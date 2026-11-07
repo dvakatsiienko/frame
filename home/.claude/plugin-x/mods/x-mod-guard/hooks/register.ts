@@ -24,6 +24,16 @@ import {
 } from './rules/merge-hold.ts';
 import { projectMoves } from './rules/milestone.ts';
 import { hasNotes, notedKey, notesEdits } from './rules/notes.ts';
+import {
+    type OverrideAsk,
+    type OverrideGrants,
+    isOverrideStore,
+    overrideAfter,
+    overrideAsked,
+    overrideStoreRefusal,
+    overrideStoreWrite,
+    overrideTypedDown,
+} from './rules/operator-override.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
 import { isSixthSense, sixthSenseSummons } from './rules/sixth-sense.ts';
@@ -369,6 +379,86 @@ async function ticketOf($: EngineInterface, id: string) {
 
 async function sessionName($: EngineInterface, sid: string) {
     return (await registryEntry($, sid))?.name;
+}
+
+// twin operator-override-store — x/go/operator_override.go's reader: the system's user record, never HOME, and off when anything does not read
+async function overrideStorePath($: EngineInterface) {
+    const record = await $.process.run(['id', '-P']).catch(() => undefined);
+    const home = record?.exitCode === 0 ? record.stdout.split(':')[8] : '';
+    return home?.startsWith('/')
+        ? `${home}/.local/state/x/operator-override.json`
+        : undefined;
+}
+
+async function overrideGrant($: EngineInterface, scope: string) {
+    const path = await overrideStorePath($);
+    if (!path) return undefined;
+    const raw = await $.fs.read(path).catch(() => undefined);
+    if (raw === undefined) return undefined;
+    try {
+        const grant = (
+            JSON.parse(raw) as Record<
+                string,
+                { at?: string; by?: string; until?: string } | undefined
+            >
+        )[scope];
+        if (!grant?.by) return undefined;
+        if (grant.until !== undefined) {
+            const until = Date.parse(grant.until);
+            if (!(until > (await $.clock.now()))) return undefined;
+        }
+        return { at: grant.at ?? '', by: grant.by, scope };
+    } catch {
+        return undefined;
+    }
+}
+// twin end
+
+// the store after his typed ask, and the note the model reads; a write that fails is told, never silent
+async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
+    const path = await overrideStorePath($);
+    if (!path)
+        return 'operator-override: the system user record did not read, so the switch did not move';
+    const raw = await $.fs.read(path).catch(() => '{}');
+    let grants: OverrideGrants = {};
+    try {
+        grants = JSON.parse(raw) as OverrideGrants;
+    } catch {}
+    const at = new Date(await $.clock.now()).toISOString();
+    await $.fs.write(path, JSON.stringify(overrideAfter(grants, ask, at)));
+    return ask.scope === 'off'
+        ? "operator-override is off, by dima's typed words"
+        : `operator-override prs is on, by ${ask.by}: x lane merge-auto <pr> --apply lands every pr; his hold and the brake still stop it`;
+}
+
+// one line per pass, as x writes it; a line that can't land stops nothing
+async function overrideLogPass(
+    $: EngineInterface,
+    grant: { at: string; by: string; scope: string },
+    what: string,
+) {
+    const path = await overrideStorePath($);
+    if (!path) return;
+    const log = path.replace(/\.json$/, '.log');
+    const was = await $.fs.read(log).catch(() => '');
+    const line = JSON.stringify({
+        at: new Date(await $.clock.now()).toISOString(),
+        by: grant.by,
+        scope: grant.scope,
+        since: grant.at,
+        what,
+    });
+    await $.fs.write(log, `${was}${line}\n`);
+}
+
+// this mac's own brake record (`x/go/merge_auto.go`); the brake's label and reverts need the network, so only merge-auto reads those
+async function rawMergeBraked($: EngineInterface) {
+    const path = await overrideStorePath($);
+    if (!path) return true;
+    const dir = path.replace(/operator-override\.json$/, 'merge-brake');
+    if (!(await $.fs.exists(dir).catch(() => true))) return false;
+    const files = await $.fs.list(dir).catch(() => undefined);
+    return !files || files.some((f) => f.name.endsWith('.json'));
 }
 
 // x's own record of dima's holds, one file per repo (`x/go/merge_hold.go`); a pr number across repos counts as held in each,
@@ -1596,6 +1686,19 @@ export const register: Register = (on) => {
             );
             if (stop) return stop;
         }
+        for (const refusal of [
+            overrideStoreWrite(typed, cwd),
+            overrideTypedDown(typed, cwd),
+        ]) {
+            if (!refusal) continue;
+            const said = `x-mod-guard stopped this one command. instead: ${refusal.door}. why: ${refusal.why} (rule ${refusal.rule}).`;
+            const stop = await enforce(
+                refusal,
+                `nothing in this command ran — ${said}`,
+                said,
+            );
+            if (stop) return stop;
+        }
         const merges = [
             ...rawMerges(typed, cwd),
             // a file in another language can read as anything, so its parse failing refuses nothing
@@ -1610,9 +1713,26 @@ export const register: Register = (on) => {
                     quotesCommand(typed),
                     spends,
                 )) !== undefined;
+            const held = mergeHold(merges, await readMergeHolds($));
+            const override = held
+                ? undefined
+                : await overrideGrant($, 'prs').catch(() => undefined);
             const hold =
-                mergeHold(merges, await readMergeHolds($)) ??
-                rawMergeRefused(merges, isStackTicked);
+                held ??
+                (override && (await rawMergeBraked($))
+                    ? {
+                          door: "dima's look, then x lane merge-auto <pr> --release-brake --dima-ok <pr>",
+                          rule: 'raw-merge',
+                          targets: ['merge-brake'],
+                          why: 'the brake is on, and operator-override never opens it',
+                      }
+                    : override
+                      ? undefined
+                      : rawMergeRefused(merges, isStackTicked));
+            if (override && !hold)
+                await overrideLogPass($, override, `raw merge: ${typed}`).catch(
+                    () => undefined,
+                );
             if (hold) {
                 const said = `x-mod-guard stopped this one command. instead: ${hold.door}. why: ${hold.why} (rule ${hold.rule}).`;
                 const stop = await enforce(
@@ -1850,6 +1970,23 @@ export const register: Register = (on) => {
                 (s) => s.realPath ?? path,
                 () => path,
             );
+            if (
+                e.tool !== 'Read' &&
+                (isOverrideStore(real) || isOverrideStore(path))
+            ) {
+                const refusal = overrideStoreRefusal(path);
+                await record($, {
+                    command: `${e.tool} ${path}`,
+                    door: refusal.door,
+                    kind: 'refused',
+                    rule: refusal.rule,
+                    target: path,
+                    why: refusal.why,
+                });
+                return {
+                    deny: `x-mod-guard stopped this ${e.tool}. instead: ${refusal.door}. why: ${refusal.why}: ${path}`,
+                };
+            }
             const { value: seen = [] } = await $.state.get(SEEN);
             if (
                 e.tool === 'Write' &&
@@ -1939,19 +2076,34 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await $.state.set(IMAGES, 0).catch(() => undefined);
+        let overrideNote: string | undefined;
         if (TYPED_BY_DIMA.has(e.origin.kind)) {
             const sid = await $.session.id().catch(() => undefined);
-            const isBg = sid
-                ? ((await registryEntry($, sid).catch(() => undefined))?.isBg ??
-                  false)
-                : false;
+            const entry = sid
+                ? await registryEntry($, sid).catch(() => undefined)
+                : undefined;
+            const isBg = entry?.isBg ?? false;
             if ((isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind))
                 await $.state.set(PROMPT, e.text).catch(() => undefined);
             if ((isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind))
                 await $.state.set(TOLD, e.text).catch(() => undefined);
+            const ask = overrideAsked(e.text);
+            // no registry row reads as not his: a bg session's brief must never slip through a read that failed
+            if (
+                ask &&
+                entry &&
+                (isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind)
+            )
+                overrideNote = await overrideFlip($, ask).catch(
+                    (err: unknown) =>
+                        `operator-override: the switch did not move: ${String(err)}`,
+                );
         }
         await logOrigin($, e).catch(() => undefined);
-        return next(e);
+        const sent = await next(e);
+        return overrideNote === undefined || sent.drop !== undefined
+            ? sent
+            : { ...sent, context: [...(sent.context ?? []), overrideNote] };
     });
 
     // his word on the stash holds for the turn it was typed in (FRM-426 exit 1: «in this turn»)
@@ -1967,6 +2119,21 @@ export const register: Register = (on) => {
     on('tool.call', async ($, e, next) => {
         if ((e.tool as string) !== START_SESSION) return next(e);
         const prompt = (e as { prompt?: unknown }).prompt;
+        // a summon's first prompt can read as typed, so a brief that is only the phrase never starts
+        if (typeof prompt === 'string' && overrideAsked(prompt)) {
+            const refusal = overrideStoreRefusal('start_session');
+            await record($, {
+                command: 'start_session',
+                door: refusal.door,
+                kind: 'refused',
+                rule: refusal.rule,
+                target: 'start_session',
+                why: refusal.why,
+            }).catch(() => undefined);
+            return {
+                deny: `x-mod-guard stopped this spawn. instead: ${refusal.door}. why: ${refusal.why}`,
+            };
+        }
         const reason =
             typeof prompt === 'string'
                 ? await trialGap($, prompt).catch(() => undefined)
