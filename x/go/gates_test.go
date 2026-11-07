@@ -621,6 +621,29 @@ func TestModsChainRetryRunsNoSecondSuiteOnBytesTheHookPassed(t *testing.T) {
 	}
 }
 
+func TestAWholeModsRunLogsItsCpuAndASkippedOneLogsADash(t *testing.T) {
+	t.Parallel()
+	dir, env, _ := modsChain(t)
+	redsAfterTheSuiteOnce(t, dir)
+	write(t, filepath.Join(dir, modHooks), "export const register = () => 1;\n")
+	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks); got.code == 0 {
+		t.Fatalf("the first attempt should be refused\n%s", got.stdout)
+	}
+	commitHooks(t, dir, env)
+
+	rows := nonBlank(readFile(t, filepath.Join(envValue(env, "X_STATE"), "gate-steps.log")))
+	if len(rows) < 2 {
+		t.Fatalf("%d rows, want the suite's run and its skip:\n%q", len(rows), rows)
+	}
+	last := func(row string) string { return row[strings.LastIndex(row, "\t")+1:] }
+	if whole := last(rows[0]); !regexp.MustCompile(`^\d+\.\d$`).MatchString(whole) {
+		t.Errorf("the whole run's last column reads %q, want user + sys:\n%s", whole, rows[0])
+	}
+	if skipped := last(rows[len(rows)-1]); skipped != "-" {
+		t.Errorf("the skipped run's last column reads %q, want -:\n%s", skipped, rows[len(rows)-1])
+	}
+}
+
 func TestModsChainRetryRerunsARedSuite(t *testing.T) {
 	t.Parallel()
 	for _, red := range []string{"RED\n", "HOOK-THROWS\n", "DIES-QUIET\n"} {

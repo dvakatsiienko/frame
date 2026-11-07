@@ -839,7 +839,7 @@ func ciJobs(tree string, paths []string) []ciJob {
 		if module := goModule(tree, filepath.Dir(filepath.Join(tree, path))); module != "" && !seen[module] {
 			seen[module] = true
 			// the same isolation pnpm x-go:test runs under: no global gitconfig reaches a fixture repo
-			jobs = append(jobs, ciJob{module, []string{"GIT_CONFIG_GLOBAL=/dev/null"}, []string{"go", "test", "./..."}})
+			jobs = append(jobs, ciJob{module, []string{"GIT_CONFIG_GLOBAL=/dev/null"}, goTestJob(tree, module)})
 		}
 	}
 	if ts {
@@ -852,6 +852,17 @@ func ciJobs(tree string, paths []string) []ciJob {
 		}
 	}
 	return jobs
+}
+
+// a repo that keeps a test-cpu-budget logs this run's cost; log only, since a commit never reds on cost (FRM-528)
+func goTestJob(tree, module string) []string {
+	goTest := []string{"go", "test", "./..."}
+	suite, err := filepath.Rel(tree, module)
+	budget := filepath.Join(tree, "script/test-cpu-budget.sh")
+	if err != nil || !exists(budget) {
+		return goTest
+	}
+	return append([]string{budget, "--log-only", strings.ReplaceAll(suite, "/", "-")}, goTest...)
 }
 
 var (

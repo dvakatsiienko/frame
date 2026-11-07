@@ -235,13 +235,51 @@ test.each([
         const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
             .trimEnd()
             .split('\t');
-        expect(row).toHaveLength(8);
+        expect(row).toHaveLength(9);
         expect(row.slice(2, 4)).toEqual([source, 'codie/FRM-1-x']);
         expect(row[4]).toMatch(/^[0-9a-f]+$/);
         expect(row[6]).toBe('7');
         expect(row[7]).toContain('exit 7');
+        expect(row[8]).toBe('-');
     },
 );
+
+test.each([
+    ['a whole test step logs its cpu', 'main', /^\d+\.\d$/],
+    ['a related test step logs a dash', 'codie/FRM-1-x', /^-$/],
+])('%s', (_name, branch, want) => {
+    const { gate, repo } = peerStaged();
+    const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
+    execFileSync('git', ['switch', '-q', '-C', branch], {
+        cwd: repo,
+        env: gitEnv(),
+    });
+
+    const run = gate(`bash ${join(root, 'script/test-commit.sh')} true`, {
+        VITEST: '',
+        X_STATE: state,
+    });
+
+    expect(run.status, run.stderr).toBe(0);
+    const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
+        .trimEnd()
+        .split('\t');
+    expect(row[8]).toMatch(want);
+});
+
+test('a whole step nested under vitest leaves its parent row a dash', () => {
+    const { gate } = peerStaged();
+    const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
+
+    const nested = `VITEST=1 bash ${join(root, 'script/test-commit.sh')} true`;
+    const run = gate(`sh -c '${nested}'`, { VITEST: '', X_STATE: state });
+
+    expect(run.status, run.stderr).toBe(0);
+    const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
+        .trimEnd()
+        .split('\t');
+    expect(row[8]).toBe('-');
+});
 
 test('the test step logs the source its gate row logs', () => {
     const { commitIndex, gate } = peerStaged();
