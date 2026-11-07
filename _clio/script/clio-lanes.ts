@@ -10,6 +10,8 @@ import { join } from 'node:path';
 const claudeDir = process.env.CLIO_LANES_CLAUDE ?? join(homedir(), '.claude');
 const root = process.env.CLIO_LANES_ROOT ?? join(homedir(), 'frame');
 const unread: string[] = [];
+// inside the hook's 10 s, so a slow tree reads «unread» and the view still prints
+const gitDeadline = Date.now() + 7000;
 
 const sessions = readSessions();
 
@@ -26,7 +28,7 @@ const orphanTrees = placeTrees();
 
 const blocks = sortedSeats().map(renderSeat);
 if (orphanTrees.length > 0) {
-    blocks.push(`trees no clio holds:\n${bullets(orphanTrees)}`);
+    blocks.push(`trees outside a seat:\n${bullets(orphanTrees)}`);
 }
 if (unread.length > 0) {
     blocks.push(
@@ -34,7 +36,7 @@ if (unread.length > 0) {
     );
 }
 console.log(
-    `🛫 every clio lane, read live by \`node ~/frame/_clio/script/clio-lanes.ts\`:\n\n${blocks.join('\n\n')}`,
+    `🛫 every clio lane, read live by \`node ~/frame/_clio/script/clio-lanes.ts\`; a seat's tickets, which this skips: \`x linear list --team FRM --label clio-wing-<N>\`\n\n${blocks.join('\n\n')}`,
 );
 
 function readJson(path: string): unknown {
@@ -43,6 +45,15 @@ function readJson(path: string): unknown {
     } catch {
         unread.push(path);
         return undefined;
+    }
+}
+
+function readText(path: string) {
+    try {
+        return readFileSync(path, 'utf8');
+    } catch {
+        unread.push(path);
+        return '';
     }
 }
 
@@ -99,13 +110,21 @@ function seat(key: string) {
     return found;
 }
 
-function isAlive(pid: number) {
+function isAlive(session: Session) {
     try {
-        process.kill(pid, 0);
-        return true;
-    } catch (error) {
-        return (error as NodeJS.ErrnoException).code === 'EPERM';
+        process.kill(session.pid, 0);
+    } catch {
+        return false;
     }
+    if (!session.procStart) {
+        return true;
+    }
+    // a pid gets reused, and a stale registry file would then read alive; the registry writes this in utc
+    const started = spawnSync('ps', ['-o', 'lstart=', '-p', `${session.pid}`], {
+        encoding: 'utf8',
+        env: { ...process.env, LC_ALL: 'C', TZ: 'UTC' },
+    }).stdout;
+    return started.trim() === session.procStart;
 }
 
 function placeSessions() {
@@ -115,7 +134,7 @@ function placeSessions() {
             continue;
         }
         const held = seat(key);
-        const isLive = isAlive(session.pid);
+        const isLive = isAlive(session);
         const isNewer =
             session.statusUpdatedAt > (held.session?.statusUpdatedAt ?? 0);
         if (
@@ -132,7 +151,7 @@ function placeSessions() {
 function placeFlyways() {
     const dir = join(root, '_clio', 'pocket', 'tasks');
     for (const file of listDir(dir)) {
-        const text = readFileSync(join(dir, file), 'utf8');
+        const text = readText(join(dir, file));
         const key = /^title: ['"]?flyway: (main|wing \d+)['"]?$/m.exec(
             text,
         )?.[1];
@@ -182,19 +201,27 @@ function placeTrees() {
             : [...seats.values()].find((held) => {
                   return held.session?.sessionId.startsWith(fork ?? '');
               });
+        const other = sessions.find((session) => {
+            return session.sessionId.startsWith(fork ?? '\0');
+        });
         if (holder) {
             holder.trees.push(line);
         } else {
-            orphans.push(line);
+            orphans.push(other?.name ? `${line}, ${other.name}` : line);
         }
     }
     return orphans;
 }
 
 function git(tree: string, ...args: string[]) {
-    const run = spawnSync('git', ['-C', tree, ...args], {
+    const timeout = gitDeadline - Date.now();
+    if (timeout <= 0) {
+        return undefined;
+    }
+    // a read must never take the index lock from the seat working in that tree
+    const run = spawnSync('git', ['--no-optional-locks', '-C', tree, ...args], {
         encoding: 'utf8',
-        timeout: 3000,
+        timeout,
     });
     return run.status === 0 ? run.stdout.trim() : undefined;
 }
@@ -207,7 +234,7 @@ function renderTree(name: string, tree: string) {
         '--count',
         'refs/heads/main...HEAD',
     );
-    const dirty = git(tree, 'status', '--porcelain', '--untracked-files=no');
+    const dirty = git(tree, 'status', '--porcelain');
     if (counts === undefined || dirty === undefined) {
         return `tree ${name}: unread`;
     }
@@ -216,7 +243,7 @@ function renderTree(name: string, tree: string) {
     const parts = [
         behind !== '0' && `${behind} behind main`,
         ahead !== '0' && `${ahead} not on main`,
-        edited > 0 && `${edited} files uncommitted`,
+        edited > 0 && `${edited} uncommitted`,
     ].filter(Boolean);
     return `tree ${name}: ${parts.join(', ') || 'level with main, clean'}`;
 }
@@ -282,6 +309,7 @@ interface Session {
     kind: string;
     name?: string;
     pid: number;
+    procStart?: string;
     sessionId: string;
     status: string;
     statusUpdatedAt: number;

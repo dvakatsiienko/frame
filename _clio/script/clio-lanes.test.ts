@@ -48,6 +48,7 @@ function world() {
                 ...process.env,
                 CLIO_LANES_CLAUDE: claude,
                 CLIO_LANES_ROOT: root,
+                TZ: 'Asia/Tokyo',
             },
             input,
         }).stdout;
@@ -198,18 +199,21 @@ describe('clio-lanes', () => {
         const wing = w.addTree('clio-wing-2');
         w.addTree('fork-abcd1234');
         w.addTree('fork-00000000');
+        w.session('🦉 clio (fork)', '11111111-rest');
+        w.addTree('fork-11111111');
         w.addTree('verify-1');
         w.commit(w.root, 'behind.txt');
         w.commit(wing, 'ahead.txt');
         writeFileSync(join(wing, 'a.txt'), 'edited\n');
         const out = w.run();
         expect(out).toContain(
-            '🦉🪽 clio: wing 2: dead\ntree clio-wing-2: 1 behind main, 1 not on main, 1 files uncommitted',
+            '🦉🪽 clio: wing 2: dead\ntree clio-wing-2: 1 behind main, 1 not on main, 1 uncommitted',
         );
         expect(out).toContain(
             'alive, idle 0 min\ntree fork-abcd1234: 1 behind main',
         );
-        expect(out).toContain('trees no clio holds:\n  - tree fork-00000000');
+        expect(out).toContain('trees outside a seat:\n  - tree fork-00000000');
+        expect(out).toContain('fork-11111111: 1 behind main, 🦉 clio (fork)');
         expect(out).not.toContain('verify-1');
     });
 
@@ -218,6 +222,41 @@ describe('clio-lanes', () => {
         w.gitRepo();
         w.addTree('clio-wing-4');
         expect(w.run()).toContain('tree clio-wing-4: level with main, clean');
+    });
+
+    test('an untracked stray keeps a tree from reading clean', () => {
+        const w = world();
+        w.gitRepo();
+        writeFileSync(join(w.addTree('clio-wing-4'), 'stray.txt'), 'x\n');
+        expect(w.run()).toContain('tree clio-wing-4: 1 uncommitted');
+    });
+
+    test('a reused pid reads dead: alive by pid, but another process', () => {
+        const w = world();
+        w.session('🦉 clio', 'sid-m', {
+            procStart: 'Thu Jan  1 00:00:00 1970',
+        });
+        expect(w.run()).toContain('🦉 clio: dead');
+    });
+
+    test('the process the registry names reads alive', () => {
+        const w = world();
+        const procStart = spawnSync(
+            'ps',
+            ['-o', 'lstart=', '-p', `${process.pid}`],
+            { encoding: 'utf8', env: { ...process.env, TZ: 'UTC' } },
+        ).stdout.trim();
+        w.session('🦉 clio', 'sid-m', { procStart });
+        expect(w.run()).toContain('🦉 clio: alive');
+    });
+
+    test('a pocket file gone mid-read is named, and the view still prints', () => {
+        const w = world();
+        w.session('🦉 clio', 'sid-m');
+        mkdirSync(join(w.root, '_clio/pocket/tasks/pk-gone.md'));
+        const out = w.run();
+        expect(out).toContain('🦉 clio: alive');
+        expect(out).toContain('pk-gone.md');
     });
 
     test('a source it cannot read is named, not read as nothing there', () => {

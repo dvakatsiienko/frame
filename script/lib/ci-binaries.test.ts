@@ -8,7 +8,7 @@ import { gitEnv, trackedFiles } from './git-fixture.ts';
 
 const root = path.resolve(import.meta.dirname, '../..');
 // what ubuntu-latest ships before any step runs
-const runnerBinaries = ['bash', 'git', 'python3', 'sh'];
+const runnerBinaries = ['bash', 'git', 'ps', 'python3', 'sh'];
 // sees a binary a test names as a literal; one the code under test execs, or one passed in a
 // variable, stays the test author's to install
 const execCall: Record<string, RegExp> = {
@@ -19,7 +19,7 @@ const execCall: Record<string, RegExp> = {
 function jobBinaries(ci: string) {
     const jobs = new Map<string, Set<string>>();
     const body = ci.slice(ci.indexOf('\njobs:\n'));
-    for (const block of body.split(/\n(?=  [\w-]+:\n)/).slice(1)) {
+    for (const block of body.split(/\n(?= {2}[\w-]+:\n)/).slice(1)) {
         const name = block.match(/^ {2}([\w-]+):/)?.[1] ?? '';
         const installed = new Set(runnerBinaries);
         for (const line of block.matchAll(/apt-get install ([^\n]+)/g)) {

@@ -174,7 +174,7 @@ adds ~5k resident tokens and re-fires the prefetch hook (measured 2026-09-11).
 
 ## phase 7 — one earned joke. never skip it.
 
-done when: every live wing's report is folded and the wing archived, the CST slug is in the store, crow is stopped and her card archived, orbit holds the `tomorrow:` lines, the joke closed the reply.
+done when: every live wing's report is folded and the wing archived or named to him, the CST slug is in the store, crow is stopped and her card archived, orbit holds the `tomorrow:` lines, the joke closed the reply.
 
 ## standing rules
 - unpushed commits are pushed at the halt by default; dima's «stop» holds them (`habit-dima-comms`)
