@@ -44,6 +44,7 @@
 - **a relay to a member names the source it was read from**; a claim about a repo's behaviour opens that repo's `AGENTS.md` first.
 - **a message stating a result goes after the command's output**, never in the same batch.
 - **a timeout is not proof of failure** — `ListAgents` before a re-summon; a blind retry double-runs the work.
+- **a `local_…` id send reports no refusal, so its success never proves a read**: a name send carries the delivery notice.
 
 ## the pr
 
