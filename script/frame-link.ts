@@ -206,6 +206,23 @@ async function untrack(rawPath: string | undefined) {
         process.exit(1);
     }
 
+    // ? A missing target is fine (the copy below recreates it); anything else must be our link.
+    const stats = await lstatOrNull(target);
+    const isOurLink =
+        stats?.isSymbolicLink() &&
+        zx.path.resolve(
+            zx.path.dirname(target),
+            await zx.fs.readlink(target),
+        ) === entry.source;
+    if (stats !== null && !isOurLink) {
+        zx.echo(
+            rb(
+                `❌ ${toTilde(target)} isn't linked to the mirror, nothing changed`,
+            ),
+        );
+        process.exit(1);
+    }
+
     zx.echo(
         bb(`This turns ${mb(toTilde(target))} into a real file and deletes`),
     );

@@ -67,7 +67,9 @@ if (dropName !== undefined) {
     const dropped = dropHotkey(payload, dropName);
     payload = dropped.payload;
 
-    const clean = file.replace(/\.rayconfig$/, '-clean.rayconfig');
+    const clean = /\.rayconfig$/i.test(file)
+        ? file.replace(/\.rayconfig$/i, '-clean.rayconfig')
+        : `${file}-clean.rayconfig`;
     writeFileSync(clean, encryptExport({ header, password, payload }));
 
     console.log(
