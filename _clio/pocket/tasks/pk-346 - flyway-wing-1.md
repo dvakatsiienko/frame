@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-07T20:00:00Z'
+updated_date: '2026-11-07T21:10:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,23 +16,14 @@ ordinal: 18998
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 cpu: one-lane baseline, 30 min sampler
-- [x] #2 cpu: dose test, 1 2 3 suites at once on a quiet mac
-- [x] #3 commit: cut the sleeps 4739e4ed added
-- [x] #4 git: core.bare and fixture GIT_DIR, every door
-- [ ] #5 FRM-525: cause with numbers, fix landed, next step named
-- [x] #6 main: tell her when lanes can join
-- [x] #7 dima: owed answers W2 W5 W6, PK-328 W5 W35 W36, before and after numbers
-- [x] #8 PK-337 mac freeze
-- [x] #9 PK-345 parked member
-- [ ] #10 PK-300 one complete measuring solution
-- [x] #11 PK-334 every gate listed, gate as a vibe word, maintained
-- [x] #12 FRM-521's next pr, its own lane
-- [ ] #13 FRM-517 temp dir: the day's count read 11-08, close or one step named, from wing 2
-- [ ] #14 standing: FRM-525 cpu, watch until 2026-11-13
-- [ ] #15 FRM-520 x lane commit runs x/go tests on a gate change: its chunk's owner
-- [ ] #16 FRM-497 speak meter: starts with speak v2, not before
-- [ ] #17 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
+- [ ] #1 PK-300 one complete measuring solution
+- [ ] #2 FRM-517 temp dir: the day's count read 11-08, close or one step named, from wing 2
+- [ ] #3 standing: FRM-525 cpu, watch until 2026-11-13
+- [ ] #4 FRM-520 x lane commit runs x/go tests on a gate change: its chunk's owner
+- [ ] #5 FRM-497 speak meter: starts with speak v2, not before
+- [ ] #6 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
+- [ ] #7 perf after the reset, useful first, in order: FRM-533 FRM-535 FRM-534 FRM-536 FRM-537
+- [ ] #8 FRM-503 door 1: shape it for his sign, after FRM-520
 <!-- AC:END -->
 
 ## Implementation Notes
