@@ -4,10 +4,10 @@ title: 'api credits channel: plan where the $200 a month goes (shape-idea)'
 status: open
 assignee: []
 created_date: '2026-11-03T08:43:00Z'
-updated_date: '2026-11-07T02:00:00Z'
+updated_date: '2026-11-07T12:45:00Z'
 labels:
   - m
-  - wing-1
+  - wing-2
 dependencies: []
 priority: next
 type: wish
