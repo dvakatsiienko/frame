@@ -6,6 +6,17 @@ set -uo pipefail
 root="${TREE_SYNC_ROOT:-$HOME/frame}"
 trees="$root/.claude/worktrees"
 
+# the seat's tree outlives the session, so its number is read from the registry; a tree from before seats goes by session id
+seat_tree() {
+	local sid=$1 file name
+	file=$(grep -lE "\"sessionId\": *\"$sid" "${TREE_SYNC_SESSIONS:-$HOME/.claude/sessions}"/*.json 2>/dev/null | head -1)
+	if [ -n "$file" ] && [[ $(<"$file") =~ \"name\":\ *\"[^\"]*wing\ ([0-9]+) ]]; then
+		name="$trees/clio-wing-${BASH_REMATCH[1]}"
+		[ -d "$name" ] && { echo "$name"; return; }
+	fi
+	echo "$trees/fork-${sid:0:8}"
+}
+
 # prints only what the session must know; a failure never touches the tree's own work
 sync_tree() {
 	local tree=$1 behind output
@@ -46,8 +57,8 @@ sync_tree() {
 
 if [ "${1:-}" != land ]; then
 	input=$(cat)
-	[[ $input =~ \"session_id\":\ *\"([^\"]{8}) ]] || exit 0
-	tree="$trees/fork-${BASH_REMATCH[1]}"
+	[[ $input =~ \"session_id\":\ *\"([^\"]+) ]] || exit 0
+	tree=$(seat_tree "${BASH_REMATCH[1]}")
 	[ -d "$tree" ] || exit 0
 	sync_tree "$tree"
 	ahead=$(git -C "$tree" rev-list --count refs/heads/main..HEAD 2>/dev/null) || exit 0
@@ -56,7 +67,7 @@ if [ "${1:-}" != land ]; then
 fi
 
 sid="${CLAUDE_CODE_SESSION_ID:-}"
-tree="$trees/fork-${sid:0:8}"
+tree=$(seat_tree "$sid")
 [ -n "$sid" ] && [ -d "$tree" ] || {
 	echo "tree-sync land: no tree for this session, $tree" >&2
 	exit 2
@@ -101,7 +112,7 @@ fi
 if grep '^home/.claude/plugin-x/' <<<"$changed" | grep -qv '^home/.claude/plugin-x/mods/'; then
 	bump x home/.claude/plugin-x/.claude-plugin/plugin.json
 fi
-for other in "$trees"/fork-*; do
+for other in "$trees"/fork-* "$trees"/clio-wing-*; do
 	[ -d "$other" ] && [ "$other" != "$tree" ] || continue
 	sync_tree "$other" >/dev/null
 done

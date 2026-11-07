@@ -20,11 +20,17 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 - an ask of his born anywhere — a grill, a sweep plan, a log or test-drive line — gets a home, never with that line as its only one
 **promotion is one-way**: an item that needs a sign or codie moves to linear and dies here with `ticket: FRM-N` and a `close:` line. a wait on a lane, a window or a date is linear's, never a pocket `waiting` or `parked` item; a pocket wait ends today or tomorrow.
 **staleness, by hand** (W223, W224): every 3 days the boot lists the items untouched for 2 days; each is revalidated by hand — still main lane, or out to linear; a stayer carries `kept: <date> — <why>`, and an item carrying his words is asked at the halt. a done item is set `done` the turn it closes and filed by the halt (`backlog task archive`) after the day's gazette carries it — he reads the pocket often, a stale state is not allowed. `pocket-check` reds every breach and runs on every status move (`onStatusChange`, a notification when red); a red pocket runs before the main lane.
-**a day plan dies at its halt** (dima, 2026-11-04; `clio:halt` phase 1.5): what is not done moves to the CST; `pocket-check` reds one that slips to the next day.
 **a pocket write with its fields known goes to helga as a `pocket-write` chore**; a write that needs wording stays mine.
 <!-- 2026-10-14, dima: 1 of ~6 pocket writes went to helga that day -->
 
 **an item that gets a ticket carries a `ticket: FRM-N` line**; `pocket-check` (the boot runs it) reds any open item carrying one, unless a `held: <date> — FRM-N <step>` line dated within 3 days names its own ticket and the step it waits for (dima o80; `kept:` is only a stale item that stays); a closed ticket reds it all the same (dima, 2026-10-09, after pk-44 stayed open behind a closed FRM-371: «keep your pocket up to date»).
+
+## the flyway — a clio lane's live plan
+
+- one pocket item per seat, never closed, always live: `flyway: main` + `clio-main`, `flyway: wing 2` + `clio-wing-2`; none yet: `node script/pocket-add.ts "flyway: wing 2" --priority next --wing 2`
+- a line ticks the turn it finishes; at each halt, or the seat's boot after a missed one, finished lines leave (`--remove-ac`, highest number first) and the rest stay
+- a standing line is what the seat maintains: `standing: FRM-525 cpu, watch until 11-14`, its detail in the ticket
+- a parked wing's flyway waits for the next wing of its number; dima may flip its number
 
 ## the stash hierarchy — dima's, 2026-09-27
 

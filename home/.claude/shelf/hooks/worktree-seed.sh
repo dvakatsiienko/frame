@@ -21,7 +21,7 @@ case $branch in
 esac
 # wishkeeper is clio's card: a side channel's tree sees it through an untracked link, no other frame session does
 case $branch in
-  worktree-fork-*)
+  worktree-fork-* | clio-wing-*)
     if [ -f "$wt/_clio/.claude/agents/wishkeeper.md" ] && [ ! -e "$wt/.claude/agents/wishkeeper.md" ]; then
       mkdir -p "$wt/.claude/agents"
       ln -s ../../_clio/.claude/agents/wishkeeper.md "$wt/.claude/agents/wishkeeper.md"

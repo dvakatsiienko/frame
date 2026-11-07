@@ -27,7 +27,12 @@ const STALE_AFTER_DAYS = 2;
 const PARKED_LINE = /^parked:\s*\S/m;
 const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
 // the boot seeds it every evergreen day; counting it would trip the caps weekly by design
-const CAP_FREE_TITLE = /^🧬 evergreen turn/;
+const CAP_FREE_TITLE = /^🧬 evergreen turn|^flyway: /;
+// a seat's live plan: never closed, its finished lines cleaned at each halt or boot (PK-351:W69-W75)
+const FLYWAY_TITLE = /^flyway: (main|wing ([1-9]\d*))$/;
+const FLYWAY_STANDING = /^- \[[ x]\] #\d+ standing: (.*)$/gm;
+const FLYWAY_TICKED = /^- \[x\] #\d+ /m;
+const STANDING_ENDS = /\b(?:FRM|BYT)-\d+\b|\buntil:? \d/;
 // the wish-accounting reds apply to items born or touched from this day on
 const WISH_RULES_FROM = '2026-10-22';
 const CLOSE_LINE = /^close:/;
@@ -60,6 +65,7 @@ export function checkPocket(
         types: listOf(configText, 'types'),
     };
     const problems: string[] = [];
+    const flywayTitles = new Set<string>();
     let nowCount = 0;
     const tomorrow = daysBefore(today, -1);
 
@@ -81,19 +87,36 @@ export function checkPocket(
         if (text.includes(ZERO_WIDTH_JOINER))
             report('a joined emoji breaks the board view (Backlog.md #949)');
         const title = front.scalars.title ?? '';
-        const planDay = title.startsWith('day plan ')
-            ? title
-                  .split(':')[0]
-                  ?.match(/\d{2}-\d{2}/g)
-                  ?.at(-1)
-            : undefined;
-        if (planDay && status !== 'done' && `${today.slice(5)}` !== planDay)
-            report(
-                `a dated day plan dies at its halt: home its open lines, close it (day ${planDay})`,
-            );
         const touched = localDay(
             front.scalars.updated_date || front.scalars.created_date || '',
         );
+        if (title.startsWith('flyway')) {
+            const seat = title.match(FLYWAY_TITLE);
+            const label =
+                seat && (seat[2] ? `clio-wing-${seat[2]}` : 'clio-main');
+            if (!seat)
+                report(
+                    'a flyway is titled «flyway: main» or «flyway: wing <N>»',
+                );
+            if (status === 'done')
+                report(
+                    'a flyway never closes: reopen it; its lines are cleaned, the item stays',
+                );
+            if (label && !(front.lists.labels ?? []).includes(label))
+                report(`a flyway carries its seat's label, ${label}`);
+            if (flywayTitles.has(title))
+                report(`a second «${title}»: one flyway per seat`);
+            flywayTitles.add(title);
+            for (const [, line] of text.matchAll(FLYWAY_STANDING))
+                if (!STANDING_ENDS.test(line ?? ''))
+                    report(
+                        `a standing line names its ticket or an until: date: «${line}»`,
+                    );
+            if (touched < today && FLYWAY_TICKED.test(text))
+                report(
+                    `finished lines wait since ${touched}: clean them with backlog task edit --remove-ac`,
+                );
+        }
         const born = localDay(front.scalars.created_date ?? '');
         const wishIds = [...wishLines(text, [home]).keys()];
         if (
@@ -104,7 +127,7 @@ export function checkPocket(
             report('wish born without W-lines: fold it into PK-N:W1… lines');
         // a wing's prompts reach no prompt log; the main folds its asks from the closing report (FRM-464)
         const wing = (front.lists.labels ?? []).some((label) =>
-            /^wing-\d+$/.test(label),
+            /^clio-wing-\d+$/.test(label),
         );
         for (const hhmm of wing ? [] : ungroomedStamps(text, today, isGroomed))
             report(

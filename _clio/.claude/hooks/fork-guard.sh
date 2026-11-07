@@ -57,12 +57,13 @@ start)
 - helga takes your chores, by SendMessage as `x:crew-helga` names them
 - a lane starts from here only on dima's own words for a chore of yours: `clio:shape-lane-dispatch`, you its coordinator; it has no glide card and no quiet gate here, so its member's notes wake you
 - crow takes your consults, she does not read this thread: a call you'd decide alone goes to her by SendMessage under the name ListAgents prints, one question; a plan goes through `pnpm crow:plan-critique <file>`, run in the background
-- linear is yours through `clio:pm` for asks born here; the pocket too, every item born with `node script/pocket-add.ts … --wing <N>`, labelled `wing-<N>` until you hand it back
-- a change dima asks for runs in your own worktree, while the session stands in `~/frame/_clio`: never EnterWorktree, which hides the `clio:*` skills and refuses complex shell. the tree: `git -C ~/frame -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false worktree add -b worktree-fork-<session id's first 8> ~/frame/.claude/worktrees/fork-<same> main`, then `x lane seed <tree>`; edit by absolute path; commit in two calls, `cd <tree>`, then `x lane commit`; an edit in a main checkout is refused; the halt catches a branch left unlanded
+- linear is yours through `clio:pm` for asks born here; the pocket too, every item born with `node script/pocket-add.ts … --wing <N>`, labelled `clio-wing-<N>` until you hand it back
+- a change dima asks for runs in your seat's worktree, while the session stands in `~/frame/_clio`: never EnterWorktree, which hides the `clio:*` skills and refuses complex shell. the tree is `~/frame/.claude/worktrees/clio-wing-<N>`, branch `clio-wing-<N>`, and it outlives you: there already, it's yours; else `git -C ~/frame -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false worktree add -b clio-wing-<N> ~/frame/.claude/worktrees/clio-wing-<N> main`, then `x lane seed <tree>`. edit by absolute path; commit in two calls, `cd <tree>`, then `x lane commit`; an edit in a main checkout is refused
+- your flyway first (`habit-shared-files` § the flyway): read `flyway: wing <N>`, clean its finished lines, keep it live
 - your tree stays level by itself: each prompt merges main into it, and its 🌿 line names what needs you
 - you land your own branch at each finished piece, no message to clio: commit, then `~/frame/_clio/.claude/hooks/tree-sync.sh land` in the background (main in, fast-forward main, push, bump a changed plugin, refresh the other wings' trees); your tree stays for the next piece
   - a known hiccup: a file main has staged blocks the fast-forward. `[ask]` clio to commit hers, since it is her work, then land with no further ask; any other conflict or refusal: stop, `[ask]` clio
-- a ticket you work carries your `wing-<N>` label, on at your first write, off when you hand it back or close it
+- a ticket you work carries your `clio-wing-<N>` label, on at your first write, off when you hand it back or close it
 - you keep the siesta habit by `clio:siesta`, its due stamp main's: run its steps at each finished batch with both cards, wishkeeper and wisphunter, a brief's paths absolute
 - your second wind sends and ends with `clio:checkpoint`'s notice words, you as `wing <N>`
 - the end: when dima says the work is done, send «🦉 clio» one SendMessage, then stop; dima archives you from the sidebar. your prompts reach no prompt log, so it opens with «dima's asks here»: every ask or wish of his from this thread, his words copied, each with its home (the ticket or pocket id you wrote, or «main's call»), then every external write
@@ -127,8 +128,7 @@ fork-edit | fork-bash)
 		hit=$(node "$(dirname "$0")/../../script/fork-bash-check.ts" <<<"$input" 2>/dev/null)
 		[ -n "$hit" ] || exit 0
 	fi
-	sid=$(jq -r '.session_id // ""' <<<"$input" | cut -c1-8)
-	jq -n --arg why "a fork edits only inside its own worktree: make the tree «fork-${sid}» by the banner's line, edit it by absolute path, commit there (x lane commit), and land its branch worktree-fork-$sid yourself: the banner's landing line" \
+	jq -n --arg why "a wing edits only inside its own worktree: make «clio-wing-<N>» by the banner's line, edit it by absolute path, commit there (x lane commit), and land it with tree-sync.sh land, the banner's landing line" \
 		'{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $why}}'
 	;;
 main-only)

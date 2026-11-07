@@ -128,6 +128,29 @@ describe('tree-sync on a prompt', () => {
     });
 });
 
+describe('tree-sync seat', () => {
+    test('a wing named in the registry syncs its seat tree, whatever its session id', () => {
+        const w = world();
+        const seat = w.addTree('clio-wing-2');
+        const sessions = mkdtempSync(join(tmpdir(), 'tree-sync-s-'));
+        writeFileSync(
+            join(sessions, '1.json'),
+            JSON.stringify({
+                name: '🦉🪽 clio: wing 2',
+                sessionId: 'after-a-clear',
+            }),
+        );
+        w.write(w.root, 'b.txt', 'b\n');
+        const out = spawnSync('bash', [SYNC], {
+            encoding: 'utf8',
+            env: { ...w.env, TREE_SYNC_SESSIONS: sessions },
+            input: JSON.stringify({ session_id: 'after-a-clear' }),
+        });
+        expect(out.stdout).toContain('tree synced');
+        expect(existsSync(join(seat, 'b.txt'))).toBe(true);
+    });
+});
+
 describe('tree-sync land', () => {
     test('merges main in, moves main, pushes, keeps the tree', () => {
         const w = world();

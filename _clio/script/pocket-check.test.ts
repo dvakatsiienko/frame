@@ -233,62 +233,85 @@ describe('checkPocket', () => {
         ).toContain('joined emoji');
     });
 
-    test.each([
-        ['an open plan of an earlier day', 'day plan 01-01: x', 'open', true],
-        [
-            'a rolled plan by its last day',
-            'day plan 01-01, rolled to 01-02: x',
-            'open',
-            true,
-        ],
-        ['a closed plan', 'day plan 01-01: x', 'done', false],
-        [
-            'an item that only mentions a plan',
-            'review day plan 01-01: x',
-            'open',
-            false,
-        ],
-    ])('a day plan past its day: %s', (_, title, status, isRed) => {
-        const problems = checkPocket(
+    const flyway = (fields: Record<string, string | string[]>, body = 'body') =>
+        checkPocket(
             config,
-            [task({ status, title })],
-            '2026-06-15',
+            [
+                task(
+                    {
+                        labels: ['m', 'clio-wing-1'],
+                        title: 'flyway: wing 1',
+                        ...fields,
+                    },
+                    body,
+                ),
+            ],
+            today,
         ).join('\n');
-        expect(problems.includes('dated day plan')).toBe(isRed);
+
+    test('a clean flyway from any earlier day stays, past the stale check', () => {
+        expect(
+            flyway({ updated_date: '2026-01-01 10:00' }, '- [ ] #1 cpu'),
+        ).toBe('');
     });
 
-    test('a folded day plan title reds', () => {
-        const planned = task({});
-        const folded = {
-            ...planned,
-            text: planned.text.replace(
-                "id: 'PK-1'",
-                "id: 'PK-1'\ntitle: >-\n  day plan 01-01: side channel,\n  mods lane",
-            ),
-        };
-        expect(
-            checkPocket(config, [folded], '2026-06-15').join('\n'),
-        ).toContain('dated day plan');
+    test('a flyway never closes', () => {
+        expect(flyway({ status: 'done' })).toContain('never closes');
     });
 
-    test('a plan from last year reds', () => {
+    test('a flyway carries its seat label, main and wing alike', () => {
+        expect(flyway({ labels: ['m'] })).toContain('clio-wing-1');
+        expect(flyway({ labels: ['m'], title: 'flyway: main' })).toContain(
+            'clio-main',
+        );
         expect(
-            checkPocket(
-                config,
-                [task({ title: 'day plan 12-31: x' })],
-                '2026-01-01',
-            ).join('\n'),
-        ).toContain('dated day plan');
+            flyway({ labels: ['m', 'clio-main'], title: 'flyway: main' }),
+        ).toBe('');
     });
 
-    test('a day plan of today stays', () => {
-        expect(
-            checkPocket(
-                config,
-                [task({ title: 'day plan 06-15: x' })],
-                '2026-06-15',
-            ).join('\n'),
-        ).not.toContain('dated day plan');
+    test('a flyway title names a seat', () => {
+        expect(flyway({ title: 'flyway: 11-07' })).toContain('titled');
+    });
+
+    test('one flyway per seat', () => {
+        const one = task({ labels: ['m', 'clio-main'], title: 'flyway: main' });
+        expect(checkPocket(config, [one, one], today).join('\n')).toContain(
+            'one flyway per seat',
+        );
+    });
+
+    test('a flyway stays out of the now cap', () => {
+        const ones = ['main', 'wing 1', 'wing 2', 'wing 3'].map((seat) =>
+            task({
+                labels: [
+                    'm',
+                    seat === 'main'
+                        ? 'clio-main'
+                        : `clio-wing-${seat.slice(5)}`,
+                ],
+                priority: 'now',
+                title: `flyway: ${seat}`,
+            }),
+        );
+        expect(checkPocket(config, ones, today).join('\n')).not.toContain(
+            'the cap is',
+        );
+    });
+
+    test.each([
+        ['a ticket', '- [ ] #1 standing: FRM-525 cpu, watch', false],
+        ['a date', '- [ ] #1 standing: cpu, until 11-14', false],
+        ['neither', '- [ ] #1 standing: cpu, watch', true],
+    ])('a standing line naming %s', (_, line, isRed) => {
+        expect(flyway({}, line).includes('standing line')).toBe(isRed);
+    });
+
+    test('finished lines from an earlier day red, from today wait for the halt', () => {
+        const done = '- [x] #1 shipped';
+        expect(flyway({ updated_date: '2026-10-08 10:00' }, done)).toContain(
+            'remove-ac',
+        );
+        expect(flyway({}, done)).toBe('');
     });
 
     test('now holds at most three items', () => {
@@ -1109,7 +1132,7 @@ describe('the prompt groom (FRM-418)', () => {
     test("a numbered wing's item is groomed in its wing, not here", () => {
         const owned = task(
             {
-                labels: ['s', 'wing-2'],
+                labels: ['s', 'clio-wing-2'],
                 updated_date: `${day} 09:30`,
             },
             '\nW302 (2026-10-26 09:12, dima): a fold',

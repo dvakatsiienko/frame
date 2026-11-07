@@ -8,7 +8,7 @@ import { parseArgs } from 'node:util';
 const PRIORITIES = ['now', 'next', 'later'] as const;
 const pocket = path.resolve(import.meta.dirname, '..');
 
-// wing 01 would label `wing-01`, which no `--labels wing-1` ever finds
+// wing 01 would label `clio-wing-01`, which no `--labels clio-wing-1` ever finds
 export const isWingNumber = (value: string) => /^[1-9]\d*$/.test(value);
 
 export function ordinalFor(
@@ -63,7 +63,7 @@ if (import.meta.main) {
             size: { default: 's', type: 'string' },
             top: { type: 'boolean' },
             type: { default: 'task', type: 'string' },
-            // the wing that owns it: labelled wing-<N> until that wing hands it back (FRM-464, PK-311)
+            // the wing that owns it: labelled clio-wing-<N> until that wing hands it back (FRM-464, PK-311)
             wing: { type: 'string' },
         },
     });
@@ -115,7 +115,7 @@ if (import.meta.main) {
         '-s',
         'open',
         '-l',
-        [values.size, values.wing && `wing-${values.wing}`]
+        [values.size, values.wing && `clio-wing-${values.wing}`]
             .filter(Boolean)
             .join(','),
         '--priority',

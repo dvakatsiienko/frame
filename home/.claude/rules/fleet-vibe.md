@@ -13,14 +13,14 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **granular** — an area or ticket where every agent change needs Dima's weighted approve, step
   by step, with adoption notes for anything his own fingers will use (aliases, gitconfig, nvim,
   the vault). A Linear label and a chat word. Day-to-day areas (deps, docs, freebies) stay free.
-- **🎑 mil** — a Linear milestone: the unit we plan and retire in, always opened with a sorting phase so it starts ordered (badge: dima, 2026-10-22).
+- **🎑 mil** — a Linear milestone: the unit we plan and retire in, always opened with a sorting phase so it starts ordered.
 - **run id** — the thread of one continuous piece of work, continued across sessions, never minted
   mid-story.
 - **✨ wisp** — a bug: a small glow to tend before it burns, a will-o'-the-wisp that leads the app
   astray (dima, 2026-10-08, replacing «gremlins»). each app keeps a «<app> wisps» stash ticket; the
   inbox's ✨ section is the drop point.
 - **blueprint** — a picture of one part of our system (a flow, a structure, a map) that clio draws
-  and dima edits to show an idea; clio reads the edit back and builds from it (dima, 2026-10-18).
+  and dima edits to show an idea; clio reads the edit back and builds from it.
   home: `_clio/blueprints/`.
 - **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (`rules/fleet-mods.md`). <!-- cc -->
 - **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held ping; «slipstreamed» = delivered that way; its opposite is **push**. <!-- cc -->
@@ -28,14 +28,15 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **🌠 wish** — what dima wants, in his words (dima, 2026-10-08: the word replaces «todo»). he prints
   wishes in the inbox and mid-prompt; the inbox's wishes section is the drop point; the pocket, then linear, is where a wish lives; a spec points at its wish, never copies it.
 - **🌤️ siesta** — the pause between batches (dima, 2026-10-08; was «pit stop»): he reads and steers, the fleet checks what just landed (clio: `wishkeeper` 🐬, `clio:siesta`), and the reply ends with one light line — a fact with a twist, a dry joke, or «meanwhile i did <freebie>». never inside a ticket's build.
-- **lane** — any flow of work (dima, 2026-10-22, groomed 10-23 and 10-29); four kinds, and a `lane:` line holds
+- **lane** — any flow of work ; four kinds, and a `lane:` line holds
   only the kind word: the **main lane** is ours, this thread, where the operational work is solved; a **side lane** is
   any lane not ours, summoned while we work the main lane: codie with a pr always, sixth sense on by default; a **quick
   lane** is a side lane with no pr, on main, sixth sense off by default; a **shift** is a lane run from a
   written plan while his AFK tick is on, `clio:shift` its contract. a thread name reads `<mode> <role emoji> <member name>: <scope> |
   <ticket or what>`, the scope optional, mode `🌗` side, `⚡` quick, `🌘` shift: `⚡ 🔧 codie: mods lane 3 | FRM-467`.
-- **🪽 wing** (dima, 2026-11-06, was «side channel») — a second clio beside the main thread, numbered: `🦉🪽 clio: wing 1`; «your wing 2» never means a lane (`clio:wing`). <!-- cc -->
-- lane init (dima, 2026-10-23, PK-263; the contract: `craft-fleet-flow`):
+- **🪽 wing** (dima, 2026-11-06, was «side channel») — a second clio beside the main thread, numbered: `🦉🪽 clio: wing 1`; «your wing 2» never means a lane (`clio:wing`). a clio's flow is named by its seat, «wing 2 lane»; `clio-main`, `clio-wing-2` sit on labels, a wing's on its tree and branch. <!-- cc -->
+- **flyway** (was «day plan») — a clio lane's live plan, never closed: `habit-shared-files`. <!-- cc -->
+- lane init (the contract: `craft-fleet-flow`):
   - **🍫 chunk** — one ticket a lane takes; a lane runs one or more in order, its lane plan's slices the steps of its glide card
   - **✍️ signed** — dima's yes on a chunk in `clio:shape-lane`: a `signed` label, a dated `## signed` line; a change after it asks a re-sign
   - **dispatch** — dima's pick of signed chunks, which starts their lane; «what can we dispatch?»
@@ -48,10 +49,10 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 <!-- sync: cloud-chat -->
 
 - **slay** = push (git push). «go slay» → push it.
-- **🍀 freebie** (badge: dima, 2026-10-08) = a ticket/action executable without Dima's approval (pre-approved or approval-free by contract). «do the freebies» → run them unprompted.
-- **☘️ almost-freebie** (dima, 2026-10-25) = past a freebie's 5 calls, short of codie: one helper card clio briefs and proves. <!-- cc -->
-- **⚖️ worth it** (dima, 2026-11-02) = new surface earns its plan: what it removes against today's door, the cheaper door turned down, its upkeep — a ticket's `## ⚖️ worth it` section; root invariant 3. «worth it?» → run the check before planning. <!-- cc -->
-- **🔌 fleet wired** (dima, 2026-11-02) = new surface has a real caller in the fleet: a `🔌 fleet wired: <caller>` line in its `## ⚖️ worth it` section, the caller edit in the same chunk, one real call before its ticket closes (dima's word alone exempts a rare event). <!-- cc -->
+- **🍀 freebie** = a ticket/action executable without Dima's approval (pre-approved or approval-free by contract). «do the freebies» → run them unprompted.
+- **☘️ almost-freebie** = past a freebie's 5 calls, short of codie: one helper card clio briefs and proves. <!-- cc -->
+- **⚖️ worth it** = new surface earns its plan: what it removes against today's door, the cheaper door turned down, its upkeep — a ticket's `## ⚖️ worth it` section; root invariant 3. «worth it?» → run the check before planning. <!-- cc -->
+- **🔌 fleet wired** = new surface has a real caller in the fleet: a `🔌 fleet wired: <caller>` line in its `## ⚖️ worth it` section, the caller edit in the same chunk, one real call before its ticket closes (dima's word alone exempts a rare event). <!-- cc -->
 - **propose** = answer → approve → act: print the answer/plan, stop, execute only on his word. Prefixes any ask.
 - **rewind** = reprint the last report (the `📄` line at a report's end) in full; `rewind <topic>` reprints an older one. for when member traffic pushed it out of view.
 - **pause** = hold off, stop what you are doing, i will steer.
@@ -60,7 +61,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **park** = a member stays alive and idle, context kept, waiting for its next message; a chunk's end parks it (dima, 2026-11-07: «park is not stop»). <!-- cc -->
 - **⏹️ stop** = end a summoned thread fully and archive it, only on his word, a probe excepted. <!-- cc -->
 - **⚗️ facility** = clio's area: her passport's **owns** and the `clio:*` skills. <!-- cc -->
-- **verdicts** (dima, 2026-11-03) = a member's word on work handed back to it: **🌼 clean** (it holds; sixth sense's word), **🩹 fix** (a missed check, redone), **🪜 escalate** (nothing to redo: it climbs one rung, up to dima). <!-- cc -->
+- **verdicts** = a member's word on work handed back to it: **🌼 clean** (it holds; sixth sense's word), **🩹 fix** (a missed check, redone), **🪜 escalate** (nothing to redo: it climbs one rung, up to dima). <!-- cc -->
 
 ## shell words — the few git aliases that are fleet vocabulary
 

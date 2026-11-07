@@ -205,7 +205,7 @@ describe('fork-guard', () => {
                     tool_input: { file_path: join(repo, 'a.md') },
                 }),
             ).stdout,
-        ).toContain('«fork-abcd1234»');
+        ).toContain('edits only inside');
     });
 
     test('main-only runs its command for the main and passes stdin through', () => {
@@ -288,7 +288,7 @@ describe('fork-guard fork-edit', () => {
 
     test('a fork editing a main checkout is refused, named by its worktree', () => {
         expect(edit(String(process.ppid), join(repo, 'new/a.md'))).toContain(
-            '«fork-d1bbf86b»',
+            'edits only inside',
         );
     });
 
@@ -344,13 +344,13 @@ describe('fork-guard fork-edit', () => {
         ['find -delete', () => `find ${repo} -name y -delete`],
         ['a nested shell', () => `bash -c 'touch ${repo}/y'`],
     ])('a real write into a main checkout is refused: %s', (_, command) => {
-        expect(bashIn(tree, command())).toContain('«fork-d1bbf86b»');
+        expect(bashIn(tree, command())).toContain('edits only inside');
     });
 
     test('a plain verb standing in a main checkout is refused', () => {
-        expect(bashIn(repo, 'rm a.txt')).toContain('«fork-d1bbf86b»');
+        expect(bashIn(repo, 'rm a.txt')).toContain('edits only inside');
         expect(bashIn(repo, 'x lane commit /tmp/m.txt -- a.md')).toContain(
-            '«fork-d1bbf86b»',
+            'edits only inside',
         );
     });
 
@@ -401,7 +401,7 @@ describe('fork-guard fork-edit', () => {
     ])('a real write still refused: %s', (_, line) => {
         const [cwd, command] = line();
         expect(bashIn(cwd as string, command as string)).toContain(
-            '«fork-d1bbf86b»',
+            'edits only inside',
         );
     });
 
@@ -421,7 +421,7 @@ describe('fork-guard fork-edit', () => {
         ).toBe('');
         expect(
             bashIn(repo, 'timeout 600 x lane commit /tmp/m -- other/b.md'),
-        ).toContain('«fork-d1bbf86b»');
+        ).toContain('edits only inside');
     });
 
     test('an empty .git folder is no repo, so a write under it passes', () => {
@@ -460,17 +460,17 @@ describe('fork-guard fork-edit', () => {
             bash(
                 'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md" a.md',
             ),
-        ).toContain('«fork-d1bbf86b»');
+        ).toContain('edits only inside');
         expect(
             bash(
                 'x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"; rm a.md',
             ),
-        ).toContain('«fork-d1bbf86b»');
+        ).toContain('edits only inside');
         expect(
             bash(
                 'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md other/b.md',
             ),
-        ).toContain('«fork-d1bbf86b»');
+        ).toContain('edits only inside');
     });
 
     test.each([
@@ -489,7 +489,7 @@ describe('fork-guard fork-edit', () => {
     ])(
         'a pocket-shaped path that escapes the pocket is refused: %s',
         (command) => {
-            expect(bash(command)).toContain('«fork-d1bbf86b»');
+            expect(bash(command)).toContain('edits only inside');
         },
     );
 });

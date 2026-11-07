@@ -35,7 +35,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
    - 🐬 **wishkeeper**: its top 5 and the count of the rest; its tokens and findings count go as one `## rounds` row of `docs/test-drive/pre-merge-siesta.md`
    - 🎀 **chores**: the lines of `… card-lines <transcript>`
    - 🍀 **freebie**: what step 2.2 got done; a duplication finding offers `/simplify` here
-   - ➡️ **next**: the main-lane item
+   - ➡️ **next**: your flyway's next line
    - the asks and the plan go to orbit, never into the card
    - one light line: a fact with a twist, a dry joke, or «meanwhile I did <freebie>» when that is true (`fleet-vibe`)
 

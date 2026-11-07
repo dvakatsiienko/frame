@@ -9,23 +9,23 @@ dima, 2026-10-20, folded: «before we move to something bigger, like the speak v
 
 ## the start
 
-read the open day plans' notes for today's `hoist MM-DD` line:
+read the flyways' notes for today's `hoist MM-DD` line:
 - none → `clio:low-tide-triage` runs first; offer it in one line
 - `proposing` → wait for dima's yes on that split
-- `done` → work your own day plan in its order
-- no plan of yours, a wing opened after the hoist → take only items no plan holds, your label on at the pick
+- `done` → work your own flyway in its order
+- a wing opened after the hoist, its flyway empty → take only items no plan holds, your label on at the pick
 
 ## each pick
 
-- **before it**, reread every open day plan: an id already in another plan stops the pick, named to dima
+- **before it**, reread every flyway: an id already in another flyway stops the pick, named to dima
 - **a batch** (dima, 2026-11-07, folded: «it is good to batch them. one at a time is more for stuff that is quite bigger and wants my decision»): items passing the freebie test (`craft-pm`) run together with no ask, reported after as `PK-N → what happened`; an almost-freebie is one helper card
 - **one at a time**: an unsure item, and anything irreversible or visible outside. print what it is, why it is parked, how to solve it, then wait for his steer or go
 - **big stuff** goes last and is proposed for its own shaping, never started in this run, unless he asks to prioritize it
-- **then**: fully solved, its item closed (a close carrying his asks takes the ask-guard, `craft-pm`), its plan line ticked, synced with main (a wing lands per its banner)
+- **then**: fully solved, its item closed (a close carrying his asks takes the ask-guard, `craft-pm`), its flyway line ticked, synced with main (a wing lands per its banner)
 
 ## a handover
 
-an item moves between plans on his want, or when another lane fits it better: the line out of one plan, into the other, its label swapped, the other clio told in one `SendMessage`.
+an item moves between flyways on his want, or when another lane fits it better: the line out of one flyway, into the other, its label swapped, the other clio told in one `SendMessage`.
 
 ## how it runs
 
@@ -33,4 +33,4 @@ an item moves between plans on his want, or when another lane fits it better: th
 - an item that turns out blocked or lane-bound gets its `**waiting for:**` line or lane note the same turn, and leaves the hunt
 - the next big step starts only when this lane has nothing left
 
-**done**: reread the whole pile, not only your plan. an unclaimed item or a closed wing's unticked line is taken or named. then a «nothing left» line naming every store searched (pocket, linear FRM, linear BYT, inbox), with the counts before and after.
+**done**: reread the whole pile, not only your flyway. an unclaimed item or a parked wing's unticked line is taken or named. then a «nothing left» line naming every store searched (pocket, linear FRM, linear BYT, inbox), with the counts before and after.
