@@ -235,6 +235,21 @@
   - then a detached worktree of that head sits at `.claude/worktrees/verify-pr-<n>` or `verify-<sha7>`, seeded the way `x lane seed` seeds, its git-crypt files plain text, and the verb prints the path
   - given its tree exists from an earlier round, then it moves that tree to the new head; a tree holding a probe's changes refuses and stays as it is
   - given anything else (a bare number, an issue url, another repo's pr, a sha off main), then it exits 2 and adds no worktree
+- ✅ `x lane verify-tree <head> --revert <base> <paths…> -- <command>` proves head's new tests red on base's source
+  - given a verify tree on a head, when the flag runs, then for the run each named path holds its merge-base content, a path the pr added is gone, and a path on neither side refuses before any swap, naming it; a stray arg without the flag still exits 2
+  - given the flag runs, then the command runs on head first, then on base's source; a head run that cannot load, or that changed a tracked file, stops before any swap; each run takes the gate queue's long slot itself
+  - given the run ends, then each new test is named: red when it failed on an assertion on base and passed on head, still green, broken, red on head or unread; the exit is 0 only when at least one test is red and every other new test is red or unread; a load error, a timeout, any throw on base by a new test, a run of 0 tests and a pr adding no test x can read are broken; a new test red on head exits non-zero whatever else read red, an expanded row with text in its title that fails on head alone included; unread is named with no vote: a computed, placeholder or table title, a name another test holds, a test that skips on head, and an added line no named test holds; a failing old test gets a row and no vote, a throw included, and the verdict line names it; an opaque command that fails, or a command that exits 0 while naming a failure, reads failed
+  - given head failed elsewhere, then a test reads red only on a line saying it passed there, since a failure can stop a run however it was asked to
+  - given the command is a bare `go test`, then it runs with `-v`, so its pass and skip lines can be read; a shell or a script around it stays as written, broken on a head failure
+  - given the command throws or exits non-zero, then head's content is back and the tree's porcelain is empty, the same check that refuses a tree dirty before the swap
+  - given a run killed mid-swap, when the next `x lane verify-tree` touches that tree, then it restores head's content, or refuses naming a file that holds neither side; a run still alive, from its first step on, refuses naming its pid
+  - given a dir where base holds a file, when a file only this tree holds sits in it, then the swap refuses naming it, and the file stays
+  - decision: any throw reads broken with no symbol parsing, so a real `TypeError` on base is a false no-proof on the safe side (dima, 2026-11-06)
+  - decision: an unread test does not stop exit 0, so what it holds is left to the verifier's read (dima, 2026-11-06)
+  - decision: an assertion is the runner's word, so `expect(LIMIT).toBe(3)` on a const base lacks reads red
+  - limit: a helper call in the same hunk as a named test gets no row, so it can exit 0
+  - limit: a skip on head under `sh -c 'go test'` with no other head failure reads red, exit 0, since nothing prints the skip
+  - limit: a head-only row whose title x cannot tie to a row (`'%s'`, `'${x}'`, a computed title) gets a named row and no vote, so it can exit 0; the repo holds none today (dima's tick, 2026-11-07)
 - ⬜ the stacks add-on: a pr opens onto the layer below, and gh-stack links and shows the layers
   - given branch `codie/FRM-1-a-2` on top of `codie/FRM-1-a`, when `x lane pr-open --apply --base codie/FRM-1-a <title> <body-file>` runs, then one pr opens with base `codie/FRM-1-a`; a base origin lacks refuses before gh runs
   - given layers `codie/FRM-1-a`, `-2`, `-3` on origin, when `x lane stack link --apply` runs, then one `gh stack link` call names their 3 open prs by number, bottom-up (gh-stack pushes a named branch, and a frame worktree's push dies at the mirror gate), and `x lane stack view` prints all 3 in order, read from github's stacks api for this branch's pr; a pr in no stack names `x lane stack link --apply`
@@ -510,6 +525,12 @@
   - given a write that fails midway, then every file already written is put back from the backup push took first
   - given `test --against HEAD`, then only the edited tests run on HEAD's mod, each named «failed» or, when its file cannot load, «errored»; nothing is written
   - decision: `scratch-edit` (plugin bin) retired into these verbs; a three-word verb sits under a group per middle word
+- ⬜ `x mods edit test --only <test file>` runs one test file on the overlay (FRM-433)
+  - given a path read from the repo root, then that file runs and its sibling does not; a path that is no test file, a missing file, a copy deleted in scratch or a run of no test is refused naming it
+  - given a green `--only`, then no `.tested` stamp and no gate green is written, so a push still runs the whole test; a full green's stamp stays
+  - given a long round holding the gate queue, then `--only` runs at once, taking no turn
+- ⬜ `x mods edit status` and `test` print «overlay N paths differ» with the paths (FRM-433)
+  - given scratch edits, an added and a deleted path counted, then the line prints first, before a red; a clean overlay prints no line, and main moving past an untouched copy counts nothing; it names what differs, never whose
 - ⬜ `x mods edit push <paths…>` lands only the named paths (FRM-470)
   - given two edits in scratch, when push names one, then only it lands and the other stays in scratch, listed by `status`
   - given a named path with no edit, then nothing lands and the refusal names it

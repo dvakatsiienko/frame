@@ -82,7 +82,8 @@ function rawMerge(c: Command) {
         return undefined;
     const [family, verb, target] = operands(words);
     // a stack merge lands every layer under the pr it names, and those layers are github's to list: it counts as no number
-    if (family === 'stack' && verb === 'merge') return { pr: undefined };
+    if (family === 'stack' && verb === 'merge')
+        return { isStack: true, pr: undefined };
     if (family === 'pr' && verb === 'merge') return { pr: prOf(target) };
     // the graphql door takes a node id, never a number, so it reads as a target it cannot name
     if (family === 'api' && words.some((w) => GRAPHQL_PATH.test(w)))
@@ -114,6 +115,22 @@ export const rawMerges = (command: string, cwd: string) =>
     commandsDeep(command, cwd).flatMap((c) => rawMerge(c) ?? []);
 
 const DOOR = "x lane merge-auto <pr> --apply --dima-ok <pr>, on dima's word";
+
+// after the required check went, nothing on github stops a raw merge reaching production (dima's o48, BYT-94): it refuses from
+// its first head, the one named exception to warn-only; a stack merge stays open, its door has no merge-auto yet
+export function rawMergeRefused(
+    merges: { isStack?: boolean; pr: string | undefined }[],
+): Refusal | undefined {
+    const raw = merges.filter((m) => !m.isStack);
+    return raw.length
+        ? {
+              door: 'x lane merge-auto <pr>',
+              rule: 'raw-merge',
+              targets: raw.map((m) => m.pr ?? 'gh merge'),
+              why: 'a raw merge skips its gates, and nothing on github stops it reaching production',
+          }
+        : undefined;
+}
 
 // a hold reads as held when its record does not read, and a target it cannot name counts as held while any hold stands
 export function mergeHold(

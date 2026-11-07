@@ -20,6 +20,10 @@ func samePath(a, b string) bool {
 func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	target, help := args[0], "x lane verify-tree --help"
 	stacked, _ := flags["stack"].(bool)
+	paths, command, err := revertArgs(args, flags)
+	if err != nil {
+		return nil, err
+	}
 	pr := prURL.FindStringSubmatch(target)
 	if stacked && pr == nil {
 		return nil, usageFail("--stack reads a stack from its top pr's url, not "+target, "x lane verify-tree --stack <top pr url>")
@@ -47,10 +51,17 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 		}
 		name = "verify-pr-" + match[2]
 		resolve = func() (string, error) {
-			if _, err := mustGitIn(main, "fetch", "fetch", "-q", "origin", "refs/pull/"+match[2]+"/head"); err != nil {
+			// never FETCH_HEAD: the main checkout's one file, which a peer's fetch rewrites under this read
+			ref := "refs/pull/" + match[2] + "/head"
+			listed, err := mustGitIn(main, "ls-remote", "ls-remote", "origin", ref)
+			if err != nil {
 				return "", err
 			}
-			return mustGitIn(main, "rev-parse", "rev-parse", "--verify", "FETCH_HEAD^{commit}")
+			sha, _, _ := strings.Cut(listed, "\t")
+			if _, err := mustGitIn(main, "fetch", "fetch", "-q", "origin", ref); err != nil {
+				return "", err
+			}
+			return mustGitIn(main, "rev-parse", "rev-parse", "--verify", sha+"^{commit}")
 		}
 	} else if match := mainSha.FindStringSubmatch(target); match != nil {
 		name = "verify-" + short(match[1])
@@ -79,8 +90,20 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 	}
 	path := filepath.Join(main, ".claude/worktrees", name)
 	r.Open(name)
+	if len(paths) == 0 {
+		r.skip("test-head", "swap", "test-base", "restore")
+	}
 
 	var sha string
+	release := func() {}
+	defer func() { release() }()
+	claim := func() error {
+		claimed, err := claimTree(path)
+		if err == nil {
+			release = claimed
+		}
+		return err
+	}
 	if err := r.Step("fetch", "fetching the head", func() (string, error) {
 		var err error
 		sha, err = resolve()
@@ -94,6 +117,9 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 			if root, _ := gitIn(path, "rev-parse", "--show-toplevel"); !root.ok || !samePath(root.out, path) {
 				return "", &Fail{Refused: true, Msg: path + " is a plain dir, not a worktree", Next: "trash " + path}
 			}
+			if err := claim(); err != nil {
+				return "", err
+			}
 			// the next round on the same pr: the tree moves, unless a probe changed a tracked file (the seed's copies are untracked)
 			if dirty, _ := gitIn(path, "status", "--porcelain", "--untracked-files=no"); dirty.out != "" || !dirty.ok {
 				return "", &Fail{Refused: true, Msg: path + " holds changes a probe left; it stays as it is", Next: "git -C " + path + " status"}
@@ -104,12 +130,18 @@ func verifyTree(r *Run, args []string, flags Flags) (any, error) {
 		// the key lives in the main .git: the tree holds ciphertext until the seed unlocks it
 		_, err := mustGitIn(main, "worktree", "-c", "filter.git-crypt.smudge=cat", "-c", "filter.git-crypt.required=false",
 			"worktree", "add", "-q", "--detach", path, sha)
-		return home(path), err
+		if err != nil {
+			return "", err
+		}
+		return home(path), claim()
 	}); err != nil {
 		return nil, err
 	}
 	if err := seedTree(r, path, main); err != nil {
 		return nil, err
+	}
+	if len(paths) > 0 {
+		return revertRun(r, main, path, sha, flags["revert"].(string), paths, command)
 	}
 	r.Done(strings.Join(append([]string{"seeded " + path + " at " + short(sha)}, layers...), "\n"), "cd "+path)
 	if stacked {

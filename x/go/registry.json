@@ -172,12 +172,42 @@
                 {
                     "description": "the pr's url, or main:<sha>",
                     "name": "head"
+                },
+                {
+                    "description": "with --revert: the source paths to swap, from the tree's root",
+                    "isOptional": true,
+                    "isVariadic": true,
+                    "name": "paths"
+                },
+                {
+                    "afterDash": true,
+                    "description": "with --revert: the test command",
+                    "isOptional": true,
+                    "isVariadic": true,
+                    "name": "command"
                 }
             ],
+            "flags": {
+                "revert": {
+                    "description": "run head's tests on head, then on this base's source: the named paths hold their merge-base content for the second run, then head's content comes back; a bare `go test` runs with -v, so its pass and skip lines can be read",
+                    "type": "string",
+                    "value": "base"
+                }
+            },
             "name": "lane verify-tree",
             "needsApply": false,
-            "purpose": "add a seeded worktree of a pr's head or a main sha for sixth sense, git-crypt unlocked; prints its path",
-            "steps": ["fetch", "worktree", "seed", "verify", "hooks"]
+            "purpose": "add a seeded worktree of a pr's head or a main sha; --revert proves its new tests red on base's source",
+            "steps": [
+                "fetch",
+                "worktree",
+                "seed",
+                "verify",
+                "hooks",
+                "test-head",
+                "swap",
+                "test-base",
+                "restore"
+            ]
         },
         {
             "name": "lane merge-main",
@@ -1215,6 +1245,11 @@
                     "description": "run only the edited tests on that ref's mod, naming which fail there and which errored",
                     "type": "string",
                     "value": "ref"
+                },
+                "only": {
+                    "description": "run one test file on the overlay, its path read from the repo root: no queue turn, no gates, no stamp, so a push still runs the whole test",
+                    "type": "string",
+                    "value": "test file"
                 }
             },
             "name": "mods edit test",
