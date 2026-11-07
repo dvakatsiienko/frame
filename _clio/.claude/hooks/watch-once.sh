@@ -6,6 +6,8 @@ reg=$(grep -l "\"sessionId\": *\"$armed\"" ~/.claude/sessions/*.json 2>/dev/null
 cleared() { [ -n "$armed" ] && [ -n "$reg" ] && ! grep -q "\"sessionId\": *\"$armed\"" "$reg" 2>/dev/null; }
 out=$(mktemp)
 loud=$(mktemp)
+trap 'rm -f "$out" "$loud"' EXIT
+trap 'exit 143' TERM
 quiet=$HOME/.local/state/clio/watch-quiet.log
 mkdir -p "${quiet%/*}"
 # a line starting «~ » is quiet: it goes to the log, without the prefix, and does not end the wait

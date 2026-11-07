@@ -4,7 +4,7 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-07T02:48:00Z'
+updated_date: '2026-11-07T12:05:00Z'
 labels:
   - s
 dependencies: []
@@ -93,4 +93,8 @@ afk hour read 16:01, 15:01–16:01, a forced restart 15:29–15:33 inside: 31 lo
 ⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: W2, W3, W4, W25 are numbered twice; W430–W432 are FRM-368 pointers, then its lines get full ids.
 
 quiet comms, the widest day, read 11-07 04:47: holds, 72 of 484 messages started a turn, 0 lone notices; docs/test-drive/gate-speed/empty-wakes.md. dima: FRM-368 waits for this mark, FRM-368's comment carries it.
+
+PK-326:W437 (2026-11-07 04:46, dima): what about silent comms, how they worked today? ❓
+
+PK-326:W438 (2026-11-07 04:47, dima): if comms measure holds, update corresponding files; 368 waits for a checkmark.
 <!-- SECTION:NOTES:END -->
