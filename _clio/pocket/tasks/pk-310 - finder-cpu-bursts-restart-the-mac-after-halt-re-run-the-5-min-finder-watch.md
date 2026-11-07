@@ -4,7 +4,7 @@ title: 'finder cpu bursts: restart the mac after halt, re-run the 5-min finder w
 status: open
 assignee: []
 created_date: '2026-11-03T14:11:00Z'
-updated_date: '2026-11-07T02:01:00Z'
+updated_date: '2026-11-07T13:03:00Z'
 labels:
   - xs
   - wing-1
@@ -58,4 +58,6 @@ W1 (2026-11-06 03:14, dima): once we have two side lanes at once, the side chann
 2026-11-06 15:36 side channel: the mac was force reset at 15:29 (panic btn_rst, the power button; cause unknown), so Finder and uptime restarted: the past-24 h watch due 17:54 can't run. a day of uptime is now 15:29 tomorrow, moved. the 15:05 settle test stands. the day plan's line 19 was ticked wrong at 14:39: no 17:54 watch ever ran; unticked 15:21.
 
 ⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: W1 is numbered twice, then its lines get full ids.
+
+2026-11-07 15:03 wing 1, one lane, load 16, no Finder window, 10 h since the reboot: 0 of 75 polls at or over 15 %, max 5.3 %, mean 0.5 %, 332 MB. the 14:01 ps read of 98.5 % was a burst, its trigger unread. a day of uptime is 04:56 tomorrow; the owed past-a-day watch stays.
 <!-- SECTION:NOTES:END -->
