@@ -36,11 +36,9 @@ conventions for pull requests and issues — the `gh` mechanics under the lanes 
   an inline thread is answered only through `POST /pulls/{n}/comments/{id}/replies`; a
   top-level comment does not count as a reply.
 - **the bytes review lane**: `gh pr edit <n> --add-label '🤖 review:requested'` starts the ci
-  reviewer on this head; the guard publishes `review:clean`, the required check on main —
-  never created = blocked. a later push leaves it stale — `x lane review <pr>` names the judged commit and
-  counts the rounds (one per pr, at «final»); past that round it names clio's approval on dima's
-  account after sixth sense's clean, the way past. 📌 a green `review:clean` means a review ran; until the reviewer's
-  own verdict marker gates it, the findings live in its comment — read that.
+  reviewer on this head; `x lane merge-auto` needs its reviewer job finished on the head or an ancestor, no required check holds it.
+  `x lane review <pr>` names the judged commit and counts the rounds (one per pr, at «final»); past that cap, another round is dima's label. a round that posted nothing reads red and counts as none.
+  📌 a green round means a review ran; the findings live in its threads and comment — read those.
 - a claude-code-action pr that edits a workflow already on the default branch IS reviewed (#79, two rounds
   with verdict lines); only a pr that edits `claude.yml` itself is unproven.
 - `performed_via_github_app` exists on issue comments only — absent on `pulls/N/comments` and

@@ -74,7 +74,7 @@ this file says how every member does it. A section headed with roles binds only 
 - rounds run codie ↔ sixth sense: clio hears nothing per round, and codie carries `clean`
 - the round cap: 3 rounds with a P0 or P1 finding, scope growth resets the count, the stop goes to clio
 - a dispute goes to clio with both sides in one message
-- after `clean`, clio approves the head and merges; the look card reaches dima, never a review request
+- after `clean`, clio merges; the look card reaches dima, never a review request
 - sixth sense's posts are `crew-sixth-sense/posting.md`; a side lane records its clean by `watch-pr.sh --verified` too; codie's done comment says «verified clean, round N»
 
 **proof**
