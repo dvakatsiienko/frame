@@ -4,9 +4,10 @@ title: 'wire what we build, cli and mods: chores go to the wings, main coordinat
 status: open
 assignee: []
 created_date: '2026-11-06T19:53:00Z'
-updated_date: '2026-11-07T12:46:00Z'
+updated_date: '2026-11-07T13:05:00Z'
 labels:
   - s
+  - main-lane
 dependencies: []
 priority: next
 type: task
@@ -59,4 +60,12 @@ PK-342:W18 (2026-11-07 14:43, dima): pk-336 and pk-346 — groom the bodies acco
 PK-342:W19 (2026-11-07 14:43, dima): if pk items for wings are wing-* which is yours? ❓
 
 PK-342:W20 (2026-11-07 14:43, dima): i think you also need a label, top7 name, propose.
+
+PK-342:W21 (2026-11-07 15:02, dima): where? SW clicking works at a band and board (session list) for me at. passd? ❓
+
+PK-342:W22 (2026-11-07 15:02, dima): i ticked o4 but do not see any toasts. how it should look like? ❓
+
+PK-342:W23 (2026-11-07 15:02, dima): observe
+
+PK-342:W24 (2026-11-07 15:02, dima): i want all my wishes in this new format.
 <!-- SECTION:NOTES:END -->

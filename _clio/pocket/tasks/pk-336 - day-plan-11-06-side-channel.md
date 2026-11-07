@@ -4,7 +4,7 @@ title: 'day plan 11-07: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T12:46:00Z'
+updated_date: '2026-11-07T12:47:00Z'
 labels:
   - m
   - wing-2
@@ -42,7 +42,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #18 PK-308's 14 left (PK-325 moved to main, dima 19:08)
 - [x] #19 FRM-517: solve it on the fresh boot, first thing: his stopwatch time, temp dir read, the writer named by prefix (CST first-act 4)
 - [ ] #20 sharpen closing a wing: it has no verb, any close: line closes a day plan, with dima (his 11-07 04:39), beside line 23
-- [ ] #21 sharpen how pocket items tied to wings are handled, with dima (his 11-07 04:18)
+- [x] #21 sharpen how pocket items tied to wings are handled, with dima (his 11-07 04:18)
 - [ ] #22 PK-304 and PK-308, moved from wing 1 on his 14:43 word
 - [ ] #23 PK-348 REVIEW.md
 - [ ] #24 PK-326 quiet comms, both sides, today: read at the halt
