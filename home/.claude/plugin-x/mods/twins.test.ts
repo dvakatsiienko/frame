@@ -33,6 +33,7 @@ describe('twin blocks across mods', () => {
         expect([...twins.keys()].sort()).toEqual([
             'dirname',
             'holder-gone',
+            'operator-override-store',
             'proc-of',
             'real-path',
             'sign-ask',

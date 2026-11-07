@@ -127,6 +127,15 @@ for (const [text, kind] of [
         );
     });
 
+// the same bytes x/go/operator_override_test.go plants for its frame#129 replay: the go reader reads what this writes
+test('his typed phrase writes the store x reads', async ($, on) => {
+    const { files } = world(on);
+    await say($, 'operator-override prs');
+    expect(files[REAL]).toBe(
+        '{"prs":{"at":"2026-11-07T14:00:00.000Z","by":"word"}}',
+    );
+});
+
 test('«operator-override off», any case, clears the store', async ($, on) => {
     const { files } = world(on, { files: { [REAL]: ON } });
     await say($, 'Operator override off.');

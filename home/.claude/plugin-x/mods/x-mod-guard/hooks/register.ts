@@ -390,9 +390,11 @@ async function overrideStorePath($: EngineInterface) {
         : undefined;
 }
 
-async function overrideGrant($: EngineInterface, scope: string) {
-    const path = await overrideStorePath($);
-    if (!path) return undefined;
+async function overrideGrantAt(
+    $: EngineInterface,
+    path: string,
+    scope: string,
+) {
     const raw = await $.fs.read(path).catch(() => undefined);
     if (raw === undefined) return undefined;
     try {
@@ -413,6 +415,11 @@ async function overrideGrant($: EngineInterface, scope: string) {
     }
 }
 // twin end
+
+async function overrideGrant($: EngineInterface, scope: string) {
+    const path = await overrideStorePath($);
+    return path ? overrideGrantAt($, path, scope) : undefined;
+}
 
 // the store after his typed ask, and the note the model reads; a write that fails is told, never silent
 async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
