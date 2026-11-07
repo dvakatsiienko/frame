@@ -24,6 +24,7 @@ Standing: read this before chasing a red cpu, and add to it when a round ends, s
 One row per lane count, from `scripts/lane-count-read.mjs`. A lane here is a codie and its sixth sense; main's and the wings' commits run beside it. The number to beat is 1.8× at 4-5 lanes, in [cases.md](cpu-overload/cases.md).
 
 - 1 lane, FRM-521 pr 3, 15:07 to 15:30, 140 samples at 10 s: 9.2 cores, load p50 20 p90 35, kernel 45 %, 40 % of samples at 95 %+, spotlight 0.4 cores, git start 7.1 ms (n=27), go suite 66 s run, 2 s wait (n=1). Its codie started before `LANG` landed
+- 2 lanes, FRM-521 pr 3 + FRM-524, 15:30 to 15:40, 52 samples: 10.0 cores, load p50 20 p90 30, kernel 50 %, 50 % of samples at 95 %+, spotlight 0.2 cores, git start 8.1 ms (n=10), no go suite in the window: too thin to compare, lane 1 merged at 15:39
 
 ## the files
 
