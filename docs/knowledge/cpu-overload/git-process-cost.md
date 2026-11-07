@@ -10,7 +10,7 @@ Asked 2026-11-07: exa, parallel, an opus source lane. Raw lanes, read for depth:
 
 ## the verdict
 
-**No single trick frees the mac.** The `LANG` chain is now read frame by frame, and about 5 of the 300 cpu-s more sit in each of two cheap levers. The largest cost left is what the fixtures make git do and `x` running as a real child, about 170 cpu-s.
+**No single trick frees the mac.** The `LANG` chain is now read frame by frame, and each of two cheap levers left holds about 5 % of the suite. The largest cost left is what the fixtures make git do and `x` running as a real child, about 170 cpu-s.
 
 ## what is proven
 
