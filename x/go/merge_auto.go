@@ -177,7 +177,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 
 	var sixthSense, ci, round, threads mergeCheck
 	if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
-		sixthSense = d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
+		sixthSense = d.sixthSenseOf(api, repo, n, pr)
 		return sixthSense.shown()
 	}); err != nil {
 		return nil, err
@@ -286,7 +286,7 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	d.heads[n] = pr.Head.Sha
-	sixthSense := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
+	sixthSense := d.sixthSenseOf(api, repo, n, pr)
 	ci, needsApprove, err := ciCheck(api, trunk, pr.Head.Sha)
 	if err != nil {
 		return "", err
@@ -907,6 +907,46 @@ func clock() time.Time {
 
 /* Checks */
 
+func renovateAuthor(login string) bool {
+	return login == "x-renovate[bot]" || login == "renovate[bot]"
+}
+
+// a renovate pr needs no clean while every commit is renovate's own, signed by github: a member's push onto its branch
+// makes it a member's pr, as bytes' review-renovate.yml reads it, and an unread list counts as that push
+func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeCheck {
+	c := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
+	if c.OK || !renovateAuthor(pr.User.Login) {
+		return c
+	}
+	type login struct {
+		Login string `json:"login"`
+	}
+	commits, err := ghPages[struct {
+		Author    login `json:"author"`
+		Committer login `json:"committer"`
+		Commit    struct {
+			Verification struct {
+				Verified bool `json:"verified"`
+			} `json:"verification"`
+		} `json:"commit"`
+	}](asDima, api+"/pulls/"+n+"/commits", "")
+	if err != nil {
+		c.Detail += "; its commits did not read: " + err.Error()
+		return c
+	}
+	for _, commit := range commits {
+		if !renovateAuthor(commit.Author.Login) || commit.Committer.Login != "web-flow" || !commit.Commit.Verification.Verified {
+			c.Detail += "; a commit on it is not renovate's own"
+			return c
+		}
+	}
+	if len(commits) == 0 {
+		return c
+	}
+	c.OK, c.Detail = true, "renovate's own commits, ci is their review"
+	return c
+}
+
 // a «clean» in a pr comment or body is never read: only sixth sense and a stamp through watch-pr.sh write this store; a
 // sibling `<repo>#<n>:by` key names a verifier other than sixth sense, and the gate treats both alike, only the detail differs
 func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
@@ -1154,7 +1194,7 @@ func roundCheck(api, repo, n, base, ref, head, author string, dimaOK bool) (merg
 	case !roundGated(repo):
 		c.OK, c.Detail = true, "no round asked on "+repo
 		return c, nil
-	case author == "x-renovate[bot]" || author == "renovate[bot]":
+	case renovateAuthor(author):
 		c.OK, c.Detail = true, "renovate's pr, ci is its review"
 		return c, nil
 	}

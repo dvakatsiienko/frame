@@ -190,6 +190,7 @@
   - given no run, a skipped or red required check, 0 required checks, an open thread, no sixth sense clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
   - given a bytes pr whose reviewer job finished a round on an ancestor of its head, sixth sense's clean covering the commits after it, or on a head a rebase carried with its patch-id unchanged, then it merges with no approve while `review:clean` is not required; a required one still takes the approve, then the merge
   - given no round, a round a rebase changed the code under, or a run whose reviewer job skipped or was cancelled, then it waits and names `x lane review <pr>`; given a stand-down alone, then it names the `--dima-ok` door, which passes the round; a renovate author needs no round
+  - given a renovate pr whose every commit is renovate's own and signed by github, then it needs no clean; a member's commit on it, or a list that did not read, asks the clean as on any pr; ci, threads, the self-edit wait and the brake still hold
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ⬜ a self-edit merges with no hand step when its chunk's sign pre-approved it
