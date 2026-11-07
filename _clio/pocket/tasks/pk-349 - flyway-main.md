@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-07T19:37:00Z'
+updated_date: '2026-11-07T19:49:00Z'
 labels:
   - s
   - clio-main
@@ -28,10 +28,11 @@ ordinal: 9995
 - [x] #10 PK-344 retro leftovers
 - [ ] #11 FRM-368 tilde grill with dima
 - [x] #12 retro fold, 24 lines
-- [ ] #13 redraws: crew-pm-flow, refresh-crew-coordinator boards, watch-pr.sh:64, review-rounds.md:20
-- [ ] #14 FRM-483 boot-prefetch stall, re-signed, dispatch pick
-- [ ] #15 FRM-503 lane loop, by load
-- [ ] #16 PK-326 quiet comms, both sides: read today's quiet log at the halt, his word, today
+- [ ] #13 FRM-503 lane loop, by load
+- [ ] #14 PK-326 quiet comms, both sides: read today's quiet log at the halt, his word, today
+- [ ] #15 standing: FRM-483 3-day read, by 11-10
+- [ ] #16 redraws after winged v2 lands
+- [ ] #17 trial reads with dima: delve, skill-named-load, unbash
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -48,4 +49,6 @@ low tide split 11-07, dima's yes 17:36: nothing new today beyond FRM-528 and ci.
 18:10 his word: FRM-472 goes after everything that blocks tilde: FRM-501, FRM-505, FRM-504, FRM-503 now block it; wing 2's parse fix rides ahead of it, his tick.
 
 hoist 11-07: proposing, main
+
+hoist 11-07: done
 <!-- SECTION:NOTES:END -->
