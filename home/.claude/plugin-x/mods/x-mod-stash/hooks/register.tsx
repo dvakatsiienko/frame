@@ -3172,7 +3172,10 @@ async function stopRed($: EngineInterface, reply: string) {
     if (!(await partsShown($))('stash.orbit') || (await isBgSelf($)))
         return undefined;
     const open = (await currentOrbit($)).asks.filter((a) => !a.isResolved);
-    const lost = gridQs.filter((n) => !reply.includes(`❓ **Q${n}**`));
+    // a title inside the bold still printed the round; a false red here makes the model print it twice (PK-351:W54)
+    const lost = gridQs.filter(
+        (n) => !new RegExp(`❓ \\*\\*Q${n}\\b`).test(reply),
+    );
     const reds = [
         isWrapAsked && open.length
             ? `your wrap_up asks dima a question while orbit holds ${open.map((a) => `${a.id} «${a.text}»`).join(', ')} open: one home for the next move — resolve or follow the orbit ask, or drop the wrap_up ask`

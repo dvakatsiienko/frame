@@ -3283,6 +3283,32 @@ test('a reply printing «❓ **Q2**» passes the Stop', async ($, on) => {
     ).toBeUndefined();
 });
 
+test('a round with its title inside the bold passes the Stop, no reprint', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'grill me');
+    await orbit($, {
+        asks: [{ pick: 'a', text: 'Q2 which door for the tick record?' }],
+        op: 'add',
+    });
+    expect(
+        (await stop($, '❓ **Q2 - which door**: state or file?')).block,
+    ).toBeUndefined();
+});
+
+test('a printed «❓ **Q20**» does not stand in for «Q2»', async ($, on) => {
+    world(on);
+    await start($);
+    await say($, 'grill me');
+    await orbit($, {
+        asks: [{ pick: 'a', text: 'Q2 which door for the tick record?' }],
+        op: 'add',
+    });
+    expect((await stop($, '❓ **Q20** another question')).block).toMatch(
+        /Q2.*❓ \*\*Q2\*\*/s,
+    );
+});
+
 // review round 1: «changed:» needs a follow or an add that lands, never one the same call refuses
 test('a «changed:» resolve beside a refused follow is refused', async ($, on) => {
     const w = world(on);
