@@ -872,8 +872,14 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - and when neither `$.ui.notify` nor osascript raises it, a `ui.log` line says so; nothing throws
   - decision: `$.ui.notify` first, osascript when it answers not sent — the desktop, where clio runs, answers `no-surface` (dima's o75, 2026-10-12)
   - proof: tests/quiet.test.ts::a ledger gap raises one native alarm, through osascript when notify finds no surface; ::a test child raises no alarm on the mac, its log says what it would; ::a gap that closes and opens again alarms again; ::a gap notify sends itself goes no further; ::a held ping stuck past … — not asserted: once-per-oldest-ping not separately asserted
+- ✅ a lane parked for 10 min wakes the clio running it
+  - given an open glide card whose live members all read idle, none past its last word by under 10 min, when the coordinator's turn is free, then one turn opens in the clio the card names as runner, main for a card with no runner, naming the lane and its idle minutes, shift or not
+  - and once per silence: a member speaking re-arms it; a busy turn or a refused wake asks again at the next minute's read
+  - and a finished or ended card, a lane of another live clio, a member still working, the glide part off or a spent 5h window wakes nobody; a dead wing's lane falls to main
+  - decision: a coder sat parked 40 min on a wing's lane and only dima saw it; the 30 min alarm below tells him, this tells whoever can move it (dima, 2026-11-07, PK-351:W44)
+  - proof: tests/quiet.test.ts::a lane whose members sit idle 10 min wakes its clio once, no shift needed; ::a member speaking again re-arms the parked wake; ::a finished or ended lane wakes nobody; ::a member still working wakes nobody; ::a live wing's lane wakes nobody here; ::a dead wing's lane falls to main; ::a ping moving the last word back wakes no second time
 - ✅ a member silent on an open lane raises a native alarm
-  - given a live member of an open glide card, by its own transcript's last write, silent past three times the 🎛️ `🤫 quiet comms` wait, 30 min by default, then one notification names it and its lane, at his keyboard and under afk, with no turn of clio's
+  - given a live member of an open glide card, by its own transcript's last write, silent past three times the 🎛️ `🤫 quiet comms` wait, 30 min by default, then one notification names it and its lane, at his keyboard and under afk, with no turn of clio's unless the parked wake above took one
   - and again only after it spoke and fell silent again; a keep-hot ping's reply is no word of the member's, and real work after a ping is; a coordinator's nudge counts as speaking (inference); a member with no open lane, a finished card's member, a member the card names by an old title, or quiet off, raises none
   - and under a shift it also wakes clio once; a refused or a busy turn asks again at the next poll
   - decision: a hung member can't push `[escalate]`, and turn-end notes stop reaching clio, so this is what shows it (dima's ticks, 2026-11-06: «the alarm goes to clio too: it wakes her once, shifts only»)

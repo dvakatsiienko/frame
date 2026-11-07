@@ -1240,6 +1240,8 @@ const QUIET_ALARMED = 'quiet-alarmed';
 const QUIET_ALARMED_MAX = 50;
 // a member alarms past this many 🎛️ waits; one wait read 24 alarm keys on 7 members in a day
 const QUIET_SILENT_WAITS = 3;
+const PARKED_WAKE_MS = 10 * 60_000;
+const PARKED_WOKE = 'parked-woke:';
 // when clio last sent each member a line, by session id: past its [done], that re-arms its silent alarm
 const QUIET_SENT = 'quiet-sent';
 const QUIET_TAGGED = 'quiet-tagged';
@@ -1660,6 +1662,66 @@ async function quietSilentMembers($: EngineInterface, now: number) {
                 [...raised, `wake:${key}`].slice(-QUIET_ALARMED_MAX),
             );
         }
+    }
+}
+
+// a lane with open steps and every live member idle is parked: the clio running it hears at 10 min, once per
+// silence, shift or not, since nobody else will; a busy turn or a refused wake asks again at the next read (PK-351:W44)
+let parkedReadAt = 0;
+async function wakeForParkedLanes($: EngineInterface) {
+    const now = await $.clock.now();
+    if (now - parkedReadAt < LEDGER_EVERY_MS) return;
+    parkedReadAt = now;
+    const me = await sessionName($);
+    if (!me || (!isCoordinator(me) && !isWing(me))) return;
+    if (!(await partsShown($))('stash.glide') || (await isWindowSpent($)))
+        return;
+    const home = (await $.env.get('HOME')) ?? '';
+    const rows = await registry($);
+    const myId = await currentId($);
+    for (const lane of await readLanes($)) {
+        if (lane.endedAt || lane.current >= lane.items.length) continue;
+        // a dead wing's lane falls to main
+        const isRunnerLive = rows.some(
+            (row) =>
+                row.isAlive && bare(row.base.name) === bare(lane.runner ?? ''),
+        );
+        const isMine =
+            lane.runner && (isRunnerLive || !isCoordinator(me))
+                ? bare(lane.runner) === bare(me)
+                : isCoordinator(me);
+        if (!isMine) continue;
+        const members = [];
+        for (const name of Object.values(lane.members)) {
+            if (!name) continue;
+            const row = memberOf(rows, await successorOf($, name));
+            if (row?.isAlive && row.base.sid !== myId) members.push(row);
+        }
+        if (!members.length) continue;
+        if (members.some((row) => row.base.status !== 'idle')) continue;
+        const spoke = await Promise.all(
+            members.map((row) => lastSpokeAt($, home, row.base.sid)),
+        );
+        const heard = spoke.filter((at) => at !== undefined);
+        if (heard.length < members.length) continue;
+        const at = Math.max(...heard);
+        const minutes = Math.round((now - at) / 60_000);
+        if (now - at < PARKED_WAKE_MS || (await quietIsBusy($))) continue;
+        // a ping moves `at` back to the reply before it, so only a newer word re-arms
+        const key = `${PARKED_WOKE}${lane.id}`;
+        const woke = (await $.store.get(key)) as number | undefined;
+        if (woke !== undefined && woke >= at) continue;
+        const r = await selfSubmit(
+            $,
+            `🅿️ parked lane: «${lane.title}» has open steps and its members sat idle ${minutes} min. what can run now? a wait needs its deadline named, or the next step goes out.`,
+        ).catch(() => undefined);
+        if (!r || r.drop) {
+            isBusy = false;
+            await keepTurn($);
+            await armHot($);
+            continue;
+        }
+        await $.store.set(key, at);
     }
 }
 
@@ -5675,6 +5737,7 @@ export const register: Register = (on) => {
                     await wakeForMarks($).catch(() => undefined);
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
+                    await wakeForParkedLanes($).catch(() => undefined);
                     await pacePoll($).catch(() => undefined);
                     await hotLate($).catch(() => undefined);
                     await relayCrowWake($).catch(() => undefined);

@@ -46,6 +46,7 @@ function world(
     for (const p of peers)
         files[`/home/.claude/sessions/${p.pid}.json`] = JSON.stringify(p);
     const contexts: string[][] = [];
+    const submitted: string[] = [];
     const appended: string[] = [];
     const queued: string[] = [];
     const clock = mock.clock(on, { now });
@@ -133,6 +134,7 @@ function world(
     });
     on('prompt.submit', (_$, e) => {
         contexts.push([...(e.context ?? [])]);
+        submitted.push(String(e.text ?? ''));
         return dropSubmit(e.text) ? { drop: 'refused' } : { text: e.text };
     });
     on('session.append', (_$, e, next) => {
@@ -148,7 +150,7 @@ function world(
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { appended, clock, contexts, logged, queued, store };
+    return { appended, clock, contexts, logged, queued, store, submitted };
 }
 
 const start = ($: Engine) =>
@@ -1419,7 +1421,12 @@ test('a wake already sent goes out once', async ($, on) => {
 /* o75: the quiet ledger's gaps and a stuck hold raise a native alarm */
 
 const CODIE_SID = 'c0c0c0c0-codie';
-const codiePeer = { name: '☕️ 🔧 codie: mods', pid: 778, sessionId: CODIE_SID };
+const codiePeer = {
+    name: '☕️ 🔧 codie: mods',
+    pid: 778,
+    sessionId: CODIE_SID,
+    status: 'idle',
+};
 // the send timestamps the ledger's transcript grep returns, local time like EVEN
 const sendAt = (min: number) =>
     `2026-10-12T15:${String(min).padStart(2, '0')}:00.000`;
@@ -1432,7 +1439,9 @@ function alarmWorld(
         isTestChild = false,
         lastWrite = (): number | undefined => undefined,
         notify = 'no-surface',
+        also = [] as (typeof codiePeer)[],
         osascript = 0,
+        peer = codiePeer,
         refuseAppend = false,
         sends = [] as string[],
     } = {},
@@ -1442,7 +1451,7 @@ function alarmWorld(
         dropSubmit,
         files,
         isTestChild,
-        peers: [codiePeer],
+        peers: [peer, ...also],
         refuseAppend,
         run: (argv) => {
             if (argv[0] === 'osascript') {
@@ -1500,16 +1509,20 @@ const laneCard = (over = {}) => ({
 function silentWorld(
     on: On,
     {
+        also = [] as (typeof codiePeer)[],
         card = {} as object,
         dropSubmit = (_t: string): boolean => false,
+        peer = codiePeer,
         wait = 1,
     } = {},
 ) {
     const spoke = { at: EVEN };
     const w = alarmWorld(on, {
+        also,
         dropSubmit,
         files: { [LANES]: JSON.stringify({ lanes: [laneCard(card)] }) },
         lastWrite: () => spoke.at,
+        peer,
     });
     w.store.set('quiet-wait', wait);
     return { ...w, spoke };
@@ -1518,7 +1531,10 @@ const silentAlarms = (w: { scripted: string[] }) =>
     w.scripted.filter((s) => s.includes(' silent '));
 
 test('a lane member silent past three waits raises one alarm naming it, no turn', async ($, on) => {
-    const w = silentWorld(on, { wait: 10 });
+    const w = silentWorld(on, {
+        peer: { ...codiePeer, status: 'busy' },
+        wait: 10,
+    });
     await start($);
     await w.clock.advance(29 * MIN);
     const early = silentAlarms(w).length;
@@ -1796,6 +1812,99 @@ test('under afk a silent member takes no turn of clio', async ($, on) => {
     w.store.set('afk', { on: true });
     await w.clock.advance(4 * MIN);
     expect([silentAlarms(w).length, w.contexts]).toEqual([1, []]);
+});
+
+/* a lane parked: open steps, every live member idle */
+
+const parkedWakes = (w: { submitted: string[] }) =>
+    w.submitted.filter((text) => text.includes('🅿️ parked lane'));
+
+test('a lane whose members sit idle 10 min wakes its clio once, no shift needed', async ($, on) => {
+    const w = silentWorld(on, { wait: 60 });
+    await start($);
+    await w.clock.advance(9 * MIN);
+    const early = parkedWakes(w).length;
+    await w.clock.advance(2 * MIN);
+    await $.turn.complete({
+        answer: 'ok',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    await w.clock.advance(5 * MIN);
+    expect([early, parkedWakes(w).length]).toEqual([0, 1]);
+});
+
+test('a member speaking again re-arms the parked wake', async ($, on) => {
+    const w = silentWorld(on, { wait: 60 });
+    await start($);
+    await w.clock.advance(11 * MIN);
+    await $.turn.complete({
+        answer: 'ok',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    w.spoke.at = EVEN + 12 * MIN;
+    await w.clock.advance(12 * MIN);
+    expect(parkedWakes(w).length).toBe(2);
+});
+
+test('a finished or ended lane wakes nobody', async ($, on) => {
+    const w = silentWorld(on, { card: { current: 1 }, wait: 60 });
+    await start($);
+    await w.clock.advance(15 * MIN);
+    expect(parkedWakes(w)).toEqual([]);
+});
+
+test('a member still working wakes nobody', async ($, on) => {
+    const w = silentWorld(on, {
+        peer: { ...codiePeer, status: 'busy' },
+        wait: 60,
+    });
+    await start($);
+    await w.clock.advance(15 * MIN);
+    expect(parkedWakes(w)).toEqual([]);
+});
+
+test("a live wing's lane wakes nobody here", async ($, on) => {
+    const wing = '🦉🪽 clio: wing 9';
+    const w = silentWorld(on, {
+        also: [{ name: wing, pid: 779, sessionId: 'w9', status: 'idle' }],
+        card: { runner: wing },
+        wait: 60,
+    });
+    await start($);
+    await w.clock.advance(15 * MIN);
+    expect(parkedWakes(w)).toEqual([]);
+});
+
+test("a dead wing's lane falls to main", async ($, on) => {
+    const w = silentWorld(on, {
+        card: { runner: '🦉🪽 clio: wing 9' },
+        wait: 60,
+    });
+    await start($);
+    await w.clock.advance(15 * MIN);
+    expect(parkedWakes(w).length).toBe(1);
+});
+
+test('a ping moving the last word back wakes no second time', async ($, on) => {
+    const w = silentWorld(on, { wait: 60 });
+    await start($);
+    await w.clock.advance(11 * MIN);
+    await $.turn.complete({
+        answer: 'ok',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    w.spoke.at = EVEN - 5 * MIN;
+    await w.clock.advance(12 * MIN);
+    expect(parkedWakes(w).length).toBe(1);
 });
 
 test('under a shift a silent member wakes clio once', async ($, on) => {
