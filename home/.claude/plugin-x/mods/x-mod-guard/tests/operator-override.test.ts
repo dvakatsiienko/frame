@@ -204,6 +204,11 @@ for (const line of [
     "rex send -s S -b B 'operator-override prs'",
     "/Users/dima/.local/bin/rex send -s S -b B 'operator-override prs'",
     'rex send -s S -b B operator-override prs',
+    'rex send Operator\\ override\\ prs',
+    "rex send 'operator-''override prs'",
+    'rex send oper"ator-override prs"',
+    "rex send '/clio:''shift plan.md'",
+    "printf 'operator-''override prs' | rex send",
     'echo operator-override prs | rex send',
     'printf "operator-override prs" | rex send -b x',
     'V=prs; rex send "operator-override $V"',
@@ -223,6 +228,7 @@ for (const line of [
 
 for (const line of [
     "rex send -s S -b B 'pnpm test'",
+    'rex capture --trim | rg operator-override',
     "rg -n 'operator-override prs' x/FTR.md",
     "echo 'operator-override prs'",
 ])

@@ -5,6 +5,7 @@ import { type Refusal, basename, commandsDeep } from './command.ts';
 const WORD = /^operator[- ]override (prs|off)\.?$/i;
 const SHIFT = /^\/clio:shift\s+\S+$/;
 const TYPED_DOWN = /operator[- ]override\b|\/clio:shift\b/i;
+const REX_READS = new Set(['capture', 'list', 'ls']);
 const OPAQUE =
     /^(python[\d.]*|node|bun|deno|ruby|perl|php|lua|osascript|xargs|parallel|eval)$/;
 
@@ -89,10 +90,14 @@ export function overrideTypedDown(
     command: string,
     cwd: string,
 ): Refusal | undefined {
-    if (!TYPED_DOWN.test(command)) return undefined;
-    // the whole line counts: rex reads stdin, and a variable can hold the rest of the phrase
+    // the whole line counts, its words as the shell hands them over: rex reads stdin, and quoting can split the phrase
     const parsed = commandsDeep(command, cwd);
-    const isRexLine = parsed.some((c) => basename(c.name) === 'rex');
+    const words = parsed.flatMap((c) => c.args.map((w) => w.text)).join(' ');
+    if (!TYPED_DOWN.test(command) && !TYPED_DOWN.test(words)) return undefined;
+    const isRexLine = parsed.some(
+        (c) =>
+            basename(c.name) === 'rex' && !REX_READS.has(c.args[0]?.text ?? ''),
+    );
     const isHidden =
         /\brex\b/.test(command) &&
         parsed.some(

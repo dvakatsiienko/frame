@@ -374,7 +374,8 @@
   - given `prs` on, then `gh pr merge` and the other raw doors of `raw-merge` run, `gh stack merge` staying refused, each logging one «let through» line in the override's log before it runs; his hold and this mac's brake record still refuse; given a store that does not read, then `raw-merge` refuses as today
   - decision: the store's path comes from `id -P`, the system's user record, never `HOME`; `X_STATE` is never read
   - decision: a refusal from its first head, never warn-only: its rows name only the store and the phrase, so a past command can't meet them, and a warn would run what it means to stop
-  - known gap: a script run by path can still write the store or type the phrase: a local guard, never a cryptographic one, and the log is what catches it; a raw door reads only this mac's brake record, since the label and the reverts need the network
+  - decision: a line naming the store's file past a plain read is refused even when it only talks about it (`git commit -m '… operator-override.json'`): the rule reads names, and a message goes through a file
+  - known gap: a variable splitting the words on a rex line, and a script run by path, can still write the store or type the phrase: a local guard, never a cryptographic one, and the log is what catches it; a raw door reads only this mac's brake record, since the label and the reverts need the network
   - proof: tests/operator-override.test.ts
 - ⬜ only sixth sense and the coordinator write the clean (FRM-511)
   - given a Bash line running `watch-pr.sh --verified` or writing `~/.claude/shelf/pr-verified.json` (a redirect, `tee`, `cp`, `mv`, `sed -i`, an inline python or node write) from a session whose registry name is neither sixth sense's nor `🦉 clio`, or that the registry does not list, then nothing runs and the refusal (rule `clean-stamp`) names who writes it; `🦉 clio (side)` is refused; a read or a copy out of the store passes
