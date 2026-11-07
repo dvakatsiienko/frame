@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-07T18:57:00Z'
+updated_date: '2026-11-07T19:37:00Z'
 labels:
   - s
   - clio-main
@@ -46,4 +46,6 @@ low tide split 11-07, dima's yes 17:36: nothing new today beyond FRM-528 and ci.
 18:03 frame#146 reached round 6: clean at 3 rounds, wishkeeper's high opened 4 on my steer, 5 and 6 grew inside it. capped at 6 by me, brake only.
 
 18:10 his word: FRM-472 goes after everything that blocks tilde: FRM-501, FRM-505, FRM-504, FRM-503 now block it; wing 2's parse fix rides ahead of it, his tick.
+
+hoist 11-07: proposing, main
 <!-- SECTION:NOTES:END -->
