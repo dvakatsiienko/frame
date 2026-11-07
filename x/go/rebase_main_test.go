@@ -14,22 +14,24 @@ type rebaseWorld struct {
 
 func newRebaseWorld(t *testing.T, branch string) *rebaseWorld {
 	t.Helper()
-	origin := filepath.Join(t.TempDir(), "origin.git")
-	gitT(t, filepath.Dir(origin), "init", "-q", "--bare", "-b", "main", origin)
-	side := repo(t)
-	gitT(t, side, "remote", "add", "origin", origin)
-	gitT(t, side, "push", "-q", "origin", "main")
-	gitT(t, side, "switch", "-q", "-c", branch)
-	write(t, filepath.Join(side, "mine.txt"), "codie's change\n")
-	gitT(t, side, "add", "mine.txt")
-	gitT(t, side, "commit", "-q", "-m", "codie's change")
-	gitT(t, side, "push", "-q", "origin", branch)
-	gitT(t, side, "switch", "-q", "main")
-
-	clone := filepath.Join(t.TempDir(), "clone")
-	gitT(t, filepath.Dir(clone), "clone", "-q", origin, clone)
-	gitT(t, clone, "switch", "-q", branch)
-	return &rebaseWorld{origin, clone, side}
+	root := seeded(t, "rebase "+branch, func(root string) {
+		origin := filepath.Join(root, "origin.git")
+		gitT(t, root, "init", "-q", "--bare", "-b", "main", origin)
+		side := filepath.Join(root, "side")
+		copyFixture(t, seedRepo(t), side)
+		gitT(t, side, "remote", "add", "origin", origin)
+		gitT(t, side, "push", "-q", "origin", "main")
+		gitT(t, side, "switch", "-q", "-c", branch)
+		write(t, filepath.Join(side, "mine.txt"), "codie's change\n")
+		gitT(t, side, "add", "mine.txt")
+		gitT(t, side, "commit", "-q", "-m", "codie's change")
+		gitT(t, side, "push", "-q", "origin", branch)
+		gitT(t, side, "switch", "-q", "main")
+		clone := filepath.Join(root, "clone")
+		gitT(t, root, "clone", "-q", origin, clone)
+		gitT(t, clone, "switch", "-q", branch)
+	})
+	return &rebaseWorld{filepath.Join(root, "origin.git"), filepath.Join(root, "clone"), filepath.Join(root, "side")}
 }
 
 func (w *rebaseWorld) mainMoves(t *testing.T, name, body string) {

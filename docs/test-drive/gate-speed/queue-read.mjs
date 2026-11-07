@@ -51,10 +51,12 @@ for (const slot of ['gate', 'long'])
         `slot ${slot}`,
         rows.filter((r) => r.slot === slot),
     );
-// a tree older than the gate turn's pr runs its own x, which takes no turn under main's script
+// a bare wrap: a tree older than the gate turn's pr runs its own x and takes no turn; a new tree's also shows in the gate slot
 line(
-    "slot none, an older tree's lane commit or push",
-    rows.filter((r) => r.slot === 'none' && /lane (commit|push)/.test(r.cmd)),
+    "slot none, a bare lane commit or push, an older tree's or a wrapped new one's",
+    rows.filter(
+        (r) => r.slot === 'none' && /^x lane (commit|push)\b/.test(r.cmd),
+    ),
 );
 for (const k of ['commit', 'push', 'mods', 'round', 'script', 'other'])
     line(

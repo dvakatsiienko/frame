@@ -35,7 +35,7 @@ hold_until_told() {
     exit "${code:-1}"
 }
 # a queued run calling another queued run of its slot keeps its turn; a commit inside a long round still takes the gate slot
-[ "$slot" = gate ] && [ "$held" = gate ] && hold_until_told
+[ "$slot" = gate ] && [ "$held" = gate ] && hold_until_told "$@"
 [ "$slot" = long ] && [ "$held" = long ] && exec "$@"
 [ "$slot" = none ] && [ -n "$held" ] && exec "$@"
 
@@ -139,5 +139,5 @@ leave
 trap release EXIT
 printf '%s\n%s\n%s\n' "$$" "$(started_at $$)" "$*" >"$turn/holder"
 [ "$waited" -gt 0 ] && echo "gate-queue: took the turn after ${waited}s" >&2
-[ "$slot" = gate ] && hold_until_told
+[ "$slot" = gate ] && hold_until_told "$@"
 GATE_QUEUE_HELD=$slot "$@"
