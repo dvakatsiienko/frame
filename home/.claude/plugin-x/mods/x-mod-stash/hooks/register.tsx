@@ -3368,7 +3368,7 @@ async function overrideGrantAt(
 
 // the path comes once a process, the id spawn being the cost; every poll after it is one file read
 async function readOverrideOn($: EngineInterface) {
-    overrideStore ??= await overrideStorePath($);
+    overrideStore ??= (await overrideStorePath($)) ?? '';
     overrideIsOn = overrideStore
         ? (await overrideGrantAt($, overrideStore, 'prs')) !== undefined
         : false;
@@ -8606,7 +8606,7 @@ export const register: Register = (on) => {
                                 ? null
                                 : tip(
                                       'operator-override',
-                                      'operator-override: press to turn it off',
+                                      'operator-override',
                                       <Button
                                           key='operator-override'
                                           onPress={() =>

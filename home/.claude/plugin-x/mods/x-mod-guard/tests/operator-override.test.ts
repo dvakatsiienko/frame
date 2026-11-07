@@ -200,6 +200,8 @@ for (const [name, text, kind, registry] of [
 
 for (const line of [
     "rex send -s S -b B 'operator-override prs'",
+    "/Users/dima/.local/bin/rex send -s S -b B 'operator-override prs'",
+    'rex send -s S -b B operator-override prs',
     "rex send -s S -b B 'Operator override PRs.'",
     "rex send -s S -b B 'operator-override off'",
     "rex send -s S -b B '/clio:shift plan.md'",
@@ -230,6 +232,8 @@ for (const line of [
     `echo '{}' > ${REAL}`,
     `cp /tmp/forged.json ${REAL}`,
     `trash ${REAL}`,
+    `echo '${ON}' > /real-home/.local/state/x/operator-*.json`,
+    `cd /real-home/.local/state/x && echo '${ON}' > operator-override.json`,
     'echo x >> "$HOME/.local/state/x/operator-override.json"',
     `sed -i '' s/a/b/ ${REAL}`,
     `python3 -c "open('${REAL}','w')"`,
@@ -282,7 +286,7 @@ test('a start_session brief that is only the phrase never starts', async ($, on)
     expect(ran).toEqual([]);
 });
 
-test('a raw merge runs under prs and logs its pass', async ($, on) => {
+test('a raw merge under prs runs, its pass logged', async ($, on) => {
     const { files, ran } = world(on, { files: { [REAL]: ON } });
     const r = await bash($, 'gh pr merge 7 --squash');
     expect(r.deny).toBe(undefined);
@@ -291,6 +295,32 @@ test('a raw merge runs under prs and logs its pass', async ($, on) => {
     expect(log).toContain('"scope":"prs"');
     expect(log).toContain('"by":"word"');
     expect(log).toContain('gh pr merge 7');
+});
+
+test('a hold-only graphql line under prs logs no pass', async ($, on) => {
+    const { files } = world(on, { files: { [REAL]: ON } });
+    await bash($, `gh api graphql -F threadId=$ID -f query='mutation { a }'`);
+    expect(files[REAL.replace('.json', '.log')]).toBe(undefined);
+});
+
+test("a hold-only graphql line runs under prs with this mac's brake on", async ($, on) => {
+    const { ran } = world(on, {
+        files: {
+            '/real-home/.local/state/x/merge-brake/o_r.json':
+                '{"pr":"7","why":"w"}',
+            [REAL]: ON,
+        },
+    });
+    const line = `gh api graphql -F threadId=$ID -f query='mutation { a }'`;
+    expect((await bash($, line)).deny).toBe(undefined);
+    expect(ran).toEqual([line]);
+});
+
+test('his phrase with no registry row says it moved nothing', async ($, on) => {
+    const { files } = world(on, { registry: 'none' });
+    const sent = await say($, 'operator-override prs');
+    expect(files[REAL]).toBe(undefined);
+    expect(sent.context?.join(' ')).toContain('did not move');
 });
 
 test('a raw merge stays refused with it off', async ($, on) => {

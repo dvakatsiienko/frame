@@ -1725,9 +1725,10 @@ export const register: Register = (on) => {
             const override = held
                 ? undefined
                 : await overrideGrant($, 'prs').catch(() => undefined);
+            const landsAny = merges.some((m) => !m.isHoldOnly);
             const hold =
                 held ??
-                (override && (await rawMergeBraked($))
+                (override && landsAny && (await rawMergeBraked($))
                     ? {
                           door: "dima's look, then x lane merge-auto <pr> --release-brake --dima-ok <pr>",
                           rule: 'raw-merge',
@@ -1737,7 +1738,7 @@ export const register: Register = (on) => {
                     : override
                       ? undefined
                       : rawMergeRefused(merges, isStackTicked));
-            if (override && !hold)
+            if (override && !hold && landsAny)
                 await overrideLogPass($, override, `raw merge: ${typed}`).catch(
                     () => undefined,
                 );
@@ -2096,7 +2097,11 @@ export const register: Register = (on) => {
             if ((isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind))
                 await $.state.set(TOLD, e.text).catch(() => undefined);
             const ask = overrideAsked(e.text);
-            // no registry row reads as not his: a bg session's brief must never slip through a read that failed
+            // no registry row reads as not his: a bg session's brief must never slip through a read that failed; said out
+            // loud, since a word that moved nothing must not pass for one that did
+            if (ask && !entry)
+                overrideNote =
+                    "operator-override: this session's registry row did not read, so the switch did not move; tell dima to type it in a session that reads, or x lane merge-auto --override-check";
             if (
                 ask &&
                 entry &&

@@ -11,7 +11,7 @@ import (
 
 var (
 	ticketOfBranch = regexp.MustCompile(`(?i)^(?:codie|coder)/((?:FRM|BYT|PK)-\d+)(?:-|$)`) // read-both: coder/ before the 10-29 rename
-	ticketOfBody   = regexp.MustCompile(`(?im)^[\s>*-]*ticket:\s*((?:FRM|BYT|PK)-\d+)\b`)
+	ticketOfBody   = regexp.MustCompile(`(?im)^[\s*-]*ticket:\s*([a-z]+-\d+)\b`)
 	fenced         = regexp.MustCompile("(?s)```.*?```")
 	signedHeading  = regexp.MustCompile(`(?m)^## signed\s*$`)
 	nextHeading    = regexp.MustCompile(`(?m)^## `)

@@ -61,7 +61,7 @@ async function band($: Engine, surface: 'desktop' | 'terminal' = 'terminal') {
 }
 
 for (const surface of ['terminal', 'desktop'] as const)
-    test(`🔓 shows while prs is on, and one press clears it, on ${surface}`, async ($, on) => {
+    test(`🔓 clears on one press while prs is on, on ${surface}`, async ($, on) => {
         const files = world(on, { [REAL]: ON });
         const ui = await band($, surface);
         expect(await ui.find({ key: 'operator-override' })).toBeDefined();

@@ -123,7 +123,7 @@ func overrideOffPlan(r *Run, shiftOnly bool) (any, error) {
 	r.Open("operator-override " + store)
 	raw, err := os.ReadFile(store)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return nil, err
+		return nil, &Fail{Msg: "the store did not read: " + err.Error(), Next: "ls -l " + store}
 	}
 	cleared, _ := overrideAfterOff(raw, shiftOnly)
 	return &mergeDecision{Decision: "override-off", Risky: []string{}, Cleared: cleared, shiftOnly: shiftOnly}, nil
@@ -153,7 +153,11 @@ func overrideOffApply(r *Run, d *mergeDecision) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	r.Done("operator-override: "+strings.Join(d.Cleared, ", ")+" off", "")
+	said := "operator-override off"
+	if len(d.Cleared) > 0 {
+		said = "operator-override: " + strings.Join(d.Cleared, ", ") + " off"
+	}
+	r.Done(said, "")
 	return d, nil
 }
 
@@ -237,6 +241,19 @@ func overrideCheckPlan(r *Run) (any, error) {
 				row := overridePr{Repo: repo, PR: pr.Number, Title: pr.Title}
 				if _, err := mergeAutoPlan(&Run{verb: r.verb}, []string{fmt.Sprint(pr.Number)}, Flags{"repo": repo}); err != nil {
 					row.Stops = err.Error()
+				}
+				// github's own refusals, which the door meets only at the merge; mergeable is null while github computes it
+				var shape struct {
+					Draft     bool  `json:"draft"`
+					Mergeable *bool `json:"mergeable"`
+				}
+				if _, err := ghFetch(asDima, fmt.Sprintf("%s/repos/%s/pulls/%d", githubBase(), repo, pr.Number), &shape); err == nil && row.Stops == "" {
+					switch {
+					case shape.Draft:
+						row.Stops = "github refuses a draft"
+					case shape.Mergeable != nil && !*shape.Mergeable:
+						row.Stops = "github refuses it: a conflict"
+					}
 				}
 				report.Prs = append(report.Prs, row)
 			}

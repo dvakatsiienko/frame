@@ -89,7 +89,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	shiftOnly, _ := flags["shift-only"].(bool)
 	check, _ := flags["override-check"].(bool)
 	switch {
-	case check && (off || len(args) > 0):
+	case check && (off || shiftOnly || len(args) > 0):
 		return nil, usageFail("--override-check reads every open pr: it takes no pr and no other switch", "x lane merge-auto --override-check")
 	case check:
 		return overrideCheckPlan(r)

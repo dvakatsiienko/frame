@@ -311,6 +311,23 @@ func TestOverrideCheckNamesWhatWouldStopEachPr(t *testing.T) {
 	}
 }
 
+func TestOverrideCheckNamesGithubsOwnRefusals(t *testing.T) {
+	t.Parallel()
+	for field, want := range map[string]string{`"draft":true`: "a draft", `"mergeable":false`: "a conflict"} {
+		t.Run(want, func(t *testing.T) {
+			t.Parallel()
+			w, _ := overrideWorld(t, prsOn(), "script/foo.ts")
+			w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"number":7,`, `"number":7,`+field+`,`, 1)
+
+			_, report := overrideCheck(t, w)
+
+			if len(report.Prs) != 1 || !strings.Contains(report.Prs[0].Stops, want) {
+				t.Fatalf("prs %+v, want it to name %q", report.Prs, want)
+			}
+		})
+	}
+}
+
 func TestOverrideCheckNamesAMissingClone(t *testing.T) {
 	t.Parallel()
 	got := xIn(t, t.TempDir(), []string{"X_OVERRIDE_CLONES=o/b=/no/such/clone", "X_GITHUB_URL=http://127.0.0.1:1"}, "lane", "merge-auto", "--override-check")
@@ -321,7 +338,7 @@ func TestOverrideCheckNamesAMissingClone(t *testing.T) {
 
 func TestOverrideCheckKeepsItsArgvExact(t *testing.T) {
 	t.Parallel()
-	for _, args := range [][]string{{"--override-check", "7"}, {"--override-check", "--override-off"}} {
+	for _, args := range [][]string{{"--override-check", "7"}, {"--override-check", "--override-off"}, {"--override-check", "--shift-only"}} {
 		if got := xIn(t, t.TempDir(), nil, append([]string{"lane", "merge-auto"}, args...)...); got.code != 2 {
 			t.Errorf("%v: exit %d, want 2\n%s", args, got.code, got.stdout)
 		}
@@ -344,7 +361,7 @@ func TestOverrideOffAfterTheReadMergesNothing(t *testing.T) {
 	}
 }
 
-func TestOverrideNamesGithubsRefusalAndNoLanding(t *testing.T) {
+func TestOverrideNamesGithubsRefusalWithNoLanding(t *testing.T) {
 	t.Parallel()
 	for _, refusal := range []string{
 		"405 Pull Request is still a draft",

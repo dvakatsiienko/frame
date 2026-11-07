@@ -100,9 +100,10 @@
   - then the stored row reads the clock's `HH:MM`; a time outside a 📄 line, and dima's own prompt, stay as typed (FRM-337)
   - 📌 harness-proven only: whether the live screen and `reply-check.py`'s Stop input read the stored row or the streamed one is unprobed — a live reply with a stamp a minute ahead would show it
   - proof: tests/stamp.test.ts::a reply's 📄 stamp is stored with the real clock (+ «a time outside a 📄 line is kept», «dima's prompt is kept as typed») — not asserted: live-screen read path stays the 📌 unprobed part
-- ⬜ operator-override: 🔓 on the row while `prs` is on, one press turns it off (FRM-524)
+- ✅ operator-override: 🔓 on the row while `prs` is on, one press turns it off (FRM-524)
   - given the store holding `prs`, then 🔓 sits on the row as a `secondary` chip, its card naming `operator-override`, within one poll of the flip; one press clears the store
   - given it off, a store that does not read, or a store planted under `HOME`, then no 🔓 is drawn, so no press can turn it on
+  - decision: no 🎛️ switch: it shows a lock standing open, so hiding it would hide what a member can merge through (FRM-524)
   - decision: the press only turns it off: a session's Bash pressed a band button through a `rex send` click (probed 2026-11-07), so a press that turns it on would be no switch only he flips; typed words turn it on (`x-mod-guard/FTR.md`)
   - proof: tests/operator-override.test.ts
 - ✅ afk switch: one icon, `💨`; the `secondary` chip alone says it is on

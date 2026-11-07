@@ -1,9 +1,5 @@
 import { touchesStore } from './clean-stamp.ts';
-import { type Refusal, commandsDeep } from './command.ts';
-
-export type OverrideAsk =
-    | { by: 'shift' | 'word'; scope: 'prs' }
-    | { by: 'word'; scope: 'off' };
+import { type Refusal, basename, commandsDeep } from './command.ts';
 
 // wispr types «Operator override PRs.», so case and a closing period pass; anything else around the words reads as talk about them
 const WORD = /^operator[- ]override (prs|off)\.?$/i;
@@ -22,11 +18,6 @@ export function overrideAsked(text: string): OverrideAsk | undefined {
     return undefined;
 }
 
-export type OverrideGrants = Record<
-    string,
-    { at: string; by: string; until?: string }
->;
-
 // the store after an ask. a shift's start leaves his own word standing, so its end can't take it
 export function overrideAfter(
     grants: OverrideGrants,
@@ -39,7 +30,7 @@ export function overrideAfter(
 }
 
 export const isOverrideStore = (text: string) =>
-    /\.local\/state\/x\/operator-override|\$\{?\w+\}?\/operator-override/i.test(
+    /\.local\/state\/x\/(operator-override|[^/]*[*?[])|\$\{?\w+\}?\/operator-override|^operator-override\.(json|log)\b/i.test(
         text,
     );
 const isStoreDir = (text: string) => /\.local\/state\/x\/?$/i.test(text);
@@ -79,7 +70,9 @@ export function overrideTypedDown(
 ): Refusal | undefined {
     const parsed = commandsDeep(command, cwd);
     const isRexLine = parsed.some(
-        (c) => c.name === 'rex' && c.args.some((w) => TYPED_DOWN.test(w.text)),
+        (c) =>
+            basename(c.name) === 'rex' &&
+            TYPED_DOWN.test(c.args.map((w) => w.text).join(' ')),
     );
     const isHidden =
         TYPED_DOWN.test(command) &&
@@ -96,3 +89,13 @@ export function overrideTypedDown(
         why: 'keys sent through rex read as his typing, and the override opens on his typing alone',
     };
 }
+
+/* Types */
+export type OverrideAsk =
+    | { by: 'shift' | 'word'; scope: 'prs' }
+    | { by: 'word'; scope: 'off' };
+
+export type OverrideGrants = Record<
+    string,
+    { at: string; by: string; until?: string }
+>;

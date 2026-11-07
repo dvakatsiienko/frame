@@ -399,7 +399,7 @@
                     "type": "boolean"
                 },
                 "override-check": {
-                    "description": "read every open pr of frame and bytes and name what would stop each one; writes nothing; takes no pr",
+                    "description": "read every open pr of frame and bytes and name what would stop each one; writes nothing but a ref fetch in each clone; takes no pr",
                     "type": "boolean"
                 },
                 "override-off": {
@@ -443,6 +443,7 @@
                 "linear — a self-edit's chunk ticket, its ## signed block read",
                 "~/.local/state/x/merge-hold/ — dima's held prs per repo, read every run, written by --hold, --release-hold and a landing",
                 "~/.local/state/x/operator-override.json — the switch only dima flips, read every run through the system's user record; .log beside it, one line per pass",
+                "~/projects/bytes — --override-check reads bytes' prs from its clone, a ref fetch its one write",
                 "~/.local/state/x/merge-brake/ — the brake's own record when github refuses its label, read every run, written and removed"
             ]
         },
