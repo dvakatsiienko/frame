@@ -4,6 +4,13 @@ Read this first on reopening the problem. Mac16,7, M4 Pro, 14 cores, 48 GB, macO
 
 📌 **proven, two 10 s windows: go test runs spawn the git that fills the kernel; the mods suite fills user cpu; sessions at rest are cheap.** Every line below says what it proves.
 
+📌 **the number to beat: a lane ran about 1.8× slower at 4-5 lanes than at 2** (121 → 71 tool calls per lane-hour), and more lanes is the goal, so fewer lanes is not the fix. [fleet-pace-under-load](../../research/fleet-pace-under-load.md) holds it, with its lane-count recommendation out by dima's word, relayed by main at 02:27. One unplanned window, a correlation:
+
+- queue wait is the main suspect: 892 min waited against 605 min run in 6.6 h, about 2.25 sessions stuck at any moment; no baseline exists before 11-06 19:39
+- the same command slows little: ×1.15 p50, ×1.75 p90 same-workload, knee at load 30-40, steep at 60+; so cpu run time alone reads about +7 % wall at p50, +35 % at p90, inference
+- mods tests grew 902 → 3,430, go `func Test` 368 → 703: part of what reads as load is suite growth
+- its rows' scripts, off `/tmp`: `~/.local/state/x/lanes/frm-525/pace-under-load/`
+
 ## the spindump, 2026-11-07 01:43:54, 10 s, load about 30, a go run live
 
 Read by `spindump-read.mjs` and `spindump-git.mjs` beside this file; the sampler itself took 11.7 cpu-s of the total.
@@ -33,7 +40,7 @@ Raw data, off `/tmp` so a reboot keeps it: `~/.local/state/x/lanes/frm-525/` hol
 
 - 2026-11-07 01:08: load 47, `top` 40.6 % user, 59.4 % sys, 0.0 % idle; `ps` totals about 6 of 14 cores. CPU 106 °C on dima's screen
 - 2026-11-06: load peaks 126 to 172, 247 once at 00:12, codie's `measure.sh`
-- a commit's test step: about 13 s alone, 35 s at load, so about 2.5×
+- a commit's test step: about 13 s alone, 35 s at load, read as about 2.5×. Corrected by [fleet-pace-under-load](../../research/fleet-pace-under-load.md): most of that gap is `4739e4ed` at 11-06 19:25, which added the sleeping `gate-queue.test.ts`, and 26 to 28 s still shows at load 7 to 11. Same suite after it: ×1.14 p50, ×1.43 p90 at load 16+
 - dima's screenshot: a commit at 7m57s, 201 s by the transcript, the rest unexplained
 
 ## proven
@@ -67,6 +74,7 @@ Peak load halved, 100 → 49; sys share unchanged, 33 → 35 %. Not the cpu's fi
 
 ## next, cheapest first
 
+0. the queue and the sleep: split queue wait from cpu wait first, since lanes stuck on one turn is a lever beside cpu; cut the sleeps `4739e4ed` added to every commit's test step; a planned ramp replays one fixed chunk set per dose, its design in the research doc § what would make this causal, doses raised to 16
 1. the third piece: a `spindump` with neither a go run nor a mods suite, and whose sandbox profile hits git, the cheapest new lever if it can go
    - then, dima's tick: a research on git's process cost, all lanes: fewer git per fixture, a repo template, in-process libraries (gix, go-git), a long-lived `git cat-file --batch`, config and sandbox cost per start, jj's process count and hooks
 2. the decisive A/B at a halt: the same go run with every session running, then with all stopped. sys stays near its number → the suite's own work; it falls far → contention
