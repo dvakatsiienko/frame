@@ -4905,3 +4905,130 @@ test('a held text the store refused three times leaves the box for the offer, an
     await back.redraw();
     expect(await boxValue(back, key)).toBe('');
 });
+
+test('a steer another board wrote, still a mark at his return inside the poll, wins with his text offered', async ($, on) => {
+    const { id, key, ui, w } = await askBoxOnBoard($, on);
+    await ui.input({ key, kind: 'change', text: 'a heron' });
+    await w.clock.advance(FIELD_SAVE + 100);
+    await $.session.detach({ ...CLIENT, reason: 'detach' });
+    await ui.unmount();
+    w.store.set(`marks:${SID}:${id}`, {
+        at: (w.clock as unknown as { now: () => number }).now(),
+        isSteerEdit: true,
+        steer: 'a swan',
+    });
+    await $.session.attach(CLIENT);
+    const back = await board($);
+    expect([
+        await boxValue(back, key),
+        (await back.find({ key: `kept:${key}`, type: 'Button' }))?.text,
+    ]).toEqual(['a swan', expect.stringContaining('a heron')]);
+});
+
+test('a refused text that yields to a newer steer draws the steer, with his text offered once', async ($, on) => {
+    const lane = `l${++switchRow}`;
+    const w = world(on, glide({}, lane));
+    keptState(on);
+    let isDown = true;
+    w.taps.set = (key) =>
+        isDown && key === `lane-steer:${lane}` ? 'store down' : undefined;
+    await start($);
+    const ui = await board($);
+    await ui.redraw();
+    const key = `lane:${lane}:steer`;
+    await ui.input({ key, kind: 'change', text: 'cards first' });
+    const back = await switchThread($, w, ui);
+    isDown = false;
+    w.store.set(`lane-steer:${lane}`, { steer: 'bars first' });
+    await say($, 'go');
+    await w.clock.advance(5_000);
+    const again = await switchThread($, w, back);
+    const offer = await again.find({ key: `kept:${key}`, type: 'Button' });
+    expect([await boxValue(again, key), offer?.text]).toEqual([
+        'bars first',
+        expect.stringMatching(/^↩️ kept «cards first»$/u),
+    ]);
+});
+
+test('a refused text meets no offer of the steer it was typed over', async ($, on) => {
+    const lane = `l${++switchRow}`;
+    const w = world(on, glide({}, lane));
+    w.store.set(`lane-steer:${lane}`, { steer: 'from another board' });
+    keptState(on);
+    let isDown = false;
+    w.taps.set = (key) =>
+        isDown && key === `lane-steer:${lane}` ? 'store down' : undefined;
+    await start($);
+    const ui = await board($);
+    await ui.redraw();
+    const key = `lane:${lane}:steer`;
+    isDown = true;
+    await ui.input({ key, kind: 'change', text: 'from another board, no' });
+    await $.session.detach({ ...CLIENT, reason: 'detach' });
+    await ui.unmount();
+    w.store.set(`lane-steer:${lane}`, { steer: 'a third' });
+    await w.clock.advance(5_000);
+    await $.session.attach(CLIENT);
+    const back = await board($);
+    const offer = await back.find({ key: `kept:${key}`, type: 'Button' });
+    expect(offer?.text ?? '').not.toContain('from another board»');
+});
+
+test('what the store held as he left is kept in $.state, so a reload while away still offers it', async ($, on) => {
+    const { key, state, ui, w } = await askBoxOnBoard($, on);
+    await ui.input({ key, kind: 'change', text: 'a heron' });
+    await w.clock.advance(FIELD_SAVE + 3500);
+    await $.session.detach({ ...CLIENT, reason: 'detach' });
+    await ui.unmount();
+    await w.clock.advance(0);
+    expect((state.fields as Record<string, { left?: string }>)[key]?.left).toBe(
+        'a heron',
+    );
+});
+
+test('a reloaded module takes back what he left, and his return offers it over a newer steer', async ($, on) => {
+    const id = `o${++switchRow}`;
+    const key = `orbit:steer:${id}`;
+    world(on);
+    keptState(on, {
+        fields: { [key]: { left: 'a heron' } },
+        orbit: {
+            asks: [
+                { id, pick: 'pelican', steer: 'a swan', text: 'name a bird' },
+            ],
+            next: switchRow + 1,
+            turns: 1,
+        },
+    });
+    await start($);
+    await $.session.attach(CLIENT);
+    const back = await board($);
+    expect(
+        (await back.find({ key: `kept:${key}`, type: 'Button' }))?.text,
+    ).toEqual(expect.stringContaining('a heron'));
+});
+
+test('a held text that yielded never draws over the words he types next', async ($, on) => {
+    const w = world(on);
+    const { down, state } = refusingOrbit(on);
+    const id = `o${(state.orbit as { next: number }).next}`;
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await ui.redraw();
+    const key = `orbit:steer:${id}`;
+    down.isDown = true;
+    await ui.input({ key, kind: 'change', text: 'a heron' });
+    const back = await switchThread($, w, ui);
+    down.isDown = false;
+    w.store.set(`marks:${SID}:${id}`, {
+        at: (w.clock as unknown as { now: () => number }).now(),
+        isSteerEdit: true,
+        steer: 'a swan',
+    });
+    await w.clock.advance(5_000);
+    await say($, 'go');
+    await back.input({ key, kind: 'change', text: 'a swan and' });
+    await back.redraw();
+    expect(await boxValue(back, key)).toBe('a swan');
+});

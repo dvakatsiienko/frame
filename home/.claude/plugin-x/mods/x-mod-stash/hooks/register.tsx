@@ -578,12 +578,14 @@ async function flushFields($: EngineInterface) {
         }),
     );
     const failed = new Set<string>();
+    const replayed = new Set<string>();
     let isOffered = false;
     for (const [key, text] of lost)
         await saveTyped($, key, text, bases.get(key))
             .then(async (isSaved) => {
                 if (isSaved && !(await holdsSteer($, key, text)))
                     throw new Error('the store does not hold it');
+                if (isSaved) replayed.add(key);
             })
             .catch((err) => {
                 const tries = (failures.get(key) ?? 0) + 1;
@@ -611,7 +613,15 @@ async function flushFields($: EngineInterface) {
     }
     for (const [key, text] of lost)
         if (!failed.has(key) && unsaved.get(key) === text) {
-            await settleHeld($, key);
+            if (replayed.has(key)) await settleHeld($, key);
+            else {
+                // it yielded, or its box is gone: a newer steer draws, and his words stay on offer
+                remountTexts.delete(key);
+                if ((await storedSteer($, key))?.trim()) {
+                    keptSteers.set(key, [...(keptSteers.get(key) ?? []), text]);
+                    isOffered = true;
+                }
+            }
             landed(key, text);
             failures.delete(key);
             unsaved.delete(key);
@@ -628,8 +638,8 @@ const unsaved = new Map<string, string>();
 const remountTexts = new Map<string, string>();
 const heldOver = (key: string) =>
     unsaved.has(key) ? remountTexts.get(key) : undefined;
-// the text each box last typed, read at a return: another board's steer that replaced it while the view was gone offers it back
-const typedTexts = new Map<string, string>();
+// what the store held of his typing as the view left: another board's steer that replaces it while he is away offers it back
+const textsLeft = new Map<string, string>();
 // the stored steer each box's unsaved text was typed over, so a replay after a reload knows a newer one came in
 const bases = new Map<string, string>();
 // the base before a box's own last save: a keystroke drawn from a render older than that save still reads it
@@ -662,12 +672,14 @@ function keepFields($: EngineInterface) {
                 ...drafts.keys(),
                 ...unsaved.keys(),
                 ...keptSteers.keys(),
+                ...textsLeft.keys(),
             ])) {
                 const draft = drafts.get(key);
                 const kept = keptSteers.get(key);
                 const gen = remounts.get(key);
                 const pending = unsaved.get(key);
                 const base = bases.get(key);
+                const left = textsLeft.get(key);
                 boxes[key] = {
                     ...(draft ? { draft } : {}),
                     ...(gen ? { gen } : {}),
@@ -676,6 +688,7 @@ function keepFields($: EngineInterface) {
                         ? {}
                         : { base }),
                     ...(kept?.length ? { keptSteers: kept } : {}),
+                    ...(left === undefined ? {} : { left }),
                 };
             }
             const text = JSON.stringify(boxes);
@@ -705,6 +718,8 @@ async function takeFields($: EngineInterface) {
         }
         if (f.keptSteers?.length && !keptSteers.has(key))
             keptSteers.set(key, f.keptSteers);
+        if (f.left !== undefined && !textsLeft.has(key))
+            textsLeft.set(key, f.left);
     }
 }
 // a press on a kept steer saves it over whatever the box holds now: his own pick, so no base to yield to
@@ -798,26 +813,32 @@ async function forgetMountedText($: EngineInterface) {
 async function leaveBoxes($: EngineInterface) {
     await flushFields($);
     askTypedAt.clear();
-    for (const [key, text] of typedTexts)
-        if (!unsaved.has(key) && !(await holdsSteer($, key, text)))
-            typedTexts.delete(key);
+    textsLeft.clear();
+    for (const [key, text] of bases)
+        if (
+            text.trim() &&
+            !unsaved.has(key) &&
+            (await holdsSteer($, key, text))
+        )
+            textsLeft.set(key, text);
+    keepFields($);
 }
 // the return draws fresh, so the boxes draw the store; a steer another board wrote meanwhile wins and his text is offered
 async function returnToBoxes($: EngineInterface) {
+    // a steer another board wrote may still wait as a mark the poll has not read
+    await absorbMarks($);
     await forgetMountedText($);
     let isOffered = false;
-    for (const [key, text] of typedTexts) {
-        if (unsaved.has(key)) continue;
+    const left = [...textsLeft];
+    textsLeft.clear();
+    for (const [key, text] of left) {
         const now = await storedSteer($, key);
-        if (sameSteer(now, text)) continue;
-        typedTexts.delete(key);
-        if (!now?.trim()) continue;
+        if (sameSteer(now, text) || !now?.trim()) continue;
         keptSteers.set(key, [...(keptSteers.get(key) ?? []), text]);
         isOffered = true;
     }
-    if (!isOffered) return;
     keepFields($);
-    await publish($);
+    if (isOffered) await publish($);
 }
 // the save a box's closure ran, rebuilt from its key: the closure went with the old module. it lands only while the
 // stored steer is still the one the text was typed over, so a newer steer from another board wins; a text kept with no
@@ -985,7 +1006,6 @@ function typed(
     save: () => unknown,
 ) {
     pendingSaves.get(key)?.timer.cancel();
-    if (text.trim()) typedTexts.set(key, text);
     // a burst's first keystroke records the steer it types over; right after his own save the render may still show the
     // steer before it, and that one is his own save too
     if (

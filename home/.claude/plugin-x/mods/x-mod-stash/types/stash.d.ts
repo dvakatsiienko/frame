@@ -162,6 +162,8 @@ export type StashField = {
     base?: string;
     // a replay the store refused three times: tried no more, offered back on the board (dima's o123)
     keptSteers?: string[];
+    // what the store held of his typing as the desktop's view left: a newer steer at his return offers it back (FRM-531)
+    left?: string;
 };
 
 // one choice the session made without asking, that costs a redo if wrong: born at a turn count; dima's send-back
