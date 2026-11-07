@@ -14,12 +14,12 @@ a bold verdict line with the counts, then one block per item, in build order:
 ```
 **12 chunks: 7 stay, 3 trimmed, 1 merged, 1 cut**
 
-✂️ **cut** · [FRM-468](https://linear.app/x-com/issue/FRM-468) the jump list of compactions
+✂️ **cut: [FRM-468](https://linear.app/x-com/issue/FRM-468) the jump list of compactions**
 - what it is: a command that shows where a session compacted, and lets you jump there
 - why: nobody jumped in 14 days, 0 real reads; the 4 hand reads were looking for a compact
 - **you lose: your «looks very useful» on it.** a real compaction mystery reopens it
 
-🪶 **trim** · [FRM-414](https://linear.app/x-com/issue/FRM-414) the review command's wrong messages
+🪶 **trim: [FRM-414](https://linear.app/x-com/issue/FRM-414) the review command's wrong messages**
 - what it is: two messages that tell a coder the wrong next step
 - why: the rest of it was never built, and no lane asked
 - **you lose: nothing.** the screenshot part moves to the stats board
