@@ -4,9 +4,10 @@ title: 'quiet comms: a member''s lone turn-end note stops waking clio while he i
 status: done
 assignee: []
 created_date: '2026-11-06T00:17:00Z'
-updated_date: '2026-11-07T01:54:00Z'
+updated_date: '2026-11-07T02:01:00Z'
 labels:
   - s
+  - wing-1
 dependencies: []
 priority: now
 type: task

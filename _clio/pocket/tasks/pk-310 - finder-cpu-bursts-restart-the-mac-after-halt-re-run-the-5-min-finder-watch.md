@@ -4,9 +4,10 @@ title: 'finder cpu bursts: restart the mac after halt, re-run the 5-min finder w
 status: open
 assignee: []
 created_date: '2026-11-03T14:11:00Z'
-updated_date: '2026-11-07T01:54:00Z'
+updated_date: '2026-11-07T02:01:00Z'
 labels:
   - xs
+  - wing-1
 dependencies: []
 priority: next
 type: task

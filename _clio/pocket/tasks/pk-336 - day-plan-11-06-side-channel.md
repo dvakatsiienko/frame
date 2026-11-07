@@ -4,9 +4,10 @@ title: 'day plan 11-06: wing 1'
 status: done
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T01:54:00Z'
+updated_date: '2026-11-07T02:01:00Z'
 labels:
   - m
+  - wing-1
 dependencies: []
 priority: now
 type: task

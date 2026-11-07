@@ -4,9 +4,10 @@ title: 'parked member: codie sat 38 min with runnable work, its wing missed it t
 status: open
 assignee: []
 created_date: '2026-11-06T23:27:00Z'
-updated_date: '2026-11-07T02:00:00Z'
+updated_date: '2026-11-07T02:01:00Z'
 labels:
   - s
+  - wing-1
 dependencies: []
 priority: next
 type: task

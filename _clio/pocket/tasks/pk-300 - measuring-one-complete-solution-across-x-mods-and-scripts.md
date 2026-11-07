@@ -4,9 +4,10 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-07T01:54:00Z'
+updated_date: '2026-11-07T02:00:00Z'
 labels:
   - m
+  - wing-1
 dependencies: []
 priority: next
 type: task
