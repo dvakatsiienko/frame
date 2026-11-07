@@ -163,10 +163,15 @@ fi
 
 fi
 
+if [ -z "${COMPACT:-}" ]; then
 echo "-- go vulns in x/go (pnpm x-go:vuln, ~3 s) --"
 vuln=$(cd "$HOME/frame" && pnpm --silent x-go:vuln 2>&1)
 vulns=$(printf '%s\n' "$vuln" | grep -c '^Vulnerability #')
 if [ "$vulns" = 0 ]; then echo "x/go: no reachable vulns"; else echo "x/go: $vulns reachable vulns — fixed in: $(printf '%s\n' "$vuln" | sed -n 's/.*Fixed in: //p' | sort -u | tr '\n' ' ')"; fi
+else
+# a compact waits on this hook: the network rows took 12 of its 18.6 s (FRM-483), and the running watches hold what they'd say
+echo "-- skipped on a compact: go vulns, repo fetch, ci reds, n8n tables; the whole digest: boot-prefetch.sh --"
+fi
 
 echo "-- usage (x-mod-stash writes rate_limits to shelf/cc-usage-window.json on every session.measure, terminal and desktop) --"
 jq -r --argjson now "$(date +%s)" '
@@ -183,7 +188,7 @@ jq -r --argjson now "$(date +%s)" '
 echo "-- repos vs origin (behind-only on a clean main → pulled here; anything else → the reason it was not) --"
 for repo in "$HOME/frame" "$HOME/projects/bytes"; do
   name=$(basename "$repo")
-  git -C "$repo" fetch -q 2>/dev/null || { fail "fetch failed in $name"; continue; }
+  [ -n "${COMPACT:-}" ] || git -C "$repo" fetch -q 2>/dev/null || { fail "fetch failed in $name"; continue; }
   counts=$(git -C "$repo" rev-list --left-right --count HEAD...@{upstream} 2>/dev/null)
   ahead=${counts%%	*}; behind=${counts##*	}
   if [ "$behind" = 0 ]; then
@@ -211,6 +216,7 @@ for repo in "$HOME/frame" "$HOME/projects/bytes"; do
   done
 done
 
+if [ -z "${COMPACT:-}" ]; then
 echo "-- ci + vercel reds, 48 h (watch-ci.sh --boot; --watch is the in-session monitor) --"
 # the FAIL names the call that failed — a bare «could not query» sat next to a working gh twice (FRM-261)
 cw_err=$(mktemp)
@@ -228,6 +234,7 @@ if n8n_out=$(timeout 30 ~/frame/script/op-run.sh bash -c '
   printf '%s\n' "${n8n_out:-no unseen ci reds, no receipts in a day}"
 else
   fail "n8n tables unreadable (x-n8n down? pm2 ls): $(printf '%s' "$n8n_out" | tail -1)"
+fi
 fi
 
 # a project-scope plugin starts no monitors (code.claude.com/docs/en/plugins/loading, «Background monitors do not load»), so the boot arms both every time; n8n's ci rows above are the record, watch-ci is the wake, until an n8n → mod bridge lands
