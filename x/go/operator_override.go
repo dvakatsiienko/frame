@@ -52,8 +52,14 @@ func overrideLog(store string) string {
 	return filepath.Join(filepath.Dir(store), "operator-override.log")
 }
 
+// set only by `go build -ldflags "-X main.systemHomeAtBuild=<dir>"`, so a release-build test reads a fixture home without any env var or flag a session could set
+var systemHomeAtBuild string
+
 // the system's user record, which HOME can't move; no record means no path, and no path reads off
 func systemHome() string {
+	if systemHomeAtBuild != "" {
+		return systemHomeAtBuild
+	}
 	if home := os.Getenv("X_SYSTEM_HOME"); isTestBuild && home != "" {
 		return home
 	}

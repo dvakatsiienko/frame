@@ -222,7 +222,7 @@ func TestMergeAutoRefusesHoldAndReleaseTogether(t *testing.T) {
 func TestMergeAutoReleaseBuildIgnoresTheTestEnv(t *testing.T) {
 	t.Parallel()
 	bin := filepath.Join(t.TempDir(), "x-release")
-	if out, err := exec.Command("go", "build", "-o", bin, ".").CombinedOutput(); err != nil {
+	if out, err := exec.Command("go", "build", "-ldflags", "-X main.systemHomeAtBuild="+t.TempDir(), "-o", bin, ".").CombinedOutput(); err != nil {
 		t.Fatalf("build: %v\n%s", err, out)
 	}
 	release := func(w *mergeWorld, home string) (int, string) {

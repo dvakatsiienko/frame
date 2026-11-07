@@ -877,7 +877,7 @@ func TestMergeAutoHonoursXVerifiedOnlyUnderXTest(t *testing.T) {
 	home := t.TempDir()
 	write(t, filepath.Join(home, ".claude/shelf/pr-verified.json"), `{}`)
 
-	got := xIn(t, w.clone, append(w.env, "X_TEST=", "HOME="+home), "lane", "merge-auto", "7", "--apply")
+	got := xIn(t, w.clone, append(w.env, "X_TEST=", "X_SYSTEM_HOME="+home, "HOME="+home), "lane", "merge-auto", "7", "--apply")
 
 	if merges := w.hub.sent("PUT "); len(merges) != 0 {
 		t.Fatalf("exit %d, merges %q: want the planted X_VERIFIED ignored outside X_TEST:\n%s", got.code, merges, got.stdout)
