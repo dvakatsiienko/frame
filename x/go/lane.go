@@ -987,10 +987,7 @@ func enterMain(repo string) error {
 }
 
 func midOperation() bool {
-	return slices.ContainsFunc([]string{"MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply"}, func(name string) bool {
-		path, _ := git("rev-parse", "--path-format=absolute", "--git-path", name)
-		return path.ok && exists(path.out)
-	})
+	return slices.ContainsFunc(gitPaths("", "MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply"), exists)
 }
 
 func isMerging() bool {
@@ -1064,12 +1061,25 @@ func pushHome() (string, string, error) {
 
 // worktreeOf answers the repo's common git dir and whether tree is a linked worktree of it
 func worktreeOf(tree string) (common string, linked bool, err error) {
-	own, err := mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-dir")
+	both, err := mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-dir", "--git-common-dir")
 	if err != nil {
 		return "", false, err
 	}
-	common, err = mustGitIn(tree, "rev-parse", "rev-parse", "--path-format=absolute", "--git-common-dir")
-	return common, err == nil && own != common, err
+	own, common, _ := strings.Cut(both, "\n")
+	return common, own != common, nil
+}
+
+// where git keeps each named file, one spawn for them all; nil when git could not say
+func gitPaths(cwd string, names ...string) []string {
+	args := []string{"rev-parse", "--path-format=absolute"}
+	for _, name := range names {
+		args = append(args, "--git-path", name)
+	}
+	got, _ := gitIn(cwd, args...)
+	if !got.ok {
+		return nil
+	}
+	return strings.Split(got.out, "\n")
 }
 
 func top() (string, error)  { return mustGit("rev-parse", "rev-parse", "--show-toplevel") }

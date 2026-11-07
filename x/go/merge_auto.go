@@ -545,9 +545,8 @@ func branchStands(main, ref string) bool {
 
 // a rebase or a bisect detaches its tree, and only these files still name what it will come back to
 func stoppedOn(tree string) string {
-	for _, file := range []string{"rebase-merge/head-name", "rebase-apply/head-name", "BISECT_START"} {
-		path, _ := gitIn(tree, "rev-parse", "--path-format=absolute", "--git-path", file)
-		if raw, err := os.ReadFile(path.out); path.ok && err == nil {
+	for _, path := range gitPaths(tree, "rebase-merge/head-name", "rebase-apply/head-name", "BISECT_START") {
+		if raw, err := os.ReadFile(path); err == nil {
 			return strings.TrimPrefix(strings.TrimSpace(string(raw)), "refs/heads/")
 		}
 	}

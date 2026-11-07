@@ -157,25 +157,30 @@ func (w *mergeWorld) mainMoves(t *testing.T, name string) {
 
 func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 	t.Helper()
-	origin := filepath.Join(t.TempDir(), "origin.git")
-	gitT(t, filepath.Dir(origin), "init", "-q", "--bare", "-b", "main", origin)
-	seed := repo(t)
-	gitT(t, seed, "remote", "add", "origin", origin)
-	gitT(t, seed, "push", "-q", "origin", "main")
-	gitT(t, seed, "switch", "-q", "-c", "coder/x")
-	for _, p := range paths {
-		write(t, filepath.Join(seed, p), "change in "+p+"\n")
-	}
-	gitT(t, seed, "add", ".")
-	gitT(t, seed, "commit", "-q", "-m", "the pr's change")
-	gitT(t, seed, "push", "-q", "origin", "coder/x")
-	head := gitT(t, seed, "rev-parse", "HEAD")
+	root := seeded(t, "merge "+strings.Join(paths, "\n"), func(root string) {
+		origin := filepath.Join(root, "origin.git")
+		gitT(t, root, "init", "-q", "--bare", "-b", "main", origin)
+		seed := filepath.Join(root, "seed")
+		copyFixture(t, seedRepo(t), seed)
+		gitT(t, seed, "remote", "add", "origin", origin)
+		gitT(t, seed, "push", "-q", "origin", "main")
+		gitT(t, seed, "switch", "-q", "-c", "coder/x")
+		for _, p := range paths {
+			write(t, filepath.Join(seed, p), "change in "+p+"\n")
+		}
+		gitT(t, seed, "add", ".")
+		gitT(t, seed, "commit", "-q", "-m", "the pr's change")
+		gitT(t, seed, "push", "-q", "origin", "coder/x")
+		write(t, filepath.Join(root, "head"), gitT(t, seed, "rev-parse", "HEAD"))
 
-	clone := filepath.Join(t.TempDir(), "clone")
-	gitT(t, filepath.Dir(clone), "clone", "-q", origin, clone)
-	gitT(t, clone, "remote", "set-url", "origin", "https://github.com/o/r.git")
-	gitT(t, clone, "config", "url."+origin+".insteadOf", "https://github.com/o/r.git")
-	gitT(t, clone, "config", "url."+origin+".pushInsteadOf", "https://github.com/o/r.git")
+		clone := filepath.Join(root, "clone")
+		gitT(t, root, "clone", "-q", origin, clone)
+		gitT(t, clone, "remote", "set-url", "origin", "https://github.com/o/r.git")
+		gitT(t, clone, "config", "url."+origin+".insteadOf", "https://github.com/o/r.git")
+		gitT(t, clone, "config", "url."+origin+".pushInsteadOf", "https://github.com/o/r.git")
+	})
+	origin, seed, clone := filepath.Join(root, "origin.git"), filepath.Join(root, "seed"), filepath.Join(root, "clone")
+	head := readOr(filepath.Join(root, "head"), "")
 
 	var files []string
 	for _, p := range paths {
