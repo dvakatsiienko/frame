@@ -3989,6 +3989,7 @@ function pressRace(on: On) {
         last: undefined as unknown,
         lastTicks: undefined as unknown,
         onLock: undefined as (() => void) | undefined,
+        onWrite: undefined as (() => void) | undefined,
         orbit: undefined as
             | { asks: { id: string; isLocked?: boolean; mark?: string }[] }
             | undefined,
@@ -4007,10 +4008,14 @@ function pressRace(on: On) {
     on('state.set', async (_$, e, next) => {
         if (e.key === 'orbit') {
             const value = e.value as NonNullable<typeof race.orbit>;
-            const onLock = race.onLock;
-            if (onLock && value.asks.some((a) => a.isLocked)) {
+            const onLock = value.asks.some((a) => a.isLocked)
+                ? race.onLock
+                : undefined;
+            const onRace = onLock ?? race.onWrite;
+            if (onRace) {
                 race.onLock = undefined;
-                onLock();
+                race.onWrite = undefined;
+                onRace();
                 for (let i = 0; i < 2000; i++) await Promise.resolve();
             }
             race.orbit = value;
@@ -4116,15 +4121,18 @@ test('a second press reading ticks from before the first keeps both records', as
     const race = pressRace(on);
     await start($);
     const ui = await board($);
-    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+    await add(
+        $,
+        ['push `origin`', 'yes'],
+        ['push `backup`', 'yes'],
+        ['push `third`', 'yes'],
+    );
+    await ui.press({ key: 'orbit:accepted:o3' });
     await ui.press({ key: 'orbit:accepted:o1' });
-    const stale = race.lastTicks;
-    await ui.press({ key: 'orbit:accepted:o1' });
-    await ui.press({ key: 'orbit:accepted:o1' });
-    race.frozenTicks = stale;
+    race.frozenTicks = race.lastTicks;
     await ui.press({ key: 'orbit:accepted:o2' });
     race.frozenTicks = undefined;
-    expect(race.ticks.map((t) => t.id)).toEqual(['o1', 'o2']);
+    expect(race.ticks.map((t) => t.id)).toEqual(['o3', 'o1', 'o2']);
 });
 
 /* FRM-510: ✅ is his word on what it marks, one record per ask; a ⚠️ ask takes its own 🛎️ */
@@ -4212,35 +4220,6 @@ test('✅ is not drawn while only ⚠️ asks are left to mark', async ($, on) =
     expect(await ui.find({ key: 'orbit:all' })).toBeUndefined();
 });
 
-for (const [press, key, left] of [
-    ['🛎️', 'orbit:accepted:o1', []],
-    ['✅', 'orbit:all', ['o2']],
-] as const)
-    test(`${press} on an ask resolved during its record write leaves it no record`, async ($, on) => {
-        const w = world(on);
-        const writes = tickLog(on);
-        let open = () => {};
-        let isHeld = false;
-        const gate = new Promise<void>((resolve) => {
-            open = resolve;
-        });
-        on('state.get', async (_$, e, next) => {
-            if (isHeld && e.key === 'ticks') await gate;
-            return next(e as never);
-        });
-        await start($);
-        const ui = await board($);
-        await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
-        isHeld = true;
-        await ui.press({ key });
-        await orbit($, { ids: ['o1'], op: 'resolve' });
-        open();
-        await w.clock.advance(1);
-        expect((writes.at(-1) as { id: string }[]).map((t) => t.id)).toEqual([
-            ...left,
-        ]);
-    });
-
 test('✅ marks only the asks on the frame he pressed', async ($, on) => {
     const w = world(on);
     const writes = tickLog(on);
@@ -4259,12 +4238,74 @@ test('✅ marks only the asks on the frame he pressed', async ($, on) => {
     await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
     isHeld = true;
     await ui.press({ key: 'orbit:accepted:o1' });
+    const late = add($, ['push `late`', 'yes']);
     await ui.press({ key: 'orbit:all' });
-    await add($, ['push `late`', 'yes']);
     open();
+    await late;
     await w.clock.advance(1);
     expect((writes.at(-1) as { id: string }[]).map((t) => t.id)).toEqual([
         'o1',
         'o2',
     ]);
 });
+
+test('✅ leaves an ask followed up since the frame he pressed', async ($, on) => {
+    const w = world(on);
+    const writes = tickLog(on);
+    let open = () => {};
+    let isHeld = false;
+    const gate = new Promise<void>((resolve) => {
+        open = resolve;
+    });
+    on('state.get', async (_$, e, next) => {
+        if (isHeld && e.key === 'ticks') await gate;
+        return next(e as never);
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+    isHeld = true;
+    await ui.press({ key: 'orbit:accepted:o1' });
+    const follow = orbit($, {
+        id: 'o2',
+        op: 'follow',
+        pick: 'yes',
+        text: 'push `late`',
+    });
+    await ui.press({ key: 'orbit:all' });
+    open();
+    await follow;
+    await w.clock.advance(1);
+    expect((writes.at(-1) as { id: string }[]).map((t) => t.id)).toEqual([
+        'o1',
+    ]);
+});
+
+for (const [site, act] of [
+    ['a turn end', ($: Engine) => endTurn($)],
+    ['an orbit op', ($: Engine) => add($, ['push `late`', 'yes'])],
+    [
+        'a follow dropping its tick',
+        ($: Engine) =>
+            orbit($, {
+                id: 'o1',
+                op: 'follow',
+                pick: 'yes',
+                text: 'push `new`',
+            }),
+    ],
+] as const)
+    test(`a press landing inside ${site}'s write stays marked, its record kept`, async ($, on) => {
+        world(on);
+        const race = pressRace(on);
+        await start($);
+        const ui = await board($);
+        await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
+        race.onWrite = () => void ui.press({ key: 'orbit:accepted:o2' });
+        await act($);
+        await ui.find({ key: 'orbit:accepted:o2' });
+        expect([askOf(race, 'o2')?.mark, race.ticks.map((t) => t.id)]).toEqual([
+            'accepted',
+            ['o2'],
+        ]);
+    });

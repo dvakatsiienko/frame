@@ -111,6 +111,8 @@ for (const line of [
     'gh api -X PUT repos/o/r/pulls/12/merge-async',
     `gh api graphql -f query='mutation { mergePullRequest(input: {}) { clientMutationId } }'`,
     'github-token-wrap gh api graphql -f query=@merge.graphql',
+    'gh api graphql -f query="$Q"',
+    'gh api graphql --input q.json',
 ])
     test(`a raw merge is refused naming the door, nothing held: ${line}`, async ($, on) => {
         const { ran } = world(on, null);
@@ -124,6 +126,10 @@ for (const line of [
     'gh stack merge 12',
     'gh stack merge',
     'gh pr merge --help',
+    'gh pr merge -h',
+    'gh pr merge 12 -h',
+    'gh pr merge 12 --disable-auto',
+    `gh api graphql -F id="$ID" -f query='mutation { resolveReviewThread(input: {threadId: $id}) { thread { id } } }'`,
     'x lane merge-auto 12',
     "echo 'gh pr merge 12'",
     "cat <<'EOF'\ngh pr merge 12\nEOF",

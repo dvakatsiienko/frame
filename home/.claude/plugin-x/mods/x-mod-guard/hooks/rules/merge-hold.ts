@@ -76,26 +76,33 @@ function rawMerge(c: Command) {
     if (
         !words ||
         words.some(
-            (w, i) => w === '--help' && !VALUE_FLAGS.has(words[i - 1] ?? ''),
+            (w, i) =>
+                (w === '--help' || w === '-h' || w === '--disable-auto') &&
+                !VALUE_FLAGS.has(words[i - 1] ?? ''),
         )
     )
         return undefined;
     const [family, verb, target] = operands(words);
     // a stack merge lands every layer under the pr it names, and those layers are github's to list: it counts as no number
     if (family === 'stack' && verb === 'merge')
-        return { isStack: true, pr: undefined };
+        return { isHoldOnly: true, pr: undefined };
     if (family === 'pr' && verb === 'merge') return { pr: prOf(target) };
     // the graphql door takes a node id, never a number, so it reads as a target it cannot name
-    if (family === 'api' && words.some((w) => GRAPHQL_PATH.test(w)))
-        // a query read from a file or a variable holds text this rule cannot see
-        return c.args.some(
+    if (family === 'api' && words.some((w) => GRAPHQL_PATH.test(w))) {
+        // a query read from a file or a variable holds text this rule cannot see; any other field's variable, a thread id
+        // on a review-thread mutation, only counts against a hold
+        const isMerge = c.args.some(
             (a) =>
-                a.isExpanding ||
                 GRAPHQL_MERGE.test(a.text) ||
-                /=@|^--input/.test(a.text),
-        )
-            ? { pr: undefined }
+                (a.text.startsWith('query=') &&
+                    (a.isExpanding || a.text.startsWith('query=@'))) ||
+                a.text.startsWith('--input'),
+        );
+        if (isMerge) return { pr: undefined };
+        return c.args.some((a) => a.isExpanding || /=@/.test(a.text))
+            ? { isHoldOnly: true, pr: undefined }
             : undefined;
+    }
     if (family !== 'api' || !isPut(words)) return undefined;
     const prs = new Set(
         words
@@ -119,9 +126,9 @@ const DOOR = "x lane merge-auto <pr> --apply --dima-ok <pr>, on dima's word";
 // after the required check went, nothing on github stops a raw merge reaching production (dima's o48, BYT-94): it refuses from
 // its first head, the one named exception to warn-only; a stack merge stays open, its door has no merge-auto yet
 export function rawMergeRefused(
-    merges: { isStack?: boolean; pr: string | undefined }[],
+    merges: { isHoldOnly?: boolean; pr: string | undefined }[],
 ): Refusal | undefined {
-    const raw = merges.filter((m) => !m.isStack);
+    const raw = merges.filter((m) => !m.isHoldOnly);
     return raw.length
         ? {
               door: 'x lane merge-auto <pr>',

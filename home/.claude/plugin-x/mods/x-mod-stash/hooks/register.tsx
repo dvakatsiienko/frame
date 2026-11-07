@@ -752,11 +752,13 @@ async function saveTyped(
         return true;
     }
     if (key === 'plan:steer') {
-        const o = await currentOrbit($);
-        if (!o.plan) return false;
-        if (!isBase(o.plan.steer)) return yielded();
-        await saveOrbit($, { ...o, plan: { ...o.plan, steer } });
-        return true;
+        return inMarking(async () => {
+            const o = await currentOrbit($);
+            if (!o.plan) return false;
+            if (!isBase(o.plan.steer)) return yielded();
+            await saveOrbit($, { ...o, plan: { ...o.plan, steer } });
+            return true;
+        });
     }
     const step = /^lane:([^:]+):steer$/.exec(key);
     if (step?.[1]) {
@@ -2124,24 +2126,26 @@ async function absorbMarks($: EngineInterface) {
     if (!sid) return;
     const marks = await marksOf($, sid);
     if (!Object.keys(marks).length) return;
-    const o = await currentOrbit($);
-    await saveOrbit($, {
-        ...o,
-        asks: o.asks.map((a) => {
-            const m = marks[a.id];
-            if (!m || a.isLocked || a.isResolved) return a;
-            return {
-                ...a,
-                isChanged: false,
-                mark: m.mark,
-                markedAt: m.mark ? m.at : undefined,
-                steer: isTypedHere(a.id)
-                    ? a.steer
-                    : m.isSteerEdit
-                      ? m.steer
-                      : (a.steer ?? m.steer),
-            };
-        }),
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        await saveOrbit($, {
+            ...o,
+            asks: o.asks.map((a) => {
+                const m = marks[a.id];
+                if (!m || a.isLocked || a.isResolved) return a;
+                return {
+                    ...a,
+                    isChanged: false,
+                    mark: m.mark,
+                    markedAt: m.mark ? m.at : undefined,
+                    steer: isTypedHere(a.id)
+                        ? a.steer
+                        : m.isSteerEdit
+                          ? m.steer
+                          : (a.steer ?? m.steer),
+                };
+            }),
+        });
     });
     // the marks go once the orbit holds them, and only the ones still as read: a steer typed on that board meanwhile
     // stays for the next take, and its card never sees the steer missing in between
@@ -2266,28 +2270,34 @@ async function changeAssumed(
     isMark = false,
 ) {
     if (isMark) await $.state.set(MOBILE, false).catch(() => undefined);
-    const o = await currentOrbit($);
-    await saveOrbit($, {
-        ...o,
-        assumed: (o.assumed ?? []).flatMap((x) => {
-            const changed = change(x);
-            return changed ? [changed] : [];
-        }),
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        await saveOrbit($, {
+            ...o,
+            assumed: (o.assumed ?? []).flatMap((x) => {
+                const changed = change(x);
+                return changed ? [changed] : [];
+            }),
+        });
     });
 }
 
 // one mark or steer write at a time: two boxes saved together each read the orbit before the other wrote it, and the
 // later save put the earlier one's steer back to none while its box still showed it (FRM-492)
 let marking: Promise<unknown> = Promise.resolve();
+// a read-change-write of the orbit or the ticks, each whole; a step never queues another, which would wait on itself
+function inMarking<T>(step: () => Promise<T>) {
+    const run = marking.then(step);
+    marking = run.catch(() => undefined);
+    return run;
+}
 async function markAsks(
     $: EngineInterface,
     change: (a: OrbitAsk) => OrbitAsk,
     isMark = false,
     typedId?: string,
 ) {
-    const run = marking.then(() => markAsksNow($, change, isMark, typedId));
-    marking = run.catch(() => undefined);
-    await run;
+    await inMarking(() => markAsksNow($, change, isMark, typedId));
 }
 async function markAsksNow(
     $: EngineInterface,
@@ -2305,31 +2315,28 @@ async function markAsksNow(
 }
 
 // a turn takes his marks in the marking queue: a press lands wholly before or after the lock, never inside it
-async function takeMarks(
-    $: EngineInterface,
-    pick: (o: StashOrbit) => OrbitAsk[],
-) {
-    const run = marking.then(async () => {
+function takeMarks($: EngineInterface, pick: (o: StashOrbit) => OrbitAsk[]) {
+    return inMarking(async () => {
         const o = await currentOrbit($);
         const asks = pick(o);
         if (asks.length) await saveOrbit($, lockJoined(o, asks));
         return asks;
     });
-    marking = run.catch(() => undefined);
-    return run;
 }
 
 // an unmounted box mounts again with the stored steer: a fold or a closed board drops what each box mounted with
 async function unmountSteers($: EngineInterface) {
     askTypedAt.clear();
     keepFields($);
-    const o = await currentOrbit($);
-    if (!o.asks.some((a) => a.shown !== undefined)) return;
-    orbit = {
-        ...o,
-        asks: o.asks.map(({ shown: _, ...a }) => a),
-    };
-    await keepOrbit($);
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        if (!o.asks.some((a) => a.shown !== undefined)) return;
+        orbit = {
+            ...o,
+            asks: o.asks.map(({ shown: _, ...a }) => a),
+        };
+        await keepOrbit($);
+    });
 }
 
 // dima's tick as x-mod-guard reads it: written here, from his own press alone, so no tool call can forge one (FRM-427);
@@ -2344,7 +2351,8 @@ let ticksKept: { value: StashTick[]; version: number } = {
 };
 async function readTicks($: EngineInterface) {
     const read = await $.state.get(TICKS);
-    if (read.version >= ticksKept.version)
+    // a state that holds nothing was reset under this process: a tick lost to that fails closed at the guard
+    if (read.version >= ticksKept.version || read.value === undefined)
         ticksKept = { value: read.value ?? [], version: read.version };
     return ticksKept.value;
 }
@@ -2391,28 +2399,28 @@ async function pressMarkNow(
     const next = ask.mark === mark ? undefined : mark;
     const isTicked = next === 'accepted';
     if (isTicked) await recordTicks($, [ask], true);
-    // a tool call may lock this ask while the record is written: then the mark never lands and the record goes too
-    let isMarked = false;
     await markAsksNow(
         $,
-        (a) => {
-            if (a.id !== id) return a;
-            isMarked = true;
-            return { ...a, isChanged: false, mark: next };
-        },
+        (a) => (a.id === id ? { ...a, isChanged: false, mark: next } : a),
         false,
         undefined,
     );
-    if (!isTicked || !isMarked) await recordTicks($, [ask], false);
+    if (!isTicked) await recordTicks($, [ask], false);
 }
 // ✅ is a press on the frame he read: an ask added since waits for its own look
-async function pressAllAsksNow($: EngineInterface, drawn: string[]) {
+async function pressAllAsksNow(
+    $: EngineInterface,
+    drawn: Pick<OrbitAsk, 'id' | 'text'>[],
+) {
     await $.state.set(MOBILE, false).catch(() => undefined);
     const open = (await currentOrbit($)).asks.filter(
         (a) => !a.mark && !a.isLocked && !a.isResolved,
     );
+    // the text too: a follow keeps the id and asks a new question he has not read
     const asks = open.filter(
-        (a) => drawn.includes(a.id) && isAllAsksMarkable(a),
+        (a) =>
+            drawn.some((d) => d.id === a.id && d.text === a.text) &&
+            isAllAsksMarkable(a),
     );
     // a merge ask is ⚠️: a silent skip would read as a block at the guard
     const skipped = open.filter((a) => !asks.includes(a));
@@ -2422,42 +2430,39 @@ async function pressAllAsksNow($: EngineInterface, drawn: string[]) {
         );
     if (!asks.length) return;
     await recordTicks($, asks, true);
-    const marked = new Set<string>();
     await markAsksNow(
         $,
-        (a) => {
-            if (!asks.some((x) => x.id === a.id) || a.mark) return a;
-            marked.add(a.id);
-            return { ...a, isChanged: false, mark: 'accepted' };
-        },
+        (a) =>
+            asks.some((x) => x.id === a.id)
+                ? { ...a, isChanged: false, mark: 'accepted' }
+                : a,
         false,
         undefined,
     );
-    const unmarked = asks.filter((a) => !marked.has(a.id));
-    if (unmarked.length) await recordTicks($, unmarked, false);
 }
-async function pressAllAsks($: EngineInterface, drawn: string[]) {
-    const run = marking.then(() => pressAllAsksNow($, drawn));
-    marking = run.catch(() => undefined);
-    await run;
+async function pressAllAsks(
+    $: EngineInterface,
+    drawn: Pick<OrbitAsk, 'id' | 'text'>[],
+) {
+    await inMarking(() => pressAllAsksNow($, drawn));
 }
 async function pressMark(
     $: EngineInterface,
     id: string,
     mark: 'accepted' | 'rejected',
 ) {
-    const run = marking.then(() => pressMarkNow($, id, mark));
-    marking = run.catch(() => undefined);
-    await run;
+    await inMarking(() => pressMarkNow($, id, mark));
 }
 
-async function dropTicks($: EngineInterface, id: string) {
-    const kept = await readTicks($);
-    if (kept.some((t) => t.id === id))
-        await writeTicks(
-            $,
-            kept.filter((t) => t.id !== id),
-        );
+function dropTicks($: EngineInterface, id: string) {
+    return inMarking(async () => {
+        const kept = await readTicks($);
+        if (kept.some((t) => t.id === id))
+            await writeTicks(
+                $,
+                kept.filter((t) => t.id !== id),
+            );
+    });
 }
 
 // the lane ops on the fleet's lanes: validate, then keep each pointer honest — every step before it done, never on a done one
@@ -5274,15 +5279,19 @@ async function orbitCall(
         return {
             deny: 'orbit plan: step is your lane step now, a whole number from 0, as your brief numbers it',
         };
-    const op = orbitOp(
-        await currentOrbit($),
-        input,
-        isTurn,
-        await readNumber($, 'lines'),
-        isAmended,
-    );
+    const lines = await readNumber($, 'lines');
+    const op = await inMarking(async () => {
+        const made = orbitOp(
+            await currentOrbit($),
+            input,
+            isTurn,
+            lines,
+            isAmended,
+        );
+        if (!('deny' in made)) await saveOrbit($, made.orbit);
+        return made;
+    });
     if ('deny' in op) return { deny: op.deny };
-    await saveOrbit($, op.orbit);
     // a follow asks a new question: his tick on the old one is no longer his word on it (S3)
     if (input.op === 'follow') await dropTicks($, oneLine(input.id));
     if (input.op === 'add')
@@ -5499,11 +5508,14 @@ export const register: Register = (on) => {
                 ? (orbit.assumed ?? []).filter((x) => x.isWrong)
                 : [];
         if (wrong.length)
-            await saveOrbit($, {
-                ...orbit,
-                assumed: (orbit.assumed ?? []).filter(
-                    (x) => !wrong.includes(x),
-                ),
+            await inMarking(async () => {
+                const o = await currentOrbit($);
+                await saveOrbit($, {
+                    ...o,
+                    assumed: (o.assumed ?? []).filter(
+                        (x) => !wrong.some((w) => w.id === x.id),
+                    ),
+                });
             });
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
         const reminder =
@@ -5533,7 +5545,12 @@ export const register: Register = (on) => {
                 ? orbit.plan
                 : undefined;
         if (planMark)
-            await saveOrbit($, { ...orbit, plan: planTaken(planMark) });
+            await inMarking(async () =>
+                saveOrbit($, {
+                    ...(await currentOrbit($)),
+                    plan: planTaken(planMark),
+                }),
+            );
         // held member pings ride the next prompt of any origin, once (quiet comms)
         const quiet = await quietLocked(() => quietTake($));
         const gapNotes = isOwner ? await takeGapNotes($).catch(() => []) : [];
@@ -5685,7 +5702,9 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         isBusy = false;
-        await saveOrbit($, turnEnded(await currentOrbit($)));
+        await inMarking(async () =>
+            saveOrbit($, turnEnded(await currentOrbit($))),
+        );
         await windAfterTurn($).catch(() => undefined);
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
@@ -6726,7 +6745,12 @@ export const register: Register = (on) => {
                                             onPress={() =>
                                                 void pressAllAsks(
                                                     $,
-                                                    open.map((x) => x.id),
+                                                    open.map(
+                                                        ({ id, text }) => ({
+                                                            id,
+                                                            text,
+                                                        }),
+                                                    ),
                                                 )
                                             }
                                             plain>
@@ -6996,11 +7020,13 @@ export const register: Register = (on) => {
                     const changePlan = async (
                         change: (p: StashPlan) => StashPlan,
                     ) => {
-                        const was = await currentOrbit($);
-                        if (!was.plan) return;
-                        await saveOrbit($, {
-                            ...was,
-                            plan: change(was.plan),
+                        await inMarking(async () => {
+                            const was = await currentOrbit($);
+                            if (!was.plan) return;
+                            await saveOrbit($, {
+                                ...was,
+                                plan: change(was.plan),
+                            });
                         });
                     };
                     const handlePlanMove = (i: number, by: -1 | 1) =>
@@ -7945,7 +7971,6 @@ export const register: Register = (on) => {
         const left = await currentId($);
         const r = await next(e);
         if (left) await forget($, left).catch(() => undefined);
-        ticksKept = { value: [], version: 0 };
         await saveOrbit($, EMPTY_ORBIT);
         await load($);
         await seatDefaults($).catch(() => undefined);
@@ -8072,10 +8097,12 @@ export const register: Register = (on) => {
         // dima's phases mark joins the running turn at its next tool call
         const p = (await currentOrbit($)).plan;
         if (!isPing && isOn('stash.phases') && hasPlanMark(p)) {
-            await saveOrbit($, {
-                ...(await currentOrbit($)),
-                plan: planTaken(p),
-            });
+            await inMarking(async () =>
+                saveOrbit($, {
+                    ...(await currentOrbit($)),
+                    plan: planTaken(p),
+                }),
+            );
             notes.push(planText(p));
         }
         const o = await currentOrbit($);
