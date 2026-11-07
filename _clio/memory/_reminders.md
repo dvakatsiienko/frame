@@ -81,3 +81,5 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514): read the guide-before-first-edit share, `pnpm memory-load:guide-share`, against 47 % and the 90 % bar; under the bar the chunk reopens; and `pnpm memory-load:replay` for the rows' false fires (his «ok and measure», o43) — set 2026-11-06 · due: 2026-11-20
 ⏰ 🦉 re-login to claude before 2026-12-01, the login ends then (FRM-508's read, his o4) — set 2026-11-07 · due: 2026-11-24
 ⏰📌 🦉 reopen the cpu overload with dima, FRM-525: `docs/knowledge/cpu-overload/cases.md` § next; dies when it closes — set 2026-11-07 · due: 2026-11-07
+
+⏰ next boot, his order, run before the first reply: (1) start the mods lane, `FRM-529`, `.scratch/boot-next/brief-mods.md`, and the cli lane from `FRM-383`, `.scratch/boot-next/brief-cli.md`: summon each (`x:crew-lead`), then `x lane dispatch`, and the blind critic and the code-read card run on each spec before its greenlight; (2) start wing 1 and tell it to do its flyway; (3) start wing 2 and tell it to stay parked. from monday he plans speak v2, maybe with wing 2 — set 2026-11-07 · due: 2026-11-08
