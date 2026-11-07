@@ -1969,3 +1969,37 @@ test('a create naming a relative plan path is refused for its shape, not read', 
         await denied($, { act: 'create', plan: 'plan.md', title: 'x' }),
     ).toContain('absolute or ~/');
 });
+
+test('a glide steer clio took while he was away is not offered back over a newer steer', async ($, on) => {
+    const { store } = world(on);
+    on('session.attach', (_$, e) => ({ clientId: e.clientId }));
+    on('session.detach', (_$, e) => ({ clientId: e.clientId }));
+    on('ui.panes', () => ({
+        value: [
+            {
+                id: 'fleet-board',
+                isFocused: false,
+                isPlaced: true,
+                isShown: true,
+                plugin: 'x-mod-stash',
+                title: 'fleet board',
+            },
+        ],
+    }));
+    await start($);
+    const ui = await board($);
+    await create($);
+    await steer(ui, 'cards first');
+    await take(ui);
+    const client = { clientId: 'desktop-2', surface: 'desktop' } as const;
+    await $.session.detach({ ...client, reason: 'detach' });
+    await ui.unmount();
+    await say($, 'go');
+    store.set('lane-steer:l1', { steer: 'bars first' });
+    await $.session.attach(client);
+    const back = await board($);
+    await back.redraw();
+    expect(await back.find({ key: 'kept:lane:l1:steer', type: 'Button' })).toBe(
+        undefined,
+    );
+});

@@ -5169,3 +5169,66 @@ test("a return's first draw ahead of a slow save at the detach reads every word"
     await back.redraw();
     expect([first, await boxValue(back, key)]).toEqual(['a heron', 'a heron']);
 });
+
+/* FRM-531 sixth sense, round 2 */
+test('a text a turn carried while he was away is not offered back over a newer steer', async ($, on) => {
+    const { id, key, ui, w } = await askBoxOnBoard($, on);
+    await ui.input({ key, kind: 'change', text: 'a heron' });
+    await ui.press({ key: `orbit:accepted:${id}` });
+    await $.session.detach({ ...CLIENT, reason: 'detach' });
+    await ui.unmount();
+    await say($, 'go');
+    await endTurn($);
+    w.store.set(`marks:${SID}:${id}`, {
+        at: (w.clock as unknown as { now: () => number }).now(),
+        isSteerEdit: true,
+        steer: 'a swan',
+    });
+    await $.session.attach(CLIENT);
+    const back = await board($);
+    expect(await back.find({ key: `kept:${key}`, type: 'Button' })).toBe(
+        undefined,
+    );
+});
+
+test('a phases steer a turn carried while he was away is forgotten as his text left', async ($, on) => {
+    const w = world(on);
+    const state = keptState(on, { orbit: orbitSeed() });
+    await start($);
+    const ui = await board($);
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await ui.redraw();
+    await ui.input({ key: 'plan:steer', kind: 'change', text: 'a first' });
+    await w.clock.advance(FIELD_SAVE + 3500);
+    await ui.press({ key: 'plan:tick' });
+    await $.session.detach({ ...CLIENT, reason: 'detach' });
+    await ui.unmount();
+    const left = (state.fields as Record<string, { left?: string }>)[
+        'plan:steer'
+    ]?.left;
+    await say($, 'go');
+    await w.clock.advance(0);
+    expect([
+        left,
+        (state.fields as Record<string, { left?: string }>)['plan:steer']?.left,
+    ]).toEqual(['a first', undefined]);
+});
+
+test("a phone attaching while he is away leaves the desktop's offer for his return", async ($, on) => {
+    const { id, key, ui, w } = await askBoxOnBoard($, on);
+    await ui.input({ key, kind: 'change', text: 'a heron' });
+    await w.clock.advance(FIELD_SAVE + 3500);
+    await $.session.detach({ ...CLIENT, reason: 'detach' });
+    await ui.unmount();
+    await $.session.attach({ clientId: 'phone', surface: 'mobile' });
+    w.store.set(`marks:${SID}:${id}`, {
+        at: (w.clock as unknown as { now: () => number }).now(),
+        isSteerEdit: true,
+        steer: 'a swan',
+    });
+    await $.session.attach(CLIENT);
+    const back = await board($);
+    expect(
+        (await back.find({ key: `kept:${key}`, type: 'Button' }))?.text,
+    ).toEqual(expect.stringContaining('a heron'));
+});
