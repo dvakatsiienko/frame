@@ -4,7 +4,7 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T19:21:00Z'
+updated_date: '2026-11-07T19:43:00Z'
 labels:
   - m
   - clio-wing-2
@@ -186,4 +186,12 @@ PK-351:W76 (2026-11-07 20:49, dima): note, don't forget: all clio lanes should b
 PK-351:W77 (2026-11-07 21:19, dima): another small tweak to main clio's halt, do it now: when main clio halts, any existing wings have to halt too. instead of me asking them, i just run halt in the main clio window and she takes care of the wings. any wing that is parked goes through its own halt and hands everything over to clio, and clio then gracefully stops all of her wings.
 
 step 4 ⚖️ worth it (clio-lanes, name is a pick until his tick): removes his re-explaining and clios guessing what the others hold. cheaper door turned down: messaging each clio wakes them and goes stale. upkeep: one script. 🔌 fleet wired: the SessionStart hook and clio:wing.
+
+PK-351:W78 (2026-11-07 21:42, dima): i spotted that wings often miss the siesta. why is that? siesta is flawed overall, even my clio sometimes misses it. sharpen the siesta so it works well for everyone, every clio. wings must use siestas and the wishkeeper flow when needed.
+
+PK-351:W79 (2026-11-07 21:42, dima): then FRM-483 is on you, fully solve it.
+
+PK-351:W80 (2026-11-07 21:42, dima): reboots bring wings back, okay, with a catch: a pocket holding flyways, even with pending lines, does not mean clio must boot them at the boot. the habit: by default no wings are summoned at the boot. the triggers to summon at boot: a line in main clio's handoff from the previous halt, for example at the halt i tell clio that during the next boot she summons wing 1, wing 2, both wings or any other amount; or i tell clio right at boot to summon wings. wing summoning is driven by me.
+
+PK-351:W81 (2026-11-07 21:42, dima): proceed. solve this step and propose the next step.
 <!-- SECTION:NOTES:END -->
