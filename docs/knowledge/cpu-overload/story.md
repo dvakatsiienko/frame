@@ -148,7 +148,9 @@ key to short sources, all read 2026-11-07. clock is local, UTC+2, except a time 
 - verdict [read]: stays open: FRM-525 is Todo at 12:18Z, its text still asks who spawns the 377 git/s, which the 02:04 window answers; done means 16 lanes with the mac usable and commit wait p90 under one run (FRM-525 description, updatedAt 2026-11-07T12:18:22Z; cpu-cases.md:40)
 
 - checked [read]: 14:33 to 14:38 the same go suite from a rex tab against the bash tool, abba: rex 42.5 and 43.1 s, 330 and 337 cpu-s; tool 51.0 and 52.2 s, 389 and 391 cpu-s. 500 `git --version`: rex 2.25 s, tool 4.13 s, while a pure compute loop reads 2.29 s in both (`spawn-bench.tsv`, `lineage-rex.txt`, `lineage-tool.txt` in `~/.local/state/x/lanes/frm-525/`)
-- checked [read]: not the cause of that gap: cwd, env (`env -i`), `PATH`, the open-files limit, the bash sandbox flag, cpu speed. what is left is the process tree under the desktop app, mechanism unread
+- assumed [read]: cwd, env, `PATH`, limits, the sandbox flag and cpu speed ruled out, so the process tree under the desktop app was blamed. wrong within minutes: `env -i` had hidden the cause, since a clean env has no `LANG` either, and a launchd job read as slow as the tool
+- verdict [read]: a shell with no `LANG` makes each git start 1.7× slower, 4.34 → 2.62 s per 500, one key flipped; go suite 13 % less cpu, 16 % less wall; vitest 3 % less cpu (`tree.tsv`, `ab-lang.tsv`). why is inference: libintl asking macOS for the locale on each start
+- tried [read]: `LANG` set in `settings.json`, reaching new sessions only
 - tried [read]: cut the commit test step's two longest files: `pocket-check-on-write.test.ts` 25 → 3 s, a test polling 20 s for a record that never comes; `gate-queue.test.ts` 30 → 13 s, its 2 s poll and 2 s deadlines, one run each under other work
 
 <!-- end -->
