@@ -44,6 +44,16 @@ Planned doses, `dose` and `ab-ram` rows in `~/.local/state/x/lanes/frm-525/`. At
 - why, inference: `otool -L` shows git linking homebrew's `libintl` and CoreFoundation, so with no locale it asks macOS for the language on every start. It fits `cfprefsd`, `opendirectoryd` and `notifyd` running high in the spindump; a spindump with `LANG` set would prove it
 - fix: `"LANG"` in `settings.json`'s env; a session started before it keeps none
 
+## a go parent's spawn, 2026-11-07 14:55, `LANG` set, load 8 to 12
+
+2,000 children from a small go program, ms per spawn, parent sys then child user + sys:
+
+- `/usr/bin/true`, serial: 0.34, 0.34 + 0.56; 14 at once: 0.60, 0.36 + 0.62
+- `git --version`, serial: 0.43, 2.14 + 1.53; 14 at once: 0.82, 2.10 + 1.71
+- a 500 MB heap in the parent, 14 at once: `git` parent sys 1.53, against 0.82
+
+🚫 **go's fork is not the cost**, and bare starts don't add up to the suite: 17,490 spawns at about 5 ms is under 90 of its 350 cpu-s. The rest is what the spawned commands do: `git push` 76 ms, `git commit` 24 ms, `x` as a child 152 ms (`go-test-cost.md`, measured before `LANG`). So the lever left is fewer real git operations per fixture.
+
 ## the process tree, 2026-11-07 14:33 to 14:38, its reading corrected by `LANG` above
 
 The same go suite and spawn loops, from a rex tab against the Bash tool, abba, `spawn-bench.tsv`, `spawn-matrix.tsv`, `lineage-*.txt` in `~/.local/state/x/lanes/frm-525/`.
