@@ -4,7 +4,7 @@ import { type Refusal, basename, commandsDeep } from './command.ts';
 // wispr types «Operator override PRs.», so case and a closing period pass; anything else around the words reads as talk about them
 const WORD = /^operator[- ]override (prs|off)\.?$/i;
 const SHIFT = /^\/clio:shift\s+\S+$/;
-const TYPED_DOWN = /operator[- ]override\s+(prs|off)\b|\/clio:shift\b/i;
+const TYPED_DOWN = /operator[- ]override\b|\/clio:shift\b/i;
 const OPAQUE =
     /^(python[\d.]*|node|bun|deno|ruby|perl|php|lua|osascript|xargs|parallel|eval)$/;
 
@@ -29,11 +29,23 @@ export function overrideAfter(
     return { ...grants, prs: { at, by: ask.by } };
 }
 
+const normalized = (path: string) => {
+    let was = '';
+    let now = path.replaceAll(/\/+/g, '/').replaceAll('/./', '/');
+    while (was !== now) {
+        was = now;
+        now = now.replace(/[^/]+\/\.\.\//, '');
+    }
+    return now;
+};
+
+// its name anywhere, however the path reaches it; a last word with an expansion directly in x's state dir can land on it too
 export const isOverrideStore = (text: string) =>
-    /\.local\/state\/x\/(operator-override|[^/]*[*?[])|\$\{?\w+\}?\/operator-override|^operator-override\.(json|log)\b/i.test(
+    /operator-override\.(json|log)\b|\$\{?\w+\}?\/operator-override/i.test(
         text,
-    );
-const isStoreDir = (text: string) => /\.local\/state\/x\/?$/i.test(text);
+    ) || /\.local\/state\/x\/[^/]*[*?[{$(`][^/]*$/i.test(normalized(text));
+const isStoreDir = (text: string) =>
+    /\.local\/state\/x\/?$/i.test(normalized(text));
 
 const STORE_DOOR =
     "dima's whole typed prompt `operator-override prs` or `operator-override off`, or x lane merge-auto --override-off --apply; a read goes through cat or jq";
@@ -45,7 +57,16 @@ export function overrideStoreWrite(
     command: string,
     cwd: string,
 ): Refusal | undefined {
-    if (!touchesStore(command, cwd, isOverrideStore, isStoreDir))
+    // a bare `$F` after a `cd` names the store only with its dir joined on
+    const isJoinedWrite = commandsDeep(command, cwd).some((c) =>
+        [...c.writes, ...c.appends].some((w) =>
+            isOverrideStore(`${c.dir}/${w}`),
+        ),
+    );
+    if (
+        !isJoinedWrite &&
+        !touchesStore(command, cwd, isOverrideStore, isStoreDir)
+    )
         return undefined;
     return {
         door: STORE_DOOR,
@@ -68,14 +89,11 @@ export function overrideTypedDown(
     command: string,
     cwd: string,
 ): Refusal | undefined {
+    if (!TYPED_DOWN.test(command)) return undefined;
+    // the whole line counts: rex reads stdin, and a variable can hold the rest of the phrase
     const parsed = commandsDeep(command, cwd);
-    const isRexLine = parsed.some(
-        (c) =>
-            basename(c.name) === 'rex' &&
-            TYPED_DOWN.test(c.args.map((w) => w.text).join(' ')),
-    );
+    const isRexLine = parsed.some((c) => basename(c.name) === 'rex');
     const isHidden =
-        TYPED_DOWN.test(command) &&
         /\brex\b/.test(command) &&
         parsed.some(
             (c) =>

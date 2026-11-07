@@ -217,6 +217,9 @@ func TestOverrideOffClearsWhatItNames(t *testing.T) {
 			if dry.code != 4 || read(t, store) != c.store {
 				t.Fatalf("without --apply: exit %d, store %s, want 4 and it unchanged\n%s", dry.code, read(t, store), dry.stdout)
 			}
+			if !strings.Contains(dry.next, "--override-off") {
+				t.Errorf("the confirm command %q drops --override-off", dry.next)
+			}
 			got := xIn(t, t.TempDir(), env, append([]string{"lane", "merge-auto", "--apply"}, c.args...)...)
 
 			if got.code != 0 || !jsonEqual(read(t, store), c.want) {
@@ -297,6 +300,9 @@ func TestOverrideCheckNamesWhatWouldStopEachPr(t *testing.T) {
 			}
 			if stops := report.Prs[0].Stops; (c.lands && stops != "") || !strings.Contains(stops, c.stops) {
 				t.Errorf("stops %q, want %q", stops, c.stops)
+			}
+			if isOn := report.Override != nil && report.Override.By == "word"; isOn != (c.store != "") {
+				t.Errorf("the report's override = %+v, with store %q", report.Override, c.store)
 			}
 			if writes := append(w.hub.sent("PUT "), w.hub.sent("DELETE ")...); len(writes) != 0 {
 				t.Errorf("a read-only check wrote to github: %q", writes)

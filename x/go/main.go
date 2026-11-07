@@ -527,6 +527,9 @@ func confirmCommand(verb Verb, args []string, flags Flags) string {
 		if value, ok := flags[own].(string); ok && value != "" {
 			parts = append(parts, "--"+own, quote(value))
 		}
+		if flags[own] == true {
+			parts = append(parts, "--"+own)
+		}
 	}
 	for _, arg := range args {
 		parts = append(parts, quote(arg))

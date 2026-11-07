@@ -382,6 +382,7 @@ async function sessionName($: EngineInterface, sid: string) {
 }
 
 // twin operator-override-store — x/go/operator_override.go's reader: the system's user record, never HOME, and off when anything does not read
+const RFC3339 = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|[+-]\d\d:\d\d)$/;
 async function overrideStorePath($: EngineInterface) {
     const record = await $.process.run(['id', '-P']).catch(() => undefined);
     const home = record?.exitCode === 0 ? record.stdout.split(':')[8] : '';
@@ -399,16 +400,29 @@ async function overrideGrantAt(
     const raw = await $.fs.read(path).catch(() => undefined);
     if (raw === undefined) return undefined;
     try {
+        const grants: unknown = JSON.parse(raw);
+        if (typeof grants !== 'object' || Array.isArray(grants))
+            return undefined;
+        // go reads the whole map into one shape, so one bad scope reads every scope off
+        for (const g of Object.values(grants ?? {}) as unknown[]) {
+            if (g === null) continue;
+            if (typeof g !== 'object' || Array.isArray(g)) return undefined;
+            const { at, by, until } = g as Record<string, unknown>;
+            for (const field of [at, by, until])
+                if (field != null && typeof field !== 'string')
+                    return undefined;
+        }
         const grant = (
-            JSON.parse(raw) as Record<
+            grants as Record<
                 string,
-                { at?: string; by?: string; until?: string } | undefined
-            >
-        )[session ? `${scope}:${session}` : scope];
+                { at?: string; by?: string; until?: string } | null
+            > | null
+        )?.[session ? `${scope}:${session}` : scope];
         if (!grant?.by) return undefined;
-        if (grant.until !== undefined) {
-            const until = Date.parse(grant.until);
-            if (!(until > (await $.clock.now()))) return undefined;
+        if (grant.until) {
+            if (!RFC3339.test(grant.until)) return undefined;
+            if (!(Date.parse(grant.until) > (await $.clock.now())))
+                return undefined;
         }
         return { at: grant.at ?? '', by: grant.by, scope };
     } catch {
@@ -433,7 +447,8 @@ async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
         grants = JSON.parse(raw) as OverrideGrants;
     } catch {}
     const at = new Date(await $.clock.now()).toISOString();
-    await $.fs.write(path, JSON.stringify(overrideAfter(grants, ask, at)));
+    const after = JSON.stringify(overrideAfter(grants, ask, at));
+    if (after !== raw) await $.fs.write(path, after);
     return ask.scope === 'off'
         ? "operator-override is off, by dima's typed words"
         : `operator-override prs is on, by ${ask.by}: x lane merge-auto <pr> --apply lands every pr; his hold and the brake still stop it`;
@@ -448,7 +463,6 @@ async function overrideLogPass(
     const path = await overrideStorePath($);
     if (!path) return;
     const log = path.replace(/\.json$/, '.log');
-    const was = await $.fs.read(log).catch(() => '');
     const line = JSON.stringify({
         at: new Date(await $.clock.now()).toISOString(),
         by: grant.by,
@@ -456,7 +470,15 @@ async function overrideLogPass(
         since: grant.at,
         what,
     });
-    await $.fs.write(log, `${was}${line}\n`);
+    // an append, never a read and a rewrite: a failed read or x's own line landing between must not cost the log
+    await $.process.run([
+        'sh',
+        '-c',
+        'printf "%s\\n" "$1" >> "$2"',
+        'sh',
+        line,
+        log,
+    ]);
 }
 
 // this mac's own brake record (`x/go/merge_auto.go`); the brake's label and reverts need the network, so only merge-auto reads those
@@ -1735,13 +1757,17 @@ export const register: Register = (on) => {
                           targets: ['merge-brake'],
                           why: 'the brake is on, and operator-override never opens it',
                       }
-                    : override
-                      ? undefined
-                      : rawMergeRefused(merges, isStackTicked));
+                    : rawMergeRefused(
+                          // `gh stack merge` stays outside the override (FRM-524 `## out`)
+                          override ? merges.filter((m) => m.isStack) : merges,
+                          isStackTicked,
+                      ));
             if (override && !hold && landsAny)
-                await overrideLogPass($, override, `raw merge: ${typed}`).catch(
-                    () => undefined,
-                );
+                await overrideLogPass(
+                    $,
+                    override,
+                    `let through: ${typed}`,
+                ).catch(() => undefined);
             if (hold) {
                 const said = `x-mod-guard stopped this one command. instead: ${hold.door}. why: ${hold.why} (rule ${hold.rule}).`;
                 const stop = await enforce(

@@ -3331,6 +3331,7 @@ async function countWords($: EngineInterface, hits: Record<string, number>) {
 }
 
 // twin operator-override-store — a copy lives in x-mod-guard; x/go/operator_override.go reads the same store
+const RFC3339 = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|[+-]\d\d:\d\d)$/;
 async function overrideStorePath($: EngineInterface) {
     const record = await $.process.run(['id', '-P']).catch(() => undefined);
     const home = record?.exitCode === 0 ? record.stdout.split(':')[8] : '';
@@ -3348,16 +3349,29 @@ async function overrideGrantAt(
     const raw = await $.fs.read(path).catch(() => undefined);
     if (raw === undefined) return undefined;
     try {
+        const grants: unknown = JSON.parse(raw);
+        if (typeof grants !== 'object' || Array.isArray(grants))
+            return undefined;
+        // go reads the whole map into one shape, so one bad scope reads every scope off
+        for (const g of Object.values(grants ?? {}) as unknown[]) {
+            if (g === null) continue;
+            if (typeof g !== 'object' || Array.isArray(g)) return undefined;
+            const { at, by, until } = g as Record<string, unknown>;
+            for (const field of [at, by, until])
+                if (field != null && typeof field !== 'string')
+                    return undefined;
+        }
         const grant = (
-            JSON.parse(raw) as Record<
+            grants as Record<
                 string,
-                { at?: string; by?: string; until?: string } | undefined
-            >
-        )[session ? `${scope}:${session}` : scope];
+                { at?: string; by?: string; until?: string } | null
+            > | null
+        )?.[session ? `${scope}:${session}` : scope];
         if (!grant?.by) return undefined;
-        if (grant.until !== undefined) {
-            const until = Date.parse(grant.until);
-            if (!(until > (await $.clock.now()))) return undefined;
+        if (grant.until) {
+            if (!RFC3339.test(grant.until)) return undefined;
+            if (!(Date.parse(grant.until) > (await $.clock.now())))
+                return undefined;
         }
         return { at: grant.at ?? '', by: grant.by, scope };
     } catch {

@@ -22,8 +22,11 @@ func TestTicketsOfPrReadOneShape(t *testing.T) {
 		{"a fenced id alone", "dima/gate", fence, nil},
 		{"a fenced id beside a real line", "dima/gate", fence + "- ticket: FRM-2\n", []string{"FRM-2"}},
 		{"an id running on", "dima/gate", "- ticket: FRM-1x", nil},
-		{"a quoted line names nothing", "dima/gate", "> ticket: frm-4", nil},
-		{"any case in a body", "dima/gate", "- Ticket: frm-4", []string{"FRM-4"}},
+		{"a quoted line names nothing", "dima/gate", "> ticket: FRM-4", nil},
+		{"a tilde fence", "dima/gate", "~~~\n- ticket: FRM-9\n~~~\n", nil},
+		{"an unclosed fence", "dima/gate", "```\n- ticket: FRM-9\n", nil},
+		{"backticks mid-line open no fence", "dima/gate", "use ``` here\n- ticket: FRM-2\n```x```\n", []string{"FRM-2"}},
+		{"a word that is no ticket", "dima/gate", "- ticket: slice-2", nil},
 		{"the branch reads first", "codie/FRM-1-a", "- ticket: BYT-2\n", []string{"FRM-1", "BYT-2"}},
 	}
 	for _, c := range cases {

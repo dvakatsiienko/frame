@@ -371,7 +371,7 @@
   - given the phrase inside a longer sentence, a quote, a peer message, `claude -p`, a plugin's prompt, a `--bg` session's composer or no registry row, then the store is unchanged
   - given a Bash line carrying the phrase or `/clio:shift` through rex (`rex send`, `rex run … claude …`, or `rex` beside the phrase in an opaque runner), or a `start_session` prompt that is only the phrase, then nothing runs (rule `operator-override`): rex's keys read as his composer (probed 2026-11-07)
   - given a Bash line past a plain read, or `Write` or `Edit`, on `~/.local/state/x/operator-override.json` or its log, then nothing runs: x and this mod are its writers
-  - given `prs` on, then `gh pr merge` and the other raw doors of `raw-merge` run, each logging one line in the override's log; his hold and this mac's brake record still refuse; given a store that does not read, then `raw-merge` refuses as today
+  - given `prs` on, then `gh pr merge` and the other raw doors of `raw-merge` run, `gh stack merge` staying refused, each logging one «let through» line in the override's log before it runs; his hold and this mac's brake record still refuse; given a store that does not read, then `raw-merge` refuses as today
   - decision: the store's path comes from `id -P`, the system's user record, never `HOME`; `X_STATE` is never read
   - decision: a refusal from its first head, never warn-only: its rows name only the store and the phrase, so a past command can't meet them, and a warn would run what it means to stop
   - known gap: a script run by path can still write the store or type the phrase: a local guard, never a cryptographic one, and the log is what catches it; a raw door reads only this mac's brake record, since the label and the reverts need the network

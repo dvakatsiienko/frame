@@ -11,8 +11,8 @@ import (
 
 var (
 	ticketOfBranch = regexp.MustCompile(`(?i)^(?:codie|coder)/((?:FRM|BYT|PK)-\d+)(?:-|$)`) // read-both: coder/ before the 10-29 rename
-	ticketOfBody   = regexp.MustCompile(`(?im)^[\s*-]*ticket:\s*([a-z]+-\d+)\b`)
-	fenced         = regexp.MustCompile("(?s)```.*?```")
+	ticketOfBody   = regexp.MustCompile(`(?m)^[ \t*-]*ticket:\s*([A-Z]+-\d+)\b`)
+	fenceLine      = regexp.MustCompile("^ {0,3}(`{3,}|~{3,})(.*)$")
 	signedHeading  = regexp.MustCompile(`(?m)^## signed\s*$`)
 	nextHeading    = regexp.MustCompile(`(?m)^## `)
 	signedBodyHash = regexp.MustCompile(`· body ([0-9a-f]{8})\s*$`)
@@ -33,10 +33,28 @@ func ticketsOfPr(branch, body string) (tickets []string) {
 	if m := ticketOfBranch.FindStringSubmatch(branch); m != nil {
 		tickets = append(tickets, strings.ToUpper(m[1]))
 	}
-	for _, m := range ticketOfBody.FindAllStringSubmatch(fenced.ReplaceAllString(body, ""), -1) {
-		tickets = append(tickets, strings.ToUpper(m[1]))
+	for _, m := range ticketOfBody.FindAllStringSubmatch(outsideFences(body), -1) {
+		tickets = append(tickets, m[1])
 	}
 	return tickets
+}
+
+// markdown's own fences: a line of three or more backticks or tildes opens one, a bare run as long closes it, an unclosed one runs to the end
+func outsideFences(body string) string {
+	var kept strings.Builder
+	open := ""
+	for line := range strings.Lines(body) {
+		m := fenceLine.FindStringSubmatch(strings.TrimRight(line, "\r\n"))
+		switch {
+		case open == "" && m != nil && !(m[1][0] == '`' && strings.Contains(m[2], "`")):
+			open = m[1]
+		case open != "" && m != nil && m[1][0] == open[0] && len(m[1]) >= len(open) && strings.TrimSpace(m[2]) == "":
+			open = ""
+		case open == "":
+			kept.WriteString(line)
+		}
+	}
+	return kept.String()
 }
 
 func ticketOfPr(pr pullHead) string {

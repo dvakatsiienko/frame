@@ -215,6 +215,7 @@
   - given a session's `HOME` or `X_STATE` pointing at a planted store, then it reads off: the path comes from the system's user record
   - given `x lane merge-auto --override-off --apply`, then every scope clears; with `--shift-only`, only a grant `by: shift`, his word staying; no pr and no `--apply` writes nothing
   - given `x lane merge-auto --override-check`, then every open pr of frame and bytes prints with what would stop it, read from that repo's own clone, through merge-auto's own plan; it writes nothing but a ref fetch
+  - decision: a failed read of what the merge itself targets still stops it: a stack's list on a non-main base, a layer's head, `headsHeld` at apply; no landing can name a head it did not read (FRM-524)
   - decision: any caller may land while it's on: the crew contract, never this door, keeps a codie from merging (dima, 2026-11-07)
   - decision: a pr onto another pr's branch with no linked stack still waits: a merge there lands in a dead end, never on main (FRM-524)
 - ⬜ on a lane with no sixth sense, `--dima-ok` is the merge's one door (FRM-511, o36)

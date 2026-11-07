@@ -522,7 +522,11 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}
 	if d.Override != nil {
 		result += "\n" + d.Override.named()
-		if err := overrideLogPass(d.Override, d.Repo+"#"+d.PR+" at "+short(d.Head)); err != nil {
+		what := d.Repo + "#" + d.PR + " at " + short(d.Head)
+		if d.Merged == "" {
+			what += ", still enqueued"
+		}
+		if err := overrideLogPass(d.Override, what); err != nil {
 			result += "\n⚠ the override's log line did not land: " + err.Error()
 		}
 	}

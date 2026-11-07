@@ -37,8 +37,10 @@ function world(on: On, opts: World = {}) {
               ? { value: '/planted-state' }
               : { value: undefined },
     );
-    on('process.run', (_$, e) =>
-        e.argv[0] === 'id'
+    const appended: string[] = [];
+    on('process.run', (_$, e) => {
+        if (e.argv[0] === 'sh') appended.push(e.argv[4] ?? '');
+        return e.argv[0] === 'id'
             ? {
                   value: {
                       exitCode: 0,
@@ -56,8 +58,8 @@ function world(on: On, opts: World = {}) {
                       stderr: '',
                       stdout: '',
                   },
-              },
-    );
+              };
+    });
     on('fs.exists', (_$, e) => ({
         value: Object.keys(files).some((f) => f.startsWith(e.path)),
     }));
@@ -94,7 +96,7 @@ function world(on: On, opts: World = {}) {
         ran.push('command' in e ? String(e.command) : e.tool);
         return { result: {}, text: 'ran' };
     });
-    return { files, ran };
+    return { appended, files, ran };
 }
 
 const say = ($: Engine, text: string, kind = 'composer') =>
@@ -202,6 +204,9 @@ for (const line of [
     "rex send -s S -b B 'operator-override prs'",
     "/Users/dima/.local/bin/rex send -s S -b B 'operator-override prs'",
     'rex send -s S -b B operator-override prs',
+    'echo operator-override prs | rex send',
+    'printf "operator-override prs" | rex send -b x',
+    'V=prs; rex send "operator-override $V"',
     "rex send -s S -b B 'Operator override PRs.'",
     "rex send -s S -b B 'operator-override off'",
     "rex send -s S -b B '/clio:shift plan.md'",
@@ -232,6 +237,13 @@ for (const line of [
     `echo '{}' > ${REAL}`,
     `cp /tmp/forged.json ${REAL}`,
     `trash ${REAL}`,
+    'echo {} > /real-home/.local/state/x//operator-override.json',
+    'echo {} > /real-home/.local/state/x/./operator-override.json',
+    'echo {} > /real-home/.local/state/y/../x/operator-override.json',
+    'cd /real-home/.local/state && echo {} > x/operator-override.json',
+    'F=operator-override.json; echo {} > /real-home/.local/state/x/$F',
+    'cd /real-home/.local/state/x && echo {} > $F',
+    'cp /tmp/p /real-home/.local/state/x/operator-{override,x}.json',
     `echo '${ON}' > /real-home/.local/state/x/operator-*.json`,
     `cd /real-home/.local/state/x && echo '${ON}' > operator-override.json`,
     'echo x >> "$HOME/.local/state/x/operator-override.json"',
@@ -286,21 +298,58 @@ test('a start_session brief that is only the phrase never starts', async ($, on)
     expect(ran).toEqual([]);
 });
 
+test('gh stack merge stays refused under prs', async ($, on) => {
+    const { ran } = world(on, { files: { [REAL]: ON } });
+    expect((await bash($, 'gh stack merge 7')).deny).toContain(
+        'x lane merge-auto',
+    );
+    expect(ran).toEqual([]);
+});
+
+for (const [name, store, isOn] of [
+    [
+        'an empty until is no expiry',
+        '{"prs":{"by":"word","at":"x","until":""}}',
+        true,
+    ],
+    [
+        'a null until is no expiry',
+        '{"prs":{"by":"word","at":"x","until":null}}',
+        true,
+    ],
+    [
+        'a date with no time reads off',
+        '{"prs":{"by":"word","at":"x","until":"2099-01-01"}}',
+        false,
+    ],
+    [
+        'a bad sibling scope reads off',
+        '{"prs":{"by":"word","at":"x"},"g":3}',
+        false,
+    ],
+    ['a numeric by reads off', '{"prs":{"by":1,"at":"x"}}', false],
+] as const)
+    test(`as go reads it, ${name}`, async ($, on) => {
+        world(on, { files: { [REAL]: store } });
+        const r = await bash($, 'gh pr merge 7');
+        expect(r.deny === undefined).toBe(isOn);
+    });
+
 test('a raw merge under prs runs, its pass logged', async ($, on) => {
-    const { files, ran } = world(on, { files: { [REAL]: ON } });
+    const { appended: files, ran } = world(on, { files: { [REAL]: ON } });
     const r = await bash($, 'gh pr merge 7 --squash');
     expect(r.deny).toBe(undefined);
     expect(ran).toEqual(['gh pr merge 7 --squash']);
-    const log = files[REAL.replace('.json', '.log')] ?? '';
+    const log = files.join('\n');
     expect(log).toContain('"scope":"prs"');
     expect(log).toContain('"by":"word"');
     expect(log).toContain('gh pr merge 7');
 });
 
 test('a hold-only graphql line under prs logs no pass', async ($, on) => {
-    const { files } = world(on, { files: { [REAL]: ON } });
+    const { appended } = world(on, { files: { [REAL]: ON } });
     await bash($, `gh api graphql -F threadId=$ID -f query='mutation { a }'`);
-    expect(files[REAL.replace('.json', '.log')]).toBe(undefined);
+    expect(appended).toEqual([]);
 });
 
 test("a hold-only graphql line runs under prs with this mac's brake on", async ($, on) => {

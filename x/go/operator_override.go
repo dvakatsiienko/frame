@@ -232,7 +232,7 @@ func overrideCheckPlan(r *Run) (any, error) {
 			open, err := ghPages[struct {
 				Number int    `json:"number"`
 				Title  string `json:"title"`
-			}](asDima, githubBase()+"/repos/"+repo+"/pulls?state=open", "")
+			}](asDima, githubBase()+"/repos/"+repo+"/pulls", "")
 			if err != nil {
 				report.Prs = append(report.Prs, overridePr{Repo: repo, Stops: "the open prs did not read: " + err.Error()})
 				return "", nil
