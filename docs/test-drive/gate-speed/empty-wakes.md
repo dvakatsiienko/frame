@@ -39,3 +39,11 @@ Main was alive only about 13.9 h of the 24 (a gap 03:37 to 13:43 local, nobody r
 ## Reading
 - Per live hour, bare replies did not fall (11.4 vs 9.9); per clock hour they look lower only because of the idle night. Members rose. Dima typed more per live hour, so load is not equal.
 - Sample is tiny on the baseline side (24 wakes, 91 min); the member baseline did not reproduce, so that comparison is weak.
+
+## 2026-11-07 round: the widest day, 11-06 12:00 to 11-07 04:20
+
+From `quiet-log:*` in x-mod-stash's store, every coordinator session (main and wings), read 11-07 04:47: 600 lines, 116 of them flushes repeating held ones, so 484 messages.
+- no turn: 177 lone notices logged, 115 held, 75 passed mid-turn
+- started a turn: 72, 15 %: 43 done, 24 ask, 3 escalate, 2 untagged; 0 lone notices
+- retro card's classifier over main alone: 27 of 368 machine wakes did nothing, 26 only logged, about 14 %
+- not read here: alarm keys (FRM-501's second number), and the baseline over 5 codie chunks that FRM-368's gate asks
