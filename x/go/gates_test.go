@@ -225,7 +225,7 @@ func modsChain(t *testing.T) (dir string, env []string, tests func() int) {
 	gitT(t, dir, "checkout", "-q", "-b", "codie/chain")
 	gitT(t, dir, "add", ".")
 	gitT(t, dir, "commit", "-q", "-m", "suite")
-	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\nexec script/index-run.sh node "+suite+" --skip-tested\n")
+	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\nexec script/index-run.sh node "+suite+" --skip-tested >> \"$CLAUDE_CALLS.out\"\n")
 	calls := filepath.Join(t.TempDir(), "calls")
 	return dir, append(env, "CLAUDE_CALLS="+calls), func() int {
 		logged, _ := os.ReadFile(calls)
@@ -332,6 +332,208 @@ func TestModsChainRerunsARecordPastItsHour(t *testing.T) {
 	commitHooks(t, dir, env)
 	if n := tests(); n != 2 {
 		t.Errorf("the mod's tests ran %d times, want 2: a record past its hour stands for nothing", n)
+	}
+}
+
+// what the suite printed across the chain's commits
+func suiteSaid(t *testing.T, env []string) string {
+	t.Helper()
+	return readFile(t, envValue(env, "CLAUDE_CALLS")+".out")
+}
+
+// the chain behind real lefthook hooks and the real biome, whose rewrite the commit's format step makes
+func modsChainFormatted(t *testing.T) (string, []string, func() int) {
+	t.Helper()
+	dir, env, tests := modsChain(t)
+	lefthook, err := filepath.Abs("../../node_modules/.bin/lefthook")
+	if err != nil {
+		t.Fatal(err)
+	}
+	biome, err := filepath.Abs("../../node_modules/.bin/biome")
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(dir, "lefthook.yaml"), "pre-commit:\n  commands:\n    mods-test:\n      glob: \""+modsDir+"**\"\n      tags: [commit-only]\n      run: script/index-run.sh sh -c 'node "+modsDir+"test.ts --skip-tested >> \"$CLAUDE_CALLS.out\"'\n")
+	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\nexec "+lefthook+" run pre-commit --no-auto-install \"$@\"\n")
+	write(t, filepath.Join(dir, "biome.json"), "{}\n")
+	write(t, filepath.Join(dir, ".gitignore"), "node_modules\n")
+	write(t, filepath.Join(dir, "node_modules/.bin/biome"), "#!/bin/sh\nexec "+biome+" \"$@\"\n")
+	gitT(t, dir, "add", "lefthook.yaml", "biome.json", ".gitignore")
+	gitT(t, dir, "commit", "-q", "-m", "real hooks")
+	return dir, env, tests
+}
+
+func TestModsChainSkipsBytesTheFormatStepRewrites(t *testing.T) {
+	t.Parallel()
+	dir, env, tests := modsChainFormatted(t)
+	saw := filepath.Join(t.TempDir(), "saw")
+	env = append(env, "CLAUDE_SAW="+saw)
+	const raw = "import { b } from './b.ts';\nimport { a } from './a.ts';\n\nexport const register = () => [a, b];\n"
+	edited(t, dir, env, modHooks, raw)
+	testOverlay(t, dir, env)
+	pushOverlay(t, dir, env)
+	commitHooks(t, dir, env)
+	committed := gitT(t, dir, "show", "HEAD:"+modHooks)
+	if strings.TrimSpace(raw) == committed {
+		t.Fatalf("the format step rewrote nothing, so this proves nothing:\n%s", committed)
+	}
+	if n := tests(); n != 1 {
+		t.Errorf("the mod's tests ran %d times across test, push and commit, want 1\n%s", n, suiteSaid(t, env))
+	}
+	if said := suiteSaid(t, env); !strings.Contains(said, "skipped on tested bytes") {
+		t.Errorf("the suite never said it skipped:\n%s", said)
+	}
+	if read := readFile(t, saw); strings.TrimSpace(read) != committed {
+		t.Errorf("the overlay's tests read other bytes than the commit holds:\n%s\nagainst:\n%s", read, committed)
+	}
+}
+
+func TestModsEditOnlyReadsTheFormattedBytes(t *testing.T) {
+	t.Parallel()
+	dir, env, _ := modsChainFormatted(t)
+	saw := filepath.Join(t.TempDir(), "saw")
+	env = append(env, "CLAUDE_SAW="+saw)
+	edited(t, dir, env, modHooks, "import { b } from './b.ts';\nimport { a } from './a.ts';\n\nexport const register = () => [a, b];\n")
+	if got := xIn(t, dir, env, "mods", "edit", "test", "--only", modTestA); got.code != 0 {
+		t.Fatalf("--only: exit %d\n%s", got.code, got.stdout)
+	}
+	if read := readFile(t, saw); !strings.HasPrefix(read, "import { a }") {
+		t.Errorf("--only read the raw scratch:\n%s", read)
+	}
+}
+
+func TestModsChainRunsTheSuiteOnWhatTheGreenNeverRead(t *testing.T) {
+	t.Parallel()
+	saved := func(t *testing.T, dir string, env []string) []string {
+		copied := pullCopy(t, dir, env, modHooks)
+		write(t, copied, "export const register = () => 1;\n")
+		testOverlay(t, dir, append(env[:len(env):len(env)], "CLAUDE_MID_TEST=echo '// saved mid-test' >> "+copied))
+		write(t, filepath.Join(dir, modHooks), readFile(t, copied))
+		return []string{modHooks}
+	}
+	changed := func(t *testing.T, dir string, env []string) []string {
+		edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+		testOverlay(t, dir, env)
+		pushOverlay(t, dir, env)
+		write(t, filepath.Join(dir, modHooks), "export const register = () => 2;\n")
+		return []string{modHooks}
+	}
+	second := func(t *testing.T, dir string, env []string) []string {
+		edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+		testOverlay(t, dir, env)
+		pushOverlay(t, dir, env)
+		write(t, filepath.Join(dir, modsDir, "n/.claude-plugin/plugin.json"), "{}\n")
+		write(t, filepath.Join(dir, modsDir, "n/hooks/register.ts"), "export const register = () => 1;\n")
+		write(t, filepath.Join(dir, modsDir, "n/tests/a.test.ts"), "green\n")
+		return []string{modHooks, modsDir + "n"}
+	}
+	stale := func(t *testing.T, dir string, env []string) []string {
+		edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+		testOverlay(t, dir, env)
+		pushOverlay(t, dir, env)
+		record := filepath.Join(envValue(env, "X_STATE"), gatesGreenFile)
+		_, rest, ok := strings.Cut(readFile(t, record), "\t")
+		if !ok {
+			t.Fatalf("no record in %s", record)
+		}
+		write(t, record, "1000\t"+rest)
+		return []string{modHooks}
+	}
+	cases := []struct {
+		name  string
+		setup func(*testing.T, string, []string) []string
+		runs  int
+		said  string
+	}{
+		{"a byte changed after the green", changed, 2, "m ran: other bytes"},
+		{"a save during the tests", saved, 2, "m ran: no record"},
+		{"a second mod in the commit", second, 2, "n ran: no record"},
+		{"a record past its hour", stale, 2, "m ran: past its hour"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir, env, tests := modsChain(t)
+			paths := c.setup(t, dir, env)
+			before := tests()
+			if got := xIn(t, dir, env, append([]string{"lane", "commit", message(t), "--"}, paths...)...); got.code != 0 {
+				t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+			}
+			if tests() != before+1 || tests() != c.runs {
+				t.Errorf("the suite ran %d times, %d of them at the commit, want %d", tests(), tests()-before, c.runs)
+			}
+			if said := suiteSaid(t, env); !strings.Contains(said, c.said) {
+				t.Errorf("want %q in:\n%s", c.said, said)
+			}
+		})
+	}
+}
+
+func TestModsChainSkipsTheOverlaysModBesideASecondMod(t *testing.T) {
+	t.Parallel()
+	dir, env, _ := modsChain(t)
+	edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+	testOverlay(t, dir, env)
+	pushOverlay(t, dir, env)
+	write(t, filepath.Join(dir, modsDir, "n/.claude-plugin/plugin.json"), "{}\n")
+	write(t, filepath.Join(dir, modsDir, "n/hooks/register.ts"), "export const register = () => 1;\n")
+	write(t, filepath.Join(dir, modsDir, "n/tests/a.test.ts"), "green\n")
+	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks, modsDir+"n"); got.code != 0 {
+		t.Fatalf("commit: exit %d\n%s", got.code, got.stdout)
+	}
+	if said := suiteSaid(t, env); !strings.Contains(said, "m: tests skipped, x mods edit test passed these bytes") {
+		t.Errorf("the overlay's mod ran again:\n%s", said)
+	}
+}
+
+// the hook's suite went green, then a later step of the same commit refused it once
+func redsAfterTheSuiteOnce(t *testing.T, dir string) {
+	t.Helper()
+	marker := filepath.Join(t.TempDir(), "refused")
+	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\nscript/index-run.sh node "+modsDir+"test.ts --skip-tested >> \"$CLAUDE_CALLS.out\" || exit 1\n[ -e "+marker+" ] && exit 0\ntouch "+marker+"\nexit 1\n")
+}
+
+func TestModsChainRetryRunsNoSecondSuiteOnBytesTheHookPassed(t *testing.T) {
+	t.Parallel()
+	dir, env, tests := modsChain(t)
+	redsAfterTheSuiteOnce(t, dir)
+	write(t, filepath.Join(dir, modHooks), "export const register = () => 1;\n")
+	if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modHooks); got.code == 0 {
+		t.Fatalf("the first attempt should be refused\n%s", got.stdout)
+	}
+	commitHooks(t, dir, env)
+	if n := tests(); n != 1 {
+		t.Errorf("the suite ran %d times across a refused attempt and its retry, want 1\n%s", n, suiteSaid(t, env))
+	}
+}
+
+func TestModsChainRetryRerunsARedSuite(t *testing.T) {
+	t.Parallel()
+	dir, env, tests := modsChain(t)
+	write(t, filepath.Join(dir, modTestA), "RED\n")
+	for range 2 {
+		if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modTestA); got.code == 0 {
+			t.Fatalf("a red suite committed\n%s", got.stdout)
+		}
+	}
+	if n := tests(); n != 2 {
+		t.Errorf("the suite ran %d times, want 2: a red records nothing", n)
+	}
+}
+
+// a hand run reads the working tree, never the index, so its green proves nothing a commit holds
+func TestHandSkipTestedRecordsNothing(t *testing.T) {
+	t.Parallel()
+	dir, env, _ := modsChain(t)
+	write(t, filepath.Join(dir, modHooks), "export const register = () => 1;\n")
+	hand := exec.Command("node", modsDir+"test.ts", "--skip-tested")
+	hand.Dir = dir
+	hand.Env = append(append(cleanEnv(), "X_TEST=1"), env...)
+	if out, err := hand.CombinedOutput(); err != nil {
+		t.Fatalf("%v\n%s", err, out)
+	}
+	if record := readFile(t, filepath.Join(envValue(env, "X_STATE"), gatesGreenFile)); strings.Contains(record, "mod m") {
+		t.Errorf("a hand run recorded a green:\n%s", record)
 	}
 }
 

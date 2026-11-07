@@ -1,7 +1,8 @@
 // pnpm mods:test [<mod>…] [--extra <file>] [--only <file>] — each mod's tests through `claude plugin test`, printing only
 // the failing tests' output, then one summary line; exit 1 when any mod is red. --extra runs one outside test file with the
 // mod's harness on a copy of the one mod named (FRM-388); --only runs one of a mod's own test files; --skip-tested, the
-// commit gate's flag, passes a mod whose bytes in the index a green `x mods edit test` already read; --clock-only, that
+// commit gate's flag, passes a mod whose bytes in the index a green `x mods edit test` or an earlier hook read, and names
+// why any other ran; --clock-only, that
 // verb's flag, reads only the clock rule of the named mods and runs no test
 import { spawnSync } from 'node:child_process';
 import {
@@ -307,13 +308,40 @@ function testedTrees(record: string, now: number) {
     return trees;
 }
 
-function readTested() {
-    const state = process.env.X_STATE ?? join(homedir(), '.local/state/x');
-    const path = join(state, 'gates-green.tsv');
-    return testedTrees(
-        existsSync(path) ? readFileSync(path, 'utf8') : '',
-        Date.now(),
+function greenRecord() {
+    return join(
+        process.env.X_STATE ?? join(homedir(), '.local/state/x'),
+        'gates-green.tsv',
     );
+}
+
+function readTested() {
+    const path = greenRecord();
+    return existsSync(path) ? readFileSync(path, 'utf8') : '';
+}
+
+// why a mod's tests ran under --skip-tested, so the week can read each miss
+export function whyRan(
+    record: string,
+    now: number,
+    mod: string,
+    tree: string | undefined,
+) {
+    const rows = record
+        .split('\n')
+        .map((line) => line.split('\t'))
+        .filter(([, subject]) => subject === `mod ${mod}`);
+    const isLive = ([until]: string[]) => now < Number(until) * 1000;
+    if (rows.some((row) => row[2] === tree && !isLive(row)))
+        return 'past its hour';
+    return rows.some(isLive) ? 'other bytes' : 'no record';
+}
+
+// a green read these bytes, so a retry of the same commit skips them; the line `x mods edit test` writes, and a lost one costs one rerun
+function recordGreen(mod: string, tree: string) {
+    const until = Math.floor(Date.now() / 1000) + 3600;
+    mkdirSync(dirname(greenRecord()), { recursive: true });
+    appendFileSync(greenRecord(), `${until}\tmod ${mod}\t${tree}\t\n`);
 }
 
 // one line per run, so a chain's count of whole runs reads from a file, never a memory (FRM-470); off under X_TEST
@@ -376,7 +404,16 @@ if (import.meta.main) {
     }
     process.on('exit', startTestTempDir());
     const named = onlyMod ? [onlyMod] : positionals;
-    const tested = values['skip-tested'] ? readTested() : undefined;
+    const record = values['skip-tested'] ? readTested() : undefined;
+    const tested =
+        record === undefined ? undefined : testedTrees(record, Date.now());
+    // only the gate's private copy holds exactly the index: a hand run's tests read the working tree
+    const readsTheIndex =
+        values['skip-tested'] &&
+        process.env.INDEX_RUN_BRANCH !== undefined &&
+        !values.extra &&
+        !only;
+    const whys: string[] = [];
     const untouched = values['skip-tested']
         ? untouchedMods(stagedPaths(root), all)
         : new Set<string>();
@@ -391,17 +428,17 @@ if (import.meta.main) {
             );
             continue;
         }
+        const tree = tested && indexedTree(root, mod);
         // a clock read reds whatever was tested, so that mod runs and reads red as it always did
-        if (
-            tested?.has(`${mod} ${indexedTree(root, mod)}`) &&
-            !hookClockReads(dir).length
-        ) {
+        if (tested?.has(`${mod} ${tree}`) && !hookClockReads(dir).length) {
             skipped++;
             process.stdout.write(
                 `${mod}: tests skipped, x mods edit test passed these bytes\n`,
             );
             continue;
         }
+        if (record !== undefined)
+            whys.push(`${mod} ran: ${whyRan(record, Date.now(), mod, tree)}`);
         if (values.extra) {
             dir = join(mkdtempSync(join(tmpdir(), 'mods-extra-')), mod);
             cpSync(join(root, mod), dir, { recursive: true });
@@ -441,13 +478,25 @@ if (import.meta.main) {
                 `${mod}: a clock read outside $.clock (date bomb), give it the $.clock fallback or a clock-ok line above:\n${clock.map((c) => `  ${c}`).join('\n')}\n`,
             );
         runs.push({ clockReads: clock, mod, output, status });
+        const { errored, failed: red, passed } = outcome(output);
+        if (
+            readsTheIndex &&
+            tree &&
+            status === 0 &&
+            passed &&
+            !red.length &&
+            !errored.length &&
+            !clock.length
+        )
+            recordGreen(mod, tree);
         if (values.extra || only)
             rmSync(dirname(dir), { force: true, recursive: true });
     }
     const line =
         summary(runs) +
         (skipped ? `, ${skipped} skipped on tested bytes` : '') +
-        (untouchedRuns ? `, ${untouchedRuns} skipped as untouched` : '');
+        (untouchedRuns ? `, ${untouchedRuns} skipped as untouched` : '') +
+        whys.map((why) => `, ${why}`).join('');
     console.log(`\n${line}`);
     logRun(
         process.argv.slice(2).join(' '),

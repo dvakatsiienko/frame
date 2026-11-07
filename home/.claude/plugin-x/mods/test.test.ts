@@ -18,6 +18,7 @@ import {
     summary,
     timedOutFiles,
     untouchedMods,
+    whyRan,
     withRerun,
 } from './test.ts';
 
@@ -113,6 +114,33 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
         const state = mkdtempSync(join(tmpdir(), 'mods-test-state-'));
         runScript(['x-mod-holds'], { X_STATE: state, X_TEST: '1' });
         expect(readdirSync(state)).toEqual([]);
+    });
+});
+
+describe('whyRan', () => {
+    const live = 2000;
+    const stale = 1;
+    const row = (until: number, mod: string, sha: string) =>
+        `${until}\tmod ${mod}\t${sha}\t`;
+    const now = 1500 * 1000;
+
+    it.each([
+        ['an empty record', '', 'no record'],
+        ["only another mod's row", row(live, 'other', 'aaa'), 'no record'],
+        [
+            'only a stale row of other bytes',
+            row(stale, 'm', 'bbb'),
+            'no record',
+        ],
+        ['a live row of other bytes', row(live, 'm', 'bbb'), 'other bytes'],
+        ['these bytes, stale', row(stale, 'm', 'aaa'), 'past its hour'],
+        [
+            'these bytes stale beside live others',
+            `${row(stale, 'm', 'aaa')}\n${row(live, 'm', 'bbb')}`,
+            'past its hour',
+        ],
+    ])('%s', (_name, record, want) => {
+        expect(whyRan(record, now, 'm', 'aaa')).toBe(want);
     });
 });
 

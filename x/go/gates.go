@@ -405,7 +405,7 @@ func recordGreen(subject, sha string, gates []string) {
 	}
 }
 
-// each touched mod's subtree as the overlay's tests read it: the tree's mod, then the scratch copies
+// each touched mod's subtree as the overlay's tests read it: the tree's mod, then the copies as the commit's format step leaves them
 func recordTestedMods(repo, scratch string, changed []string) {
 	env, _, done, err := headIndex(repo)
 	if err != nil {
@@ -418,7 +418,7 @@ func recordTestedMods(repo, scratch string, changed []string) {
 			return
 		}
 	}
-	if layScratch(repo, scratch, changed, env) != nil {
+	if layFormatted(repo, scratch, changed, env) != nil {
 		return
 	}
 	for _, mod := range mods {
@@ -428,21 +428,15 @@ func recordTestedMods(repo, scratch string, changed []string) {
 	}
 }
 
-// the scratch copies over the index env names: HEAD plus these paths is what a commit of them would hold
-func layScratch(repo, scratch string, changed []string, env []string) error {
-	return layCopies(repo, changed, env, func(path string) string { return filepath.Join(scratch, path) })
-}
-
 // the commit's format step run on stdin, since biome panics on a path outside the repo, each result in a temp dir: the
-// overlay's format gate reads what a commit would hold, and a file biome cannot fix stays as it is, for the gate to red
-func layFormatted(repo, scratch string, changed []string, env []string) error {
+// overlay reads what a commit would hold, and a file biome cannot fix stays as it is, for the gate to red
+func formattedCopies(repo, scratch string) (copyOf func(string) string, done func(), err error) {
 	biome := filepath.Join(repo, "node_modules/.bin/biome")
 	dir, err := os.MkdirTemp("", "x-gates-format-")
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	defer os.RemoveAll(dir)
-	return layCopies(repo, changed, env, func(path string) string {
+	return func(path string) string {
 		copied := filepath.Join(scratch, path)
 		body, err := os.ReadFile(copied)
 		if err != nil || !exists(biome) {
@@ -454,7 +448,16 @@ func layFormatted(repo, scratch string, changed []string, env []string) error {
 			return copied
 		}
 		return out
-	})
+	}, func() { _ = os.RemoveAll(dir) }, nil
+}
+
+func layFormatted(repo, scratch string, changed []string, env []string) error {
+	copyOf, done, err := formattedCopies(repo, scratch)
+	if err != nil {
+		return err
+	}
+	defer done()
+	return layCopies(repo, changed, env, copyOf)
 }
 
 func layCopies(repo string, changed []string, env []string, copyOf func(string) string) error {

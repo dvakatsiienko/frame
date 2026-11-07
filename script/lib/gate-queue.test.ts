@@ -415,8 +415,11 @@ describe('gate-queue --long', () => {
             while (!existsSync(`${turn}.tickets`) || tickets() !== count)
                 await sleep(50);
         };
-        // the holder leaves only on the marker: a slow machine cannot end the line early
-        const holder = run('holder', `until [ -e ${go} ]; do sleep 0.1; done`);
+        // the holder leaves on the marker: a slow machine cannot end the line early. the bound, past the test's own timeout, ends it when the test died
+        const holder = run(
+            'holder',
+            `i=0; until [ -e ${go} ] || [ $i -ge 600 ]; do sleep 0.1; i=$((i+1)); done`,
+        );
         while (!existsSync(turn)) await sleep(50);
         const first = run('first');
         await lined(1);

@@ -23,6 +23,7 @@ func modsFixture(t *testing.T) (dir string, env []string) {
 d="$3"
 [ -n "$CLAUDE_CALLS" ] && echo "$2" >> "$CLAUDE_CALLS"
 [ "$2" = test ] && [ -n "$CLAUDE_MID_TEST" ] && sh -c "$CLAUDE_MID_TEST"
+[ "$2" = test ] && [ -n "$CLAUDE_SAW" ] && cat "$d"/hooks/* >> "$CLAUDE_SAW"
 if [ "$2" = validate ]; then
   if grep -q PARSE-ERROR "$d"/hooks/* 2>/dev/null; then echo "  ❯ modules../register.ts: m: does not parse: PARSE-ERROR (line 1)"; echo "✘ Validation failed"; exit 1; fi
   echo "✔ Validation passed"; exit 0

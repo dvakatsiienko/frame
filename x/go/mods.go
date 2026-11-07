@@ -450,10 +450,15 @@ type modReport struct {
 
 func (m modReport) isRed() bool { return m.Validate != "ok" || len(m.Failed)+len(m.Errored) > 0 }
 
-// each touched mod is copied to the job tmp with the edited copies laid over it, then validated, then tested; a named
-// test file narrows the run to its mod and that one file
+// each touched mod is copied to the job tmp with the edited copies laid over it as the commit's format step leaves them, then
+// validated, then tested, so its green proves the bytes a commit holds; a named test file narrows the run to its mod and that one file
 func overlayTest(repo, scratch string, changed []string, only string) ([]modReport, error) {
 	var reports []modReport
+	copyOf, done, err := formattedCopies(repo, scratch)
+	if err != nil {
+		return nil, err
+	}
+	defer done()
 	mods := touchedMods(changed)
 	if only != "" {
 		mods = touchedMods([]string{only})
@@ -471,7 +476,7 @@ func overlayTest(repo, scratch string, changed []string, only string) ([]modRepo
 		for _, path := range changed {
 			if m, _ := modOf(path); m == mod {
 				rel := strings.TrimPrefix(filepath.ToSlash(path), modsDir+mod+"/")
-				if err := copyFile(filepath.Join(scratch, path), filepath.Join(overlay, rel)); err != nil {
+				if err := copyFile(copyOf(path), filepath.Join(overlay, rel)); err != nil {
 					return nil, err
 				}
 			}
