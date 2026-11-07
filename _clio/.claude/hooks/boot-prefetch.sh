@@ -301,6 +301,13 @@ else
   fail "REAL FILE where the symlink belongs — silent divergence"
 fi
 
+echo "-- git-slim (agent shells fall back to brew's git silently, at about 17 % more cpu) --"
+if slim_check=$("$(dirname "$0")/../../../script/git-slim.sh" --check 2>&1); then
+  echo "$slim_check"
+else
+  fail "$slim_check"
+fi
+
 echo "-- runtime (a parked session keeps its binary, plugins and feature gates until a restart) --"
 pid=$$; born=""
 for _ in 1 2 3 4 5 6; do
