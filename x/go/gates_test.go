@@ -644,6 +644,49 @@ func TestAWholeModsRunLogsItsCpuAndASkippedOneLogsADash(t *testing.T) {
 	}
 }
 
+func TestAModsRunOfPartOfTheModsLogsADash(t *testing.T) {
+	t.Parallel()
+	lastColumn := func(t *testing.T, env []string) string {
+		t.Helper()
+		rows := nonBlank(readFile(t, filepath.Join(envValue(env, "X_STATE"), "gate-steps.log")))
+		if len(rows) == 0 {
+			t.Fatal("no gate-steps row")
+		}
+		row := rows[len(rows)-1]
+		return row[strings.LastIndex(row, "\t")+1:]
+	}
+	t.Run("one mod named", func(t *testing.T) {
+		t.Parallel()
+		dir, env, _ := modsChain(t)
+		hand := exec.Command("script/index-run.sh", "node", modsDir+"test.ts", "m")
+		hand.Dir, hand.Env = dir, append(append(cleanEnv(), "X_TEST=1"), env...)
+		if out, err := hand.CombinedOutput(); err != nil {
+			t.Fatalf("%v\n%s", err, out)
+		}
+		if got := lastColumn(t, env); got != "-" {
+			t.Errorf("last column %q, want -", got)
+		}
+	})
+	t.Run("a commit that leaves one mod untouched", func(t *testing.T) {
+		t.Parallel()
+		dir, env, _ := modsChain(t)
+		sibling := filepath.Join(dir, modsDir, "n")
+		write(t, filepath.Join(sibling, ".claude-plugin/plugin.json"), `{"name": "n"}`+"\n")
+		write(t, filepath.Join(sibling, "tests/a.test.ts"), "green\n")
+		write(t, filepath.Join(sibling, "hooks/register.ts"), "export const register = () => {};\n")
+		gitT(t, dir, "add", ".")
+		gitT(t, dir, "-c", "core.hooksPath=/dev/null", "commit", "-q", "-m", "a sibling mod")
+		touched := modsDir + "n/hooks/register.ts"
+		write(t, filepath.Join(dir, touched), "export const register = () => 1;\n")
+		if got := xIn(t, dir, env, "lane", "commit", message(t), "--", touched); got.code != 0 {
+			t.Fatalf("exit %d\n%s", got.code, got.stdout)
+		}
+		if got := lastColumn(t, env); got != "-" {
+			t.Errorf("last column %q, want -", got)
+		}
+	})
+}
+
 func TestModsChainRetryRerunsARedSuite(t *testing.T) {
 	t.Parallel()
 	for _, red := range []string{"RED\n", "HOOK-THROWS\n", "DIES-QUIET\n"} {
