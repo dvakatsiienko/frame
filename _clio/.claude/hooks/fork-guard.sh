@@ -24,14 +24,28 @@ cc_pid() {
 
 me=$(cc_pid)
 main_pid=$(sed -n 's/^pid=//p' "$main_file" 2>/dev/null)
-# the main is classified positively: its own pid, or the seat is free (none recorded, or that pid is dead)
-is_main() { [ -z "$main_pid" ] || [ "$main_pid" = "$me" ] || ! kill -0 "$main_pid" 2>/dev/null; }
+# a dead main leaves the seat empty until a start fills it, so no wing's guard lifts in the gap
+is_main() { [ "$main_pid" = "$me" ]; }
+
+# a compact, a known wing and a session her registry names a wing never take the seat, even an empty one
+takes_seat() {
+	is_main && return 0
+	[ -n "$session" ] && [ "$session" = "$(sed -n 's/^session=//p' "$main_file" 2>/dev/null)" ] && return 0
+	[ "$source" = compact ] && return 1
+	grep -q "^$session " "$state/forks.log" 2>/dev/null && return 1
+	case "$entry" in *🪽* | *wing*) return 1 ;; esac
+	[ -z "$main_pid" ] || ! kill -0 "$main_pid" 2>/dev/null
+}
 
 case "${1:-}" in
 start)
 	input=$(cat)
 	session=$(jq -r '.session_id // ""' <<<"$input" 2>/dev/null)
-	if is_main; then
+	source=$(jq -r '.source // ""' <<<"$input" 2>/dev/null)
+	entry=$(jq -r '[.kind // "", .name // ""] | @tsv' "${FORK_GUARD_SESSIONS:-$HOME/.claude/sessions}/$me.json" 2>/dev/null)
+	# crow and helga are parked sidecars, neither the main nor a wing
+	[[ $entry == bg$'\t'* ]] && exit 0
+	if takes_seat; then
 		printf 'pid=%s\nsession=%s\n' "$me" "$session" >"$main_file"
 	else
 		# a fork's /compact starts it again; it keeps its one line

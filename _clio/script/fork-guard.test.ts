@@ -1,5 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
@@ -72,6 +78,122 @@ describe('fork-guard', () => {
         expect(readFileSync(join(state, 'main-session'), 'utf8')).toContain(
             `pid=${process.pid}`,
         );
+    });
+
+    const deadMain = () => {
+        const state = mkdtempSync(join(tmpdir(), 'fg-'));
+        writeFileSync(
+            join(state, 'main-session'),
+            `pid=${DEAD_PID}\nsession=s-main\n`,
+        );
+        return state;
+    };
+    const seat = (state: string) =>
+        readFileSync(join(state, 'main-session'), 'utf8');
+
+    test('a compact never takes the seat, even an empty one', () => {
+        const state = deadMain();
+        const out = run(
+            ['start'],
+            String(process.pid),
+            state,
+            '{"session_id":"s-wing","source":"compact"}',
+        );
+        expect(out.stdout).toContain("you are clio's wing");
+        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+    });
+
+    test('a wing in forks.log resuming finds the seat empty and stays a wing', () => {
+        const state = deadMain();
+        writeFileSync(join(state, 'forks.log'), 's-wing 2026-11-07 14:01\n');
+        const out = run(
+            ['start'],
+            String(process.pid),
+            state,
+            '{"session_id":"s-wing","source":"resume"}',
+        );
+        expect(out.stdout).toContain("you are clio's wing");
+        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+    });
+
+    test('a session the registry names a wing never takes the seat', () => {
+        const state = deadMain();
+        const sessions = mkdtempSync(join(tmpdir(), 'fg-s-'));
+        writeFileSync(
+            join(sessions, `${process.pid}.json`),
+            JSON.stringify({ kind: 'interactive', name: '🦉🪽 clio: wing 3' }),
+        );
+        const out = spawnSync('bash', [GUARD, 'start'], {
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                FORK_GUARD_CC_PID: String(process.pid),
+                FORK_GUARD_SESSIONS: sessions,
+                FORK_GUARD_STATE: state,
+            },
+            input: '{"session_id":"s-new","source":"resume"}',
+        });
+        expect(out.stdout).toContain("you are clio's wing");
+        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+    });
+
+    test('a parked sidecar takes no seat, no banner and no forks.log line', () => {
+        const state = deadMain();
+        const sessions = mkdtempSync(join(tmpdir(), 'fg-s-'));
+        writeFileSync(
+            join(sessions, `${process.pid}.json`),
+            JSON.stringify({ kind: 'bg', name: '🎀 helga' }),
+        );
+        const out = spawnSync('bash', [GUARD, 'start'], {
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                FORK_GUARD_CC_PID: String(process.pid),
+                FORK_GUARD_SESSIONS: sessions,
+                FORK_GUARD_STATE: state,
+            },
+            input: '{"session_id":"s-helga","source":"startup"}',
+        });
+        expect(out.stdout).toBe('');
+        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+        expect(existsSync(join(state, 'forks.log'))).toBe(false);
+    });
+
+    test('the recorded main restarting takes her seat back from any pid', () => {
+        const state = mkdtempSync(join(tmpdir(), 'fg-'));
+        writeFileSync(
+            join(state, 'main-session'),
+            `pid=${process.ppid}\nsession=s-main\n`,
+        );
+        const out = run(
+            ['start'],
+            String(process.pid),
+            state,
+            '{"session_id":"s-main","source":"resume"}',
+        );
+        expect(out.stdout).toBe('');
+        expect(seat(state)).toContain(`pid=${process.pid}`);
+    });
+
+    test('with the main dead, a wing stays guarded and main-only stays off', () => {
+        const state = deadMain();
+        const repo = mkdtempSync(join(tmpdir(), 'fg-repo-'));
+        spawnSync('git', ['-C', repo, 'init', '-q'], { env: gitEnv() });
+        const pid = String(process.pid);
+        expect(run(['main-only', '--', 'echo', 'ran'], pid, state).stdout).toBe(
+            '',
+        );
+        expect(
+            run(
+                ['fork-edit'],
+                pid,
+                state,
+                JSON.stringify({
+                    session_id: 'abcd1234-x',
+                    tool_input: { file_path: join(repo, 'a.md') },
+                }),
+            ).stdout,
+        ).toContain('«fork-abcd1234»');
     });
 
     test('main-only runs its command for the main and passes stdin through', () => {
