@@ -16,6 +16,7 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
   order (`- [ ] 03 · <ticket id> <title>`, the id is what the glide card shows; its steps stay in its slice file), each chunk's lines ending in `- [ ] NN · <ticket> reviewed and closed`, ping clio `[ask] lane-plan ready to greenlight`, and start on her 🟢 greenlit order. tick `[x]` at
   each ticket's commit; `x lane landed --apply` ticks the closing line, so the glide card holds the chunk through its reviews. when dima steers you in this thread and the steer adds or moves work, append it under
   `## not greenlit` and send clio one line; a steer that changes no order (a typo, a style) needs neither.
+- **a wind or a background run stops nothing else**: a wind is a context reset, so every step that does not need the pending run keeps going; a turn ends waiting only when no step can run (a codie sat 38 min this way).
 - **a second wind between every chunk** (dima, 2026-11-02): once a chunk is clean, write your handoff (`x:handoff`, slug `<feature>-<n>`), ping clio «sw done», and start the next chunk only after the pickup
   build each ticket test-first with `tdd`, through `implement` for granular work dima watches or
   `implement-spec` for bulk work. they are user-only: read each `SKILL.md`
