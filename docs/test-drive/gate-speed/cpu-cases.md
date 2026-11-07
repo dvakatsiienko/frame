@@ -27,6 +27,8 @@ The same scripts, `node spindump-read.mjs /tmp/spindump-quiet.txt`. Two windows,
 - **sessions at rest are cheap**: long-lived `claude` 0.2 to 0.4 cpu-s per 10 s each. All the rest of the mac, sessions, app, WindowServer, Chrome and the OS: 138.6 − 87 − 10.7 for the sampler = about 41 cpu-s, about 4 cores. So about 15 sessions fit in 4 of 14 cores, and **lane count is not what fills the mac, heavy runs are**. That points at 16 lanes being possible if heavy runs stop stacking, inference until a ramp proves it
 - Sandbox 10 % of kernel samples here against 18 %
 
+Raw data, off `/tmp` so a reboot keeps it: `~/.local/state/x/lanes/frm-525/` holds both spindumps gzipped, the 30 min cpu sample, the measure scripts and exit 5's rows. codie's fuller cost list: `~/.local/state/x/lanes/frm-521/go-test-cost.md`.
+
 ## the symptom
 
 - 2026-11-07 01:08: load 47, `top` 40.6 % user, 59.4 % sys, 0.0 % idle; `ps` totals about 6 of 14 cores. CPU 106 °C on dima's screen

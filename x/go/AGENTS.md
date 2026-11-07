@@ -23,6 +23,20 @@ fleet sees whether the page earns its place.
   every commit here. `x:guide-go` holds the go craft (gofmt, vet, staticcheck, table tests).
 - every test opens with `t.Parallel()`; one that cannot opens with a `// serial: <why>` line instead (a `t.Setenv`, a `t.Chdir`) — go panics on a `t.Setenv` in a parallel test, so a missed one shows itself. this is what keeps the gate near 1 minute (FRM-422)
 
+## a test's cost on the mac
+
+go test runs fill the mac's kernel with spawned git, about 377 git/s beside any other work (`docs/test-drive/gate-speed/cpu-cases.md`); a process is the unit of cost here, so count spawns before adding a fixture. the numbers are one suite run, full list `go-test-cost.md` in FRM-521's lane state.
+
+- build a repo fixture once and copy it with `copyFixture` (`fixture_template_test.go`): no spawn per test; this cut the suite 385 → 278 cpu-s. `repo`, `world`, `modsFixture`, `layers` and `newRebaseWorld` already do
+- `fixtures/setup.sh` runs once per template: 512 ms a run, 62 runs were 32 cpu-s
+- call `xIn` when the binary's behaviour is the proof, since each costs 152 ms: 1,198 runs were 182 cpu-s, mostly the git x spawns; x's bare launch is 18 ms
+- a test's own git adds up: `git push` 78 ms, the biggest left at 55 cpu-s; `commit` 1,601 runs 38 cpu-s; `add`, `init` and `clone` 44 cpu-s together
+- keep `cleanEnv` on every git, its housekeeping-off settings too: they reach x's child, and stripping them there costs the run 328.5 cpu-s against 278
+- a fixture hook waits with `markerWait` (`gate_turn_test.go`): a bare poll on a marker outlived its dead test by up to 3.2 h, 24 of them at about 240 spawns/s
+- a seed writes the same path form, resolved or raw, that it passes `copyFixture` as `from`, or the rewrite misses it
+- a counter passed through a child's env can lie on a duplicate key: go's getenv keeps the first, exec's dedupe keeps the last
+- a heavy run by hand takes `~/frame/script/gate-queue.sh --long`, and a measure states its run count and time first: 16 suite runs behind the queue took about 80 min
+
 ## the contract
 
 - `go:embed` bakes `registry.json` (and `risky.json`, `stacks.json`) into the binary; the shim rebuilds on any `*.json` here newer than the binary; the verb rules and the `fixtures/calls.json` contract are `../AGENTS.md`'s.
