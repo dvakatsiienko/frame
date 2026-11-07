@@ -4,7 +4,7 @@ title: 'parked member: codie sat 38 min with runnable work, its wing missed it t
 status: open
 assignee: []
 created_date: '2026-11-06T23:27:00Z'
-updated_date: '2026-11-07T02:01:00Z'
+updated_date: '2026-11-07T02:49:00Z'
 labels:
   - s
   - wing-1
@@ -60,4 +60,6 @@ PK-345:W3 (2026-11-07 01:38, dima): will the auto second wind mod solve this? ‚ù
 answered, in the thread 01:39, read from FRM-505's wish: no, partly. it removes the coordinator's order, not the refusal; its W1 says the thread parks and solves its tails first, so it could park more threads. FRM-505 needs proposal 1 in its scope, main's call. his tick o91: proposal order stands, tomorrow.
 
 from 11-07's retros: a --long protocol of 16 runs waits up to 729 s a run, and frm-521 codie parked on it twice, dima and wing each caught one: a queued run is no reason to end a turn; open the pr, rows join by edit.
+
+his 11-07 04:48: maybe quiet comms is too quiet? read that minute: held messages p50 under 1 min, max 8.3, 0 lost (115 of them). the risk left: 177 lone notices logged, read by nobody, and this item's 38 min. to do: read a sample of those 177 for a parked member or a question, and name what a turn-end note must carry to pass.
 <!-- SECTION:NOTES:END -->
