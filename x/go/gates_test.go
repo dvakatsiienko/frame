@@ -509,15 +509,20 @@ func TestModsChainRetryRunsNoSecondSuiteOnBytesTheHookPassed(t *testing.T) {
 
 func TestModsChainRetryRerunsARedSuite(t *testing.T) {
 	t.Parallel()
-	dir, env, tests := modsChain(t)
-	write(t, filepath.Join(dir, modTestA), "RED\n")
-	for range 2 {
-		if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modTestA); got.code == 0 {
-			t.Fatalf("a red suite committed\n%s", got.stdout)
-		}
-	}
-	if n := tests(); n != 2 {
-		t.Errorf("the suite ran %d times, want 2: a red records nothing", n)
+	for _, red := range []string{"RED\n", "HOOK-THROWS\n", "DIES-QUIET\n"} {
+		t.Run(strings.TrimSpace(red), func(t *testing.T) {
+			t.Parallel()
+			dir, env, tests := modsChain(t)
+			write(t, filepath.Join(dir, modTestA), red)
+			for range 2 {
+				if got := xIn(t, dir, env, "lane", "commit", message(t), "--", modTestA); got.code == 0 {
+					t.Fatalf("a red suite committed\n%s", got.stdout)
+				}
+			}
+			if n := tests(); n != 2 {
+				t.Errorf("the suite ran %d times, want 2: a red records nothing", n)
+			}
+		})
 	}
 }
 

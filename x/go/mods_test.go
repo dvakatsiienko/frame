@@ -38,6 +38,7 @@ for f in "$d"/tests/*.test.ts; do
   elif grep -q SLOW-ONCE "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q PASS-THEN-SLOW "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(pass) $n first [1.0ms]"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q SLOW-SECOND "$f" && [ -e "$f.ran" ]; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
+  elif grep -q DIES-QUIET "$f"; then echo "(pass) $n [1.0ms]"; exit 1
   elif grep -q DIES-PARTWAY "$f"; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; exit 1
   elif grep -q HOOK-THROWS "$f"; then echo "(pass) $n [1.0ms]"; echo "    m's session.start hook was skipped: m: boom"
   elif grep -q RED "$f"; then echo "(fail) $n is red [1.0ms]"; red=1
