@@ -29,6 +29,8 @@ Ticket: PK-334. A gate here is a check that refuses: it stops a commit, a push, 
 - retired-names: the 10-29 rename's old forms in an added line, 2 s; temporary, its row says 14 green days and a ticket remove it
 - chords-essentials, speak-essentials: bytes' app checker, on that app
 
+- on main: `x lane commit`'s ci step, `go test ./...` for a go change, a ts change's scripts the hook does not run
+
 ## at commit, the message
 
 - commit-msg-lint: the `x:cmt` format
@@ -40,7 +42,6 @@ Ticket: PK-334. A gate here is a check that refuses: it stops a commit, a push, 
 
 - runner-twin: vitest in a clean clone, empty HOME, the ubuntu runner's view, 43 s, p90 64
 - mirror: `pnpm frame:link`, the manifest still derives
-- on main: `x lane push`'s whole go run
 
 ## on the pr
 
