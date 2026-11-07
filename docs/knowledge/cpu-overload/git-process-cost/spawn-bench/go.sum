@@ -1,0 +1,6 @@
+github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
+github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
+github.com/zchee/fastexec v0.0.0-20260728181915-be41bef39ca3 h1:jK6l2xKTKR6ycxM/7hy5MOz386lORZVq7TV5b08t+eE=
+github.com/zchee/fastexec v0.0.0-20260728181915-be41bef39ca3/go.mod h1:8MLgVxmBPL+hwjQMElg2uOLKPV/F/0QSmQxISlqotRE=
+golang.org/x/sys v0.47.0 h1:o7XGOvZQCADBQQ4Y7VNq2dRWQR7JmOUW8Kxx4ZsNgWs=
+golang.org/x/sys v0.47.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=

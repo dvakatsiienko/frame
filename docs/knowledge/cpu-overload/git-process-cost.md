@@ -26,6 +26,16 @@ Asked 2026-11-07: exa, parallel, an opus source lane. Raw lanes, read for depth:
 - 10,000 git starts × 1.8 ms saved is 18 of about 300 cpu-s
 - swapping Go's spawn: at most about 14 cpu-s of parent sys, about 5 % with the child's atfork work (inference)
 
+## measured after the lanes, 2026-11-07, load 40 to 70, other lanes live
+
+- **A slim git cuts the whole go suite 18 %, with no code change.** Git 2.56.0 built with no gettext, no Rust, no perl, no python, CoreServices and fsmonitor removed: 85 dylibs against 706. `go -C x/go test -count=1 .`, abba, slim first on `PATH`: brew 395.6 and 393.0, slim 319.6 and 324.1 cpu-s. Sys 240 → 213, user 154 → 109. Three times the 6 % estimate above. Recipe: `git-process-cost/slim-build.sh`, http helper kept (`NO_CURL` broke `TestPushRetriesOnlyAServerError`, fixed and rerun green)
+- Per start, 200 runs, abba: `--version` brew 5.30 and 4.60 cpu ms, slim 3.80 and 3.05; `rev-parse` brew 4.95 and 5.20, slim 2.80 and 3.30
+- **`posix_spawn` beats Go's `fork` by 23 % per spawn**, not the 5 % capped above. 1,000 spawns of brew git, abba, os/exec against fastexec: 1 worker 6.0 → 4.7 ms total, 8 workers 5.65 → 4.37; parent 0.95 → 0.35, child 4.9 → 4.2; wall at 8 workers 1.5 → 0.85 ms. A short-lived parent; not yet a suite number. `git-process-cost/spawn-bench/`
+- `GIT_TRACE2_EVENT` over the suite saw 181 git starts of thousands: fixtures strip the env, so it is no count
+- A batch read of all 55 test files, $8.80, claims 1,119 spawns no assertion needs, unchecked, about 20 cpu-s at 19 ms each: `lane_landed_test.go` 315, `merge_auto_test.go` 338. `~/.local/state/x/lanes/frm-525/spawn-audit.jsonl`
+- No caller of `/usr/bin/git` in our scripts, jobs or x; all 4,394 git records in the `LANG` trace are brew's. No guard needed
+- `sandbox_check` reads 0 for all 6 `--bg` lane sessions and their children too
+
 ## dead ends
 
 - `LC_ALL=C` over `LANG`: no steady gain, and it turns off UTF-8 in git's regex. Keep `LANG`

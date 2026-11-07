@@ -41,7 +41,22 @@ posted: {health: yes}
 **state**
 - lanes: gates, override; ci next on wing 1's row; a second wind at this block
 
+⸻ upd 18:16
+
+**shipped**
+- [FRM-524](https://linear.app/x-com/issue/FRM-524) landed, frame#146: `operator-override prs`, his whole typed phrase; hold and brake stay. his two proofs left, by 11-09
+- ci made boring built: [BYT-132](https://linear.app/x-com/issue/BYT-132), [BYT-131](https://linear.app/x-com/issue/BYT-131), [BYT-106](https://linear.app/x-com/issue/BYT-106) closed; the walk page read by him; reads owed by 11-14
+- per-lane retros paused, one weekly card, at most 3 lines become work; retro fold of 11-06 done, 5 re-signs
+- [FRM-510](https://linear.app/x-com/issue/FRM-510) closed; wish ids moved by wing 2, about 700 lines on 78 homes
+
+**tricks gained**
+- a coordinator reopening a clean lane names its one round: frame#146 went 3 to 6
+- the quiet log's 88 logged notes hid 1 real miss, 6 min; the count of rounds told only the codie
+
+**state**
+- running: wing 1's [FRM-528](https://linear.app/x-com/issue/FRM-528), frame#147. the override not flipped yet, frame#134 its first test. weekly 89 %
+
 ## trail
-- shipped: BYT-94's one gate, the renovate door and key, FRM-510, FRM-474, FRM-433, 9 retros
-- open: FRM-525 first, BYT-132, BYT-106, BYT-131, FRM-524's merge doors, FRM-505
-- state: every lane stopped, wing 1 on PK-328 and wing 2 on PK-336 at the next boot
+- shipped: the override landed, ci made boring built, retros paused for a weekly card
+- open: the override's first flip, frame#147, FRM-531's start, the mods card to tilde
+- state: wing 1's go suite lane runs, weekly 89 %, stop by 98 %
