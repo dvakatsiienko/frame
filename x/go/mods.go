@@ -124,9 +124,14 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	}
 	// read before the run: a save while the tests run must not stamp bytes they never read
 	stamp := overlayStamp(repo, scratch, changed)
+	copies, err := newFormattedCopies(repo, scratch)
+	if err != nil {
+		return nil, err
+	}
+	defer copies.done()
 	var reports []modReport
 	if err := r.Step("test", "validate and test on an overlay copy", func() (string, error) {
-		reports, err = overlayTest(repo, scratch, changed, "")
+		reports, err = overlayTest(repo, copies, changed, "")
 		return reportLine(reports), err
 	}); err != nil {
 		return nil, err
@@ -135,7 +140,7 @@ func modsEditTest(r *Run, _ []string, flags Flags) (any, error) {
 	var verdicts []gateVerdict
 	// a red test does not stop the gates: one run names every red a commit would meet
 	gatesErr := r.Step("gates", "the commit hook's gates on the overlay", func() (string, error) {
-		verdicts, err = overlayGates(repo, scratch, changed, stamp, len(red) == 0)
+		verdicts, err = overlayGates(repo, scratch, copies, changed, stamp, len(red) == 0)
 		if err != nil {
 			return "", err
 		}
@@ -172,7 +177,12 @@ func testOneFile(r *Run, repo, scratch string, changed []string, arg string) (an
 		if only, err = onlyTestFile(repo, scratch, arg); err != nil {
 			return "", err
 		}
-		if reports, err = overlayTest(repo, scratch, changed, only); err != nil {
+		copies, err := newFormattedCopies(repo, scratch)
+		if err != nil {
+			return "", err
+		}
+		defer copies.done()
+		if reports, err = overlayTest(repo, copies, changed, only); err != nil {
 			return "", err
 		}
 		if red := redReports(reports); len(red) > 0 {
@@ -288,25 +298,30 @@ func modsEditPush(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
+	copies, err := newFormattedCopies(repo, scratch)
+	if err != nil {
+		return nil, err
+	}
+	defer copies.done()
 	var reports []modReport
 	if err := r.Step("test", "validate and test on an overlay copy", func() (string, error) {
 		stamp := overlayStamp(repo, scratch, changed)
 		if tested, _ := os.ReadFile(filepath.Join(scratch, scratchTested)); string(tested) == stamp {
 			return "x mods edit test passed these bytes", nil
 		}
-		reports, err = overlayTest(repo, scratch, changed, "")
+		reports, err = overlayTest(repo, copies, changed, "")
 		if red := redReports(reports); err == nil && len(red) > 0 {
 			err = &Fail{Refused: true, Msg: "red on the overlay, nothing written: " + reportLine(red), Next: "x mods edit test", Log: nonBlank(redLog(red))}
 		}
 		if err == nil && overlayStamp(repo, scratch, changed) == stamp {
-			recordTestedMods(repo, scratch, changed)
+			recordTestedMods(repo, copies, changed)
 		}
 		return reportLine(reports), err
 	}); err != nil {
 		return nil, err
 	}
 	if err := r.Step("write", "all or nothing, restored from a backup on a failed write", func() (string, error) {
-		return fmt.Sprintf("%d written", len(changed)), writeAll(repo, scratch, changed)
+		return fmt.Sprintf("%d written", len(changed)), writeAll(repo, scratch, copies, changed)
 	}); err != nil {
 		return nil, err
 	}
@@ -345,8 +360,9 @@ func modsPushPlan(repo, scratch string, changed, added []string) error {
 	return nil
 }
 
-// every target is backed up before the first write; a failed write puts back each one already written
-func writeAll(repo, scratch string, changed []string) error {
+// every target is backed up before the first write; a failed write puts back each one already written. it lands as the
+// commit's format step leaves it, so a later overlay of this mod reads what the commit holds
+func writeAll(repo, scratch string, copies *formattedCopies, changed []string) error {
 	type was struct {
 		path  string
 		body  []byte
@@ -357,7 +373,7 @@ func writeAll(repo, scratch string, changed []string) error {
 		target := filepath.Join(repo, path)
 		body, err := os.ReadFile(target)
 		prior := was{path: target, body: body, isNew: errors.Is(err, fs.ErrNotExist)}
-		if err := copyFile(filepath.Join(scratch, path), target); err != nil {
+		if err := copyFile(copies.path(path), target); err != nil {
 			restoreErr := error(nil)
 			for _, w := range written {
 				if w.isNew {
@@ -372,8 +388,15 @@ func writeAll(repo, scratch string, changed []string) error {
 		written = append(written, prior)
 	}
 	for _, path := range changed {
-		if err := copyFile(filepath.Join(scratch, path), filepath.Join(scratch, scratchBase, path)); err != nil {
+		target, copied := filepath.Join(repo, path), filepath.Join(scratch, path)
+		if err := copyFile(target, filepath.Join(scratch, scratchBase, path)); err != nil {
 			return err
+		}
+		// a save since the format stays in scratch, an edit still to land
+		if now, err := os.ReadFile(copied); err == nil && bytes.Equal(now, copies.raw[path]) {
+			if err := copyFile(target, copied); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -383,7 +406,7 @@ func writeAll(repo, scratch string, changed []string) error {
 
 // every pre-commit gate the overlay's paths match, on a temp index of HEAD and the overlay; a green records only bytes the
 // tests read, so a save after the stamp and a red test record nothing
-func overlayGates(repo, scratch string, changed []string, stamp string, testsGreen bool) ([]gateVerdict, error) {
+func overlayGates(repo, scratch string, copies *formattedCopies, changed []string, stamp string, testsGreen bool) ([]gateVerdict, error) {
 	gates, err := readHookGates(repo, "pre-commit")
 	if err != nil || len(gates) == 0 || len(changed) == 0 {
 		return nil, err
@@ -393,7 +416,7 @@ func overlayGates(repo, scratch string, changed []string, stamp string, testsGre
 		return nil, err
 	}
 	defer done()
-	if err := layFormatted(repo, scratch, changed, env); err != nil {
+	if err := layCopies(repo, changed, env, copies.path); err != nil {
 		return nil, err
 	}
 	staged, err := indexPaths(repo, env)
@@ -409,7 +432,7 @@ func overlayGates(repo, scratch string, changed []string, stamp string, testsGre
 	redClockReads(repo, gates, verdicts, changed, env)
 	if gatesFail(verdicts, "", "") == nil && testsGreen && overlayStamp(repo, scratch, changed) == stamp {
 		recordTree(repo, treeOf, gates, verdicts)
-		recordTestedMods(repo, scratch, changed)
+		recordTestedMods(repo, copies, changed)
 	}
 	return verdicts, nil
 }
@@ -450,9 +473,9 @@ type modReport struct {
 
 func (m modReport) isRed() bool { return m.Validate != "ok" || len(m.Failed)+len(m.Errored) > 0 }
 
-// each touched mod is copied to the job tmp with the edited copies laid over it, then validated, then tested; a named
-// test file narrows the run to its mod and that one file
-func overlayTest(repo, scratch string, changed []string, only string) ([]modReport, error) {
+// each touched mod is copied to the job tmp with the edited copies laid over it as the commit's format step leaves them, then
+// validated, then tested, so its green proves the bytes a commit holds; a named test file narrows the run to its mod and that one file
+func overlayTest(repo string, copies *formattedCopies, changed []string, only string) ([]modReport, error) {
 	var reports []modReport
 	mods := touchedMods(changed)
 	if only != "" {
@@ -471,7 +494,7 @@ func overlayTest(repo, scratch string, changed []string, only string) ([]modRepo
 		for _, path := range changed {
 			if m, _ := modOf(path); m == mod {
 				rel := strings.TrimPrefix(filepath.ToSlash(path), modsDir+mod+"/")
-				if err := copyFile(filepath.Join(scratch, path), filepath.Join(overlay, rel)); err != nil {
+				if err := copyFile(copies.path(path), filepath.Join(overlay, rel)); err != nil {
 					return nil, err
 				}
 			}

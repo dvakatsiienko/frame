@@ -9,7 +9,7 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { gitEnv } from '../../script/lib/git-fixture.ts';
@@ -246,9 +246,13 @@ describe('the pocket hook commits every pocket write', () => {
 
     test('a read never calls the commit', () => {
         writeFileSync(join(frame, task), 'x');
+        const state = dirname(lastCommit);
+        rmSync(state, { force: true, recursive: true });
         // a red check blocks before the commit step, so no block means the hook left before both
         expect(run(bash('grep -c x _clio/pocket/tasks/*.md'), redCmd)).toBe(
             undefined,
         );
+        // the commit step makes this dir before it detaches, so its absence is proof with no wait
+        expect(existsSync(state)).toBe(false);
     });
 });

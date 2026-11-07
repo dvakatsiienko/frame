@@ -104,7 +104,7 @@ brief says which, and when it does not, ask once, up front.
    head sha and the test command with its exit. `x lane review` stays yours; the reviewer handling in 5 and the hand-over in 6 are
    skipped.
 5. **the ci reviewer** on a pr, in `bytes` and `frame`: `x lane review <pr>` is its door, and it fires at once. it requests the one round, up to
-   the 1-round cap. run it once, at «final», never per push.
+   the 1-round cap. run it once, at «final», never per push, alone in its call, after reading the push's result.
    fix what is real; answer «declined: <why>» on the thread.
 6. **hand over**, once both reviews are handled: the «final» line to the coordinator (dima is never added as a
    reviewer; clio merges): `[done]` + pr url + head sha + «final». leave no untracked file in the worktree,

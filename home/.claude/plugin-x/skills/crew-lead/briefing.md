@@ -5,6 +5,7 @@
 - **the role contract opens it** — a fresh `--bg` summon's prompt starts `/x:crew-codie …` (or `/x:crew-sixth-sense …`), and the slash expands; a running session gets it by a `SendMessage` saying «load the `x:crew-codie` skill», since a slash in a message never expands (`author-memory/references/skill-craft.md` § placeholders). clio adds only the job (the lane's spec path, `clio:shape-lane-dispatch` § 2), the ticket, its own registry name, and any skill the work drifts into.
 - **every other skill rides plain words that name it** — only the prompt's first slash expands, so the brief repeats the role in plain words as if the slash never expanded («use the crew-codie skill») and names the rest the same way: «use the guide-go skill to …», never «follow our go rules». a complete brief mutes the skill router, so an unnamed skill is an unloaded one. each summoned member's first reply lists the skills it loaded; one line per summon, named vs loaded, goes to `docs/test-drive/skill-named-load.md`.
 - **on a sixth sense yes, codie's brief names its sixth sense** `🌗 🔎 sixth sense: <scope> | #<pr>` (`| main` on a quick lane), the number added once the pr exists; codie with no sixth sense named hands its pr straight to dima.
+- **a sixth sense on a pr touching `x/` or `mods/`**: its summon prompt ends «read `x/.claude/skills/x-verify/SKILL.md` first» or «read `home/.claude/plugin-x/mods/.claude/skills/mods-verify/SKILL.md` first»; project skills load only once the tree is the cwd, past its first probes.
 - 🚧 **a `not yours: …` line** — what another member owns, written as a fence («crossing it is a stop and a question»), so codie never duplicates or crosses it; the exit lines are the termination half.
 - 🧭 **context pointers, never restatement** (dima's yes, 2026-10-07: «both are very useful ideas»): a brief or a `SendMessage` names the spec (`.scratch/<feature>/`), the pocket item, the commit or the research doc, and adds only what none of them holds. a restated ticket drifts from its source the moment either changes.
 - **a brief whose proof needs dima's hands says so at the top** and asks up front.
@@ -43,6 +44,7 @@
 - **a relay to a member names the source it was read from**; a claim about a repo's behaviour opens that repo's `AGENTS.md` first.
 - **a message stating a result goes after the command's output**, never in the same batch.
 - **a timeout is not proof of failure** — `ListAgents` before a re-summon; a blind retry double-runs the work.
+- **a `local_…` id send reports no refusal, so its success never proves a read**: a name send carries the delivery notice.
 
 ## the pr
 

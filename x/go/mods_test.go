@@ -23,6 +23,7 @@ func modsFixture(t *testing.T) (dir string, env []string) {
 d="$3"
 [ -n "$CLAUDE_CALLS" ] && echo "$2" >> "$CLAUDE_CALLS"
 [ "$2" = test ] && [ -n "$CLAUDE_MID_TEST" ] && sh -c "$CLAUDE_MID_TEST"
+[ "$2" = test ] && [ -n "$CLAUDE_SAW" ] && cat "$d"/hooks/* >> "$CLAUDE_SAW"
 if [ "$2" = validate ]; then
   if grep -q PARSE-ERROR "$d"/hooks/* 2>/dev/null; then echo "  ❯ modules../register.ts: m: does not parse: PARSE-ERROR (line 1)"; echo "✘ Validation failed"; exit 1; fi
   echo "✔ Validation passed"; exit 0
@@ -37,6 +38,7 @@ for f in "$d"/tests/*.test.ts; do
   elif grep -q SLOW-ONCE "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q PASS-THEN-SLOW "$f" && [ ! -e "$f.slow" ]; then touch "$f.slow"; echo "(pass) $n first [1.0ms]"; echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
   elif grep -q SLOW-SECOND "$f" && [ -e "$f.ran" ]; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; red=1
+  elif grep -q DIES-QUIET "$f"; then echo "(pass) $n [1.0ms]"; exit 1
   elif grep -q DIES-PARTWAY "$f"; then echo "(fail) $n timed out [5001.0ms]"; echo "  Error: timed out after 5000 ms"; exit 1
   elif grep -q HOOK-THROWS "$f"; then echo "(pass) $n [1.0ms]"; echo "    m's session.start hook was skipped: m: boom"
   elif grep -q RED "$f"; then echo "(fail) $n is red [1.0ms]"; red=1

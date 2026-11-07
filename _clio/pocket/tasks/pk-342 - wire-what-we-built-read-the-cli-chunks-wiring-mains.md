@@ -1,10 +1,10 @@
 ---
 id: PK-342
 title: 'wire what we build, cli and mods: chores go to the wings, main coordinates'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-06T19:53:00Z'
-updated_date: '2026-11-07T13:27:00Z'
+updated_date: '2026-11-07T13:44:00Z'
 labels:
   - s
   - main-lane
@@ -70,4 +70,15 @@ PK-342:W23 (2026-11-07 15:02, dima): observe
 PK-342:W24 (2026-11-07 15:02, dima): i want all my wishes in this new format.
 
 15:27 crow's root fix, for a ticket or a no: orbit add refuses a hidden note promising a re-sign when the ask's text has no ✍️ sign shape; his 15:12 tick cost a second tick.
+
+PK-342:W25 (2026-11-07 15:12, dima): i ticked right before sending this mesage.
+
+PK-342:W26 (2026-11-07 15:12, dima): remember how this new ticking stuff works, simple words to tech terms.
+
+15:42 crow's root fix for the ask with no ✍️ shape is live: orbit add refused a re-sign pick with no sign text at 15:39, so no ticket; a no.
+
+15:45 the cli half of the wiring read, a helper card, spot-checked: 14 landed cli tickets, 8 promises wired with real callers, 0 not wired, 9 tickets with nothing promised (they predate the 🔌 line). the mods half: wing 3's line above; what FRM-505 and FRM-493 owe lands with them as their 🪢 lines. W26: the tick words sit in the orbit tool's description, resident.
+close: both reads done, nothing unwired
+
+close: W1 moved to PK-332 and craft-fleet-flow's lanes-are-main's line; W2 done, this read; W3 done, FRM-410 canceled; W4, W5 done, reminders dropped; W6, W7, W8 moved to wing 1, PK-337 and PK-328; W9, W10, W11 moved to FRM-510 and BYT-94's look cards; W12, W13, W14, W15 moved to PK-348; W16 done, wing-2 labels; W17, W18 done, day plans PK-336, PK-346, PK-349; W19, W20 done, his o6 label main-lane; W21, W22, W23 done, FRM-510's toast seen and the gates card watched, FRM-527; W24 moved to PK-350; W25 done, heard; W26 done, the orbit tool's description holds the tick words
 <!-- SECTION:NOTES:END -->

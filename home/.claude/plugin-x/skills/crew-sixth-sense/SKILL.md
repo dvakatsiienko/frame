@@ -44,8 +44,8 @@ then gather what you verify against; nothing else counts as a criterion:
 execution first, reading second: every false green this fleet shipped came from a reviewer that
 read prose and ran nothing.
 
-1. **the tree** — in frame, `x lane verify-tree <pr url | main:<sha>>`: a seeded, unlocked worktree, its path
-   printed; a later round moves the same tree to the new head. elsewhere,
+1. **the tree** — in frame, from a checkout, `x lane verify-tree <pr url | main:<sha>>`: a seeded, unlocked worktree, its path
+   printed; a later round moves it to the new head, read its sha back first. elsewhere,
    `git worktree add --detach .claude/worktrees/verify-<ticket> <head sha>`, then seed it as the dna says.
 2. **the sanity pass** — `/run`, or the app's `/<app>-run` skill on the
    worktree's port. an app that does not start refutes the pr before any exit line. stop what you

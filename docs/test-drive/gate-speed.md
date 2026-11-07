@@ -17,9 +17,9 @@ PK-328:W15 (2026-11-06 20:49, dima, on the expected gains): ensure all these poi
 ## where the numbers come from
 
 - `~/.local/state/x/gate-queue.log`: start, load, slot (`gate`, `long`, `none`), wait, run, exit, session (first 8 characters, or `-`), command; each commit, push, long round and wrapped run; rows before FRM-521's turn change have no session column. `x lane rebase-main` and the stack push take no turn and log no row
-- `~/.local/state/x/gate-steps.log`: start, load, source (`commit`, `push`, `other`), branch or ref, commit, seconds, exit, command; each gate run through `script/index-run.sh`, each push's whole suite
-- `~/.local/state/x/test-commit.log`: start, load, branch, mode (`whole`, `related`, `none`, pocket-only commits included), staged paths, commit, seconds, exit
-- `~/.local/state/x/mods-test.log`: each mods test run, its skips and timed-out reruns
+- `~/.local/state/x/gate-steps.log`: start, load, source (`commit` a real commit's hook, `push` a real push, `other` the rest, `x lane commit --dry` and `x mods edit test` included), branch or remote ref (`unnamed` on a hand twin), commit, seconds, exit, command; each gate run through `script/index-run.sh`, each twin's whole suite. rows before FRM-521's pr 3 say `commit` for any cc session and a sha for the ref
+- `~/.local/state/x/test-commit.log`: start, load, branch, mode (`whole`, `related`, `none`, pocket-only commits included), staged paths, commit, seconds, exit, source (as `gate-steps.log`); rows before FRM-521's pr 3 have no source
+- `~/.local/state/x/mods-test.log`: each mods test run, its skips and timed-out reruns; under `--skip-tested`, each mod that ran says why: `<mod> ran: no record`, `other bytes`, `past its hour` or `a shared path`
 - transcripts: `GATE_SPEED_DIR=<tmp> node docs/test-drive/gate-speed/collect.mjs`, then `analyze.mjs`, `slow-collect.mjs`, `slow-analyze.mjs`: the same scripts as the baseline, so the classes match
 - an empty or missing log reads «unmeasured», never green; a row's load decides whether a slow day is the gate or the machine
 
@@ -91,6 +91,8 @@ dima explores how to balance the load across clio main and her wings; FRM-521 is
 
 ## rounds
 
+- 2026-11-07 · FRM-521 merged, its first read, `gate-queue.log` 14:04 to 15:40, n=60, 1 to 2 lanes, load p50 15, against the baseline's 4-5 lanes: not a fair comparison until a day with as many lanes · gate wait p90 636 → 39 s, max 1,011 → 89 s, held by anything but a commit or push 76 → 0 %; go suite: pr 139's protocol read 385 → 278 cpu-s, unreproduced since, today's runs read 351 to 357 with `LANG`, 405 without (`ab-lang.tsv`); a mods commit after a green overlay 294 s suite → 1 s, n=3; `refs/heads/main` in the first push row · better, the 11-13 read decides
+- 2026-11-07 · a wing's side lane, the probe: what needed main, nothing past lane times; the merge ran on his sign's pre-approval; what broke, sixth sense's 3 breaks in pr 3, all fixed; a stale lock read as a live session at decamp; a member's note astray, none seen; wing turns woken: not counted
 - 2026-11-07 · exit 16 for real on the merged script, load 60 · the 120 s script logs slot `none` and holds nothing; the peer's wait past the script's commit is 36 s against that commit's 39 s run; both still waited 424 and 460 s, behind a mods commit that held the turn 494 s, its `mods:test --skip-tested` 294 s, exit 1 · the wrapper is fixed; the next hold is the mods suite inside a commit's turn, pr 3's skip
 - 2026-11-07 · exit 16 for real, first try, void: main's checkout still held the old script, so the wrapper took the turn: the peer waited 139 s of the script's 164 s · void, not a read of the fix
 - 2026-11-06 · red-proof on one mutant, load 38 · 15 s → 8 s, base included · better

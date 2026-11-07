@@ -111,6 +111,16 @@ describe('test-commit', () => {
         ]);
     });
 
+    test.each([
+        [{ INDEX_RUN_SOURCE: 'commit' }, 'commit'],
+        [{ INDEX_RUN_SOURCE: 'other' }, 'other'],
+        // this test runs inside a gate at commit, whose own source it would inherit
+        [{ INDEX_RUN_SOURCE: undefined }, 'other'],
+    ])('its last column is the source: %j', (extra, source) => {
+        const got = runGate(staged({ 'a.ts': 'a\n' }), 'main', '0', extra);
+        expect(got.fields.at(-1)).toBe(source);
+    });
+
     test('a codie commit with no code staged runs nothing and logs it', () => {
         const got = runGate(staged({ 'd.md': 'd\n' }), 'codie/FRM-1-x');
         expect(got.calls).toBe('');
@@ -226,6 +236,6 @@ describe('test-commit', () => {
     ])('on %s a red hands back its exit and logs it', (branch) => {
         const got = runGate(staged({ 'a.ts': 'a\n' }), branch, '3');
         expect(got.status).toBe(3);
-        expect(got.fields.at(-1)).toBe('3');
+        expect(got.fields.at(-2)).toBe('3');
     });
 });

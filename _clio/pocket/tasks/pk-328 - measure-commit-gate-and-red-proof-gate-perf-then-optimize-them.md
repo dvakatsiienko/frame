@@ -1,10 +1,10 @@
 ---
 id: PK-328
 title: measure commit gate and red-proof gate perf, then optimize them
-status: open
+status: done
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-07T12:27:00Z'
+updated_date: '2026-11-07T13:45:00Z'
 labels:
   - s
   - wing-1
@@ -125,4 +125,8 @@ PK-328:W38 (2026-11-07 03:54, dima): we open tomorrow with your 328 lane, only o
 his 11-07 04:46, an important steer: core.bare=true is a point to rethink for wing 1: «i don't like bad git stuff in our setup especially given lots of cpu issues.» first in wing-1-9.
 
 2026-11-07 14:28 the cpu overload's numbers, story and traces now live only in docs/knowledge/cpu-overload.md (his words W11 to W14 in FRM-525); this item keeps his words, new findings go there.
+
+close: 2026-11-07 FRM-521 landed, #145 merged; the 11-13 read lives in docs/test-drive/gate-speed.md, the cpu goal in FRM-525 and FRM-528. this item keeps his words.
+
+close: PK-328:W1-W38 moved to FRM-521, raw drop kept in the notes
 <!-- SECTION:NOTES:END -->
