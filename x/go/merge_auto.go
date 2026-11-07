@@ -921,7 +921,7 @@ func renovateAuthor(login string) bool {
 
 // a renovate pr needs no clean while every commit is renovate's own, signed by github: a member's push onto its branch
 // makes it a member's pr, as bytes' review-renovate.yml reads it; an unread list, or one cut short of the head (github
-// stops at 250, a push can land between reads), counts as that push
+// stops at 250, a push can land between reads), counts as that push; a changed workflow file asks the clean too
 func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeCheck {
 	c := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
 	if c.OK || !renovateAuthor(pr.User.Login) {
@@ -953,6 +953,24 @@ func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeChec
 	if len(commits) == 0 || commits[len(commits)-1].Sha != pr.Head.Sha {
 		c.Detail += "; its commit list does not end at the head"
 		return c
+	}
+	type file struct {
+		Filename         string `json:"filename"`
+		PreviousFilename string `json:"previous_filename"`
+	}
+	files, err := ghPages[file](asDima, api+"/pulls/"+n+"/files", "")
+	if err != nil {
+		c.Detail += "; its files did not read: " + err.Error()
+		return c
+	}
+	for _, f := range files {
+		for _, path := range []string{f.PreviousFilename, f.Filename} {
+			// a bumped action runs with the repo's secrets, and ci running it proves nothing about what it took
+			if strings.HasPrefix(path, ".github/workflows/") {
+				c.Detail += "; it changes a workflow file, so a clean reads it: " + path
+				return c
+			}
+		}
 	}
 	c.OK, c.Detail, c.renovateExempt = true, "renovate's own commits, ci is their review", true
 	return c

@@ -30,6 +30,8 @@ jobs:
   renovate:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # holds RENOVATE_APP_KEY, which pushes workflows: github refuses this job on any branch but main
+    environment: renovate-main-only
 
     permissions:
       contents: read
