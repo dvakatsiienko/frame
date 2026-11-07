@@ -19,6 +19,12 @@ Standing: read this before chasing a red cpu, and add to it when a round ends, s
 - Sessions at rest are cheap: about 15 sessions, the app and the os fit in about 4 of 14 cores (two 10 s windows)
 - `ps` and activity monitor miss the load: a go run makes 661 short-lived processes a second, so the app list sums to 15 % at a real 100 %. A `spindump` sees them
 
+## lane count rows, 2026-11-07
+
+One row per lane count, from `scripts/lane-count-read.mjs`. A lane here is a codie and its sixth sense; main's and the wings' commits run beside it. The number to beat is 1.8× at 4-5 lanes, in [cases.md](cpu-overload/cases.md).
+
+- 1 lane, FRM-521 pr 3, 15:07 to 15:30, 140 samples at 10 s: 9.2 cores, load p50 20 p90 35, kernel 45 %, 40 % of samples at 95 %+, spotlight 0.4 cores, git start 7.1 ms (n=27), go suite 66 s run, 2 s wait (n=1). Its codie started before `LANG` landed
+
 ## the files
 
 - [story.md](cpu-overload/story.md): the dated history, oldest first: seen, checked, assumed, verdict, tried, cost. Append a day when a round ends
