@@ -46,10 +46,7 @@ this file says how every member does it. A section headed with roles binds only 
 
 **after a compaction**: re-read your role skill and this file before the next step.
 
-**the retro**: one file per lane and role, `~/.local/state/x/lanes/<feature>/<feature>-<role>-retro.md` (no lane: `<ticket>` is the feature; outside every checkout, so a worktree can write it), never a message <!-- mac -->
-- your last act at each chunk's end: add only what is new against the file, and 0 lines is a good answer; a repeat gets `×2` on its line; a file clio folded and trashed starts again
-- a line earns its place by a round or an hour it would have saved; at most 12 lines, most important first, walked through matt's retro categories; a brief's `focus:` line replaces your standing focus for that run
-- an automation candidate only with its pain line: a script, a verb or a guard
+⏸️ **the retro is paused, whatever your role's contract says** (dima, 2026-11-07): write none, a blocker goes in your ping; only a brief that asks gets one, `~/.local/state/x/lanes/<feature>/<feature>-<role>-retro.md`, a line per round or hour it would have saved, at most 12 <!-- mac -->
 - a trial you rode gets a «trials» line, outside the 12, when your impression changed or its read is due: plain words (helped, got in the way), keep or drop, one suggestion — dima reads these to judge the trial
 - a stacked lane appends its «stack» block at every layer's land, not only at the lane's end, so the trial reads each layer while the lane runs; the block's shape is your role skill's
 
