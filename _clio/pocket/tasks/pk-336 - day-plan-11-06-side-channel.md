@@ -4,7 +4,7 @@ title: 'day plan 11-07: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T02:18:00Z'
+updated_date: '2026-11-07T02:19:00Z'
 labels:
   - m
   - wing-2
@@ -110,4 +110,6 @@ closed 2026-11-07 at his 03:51 word, 12 of 22 done. the 10 open lines' homes: #9
 close: W1, W2, W3, W4 moved: PK-334 still holds the gates list, the vibe word and the upkeep. W5 moved: PK-328, then FRM-521 and FRM-525. W12, W13, W14 moved: rex set up with him, the trial runs in docs/test-drive/rex.md, verdict 11-20. W15, W16, W17, W18, W19, W20, W21, W22 done: ci made boring shaped, specced and handed to main 17:12, BYT-130, BYT-94, BYT-132, BYT-106, BYT-131 in her lane. the 10 unchecked lines: #9 moved FRM-495; #10 moved FRM-503; #11 FRM-514 done, moved FRM-410; #12 moved FRM-491; #13 moved PK-328 and PK-334; #14 moved PK-332; #17 moved PK-300, PK-304, PK-323 done; #18 moved PK-310; #21 moved FRM-516; #22 moved PK-308. none dropped.
 
 reopened 2026-11-07 04:18, dima: not solved, lots of unticked lines; wing 2 runs it as its plan and does the chores, wing 1 is summoned to solve PK-328, so PK-328 left the list. the close line above is wing 1's hand-over, read it for each line's other home.
+
+for line 23, from the 11-07 flush: a spec lives in main's .scratch, since a wing's tree dies with its archive (FRM-521's nearly did); a wing's items keep their label at hand-back, or the groom check reds them (PK-343).
 <!-- SECTION:NOTES:END -->

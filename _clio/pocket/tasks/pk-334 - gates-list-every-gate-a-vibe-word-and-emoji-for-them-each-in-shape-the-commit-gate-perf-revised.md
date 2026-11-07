@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-06T11:45:00Z'
-updated_date: '2026-11-07T02:01:00Z'
+updated_date: '2026-11-07T02:19:00Z'
 labels:
   - m
   - wing-1
@@ -34,4 +34,6 @@ raw drop (11-06 inbox, dima): for side channel
 raw drop (11-06 inbox, dima): list all possible gates at all list places. like commit gate red prof gate, i want to have our gate as vibe word. and top seven emoji. so we treat all gates properly. and maintain them. all gates should have clear purpose and be relevant and in a good shape. including per wise i spotted that commit gate should be perf revised its slow. optimize it.
 
 from 11-07's retros, for the gates list: a glossary line inside a bullet is refused only after the commit's queue wait, 476 s (cli 5 codie): the gate could read the message before the turn; a one-line crew skill edit shows its size cap only on ci, `script/lib/skill-size.test.ts` runs by hand before a push (cli 6 codie).
+
+x lane commit from _clio with a path not relative to the repo root says «the path list arrived as one word» (x/go/lane.go:167): a path with spaces reads as a lost split; fix the wording, or resolve from the cwd. from the 11-07 flush.
 <!-- SECTION:NOTES:END -->
