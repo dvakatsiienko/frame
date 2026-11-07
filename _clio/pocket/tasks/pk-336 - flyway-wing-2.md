@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T19:49:00Z'
+updated_date: '2026-11-07T20:00:00Z'
 labels:
   - m
   - clio-wing-2
@@ -123,4 +123,6 @@ batch read 17:40: neither is stale. FRM-455 waits on wisphunter's trial verdict,
 2026-11-07 17:47: PK-326 handed to main, his word: she runs the halt.
 
 line 4 done 17:48: low-tide and low-tide-triage live in clio 0.3.438; the first split ran, consulted, settled with his yes.
+
+PK-336:W24 (2026-11-07 21:48, dima): fix the habit: an action that folds or dissolves an item into another area does a sanity check across flyways and yanks it out of the flyway plan, so no confusions.
 <!-- SECTION:NOTES:END -->

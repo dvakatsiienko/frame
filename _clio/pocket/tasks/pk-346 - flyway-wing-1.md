@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-07T19:49:00Z'
+updated_date: '2026-11-07T20:00:00Z'
 labels:
   - s
   - clio-wing-1
@@ -47,4 +47,6 @@ ordinal: 18998
 17:34: the PK-310 line dropped: closed on his 15:06 word, so the second watch was a stale tail of mine; a burst seen again reopens it. PK-300 parked, his 17:26 word.
 
 low tide split 11-07, dima's yes 17:36: FRM-517 joins; PK-300 and FRM-530 parked on his word.
+
+PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance issues topic, so anything performance-related can go to wing one.
 <!-- SECTION:NOTES:END -->
