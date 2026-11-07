@@ -137,14 +137,10 @@ Peak load halved, 100 → 49; sys share unchanged, 33 → 35 %. Not the cpu's fi
 
 ## next, cheapest first
 
-0. first, one lane alone: start `cpu-sample.mjs` and catch a 100 % with a spindump at minimal activity, naming the run behind it
-0. the queue and the sleep: split queue wait from cpu wait first, since lanes stuck on one turn is a lever beside cpu; cut the sleeps `4739e4ed` added to every commit's test step; a planned ramp replays one fixed chunk set per dose, its design in the research doc § what would make this causal, doses raised to 16
-1. the third piece: a `spindump` with neither a go run nor a mods suite, and whose sandbox profile hits git, the cheapest new lever if it can go
-   - then, dima's tick: a research on git's process cost, all lanes: fewer git per fixture, a repo template, in-process libraries (gix, go-git), a long-lived `git cat-file --batch`, config and sandbox cost per start, jj's process count and hooks
-2. the decisive A/B at a halt: the same go run with every session running, then with all stopped. sys stays near its number → the suite's own work; it falls far → contention
-3. the leak: free the 24, compare spawn floor and sys; pr 2 stops new ones
-4. Spotlight: exclude the worktrees dir through the Search Privacy pane, read commits and `mds_stores` before and after
-5. hide the desktop window: `top` WindowServer, 2 min
-6. fewer spawns per test, FRM-521's pr 2; exit 5 reads it
-7. a Developer Tools A/B only with the gates run from a shell outside claude, since #104173 says the Bash tool is not covered
-8. a Linux VM with the checkout on its own disk: one go suite against native, when the machine is quiet. Only then think of hardware
+0. running: FRM-528, fewer git ops per fixture and a cpu budget; its first step tags each git spawn as setup, scenario or `x` child
+0. a planned ramp replays one fixed chunk set per dose, its design in the research doc § what would make this causal, doses raised to 16; the 1.8× at 4-5 lanes stays unproven until then
+1. a `spindump` with `LANG` set proves or kills the `cfprefsd` reading, and names whose sandbox profile hits git; needs his `sudo`
+   - then, dima's tick: a research on git's process cost, all lanes: in-process libraries (gix, go-git), a long-lived `git cat-file --batch`, config and sandbox cost per start, jj's process count and hooks
+2. hide the desktop window: `top` WindowServer, 2 min
+3. a Developer Tools A/B only with the gates run from a shell outside claude, since #104173 says the Bash tool is not covered
+4. a Linux VM with the checkout on its own disk: one go suite against native, when the machine is quiet. Only then think of hardware

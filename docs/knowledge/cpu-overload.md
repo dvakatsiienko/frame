@@ -25,6 +25,8 @@ One row per lane count, from `scripts/lane-count-read.mjs`. A lane here is a cod
 
 - 1 lane, FRM-521 pr 3, 15:07 to 15:30, 140 samples at 10 s: 9.2 cores, load p50 20 p90 35, kernel 45 %, 40 % of samples at 95 %+, spotlight 0.4 cores, git start 7.1 ms (n=27), no clean go suite row: the one match was a chain with typecheck and vitest. Its codie started before `LANG` landed
 - 2 lanes, FRM-521 pr 3 + FRM-524, 15:30 to 15:40, 52 samples: 10.0 cores, load p50 20 p90 30, kernel 50 %, 50 % of samples at 95 %+, spotlight 0.2 cores, git start 8.1 ms (n=10), no go suite in the window: too thin to compare, lane 1 merged at 15:39
+- 1 lane, FRM-524, 15:40 to 15:46, 32 samples: 6.7 cores, load p50 14 p90 20, kernel 44 %, 13 % of samples at 95 %+, git start 5.8 ms (n=6): too thin
+- 2 lanes, FRM-524 + BYT-132, 15:46 to 16:22, 189 samples: 8.7 cores, load p50 15 p90 30, kernel 42 %, 29 % of samples at 95 %+, spotlight 0.1 cores, git start 6.2 ms (n=35), go suite run p50 56 s, wait p50 0 s (n=6): `LANG`-era codies
 
 ## the files
 
