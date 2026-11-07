@@ -89,6 +89,11 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	shiftOnly, _ := flags["shift-only"].(bool)
 	check, _ := flags["override-check"].(bool)
 	switch {
+	case flags["brake-check"] == true:
+		if len(args) > 0 || off || shiftOnly || check {
+			return nil, usageFail("--brake-check reads one repo's brake: it takes no pr and no other switch", "x lane merge-auto --brake-check --repo <owner/name>")
+		}
+		return brakeCheckPlan(r, flags)
 	case check && (off || shiftOnly || len(args) > 0):
 		return nil, usageFail("--override-check reads every open pr: it takes no pr and no other switch", "x lane merge-auto --override-check")
 	case check:
@@ -302,12 +307,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		brake, err = brakeOn(repo, trunk)
 		switch {
 		case err != nil:
-			if fail, isFail := errors.AsType[*Fail](err); isFail {
-				named := *fail
-				named.Msg = "the brake did not read, so it stops the merge: " + fail.Msg
-				return "", &named
-			}
-			return "", fmt.Errorf("the brake did not read, so it stops the merge: %w", err)
+			return "", brakeReadFail(err)
 		case brake != "":
 			return "", notHeld("on: " + brake)
 		}
@@ -854,7 +854,11 @@ func brakeLabelled(api string) (string, error) {
 
 // the brake's own record on this mac, for a brake github refused to label (dima, o194)
 func brakeRecord(repo string) string {
-	return filepath.Join(stateDir(), "merge-brake", strings.ReplaceAll(repo, "/", "_")+".json")
+	state := stateDir()
+	if !mergeTestEnvOn() {
+		state = filepath.Join(systemHome(), ".local/state/x")
+	}
+	return filepath.Join(state, "merge-brake", strings.ReplaceAll(repo, "/", "_")+".json")
 }
 
 type brakeNote struct {
@@ -887,6 +891,17 @@ func brakeRecorded(repo string) (string, error) {
 		return "", &Fail{Msg: "the brake record " + brakeRecord(repo) + " is unreadable, so the brake reads on", Next: "cat " + brakeRecord(repo)}
 	}
 	return "#" + note.PR + " " + note.Why + "; release once dima looked: " + releaseBrake(note.PR), nil
+}
+
+// a *Fail keeps its shape, or the dispatcher would print it without the name
+func brakeReadFail(err error) error {
+	const named = "the brake did not read, so it stops the merge: "
+	if fail, isFail := errors.AsType[*Fail](err); isFail {
+		copied := *fail
+		copied.Msg = named + fail.Msg
+		return &copied
+	}
+	return fmt.Errorf(named+"%w", err)
 }
 
 // the label, then this mac's record, then reverts; git's revert names the sha, github's revert button only the subject

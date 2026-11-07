@@ -54,6 +54,9 @@ func overrideLog(store string) string {
 
 // the system's user record, which HOME can't move; no record means no path, and no path reads off
 func systemHome() string {
+	if home := os.Getenv("X_SYSTEM_HOME"); isTestBuild && home != "" {
+		return home
+	}
 	me, err := user.Current()
 	if err != nil {
 		return ""
@@ -208,6 +211,32 @@ func overrideClones() [][2]string {
 		{"dvakatsiienko/frame", mainCheckout(frameRoot())},
 		{"dvakatsiienko/bytes", filepath.Join(systemHome(), "projects/bytes")},
 	}
+}
+
+// x-mod-guard's read of the brake before a raw merge under the override: one reader, brakeOn, and a failed read exits non-zero
+func brakeCheckPlan(r *Run, flags Flags) (any, error) {
+	repo, err := repoOf(flags)
+	if err != nil {
+		return nil, err
+	}
+	for _, clone := range overrideClones() {
+		if clone[0] == repo {
+			if err := os.Chdir(clone[1]); err != nil {
+				return nil, fmt.Errorf("the brake did not read, no clone of %s: %w", repo, err)
+			}
+		}
+	}
+	r.Open(repo)
+	brake, err := brakeOn(repo, "main")
+	if err != nil {
+		return nil, brakeReadFail(err)
+	}
+	said := "off"
+	if brake != "" {
+		said = "on: " + brake
+	}
+	r.Done(said, "")
+	return map[string]string{"brake": brake, "repo": repo}, nil
 }
 
 // merge-auto's own plan per pr, so the answer can't drift from the door; a ref fetch is the only thing it writes

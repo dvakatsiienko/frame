@@ -334,6 +334,67 @@ func TestOverrideCheckNamesGithubsOwnRefusals(t *testing.T) {
 	}
 }
 
+func TestBrakeCheckAnswersOneReader(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, issues, want string
+		code               int
+	}{
+		{name: "off", issues: `[]`},
+		{name: "the label is on", issues: `[{"number":8,"labels":[{"name":"` + brakeLabel + `"}]}]`, want: "#8"},
+		{name: "a failed read exits non-zero", issues: serverDown, code: 1, want: "the brake did not read"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			w.hub.pages[repoPath+"/issues"] = c.issues
+
+			got := w.run(t, "--brake-check")
+
+			if got.code != c.code || !strings.Contains(got.stdout, c.want) {
+				t.Fatalf("exit %d, want %d and %q\n%s", got.code, c.code, c.want, got.stdout)
+			}
+			if c.code == 0 && (got.data["brake"] != "") != (c.want != "") {
+				t.Errorf("brake = %v, want it to name %q", got.data["brake"], c.want)
+			}
+			if writes := append(w.hub.sent("PUT "), w.hub.sent("POST ")...); len(writes) != 0 {
+				t.Errorf("a read wrote to github: %q", writes)
+			}
+		})
+	}
+}
+
+// the last gates under the override: a line's own HOME or X_STATE moves neither record on a real run
+func TestHoldAndBrakeRecordsIgnoreHomeAndXState(t *testing.T) {
+	t.Parallel()
+	for name, record := range map[string]string{
+		"the hold":  ".local/state/x/merge-hold/o_r.json",
+		"the brake": ".local/state/x/merge-brake/o_r.json",
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			real, moved := t.TempDir(), t.TempDir()
+			body := `{"prs":["7"]}`
+			if name == "the brake" {
+				body = `{"pr":"7","why":"w"}`
+			}
+			write(t, filepath.Join(real, record), body)
+
+			got := xIn(t, w.clone, append(w.env, "X_TEST=", "X_SYSTEM_HOME="+real, "HOME="+moved, "X_STATE="+moved), "lane", "merge-auto", "7", "--apply")
+
+			want := "held by dima's hold"
+			if name == "the brake" {
+				want = "brake on"
+			}
+			if merges := w.hub.sent("PUT "); got.code == 0 || len(merges) != 0 || !strings.Contains(got.stdout, want) {
+				t.Fatalf("exit %d, %d merges, want %q: %s moved with the line\n%s", got.code, len(merges), want, name, got.stdout)
+			}
+		})
+	}
+}
+
 func TestOverrideCheckNamesAMissingClone(t *testing.T) {
 	t.Parallel()
 	got := xIn(t, t.TempDir(), []string{"X_OVERRIDE_CLONES=o/b=/no/such/clone", "X_GITHUB_URL=http://127.0.0.1:1"}, "lane", "merge-auto", "--override-check")

@@ -18,8 +18,7 @@ type holdNote struct {
 func holdRecord(repo string) string {
 	state := stateDir()
 	if !mergeTestEnvOn() {
-		userHome, _ := os.UserHomeDir()
-		state = filepath.Join(userHome, ".local/state/x")
+		state = filepath.Join(systemHome(), ".local/state/x")
 	}
 	return filepath.Join(state, "merge-hold", strings.ReplaceAll(repo, "/", "_")+".json")
 }

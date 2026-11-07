@@ -482,13 +482,40 @@ async function overrideLogPass(
 }
 
 // this mac's own brake record (`x/go/merge_auto.go`); the brake's label and reverts need the network, so only merge-auto reads those
-async function rawMergeBraked($: EngineInterface) {
-    const path = await overrideStorePath($);
-    if (!path) return true;
-    const dir = path.replace(/operator-override\.json$/, 'merge-brake');
-    if (!(await $.fs.exists(dir).catch(() => true))) return false;
-    const files = await $.fs.list(dir).catch(() => undefined);
-    return !files || files.some((f) => f.name.endsWith('.json'));
+async function rawMergeBrake($: EngineInterface, typed: string, cwd: string) {
+    const named = typed.match(
+        /(?:-R|--repo)[ =]['"]?([\w.-]+\/[\w.-]+)|repos\/([\w.-]+\/[\w.-]+)\/pulls|github\.com\/([\w.-]+\/[\w.-]+)\/pull\//,
+    );
+    const repo =
+        named?.[1] ?? named?.[2] ?? named?.[3] ?? (await repoOf($, cwd));
+    if (!repo) return 'the brake did not read: no repo to read it for';
+    const read = await $.process
+        .run(
+            [
+                'x',
+                'lane',
+                'merge-auto',
+                '--brake-check',
+                '--repo',
+                repo,
+                '--json',
+            ],
+            {
+                cwd,
+                timeoutMs: 8000,
+            },
+        )
+        .catch(() => undefined);
+    try {
+        const { data } = JSON.parse(read?.stdout ?? '') as {
+            data?: { brake?: unknown };
+        };
+        if (typeof data?.brake !== 'string')
+            return 'the brake did not read, so it reads on';
+        return data.brake ? `the brake is on: ${data.brake}` : undefined;
+    } catch {
+        return 'the brake did not read, so it reads on';
+    }
 }
 
 // x's own record of dima's holds, one file per repo (`x/go/merge_hold.go`); a pr number across repos counts as held in each,
@@ -1748,14 +1775,18 @@ export const register: Register = (on) => {
                 ? undefined
                 : await overrideGrant($, 'prs').catch(() => undefined);
             const landsAny = merges.some((m) => !m.isHoldOnly);
+            const brake =
+                !held && override && landsAny
+                    ? await rawMergeBrake($, typed, cwd)
+                    : undefined;
             const hold =
                 held ??
-                (override && landsAny && (await rawMergeBraked($))
+                (brake
                     ? {
                           door: "dima's look, then x lane merge-auto <pr> --release-brake --dima-ok <pr>",
                           rule: 'raw-merge',
                           targets: ['merge-brake'],
-                          why: 'the brake is on, and operator-override never opens it',
+                          why: `${brake}, and operator-override never opens it`,
                       }
                     : rawMergeRefused(
                           // `gh stack merge` stays outside the override (FRM-524 `## out`)

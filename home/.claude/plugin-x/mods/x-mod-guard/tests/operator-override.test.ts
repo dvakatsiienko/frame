@@ -10,6 +10,7 @@ const PLANTED = '/planted-home/.local/state/x/operator-override.json';
 const ON = '{"prs":{"at":"2026-11-07T13:00:00.000Z","by":"word"}}';
 
 type World = {
+    brake?: string;
     files?: Record<string, string>;
     registry?: 'bg' | 'interactive' | 'none';
 };
@@ -38,8 +39,29 @@ function world(on: On, opts: World = {}) {
               : { value: undefined },
     );
     const appended: string[] = [];
+    const brakeReads: string[] = [];
     on('process.run', (_$, e) => {
         if (e.argv[0] === 'sh') appended.push(e.argv[4] ?? '');
+        const answer = (exitCode: number, stdout: string) => ({
+            value: {
+                exitCode,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout,
+            },
+        });
+        if (e.argv.includes('get-url'))
+            return answer(0, 'https://github.com/o/r.git\n');
+        if (e.argv.includes('--brake-check')) {
+            brakeReads.push(e.argv[e.argv.indexOf('--repo') + 1] ?? '');
+            return opts.brake === 'fails'
+                ? answer(1, '')
+                : answer(
+                      0,
+                      JSON.stringify({ data: { brake: opts.brake ?? '' } }),
+                  );
+        }
         return e.argv[0] === 'id'
             ? {
                   value: {
@@ -96,7 +118,7 @@ function world(on: On, opts: World = {}) {
         ran.push('command' in e ? String(e.command) : e.tool);
         return { result: {}, text: 'ran' };
     });
-    return { appended, files, ran };
+    return { appended, brakeReads, files, ran };
 }
 
 const say = ($: Engine, text: string, kind = 'composer') =>
@@ -358,17 +380,15 @@ test('a hold-only graphql line under prs logs no pass', async ($, on) => {
     expect(appended).toEqual([]);
 });
 
-test("a hold-only graphql line runs under prs with this mac's brake on", async ($, on) => {
-    const { ran } = world(on, {
-        files: {
-            '/real-home/.local/state/x/merge-brake/o_r.json':
-                '{"pr":"7","why":"w"}',
-            [REAL]: ON,
-        },
+test('a hold-only graphql line under prs reads no brake', async ($, on) => {
+    const { brakeReads, ran } = world(on, {
+        brake: '#8 merged a head',
+        files: { [REAL]: ON },
     });
     const line = `gh api graphql -F threadId=$ID -f query='mutation { a }'`;
     expect((await bash($, line)).deny).toBe(undefined);
     expect(ran).toEqual([line]);
+    expect(brakeReads).toEqual([]);
 });
 
 test('his phrase with no registry row says it moved nothing', async ($, on) => {
@@ -434,14 +454,33 @@ test('his hold still stops a raw merge under prs', async ($, on) => {
     expect(ran).toEqual([]);
 });
 
-test("this mac's brake record still stops a raw merge under prs", async ($, on) => {
+test("x's brake, its label or a revert, stops a raw merge under prs", async ($, on) => {
     const { ran } = world(on, {
-        files: {
-            '/real-home/.local/state/x/merge-brake/o_r.json':
-                '{"pr":"7","why":"w"}',
-            [REAL]: ON,
-        },
+        brake: '#8 merged a head its gate never read',
+        files: { [REAL]: ON },
     });
-    expect((await bash($, 'gh pr merge 7')).deny).toContain('the brake is on');
+    expect((await bash($, 'gh pr merge 7')).deny).toContain(
+        'the brake is on: #8',
+    );
     expect(ran).toEqual([]);
 });
+
+test('a brake that does not read refuses a raw merge under prs', async ($, on) => {
+    const { ran } = world(on, { brake: 'fails', files: { [REAL]: ON } });
+    expect((await bash($, 'gh pr merge 7')).deny).toContain(
+        'the brake did not read',
+    );
+    expect(ran).toEqual([]);
+});
+
+for (const [line, repo] of [
+    ['gh pr merge 7', 'o/r'],
+    ['gh pr merge 7 -R a/b', 'a/b'],
+    ['gh pr merge https://github.com/a/b/pull/7', 'a/b'],
+    ['gh api -X PUT repos/a/b/pulls/7/merge', 'a/b'],
+] as const)
+    test(`the brake read names the merge's repo: ${line}`, async ($, on) => {
+        const { brakeReads } = world(on, { files: { [REAL]: ON } });
+        await bash($, line);
+        expect(brakeReads).toEqual([repo]);
+    });

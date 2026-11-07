@@ -74,7 +74,7 @@ func TestMergeAutoHonoursXStateForTheHoldOnlyUnderXTest(t *testing.T) {
 	home := t.TempDir()
 	write(t, filepath.Join(home, ".local/state/x/merge-hold/o_r.json"), `{"prs":["7"]}`)
 
-	got := xIn(t, w.clone, append(w.env, "X_TEST=", "HOME="+home), "lane", "merge-auto", "7", "--apply")
+	got := xIn(t, w.clone, append(w.env, "X_TEST=", "X_SYSTEM_HOME="+home, "HOME="+home), "lane", "merge-auto", "7", "--apply")
 
 	if merges := w.hub.sent("PUT "); got.code == 0 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, "held") {
 		t.Fatalf("exit %d, error %q, merges %q: want the real record read past X_STATE", got.code, envelopeOf(got).Error, merges)
@@ -234,18 +234,6 @@ func TestMergeAutoReleaseBuildIgnoresTheTestEnv(t *testing.T) {
 		code := exitOf(c.Run())
 		return code, stdout.String()
 	}
-	t.Run("the hold comes from the real record, past X_STATE", func(t *testing.T) {
-		t.Parallel()
-		w := newMergeWorld(t, "script/foo.ts")
-		home := t.TempDir()
-		write(t, filepath.Join(home, ".local/state/x/merge-hold/o_r.json"), `{"prs":["7"]}`)
-
-		code, stdout := release(w, home)
-
-		if merges := w.hub.sent("PUT "); code == 0 || len(merges) != 0 || !strings.Contains(stdout, "held") {
-			t.Fatalf("exit %d, merges %q: want the real record read\n%s", code, merges, stdout)
-		}
-	})
 	t.Run("a sign comes from the real linear, past X_LINEAR_URL", func(t *testing.T) {
 		t.Parallel()
 		w := newMergeWorld(t, "x/go/gh.go")
