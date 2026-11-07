@@ -56,3 +56,5 @@ workflow was guessed at ~150k and spent 1.27M for 82 ticket bodies + comments.
 **codie's last act at each chunk's end is its retro**, its shape in `x:crew-dna`; clio's ask states the why (the fleet improves only from what its members saw) and names the angles: the brief, the steers, the lane, the reporting, what nobody asked; blunt, name-the-moment specifics.
 
 Full evidence base: [references/spawn-mechanics.md](references/spawn-mechanics.md), on demand.
+
+**a coordinator reopening a clean lane names its one round**: the delta, «one round, then merge or stop to me», and a follow-up finding goes to the next chunk unless it passes his brake or hold; `lane-rounds:<lane>` in x-mod-stash's store holds the count (frame#146 went 3 rounds to 6 on an open steer, 2026-11-07).
