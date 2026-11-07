@@ -4,7 +4,7 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T20:34:00Z'
+updated_date: '2026-11-07T20:36:00Z'
 labels:
   - m
   - clio-wing-2
@@ -200,4 +200,6 @@ PK-351:W82 (2026-11-07 22:30, dima): can we plan everything with me so you can s
 PK-351:W83 (2026-11-07 22:30, dima): step 7 is already planned, but we planned it when clio's old side channel model was working, before wings. adjust it to the wings model. in short, crow should be an adviser for main clio and all possible wings, and the quantity of wings is dynamic. any wing should request crow consultations when grilling or during other decisions: consultation on request.
 
 PK-351:W84 (2026-11-07 22:34, dima): on the weekly at 97 %: finish normal. you will fit into 2 %, then clio halts. after you are fully done, main clio halts: the new halt's test, you and wing 1 should autohalt by main clio.
+
+PK-351:W85 (2026-11-07 22:36, dima): i go cook. fully finish PK-351. if any post-boot probes are needed to fully close it, you can leave it open for a final probe during the next boot, that's fine, but fully resolve the plan scope so the next boot boots a properly groomed winged clio v2.
 <!-- SECTION:NOTES:END -->
