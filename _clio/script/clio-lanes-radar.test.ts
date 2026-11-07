@@ -6,11 +6,11 @@ import { describe, expect, test } from 'vitest';
 
 import { gitEnv } from '../../script/lib/git-fixture.ts';
 
-const SCRIPT = join(import.meta.dirname, 'clio-lanes.ts');
+const SCRIPT = join(import.meta.dirname, 'clio-lanes-radar.ts');
 const DEAD_PID = spawnSync('node', ['-e', '']).pid;
 
 function world() {
-    const base = mkdtempSync(join(tmpdir(), 'clio-lanes-'));
+    const base = mkdtempSync(join(tmpdir(), 'clio-lanes-radar-'));
     const claude = join(base, 'claude');
     const root = join(base, 'frame');
     for (const dir of ['sessions', 'plugins/store', 'shelf']) {
@@ -46,8 +46,8 @@ function world() {
             encoding: 'utf8',
             env: {
                 ...process.env,
-                CLIO_LANES_CLAUDE: claude,
-                CLIO_LANES_ROOT: root,
+                CLIO_LANES_RADAR_CLAUDE: claude,
+                CLIO_LANES_RADAR_ROOT: root,
                 TZ: 'Asia/Tokyo',
             },
             input,
@@ -86,7 +86,7 @@ function world() {
     };
 }
 
-describe('clio-lanes', () => {
+describe('clio-lanes-radar', () => {
     test('a live seat shows its status, phases and wait from the board store', () => {
         const w = world();
         w.session('🦉🪽 clio: wing 2', 'sid-2', { status: 'busy' });

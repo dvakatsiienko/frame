@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 // every clio lane at a glance, read from what each lane already keeps (PK-351:W22, W24, W76)
-// usage: node clio-lanes.ts          the view
-//        node clio-lanes.ts --hook   SessionStart: the same, silent for a parked sidecar
+// usage: node clio-lanes-radar.ts          the view
+//        node clio-lanes-radar.ts --hook   SessionStart: the same, silent for a parked sidecar
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-const claudeDir = process.env.CLIO_LANES_CLAUDE ?? join(homedir(), '.claude');
-const root = process.env.CLIO_LANES_ROOT ?? join(homedir(), 'frame');
+const claudeDir =
+    process.env.CLIO_LANES_RADAR_CLAUDE ?? join(homedir(), '.claude');
+const root = process.env.CLIO_LANES_RADAR_ROOT ?? join(homedir(), 'frame');
 const unread: string[] = [];
 // inside the hook's 10 s, so a slow tree reads «unread» and the view still prints
 const gitDeadline = Date.now() + 7000;
@@ -36,7 +37,7 @@ if (unread.length > 0) {
     );
 }
 console.log(
-    `🛫 every clio lane, read live by \`node ~/frame/_clio/script/clio-lanes.ts\`; a seat's tickets, which this skips: \`x linear list --team FRM --label clio-wing-<N>\`\n\n${blocks.join('\n\n')}`,
+    `🛫 every clio lane, read live by \`node ~/frame/_clio/script/clio-lanes-radar.ts\`; a seat's tickets, which this skips: \`x linear list --team FRM --label clio-wing-<N>\`\n\n${blocks.join('\n\n')}`,
 );
 
 function readJson(path: string): unknown {
