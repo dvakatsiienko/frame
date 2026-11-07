@@ -60,6 +60,8 @@ func TestMain(m *testing.M) {
 	}
 	src, _ := filepath.Abs(".")
 	xbin = filepath.Join(dir, "x")
+	// a test's temp files and a refused commit's x-commit log die with this run's dir
+	_ = os.Setenv("TMPDIR", dir)
 	// no child reads or writes dima's real ~/.local/state/x — a stats run there would trash real days
 	_ = os.Setenv("X_STATE", filepath.Join(dir, "state"))
 	// the child carries this test binary's own tags, so `go test -tags nostacks` tests a binary without the add-on
