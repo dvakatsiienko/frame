@@ -65,7 +65,7 @@ case "$decision" in
   *) echo "Deploy for $short: its log names no apps (run $deploy_run) — read it by hand"; exit 1 ;;
 esac
 
-pushed=$(date -juf '%Y-%m-%dT%H:%M:%SZ' "$(gh run view "$deploy_run" --json createdAt --jq .createdAt)" +%s)
+pushed=$(gh run view "$deploy_run" --json createdAt --jq '.createdAt | fromdateiso8601')
 for app in $apps; do
   n=0
   seen=
