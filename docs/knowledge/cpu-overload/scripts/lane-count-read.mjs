@@ -23,6 +23,8 @@ const gitRows = lines(gitFile).map((l) => {
 const goRows = lines(queueFile)
     .map((l) => l.split('\t'))
     .filter((r) => /go(\s+-C \S+)?\s+test|x-go:gate/.test(r.at(-1) ?? ''))
+    // a chain's run time holds its other commands too
+    .filter((r) => !/pnpm (typecheck|test)/.test(r.at(-1) ?? ''))
     .filter((r) => /^\d+$/.test(r[4]))
     .map((r) => ({ run: Number(r[4]), t: at(r[0]), wait: Number(r[3]) }));
 

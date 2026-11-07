@@ -76,7 +76,7 @@ step_code=0
 # the one config line that stops git in every tree: a gate that set it goes red and it goes back (core.bare, 2026-11-06)
 if [ "$(git config --local core.bare)" = true ]; then
     git config --local core.bare false
-    echo "index-run: this gate set core.bare=true in the shared repo, put back: $*" >&2
+    echo "index-run: a gate in this commit set core.bare=true in the shared repo, put back; seen after: $*" >&2
     step_code=1
 fi
 # a nested run under vitest is a fixture, not a gate

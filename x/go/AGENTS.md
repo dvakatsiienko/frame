@@ -28,7 +28,7 @@ fleet sees whether the page earns its place.
 
 go test runs fill the mac's kernel with spawned git, about 377 git/s beside any other work (`docs/knowledge/cpu-overload/cases.md`); a process is the unit of cost here, so count spawns before adding a fixture. the numbers are one suite run, full list `go-test-cost.md` in FRM-521's lane state.
 
-- build a repo fixture once and copy it with `copyFixture` (`fixture_template_test.go`): no spawn per test; this cut the suite 385 → 278 cpu-s. `repo`, `world`, `modsFixture`, `layers` and `newRebaseWorld` already do
+- build a repo fixture once and copy it with `copyFixture` (`fixture_template_test.go`): no spawn per test; pr 139's protocol read 385 → 278 cpu-s, unreproduced since. `repo`, `world`, `modsFixture`, `layers` and `newRebaseWorld` already do
 - `fixtures/setup.sh` runs once per template: 512 ms a run, 62 runs were 32 cpu-s
 - call `xIn` when the binary's behaviour is the proof, since each costs 152 ms: 1,198 runs were 182 cpu-s, mostly the git x spawns; x's bare launch is 18 ms
 - a test's own git adds up: `git push` 78 ms, the biggest left at 55 cpu-s; `commit` 1,601 runs 38 cpu-s; `add`, `init` and `clone` 44 cpu-s together
