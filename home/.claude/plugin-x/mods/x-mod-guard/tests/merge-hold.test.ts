@@ -21,7 +21,7 @@ function world(on: On, record: string | null, dirStands = record !== null) {
             kind: 'file' as const,
             mtimeMs: 0,
             realPath: e.path,
-            size: 0,
+            size: e.path.endsWith('huge.sh') ? 1_000_000 : 0,
         },
     }));
     on('fs.list', (_$, e) =>
@@ -39,10 +39,19 @@ function world(on: On, record: string | null, dirStands = record !== null) {
               }
             : { deny: 'no such dir' },
     );
+    const scripts: Record<string, string> = {
+        '/repo/echoing.sh': "echo 'gh pr merge 5'\n",
+        '/repo/huge.sh': 'gh pr merge 5\n',
+        '/repo/m.sh': 'set -e\ngh pr merge 5 --squash\n',
+        '/repo/nested.sh': 'bash m.sh # the merge\n',
+        '/repo/plain.sh': 'echo hi\n',
+    };
     on('fs.read', (_$, e) =>
         e.path === `${HOLD_DIR}/o_r.json` && record !== null
             ? { value: record }
-            : { deny: 'no such file' },
+            : e.path in scripts
+              ? { value: scripts[e.path] ?? '' }
+              : { deny: 'no such file' },
     );
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
@@ -54,6 +63,12 @@ const bash = ($: Engine, command: string) =>
     $.tool.call({ command, run_in_background: true, tool: 'Bash' });
 
 const HELD_7 = '{"prs":["7"]}';
+
+test('a query in a file is refused with a way to run it inline', async ($, on) => {
+    world(on, null);
+    const r = await bash($, 'gh api graphql -F query=@threads.graphql');
+    expect(r.deny).toContain('write the query or the endpoint inline');
+});
 
 for (const line of [
     'gh pr merge 7',
@@ -113,6 +128,23 @@ for (const line of [
     'github-token-wrap gh api graphql -f query=@merge.graphql',
     'gh api graphql -f query="$Q"',
     'gh api graphql --input q.json',
+    'gh api -X PUT "$URL"',
+    'gh api -X "$M" repos/o/r/pulls/12/merge',
+    'gh api --method="$M" repos/o/r/pulls/12/merge',
+    'gh api -X "$M" "$URL"',
+    'gh stack merge 12',
+    'gh stack merge',
+    'github-token-wrap gh stack merge 12',
+    'x as codie -- gh stack merge 12',
+    'bash m.sh',
+    'sh m.sh',
+    './m.sh',
+    '/repo/m.sh',
+    'source m.sh',
+    '. m.sh',
+    'sh < m.sh',
+    'bash nested.sh',
+    `cat > w.sh <<'EOF'\ngh pr merge 5\nEOF\nbash w.sh`,
 ])
     test(`a raw merge is refused naming the door, nothing held: ${line}`, async ($, on) => {
         const { ran } = world(on, null);
@@ -123,8 +155,15 @@ for (const line of [
     });
 
 for (const line of [
-    'gh stack merge 12',
-    'gh stack merge',
+    'gh stack merge --help',
+    'gh api -X "$M" repos/o/r/pulls/12',
+    'gh api -X PUT repos/o/r/topics -f names="$b"',
+    'gh api "$URL"',
+    'bash plain.sh',
+    './plain.sh',
+    'bash echoing.sh',
+    'bash missing.sh',
+    'bash huge.sh',
     'gh pr merge --help',
     'gh pr merge -h',
     'gh pr merge 12 -h',

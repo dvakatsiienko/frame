@@ -3,7 +3,14 @@ import type { EngineInterface, Register } from 'claude-code';
 import { briefPaths } from './rules/brief.ts';
 import { cleanStampWrite } from './rules/clean-stamp.ts';
 import type { Brief, Context, Refusal, Written } from './rules/command.ts';
-import { TICKET_KEY, UNREAD, laidOver, resolve } from './rules/command.ts';
+import {
+    TICKET_KEY,
+    UNREAD,
+    commandsDeep,
+    laidOver,
+    resolve,
+    scriptRun,
+} from './rules/command.ts';
 import { linearWritePiped, stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
@@ -724,6 +731,43 @@ async function tickFor(
         );
     if (tick) spends.push(`${tick.id}@${tick.at}:${scope}`);
     return tick;
+}
+// the raw merges a script run by path holds, as far as the guard reads one (BYT-94): a file this turn or this line wrote, or
+// the one on disk; a file past the cap, or a language other than shell, stays the rule's known gap
+const SCRIPT_READ_MAX = 256 * 1024;
+async function scriptMerges(
+    $: EngineInterface,
+    command: string,
+    cwd: string,
+    ctx: Context,
+    seen = new Set<string>(),
+): Promise<ReturnType<typeof rawMerges>> {
+    const written = new Map<string, string>([
+        ...(ctx.written ?? []),
+        ...lineWrites(command, cwd, ctx).map(
+            ([path, text]): [string, string] => [path, text],
+        ),
+    ]);
+    const found: ReturnType<typeof rawMerges> = [];
+    for (const c of commandsDeep(command, cwd)) {
+        const ran = scriptRun(c, ctx);
+        if (ran === undefined || seen.has(ran)) continue;
+        seen.add(ran);
+        const size = written.has(ran)
+            ? 0
+            : (await $.fs.stat(ran).catch(() => undefined))?.size;
+        const text =
+            written.get(ran) ??
+            (size !== undefined && size <= SCRIPT_READ_MAX
+                ? await $.fs.read(ran).catch(() => undefined)
+                : undefined);
+        if (!text || !/merge/i.test(text)) continue;
+        found.push(
+            ...rawMerges(text, c.dir),
+            ...(await scriptMerges($, text, c.dir, { ...ctx, written }, seen)),
+        );
+    }
+    return found;
 }
 // the github slug merge-auto reads when no --repo names one: the dir's origin, as x/go/gh.go repoOf does
 async function repoOf($: EngineInterface, dir: string) {
@@ -1548,11 +1592,23 @@ export const register: Register = (on) => {
             );
             if (stop) return stop;
         }
-        const merges = rawMerges(typed, cwd);
+        const merges = [
+            ...rawMerges(typed, cwd),
+            // a file in another language can read as anything, so its parse failing refuses nothing
+            ...(await scriptMerges($, typed, cwd, ctx).catch(() => [])),
+        ];
         if (merges.length) {
+            const isStackTicked =
+                merges.some((m) => m.isStack) &&
+                (await tickFor(
+                    $,
+                    `stack-merge:${guardedOf(typed)}`,
+                    quotesCommand(typed),
+                    spends,
+                )) !== undefined;
             const hold =
                 mergeHold(merges, await readMergeHolds($)) ??
-                rawMergeRefused(merges);
+                rawMergeRefused(merges, isStackTicked);
             if (hold) {
                 const said = `x-mod-guard stopped this one command. instead: ${hold.door}. why: ${hold.why} (rule ${hold.rule}).`;
                 const stop = await enforce(

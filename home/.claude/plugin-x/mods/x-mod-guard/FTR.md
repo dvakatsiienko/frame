@@ -48,10 +48,13 @@
   - proof: tests/hint.test.ts::a raw pr read runs with an x gh pr hint: …; a raw git add or commit in frame or bytes runs with an x lane commit hint: …; no hint for: …
 - ✅ a numbered wing, `🦉🪽 clio: wing <N>`, reads as the coordinator on every rule that names her (FRM-504); proof: tests/linearwrite.test.ts::a numbered wing runs as the coordinator does; ::a wing title with no number is still a member
 - ✅ a raw merge is refused, naming `x lane merge-auto` as the door (BYT-94, was a hint since FRM-504)
-  - given `gh pr merge`, `gh pr merge --auto`, `gh api -X PUT …/pulls/<n>/merge` or merge-async, or a graphql merge mutation, past gh's own flags, bare, through `github-token-wrap`, under `x as <member>` or in a nested shell, on any pr, then nothing runs and the refusal (rule `raw-merge`) names the door; `gh stack merge`, `gh pr merge --help` or `-h`, `--disable-auto`, which cancels one, `x lane merge-auto`, quoted text and a heredoc body pass
+  - given `gh pr merge`, `gh pr merge --auto`, `gh api -X PUT …/pulls/<n>/merge` or merge-async, or a graphql merge mutation, past gh's own flags, bare, through `github-token-wrap`, under `x as <member>` or in a nested shell, on any pr, then nothing runs and the refusal (rule `raw-merge`) names the door; `gh pr merge --help` or `-h`, `--disable-auto`, which cancels one, `x lane merge-auto`, quoted text and a heredoc body pass
+  - given `gh stack merge`, then it is refused too (dima's tick, 2026-11-07): merge-auto lands a linked stack in one call; where a repo has no async merge, merge-auto names `gh stack merge <n>`, and his tick on an ask quoting that whole runs it once
+  - given a script run by path holding a raw merge (`bash m.sh`, `./m.sh`, `source m.sh`, one it calls in turn, one this turn wrote), then it is refused the same way, as far as the guard reads one
+  - given `gh api` with a PUT or a method in a variable, on an endpoint in a variable or a merge path, then it is refused, since the rule cannot read it; a query or an endpoint it cannot read has the refusal name writing it inline as the way on
   - given a graphql call whose `query` field is a variable, a file or `--input`, then it is refused, since the rule cannot read it; a variable in any other field, a thread id on a review-thread mutation, passes
   - decision: a refusal from its first head, never warn-only: after the required check went, nothing on github stops a raw merge reaching production (dima's o48); the one named exception to `mods/AGENTS.md`'s warn-only line
-  - known gap: the web button, a hand-typed merge, a `curl` to the merge url
+  - known gap: the web button, a hand-typed merge, a `curl` to the merge url, a script past 256 KiB or in another language
   - proof: tests/merge-hold.test.ts::a raw merge is refused naming the door, nothing held: …; ::no raw merge in: …
 - ✅ a `gh --jq` call gets a gojq hint (FRM-394)
   - given a Bash call runs `gh … --jq <program>` (also `--jq=…` or `-q`), then it runs as typed and the model reads: `gh --jq` runs gojq, not jq — prove the program through gh itself, or pipe `gh --json …` into `jq`

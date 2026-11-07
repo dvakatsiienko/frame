@@ -267,6 +267,43 @@ test('a merge ask in a batch marked in one go runs', async ($, on) => {
     ]);
 });
 
+// merge-auto names `gh stack merge <n>` where a repo has no async merge (x/go/stacks.go): his tick keeps that door open
+const STACK = 'gh stack merge 104';
+test('a stack merge runs once on a tick quoting it whole, its second run refused', async ($, on) => {
+    const { ran } = world(on, [tick(`stack: \`${STACK}\``)]);
+    const first = await bash($, STACK);
+    const second = await bash($, STACK);
+    expect([first.deny, second.deny !== undefined, ran]).toEqual([
+        undefined,
+        true,
+        [STACK],
+    ]);
+});
+
+for (const [why, ticks] of [
+    ['no tick', []],
+    ['a tick on another pr', [tick('stack: `gh stack merge 1045`')]],
+    ['a tick past its 2 h', [tick(`stack: \`${STACK}\``, NOW - TWO_HOURS - 1)]],
+    ['a merge tick on the pr', [tick(`merge ${PR}`)]],
+] as const)
+    test(`a stack merge is refused on ${why}`, async ($, on) => {
+        const { ran } = world(on, [...ticks]);
+        const r = await bash($, STACK);
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('rule raw-merge'),
+            [],
+        ]);
+    });
+
+test('a tick on a stack merge carries no raw merge beside it', async ($, on) => {
+    const { ran } = world(on, [tick(`stack: \`${STACK}\``)]);
+    const r = await bash($, `${STACK} && gh pr merge 104`);
+    expect([r.deny, ran]).toEqual([
+        expect.stringContaining('rule raw-merge'),
+        [],
+    ]);
+});
+
 test('the brake never takes a tick: --release-brake still needs his typed word', async ($, on) => {
     const { ran } = world(on, [tick(`merge ${PR}`)]);
     const r = await bash(

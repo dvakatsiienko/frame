@@ -85,7 +85,7 @@ function rawMerge(c: Command) {
     const [family, verb, target] = operands(words);
     // a stack merge lands every layer under the pr it names, and those layers are github's to list: it counts as no number
     if (family === 'stack' && verb === 'merge')
-        return { isHoldOnly: true, pr: undefined };
+        return { isStack: true, pr: undefined };
     if (family === 'pr' && verb === 'merge') return { pr: prOf(target) };
     // the graphql door takes a node id, never a number, so it reads as a target it cannot name
     if (family === 'api' && words.some((w) => GRAPHQL_PATH.test(w))) {
@@ -98,12 +98,26 @@ function rawMerge(c: Command) {
                     (a.isExpanding || a.text.startsWith('query=@'))) ||
                 a.text.startsWith('--input'),
         );
-        if (isMerge) return { pr: undefined };
+        if (c.args.some((a) => GRAPHQL_MERGE.test(a.text)))
+            return { pr: undefined };
+        if (isMerge) return { isUnread: true, pr: undefined };
         return c.args.some((a) => a.isExpanding || /=@/.test(a.text))
             ? { isHoldOnly: true, pr: undefined }
             : undefined;
     }
-    if (family !== 'api' || !isPut(words)) return undefined;
+    if (family !== 'api') return undefined;
+    // a method or an endpoint in a variable can be a merge this rule cannot read
+    const isMethodUnread = c.args.some(
+        (a, i) =>
+            a.isExpanding &&
+            (/^(-X|--method)=/.test(a.text) ||
+                c.args[i - 1]?.text === '-X' ||
+                c.args[i - 1]?.text === '--method'),
+    );
+    if (!isPut(words) && !isMethodUnread) return undefined;
+    const endpoint = c.args.find((a) => a.text === verb);
+    if (endpoint?.isExpanding && !MERGE_PATH.test(endpoint.text))
+        return { isUnread: true, pr: undefined };
     const prs = new Set(
         words
             .filter((w) => MERGE_PATH.test(w))
@@ -124,19 +138,32 @@ export const rawMerges = (command: string, cwd: string) =>
 const DOOR = "x lane merge-auto <pr> --apply --dima-ok <pr>, on dima's word";
 
 // after the required check went, nothing on github stops a raw merge reaching production (dima's o48, BYT-94): it refuses from
-// its first head, the one named exception to warn-only; a stack merge stays open, its door has no merge-auto yet
+// its first head, the one named exception to warn-only. merge-auto lands a linked stack itself, through github's api; where
+// a repo has no async merge it names `gh stack merge <n>` (x/go/stacks.go), so his tick on an ask quoting that keeps it open
 export function rawMergeRefused(
-    merges: { isHoldOnly?: boolean; pr: string | undefined }[],
+    merges: {
+        isHoldOnly?: boolean;
+        isStack?: boolean;
+        isUnread?: boolean;
+        pr: string | undefined;
+    }[],
+    isStackTicked = false,
 ): Refusal | undefined {
-    const raw = merges.filter((m) => !m.isHoldOnly);
-    return raw.length
-        ? {
-              door: 'x lane merge-auto <pr>',
-              rule: 'raw-merge',
-              targets: raw.map((m) => m.pr ?? 'gh merge'),
-              why: 'a raw merge skips its gates, and nothing on github stops it reaching production',
-          }
-        : undefined;
+    const raw = merges.filter(
+        (m) => !m.isHoldOnly && !(m.isStack && isStackTicked),
+    );
+    if (!raw.length) return undefined;
+    const isAllUnread = raw.every((m) => m.isUnread);
+    return {
+        door: isAllUnread
+            ? 'write the query or the endpoint inline in the call, if it merges nothing; a merge goes through x lane merge-auto <pr>'
+            : 'x lane merge-auto <pr>',
+        rule: 'raw-merge',
+        targets: raw.map((m) => m.pr ?? 'gh merge'),
+        why: isAllUnread
+            ? 'this rule cannot read a query or an endpoint held in a file or a variable, and a merge there would reach production unseen'
+            : 'a raw merge skips its gates, and nothing on github stops it reaching production',
+    };
 }
 
 // a hold reads as held when its record does not read, and a target it cannot name counts as held while any hold stands
