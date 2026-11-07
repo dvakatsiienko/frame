@@ -19,6 +19,7 @@ each stage names its gate, its owner, its door and its wait budget.
    - gate: wishkeeper read the chunk's base..head, merge state clean and the deploy Ready, where «no run» is never green
    - owner: clio merges by the gate in `docs/knowledge/pr-flow.md` § core — risky paths named in the look card, a self-edit waiting for dima unless his sign pre-approved the merge, the brake always waiting (dima, 2026-10-22: he does not read prs); clio pushes (a quick lane's codie its own head, 11-03)
    - door: `x lane merge-auto` (it waits for ci and names why)
+   - `operator-override prs` on (his whole typed phrase, or a shift): `x lane merge-auto <pr> --apply` lands any pr on its first call; hold and brake still stop it (FRM-524)
    - self-edit path: his sign pre-approved → `x lane merge-auto <pr> --apply`; his typed word → `--dima-ok <pr>` added (x-mod-guard proves the word); a stack layer: `gh stack merge <pr> --squash --yes`, `merged-by-x` by hand
    - the brake is never pre-approved: his word each time, a tick quoting the pr carrying it (FRM-427)
    - archive step: the merge turn ends with `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`): the spec archived once every chunk merged, the clean trees decamped, each chunk proven live is closed and named to dima (closing.md, landed); each 🔴 it prints is a chore left with its fix, the review-rounds line among them

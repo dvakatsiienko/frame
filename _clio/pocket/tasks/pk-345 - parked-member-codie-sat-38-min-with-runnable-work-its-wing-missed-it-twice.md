@@ -1,10 +1,10 @@
 ---
 id: PK-345
 title: 'parked member: codie sat 38 min with runnable work, its wing missed it twice'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-06T23:27:00Z'
-updated_date: '2026-11-07T13:43:00Z'
+updated_date: '2026-11-07T14:29:00Z'
 labels:
   - s
   - wing-1
@@ -73,4 +73,10 @@ suggested steps: 1. pull the 177 by verdict logged from that key; the log holds 
 pointers: docs/test-drive/gate-speed/empty-wakes.md's 11-07 round, FRM-501's re-count comment, _clio/.scratch/retro-2026-11-07.md line 1 (447 min of codie waits on clio or dima, the bigger delay, which loud comms would not shorten), FRM-368 for tilde. his words: 01:23, 01:25 «trace why it happened», 04:48 «maybe quiet coms now too quiet?»
 
 15:43 his o16: proposal 1 joined FRM-505's re-sign with the 5-min replay; proposals 2-5 stay here.
+
+16:28 his o21: proposals 2 and 5's words landed as lines, 4's minus the rules edit; the turn-end refusal and the extra watch cut, as printed; a second park reopens them.
+
+close: PK-345:W1 PK-345:W2 PK-345:W3 done, W2's trace in this item, proposal 1 moved to FRM-505, the rest by his o21
+
+16:29 correcting the 16:28 line: proposals 4 and 5 landed as lines, 4 without its rules edit; 2, the turn-end refusal, and 3, the extra watch, are the cuts.
 <!-- SECTION:NOTES:END -->

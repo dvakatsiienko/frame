@@ -119,7 +119,7 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 			return nil, ferr
 		}
 		// another lane's pr would green «merged» and hand its trees to this ticket
-		if !strings.HasPrefix(read.Head.Ref, "codie/"+id+"-") && !bodyNamesTicket(read.Body, id) {
+		if !slices.Contains(ticketsOfPr(read.Head.Ref, read.Body), id) {
 			return nil, &Fail{Refused: true, Msg: "#" + pr + " is not " + id + "'s pr: its head is " + read.Head.Ref + " and its body holds no «- ticket: " + id + "» line", Next: "x lane landed " + id + " --pr <" + id + "'s pr>"}
 		}
 		headRef, headSha = read.Head.Ref, read.Head.Sha
@@ -577,13 +577,6 @@ func wiredLine(verb string, issue landedRead) landedLine {
 	line.detail = plural(calls, "call") + " of x " + verb + " in " + strconv.Itoa(wiredDays) + " days"
 	line.fix = "back to Todo with the ↩️ awaited call of x " + verb
 	return line
-}
-
-var fenced = regexp.MustCompile("(?s)```.*?```")
-
-// bodyNamesTicket finds a pr body's own «- ticket: <id>» line: never one quoted in a fence, never FRM-1x or FRM-12
-func bodyNamesTicket(body, id string) bool {
-	return regexp.MustCompile(`(?m)^[\s>*-]*ticket:\s*` + regexp.QuoteMeta(id) + `\b`).MatchString(fenced.ReplaceAllString(body, ""))
 }
 
 // the look card's two fields every done report carries, each a «- **field**:» line (crew-codie how-you-work.md)

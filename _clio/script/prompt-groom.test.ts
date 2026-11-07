@@ -9,7 +9,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import {
     dayBefore,
@@ -132,6 +132,31 @@ const steer = (id: string, text: string) =>
         timestamp: '2026-10-26T09:15:00Z',
         type: 'attachment',
     });
+
+describe('groomedOrUnlogged', () => {
+    const day = '2020-01-02';
+    const load = async () => {
+        const dir = mkdtempSync(join(tmpdir(), 'prompt-log-'));
+        writeFileSync(join(dir, `${day}.md`), '## 09:12\n\na prompt\n');
+        vi.stubEnv('PROMPT_RAW_DIR', dir);
+        vi.resetModules();
+        const { groomedOrUnlogged } = await import('./prompt-groom.ts');
+        vi.unstubAllEnvs();
+        return groomedOrUnlogged;
+    };
+
+    test('a logged minute with no groom still owes one', async () => {
+        expect((await load())(day, '09:12', '')).toBe(false);
+    });
+
+    test("a wing's minute, absent from the log, owes none", async () => {
+        expect((await load())(day, '17:47', '')).toBe(true);
+    });
+
+    test('an orbit steer stays owed, the log never holds one', async () => {
+        expect((await load())(day, 'o34', '')).toBe(false);
+    });
+});
 
 describe('ungroomedStamps', () => {
     const text = [

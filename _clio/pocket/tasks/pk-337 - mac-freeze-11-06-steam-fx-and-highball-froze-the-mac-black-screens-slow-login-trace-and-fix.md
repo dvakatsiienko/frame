@@ -3,10 +3,10 @@ id: PK-337
 title: >-
   mac freeze 11-06: steam fx and highball froze the mac, black screens, slow
   login: trace and fix
-status: open
+status: done
 assignee: []
 created_date: '2026-11-06T13:39:00Z'
-updated_date: '2026-11-07T13:35:00Z'
+updated_date: '2026-11-07T14:38:00Z'
 labels:
   - m
   - wing-1
@@ -34,4 +34,6 @@ his photo 15:36: the lock screen at 15:29. trace started 15:39 by a researcher, 
 ⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: W1–W4 share one line, split them, then its lines get full ids.
 
 2026-11-07 wing 2, PK-350: the ⏰ PK-338 sort above is done, ids are full; that note is history.
+
+close: PK-337:W1 PK-337:W2 done, the trace in firelink/AGENTS.md, Apple FB25461148 filed, vm rules landed; PK-337:W3 PK-337:W4 moved to FRM-517; his o23
 <!-- SECTION:NOTES:END -->

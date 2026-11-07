@@ -81,6 +81,8 @@ export type StashView = {
     wait?: string;
     afk: boolean;
     isHot: boolean;
+    // operator-override prs is on, so the band draws its 🔓
+    isOverrideOn: boolean;
     isPaced: boolean;
     isWaker: boolean;
     isBoardOpen: boolean;

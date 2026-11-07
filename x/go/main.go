@@ -50,12 +50,15 @@ var impls = map[string]Impl{
 	"lane unlock":      {Run: unlock, Undone: "nothing was decrypted"},
 	"lane decamp": {Plan: decampPlan, Apply: decamp, Undone: "the worktree is still there", Ask: askDecamp,
 		ReadOnly: listingStale},
-	"lane dispatch":     {Plan: dispatchPlanOf, Apply: laneDispatch, Undone: "a ticket before the failed one keeps its marks", Ask: askDispatch},
-	"lane landed":       {Plan: landedPlanOf, Apply: laneLanded, Undone: "a step that ran stands; the list above is read after it", Ask: askLanded},
-	"lane seed":         {Run: seed, Undone: "the tree is as the hook left it"},
-	"lane review":       {Run: laneReview, Undone: "no review was requested"},
-	"lane pr-body":      {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
-	"lane merge-auto":   {Plan: mergeAutoPlan, Apply: mergeAuto, Undone: "nothing was merged", Ask: askMergeAuto},
+	"lane dispatch": {Plan: dispatchPlanOf, Apply: laneDispatch, Undone: "a ticket before the failed one keeps its marks", Ask: askDispatch},
+	"lane landed":   {Plan: landedPlanOf, Apply: laneLanded, Undone: "a step that ran stands; the list above is read after it", Ask: askLanded},
+	"lane seed":     {Run: seed, Undone: "the tree is as the hook left it"},
+	"lane review":   {Run: laneReview, Undone: "no review was requested"},
+	"lane pr-body":  {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},
+	"lane merge-auto": {Plan: mergeAutoPlan, Apply: mergeAuto, Undone: "nothing was merged", Ask: askMergeAuto,
+		ReadOnly: func(flags Flags) bool {
+			return flags["override-check"] == true || flags["brake-check"] == true
+		}},
 	"plugin bump":       {Plan: pluginBumpPlan, Apply: pluginBump, Undone: "the cache holds the old version", Ask: askPluginBump},
 	"mods edit pull":    {Run: modsEditPull, Undone: "the copies sit in scratch, the mod untouched"},
 	"mods edit status":  {Run: modsEditStatus, Undone: "a read"},
@@ -525,6 +528,9 @@ func confirmCommand(verb Verb, args []string, flags Flags) string {
 	for _, own := range verb.OwnFlags() {
 		if value, ok := flags[own].(string); ok && value != "" {
 			parts = append(parts, "--"+own, quote(value))
+		}
+		if flags[own] == true {
+			parts = append(parts, "--"+own)
 		}
 	}
 	for _, arg := range args {

@@ -60,8 +60,8 @@ dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any t
 - `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 watch-pr`, each with its why; any 🔴 = no shift
 - a bytes app in the plan passes `apps:essentials`
 - write `status: running`, `afk:` (on/off at the start), the members and each lane's merge rule into the plan file; no weekly budget line: the week is his, the ladder paces
-- every pr chunk in the plan gets its merge word while he is still here: one orbit ask, `✍️ sign FRM-1, FRM-2: merge pre-approved for this shift`, and his tick lets me write `merge: pre-approved` under each one's last sign, so a self-edit lands with him fully afk. every chunk, not the ones that look it: a fix can grow into a self path mid-shift. a re-sign voids the line, so a re-signed chunk parks ready until his word
-- every live member's 🔥 on (§ hot caches); a wing parks with the shift, its merges and wishes queue on its branch until the end; `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found
+- `/clio:shift` itself sets `operator-override prs`, `by: shift` (FRM-524): every pr chunk lands with him fully afk, a self-edit or a re-signed chunk too; his hold and the brake still stop it
+- every live member's 🔥 on (§ hot caches); a wing parks with the shift, its wishes queue on its branch until the end; `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found
 - one message to dima: mode, members, when the report lands. **from here the shift is on.**
 
 ## 2 · run — no asks
@@ -98,6 +98,6 @@ A shift ends when its plan is done or on his word. In the plan file, then one ch
 - the debrief reads «clear, compact, pretty, and readable … your proposals up front for how to solve unsolvables», themed per shift: atelier → mini art, chords → keyboard, sys → game (dima, 2026-09-27)
 - then the return sections, one or two plain lines each: how it went (per lane: merged, parked, not run), what waited on dima and how it resolved, second winds (who, when, what survived), failures with their state now, merges and what held one, retros per member, the flow (good and off, a fix per off), ticket readiness (exit lines rewritten mid-lane, and why), anything else or `none`
 
-Retros in, members stopped, 🔥 off, `pnpm -C ~/frame mods:set pace end`, which puts ⏰ back as it found it, the plan's `status:` flipped to `done`, orbit asks back on. the hand-over: the full report as an Artifact, a CST (`x:handoff`) with the open asks and this thread's transcript path, and the chat message's last line «questions → a fresh clio, `/clio:boot <slug>`».
+Members stopped, 🔥 off, `x lane merge-auto --override-off --shift-only --apply`, `pnpm -C ~/frame mods:set pace end`, which puts ⏰ back as it found it, the plan's `status:` flipped to `done`, orbit asks back on. the hand-over: the full report as an Artifact, a CST (`x:handoff`) with the open asks and this thread's transcript path, and the chat message's last line «questions → a fresh clio, `/clio:boot <slug>`».
 
 **Done** = the report is in the file, the artifact and the chat, the CST is in the store, every member is stopped or carried on purpose, and nothing parked is lost.

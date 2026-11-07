@@ -75,6 +75,17 @@ export const groomedOnDisk: Groomed = (day, hhmm, item) => {
         .some(([, date, time, id]) => date === day && (id ?? time) === hhmm);
 };
 
+// a wing's prompts reach no prompt log, so a minute the log lacks owes no groom, even after its wing label comes off
+export const groomedOrUnlogged: Groomed = (day, key, item) => {
+    if (groomedOnDisk(day, key, item)) return true;
+    if (!/^\d{2}:\d{2}$/.test(key)) return false;
+    const log = path.join(promptDir, `${day}.md`);
+    return (
+        !existsSync(log) ||
+        rawPromptAt(readFileSync(log, 'utf8'), key) === undefined
+    );
+};
+
 // the step that turns an ungroomed stamp green: a prompt is groomed by the chore, an inbox day by the boot's copy of helga's prep
 export const groomStep = (hhmm: string) =>
     hhmm.startsWith('inbox')
