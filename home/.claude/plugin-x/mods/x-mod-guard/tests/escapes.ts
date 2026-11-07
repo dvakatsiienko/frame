@@ -520,6 +520,12 @@ EOF`,
     ['refused', 'reader', 'a head held in a variable', 'R=rm; $R -rf x'],
     ['refused', 'reader', 'a git held in a variable', 'g=git; $g reset --hard'],
     ['refused', 'reader', 'an ansi-c quoted head', "$'rm' x"],
+    [
+        'refused',
+        'reader',
+        'a dollar and a quote inside double quotes hide nothing after them',
+        `echo "price $'"; rm -rf ~`,
+    ],
     ['refused', 'reader', 'a head from an echo substitution', '$(echo rm) x'],
     [
         'refused',
