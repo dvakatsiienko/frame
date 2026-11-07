@@ -1,5 +1,5 @@
 ---
-description: load at every siesta — a lane member's done lands, 15 files of clio's or one memory, rule or skill file, a phases line done, or dima says «siesta». the pause between batches as one fixed flow; it ends with what to do next, never a dead stop.
+description: load at every siesta — a lane member's done lands, 15 files of clio's or one memory, rule or skill file, or dima says «siesta». the pause between batches as one fixed flow; it ends with what to do next, never a dead stop.
 ---
 
 # /clio:siesta — the pause between batches
@@ -10,7 +10,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 
 ## when
 
-- a codie's, sixth sense's or designer's `[done]` or `final` lands, or a phases line is done
+- a codie's, sixth sense's or designer's `[done]` or `final` lands
 - 15 files of clio's since the last siesta, or one memory, rule or skill file (the Stop hook's «🌤️ siesta due»); a memory sweep: `recipes/nurture-memory/recipe.md` § the run
 - dima says «siesta»
 - never on a timer

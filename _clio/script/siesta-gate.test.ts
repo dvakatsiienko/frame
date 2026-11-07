@@ -206,7 +206,6 @@ describe('the siesta comes due', () => {
         const home = fixtureHome();
         commit(home, 15, 'clio');
         const dir = join(home, '.local/state/clio');
-        writeFileSync(join(dir, 'phases-done.jsonl'), '{"at": "2026-\n');
         writeFileSync(join(dir, 'siesta-last'), 'garbage\n');
         const input = stopInput(home);
         appendFileSync(input.transcript_path, '\n{"type": "us');
@@ -260,21 +259,6 @@ describe('the siesta comes due', () => {
         commit(home, 5, 'codie');
         commit(home, 5, 'clio', '📜 pocket: pk-1 (auto)');
         expect(stop(home, stopInput(home))).toBeUndefined();
-    });
-
-    test('a phases-done row after the last siesta makes it due, an older one none', () => {
-        const home = fixtureHome();
-        const rows = join(home, '.local/state/clio/phases-done.jsonl');
-        writeFileSync(
-            rows,
-            `${JSON.stringify({ at: new Date(Date.now() - 2 * HOUR).toISOString(), line: 'old' })}\n`,
-        );
-        expect(stop(home, stopInput(home))).toBeUndefined();
-        appendFileSync(
-            rows,
-            `${JSON.stringify({ at: new Date().toISOString(), line: 'FRM-1 built' })}\n`,
-        );
-        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
     });
 
     test.each([

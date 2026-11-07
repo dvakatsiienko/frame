@@ -269,14 +269,10 @@ function dueReasons(home: string, state: Siesta, seat: Seat) {
     const closedAt = new Date(state.closed_at ?? 0);
     const files = clioFiles(home, closedAt > since ? closedAt : since, seat);
     const isMemory = files.some((f) => /(^|\/)(memory|rules|skills)\//.test(f));
-    const rows = readLines(path.join(stateDir(home), 'phases-done.jsonl'))
-        .flatMap((l) => parsed<{ at: string | number }>(l) ?? [])
-        .filter((r) => after(r.at));
     const pings = state.pings.filter(after);
     return [
         files.length >= FILES_DUE ? `${files.length} files of clio's` : '',
         isMemory ? "a memory, rule or skill file of clio's" : '',
-        rows.length ? `${rows.length} phases line(s) done` : '',
         pings.length ? `${pings.length} member done ping(s)` : '',
     ].filter(Boolean);
 }
