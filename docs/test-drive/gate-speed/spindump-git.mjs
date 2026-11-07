@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 
-const rl = createInterface({ input: createReadStream('/tmp/spindump-go.txt') });
+const rl = createInterface({ input: createReadStream(process.argv[2]) });
 const procs = [];
 let cur = null;
 for await (const line of rl) {

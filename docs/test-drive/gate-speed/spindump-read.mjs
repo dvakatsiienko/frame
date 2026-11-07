@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 
-const rl = createInterface({ input: createReadStream('/tmp/spindump-go.txt') });
+const rl = createInterface({ input: createReadStream(process.argv[2]) });
 const bump = (m, k, n = 1) => m.set(k, (m.get(k) ?? 0) + n);
 const top = (m, n) => [...m].sort((a, b) => b[1] - a[1]).slice(0, n);
 const byParent = new Map();
