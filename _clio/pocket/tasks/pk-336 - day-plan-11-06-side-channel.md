@@ -1,13 +1,12 @@
 ---
 id: PK-336
 title: 'day plan 11-06: wing 1'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-06T19:47:00Z'
+updated_date: '2026-11-07T01:54:00Z'
 labels:
   - m
-  - wing-1
 dependencies: []
 priority: now
 type: task
@@ -103,4 +102,6 @@ W22 (2026-11-06 16:43, dima, on grill 1 Q1): okay. i want ci efficient and optim
 17:16 his o63 half two, a check for bare W cites: reply-check's a mods part, so it goes to main on her resume, with the ci handover.
 
 ⏰ PK-338 (full wish ids), dima's o69: this item stays bare until worked; the next touch sorts it first: its PK-334 and PK-335 lines keep their source ids, then its lines get full ids.
+
+closed 2026-11-07 at his 03:51 word, 12 of 22 done. the 10 open lines' homes: #9 FRM-495 signed Todo; #10 FRM-503 signed Todo; #11 FRM-514 Done, FRM-410 signed Todo, someday; #12 FRM-491 In Progress; #13 PK-328 and PK-334; #14 PK-332; #17 PK-300, PK-304, PK-323 done, its want FRM-516; #18 PK-310, due in _reminders.md 11-07; #21 FRM-516; #22 PK-308.
 <!-- SECTION:NOTES:END -->

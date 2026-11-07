@@ -4,10 +4,9 @@ title: 'parked member: codie sat 38 min with runnable work, its wing missed it t
 status: open
 assignee: []
 created_date: '2026-11-06T23:27:00Z'
-updated_date: '2026-11-06T23:39:00Z'
+updated_date: '2026-11-07T02:00:00Z'
 labels:
   - s
-  - wing-1
 dependencies: []
 priority: next
 type: task
@@ -58,4 +57,6 @@ done test, a replay: a member with a pending background run and open steps gets 
 
 PK-345:W3 (2026-11-07 01:38, dima): will the auto second wind mod solve this? ❓
 answered, in the thread 01:39, read from FRM-505's wish: no, partly. it removes the coordinator's order, not the refusal; its W1 says the thread parks and solves its tails first, so it could park more threads. FRM-505 needs proposal 1 in its scope, main's call. his tick o91: proposal order stands, tomorrow.
+
+from 11-07's retros: a --long protocol of 16 runs waits up to 729 s a run, and frm-521 codie parked on it twice, dima and wing each caught one: a queued run is no reason to end a turn; open the pr, rows join by edit.
 <!-- SECTION:NOTES:END -->

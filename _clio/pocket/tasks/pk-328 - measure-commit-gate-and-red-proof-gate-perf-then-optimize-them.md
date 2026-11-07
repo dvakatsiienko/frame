@@ -4,10 +4,9 @@ title: measure commit gate and red-proof gate perf, then optimize them
 status: open
 assignee: []
 created_date: '2026-11-05T22:23:00Z'
-updated_date: '2026-11-06T23:16:00Z'
+updated_date: '2026-11-07T01:55:00Z'
 labels:
   - s
-  - wing-1
 dependencies: []
 priority: next
 type: task
@@ -113,4 +112,12 @@ PK-328:W31 (2026-11-07 01:15, dima): it seems like a big issue, because with cpu
 PK-328:W32 (2026-11-07 01:15, dima): i still think using fewer threads is not a solution: i currently have 14, which is not a lot, and other people run 64 parallel threads somehow. ❓ how do they?
 PK-328:W33 (2026-11-07 01:15, dima): another idea: i hear a lot that many people treat macos as not very agentic friendly and use linux instead, or buy that new mac mini for agentic workflows.
 PK-328:W34 (2026-11-07 01:15, dima): do a proposal for how to save the context of the current problem until tomorrow's reopening of this issue, and do a wide research, all research lanes, about my issue, using all the context you have: maybe there is a known solution? has anyone else met my issue with macos? hunt any similarities to see if someone solved it. also research linux vs macos, my claim.
+
+PK-328:W35 (2026-11-06 23:36, dima): i can't get it. i thought go is fast, and my mac is pretty strong. why then the bottleneck? maybe the tests are not good? i'm confused, because we picked go for the cli exactly for performance, and now tests turn out to bottleneck my cpu. i'm confused about the base tech pick for the cli: go. ❓
+PK-328:W36 (2026-11-07 01:38, dima): 64 threads: i meant the bun migration from zig to rust. its author used 64 cc's to migrate the whole repo; i'm not sure how he balanced the load across gear though.
+2026-11-07 03:55 wing 1 hands back at his 03:51 word; tomorrow's wing 1 continues from handoff wing-1-9, FRM-525 first.
+
+PK-328:W37 (2026-11-07 03:54, dima): i just saw another 100 % cpu load while only one lane is left active, ci. how is that possible? i thought the load came from lots of threads at once, but now only 1 lane is active. log this case for tomorrow.
+PK-328:W38 (2026-11-07 03:54, dima): we open tomorrow with your 328 lane, only one at a time: so start the measures and catch the 100 % cpu load right with minimal one-lane activity.
+2026-11-07 03:55 the case, his screenshot: cpu 99 % all 14 cores, 109 °C, gpu 57 %; the app list sums about 15 %, the same gap as ps. snapshot at 03:54:59 after the spike: 15 % user, 9 % sys, 75 % idle, load 11, in ~/.local/state/x/lanes/frm-525/snapshot-1-lane-20261107-0355.txt. the queue read: ci's lane ran the whole go gate 03:50:14 for 69 s and 03:51:43 for 116 s, load 24. inference, the spike's clock is unread: one heavy run fills the mac by itself, since a go suite parallels over all cores, so 100 % says a heavy run is live, never how many lanes.
 <!-- SECTION:NOTES:END -->
