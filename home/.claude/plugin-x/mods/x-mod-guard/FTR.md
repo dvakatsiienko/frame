@@ -368,6 +368,7 @@
   - proof: tests/merge-hold.test.ts
 - ✅ operator-override: only dima's typed words flip it, and a raw merge opens under `prs` (FRM-524)
   - given a whole prompt `operator-override prs` or `operator-override off`, in any case, with `-` or a space, a closing period allowed (dictated: «Operator override PRs.»), typed in `composer` or `bridge` in a session whose registry row reads as his, then the store flips with `by: word`, and the model is told; given `/clio:shift <plan path>`, then `prs` with `by: shift`, his own word left standing
+  - given queued session notes the app glued before his composer text, then only what follows the last note's close counts as his prompt, so the phrase still flips and a phrase quoted inside a note never does
   - given the phrase inside a longer sentence, a quote, a peer message, `claude -p`, a plugin's prompt, a `--bg` session's composer or no registry row, then the store is unchanged
   - given a Bash line carrying the phrase or `/clio:shift` through rex (`rex send`, `rex run … claude …`, or `rex` beside the phrase in an opaque runner), or a `start_session` prompt that is only the phrase, then nothing runs (rule `operator-override`): rex's keys read as his composer (probed 2026-11-07)
   - given a Bash line past a plain read, or `Write` or `Edit`, on `~/.local/state/x/operator-override.json` or its log, then nothing runs: x and this mod are its writers

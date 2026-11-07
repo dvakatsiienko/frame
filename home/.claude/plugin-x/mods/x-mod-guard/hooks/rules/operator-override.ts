@@ -9,9 +9,21 @@ const REX_READS = new Set(['capture', 'list', 'ls']);
 const OPAQUE =
     /^(python[\d.]*|node|bun|deno|ruby|perl|php|lua|osascript|xargs|parallel|eval)$/;
 
+const NOTE_OPEN = '<system-reminder>';
+const NOTE_CLOSE = '</system-reminder>';
+
+// the app glues queued session notes before his composer text. a note quotes a child's words, so only what follows the
+// last close counts: the app writes that close, so a quoted one can never end the last note early
+function typedPart(text: string) {
+    const prompt = text.trim();
+    const lastClose = prompt.lastIndexOf(NOTE_CLOSE);
+    if (!prompt.startsWith(NOTE_OPEN) || lastClose < 0) return prompt;
+    return prompt.slice(lastClose + NOTE_CLOSE.length).trim();
+}
+
 // what a whole prompt asks of the switch, undefined for anything else
 export function overrideAsked(text: string): OverrideAsk | undefined {
-    const prompt = text.trim();
+    const prompt = typedPart(text);
     if (SHIFT.test(prompt)) return { by: 'shift', scope: 'prs' };
     const scope = prompt.match(WORD)?.[1]?.toLowerCase();
     if (scope === 'prs') return { by: 'word', scope };
