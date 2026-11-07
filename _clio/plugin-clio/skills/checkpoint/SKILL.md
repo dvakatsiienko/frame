@@ -43,8 +43,7 @@ member goes into the CST. crow pauses by file, not by message: `touch ~/.local/s
 - flawlog flush: one batched proposal, his one approve, execute (halt phase 3a); stories appended
 - milestones refreshed (halt phase 3.5)
 - gazette: `/clio:gazette` writes the ⸻ upd block; **no wire** unless he says so
-- **the codie roster**: retro received? still needed? a codie that is done is stopped now
-  (`claude stop <id>`), never carried through a compact
+- **the codie roster**: retro received? still needed? a codie that is done is parked and carried on the roster with its id; stopped only on his word
 
 ## 3. the CST — fuller than a halt's
 

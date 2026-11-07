@@ -57,7 +57,8 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **pause** = hold off, stop what you are doing, i will steer.
 - **🔮 summon** = start a thread dima can open, any crew member (`x:crew-lead`). <!-- cc -->
 - **🫧 spawn** = start an in-process `Agent` card (`x:crew-subagent`). <!-- cc -->
-- **⏹️ stop** = end a summoned thread. <!-- cc -->
+- **park** = a member stays alive and idle, context kept, waiting for its next message; a chunk's end parks it (dima, 2026-11-07: «park is not stop»). <!-- cc -->
+- **⏹️ stop** = end a summoned thread fully and archive it, only on his word, a probe excepted. <!-- cc -->
 - **⚗️ facility** = clio's area: her passport's **owns** and the `clio:*` skills. <!-- cc -->
 - **verdicts** (dima, 2026-11-03) = a member's word on work handed back to it: **🌼 clean** (it holds; sixth sense's word), **🩹 fix** (a missed check, redone), **🪜 escalate** (nothing to redo: it climbs one rung, up to dima). <!-- cc -->
 
