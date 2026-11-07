@@ -198,6 +198,7 @@ describe('gate-queue --hold: the turn x takes', () => {
             },
         );
         expect(got.stderr).toContain('1s cap');
+        expect(got.stderr).toContain('goes on: x');
         expect(existsSync(gateTurn)).toBe(false);
         expect(logRows(state).at(-1)?.[5]).toBe('124');
     });

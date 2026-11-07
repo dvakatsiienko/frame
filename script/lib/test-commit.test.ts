@@ -118,6 +118,70 @@ describe('test-commit', () => {
         expect(got.fields.slice(1, 2)).toEqual(['none']);
     });
 
+    describe('a pocket-only commit', () => {
+        const pocket = '_clio/pocket/tasks/pk-1.md';
+        const moved = '_clio/pocket/archive/pk-1.md';
+
+        test.each(['main', 'codie/FRM-1-x', 'worktree-fork-1', ''])(
+            'on branch «%s» runs no suite',
+            (branch) => {
+                const got = runGate(staged({ [pocket]: 'a\n' }), branch);
+                expect(got.calls).toBe('');
+                expect(got.status).toBe(0);
+                expect(got.fields.slice(1, 3)).toEqual(['none', '1']);
+            },
+        );
+
+        test.each(['main', 'codie/FRM-1-x'])(
+            'a rename with both ends in the pocket runs no suite on «%s»',
+            (branch) => {
+                const context = fixture({ [pocket]: 'a body long enough\n' });
+                rmSync(join(context.repo, pocket));
+                write(context.repo, moved, 'a body long enough\n');
+                context.git('add', '-A');
+                const got = runGate(context, branch);
+                expect(got.calls).toBe('');
+                expect(got.fields.slice(1, 2)).toEqual(['none']);
+            },
+        );
+
+        test('one path outside runs the whole suite on main', () => {
+            const got = runGate(
+                staged({ [pocket]: 'a\n', 'a.ts': 'a\n' }),
+                'main',
+            );
+            expect(got.calls).toBe('test');
+            expect(got.fields.slice(1, 2)).toEqual(['whole']);
+        });
+
+        test('one path outside runs the related tests on a codie branch', () => {
+            const got = runGate(
+                staged({ [pocket]: 'a\n', 'a.ts': 'a\n' }),
+                'codie/FRM-1-x',
+            );
+            expect(got.fields.slice(1, 2)).toEqual(['related']);
+        });
+
+        test.each([
+            ['out of', pocket, 'docs/pk-1.md'],
+            ['into', 'docs/pk-1.md', pocket],
+        ])('a rename %s the pocket runs the whole suite', (_name, from, to) => {
+            const context = fixture({ [from]: 'a body long enough\n' });
+            rmSync(join(context.repo, from));
+            write(context.repo, to, 'a body long enough\n');
+            context.git('add', '-A');
+            expect(runGate(context, 'main').calls).toBe('test');
+        });
+
+        test('a failed read of the staged paths runs the whole suite', () => {
+            const context = staged({ [pocket]: 'a\n' });
+            const got = runGate(context, 'main', '0', {
+                GIT_DIR: join(context.dir, 'missing'),
+            });
+            expect(got.calls).toBe('test');
+        });
+    });
+
     test('a failed read of the staged paths runs the whole suite', () => {
         const context = staged({ 'a.ts': 'a\n' });
         const got = runGate(context, 'codie/FRM-1-x', '0', {

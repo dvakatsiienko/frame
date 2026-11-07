@@ -21,10 +21,7 @@ import (
 func repo(t *testing.T) string {
 	t.Helper()
 	dir, _ := filepath.EvalSymlinks(t.TempDir())
-	gitT(t, dir, "init", "-q", "-b", "main")
-	write(t, filepath.Join(dir, "readme.txt"), "one\n")
-	gitT(t, dir, "add", ".")
-	gitT(t, dir, "commit", "-q", "-m", "seed")
+	copyFixture(t, seedRepo(t), dir)
 	return dir
 }
 
@@ -48,9 +45,16 @@ func cleanEnv() []string {
 			kept = append(kept, pair)
 		}
 	}
+	// git's own housekeeping off: no template copy on an init or clone, no fsync, no maintenance spawn after a commit, fetch or push, no thread pool for three objects
 	return append(kept, "GIT_AUTHOR_NAME=fixture", "GIT_AUTHOR_EMAIL=fixture@example.com",
-		"GIT_COMMITTER_NAME=fixture", "GIT_COMMITTER_EMAIL=fixture@example.com", "GIT_CONFIG_COUNT=1",
-		"GIT_CONFIG_KEY_0=commit.gpgsign", "GIT_CONFIG_VALUE_0=false", "X_TRACE=0")
+		"GIT_COMMITTER_NAME=fixture", "GIT_COMMITTER_EMAIL=fixture@example.com", "GIT_TEMPLATE_DIR=", "GIT_CONFIG_COUNT=7",
+		"GIT_CONFIG_KEY_0=commit.gpgsign", "GIT_CONFIG_VALUE_0=false",
+		"GIT_CONFIG_KEY_1=maintenance.auto", "GIT_CONFIG_VALUE_1=false",
+		"GIT_CONFIG_KEY_2=gc.auto", "GIT_CONFIG_VALUE_2=0",
+		"GIT_CONFIG_KEY_3=receive.autogc", "GIT_CONFIG_VALUE_3=false",
+		"GIT_CONFIG_KEY_4=core.fsync", "GIT_CONFIG_VALUE_4=none",
+		"GIT_CONFIG_KEY_5=pack.threads", "GIT_CONFIG_VALUE_5=1",
+		"GIT_CONFIG_KEY_6=core.preloadIndex", "GIT_CONFIG_VALUE_6=false", "X_TRACE=0")
 }
 
 func write(t *testing.T, path, body string) {
@@ -825,21 +829,22 @@ func TestCommitWithNoIndexLockSaysNothingOfWaiting(t *testing.T) {
 // layers pushes each branch on top of the one before it, from main up, and leaves a clone on the last
 func layers(t *testing.T, names ...string) string {
 	t.Helper()
-	origin := filepath.Join(t.TempDir(), "origin.git")
-	gitT(t, filepath.Dir(origin), "init", "-q", "--bare", "-b", "main", origin)
-	seed := repo(t)
-	gitT(t, seed, "remote", "add", "origin", origin)
-	gitT(t, seed, "push", "-q", "origin", "main")
-	for _, name := range names {
-		gitT(t, seed, "switch", "-q", "-c", name)
-		write(t, filepath.Join(seed, strings.ReplaceAll(name, "/", "-")+".txt"), name+"\n")
-		gitT(t, seed, "add", ".")
-		gitT(t, seed, "commit", "-q", "-m", name)
-		gitT(t, seed, "push", "-q", "origin", name)
-	}
-	clone := filepath.Join(t.TempDir(), "clone")
-	gitT(t, filepath.Dir(clone), "clone", "-q", "-b", names[len(names)-1], origin, clone)
-	return clone
+	return filepath.Join(seeded(t, "layers "+strings.Join(names, " "), func(root string) {
+		origin := filepath.Join(root, "origin.git")
+		gitT(t, root, "init", "-q", "--bare", "-b", "main", origin)
+		seed := filepath.Join(root, "seed")
+		copyFixture(t, seedRepo(t), seed)
+		gitT(t, seed, "remote", "add", "origin", origin)
+		gitT(t, seed, "push", "-q", "origin", "main")
+		for _, name := range names {
+			gitT(t, seed, "switch", "-q", "-c", name)
+			write(t, filepath.Join(seed, strings.ReplaceAll(name, "/", "-")+".txt"), name+"\n")
+			gitT(t, seed, "add", ".")
+			gitT(t, seed, "commit", "-q", "-m", name)
+			gitT(t, seed, "push", "-q", "origin", name)
+		}
+		gitT(t, root, "clone", "-q", "-b", names[len(names)-1], origin, filepath.Join(root, "clone"))
+	}), "clone")
 }
 
 // ghRecorder is a fake gh on PATH: every call lands in calls.log behind its token, then the case body answers it
