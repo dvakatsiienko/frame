@@ -15,9 +15,9 @@ his rules live in project memory; this skill is the order. read the leaves it na
 
 ## 2. depth
 
-- one fact → `WebSearch` standard, one confirming page
-- a state or «why» question → `WebSearch` extended, then `WebFetch` the primary pages
-- wide or several games → `x-cloud-chat:research` lanes, launched detached on the mac, under `~/.local/share/research-lanes/games/<date>-<slug>/`
+- one fact → `WebSearch` standard, one confirming page through the mac fetch
+- anything bigger (a state, a «why», a «what is it», a comparison, several games) → load `x-cloud-chat:research` and run all its lanes: exa + parallel detached on the mac under `~/.local/share/research-lanes/games/<date>-<slug>/`, plus an opus subagent as the source lane on the primary pages; the brief carries his context (taste leaves, setup), the synthesis is mine
+  - the subagent reads through the mac fetch only: its prompt names the desktop commander tool, and `~/.local/share/web-bot-blocked-fetch/<game>/` exists before it starts (a missing folder fails every fetch)
 - bot-blocked page (psnprofiles, wikis) → `pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>" --out <file>` on the mac (`firelink` § 2)
 
 ## 3. judging what comes back
