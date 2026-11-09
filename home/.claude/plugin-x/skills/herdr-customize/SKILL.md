@@ -38,7 +38,8 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 
 ## where our mods live
 
-- 📌 a mod's source belongs in `~/frame/home/.config/herdr-app/mods/<name>/`, linked out by the dotfiles mirror, so it gets git and our gates. `ls ~/frame/home/.config/herdr-app` says whether that home exists yet: until it does, a mod lives only in `~/.config/herdr-app/mods/`, with no undo — copy the folder aside before a rewrite
+- 📌 a mod's source belongs in `~/frame/home/.config/herdr-app/mods/<name>/`, linked out by the dotfiles mirror, so it gets git and our gates
+- 📌 a linked mod never hot-reloads: a commit reaches dima's window only after he quits herdr (⌘Q) and reopens it, his terminals living on in hc; cmd-p is the Go to box and a pane hide/show keeps the old build (2026-11-09, FRM-558; the watcher not following the link is the likely cause, unproven)
 - a shipped mod or layout belongs to herdr and is replaced on every start; our copy comes from `mod.clone` or `layout.clone` and never takes upstream fixes, so it is diffed against the new shipped one at each herdr update
 - 📌 `layout.clone` switches dima's shown layout to the clone: ask before running it
 - one mod per idea; touch only the mod or file the job names
@@ -64,4 +65,4 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 
 - draw into a pane from an outside process: every native pane is an in-app mod
 - show a web page: the near door is an `agent-browser` screenshot shown in a pane
-- undo an edit: git, once the mirror home exists
+- undo an edit outside the mirror home: git covers only `~/frame/home/.config/herdr-app`
