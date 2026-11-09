@@ -1,10 +1,10 @@
 ---
 id: PK-326
 title: 'first at boot: prove quiet comms live, and tilde blockers next'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-09T14:01:00Z'
+updated_date: '2026-11-09T17:31:00Z'
 labels:
   - s
   - clio-wing-2
@@ -129,4 +129,11 @@ handed over 17:47 to main. read so far by wing 2, 11-07: `quiet-log:2026-11-07` 
 kept: 2026-11-09 — a CST first-act, today's read of 11-07's quiet log, then closed
 
 2026-11-09 15:58 clio: re-measured on dima's o16 tick — quiet comms holds for member pings (11-07: 63 held, 63 flushed, every push carries a reason); the leak is the app's session-done notices, 55 turns on 11-07, 45 % bare, a rider on FRM-501; the read: scratchpad quiet-read.md. its close waits on the ask-guard over its 50 W-lines
+
+ticket: FRM-368
+ticket: FRM-501
+ticket: FRM-505
+close: 2026-11-09 19:31 — dima o56. W4 W20 moved to FRM-368 (FRM-368:W443 W444); W32 W33 W437 W438 W439 W440 W441 W442 W443 W444 W445 moved to FRM-501 (FRM-501:W2004–W2014, re-signed o59); W25 moved to FRM-505 (FRM-505:W1946, re-signed o60); W1 W2 W3 W5 W6 W7 W8 W9 W10 W11 W15 W16 W17 W18 W19 W21 W22 W23 W24 W26 W27 W28 W29 W30 W31 W34 W426 W434 W435 W436 W446 W447 W448 W449 W450 W451 dropped as answered in their own sessions 11-05 to 11-07 by dima o56
+
+correction 19:33: the two tilde lines are FRM-368:W466 and FRM-368:W467, not W443 W444 (those ids were taken; my first copy landed under dima notes, moved into the wish block)
 <!-- SECTION:NOTES:END -->

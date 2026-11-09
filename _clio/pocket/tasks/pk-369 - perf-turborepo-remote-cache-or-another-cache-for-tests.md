@@ -7,7 +7,7 @@ created_date: '2026-11-09T12:39:00Z'
 updated_date: '2026-11-09T15:10:00Z'
 labels:
   - s
-  - clio-wing-3
+  - clio-wing-1
 dependencies: []
 priority: next
 type: task
