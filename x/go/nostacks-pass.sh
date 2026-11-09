@@ -1,6 +1,7 @@
 #!/bin/sh
 # the stacks-built-out pass of `pnpm x-go:test`: build, vet and every test in a file that runs a lane verb,
-# with the add-on out — the proof plain prs run without it; the rest of the suite never meets the seam
+# with the add-on out — the proof plain prs run without it; the rest of the suite never meets the seam.
+# it runs on ci only: 235 cpu-s, as much as the whole suite, measured (FRM-535); `x-go:gate` still vets the tag at commit
 set -eu
 cd "$(dirname "$0")"
 # go names the test files that compile under the tag, so a file built only with the add-on never pads the count
