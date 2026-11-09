@@ -4,7 +4,7 @@ title: 'gates: one naming convention everywhere, one big sweep'
 status: open
 assignee: []
 created_date: '2026-11-09T20:03:00Z'
-updated_date: '2026-11-09T20:03:00Z'
+updated_date: '2026-11-09T20:20:00Z'
 labels:
   - s
   - clio-wing-1
@@ -26,4 +26,10 @@ PK-374:W3 (2026-11-09 21:59, dima, o80): resolve the gates pocket item as done, 
 PK-374:W4 (2026-11-09 21:59, dima, o80): i will pick a good time when we can do this, probably not this week, because we moved ahead of pace with the pile of shares from today. keep this pocket item parked until we have capacity and a window for it.
 
 kept: 2026-11-09 — 💤 on dima's word (o80), a pocket item by his own choice, not linear; the facts for the sweep: required ci checks are named in branch protection (bytes: lint + typecheck + test + build, apps essentials, skip-marker; frame: check + typecheck + test, Test x), so a rename moves protection in the same step; x verbs are their own families; the list is docs/knowledge/gates-catalog.md
+
+PK-374:W5 (2026-11-07 16:40, dima, from FRM-530:W6): i want all gates to have consistent names: a lot of differently named gates is confusing and not good.
+
+PK-374:W6 (2026-11-09 21:32, dima, from FRM-530:W18): then i would like to revisit the gates naming, because another issue with gates is that all gates are named randomly. i want all gates consistently named following the fleet naming guidelines, and maybe some memory rules are also worth updating so all new gates are named properly following the established naming conventions.
+
+PK-374:W7 (2026-11-09 21:42, dima, from FRM-530:W23): what about naming conventions for the actual gates? do you think a rename sweep is a good idea, to have all gates follow a convention like gate-*? ❓ (answered 21:46: not now, the sweep is this item)
 <!-- SECTION:NOTES:END -->

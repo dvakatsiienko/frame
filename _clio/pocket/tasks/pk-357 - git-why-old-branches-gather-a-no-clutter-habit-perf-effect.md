@@ -1,10 +1,10 @@
 ---
 id: PK-357
 title: 'git: why old branches gather, a no-clutter habit, perf effect'
-status: done
+status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T17:54:00Z'
+updated_date: '2026-11-09T20:20:00Z'
 labels:
   - s
   - clio-wing-1
@@ -46,4 +46,10 @@ note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-
 close 2026-11-09 19:56 wing 1: W2 why they gather → decamp removed the tree but kept its branch; fixed by wing 2's branch-delete-by-lease in frame#152 (FRM-553 queue). W3 the habit → that fix: a decamp now deletes the merged branch with its tree; the 112 local + bytes renovate/minors remote went only after his o52, o53 and typed word, tips logged in the wing 1 tree's .scratch/branches-deleted-tips.txt. W4 perf ❓ → no effect: 0.03 s on branch-listing ops, a 66 MB pack either way. W1 timing met: after the perf items, with him.
 
 close: PK-357:W1 done (after perf items, with him); PK-357:W2 done (decamp kept the branch, fixed in frame#152); PK-357:W3 done (habit = the decamp fix, delete only after his word); PK-357:W4 done (no perf effect, 0.03 s, 66 MB pack)
+
+PK-357:W5 (2026-11-09 19:35, dima): i want all stale branches cleared and pristine. the stale lagged branches should never be present anywhere, nor locally nor on remote, in frame and bytes, so when i print the `gba` alias in the terminal it prints a clean state.
+
+PK-357:W6 (2026-11-09 19:35, dima): how to solve efficiently? do you do it, or ask a subagent to help so your context does not get polluted? ❓ (answered then: one batch by script, the tips logged)
+
+2026-11-09 22:20 reopened (wishkeeper siesta): W5 not yet true — bytes holds a stray `refs/remotes/pr125` (50f593af, 2026-10-08) the branch sort never listed; its delete is asked in orbit
 <!-- SECTION:NOTES:END -->
