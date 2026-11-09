@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T18:01:00Z'
+updated_date: '2026-11-09T18:11:00Z'
 labels:
   - s
   - clio-main
@@ -16,16 +16,16 @@ ordinal: 9995
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-552 orbit in herdr: sixth sense reviewing, codie adds the «from herdr» label, then your one tick in herdr's board panel
-- [ ] #2 probe 4b, last leg: you look for «tool-existence-probe-and-session-id» in the desktop sidebar (restart and terminal resume passed)
-- [ ] #3 chunk 2: Zoo's chat into frame as fleet-chatter, a ticket for your sign, the herdr codie builds it
-- [ ] #4 tomorrow: boot clio in herdr (recipe in .scratch/herdr/plan.md), then FRM-542's main-seat check
-- [ ] #5 FRM-505 second wind runs itself: a fresh mods codie, seal first; then FRM-491 and FRM-495 behind it
-- [ ] #6 FRM-550: judge it against herdr after tomorrow's boot, then your sign, by 11-11
-- [ ] #7 PK-358 rex settings walkthrough with you, two at a time, shown live
-- [ ] #8 FRM-368 tilde grill with you, after the herdr move
-- [ ] #9 tonight's halt: every wing halts on its own, no running watcher blocks it
-- [ ] #10 helga's fresh boot on the next groom: her passport loaded proves the auto-load (crow restarted 20:01, job 4fb442fe)
+- [ ] #1 chunk 2: Zoo's chat into frame as fleet-chatter, a ticket for your sign, the herdr codie builds it
+- [ ] #2 FRM-505 second wind runs itself: seal its spec and start a fresh mods codie; FRM-491 and FRM-495 follow it
+- [ ] #3 ⏳ FRM-552 orbit in herdr: codie's «from herdr» label, then your one tick in herdr's board panel — waits for: the sixth sense's verdict
+- [ ] #4 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #5 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
+- [ ] #6 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
+- [ ] #7 ⏳ boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check — waits for: tomorrow's boot
+- [ ] #8 ⏳ FRM-550: judge it against herdr, then dima's sign — waits for: tomorrow's herdr boot, by 11-11
+- [ ] #9 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #10 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
