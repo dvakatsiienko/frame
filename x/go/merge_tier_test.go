@@ -149,6 +149,8 @@ func TestMergeAutoWaitsForClioWishkeeperRead(t *testing.T) {
 		{"clio's read on an ancestor", clio, true, ""},
 		{"clio's read before a memory edit", clio, false, "home/.claude/plugin-x/skills/foo/SKILL.md"},
 		{"clio's read before a memory file moved off its path", clio, false, "rename"},
+		{"clio's read before an edit to a memory path with a space", clio, false, "home/.claude/rules/new rule.md"},
+		{"clio's read before an edit to a non-ascii memory path", clio, false, "home/.claude/rules/é.md"},
 		{"the same text from codie's app", func(_ *mergeWorld, ancestor string) []string {
 			return []string{comment("x-codie-cc[bot]", "Bot", "wishkeeper read "+ancestor+": 0 findings")}
 		}, false, ""},
@@ -161,7 +163,7 @@ func TestMergeAutoWaitsForClioWishkeeperRead(t *testing.T) {
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			w := newMergeWorld(t, "x/go/merge_auto.go", "home/.claude/plugin-x/skills/foo/SKILL.md")
+			w := newMergeWorld(t, "x/go/merge_auto.go", "home/.claude/plugin-x/skills/foo/SKILL.md", "home/.claude/rules/new rule.md", "home/.claude/rules/é.md")
 			w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
 			ancestor := w.head
 			if c.after == "rename" {

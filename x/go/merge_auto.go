@@ -1334,7 +1334,7 @@ func wishkeeperCheck(api, n, head, base, ref string, paths []string) (mergeCheck
 	if err != nil {
 		return c, err
 	}
-	if got, _ := gitIn("", "fetch", "-q", "origin", ref); !got.ok {
+	if got, _ := gitIn("", "fetch", "-q", "origin", "refs/heads/"+ref); !got.ok {
 		c.Detail = "git could not fetch " + ref + " to read the wishkeeper read's history: " + logLine(got.log)
 		return c, nil
 	}
@@ -1350,15 +1350,17 @@ func wishkeeperCheck(api, n, head, base, ref string, paths []string) (mergeCheck
 		// a rebase carried saw the same change, and a memory file only main changed is not the pr's
 		// no rename folding: a memory file moved off its path still names its old one; a diff git could not read vouches nothing
 		if ok(gitIn("", "merge-base", "--is-ancestor", read[1], head)) {
-			changed, _ := gitIn("", "diff", "--name-only", "--no-renames", read[1], head)
+			// -z: a path with a space or a non-ascii byte comes whole and unquoted, as github names it
+			changed, _ := gitIn("", "diff", "-z", "--name-only", "--no-renames", read[1], head)
 			if !changed.ok {
 				c.Detail = "git could not diff clio's wishkeeper read on " + short(read[1]) + " against " + short(head) + ": " + logLine(changed.log)
 				continue
 			}
-			if edited := slices.IndexFunc(strings.Fields(changed.out), func(p string) bool {
+			names := strings.Split(strings.Trim(changed.out, "\x00"), "\x00")
+			if edited := slices.IndexFunc(names, func(p string) bool {
 				return slices.Contains(paths, p) && matchesAny(p, riskyList.Memory)
 			}); edited >= 0 {
-				c.Detail = "clio's wishkeeper read on " + short(read[1]) + " is older than a memory edit, " + strings.Fields(changed.out)[edited] + ": a new read reaches " + short(head)
+				c.Detail = "clio's wishkeeper read on " + short(read[1]) + " is older than a memory edit, " + names[edited] + ": a new read reaches " + short(head)
 				continue
 			}
 		}
@@ -1718,7 +1720,7 @@ func roundCheck(api, repo, n, base, ref, head, author string, dimaOK bool) (merg
 	if err != nil {
 		return c, err
 	}
-	if got, _ := gitIn("", "fetch", "-q", "origin", ref); !got.ok {
+	if got, _ := gitIn("", "fetch", "-q", "origin", "refs/heads/"+ref); !got.ok {
 		c.Detail = "git could not fetch " + ref + " to read the round's history: " + logLine(got.log)
 		return c, nil
 	}
