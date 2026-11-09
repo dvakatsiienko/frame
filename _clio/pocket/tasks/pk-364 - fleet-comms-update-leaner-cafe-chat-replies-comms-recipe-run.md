@@ -4,7 +4,7 @@ title: 'fleet comms update: leaner cafe-chat replies, comms recipe run'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T13:29:00Z'
+updated_date: '2026-11-09T13:41:00Z'
 labels:
   - m
   - clio-wing-3
@@ -110,4 +110,9 @@ PK-364:W23 (2026-11-09 15:28, dima): comms that steer: fewer technical details, 
 PK-364:W24 (2026-11-09 15:28, dima): ❓ «delete the comms and everything else related to ongoing activities» (wispr, unclear: read as «drop the progress chatter about ongoing activities»)
 PK-364:W25 (2026-11-09 15:28, dima): groom the recipe: make it good, pretty, clean; cut fluff; sync it to the current state of multi-winged clio; my comms steering is based on this recipe, so it must be pristine; then research and proceed with PK-364
 note (wing 3): prompt-groom.ts sees only main's prompt log, so wing 3's 15:28 prompt was folded by hand; a gap for the comms run
+
+PK-364:W26 (2026-11-09 15:40, dima): orbit matters because our comms are built mostly around it; the flaw: --bg threads have no desktop orbit, only the terminal one; i assume they write into orbit and phases, but i don't see it, so i treated it as a wasted part
+PK-364:W27 (2026-11-09 15:40, dima): i want to know how much effort --bg sessions spend on orbit and phases, and what important thing i do not see there
+PK-364:W28 (2026-11-09 15:40, dima): the clunky fix today is glide: a --bg thread's orbit asks show up in glide, a workaround for now
+PK-364:W29 (2026-11-09 15:40, dima): batch the M3 weekly wish-loss audit with this recipe run
 <!-- SECTION:NOTES:END -->
