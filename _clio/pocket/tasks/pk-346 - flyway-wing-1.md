@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T20:54:00Z'
+updated_date: '2026-11-09T20:57:00Z'
 labels:
   - s
   - clio-wing-1
@@ -21,12 +21,15 @@ ordinal: 1001
 - [ ] #3 ⏳ FRM-557 test hooks trimmed: sealed and dispatched into the vm lane; codie second-winds, to-tickets, my greenlight, build, pr, merge — waits for: codie's lane plan
 - [ ] #4 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
 - [ ] #5 ⏳ FRM-537 next probes, by hand, the vitest pools now ride FRM-557 — waits for: spare usage
-- [ ] #6 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
-- [ ] #7 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
-- [ ] #8 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
-- [ ] #9 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
-- [ ] #10 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #11 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #6 ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next frame pr's merge-auto run, the first live read of #152's checks (549, 553 red only on the guard-refused «look sent» line, main's guard bug) — waits for: #153's merge
+- [ ] #7 ⏳ cli lane 6's rest, all signed: FRM-384 (gate runner, body guard, own-branch push, brief lint, the 19:27 gate riders, FRM-554), FRM-436, FRM-424; no codie, its sixth sense «cli lane | #150» idle — waits for: dima's word on a new cli codie
+- [ ] #8 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
+- [ ] #9 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
+- [ ] #10 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
+- [ ] #11 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
+- [ ] #12 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #13 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #14 💤 FRM-414 re-grill with dima before any build (spec ~/frame/.scratch/cli-lane-6/spec.md): cut the two messages fixed in #131; who writes the round record; rider 2 reverses his grill 2 Q6 «one pass, never rerun»; rider 3 is one codie ping line; the watch-pr undo drops :by — later: dima
 <!-- AC:END -->
 
 ## Implementation Notes
