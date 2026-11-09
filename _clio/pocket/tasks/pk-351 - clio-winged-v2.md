@@ -4,7 +4,7 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-07T21:09:00Z'
+updated_date: '2026-11-09T12:36:00Z'
 labels:
   - m
 dependencies: []
@@ -203,4 +203,6 @@ PK-351:W84 (2026-11-07 22:34, dima): on the weekly at 97 %: finish normal. you w
 PK-351:W85 (2026-11-07 22:36, dima): i go cook. fully finish PK-351. if any post-boot probes are needed to fully close it, you can leave it open for a final probe during the next boot, that's fine, but fully resolve the plan scope so the next boot boots a properly groomed winged clio v2.
 
 2026-11-07 23:10 wing 2 halt: handed back to main; PK-351 left: the fresh-wing boot probe at the next boot (W85), FRM-516's live reads by 11-09
+
+kept: 2026-11-09 — winged v2, wing 2's flyway line, its fresh-wing probe rides today's wing opens
 <!-- SECTION:NOTES:END -->

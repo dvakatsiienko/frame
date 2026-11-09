@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-07T19:53:00Z'
+updated_date: '2026-11-09T12:36:00Z'
 labels:
   - s
   - clio-main
@@ -16,23 +16,15 @@ ordinal: 9995
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 FRM-508 close on his tick
-- [x] #2 FRM-410 close on his tick, leftovers to a someday ticket
-- [x] #3 FRM-524 re-signed, dispatched, landed: the first lane
-- [ ] #4 mods quick lane with its verifier, by load
-- [x] #5 ci made boring finished, maybe today: BYT-132, BYT-106, BYT-131
-- [ ] #6 cli lane by load
-- [ ] #7 FRM-491 and FRM-495 behind FRM-505
-- [x] #8 look cards: FRM-510, BYT-94
-- [x] #9 PK-342 wire what we build
-- [x] #10 PK-344 retro leftovers
-- [ ] #11 FRM-368 tilde grill with dima
-- [x] #12 retro fold, 24 lines
-- [ ] #13 FRM-503 lane loop, by load
-- [ ] #14 PK-326 quiet comms, both sides: read today's quiet log at the halt, his word, today
-- [ ] #15 standing: FRM-483 3-day read, by 11-10
-- [ ] #16 redraws after winged v2 lands
-- [ ] #17 trial reads with dima: delve, skill-named-load, unbash
+- [ ] #1 mods quick lane with its verifier, by load
+- [ ] #2 cli lane by load
+- [ ] #3 FRM-491 and FRM-495 behind FRM-505
+- [ ] #4 FRM-368 tilde grill with dima
+- [ ] #5 FRM-503 lane loop, by load
+- [ ] #6 PK-326 quiet comms, both sides: read today's quiet log at the halt, his word, today
+- [ ] #7 standing: FRM-483 3-day read, by 11-10
+- [ ] #8 redraws after winged v2 lands
+- [ ] #9 trial reads with dima: delve, skill-named-load, unbash
 <!-- AC:END -->
 
 ## Implementation Notes
