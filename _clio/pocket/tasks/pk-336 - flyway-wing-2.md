@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T17:31:00Z'
+updated_date: '2026-11-09T17:37:00Z'
 labels:
   - m
   - clio-wing-2
@@ -36,9 +36,9 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #12 FRM-547 bytes REVIEW.md: committed in the bytes clio-wing-2 tree, push with the ci prompt line on o44, then its live proof and close
 - [x] #13 FRM-548 → FRM-549 codie side lane: spec now, summon on o45
 - [ ] #14 cli lane 6 is mine (wing 1's handover 19:05): after FRM-548/549, walk FRM-414 (+ round counter rider), FRM-384, FRM-436, FRM-424; door 1 tails in /Users/dima/frame/.claude/worktrees/clio-wing-1/.scratch/handover-cli-lane-6.md
-- [ ] #15 FRM-553 merge-auto waits on main's running ci/deploy (wing 1's joiner, unsigned): grill + sign it before the lane brief, so it batches into the merge-auto pr with FRM-549/548
-- [ ] #16 FRM-384 re-sign with FRM-520's gate tails + watch-pr --verified undo (dima 19:21 via wing 1), on his tick; lefthook tail lands after 11-10 17:28
-- [ ] #17 x verify red re-links node_modules/.bin into its temp copy and deletes it (main 19:23: every commit gate red 19:20–19:22): its fix joins the FRM-384 re-sign batch with the gate tails
+- [x] #15 FRM-553 merge-auto waits on main's running ci/deploy (wing 1's joiner, unsigned): grill + sign it before the lane brief, so it batches into the merge-auto pr with FRM-549/548
+- [x] #16 FRM-384 re-sign with FRM-520's gate tails + watch-pr --verified undo (dima 19:21 via wing 1), on his tick; lefthook tail lands after 11-10 17:28
+- [x] #17 x verify red re-links node_modules/.bin into its temp copy and deletes it (main 19:23: every commit gate red 19:20–19:22): its fix joins the FRM-384 re-sign batch with the gate tails
 <!-- AC:END -->
 
 ## Implementation Notes
