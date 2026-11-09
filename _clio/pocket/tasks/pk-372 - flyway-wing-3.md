@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T15:21:00Z'
+updated_date: '2026-11-09T15:33:00Z'
 labels:
   - s
   - clio-wing-3
@@ -23,4 +23,7 @@ ordinal: 18999
 - [x] #5 x-mod-guard dima-ok-flag rule misreads a followed ask: fold as one ticket under 🐋 safer, quieter mods (from main, wing 1's o40)
 - [ ] #6 PK-369 perf: can turbo remote cache or another cache reuse test results, against FRM-533's own key; a read, verdict line to wing 1 (from wing 1)
 - [x] #7 PK-366 linear: delete the «model» label group (his o19), the GLOSSARY label line with it; ⚠️ ask first (from wing 2)
+- [ ] #8 crew-pm board redraw: re-check and re-stamp after the label cut and winged v2, via a helper card (yanked from wing 2 #6, dima o19)
+- [ ] #9 FRM-542 every seat's prompt log, wing 2 #10 folded in (yanked, dima o19)
+- [ ] #10 FRM-550 decided-pattern read-back: a short grill, then build (dima 17:33)
 <!-- AC:END -->
