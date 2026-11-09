@@ -235,9 +235,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 
-	var sixthSense, ci, round, mergeable, deploy, threads mergeCheck
+	var sixthSense, ci, round, mergeable, deploy, mainCI, threads mergeCheck
 	if d.Override != nil {
-		r.skip("sixth-sense", "ci", "mergeable", "deploy", "round", "threads")
+		r.skip("sixth-sense", "ci", "mergeable", "deploy", "main-ci", "round", "threads")
 	} else {
 		if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
 			sixthSense = d.sixthSenseOf(api, repo, n, pr)
@@ -278,6 +278,15 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}); err != nil {
 			return nil, err
 		}
+		if err := r.Step("main-ci", "reading main's newest ci run", func() (string, error) {
+			var err error
+			if mainCI, err = mainRunsCheck(api); err != nil {
+				return "", err
+			}
+			return mainCI.shown()
+		}); err != nil {
+			return nil, err
+		}
 		if err := r.Step("round", "reading the reviewer's round on the branch", func() (string, error) {
 			var err error
 			if round, err = roundCheck(api, repo, n, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK); err != nil {
@@ -296,9 +305,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}); err != nil {
 			return nil, err
 		}
-		d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, threads}
+		d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, mainCI, threads}
 		if roundGated(repo) {
-			d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, round, threads}
+			d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, mainCI, round, threads}
 		}
 	}
 	selfWait := ""
@@ -351,7 +360,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		d.Decision = "merge"
 		return d, nil
 	}
-	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, round, ci, mergeable, deploy, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, round, ci, mergeable, deploy, mainCI, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -1360,6 +1369,35 @@ func deployCheck(api, repo, trunk string) (mergeCheck, error) {
 		}
 	}
 	c.Detail = fmt.Sprintf("no deploy in main's last %d commits, so nothing proves main deploys", deployLookback)
+	return c, nil
+}
+
+// main's own ci, newest run first: a red one on main holds every merge onto it, so a second failure never stacks there.
+// a run is named by its run-name («deploy <sha>»), so its workflow file is what tells ci from deploy
+func mainRunsCheck(api string) (mergeCheck, error) {
+	c := mergeCheck{Name: "main-ci"}
+	var answer struct {
+		Runs []struct {
+			ID         int64  `json:"id"`
+			Path       string `json:"path"`
+			HeadSha    string `json:"head_sha"`
+			Conclusion string `json:"conclusion"`
+		} `json:"workflow_runs"`
+	}
+	if _, err := ghFetch(asDima, api+"/actions/runs?branch=main&per_page=30", &answer); err != nil {
+		return c, err
+	}
+	for _, run := range answer.Runs {
+		if run.Path != ".github/workflows/ci.yml" {
+			continue
+		}
+		if run.Conclusion == "failure" {
+			c.Detail = fmt.Sprintf("main's ci is red on %s, run %d: a merge would stack on it; a fix for main lands under dima's operator-override for prs", short(run.HeadSha), run.ID)
+			return c, nil
+		}
+		break
+	}
+	c.OK, c.Detail = true, "main's newest ci is not red"
 	return c, nil
 }
 
