@@ -12,7 +12,6 @@ import (
 	"maps"
 	"net/http"
 	"net/url"
-	"os"
 	"os/exec"
 	"regexp"
 	"slices"
@@ -165,7 +164,7 @@ func stackMerge(repo, n, head string) (merged, sha string, err error) {
 	}
 	// the first answer naming the head github took holds: a later answer may name none
 	took := res.Details.ExpectedHead
-	clock := newStackClock()
+	clock := newWaitClock()
 	var polled error
 	for res.Status == "pending" && clock.elapsed() < stackMergeBudget {
 		clock.sleep(2 * time.Second)
@@ -665,7 +664,7 @@ func stackCall(args ...string) (result, error) {
 	if err != nil {
 		return result{}, &Fail{Msg: "no gh token for the codie app: " + err.Error(), Next: "x schema as"}
 	}
-	clock := newStackClock()
+	clock := newWaitClock()
 	pause := 2 * time.Second
 	for calls := 1; ; calls++ {
 		got, err := run("", []string{"GH_TOKEN=" + token}, "", "gh", append([]string{"stack"}, args...)...)
@@ -702,27 +701,6 @@ func stackCall(args ...string) (result, error) {
 		}
 		return got, &Fail{Msg: "gh stack " + args[0] + " failed — its output is above", Next: "gh stack " + args[0], Log: nonBlank(got.log)}
 	}
-}
-
-// under X_TEST, X_FAKE_SLEEP counts the waits instead of sleeping them
-type stackClock struct {
-	start   time.Time
-	skipped time.Duration
-	fake    bool
-}
-
-func newStackClock() *stackClock {
-	return &stackClock{start: time.Now(), fake: os.Getenv("X_TEST") != "" && os.Getenv("X_FAKE_SLEEP") != ""}
-}
-
-func (c *stackClock) elapsed() time.Duration { return time.Since(c.start) + c.skipped }
-
-func (c *stackClock) sleep(d time.Duration) {
-	if c.fake {
-		c.skipped += d
-		return
-	}
-	time.Sleep(d)
 }
 
 func stackBase(flags Flags) (string, error) {

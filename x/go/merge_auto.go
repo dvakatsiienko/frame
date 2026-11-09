@@ -81,6 +81,9 @@ type pullHead struct {
 	Base struct {
 		Ref string `json:"ref"`
 	} `json:"base"`
+	// github's own read of whether it would merge: null while it computes, after a push
+	Mergeable      *bool  `json:"mergeable"`
+	MergeableState string `json:"mergeable_state"`
 }
 
 /* Verbs */
@@ -232,9 +235,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 
-	var sixthSense, ci, round, threads mergeCheck
+	var sixthSense, ci, round, mergeable, deploy, threads mergeCheck
 	if d.Override != nil {
-		r.skip("sixth-sense", "ci", "round", "threads")
+		r.skip("sixth-sense", "ci", "mergeable", "deploy", "round", "threads")
 	} else {
 		if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
 			sixthSense = d.sixthSenseOf(api, repo, n, pr)
@@ -248,6 +251,30 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 				return "", err
 			}
 			return ci.shown()
+		}); err != nil {
+			return nil, err
+		}
+		if err := r.Step("mergeable", "reading whether github would merge it", func() (string, error) {
+			var err error
+			// a pr in a stack, its bottom layer included, is fixed by the restack, so it reads with no trunk as a layer does
+			plainTrunk := trunk
+			if d.layered {
+				plainTrunk = ""
+			}
+			if mergeable, err = mergeableCheck(api, n, pr, plainTrunk, newWaitClock()); err != nil {
+				return "", err
+			}
+			return mergeable.shown()
+		}); err != nil {
+			return nil, err
+		}
+		if err := r.Step("deploy", "reading main's deploy, which the merge lands on", func() (string, error) {
+			var err error
+			// production deploys from main whatever the pr's base, so main's tip is the one a merge lands on in the end
+			if deploy, err = deployCheck(api, repo, "main"); err != nil {
+				return "", err
+			}
+			return deploy.shown()
 		}); err != nil {
 			return nil, err
 		}
@@ -269,9 +296,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}); err != nil {
 			return nil, err
 		}
-		d.Checks = []mergeCheck{sixthSense, ci, threads}
+		d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, threads}
 		if roundGated(repo) {
-			d.Checks = []mergeCheck{sixthSense, ci, round, threads}
+			d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, round, threads}
 		}
 	}
 	selfWait := ""
@@ -324,7 +351,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		d.Decision = "merge"
 		return d, nil
 	}
-	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, ci, round, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, round, ci, mergeable, deploy, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -333,14 +360,16 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 }
 
 // the brake and a self-edit outrank every check
-func decide(brake, selfWait string, sixthSense, ci, round, threads mergeCheck) (decision, wait string) {
+// the checks in the order their waits outrank each other: mergeable after ci, since a pending required check is what
+// github's blocked means, so ci names it first
+func decide(brake, selfWait string, checks ...mergeCheck) (decision, wait string) {
 	switch {
 	case brake != "":
 		return "wait", "brake on, needs dima's word — " + brake
 	case selfWait != "":
 		return "wait", selfWait
 	}
-	for _, c := range []mergeCheck{sixthSense, round, ci, threads} {
+	for _, c := range checks {
 		if !c.OK {
 			return "wait", c.Detail
 		}
@@ -368,6 +397,11 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// a layer's conflict is fixed by restacking the stack onto main, never by merging main into one layer, so no trunk
+	mergeable, err := mergeableCheck(api, n, pr, "", newWaitClock())
+	if err != nil {
+		return "", err
+	}
 	risky, ownSelf, err := riskyPaths(api, n)
 	if err != nil {
 		return "", err
@@ -380,11 +414,12 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
-	decision, wait := decide("", selfWait, sixthSense, ci, round, threads)
+	// main's deploy is the merged pr's own check, read once for the whole stack
+	decision, wait := decide("", selfWait, sixthSense, round, ci, mergeable, threads)
 	if decision == "merge" {
 		return "", nil
 	}
-	for _, c := range []mergeCheck{sixthSense, ci, round, threads} {
+	for _, c := range []mergeCheck{sixthSense, ci, round, mergeable, threads} {
 		if !c.OK && c.Detail == wait {
 			wait = c.Name + ": " + wait
 		}
@@ -503,10 +538,15 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			trailers += "\nOperator-override: " + d.Override.Scope + ", by " + d.Override.By + " at " + d.Override.At
 		}
 		// the sha pins the merge to the head the checks read: a push since makes github refuse it
-		_, _, err := ghSend(asDima, http.MethodPut, api+"/pulls/"+d.PR+"/merge", map[string]string{
+		status, _, err := ghSend(asDima, http.MethodPut, api+"/pulls/"+d.PR+"/merge", map[string]string{
 			"sha": d.Head, "merge_method": "squash", "commit_title": d.title + " (#" + d.PR + ")",
 			"commit_message": strings.TrimSpace(d.body) + "\n\n" + trailers,
 		}, &merged)
+		// every check passed, so a moved branch is github seeing what changed since the read: a fresh run reads it again;
+		// any other refusal (a draft or a rule, under the override) stays github's own, since a rerun meets it again
+		if refused, ok := errors.AsType[*Fail](err); ok && (status == http.StatusMethodNotAllowed || status == http.StatusConflict) && strings.Contains(refused.Msg, "was modified") {
+			return "", &Fail{Refused: true, Msg: "github refused the merge of #" + d.PR + ": " + refused.Msg, Next: "x lane merge-auto " + d.PR + ", again"}
+		}
 		d.Merged = merged.Sha
 		return "#" + d.PR + " → " + short(merged.Sha), err
 	}); err != nil {
@@ -1188,6 +1228,44 @@ func logLine(text string) string {
 	return line
 }
 
+// github's own read of the merge, an allow-list: clean passes, and unstable, a red or pending check no branch rule
+// requires, which ciCheck ignores too; github computes it after a push, so a null or unknown is read again
+func mergeableCheck(api, n string, pr pullHead, trunk string, clock *waitClock) (mergeCheck, error) {
+	c := mergeCheck{Name: "mergeable"}
+	for read := 1; pr.Mergeable == nil || pr.MergeableState == "unknown"; read++ {
+		if read == 3 {
+			c.Detail = "github is still computing whether #" + n + " merges; run it again in a minute"
+			return c, nil
+		}
+		clock.sleep(2 * time.Second)
+		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
+			return c, err
+		}
+	}
+	switch state := pr.MergeableState; state {
+	case "clean", "unstable":
+		c.OK, c.Detail = true, "github would merge it ("+state+")"
+	case "dirty", "behind":
+		// merge-main merges origin/main, so it fixes a plain pr onto main; a stack's layer restacks onto main whole
+		door := "x lane restack --apply"
+		if trunk != "" && pr.Base.Ref == "main" {
+			door = "x lane merge-main"
+		}
+		said := "conflicts with"
+		if state == "behind" {
+			said = "is behind"
+		}
+		c.Detail = "#" + n + " " + said + " " + pr.Base.Ref + " → " + door
+	case "blocked":
+		c.Detail = "github's branch protection holds it: a required check or review is still missing"
+	case "":
+		c.Detail = "github gave #" + n + " no mergeable state"
+	default:
+		c.Detail = "github will not merge #" + n + ": its mergeable state is " + state
+	}
+	return c, nil
+}
+
 // «no run» and «skipped» are never green
 func ciCheck(api, base, head string) (mergeCheck, error) {
 	c := mergeCheck{Name: "ci"}
@@ -1229,6 +1307,64 @@ func ciCheck(api, base, head string) (mergeCheck, error) {
 	c.OK, c.Detail = true, fmt.Sprintf("%d of %d required green on %s", len(required), len(required), short(head))
 	return c, nil
 }
+
+// a repo whose main deploys from ci, so a merge onto a red or running deploy stacks a second failure on it
+func deployGated(repo string) bool {
+	if mergeTestEnvOn() {
+		return repo == os.Getenv("X_DEPLOY_REPO")
+	}
+	return repo == "dvakatsiienko/bytes"
+}
+
+// main's tip, never the pr head: bytes pr heads carry no deploy, since production deploys run from ci after a merge
+func deployCheck(api, repo, trunk string) (mergeCheck, error) {
+	c := mergeCheck{Name: "deploy"}
+	if !deployGated(repo) {
+		c.OK, c.Detail = true, "no deploy: skipped"
+		return c, nil
+	}
+	// a ci or docs commit deploys nothing, so the commit read is main's last one that deployed, newest first
+	var history []struct {
+		Sha string `json:"sha"`
+	}
+	if _, err := ghFetch(asDima, api+"/commits?sha="+trunk+"&per_page="+fmt.Sprint(deployLookback), &history); err != nil {
+		return c, err
+	}
+	for _, commit := range history[:min(len(history), deployLookback)] {
+		checks, err := checksOf(asDima, api, commit.Sha)
+		if err != nil {
+			return c, err
+		}
+		var apps []string
+		for _, check := range checks {
+			app, isDeploy := strings.CutPrefix(check.Name, "Vercel – ")
+			if !isDeploy {
+				continue
+			}
+			apps = append(apps, app)
+			// a skipped deploy reads success and passes: the hold is a red or a running deploy only (dima, o45)
+			switch check.State {
+			case "success":
+			case "pending":
+				c.Detail = "main's deploy is running: " + app + " on " + short(commit.Sha)
+				return c, nil
+			default:
+				// the pr that fixes main meets this same wait, so the door that lands it is named, never «fix main» alone
+				c.Detail = app + "'s deploy is " + check.State + " on main at " + short(commit.Sha) + ": a merge would stack on it; a fix for main lands under dima's operator-override for prs"
+				return c, nil
+			}
+		}
+		if len(apps) > 0 {
+			c.OK, c.Detail = true, strings.Join(apps, ", ")+" deployed on main at "+short(commit.Sha)
+			return c, nil
+		}
+	}
+	c.Detail = fmt.Sprintf("no deploy in main's last %d commits, so nothing proves main deploys", deployLookback)
+	return c, nil
+}
+
+// how far back main's last deploy is looked for: a run of ci and docs commits is a few, never a release's worth
+const deployLookback = 20
 
 // the one repo whose merges need a reviewer round; frame's round stays advice
 func roundGated(repo string) bool {

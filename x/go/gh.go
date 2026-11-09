@@ -35,6 +35,8 @@ type prCheck struct {
 	Name  string `json:"name"`
 	State string `json:"state"`
 	URL   string `json:"url,omitempty"`
+	// a commit status's own words: vercel reports a skipped deploy as success, and only this says so
+	Description string `json:"description,omitempty"`
 }
 
 type prComment struct {
@@ -184,9 +186,10 @@ func checksOf(as, base, sha string) ([]prCheck, error) {
 		URL        string `json:"html_url"`
 	}
 	type status struct {
-		Context string `json:"context"`
-		State   string `json:"state"`
-		URL     string `json:"target_url"`
+		Context     string `json:"context"`
+		State       string `json:"state"`
+		URL         string `json:"target_url"`
+		Description string `json:"description"`
 	}
 	runs, err := ghPages[run](as, base+"/commits/"+sha+"/check-runs", "check_runs")
 	if err != nil {
@@ -202,14 +205,14 @@ func checksOf(as, base, sha string) ([]prCheck, error) {
 		if c.Status != "completed" {
 			state = c.Status
 		}
-		checks = append(checks, prCheck{c.Name, state, c.URL})
+		checks = append(checks, prCheck{Name: c.Name, State: state, URL: c.URL})
 	}
 	// the statuses list holds every state a context went through, newest first: the first one counts
 	seen := map[string]bool{}
 	for _, s := range statuses {
 		if !seen[s.Context] {
 			seen[s.Context] = true
-			checks = append(checks, prCheck{s.Context, s.State, s.URL})
+			checks = append(checks, prCheck{s.Context, s.State, s.URL, s.Description})
 		}
 	}
 	slices.SortStableFunc(checks, func(a, b prCheck) int { return strings.Compare(a.Name, b.Name) })
