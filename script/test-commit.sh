@@ -2,7 +2,8 @@
 # test-commit <whole-suite command…> — the commit gate's test step, run inside script/index-run.sh's copy.
 # a commit whose every staged path sits under _clio/pocket/ runs no suite, on any branch: the whole suite stays at push.
 # a commit of only memory runs only the tests that read memory, on any branch (script/lib/memory-only.sh); ci keeps the whole suite.
-# a codie/* branch runs only the tests importing its staged code: the whole suite stays at push and on ci. any other branch runs the command.
+# every branch runs only the tests importing its staged code; a path off the no-test list, a delete, a rename or a detached HEAD runs the command.
+# the whole suite stays at push (the twin) and on ci.
 # one row a run in test-commit.log, tab-separated: start, 1-min load, branch, mode, staged paths, commit it sits on, seconds, exit, source.
 set -u
 # shellcheck source=script/lib/memory-only.sh
@@ -34,24 +35,34 @@ if [ -n "$changes" ]; then
     done <<<"$changes"
 fi
 case $branch in
-codie/*)
-    mode=related
-    [ -z "${read_failed:-}" ] || mode=whole
+'') kind=detached ;;
+main) kind=main ;;
+codie/*) kind=codie ;;
+clio-wing-*) kind=clio-wing ;;
+worktree-*) kind=worktree ;;
+*) kind=other ;;
+esac
+# the kill rule's lever: a kind taken off this list runs the whole suite at commit (docs/test-drive/gate-speed.md)
+related_kinds=' main codie clio-wing worktree other '
+case $related_kinds in *" $kind "*) [ -n "${read_failed:-}" ] || mode=related ;; esac
+if [ "$mode" = related ]; then
     while IFS=$'\t' read -r status path; do
         [ -n "$status" ] || continue
         staged=$((staged + 1))
         case $status in
         D* | R*) mode=whole ;;
         esac
-        # what every test leans on: the import graph cannot name them
         case $path in
+        # what every test leans on: the import graph cannot name them
         package.json | pnpm-lock.yaml | pnpm-workspace.yaml | vitest.config.ts | tsconfig*.json | lefthook.yaml | script/lib/test-temp-dir.ts) mode=whole ;;
         *.ts | *.tsx | *.js | *.mjs) code_paths+=("$path") ;;
+        # the no-test list: no test reads these kinds by path (a grep, 2026-11-09); the pocket runs none on its own too
+        *.svg | *.png | *.jpg | *.jpeg | *.gif | *.webp | *.avif | *.ico | *.mp4 | *.mov | _clio/pocket/*) ;;
+        *) mode=whole ;;
         esac
     done <<<"$changes"
     [ "$mode" = related ] && [ ${#code_paths[@]} -eq 0 ] && mode=none
-    ;;
-esac
+fi
 if [ -n "$pocket_only" ]; then
     mode=none
     staged=$pocket_paths
@@ -70,5 +81,5 @@ whole)
 related) pnpm exec vitest related --run --passWithNoTests "${code_paths[@]}" || code=$? ;;
 memory) pnpm exec vitest run "${MEMORY_TESTS[@]}" || code=$? ;;
 esac
-printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "$branch" "$mode" "$staged" "$(git rev-parse --short HEAD)" "$SECONDS" "$code" "${INDEX_RUN_SOURCE:-other}" >>"$state/test-commit.log"
+printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "${branch:-detached}" "$mode" "$staged" "$(git rev-parse --short HEAD)" "$SECONDS" "$code" "${INDEX_RUN_SOURCE:-other}" >>"$state/test-commit.log"
 exit "$code"

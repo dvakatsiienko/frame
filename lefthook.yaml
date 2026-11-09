@@ -25,7 +25,8 @@ pre-commit:
     typecheck:
       run: script/index-run.sh pnpm typecheck
     test:
-      # a codie/* branch: only the tests related to the staged code; the whole suite stays at push and on ci
+      # every branch kind (main, codie/*, clio-wing-*, worktree-*, any other; a detached HEAD runs whole): only the tests related to the staged code;
+      # the whole suite stays at push and on ci, and the kill rule's lever is related_kinds in script/test-commit.sh
       run: script/index-run.sh script/test-commit.sh pnpm test
     mods:
       # the mods sit outside vitest and the root tsconfig: their own runner and their engine-written types gate them.
