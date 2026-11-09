@@ -4,10 +4,9 @@ title: 'steamac vm disk: shrink 256gb to 192gb'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T14:59:00Z'
+updated_date: '2026-11-09T21:10:00Z'
 labels:
   - s
-  - clio-wing-2
 dependencies: []
 priority: next
 type: task
@@ -51,4 +50,6 @@ PK-362:W8 (2026-11-09 15:08, dima): steamac disk, 256 → 192 gb: reassign this 
 typo above: «fstraps» reads «fstrims».
 
 15:57 the correction comment on fxgl/steamac#91 posted on his o15 tick: https://github.com/fxgl/steamac/issues/91#issuecomment-6741843407
+
+2026-11-09 23:12 wing 2 halts: handed back unlabelled; still dima's «i tell when» (20:17)
 <!-- SECTION:NOTES:END -->
