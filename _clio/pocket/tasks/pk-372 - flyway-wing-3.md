@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T17:59:00Z'
+updated_date: '2026-11-09T18:11:00Z'
 labels:
   - s
   - clio-wing-3
@@ -16,10 +16,10 @@ ordinal: 18999
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 speak v2 planning with dima, once this flyway is clear and if he is up (his o5, via main)
-- [ ] #2 FRM-542 every seat's prompt log: built and on main; it closes once main's first herdr boot reads its own seat and one wing prompt reaches helga, by 11-11
-- [ ] #3 PK-367 cut process: dima answers grill 1 (what stays, when the pass runs, where it lives), then the rename to clio:low-tide-cuts with its filter test
-- [ ] #4 M3 wish-loss audit: its run.sh leaves wing 3's scratch for a tracked home, seven names first, before the wing halts
+- [ ] #1 PK-367 cut process: clio:low-tide-cuts built with your three answers; it lands on your word that the quotes were shown
+- [ ] #2 the wish-loss audit script: fold it into wish-cover as a weekly audit mode, then its flag name in a top-7 round — waits for: your tick in orbit
+- [ ] #3 FRM-542 every seat's prompt log, built and on main: its close — waits for: main's first herdr boot reading its own seat, by 11-11
+- [ ] #4 speak v2 planning with you — later: dima, once this flyway is clear and you're up
 <!-- AC:END -->
 
 ## Implementation Notes
