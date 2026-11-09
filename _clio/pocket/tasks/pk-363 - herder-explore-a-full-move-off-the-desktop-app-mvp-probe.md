@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T16:22:00Z'
+updated_date: '2026-11-09T16:34:00Z'
 labels:
   - m
   - clio-main
@@ -230,4 +230,134 @@ PK-363:W53 (2026-11-09 18:21, dima): I lean towards refining herdr now with forw
 PK-363:W54 (2026-11-09 18:21, dima): approve plan.
 
 PK-363:W55 (2026-11-09 18:21, dima): print grill in thread
+
+corrections (clio, 18:37, wishkeeper): W52 is clio's rung-4 ladder text that dima quoted, not his words — his line is W53, «on rung 4, Zoo's chat view»; his rung-4 verdict is still asked. W54 «approve plan» = the herdr probe ladder he quoted, rungs 4–8 (rung 7: close the window, reopen, panes come back; rung 8: rerun herdr-app check after the next herdr update). W37 lost his «← it maybe even better» (hc send always submitting is fine by him).
+
+raw drop (2026-11-09 18:21, dima): * prefill a command for you to press Enter: ❌ `hc send` always submits. A prefill would have to be typed key by key. Rex stays the door for that. ← it maybe even better. i usually want you to run yourself too when you prefill. in rex - can you prefill and send?
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): i forgot a thing (or you forgot). in my plan asks (inbox) i asekd to compile a rex/herder skill out from the research results, thorough parse of the research data and compile a really solid skill for both doors. importance is described in inbox. we have that already?
+
+raw drop (2026-11-09 18:21, dima): * Its own memory file: a 62 KB `AGENTS.md` regenerated on every start. It's the manual an agent reads. That answers «any herdr memory files?». ← so herder part partially covered — It already has everything that is needed about it inside its own agents.md? This overhead of 62 KB of herdr-specific agents.md, is it shared for all CC threads? How many tokens is 62 KB? For example, how many tokens does it add to each thread? Or is this file only read when any further edits are made?
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): standing for everyone today: no more artifacts until i ask.
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): you forgot to describe grilling into the main thread again.
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): rex: so Rex is generally less flexible than herdr, right? herdr allows building a lot of custom UIs pretty flexibly, while Rex only allows running a lot of CCs in parallel but doesn't have so many custom UIs like herdr has (or probably even doesn't have custom UI at all). So Rex is limited to terminal and CCView UI, right?
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): herder - can it run with typescript, not raw js? if so i prefer TS.
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): herder custom UI with c desktop app custom UI - what is faster/cheaper/more approachabes in terms of building and running live (result) both? is herder cheaper to build? ask herder codie. he just rebuild herder board slightly
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): zoo (where we borrow from) - how to gradually reconnect borrowed parts to our own? so we are free to gradually evolve it? i want it to be fully branded as ours.
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): Our board inside herdr (from artifact) ←  so currently, we have an element of duping? Our mods get drawn everywhere: in playing CC in the Claude desktop app (the native UI) and in herdr. They will be mirrored? How do you think: is it good or not good? We have two places to maintain each new UI for a new mod, and then it has to be implemented on the mods side to have it working as a base and in herdr too, right?
+
+raw drop (2026-11-09 18:21, dima): A clarification: Can a part of the UI be built only on the herdr side, but no effort be spent on building the actual mod in CC or anything custom in herdr? Have to be first baked up by a built-in CC mod under the hood? This question is related to the scope we have planned for mods and the future scope. Is it still relevant with current findings, or does some of the planned mod scope get outdated or stale or superseded by herder?
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): What breaks if coding leaves the desktop app ← does herder have replacements counterparts? i assume then if doors/apis are different we have choice:
+
+raw drop (2026-11-09 18:21, dima): * dual support that includes c desktop app + herder
+
+raw drop (2026-11-09 18:21, dima): * or full move leaving no doors?
+
+raw drop (2026-11-09 18:21, dima): how expensive/messy to support all doors at once (keep c desktop app door as safety net backup door in case if herder desktop app will die)?
+
+raw drop (2026-11-09 18:21, dima): * The board itself: sessions, band, steer boxes and hover cards would need herdr-native versions. ← herder codie already partially covered board part, and pretty fast from what i saw. ask him how hard it was.
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): from what i saw, i can use both rex and herder with a boundary split of what each do. each is very pretty (i like) and have its perks. rex is terminal by default (herder also have terminal, do not throw it away).
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): The probe ladder
+
+raw drop (2026-11-09 18:21, dima): Cheapest first. Each rung answers go or no-go. Rungs 1–3 ran read-only today. Rung 4 is new since the research landed, and it's the one that decides.
+
+raw drop (2026-11-09 18:21, dima): ✓ 1
+
+raw drop (2026-11-09 18:21, dima): Does cc report into the Agents sidebar?
+
+raw drop (2026-11-09 18:21, dima): go: hc get shows app=claude-code
+
+raw drop (2026-11-09 18:21, dima): 1 min
+
+raw drop (2026-11-09 18:21, dima): ✓ 2
+
+raw drop (2026-11-09 18:21, dima): Do mod panes have markdown, inputs and a websocket?
+
+raw drop (2026-11-09 18:21, dima): go native, no-go for html
+
+raw drop (2026-11-09 18:21, dima): 10 min
+
+raw drop (2026-11-09 18:21, dima): ✓ 3
+
+raw drop (2026-11-09 18:21, dima): Does the cc binary speak OSC 7501?
+
+raw drop (2026-11-09 18:21, dima): go
+
+raw drop (2026-11-09 18:21, dima): 1 min
+
+raw drop (2026-11-09 18:21, dima): 4
+
+raw drop (2026-11-09 18:21, dima): Install Herdr Zoo, open a clio thread in its chat view
+
+raw drop (2026-11-09 18:21, dima): your read: is this chatter good enough to grow?
+
+raw drop (2026-11-09 18:21, dima): 20 min ←  I lean towards refining herdr now with forwardly deployed CC, and keeping fleet in the Claude desktop app for today, and prepping it well enough so tomorrow everyone can start in herdr
+
+raw drop (2026-11-09 18:21, dima): 5
+
+raw drop (2026-11-09 18:21, dima): Hello mod: a markdown pane beside a cc terminal
+
+raw drop (2026-11-09 18:21, dima): renders, passes herdr-app check
+
+raw drop (2026-11-09 18:21, dima): 15 min
+
+raw drop (2026-11-09 18:21, dima): 6
+
+raw drop (2026-11-09 18:21, dima): Orbit mirror: x-mod-stash writes its board to JSON, a mod draws asks with a working tick
+
+raw drop (2026-11-09 18:21, dima): the tick reaches cc's next turn
+
+raw drop (2026-11-09 18:21, dima): 90–120 min
+
+raw drop (2026-11-09 18:21, dima): 7
+
+raw drop (2026-11-09 18:21, dima): Resume: close the window, reopen
+
+raw drop (2026-11-09 18:21, dima): panes and sessions come back
+
+raw drop (2026-11-09 18:21, dima): 15 min
+
+raw drop (2026-11-09 18:21, dima): 8
+
+raw drop (2026-11-09 18:21, dima): Drift: rerun herdr-app check after the next herdr update
+
+raw drop (2026-11-09 18:21, dima): still passes
+
+raw drop (2026-11-09 18:21, dima): approve plan.
+
+raw drop (2026-11-09 18:21, dima): --
+
+raw drop (2026-11-09 18:21, dima): print grill in thread
 <!-- SECTION:NOTES:END -->
