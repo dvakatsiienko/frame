@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T20:23:00Z'
+updated_date: '2026-11-09T20:36:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,12 +22,11 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card
-- [ ] #2 the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25)
-- [ ] #3 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
-- [ ] #4 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
-- [ ] #5 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
-- [ ] #6 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go, stacks.go, habit-shared-files, the siesta skill, prompt-groom.ts, craft-fleet-flow and shape-lane-dispatch changed since its last version — later: dima 20:21 («i tell when»)
+- [ ] #1 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
+- [ ] #2 ⏳ FRM-548, FRM-549, FRM-553 close by x lane landed (frame#152 merged 22:03) — waits for: codie's stop and its tree's decamp, after FRM-414 if dima picks it (o84)
+- [ ] #3 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
+- [ ] #4 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
+- [ ] #5 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go, stacks.go, habit-shared-files, the siesta skill, prompt-groom.ts, craft-fleet-flow and shape-lane-dispatch changed since its last version — later: dima 20:21 («i tell when»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -177,4 +176,8 @@ moved 2026-11-09 21:23 (low tide triage, dima's ask): 📅 FRM-483 and 📅 FRM-
 hoist 11-09: done
 
 done 2026-11-09 22:23: ⏳ frame#152 (FRM-549, FRM-553 + its riders, FRM-548) merges by merge-auto — waits for: sixth sense's round-4 clean and my wishkeeper read (FRM-549 In Progress, FRM-553 In Progress, FRM-548 In Progress)
+
+done 2026-11-09 22:36: FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card (FRM-546 Done)
+
+done 2026-11-09 22:36: the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25)
 <!-- SECTION:NOTES:END -->

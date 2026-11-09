@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T20:00:00Z'
+updated_date: '2026-11-09T20:36:00Z'
 labels:
   - m
   - clio-main
@@ -509,4 +509,48 @@ PK-363:W99 (2026-11-09 21:51, dima): Maybe you can ask Codie to probe the summon
 PK-363:W100 (2026-11-09 21:51, dima): You can tell Codie all the stuff you want to have for summoning and spawning, and Codie will probe with cheap probes via haiku 5.5? ❓
 PK-363:W101 (2026-11-09 21:51, dima): what else do we want for mvp? ❓
 answered 21:52: W99–W100 → codie's summon probe (~/frame/.scratch/herdr-summon-probe/), W101 → the MVP list in the 21:52 reply
+
+PK-363:W102 (2026-11-09 22:28, dima): Let's review the herdr MVP plan.
+PK-363:W103 (2026-11-09 22:28, dima): I saw you told us that the MVP is ready and you can start in herdr already.
+PK-363:W104 (2026-11-09 22:28, dima): What other essentials are we missing? ❓
+PK-363:W105 (2026-11-09 22:28, dima): my plan today:
+PK-363:W106 (2026-11-09 22:28, dima): wing 1 - leads its lane through full scope planned for today. merges everything, hunts and resolves all tails and parks until you halt it. (upd wing 1 just in case)
+PK-363:W107 (2026-11-09 22:28, dima): wing 2- same as wing 1.
+PK-363:W108 (2026-11-09 22:28, dima): you — let's think what easy wins we can have today with herdr.
+PK-363:W109 (2026-11-09 22:28, dima): we need to revisit mods scope and compare against herdr — whats now redundant? ❓
+PK-363:W110 (2026-11-09 22:28, dima): what we previously planned for c desktop app can now be rethought in simpler way in herdr? ❓
+PK-363:W111 (2026-11-09 22:28, dima): ← i think this is better to do tomorrow.
+PK-363:W112 (2026-11-09 22:28, dima): what else we can start doing now in herdr to smoothen the transition? ❓
+PK-363:W113 (2026-11-09 22:28, dima): maybe do something that allows explore herdr more to know better how to run than scan of planned mods scope? ❓
+PK-363:W114 (2026-11-09 22:28, dima): as for o104 — maybe let's have it too. if it is relevant.
+PK-363:W115 (2026-11-09 22:28, dima): for me - not too critical, a nice to have QOL. i can live with plain paths until we stabilize herdr.
+PK-363:W116 (2026-11-09 22:28, dima): tmrw.
+PK-363:W117 (2026-11-09 22:28, dima): 1. you — boot carefully knowing that you are in herdr now
+PK-363:W118 (2026-11-09 22:28, dima): 2. fix stuff as you boot — you likely hit some stuff
+PK-363:W119 (2026-11-09 22:28, dima): 3. start only crow and helga first — By the way, how will we start it: via `--bg` or via herdr door? ❓
+PK-363:W120 (2026-11-09 22:28, dima): Also, in short, tell what the difference is between starting threads in `--bg` and via herdr-specific door. ❓
+PK-363:W121 (2026-11-09 22:28, dima): Why can you just start `--bg` threads, and they would work in herdr? ❓
+PK-363:W122 (2026-11-09 22:28, dima): Does herdr need some specific API for you to start threads in herdr? ❓
+PK-363:W123 (2026-11-09 22:28, dima): Why is that? ❓
+PK-363:W124 (2026-11-09 22:28, dima): To have the ability to start and end threads gracefully in herdr? ❓
+PK-363:W125 (2026-11-09 22:28, dima): 4. wings:
+PK-363:W126 (2026-11-09 22:28, dima): 1. wing 1 - i plan it tomorrow, but not from start. lets first explore herdr and plan your main lane shape. after we explore i plan to have wing 1, solve its tails and start speak app v2 at some point.
+PK-363:W127 (2026-11-09 22:28, dima): 2. wing 2 - not planned for now. it solves its lane fully — then its flyway parks or moves to wing 1. park its flyway for now.
+PK-363:W128 (2026-11-09 22:28, dima): you, tmrw.
+PK-363:W129 (2026-11-09 22:28, dima): i think we need to plan what to change in herdr and have a herdr quicklane running, you drive it.
+PK-363:W130 (2026-11-09 22:28, dima): we shape scope as we go, i steer UI looks, we patch stuff until stable.
+PK-363:W131 (2026-11-09 22:28, dima): and we run a mods lane scope audit at some point. so we can resume mods lane and decide what and where we run - in cc native mods lane or in herdr lane? ❓
+PK-363:W132 (2026-11-09 22:28, dima): then - resume mods lane at some point i suppose we will have mods lane and herdr lane in parallel? ❓
+PK-363:W133 (2026-11-09 22:28, dima): or herdr lane is kinda the same as mods lane? ❓
+PK-363:W134 (2026-11-09 22:28, dima): or it is two different areas? ❓
+PK-363:W135 (2026-11-09 22:28, dima): propose how to have them better? ❓
+PK-363:W136 (2026-11-09 22:28, dima): i would want herdr lane separate.
+PK-363:W137 (2026-11-09 22:28, dima): but today we went ahead of weekly pace.
+PK-363:W138 (2026-11-09 22:28, dima): currently we are at 33% weekly (1day+ as for today).
+PK-363:W139 (2026-11-09 22:28, dima): it is not bad — today we solved a whole pile of tails (good), and probed herdr and even have an mvp.
+PK-363:W140 (2026-11-09 22:28, dima): but now we have to move more carefully and try batch work.
+PK-363:W141 (2026-11-09 22:28, dima): for example, if herdr lane is close to mods lane - then it is a same lane.
+PK-363:W142 (2026-11-09 22:28, dima): (i still accept two lanes at once -mods and herdr. because we need to stabilize herdr, it is a prio, so i accept having two parallel lanes).
+PK-363:W143 (2026-11-09 22:28, dima): either way, propose how to have this tmrw.
+answered 22:30 and 22:40: W104, W108, W112–W113, W119–W124, W131–W135 in the replies; W114–W115 → PK-349 (the for-you row after herdr is stable); W117–W118, W126, W129–W131 → PK-349 📅 11-10 lines
 <!-- SECTION:NOTES:END -->
