@@ -381,7 +381,8 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	mergeable, err := mergeableCheck(api, n, pr, trunk, newWaitClock())
+	// a layer's conflict is fixed by restacking the stack onto main, never by merging main into one layer, so no trunk
+	mergeable, err := mergeableCheck(api, n, pr, "", newWaitClock())
 	if err != nil {
 		return "", err
 	}
@@ -520,10 +521,14 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 			trailers += "\nOperator-override: " + d.Override.Scope + ", by " + d.Override.By + " at " + d.Override.At
 		}
 		// the sha pins the merge to the head the checks read: a push since makes github refuse it
-		_, _, err := ghSend(asDima, http.MethodPut, api+"/pulls/"+d.PR+"/merge", map[string]string{
+		status, _, err := ghSend(asDima, http.MethodPut, api+"/pulls/"+d.PR+"/merge", map[string]string{
 			"sha": d.Head, "merge_method": "squash", "commit_title": d.title + " (#" + d.PR + ")",
 			"commit_message": strings.TrimSpace(d.body) + "\n\n" + trailers,
 		}, &merged)
+		// every check passed, so a 405 or 409 is github seeing what moved since the read: a fresh run reads it again
+		if refused, ok := errors.AsType[*Fail](err); ok && (status == http.StatusMethodNotAllowed || status == http.StatusConflict) {
+			return "", &Fail{Refused: true, Msg: "github refused the merge of #" + d.PR + ": " + refused.Msg, Next: "x lane merge-auto " + d.PR + ", again"}
+		}
 		d.Merged = merged.Sha
 		return "#" + d.PR + " → " + short(merged.Sha), err
 	}); err != nil {
