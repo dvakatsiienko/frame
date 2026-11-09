@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T12:36:00Z'
+updated_date: '2026-11-09T12:37:00Z'
 labels:
   - s
   - clio-main
@@ -58,4 +58,24 @@ PK-349:W11 (2026-11-07 20:15, dima): q: why mods lane active if it was parked? �
 PK-349:W12 (2026-11-07 20:33, dima): are you sure mods lane not stuck looks like codie waits for sense and sense waits for codie ❓
 PK-349:W13 (2026-11-07 21:13, dima): lets keep mods lane parked and wait until cpu lane fully resolves. wing 1 still does something. wing 2 builds winged clio v2.
 PK-349:W14 (2026-11-07 21:13, dima): let's solve chores what you have ? tails? retros? ❓
+
+PK-349:W15 (2026-11-09 14:30, dima): /clio:boot pm-revamp-halt, start as planned but:
+
+PK-349:W16 (2026-11-09 14:30, dima): move all test drives and wait/measure dates +1 day; no activity was present yesterday
+
+PK-349:W17 (2026-11-09 14:30, dima): mods lane is paused; the inbox item is prioritized. i want to explore if herder is an option to fully move to it from the c desktop app for coding
+
+PK-349:W18 (2026-11-09 14:30, dima): first explore herder, then we see how to act better: migrate and revisit how our planned mods chunks apply to the herder shell, or continue here for now
+
+PK-349:W19 (2026-11-09 14:30, dima): all wings can start as planned, but all wings work in low-tide mode: propose the plan first, then act
+
+PK-349:W20 (2026-11-09 14:30, dima): you: solve the smaller chores first; i want no small tails present before the herder part starts, it is bigger; with you it is granular
+
+PK-349:W21 (2026-11-09 14:30, dima): wing 1 starts with its cpu plan and does the mechanical parts by itself
+
+PK-349:W22 (2026-11-09 14:30, dima): wing 2 starts with its chore pile and solves one at a time (or in batches when possible), with me mostly whenever i need
+
+PK-349:W23 (2026-11-09 14:30, dima): wing 3 has to solve the comms issues (inbox)
+
+PK-349:W24 (2026-11-09 14:30, dima): who can lead the x verify cli chunk, you or wing 1? it is better to be stated by someone. i think wing 1 can do it, or you; pick wing 1 if it is close to cpu/perf issues ❓
 <!-- SECTION:NOTES:END -->
