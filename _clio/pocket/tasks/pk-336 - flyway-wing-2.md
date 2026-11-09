@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T15:27:00Z'
+updated_date: '2026-11-09T15:33:00Z'
 labels:
   - m
   - clio-wing-2
@@ -27,16 +27,14 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #3 PK-326 close: route its 50 W-lines (the ask-guard), then close; its re-measure is done, notes 11-09 15:58
 - [ ] #4 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first
 - [ ] #5 trial reads with dima: skill-named-load (due 11-09), delve (11-10), unbash (11-22) — his word: probably mostly solved 2-3 days ago, double-check
-- [ ] #6 redraw the crew-pm blueprint after winged v2 and the sidecar changes
-- [ ] #7 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
-- [ ] #8 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
-- [ ] #9 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)
-- [ ] #10 side prompts join the prompt log (his winged v2 wish, never landed): ask dima if it still stands
-- [ ] #11 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
-- [ ] #12 FRM-538 quick lane, on his word (mods lane paused today)
-- [ ] #13 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
-- [x] #14 main's ask: x-mod-guard fail-closed on parse.ts fixed and landed; badge swap written, main commits the 7
-- [ ] #15 cli lane 6 and its codie move to wing 2 after FRM-503 lands, for 🐉 review loop gets verbs (main 17:27, agreed)
+- [ ] #6 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
+- [ ] #7 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
+- [ ] #8 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)
+- [ ] #9 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
+- [ ] #10 FRM-538 quick lane, on his word (mods lane paused today)
+- [ ] #11 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
+- [x] #12 main's ask: x-mod-guard fail-closed on parse.ts fixed and landed; badge swap written, main commits the 7
+- [ ] #13 cli lane 6 and its codie move to wing 2 after FRM-503 lands, for 🐉 review loop gets verbs (main 17:27, agreed)
 <!-- AC:END -->
 
 ## Implementation Notes
