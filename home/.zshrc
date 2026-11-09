@@ -68,5 +68,7 @@ zsh_init_cached() {           # $1 = binary, rest = the command that prints init
 }
 
 zsh_init_cached fnm fnm env --use-on-cd --version-file-strategy=recursive
+# a module past command_timeout under load printed a WARN into every pane; the prompt stays capped, the warning goes
+export STARSHIP_LOG=error
 zsh_init_cached starship starship init zsh
 zsh_init_cached zoxide zoxide init zsh
