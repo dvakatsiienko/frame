@@ -53,4 +53,10 @@ if ((stale)); then
         exit 1
     fi
 fi
+# most verbs end in milliseconds, so a collection is pure cost: a start 19.6 → 13.8 cpu ms with the collector off from
+# init on, which only the env reaches; the limit brings it back for a long verb (fleet flow's 500 MB, no slower), and
+# x drops all three at its start, so a go test it spawns keeps its own collector (FRM-535)
+if [[ -z ${GOGC-} && -z ${GOMEMLIMIT-} ]]; then
+    export GOGC=off GOMEMLIMIT=256MiB X_GC_FROM_SHIM=1
+fi
 exec "${bin}" "$@"

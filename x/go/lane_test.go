@@ -686,6 +686,67 @@ func TestShimRunsTheNearestTreesBinary(t *testing.T) {
 	}
 }
 
+func TestShimTurnsTheCollectorOffUnlessTheCallerSetOne(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name string
+		env  []string
+		want string
+	}{
+		{"nothing set", nil, "off 256MiB 1"},
+		{"the caller's GOGC", []string{"GOGC=50"}, "50  "},
+		{"the caller's GOMEMLIMIT", []string{"GOMEMLIMIT=1GiB"}, " 1GiB "},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			tree := fakeTree(t, "unused")
+			write(t, filepath.Join(tree, "x/go/bin/x"), "#!/bin/sh\necho \"$GOGC $GOMEMLIMIT $X_GC_FROM_SHIM\"\n")
+			now := time.Now()
+			_ = os.Chtimes(filepath.Join(tree, "x/go/bin/x"), now.Add(-time.Minute), now.Add(-time.Minute))
+			run := exec.Command(filepath.Join(tree, "x/bin/x"))
+			run.Dir = tree
+			run.Env = append(withoutGC(os.Environ()), c.env...)
+			out, _ := run.Output()
+
+			if got := strings.TrimRight(string(out), "\n"); got != c.want {
+				t.Errorf("the binary saw %q, want %q", got, c.want)
+			}
+		})
+	}
+}
+
+func withoutGC(env []string) []string {
+	return slices.DeleteFunc(slices.Clone(env), func(kv string) bool {
+		return strings.HasPrefix(kv, "GOGC=") || strings.HasPrefix(kv, "GOMEMLIMIT=") || strings.HasPrefix(kv, "X_GC_FROM_SHIM=")
+	})
+}
+
+func TestXDropsTheShimsCollectorSettingsBeforeItSpawnsAnything(t *testing.T) {
+	t.Setenv("X_GC_FROM_SHIM", "1")
+	t.Setenv("GOGC", "off")
+	t.Setenv("GOMEMLIMIT", "256MiB")
+
+	dropShimGC()
+
+	for _, name := range []string{"GOGC", "GOMEMLIMIT", "X_GC_FROM_SHIM"} {
+		if value, ok := os.LookupEnv(name); ok {
+			t.Errorf("%s still reads %q, so a spawned go test would inherit it", name, value)
+		}
+	}
+}
+
+func TestXKeepsACallersOwnGOGC(t *testing.T) {
+	t.Setenv("X_GC_FROM_SHIM", "")
+	t.Setenv("GOGC", "50")
+
+	dropShimGC()
+
+	if got := os.Getenv("GOGC"); got != "50" {
+		t.Errorf("GOGC reads %q, want the caller's 50", got)
+	}
+}
+
 func TestShimPinsADevBuildWhenXGoDiffersFromOriginMain(t *testing.T) {
 	t.Parallel()
 	program := "package main\n\nimport \"fmt\"\n\nvar devBuild string\n\nfunc main() { fmt.Println(\"dev=\" + devBuild) }\n"

@@ -115,7 +115,20 @@ func logLevel() log.Level {
 	return log.WarnLevel
 }
 
-func main() { os.Exit(execute(os.Args[1:])) }
+func main() {
+	dropShimGC()
+	os.Exit(execute(os.Args[1:]))
+}
+
+// the shim turns the collector off for x alone; the runtime read it at start, so the env goes before x spawns anything
+func dropShimGC() {
+	if os.Getenv("X_GC_FROM_SHIM") == "" {
+		return
+	}
+	for _, name := range []string{"GOGC", "GOMEMLIMIT", "X_GC_FROM_SHIM"} {
+		_ = os.Unsetenv(name)
+	}
+}
 
 type mode struct{ json, interactive bool }
 
