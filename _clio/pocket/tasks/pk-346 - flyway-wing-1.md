@@ -29,9 +29,7 @@ ordinal: 18998
 - [ ] #11 PK-369 perf: turborepo remote cache or another cache for tests
 - [ ] #12 PK-370 perf: tests off pre-commit, to ci or pre-push
 - [ ] #13 PK-371 gates file name: gates museum
-- [x] #14 PK-355 commit gate: simple memory edits must not block for minutes, today (dima 14:42)
-- [ ] #15 FRM-383 cli lane: dispatch alongside the cpu plan (main's move, dima 14:51)
-- [ ] #16 PK-359 where wing 1's branch went: answer it, propose the standing-branch fix (a forked wing skips clio-wing-N) — one of the first items, dima 15:08
+- [ ] #14 FRM-383 cli lane: dispatch alongside the cpu plan (main's move, dima 14:51)
 <!-- AC:END -->
 
 ## Implementation Notes

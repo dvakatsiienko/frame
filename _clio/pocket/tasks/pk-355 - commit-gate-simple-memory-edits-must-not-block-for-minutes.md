@@ -42,4 +42,6 @@ kept: 2026-11-09 — dima 14:42: wing 1's for today
 close: 2026-11-09 dima's o7 tick — the gate is about 10 s since the queue fix; a slow memory commit again reopens it
 
 close: W1 done — answered: memory commits wait on no red-proof, the gate is about 10 s; W2 done — the block is gone since FRM-521's queue fix, queue p90 42 s; W3 done — wing 1 rethought it, the proofs stay at push and ci (FRM-534 carries the related-tests cut)
+
+close: PK-355:W1 done, PK-355:W2 done, PK-355:W3 done — as the line above
 <!-- SECTION:NOTES:END -->
