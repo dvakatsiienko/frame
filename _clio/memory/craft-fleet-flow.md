@@ -17,6 +17,7 @@ each stage names its gate, its owner, its door and its wait budget.
 7. **verify** — gate: sixth sense says clean, or its round-3 stop goes to clio; owner: sixth sense; door: `x:crew-sixth-sense`; wait: 3 rounds
 8. **land**
    - gate: wishkeeper read the chunk's base..head, merge state clean and the deploy Ready, where «no run» is never green
+   - a memory pr's read: one comment as `x-clio-cc`, `github-token-wrap pr comment <n> --body "wishkeeper read <head sha>: <n> findings"`; merge-auto counts it on the head, or an ancestor with no memory change since
    - owner: clio merges by the gate in `docs/knowledge/pr-flow.md` § core — risky paths named in the look card, a self-edit waiting for dima unless his sign pre-approved the merge, the brake always waiting (dima, 2026-10-22: he does not read prs); clio pushes (a quick lane's codie its own head, 11-03)
    - door: `x lane merge-auto` (it waits for ci and names why)
    - `operator-override prs` on (his whole typed phrase, or a shift): `x lane merge-auto <pr> --apply` lands any pr on its first call; hold and brake still stop it (FRM-524)
