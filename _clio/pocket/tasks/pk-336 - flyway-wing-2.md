@@ -22,8 +22,8 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
-- [ ] #2 ⏳ FRM-548, FRM-549, FRM-553 close by x lane landed (frame#152 merged 22:03) — waits for: codie's stop and its tree's decamp, after FRM-414 if dima picks it (o84)
+- [ ] #1 close FRM-548, FRM-549, FRM-553, FRM-509 by closing.md: frame#152 merged, its tree decamped, landed green on 548 and 509; 549 and 553 red only on the guard-refused «look sent» line (main's guard bug)
+- [ ] #2 ⏳ FRM-414 re-grill (its spec read found the messages already fixed, no round record to count, rider 2 against dima's grill 2 Q6); FRM-384 (gate riders, FRM-554), FRM-436, FRM-424 to wing 1's flyway — waits for: dima's tick on the hand-over ask
 - [ ] #3 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
 - [ ] #4 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
 - [ ] #5 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go, stacks.go, habit-shared-files, the siesta skill, prompt-groom.ts, craft-fleet-flow and shape-lane-dispatch changed since its last version — later: dima 20:21 («i tell when»)
