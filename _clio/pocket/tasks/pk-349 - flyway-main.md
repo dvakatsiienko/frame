@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T20:44:00Z'
+updated_date: '2026-11-09T20:52:00Z'
 labels:
   - s
   - clio-main
@@ -32,12 +32,13 @@ ordinal: 1000
 - [ ] #14 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
 - [ ] #15 📅 wing 1 opens after the herdr explore: its tails, then speak v2 — on: 2026-11-10
 - [ ] #16 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
-- [ ] #17 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #18 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
-- [ ] #19 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #20 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #21 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #22 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
+- [ ] #17 📅 first thing: the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors and the for-you row, FRM-542 and FRM-556 moved in; then PK-363 dies with its ticket line — on: 2026-11-10
+- [ ] #18 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #19 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
+- [ ] #20 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #21 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #22 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #23 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
 <!-- AC:END -->
 
 ## Implementation Notes
