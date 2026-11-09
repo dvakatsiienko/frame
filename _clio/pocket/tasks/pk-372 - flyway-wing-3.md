@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T15:37:00Z'
+updated_date: '2026-11-09T17:02:00Z'
 labels:
   - s
   - clio-wing-3
@@ -25,5 +25,11 @@ ordinal: 18999
 - [x] #7 PK-366 linear: delete the «model» label group (his o19), the GLOSSARY label line with it; ⚠️ ask first (from wing 2)
 - [x] #8 crew-pm board redraw: re-check and re-stamp after the label cut and winged v2, via a helper card (yanked from wing 2 #6, dima o19)
 - [ ] #9 FRM-542 every seat's prompt log, wing 2 #10 folded in (yanked, dima o19)
-- [ ] #10 FRM-550 decided-pattern read-back: a short grill, then build (dima 17:33)
+- [x] #10 FRM-550 decided-pattern read-back: a short grill, then build (dima 17:33)
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+18:5x FRM-550 → main clio on dima's o29 steer «reassign to main clio»; handover: wing 3 tree .scratch/frm-550/grill-2-proposal.md, frame .scratch/decided-picks/spec.md (parked), cut ask o30 open
+<!-- SECTION:NOTES:END -->
