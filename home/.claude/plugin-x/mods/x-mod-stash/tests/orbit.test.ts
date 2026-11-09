@@ -2490,9 +2490,10 @@ test('a herdr press already taken never marks the round a follow puts under its 
     const files: Record<string, string> = {};
     const w = world(on, files);
     await start($);
-    await add($, ['push FRM-1', 'yes']);
+    await add($, ['push FRM-1', 'yes'], ['push FRM-2', 'yes']);
     await say($, 'go');
-    files[HERDR_FILE] = press({ at: w.clock.now(), id: 'o1', verdict: 'tick' });
+    const at = w.clock.now();
+    files[HERDR_FILE] = press({ at, id: 'o1', verdict: 'tick' });
     await turnContext($);
     await orbit($, {
         id: 'o1',
@@ -2501,8 +2502,12 @@ test('a herdr press already taken never marks the round a follow puts under its 
         text: 'push FRM-1',
     });
     await endTurn($);
+    // a newer press on another ask makes the file worth reading again; only the watermark keeps o1's old line out
+    files[HERDR_FILE] += press({ at: at + 1, id: 'o2', verdict: 'tick' });
     await say($, 'go on');
-    expect(joined(w.contexts)).toEqual([]);
+    expect(joined(w.contexts).join('\n')).toMatch(
+        /^(?![\s\S]*- o1 )[\s\S]*- o2 🛎️/,
+    );
 });
 
 test('a herdr press made on the old question never marks the new one a follow put under its id', async ($, on) => {
