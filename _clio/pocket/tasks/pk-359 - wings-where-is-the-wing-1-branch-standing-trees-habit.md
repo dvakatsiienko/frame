@@ -42,4 +42,6 @@ close: W1 done — the habit stands, every wing takes clio-wing-<N> (4ce50b68); 
 close: PK-359:W1 done, PK-359:W2 done, PK-359:W3 done — as the line above
 
 PK-359:W4 (2026-11-09 15:08, dima): PK-359 is reassigned to wing 1; it is a chore and you are busy. tell it to solve it as one of the first action items. (moved from PK-368:W4)
+
+close: PK-359:W4 done (the routing ran: wing 1 took PK-359 and answered it at 15:12)
 <!-- SECTION:NOTES:END -->
