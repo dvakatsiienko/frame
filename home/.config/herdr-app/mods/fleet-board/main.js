@@ -413,76 +413,72 @@ export default class FleetBoard extends View {
                 ),
             )
             .when(Boolean(ask.id) && !done, (el) =>
-                el
-                    .child(
-                        h_flex()
-                            .pl(20)
-                            .gap(6)
-                            .child(
-                                isGuardGated(ask.text)
-                                    ? div()
-                                          .id(`desk-${key}`)
-                                          .text_size(SIZE.meta)
-                                          .text_color(t.dim)
-                                          .tooltip(
-                                              'x-mod-guard reads this tick as your word, so it goes on the desktop board',
-                                          )
-                                          .child('🖥️ tick on desktop')
-                                    : button(
-                                          'tick',
-                                          '🛎️ tick',
-                                          'good to go: the session takes the pick',
-                                          (cx) =>
-                                              cx.spawn((cx) =>
-                                                  this.press(
-                                                      cx,
-                                                      s,
-                                                      ask,
-                                                      'tick',
-                                                  ),
-                                              ),
-                                      ),
-                            )
-                            .child(
-                                button(
-                                    'replay',
-                                    '🔁 replay',
-                                    'another round, with your steer',
-                                    (cx) =>
-                                        cx.spawn((cx) =>
-                                            this.press(cx, s, ask, 'replay'),
-                                        ),
-                                ),
+                el.child(
+                    h_flex()
+                        .pl(20)
+                        .gap(6)
+                        .items_center()
+                        .child(
+                            isGuardGated(ask.text)
+                                ? div()
+                                      .id(`desk-${key}`)
+                                      .text_size(SIZE.meta)
+                                      .text_color(t.dim)
+                                      .tooltip(
+                                          'x-mod-guard reads this tick as your word, so it goes on the desktop board',
+                                      )
+                                      .child('🖥️ tick on desktop')
+                                : button(
+                                      'tick',
+                                      '🛎️ tick',
+                                      'good to go: the session takes the pick',
+                                      (cx) =>
+                                          cx.spawn((cx) =>
+                                              this.press(cx, s, ask, 'tick'),
+                                          ),
+                                  ),
+                        )
+                        .child(
+                            button(
+                                'replay',
+                                '🔁 replay',
+                                'another round, with your steer',
+                                (cx) =>
+                                    cx.spawn((cx) =>
+                                        this.press(cx, s, ask, 'replay'),
+                                    ),
                             ),
-                    )
-                    .when(Boolean(steer), (el) =>
-                        el.child(
-                            div()
-                                .id(`steer-${key}`)
-                                .ml(20)
-                                .h(28)
-                                .px(8)
-                                .flex()
-                                .items_center()
-                                .rounded(6)
-                                .border_1()
-                                .border_color(t.border)
-                                .bg(t.input)
-                                .cursor_text()
-                                .tooltip(
-                                    'your steer, sent with 🛎️ tick or 🔁 replay',
-                                )
-                                .on_mouse_down('left', (_e, cx) =>
-                                    cx.stop_propagation(),
-                                )
-                                .child(
-                                    Input.new(steer)
-                                        .w_full()
-                                        .text_size(SIZE.body)
-                                        .text_color(t.foreground),
-                                ),
+                        )
+                        .when(Boolean(steer), (row) =>
+                            row.child(
+                                div()
+                                    .id(`steer-${key}`)
+                                    .flex_1()
+                                    .min_w(0)
+                                    .h(28)
+                                    .px(8)
+                                    .flex()
+                                    .items_center()
+                                    .rounded(6)
+                                    .border_1()
+                                    .border_color(t.border)
+                                    .bg(t.background)
+                                    .cursor_text()
+                                    .tooltip(
+                                        'your steer, sent with 🛎️ tick or 🔁 replay',
+                                    )
+                                    .on_mouse_down('left', (_e, cx) =>
+                                        cx.stop_propagation(),
+                                    )
+                                    .child(
+                                        Input.new(steer)
+                                            .w_full()
+                                            .text_size(SIZE.body)
+                                            .text_color(t.foreground),
+                                    ),
+                            ),
                         ),
-                    ),
+                ),
             )
             .when(Boolean(done), (el) =>
                 el.child(
