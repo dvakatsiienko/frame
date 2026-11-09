@@ -31,7 +31,7 @@ test('a fleet member prints bold with its badge', () => {
     expect(
         boldFleetWords('clio asks crow; codie and two sixth senses').text,
     ).toBe(
-        '**🦉 clio** asks **🐦‍⬛ crow**; **🔧 codie** and two **🔦 sixth senses**',
+        '**🦉 clio** asks **🐦‍⬛ crow**; **🔧 codie** and two **🔎 sixth senses**',
     );
 });
 
@@ -47,8 +47,8 @@ test("a skill name, a quote, a session name and another member's badge keep thei
         '«dima, 2026-10-08»',
         'ask ☕️ 🔧 mods codie',
         'ping ⚡ 🔧 mods lane 3 codie: FRM-431',
-        'ping 🌗 🔦 cli lane sixth sense: #12',
-        'a 🔦 codie',
+        'ping 🌗 🔎 cli lane sixth sense: #12',
+        'a 🔎 codie',
     ].join('\n');
     expect(boldFleetWords(text).text).toBe(text);
 });

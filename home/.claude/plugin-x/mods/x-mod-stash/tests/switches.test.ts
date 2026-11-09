@@ -272,14 +272,14 @@ const SCENARIOS: Record<string, Scenario> = {
             for (const sha of ['aaaaaaa', 'bbbbbbb'])
                 await $.tool.call({
                     message: `round 1 on ${sha}`,
-                    to: '⚡ 🔦 sixth sense: x',
+                    to: '⚡ 🔎 sixth sense: x',
                     tool: 'SendMessage',
                 } as never);
         },
         fire: async ($, w) => {
             const r = await $.tool.call({
                 message: 'round 1 on ccccccc',
-                to: '⚡ 🔦 sixth sense: x',
+                to: '⚡ 🔎 sixth sense: x',
                 tool: 'SendMessage',
             } as never);
             w.lines.push(...((r as { context?: string[] }).context ?? []));

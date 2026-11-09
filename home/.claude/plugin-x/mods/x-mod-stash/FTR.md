@@ -81,9 +81,9 @@
   - given a reply in prose names a fleet word plain: `wisp`, `siesta`, `wish` after a determiner (`a`, `the`, `his` …), `freebie`, or their plurals
   - then the drawing and the stored row both read **✨ wisp**, **🌤️ siesta**, **🌠 wish**, **🍀 freebie**; a word already badged only gains the bold
   - given a reply names a fleet member from `rules/fleet-identity.md` plain: `clio`, `crow`, `codie`, `sixth sense`, `designer`, `researcher`, `helper-lite`, `cloud chat`, `cloud-chat`, `dima`, or their plurals
-  - then it reads **🦉 clio**, **🐦‍⬛ crow**, **🔧 codie**, **🔦 sixth sense**, **🎨 designer**, **🐝 researcher**, **🪶 helper-lite**, **☁️ cloud chat**, **🙋‍♂️ dima** (FRM-357)
+  - then it reads **🦉 clio**, **🐦‍⬛ crow**, **🔧 codie**, **🔎 sixth sense**, **🎨 designer**, **🐝 researcher**, **🪶 helper-lite**, **☁️ cloud chat**, **🙋‍♂️ dima** (FRM-357)
   - decision: members that are plain english too stay out — `helper`, `retro`, `classifier`, `scout`, `cc` would badge a helper function, the retro file or the verb
-  - then a fence, a `>` quote, a «quote», inline code, bold text, a link or url, a session name (`☕️ 🔧 mods codie`), a word behind another word's badge (`🔦 codie`), and a name like `x-mod-wisp`, `wisp.md` or `clio:halt` keep theirs; «i wish» stays a verb; «lane» is never touched
+  - then a fence, a `>` quote, a «quote», inline code, bold text, a link or url, a session name (`☕️ 🔧 mods codie`), a word behind another word's badge (`🔎 codie`), and a name like `x-mod-wisp`, `wisp.md` or `clio:halt` keep theirs; «i wish» stays a verb; «lane» is never touched
   - makes: one `words:<yyyy-mm-dd>:<session>` key in x-mod-stash's `$.store`, `{ <word>: <rewrites> }`, counted from the stored row only (a redraw never counts); keys older than 30 days are dropped
   - decision: fixed in the output, never policed — clio wrote «that becomes a wisp» plain at 17:43 and dima wanted it fixed in place (2026-10-08)
   - proven live 2026-10-08: a headless reply told to print «that becomes a wisp, then a siesta; i wish the wish were a freebie» was stored with all four bolded, the verb left, and the day's key written; freebie took its 🍀 the same day (dima, 18:25)

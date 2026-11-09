@@ -25,7 +25,7 @@ test('a title that only mentions clio is not the coordinator', () => {
 for (const [name, ticket] of [
     ['⚡ 🔧 codie: mods lane 4 | FRM-478', 'FRM-478'],
     ['⚡ 🔧 codie: UTF-8 names | BYT-12', 'BYT-12'],
-    ['🔦 sixth sense: SHA-256 check', undefined],
+    ['🔎 sixth sense: SHA-256 check', undefined],
 ] as const)
     test(`${name} names ticket ${ticket}`, () => {
         expect(ticketOf(name)).toBe(ticket);

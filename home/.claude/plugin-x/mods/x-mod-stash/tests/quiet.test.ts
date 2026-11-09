@@ -3113,7 +3113,7 @@ test('a waiting note with the event keeps its wake', async ($, on) => {
 
 const ROUND_CODIE = '⚡ 🔧 codie: mods lane 5 | FRM-9';
 const LANE_KEY = 'lane-rounds:mods lane 5 | FRM-9';
-const ROUND_SENSE = '⚡ 🔦 sixth sense: mods lane 5';
+const ROUND_SENSE = '⚡ 🔎 sixth sense: mods lane 5';
 const roundLines = (r: { context?: string[] }) =>
     (r.context ?? []).filter((c) => /\bround \d/.test(c));
 
