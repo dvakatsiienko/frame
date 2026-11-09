@@ -62,4 +62,9 @@ ticket: FRM-547
 ticket: FRM-548
 ticket: FRM-549
 held: 2026-11-09 — FRM-545 the sixth sense round counter's placement (a cli rider or its own chunk), asked of main 17:23; this item closes once it has a home
+
+held: 2026-11-09 — FRM-546 its sign, then the ask-guard close of PK-348
+held: 2026-11-09 — FRM-547 its sign, then the ask-guard close of PK-348
+held: 2026-11-09 — FRM-548 its sign, then the ask-guard close of PK-348
+held: 2026-11-09 — FRM-549 its sign, then the ask-guard close of PK-348
 <!-- SECTION:NOTES:END -->
