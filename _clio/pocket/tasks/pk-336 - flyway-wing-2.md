@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T12:43:00Z'
+updated_date: '2026-11-09T12:45:00Z'
 labels:
   - m
   - clio-wing-2
@@ -132,4 +132,6 @@ PK-336:W29 (2026-11-09 inbox, dima): instead, main clio's asks join the wing's f
 14:40 wing 2 siesta: wishkeeper high fixed, line #1 was written from main's brief with no W-lines; W25–W29 folded from inbox.md, #1 cites them.
 
 14:44 wing 2, his ticks: o1 slipstream habit yes; o2 PK-351 and PK-348 stay here, labels back on; o4 no skip: wing 2 runs the low tide triage now, checking every flyway is compiled right and every item sits with the right seat, then again once main compiles today's inbox.
+
+14:50 wing 2 triage: PK-336:W25–W29 above copy PK-356:W2–W5 and PK-356:W10, main's parse, the home; the habit cites PK-356. lines #1 and #5 are one item.
 <!-- SECTION:NOTES:END -->
