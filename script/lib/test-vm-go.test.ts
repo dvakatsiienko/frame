@@ -307,7 +307,7 @@ describe('the vm leg', () => {
     test.each([
         [
             'another run still in its window marks the row vm-overlap',
-            0,
+            2,
             'vm-overlap',
         ],
         [
