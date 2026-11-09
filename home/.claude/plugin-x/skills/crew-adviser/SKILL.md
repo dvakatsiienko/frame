@@ -27,7 +27,7 @@ a wake line arrives as a peer message:
 `crow wake <id> · mode <day|systematic|decision> · live · packet <file> · charter <sha8> <path> · thread <main|wing-<N>> · reply to «<seat's name>»`
 
 0. a session that never ran the boot (dima cleared it) runs the boot first, from the charter path the wake line names;
-   after a compaction since the last wake, re-read that charter and the dna.
+   after a compaction since the last wake, re-read that charter, your passport `~/frame/_crow/AGENTS.md` and the dna.
 1. read the one `packet.md` the wake line names with a single `Read` call, never Bash (Bash persists output past ~30 KB and splits the read). it opens with the seat's thread since its last wake
    (dima's lines, member traffic, clio's replies, each block headed with its time), then `## receipts`, one line per tool call of hers since dima's last line (exit, first error), then
    clio's leaves that changed since your last read, each under a `## leaf ·` header (strategy, stories, habits, the pm craft, the day's flawlog, the last handoff); the ones listed as unchanged you already hold.
