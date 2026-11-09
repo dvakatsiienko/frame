@@ -2,10 +2,10 @@
 
 ## summon or reuse
 
-**the order — reuse before summon, sequential by default** (dima, 2026-11-10: «each new summon is not free … it is costing weekly usage»; clio's copy: `craft-fleet-flow` § lane init):
-- a parked member takes the next chunk by message, in any area; its scope is prepped up front, ideally in a similar area
+**the order — reuse before summon, sequential by default** (dima, 2026-11-10: «each new summon is not free. it has its resident base memory, so each new summon is costing weekly usage, which we have to use mindfully to accomplish as much as possible of what is planned»; clio's copy: `craft-fleet-flow` § lane init):
+- batch: a parked member takes the next chunk by message, in any area; its scope is prepped up front, ideally in a similar area
 - under ~20–25 % context it switches in place; above it, it second-winds first; this beats the step grid below
-- a finished member stays parked for the next job; a stop is dima's word
+- a finished member stays parked for the next job (its stops: [watching.md](watching.md) § lifetime and stopping)
 - chunks run one by one through the reused member; a parallel lane only when it matters, when it is needed, or on dima's ask, its reason in the brief
 - a fresh summon is the last door; its brief names why no parked member fit
 
