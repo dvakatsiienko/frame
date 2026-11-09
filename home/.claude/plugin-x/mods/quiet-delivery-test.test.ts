@@ -87,7 +87,7 @@ function sends(rows: unknown[]) {
     const out = spawnSync(
         'sh',
         ['-c', LEDGER_SENDS, 'sh', home, 'sid-1', 'clio'],
-        { encoding: 'utf8' },
+        { encoding: 'utf8', timeout: 10_000 },
     ).stdout;
     // frame's commit hook runs this file: its fixtures leave with it
     rmSync(home, { force: true, recursive: true });

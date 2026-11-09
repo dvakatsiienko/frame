@@ -55,7 +55,7 @@ test('a drag, a text edit and a new note read back as exactly those three change
             beforeFile,
             afterFile,
         ],
-        { encoding: 'utf8' },
+        { timeout: 10_000,  encoding: 'utf8' },
     );
     expect(cli.trim().split('\n')).toEqual(lines);
 }, 180000);

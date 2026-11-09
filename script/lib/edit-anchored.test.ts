@@ -64,7 +64,7 @@ describe('the edit-anchored executable', () => {
                     '../../home/.claude/plugin-x/bin/edit-anchored',
                 ),
                 [target, anchorPath, replacementPath],
-                { encoding: 'utf8' },
+                { encoding: 'utf8', timeout: 10_000 },
             );
             return { code: 0, read: readFileSync(target, 'utf8'), stdout };
         } catch (error) {

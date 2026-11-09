@@ -753,6 +753,7 @@ test('a verdict carries what the note changed', () => {
                     CROW_STATE_DIR: state,
                     CROW_VET_WAIT_MS: '0',
                 },
+                timeout: 10_000,
             },
         );
     expect(

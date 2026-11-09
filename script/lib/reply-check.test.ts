@@ -46,6 +46,7 @@ function check(reply: string, lastMessage?: string, now = '12:00') {
             session_id: 'test',
             transcript_path: transcript,
         }),
+        timeout: 10_000,
     });
     if (!existsSync(log)) return [];
     return readFileSync(log, 'utf8')
@@ -75,6 +76,7 @@ function stop(
             session_id: session,
             stop_hook_active: active,
         }),
+        timeout: 10_000,
     });
     const out = run.stdout.trim();
     return out
@@ -265,6 +267,7 @@ describe('a relative link that resolves to nothing', () => {
                 last_assistant_message: reply,
                 session_id: 'test',
             }),
+            timeout: 10_000,
         });
         const out = run.stdout.trim();
         return out ? (JSON.parse(out) as { reason: string }) : undefined;
@@ -306,6 +309,7 @@ describe('a link checked from the launch folder after a cd', () => {
                 last_assistant_message: 'see [x](docs/here.md)',
                 session_id: 'test',
             }),
+            timeout: 10_000,
         }).stdout.trim();
         expect(out).toBe('');
     });

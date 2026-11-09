@@ -153,9 +153,9 @@ describe('the bin', () => {
                 '"dependencies":{"react":"19.2.8"}}',
         });
 
-        expect(execFileSync(bin, [root], { encoding: 'utf8' })).toContain(
-            '1 manifest on the convention shape',
-        );
+        expect(
+            execFileSync(bin, [root], { encoding: 'utf8', timeout: 10_000 }),
+        ).toContain('1 manifest on the convention shape');
     });
 
     it('exits non-zero and names the offender', () => {
@@ -168,7 +168,11 @@ describe('the bin', () => {
         let stderr = '';
         let code = 0;
         try {
-            execFileSync(bin, [root], { encoding: 'utf8', stdio: 'pipe' });
+            execFileSync(bin, [root], {
+                encoding: 'utf8',
+                stdio: 'pipe',
+                timeout: 10_000,
+            });
         } catch (error) {
             const failure = error as { status: number; stderr: string };
             code = failure.status;

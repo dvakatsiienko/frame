@@ -95,7 +95,11 @@ function run(home: string, since = '00:00') {
     return spawnSync(
         'node',
         [join(import.meta.dirname, 'siesta-checks.ts'), '--since', since],
-        { encoding: 'utf8', env: { ...process.env, HOME: home } },
+        {
+            encoding: 'utf8',
+            env: { ...process.env, HOME: home },
+            timeout: 10_000,
+        },
     );
 }
 

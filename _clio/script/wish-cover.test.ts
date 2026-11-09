@@ -262,6 +262,7 @@ describe('wish-cover', () => {
                             ...process.env,
                             PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                         },
+                        timeout: 10_000,
                     },
                 );
             } finally {

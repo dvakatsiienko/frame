@@ -434,7 +434,7 @@ describe('the clio boot digest line', () => {
                 '-c',
                 `fail() { echo "RED $1"; }\n${fn}\nINIT_CTX_SCRIPT=${script} init_ctx_digest`,
             ],
-            { encoding: 'utf8' },
+            { encoding: 'utf8', timeout: 10_000 },
         ).trim();
     };
 

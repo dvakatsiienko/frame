@@ -45,6 +45,7 @@ function run(
     return spawnSync('node', [join(import.meta.dirname, 'close-net.ts')], {
         encoding: 'utf8',
         env: { ...process.env, HOME: home, PATH: `${dir}:${process.env.PATH}` },
+        timeout: 10_000,
     });
 }
 

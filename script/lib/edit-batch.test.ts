@@ -62,7 +62,10 @@ describe('edit-batch cli', () => {
         );
 
         expect(() =>
-            execFileSync(bin, [join(dir, 'batch')], { stdio: 'pipe' }),
+            execFileSync(bin, [join(dir, 'batch')], {
+                stdio: 'pipe',
+                timeout: 10_000,
+            }),
         ).toThrow();
         expect(readFileSync(join(dir, 'a.txt'), 'utf8')).toBe('alpha\n');
     });
@@ -77,6 +80,7 @@ describe('edit-batch cli', () => {
 
         const out = execFileSync(bin, [join(dir, 'batch')], {
             encoding: 'utf8',
+            timeout: 10_000,
         });
 
         expect(out.trim()).toBe(`${join(dir, 'a.txt')}:2`);

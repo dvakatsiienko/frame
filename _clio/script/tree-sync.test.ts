@@ -30,6 +30,7 @@ function world() {
         spawnSync('git', ['-C', dir, ...args], {
             encoding: 'utf8',
             env: gitEnv(),
+            timeout: 10_000,
         });
     git(root, 'init', '-q', '-b', 'main');
     const write = (dir: string, file: string, text: string, commit = true) => {
@@ -65,9 +66,14 @@ function world() {
             encoding: 'utf8',
             env,
             input: JSON.stringify({ session_id: session }),
+            timeout: 10_000,
         });
     const land = () =>
-        spawnSync('bash', [SYNC, 'land'], { encoding: 'utf8', env });
+        spawnSync('bash', [SYNC, 'land'], {
+            encoding: 'utf8',
+            env,
+            timeout: 10_000,
+        });
     const xCalls = () => (existsSync(calls) ? readFileSync(calls, 'utf8') : '');
     return { addTree, env, git, land, prompt, root, tree, write, xCalls };
 }
@@ -145,6 +151,7 @@ describe('tree-sync seat', () => {
             encoding: 'utf8',
             env: { ...w.env, TREE_SYNC_SESSIONS: sessions },
             input: JSON.stringify({ session_id: 'after-a-clear' }),
+            timeout: 10_000,
         });
         expect(out.stdout).toContain('tree synced');
         expect(existsSync(join(seat, 'b.txt'))).toBe(true);
@@ -231,6 +238,7 @@ describe('tree-sync land', () => {
             encoding: 'utf8',
             env: { ...w.env, TREE_SYNC_MERGE_LIMIT: '1' },
             input: JSON.stringify({ session_id: SID }),
+            timeout: 10_000,
         });
         expect(w.git(w.tree, 'rev-parse', 'HEAD').stdout).toBe(head);
         expect(existsSync(join(w.tree, 'b.txt'))).toBe(false);
@@ -276,7 +284,7 @@ describe('tree-sync land', () => {
         const out = spawnSync(
             'bash',
             ['-c', `(sleep 1; rm -f '${lock}') & bash '${SYNC}' land`],
-            { encoding: 'utf8', env: w.env },
+            { encoding: 'utf8', env: w.env, timeout: 10_000 },
         );
         expect(out.status).toBe(0);
         expect(existsSync(join(w.root, 'c.txt'))).toBe(true);
@@ -303,6 +311,7 @@ describe('tree-sync land', () => {
                 CLAUDE_CODE_SESSION_ID: '',
                 TREE_SYNC_ROOT: w.root,
             },
+            timeout: 10_000,
         });
         expect([out.status, out.stderr]).toEqual([
             2,

@@ -18,7 +18,12 @@ const env = gitEnv();
 function repo(leaf: string, budget: number) {
     const dir = mkdtempSync(join(tmpdir(), 'memory-lint-'));
     const git = (...args: string[]) =>
-        execFileSync('git', args, { cwd: dir, env, stdio: 'ignore' });
+        execFileSync('git', args, {
+            cwd: dir,
+            env,
+            stdio: 'ignore',
+            timeout: 10_000,
+        });
     git('init', '-q');
     mkdirSync(join(dir, '_clio/memory'), { recursive: true });
     mkdirSync(join(dir, 'recipes/nurture-memory/scripts'), { recursive: true });
@@ -41,12 +46,14 @@ function repo(leaf: string, budget: number) {
             cwd: dir,
             encoding: 'utf8',
             env: runEnv,
+            timeout: 10_000,
         });
     const seed = () =>
         spawnSync('node', [LINT, '--seed'], {
             cwd: dir,
             encoding: 'utf8',
             env,
+            timeout: 10_000,
         });
     const read = (path: string) => readFileSync(join(dir, path), 'utf8');
     const drop = (path: string) => git('rm', '-q', path);

@@ -27,6 +27,7 @@ test('every code file type in frame loads the code rule', () => {
         cwd: root,
         encoding: 'utf8',
         env: gitEnv(),
+        timeout: 10_000,
     }).stdout.split('\0');
     const counts = new Map<string, number>();
     for (const f of files) {
