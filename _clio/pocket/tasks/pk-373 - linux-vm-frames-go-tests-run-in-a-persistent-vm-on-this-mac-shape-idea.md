@@ -4,7 +4,7 @@ title: 'linux vm: frame''s go tests run in a persistent vm on this mac, shape-id
 status: open
 assignee: []
 created_date: '2026-11-09T14:19:00Z'
-updated_date: '2026-11-09T14:20:00Z'
+updated_date: '2026-11-09T14:27:00Z'
 labels:
   - s
   - clio-wing-1
@@ -26,4 +26,14 @@ PK-373:W6 (2026-11-09 15:46, dima, o14): how did you name the vm, and is it pers
 PK-373:W7 (2026-11-09 15:46, dima, o14): how do we optimize this move so the wins are clear wins, not blurred by some other bootstrapping set of chores that slows everything down? how do we make it a true win in performance?
 PK-373:W8 (2026-11-09 16:19, dima, on the ram never given back): maybe start it during the boot and stop it during the halt?
 measures and research: FRM-536's comments; ~/frame/.claude/worktrees/clio-wing-1/.scratch/vm-tests/
+
+grill 1 settled 2026-11-09 16:27, dima's ticks o24-o31, all as picked:
+- Q0 worth it, go only: no money; the vm's ram held boot to halt, one boot step, one halt step, go matched by go.mod's toolchain line, a mac fallback; against about 160 cpu-s and 3× the wall per go suite
+- Q1 frame's go suite only (pnpm x-go:test and the commit hook's go job); vitest, mods, bytes stay on the mac
+- Q2 persistent, started at clio's boot, stopped at the halt; the restart frees the ram lima never returns
+- Q3 code in by git push to a vm repo (receive.denyCurrentBranch=updateInstead), warm GOCACHE and GOMODCACHE in the vm, the win counted as sync + run, cold and warm
+- Q4 a stopped or broken vm sends the run to the mac, one line, never a red
+- Q5 ubuntu 26.04 minimal arm64, --containerd none --mount-none, snapd and unattended-upgrades off, cpus and ram from a 4/6/8/10 vcpu sweep
+- Q6 the name: round 2, seven candidates
+- Q7 no tools inside past go, git and rsync
 <!-- SECTION:NOTES:END -->
