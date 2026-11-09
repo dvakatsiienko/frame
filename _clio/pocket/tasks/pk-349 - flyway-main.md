@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T12:44:00Z'
+updated_date: '2026-11-09T12:45:00Z'
 labels:
   - s
   - clio-main
@@ -21,20 +21,19 @@ ordinal: 9995
 - [ ] #3 FRM-491 and FRM-495 behind FRM-505
 - [ ] #4 FRM-368 tilde grill with dima
 - [ ] #5 FRM-503 lane loop, by load
-- [ ] #6 PK-326 quiet comms, both sides: read today's quiet log at the halt, his word, today
-- [ ] #7 standing: FRM-483 3-day read, by 11-10
-- [ ] #8 redraws after winged v2 lands
-- [ ] #9 trial reads with dima: delve, skill-named-load, unbash
-- [ ] #10 PK-359 where wing 1's branch went, the standing-trees habit
-- [ ] #11 PK-360 _crow cleanup
-- [ ] #12 PK-361 _helga: why empty, move its data in
-- [ ] #13 PK-362 steamac disk 256 → 192 gb, at a free spot
-- [ ] #14 PK-363 herder: research, print, his call
-- [ ] #15 PK-365 clio label group, top-seven
-- [ ] #16 PK-366 delete the model label group, his word
-- [ ] #17 PK-367 rename cut-proposals-print, shape the cuts
-- [ ] #18 PK-368 sidecar passports rebalance
-- [ ] #19 PK-326 quiet comms re-measure and close
+- [ ] #6 standing: FRM-483 3-day read, by 11-10
+- [ ] #7 redraws after winged v2 lands
+- [ ] #8 trial reads with dima: delve, skill-named-load, unbash
+- [ ] #9 PK-359 where wing 1's branch went, the standing-trees habit
+- [ ] #10 PK-360 _crow cleanup
+- [ ] #11 PK-361 _helga: why empty, move its data in
+- [ ] #12 PK-362 steamac disk 256 → 192 gb, at a free spot
+- [ ] #13 PK-363 herder: research, print, his call
+- [ ] #14 PK-365 clio label group, top-seven
+- [ ] #15 PK-366 delete the model label group, his word
+- [ ] #16 PK-367 rename cut-proposals-print, shape the cuts
+- [ ] #17 PK-368 sidecar passports rebalance
+- [ ] #18 PK-326 quiet comms re-measure and close
 <!-- AC:END -->
 
 ## Implementation Notes

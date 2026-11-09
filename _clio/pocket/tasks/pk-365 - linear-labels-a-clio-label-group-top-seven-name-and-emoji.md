@@ -4,9 +4,10 @@ title: 'linear labels: a clio label group, top-seven name and emoji'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T12:39:00Z'
+updated_date: '2026-11-09T12:45:00Z'
 labels:
   - s
+  - clio-main
 dependencies: []
 priority: next
 type: task

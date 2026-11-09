@@ -4,9 +4,10 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T12:38:00Z'
+updated_date: '2026-11-09T12:45:00Z'
 labels:
   - m
+  - clio-main
 dependencies: []
 priority: now
 type: task
