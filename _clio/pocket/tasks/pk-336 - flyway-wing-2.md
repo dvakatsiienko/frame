@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T19:04:00Z'
+updated_date: '2026-11-09T19:21:00Z'
 labels:
   - m
   - clio-wing-2
@@ -174,4 +174,6 @@ done 2026-11-09 20:48: codie second-winded before its #152 final (cst cli-lane-6
 
 PK-336:W31 (2026-11-09 20:53, dima): why are they staying ungroomed? habit lag, or what? i thought every prompt gets groomed right away. it's not good that they pile up. how to solve? ❓
 — answered: the hook only warned and a wing's siesta skipped the groom check; built 21:04 (o76): a seat's turn holds at 5 waiting past 30 min, every seat's siesta checks, a one-call no-wish
+
+hoist 11-09 21:20: proposing, wing 2 (re-triage on dima's ask)
 <!-- SECTION:NOTES:END -->
