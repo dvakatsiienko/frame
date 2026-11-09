@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T16:42:00Z'
+updated_date: '2026-11-09T16:45:00Z'
 labels:
   - m
   - clio-main
@@ -364,4 +364,68 @@ raw drop (2026-11-09 18:21, dima): print grill in thread
 PK-363:W56 (2026-11-09 17:58, dima): no browser pane in herdr: agreed for now; we will find a workaround
 
 PK-363:W57 (2026-11-09 17:58, dima): rex gave us many doors, like prefilling terminal prompts or taking snapshots easily; does herdr have any of that, is it at parity with rex in door flexibility? ❓
+
+PK-363:W58 (2026-11-09 18:43, dima): probe now and tell. so rex can: 1. prefill 2. send
+
+raw drop (2026-11-09 18:43, dima): probe now and tell. so rex can: 1. prefill 2. send
+
+PK-363:W59 (2026-11-09 18:43, dima): herder only: 1. prefill + send? ❓
+
+raw drop (2026-11-09 18:43, dima): herder only: 1. prefill + send?
+
+PK-363:W60 (2026-11-09 18:43, dima): what is the use case when thread reads ~/.config/herdr-app ? when it builds custom ui only? ❓
+
+raw drop (2026-11-09 18:43, dima): what is the use case when thread reads ~/.config/herdr-app ? when it builds custom ui only?
+
+PK-363:W61 (2026-11-09 18:43, dima): i'd like to know what power usage lua scripts i or we can have in rex. fold to my other pending rex questions (assigned to you)
+
+raw drop (2026-11-09 18:43, dima): i'd like to know what power usage lua scripts i or we can have in rex. fold to my other pending rex questions (assigned to you)
+
+PK-363:W62 (2026-11-09 18:43, dima): can you quickly search if herder desktop app (HDA) have support plan for typescript? would be nice. ❓
+
+raw drop (2026-11-09 18:43, dima): can you quickly search if herder desktop app (HDA) have support plan for typescript? would be nice.
+
+PK-363:W63 (2026-11-09 18:43, dima): how to properly decide what to keep, what to throw away, then what gets stale in our already existing mods if we use herdr and move to herdr fully, and what gets redundant or stale in the planned mods lane junk queue ❓
+
+raw drop (2026-11-09 18:43, dima): how to properly decide what to keep, what to throw away, then what gets stale in our already existing mods if we use herdr and move to herdr fully, and what gets redundant or stale in the planned mods lane junk queue
+
+PK-363:W64 (2026-11-09 18:43, dima): q3: stays frozen until some time, until we see if herder works fully. then if c desktop app is not used and heder is proven — we migrate fully (wants a weighed decision)
+
+raw drop (2026-11-09 18:43, dima): q3: stays frozen until some time, until we see if herder works fully. then if c desktop app is not used and heder is proven — we migrate fully (wants a weighed decision)
+
+PK-363:W65 (2026-11-09 18:43, dima): q4. print full list of what goes where - what gets dropped and why what stays.
+
+raw drop (2026-11-09 18:43, dima): q4. print full list of what goes where - what gets dropped and why what stays.
+
+PK-363:W66 (2026-11-09 18:43, dima): q5: orbit must work, most wanted.
+
+raw drop (2026-11-09 18:43, dima): q5: orbit must work, most wanted.
+
+PK-363:W67 (2026-11-09 18:43, dima): OK, but make both skills very good and very solid. Carefully think about what these skills have to contain in terms of useful information, and consult with currently parked herdr codie because he can see herdr from inside. Actually tell what he wants to have inside of the skill.
+
+raw drop (2026-11-09 18:43, dima): OK, but make both skills very good and very solid. Carefully think about what these skills have to contain in terms of useful information, and consult with currently parked herdr codie because he can see herdr from inside. Actually tell what he wants to have inside of the skill.
+
+PK-363:W68 (2026-11-09 18:43, dima): In my mind, the herdr skill should have anything useful related to either building herdr and maybe even using it in doors. Everyone has a proper way to use all herdr doors in terms of daily usage and actually building custom UI in herdr, but maybe these two parts have to be split. For example, have one herdr skill leaf for day-to-day herdr usage (e.g., doors, APIs, tips and tricks, power usage recipe, shortcuts, etc., for you and for everyone). The second leaf is for building harder custom UIs and doing under-the-hood stuff when I ask to tweak herdr under the hood
+
+raw drop (2026-11-09 18:43, dima): In my mind, the herdr skill should have anything useful related to either building herdr and maybe even using it in doors. Everyone has a proper way to use all herdr doors in terms of daily usage and actually building custom UI in herdr, but maybe these two parts have to be split. For example, have one herdr skill leaf for day-to-day herdr usage (e.g., doors, APIs, tips and tricks, power usage recipe, shortcuts, etc., for you and for everyone). The second leaf is for building harder custom UIs and doing under-the-hood stuff when I ask to tweak herdr under the hood
+
+PK-363:W69 (2026-11-09 18:43, dima): ok lets do for now. would be good to have native ts support
+
+raw drop (2026-11-09 18:43, dima): Q7: ok lets do for now. would be good to have native ts support
+
+PK-363:W70 (2026-11-09 18:43, dima): q8. do we need a naming decisions? top seven? anything to name/rename? ❓
+
+raw drop (2026-11-09 18:43, dima): q8. do we need a naming decisions? top seven? anything to name/rename?
+
+PK-363:W71 (2026-11-09 18:43, dima): not possible to dnd images into chatter that (only cmd+v). not critical, later.
+
+raw drop (2026-11-09 18:43, dima): not possible to dnd images into chatter that (only cmd+v). not critical, later.
+
+PK-363:W72 (2026-11-09 18:43, dima): what other stuff gets deprecated or potentially deprecated with herder? any cli stuff we have, or maybe something planned? i think its worth to send a researcher hunter to gather potential stuff to cut/migrate to herder (not now, maybe little later once we see broader picture what herder can have). ❓
+
+raw drop (2026-11-09 18:43, dima): what other stuff gets deprecated or potentially deprecated with herder? any cli stuff we have, or maybe something planned? i think its worth to send a researcher hunter to gather potential stuff to cut/migrate to herder (not now, maybe little later once we see broader picture what herder can have).
+
+PK-363:W73 (2026-11-09 18:43, dima): you again printed double gril. answering first large grill took me ~20min. i replied to first grill. so i will not reply to second grill. clarfiy me with anything drifts. and propose next actions with efficiency in mind.
+
+raw drop (2026-11-09 18:43, dima): you again printed double gril. answering first large grill took me ~20min. i replied to first grill. so i will not reply to second grill. clarfiy me with anything drifts. and propose next actions with efficiency in mind.
 <!-- SECTION:NOTES:END -->
