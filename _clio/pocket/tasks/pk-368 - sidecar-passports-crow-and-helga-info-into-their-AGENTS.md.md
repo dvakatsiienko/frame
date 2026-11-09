@@ -1,10 +1,10 @@
 ---
 id: PK-368
 title: 'sidecar passports: crow and helga info into their AGENTS.md'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T13:48:00Z'
+updated_date: '2026-11-09T14:06:00Z'
 labels:
   - s
   - clio-main
@@ -46,4 +46,8 @@ PK-368:W10 (2026-11-09 15:08, dima): correction of W7: «in sky» was wispr for 
 PK-368:W11 (2026-11-09 15:17, dima): is a pnpm script not redundant? clean up everything redundant after the crow and helga restructure ❓
 
 PK-368:W12 (2026-11-09 15:42, dima): both sessions run outside of frame, but their homes are inside frame. a question then: do they know this fact about themselves, and do they read their own agents.md? i would like them to auto-load agents.md of each of them somehow ❓
+
+close: PK-368:W1 done (passports _crow/AGENTS.md and _helga/AGENTS.md, skills point there), W2 done (answered: specs and starts, now in the passports), W3 done (answered: no new tool, 🧐), W4 moved (PK-359:W4), W5 done (_helga born, her session stays beside crow's outside frame, his o13 tick), W6 done (scripts in the skill folders), W7 done (both skills groomed to the boot contract, one passport shape), W8 moved (PK-362:W8), W9 moved (PK-365:W3), W10 done (the «sky» → skill correction applied), W11 done (pnpm verbs kept, each has callers; crow:reconcile cut on o14), W12 done (both starts send the passport after the skill, b7fdfefb)
+
+2026-11-09 16:07 clio, correction of the close: W12's code landed (b7fdfefb), its live proof is open on PK-349
 <!-- SECTION:NOTES:END -->
