@@ -211,10 +211,16 @@ export default class FleetBoard extends View {
                 for (const ask of s.asks) {
                     const key = `${s.sid}:${ask.id}`;
                     if (ask.id && !ask.mark && !this.steers.has(key))
-                        this.steers.set(
-                            key,
-                            InputState.new({ placeholder: 'steer…' }),
-                        );
+                        // herdr documents InputState.new for init or a handler; a refusal here costs the box, never
+                        // the reload that redraws the whole board
+                        try {
+                            this.steers.set(
+                                key,
+                                InputState.new({ placeholder: 'steer…' }),
+                            );
+                        } catch (err) {
+                            this.pressError = `steer box not made: ${err instanceof Error ? err.message : err}`;
+                        }
                 }
             this.loadedAt = new Date();
             cx.notify();
