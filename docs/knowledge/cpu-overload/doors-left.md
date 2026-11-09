@@ -20,6 +20,7 @@ Asked 2026-11-07: exa, parallel, an opus source lane, on our own rows. Raw lanes
    - risk: a test reads what the key misses, toolchain, fixtures or env
 2. **Vitest selection at commit.** Whole on 260 of 368 commit rows, `related` on 29, measured; about 26,000 cpu-s in 26 h, inference
    - landed 2026-11-09 (FRM-534, gate lane 1): `related` on every branch, an allow-list of kinds; the cause was a `codie/*`-only switch, 132 of 136 whole commit runs off it; the day's read lands 2026-11-10
+   - landed 2026-11-10 (FRM-557, frame#155): a commit runs related tests or none, never the whole suite; the push twin runs only on a push to main that carries code; every test spawn carries a timeout (a lint reds one without) and the commit test step is capped at 3 min, naming the hung file. replayed over the 11-07 → 11-09 rows: 118 → 51 min a day from 11-07 15:40, 11-09 alone 155 → 73, against dima's 46 bar, projected; the measured day read is 2026-11-11
    - risk: a missed test reaches main, the push twin and ci still catch it
 3. **A Linux VM with the checkout on its own disk.** Measured 2026-11-09, FRM-536: a Lima vz VM, 10 cpus, 8 GiB, the whole tree on its disk, two runs a side, mac load 20 to 50
    - spawn: `git --version` 0.5 ms against 5.2 on the mac, cpu per spawn; Ubuntu's git against Homebrew's, unsplit (slim ran only in the suite rows)
@@ -27,6 +28,7 @@ Asked 2026-11-07: exa, parallel, an opus source lane, on our own rows. Raw lanes
    - vitest: 133 cpu-s against 123 to 128, the same 2,102 tests (30 skipped in the VM); wall 20 s against 31 to 37 under load. no cpu win
    - so the win is go's spawn-heavy suite only. costs: 8 GiB held, a code sync per run, a toolchain kept matched; nothing that needs macOS (Keychain, launchd, 1Password, git-crypt, claude) moves. reported: bind mounts about 2.5× slower than the VM's disk (Mainardi, 2025). It adds no cores
    - raw rows, the scripts and the three research lanes: [linux-vm/](linux-vm/); its shaping is PK-373
+   - landed 2026-11-09 (FRM-551, frame#153): `script/test-vm-go.sh` runs every go suite door in `vm-go-test` (4 vcpus, 7 workers), the mac when it is down; a warm go commit ~101 to 124 cpu-s against 235 to 242, measured; the idle vm costs about 288 cpu-s a day; it starts at clio's boot and stops at her halt
 4. **A remote Linux box.** The cleanest added capacity, the one door that adds cores. Hetzner AX102, 16 cores, from €159 a month, reported, no suite measured there
 5. **The `nostacks` pass at merge.** landed 2026-11-09 (FRM-535): 235 cpu-s a run, as much as the whole suite, measured; it now runs on ci only
 6. **The queue's ad hoc scripts get a budget.** 42 % of run wall in 26 h, measured, FRM-525's own trials included
@@ -34,10 +36,18 @@ Asked 2026-11-07: exa, parallel, an opus source lane, on our own rows. Raw lanes
 8. **Cut `x`'s start.** 16 ms cpu against slim git's 2.8, measured. `GOGC=off` landed 2026-11-09 (FRM-535): 19.6 → 13.8 cpu ms a start through the shim, a 256 MiB limit; chroma's 5.8 ms stays, glamour needs it
 9. **Fixture setup through `git fast-import` or go-git.** 20 to 40 cpu-s, inference; 702 sites behind one helper, measured
 10. **Find the mods' heavy test files.** Start is at most 13 % of 527, so at least 87 % is test bodies, measured bound. read 2026-11-09 (FRM-537), `x-mod-stash`, 28 files one at a time: 286 user-s in all, 4 files hold 69 % — `quiet` 85 (235 tests), `orbit` 41, `pace` 36, `hot` 36 (20 tests, 1.8 s each). a file's own start is ~0.3 s, so start is not the cost. the whole run took 375 user-s, 89 more than the sum, because 4 files (`hot`, `pace`, `switches`, `waker`) timed out under load and ran again. keep: trimming `quiet` and `hot`, and ending the retries, is the next door, no number yet
-11. **Vitest pools and isolation.** Default today, `threads` and no isolate untried, no number. `vitest doctor` compares them, reported
+11. **Vitest pools and isolation.** read 2026-11-10 (FRM-557's rider): forks stay. threads fails a TZ test every run, no isolation saves 6 % cpu but no wall; `vitest doctor` (413 s) agrees
 12. **`-vet=off` in `x-go:gate`.** It already vets apart, so the run's vet is free to drop; size unread
 13. **The Developer Tools exemption for gates outside the claude tree.** [#104173](https://github.com/anthropics/claude-code/issues/104173): Bash children lose it, 40 of 40 fresh binaries scanned against 1, reported. Helps wall on fresh binaries, cpu small here. A system setting, his call
 14. **A machine-wide admission gate.** `gate-queue.sh` is this already for gates. `cpuq`'s author reports load 36 to 120 down to 5 to 9 on a 10-cpu Mac; no more throughput, a better mac
+
+## the habits that keep the gains
+
+- a by-hand go run takes `pnpm x-go:test` or `pnpm x-go:gate`, one test `script/test-vm-go.sh go test -run <T> ./...` from `x/go`: each runs in the vm. a bare `go test` runs on the mac at about 2× the cpu
+- while you work, run your own test by name; the whole suite once, at the chunk's end (`crew-dna` § heavy runs)
+- every `spawnSync` and `execFileSync` in a test carries a `timeout`; the lint reds one without
+- a test reaches the code it covers through an import: a test that reads a file by path is invisible to `related` and runs only at the push twin and ci
+- the vm stopped means every go run falls back to the mac and says so once: a silent slow day starts there
 
 ## shut
 
