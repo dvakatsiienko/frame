@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-07T21:10:00Z'
+updated_date: '2026-11-09T12:39:00Z'
 labels:
   - s
   - clio-wing-1
@@ -24,6 +24,11 @@ ordinal: 18998
 - [ ] #6 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
 - [ ] #7 perf after the reset, useful first, in order: FRM-533 FRM-535 FRM-534 FRM-536 FRM-537
 - [ ] #8 FRM-503 door 1: shape it for his sign, after FRM-520
+- [ ] #9 PK-357 git: old branches, why they gather, a habit, perf effect — with dima, when free
+- [ ] #10 PK-358 rex settings walkthrough with dima, two at a time, shown live
+- [ ] #11 PK-369 perf: turborepo remote cache or another cache for tests
+- [ ] #12 PK-370 perf: tests off pre-commit, to ci or pre-push
+- [ ] #13 PK-371 gates file name: gates museum
 <!-- AC:END -->
 
 ## Implementation Notes

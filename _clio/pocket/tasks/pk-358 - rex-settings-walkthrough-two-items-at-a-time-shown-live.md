@@ -4,7 +4,7 @@ title: rex settings walkthrough, two items at a time, shown live
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T12:37:00Z'
+updated_date: '2026-11-09T12:38:00Z'
 labels:
   - s
   - clio-wing-1
@@ -62,4 +62,30 @@ raw drop (11-09 inbox, dima): rex: how to understand
 raw drop (11-09 inbox, dima): note: you walkthrough me thorugh rex settings. i want explore and see how settings work in action. lots of quetions so two items at a time.
 
 raw drop (11-09 inbox, dima): note: for all «i can't see effect» — find a way to see an effect, take snapshot and show it in thread yourself if you can. if can't - tell how to see it myself.
+
+raw drop (2026-11-09 inbox, dima): **wing 1: rex questions (joins research and you walkthrough me , maybe with cum
+
+raw drop (2026-11-09 inbox, dima): utter use)**
+
+raw drop (2026-11-09 inbox, dima): interface → Tint with theme → describe how it works. it confuses me. a theme seems to apply only if it is on. if off - looks like a theme does not apply at all.
+
+raw drop (2026-11-09 inbox, dima): interface → panes → Match program backgrounds — can't see effect of this switch. how to see what does it do?
+
+raw drop (2026-11-09 inbox, dima): themes → Use extended theme palette — what does it? i want to see an effect of this switch.
+
+raw drop (2026-11-09 inbox, dima): terminal → colors → Improve text contrast, Force theme palette, Use Display P3 color space — can't see effect of these. how to see it?
+
+raw drop (2026-11-09 inbox, dima): terminal → Shell → Startup command — anything to add here?
+
+raw drop (2026-11-09 inbox, dima): rex vs warp:
+
+raw drop (2026-11-09 inbox, dima): - in warp cmd+k was clearing terminal history. i want that but in rex cmd+k opens a session list. how to have clear terminal? «clear» is long to type.
+
+raw drop (2026-11-09 inbox, dima): - cmd+shift+t: i was reopening previously closed tabs.  how to have the same in Rex?
+
+raw drop (2026-11-09 inbox, dima): rex: how to understand
+
+raw drop (2026-11-09 inbox, dima): note: you walkthrough me thorugh rex settings. i want explore and see how settings work in action. lots of quetions so two items at a time.
+
+raw drop (2026-11-09 inbox, dima): note: for all «i can't see effect» — find a way to see an effect, take snapshot and show it in thread yourself if you can. if can't - tell how to see it myself.
 <!-- SECTION:NOTES:END -->
