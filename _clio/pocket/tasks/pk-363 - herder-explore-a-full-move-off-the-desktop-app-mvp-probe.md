@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T17:00:00Z'
+updated_date: '2026-11-09T17:08:00Z'
 labels:
   - m
   - clio-main
@@ -452,4 +452,6 @@ raw drop (2026-11-09 18:58, dima): what's on you? propose what to do — skills?
 PK-363:W79 (2026-11-09 18:58, dima): Also, you currently hold valuable context about herdr, but you are at 57% of CTX. Do as much useful stuff as possible related to the current context before the second wind, so you can freely second wind and gracefully hand off to other least-context-dependent actions after the second wind, so you can proceed there.
 
 raw drop (2026-11-09 18:58, dima): Also, you currently hold valuable context about herdr, but you are at 57% of CTX. Do as much useful stuff as possible related to the current context before the second wind, so you can freely second wind and gracefully hand off to other least-context-dependent actions after the second wind, so you can proceed there.
+
+answered 19:03 (main), the 18:58 ❓ lines: PK-363:W76 saved in .scratch/herdr/plan.md; PK-363:W78 main runs FRM-552, wing 3 builds the skills
 <!-- SECTION:NOTES:END -->

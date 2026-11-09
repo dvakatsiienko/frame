@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T17:03:00Z'
+updated_date: '2026-11-09T17:08:00Z'
 labels:
   - s
   - clio-main
@@ -26,6 +26,7 @@ ordinal: 9995
 - [ ] #8 herdr chunk 1: orbit in herdr — ticket + sign from o72, dispatch the herdr codie, sixth sense on (spec ~/frame/.scratch/herdr-orbit/spec.md)
 - [ ] #9 herdr: probe 4b + haiku clio probe, Zoo + board into frame, then tomorrow's boot in herdr (plan ~/frame/_clio/.scratch/herdr/plan.md)
 - [ ] #10 FRM-550 decided-picks: yours to judge against herdr (dima o29); his o30 tick: cut the transcript index, reshape to «a tick lands in its home the same turn»; handover in wing 3 tree .scratch/frm-550/
+- [ ] #11 PK-358 rex settings walkthrough with dima, two at a time, shown live (from wing 1, his 19:01 word)
 <!-- AC:END -->
 
 ## Implementation Notes
