@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T17:48:00Z'
+updated_date: '2026-11-09T17:49:00Z'
 labels:
   - s
   - clio-wing-1
@@ -25,7 +25,7 @@ ordinal: 18998
 - [ ] #7 FRM-551 vm-go-test: signed; step 1 now, the idle-cost kill gate (dima 19:01)
 - [ ] #8 FRM-383 close: W3 timing run, then x lane landed FRM-383 --pr 150 --apply, by 2026-11-12
 - [ ] #9 PK-370 perf: tests off pre-commit, to ci or pre-push — with dima, a little later (his 18:43)
-- [ ] #10 PK-357 branches: 112 deleted local (dima o52, o53), bytes remote renovate/minors waits on his typed word; the habit is wing 2's rider
+- [ ] #10 PK-357 branches: done (112 local deleted, bytes renovate/minors remote deleted on his typed word, the habit in wing 2's frame#152); close PK-357 routing its W-lines
 <!-- AC:END -->
 
 ## Implementation Notes
