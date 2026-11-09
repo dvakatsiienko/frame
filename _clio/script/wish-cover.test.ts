@@ -218,6 +218,7 @@ describe('wish-cover', () => {
                 mkdirSync(join(root, 'script'));
                 for (const file of [
                     'wish-cover.ts',
+                    'flyway-done.ts',
                     'pocket-check.ts',
                     'prompt-groom.ts',
                     'chat-lines.ts',

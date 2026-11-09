@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T18:11:00Z'
+updated_date: '2026-11-09T18:20:00Z'
 labels:
   - s
   - clio-wing-1
@@ -22,12 +22,12 @@ ordinal: 18998
 - [ ] #4 ⏳ FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — waits for: 11-10
 - [ ] #5 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
 - [ ] #6 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
-- [ ] #7 ⏳ mods test trim (quiet, hot, the timeout retries): shape a chunk — waits for: dima's word
-- [ ] #8 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
-- [ ] #9 ⏳ FRM-525 performance topic and cpu watch, anything performance comes to wing 1 — waits for: 11-14
-- [ ] #10 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
-- [ ] #11 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #12 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
+- [ ] #7 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
+- [ ] #8 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
+- [ ] #9 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #10 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
+- [ ] #11 💤 FRM-525 performance topic and cpu watch, anything performance comes to wing 1 — later: dima says when he has capacity
+- [ ] #12 ⏳ FRM-555 stash tests: no timeout reruns, idle poll at 30 s — grill and sign — waits for: dima's word, after FRM-505
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -70,4 +70,6 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 2026-11-09 19:59 groom (dima 19:58 via wing 2): done and cleared — PK-357 branches closed (status done, every W-line routed, verified by pocket-check green); the open lines rewritten to read alone, ordered by date, each ticket's state read live (all Todo).
 
 done 2026-11-09: FRM-537 mods test-cost probe — 4 files hold 69 % of 286 user-s, comment on FRM-537, doors-left door 10 (dima's o55). groomed 20:11 to the flyway shape (dima's o68 via wing 2).
+
+done 2026-11-09: mods test trim shaped into FRM-555 (dima's o56, o57); the perf watch moved to 💤 on his 20:18 word
 <!-- SECTION:NOTES:END -->

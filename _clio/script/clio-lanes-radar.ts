@@ -164,10 +164,8 @@ function placeFlyways() {
                 return match[1] ?? [];
             },
         );
-        seat(key).flyway = [
-            ...open.filter((line) => line.startsWith('standing:')),
-            ...open.filter((line) => !line.startsWith('standing:')),
-        ];
+        // the flyway's own order is the reading order: open, then ⏳, then 💤 (pocket-check holds it)
+        seat(key).flyway = open;
     }
 }
 

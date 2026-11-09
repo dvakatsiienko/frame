@@ -10,6 +10,9 @@ fail=0
 check() { [ "$2" = "$3" ] || { echo "FAIL $1: got «$2», want «$3»"; fail=1; }; }
 key() { jq -r --arg k "$1" '.[$k] // ""' "$store"; }
 
+"$here/watch-pr.sh" --verified o/r 6 99999999 >/dev/null
+check "bare clean, the old form" "$(key 'o/r#6'),$(key 'o/r#6:security')" 99999999,
+
 "$here/watch-pr.sh" --verified o/r 7 aaaaaaaa --security bbbbbbbb >/dev/null
 check "clean" "$(key 'o/r#7')" aaaaaaaa
 check "security" "$(key 'o/r#7:security')" bbbbbbbb

@@ -4,7 +4,7 @@ title: rename cut-proposals-print, shape the cut process
 status: done
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T18:16:00Z'
+updated_date: '2026-11-09T18:19:00Z'
 labels:
   - s
   - clio-wing-3
@@ -28,4 +28,8 @@ raw drop (2026-11-09 inbox, dima): **clio main** renam skill proposal: cut-propo
 2026-11-09 20:16 done: clio:low-tide-cuts on origin/main, W1 (the name, his o10 pick), W2 (the why, its opening line), W3 (the filter test + grill o36–o38) homed in the skill
 
 close: PK-367:W1 done (renamed clio:low-tide-cuts, his o10 pick, no top-7 wanted), PK-367:W2 done (the skill's opening why), PK-367:W3 done (grill o36–o38, the filter test built)
+
+PK-367:W4 (2026-11-09 20:03, dima): approve everything, and sharpen the description so it fires correctly, using x:author-memory
+PK-367:W5 (2026-11-09 20:03, dima): tell me when it's fully built
+close: PK-367:W4 done (description sharpened by x:author-memory; firing is an inference until an eval runs on his word), PK-367:W5 done (told 20:16)
 <!-- SECTION:NOTES:END -->

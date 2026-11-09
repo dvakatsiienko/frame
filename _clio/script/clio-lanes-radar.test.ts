@@ -127,16 +127,18 @@ describe('clio-lanes-radar', () => {
         expect(w.run()).toContain('🦉🪽 clio: wing 7: dead\nflyway, parked:');
     });
 
-    test('a flyway lists its open lines only, standing ones first', () => {
+    test('a flyway lists its open lines only, in its own order', () => {
         const w = world();
         w.session('🦉 clio', 'sid-m');
         w.flyway('main', [
             '- [x] #1 finished',
             '- [ ] #2 a chore',
-            '- [ ] #3 standing: a watch',
+            '- [ ] #3 ⏳ a watch — waits for: 2026-11-14',
         ]);
         const out = w.run();
-        expect(out).toContain('flyway:\n  - standing: a watch\n  - a chore');
+        expect(out).toContain(
+            'flyway:\n  - a chore\n  - ⏳ a watch — waits for: 2026-11-14',
+        );
         expect(out).not.toContain('finished');
     });
 

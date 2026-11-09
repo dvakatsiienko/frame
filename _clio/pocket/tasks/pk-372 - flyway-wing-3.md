@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T18:16:00Z'
+updated_date: '2026-11-09T18:19:00Z'
 labels:
   - s
   - clio-wing-3
@@ -16,9 +16,9 @@ ordinal: 18999
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 the wish-loss audit script: fold it into wish-cover as a weekly audit mode, then its flag name in a top-7 round — waits for: your tick in orbit
-- [ ] #2 FRM-542 every seat's prompt log, built and on main: its close — waits for: main's first herdr boot reading its own seat, by 11-11
-- [ ] #3 speak v2 planning with you — later: dima, once this flyway is clear and you're up
+- [ ] #1 the wish-loss audit script: fold it into wish-cover as a weekly audit mode, after dima's worth-it word and seven flag names
+- [ ] #2 ⏳ FRM-542 every seat's prompt log, on main: its close — waits for: main's first herdr boot reading its own seat, by 11-11
+- [ ] #3 💤 speak v2 planning with dima — later: dima, after this flyway's open lines
 <!-- AC:END -->
 
 ## Implementation Notes
