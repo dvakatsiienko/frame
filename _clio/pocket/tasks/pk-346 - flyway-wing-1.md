@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T17:43:00Z'
+updated_date: '2026-11-09T17:48:00Z'
 labels:
   - s
   - clio-wing-1
@@ -25,8 +25,7 @@ ordinal: 18998
 - [ ] #7 FRM-551 vm-go-test: signed; step 1 now, the idle-cost kill gate (dima 19:01)
 - [ ] #8 FRM-383 close: W3 timing run, then x lane landed FRM-383 --pr 150 --apply, by 2026-11-12
 - [ ] #9 PK-370 perf: tests off pre-commit, to ci or pre-push — with dima, a little later (his 18:43)
-- [ ] #10 PK-369 perf: can turbo remote cache or another cache reuse test results, against FRM-533's own key; read it blind, verdict: a line in FRM-533 or a new ticket (moved from wing 3 on dima's 19:30 word: «wing 1 property»)
-- [ ] #11 PK-357 branches: 112 deleted local (dima o52, o53), bytes remote renovate/minors waits on his typed word; the habit is wing 2's rider
+- [ ] #10 PK-357 branches: 112 deleted local (dima o52, o53), bytes remote renovate/minors waits on his typed word; the habit is wing 2's rider
 <!-- AC:END -->
 
 ## Implementation Notes
