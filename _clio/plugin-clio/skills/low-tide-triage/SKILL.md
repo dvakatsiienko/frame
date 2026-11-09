@@ -20,7 +20,7 @@ dima, 2026-11-07, folded: «hoisting selects the scope each clio lane will execu
 4. **consult**: send the draft to each clio, one `SendMessage` led by `[ask]`: steer it, what do you want to solve, what do you hold in hand? a reply wakes you; after 10 min a silent clio's share stands, marked unconfirmed.
 5. **settle the proposal**: their reports come back to you, and yours is the final word. what a clio holds in hand leaves the pile.
 6. **propose to dima**: print the split per lane, with each line's verdict, each clio's steer you turned down, and any unconfirmed share; his accept goes in orbit. nothing is written before his yes, unless he asked for auto-settle in words, this run.
-7. **seed, on his yes**: per lane, its flyway gets one `--ac` per line (none yet: `habit-shared-files` § the flyway). each pocket item takes that lane's label, each ticket `clio-wing-<N>` when a wing holds it. append `hoist MM-DD: done` to your flyway, and send each clio one line: your flyway is seeded.
+7. **seed, on his yes**: per lane, its flyway gets one `node script/flyway-done.ts <PK> --add '<line>'` per line, each landing in its kind's place (none yet: `habit-shared-files` § the flyway). each pocket item takes that lane's label, each ticket `clio-wing-<N>` when a wing holds it. append `hoist MM-DD: done` to your flyway, and send each clio one line: your flyway is seeded.
 
 ## a re-triage
 

@@ -29,11 +29,11 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 
 - one pocket item per seat, never closed, always live: `flyway: main` + `clio-main`, `flyway: wing 2` + `clio-wing-2`; none yet: `node script/pocket-add.ts "flyway: wing 2" --priority next --wing 2`
 - order: open lines (no marker, most important first), then ⏳ near (`— waits for: <one thing>`), then 📅 dated (`— on: YYYY-MM-DD`, by date), then 💤 (`— later: dima <time>`); a cleared wait moves up
-- a finished line leaves the turn it ticks into a `done` note: `flyway-done.ts <PK> <n>`; a line joins by `--add`
-<!-- dima, 2026-11-09 (FRM-538:W4–W6): «✓ items get mixed up with the unfinished ones … they make my reading harder»; «standing items, the ones that wait for something, go to the end, so the order of a flyway is always relevant»; «it should be a habit» -->
+- a finished line leaves the turn it ticks: `node script/flyway-done.ts <PK> <n>`; a line joins by `--add '<line>'`, a stray order by `--sort`
 - a parked wing's flyway waits for the next wing of its number; dima may flip its number
 - an action that folds an item into another area reads every flyway for its id and yanks the line that turn (dima, 2026-11-07: «sanity check across flyways, yank it out of flyway plan so no confusions»); `pocket-check` reds a PK id left behind
 - **main delegates operational work to a wing by slipstream**: the wing puts main's ask in its flyway right after the line it is solving, finishes that line, then takes it; unless it is urgent, or dima says otherwise
+<!-- dima, 2026-11-09 (FRM-538:W4–W6): «✓ items get mixed up with the unfinished ones … they make my reading harder»; «standing items, the ones that wait for something, go to the end, so the order of a flyway is always relevant»; «it should be a habit» -->
 <!-- failure: a wing dropped what it was solving with dima mid-turn for main's ask. his words:
 PK-356:W2 (2026-11-09 inbox, dima): wing 2: i steer piles of chores, the solve queue; main clio can delegate operational work to it, but only via slipstream mode
 PK-356:W3 (2026-11-09 inbox, dima): why slipstream: main clio sometimes starts solving its asks mid-turn while a wing is solving something else; not good. instead, a main clio ask joins wing 2's flyway solve queue, right after the current item
