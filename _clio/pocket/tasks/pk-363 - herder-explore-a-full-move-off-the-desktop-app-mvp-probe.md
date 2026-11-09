@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T20:44:00Z'
+updated_date: '2026-11-09T21:01:00Z'
 labels:
   - m
   - clio-main
@@ -568,4 +568,6 @@ PK-363:W154 (2026-11-09 22:38, dima): I would start with a band that shows the C
 answered 22:40: W144–W148 in the reply and orbit o107; W149 → o105 resolved; W151–W154 → PK-349 📅 herdr lane chunk 1 (the band), W154 cut off, asked at the shaping
 
 PK-363:W155 (2026-11-09 22:38, dima, o105 steer): herder lane can tell what it want and mods lane tries to fulfill that as soon as possible (delegation)
+
+PK-363:W156 (2026-11-09 22:43, dima): I assumed that if you start them in --bg mode, they won't show in the order list, which is not good. I want to see everyone in order.
 <!-- SECTION:NOTES:END -->
