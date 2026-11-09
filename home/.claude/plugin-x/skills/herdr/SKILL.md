@@ -29,13 +29,13 @@ they ship with each herdr update and are the truth for the installed version: sy
 
 ## recipes
 
-**start a member in a pane** — a wing, the mods codie, any seat that outlives its starter and the window (summon probe, 2026-11-09, `~/frame/.scratch/herdr-summon-probe/findings.md`)
+**start a member in a pane** — a wing, the mods codie, a seat that outlives the window (summon probe, 2026-11-09, `~/frame/.scratch/herdr-summon-probe/findings.md`; `-n` with `--remote-control` together, unrun)
 
 ```sh
 hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<registry name>' "<its first task>" --remote-control
 ```
 
-- 📌 the cc `-n` is its name for `ListAgents`, `SendMessage` and `seatOf` (`🦉🪽 clio: wing <N>` makes a wing); herdr's `--name` and `--label` only tag the pane
+- 📌 the cc `-n` is its name for `ListAgents` and `seatOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live seats
 - its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends
 - stop it with `hc kill <t>`; a `claude --bg` member runs unchanged from a herdr seat, `claude attach <id>` opens it in a pane, `claude stop <id>` ends it
 - the first task rides in `run`: a send to a booting agent can be dropped (`hc --skill`, «Delegate a task»)
@@ -43,7 +43,7 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 - `--no-notify`: by default hc types notes about the child into the parent's prompt
 - `--keep` is not a restart: it puts a shell where a lost program was and never re-runs `claude`
 
-**hand another agent seat a message, then read it** — `hc send <t> '<text>' --wait --timeout 300` once `hc get <t> --json` reads `done` or `idle`, then `hc read <t> --lines 80`. an agent seat takes the text as its next prompt; `--if idle` refuses every seat that has finished a turn, since its status stays `done` (probe, 2026-11-09)
+**hand another agent seat a message, then read it** — `hc send <t> '<text>'` once `hc get <t> --json` reads `done` or `idle`, then `hc read <t> --lines 80`. an agent seat takes the text as its next prompt; `--if idle` refuses every seat that has finished a turn, its status staying `done` (probe, 2026-11-09); a plain shell reports no status, so it gets a bare `hc send` too
 
 **prefill a command for dima's hand** — the enter is his
 
@@ -63,8 +63,8 @@ printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building'
 - 📌 `hc send` always presses Enter; `hc keys` is the only prefill, with the limits above
 - 📌 `hc send --force` types into a blocked program and may answer its permission dialog: never into a seat waiting on dima
 - `hc get` changes nothing and shows no screen; the screen is `hc read`
+- 📌 `SendUserFile` from a herdr seat says «delivered» and reaches dima nowhere (summon probe door 5, 2026-11-09): a look card's shot goes out as its absolute path in the reply, and `open <png>` shows it on his mac
 - `herdr-app do '<json>'` alone is refused: the command name comes first, `herdr-app do pane.split '<json>'`
-- `hc label <t> seat=<seat>` tags a terminal you didn't start with `--label`, so a script finds it later
 - a `herdr-app do` that makes or splits a pane names its target `pane` from `ls` and runs only when dima asked for it; without one it acts on his focused pane
 - `mcp__ide` tools in a herdr seat are Cursor's (open on the same folder), never herdr's
 
@@ -87,5 +87,4 @@ the rest: `~/.config/herdr-app/keys.json`.
 
 ## what herdr costs a session
 
-- `~/.config/herdr-app/AGENTS.md` is 62 KB, about 15k tokens (inference: 4 bytes a token); our loader hook names it only when a session touches `~/.config/herdr-app` and never inlines it, so a seat that only drives herdr pays nothing
-- the herdr window ran about 270 MB against the desktop app's 2.3 GB (one snapshot)
+- nothing resident: our loader hook names `~/.config/herdr-app/AGENTS.md` (62 KB, ~15k tokens) only when a session touches `~/.config/herdr-app`, never inlined
