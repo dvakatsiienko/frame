@@ -283,3 +283,18 @@ func TestMergeAutoRefusesAPrPastGithubsFileList(t *testing.T) {
 		t.Fatalf("exit %d, error %q, want a refusal naming github's 3000-file list:\n%s", got.code, e, got.stdout)
 	}
 }
+
+// a push between the head read and the files read would tier one head and merge another, so a moved head refuses
+func TestMergeAutoRefusesWhenTheHeadMovesWhileItsPathsAreRead(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "docs/research/x.md")
+	w.hub.mu.Lock()
+	w.hub.later = map[string]string{repoPath + "/pulls/7": strings.ReplaceAll(w.hub.pages[repoPath+"/pulls/7"], w.head, runSha(9))}
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "7", "--apply")
+
+	if e := envelopeOf(got).Error; got.code == 0 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(e, "moved while its paths were read") {
+		t.Fatalf("exit %d, error %q, want a refusal naming the moved head:\n%s", got.code, e, got.stdout)
+	}
+}

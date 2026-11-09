@@ -178,10 +178,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 	// the pr is read first and its paths after, so they are its head's or a later push's, never an older one's; a push past
 	// the read leaves the merge pinned to the read head, which github refuses
 	if err := r.Step("tier", "reading the checks the changed paths ask", func() (string, error) {
-		if _, pathsErr = ghFetch(asDima, api+"/pulls/"+n, &pr); pathsErr == nil {
-			paths, pathsErr = prPaths(api, n)
-		}
-		if pathsErr != nil {
+		if paths, pathsErr = headAndPaths(api, n, &pr); pathsErr != nil {
 			if override != nil {
 				// the tier only names; a read that failed stops nothing under the override
 				return "the paths did not read: " + pathsErr.Error(), nil
@@ -459,14 +456,11 @@ func decide(brake, selfWait string, checks ...mergeCheck) (decision, wait string
 // why a layer under the merged pr holds the merge, as the same gate reads it; "" when it passes
 func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	var pr pullHead
-	if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
-		return "", err
-	}
-	d.heads[n] = pr.Head.Sha
-	paths, err := prPaths(api, n)
+	paths, err := headAndPaths(api, n, &pr)
 	if err != nil {
 		return "", err
 	}
+	d.heads[n] = pr.Head.Sha
 	sixthSense := d.sixthSenseOf(api, repo, n, pr, paths)
 	ci, err := ciCheck(api, trunk, pr.Head.Sha)
 	if err != nil {
@@ -935,6 +929,26 @@ func globRegexp(glob string) *regexp.Regexp {
 
 func matchesAny(path string, globs []*regexp.Regexp) bool {
 	return slices.ContainsFunc(globs, func(g *regexp.Regexp) bool { return g.MatchString(path) })
+}
+
+// the pr's head and the paths it changes, read again after the paths: a push between the two reads would tier one head
+// and merge another, so a moved head refuses
+func headAndPaths(api, n string, pr *pullHead) ([]string, error) {
+	if _, err := ghFetch(asDima, api+"/pulls/"+n, pr); err != nil {
+		return nil, err
+	}
+	paths, err := prPaths(api, n)
+	if err != nil {
+		return nil, err
+	}
+	var again pullHead
+	if _, err := ghFetch(asDima, api+"/pulls/"+n, &again); err != nil {
+		return nil, err
+	}
+	if again.Head.Sha != pr.Head.Sha {
+		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("#%s's head moved while its paths were read, %s → %s: the tier would name one head and the merge another", n, short(pr.Head.Sha), short(again.Head.Sha)), Next: "x lane merge-auto " + n}
+	}
+	return paths, nil
 }
 
 // every path a pr changes, a rename's old name included: a file moved out of a risky dir is still a change to it
