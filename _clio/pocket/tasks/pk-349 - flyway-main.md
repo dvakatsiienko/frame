@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T18:25:00Z'
+updated_date: '2026-11-09T18:29:00Z'
 labels:
   - s
   - clio-main
@@ -17,7 +17,7 @@ ordinal: 9995
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 chunk 2: Zoo's chat into frame as fleet-chatter, a ticket for your sign, the herdr codie builds it
-- [ ] #2 next mods lane, one fresh codie, fixes first: FRM-538's public-post guard half, FRM-544 (after its sign grill), then FRM-505, FRM-491, FRM-495 (dima 20:13, his o87 tick)
+- [ ] #2 next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87)
 - [ ] #3 ⏳ FRM-552 orbit in herdr, the want line: you tick the 🧪 ask in herdr's fleet-board — waits for: dima's herdr tick
 - [ ] #4 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
 - [ ] #5 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
