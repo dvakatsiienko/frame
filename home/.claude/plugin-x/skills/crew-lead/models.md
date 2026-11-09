@@ -2,6 +2,13 @@
 
 ## summon or reuse
 
+**the order — reuse before summon, sequential by default** (dima, 2026-11-10: «each new summon is not free … it is costing weekly usage»; clio's copy: `craft-fleet-flow` § lane init):
+- a parked member takes the next chunk by message, in any area; its scope is prepped up front, ideally in a similar area
+- under ~20–25 % context it switches in place; above it, it second-winds first; this beats the step grid below
+- a finished member stays parked for the next job; a stop is dima's word
+- chunks run one by one through the reused member; a parallel lane only when it matters, when it is needed, or on dima's ask, its reason in the brief
+- a fresh summon is the last door; its brief names why no parked member fit
+
 **summon or reuse — the grid** (dima, 2026-10-06: «pre-plan these breakpoints … reuse existing sessions, or spawn a new one?»):
 - measured 2026-10-06 on 8 implementers: a fresh agent's first request reads ~35k warm (tools + the fixed system prompt, the same bytes in every session) and writes ~102k cold (memory + per-session bits); every later step reads the whole context back. the halt re-measures the base (first-request `cache_read` / `cache_creation` of the day's agents).
 - prices, [pricing](https://platform.claude.com/docs/en/about-claude/pricing) read 2026-10-08, per MTok — in · 5m write · 1h write · hit · out: opus 5.5 $4 · $5 · $8 · $0.20 (0.05×) · $20; sonnet 5.5 $2 · $2.50 · $4 · $0.10 (0.05×) · $10; fable 5.1 $10 · $12.50 · $20 · $0.25 (0.025×) · $50; haiku 5.5 (≤100K prompts) $0.10 · $0.125 · $0.20 · $0.01 (0.1×) · $0.50, over 100K ×5. the 1M window bills at standard rates.

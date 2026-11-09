@@ -90,3 +90,4 @@ Ticket: none
 
 ## verdict
 - 2026-11-09 22:06–23:58 wing 1: wishkeeper 15 findings (1 high, 6 medium, 8 low), ~143k tokens, 48 tool calls; the high, a merge loop armed before the head was read, was caught before any merge
+- 2026-11-10 · main 22:57–00:25: the lane reuse rule, the crow and helga herdr pane door, both wings halted · wishkeeper 4 min, 87k tokens, 10 findings: 3 high real (his reuse clauses cut to fit the size caps and then reported as written, crew-lead and craft-fleet-flow pointing at each other with neither holding the steps), all fixed before the commit; 2 medium fixed (the 00:01 and 00:07 grooms, the models.md threshold)
