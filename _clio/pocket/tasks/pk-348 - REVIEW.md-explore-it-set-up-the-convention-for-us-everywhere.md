@@ -75,4 +75,6 @@ close: 2026-11-09 18:24 — dima o38. homes: W1 W6 W8 W10 W11 → FRM-546–549;
 held: 2026-11-09 — FRM-546 his o38 close stands; left: each moved W-line copied into its ticket's wish block (W1 W6 W8 W11 → FRM-546–549, W5 W9 → FRM-414), the answered ones dropped citing o38, then done
 
 close: 2026-11-09 18:26 — PK-348:W2 PK-348:W3 PK-348:W4 PK-348:W5 PK-348:W7 PK-348:W10 answered by the proposal and the escape replay, dropped from the tickets (dima o38)
+
+close: 2026-11-09 18:27 — PK-348:W2 PK-348:W3 PK-348:W4 PK-348:W5 PK-348:W7 PK-348:W10 dropped from the tickets as answered by the proposal and the escape replay (dima o38)
 <!-- SECTION:NOTES:END -->
