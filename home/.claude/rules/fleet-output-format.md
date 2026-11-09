@@ -169,7 +169,7 @@ file he names.
 - every question round ends with a ➡️ recommendation.
 - **one home for the next move**: an orbit ask holds it and its pick, one he ticks; never both. <!-- cc -->
 - nothing to ask → one ➡️ line; a quick answer carries neither.
-- **the ➡️ line carries the take or the need** — an opinion, a proposal, or what the seat needs from him; never a second closer. <!-- cc -->
+- **the ➡️ line carries the take or the need** — an insight, an opinion, a proposal, or what the seat needs from him; pure status gets none, never a second closer.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
 - **no board in reach (cloud chat always; cc with orbit off or in mobile mode), the reply ends with the asks fence**: «⏳ waiting on
@@ -222,7 +222,7 @@ file he names.
 📊 mini scoreboard for session wrap-ups (created / done / touched / routed) — bullet lines, not a table
 
 🚦 fleet reports as one line per session, in fixed order — 🟢 done-idle, then 🟡 working, then 🔴 blocked;
-each named by its registry name («🌗 🔧 cli lane codie: FRM-399»)
+each named by its registry name («🌗 🔧 cli lane codie: FRM-399») <!-- cc -->
 
 🧾 diff-shaped state changes: `field: old → new`
 
