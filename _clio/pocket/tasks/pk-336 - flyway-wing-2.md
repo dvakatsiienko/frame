@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T14:09:00Z'
+updated_date: '2026-11-09T14:39:00Z'
 labels:
   - m
   - clio-wing-2
@@ -23,17 +23,18 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 PK-348 REVIEW.md: explore, set up the convention
-- [ ] #2 PK-326 close: route its 50 W-lines (the ask-guard), then close; its re-measure is done, notes 11-09 15:58
-- [ ] #3 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first
-- [ ] #4 PK-366 delete the model label group: his o19 tick, 9 tickets lose fable 5 / opus 5
-- [ ] #5 trial reads with dima: skill-named-load (due 11-09), delve (11-10), unbash (11-22) — his word: probably mostly solved 2-3 days ago, double-check
-- [ ] #6 redraw the crew-pm blueprint after winged v2 and the sidecar changes
-- [ ] #7 FRM-454 helga on Sonnet
-- [ ] #8 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
-- [ ] #9 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
-- [ ] #10 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)
-- [ ] #11 side prompts join the prompt log (his winged v2 wish, never landed): ask dima if it still stands
-- [ ] #12 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
+- [ ] #2 FRM-538 two guards (public posts name sources, finished flyway lines tick): proposed for his sign
+- [ ] #3 PK-326 close: route its 50 W-lines (the ask-guard), then close; its re-measure is done, notes 11-09 15:58
+- [ ] #4 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first
+- [ ] #5 PK-366 delete the model label group: his o19 tick, 9 tickets lose fable 5 / opus 5
+- [ ] #6 trial reads with dima: skill-named-load (due 11-09), delve (11-10), unbash (11-22) — his word: probably mostly solved 2-3 days ago, double-check
+- [ ] #7 redraw the crew-pm blueprint after winged v2 and the sidecar changes
+- [ ] #8 FRM-454 helga on Sonnet
+- [ ] #9 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
+- [ ] #10 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
+- [ ] #11 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)
+- [ ] #12 side prompts join the prompt log (his winged v2 wish, never landed): ask dima if it still stands
+- [ ] #13 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -154,4 +155,6 @@ hoist 11-09: proposing, wing 2
 16:07 three tails from main by slipstream, after PK-348: helga's n8n 404, FRM-383 read unsigned, the groom check's false W1.
 
 16:10 main's three tails done and reported to her: n8n path live and right (helga's slip), FRM-383's missing signed label handed to wing 1, the groom check's false W1 fixed in prompt-groom.ts.
+
+16:41 FRM-538 born from main's slipstream (his o23, o25), after PK-348.
 <!-- SECTION:NOTES:END -->
