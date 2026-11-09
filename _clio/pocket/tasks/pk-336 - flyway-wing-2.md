@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T15:18:00Z'
+updated_date: '2026-11-09T15:27:00Z'
 labels:
   - m
   - clio-wing-2
@@ -36,6 +36,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #12 FRM-538 quick lane, on his word (mods lane paused today)
 - [ ] #13 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
 - [x] #14 main's ask: x-mod-guard fail-closed on parse.ts fixed and landed; badge swap written, main commits the 7
+- [ ] #15 cli lane 6 and its codie move to wing 2 after FRM-503 lands, for 🐉 review loop gets verbs (main 17:27, agreed)
 <!-- AC:END -->
 
 ## Implementation Notes

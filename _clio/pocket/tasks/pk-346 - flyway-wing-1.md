@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T15:18:00Z'
+updated_date: '2026-11-09T15:28:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,7 +17,7 @@ ordinal: 18998
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 PK-300 one complete measuring solution
-- [x] #2 FRM-517 temp dir: the day's count read 11-08, close or one step named, from wing 2
+- [ ] #2 FRM-517 temp dir: the day's count read 11-08, close or one step named, from wing 2
 - [ ] #3 FRM-497 speak meter: starts with speak v2, not before
 - [ ] #4 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
 - [ ] #5 PK-357 git: old branches, why they gather, a habit, perf effect — with dima, when free
@@ -60,4 +60,6 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 17:17 dima 17:02 via main: both lanes finish and merge what they hold, then park until further steps; cli lane 6 lands FRM-383 and does NOT start FRM-503 door 1; gate lane 1 lands FRM-534 + FRM-520 and parks; park = alive and idle, never stopped (he attaches from herdr). gate lane 1 landed FRM-520 17:16, both codies parked. the 17:06 note's «#11» means the gate lane 1 line
 
 17:18 dima 17:16 via main changes the 17:02 park: cli lane 6 does not park, it takes FRM-503 door 1 after FRM-383 lands; gate lane 1's codie is the herdr probe host
+
+17:29 FRM-520 closed (dima o43); FRM-517 reopened (dima o44), its count 345 at 17:28, read again 11-10 17:28
 <!-- SECTION:NOTES:END -->
