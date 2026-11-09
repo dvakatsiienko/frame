@@ -4,7 +4,7 @@ title: 'sidecar passports: crow and helga info into their AGENTS.md'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T13:29:00Z'
+updated_date: '2026-11-09T13:48:00Z'
 labels:
   - s
   - clio-main
@@ -44,4 +44,6 @@ PK-368:W10 (2026-11-09 15:08, dima): correction of W7: «in sky» was wispr for 
 2026-11-09 15:30 clio: W4 → PK-359:W4, W8 → PK-362:W8, W9 → PK-365:W3, each its own item's line; the 15:08 groom brief named one home for the whole prompt
 
 PK-368:W11 (2026-11-09 15:17, dima): is a pnpm script not redundant? clean up everything redundant after the crow and helga restructure ❓
+
+PK-368:W12 (2026-11-09 15:42, dima): both sessions run outside of frame, but their homes are inside frame. a question then: do they know this fact about themselves, and do they read their own agents.md? i would like them to auto-load agents.md of each of them somehow ❓
 <!-- SECTION:NOTES:END -->
