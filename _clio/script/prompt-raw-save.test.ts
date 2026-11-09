@@ -157,10 +157,11 @@ describe('seatOf', () => {
         expect(seatOf(seatHome(10, { 10: '🦉 clio' }), 10)).toBe('');
     });
 
-    test('a wing writes in its own folder', () => {
-        expect(seatOf(seatHome(10, { 11: '🦉🪽 clio: wing 3' }), 11)).toBe(
-            'wing-3',
-        );
+    test.each([
+        ['the desktop title', '🦉🪽 clio: wing 3'],
+        ['a herdr seat name', 'wing-3'],
+    ])('a wing by %s writes in its own folder', (_kind, name) => {
+        expect(seatOf(seatHome(10, { 11: name }), 11)).toBe('wing-3');
     });
 
     test.each([

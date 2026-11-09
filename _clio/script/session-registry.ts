@@ -35,7 +35,8 @@ export function seatOf(home = homedir(), ccPid = nearestClaude()) {
     )?.[1];
     if (mainPid === String(ccPid)) return '';
     const wing = readOr(join(home, '.claude/sessions', `${ccPid}.json`)).match(
-        /"name"\s*:\s*"[^"]*\bwing (\d+)\b/,
+        // the desktop titles a wing «🦉🪽 clio: wing 3», a herdr seat starts as `--name wing-3`
+        /"name"\s*:\s*"[^"]*\bwing[ -](\d+)\b/,
     )?.[1];
     return wing === undefined ? undefined : `wing-${wing}`;
 }
