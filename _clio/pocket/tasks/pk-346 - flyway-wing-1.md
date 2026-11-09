@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T15:36:00Z'
+updated_date: '2026-11-09T15:58:00Z'
 labels:
   - s
   - clio-wing-1
@@ -28,10 +28,10 @@ ordinal: 18998
 - [ ] #10 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
 - [x] #11 gate lane 1: its codie stays parked as dima's herdr probe host, sixth sense parked (dima 17:16)
 - [ ] #12 PK-373 linux vm: named vm-go-test; shape-idea steps 4-7 and its ticket
-- [ ] #13 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
-- [x] #14 FRM-520 close on dima's o43; FRM-517 reopen or not on his o44
-- [ ] #15 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
-- [ ] #16 cli lane 6: FRM-503 door 1, then x lane landed FRM-383 --apply, then hand the lane to wing 2 (dima o34); its queue FRM-384, FRM-436, FRM-414, FRM-424 (o32) is wing 2's
+- [x] #13 FRM-520 close on dima's o43; FRM-517 reopen or not on his o44
+- [ ] #14 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
+- [ ] #15 cli lane 6: FRM-503 door 1, then x lane landed FRM-383 --apply, then hand the lane to wing 2 (dima o34); its queue FRM-384, FRM-436, FRM-414, FRM-424 (o32) is wing 2's
+- [ ] #16 FRM-551 vm-go-test: dima's sign, then its first step, the idle-cost kill gate
 <!-- AC:END -->
 
 ## Implementation Notes

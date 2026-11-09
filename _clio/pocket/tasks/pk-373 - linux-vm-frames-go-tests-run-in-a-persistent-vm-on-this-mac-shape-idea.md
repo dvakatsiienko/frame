@@ -1,10 +1,10 @@
 ---
 id: PK-373
 title: 'linux vm: frame''s go tests run in a persistent vm on this mac, shape-idea'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T14:19:00Z'
-updated_date: '2026-11-09T14:45:00Z'
+updated_date: '2026-11-09T15:58:00Z'
 labels:
   - s
   - clio-wing-1
@@ -40,4 +40,7 @@ grill 1 settled 2026-11-09 16:27, dima's ticks o24-o31, all as picked:
 PK-373 name, dima's o32 steer 16:44: vm-go-test (over my go-test-vm pick)
 
 16:46 name: vm-go-test (dima's 16:44 steer over go-test-vm); the lima instance frm536 is renamed at the build, never before
+
+ticket: FRM-551
+close: 2026-11-09 17:58 — shaped (grill 1 o24-o31, name o32, crow critique folded) into FRM-551, all 8 W-lines carried as FRM-551:W1-W8; the raw drop stays here
 <!-- SECTION:NOTES:END -->
