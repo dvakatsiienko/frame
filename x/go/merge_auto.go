@@ -278,9 +278,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}); err != nil {
 			return nil, err
 		}
-		if err := r.Step("main-ci", "reading main's newest ci run", func() (string, error) {
+		if err := r.Step("main-ci", "reading main's ci and deploy runs", func() (string, error) {
 			var err error
-			if mainCI, err = mainRunsCheck(api); err != nil {
+			if mainCI, err = mainRunsCheck(api, deployGated(repo)); err != nil {
 				return "", err
 			}
 			return mainCI.shown()
@@ -1372,20 +1372,29 @@ func deployCheck(api, repo, trunk string) (mergeCheck, error) {
 	return c, nil
 }
 
-// main's own ci, newest run first: a red one on main holds every merge onto it, so a second failure never stacks there.
-// a run is named by its run-name («deploy <sha>»), so its workflow file is what tells ci from deploy
-func mainRunsCheck(api string) (mergeCheck, error) {
+// main's own ci and deploy runs, newest first: a red ci on main holds every merge onto it, and in a repo that deploys
+// a ci or deploy still queued or running holds it too, for door 1's deploy read sees only the older green one then.
+// one read, the wait a pr's own pending ci gets, no poll (dima o53). a run is named by its run-name («deploy <sha>»),
+// so its workflow file is what tells ci from deploy
+func mainRunsCheck(api string, deploys bool) (mergeCheck, error) {
 	c := mergeCheck{Name: "main-ci"}
 	var answer struct {
 		Runs []struct {
 			ID         int64  `json:"id"`
 			Path       string `json:"path"`
 			HeadSha    string `json:"head_sha"`
+			Status     string `json:"status"`
 			Conclusion string `json:"conclusion"`
 		} `json:"workflow_runs"`
 	}
 	if _, err := ghFetch(asDima, api+"/actions/runs?branch=main&per_page=30", &answer); err != nil {
 		return c, err
+	}
+	for _, run := range answer.Runs {
+		if deploys && run.Status != "completed" && slices.Contains([]string{".github/workflows/ci.yml", ".github/workflows/deploy.yml"}, run.Path) {
+			c.Detail = fmt.Sprintf("main's deploy is running: run %d (%s) on %s", run.ID, strings.TrimPrefix(run.Path, ".github/workflows/"), short(run.HeadSha))
+			return c, nil
+		}
 	}
 	for _, run := range answer.Runs {
 		if run.Path != ".github/workflows/ci.yml" {

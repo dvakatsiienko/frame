@@ -64,6 +64,40 @@ func TestMergeAutoReadsOnlyMainsNewestCIRun(t *testing.T) {
 	}
 }
 
+// FRM-553 exits 1 and 4: in a repo that deploys, a queued or running ci or deploy run on main is one read and a wait naming it
+func TestMergeAutoWaitsWhileMainsCIOrDeployRuns(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ workflow, status string }{
+		{"deploy.yml", "in_progress"}, {"deploy.yml", "queued"}, {"ci.yml", "in_progress"}, {"ci.yml", "queued"},
+	} {
+		t.Run(c.workflow+" "+c.status, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			w.mainHistory(vercel("hq", "success", "Deployment has completed"))
+			w.mainRuns(mainRun(9, c.workflow, c.status, "", runSha(2)), mainRun(1, "ci.yml", "completed", "success", runSha(1)))
+
+			got := w.run(t, "7", "--apply")
+
+			wait := envelopeOf(got).Data.Wait
+			if got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(wait, "main's deploy is running") || !strings.Contains(wait, "run 9") {
+				t.Fatalf("exit %d, wait %q, want a wait naming main's running deploy and run 9:\n%s", got.code, wait, got.stdout)
+			}
+		})
+	}
+}
+
+// FRM-553 exit 1: the same runs finished green land
+func TestMergeAutoLandsOnceMainsDeployFinishedGreen(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.mainHistory(vercel("hq", "success", "Deployment has completed"))
+	w.mainRuns(mainRun(9, "deploy.yml", "completed", "success", runSha(2)), mainRun(8, "ci.yml", "completed", "success", runSha(2)))
+
+	if got := w.run(t, "7", "--apply"); got.code != 0 || len(w.hub.sent("PUT ")) != 1 {
+		t.Fatalf("exit %d, want the merge once main's runs finished green:\n%s", got.code, got.stdout)
+	}
+}
+
 // FRM-553 exit 2: frame deploys nothing, so its running deploy run holds no merge
 func TestMergeAutoIsNotHeldByARunningDeployInARepoThatDeploysNothing(t *testing.T) {
 	t.Parallel()
