@@ -4,7 +4,7 @@ title: 'REVIEW.md: explore it, set up the convention for us everywhere'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T14:00:00Z'
+updated_date: '2026-11-09T15:26:00Z'
 labels:
   - s
   - clio-wing-2
@@ -55,4 +55,11 @@ PK-348:W11 (2026-11-09 15:58, dima): propose how to optimize it and cut redundan
 15:59 wing 2: step 1 done: the blog read (web-fetch), the video kept on the shelf (fetch mode, not transit: theo-t3gg-how-claude-fixes-its-own-code-TFCDWrEBaFM), summary at the scratchpad's theo-review-summary.md. a stack map of our review layers is running.
 
 stamp note: W1 to W7 were typed by hand into this item's description on 11-07, not a prompt; «inbox» is the nearest stamp the groom check takes.
+
+ticket: FRM-545
+ticket: FRM-546
+ticket: FRM-547
+ticket: FRM-548
+ticket: FRM-549
+held: 2026-11-09 — FRM-545 the sixth sense round counter's placement (a cli rider or its own chunk), asked of main 17:23; this item closes once it has a home
 <!-- SECTION:NOTES:END -->
