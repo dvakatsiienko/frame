@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-07T18:57:00Z'
+updated_date: '2026-11-09T12:34:00Z'
 labels:
   - m
   - clio-wing-1
@@ -34,4 +34,6 @@ correction 2026-11-04: the kept line above came from a loop; this item waits on 
 the side channel's tree is archived: its round 1 lives at _clio/.scratch/side-channel-38d42581/pk-300/grill-1-proposal.md
 
 kept: 2026-11-07 — his 17:26 word: it is bigger, not now. round 1 printed 17:09, unanswered; the old store inventory file is gone, rebuild it before round 2
+
+kept: 2026-11-09 — parked on dima's 17:26 word (11-07), wing 1 flyway line #1; revisits after the cpu plan
 <!-- SECTION:NOTES:END -->
