@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T19:02:00Z'
+updated_date: '2026-11-09T19:04:00Z'
 labels:
   - m
   - clio-wing-2
@@ -168,4 +168,7 @@ done 2026-11-09 19:59, verified then cleared: FRM-538 proposed and signed; PK-36
 20:14 moved to main: FRM-538's public-post guard half + FRM-544 lead main's next mods lane (fixes first, then FRM-505, FRM-491, FRM-495), starting once FRM-552 lands; FRM-544's sign grill is main's
 
 done 2026-11-09 20:44: FRM-538's flyway half, wishkeeper's 5 fixes: verify a line's ticket or PK before it leaves, reds name #n and the command, --add/--sort run in a test, 3 skills name flyway-done.ts, --sort in one edit (FRM-538 In Progress)
+
+PK-336:W30 (2026-11-09 20:46, dima): your cli lane codie needs a SW. ask when he wants it.
+done 2026-11-09 20:48: codie second-winded before its #152 final (cst cli-lane-6-7)
 <!-- SECTION:NOTES:END -->
