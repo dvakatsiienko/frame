@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T18:00:00Z'
+updated_date: '2026-11-09T18:10:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,15 +22,16 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
-- [ ] #2 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
-- [ ] #3 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
-- [ ] #4 redraw the crew-pm board (pocket-check.ts, merge_auto.go, stacks.go changed)
-- [ ] #5 review contract notice to every clio and member once frame#152 lands (the review-tiers pr; dima o25)
-- [ ] #6 guard quick lane: FRM-538 (two guards, signed) + FRM-544 (your tick runs a refused command; his «no cryptic typing» line) — FRM-544's sign first, then your dispatch word; mods lane paused today
-- [ ] #7 later (dima 19:58): FRM-454 helga on Sonnet, a shape-idea grill with you before any sign
-- [ ] #8 FRM-546 frame REVIEW.md: closes when frame#152's own review shows codie's cards and sixth sense naming REVIEW.md (the read postponed, dima 19:58)
-- [ ] #9 cli lane 6 PARKS once frame#152 merges (dima 20:00): FRM-414, FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 wait for his word
+- [ ] #1 redraw the crew-pm board: pocket-check.ts, merge_auto.go and stacks.go changed since its last version
+- [ ] #2 ⏳ frame#152 (FRM-549, FRM-553 + its riders, FRM-548) merges by merge-auto — waits for: codie's final, then sixth sense's clean
+- [ ] #3 ⏳ FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card — waits for: frame#152's review run
+- [ ] #4 ⏳ the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25) — waits for: frame#152's merge
+- [ ] #5 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
+- [ ] #6 ⏳ FRM-483 boot-prefetch stall, the 3-day read — waits for: 2026-11-11
+- [ ] #7 ⏳ FRM-516 crow on every wing, the week's read — waits for: 2026-11-14
+- [ ] #8 ⏳ PK-362 steamac disk 256 → 192 gb — waits for: free space on the mac (dima 15:23)
+- [ ] #9 💤 guard quick lane: FRM-538 (signed) + FRM-544 (his tick runs a refused command; needs its sign) — later: dima 19:58
+- [ ] #10 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
 <!-- AC:END -->
 
 ## Implementation Notes
