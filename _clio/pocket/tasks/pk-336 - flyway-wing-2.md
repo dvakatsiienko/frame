@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T17:23:00Z'
+updated_date: '2026-11-09T17:26:00Z'
 labels:
   - m
   - clio-wing-2
@@ -27,20 +27,19 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #3 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first
 - [ ] #4 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
 - [ ] #5 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
-- [ ] #6 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)
-- [ ] #7 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
-- [ ] #8 FRM-538 quick lane, on his word (mods lane paused today)
-- [ ] #9 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
-- [x] #10 main's ask: x-mod-guard fail-closed on parse.ts fixed and landed; badge swap written, main commits the 7
-- [x] #11 cli lane 6 and its codie move to wing 2 after FRM-503 lands, for 🐉 review loop gets verbs (main 17:27, agreed)
-- [ ] #12 review contract notice to every clio and member once FRM-547, FRM-548 and FRM-549 land (dima o25)
-- [x] #13 review tickets wish-line trim + pocket-check one-home fix, on dima's o43 tick
-- [ ] #14 FRM-547 bytes REVIEW.md: committed in the bytes clio-wing-2 tree, push with the ci prompt line on o44, then its live proof and close
-- [x] #15 FRM-548 → FRM-549 codie side lane: spec now, summon on o45
-- [ ] #16 cli lane 6 is mine (wing 1's handover 19:05): after FRM-548/549, walk FRM-414 (+ round counter rider), FRM-384, FRM-436, FRM-424; door 1 tails in /Users/dima/frame/.claude/worktrees/clio-wing-1/.scratch/handover-cli-lane-6.md
-- [ ] #17 FRM-553 merge-auto waits on main's running ci/deploy (wing 1's joiner, unsigned): grill + sign it before the lane brief, so it batches into the merge-auto pr with FRM-549/548
-- [ ] #18 FRM-384 re-sign with FRM-520's gate tails + watch-pr --verified undo (dima 19:21 via wing 1), on his tick; lefthook tail lands after 11-10 17:28
-- [ ] #19 x verify red re-links node_modules/.bin into its temp copy and deletes it (main 19:23: every commit gate red 19:20–19:22): its fix joins the FRM-384 re-sign batch with the gate tails
+- [ ] #6 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
+- [ ] #7 FRM-538 quick lane, on his word (mods lane paused today)
+- [ ] #8 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
+- [x] #9 main's ask: x-mod-guard fail-closed on parse.ts fixed and landed; badge swap written, main commits the 7
+- [x] #10 cli lane 6 and its codie move to wing 2 after FRM-503 lands, for 🐉 review loop gets verbs (main 17:27, agreed)
+- [ ] #11 review contract notice to every clio and member once FRM-547, FRM-548 and FRM-549 land (dima o25)
+- [x] #12 review tickets wish-line trim + pocket-check one-home fix, on dima's o43 tick
+- [ ] #13 FRM-547 bytes REVIEW.md: committed in the bytes clio-wing-2 tree, push with the ci prompt line on o44, then its live proof and close
+- [x] #14 FRM-548 → FRM-549 codie side lane: spec now, summon on o45
+- [ ] #15 cli lane 6 is mine (wing 1's handover 19:05): after FRM-548/549, walk FRM-414 (+ round counter rider), FRM-384, FRM-436, FRM-424; door 1 tails in /Users/dima/frame/.claude/worktrees/clio-wing-1/.scratch/handover-cli-lane-6.md
+- [ ] #16 FRM-553 merge-auto waits on main's running ci/deploy (wing 1's joiner, unsigned): grill + sign it before the lane brief, so it batches into the merge-auto pr with FRM-549/548
+- [ ] #17 FRM-384 re-sign with FRM-520's gate tails + watch-pr --verified undo (dima 19:21 via wing 1), on his tick; lefthook tail lands after 11-10 17:28
+- [ ] #18 x verify red re-links node_modules/.bin into its temp copy and deletes it (main 19:23: every commit gate red 19:20–19:22): its fix joins the FRM-384 re-sign batch with the gate tails
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -167,4 +166,6 @@ hoist 11-09: proposing, wing 2
 16:59 #2 ticked: FRM-538 signed and re-signed; its quick lane is the new last line.
 
 19:21 #4 trial reads closed on dima's «let's do it and finish it»: skill-named-load adopted 11-07 (o44), delve dropped 11-07 (o43), both read in their docs; unbash's verdict lands at FRM-472's close, the trial live until 11-22, which test-drive:check tracks — no flyway line
+
+19:26 #6 «tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)» moved to main clio on dima's word
 <!-- SECTION:NOTES:END -->
