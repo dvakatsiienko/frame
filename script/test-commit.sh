@@ -72,7 +72,8 @@ if [ "$mode" = related ]; then
     out=$(mktemp "${TMPDIR:-/tmp}/test-commit.XXXX")
     pnpm exec vitest related --run --passWithNoTests "${code_paths[@]}" 2>&1 | tee "$out"
     code=${PIPESTATUS[0]}
-    # code no test imports may still be one a test spawns by path: the whole suite reads it
+    # code no test imports may still be one a test spawns by path: the whole suite reads it. a set where some code is
+    # imported runs related, and a test that spawns another of its files by path is left to the push twin and ci
     if grep -q 'No affected test files found' "$out"; then
         mode=whole
         code=0
