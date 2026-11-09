@@ -78,6 +78,7 @@ test.each(['abc', '0', '1.5'])(
             [join(import.meta.dirname, 'replay.ts'), days],
             {
                 encoding: 'utf8',
+                timeout: 10_000,
             },
         );
         expect([r.status, r.stderr]).toEqual([

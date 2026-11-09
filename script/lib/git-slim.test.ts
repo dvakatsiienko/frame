@@ -116,6 +116,7 @@ chmod +x "$prefix/bin/git"
                 X_STATE: state,
                 ...extra,
             },
+            timeout: 10_000,
         });
     const home = join(state, 'git-slim');
     const builds = () =>
@@ -141,7 +142,7 @@ function built(f: Fixture) {
 }
 
 const ask = (git: string, arg: string) =>
-    spawnSync(git, [arg], { encoding: 'utf8' }).stdout.trim();
+    spawnSync(git, [arg], { encoding: 'utf8', timeout: 10_000 }).stdout.trim();
 
 onMac('the build', () => {
     test('with no home, its git reads brew version and its exec path lies under the live tree', () => {
@@ -343,6 +344,7 @@ onMac(
             const got = spawnSync(hook, {
                 encoding: 'utf8',
                 env: { ...process.env, CLAUDE_ENV_FILE: envFile, HOME: dir },
+                timeout: 10_000,
             });
             const read = spawnSync(
                 '/bin/bash',
@@ -350,7 +352,7 @@ onMac(
                     '-c',
                     `HOME=/h PATH=/fnm/bin:/b; . "${envFile}"; echo "$PATH"`,
                 ],
-                { encoding: 'utf8' },
+                { encoding: 'utf8', timeout: 10_000 },
             );
 
             expect(got.status, got.stderr).toBe(0);
@@ -377,6 +379,7 @@ onMac(
             const got = spawnSync(hook, {
                 encoding: 'utf8',
                 env: { ...process.env, CLAUDE_ENV_FILE: envFile, HOME: dir },
+                timeout: 10_000,
             });
 
             expect(got.status, got.stderr).toBe(0);
@@ -386,7 +389,11 @@ onMac(
         test('with no env file it exits 0 and writes nothing', () => {
             const { CLAUDE_ENV_FILE: _file, ...env } = process.env;
 
-            const got = spawnSync(hook, { encoding: 'utf8', env });
+            const got = spawnSync(hook, {
+                encoding: 'utf8',
+                env,
+                timeout: 10_000,
+            });
 
             expect(got.status, got.stderr).toBe(0);
         });
@@ -428,6 +435,7 @@ onMac('the door, read by a new shell', () => {
                 HOME: dir,
                 PATH: `${brewBin}${delimiter}/usr/bin${delimiter}/bin`,
             },
+            timeout: 10_000,
         });
         return {
             brew: join(brewBin, 'git'),
@@ -484,6 +492,7 @@ onMac('the bash door, BASH_ENV for hooks and their scripts', () => {
                 HOME: dir,
                 PATH: `${firstOnPath}${delimiter}/usr/bin${delimiter}/bin`,
             },
+            timeout: 10_000,
         });
         return { printed: got.stdout.trim(), slimGit };
     }

@@ -10,7 +10,7 @@ const SESSION = 'rc-test';
 
 // the line the next prompt carries after a style miss; reading it consumes it, as the real prompt does
 const nextPrompt = () =>
-    execFileSync('python3', [HOOK, '--prompt'], {
+    execFileSync('python3', [HOOK, '--prompt'], { timeout: 10_000, 
         encoding: 'utf8',
         env: { ...process.env, REPLY_CHECK_REMIND: REMIND },
         input: JSON.stringify({ session_id: SESSION }),
@@ -18,7 +18,7 @@ const nextPrompt = () =>
 
 // the hook's stdout for one ended reply: empty when it lets the stop through
 const stop = (reply: string) =>
-    execFileSync('python3', [HOOK], {
+    execFileSync('python3', [HOOK], { timeout: 10_000, 
         encoding: 'utf8',
         env: {
             ...process.env,
@@ -90,7 +90,7 @@ const promptedAt = (now: string) => {
 };
 
 const stopAfter = (reply: string, transcript: string) =>
-    execFileSync('python3', [HOOK], {
+    execFileSync('python3', [HOOK], { timeout: 10_000, 
         encoding: 'utf8',
         env: {
             ...process.env,
@@ -144,7 +144,7 @@ describe('the grill answer fence', () => {
 // the log line for one ended reply, with the session's folder as cwd
 const logged = (reply: string, cwd: string) => {
     const log = join(mkdtempSync(join(tmpdir(), 'rc-')), 'log.tsv');
-    execFileSync('python3', [HOOK], {
+    execFileSync('python3', [HOOK], { timeout: 10_000, 
         encoding: 'utf8',
         env: { ...process.env, REPLY_CHECK_LOG: log, REPLY_CHECK_NOW: '15:10' },
         input: JSON.stringify({ cwd, last_assistant_message: reply }),
@@ -210,7 +210,7 @@ describe('the grill-drift rule', () => {
             JSON.stringify({ [`asks:${SESSION}`]: { at: Date.now(), items } }),
         );
         return (reply: string) =>
-            execFileSync('python3', [HOOK], {
+            execFileSync('python3', [HOOK], { timeout: 10_000, 
                 encoding: 'utf8',
                 env: { ...process.env, REPLY_CHECK_HOME: home, REPLY_CHECK_LOG: join(home, 'log.tsv'), REPLY_CHECK_REMIND: REMIND },
                 input: JSON.stringify({ last_assistant_message: reply, session_id: SESSION }),
@@ -290,7 +290,7 @@ describe('the never-reached text', () => {
 // the log a reply leaves when its turn's transcript is known
 const loggedAfter = (reply: string, transcript: string) => {
     const log = join(mkdtempSync(join(tmpdir(), 'rc-')), 'log.tsv');
-    execFileSync('python3', [HOOK], {
+    execFileSync('python3', [HOOK], { timeout: 10_000, 
         encoding: 'utf8',
         env: { ...process.env, REPLY_CHECK_LOG: log, REPLY_CHECK_NOW: '15:10', REPLY_CHECK_REMIND: REMIND },
         input: JSON.stringify({ last_assistant_message: reply, session_id: SESSION, transcript_path: transcript }),

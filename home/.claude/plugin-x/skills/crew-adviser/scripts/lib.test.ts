@@ -1180,6 +1180,7 @@ test('an unsent parked wake stays parked and puts nothing in clio’s context', 
     const run = spawnSync('node', [join(import.meta.dirname, 'relay.ts')], {
         encoding: 'utf8',
         env: { ...process.env, CROW_STATE_DIR: state },
+        timeout: 10_000,
     });
     expect([run.status, run.stdout, existsSync(relay)]).toEqual([0, '', true]);
 });

@@ -91,10 +91,23 @@ elif [ -n "$memory_only" ]; then
     mode=memory was=memory
 fi
 
+# the cap: a test child that never ends (a script blocked on stdin) once held a commit 18 min against a 26 s p50.
+# at the cap the step stops, names what started and never ended (the running reporter's log), and reds the commit
+cap=${TEST_COMMIT_CAP:-180}
+running=$(mktemp "${TMPDIR:-/tmp}/test-commit-running.XXXX")
+reporters=(--reporter=default "--reporter=$(cd "$(dirname "$0")" && pwd)/lib/vitest-running.ts")
+capped() { TEST_COMMIT_RUNNING=$running timeout -k 5 "$cap" "$@"; }
+over_cap() {
+    case $1 in 124 | 137) ;; *) return 1 ;; esac
+    echo "test-commit: the test step passed its ${cap} s cap; still running:"
+    awk -F'\t' '$1 == "start" { open[$2] = 1; order[++n] = $2 } $1 == "end" { delete open[$2] }
+        END { for (i = 1; i <= n; i++) if (order[i] in open) print "  " order[i] }' "$running"
+}
+
 code=0
 if [ "$mode" = related ]; then
     out=$(mktemp "${TMPDIR:-/tmp}/test-commit.XXXX")
-    pnpm exec vitest related --run --passWithNoTests "${code_paths[@]}" 2>&1 | tee "$out"
+    capped pnpm exec vitest related --run --passWithNoTests "${reporters[@]}" "${code_paths[@]}" 2>&1 | tee "$out"
     code=${PIPESTATUS[0]}
     # code no test imports may still be one a test spawns by path: the push twin and ci read it
     if grep -q 'No affected test files found' "$out"; then
@@ -106,12 +119,14 @@ fi
 [ "$mode" != none ] || [ "$was" != whole ] || echo 'test-commit: no related tests, the push and ci run the suite'
 case $mode in
 whole)
-    "$@" || code=$?
+    capped "$@" || code=$?
     # index-run logs user + sys for a run marked whole; a run nested under vitest is a fixture, and it would mark a related run
     [ -n "${VITEST:-}" ] || [ -z "${INDEX_RUN_WHOLE_MARK:-}" ] || : >"$INDEX_RUN_WHOLE_MARK"
     ;;
-memory) pnpm exec vitest run "${MEMORY_TESTS[@]}" || code=$? ;;
+memory) capped pnpm exec vitest run "${reporters[@]}" "${MEMORY_TESTS[@]}" || code=$? ;;
 esac
+over_cap "$code" || true
+rm -f "$running"
 by_kind=code=$n_code,config=$n_config,asset=$n_asset,other=$n_other
 printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "${branch:-detached}" "$mode" "$staged" "$(git rev-parse --short HEAD)" "$SECONDS" "$code" "${INDEX_RUN_SOURCE:-other}" "$by_kind" "$was" >>"$state/test-commit.log"
 exit "$code"

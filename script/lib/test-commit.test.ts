@@ -6,6 +6,7 @@ import {
     mkdtempSync,
     readFileSync,
     rmSync,
+    symlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -29,6 +30,7 @@ function fixture(files: Record<string, string> = { 'old.ts': 'old\n' }) {
             cwd: repo,
             encoding: 'utf8',
             env: gitEnv(),
+            timeout: 10_000,
         });
     git('init', '-q');
     for (const [path, body] of Object.entries(files)) write(repo, path, body);
@@ -66,6 +68,7 @@ function runGate(
             X_STATE: join(dir, 'state'),
             ...extra,
         },
+        timeout: 10_000,
     });
     const callsFile = join(dir, 'calls');
     const calls = existsSync(callsFile) ? readFileSync(callsFile, 'utf8') : '';
@@ -83,6 +86,9 @@ function runGate(
         stdout: got.stdout,
     };
 }
+
+// the related call as the stub records it, the gate's running reporter beside the default one
+const related = `exec|vitest|related|--run|--passWithNoTests|--reporter=default|--reporter=${join(dirname(script), 'lib/vitest-running.ts')}`;
 
 const noneLine = 'test-commit: no related tests, the push and ci run the suite';
 
@@ -119,9 +125,7 @@ describe('test-commit', () => {
                 staged({ 'a b.ts': 'a\n', 'c.tsx': 'c\n', 'e.png': 'e\n' }),
                 branch,
             );
-            expect(got.calls).toBe(
-                'exec|vitest|related|--run|--passWithNoTests|a b.ts|c.tsx',
-            );
+            expect(got.calls).toBe(`${related}|a b.ts|c.tsx`);
             expect(got.fields.slice(0, 3)).toEqual([branch, 'related', '3']);
         },
     );
@@ -136,9 +140,7 @@ describe('test-commit', () => {
         const got = runGate(staged({ 'script/a.ts': 'a\n' }), 'main', '0', {
             STUB_OUT: 'No affected test files found, exiting with code 0',
         });
-        expect(got.calls).toBe(
-            'exec|vitest|related|--run|--passWithNoTests|script/a.ts',
-        );
+        expect(got.calls).toBe(`${related}|script/a.ts`);
         expect(got.stdout.split(noneLine)).toHaveLength(2);
         expect(got.fields[1]).toBe('none');
         expect(got.fields.at(-1)).toBe('whole');
@@ -287,9 +289,7 @@ describe('test-commit', () => {
                 staged({ [pocket]: 'a\n', 'a.ts': 'a\n' }),
                 'main',
             );
-            expect(got.calls).toBe(
-                'exec|vitest|related|--run|--passWithNoTests|a.ts',
-            );
+            expect(got.calls).toBe(`${related}|a.ts`);
         });
 
         test.each([
@@ -352,6 +352,48 @@ describe('test-commit', () => {
     ])('%s runs none', (path) => {
         expectNone(runGate(staged({ [path]: 'x\n' }), 'main'));
     });
+
+    test('a test whose child never ends stops at the cap, named, and reds the commit', () => {
+        const context = fixture();
+        const frame = join(import.meta.dirname, '../..');
+        // the call spelled in pieces, so the timeout lint never reads the fixture's own bare spawn as this file's
+        const call = ['spawn', 'Sync('].join('');
+        write(
+            context.repo,
+            'hang.test.ts',
+            `import { ${call.slice(0, -1)} } from 'node:child_process';\nimport { test } from 'vitest';\ntest('waits on a child', () => {\n    ${call}'sleep', ['60']);\n});\n`,
+        );
+        context.git('add', '-A');
+        // after the add, so only the test file is staged
+        symlinkSync(
+            join(frame, 'node_modules'),
+            join(context.repo, 'node_modules'),
+        );
+        // a pnpm whose exec runs the real vitest, so the hung test really hangs
+        writeFileSync(
+            join(context.bin, 'pnpm'),
+            `#!/bin/sh\nshift\nshift\nexec "${frame}/node_modules/.bin/vitest" "$@"\n`,
+        );
+
+        const from = Date.now();
+        const got = spawnSync(script, ['pnpm', 'test'], {
+            cwd: context.repo,
+            encoding: 'utf8',
+            env: {
+                ...gitEnv(),
+                INDEX_RUN_BRANCH: 'main',
+                PATH: `${context.bin}:${process.env.PATH}`,
+                TEST_COMMIT_CAP: '2',
+                X_STATE: join(context.dir, 'state'),
+            },
+            timeout: 25_000,
+        });
+
+        expect(Date.now() - from).toBeLessThan(20_000);
+        expect(got.status, got.stdout + got.stderr).not.toBe(0);
+        expect(got.stdout).toContain('passed its 2 s cap; still running:');
+        expect(got.stdout).toContain('hang.test.ts');
+    }, 30_000);
 
     test.each([
         ['main', {}],

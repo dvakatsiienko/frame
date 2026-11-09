@@ -44,9 +44,13 @@ test("the hook's typecheck passes a commit while a peer's unstaged edit is broke
         }),
     );
     writeFileSync(join(repo, 'peer.ts'), 'export const ok = 1;\n');
-    execFileSync('git', ['init', '-q'], { cwd: repo, env });
-    execFileSync('git', ['add', '-A'], { cwd: repo, env });
-    execFileSync('git', ['commit', '-q', '-m', 'seed'], { cwd: repo, env });
+    execFileSync('git', ['init', '-q'], { cwd: repo, env, timeout: 10_000 });
+    execFileSync('git', ['add', '-A'], { cwd: repo, env, timeout: 10_000 });
+    execFileSync('git', ['commit', '-q', '-m', 'seed'], {
+        cwd: repo,
+        env,
+        timeout: 10_000,
+    });
     writeFileSync(
         join(repo, 'peer.ts'),
         'export const ok: number = "BROKEN";\n',
@@ -56,6 +60,7 @@ test("the hook's typecheck passes a commit while a peer's unstaged edit is broke
         cwd: repo,
         encoding: 'utf8',
         env,
+        timeout: 10_000,
     });
 
     expect(run.status, run.stdout + run.stderr).toBe(0);
@@ -68,6 +73,7 @@ test('the index copy leaves nothing behind', () => {
         cwd: root,
         encoding: 'utf8',
         env: { ...env, TMPDIR: scratch },
+        timeout: 10_000,
     });
 
     expect(run.status, run.stderr).toBe(0);
@@ -82,14 +88,19 @@ test('the index copy registers no worktree', () => {
         join(repo, 'script/index-run.sh'),
     );
     writeFileSync(join(repo, 'pnpm-workspace.yaml'), 'packages: []\n');
-    execFileSync('git', ['init', '-q'], { cwd: repo, env });
-    execFileSync('git', ['add', '-A'], { cwd: repo, env });
-    execFileSync('git', ['commit', '-q', '-m', 'seed'], { cwd: repo, env });
+    execFileSync('git', ['init', '-q'], { cwd: repo, env, timeout: 10_000 });
+    execFileSync('git', ['add', '-A'], { cwd: repo, env, timeout: 10_000 });
+    execFileSync('git', ['commit', '-q', '-m', 'seed'], {
+        cwd: repo,
+        env,
+        timeout: 10_000,
+    });
     const listed = () =>
         execFileSync('git', ['worktree', 'list', '--porcelain'], {
             cwd: repo,
             encoding: 'utf8',
             env,
+            timeout: 10_000,
         });
     const before = listed();
 
@@ -97,6 +108,7 @@ test('the index copy registers no worktree', () => {
         cwd: repo,
         encoding: 'utf8',
         env,
+        timeout: 10_000,
     });
 
     expect(run.status, run.stderr).toBe(0);
@@ -118,6 +130,7 @@ function peerStaged() {
             cwd: repo,
             encoding: 'utf8',
             env: { ...gitEnv(), ...extra },
+            timeout: 10_000,
         });
     git(['init', '-q']);
     git(['add', '-A']);
@@ -141,7 +154,12 @@ function peerStaged() {
                 '-c',
                 `env -u GIT_INDEX_FILE ${command}`,
             ],
-            { cwd: repo, encoding: 'utf8', env: { ...gitEnv(), ...extra } },
+            {
+                cwd: repo,
+                encoding: 'utf8',
+                env: { ...gitEnv(), ...extra },
+                timeout: 10_000,
+            },
         );
     return { commitIndex, gate, repo };
 }
@@ -206,6 +224,7 @@ test('a gate that sets core.bare in the shared repo goes red and puts it back', 
 const execPath = execFileSync('git', ['--exec-path'], {
     encoding: 'utf8',
     env,
+    timeout: 10_000,
 }).trim();
 
 test.each([
@@ -222,6 +241,7 @@ test.each([
         execFileSync('git', ['switch', '-q', '-c', 'codie/FRM-1-x'], {
             cwd: repo,
             env: gitEnv(),
+            timeout: 10_000,
         });
 
         const run = gate('sh -c "exit 7"', {
@@ -279,6 +299,7 @@ test.each([
     execFileSync('git', ['switch', '-q', '-C', 'main'], {
         cwd: repo,
         env: gitEnv(),
+        timeout: 10_000,
     });
 
     const run = gate(`bash ${testCommit()} true`, {
@@ -350,6 +371,7 @@ test('a gate reads the branch its detached copy cannot', () => {
     execFileSync('git', ['switch', '-q', '-c', 'codie/FRM-1-x'], {
         cwd: repo,
         env: gitEnv(),
+        timeout: 10_000,
     });
 
     const run = gate('printenv INDEX_RUN_BRANCH');

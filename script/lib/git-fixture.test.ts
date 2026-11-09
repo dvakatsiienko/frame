@@ -3,7 +3,12 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'vitest';
 
-import { bareGitSpawns, gitEnv, trackedFiles } from './git-fixture.ts';
+import {
+    bareGitSpawns,
+    gitEnv,
+    trackedFiles,
+    untimedSpawns,
+} from './git-fixture.ts';
 
 const root = path.resolve(import.meta.dirname, '../..');
 // the fixtures' calls are spelled in pieces, so the repo-wide lint below never reads them as this file's own spawns
@@ -89,4 +94,48 @@ test('every tracked test that spawns git passes env from gitEnv in script/lib/gi
         bare,
         'spawns git without env: gitEnv() from script/lib/git-fixture.ts',
     ).toEqual([]);
+});
+
+test.each([
+    ['a spawnSync with no options', `${callOf('spawn')}'node', [script]);`],
+    [
+        'a spawnSync whose options lack it',
+        `${callOf('spawn')}'node', [script], { cwd: dir });`,
+    ],
+    [
+        'an execFileSync with no timeout',
+        `${callOf('execFile')}'git', ['init'], { env });`,
+    ],
+])('%s is caught at its line', (_name, call) => {
+    expect(untimedSpawns(`const a = 1;\n${call}`)).toEqual([2]);
+});
+
+test.each([
+    [
+        'a timeout key',
+        `${callOf('spawn')}'node', [script], { timeout: 10_000 });`,
+    ],
+    [
+        'a timeout beside a spread',
+        `${callOf('execFile')}'git', args, { ...opts, timeout: 10_000 });`,
+    ],
+    ['a method of another object', `child.${callOf('spawn')}'node');`],
+])('%s passes', (_name, call) => {
+    expect(untimedSpawns(call)).toEqual([]);
+});
+
+// _clio/ is the coordinator's home: its tests take their timeouts by her hand
+test('every tracked test outside _clio/ gives each spawnSync and execFileSync a timeout', () => {
+    const untimed = trackedFiles(
+        root,
+        '*.test.ts',
+        '*.test.mjs',
+        '*.test.tsx',
+        ':!_clio/',
+    ).flatMap((file) =>
+        untimedSpawns(readFileSync(path.join(root, file), 'utf8')).map(
+            (line) => `${file}:${line}`,
+        ),
+    );
+    expect(untimed, 'a spawn with no timeout: add timeout: 10_000').toEqual([]);
 });

@@ -14,7 +14,10 @@ const dnaFile = resolve(
 );
 
 const print = (file?: string) =>
-    execFileSync(script, file ? [file] : [], { encoding: 'utf8' });
+    execFileSync(script, file ? [file] : [], {
+        encoding: 'utf8',
+        timeout: 10_000,
+    });
 
 const fixture = (text: string) => {
     const file = join(mkdtempSync(join(tmpdir(), 'crew-dna-')), 'SKILL.md');

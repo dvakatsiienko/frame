@@ -46,6 +46,7 @@ function runChild(fixture: string, temp: string) {
         cwd: root,
         encoding: 'utf8',
         env: childEnv(temp),
+        timeout: 10_000,
     });
 }
 
@@ -59,6 +60,7 @@ test('leaks', () => { mkdtempSync(join(tmpdir(), 'leak-')); });
 test('a child process a test spawns reads the run dir', () => {
     const child = spawnSync(process.execPath, ['-p', 'os.tmpdir()'], {
         encoding: 'utf8',
+        timeout: 10_000,
     }).stdout.trim();
 
     console.log(`child tmpdir: ${child}`);
@@ -112,6 +114,7 @@ function deadPid() {
     return Number(
         spawnSync(process.execPath, ['-p', 'process.pid'], {
             encoding: 'utf8',
+            timeout: 10_000,
         }).stdout,
     );
 }
@@ -141,6 +144,7 @@ function runModsChild(temp: string) {
                 PATH: `${bin}:${process.env.PATH}`,
                 X_TEST: '1',
             },
+            timeout: 10_000,
         },
     );
 }

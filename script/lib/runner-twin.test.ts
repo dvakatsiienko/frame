@@ -46,6 +46,7 @@ function fixture() {
             cwd: repo,
             encoding: 'utf8',
             env: gitEnv(),
+            timeout: 10_000,
         }).trim();
     git('init', '-q');
     git('add', '-A');
@@ -69,6 +70,7 @@ function twin(
         encoding: 'utf8',
         env: { ...gitEnv(), PATH: process.env.PATH, ...extra },
         input,
+        timeout: 10_000,
     });
 }
 
@@ -297,6 +299,7 @@ describe('runner-twin', () => {
             cwd: context.repo,
             encoding: 'utf8',
             env: gitEnv(),
+            timeout: 10_000,
         }).trim();
         expect(head).toBe(context.head);
     });
