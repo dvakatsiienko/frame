@@ -21,7 +21,7 @@ ordinal: 1000
 - [ ] #3 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
 - [ ] #4 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
 - [ ] #5 ⏳ next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87) — waits for: herdr, the mods revisit pass
-- [ ] #6 ⏳ FRM-556 fleet-chatter, Zoo's chat into frame under our name; the herdr codie builds it after the polish batches — waits for: dima's tick on its ask
+- [ ] #6 ⏳ FRM-556 fleet-chatter, signed: spec and dispatch to the herdr codie — waits for: dima's polish batches to end
 - [ ] #7 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check prints "" and FRM-542 closes — on: 2026-11-10
 - [ ] #8 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
 - [ ] #9 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
