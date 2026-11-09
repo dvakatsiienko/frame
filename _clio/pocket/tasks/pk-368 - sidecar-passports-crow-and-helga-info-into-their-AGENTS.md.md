@@ -4,7 +4,7 @@ title: 'sidecar passports: crow and helga info into their AGENTS.md'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T12:45:00Z'
+updated_date: '2026-11-09T13:10:00Z'
 labels:
   - s
   - clio-main
@@ -26,4 +26,16 @@ raw drop (2026-11-09 inbox, dima): **clio main** — sidecars passport info reba
 raw drop (2026-11-09 inbox, dima): remind how to you store specs for crow and helga. and how you start them? if want all info about crow and helga colocated in their agents.md as their passports.
 
 PK-368:W3 (2026-11-09 inbox, dima): maybe some useful complementary tools for efficiency? ❓
+
+PK-368:W4 (2026-11-09 15:08, dima): PK-359 is reassigned to wing 1; it is a chore and you are busy. tell it to solve it as one of the first action items.
+
+PK-368:W5 (2026-11-09 15:08, dima): that happened during the migration, the renaming sweep a few days ago. we did a big renaming sweep for all fleet names: coder became Codie, verifier became SixSense, and everything else; Helga was forgotten. only a new folder was created for her in frame, but her folder was not actually moved, so it is forgotten and a tail. it needs solving, so Helga is parked in the correct location.
+
+PK-368:W6 (2026-11-09 15:08, dima): where is the script for crow parked? maybe colocate crow scripts inside its skill? i think colocation is good and do the same shape for helga. ❓
+
+PK-368:W7 (2026-11-09 15:08, dima): i've read both skills for crow and helga. they are quite wordy. so my wish stands: I want both skills properly groomed and rebalanced, so skills only contain useful information for you to actually boot Crow and Helga, while their overall identity and info are collocated inside AGENTS.md. All their helper scripts should also be properly collocated in a good place. i think it is worth collocating them beside their skill files in sky (?), inside the skill folders. propose if it is a good idea. Both Crow and Helga should be properly groomed and restructured in a similar way, because they are your sidecars and should be treated accordingly and have a similar pretty shape.
+
+PK-368:W8 (2026-11-09 15:08, dima): steamac disk, 256 → 192 gb: reassign this topic to wing 2. your channel is busy and i have clarification questions.
+
+PK-368:W9 (2026-11-09 15:08, dima): i prefer «owner» or something similar; i want the label to sound action-flavoured: who does this, who owns this. propose more top7; owner is still somewhat blurry, it should be connected to you somehow.
 <!-- SECTION:NOTES:END -->

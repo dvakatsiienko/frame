@@ -1,10 +1,10 @@
 ---
 id: PK-359
 title: 'wings: where is the wing-1 branch, standing trees habit'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T13:09:00Z'
+updated_date: '2026-11-09T13:10:00Z'
 labels:
   - s
   - clio-wing-1
@@ -36,4 +36,6 @@ note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-
 2026-11-09 14:56 clio, the answer: last session's wing 1 (the cpu one) ran as a forked wing in tree fork-483eb11c on branch worktree-fork-483eb11c, never on clio-wing-1, so no standing branch was ever made for it; clio-wing-1 was born today 14:38 with the new wing 1 (reflog). the gap: a forked wing skips the standing seat branch. fix to propose: a forked wing also takes clio-wing-<N>
 
 2026-11-09 15:12 wing 1: the gap already closed — the old wing's tree fork-483eb11c was made 11-07 14:03, the seat rule (every wing, forked or not, takes clio-wing-<N>) landed 11-07 20:58 (4ce50b68), and today's wing 1 took clio-wing-1 by it. the old tree: clean, 0 commits off main, its .scratch/frm-525 copied into clio-wing-1/.scratch (diff clean); its decamp waits on dima's word.
+
+close: W1 done — the habit stands, every wing takes clio-wing-<N> (4ce50b68); W2 done — the old wing 1 ran in fork-483eb11c, decamped on dima's o8; W3 done — answered in this item's notes
 <!-- SECTION:NOTES:END -->
