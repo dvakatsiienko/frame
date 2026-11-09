@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T14:06:00Z'
+updated_date: '2026-11-09T14:22:00Z'
 labels:
   - s
   - clio-main
@@ -86,4 +86,6 @@ PK-349:W24 (2026-11-09 14:30, dima): who can lead the x verify cli chunk, you or
 2026-11-09 15:00 clio, correction of the 14:55 note: the dated reads now sit as ticket comments: BYT-132 11-10, FRM-509 11-10, FRM-483 11-11, FRM-465 11-12, FRM-503 11-14, BYT-94 11-15, FRM-501 and FRM-504 11-16 (mods paused); unbash 11-22 in its test-drive file
 
 2026-11-09 16:03 clio, his o17 o18 o19: PK-326 close, PK-367, PK-366, the trial reads and the redraw moved to wing 2 (PK-336); FRM-503 moved to wing 1 (clio-wing-1). PK-368 passports ticked done
+
+PK-349:W25 (2026-11-09 16:01, dima): habit fix — any time you solve a part of your flyway, always tick its item in the list; a guard, not an intention (proposed in orbit)
 <!-- SECTION:NOTES:END -->
