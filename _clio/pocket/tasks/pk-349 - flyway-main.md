@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T12:51:00Z'
+updated_date: '2026-11-09T12:53:00Z'
 labels:
   - s
   - clio-main
@@ -34,6 +34,7 @@ ordinal: 9995
 - [ ] #16 PK-367 rename cut-proposals-print, shape the cuts
 - [ ] #17 PK-368 sidecar passports rebalance
 - [ ] #18 PK-326 quiet comms re-measure and close
+- [ ] #19 FRM-509 live read of the 11-07 lane ends, by 11-10
 <!-- AC:END -->
 
 ## Implementation Notes
