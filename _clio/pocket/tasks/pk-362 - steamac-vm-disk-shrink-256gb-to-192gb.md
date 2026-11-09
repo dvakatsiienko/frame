@@ -4,10 +4,10 @@ title: 'steamac vm disk: shrink 256gb to 192gb'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T12:57:00Z'
+updated_date: '2026-11-09T13:08:00Z'
 labels:
   - s
-  - clio-main
+  - clio-wing-2
 dependencies: []
 priority: next
 type: task
