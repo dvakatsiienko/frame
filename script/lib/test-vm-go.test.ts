@@ -143,6 +143,22 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
             });
             child.on('exit', (code) => done(`exit ${code} ${stderr}`.trim()));
         });
+    // a ctrl-c as a terminal sends it: SIGINT to the whole process group, once the guest's suite has started
+    const runInterrupted = (args: string[]) =>
+        new Promise<number | null>((done) => {
+            const child = spawn(copy, args, {
+                cwd,
+                detached: true,
+                env: env({ GO_SLEEP: '20' }),
+                stdio: 'ignore',
+            });
+            child.on('exit', (code) => done(code));
+            const poll = setInterval(() => {
+                if (!existsSync(join(dir, 'go.calls.starts'))) return;
+                clearInterval(poll);
+                process.kill(-(child.pid ?? 0), 'SIGINT');
+            }, 50);
+        });
     const calls = (name: string) =>
         existsSync(join(dir, `${name}.calls`))
             ? readFileSync(join(dir, `${name}.calls`), 'utf8')
@@ -239,6 +255,7 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
         leg,
         run,
         runAsync,
+        runInterrupted,
         windows: join(dir, 'state/test-vm-go.log'),
     };
 }
@@ -455,6 +472,17 @@ describe('the vm leg', () => {
             'guest test -count=1 ./... -parallel 7 | bad',
         ]);
     });
+
+    test('a ctrl-c on a by-hand run stops it, with no re-run on the mac', async () => {
+        const { calls, runInterrupted } = fixture();
+
+        const exit = await runInterrupted(suite);
+
+        expect(exit).toBe(130);
+        expect(calls('go').filter((line) => line.startsWith('mac'))).toEqual(
+            [],
+        );
+    }, 30_000);
 
     test('a by-hand run carries an unstaged edit outside the module, a file its tests read', () => {
         const { code, git, run } = fixture();

@@ -219,11 +219,14 @@ if ! sync_tree; then
     on_mac vm-cut "$(($(vm_cpu_ms) - cpu_before))"
 fi
 remote=$(printf '%q ' "$id" "$commit" "$(git rev-parse --show-prefix)" "$deadline" "${GOFLAGS-}" "${GIT_CONFIG_GLOBAL-}" "$@" -parallel "$vm_parallel")
-# --foreground: a ctrl-c on a by-hand run reaches ssh; ssh with no tty forwards no signal, so the guest run ends at its own deadline
+# --foreground: a ctrl-c on a by-hand run reaches ssh; ssh with no tty forwards no signal, so the guest run ends at its own deadline.
+# ssh dies of it with 255, its own death's code, so the trap is what tells a ctrl-c from a cut: a ctrl-c re-runs nothing
+trap 'interrupted=1' INT TERM
 timeout --foreground -k 5 $((deadline + 15)) "${ssh_vm[@]}" "bash -l -s -- $remote" <<<"$guest"
 code=$?
 ended=$(date +%s)
 echo "end $ended $id" >>"$windows"
+[ -z "${interrupted:-}" ] || exit 130
 used=$(($(vm_cpu_ms) - cpu_before))
 
 # 124 and 137 the deadline, 143 a guest stopped under the run, 126 and 127 a guest with no go, 125 a tree that never checked out,
