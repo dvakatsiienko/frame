@@ -73,6 +73,7 @@ describe('an ask the guard reads takes its tick on the desktop', () => {
         'FRM-505: drop its 524/529 links',
         'sign-in page: keep the old copy?',
         'emerge the two lists into one',
+        'review https://github.com/o/n/pull/9?',
     ])('%s takes a herdr tick', (text) => {
         expect(isGuardGated(text)).toBe(false);
     });

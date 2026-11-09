@@ -78,7 +78,7 @@ export const runningPids = (stdout) =>
  * @param {string} text
  */
 export const isGuardGated = (text) =>
-    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|github\.com\/[\w.-]+\/[\w.-]+\/pull\/\d+|`[^`]+`/iu.test(
+    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
         text,
     );
 
