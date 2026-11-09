@@ -46,6 +46,13 @@ type landedPlan struct {
 	openClosing string
 	// the merged pr's branch, when one stands; --apply takes it
 	mergedRef, mergedHead, ghRepo string
+	// the merged worktree- branches no tree holds, each with the tips its delete leases on
+	worktreeDrops []worktreeDrop
+}
+
+type worktreeDrop struct {
+	ref  string
+	tips branchTips
 }
 
 // landedPlanOf reads every after-merge chore of a ticket's lane; nothing here writes
@@ -178,10 +185,15 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	plan.clean = nil
 	var notes []string
 	found, terr := laneTrees(main, repo, id, laneRefs{pr, headRef, headSha, mergedHead, commits, underReview})
+	var swept []string
 	for _, tree := range found {
-		if tree.reason == "" {
+		switch {
+		case tree.reason == "":
 			plan.clean = append(plan.clean, tree.path)
 			notes = append(notes, home(tree.path)+" is clean, decamped on --apply")
+			continue
+		case tree.swept:
+			swept = append(swept, home(tree.path)+" stays: "+tree.reason)
 			continue
 		}
 		notes = append(notes, home(tree.path)+" stays: "+tree.reason)
@@ -196,8 +208,11 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		trees.ok, trees.detail, trees.fix = false, strings.Join(notes, "; "), "x lane landed "+id+" --apply"
 	case len(notes) > 0:
 		trees.ok, trees.detail = false, strings.Join(notes, "; ")
+	case len(swept) > 0:
+		trees.detail = strings.Join(swept, "; ")
 	}
 	lines = append(lines, trees)
+	lines = append(lines, worktreeBranchesLine(main, id, plan))
 
 	plan.mergedRef = ""
 	if mergedHead != "" && isLaneBranch(headRef) && branchStands(main, headRef) {
@@ -634,7 +649,11 @@ func landedIssue(flags Flags, id string) (landedRead, error) {
 	return read, nil
 }
 
-type laneTree struct{ path, reason string }
+// swept: a quick lane's verify-<sha> tree whose sha is on main, any lane's: it never holds this lane's landing
+type laneTree struct {
+	path, reason string
+	swept        bool
+}
 
 // what names a lane's trees beyond its codie/<ticket>-* branches: the pr, its head, its head once merged
 type laneRefs struct {
@@ -680,6 +699,38 @@ func unmergedChunks(repo, spec, id string) []string {
 // the root rule: no change in git status, no file in .scratch/, every commit on an origin ref or in the merged pr.
 // a lane tree is a codie/<ticket>-* branch or the pr's head ref; a detached one is sixth sense's verify tree,
 // named verify-pr-<n> (frame), verify-<ticket> (any other repo) or sitting at the pr's head
+var verifySha = regexp.MustCompile(`^verify-[0-9a-f]{7,40}$`)
+
+// the merged worktree- branches no tree holds go on --apply, by decamp's main-holds rule and lease; one main lacks stays,
+// named, never holding the landing: it is any session's, never this lane's (FRM-553)
+func worktreeBranchesLine(main, id string, plan *landedPlan) landedLine {
+	line := landedLine{name: "worktree branches", ok: true, detail: "no merged worktree- branch"}
+	plan.worktreeDrops = nil
+	listed, err := mustGitIn(main, "for-each-ref", "for-each-ref", "--format=%(refname:short)", "refs/heads/worktree-*")
+	if err != nil {
+		line.detail = "the branches did not read: " + err.Error()
+		return line
+	}
+	var going, staying []string
+	for _, ref := range strings.Fields(listed) {
+		why, tips := branchStay(main, ref, "main does not hold", func(sha string) bool { return onMain(main, sha) })
+		if why != "" {
+			staying = append(staying, ref+" stays: "+why)
+			continue
+		}
+		plan.worktreeDrops = append(plan.worktreeDrops, worktreeDrop{ref, tips})
+		going = append(going, ref)
+	}
+	switch {
+	case len(going) > 0:
+		line.ok, line.fix = false, "x lane landed "+id+" --apply"
+		line.detail = strings.Join(append([]string{strings.Join(going, ", ") + " merged, taken on --apply"}, staying...), "; ")
+	case len(staying) > 0:
+		line.detail = strings.Join(staying, "; ")
+	}
+	return line
+}
+
 func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 	mergedHead := refs.mergedHead
 	listed, err := mustGitIn(main, "worktree", "worktree", "list", "--porcelain")
@@ -703,14 +754,19 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 			return short != "" && strings.HasPrefix(sha, short)
 		})
 		verify := detached && (name == "verify-"+id || (refs.pr != "" && name == "verify-pr-"+refs.pr) || (refs.headSha != "" && sha == refs.headSha) || atCommit)
-		if !strings.HasPrefix(resolved(path), under) || !(ours || verify) {
+		// any quick lane's verify tree once its sha is on main: its lane landed, so nothing reviews it any more (FRM-553)
+		swept := !verify && !ours && detached && verifySha.MatchString(name) && onMain(main, sha)
+		if !strings.HasPrefix(resolved(path), under) || !(ours || verify || swept) {
 			continue
 		}
-		reason := treeStay(entry, main, selves, mergedHead)
+		reason := treeStay(entry, main, selves, sha)
+		if !swept {
+			reason = treeStay(entry, main, selves, mergedHead)
+		}
 		if verify && refs.underReview {
 			reason = strings.TrimSuffix("its lane is still under review, "+reason, ", ")
 		}
-		trees = append(trees, laneTree{path, reason})
+		trees = append(trees, laneTree{path, reason, swept})
 	}
 	return trees, nil
 }
@@ -1111,11 +1167,22 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 			return note, nil
 		})
 	}
+	var takenBranches []string
+	for _, drop := range plan.worktreeDrops {
+		_ = r.Step("branch", drop.ref, func() (string, error) {
+			note := branchDrop(plan.main, drop.ref, drop.tips)
+			takenBranches = append(takenBranches, note)
+			return note, nil
+		})
+	}
 	again, err := landedPlanOf(r, args, flags)
 	if err != nil {
 		return nil, err
 	}
 	after := again.(landedPlan)
+	for _, note := range takenBranches {
+		after.Lines = append(after.Lines, landedLine{name: "branch", ok: !strings.HasPrefix(note, "⚠"), detail: note, fix: "git branch --list worktree-*"}.String())
+	}
 	// a branch that stays is the re-read's own red line; a gone one leaves no trace there, so it is named here
 	if dropped != "" {
 		after.Lines = append(after.Lines, landedLine{name: "branch", ok: true, detail: dropped}.String())

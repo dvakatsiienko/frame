@@ -324,6 +324,57 @@ func TestLandedApplyKeepsAndNamesABranchItCannotTake(t *testing.T) {
 	}
 }
 
+// FRM-553 exit 3d: landed clears a clean verify-<sha> tree on main and a merged worktree- branch; a dirty one stays, named
+func TestLandedApplyClearsLandedVerifyTreesAndWorktreeBranches(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	gitT(t, w.clone, "fetch", "-q", "origin", "main")
+	onMain := gitT(t, w.clone, "rev-parse", "origin/main")
+	clean := filepath.Join(w.clone, ".claude/worktrees/verify-"+onMain[:8])
+	dirty := filepath.Join(w.clone, ".claude/worktrees/verify-"+onMain[:9])
+	for _, tree := range []string{clean, dirty} {
+		gitT(t, w.clone, "worktree", "add", "-q", "--detach", tree, onMain)
+	}
+	write(t, filepath.Join(dirty, "probe.txt"), "a probe kept\n")
+	gitT(t, w.clone, "branch", "worktree-x", onMain)
+	if got := w.run(t, "7", "--apply"); got.code != 0 {
+		t.Fatalf("exit %d: want the merge\n%s", got.code, got.stdout)
+	}
+
+	got := w.landedAfterMerge(t, "--apply")
+
+	gone := exists(clean) || w.onClone(t, "worktree-x")
+	if gone || !exists(dirty) || !strings.Contains(got.stdout, "worktree-x gone") || !strings.Contains(got.stdout, "verify-"+onMain[:9]+" stays") {
+		t.Fatalf("exit %d, clean %v, dirty %v, worktree-x %v: want the clean tree and the branch gone, named, the dirty tree kept, named\n%s",
+			got.code, exists(clean), exists(dirty), w.onClone(t, "worktree-x"), got.stdout)
+	}
+}
+
+// FRM-553 exit 3d: a worktree- branch holding a commit main does not have stays, named
+func TestLandedApplyKeepsAWorktreeBranchMainDoesNotHold(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	gitT(t, w.clone, "fetch", "-q", "origin", "main")
+	// a real change: a commit with main's own tree would merge as nothing, so main would hold it
+	scratch := filepath.Join(t.TempDir(), "y")
+	gitT(t, w.clone, "worktree", "add", "-q", "-b", "worktree-y", scratch, "origin/main")
+	write(t, filepath.Join(scratch, "unmerged.txt"), "work nobody merged\n")
+	gitT(t, scratch, "add", ".")
+	gitT(t, scratch, "commit", "-q", "-m", "work nobody merged")
+	gitT(t, w.clone, "worktree", "remove", scratch)
+	if got := w.run(t, "7", "--apply"); got.code != 0 {
+		t.Fatalf("exit %d: want the merge\n%s", got.code, got.stdout)
+	}
+
+	got := w.landedAfterMerge(t, "--apply")
+
+	if !w.onClone(t, "worktree-y") || !strings.Contains(got.stdout, "worktree-y stays") {
+		t.Fatalf("exit %d, worktree-y %v: want it kept and named\n%s", got.code, w.onClone(t, "worktree-y"), got.stdout)
+	}
+}
+
 // x lane landed on the merged pr, with a linear that knows FRM-1
 func (w *mergeWorld) landedAfterMerge(t *testing.T, args ...string) ran {
 	t.Helper()
