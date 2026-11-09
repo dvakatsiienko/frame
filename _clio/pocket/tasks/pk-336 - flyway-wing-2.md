@@ -34,8 +34,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #10 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
 - [x] #11 main's ask: x-mod-guard fail-closed on parse.ts fixed and landed; badge swap written, main commits the 7
 - [ ] #12 cli lane 6 and its codie move to wing 2 after FRM-503 lands, for 🐉 review loop gets verbs (main 17:27, agreed)
-- [x] #13 FRM-546 live proof: a fresh session's first wisphunter card lists REVIEW.md in its read files (this session caches the old card, inference)
-- [ ] #14 review contract notice to every clio and member once FRM-546–549 land (dima o25)
+- [ ] #13 review contract notice to every clio and member once FRM-546–549 land (dima o25)
 <!-- AC:END -->
 
 ## Implementation Notes
