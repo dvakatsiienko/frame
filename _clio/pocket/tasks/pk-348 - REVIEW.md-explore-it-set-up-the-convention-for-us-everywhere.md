@@ -73,4 +73,6 @@ held: 2026-11-09 — FRM-549 its sign, then the ask-guard close of PK-348
 close: 2026-11-09 18:24 — dima o38. homes: W1 W6 W8 W10 W11 → FRM-546–549; W2 W3 W4 W7 answered by the proposal and the replay (FRM-545, closed o39); W5 W9 too many rounds → FRM-414's round cap; ticket: FRM-414
 
 held: 2026-11-09 — FRM-546 his o38 close stands; left: each moved W-line copied into its ticket's wish block (W1 W6 W8 W11 → FRM-546–549, W5 W9 → FRM-414), the answered ones dropped citing o38, then done
+
+close: 2026-11-09 18:26 — PK-348:W2 PK-348:W3 PK-348:W4 PK-348:W5 PK-348:W7 PK-348:W10 answered by the proposal and the escape replay, dropped from the tickets (dima o38)
 <!-- SECTION:NOTES:END -->
