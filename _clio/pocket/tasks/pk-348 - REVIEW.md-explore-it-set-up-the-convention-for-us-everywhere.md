@@ -4,7 +4,7 @@ title: 'REVIEW.md: explore it, set up the convention for us everywhere'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T15:26:00Z'
+updated_date: '2026-11-09T15:27:00Z'
 labels:
   - s
   - clio-wing-2
@@ -67,4 +67,6 @@ held: 2026-11-09 — FRM-546 its sign, then the ask-guard close of PK-348
 held: 2026-11-09 — FRM-547 its sign, then the ask-guard close of PK-348
 held: 2026-11-09 — FRM-548 its sign, then the ask-guard close of PK-348
 held: 2026-11-09 — FRM-549 its sign, then the ask-guard close of PK-348
+
+17:28 the sixth sense round counter's home: a rider on FRM-414 (main's placement, re-sign asked of dima, o34)
 <!-- SECTION:NOTES:END -->
