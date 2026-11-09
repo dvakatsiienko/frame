@@ -94,9 +94,6 @@ a wake line arrives as a peer message:
     (every drop of his landed, in his meaning), the plan (order, siestas, the vector, the 5h window), the read (where she
     misread his intent, how you would plan it). `none` only when all three are clean.
 
-a `reconcile <note-id>: <evidence>` line from clio contradicts that note in `notes.jsonl`: answer once, `stands: <why>`
-or `withdrawn: <why>` in ≤2 lines, sent to clio outside the 30-min cap; the harvester logs it under the note's id.
-
 ## a consult
 
 clio, the main or a wing, may ask you anything by `SendMessage`, between wakes, on any subject (dima, 2026-11-03, 2026-11-05): answer the session that asked in one reply, ≤8 lines, your read first, what you checked and what is inference; it opens no hunt and counts as no wake.

@@ -412,11 +412,6 @@ export function spawnHarvester(args: string[]) {
     ).unref();
 }
 
-// the harvester finds crow's answer by this prefix; the evidence after it is free text
-export function reconcileMarker(noteId: string) {
-    return `reconcile ${noteId}:`;
-}
-
 export function newestTranscript() {
     const dir = join(
         homedir(),
@@ -1288,16 +1283,13 @@ export function sendLine(socketPath: string, text: string) {
     });
 }
 
-export function appendJsonl(
-    path: string,
-    value: Note | PlanNote | ReconcileNote | Verdict,
-) {
+export function appendJsonl(path: string, value: Note | PlanNote | Verdict) {
     mkdirSync(STATE_DIR, { recursive: true });
     writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
 }
 
 // two harvesters on one wake wrote the same note 2 ms apart (11-03, 11-04), past a read of the file, so a claim file decides
-export function appendNoteOnce(path: string, value: Note | ReconcileNote) {
+export function appendNoteOnce(path: string, value: Note) {
     if (jsonlOf<{ id?: string }>(path).some((row) => row.id === value.id))
         return;
     const claims = `${path}.ids`;
@@ -1829,15 +1821,6 @@ export interface Note {
     mode: Mode;
     phase: Phase;
     note: string;
-    at: string;
-}
-
-export interface ReconcileNote extends Run {
-    id: string;
-    reconciles: string;
-    evidence: string;
-    arm: Arm;
-    channel: 'reconcile';
     at: string;
 }
 

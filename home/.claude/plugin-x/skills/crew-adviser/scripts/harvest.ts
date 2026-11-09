@@ -22,7 +22,6 @@ import {
     readCharter,
     readState,
     readTurn,
-    reconcileMarker,
     runOneShot,
     threadOfNoteId,
     tokensIn,
@@ -40,7 +39,7 @@ const TIMEOUT: Run = {
     tokensIn: 0,
     tokensOut: 0,
 };
-// `<wake id> <mode> <phase>` for a wake, `reconcile <note id> <evidence>` for a reconcile
+// `<wake id> <mode> <phase>` for a wake
 const [wakeId, mode, phaseArg] = process.argv.slice(2);
 
 function log(line: string) {
@@ -108,22 +107,6 @@ async function harvestSession(wake: Wake, arm: Arm) {
     log(`session: note logged (${turn.run.seconds} s)`);
 }
 
-async function harvestReconcile(noteId: string, evidence: string, arm: Arm) {
-    // a timeout logs no row, so the line can be sent again; harvest.log has the miss
-    const turn = await waitTurn(reconcileMarker(noteId));
-    if (!turn) return;
-    appendNoteOnce(NOTES_PATH, {
-        arm,
-        at: new Date().toISOString(),
-        channel: 'reconcile',
-        evidence,
-        id: `${noteId}-reconcile`,
-        reconciles: noteId,
-        ...turn.run,
-    });
-    log(`reconcile: answer logged (${turn.run.seconds} s)`);
-}
-
 async function harvestOneShot(wake: Wake, arm: Arm) {
     const prompt = `${readCharter()}\n\nskip the boot section; this is a one-shot run. the wake line:\n${wakeLine(wake)}`;
     const oneShot = await runOneShot(claudeArgs(arm), prompt, STATE_DIR);
@@ -149,14 +132,6 @@ async function harvestOneShot(wake: Wake, arm: Arm) {
 }
 
 const sessionArm = readState().arm;
-if (wakeId === 'reconcile' && mode && phaseArg !== undefined && sessionArm) {
-    await harvestReconcile(mode, phaseArg, sessionArm).catch((error: unknown) =>
-        log(
-            `crashed: ${error instanceof Error ? error.message : String(error)}`,
-        ),
-    );
-    process.exit(0);
-}
 if (
     !wakeId ||
     !isMode(mode) ||

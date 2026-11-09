@@ -58,7 +58,6 @@
 - `pnpm crow:note-vet ok|miss <note-id> <why> --changed file|reply|ask|ticket|none --ref <path|id>` — appends the verdict to `verdicts.jsonl`, keyed by
   note id, waiting ≤60 s for a note harvest.ts has not logged yet; `pnpm crow:unvetted`, clio's Stop hook,
   blocks her turn end once per «🔴 sent» note still without a verdict, naming the command; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
-- `pnpm crow:reconcile <note-id> <evidence>` — clio's answer when her evidence contradicts a note (FRM-396): sends `reconcile <note-id>: <evidence>` to crow (or prints it for a tab), and a harvester logs her one answer as `<note-id>-reconcile` in `notes.jsonl`; an unknown, reconciled or pending id (`reconciles/<id>.json`, younger than the harvester's 15 min) exits 2; a timeout logs no row, only a `harvest.log` line, so the line can be sent again
 - `leaves.txt`: one glob per line, `{today}` → `YYYY-MM-DD`, a `latest ` prefix keeps the newest
   match only. clio owns it; the builder never reads under `_clio/`.
 

@@ -40,7 +40,6 @@
         "crow:relay": "node ./home/.claude/plugin-x/skills/crew-adviser/scripts/relay.ts",
         "crow:note-vet": "node ./home/.claude/plugin-x/skills/crew-adviser/scripts/note-vet.ts",
         "crow:unvetted": "node ./home/.claude/plugin-x/skills/crew-adviser/scripts/unvetted.ts",
-        "crow:reconcile": "node ./home/.claude/plugin-x/skills/crew-adviser/scripts/reconcile.ts",
         "design:contrast": "node ./design/contrast.ts",
         "design:comp-render": "node ./design/comp-render.ts",
         "design:cvd": "node ./design/cvd.ts",
