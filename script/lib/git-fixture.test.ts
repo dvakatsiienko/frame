@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test } from 'vitest';
@@ -106,6 +105,16 @@ test.each([
         'an execFileSync with no timeout',
         `${callOf('execFile')}'git', ['init'], { env });`,
     ],
+    ['a method call', `cp.${callOf('spawn')}'node', [script]);`],
+    [
+        'an import alias',
+        `import { ${callOf('spawn').slice(0, -1)} as run } from 'node:child_process'; run('node', [script]);`,
+    ],
+    [
+        'the word timeout as an argument',
+        `${callOf('spawn')}'timeout', ['5', bin]);`,
+    ],
+    ['a --timeout flag', `${callOf('spawn')}bin, ['--timeout', '3']);`],
 ])('%s is caught at its line', (_name, call) => {
     expect(untimedSpawns(`const a = 1;\n${call}`)).toEqual([2]);
 });
@@ -119,19 +128,20 @@ test.each([
         'a timeout beside a spread',
         `${callOf('execFile')}'git', args, { ...opts, timeout: 10_000 });`,
     ],
-    ['a method of another object', `child.${callOf('spawn')}'node');`],
+    [
+        'a method call with its key',
+        `cp.${callOf('spawn')}'node', [script], { timeout: 5000 });`,
+    ],
 ])('%s passes', (_name, call) => {
     expect(untimedSpawns(call)).toEqual([]);
 });
 
-// _clio/ is the coordinator's home: its tests take their timeouts by her hand
-test('every tracked test outside _clio/ gives each spawnSync and execFileSync a timeout', () => {
+test('every tracked test gives each spawnSync and execFileSync a timeout', () => {
     const untimed = trackedFiles(
         root,
         '*.test.ts',
         '*.test.mjs',
         '*.test.tsx',
-        ':(exclude)_clio/',
     ).flatMap((file) =>
         untimedSpawns(readFileSync(path.join(root, file), 'utf8')).map(
             (line) => `${file}:${line}`,

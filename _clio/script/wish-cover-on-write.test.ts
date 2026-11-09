@@ -49,6 +49,7 @@ function runOn(spec: string) {
             PATH: `${join(root, 'bin')}:${process.env.PATH}`,
         },
         input: JSON.stringify({ tool_input: { file_path: file } }),
+        timeout: 10_000,
     }).stdout.trim();
     return out
         ? (JSON.parse(out) as { decision?: string; reason: string })
@@ -77,6 +78,7 @@ describe('wish-cover on a .scratch spec write', () => {
                 TMPDIR: scratch,
             },
             input: JSON.stringify({ tool_input: { file_path: file } }),
+            timeout: 10_000,
         });
         expect(readdirSync(scratch)).toEqual([]);
         expect(existsSync(trashed)).toBe(false);

@@ -87,7 +87,6 @@ const pathsOf = (from, to) =>
         .map((line) => line.split('\t'));
 const epoch = (stamp) =>
     Date.parse(stamp.replace(/([+-]\d\d)(\d\d)$/, '$1:$2')) / 1000;
-const day = (stamp) => stamp.slice(0, 10);
 
 // test-commit.sh's branch kinds and its related_kinds: a kind off the list is the one whole run left
 const relatedKinds = ['main', 'codie', 'clio-wing', 'worktree', 'other'];
@@ -123,18 +122,9 @@ function commitMode(branch, changes) {
         : 'none';
 }
 
-const days = new Map();
-const add = (stamp, field, seconds) => {
-    const entry = days.get(day(stamp)) ?? { after: 0, before: 0 };
-    entry[field] += seconds;
-    days.set(day(stamp), entry);
-};
-const counts = {
-    commitUnmeasured: 0,
-    commitWhole: 0,
-    twinUnmeasured: 0,
-    unmeasuredSeconds: 0,
-};
+// one entry a row: its stamp, its cost before, its cost under the new rules, and whether git could rebuild it
+const entries = [];
+const counts = { commitWhole: 0 };
 const relatedSeconds = [];
 
 const commitRows = rows('test-commit.log');
@@ -146,52 +136,47 @@ const relatedP50 = relatedSeconds[Math.floor(relatedSeconds.length / 2)] ?? 0;
 for (const row of commitRows) {
     const [stamp, , branch, oldMode, , head, seconds] = row;
     const cost = Number(seconds);
-    add(stamp, 'before', cost);
-    if (oldMode === 'none' || oldMode === 'memory' || oldMode === 'related') {
-        add(stamp, 'after', cost);
+    const entry = { after: cost, before: cost, kind: 'commit', stamp };
+    entries.push(entry);
+    if (oldMode === 'none' || oldMode === 'memory' || oldMode === 'related')
         continue;
-    }
     // a whole row: its paths decide what it runs now
     const found = commitOf(head, epoch(stamp));
     if (!found) {
-        counts.commitUnmeasured++;
-        counts.unmeasuredSeconds += cost;
-        add(stamp, 'after', cost);
+        entry.unmeasured = true;
         continue;
     }
     const mode = commitMode(branch, pathsOf(found.parent, found.child));
-    if (mode === 'whole') add(stamp, 'after', cost);
     if (mode === 'whole') counts.commitWhole++;
     // whole under the old rules but related now: code no test imports ran related first, then whole; the related half is the p50
-    if (mode === 'related' || mode === 'memory')
-        add(stamp, 'after', Math.min(cost, relatedP50));
+    else if (mode === 'related' || mode === 'memory')
+        entry.after = Math.min(cost, relatedP50);
+    else entry.after = 0;
 }
 
-// the twin: only a main push carrying code runs; its range starts at the main push before it
+// the twin: only a main push carrying code runs; its range starts at the last main push that landed (a green twin row)
 let lastMain = '';
 for (const row of rows('gate-steps.log')) {
     if (row[7] !== 'test:twin') continue;
-    const [stamp, , source, ref, short, seconds] = row;
+    const [stamp, , source, ref, short, seconds, exit] = row;
     const cost = Number(seconds);
-    add(stamp, 'before', cost);
-    if (source !== 'push' || ref === 'unnamed') {
-        add(stamp, 'after', cost);
-        continue;
-    }
+    const entry = { after: cost, before: cost, kind: 'twin', stamp };
+    entries.push(entry);
+    if (source !== 'push' || ref === 'unnamed') continue;
     if (!ref.startsWith('refs/')) {
-        counts.twinUnmeasured++;
-        counts.unmeasuredSeconds += cost;
-        add(stamp, 'after', cost);
+        entry.unmeasured = true;
         continue;
     }
-    if (ref !== 'refs/heads/main') continue;
+    if (ref !== 'refs/heads/main') {
+        entry.after = 0;
+        continue;
+    }
     const pushed = shaOf(short);
-    const from = lastMain || (pushed && shaOf(`${pushed}^`));
-    if (pushed) lastMain = pushed;
+    const from = lastMain;
+    if (pushed && exit === '0') lastMain = pushed;
+    // the first main push in the window has no known range: a push may carry several commits
     if (!pushed || !from) {
-        counts.twinUnmeasured++;
-        counts.unmeasuredSeconds += cost;
-        add(stamp, 'after', cost);
+        entry.unmeasured = true;
         continue;
     }
     const paths = pathsOf(from, pushed).map(([, path]) => path);
@@ -201,25 +186,31 @@ for (const row of rows('gate-steps.log')) {
             !path.endsWith('.md') &&
             !isMemory(path),
     );
-    if (paths.length === 0 || carriesCode) add(stamp, 'after', cost);
+    // as runner-twin.sh: an empty range or one with no code skips
+    if (!carriesCode) entry.after = 0;
 }
 
 const minutes = (seconds) => (seconds / 60).toFixed(0);
-let before = 0;
-let after = 0;
-for (const [date, entry] of [...days].sort()) {
-    before += entry.before;
-    after += entry.after;
+function summary(name, from, to) {
+    const picked = entries.filter((e) => e.stamp >= from && e.stamp < to);
+    const days =
+        (epoch(`${to}T00:00:00+0200`) -
+            epoch(
+                from.length > 10 ? `${from}:00+0200` : `${from}T00:00:00+0200`,
+            )) /
+        86_400;
+    const sum = (rows, field) => rows.reduce((total, e) => total + e[field], 0);
+    const unmeasured = picked.filter((e) => e.unmeasured);
+    const measured = picked.filter((e) => !e.unmeasured);
     console.log(
-        `${date}: ${minutes(entry.before)} → ${minutes(entry.after)} min of hook test time`,
+        `${name}: ${minutes(sum(picked, 'before') / days)} → ${minutes(sum(picked, 'after') / days)} min a day against the bar of ${bar}; ` +
+            `measured rows ${minutes(sum(measured, 'before') / days)} → ${minutes(sum(measured, 'after') / days)}, ` +
+            `${unmeasured.length} unmeasured rows (${unmeasured.filter((e) => e.kind === 'commit').length} commit, ${unmeasured.filter((e) => e.kind === 'twin').length} twin) kept at ${minutes(sum(unmeasured, 'before') / days)} min a day`,
     );
 }
-console.log(
-    `a day: ${minutes(before / days.size)} → ${minutes(after / days.size)} min, against the bar of ${bar}`,
-);
-console.log(
-    `unmeasured: ${counts.commitUnmeasured} commit rows, ${counts.twinUnmeasured} twin rows, ${minutes(counts.unmeasuredSeconds / days.size)} min a day, counted at their old cost`,
-);
+summary('11-07 → 11-09, whole days', '2026-11-07', '2026-11-10');
+summary('from 11-07 15:40 (FRM-534 live)', '2026-11-07T15:40', '2026-11-10');
+summary('11-09 alone', '2026-11-09', '2026-11-10');
 console.log(
     `commit rows that classify as whole: ${counts.commitWhole}; the related p50 standing in for a related half: ${relatedP50} s`,
 );

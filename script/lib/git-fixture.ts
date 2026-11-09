@@ -80,12 +80,17 @@ export function bareGitSpawns(source: string) {
 
 // the 1-based line of every spawnSync or execFileSync whose own arguments name no timeout: a child that never ends
 // blocks the event loop, so vitest's own test timeout never fires and the run hangs (a reply-check.py on stdin, 18 min)
+// any spelling counts: a method (`cp.spawnSync`) or an import alias (`spawnSync as run`); only an options key `timeout:` passes
 export function untimedSpawns(source: string) {
-    const lines: number[] = [];
+    const names = ['spawnSync', 'execFileSync'];
     for (const m of source.matchAll(
-        /(?<![.\w])(?:spawnSync|execFileSync)\(/g,
-    )) {
-        if (/\btimeout\b/.test(argsFrom(source, m.index + m[0].length)))
+        /\b(?:spawnSync|execFileSync)\s+as\s+([A-Za-z_$][\w$]*)/g,
+    ))
+        names.push(m[1] ?? '');
+    const call = new RegExp(`(?<![\\w$])(?:${names.join('|')})\\(`, 'g');
+    const lines: number[] = [];
+    for (const m of source.matchAll(call)) {
+        if (/\btimeout\s*:/.test(argsFrom(source, m.index + m[0].length)))
             continue;
         lines.push(source.slice(0, m.index).split('\n').length);
     }

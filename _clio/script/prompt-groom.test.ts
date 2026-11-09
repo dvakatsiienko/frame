@@ -293,6 +293,7 @@ describe('--check against a groom file on disk', () => {
                         CLIO_SEAT: '',
                         PROMPT_GROOM_DIR: root,
                     },
+                    timeout: 10_000,
                 },
             ).status;
         } finally {
@@ -343,6 +344,7 @@ describe('--check on an inbox stamp', () => {
                         CLIO_SEAT: '',
                         PROMPT_GROOM_DIR: root,
                     },
+                    timeout: 10_000,
                 },
             );
         } finally {
@@ -430,6 +432,7 @@ describe('--day', () => {
                         PROMPT_RAW_DIR: join(root, 'prompts'),
                         TZ: 'UTC',
                     },
+                    timeout: 10_000,
                 },
             );
         } finally {
@@ -613,7 +616,7 @@ describe('prompt-groom inbox', () => {
         const out = spawnSync(
             process.execPath,
             [join(import.meta.dirname, 'prompt-groom.ts'), 'inbox'],
-            { encoding: 'utf8' },
+            { encoding: 'utf8', timeout: 10_000 },
         );
         expect(out.status).toBe(1);
         expect(out.stderr).toContain('inbox-helga.md');
@@ -660,6 +663,7 @@ describe('prompt-groom oN (FRM-451)', () => {
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                         PROMPT_GROOM_DIR: grooms,
                     },
+                    timeout: 10_000,
                 },
             );
             const rawFile = join(grooms, `${day}-${id}.raw.md`);
@@ -716,6 +720,7 @@ describe('--linear, with a stubbed x', () => {
                         // UTC+14 keeps the fixture's 2026-10-25 14:50 in the past on any CI clock
                         TZ: 'Pacific/Kiritimati',
                     },
+                    timeout: 10_000,
                 },
             );
             expect(result.status).toBe(1);

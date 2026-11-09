@@ -188,6 +188,14 @@ describe('runner-twin', () => {
         expect(tested(context.dir)).toBe(sha);
     });
 
+    test('a main push of only a memory path that is no .md skips', () => {
+        const { context, sha } = pushOf(
+            'recipes/nurture-memory/scripts/memory-budgets.tsv',
+        );
+        twin(context, `r ${sha} refs/heads/main ${context.head}\n`);
+        expect(ran(context.dir)).toBe(false);
+    });
+
     test('a main push with code runs the whole suite', () => {
         const { context, sha } = pushOf('script/a.ts');
         twin(context, `r ${sha} refs/heads/main ${context.head}\n`);

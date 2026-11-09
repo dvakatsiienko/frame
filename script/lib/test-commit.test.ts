@@ -336,7 +336,7 @@ describe('test-commit', () => {
         );
     });
 
-    test('a non-ascii path reaches vitest whole', () => {
+    test('a non-ascii path reaches vitest intact', () => {
         const got = runGate(staged({ 'é.ts': 'a\n' }), 'main');
         expect(got.calls).toContain('|é.ts');
     });

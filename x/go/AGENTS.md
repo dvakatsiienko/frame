@@ -20,7 +20,7 @@ fleet sees whether the page earns its place.
 - merge-auto lands a pre-approved self-edit only from a build that is not dev (under `operator-override prs` a dev build lands too, named in its record, so a landed `x/go` pr can't lock him out): the pin, and `x/go` in `srcDir` read
   against origin/main (`isDevBuild`, `merge_sign.go`); a test binary always reads dev, so its tests set `X_DEV_BUILD=` under `X_TEST`
 - `pnpm x-go:test` — the gate, run in ci; the frame commit hooks never run it, so run it before
-  every commit here. it and `pnpm x-go:gate` run in the vm `vm-go-test` (the mac when it is down): a by-hand run takes them, never a bare `go test`. `x:guide-go` holds the go craft.
+  every commit here. it and `pnpm x-go:gate` run in the vm `vm-go-test` (the mac when it is down): a by-hand run takes them, never a bare `go test`; one test is `../../script/test-vm-go.sh go test -run <Test> ./...` from here. `x:guide-go` holds the go craft.
 - biome's defaults format `.md` and `.yaml`, so a fixture wanting frame's behaviour sets those formatters off; `run` trims stdout, so a byte-exact tool reads `exec` itself
 - every test opens with `t.Parallel()`; one that cannot opens with a `// serial: <why>` line instead (a `t.Setenv`, a `t.Chdir`) — go panics on a `t.Setenv` in a parallel test, so a missed one shows itself. this is what keeps the gate near 1 minute (FRM-422)
 
