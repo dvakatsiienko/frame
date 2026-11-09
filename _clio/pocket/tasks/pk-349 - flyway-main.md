@@ -32,7 +32,7 @@ ordinal: 1000
 - [ ] #14 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
 - [ ] #15 📅 wing 1 opens after the herdr explore: its tails, then speak v2 — on: 2026-11-10
 - [ ] #16 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
-- [ ] #17 📅 first thing: the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors and the for-you row, FRM-542 and FRM-556 moved in; then PK-363 dies with its ticket line — on: 2026-11-10
+- [ ] #17 📅 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line — on: 2026-11-10
 - [ ] #18 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
 - [ ] #19 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
 - [ ] #20 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
