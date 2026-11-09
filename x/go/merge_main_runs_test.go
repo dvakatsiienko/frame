@@ -92,6 +92,19 @@ func TestMergeAutoReadsMainsNewestFinishedCIRun(t *testing.T) {
 	}
 }
 
+// a page of main's runs with none that finished on its own proves nothing: it waits, never reads green
+func TestMergeAutoWaitsWhenNoMainCIRunFinished(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.mainRuns(mainRun(3, "ci.yml", "in_progress", "", runSha(3)), mainRun(2, "ci.yml", "completed", "cancelled", runSha(2)))
+
+	got := w.run(t, "7", "--apply")
+
+	if wait := envelopeOf(got).Data.Wait; got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(wait, "no ci run on main finished") {
+		t.Fatalf("exit %d, wait %q, want a wait naming no finished run:\n%s", got.code, wait, got.stdout)
+	}
+}
+
 // a fork's pr from a branch it named main shows on branch=main as a pull_request run: only main's own pushes count
 func TestMergeAutoReadsOnlyMainsOwnPushRuns(t *testing.T) {
 	t.Parallel()
