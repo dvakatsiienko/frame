@@ -895,13 +895,18 @@ var riskyList = func() (list struct{ Risky, Self, Light, Memory []*regexp.Regexp
 	if err := json.Unmarshal(riskyJSON, &raw); err != nil {
 		panic("risky.json: " + err.Error())
 	}
-	compile := func(globs []string) (out []*regexp.Regexp) {
+	compile := func(globs []string, fold bool) (out []*regexp.Regexp) {
 		for _, g := range globs {
-			out = append(out, globRegexp(g))
+			re := globRegexp(g)
+			if fold {
+				re = regexp.MustCompile("(?i)" + re.String())
+			}
+			out = append(out, re)
 		}
 		return out
 	}
-	list.Risky, list.Self, list.Light, list.Memory = compile(raw.Risky), compile(raw.Self), compile(raw.Light), compile(raw.Memory)
+	// the mac's filesystem folds case, so a `claude.md` loads as memory: the gated lists fold, the light allow-list stays exact
+	list.Risky, list.Self, list.Light, list.Memory = compile(raw.Risky, true), compile(raw.Self, true), compile(raw.Light, false), compile(raw.Memory, true)
 	return list
 }()
 
@@ -941,6 +946,10 @@ func prPaths(api, n string) ([]string, error) {
 	files, err := ghPages[file](asDima, api+"/pulls/"+n+"/files", "")
 	if err != nil {
 		return nil, err
+	}
+	// github lists at most 3000 files and never says it cut: a full list may hide a risky path
+	if len(files) >= 3000 {
+		return nil, fmt.Errorf("pr %s changes %d files, github's whole 3000-file list, so its tier is unreadable: split the pr", n, len(files))
 	}
 	var paths []string
 	for _, f := range files {
@@ -1339,8 +1348,13 @@ func wishkeeperCheck(api, n, head, base, ref string, paths []string) (mergeCheck
 		}
 		// a read vouches only for the memory it saw: a memory path of the pr changed after it is unread (steer 20:32); a read
 		// a rebase carried saw the same change, and a memory file only main changed is not the pr's
-		changed, _ := gitIn("", "diff", "--name-only", read[1], head)
-		if ok(gitIn("", "merge-base", "--is-ancestor", read[1], head)) && changed.ok {
+		// no rename folding: a memory file moved off its path still names its old one; a diff git could not read vouches nothing
+		if ok(gitIn("", "merge-base", "--is-ancestor", read[1], head)) {
+			changed, _ := gitIn("", "diff", "--name-only", "--no-renames", read[1], head)
+			if !changed.ok {
+				c.Detail = "git could not diff clio's wishkeeper read on " + short(read[1]) + " against " + short(head) + ": " + logLine(changed.log)
+				continue
+			}
 			if edited := slices.IndexFunc(strings.Fields(changed.out), func(p string) bool {
 				return slices.Contains(paths, p) && matchesAny(p, riskyList.Memory)
 			}); edited >= 0 {
@@ -1591,14 +1605,16 @@ func mainRunsCheck(api string, deploys bool) (mergeCheck, error) {
 		HeadSha    string `json:"head_sha"`
 		Status     string `json:"status"`
 		Conclusion string `json:"conclusion"`
+		Event      string `json:"event"`
 	}
-	// each workflow read on its own, so another workflow's runs can never push ci's out of the page
+	// each workflow read on its own, so another workflow's runs can never push ci's out of the page; branch=main also
+	// matches a fork's pr from a branch it named main, so only push runs are main's own
 	runsOf := func(workflow string) ([]run, error) {
 		var answer struct {
 			Runs []run `json:"workflow_runs"`
 		}
-		_, err := ghFetch(asDima, api+"/actions/workflows/"+workflow+"/runs?branch=main&per_page=5", &answer)
-		return answer.Runs, err
+		_, err := ghFetch(asDima, api+"/actions/workflows/"+workflow+"/runs?branch=main&event=push&per_page=5", &answer)
+		return slices.DeleteFunc(answer.Runs, func(r run) bool { return r.Event != "push" }), err
 	}
 	ci, err := runsOf("ci.yml")
 	if err != nil {
@@ -1618,9 +1634,10 @@ func mainRunsCheck(api string, deploys bool) (mergeCheck, error) {
 			}
 		}
 	}
+	// the newest finished run decides: one still running would hide a red under it
 	// a cancelled run is the one a newer push superseded; a timeout or a failed start never proved main
-	if len(ci) > 0 && slices.Contains([]string{"failure", "timed_out", "startup_failure"}, ci[0].Conclusion) {
-		c.Detail = fmt.Sprintf("main's ci is red on %s, run %d (%s): a merge would stack on it; a fix for main lands under dima's operator-override for prs", short(ci[0].HeadSha), ci[0].ID, ci[0].Conclusion)
+	if i := slices.IndexFunc(ci, func(r run) bool { return r.Status == "completed" }); i >= 0 && slices.Contains([]string{"failure", "timed_out", "startup_failure"}, ci[i].Conclusion) {
+		c.Detail = fmt.Sprintf("main's ci is red on %s, run %d (%s): a merge would stack on it; a fix for main lands under dima's operator-override for prs", short(ci[i].HeadSha), ci[i].ID, ci[i].Conclusion)
 		return c, nil
 	}
 	c.OK, c.Detail = true, "main's newest ci is not red"

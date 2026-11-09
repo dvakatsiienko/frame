@@ -3,6 +3,7 @@ package main
 import (
 	"cmp"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -147,6 +148,7 @@ func TestMergeAutoWaitsForClioWishkeeperRead(t *testing.T) {
 		{"no comment", func(*mergeWorld, string) []string { return nil }, false, ""},
 		{"clio's read on an ancestor", clio, true, ""},
 		{"clio's read before a memory edit", clio, false, "home/.claude/plugin-x/skills/foo/SKILL.md"},
+		{"clio's read before a memory file moved off its path", clio, false, "rename"},
 		{"the same text from codie's app", func(_ *mergeWorld, ancestor string) []string {
 			return []string{comment("x-codie-cc[bot]", "Bot", "wishkeeper read "+ancestor+": 0 findings")}
 		}, false, ""},
@@ -162,8 +164,11 @@ func TestMergeAutoWaitsForClioWishkeeperRead(t *testing.T) {
 			w := newMergeWorld(t, "x/go/merge_auto.go", "home/.claude/plugin-x/skills/foo/SKILL.md")
 			w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
 			ancestor := w.head
-			edited := cmp.Or(c.after, "fix.go")
-			write(t, filepath.Join(w.seed, edited), "an edit after the read\n")
+			if c.after == "rename" {
+				gitT(t, w.seed, "mv", "home/.claude/plugin-x/skills/foo/SKILL.md", "moved.md")
+			} else {
+				write(t, filepath.Join(w.seed, cmp.Or(c.after, "fix.go")), "an edit after the read\n")
+			}
 			gitT(t, w.seed, "add", ".")
 			gitT(t, w.seed, "commit", "-q", "-m", "a fix after the read")
 			w.moveHead(t)
@@ -202,6 +207,9 @@ func TestMergeAutoNeverReadsTheseAsLight(t *testing.T) {
 		{"pnpm-lock.yaml", "normal"},
 		{"docs/knowledge/x.md", "memory"},
 		{"docs/research/review-model.md", "memory"},
+		{"docs/research/claude.md", "risky"},
+		{"docs/research/Agents.md", "risky"},
+		{"docs/research/ftr.md", "memory"},
 		{"docs/test-drive/gate-speed/analyze.mjs", "normal"},
 		{".claude/rules/scripts.md", "memory"},
 		{"brand/avatars/make.ts", "normal"},
@@ -252,5 +260,24 @@ func TestMergeAutoAsksTheUnionOfItsPathsChecks(t *testing.T) {
 				t.Fatalf("exit %d, tier %q, asks %v, want %s asking %v:\n%s", got.code, read.Tier, read.Asks, c.tier, c.asks, got.stdout)
 			}
 		})
+	}
+}
+
+// github lists at most 3000 of a pr's files and says nothing of the rest, so a full list reads no tier
+func TestMergeAutoRefusesAPrPastGithubsFileList(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "docs/research/x.md")
+	files := make([]string, 3000)
+	for i := range files {
+		files[i] = fmt.Sprintf(`{"filename":"docs/research/x%d.md","status":"modified"}`, i)
+	}
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/7/files"] = "[" + strings.Join(files, ",") + "]"
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "7", "--apply")
+
+	if e := envelopeOf(got).Error; got.code == 0 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(e, "3000") {
+		t.Fatalf("exit %d, error %q, want a refusal naming github's 3000-file list:\n%s", got.code, e, got.stdout)
 	}
 }

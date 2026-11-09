@@ -72,6 +72,38 @@ func TestMergeAutoReadsOnlyMainsNewestCIRun(t *testing.T) {
 	}
 }
 
+// an unfinished newest ci run hides nothing: the newest finished one under it still refuses a red main
+func TestMergeAutoReadsMainsNewestFinishedCIRun(t *testing.T) {
+	t.Parallel()
+	for _, status := range []string{"in_progress", "queued"} {
+		t.Run(status, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			w.mainRuns(mainRun(3, "ci.yml", status, "", runSha(3)), mainRun(2, "ci.yml", "completed", "failure", runSha(2)))
+
+			got := w.run(t, "7", "--apply")
+
+			want := "main's ci is red on " + short(runSha(2))
+			if wait := envelopeOf(got).Data.Wait; got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(wait, want) {
+				t.Fatalf("exit %d, wait %q, want a refusal naming %q:\n%s", got.code, wait, want, got.stdout)
+			}
+		})
+	}
+}
+
+// a fork's pr from a branch it named main shows on branch=main as a pull_request run: only main's own pushes count
+func TestMergeAutoReadsOnlyMainsOwnPushRuns(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	fork := mainRun(3, "ci.yml", "completed", "failure", runSha(3))
+	fork.body = strings.Replace(fork.body, `"event":"push"`, `"event":"pull_request"`, 1)
+	w.mainRuns(fork, mainRun(2, "ci.yml", "completed", "success", runSha(2)))
+
+	if got := w.run(t, "7", "--apply"); got.code != 0 || len(w.hub.sent("PUT ")) != 1 {
+		t.Fatalf("exit %d, want the merge over a fork's red run:\n%s", got.code, got.stdout)
+	}
+}
+
 // FRM-553 exits 1 and 4: in a repo that deploys, a queued or running ci or deploy run on main is one read and a wait naming it
 func TestMergeAutoWaitsWhileMainsCIOrDeployRuns(t *testing.T) {
 	t.Parallel()
