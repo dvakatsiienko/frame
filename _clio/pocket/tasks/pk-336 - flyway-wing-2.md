@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T17:58:00Z'
+updated_date: '2026-11-09T17:59:00Z'
 labels:
   - m
   - clio-wing-2
@@ -25,12 +25,12 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #1 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
 - [ ] #2 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
 - [ ] #3 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
-- [ ] #4 FRM-538 quick lane, on his word (mods lane paused today)
-- [ ] #5 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
-- [ ] #6 cli lane 6 is mine (wing 1's handover 19:05): after FRM-548/549, walk FRM-414 (+ round counter rider), FRM-384, FRM-436, FRM-424; door 1 tails in /Users/dima/frame/.claude/worktrees/clio-wing-1/.scratch/handover-cli-lane-6.md
-- [ ] #7 FRM-546 reopened (wishkeeper 19:36): by 11-10 — #152's codie cards and sixth sense round name REVIEW.md, one coderabbit cli run read, a re-planted slip only REVIEW.md names, then close
-- [ ] #8 redraw the crew-pm board (pocket-check.ts, merge_auto.go, stacks.go changed)
-- [ ] #9 review contract notice to every clio and member once frame#152 lands (the review-tiers pr; dima o25)
+- [ ] #4 cli lane 6 is mine (wing 1's handover 19:05): after FRM-548/549, walk FRM-414 (+ round counter rider), FRM-384, FRM-436, FRM-424; door 1 tails in /Users/dima/frame/.claude/worktrees/clio-wing-1/.scratch/handover-cli-lane-6.md
+- [ ] #5 redraw the crew-pm board (pocket-check.ts, merge_auto.go, stacks.go changed)
+- [ ] #6 review contract notice to every clio and member once frame#152 lands (the review-tiers pr; dima o25)
+- [ ] #7 guard quick lane: FRM-538 (two guards, signed) + FRM-544 (your tick runs a refused command; his «no cryptic typing» line) — FRM-544's sign first, then your dispatch word; mods lane paused today
+- [ ] #8 later (dima 19:58): FRM-454 helga on Sonnet, a shape-idea grill with you before any sign
+- [ ] #9 FRM-546 frame REVIEW.md: closes when frame#152's own review shows codie's cards and sixth sense naming REVIEW.md (the read postponed, dima 19:58)
 <!-- AC:END -->
 
 ## Implementation Notes
