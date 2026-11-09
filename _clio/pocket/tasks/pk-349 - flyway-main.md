@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T18:11:00Z'
+updated_date: '2026-11-09T18:14:00Z'
 labels:
   - s
   - clio-main
@@ -17,15 +17,15 @@ ordinal: 9995
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 chunk 2: Zoo's chat into frame as fleet-chatter, a ticket for your sign, the herdr codie builds it
-- [ ] #2 FRM-505 second wind runs itself: seal its spec and start a fresh mods codie; FRM-491 and FRM-495 follow it
-- [ ] #3 ⏳ FRM-552 orbit in herdr: codie's «from herdr» label, then your one tick in herdr's board panel — waits for: the sixth sense's verdict
-- [ ] #4 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #5 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
-- [ ] #6 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
-- [ ] #7 ⏳ boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check — waits for: tomorrow's boot
-- [ ] #8 ⏳ FRM-550: judge it against herdr, then dima's sign — waits for: tomorrow's herdr boot, by 11-11
-- [ ] #9 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #10 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #2 ⏳ FRM-552 orbit in herdr: codie's «from herdr» label, then your one tick in herdr's board panel — waits for: the sixth sense's verdict
+- [ ] #3 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #4 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
+- [ ] #5 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
+- [ ] #6 ⏳ boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check — waits for: tomorrow's boot
+- [ ] #7 ⏳ FRM-550: judge it against herdr, then dima's sign — waits for: tomorrow's herdr boot, by 11-11
+- [ ] #8 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #10 next mods lane, one fresh codie, fixes first: FRM-538's public-post guard half, FRM-544 (after its sign grill), then FRM-505, FRM-491, FRM-495 (dima 20:13)
 <!-- AC:END -->
 
 ## Implementation Notes
