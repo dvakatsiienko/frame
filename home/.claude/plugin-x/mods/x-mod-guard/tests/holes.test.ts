@@ -131,6 +131,11 @@ for (const command of [
     'railway sbx delete',
     'railway tcp-proxy delete',
     'railway down',
+    // a valued flag before the verb, its value never the slot (FRM-548)
+    'railway volume -s web delete',
+    'railway -e prod environment delete x',
+    'railway --service web down',
+    'railway -p proj --environment=prod service delete',
 ])
     test(`«${command}» is refused as a remote delete`, async ($, on) => {
         const w = world(on);
@@ -145,6 +150,8 @@ for (const command of [
     'railway variables --kv',
     'railway status',
     'railway run rm -rf dist',
+    'railway -s web logs',
+    'railway -e delete logs',
 ])
     test(`«${command}» runs`, async ($, on) => {
         const w = world(on);
