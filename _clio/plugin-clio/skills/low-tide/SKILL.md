@@ -31,6 +31,6 @@ an item moves between flyways on his want, or when another lane fits it better: 
 
 - a siesta at its usual triggers (`clio:siesta`), never one giant turn
 - an item that turns out blocked or lane-bound gets its `**waiting for:**` line or lane note the same turn, and leaves the hunt
-- the next big step starts only when this lane has nothing left
+- the next big step starts only when this lane has nothing left, and after its cut pass: `clio:low-tide-cuts` weighs the step's planned tickets, its print goes to dima, his ticks land before the first chunk is signed
 
 **done**: reread the whole pile, not only your flyway. an unclaimed item or a parked wing's unticked line is taken or named. then a «nothing left» line naming every store searched (pocket, linear FRM, linear BYT, inbox), with the counts before and after.
