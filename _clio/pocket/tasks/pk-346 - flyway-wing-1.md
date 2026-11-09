@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T20:57:00Z'
+updated_date: '2026-11-09T20:58:00Z'
 labels:
   - s
   - clio-wing-1
@@ -29,7 +29,6 @@ ordinal: 1001
 - [ ] #11 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
 - [ ] #12 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #13 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #14 💤 FRM-414 re-grill with dima before any build (spec ~/frame/.scratch/cli-lane-6/spec.md): cut the two messages fixed in #131; who writes the round record; rider 2 reverses his grill 2 Q6 «one pass, never rerun»; rider 3 is one codie ping line; the watch-pr undo drops :by — later: dima
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -92,4 +91,6 @@ done 2026-11-09 22:39: FRM-530 gates catalog: fold o74–o87 into decided, refre
 2026-11-09 22:50 wing 1, dima's «sync your flyway with actual scope»: FRM-530 closed and out; FRM-383's real call done (wing 2's three runs, 22:18–22:20); FRM-557 dispatched; the mods-tests follow-up from o91 is FRM-555, main's
 
 done 2026-11-09 22:54: ⏳ PK-357 branches: W5 «gba prints clean», the last stray is bytes' proof/frm-547-review-cite, then close — waits for: dima's delete tick (PK-357 done)
+
+2026-11-09 22:59: the FRM-414 re-grill line went back to wing 2 (dima 22:57 «let's regrill now so it is not a tail»)
 <!-- SECTION:NOTES:END -->
