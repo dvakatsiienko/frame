@@ -1,10 +1,10 @@
 ---
 id: PK-370
 title: 'perf: tests off pre-commit, to ci or pre-push'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T19:19:00Z'
+updated_date: '2026-11-09T19:26:00Z'
 labels:
   - s
   - clio-wing-1
@@ -50,4 +50,8 @@ PK-370:W12 (2026-11-09 21:17, dima): think especially well on this. i know movin
 PK-370:W13 (2026-11-09 21:17, dima): turbo repo caching: i asked before if it can help or if another caching solution fits better, because you said it is tricky and does not connect directly to what we have now. revisit it and think twice: could turbo repo also save on tests? by caching them and replaying the turbo repo cache for tests, will it help? ❓
 
 2026-11-09 21:20 wing 1: W6 settled — PK-370 joins the vm lane after FRM-551, codie second-winds between (o69 changed). W7–W13 answered in thread 21:20: ci-only take (main's ci red 3 of 6, direct main pushes spread a red), turbo adds nothing past FRM-533 step 2; the pick is orbit o70. W5 asked as o71.
+
+ticket: FRM-557
+
+close: PK-370:W1–W3 → FRM-557:W1–W3; PK-370:W4 answered in FRM-557 why; PK-370:W5 done on PK-346 (flyway); PK-370:W6 → FRM-557 decided (vm lane after FRM-551); PK-370:W7–W11 answered 21:20, decided b/b (o70); PK-370:W12 → FRM-557:W4; PK-370:W13 → FRM-557 decided (turbo)
 <!-- SECTION:NOTES:END -->
