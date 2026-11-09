@@ -6,8 +6,9 @@ import { liveStore } from './store.ts';
 const MOD = '/home/frame/mods/x-mod-demo';
 const LINK = '/home/.claude/mods/x-mod-demo';
 
-// one live mod in CLAUDE_CODE_PLUGIN_DIRS, reached through `~`; its plugin test exits `testExit`; LINK resolves into it
-function world(on: On, testExit: number) {
+// one live mod in CLAUDE_CODE_PLUGIN_DIRS, reached through `~`; its plugin test exits `testExit`, or outlives its limit
+// on 'timeout'; LINK resolves into it
+function world(on: On, testExit: number | 'timeout') {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const ran: string[] = [];
@@ -34,9 +35,14 @@ function world(on: On, testExit: number) {
     }));
     on('process.run', (_$, e) => {
         if (e.argv[0] === 'claude') tested.push([...e.argv]);
+        if (e.argv[0] === 'claude' && testExit === 'timeout')
+            throw new Error('process.run: still running after 60000 ms');
         return {
             value: {
-                exitCode: e.argv[0] === 'claude' ? testExit : 1,
+                exitCode:
+                    e.argv[0] === 'claude' && typeof testExit === 'number'
+                        ? testExit
+                        : 1,
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
                 stderr: '',
@@ -88,6 +94,27 @@ test("an Edit under a live mod's hooks/ goes through while its plugin test is gr
     const { ran } = world(on, 0);
     await edit($, `${MOD}/hooks/register.ts`);
     expect(ran).toEqual(['Edit']);
+});
+
+test('a plugin test that outlives its limit is refused with the scratch-copy door, never the bare fail-closed line', async ($, on) => {
+    const { ran, store } = world(on, 'timeout');
+    const r = await edit($, `${MOD}/hooks/register.ts`);
+    const events = [...store.entries()]
+        .filter(([k]) => k.startsWith('event:'))
+        .map(([, v]) => v);
+    expect([
+        r.deny?.includes('x mods edit pull'),
+        r.deny?.includes('outlived 60 s'),
+        r.deny?.includes('fail closed'),
+        ran,
+        events,
+    ]).toMatchObject([
+        true,
+        true,
+        false,
+        [],
+        [{ kind: 'refused', rule: 'live-hook-red' }],
+    ]);
 });
 
 test('a symlinked route into the live hooks/ is refused too', async ($, on) => {

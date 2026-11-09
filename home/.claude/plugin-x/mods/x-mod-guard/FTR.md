@@ -498,9 +498,10 @@
   - when an `Edit`, `Write` or `MultiEdit` targets a file under that mod's `hooks/`, by any path that resolves there
   - then it is refused: «instead: edit a scratch copy: `x mods edit pull <file>`, then `x mods edit push`, which lands it only when the mod validates and tests green», and a guard event is kept (rule `live-hook-red`)
   - given the mod's tests green, or a file outside its `hooks/` (its tests, its FTR), then the call runs, and outside `hooks/` no test runs at all
-  - decision: the test runs on each such call, 1–5 s, never a cached verdict — a stale green is the exact hole (FRM-350: a half-done refactor of a hot-reloaded mod took Bash down fleet-wide for ~5 min)
+  - given the test still running at 60 s, then it is refused the same way, the why naming «outlived 60 s», never the bare fail-closed line (x-mod-stash's suite took 85 s on 2026-11-09, and four edits of its parse.ts met only «the check failed or ran out of time»)
+  - decision: the test runs on each such call, never a cached verdict — a stale green is the exact hole (FRM-350: a half-done refactor of a hot-reloaded mod took Bash down fleet-wide for ~5 min)
   - 📌 harness-proven only; a live red mod was not planted
-  - proof: tests/livered.test.ts::a red refusal keeps a refused event under the live-hook-red rule / a Write under a red live mod is refused like an Edit, plus refuse, green, symlink and outside-hooks
+  - proof: tests/livered.test.ts::a red refusal keeps a refused event under the live-hook-red rule / a Write under a red live mod is refused like an Edit / a plugin test that outlives its limit is refused with the scratch-copy door, never the bare fail-closed line, plus refuse, green, symlink and outside-hooks
 
 ## held files — x-mod-holds' holds, refused for Bash
 

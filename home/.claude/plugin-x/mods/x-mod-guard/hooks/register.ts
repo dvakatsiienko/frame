@@ -926,6 +926,7 @@ const UNPROVEN_WHY =
 // (FRM-350: Bash down fleet-wide for ~5 min); the fix goes through a scratch copy and lands only once it is green
 const LIVE_RED_DOOR =
     'edit a scratch copy: `x mods edit pull <file>`, then `x mods edit push`, which lands it only when the mod validates and tests green';
+const LIVE_TEST_MS = 60_000;
 
 // the live mod dir a path sits under `hooks/` of, from CLAUDE_CODE_PLUGIN_DIRS; real paths on both sides, so a symlinked
 // route into the tree counts too
@@ -1992,12 +1993,18 @@ export const register: Register = (on) => {
             if (typeof path !== 'string') return next(e);
             const mod = await liveModOf($, path);
             if (!mod) return next(e);
-            const run = await $.process.run(['claude', 'plugin', 'test', mod], {
-                timeoutMs: 60_000,
-            });
-            if (run.exitCode === 0) return next(e);
+            // a run past the limit rejects; it is refused with the same door, never the bare fail-closed line
+            const run = await $.process
+                .run(['claude', 'plugin', 'test', mod], {
+                    timeoutMs: LIVE_TEST_MS,
+                })
+                .catch(() => undefined);
+            if (run?.exitCode === 0) return next(e);
             const name = mod.split('/').filter(Boolean).at(-1) ?? mod;
-            const why = `${name}'s plugin test is red, and a save under its hooks/ reloads into every live session`;
+            const verdict = run
+                ? 'is red'
+                : `outlived ${LIVE_TEST_MS / 1000} s`;
+            const why = `${name}'s plugin test ${verdict}, and a save under its hooks/ reloads into every live session`;
             await record($, {
                 command: `${e.tool} ${path}`,
                 door: LIVE_RED_DOOR,
