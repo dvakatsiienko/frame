@@ -61,16 +61,17 @@ func TestLimit(t *testing.T) {
 // node_modules as pnpm leaves it, a real dir of links into the store
 func vitestRedFixture(t *testing.T) redFixture {
 	t.Helper()
+	real := frameNodeModules(t)
 	f := vitestFixtureOn(t, func(modules string) {
-		entries, err := os.ReadDir(frameNodeModules(t))
+		entries, err := os.ReadDir(real)
 		if err != nil {
 			t.Fatal(err)
 		}
+		if err := os.MkdirAll(modules, 0o755); err != nil {
+			t.Fatal(err)
+		}
 		for _, entry := range entries {
-			if err := os.MkdirAll(modules, 0o755); err != nil {
-				t.Fatal(err)
-			}
-			if err := os.Symlink(filepath.Join(frameNodeModules(t), entry.Name()), filepath.Join(modules, entry.Name())); err != nil {
+			if err := os.Symlink(filepath.Join(real, entry.Name()), filepath.Join(modules, entry.Name())); err != nil {
 				t.Fatal(err)
 			}
 		}
@@ -496,6 +497,141 @@ func TestVerifyRedPairsTakeTheLongSlot(t *testing.T) {
 	}
 }
 
+// review round: a link into the repo, a workspace package's in node_modules or an absolute one, reads the copy's mutant
+func TestVerifyRedFollowsLinksIntoTheCopy(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name string
+		link func(t *testing.T, dir string) (target, imported string)
+	}{
+		{"a workspace package in node_modules", func(t *testing.T, dir string) (string, string) {
+			write(t, filepath.Join(dir, "pkg/package.json"), `{"name": "pkg", "type": "module"}`+"\n")
+			if err := os.Symlink("../pkg", filepath.Join(dir, "node_modules/pkg")); err != nil {
+				t.Fatal(err)
+			}
+			return "pkg/lib.js", "pkg/lib.js"
+		}},
+		{"an absolute link", func(t *testing.T, dir string) (string, string) {
+			if err := os.Symlink(filepath.Join(dir, "src"), filepath.Join(dir, "linked")); err != nil {
+				t.Fatal(err)
+			}
+			return "src/lib.js", "./linked/lib.js"
+		}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			f := vitestRedFixture(t)
+			target, imported := c.link(t, f.dir)
+			write(t, filepath.Join(f.dir, target), "export const limit = 3;\n")
+			write(t, filepath.Join(f.dir, "lib.test.js"), "import { expect, test } from \"vitest\";\nimport { limit } from \""+imported+"\";\n\ntest(\"limit is three\", () => {\n\texpect(limit).toBe(3);\n});\n")
+			commitAll(t, f.dir)
+
+			got, _ := verifyRedIn(t, f, nil, target, "limit = 3", "limit = 4", f.test)
+
+			if got.code != 0 || got.data["verdict"] != verdictRed {
+				t.Fatalf("exit %d, data %v, want the link to read the copy's mutant:\n%s", got.code, got.data, got.stdout)
+			}
+		})
+	}
+}
+
+// review round: the git-crypt set never reaches the copy, a non-ascii path and an untracked one included
+func TestVerifyRedLeavesTheGitCryptSetOutOfTheCopy(t *testing.T) {
+	t.Parallel()
+	f := vitestRedFixture(t)
+	write(t, filepath.Join(f.dir, ".gitattributes"), "secret.txt filter=git-crypt\nсекрет.txt filter=git-crypt\nnew.txt filter=git-crypt\n")
+	for _, name := range []string{"secret.txt", "секрет.txt"} {
+		write(t, filepath.Join(f.dir, name), "plain text\n")
+	}
+	write(t, filepath.Join(f.dir, "lib.test.js"), "import { existsSync } from \"node:fs\";\nimport { expect, test } from \"vitest\";\nimport { limit } from \"./lib.js\";\n\ntest(\"no plain text and the limit is three\", () => {\n\texpect([\"secret.txt\", \"секрет.txt\", \"new.txt\"].filter((name) => existsSync(name))).toEqual([]);\n\texpect(limit).toBe(3);\n});\n")
+	commitAll(t, f.dir)
+	write(t, filepath.Join(f.dir, "new.txt"), "plain text\n")
+
+	got, _ := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, f.test)
+
+	if got.code != 0 || got.data["verdict"] != verdictRed {
+		t.Fatalf("exit %d, data %v, want red with no git-crypt file in the copy:\n%s", got.code, got.data, got.stdout)
+	}
+}
+
+// exit line 1, dima's o82: a throw from the mutated code is the mutant doing its job, so it reads red
+func TestVerifyRedReadsAThrowFromTheMutantRed(t *testing.T) {
+	t.Parallel()
+	f := vitestRedFixture(t)
+	write(t, filepath.Join(f.dir, "lib.js"), "export const limit = () => 3;\n")
+	write(t, filepath.Join(f.dir, "lib.test.js"), "import { expect, test } from \"vitest\";\nimport { limit } from \"./lib.js\";\n\ntest(\"limit is three\", () => {\n\texpect(limit()).toBe(3);\n});\n")
+	commitAll(t, f.dir)
+
+	got, _ := verifyRedIn(t, f, nil, f.file, "() => 3", "() => { throw new Error(\"boom\"); }", f.test)
+
+	if rows := pairRows(t, got); got.code != 0 || len(rows) != 1 || rows[0]["verdict"] != verdictRed || rows[0]["why"] != "it threw" {
+		t.Fatalf("exit %d, pairs %v, want red, it threw:\n%s", got.code, rows, got.stdout)
+	}
+}
+
+// review round: a go test reads a data file at runtime, which an overlay never reaches, so the mutant runs in the copy
+func TestVerifyRedMutatesAFileAGoTestReadsAtRuntime(t *testing.T) {
+	t.Parallel()
+	f := goRedFixture(t)
+	write(t, filepath.Join(f.dir, "limit.txt"), "3\n")
+	write(t, filepath.Join(f.dir, "lib_test.go"), "package p\n\nimport (\n\t\"os\"\n\t\"testing\"\n)\n\nfunc TestLimit(t *testing.T) {\n\tif body, _ := os.ReadFile(\"limit.txt\"); string(body) != \"3\\n\" {\n\t\tt.Fatalf(\"read %q\", body)\n\t}\n}\n")
+	commitAll(t, f.dir)
+
+	got, _ := verifyRedIn(t, f, nil, "limit.txt", "3", "4", f.test)
+
+	if got.code != 0 || got.data["verdict"] != verdictRed {
+		t.Fatalf("exit %d, data %v, want red on a file read at runtime:\n%s", got.code, got.data, got.stdout)
+	}
+}
+
+// review round: a timeout proves nothing, a load can cause it; a vitest name that matches nothing refuses
+func TestVerifyRedReadsATimeoutBrokenAndANoMatchRefused(t *testing.T) {
+	t.Parallel()
+	f := vitestRedFixture(t)
+	write(t, filepath.Join(f.dir, "lib.test.js"), "import { expect, test } from \"vitest\";\nimport { limit } from \"./lib.js\";\n\ntest(\"limit is three\", async () => {\n\tif (limit !== 3) await new Promise((done) => setTimeout(done, 5000));\n\texpect(limit).toBe(3);\n}, 200);\n")
+	commitAll(t, f.dir)
+
+	got, _ := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, f.test)
+	if rows := pairRows(t, got); got.code != 1 || len(rows) != 1 || rows[0]["verdict"] != verdictBroken {
+		t.Fatalf("exit %d, pairs %v, want a timeout broken:\n%s", got.code, rows, got.stdout)
+	}
+
+	got, log := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, f.test, "--run", "no such name")
+	if got.code != 1 || !strings.Contains(got.stdout, "ran no test") || log != "" {
+		t.Fatalf("exit %d, want a refusal of a run that matched no test:\n%s", got.code, got.stdout)
+	}
+}
+
+// review round: a go tree reached through a symlinked dir still reads the mutant
+func TestVerifyRedOverlaysThroughASymlinkedDir(t *testing.T) {
+	t.Parallel()
+	f := goRedFixture(t)
+	link := filepath.Join(t.TempDir(), "link")
+	if err := os.Symlink(f.dir, link); err != nil {
+		t.Fatal(err)
+	}
+	f.dir = link
+
+	got, _ := verifyRedIn(t, f, []string{"PWD=" + link}, f.file, f.anchor, f.replacement, f.test)
+
+	if got.code != 0 || got.data["verdict"] != verdictRed {
+		t.Fatalf("exit %d, data %v, want red through the link:\n%s", got.code, got.data, got.stdout)
+	}
+}
+
+// review round: a cwd outside the repo would run the command on the real tree, so it refuses
+func TestVerifyRedRefusesACwdOutsideTheRepo(t *testing.T) {
+	t.Parallel()
+	f := vitestRedFixture(t)
+	outside := t.TempDir()
+
+	got := xIn(t, outside, []string{"VERIFY_LOG=" + filepath.Join(outside, "log")}, "verify", "red", filepath.Join(f.dir, f.file), f.anchor, f.replacement, filepath.Join(f.dir, f.test))
+
+	if got.code != 2 || !strings.Contains(got.stdout, "outside") {
+		t.Fatalf("exit %d, want a usage refusal naming the cwd outside the repo:\n%s", got.code, got.stdout)
+	}
+}
+
 // a form with nothing to run, or both a test and a command, exits 2
 func TestVerifyRedArgsOutsideItsFormsExitUsage(t *testing.T) {
 	t.Parallel()
@@ -511,6 +647,11 @@ func TestVerifyRedArgsOutsideItsFormsExitUsage(t *testing.T) {
 		if got, _ := verifyRedIn(t, f, nil, args...); got.code != 2 {
 			t.Fatalf("%v: exit %d, want 2:\n%s", args, got.code, got.stdout)
 		}
+	}
+	// a mod's run is its one test file, so a name it cannot pass on refuses before any run
+	m := modRedFixture(t)
+	if got, _ := verifyRedIn(t, m, nil, m.file, m.anchor, m.replacement, m.test, "--run", "a name"); got.code != 2 {
+		t.Fatalf("--run on a mod: exit %d, want 2:\n%s", got.code, got.stdout)
 	}
 }
 

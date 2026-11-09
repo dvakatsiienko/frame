@@ -69,7 +69,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **red** — a test that failed on an assertion on base's source and passed on head; a proof it reads the change. for `verify red`, a mutant whose run failed on an assertion or threw from the mutated code after the clean run passed
 - **mutant** — the file with one pair's anchor swapped for its replacement, which `verify red` runs the test on off the real tree: a go overlay, a copy of the repo, or a mod's overlay
 - **pair** — one anchor, found exactly once in the file, and its replacement; a pairs file holds many, each run alone
-- **clean run** — `verify red`'s run on the file as it is, through the same harness as each mutant; it must pass and run a test, or nothing is swapped
+- **clean run** — `verify red`'s run on the file as it is, through the same harness as each mutant; it must pass and run a test, or nothing is mutated
 - **red on head** — a test that fails on head, so base's source is not what fails it; a new test exits the run non-zero, an old one has a row and no vote
 - **still green** — a test that passed on the source it should have failed on; it does not read the change
 - **broken** — nothing proved: a compile or load error, 0 tests, a timeout, a new test's throw on base, or a pr adding no test x can read; for `verify red`, a mutant that fails its build, load or type check

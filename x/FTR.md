@@ -264,10 +264,10 @@
   - limit: a helper call in the same hunk as a named test gets no row, so it can exit 0
   - limit: a skip on head under `sh -c 'go test'` with no other head failure reads red, exit 0, since nothing prints the skip
 - ⬜ `x verify red <file> <anchor> <replacement> <test>` proves a test reads a line, the real tree never written
-  - given a test that passes on the file as it is, when the verb runs, then the clean run and the mutant go through one harness, the swap their only difference, both with `X_VERIFY=1`: a go test through `GOFLAGS=-overlay`, which a `TestMain`'s child build inherits; a js or ts test through vitest in a copy of the repo; a mod's test through `claude plugin test` on the mod's overlay
+  - given a test that passes on the file as it is, when the verb runs, then the clean run and the mutant go through one harness, the mutation their only difference, both with `X_VERIFY=1`: a go test through `GOFLAGS=-overlay`, which a `TestMain`'s child build inherits; a js or ts test through vitest in a copy of the repo; a mod's test through `claude plugin test` on the mod's overlay
   - given the mutated run fails on an assertion or throws, then it reads red and names the tests; it passes, still green; the exit is 0 only on red
   - given a test failing on the clean file, a clean run of no test, or an anchor not found exactly once, then it refuses before any mutant runs and names it
-  - given a swap that breaks the build or the load, then that pair reads broken; a `.ts` or `.tsx` swap gets `tsc --noEmit` on its nearest tsconfig first, and a type error the clean run did not have reads broken, the test never run
+  - given a mutant that breaks the build or the load, or a test that times out on it, then that pair reads broken; a `.ts` or `.tsx` mutant gets `tsc --noEmit` on its nearest tsconfig first, and a type error the clean file did not have reads broken, the test never run
   - given `--pairs <file>`, one `anchor<TAB>replacement` a line split on the last tab, then each pair runs alone and prints its row in order, in the envelope and the human view: red with the tests it reddened, still green, broken or failed, and its seconds; the exit is 0 only when every pair is red
   - given `-- <command>` in place of the test, then the command runs with the same mutation, a `go` command through the overlay, any other in the copy; a command that fails naming no test x can read reads failed, never red
   - given a run cut by a timeout or a kill, when it runs again on the same head, file, pairs, test, command and uncommitted state, then it resumes from its first unfinished pair, the clean run not repeated; a change to any of them starts over, and a finished run saves nothing to replay
@@ -277,7 +277,11 @@
   - given `--pairs`, then the round takes the gate queue's long slot itself, one turn for every pair
   - given a mod's test, then only that test file runs on the mod's overlay, each pair's seconds in its row (about 10 s a pair on `x-mod-guard`, against red-proof's inferred 64 s), and the runner's own load error reads broken whatever it reddened; an assertion whose message quotes a load word, a go `t.Fatalf` line included, reads red
   - decision: a throw from the mutated code reads red, since the mutant is the run's only change (dima, o82); `--revert` keeps any throw broken
-  - limit: a go run reads the mutant only where go builds it, so a file a test opens at runtime stays the real one
+  - given a file a go test opens at runtime, not one go builds, then its mutant runs in the copy, since an overlay never reaches it
+  - given a link in the repo, an absolute one or a workspace package's in `node_modules`, then the copy's link points at the copy; a file that resolves outside the repo, or a cwd outside it, refuses before any run
+  - given a picked runner whose clean run names no test that ran, `--run` matching nothing included, then it refuses; `--run` beside a mod's test exits 2, its run being the one file
+  - limit: a mod's `.ts` gets no type check, only `claude plugin validate`
+  - limit: an ignored file is copied with the rest, and the copy dies with the run, an interrupt included; a kill -9 leaves it in the os tmp
   - limit: a head-only row whose title x cannot tie to a row (`'%s'`, `'${x}'`, a computed title) gets a named row and no vote, so it can exit 0; the repo holds none today (dima's tick, 2026-11-07)
 - ⬜ the stacks add-on: a pr opens onto the layer below, and gh-stack links and shows the layers
   - given branch `codie/FRM-1-a-2` on top of `codie/FRM-1-a`, when `x lane pr-open --apply --base codie/FRM-1-a <title> <body-file>` runs, then one pr opens with base `codie/FRM-1-a`; a base origin lacks refuses before gh runs

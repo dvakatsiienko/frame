@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -71,6 +72,16 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	defer harness.close()
+	// a kill skips the defer, and a copy of the repo holds every ignored file it held, so an interrupt cleans it first
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(stop)
+	go func() {
+		if _, got := <-stop; got {
+			harness.close()
+			os.Exit(130)
+		}
+	}()
 	saved := resumeFrom(file, pairs, test, command, flags)
 
 	if err := r.Step("clean", "the test on the file as it is", func() (string, error) {
@@ -81,14 +92,15 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 		if err != nil {
 			return "", err
 		}
-		return "it passed", cleanHolds(file, got)
+		return "it passed", cleanHolds(file, got, test != "")
 	}); err != nil {
 		return nil, err
 	}
 
 	saved.Clean = true
 	rows := slices.Clone(saved.Pairs)
-	_ = r.Step("mutate", "each pair alone", func() (string, error) {
+	// a harness error mid-round leaves pairs unrun, so the round ends on it, never on the pairs that ran
+	if err := r.Step("mutate", "each pair alone", func() (string, error) {
 		for _, pair := range pairs[len(rows):] {
 			saved.Pairs = rows
 			saved.save()
@@ -106,7 +118,9 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 			return "", notHeld(verdict)
 		}
 		return verdictRed, nil
-	})
+	}); err != nil {
+		return nil, err
+	}
 
 	verdict := worstPair(rows)
 	lines := make([]string, len(rows))
@@ -149,9 +163,26 @@ func resumeFrom(file string, pairs []redPair, test string, command []string, fla
 	dir := filepath.Dir(abs)
 	name, _ := flags["run"].(string)
 	fmt.Fprintf(hash, "%s\n%s\n%q\n%s\n", abs, test, command, name)
+	// a new x build may read a run differently, so its saved verdicts are no longer this build's
+	if exe, err := os.Executable(); err == nil {
+		if built, err := os.Stat(exe); err == nil {
+			fmt.Fprintf(hash, "%s %d\n", exe, built.ModTime().UnixNano())
+		}
+	}
 	for _, git := range [][]string{{"rev-parse", "HEAD"}, {"status", "--porcelain", "--untracked-files=all"}, {"diff", "HEAD", "--binary"}} {
 		got, _ := run(dir, nil, "", "git", git...)
 		fmt.Fprintf(hash, "%s\n", got.out)
+	}
+	// a relative path in the command reads from the cwd, and an untracked file shows in neither the status nor the diff by content
+	cwd, _ := os.Getwd()
+	fmt.Fprintf(hash, "%s\n", cwd)
+	if untracked, err := run(dir, nil, "", "git", "ls-files", "--others", "--exclude-standard", "--full-name"); err == nil && untracked.out != "" {
+		top, _ := run(dir, nil, "", "git", "rev-parse", "--show-toplevel")
+		for name := range strings.SplitSeq(untracked.out, "\n") {
+			if info, err := os.Stat(filepath.Join(top.out, name)); err == nil {
+				fmt.Fprintf(hash, "%s %d %d\n", name, info.Size(), info.ModTime().UnixNano())
+			}
+		}
 	}
 	for _, pair := range pairs {
 		fmt.Fprintf(hash, "%q %q\n", pair.anchor, pair.replacement)
@@ -220,6 +251,7 @@ func readPairs(path string) ([]redPair, error) {
 	}
 	var pairs []redPair
 	for i, line := range strings.Split(strings.TrimSuffix(string(body), "\n"), "\n") {
+		line = strings.TrimSuffix(line, "\r")
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
@@ -240,27 +272,28 @@ func readPairs(path string) ([]redPair, error) {
 
 func pairLabel(anchor string) string {
 	label, _, cut := strings.Cut(strings.TrimSpace(anchor), "\n")
-	if cut || len(label) > 48 {
-		label = label[:min(len(label), 47)] + "…"
+	if runes := []rune(label); cut || len(runes) > 48 {
+		label = string(runes[:min(len(runes), 47)]) + "…"
 	}
 	return "«" + label + "»"
 }
 
 // a base already red reads every swap red whatever it does, so the run refuses before the first mutant
-func cleanHolds(file string, got redRun) error {
+func cleanHolds(file string, got redRun, picked bool) error {
 	read := readTestOutput(got.log)
 	switch {
 	case got.broken != "":
-		return &Fail{Refused: true, Msg: "the clean run is broken, nothing swapped: " + got.broken, Next: "fix " + file + " until its own check passes", Log: nonBlank(got.log)}
+		return &Fail{Refused: true, Msg: "the clean run is broken, nothing mutated: " + got.broken, Next: "fix " + file + " until its own check passes", Log: nonBlank(got.log)}
 	case !got.ok:
 		names := failedNames(read)
-		msg := "the clean run is red, nothing swapped: " + strings.Join(names, ", ")
+		msg := "the clean run is red, nothing mutated: " + strings.Join(names, ", ")
 		if len(names) == 0 {
-			msg = "the clean run is red, nothing swapped: no failed test named"
+			msg = "the clean run is red, nothing mutated: no failed test named"
 		}
 		return &Fail{Refused: true, Msg: msg, Next: "run the test until it passes on " + file + " as it is", Log: nonBlank(got.log)}
-	case read.none && !read.ran:
-		return &Fail{Refused: true, Msg: "the clean run ran no test, nothing swapped", Next: "name a test that runs: its file, or --run with a name it holds", Log: nonBlank(got.log)}
+	// a runner x picked prints its tally, so a run with none ran nothing, a name that matched no test included
+	case read.none && !read.ran, picked && !read.ran:
+		return &Fail{Refused: true, Msg: "the clean run ran no test, nothing mutated", Next: "name a test that runs: its file, or --run with a name it holds", Log: nonBlank(got.log)}
 	}
 	return nil
 }
@@ -315,6 +348,8 @@ func judgeMutant(got redRun) pairRow {
 		return pairRow{Verdict: verdictBroken, Why: load}
 	case len(asserted) > 0:
 		return pairRow{Verdict: verdictRed, Tests: names}
+	case slices.ContainsFunc(read.failed, func(failed failedTest) bool { return hookTimedOut.MatchString(failed.output) }):
+		return pairRow{Verdict: verdictBroken, Tests: names, Why: "it timed out, which a loaded machine does on any source; run it again when the load falls"}
 	case len(names) > 0:
 		return pairRow{Verdict: verdictRed, Tests: names, Why: "it threw"}
 	}
@@ -367,7 +402,7 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 		}
 		return newGoHarness(abs, "", command)
 	case command != nil:
-		return newCopyHarness(abs, "", command)
+		return newCopyHarness(abs, command)
 	case strings.HasSuffix(test, "_test.go"):
 		goTest := []string{"go", "test", "-count=1", "-failfast", "-v"}
 		if name != "" {
@@ -377,7 +412,13 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 		if err != nil {
 			return nil, err
 		}
+		// an overlay reaches only what go builds; a file a test opens at runtime is read from the copy
+		if filepath.Ext(abs) != ".go" {
+			return newCopyHarness(abs, append(goTest, dir))
+		}
 		return newGoHarness(abs, dir, append(goTest, "."))
+	case isModTest(test) && name != "":
+		return nil, usageFail("--run names no test in a mod: its run is the one test file named", "x verify red <file> <anchor> <replacement> "+test)
 	case isModTest(test):
 		return newModHarness(abs, test)
 	case testFile.MatchString(test):
@@ -385,7 +426,7 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 		if name != "" {
 			vitest = append(vitest, "-t", name)
 		}
-		return newCopyHarness(abs, "", append(vitest, test))
+		return newCopyHarness(abs, append(vitest, test))
 	}
 	return nil, usageFail("x picks no runner for "+test+": a _test.go, a mod's test or a .test.ts", "x verify red <file> <anchor> <replacement> -- <command>")
 }
@@ -441,7 +482,7 @@ type copyHarness struct {
 	typed      bool
 }
 
-func newCopyHarness(file, _ string, command []string) (redHarness, error) {
+func newCopyHarness(file string, command []string) (redHarness, error) {
 	root, err := mustGitIn(filepath.Dir(file), "rev-parse", "rev-parse", "--show-toplevel")
 	if err != nil {
 		return nil, err
@@ -450,6 +491,12 @@ func newCopyHarness(file, _ string, command []string) (redHarness, error) {
 	file, _ = filepath.EvalSymlinks(file)
 	cwd, _ := os.Getwd()
 	cwd, _ = filepath.EvalSymlinks(cwd)
+	switch {
+	case !inside(root, cwd):
+		return nil, usageFail("the cwd "+cwd+" is outside the repo "+root+", so the command would read the real tree", "cd "+root+" and run it again")
+	case !inside(root, file):
+		return nil, usageFail(file+" resolves outside the repo "+root+", so its mutant would land on the real file", "name the file the link points at, from its own repo")
+	}
 	scratch, err := os.MkdirTemp("", "x-verify-copy-")
 	if err != nil {
 		return nil, err
@@ -465,13 +512,31 @@ func newCopyHarness(file, _ string, command []string) (redHarness, error) {
 func (h *copyHarness) close() { _ = os.RemoveAll(filepath.Dir(h.copy)) }
 
 func (h *copyHarness) inCopy(path string) string {
-	if rel, err := filepath.Rel(h.root, path); err == nil && !strings.HasPrefix(rel, "..") {
+	if inside(h.root, path) {
+		rel, _ := filepath.Rel(h.root, path)
 		return filepath.Join(h.copy, rel)
 	}
 	return path
 }
 
+// a path under root, never one that only opens with `..` in its name
+func inside(root, path string) bool {
+	rel, err := filepath.Rel(root, path)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, "../")
+}
+
 func (h *copyHarness) run(content []byte) (redRun, error) {
+	// the baseline is the real file's errors, read first, so a resumed round's first mutant never stands in for the clean file
+	if !h.typed && typedSource.MatchString(h.file) {
+		original, err := os.ReadFile(h.file)
+		if err == nil {
+			err = os.WriteFile(h.inCopy(h.file), original, 0o644)
+		}
+		if err != nil {
+			return redRun{}, err
+		}
+		h.typed, h.typeErrors = true, h.typeErrorsNow()
+	}
 	if err := os.WriteFile(h.inCopy(h.file), content, 0o644); err != nil {
 		return redRun{}, err
 	}
@@ -504,11 +569,23 @@ var (
 	goTestLog = regexp.MustCompile(`^\s+\S+_test\.go:\d+: `)
 )
 
-// tsc --noEmit on the nearest tsconfig above the file, read against the clean run's errors; no tsconfig, no check
+// a type error the clean file did not have; no tsconfig, no check
 func (h *copyHarness) newTypeErrors() string {
 	if !typedSource.MatchString(h.file) {
 		return ""
 	}
+	for _, err := range h.typeErrorsNow() {
+		if !slices.ContainsFunc(h.typeErrors, func(clean string) bool {
+			return tscPosition.ReplaceAllString(clean, "") == tscPosition.ReplaceAllString(err, "")
+		}) {
+			return err
+		}
+	}
+	return ""
+}
+
+// tsc --noEmit on the nearest tsconfig above the file, as the copy holds it now
+func (h *copyHarness) typeErrorsNow() []string {
 	project := ""
 	for dir := filepath.Dir(h.inCopy(h.file)); strings.HasPrefix(dir, h.copy); dir = filepath.Dir(dir) {
 		if exists(filepath.Join(dir, "tsconfig.json")) {
@@ -518,29 +595,19 @@ func (h *copyHarness) newTypeErrors() string {
 	}
 	tsc := nearestBin(project, "tsc")
 	if project == "" || tsc == "" {
-		return ""
+		return nil
 	}
 	c := exec.Command(tsc, "--noEmit", "-p", project)
 	c.Dir = project
-	out, _ := c.CombinedOutput()
+	// tsc prints its errors on stdout; stderr holds its own crash, never a type error
+	out, _ := c.Output()
 	var errs []string
 	for line := range strings.SplitSeq(string(out), "\n") {
 		if strings.Contains(line, "error TS") {
 			errs = append(errs, strings.TrimSpace(line))
 		}
 	}
-	if !h.typed {
-		h.typed, h.typeErrors = true, errs
-		return ""
-	}
-	for _, err := range errs {
-		if !slices.ContainsFunc(h.typeErrors, func(clean string) bool {
-			return tscPosition.ReplaceAllString(clean, "") == tscPosition.ReplaceAllString(err, "")
-		}) {
-			return err
-		}
-	}
-	return ""
+	return errs
 }
 
 func nearestBin(dir, name string) string {
@@ -570,7 +637,7 @@ func copyRepo(root, to string) error {
 			return filepath.SkipDir
 		case name == "node_modules" && path != root:
 			// WalkDir knows SkipDir only bare, never joined to a nil
-			if err := linkEntries(path, dest); err != nil {
+			if err := linkEntries(root, to, path, dest); err != nil {
 				return err
 			}
 			return skipIfDir(entry)
@@ -583,7 +650,7 @@ func copyRepo(root, to string) error {
 			if err != nil {
 				return err
 			}
-			return os.Symlink(target, dest)
+			return os.Symlink(intoCopy(root, to, target), dest)
 		}
 		return cloneFile(path, dest)
 	})
@@ -596,8 +663,18 @@ func skipIfDir(entry fs.DirEntry) error {
 	return nil
 }
 
-// a node_modules link straight to the real one lets a runner write its caches there; a real dir of links per entry keeps them here
-func linkEntries(modules, dest string) error {
+// an absolute link into the repo would read the real tree from the copy, so it points at the copy's twin
+func intoCopy(root, to, target string) string {
+	if filepath.IsAbs(target) && inside(root, target) {
+		rel, _ := filepath.Rel(root, target)
+		return filepath.Join(to, rel)
+	}
+	return target
+}
+
+// a node_modules link straight to the real one lets a runner write its caches there; a real dir of links per entry keeps them
+// here, and an entry that resolves to a workspace package of the repo points at the copy's package
+func linkEntries(root, to, modules, dest string) error {
 	real, err := filepath.EvalSymlinks(modules)
 	if err != nil {
 		return err
@@ -613,7 +690,11 @@ func linkEntries(modules, dest string) error {
 		if strings.HasPrefix(entry.Name(), ".vite") || entry.Name() == ".vitest-cache" || entry.Name() == ".cache" {
 			continue
 		}
-		if err := os.Symlink(filepath.Join(real, entry.Name()), filepath.Join(dest, entry.Name())); err != nil {
+		link := filepath.Join(real, entry.Name())
+		if resolved, err := filepath.EvalSymlinks(link); err == nil && !strings.Contains(resolved, "/node_modules/") {
+			link = intoCopy(root, to, resolved)
+		}
+		if err := os.Symlink(link, filepath.Join(dest, entry.Name())); err != nil {
 			return err
 		}
 	}
@@ -621,23 +702,35 @@ func linkEntries(modules, dest string) error {
 }
 
 func gitCryptSet(root string) (map[string]bool, error) {
-	files, err := mustGitIn(root, "ls-files", "ls-files")
-	if err != nil || files == "" {
-		return map[string]bool{}, err
-	}
-	c := exec.Command("git", "check-attr", "filter", "--stdin")
-	c.Dir, c.Stdin = root, strings.NewReader(files+"\n")
-	out, err := c.Output()
+	// nul-separated both ways: a quoted non-ascii path would never match the walk's raw one; an untracked file counts too
+	list := exec.Command("git", "ls-files", "-z", "--cached", "--others", "--exclude-standard")
+	list.Dir = root
+	files, err := list.Output()
 	if err != nil {
-		return nil, err
+		return nil, gitFailure("ls-files", err)
+	}
+	check := exec.Command("git", "check-attr", "-z", "filter", "--stdin")
+	check.Dir, check.Stdin = root, strings.NewReader(string(files))
+	out, err := check.Output()
+	if err != nil {
+		return nil, gitFailure("check-attr", err)
 	}
 	locked := map[string]bool{}
-	for line := range strings.SplitSeq(string(out), "\n") {
-		if path, ok := strings.CutSuffix(line, ": filter: git-crypt"); ok {
-			locked[path] = true
+	// each answer is three fields: the path, the attribute, its value
+	fields := strings.Split(string(out), "\x00")
+	for i := 0; i+2 < len(fields); i += 3 {
+		if fields[i+2] == "git-crypt" {
+			locked[fields[i]] = true
 		}
 	}
 	return locked, nil
+}
+
+func gitFailure(verb string, err error) error {
+	if exit, ok := errors.AsType[*exec.ExitError](err); ok {
+		return fmt.Errorf("git %s: %w: %s", verb, err, exit.Stderr)
+	}
+	return err
 }
 
 // a mod runs as `x mods edit test` runs it: the mod copied off the tree, validated, then claude plugin test on the copy
