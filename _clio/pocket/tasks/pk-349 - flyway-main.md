@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T13:30:00Z'
+updated_date: '2026-11-09T13:48:00Z'
 labels:
   - s
   - clio-main
@@ -24,13 +24,12 @@ ordinal: 9995
 - [ ] #6 redraws after winged v2 lands
 - [ ] #7 trial reads with dima: delve, skill-named-load, unbash
 - [ ] #8 PK-360 _crow cleanup
-- [ ] #9 PK-361 _helga: why empty, move its data in
-- [ ] #10 PK-363 herder: research, print, his call
-- [ ] #11 PK-366 delete the model label group, his word
-- [ ] #12 PK-367 rename cut-proposals-print, shape the cuts
-- [ ] #13 PK-368 sidecar passports rebalance
-- [ ] #14 PK-326 quiet comms re-measure and close
-- [ ] #15 FRM-509 live read of the 11-07 lane ends, by 11-10
+- [ ] #9 PK-363 herder: research, print, his call
+- [ ] #10 PK-366 delete the model label group, his word
+- [ ] #11 PK-367 rename cut-proposals-print, shape the cuts
+- [ ] #12 PK-368 sidecar passports rebalance
+- [ ] #13 PK-326 quiet comms re-measure and close
+- [ ] #14 FRM-509 live read of the 11-07 lane ends, by 11-10
 <!-- AC:END -->
 
 ## Implementation Notes
