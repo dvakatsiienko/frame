@@ -1634,9 +1634,9 @@ func mainRunsCheck(api string, deploys bool) (mergeCheck, error) {
 			}
 		}
 	}
-	// the newest finished run decides: one still running would hide a red under it
-	// a cancelled run is the one a newer push superseded; a timeout or a failed start never proved main
-	if i := slices.IndexFunc(ci, func(r run) bool { return r.Status == "completed" }); i >= 0 && slices.Contains([]string{"failure", "timed_out", "startup_failure"}, ci[i].Conclusion) {
+	// the newest run that finished on its own decides: one still running, or one a newer push cancelled (ci.yml cancels in
+	// progress), would hide a red under it; a timeout or a failed start never proved main
+	if i := slices.IndexFunc(ci, func(r run) bool { return r.Status == "completed" && r.Conclusion != "cancelled" }); i >= 0 && slices.Contains([]string{"failure", "timed_out", "startup_failure"}, ci[i].Conclusion) {
 		c.Detail = fmt.Sprintf("main's ci is red on %s, run %d (%s): a merge would stack on it; a fix for main lands under dima's operator-override for prs", short(ci[i].HeadSha), ci[i].ID, ci[i].Conclusion)
 		return c, nil
 	}

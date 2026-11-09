@@ -55,31 +55,32 @@ func TestMergeAutoRefusesWhileMainsCIIsRed(t *testing.T) {
 	}
 }
 
-// only main's newest ci run is read: a red one under a newer green, or under a cancelled one, holds nothing
+// only main's newest finished ci run is read: a red one under a newer green holds nothing
 func TestMergeAutoReadsOnlyMainsNewestCIRun(t *testing.T) {
 	t.Parallel()
-	for _, newest := range []string{"success", "cancelled"} {
-		t.Run(newest, func(t *testing.T) {
-			t.Parallel()
-			w := newMergeWorld(t, "script/foo.ts")
-			w.mainRuns(mainRun(3, "codeberg-mirror.yml", "completed", "failure", runSha(2)),
-				mainRun(2, "ci.yml", "completed", newest, runSha(2)), mainRun(1, "ci.yml", "completed", "failure", runSha(1)))
+	w := newMergeWorld(t, "script/foo.ts")
+	w.mainRuns(mainRun(3, "codeberg-mirror.yml", "completed", "failure", runSha(2)),
+		mainRun(2, "ci.yml", "completed", "success", runSha(2)), mainRun(1, "ci.yml", "completed", "failure", runSha(1)))
 
-			if got := w.run(t, "7", "--apply"); got.code != 0 || len(w.hub.sent("PUT ")) != 1 {
-				t.Fatalf("exit %d, want the merge over an older red:\n%s", got.code, got.stdout)
-			}
-		})
+	if got := w.run(t, "7", "--apply"); got.code != 0 || len(w.hub.sent("PUT ")) != 1 {
+		t.Fatalf("exit %d, want the merge over an older red:\n%s", got.code, got.stdout)
 	}
 }
 
-// an unfinished newest ci run hides nothing: the newest finished one under it still refuses a red main
+// an unfinished or cancelled newer ci run hides nothing: ci.yml cancels in progress, so the newest run that finished on
+// its own still refuses a red main
 func TestMergeAutoReadsMainsNewestFinishedCIRun(t *testing.T) {
 	t.Parallel()
-	for _, status := range []string{"in_progress", "queued"} {
-		t.Run(status, func(t *testing.T) {
+	for name, newer := range map[string][]mainRunRow{
+		"in_progress":            {mainRun(3, "ci.yml", "in_progress", "", runSha(3))},
+		"queued":                 {mainRun(3, "ci.yml", "queued", "", runSha(3))},
+		"cancelled":              {mainRun(3, "ci.yml", "completed", "cancelled", runSha(3))},
+		"running over cancelled": {mainRun(4, "ci.yml", "in_progress", "", runSha(4)), mainRun(3, "ci.yml", "completed", "cancelled", runSha(3))},
+	} {
+		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			w := newMergeWorld(t, "script/foo.ts")
-			w.mainRuns(mainRun(3, "ci.yml", status, "", runSha(3)), mainRun(2, "ci.yml", "completed", "failure", runSha(2)))
+			w.mainRuns(append(newer, mainRun(2, "ci.yml", "completed", "failure", runSha(2)))...)
 
 			got := w.run(t, "7", "--apply")
 
