@@ -4,7 +4,7 @@ title: 'commit gate: simple memory edits must not block for minutes'
 status: open
 assignee: []
 created_date: '2026-11-07T20:25:00Z'
-updated_date: '2026-11-09T12:36:00Z'
+updated_date: '2026-11-09T12:43:00Z'
 labels:
   - s
   - clio-wing-1
@@ -34,4 +34,6 @@ PK-355:W4 (2026-11-07 22:26, dima): no, solve it yourself to unblock you now so 
 wing 2 lands the small fix tonight: memory-only commits and pushes run only the tests reading memory, a landing pushes once. the rethink is still wing 1's, after monday.
 
 kept: 2026-11-09 — commit-gate speed, goes to wing 1's perf topic at today's low tide
+
+kept: 2026-11-09 — dima 14:42: wing 1's for today
 <!-- SECTION:NOTES:END -->

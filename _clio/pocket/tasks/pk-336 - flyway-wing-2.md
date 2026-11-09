@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T12:39:00Z'
+updated_date: '2026-11-09T12:43:00Z'
 labels:
   - m
   - clio-wing-2
@@ -130,4 +130,6 @@ PK-336:W27 (2026-11-09 inbox, dima): any main clio wish joins a wing in slipstre
 PK-336:W28 (2026-11-09 inbox, dima): why? because sometimes the model starts to solve clio's asks immediately, mid-turn, while we were solving something else with a wing. not good.
 PK-336:W29 (2026-11-09 inbox, dima): instead, main clio's asks join the wing's flyway solve queue, right after the current solve item.
 14:40 wing 2 siesta: wishkeeper high fixed, line #1 was written from main's brief with no W-lines; W25–W29 folded from inbox.md, #1 cites them.
+
+14:44 wing 2, his ticks: o1 slipstream habit yes; o2 PK-351 and PK-348 stay here, labels back on; o4 no skip: wing 2 runs the low tide triage now, checking every flyway is compiled right and every item sits with the right seat, then again once main compiles today's inbox.
 <!-- SECTION:NOTES:END -->
