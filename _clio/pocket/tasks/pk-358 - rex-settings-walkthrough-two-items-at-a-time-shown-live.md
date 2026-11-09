@@ -4,10 +4,9 @@ title: rex settings walkthrough, two items at a time, shown live
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T12:44:00Z'
+updated_date: '2026-11-09T17:01:00Z'
 labels:
   - s
-  - clio-wing-1
 dependencies: []
 priority: next
 type: task
@@ -94,4 +93,6 @@ PK-358:W11 (2026-11-09 inbox, dima): it joins the herder research; walk me throu
 PK-358:W12 (2026-11-09 inbox, dima): the asks in W2, W4 and W7 are questions to answer ❓
 
 note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-09», the second «2026-11-09» for the groom check; notes are append-only, so both stay
+
+19:02 reassigned wing 1 → main clio on dima's 19:01 word
 <!-- SECTION:NOTES:END -->
