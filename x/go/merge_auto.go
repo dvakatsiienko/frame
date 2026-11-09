@@ -1320,8 +1320,13 @@ func securityCheck(repo, n, head, base, ref string) mergeCheck {
 		c.Detail = "no security pass recorded for " + repo + "#" + n + ": a risky path asks codie's /security-review before sixth sense's first round, then its stamp: " + stamp
 	case passed == head:
 		c.OK, c.Detail = true, "security pass on "+short(head)
-	// one pass a risky pr, never rerun (dima, grill 2 Q6): a pass on the head's history holds after a later push
-	case ok(gitIn("", "fetch", "-q", "origin", "refs/heads/"+ref)) && ok(gitIn("", "merge-base", "--is-ancestor", passed, head)):
+	// the store value reaches git as a revision, so a ref name like origin/main is refused before it can pass a pr
+	case !shaValue.MatchString(passed):
+		c.Detail = "the security pass recorded for " + repo + "#" + n + " is not a commit sha: " + passed + "; a new pass and its stamp: " + stamp
+	// one pass a risky pr, never rerun (dima, grill 2 Q6): a pass on the head's history holds after a later push, but only
+	// on the pr's own commits: a base commit sits in every pr's history and holds none of its code
+	case ok(gitIn("", "fetch", "-q", "origin", "refs/heads/"+ref)) && ok(gitIn("", "merge-base", "--is-ancestor", passed, head)) &&
+		!ok(gitIn("", "merge-base", "--is-ancestor", passed, "origin/"+base)):
 		c.OK, c.Detail = true, "security pass on "+short(passed)+", on the history of "+short(head)
 	default:
 		if c.OK, c.Detail = carried(passed, "the security pass", head, base, ref); !c.OK {
@@ -1333,6 +1338,8 @@ func securityCheck(repo, n, head, base, ref string) mergeCheck {
 
 // clio's app posts the read; a person could name an account like it, but never make it a Bot
 const clioApp = "x-clio-cc[bot]"
+
+var shaValue = regexp.MustCompile(`^[0-9a-f]{8,40}$`)
 
 var wishkeeperRead = regexp.MustCompile(`^wishkeeper read ([0-9a-f]{7,40})\b`)
 

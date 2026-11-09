@@ -86,14 +86,17 @@ func TestMergeAutoRefusesASecurityPassOnOtherCode(t *testing.T) {
 	for _, c := range []struct {
 		name  string
 		lands bool
-	}{{"a pass on an ancestor", true}, {"a pass on other code", false}} {
+		pass  func(t *testing.T, w *mergeWorld) string
+	}{
+		{"a pass on an ancestor", true, func(_ *testing.T, w *mergeWorld) string { return w.head }},
+		{"a pass on other code", false, func(*testing.T, *mergeWorld) string { return runSha(5) }},
+		{"a pass on the base, in every pr's history", false, func(t *testing.T, w *mergeWorld) string { return gitT(t, w.seed, "rev-parse", "main") }},
+		{"a pass that is a ref name, not a sha", false, func(*testing.T, *mergeWorld) string { return "origin/coder/x" }},
+	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			w := newMergeWorld(t, ".github/workflows/ci.yml")
-			passed := w.head
-			if !c.lands {
-				passed = runSha(5)
-			}
+			passed := c.pass(t, w)
 			write(t, filepath.Join(w.seed, "fix.ts"), "a change after the pass\n")
 			gitT(t, w.seed, "add", ".")
 			gitT(t, w.seed, "commit", "-q", "-m", "a change after the pass")
