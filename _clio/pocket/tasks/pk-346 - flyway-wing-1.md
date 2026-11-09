@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T23:22:00Z'
+updated_date: '2026-11-09T23:55:00Z'
 labels:
   - s
   - clio-wing-1
@@ -99,4 +99,6 @@ done 2026-11-10 00:15: ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next 
 2026-11-10 00:21 wing 1 (dima 00:19 «fix it»): the FRM-383 tree decamped (stale lock of dead pid 93143 removed); its 16 commits kept in tag archive/FRM-383-verify-red (fb0708f9); the branch codie/FRM-383-verify-red waits for his typed delete
 
 2026-11-10 01:24 wing 1: the codie/FRM-383-verify-red branch is deleted (his 00:20 word), only tag archive/FRM-383-verify-red stays; the 00:21 note's «waits for his typed delete» is done
+
+2026-11-10 01:56 wing 1: FRM-557 merged (frame#155, dima's «merge 155»); replay 118 → 51 min a day projected, the measured day read 11-11 (FRM-557 ⏰); sixth sense stopped, vm codie parked alive for dima; tonight's side work: 5 self-improve pulls landed, agent-browser-own-chrome trial born (until 11-24), agent-desktop trial on 11-11 (o106), neuroarxiv reinstalled
 <!-- SECTION:NOTES:END -->
