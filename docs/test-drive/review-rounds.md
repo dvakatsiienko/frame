@@ -42,6 +42,8 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-07 · ci made boring · the graded lines show which layer found what · keep
 - 2026-11-03 · FRM-494 clio-lean quick lane · 1 local review (wisphunter, 5 findings, all real), 4 sixth sense rounds, the last for a live proof · logged late, at its close
 - 2026-11-03 · FRM-496 clio-lean quick lane · 2 sixth sense rounds, round 1's duplicate wish-cover runs fixed · logged late, at its close
+- 2026-11-09 · frame#152 (FRM-548, FRM-549, FRM-553), cli lane 6: clean at 5 rounds, rounds 4–5 granted past the cap for wishkeeper's 2 high and the 21:30/21:32 steers · sixth sense 17/17 · local reviews 5, graded in FRM-548's done report · the security pass 1 medium, fixed · ci 1 red gate row, fixed · merged by merge-auto on the sign's pre-approval · measure: rounds past the cap, a security pass on a risky pr
+
 ## graded lines — one per local review, from codie's done report, copied by clio at land
 
 - 2026-10-22 · frame#95 · matt's code-review, spec card (Opus 5.5) · 4 useful, 3 noise · useful
