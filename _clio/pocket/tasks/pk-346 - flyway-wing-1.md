@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T15:59:00Z'
+updated_date: '2026-11-09T16:52:00Z'
 labels:
   - s
   - clio-wing-1
@@ -29,9 +29,10 @@ ordinal: 18998
 - [x] #11 gate lane 1: its codie stays parked as dima's herdr probe host, sixth sense parked (dima 17:16)
 - [x] #12 FRM-520 close on dima's o43; FRM-517 reopen or not on his o44
 - [ ] #13 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
-- [ ] #14 cli lane 6: FRM-503 door 1, then x lane landed FRM-383 --apply, then hand the lane to wing 2 (dima o34); its queue FRM-384, FRM-436, FRM-414, FRM-424 (o32) is wing 2's
+- [x] #14 cli lane 6: FRM-503 door 1, then x lane landed FRM-383 --apply, then hand the lane to wing 2 (dima o34); its queue FRM-384, FRM-436, FRM-414, FRM-424 (o32) is wing 2's
 - [ ] #15 FRM-551 vm-go-test: dima's sign, then its first step, the idle-cost kill gate
 - [ ] #16 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
+- [ ] #17 FRM-383 close: date its W3 timing run, then x lane landed FRM-383 --pr 150 --apply; FRM-503 close on dima's o49
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -64,4 +65,6 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 17:29 FRM-520 closed (dima o43); FRM-517 reopened (dima o44), its count 345 at 17:28, read again 11-10 17:28
 
 17:36 dima o32: the lane walks 🐉 review loop gets verbs after door 1; o34: after FRM-503 lands, cli lane 6 and its codie move to wing 2. FRM-383 reopened In Progress, blocked by FRM-503: W3 kept open on his «do»
+
+18:53 cli lane 6 handed to wing 2 (dima o34): handover at .scratch/handover-cli-lane-6.md in the wing 1 tree, glide l55 ended
 <!-- SECTION:NOTES:END -->
