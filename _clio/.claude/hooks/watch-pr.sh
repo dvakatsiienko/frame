@@ -79,13 +79,24 @@ pass() {
 
 case "${1:---watch}" in
   --verified)
-    [[ "$2" == */* && "$3" =~ ^[0-9]+$ && "$4" =~ ^[0-9a-f]{8,40}$ && ( $# -eq 4 || ( $# -eq 6 && "$5" == --by && "$6" == clio ) ) ]] ||
-      { echo "usage: watch-pr.sh --verified <owner/repo> <pr> <head sha> [--by clio]" >&2; exit 2; }
-    # no :by key means sixth sense; a later sixth sense clean drops clio's name
-    jq --arg k "$2#$3" --arg v "$4" --arg by "${6:-}" \
-      '.[$k] = $v | if $by == "" then del(.[$k + ":by"]) else .[$k + ":by"] = $by end' \
+    usage="usage: watch-pr.sh --verified <owner/repo> <pr> <head sha> [--security <sha>] [--by clio]"
+    repo=$2 pr=$3 head=$4 by="" security=""
+    [[ "$repo" == */* && "$pr" =~ ^[0-9]+$ && "$head" =~ ^[0-9a-f]{8,40}$ ]] || { echo "$usage" >&2; exit 2; }
+    shift 4
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --by) [ "${2:-}" = clio ] && [ -z "$by" ] || { echo "$usage" >&2; exit 2; }; by=clio; shift 2 ;;
+        --security) [[ "${2:-}" =~ ^[0-9a-f]{8,40}$ ]] && [ -z "$security" ] || { echo "$usage" >&2; exit 2; }; security=$2; shift 2 ;;
+        *) echo "$usage" >&2; exit 2 ;;
+      esac
+    done
+    # no :by key means sixth sense; a later sixth sense clean drops clio's name.
+    # :security is the sha the one /security-review ran on; a later clean without it keeps it, the pass is never rerun
+    jq --arg k "$repo#$pr" --arg v "$head" --arg by "$by" --arg sec "$security" \
+      '.[$k] = $v | (if $by == "" then del(.[$k + ":by"]) else .[$k + ":by"] = $by end)
+        | (if $sec == "" then . else .[$k + ":security"] = $sec end)' \
       "$VERIFIED" > "$VERIFIED.tmp" && mv "$VERIFIED.tmp" "$VERIFIED" \
-      && echo "verified: $4 on $2#$3${6:+ by $6}" ;;
+      && echo "verified: $head on $repo#$pr${by:+ by $by}${security:+, security on $security}" ;;
   --once) pass ;;
   --watch) while true; do pass; sleep 60; done ;;
 esac
