@@ -55,7 +55,7 @@ the split is **disposable vs watchable**, never research vs code.
 the mechanical steps run as one: `x brief summon "<command>"` refuses a skipped one, names its fix.
 
 - 🚫 **a running member's model never switches** (it re-reads the history uncached, model-cards' `/model` line); only on dima's word for that session (2026-10-30: «It is a banned move»); a repeat earns a deny rule
-- **reuse or summon** — an idle member revives by message, context intact; [models.md](models.md) § summon or reuse decides. one sixth sense a lane, reused by message; next side lane at «final», a trial
+- **reuse or summon** — reuse first, one by one (clio's `craft-fleet-flow`); a summon or a parallel lane says why in its brief; one sixth sense a lane, reused by message; next side lane at «final», a trial
 - **trust key** — a `--bg` summon reads its exact folder in `~/.claude.json` (`projects[<path>].hasTrustDialogAccepted`), never a trusted parent; a new summon home gets the key in one command, `jq … ~/.claude.json > tmp && mv tmp ~/.claude.json`, since every live session writes that file; never a `cp` from an older copy.
 - **spare age** — every `--bg` summon claims a pre-warmed `claude bg-spare`, and a day-old spare once booted codie without the repo's root `AGENTS.md`; a day old → `claude daemon stop --keep-workers`. the brief's «name your loaded AGENTS.md paths» line is the belt.
 - **app essentials** — the target app passes `node ~/projects/bytes/script/apps-essentials.ts --app <app>` (`x:app-setup-essentials`); a red row is filled before the summon, or the brief says which row codie fills first. a 🟡 row rides the brief too, after the app's wisps.
