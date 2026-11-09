@@ -119,7 +119,8 @@ fi
 [ "$mode" != none ] || [ "$was" != whole ] || echo 'test-commit: no related tests, the push and ci run the suite'
 case $mode in
 whole)
-    capped "$@" || code=$?
+    # the whole command is pnpm test, which hands the reporters on to vitest run
+    capped "$@" "${reporters[@]}" || code=$?
     # index-run logs user + sys for a run marked whole; a run nested under vitest is a fixture, and it would mark a related run
     [ -n "${VITEST:-}" ] || [ -z "${INDEX_RUN_WHOLE_MARK:-}" ] || : >"$INDEX_RUN_WHOLE_MARK"
     ;;

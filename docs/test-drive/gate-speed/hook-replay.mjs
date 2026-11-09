@@ -17,11 +17,14 @@ const git = (...args) =>
         maxBuffer: 1 << 28,
         timeout: 60_000,
     });
+// the want line's window, whatever else the copy holds
+const inWindow = (row) => row[0] >= '2026-11-07' && row[0] < '2026-11-10';
 const rows = (file) =>
     readFileSync(join(dir, file), 'utf8')
         .trimEnd()
         .split('\n')
-        .map((line) => line.split('\t'));
+        .map((line) => line.split('\t'))
+        .filter(inWindow);
 
 const isMemory = (path) =>
     /^_clio\/pocket\//.test(path) ||
@@ -86,9 +89,30 @@ const epoch = (stamp) =>
     Date.parse(stamp.replace(/([+-]\d\d)(\d\d)$/, '$1:$2')) / 1000;
 const day = (stamp) => stamp.slice(0, 10);
 
-// the new commit rules: none for what the import graph cannot judge, related for code a test imports, memory for memory alone
-function commitMode(changes) {
+// test-commit.sh's branch kinds and its related_kinds: a kind off the list is the one whole run left
+const relatedKinds = ['main', 'codie', 'clio-wing', 'worktree', 'other'];
+const kindOfBranch = (branch) =>
+    branch === 'detached'
+        ? 'detached'
+        : branch === 'main'
+          ? 'main'
+          : branch.startsWith('codie/')
+            ? 'codie'
+            : branch.startsWith('clio-wing-')
+              ? 'clio-wing'
+              : branch.startsWith('worktree-')
+                ? 'worktree'
+                : 'other';
+
+// the new commit rules, in the gate's order: none for what the import graph cannot judge, related for code a test imports,
+// memory for memory alone, whole only for a kind off related_kinds
+function commitMode(branch, changes) {
+    const kind = kindOfBranch(branch);
     if (changes.length === 0) return 'none';
+    if (changes.every(([, path]) => kindOf(path) === 'asset')) return 'none';
+    if (changes.every(([, path]) => isMemory(path))) return 'memory';
+    if (kind === 'detached') return 'none';
+    if (!relatedKinds.includes(kind)) return 'whole';
     if (changes.every(([, path]) => kindOf(path) === 'asset')) return 'none';
     if (changes.every(([, path]) => isMemory(path))) return 'memory';
     let mode = 'related';
@@ -129,15 +153,15 @@ for (const row of commitRows) {
         continue;
     }
     // a whole row: its paths decide what it runs now
-    const found = branch === 'detached' ? null : commitOf(head, epoch(stamp));
-    if (branch === 'detached') continue;
+    const found = commitOf(head, epoch(stamp));
     if (!found) {
         counts.commitUnmeasured++;
         counts.unmeasuredSeconds += cost;
         add(stamp, 'after', cost);
         continue;
     }
-    const mode = commitMode(pathsOf(found.parent, found.child));
+    const mode = commitMode(branch, pathsOf(found.parent, found.child));
+    if (mode === 'whole') add(stamp, 'after', cost);
     if (mode === 'whole') counts.commitWhole++;
     // whole under the old rules but related now: code no test imports ran related first, then whole; the related half is the p50
     if (mode === 'related' || mode === 'memory')

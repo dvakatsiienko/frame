@@ -139,7 +139,8 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
             cwd,
             encoding: 'utf8',
             env: env(extra),
-            timeout: 10_000,
+            // a real go test builds from a cold cache in the guest home: 10 s died on ci
+            timeout: 50_000,
         });
     const runAsync = (args: string[], extra: NodeJS.ProcessEnv = {}) =>
         new Promise<string>((done) => {
@@ -527,7 +528,7 @@ test('a failing test in the vm exits non-zero and prints its name as go test doe
         cwd: join(code, 'm'),
         encoding: 'utf8',
         env: { ...process.env, GOFLAGS: '-buildvcs=false' },
-        timeout: 10_000,
+        timeout: 50_000,
     });
 
     const got = run(suite);

@@ -169,6 +169,25 @@ describe('runner-twin', () => {
         expect(lastRow(context.dir)[7]).toBe('test:twin:skipped');
     });
 
+    test('a main push that moves code to a .md runs the twin', () => {
+        const context = fixture();
+        context.git('switch', '-q', 'codie/FRM-1-x');
+        mkdirSync(join(context.repo, 'script/lib'), { recursive: true });
+        writeFileSync(
+            join(context.repo, 'script/lib/a.ts'),
+            'export const a = 1;\n'.repeat(20),
+        );
+        context.git('add', '-A');
+        context.git('commit', '-q', '-m', 'code');
+        const base = context.git('rev-parse', 'HEAD');
+        context.git('mv', 'script/lib/a.ts', 'docs-a.md');
+        context.git('commit', '-q', '-m', 'archive it as a note');
+        const sha = context.git('rev-parse', 'HEAD');
+        context.git('switch', '-q', '-');
+        twin(context, `r ${sha} refs/heads/main ${base}\n`);
+        expect(tested(context.dir)).toBe(sha);
+    });
+
     test('a main push with code runs the whole suite', () => {
         const { context, sha } = pushOf('script/a.ts');
         twin(context, `r ${sha} refs/heads/main ${context.head}\n`);

@@ -172,8 +172,9 @@ describe('test-commit', () => {
             join(copy, 'lib/memory-only.sh'),
             readFileSync(join(dirname(script), 'lib/memory-only.sh')),
         );
+        // the whole suite, the running reporter beside the default one, so a cap names its hung test there too
         expect(runGate(context, 'codie/FRM-1-x', '0', {}, copy).calls).toBe(
-            'test',
+            `test|--reporter=default|--reporter=${join(copy, 'lib/vitest-running.ts')}`,
         );
         expect(runGate(context, 'main', '0', {}, copy).fields[1]).toBe(
             'related',
@@ -383,7 +384,8 @@ describe('test-commit', () => {
                 ...gitEnv(),
                 INDEX_RUN_BRANCH: 'main',
                 PATH: `${context.bin}:${process.env.PATH}`,
-                TEST_COMMIT_CAP: '2',
+                // past vitest's boot under load, so the hung test has started when the cap fires
+                TEST_COMMIT_CAP: '8',
                 X_STATE: join(context.dir, 'state'),
             },
             timeout: 25_000,
@@ -391,8 +393,9 @@ describe('test-commit', () => {
 
         expect(Date.now() - from).toBeLessThan(20_000);
         expect(got.status, got.stdout + got.stderr).not.toBe(0);
-        expect(got.stdout).toContain('passed its 2 s cap; still running:');
-        expect(got.stdout).toContain('hang.test.ts');
+        expect(got.stdout).toContain('passed its 8 s cap; still running:');
+        // a child spawned sync holds its worker's loop, so the test's own start never reaches the reporter: its file is the name
+        expect(got.stdout).toContain('  hang.test.ts\n');
     }, 30_000);
 
     test.each([

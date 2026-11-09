@@ -26,7 +26,8 @@ if [ -z "$sha" ] && [ ! -t 0 ]; then
         pushed_main=1 sha=$pushed step_ref=$ref remote_sha=$remote
         case $pushed in *[!0]*) ;; *) continue ;; esac
         # a zero remote sha (nothing to compare) fails the diff, and a failed diff runs the twin
-        paths=$(git -c core.quotePath=false diff --name-only "$remote" "$pushed" 2>/dev/null) || {
+        # --no-renames: code moved to a .md shows its deleted end too, and runs the twin
+        paths=$(git -c core.quotePath=false diff --no-renames --name-only "$remote" "$pushed" 2>/dev/null) || {
             carries_code=1
             continue
         }
