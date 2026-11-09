@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T13:10:00Z'
+updated_date: '2026-11-09T14:02:00Z'
 labels:
   - s
   - clio-wing-1
@@ -48,4 +48,6 @@ low tide split 11-07, dima's yes 17:36: FRM-517 joins; PK-300 and FRM-530 parked
 PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance issues topic, so anything performance-related can go to wing one.
 
 2026-11-09 14:55 wing 2 triage, settled on dima's o7: +PK-355, +FRM-383. FRM-503 stays split by step (dima o6): #8 door 1 here, the lane run on main's PK-349 #5.
+
+16:03 main's slipstream, dima's o18: FRM-503 moves to wing 1 fully, label on; door 1 (merge-auto reads mergeable state and deploy) shapes for his sign, joins cli lane 6 after FRM-383; ⏰ 11-14
 <!-- SECTION:NOTES:END -->
