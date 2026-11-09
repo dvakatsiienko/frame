@@ -4,7 +4,7 @@ title: 'fleet comms update: leaner cafe-chat replies, comms recipe run'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T13:41:00Z'
+updated_date: '2026-11-09T13:50:00Z'
 labels:
   - m
   - clio-wing-3
@@ -115,4 +115,7 @@ PK-364:W26 (2026-11-09 15:40, dima): orbit matters because our comms are built m
 PK-364:W27 (2026-11-09 15:40, dima): i want to know how much effort --bg sessions spend on orbit and phases, and what important thing i do not see there
 PK-364:W28 (2026-11-09 15:40, dima): the clunky fix today is glide: a --bg thread's orbit asks show up in glide, a workaround for now
 PK-364:W29 (2026-11-09 15:40, dima): batch the M3 weekly wish-loss audit with this recipe run
+
+PK-364:W30 (2026-11-09 15:49, dima): yes on W24: keep updates very lean, with no technical details, or keep them only when it really matters
+PK-364:W31 (2026-11-09 15:49, dima): think what else we could fold into the recipe update, and what we could miss to hunt, given the current picture, the new winged setup and my wishes; after a final check, approve
 <!-- SECTION:NOTES:END -->
