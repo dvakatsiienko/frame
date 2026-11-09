@@ -22,4 +22,5 @@ ordinal: 18999
 - [ ] #4 FRM-509 live read of the 11-07 lane: close or name the one step left, by 11-10 (from main)
 - [x] #5 x-mod-guard dima-ok-flag rule misreads a followed ask: fold as one ticket under 🐋 safer, quieter mods (from main, wing 1's o40)
 - [ ] #6 PK-369 perf: can turbo remote cache or another cache reuse test results, against FRM-533's own key; a read, verdict line to wing 1 (from wing 1)
+- [ ] #7 PK-366 linear: delete the «model» label group (his o19), the GLOSSARY label line with it; ⚠️ ask first (from wing 2)
 <!-- AC:END -->
