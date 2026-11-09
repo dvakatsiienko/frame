@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T18:39:00Z'
+updated_date: '2026-11-09T18:44:00Z'
 labels:
   - s
   - clio-main
@@ -17,18 +17,15 @@ ordinal: 9995
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 chunk 2: Zoo's chat into frame as fleet-chatter, a ticket for your sign, the herdr codie builds it
-- [ ] #2 next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87)
-- [ ] #3 the wish-loss audit's reader: align wish-cover --audit-week to the write hook's rule (every section's «wish: <id>» line, none only when no id line exists), then the M3 reminder's owner after wing 3 halts (from wing 3, 20:38)
-- [ ] #4 low-tide-cuts: «park» now reads «nothing new is built on it», wishkeeper calls it a drift from «nothing runs it»; keep or revert (wing 3's handover)
-- [ ] #5 the weekly M3 reminder (_reminders.md, 🪽3) gets an owner once wing 3 halts; and wish-cover --audit-week reads every section's wish line, like the write hook (wing 3's handover)
-- [ ] #6 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #7 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
-- [ ] #8 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
-- [ ] #9 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #10 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check prints "" and FRM-542 closes — on: 2026-11-10
-- [ ] #11 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #12 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #13 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #2 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #3 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
+- [ ] #4 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
+- [ ] #5 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #6 ⏳ next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87) — waits for: herdr, the mods revisit pass
+- [ ] #7 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check prints "" and FRM-542 closes — on: 2026-11-10
+- [ ] #8 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #9 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #10 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -106,4 +103,6 @@ done 20:01: crow and helga stopped on dima's o85, crow restarted fresh on opus; 
 20:38 wing 3: its duplicate FRM-542 line (#8, «from wing 3, dima 20:29») merged into the standing FRM-542 close line; dima's 20:29 handover word stands for it
 
 done 2026-11-09 20:38: FRM-552 orbit in herdr landed and closed, dima's o90 tick reached main «accepted from herdr», look card sent; polish steers go to codie in ~/frame/.scratch/herdr-polish/spec.md
+
+done 2026-11-09 20:45: the wish audit reads every chunk section (draftSections, run 3: 98 checked, 1 red, codie's fresh polish spec); low-tide-cuts «park» kept as «nothing new is built on it» (a doubt park keeps a safety net running; «nothing runs it» would switch it off); the weekly M3 reminder is main's (🦉)
 <!-- SECTION:NOTES:END -->
