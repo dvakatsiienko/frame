@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T19:52:00Z'
+updated_date: '2026-11-09T20:29:00Z'
 labels:
   - s
   - clio-main
@@ -25,12 +25,16 @@ ordinal: 1000
 - [ ] #7 ⏳ next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87) — waits for: herdr, the mods revisit pass
 - [ ] #8 ⏳ FRM-524 operator-override switch, needs human — waits for: dima's flip word
 - [ ] #9 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check prints "" and FRM-542 closes — on: 2026-11-10
-- [ ] #10 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #11 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
-- [ ] #12 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #13 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #14 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #15 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
+- [ ] #10 📅 boot clio in herdr carefully (plan.md recipe), fix what breaks as it boots, start only crow and helga (both --bg) — on: 2026-11-10
+- [ ] #11 📅 herdr quick lane: main drives, dima steers the looks, scope seeded by codie's herdr map — on: 2026-11-10
+- [ ] #12 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
+- [ ] #13 📅 wing 1 opens after the herdr explore: its tails, then speak v2 — on: 2026-11-10
+- [ ] #14 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #15 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
+- [ ] #16 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #17 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #18 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #19 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -114,4 +118,6 @@ done 2026-11-09 20:45: the wish audit reads every chunk section (draftSections, 
 PK-349:W26 (2026-11-09 20:20, dima, o12 steer): last time i already autohalted it went fine. The only flaw was that Wing 1 had some monitors active, monitoring for some perf-related activity. You can ask around Wing 1 what that was: those monitors prevented its halt step, so I had to archive it manually.
 
 done 2026-11-09 21:52: ⏳ FRM-556 fleet-chatter, signed: spec and dispatch to the herdr codie — waits for: dima's polish batches to end (FRM-556 Triage)
+
+PK-349:W27 (2026-11-09 21:20, dima, via wing 2): we are kind of ahead of pace, so I plan more economic moves starting from tomorrow. Most likely, we will have main clio and wing 1. it is important to hunt all tails so no chores are left.
 <!-- SECTION:NOTES:END -->
