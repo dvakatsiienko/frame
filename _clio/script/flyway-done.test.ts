@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import {
     copyFileSync,
+    existsSync,
     mkdirSync,
     mkdtempSync,
     readFileSync,
@@ -14,14 +15,9 @@ import { flywayKind, flywayLines, flywaySorted } from './flyway-done.ts';
 const script = path.join(import.meta.dirname, 'flyway-done.ts');
 const config = path.join(import.meta.dirname, '..', 'backlog.config.yml');
 // ci has no backlog cli; every local commit runs these through its gate
-const hasBacklog = (() => {
-    try {
-        execFileSync('backlog', ['--version'], { stdio: 'ignore' });
-        return true;
-    } catch {
-        return false;
-    }
-})();
+const hasBacklog = (process.env.PATH ?? '')
+    .split(path.delimiter)
+    .some((dir) => existsSync(path.join(dir, 'backlog')));
 
 // a temp pocket holding one flyway, run through the real backlog cli
 function pocketWith(lines: string[]) {
