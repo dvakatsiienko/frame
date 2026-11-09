@@ -107,7 +107,6 @@
         "fleet-hazards:check": "node ./script/fleet-hazards-check.ts",
         "git-crypt-rename:check": "node ./script/git-crypt-rename-check.ts",
         "git-slim": "./script/git-slim.sh",
-        "retired-names:check": "node ./script/retired-names-check.ts",
         "shift:checkup": "node ./script/shift-checkup.ts"
     },
     "dependencies": {

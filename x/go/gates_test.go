@@ -168,7 +168,7 @@ func TestXGoReadsNamesEveryPathItsTestsRead(t *testing.T) {
 	}
 }
 
-// the hook's shape: tsc with the mods' strict flags, the real retired-names and memory-lint, a commit-only suite
+// the hook's shape: tsc with the mods' strict flags, the real memory-lint, a commit-only suite
 const realGatesHook = `pre-commit:
   parallel: true
   commands:
@@ -177,8 +177,6 @@ const realGatesHook = `pre-commit:
       run: "\"$X_TSC\" --noEmit --strict --noUnusedLocals --target esnext --module esnext --moduleResolution bundler --allowImportingTsExtensions {staged_files}"
     memory-lint:
       run: node recipes/nurture-memory/scripts/memory-lint.ts {staged_files}
-    retired-names:
-      run: node script/retired-names-check.ts
     mods-test:
       glob: "` + modsDir + `**"
       tags: [commit-only]
@@ -233,11 +231,9 @@ func verdictsOf(got ran) map[string]string {
 
 func TestModsEditTestRedsTheGateTheCommitWouldRed(t *testing.T) {
 	t.Parallel()
-	retired := "cc" + "lio"
 	cases := []struct{ name, path, body, gate string }{
 		{"an unused variable", modHooks, "const unused = 1;\nexport const register = () => {};\n", "typecheck-mods"},
 		{"a dropped import", modHooks, "import { gone } from './gone.ts';\nexport const register = () => gone;\n", "typecheck-mods"},
-		{"a retired name", modHooks, "// the " + retired + " seat\nexport const register = () => {};\n", "retired-names"},
 		{"a budget overrun", modAgents, "# m\n" + strings.Repeat("a line past its budget\n", 4), "memory-lint"},
 	}
 	for _, c := range cases {
@@ -264,14 +260,14 @@ func TestModsEditTestPrintsEachGatesVerdictInTheHooksOrder(t *testing.T) {
 	if got.code != 0 {
 		t.Fatalf("exit %d:\n%s", got.code, got.stdout)
 	}
-	want := map[string]string{"typecheck-mods": gateGreen, "memory-lint": gateGreen, "retired-names": gateGreen, "mods-test": gateCommits, "only-speak": gateNoPath}
+	want := map[string]string{"typecheck-mods": gateGreen, "memory-lint": gateGreen, "mods-test": gateCommits, "only-speak": gateNoPath}
 	verdicts := verdictsOf(got)
 	for name, verdict := range want {
 		if verdicts[name] != verdict {
 			t.Errorf("%s reads %q, want %q", name, verdicts[name], verdict)
 		}
 	}
-	order := regexp.MustCompile(`(?s)typecheck-mods.*memory-lint.*retired-names.*mods-test.*only-speak`)
+	order := regexp.MustCompile(`(?s)typecheck-mods.*memory-lint.*mods-test.*only-speak`)
 	if !order.MatchString(got.stdout) {
 		t.Errorf("the verdicts left the hook's order:\n%s", got.stdout)
 	}
@@ -943,9 +939,9 @@ func TestModsEditTestRunsTheGatesBesideARedTest(t *testing.T) {
 	t.Parallel()
 	dir, env := gateFixture(t, realGatesHook)
 	edited(t, dir, env, modTestA, "HOOK-THROWS\n")
-	edited(t, dir, env, modHooks, "// the c"+"clio seat\nexport const register = () => {};\n")
+	edited(t, dir, env, modHooks, "const unused = 1;\nexport const register = () => {};\n")
 	got := xIn(t, dir, env, "mods", "edit", "test")
-	for _, want := range []string{"hook was skipped", "retired-names"} {
+	for _, want := range []string{"hook was skipped", "typecheck-mods"} {
 		if got.code != 1 || !strings.Contains(got.stdout, want) {
 			t.Errorf("exit %d, want 1 naming %s:\n%s", got.code, want, got.stdout)
 		}

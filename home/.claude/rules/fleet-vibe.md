@@ -19,6 +19,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **✨ wisp** — a bug: a small glow to tend before it burns, a will-o'-the-wisp that leads the app
   astray (dima, 2026-10-08, replacing «gremlins»). each app keeps a «<app> wisps» stash ticket; the
   inbox's ✨ section is the drop point.
+- **⛩️ gate** — a check that refuses a commit, push, merge, summon or turn (a warning is a nudge); all of them live in `docs/knowledge/gates-catalog.md`, always bold with the badge (dima, 2026-11-09). <!-- cc -->
 - **blueprint** — a picture of one part of our system (a flow, a structure, a map) that clio draws
   and dima edits to show an idea; clio reads the edit back and builds from it.
   home: `_clio/blueprints/`.

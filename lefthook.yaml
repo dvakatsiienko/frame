@@ -58,19 +58,10 @@ pre-commit:
       # raises its row in recipes/nurture-memory/scripts/memory-budgets.tsv with a reason, in the same commit),
       # merged bullets, a new memory file with no row, a row whose file is gone. no glob: the memory set lives in the script
       run: node recipes/nurture-memory/scripts/memory-lint.ts {staged_files}
-    replaced-doors:
-      # a memory note naming a door x retired turned main red twice (2026-10-23); the pocket is history, its notes may quote a dead door
-      glob: "_clio/memory/**"
-      # a merge commit's hook env breaks go's vcs stamp in the private copy (exit 128, 2026-11-05)
-      run: script/index-run.sh sh -c 'cd x/go && GIT_CONFIG_GLOBAL=/dev/null GOFLAGS=-buildvcs=false go test -run TestReplacedDoorsAreDead .'
     git-crypt-rename:
       # a git-crypt file moved to a path no filter line covers ships plaintext — d1bddfb5 put one on
       # public main (2026-10-07). no glob: the moved file can live anywhere
       run: node script/git-crypt-rename-check.ts
-    retired-names:
-      # temporary: the 10-29 rename's retired forms in an added line red the commit, each hit logged to
-      # ~/.local/state/x/retired-names.log; 14 green days and a ticket removes it (spec o66). no glob: any file
-      run: node script/retired-names-check.ts
     chords-essentials:
       # chords is the one app outside bytes; the essentials list lives once, in bytes' checker
       # (BYT-111), so frame calls it by path. a mac without bytes checked out skips, never blocks.
