@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "clio",
-  "version": "0.3.473",
+  "version": "0.3.474",
   "description": "clio's coordinator rituals and crafts — boot, the pm handbook, shaping, siesta, flawlog, dima-intervenes, halt.",
   "author": {
     "name": "Dima Vakatsiienko",
