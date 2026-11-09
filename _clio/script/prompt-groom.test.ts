@@ -288,7 +288,11 @@ describe('--check against a groom file on disk', () => {
                 ],
                 {
                     encoding: 'utf8',
-                    env: { ...process.env, PROMPT_GROOM_DIR: root },
+                    env: {
+                        ...process.env,
+                        CLIO_SEAT: '',
+                        PROMPT_GROOM_DIR: root,
+                    },
                 },
             ).status;
         } finally {
@@ -334,7 +338,11 @@ describe('--check on an inbox stamp', () => {
                 ],
                 {
                     encoding: 'utf8',
-                    env: { ...process.env, PROMPT_GROOM_DIR: root },
+                    env: {
+                        ...process.env,
+                        CLIO_SEAT: '',
+                        PROMPT_GROOM_DIR: root,
+                    },
                 },
             );
         } finally {
@@ -414,6 +422,7 @@ describe('--day', () => {
                     encoding: 'utf8',
                     env: {
                         ...process.env,
+                        CLIO_SEAT: '',
                         HOME: root,
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                         POCKET_DIR: join(root, 'pocket'),
@@ -647,6 +656,7 @@ describe('prompt-groom oN (FRM-451)', () => {
                     encoding: 'utf8',
                     env: {
                         ...process.env,
+                        CLIO_SEAT: '',
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                         PROMPT_GROOM_DIR: grooms,
                     },
@@ -700,6 +710,7 @@ describe('--linear, with a stubbed x', () => {
                     encoding: 'utf8',
                     env: {
                         ...process.env,
+                        CLIO_SEAT: '',
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                         PROMPT_GROOM_DIR: grooms,
                         // UTC+14 keeps the fixture's 2026-10-25 14:50 in the past on any CI clock
