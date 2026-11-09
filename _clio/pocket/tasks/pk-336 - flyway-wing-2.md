@@ -26,6 +26,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #2 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
 - [ ] #3 PK-348 REVIEW.md: explore, set up the convention
 - [ ] #4 FRM-454 helga on Sonnet
+- [ ] #5 PK-356 slipstream contract as a habit, main and every wing
 <!-- AC:END -->
 
 ## Implementation Notes
