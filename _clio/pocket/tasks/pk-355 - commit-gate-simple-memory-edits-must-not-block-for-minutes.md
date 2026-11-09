@@ -1,10 +1,10 @@
 ---
 id: PK-355
 title: 'commit gate: simple memory edits must not block for minutes'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-07T20:25:00Z'
-updated_date: '2026-11-09T13:00:00Z'
+updated_date: '2026-11-09T13:10:00Z'
 labels:
   - s
   - clio-wing-1
@@ -38,4 +38,6 @@ kept: 2026-11-09 — commit-gate speed, goes to wing 1's perf topic at today's l
 kept: 2026-11-09 — dima 14:42: wing 1's for today
 
 2026-11-09 wing 1 read: a memory-only commit's gates run about 10 s (tests 7, typecheck 2, n=16); its queue wait p90 42 s, max 93 s, the same before and after FRM-521's queue fix; on 11-07 22:05-22:19 main's transcript spent 86 s of 790 in tool calls, the commit+push about 70 s in the background, the rest model time and about 4 min idle. the exact 10-min moment is not found in any transcript (helper-lite, 58 searched). verdict, inference: the gate is not the wait now; the minutes are the turn's chain around a commit.
+
+close: 2026-11-09 dima's o7 tick — the gate is about 10 s since the queue fix; a slow memory commit again reopens it
 <!-- SECTION:NOTES:END -->
