@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T20:20:00Z'
+updated_date: '2026-11-09T20:39:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,18 +17,17 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 FRM-383 x verify: the real call happened (38 today outside its own tree, 6–154 s); time W3 «faster» against red-proof, then x lane landed FRM-383 --pr 150 --apply, by 11-12
-- [ ] #2 FRM-530 gates catalog: fold o74–o87 into decided, refresh its body (the page, not the old gates.md), then close it naming 78d1d545 and 7abb406d
-- [ ] #3 PK-357 branches: W5 «gba prints clean» — bytes' stray refs/remotes/pr125 deleted on his tick, then close
-- [ ] #4 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
-- [ ] #5 ⏳ FRM-557 test hooks trimmed, signed: joins the vm lane as its next chunk, spec section and lane-plan lines at FRM-551's final — waits for: FRM-551's final
-- [ ] #6 ⏳ FRM-551 vm lane: #153 open, sixth sense a83e4792 summoned, merge on clean (dima 22:14) — waits for: sixth sense's clean
-- [ ] #7 ⏳ FRM-537 next probes, by hand, the vitest pools now ride FRM-557 — waits for: spare usage
-- [ ] #8 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
-- [ ] #9 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
-- [ ] #10 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
-- [ ] #11 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
-- [ ] #12 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #13 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #2 PK-357 branches: W5 «gba prints clean» — bytes' stray refs/remotes/pr125 deleted on his tick, then close
+- [ ] #3 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
+- [ ] #4 ⏳ FRM-557 test hooks trimmed, signed: joins the vm lane as its next chunk, spec section and lane-plan lines at FRM-551's final — waits for: FRM-551's final
+- [ ] #5 ⏳ FRM-551 vm lane: #153 open, sixth sense a83e4792 summoned, merge on clean (dima 22:14) — waits for: sixth sense's clean
+- [ ] #6 ⏳ FRM-537 next probes, by hand, the vitest pools now ride FRM-557 — waits for: spare usage
+- [ ] #7 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
+- [ ] #8 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
+- [ ] #9 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
+- [ ] #10 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
+- [ ] #11 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #12 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -85,4 +84,6 @@ done 2026-11-09 21:26: 💤 PK-370 move tests off pre-commit, to ci or pre-push 
 done 2026-11-09 21:29: FRM-525 perf line: talk it through with dima, his «drop it» (21:24), right after the FRM-557 call (FRM-525 Todo, FRM-557 Todo)
 
 2026-11-09 21:29: FRM-525 line dropped on dima's word (21:24, «drop the FRM-525 line»; 21:28 «proceed»): the cpu watch until 11-14 ends; the ticket stays open as the performance umbrella (parent of FRM-533, 537, 551, 555, 557)
+
+done 2026-11-09 22:39: FRM-530 gates catalog: fold o74–o87 into decided, refresh its body (the page, not the old gates.md), then close it naming 78d1d545 and 7abb406d (FRM-530 Done)
 <!-- SECTION:NOTES:END -->
