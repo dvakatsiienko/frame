@@ -4,7 +4,7 @@ title: 'sidecar passports: crow and helga info into their AGENTS.md'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T12:39:00Z'
+updated_date: '2026-11-09T12:44:00Z'
 labels:
   - s
 dependencies: []
@@ -23,4 +23,6 @@ PK-368:W2 (2026-11-09 inbox, dima): remind me how we store specs for crow and he
 raw drop (2026-11-09 inbox, dima): **clio main** — sidecars passport info rebalance: move crow and helga info from skill to their agents.md? so for clio and helga and crow their agents md are their passports? tilde will also have herself. and clio skill only goes into a its agents md and calls from there. maybe having any useful complementary tools for efficiency?
 
 raw drop (2026-11-09 inbox, dima): remind how to you store specs for crow and helga. and how you start them? if want all info about crow and helga colocated in their agents.md as their passports.
+
+PK-368:W3 (2026-11-09 inbox, dima): maybe some useful complementary tools for efficiency? ❓
 <!-- SECTION:NOTES:END -->

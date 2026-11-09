@@ -4,7 +4,7 @@ title: 'perf: tests off pre-commit, to ci or pre-push'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T12:39:00Z'
+updated_date: '2026-11-09T12:44:00Z'
 labels:
   - s
   - clio-wing-1
@@ -28,4 +28,6 @@ raw drop (2026-11-09 inbox, dima): **wing1: roasted cpu idea**
 raw drop (2026-11-09 inbox, dima): move tests to ci only? test, how much faster it would be by only running tests on ci? for example: disconnect test from pre-commit entirely. run tests by hand only when writing tests. when all done — slay — and wait for tests on CI. (saves time of a large qty and time of test runs during cmt gates, run tests single/few times on ci instead)? or move to pre-push? would this work?
 
 raw drop (2026-11-09 inbox, dima): i think running tests on each commit is overkill. or this approach acts as enforcement lever for codies to actually write tests? propose how to rebalance, to reduce test run occasions. tests runs are expensive on my machine.
+
+PK-370:W4 (2026-11-09 inbox, dima): how much faster would tests on ci only be, and would pre-push work? ❓
 <!-- SECTION:NOTES:END -->
