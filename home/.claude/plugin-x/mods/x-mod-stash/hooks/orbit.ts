@@ -3,6 +3,7 @@
 import type {
     OrbitAsk,
     OrbitAssumption,
+    RemoteMark,
     StashOrbit,
     StashPlan,
     StashTick,
@@ -58,6 +59,39 @@ export const allAsksTicks = (
         targets: [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string),
         text,
     }));
+
+// herdr's board writes one press per line of `~/.claude/shelf/orbit-ticks/<sid>.jsonl`: the presses past `after`, the
+// newest per ask, as the marks a glide card would leave; a line that is no press is skipped, never fatal
+const HERDR_MARK = { replay: 'rejected', tick: 'accepted' } as const;
+export function herdrTicks(text: string, after: number) {
+    const marks: Record<string, RemoteMark> = {};
+    let last = after;
+    for (const line of text.split('\n')) {
+        let press: unknown;
+        try {
+            press = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        if (typeof press !== 'object' || !press) continue;
+        const { at, id, steer, verdict } = press as Record<string, unknown>;
+        if (
+            typeof id !== 'string' ||
+            typeof at !== 'number' ||
+            at <= after ||
+            (verdict !== 'tick' && verdict !== 'replay')
+        )
+            continue;
+        last = Math.max(last, at);
+        if ((marks[id]?.at ?? 0) > at) continue;
+        marks[id] = {
+            at,
+            mark: HERDR_MARK[verdict],
+            ...(typeof steer === 'string' && steer.trim() ? { steer } : {}),
+        };
+    }
+    return { last, marks };
+}
 
 // a marked ask no turn has taken yet
 export const isFresh = (a: OrbitAsk) =>

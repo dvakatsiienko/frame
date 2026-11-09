@@ -2403,6 +2403,77 @@ test("a tick from another board's glide card joins the running turn at once", as
     expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
+// FRM-552: herdr's board writes one press per line of the session's ticks file, and stash keeps how far it read
+const HERDR_FILE = `/home/.claude/shelf/orbit-ticks/${SID}.jsonl`;
+const press = (p: Record<string, unknown>) => `${JSON.stringify(p)}\n`;
+const turnContext = async ($: Engine) =>
+    ((await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? []).join(
+        '\n',
+    );
+
+test('a herdr tick joins the running turn once, with his steer', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'run the long job');
+    const at = w.clock.now();
+    files[HERDR_FILE] = press({
+        at,
+        id: 'o1',
+        steer: 'say "hi"\nthen go',
+        verdict: 'tick',
+    });
+    const first = await turnContext($);
+    const second = await turnContext($);
+    expect([
+        first.match(/o1 🛎️ accepted.*his steer: «say "hi"\nthen go»/s)?.length,
+        second.includes('o1 🛎️'),
+        w.store.get(`herdr-read:${SID}`),
+    ]).toEqual([1, false, at]);
+});
+
+test('a herdr replay on an ask the desktop board already ticked changes nothing', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    files[HERDR_FILE] = press({
+        at: w.clock.now(),
+        id: 'o1',
+        verdict: 'replay',
+    });
+    await say($, 'go on');
+    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
+});
+
+test('a herdr tick on a resolved ask changes nothing', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await orbit($, { ids: ['o1'], op: 'resolve', words: { o1: 'done' } });
+    files[HERDR_FILE] = press({ at: w.clock.now(), id: 'o1', verdict: 'tick' });
+    await say($, 'go on');
+    expect(joined(w.contexts)).toEqual([]);
+});
+
+test("a herdr tick on an ask quoting a command writes no record x-mod-guard reads as dima's word", async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    const writes = tickLog(on);
+    await start($);
+    await add($, ['⚠️ push `git push --mirror origin` to the backup', 'yes']);
+    files[HERDR_FILE] = press({ at: w.clock.now(), id: 'o1', verdict: 'tick' });
+    await say($, 'go on');
+    expect([joined(w.contexts).join('\n'), writes]).toEqual([
+        expect.stringMatching(/o1 🛎️ accepted/),
+        [],
+    ]);
+});
+
 test('a phases tick is ready at once', async ($, on) => {
     world(on);
     await start($);
