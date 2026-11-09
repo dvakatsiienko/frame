@@ -14,7 +14,7 @@ import (
 // dated rounds and baselines quote a door that has since died); the registry names the doors on purpose
 var notCallers = []string{":!x/go/registry.json", ":!docs/adr", ":(exclude)_clio/gazette", ":(exclude)_clio/pocket", ":(exclude)_clio/shifts", ":!home/.claude/shelf/flawlog",
 	":!home/.claude/shelf/jev/fixtures", ":!docs/research", ":!docs/test-drive/ctx7.md", ":!docs/test-drive/pocket.md",
-	":!docs/test-drive/helper-lite.md"}
+	":!docs/test-drive/helper-lite.md", ":!x/go/testdata/review-tiers.json"}
 
 // a verb is done when its old door is dead: the file it replaces is gone and nothing tracked still calls it
 func TestReplacedDoorsAreDead(t *testing.T) {

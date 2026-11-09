@@ -34,6 +34,20 @@ const OP_VALUED = new Set([
 // a leading `$HOME` names home: `trash "$HOME"` is a top dir
 const homed = (o: string, ctx: Context) =>
     ctx.home ? o.replace(/^\$\{?HOME\}?(?=\/|$)/, ctx.home) : o;
+// railway's flags that take a value (`railway <cmd> --help`, 5.71.0, 2026-11-09): `railway -e prod environment delete x`
+// deletes, and `railway -e delete logs` reads logs
+const RAILWAY_VALUED = new Set([
+    '--duplicate',
+    '--environment',
+    '--mount-path',
+    '--name',
+    '--project',
+    '--service',
+    '--volume',
+    '-e',
+    '-p',
+    '-s',
+]);
 // the railway commands with a delete verb, aliases included (`railway <cmd> --help`, 2026-10-27); a sandbox's is `destroy`
 const RAILWAY_DELETE = new Set([...DELETE, 'destroy']);
 const RAILWAY_PARTS = new Set([
@@ -169,18 +183,26 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
             or(ops.slice(vercelAt + 1), 'vercel'),
         );
     // `railway delete` takes the project, `railway down` the latest deploy, `railway <part> delete` one part;
-    // `railway run rm` is a local command
+    // `railway run rm` is a local command; a valued flag's value is never the slot
+    const railOps =
+        c.name === 'railway'
+            ? operands(
+                  c.args.filter(
+                      (_, i) => !RAILWAY_VALUED.has(c.args[i - 1]?.text ?? ''),
+                  ),
+              )
+            : [];
     const railwayAt =
-        DELETE.has(ops[0] ?? '') || ops[0] === 'down'
+        DELETE.has(railOps[0] ?? '') || railOps[0] === 'down'
             ? 0
-            : RAILWAY_PARTS.has(ops[0] ?? '') &&
-                RAILWAY_DELETE.has(ops[1] ?? '')
+            : RAILWAY_PARTS.has(railOps[0] ?? '') &&
+                RAILWAY_DELETE.has(railOps[1] ?? '')
               ? 1
               : -1;
     if (c.name === 'railway' && railwayAt >= 0)
         return remote(
-            `railway ${ops.slice(0, railwayAt + 1).join(' ')}`,
-            or(ops.slice(railwayAt + 1), 'railway'),
+            `railway ${railOps.slice(0, railwayAt + 1).join(' ')}`,
+            or(railOps.slice(railwayAt + 1), 'railway'),
         );
     const opOps =
         c.name === 'op'
