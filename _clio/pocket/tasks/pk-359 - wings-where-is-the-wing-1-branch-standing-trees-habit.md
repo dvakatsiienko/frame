@@ -4,7 +4,7 @@ title: 'wings: where is the wing-1 branch, standing trees habit'
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T12:45:00Z'
+updated_date: '2026-11-09T12:54:00Z'
 labels:
   - s
   - clio-main
@@ -32,4 +32,6 @@ raw drop (2026-11-09 inbox, dima): maybe wisp — in scope of winged clio v2, wi
 PK-359:W3 (2026-11-09 inbox, dima): where is the wing-1 branch? ❓
 
 note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-09», the second «2026-11-09» for the groom check; notes are append-only, so both stay
+
+2026-11-09 14:56 clio, the answer: last session's wing 1 (the cpu one) ran as a forked wing in tree fork-483eb11c on branch worktree-fork-483eb11c, never on clio-wing-1, so no standing branch was ever made for it; clio-wing-1 was born today 14:38 with the new wing 1 (reflog). the gap: a forked wing skips the standing seat branch. fix to propose: a forked wing also takes clio-wing-<N>
 <!-- SECTION:NOTES:END -->
