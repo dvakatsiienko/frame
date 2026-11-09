@@ -9,7 +9,7 @@ fits: codie sixth-sense
 
 Ticket: FRM-455
 
-**test card:** we believe a card made for review finds the real slips in a diff at fewer false hits and lower cost than the researcher and helper cards it replaces · we test it by every code review in the fleet for 14 days (codies' local review pair, sixth sense's second reads, clio's diff checks, the rename sweep's review) · we measure per review: findings that held, false hits, slips missed against a known list where one exists, tokens and dollars per spawn, wall time, and which card the spawn landed on · we're right if, judged by clio against FRM-425's findings file, the union of both axes returns ≥5 of FRM-425's 6 known slips in 2 of 3 runs, finds FRM-431 `07136ee6`'s held-out slip, keeps false hits ≤1 in 4 findings, and no review spawn lands on `researcher` or `helper` in the 14 days
+**test card:** we believe a card made for review finds the real slips in a diff at fewer false hits and lower cost than the researcher and helper cards it replaces · we test it by every code review in the fleet for 14 days (codies' local review pair, sixth sense's second reads, clio's diff checks, the rename sweep's review) · we measure per review: findings that held, false hits, slips missed against a known list where one exists, tokens and dollars per spawn, wall time, and which card the spawn landed on · we're right if, judged by clio against FRM-425's findings file, the union of both axes returns ≥5 of FRM-425's 6 known slips in 2 of 3 runs, finds FRM-431 `3b749531`'s held-out slip, keeps false hits ≤1 in 4 findings, and no review spawn lands on `researcher` or `helper` in the 14 days
 **kill rule:** two benchmark runs in a row under 4 of 6, or false hits over 1 in 2 across 3 real reviews
 
 ## day 0
@@ -18,7 +18,7 @@ Ticket: FRM-455
 ## stress list
 - the standards axis — matt's `code-review` on FRM-425's diff, 3 runs — slips found of 6, false hits, tokens
 - the spec axis — the same diff against FRM-425's spec — gaps found, false hits
-- a held-out diff — FRM-431 `07136ee6`, sixth sense's exit-1 refute (the throw guard wrapped only the lane cards) — found yes or no
+- a held-out diff — FRM-431 `3b749531` (`d9b056e5..3b749531`), sixth sense's exit-1 refute (the throw guard wrapped only the lane cards) — found yes or no
 - the diff-file door — a worktree-isolated codie hands a diff file — read with no git refusal, yes or no
 - routing from the built-in `/code-review` — which card its review agents land on — wisphunter yes or no
 - a clean diff — `## findings (0)` with a `checked:` line — yes or no, false hits
@@ -71,5 +71,21 @@ group by 1 order by 2 desc;
 - 2026-11-06 · lane retros (BYT-94, FRM-474, FRM-521) · all keep; on FRM-474 2 of 3 findings on the redesign were real false proofs nobody else found; on FRM-521 it found the `--dry` HEAD bug and the shared-checkout break apart from the probe; on BYT-94 2 of 4 were by-design lines it could not see. asks: hand it the known list, name the checkouts a diff's consumers share
 - 2026-11-06 · lane retros (FRM-509, FRM-474) · keep; on FRM-509 the mid-rebase break was its read alone in sixth sense's round, the plain card the most useful of codie's five; on FRM-474 a scoped read found a false proof nobody else did
 - 2026-11-07 · lane retros (BYT-94, FRM-433, FRM-521, FRM-510) · keep, 4 of 4 helped: ci spec axis 3 of 3 acted on, standards 2 of 5; on FRM-510 2 reads found 7 real and 1 false alarm, each of it and sixth sense finding what the other missed; brief it with what's already found, or it repeats
+
+### round 6 — the escape replay, the benchmark's first run, 2026-11-09 (clio wing 2, FRM-545, Opus 5.5)
+- the set: FRM-425's 6 slips (`~/.local/state/x/lanes/FRM-425/2026-10-27-FRM-425-findings.md:7-12`) on `d2d0a87c..c1e9ef0e`, and the held-out H1 on `d9b056e5..3b749531` (the stress list's `07136ee6` is a docs-only commit; `3b749531` is the diff that wrapped only the lane cards)
+- one blind run per reader, no slip named in the brief; the cards' files: `.scratch/pk-348/replay/` in the clio-wing-2 tree
+- the grid, caught / missed / didn't run:
+  - S1 `x linear api` mutation with `projectId: $p` + `--vars` slips the milestone guard — plain missed, spec missed, standards missed
+  - S2 `projectMilestoneId: null` counts as a milestone — plain missed, spec caught (a nit), standards missed
+  - S3 `railway run rm -rf dist` refused as a remote delete — plain caught (a nit), spec caught (a nit), standards missed
+  - S4 a sixth sense's findings to its codie refused as a spec-less lane job — plain caught (a bug), spec missed, standards missed
+  - S5 a raw `linear --team X issue create` skips the verb check — missed by all three
+  - S6 a ticket id in a quote counts, the why says «any size» — spec half-caught (the item-count mismatch, as a question), plain missed, standards missed
+  - H1 the throw guard wraps only the lane cards — spec caught (a bug), plain missed, standards missed
+  - didn't run: the built-in `/code-review` (it reviews a live branch or pr, never an old range), coderabbit (no quota today)
+- tally: plain 2 of 6, spec 2.5 of 6 plus H1, standards 0 of 6; the union 3.5 of 6 plus H1, under the test card's ≥5 of 6 (one run of the 3 asked; the kill rule needs two runs in a row under 4)
+- the trim reading: matt's standards axis added no known slip the other two missed, so the plain card plus the spec axis catch the same known set as all three; its own finds were real but off the set (the milestone rule refusing from day one, which the spec axis also found; an un-gated note; untested parser branches)
+- beyond the set, both the plain card and the spec axis found a nested `bash -c` linear move skipping the milestone check, and the plain card a railway delete behind `-s <service>`: candidates for a live check, not slips of record
 
 ## verdict
