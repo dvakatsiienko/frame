@@ -56,7 +56,7 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 ## the fleet's state a mod reads
 
 - `~/.claude/sessions/*.json` — live sessions, one file per pid
-- `~/.claude/plugins/store/x-mod-stash_inline-*.json` — the stash store: keys `model:`, `context:`, `asks:<sid>`, `reply:<sid>`; one shared file, read-only from a mod
+- `~/.claude/plugins/store/x-mod-stash_inline-*.json` — the stash store: keys `model:`, `context:`, `asks:<sid>`, and `reply:<sid>` with its `.wait`; one shared file, read-only from a mod
 - `~/.claude/shelf/lanes.json` — the glide cards
 - a mod never writes a cc session's state; a tick or a steer goes back through the file the stash mod reads for it, or `hc send`
 

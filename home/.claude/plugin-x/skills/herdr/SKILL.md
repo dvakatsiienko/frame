@@ -44,7 +44,7 @@ hc run --bg --no-parent --no-notify --name <name> --cwd <dir> --label seat=<seat
 
 **prefill a command for dima's hand** — the enter is his
 
-- `hc keys <t> g i t space s t a t u s` types without Enter; `hc keys <t> enter` submits (proven 2026-11-09, a scratch shell)
+- `hc keys <t> g i t space s t a t u s` types without Enter; `hc keys <t> enter` submits (proven in a scratch shell)
 - it takes letters, digits, `space`, `- / . ' =`, and `shift+<letter>` for a capital; it types `4` for `shift+4` and refuses `~ " | $`
 - a command with a pipe, a double quote, `$` or `~` goes to a Rex tab instead (`x:rex`)
 - aim it only at a terminal you started for this; his own seats are his
@@ -60,6 +60,8 @@ printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building'
 - 📌 `hc send` always presses Enter; `hc keys` is the only prefill, with the limits above
 - 📌 `hc send --force` types into a blocked program and may answer its permission dialog: never into a seat waiting on dima
 - `hc get` changes nothing and shows no screen; the screen is `hc read`
+- `herdr-app do '<json>'` alone is refused: the command name comes first, `herdr-app do pane.split '<json>'`
+- `hc label <t> seat=<seat>` tags a terminal you didn't start with `--label`, so a script finds it later
 - a `herdr-app do` that makes or splits a pane names its target `pane` from `ls` and runs only when dima asked for it; without one it acts on his focused pane
 - `mcp__ide` tools in a herdr seat are Cursor's (open on the same folder), never herdr's
 
@@ -83,4 +85,4 @@ the rest: `~/.config/herdr-app/keys.json`.
 ## what herdr costs a session
 
 - `~/.config/herdr-app/AGENTS.md` is 62 KB, about 15k tokens (inference: 4 bytes a token); our loader hook names it only when a session touches `~/.config/herdr-app` and never inlines it, so a seat that only drives herdr pays nothing
-- the herdr window ran about 270 MB against the desktop app's 2.3 GB (one snapshot, 2026-11-09)
+- the herdr window ran about 270 MB against the desktop app's 2.3 GB (one snapshot)
