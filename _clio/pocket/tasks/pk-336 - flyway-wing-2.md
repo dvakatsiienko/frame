@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-07T21:09:00Z'
+updated_date: '2026-11-09T12:34:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,9 +22,10 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
-- [ ] #2 PK-348 REVIEW.md: explore, set up the convention
-- [ ] #3 FRM-454 helga on Sonnet
+- [ ] #1 slipstream contract as a habit main and every wing know: main's asks join a wing's flyway right after the item it is on, never mid-turn, unless urgent or dima says so
+- [ ] #2 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
+- [ ] #3 PK-348 REVIEW.md: explore, set up the convention
+- [ ] #4 FRM-454 helga on Sonnet
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -119,4 +120,6 @@ batch read 17:40: neither is stale. FRM-455 waits on wisphunter's trial verdict,
 line 4 done 17:48: low-tide and low-tide-triage live in clio 0.3.438; the first split ran, consulted, settled with his yes.
 
 PK-336:W24 (2026-11-07 21:48, dima): fix the habit: an action that folds or dissolves an item into another area does a sanity check across flyways and yanks it out of the flyway plan, so no confusions.
+
+2026-11-09 14:36 wing 2: booted, low tide mode (his 14:30 word). no finished line to clear. new #1 from his inbox: the slipstream contract. PK-351 and PK-348 lost the clio-wing-2 label at the 11-07 hand-back to main; asked whether they stay here.
 <!-- SECTION:NOTES:END -->
