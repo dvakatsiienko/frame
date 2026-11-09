@@ -81,6 +81,9 @@ type pullHead struct {
 	Base struct {
 		Ref string `json:"ref"`
 	} `json:"base"`
+	// github's own read of whether it would merge: null while it computes, after a push
+	Mergeable      *bool  `json:"mergeable"`
+	MergeableState string `json:"mergeable_state"`
 }
 
 /* Verbs */
@@ -232,9 +235,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 
-	var sixthSense, ci, round, threads mergeCheck
+	var sixthSense, ci, round, mergeable, threads mergeCheck
 	if d.Override != nil {
-		r.skip("sixth-sense", "ci", "round", "threads")
+		r.skip("sixth-sense", "ci", "round", "mergeable", "threads")
 	} else {
 		if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
 			sixthSense = d.sixthSenseOf(api, repo, n, pr)
@@ -248,6 +251,15 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 				return "", err
 			}
 			return ci.shown()
+		}); err != nil {
+			return nil, err
+		}
+		if err := r.Step("mergeable", "reading whether github would merge it", func() (string, error) {
+			var err error
+			if mergeable, err = mergeableCheck(api, n, pr, trunk, newWaitClock()); err != nil {
+				return "", err
+			}
+			return mergeable.shown()
 		}); err != nil {
 			return nil, err
 		}
@@ -269,9 +281,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}); err != nil {
 			return nil, err
 		}
-		d.Checks = []mergeCheck{sixthSense, ci, threads}
+		d.Checks = []mergeCheck{sixthSense, ci, mergeable, threads}
 		if roundGated(repo) {
-			d.Checks = []mergeCheck{sixthSense, ci, round, threads}
+			d.Checks = []mergeCheck{sixthSense, ci, round, mergeable, threads}
 		}
 	}
 	selfWait := ""
@@ -324,7 +336,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		d.Decision = "merge"
 		return d, nil
 	}
-	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, ci, round, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, ci, round, mergeable, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -333,14 +345,15 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 }
 
 // the brake and a self-edit outrank every check
-func decide(brake, selfWait string, sixthSense, ci, round, threads mergeCheck) (decision, wait string) {
+func decide(brake, selfWait string, sixthSense, ci, round, mergeable, threads mergeCheck) (decision, wait string) {
 	switch {
 	case brake != "":
 		return "wait", "brake on, needs dima's word — " + brake
 	case selfWait != "":
 		return "wait", selfWait
 	}
-	for _, c := range []mergeCheck{sixthSense, round, ci, threads} {
+	// mergeable after ci: a pending required check is what github's blocked means, so ci names it first
+	for _, c := range []mergeCheck{sixthSense, round, ci, mergeable, threads} {
 		if !c.OK {
 			return "wait", c.Detail
 		}
@@ -368,6 +381,10 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	mergeable, err := mergeableCheck(api, n, pr, trunk, newWaitClock())
+	if err != nil {
+		return "", err
+	}
 	risky, ownSelf, err := riskyPaths(api, n)
 	if err != nil {
 		return "", err
@@ -380,11 +397,11 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
-	decision, wait := decide("", selfWait, sixthSense, ci, round, threads)
+	decision, wait := decide("", selfWait, sixthSense, ci, round, mergeable, threads)
 	if decision == "merge" {
 		return "", nil
 	}
-	for _, c := range []mergeCheck{sixthSense, ci, round, threads} {
+	for _, c := range []mergeCheck{sixthSense, ci, round, mergeable, threads} {
 		if !c.OK && c.Detail == wait {
 			wait = c.Name + ": " + wait
 		}
@@ -1189,6 +1206,40 @@ func logLine(text string) string {
 }
 
 // «no run» and «skipped» are never green
+// github's own read of the merge, an allow-list: clean passes, and unstable, a red or pending check no branch rule
+// requires, which ciCheck ignores too; github computes it after a push, so a null or unknown is read again
+func mergeableCheck(api, n string, pr pullHead, trunk string, clock *waitClock) (mergeCheck, error) {
+	c := mergeCheck{Name: "mergeable"}
+	for read := 1; pr.Mergeable == nil || pr.MergeableState == "unknown"; read++ {
+		if read == 3 {
+			c.Detail = "github is still computing whether #" + n + " merges; run it again in a minute"
+			return c, nil
+		}
+		clock.sleep(2 * time.Second)
+		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
+			return c, err
+		}
+	}
+	switch state := pr.MergeableState; state {
+	case "clean", "unstable":
+		c.OK, c.Detail = true, "github would merge it ("+state+")"
+	case "dirty":
+		c.Detail = "#" + n + " conflicts with " + pr.Base.Ref + " → x lane restack --apply"
+		if pr.Base.Ref == trunk {
+			c.Detail = "#" + n + " conflicts with main → x lane merge-main"
+		}
+	case "behind":
+		c.Detail = "#" + n + " is behind " + pr.Base.Ref + " → x lane merge-main"
+	case "blocked":
+		c.Detail = "github's branch protection holds it: a required check or review is still missing"
+	case "":
+		c.Detail = "github gave #" + n + " no mergeable state"
+	default:
+		c.Detail = "github will not merge #" + n + ": its mergeable state is " + state
+	}
+	return c, nil
+}
+
 func ciCheck(api, base, head string) (mergeCheck, error) {
 	c := mergeCheck{Name: "ci"}
 	var protection struct {

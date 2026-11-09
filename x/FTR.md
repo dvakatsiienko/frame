@@ -188,11 +188,12 @@
 - ✅ `x lane merge-auto <pr>` merges a pr once its head is verifier-clean, its required checks green and its threads closed
   - given sixth sense clean on the head (or carried to it when the branch's whole change keeps its patch-id, whitespace included: a rebase, a plain merge of main), every required check run green for the head and no open review thread
   - when `x lane merge-auto <pr> --apply` runs
-  - then it squash-merges the pr pinned to the head it read, marked `Merged-by: x lane merge-auto`, and prints the three checks and a `risky:` line naming each risky path
+  - then it squash-merges the pr pinned to the head it read, marked `Merged-by: x lane merge-auto`, and prints its checks and a `risky:` line naming each risky path
   - given no run, a skipped or red required check, 0 required checks, an open thread, no sixth sense clean, a self-edit, or the brake on, then it makes no merge call, exits 1 and names the wait, with or without `--apply`; the board marks each check that does not hold ✗
   - given a bytes pr whose reviewer job finished a round on an ancestor of its head, sixth sense's clean covering the commits after it, or on a head a rebase carried with its patch-id unchanged, then it merges with no approve; a repo that still requires `review:clean` waits on it as on any check
   - given no round, a round a rebase changed the code under, or a run whose reviewer job skipped or was cancelled, then it waits and names `x lane review <pr>`; given a stand-down alone, then it names the `--dima-ok` door, which passes the round; a renovate author needs no round
   - given a renovate pr whose every commit is renovate's own and signed by github, then it needs no clean, and the squash message names the exemption beside its trailer; a member's commit on it, a workflow file changed, or a list that did not read, asks the clean as on any pr; ci, threads, the self-edit wait and the brake still hold
+  - given github's own `mergeable_state` on the pr, or on a layer under it, read after ci, then only `clean` and `unstable` pass; `dirty` waits naming `x lane merge-main` on a pr onto main and `x lane restack --apply` on an upper layer, `behind` names `x lane merge-main`, `blocked` names branch protection, any other state or none waits naming it, and a null or `unknown` is read again up to 3 times, 2 s apart, then waits «github is still computing»; none of them reaches github's merge call (FRM-503)
   - decision: a risky path merges and is named, never a wait; only a self-edit waits for dima's word (dima, 2026-10-22, o49 b and o57)
   - decision: github's own auto-merge is never turned on — a stack cannot take it (gh-stack#504)
 - ⬜ a self-edit merges with no hand step when its chunk's sign pre-approved it
