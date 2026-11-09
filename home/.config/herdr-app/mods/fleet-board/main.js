@@ -211,8 +211,8 @@ export default class FleetBoard extends View {
         });
     }
 
-    /** @param {Theme} t @param {Row} s @param {number} i @param {Context} cx */
-    session(t, s, i, cx) {
+    /** @param {Theme} t @param {Row} s @param {number} i */
+    session(t, s, i) {
         const state = STATE[s.status] ?? s.status;
         const key = `phases:${s.sid}`;
         const isOpen = this.open.has(key);
@@ -238,7 +238,7 @@ export default class FleetBoard extends View {
                             .tooltip(
                                 isOpen ? 'hide its phases' : 'show its phases',
                             )
-                            .on_click(() => {
+                            .on_click((_e, cx) => {
                                 isOpen
                                     ? this.open.delete(key)
                                     : this.open.add(key);
@@ -313,6 +313,8 @@ export default class FleetBoard extends View {
             );
     }
 
+    // a click's own cx is the only one valid past an await (herdr's AGENTS.md: never keep a cx), so a press runs as
+    // its own task; every failure, a refused mkdir included, lands in the panel, never silently
     /** @param {Context} cx @param {Row} s @param {Ask} ask @param {'tick' | 'replay'} verdict */
     async press(cx, s, ask, verdict) {
         const key = `${s.sid}:${ask.id}`;
@@ -322,7 +324,11 @@ export default class FleetBoard extends View {
         this.pressError = null;
         cx.notify();
         try {
-            await exec('mkdir', ['-p', TICKS]);
+            const made = await exec('mkdir', ['-p', TICKS]);
+            if (made.code !== 0)
+                throw new Error(
+                    made.stderr.trim() || `mkdir exited ${made.code}`,
+                );
             await savePress(
                 { read: readTextFile, write: writeTextFile },
                 `${TICKS}/${s.sid}.jsonl`,
@@ -343,13 +349,13 @@ export default class FleetBoard extends View {
         cx.notify();
     }
 
-    /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j @param {Context} cx */
-    ask(t, s, ask, i, j, cx) {
+    /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j */
+    ask(t, s, ask, i, j) {
         const key = `${s.sid}:${ask.id}`;
         const sent = this.sent.get(key)?.verdict;
         const steer = this.steers.get(key);
         const done = ask.mark ?? sent;
-        /** @param {string} id @param {string} label @param {string} tip @param {() => void} onClick */
+        /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick */
         const button = (id, label, tip, onClick) =>
             div()
                 .id(`${id}-${key}`)
@@ -363,7 +369,7 @@ export default class FleetBoard extends View {
                 .cursor_pointer()
                 .hover((st) => st.bg(t.hover))
                 .tooltip(tip)
-                .on_click(onClick)
+                .on_click((_e, cx) => onClick(cx))
                 .child(label);
         return v_flex()
             .pl(8)
@@ -401,7 +407,10 @@ export default class FleetBoard extends View {
                                     'tick',
                                     '🛎️ tick',
                                     'good to go: the session takes the pick',
-                                    () => this.press(cx, s, ask, 'tick'),
+                                    (cx) =>
+                                        cx.spawn((cx) =>
+                                            this.press(cx, s, ask, 'tick'),
+                                        ),
                                 ),
                             )
                             .child(
@@ -409,7 +418,10 @@ export default class FleetBoard extends View {
                                     'replay',
                                     '🔁 replay',
                                     'another round, with your steer',
-                                    () => this.press(cx, s, ask, 'replay'),
+                                    (cx) =>
+                                        cx.spawn((cx) =>
+                                            this.press(cx, s, ask, 'replay'),
+                                        ),
                                 ),
                             )
                             .when(!steer, (row) =>
@@ -418,7 +430,7 @@ export default class FleetBoard extends View {
                                         'steer',
                                         '✏️ steer',
                                         'add a steer to send with the press',
-                                        () => {
+                                        (cx) => {
                                             const box = InputState.new({
                                                 placeholder:
                                                     'your steer, sent with the press',
@@ -455,8 +467,8 @@ export default class FleetBoard extends View {
             );
     }
 
-    /** @param {Theme} t @param {Context} cx */
-    orbit(t, cx) {
+    /** @param {Theme} t */
+    orbit(t) {
         const owners = this.rows.filter((s) => s.asks.length > 0);
         return owners.map((s, i) =>
             v_flex()
@@ -464,14 +476,12 @@ export default class FleetBoard extends View {
                 .py(4)
                 .gap(4)
                 .child(line(t.dim, SIZE.meta).child(s.name))
-                .children(
-                    s.asks.map((ask, j) => this.ask(t, s, ask, i, j, cx)),
-                ),
+                .children(s.asks.map((ask, j) => this.ask(t, s, ask, i, j))),
         );
     }
 
-    /** @param {Theme} t @param {Lane} l @param {Context} cx */
-    lane(t, l, cx) {
+    /** @param {Theme} t @param {Lane} l */
+    lane(t, l) {
         const items = l.items ?? [];
         const current = Math.min(l.current ?? 0, items.length);
         const key = l.id ?? l.title;
@@ -508,7 +518,7 @@ export default class FleetBoard extends View {
             .cursor_pointer()
             .hover((st) => st.bg(t.hover))
             .tooltip(open ? 'collapse' : 'show every step')
-            .on_click(() => {
+            .on_click((_e, cx) => {
                 open ? this.open.delete(key) : this.open.add(key);
                 cx.notify();
             })
@@ -545,8 +555,7 @@ export default class FleetBoard extends View {
             );
     }
 
-    /** @param {Context} cx */
-    render(cx) {
+    render() {
         const t = /** @type {Theme} */ (theme());
         const busy = this.rows.filter(
             (s) => STATE[s.status] === 'working',
@@ -571,11 +580,11 @@ export default class FleetBoard extends View {
                     `sessions · ${this.rows.length}${busy ? ` · ${busy} working` : ''}`,
                 ),
             )
-            .children(this.rows.map((s, i) => this.session(t, s, i, cx)))
+            .children(this.rows.map((s, i) => this.session(t, s, i)))
             .when(asks > 0, (el) =>
                 el
                     .child(header(`orbit · ${asks} asks`))
-                    .children(this.orbit(t, cx))
+                    .children(this.orbit(t))
                     .when(Boolean(this.pressError), (el2) =>
                         el2.child(
                             div()
@@ -589,7 +598,7 @@ export default class FleetBoard extends View {
             .when(this.lanes.length > 0, (el) =>
                 el
                     .child(header(`glide · ${this.lanes.length}`))
-                    .children(this.lanes.map((l) => this.lane(t, l, cx))),
+                    .children(this.lanes.map((l) => this.lane(t, l))),
             )
             .child(
                 div()
