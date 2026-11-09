@@ -1,10 +1,10 @@
 ---
 id: PK-348
 title: 'REVIEW.md: explore it, set up the convention for us everywhere'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T15:27:00Z'
+updated_date: '2026-11-09T16:23:00Z'
 labels:
   - s
   - clio-wing-2
@@ -69,4 +69,6 @@ held: 2026-11-09 — FRM-548 its sign, then the ask-guard close of PK-348
 held: 2026-11-09 — FRM-549 its sign, then the ask-guard close of PK-348
 
 17:28 the sixth sense round counter's home: a rider on FRM-414 (main's placement, re-sign asked of dima, o34)
+
+close: 2026-11-09 18:24 — dima o38. homes: W1 W6 W8 W10 W11 → FRM-546–549; W2 W3 W4 W7 answered by the proposal and the replay (FRM-545, closed o39); W5 W9 too many rounds → FRM-414's round cap; ticket: FRM-414
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T15:51:00Z'
+updated_date: '2026-11-09T16:22:00Z'
 labels:
   - m
   - clio-main
@@ -192,4 +192,42 @@ probe 2 (17:51, gate codie, ~18 min): mods/fleet-board draws live, read-only: 2 
 PK-363:W35 (2026-11-09 17:51, dima, o36 steer): image drag-and-drop can be solved later; it blurs the scope; let's explore the other parts of herdr
 
 PK-363:W36 (2026-11-09 17:51, dima, o36 steer): our main goal is to move everyone to herdr as soon as possible: first see that everything works, and measure how hard herdr loads cc compared to the claude desktop app (its mcp tools, for example)
+
+PK-363:W37 (2026-11-09 18:21, dima): i usually want you to run yourself too when you prefill. in rex - can you prefill and send? ❓
+
+PK-363:W38 (2026-11-09 18:21, dima): i forgot a thing (or you forgot). in my plan asks (inbox) i asked to compile a rex/herder skill out from the research results, thorough parse of the research data and compile a really solid skill for both doors. importance is described in inbox. we have that already? ❓
+
+PK-363:W39 (2026-11-09 18:21, dima): so herder part partially covered — it already has everything that is needed about it inside its own agents.md? This overhead of 62 KB of herdr-specific agents.md, is it shared for all CC threads? How many tokens is 62 KB? For example, how many tokens does it add to each thread? Or is this file only read when any further edits are made? ❓
+
+PK-363:W40 (2026-11-09 18:21, dima): standing for everyone today: no more artifacts until i ask.
+
+PK-363:W41 (2026-11-09 18:21, dima): you forgot to describe grilling into the main thread again.
+
+PK-363:W42 (2026-11-09 18:21, dima): rex: so Rex is generally less flexible than herdr, right? herdr allows building a lot of custom UIs pretty flexibly, while Rex only allows running a lot of CCs in parallel but doesn't have so many custom UIs like herdr has (or probably even doesn't have custom UI at all). So Rex is limited to terminal and CCView UI, right? ❓
+
+PK-363:W43 (2026-11-09 18:21, dima): herder - can it run with typescript, not raw js? if so i prefer TS. ❓
+
+PK-363:W44 (2026-11-09 18:21, dima): herder custom UI with c desktop app custom UI - what is faster/cheaper/more approachable in terms of building and running live (result) both? is herder cheaper to build? ask herder codie. he just rebuild herder board slightly ❓
+
+PK-363:W45 (2026-11-09 18:21, dima): zoo (where we borrow from) - how to gradually reconnect borrowed parts to our own? so we are free to gradually evolve it? i want it to be fully branded as ours. ❓
+
+PK-363:W46 (2026-11-09 18:21, dima): Our board inside herdr (from artifact) — so currently, we have an element of duping? Our mods get drawn everywhere: in playing CC in the Claude desktop app (the native UI) and in herdr. They will be mirrored? How do you think: is it good or not good? We have two places to maintain each new UI for a new mod, and then it has to be implemented on the mods side to have it working as a base and in herdr too, right? ❓
+
+PK-363:W47 (2026-11-09 18:21, dima): A clarification: Can a part of the UI be built only on the herdr side, but no effort be spent on building the actual mod in CC or anything custom in herdr? Have to be first baked up by a built-in CC mod under the hood? This question is related to the scope we have planned for mods and the future scope. Is it still relevant with current findings, or does some of the planned mod scope get outdated or stale or superseded by herder? ❓
+
+PK-363:W48 (2026-11-09 18:21, dima): What breaks if coding leaves the desktop app? does herder have replacements counterparts? i assume then if doors/apis are different we have choice: dual support that includes c desktop app + herder, or full move leaving no doors? ❓
+
+PK-363:W49 (2026-11-09 18:21, dima): how expensive/messy to support all doors at once (keep c desktop app door as safety net backup door in case if herder desktop app will die)? ❓
+
+PK-363:W50 (2026-11-09 18:21, dima): herder codie already partially covered board part, and pretty fast from what i saw. ask him how hard it was.
+
+PK-363:W51 (2026-11-09 18:21, dima): from what i saw, i can use both rex and herder with a boundary split of what each do. each is very pretty (i like) and have its perks. rex is terminal by default (herder also have terminal, do not throw it away).
+
+PK-363:W52 (2026-11-09 18:21, dima): Install Herdr Zoo, open a clio thread in its chat view. your read: is this chatter good enough to grow? ❓
+
+PK-363:W53 (2026-11-09 18:21, dima): I lean towards refining herdr now with forwardly deployed CC, and keeping fleet in the Claude desktop app for today, and prepping it well enough so tomorrow everyone can start in herdr
+
+PK-363:W54 (2026-11-09 18:21, dima): approve plan.
+
+PK-363:W55 (2026-11-09 18:21, dima): print grill in thread
 <!-- SECTION:NOTES:END -->
