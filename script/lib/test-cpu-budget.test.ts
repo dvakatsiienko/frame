@@ -13,6 +13,7 @@ import { delimiter, dirname, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 const script = join(import.meta.dirname, '../test-cpu-budget.sh');
+const runner = join(import.meta.dirname, '../test-vm-go.sh');
 
 // a fake go burning a known cpu in its own process, so a row reads a real user + sys and never a sleep
 const stubGo = (burnMs: number, printed: string, code: number) => `#!/bin/bash
@@ -42,6 +43,8 @@ function fixture({
     const copy = join(dir, 'test-cpu-budget.sh');
     copyFileSync(script, copy);
     chmodSync(copy, 0o755);
+    copyFileSync(runner, join(dir, 'test-vm-go.sh'));
+    chmodSync(join(dir, 'test-vm-go.sh'), 0o755);
     writeFileSync(
         join(dir, 'test-cpu-budget.tsv'),
         `# suite\tcpu-s\tdate\treason\nx-go\t${budget}`,
@@ -50,6 +53,9 @@ function fixture({
     mkdirSync(bin);
     writeFileSync(join(bin, 'go'), stubGo(burnMs, printed, code));
     chmodSync(join(bin, 'go'), 0o755);
+    // the runner reads the vm stopped, so a run never reaches the real vm-go-test
+    writeFileSync(join(bin, 'limactl'), '#!/bin/bash\necho Stopped\n');
+    chmodSync(join(bin, 'limactl'), 0o755);
     const slimBin = join(dir, 'git-slim/current/bin');
     mkdirSync(slimBin, { recursive: true });
     writeFileSync(join(slimBin, 'git'), '#!/bin/bash\n');
@@ -87,6 +93,69 @@ function fixture({
 }
 
 const whole = ['x-go', 'go', 'test', '-count=1', './...'];
+
+describe('the runner it hands the suite to', () => {
+    test.each([
+        [
+            'a commit door (--log-only) tests the index alone',
+            ['--log-only', ...whole],
+            '--index go test -count=1 ./...',
+        ],
+        [
+            'a by-hand run tests the working tree',
+            whole,
+            'go test -count=1 ./...',
+        ],
+    ])('%s', (_name, args, handed) => {
+        const { dir, run } = fixture({ budget: '9999\t2026-11-07\tno red' });
+        writeFileSync(
+            join(dir, 'test-vm-go.sh'),
+            `#!/bin/bash\necho "$*" >"${join(dir, 'runner.args')}"\n`,
+        );
+
+        run(args);
+
+        expect(readFileSync(join(dir, 'runner.args'), 'utf8').trim()).toBe(
+            handed,
+        );
+    });
+
+    test.each([
+        ['a solo vm row past its line goes red', 'vm', 1],
+        [
+            'a vm-overlap row past its line never reds: its number is shared',
+            'vm-overlap',
+            0,
+        ],
+    ])('%s', (_name, leg, status) => {
+        const { dir, rows, run } = fixture();
+        writeFileSync(
+            join(dir, 'test-vm-go.sh'),
+            `#!/bin/bash\nprintf '${leg}\\t5000\\n' >"$TEST_VM_GO_REPORT"\necho 'ok  \tx\t1s'\n`,
+        );
+
+        const got = run(whole);
+
+        expect(got.status, got.stderr).toBe(status);
+        expect(rows()[0]?.[9]).toBe(leg);
+        expect(Number(rows()[0]?.[3])).toBeGreaterThanOrEqual(5);
+    });
+
+    test('a report whose cpu is no number adds nothing and runs nothing', () => {
+        const { dir, rows, run } = fixture({ budget: '60\t2026-11-07\troomy' });
+        const ran = join(dir, 'ran');
+        writeFileSync(
+            join(dir, 'test-vm-go.sh'),
+            `#!/bin/bash\nprintf 'vm\\ta[$(touch ${ran})]\\n' >"$TEST_VM_GO_REPORT"\necho 'ok  \tx\t1s'\n`,
+        );
+
+        const got = run(whole);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(existsSync(ran)).toBe(false);
+        expect(Number(rows()[0]?.[3])).toBeLessThan(5);
+    });
+});
 
 describe('the worker cap', () => {
     test('a whole run on this mac takes 5 workers', () => {
@@ -163,7 +232,7 @@ describe('a whole run keys the code it ran on', () => {
         keyed();
 
         const [first, again, edited, staged] = rows().map((row) =>
-            row.slice(7),
+            row.slice(7, 9),
         );
         expect(first?.[0]).toMatch(/^[0-9a-f]{12}$/);
         expect(first?.[1]).toBe('clean');
@@ -221,6 +290,18 @@ describe('a run under its line', () => {
         expect(cpu).toBeGreaterThanOrEqual(0.1);
         expect(cpu).toBeLessThan(30);
         expect(rows()[0]?.[4]).toBe('60');
+    });
+
+    test.each([
+        ['on this mac', {}, 'vm-down'],
+        ['in ci', { CI: 'true' }, '-'],
+    ])('names the leg it ran on %s in its 10th column', (_name, extra, leg) => {
+        const { rows, run } = fixture({ budget: '60\t2026-11-07\troomy' });
+
+        run(whole, extra);
+
+        expect(rows()[0]).toHaveLength(10);
+        expect(rows()[0]?.[9]).toBe(leg);
     });
 });
 

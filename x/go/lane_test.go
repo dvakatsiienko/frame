@@ -54,7 +54,9 @@ func cleanEnv() []string {
 		"GIT_CONFIG_KEY_3=receive.autogc", "GIT_CONFIG_VALUE_3=false",
 		"GIT_CONFIG_KEY_4=core.fsync", "GIT_CONFIG_VALUE_4=none",
 		"GIT_CONFIG_KEY_5=pack.threads", "GIT_CONFIG_VALUE_5=1",
-		"GIT_CONFIG_KEY_6=core.preloadIndex", "GIT_CONFIG_VALUE_6=false", "X_TRACE=0")
+		"GIT_CONFIG_KEY_6=core.preloadIndex", "GIT_CONFIG_VALUE_6=false", "X_TRACE=0",
+		// no lima home: a fixture's go run through script/test-vm-go.sh reads vm-go-test down, never the real vm
+		"LIMA_HOME=/nonexistent/lima")
 }
 
 func write(t *testing.T, path, body string) {
@@ -396,6 +398,11 @@ func TestCommitOnMainLogsAGoRunPastItsBudgetAndStillCommits(t *testing.T) {
 	if err := os.Chmod(filepath.Join(dir, "script/test-cpu-budget.sh"), mode.Mode()); err != nil {
 		t.Fatal(err)
 	}
+	runner, err := os.ReadFile("../../script/test-vm-go.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(dir, "script/test-vm-go.sh"), string(runner))
 	write(t, filepath.Join(dir, "script/test-cpu-budget.tsv"), "mod\t0\t2026-11-07\tany run is past it\n")
 	write(t, filepath.Join(dir, "mod/go.mod"), "module m\n\ngo 1.21\n")
 	write(t, filepath.Join(dir, "mod/m_test.go"), "package m\n\nimport \"testing\"\n\nfunc TestM(t *testing.T) {}\n")
@@ -410,8 +417,9 @@ func TestCommitOnMainLogsAGoRunPastItsBudgetAndStillCommits(t *testing.T) {
 		t.Fatalf("exit %d, want the commit to land past its budget:\n%s", got.code, got.stdout)
 	}
 	row := strings.Split(strings.TrimSpace(readOr(filepath.Join(state, "test-cpu-budget.log"), "")), "\t")
-	if len(row) != 9 || row[2] != "mod" || row[4] != "0" || row[5] != "0" {
-		t.Errorf("the log row reads %q, want suite mod, budget 0, exit 0", row)
+	// - in ci, mac where no limactl is (a run inside vm-go-test itself), vm-down beside one: a fixture never reaches the vm
+	if len(row) != 10 || row[2] != "mod" || row[4] != "0" || row[5] != "0" || !slices.Contains([]string{"-", "mac", "vm-down"}, row[9]) {
+		t.Errorf("the log row reads %q, want suite mod, budget 0, exit 0, a mac leg", row)
 	}
 }
 
