@@ -3,10 +3,10 @@ id: PK-375
 title: >-
   lane reuse rule: reuse before summon, sequential by default (landed in
   craft-fleet-flow and crew-lead models.md)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T22:26:00Z'
-updated_date: '2026-11-09T22:28:00Z'
+updated_date: '2026-11-09T22:29:00Z'
 labels:
   - s
 dependencies: []
@@ -38,4 +38,6 @@ PK-375:W17 (2026-11-10 00:07, dima): so paralel work is killed by this rule.
 PK-375:W18 (2026-11-10 00:07, dima): it is not bad. but sometimes not good too.
 PK-375:W19 (2026-11-10 00:07, dima): so let's prefer sequentional for taxonomy.
 PK-375:W20 (2026-11-10 00:07, dima): and leave option for paralel work when matters, or when needed, or when i ask.
+
+close: landed in crew-lead models.md § summon or reuse (the order) and craft-fleet-flow § lane init, commit 43f99d0f; wish-cover's one ✗ is a bare W706 on models.md:38, the sonnet line's older wish, not PK-375's
 <!-- SECTION:NOTES:END -->
