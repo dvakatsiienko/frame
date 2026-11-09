@@ -80,7 +80,8 @@ pre-push:
       # vitest in a clean clone with an empty HOME and CI=1, the way the ubuntu runner reads the
       # repo: a test that leans on dima's mac (a ~/ path, a git-crypt plaintext) goes red here
       # instead of on main. ~8 s, node_modules symlinked (pk-43, 2026-10-09).
-      # stdin names the pushed commit: a worktree's push runs from the main checkout, so HEAD is the wrong one
+      # stdin names the pushed commit: a worktree's push runs from the main checkout, so HEAD is the wrong one.
+      # only a main push carrying code runs it; a branch push and a pocket, memory or .md main push skip (FRM-557)
       use_stdin: true
       run: pnpm test:twin
     mirror:

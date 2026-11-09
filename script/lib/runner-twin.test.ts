@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import {
     chmodSync,
     copyFileSync,
+    existsSync,
     mkdirSync,
     mkdtempSync,
     readFileSync,
@@ -88,69 +89,136 @@ describe('runner-twin', () => {
         return { context, sha };
     };
     const argsOf = (dir: string) => readFileSync(join(dir, 'args'), 'utf8');
+    const ran = (dir: string) => existsSync(join(dir, 'args'));
+    const lastRow = (dir: string) =>
+        (
+            readFileSync(join(dir, 'state/gate-steps.log'), 'utf8')
+                .trimEnd()
+                .split('\n')
+                .at(-1) ?? ''
+        ).split('\t');
+    const logged = (context: ReturnType<typeof fixture>) => ({
+        VITEST: '',
+        X_STATE: join(context.dir, 'state'),
+    });
+    // a push that carries files on top of main's head: each path committed on the side branch
+    const pushOfPaths = (paths: string[]) => {
+        const context = fixture();
+        context.git('switch', '-q', 'codie/FRM-1-x');
+        for (const path of paths) {
+            mkdirSync(join(context.repo, path, '..'), { recursive: true });
+            writeFileSync(join(context.repo, path), 'x\n');
+        }
+        context.git('add', '-A');
+        context.git('commit', '-q', '-m', 'a push');
+        const sha = context.git('rev-parse', 'HEAD');
+        context.git('switch', '-q', '-');
+        return { context, sha };
+    };
 
-    test('a push of only memory runs only the tests that read memory', () => {
-        const { context, sha } = pushOf('_clio/memory/habit-x.md');
-        twin(context, `r ${sha} refs/heads/main ${context.head}\n`);
-        expect(argsOf(context.dir)).toContain('recipe-shape');
+    test('a branch push runs no vitest, says so once and logs a skipped row', () => {
+        const { context, sha } = pushOf('script/a.ts');
+        const got = twin(
+            context,
+            `refs/heads/lane/x ${sha} refs/heads/lane/x ${context.head}\n`,
+            logged(context),
+        );
+        expect(got.status, got.stderr).toBe(0);
+        expect(ran(context.dir)).toBe(false);
+        expect(got.stdout.split('runner-twin: skipped')).toHaveLength(2);
+        expect(lastRow(context.dir).slice(2, 4)).toEqual([
+            'push',
+            'refs/heads/lane/x',
+        ]);
+        expect(lastRow(context.dir)[7]).toBe('test:twin:skipped');
     });
 
-    test('a push with code runs the whole suite', () => {
+    test('a local branch pushed to main runs the twin', () => {
+        const { context, sha } = pushOf('script/a.ts');
+        twin(
+            context,
+            `refs/heads/lane/x ${sha} refs/heads/main ${context.head}\n`,
+        );
+        expect(tested(context.dir)).toBe(sha);
+    });
+
+    test('main first with code and a tag second runs the twin', () => {
+        const { context, sha } = pushOf('script/a.ts');
+        twin(
+            context,
+            `refs/heads/main ${sha} refs/heads/main ${context.head}\nrefs/tags/v1 ${sha} refs/tags/v1 ${zeros}\n`,
+        );
+        expect(tested(context.dir)).toBe(sha);
+    });
+
+    test('a main push of only a pocket task, a memory path and a readme skips', () => {
+        const { context, sha } = pushOfPaths([
+            '_clio/pocket/tasks/pk-1.md',
+            '_clio/memory/habit-x.md',
+            'README.md',
+        ]);
+        const got = twin(
+            context,
+            `r ${sha} refs/heads/main ${context.head}\n`,
+            logged(context),
+        );
+        expect(ran(context.dir)).toBe(false);
+        expect(got.stdout).toContain('runner-twin: skipped');
+        expect(lastRow(context.dir)[7]).toBe('test:twin:skipped');
+    });
+
+    test('a main push with code runs the whole suite', () => {
         const { context, sha } = pushOf('script/a.ts');
         twin(context, `r ${sha} refs/heads/main ${context.head}\n`);
-        expect(argsOf(context.dir)).not.toContain('recipe-shape');
+        expect(argsOf(context.dir).trim()).toBe('run --reporter=dot');
     });
 
-    test('a new branch, with nothing to compare, runs the whole suite', () => {
+    test('a main push with a zero remote sha, nothing to compare, runs the twin', () => {
         const { context, sha } = pushOf('_clio/memory/habit-x.md');
         twin(context, `r ${sha} refs/heads/main ${zeros}\n`);
-        expect(argsOf(context.dir)).not.toContain('recipe-shape');
+        expect(tested(context.dir)).toBe(sha);
     });
 
     test('tests the commit the hook names, not the checkout HEAD', () => {
         const context = fixture();
         const got = twin(
             context,
-            `refs/heads/codie/FRM-1-x ${context.pushed} refs/heads/codie/FRM-1-x ${zeros}\n`,
+            `refs/heads/codie/FRM-1-x ${context.pushed} refs/heads/main ${zeros}\n`,
         );
         expect(got.status, got.stderr).toBe(0);
         expect(tested(context.dir)).toBe(context.pushed);
     });
 
-    test('a red at push logs its ref, its commit and its exit', () => {
-        const context = fixture();
-        const state = join(context.dir, 'state');
+    test('a red at push logs its ref, its commit, its exit and its remote sha', () => {
+        const { context, sha } = pushOf('script/a.ts');
         writeFileSync(
             join(context.repo, 'node_modules/.bin/vitest'),
             '#!/bin/sh\nexit 4\n',
         );
         const got = twin(
             context,
-            `refs/heads/codie/FRM-1-x ${context.pushed} refs/heads/codie/FRM-1-x ${zeros}\n`,
-            { VITEST: '', X_STATE: state },
+            `refs/heads/codie/FRM-1-x ${sha} refs/heads/main ${context.head}\n`,
+            logged(context),
         );
         expect(got.status).toBe(4);
-        const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
-            .trimEnd()
-            .split('\t');
-        expect(row.slice(2, 4)).toEqual(['push', 'refs/heads/codie/FRM-1-x']);
-        expect(context.pushed.startsWith(row[4] ?? 'none')).toBe(true);
-        expect(row.slice(6)).toEqual(['4', 'test:twin']);
+        const row = lastRow(context.dir);
+        expect(row.slice(2, 4)).toEqual(['push', 'refs/heads/main']);
+        expect(sha.startsWith(row[4] ?? 'none')).toBe(true);
+        expect(row.slice(6)).toEqual(['4', 'test:twin', '-', context.head]);
     });
 
     test('a sha-named push logs its remote ref', () => {
         const context = fixture();
-        const state = join(context.dir, 'state');
         const got = twin(
             context,
-            `${context.pushed} ${context.pushed} refs/heads/codie/FRM-1-x ${zeros}\n`,
-            { VITEST: '', X_STATE: state },
+            `${context.pushed} ${context.pushed} refs/heads/main ${zeros}\n`,
+            logged(context),
         );
         expect(got.status, got.stderr).toBe(0);
-        const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
-            .trimEnd()
-            .split('\t');
-        expect(row.slice(2, 4)).toEqual(['push', 'refs/heads/codie/FRM-1-x']);
+        expect(lastRow(context.dir).slice(2, 4)).toEqual([
+            'push',
+            'refs/heads/main',
+        ]);
     });
 
     test.each([
@@ -172,20 +240,16 @@ describe('runner-twin', () => {
         expect(row.slice(2, 4)).toEqual(['other', 'unnamed']);
     });
 
-    test('a deleted ref on stdin falls back to HEAD', () => {
+    test('a deleted branch on stdin skips, its ref logged', () => {
         const context = fixture();
-        const state = join(context.dir, 'state');
         const got = twin(
             context,
             `(delete) ${zeros} refs/heads/gone ${context.head}\n`,
-            { VITEST: '', X_STATE: state },
+            logged(context),
         );
         expect(got.status, got.stderr).toBe(0);
-        expect(tested(context.dir)).toBe(context.head);
-        const row = readFileSync(join(state, 'gate-steps.log'), 'utf8')
-            .trimEnd()
-            .split('\t');
-        expect(row.slice(2, 4)).toEqual(['push', 'refs/heads/gone']);
+        expect(ran(context.dir)).toBe(false);
+        expect(lastRow(context.dir).slice(3, 4)).toEqual(['refs/heads/gone']);
     });
 
     test('no stdin tests HEAD', () => {

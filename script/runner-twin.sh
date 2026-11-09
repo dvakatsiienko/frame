@@ -9,29 +9,46 @@ step_ref=
 remote_sha=
 # shellcheck source=script/lib/memory-only.sh
 . "$(dirname "$0")/lib/memory-only.sh"
-# a pre-push hook names what it pushes on stdin: a worktree's push runs from the main checkout, whose HEAD is another commit
+state=${X_STATE:-$HOME/.local/state/x}
+# a pre-push hook names what it pushes on stdin, one line a ref: a worktree's push runs from the main checkout, whose HEAD is another commit.
+# only a push to main runs the twin: a branch's pr ci reads it before its merge. a main push of only pocket, memory or .md skips too;
+# ci's whole suite reads it on main. a hand run (no ref named), a zero remote sha or a failed diff runs it
+named=
+pushed_main=
+carries_code=
 if [ -z "$sha" ] && [ ! -t 0 ]; then
     # git's order: local ref, local sha, remote ref, remote sha; `x lane push` pushes a sha, so the local ref is that sha
     while read -r -t 1 _ pushed ref remote; do
-        case $pushed in
-        *[!0]*) sha=$pushed step_ref=$ref remote_sha=$remote ;;
-        *) step_ref=${step_ref:-$ref} ;;
-        esac
+        [ -n "$ref" ] || continue
+        named=1
+        step_ref=${step_ref:-$ref}
+        [ "$ref" = refs/heads/main ] || continue
+        pushed_main=1 sha=$pushed step_ref=$ref remote_sha=$remote
+        case $pushed in *[!0]*) ;; *) continue ;; esac
+        # a zero remote sha (nothing to compare) fails the diff, and a failed diff runs the twin
+        paths=$(git -c core.quotePath=false diff --name-only "$remote" "$pushed" 2>/dev/null) || {
+            carries_code=1
+            continue
+        }
+        while IFS= read -r path; do
+            case $path in '' | _clio/pocket/* | *.md) continue ;; esac
+            is_memory_path "$path" || carries_code=1
+        done <<<"$paths"
     done
 fi
 sha=${sha:-HEAD}
-# a push of only memory runs only the tests that read memory; ci runs the whole suite on it. any doubt runs the whole suite
-twin_tests=()
-case $remote_sha in
-*[!0]*)
-    if pushed_paths=$(git -c core.quotePath=false diff --name-only "$remote_sha" "$sha" 2>/dev/null) && [ -n "$pushed_paths" ]; then
-        twin_tests=("${MEMORY_TESTS[@]}")
-        while IFS= read -r path; do
-            is_memory_path "$path" || twin_tests=()
-        done <<<"$pushed_paths"
+if [ -n "$named" ] && [ -z "$carries_code" ]; then
+    if [ -n "$pushed_main" ]; then
+        echo 'runner-twin: skipped, a main push of only pocket, memory or .md; ci runs the suite'
+    else
+        echo 'runner-twin: skipped, no pushed ref is main; its pr ci runs the suite'
     fi
-    ;;
-esac
+    if [ -z "${VITEST:-}" ]; then
+        mkdir -p "$state"
+        printf '%s\t%s\tpush\t%s\t-\t0\t0\ttest:twin:skipped\t-\t%s\n' "$(date +%FT%T%z)" "$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')" "$step_ref" "${remote_sha:--}" >>"$state/gate-steps.log"
+    fi
+    exit 0
+fi
 # a hook may export GIT_DIR and friends: a fixture's git, or this clone's, must never write the real repo, as in index-run.sh
 # shellcheck disable=SC2046
 unset $(git rev-parse --local-env-vars)
@@ -50,11 +67,11 @@ cd "$tmp/frame"
 step_start=$(date +%FT%T%z)
 step_load=$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')
 step_code=0
-env HOME="$home" CI=1 PATH="$PATH" "$repo/node_modules/.bin/vitest" run --reporter=dot ${twin_tests[@]+"${twin_tests[@]}"} || step_code=$?
-# one row in gate-steps.log, read by docs/test-drive/gate-speed.md: a red here on a commit whose test step was related is what the trial counts
+env HOME="$home" CI=1 PATH="$PATH" "$repo/node_modules/.bin/vitest" run --reporter=dot || step_code=$?
+# one row in gate-steps.log, read by docs/test-drive/gate-speed.md: a red here on a commit whose test step was related is what the trial counts.
+# its 9th column is the cpu one (a dash here), its 10th the remote sha, for a replay
 if [ -z "${VITEST:-}" ]; then
-    step_state=${X_STATE:-$HOME/.local/state/x}
-    mkdir -p "$step_state"
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\ttest:twin\n' "$step_start" "$step_load" "$([ -n "$step_ref" ] && echo push || echo other)" "${step_ref:-unnamed}" "$(git rev-parse --short HEAD)" "$SECONDS" "$step_code" >>"$step_state/gate-steps.log"
+    mkdir -p "$state"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\ttest:twin\t-\t%s\n' "$step_start" "$step_load" "$([ -n "$step_ref" ] && echo push || echo other)" "${step_ref:-unnamed}" "$(git rev-parse --short HEAD)" "$SECONDS" "$step_code" "${remote_sha:--}" >>"$state/gate-steps.log"
 fi
 exit "$step_code"
