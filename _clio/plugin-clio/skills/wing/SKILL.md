@@ -28,6 +28,8 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
    - forked: context `fork`, prompt «you are a wing; greet dima in one line; read your flyway, clean its finished lines, then work it with him»
 3. done: the result names a started session; the reply links it, `[its title](#local_<id>)`, in one line
 
+from a herdr seat, which has no `start_session`: `x:herdr` § start a member in a pane, with `-n '🦉🪽 clio: wing <N>'` and the fresh prompt; a forked wing opens from the desktop app
+
 ## the flyway
 
 a wing's plan, seat, tree and branch carry its number and outlive the session, for the next wing of that number: `habit-shared-files` § the flyway.

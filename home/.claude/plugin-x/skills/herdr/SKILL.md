@@ -29,18 +29,21 @@ they ship with each herdr update and are the truth for the installed version: sy
 
 ## recipes
 
-**start a seat that outlives its starter and the window** (inference from `hc run --help`: not run end to end yet)
+**start a member in a pane** — a wing, the mods codie, any seat that outlives its starter and the window (summon probe, 2026-11-09, `~/frame/.scratch/herdr-summon-probe/findings.md`)
 
 ```sh
-hc run --bg --no-parent --no-notify --name <name> --cwd <dir> --label seat=<seat> -- claude "<its first task>"
+hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<registry name>' "<its first task>" --remote-control
 ```
 
+- 📌 the cc `-n` is its name for `ListAgents`, `SendMessage` and `seatOf` (`🦉🪽 clio: wing <N>` makes a wing); herdr's `--name` and `--label` only tag the pane
+- its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends
+- stop it with `hc kill <t>`; a `claude --bg` member runs unchanged from a herdr seat, `claude attach <id>` opens it in a pane, `claude stop <id>` ends it
 - the first task rides in `run`: a send to a booting agent can be dropped (`hc --skill`, «Delegate a task»)
 - `--no-parent`: by default a terminal started from inside another dies with its parent's program
 - `--no-notify`: by default hc types notes about the child into the parent's prompt
 - `--keep` is not a restart: it puts a shell where a lost program was and never re-runs `claude`
 
-**hand another agent seat a message, then read it** — `hc send <t> '<text>' --if idle --wait --timeout 300`, then `hc read <t> --lines 80`. an agent seat takes the text as its next prompt; a plain shell reports no status, so `--if idle` refuses it — there it is a bare `hc send <t>`, then `hc read`
+**hand another agent seat a message, then read it** — `hc send <t> '<text>' --wait --timeout 300` once `hc get <t> --json` reads `done` or `idle`, then `hc read <t> --lines 80`. an agent seat takes the text as its next prompt; `--if idle` refuses every seat that has finished a turn, since its status stays `done` (probe, 2026-11-09)
 
 **prefill a command for dima's hand** — the enter is his
 
