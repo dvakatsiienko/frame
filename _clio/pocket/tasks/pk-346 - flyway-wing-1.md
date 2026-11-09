@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T20:58:00Z'
+updated_date: '2026-11-09T21:18:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,19 +16,20 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-383 x verify: time W3 «faster», one pair through x verify red and the old red-proof from 0bd86a17, on a quiet mac, then x lane landed FRM-383 --pr 150 --apply, by 11-12
-- [ ] #2 ⏳ FRM-551 vm lane: #153's fixes and slot trees pushed, sixth sense's clean, wishkeeper's read, merge-auto, landed (dima 22:14) — waits for: sixth sense's clean
-- [ ] #3 ⏳ FRM-557 test hooks trimmed: sealed and dispatched into the vm lane; codie second-winds, to-tickets, my greenlight, build, pr, merge — waits for: codie's lane plan
-- [ ] #4 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
-- [ ] #5 ⏳ FRM-537 next probes, by hand, the vitest pools now ride FRM-557 — waits for: spare usage
-- [ ] #6 ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next frame pr's merge-auto run, the first live read of #152's checks (549, 553 red only on the guard-refused «look sent» line, main's guard bug) — waits for: #153's merge
-- [ ] #7 ⏳ cli lane 6's rest, all signed: FRM-384 (gate runner, body guard, own-branch push, brief lint, the 19:27 gate riders, FRM-554), FRM-436, FRM-424; no codie, its sixth sense «cli lane | #150» idle — waits for: dima's word on a new cli codie
+- [ ] #1 ⏳ FRM-551 vm lane: #153's fixes and slot trees pushed, sixth sense's clean, wishkeeper's read, merge-auto, landed (dima 22:14) — waits for: sixth sense's clean
+- [ ] #2 ⏳ FRM-557 test hooks trimmed: sealed and dispatched into the vm lane; codie second-winds, to-tickets, my greenlight, build, pr, merge — waits for: codie's lane plan
+- [ ] #3 ⏳ FRM-537 next probes, by hand, the vitest pools now ride FRM-557 — waits for: spare usage
+- [ ] #4 ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next frame pr's merge-auto run, the first live read of #152's checks (549, 553 red only on the guard-refused «look sent» line, main's guard bug) — waits for: #153's merge
+- [ ] #5 ⏳ cli lane 6's rest, all signed: FRM-384 (gate runner, body guard, own-branch push, brief lint, the 19:27 gate riders, FRM-554), FRM-436, FRM-424; no codie, its sixth sense «cli lane | #150» idle — waits for: dima's word on a new cli codie
+- [ ] #6 ⏳ FRM-557 test hooks trimmed: 🟢 greenlit, slices 06–11 in the vm lane; the build starts first thing tomorrow (o110), then pr, sixth sense, merge — waits for: wing 1 opening tomorrow
+- [ ] #7 ⏳ the stray FRM-383 tree and branch (16 squashed lane commits, held by cli lane 6's stopped codie): decamp on dima's word — waits for: dima's word
 - [ ] #8 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
 - [ ] #9 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
 - [ ] #10 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
 - [ ] #11 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
 - [ ] #12 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #13 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #14 💤 FRM-560 x verify red: a mods red proof under half its 64 s (W3 moved from FRM-383) — later: dima
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -93,4 +94,6 @@ done 2026-11-09 22:39: FRM-530 gates catalog: fold o74–o87 into decided, refre
 done 2026-11-09 22:54: ⏳ PK-357 branches: W5 «gba prints clean», the last stray is bytes' proof/frm-547-review-cite, then close — waits for: dima's delete tick (PK-357 done)
 
 2026-11-09 22:59: the FRM-414 re-grill line went back to wing 2 (dima 22:57 «let's regrill now so it is not a tail»)
+
+done 2026-11-09 23:18: FRM-383 x verify: time W3 «faster», one pair through x verify red and the old red-proof from 0bd86a17, on a quiet mac, then x lane landed FRM-383 --pr 150 --apply, by 11-12 (FRM-383 Done)
 <!-- SECTION:NOTES:END -->
