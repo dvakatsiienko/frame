@@ -97,6 +97,15 @@ case "${1:---watch}" in
         | (if $sec == "" then . else .[$k + ":security"] = $sec end)' \
       "$VERIFIED" > "$VERIFIED.tmp" && mv "$VERIFIED.tmp" "$VERIFIED" \
       && echo "verified: $head on $repo#$pr${by:+ by $by}${security:+, security on $security}" ;;
+  # a stamp written in error goes whole: the clean, its :by and its :security, one pr only (FRM-414)
+  --unverify)
+    repo=$2 pr=$3
+    [[ $# -eq 3 && "$repo" == */* && "$pr" =~ ^[0-9]+$ ]] || { echo "usage: watch-pr.sh --unverify <owner/repo> <pr>" >&2; exit 2; }
+    jq -e --arg k "$repo#$pr" 'has($k) or has($k + ":by") or has($k + ":security")' "$VERIFIED" >/dev/null \
+      || { echo "no stamp on $repo#$pr" >&2; exit 1; }
+    jq --arg k "$repo#$pr" 'del(.[$k], .[$k + ":by"], .[$k + ":security"])' \
+      "$VERIFIED" > "$VERIFIED.tmp" && mv "$VERIFIED.tmp" "$VERIFIED" \
+      && echo "unverified: $repo#$pr" ;;
   --once) pass ;;
   --watch) while true; do pass; sleep 60; done ;;
 esac
