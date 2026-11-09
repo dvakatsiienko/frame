@@ -67,5 +67,6 @@ Ticket: none
 - 2026-11-07 · main, 15:51–21:51: 16 findings, 2 high (a false home claim on FRM-503 door 1, wishes with no W-line), 262k tokens, 7.5 min; both highs real at their spots
 - 2026-11-07 · main, 21:51–22:22, a narrow read at weekly 97 %: 2 findings, 0 high (a ready claim on FRM-505 with W1941 uncited, joiners left out), 46k tokens, 1.5 min; both real
 - 2026-11-09 · wing 2's boot batch, one pocket write · wishkeeper 3 min, 67k tokens, 5 findings: 1 high real (a wish written onto the flyway from main's brief with no W-lines, three of his points lost → PK-336:W25–W29 folded from the inbox, later found a copy of PK-356's, the cite moved there), 1 medium (his inbox's triage order dropped unoffered → asked), 3 low · hit: a one-write batch still carried a lost wish
+- 2026-11-09 · main's boot batch, dates +1, jev +4, wing hand-offs · wishkeeper 2 min, 59k tokens, 7 findings: 1 high real (the +1 day reached the test drives but not the tickets' due comments → 8 comments written), 2 medium (two dates for one ticket in a note; an unproven «conditions, not dates» claim on the board), 4 low · hit: a date move left half done reads as done
 
 ## verdict
