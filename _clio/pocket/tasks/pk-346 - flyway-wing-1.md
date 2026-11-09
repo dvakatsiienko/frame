@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T15:15:00Z'
+updated_date: '2026-11-09T15:16:00Z'
 labels:
   - s
   - clio-wing-1
@@ -26,10 +26,10 @@ ordinal: 18998
 - [ ] #8 PK-371 gates file name: gates museum
 - [ ] #9 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
 - [ ] #10 gate lane 1: FRM-534 + FRM-520 on main, sixth sense clean then land FRM-520; FRM-534 closes 11-10 on its day read
-- [ ] #11 cli lane 6: FRM-383 then FRM-503 door 1 (signed o22), wing 1 coordinates
-- [ ] #12 PK-373 linux vm for go tests: name, then shape-idea steps 4-7 and its ticket
-- [ ] #13 perf left in order: FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
-- [ ] #14 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
+- [ ] #11 PK-373 linux vm for go tests: name, then shape-idea steps 4-7 and its ticket
+- [ ] #12 perf left in order: FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
+- [ ] #13 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
+- [ ] #14 cli lane 6: land FRM-383, then park; FRM-503 door 1 waits on dima's next word (his 17:02 park)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -54,4 +54,6 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 16:37 groom (wishkeeper siesta read): FRM-520 and FRM-536 lines done; FRM-383 dispatched; FRM-503 door 1 signed, after FRM-383; the cpu watch moved to 11-14
 
 17:06 correcting the 16:37 groom: FRM-520 is not done, its line merged into #11 (gate lane 1); FRM-517 closed 11-09 on o38 (wishkeeper siesta 17:04)
+
+17:17 dima 17:02 via main: both lanes finish and merge what they hold, then park until further steps; cli lane 6 lands FRM-383 and does NOT start FRM-503 door 1; gate lane 1 lands FRM-534 + FRM-520 and parks; park = alive and idle, never stopped (he attaches from herdr). gate lane 1 landed FRM-520 17:16, both codies parked. the 17:06 note's «#11» means the gate lane 1 line
 <!-- SECTION:NOTES:END -->
