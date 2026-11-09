@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T12:45:00Z'
+updated_date: '2026-11-09T14:38:00Z'
 labels:
   - m
   - clio-main
@@ -128,4 +128,42 @@ raw drop (2026-11-09 inbox, dima): 14. shape lane and dispatch side/uick lane. i
 raw drop (2026-11-09 inbox, dima): 15. i see working mvp. if it lands we continue in herder, not in c desktop app. and evolve herder (regroom/adjust/cut mods lane scope)
 
 raw drop (2026-11-09 inbox, dima): 16. out of scope: theming, fonts and other similar stuff. i want robust framework.
+
+PK-363:W22 (2026-11-09 16:37, dima): herdr has two modes, a cli and a desktop app; focus on the desktop app, because it has a natural UI, which i want to tweak
+
+PK-363:W23 (2026-11-09 16:37, dima): i assume a custom chatter in herdr is not a freebie at all: an important probe
+
+PK-363:W24 (2026-11-09 16:37, dima): i want a chatter like the claude desktop app's in herdr: the main comms window where you print replies, same or similar, not a terminal view
+
+PK-363:W25 (2026-11-09 16:37, dima): herdr is a clean, pretty canvas; i want you to build a pretty UI there
+
+PK-363:W26 (2026-11-09 16:37, dima): the desktop app's board UI is ok but slightly clunky and not fluid, not enough space; i want something similar in herdr, ideally prettier: the desktop app reads better than a terminal, and i saw herdr can have an even prettier UI
+
+PK-363:W27 (2026-11-09 16:37, dima): cc in a herdr pane: the mods are terminal-native and i don't like them; i want pretty modded panes, and the chatter pretty too
+
+PK-363:W28 (2026-11-09 16:37, dima): rex by itself is very pretty, i like it; but its mods representation and the cc UI in it are ugly for me
+
+PK-363:W29 (2026-11-09 16:37, dima): the herdr layout gallery shows how herdr could look (Kaiju City, the Aperture Science layout); i haven't seen a good-looking chatter window in any example yet
+
+PK-363:W30 (2026-11-09 16:37, dima): fold the differences across the apps that matter for the follow-up herdr steps
+
+raw drop (2026-11-09 16:37, dima): i was busy in other threads.
+
+raw drop (2026-11-09 16:37, dima): 📋 What to research first: round 1, only what decides migrate or stay  ← yes, but take into account that herder have two mods: cli and desktop app. i want to focus on desktop app becase it have natural UI. which i want to tweak.
+
+raw drop (2026-11-09 16:37, dima): note: i assume that custom chatter in herder will be not a freebie at all - important probe.
+
+raw drop (2026-11-09 16:37, dima): plus few SS with example of how herder could look like. (i did not saw good examples of actually good looking chatter window)
+
+raw drop (2026-11-09 16:37, dima): proceed. and fold my wishes from SS and details of a diferences across apps that matter for followup herder-related steps.
+
+raw drop (2026-11-09 16:37 screenshots, dima): SS1 desktop app: i want a chatter like this in herder (main comms window, chatting) / as you see, UI is +- but slightly clunky and not fluid - not enough of space / something similar in herder — ideally prettier (desktop app reads better than terminal but i saw herder can have even prettier UI)
+
+raw drop (2026-11-09 16:37 screenshots, dima): SS2 herdr empty: how clean herder looks. as you see it is a pretty canvas. i want you to build a pretty ui here. note: as you see this is a terminal window. i want this main window (chatter, where you print replies same/similar as claude desktop app have)
+
+raw drop (2026-11-09 16:37 screenshots, dima): SS3 cc in herdr: how cc thread looks in herder. as you see mods are terminal-native i do not like them. i want pretty modded panes. and this catter to be pretty too.
+
+raw drop (2026-11-09 16:37 screenshots, dima): SS4 rex: how rex cc thread looks. rex by itself is very pretty i like it. but mods representation and actual cc UI is ugly for me.
+
+raw drop (2026-11-09 16:37 screenshots, dima): SS5-6: herdr layout gallery examples, Kaiju City by Jiqize (7 of 30) and an Aperture Science layout, no annotation
 <!-- SECTION:NOTES:END -->
