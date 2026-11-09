@@ -7,6 +7,7 @@ import {
     mkdtempSync,
     readFileSync,
     readdirSync,
+    renameSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -60,6 +61,7 @@ function fixture({
     const goBody = `echo "\${FAKE_GUEST:-mac} $* | $(cat v.txt 2>/dev/null)" >>"${goLog}"
 [ -z "\${FAKE_GUEST:-}" ] || date +%s >>"${goLog}.starts"
 [ -z "\${READ:-}" ] || cat "$READ" >>"${goLog}.read"
+[ -z "\${FAKE_GUEST:-}" ] || for fd in 8 9; do [ ! -e /dev/fd/$fd ] || echo $fd >>"${goLog}.fds"; done
 [ -z "\${FAKE_GUEST:-}" ] || [ -z "\${GO_SLEEP:-}" ] || sleep "$GO_SLEEP"
 [ "$(cat v.txt 2>/dev/null)" != bad ] || { echo '--- FAIL: TestV'; exit 1; }
 echo 'ok  \tm\t0.1s'
@@ -373,6 +375,41 @@ describe('the vm leg', () => {
         expect(guestRuns()).toEqual([]);
     });
 
+    test("the suite's children hold neither the slot lock nor the deps lock", () => {
+        const { code, run } = fixture();
+
+        run(suite);
+
+        expect(existsSync(join(code, '../go.calls.fds'))).toBe(false);
+    });
+
+    test('a run leaves its parent as refs/base/head, for the next push to negotiate against', () => {
+        const { git, guestGit, run } = fixture();
+
+        run(suite);
+
+        expect(guestGit('rev-parse', 'refs/base/head')).toBe(
+            git('rev-parse', 'HEAD').stdout.trim(),
+        );
+    });
+
+    test('a run that starts the second the last one ended marks no overlap', async () => {
+        const { leg, run, windows } = fixture();
+        mkdirSync(dirname(windows), { recursive: true });
+        await new Promise((done) =>
+            setTimeout(done, 1000 - (Date.now() % 1000)),
+        );
+        const now = Math.floor(Date.now() / 1000);
+        writeFileSync(
+            windows,
+            `start ${now - 5} 1-other\nend ${now} 1-other\n`,
+        );
+
+        run(suite);
+
+        expect(leg()).toBe('vm');
+    });
+
     test('two runs of the same tree get two refs', () => {
         const { calls, run } = fixture();
 
@@ -515,6 +552,34 @@ describe('a cut vm leg', () => {
 
         expect(got.status, got.stderr).toBe(0);
         expect(guestRefs()).toBe('');
+    });
+
+    test.each([
+        [
+            'a checkout lock a dead run left',
+            (guest: string) =>
+                writeFileSync(
+                    join(guest, 'runs.git/worktrees/slot-0/index.lock'),
+                    '',
+                ),
+        ],
+        [
+            'a slot dir gone while still registered',
+            (guest: string) =>
+                renameSync(join(guest, 'runs/slot-0'), join(guest, 'gone')),
+        ],
+    ])('a slot holding %s heals on the next run', (_name, breakSlot) => {
+        const { calls, guest, leg, run } = fixture();
+        run(suite);
+        breakSlot(guest);
+
+        const got = run(suite);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(leg()).toBe('vm');
+        expect(calls('go').at(-1)).toBe(
+            'guest test -count=1 ./... -parallel 7 | good',
+        );
     });
 
     test('a file a cut run left in its slot dies before the next run reads it', () => {

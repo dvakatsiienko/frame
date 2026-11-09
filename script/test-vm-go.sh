@@ -176,7 +176,10 @@ git -C "$repo" for-each-ref --format='%(committerdate:unix) %(refname:strip=2)' 
     while read -r at name; do
         [ "$name" = "$id" ] || [ $((now - at)) -le "$deadline" ] || git -C "$repo" update-ref -d "refs/runs/$name"
     done
+# the slot lock is ours, so a checkout lock in it is a dead run's; a slot dir gone while registered is pruned before its re-add
+git -C "$repo" worktree prune
 if [ -d "$tree" ]; then
+    rm -f "$(git -C "$tree" rev-parse --path-format=absolute --git-path index.lock 2>/dev/null)"
     git -C "$tree" checkout -q --detach --force "$commit" || exit 125
 else
     git -C "$repo" worktree add -q --detach "$tree" "$commit" >/dev/null 2>&1 || exit 125
@@ -202,7 +205,8 @@ fi
 cd "$tree/$prefix" || exit 125
 [ -z "$goflags" ] || export GOFLAGS=$goflags
 [ -z "$git_config_global" ] || export GIT_CONFIG_GLOBAL=$git_config_global
-timeout -k 5 "$deadline" "$@" </dev/null
+# the locks stay with this shell: a child that leaves the timeout's group (a test's setsid) must not keep a slot or the deps held
+timeout -k 5 "$deadline" "$@" </dev/null 8>&- 9>&-
 GUEST
 )
 
@@ -215,7 +219,7 @@ if ! sync_tree; then
     on_mac vm-cut "$(($(vm_cpu_ms) - cpu_before))"
 fi
 remote=$(printf '%q ' "$id" "$commit" "$(git rev-parse --show-prefix)" "$deadline" "${GOFLAGS-}" "${GIT_CONFIG_GLOBAL-}" "$@" -parallel "$vm_parallel")
-# --foreground: a ctrl-c on a by-hand run reaches ssh, and through it the guest
+# --foreground: a ctrl-c on a by-hand run reaches ssh; ssh with no tty forwards no signal, so the guest run ends at its own deadline
 timeout --foreground -k 5 $((deadline + 15)) "${ssh_vm[@]}" "bash -l -s -- $remote" <<<"$guest"
 code=$?
 ended=$(date +%s)
@@ -236,7 +240,7 @@ esac
 overlap=$(awk -v me="$id" -v from="$started" -v to="$ended" -v bound=$((2 * deadline + 30)) '
     $3 != me && $1 == "start" { start[$3] = $2 }
     $3 != me && $1 == "end" { end[$3] = $2 }
-    END { for (run in start) if (start[run] <= to && ((run in end) ? end[run] >= from : start[run] + bound >= from)) { print "yes"; exit } }' "$windows")
+    END { for (run in start) if (start[run] < to && ((run in end) ? end[run] > from : start[run] + bound > from)) { print "yes"; exit } }' "$windows")
 on_mac "vm${overlap:+-overlap}" "$used"
 # the log keeps its last day or so
 [ "$(wc -l <"$windows")" -lt 2000 ] || { tail -n 400 "$windows" >"$windows.new" && mv "$windows.new" "$windows"; }
