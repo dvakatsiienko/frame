@@ -206,9 +206,10 @@ ended=$(date +%s)
 echo "end $ended $id" >>"$windows"
 used=$(($(vm_cpu_ms) - cpu_before))
 
-# 124 and 137 the deadline, 255 ssh's own death, 125 a tree that never checked out; go test itself exits 0, 1 or 2
+# 124 and 137 the deadline, 143 a guest stopped under the run, 126 and 127 a guest with no go, 125 a tree that never checked out,
+# 255 ssh's own death; go test itself exits 0, 1 or 2
 case $code in
-124 | 125 | 137 | 255)
+124 | 125 | 126 | 127 | 137 | 143 | 255)
     echo "$vm cut (exit $code): re-ran on the mac" >&2
     on_mac vm-cut "$used"
     ;;

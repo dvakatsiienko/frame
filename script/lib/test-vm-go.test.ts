@@ -442,29 +442,39 @@ test('a failing test in the vm exits non-zero and prints its name as go test doe
 }, 60_000);
 
 describe('a cut vm leg', () => {
-    test('an ssh leg that dies re-runs the suite on the mac once, logged vm-cut', () => {
-        const { budget, calls } = fixture({ goCode: 4, runCode: 255 });
+    test.each([
+        ['ssh dies', 255],
+        ['the vm stops under the run', 143],
+        ['the guest has no go', 127],
+    ])(
+        'a leg where %s re-runs the suite on the mac once, logged vm-cut',
+        (_name, runCode) => {
+            const { budget, calls } = fixture({ goCode: 4, runCode });
 
-        const { got, rows } = budget(suite);
+            const { got, rows } = budget(suite);
 
-        expect(got.status, got.stderr).toBe(4);
-        expect(calls('go')).toEqual([
-            'mac test -count=1 ./... -parallel 5 | good',
-        ]);
-        expect(got.stderr).toContain(
-            'vm-go-test cut (exit 255): re-ran on the mac',
-        );
-        expect(rows.map((row) => row[9])).toEqual(['vm-cut']);
-    });
+            expect(got.status, got.stderr).toBe(4);
+            expect(calls('go')).toEqual([
+                'mac test -count=1 ./... -parallel 5 | good',
+            ]);
+            expect(got.stderr).toContain(
+                `vm-go-test cut (exit ${runCode}): re-ran on the mac`,
+            );
+            expect(rows.map((row) => row[9])).toEqual(['vm-cut']);
+        },
+    );
 
     test('a leg past its deadline re-runs on the mac once, logged vm-cut', () => {
         const { budget, calls, guestRefs, guestRuns } = fixture({ goCode: 4 });
 
+        const from = Date.now();
         const { got, rows } = budget(suite, {
             GO_SLEEP: '30',
             TEST_VM_GO_DEADLINE: '1',
         });
 
+        // the guest's own timeout ends the leg, well before the host's at deadline + 15
+        expect(Date.now() - from).toBeLessThan(10_000);
         expect(got.status, got.stderr).toBe(4);
         expect(calls('go')).toEqual([
             'guest test -count=1 ./... -parallel 7 | good',
