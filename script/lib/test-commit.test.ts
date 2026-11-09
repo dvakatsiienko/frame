@@ -37,7 +37,7 @@ function fixture(files: Record<string, string> = { 'old.ts': 'old\n' }) {
     // a stub on PATH: the suite is never really run
     writeFileSync(
         join(bin, 'pnpm'),
-        `#!/bin/sh\nIFS='|'; printf '%s\\n' "$*" >>"${dir}/calls"\nexit "\${STUB_EXIT:-0}"\n`,
+        `#!/bin/sh\nIFS='|'; printf '%s\\n' "$*" >>"${dir}/calls"\n[ -z "\${STUB_OUT:-}" ] || echo "$STUB_OUT"\nexit "\${STUB_EXIT:-0}"\n`,
     );
     chmodSync(join(bin, 'pnpm'), 0o755);
     return { bin, dir, git, repo };
@@ -113,10 +113,20 @@ describe('test-commit', () => {
         },
     );
 
-    test('a detached HEAD runs the whole suite and logs its kind', () => {
+    test('a detached HEAD logs its kind as detached', () => {
         const got = runGate(staged({ 'a.ts': 'a\n' }), '');
         expect(got.calls).toBe('test');
-        expect(got.fields.slice(0, 3)).toEqual(['detached', 'whole', '0']);
+        expect(got.fields.slice(0, 3)).toEqual(['detached', 'whole', '1']);
+    });
+
+    test('staged code no test imports runs the whole suite', () => {
+        const got = runGate(staged({ 'script/a.ts': 'a\n' }), 'main', '0', {
+            STUB_OUT: 'No affected test files found, exiting with code 0',
+        });
+        expect(got.calls).toBe(
+            'exec|vitest|related|--run|--passWithNoTests|script/a.ts\ntest',
+        );
+        expect(got.fields.slice(1, 3)).toEqual(['whole', '1']);
     });
 
     test('a kind taken off the branch-kind list runs the whole suite', () => {

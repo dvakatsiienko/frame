@@ -24,10 +24,9 @@ memory_only=
 if [ -n "$changes" ]; then
     pocket_only=1
     memory_only=1
-    pocket_paths=0
     # a rename names both ends: each must sit under the pocket
     while IFS=$'\t' read -r _ first second; do
-        pocket_paths=$((pocket_paths + 1))
+        staged=$((staged + 1))
         case $first in _clio/pocket/*) ;; *) pocket_only= ;; esac
         case $second in '' | _clio/pocket/*) ;; *) pocket_only= ;; esac
         is_memory_path "$first" || memory_only=
@@ -48,7 +47,6 @@ case $related_kinds in *" $kind "*) [ -n "${read_failed:-}" ] || mode=related ;;
 if [ "$mode" = related ]; then
     while IFS=$'\t' read -r status path; do
         [ -n "$status" ] || continue
-        staged=$((staged + 1))
         case $status in
         D* | R*) mode=whole ;;
         esac
@@ -65,20 +63,28 @@ if [ "$mode" = related ]; then
 fi
 if [ -n "$pocket_only" ]; then
     mode=none
-    staged=$pocket_paths
 elif [ -n "$memory_only" ]; then
     mode=memory
-    staged=$pocket_paths
 fi
 
 code=0
+if [ "$mode" = related ]; then
+    out=$(mktemp "${TMPDIR:-/tmp}/test-commit.XXXX")
+    pnpm exec vitest related --run --passWithNoTests "${code_paths[@]}" 2>&1 | tee "$out"
+    code=${PIPESTATUS[0]}
+    # code no test imports may still be one a test spawns by path: the whole suite reads it
+    if grep -q 'No affected test files found' "$out"; then
+        mode=whole
+        code=0
+    fi
+    rm -f "$out"
+fi
 case $mode in
 whole)
     "$@" || code=$?
     # index-run logs user + sys for a run marked whole; a run nested under vitest is a fixture, and it would mark a related run
     [ -n "${VITEST:-}" ] || [ -z "${INDEX_RUN_WHOLE_MARK:-}" ] || : >"$INDEX_RUN_WHOLE_MARK"
     ;;
-related) pnpm exec vitest related --run --passWithNoTests "${code_paths[@]}" || code=$? ;;
 memory) pnpm exec vitest run "${MEMORY_TESTS[@]}" || code=$? ;;
 esac
 printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$start" "$load" "${branch:-detached}" "$mode" "$staged" "$(git rev-parse --short HEAD)" "$SECONDS" "$code" "${INDEX_RUN_SOURCE:-other}" >>"$state/test-commit.log"
