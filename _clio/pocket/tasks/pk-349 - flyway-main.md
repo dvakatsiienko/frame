@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T17:54:00Z'
+updated_date: '2026-11-09T17:59:00Z'
 labels:
   - s
   - clio-main
@@ -16,20 +16,17 @@ ordinal: 9995
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 mods quick lane with its verifier, by load
-- [ ] #2 FRM-491 and FRM-495 behind FRM-505
-- [ ] #3 FRM-368 tilde grill with dima
-- [x] #4 PK-363 herder: research, print, his call
-- [x] #5 PK-368 sidecar passports rebalance
-- [ ] #6 prove the passport auto-load live: helga's next boot carries her passport (crow's half proven: packet 202611091548w2, charter changed)
-- [x] #7 herdr pilot: gate lane codie hosts the probe; Zoo's panel code read, then probe steps for dima
-- [ ] #8 herdr chunk 1: orbit in herdr — ticket + sign from o72, dispatch the herdr codie, sixth sense on (spec ~/frame/.scratch/herdr-orbit/spec.md)
-- [ ] #9 herdr: probe 4b + haiku clio probe, Zoo + board into frame, then tomorrow's boot in herdr (plan ~/frame/_clio/.scratch/herdr/plan.md)
-- [ ] #10 FRM-550 decided-picks: yours to judge against herdr (dima o29); his o30 tick: cut the transcript index, reshape to «a tick lands in its home the same turn»; handover in wing 3 tree .scratch/frm-550/
-- [ ] #11 PK-358 rex settings walkthrough with dima, two at a time, shown live (from wing 1, his 19:01 word)
-- [ ] #12 FRM-509: the one step left, x lane landed clears a quick lane's verify-<sha> tree and a merged worktree-* branch; place it in a lane by 11-12 (wing 3's live read, 19:26)
-- [ ] #13 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun); dima's o12 on wing 1's monitors; moved from wing 2 on his 19:26 word
-- [ ] #14 FRM-550: judge it against herdr after tomorrow's herdr boot, then a sign round with dima by 11-11 (his tick o82)
+- [ ] #1 FRM-552 orbit in herdr: sixth sense reviewing, codie adds the «from herdr» label, then your one tick in herdr's board panel
+- [ ] #2 probe 4b, last leg: you look for «tool-existence-probe-and-session-id» in the desktop sidebar (restart and terminal resume passed)
+- [ ] #3 chunk 2: Zoo's chat into frame as fleet-chatter, a ticket for your sign, the herdr codie builds it
+- [ ] #4 tomorrow: boot clio in herdr (recipe in .scratch/herdr/plan.md), then FRM-542's main-seat check
+- [ ] #5 FRM-505 second wind runs itself: a fresh mods codie, seal first; then FRM-491 and FRM-495 behind it
+- [ ] #6 FRM-550: judge it against herdr after tomorrow's boot, then your sign, by 11-11
+- [ ] #7 crow and helga restart on your tick: closes the passport auto-load proof (helga's next boot)
+- [ ] #8 FRM-509's last step rides FRM-384 in wing 2's cli lane, on your tick
+- [ ] #9 PK-358 rex settings walkthrough with you, two at a time, shown live
+- [ ] #10 FRM-368 tilde grill with you, after the herdr move
+- [ ] #11 tonight's halt: every wing halts on its own, no running watcher blocks it
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -99,4 +96,6 @@ PK-349:W25 (2026-11-09 16:01, dima): habit fix — any time you solve a part of 
 correction (clio, 16:46): W25's clause «; a guard, not an intention (proposed in orbit)» is clio's reasoning, not his words; his 16:01 ends «always tick item in a list». W25 now lives in FRM-538 → FRM-538
 
 2026-11-09 17:18 clio: #4 herdr round 1 done (artifact 98seiwXLa41Z47oBefZnP8, his call: pilot); FRM-509 read moved to wing 3 (clio-wing-3)
+
+done, cleared 19:59 on dima's word: herdr research printed and his call taken (pk-363 lives on); sidecar passports rebalanced (pk-368 done); the herdr pilot probes 1–5 by the gate lane codie; FRM-552 ticketed, signed, dispatched (19:07–19:13); the haiku clio boot in herdr proven (19:20)
 <!-- SECTION:NOTES:END -->

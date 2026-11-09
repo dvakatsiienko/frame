@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T17:54:00Z'
+updated_date: '2026-11-09T17:59:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,16 +16,17 @@ ordinal: 18998
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 PK-300 one complete measuring solution
-- [ ] #2 FRM-497 speak meter: starts with speak v2, not before
-- [ ] #3 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
-- [ ] #4 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
-- [ ] #5 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
-- [ ] #6 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
-- [ ] #7 FRM-551 vm-go-test: signed; step 1 now, the idle-cost kill gate (dima 19:01)
-- [ ] #8 FRM-383 close: W3 timing run, then x lane landed FRM-383 --pr 150 --apply, by 2026-11-12
-- [ ] #9 PK-370 perf: tests off pre-commit, to ci or pre-push — with dima, a little later (his 18:43)
-- [x] #10 PK-357 branches: done (112 local deleted, bytes renovate/minors remote deleted on his typed word, the habit in wing 2's frame#152); close PK-357 routing its W-lines
+- [ ] #1 now: FRM-551 vm go tests — second idle read lands ~20:36 at 4 vcpus, then build or drop, the vm stopped
+- [ ] #2 11-10 17:28: FRM-517 temp dir — count again against 345, under 100 grown closes it
+- [ ] #3 11-10 17:30: FRM-534 related tests at commit — day read, then close
+- [ ] #4 11-10: FRM-533 reuse proven results — day read, then shape step 2 (reuse on our own key)
+- [ ] #5 after FRM-534 closes: FRM-539 gate step time budget — build as a quick lane (signed)
+- [ ] #6 by 11-12: FRM-383 x verify — time W3 «faster», see one real red call, then x lane landed FRM-383 --pr 150 --apply
+- [ ] #7 on spare usage: FRM-537 perf probes (mods test cost first, asked in orbit), then FRM-535 go -parallel grid
+- [ ] #8 with dima, a little later: PK-370 move tests off pre-commit, to ci or pre-push
+- [ ] #9 11-11: PK-300 one complete measuring solution — parked on his word, touch again
+- [ ] #10 with speak v2: FRM-497 speak meter 120 → 60 fps
+- [ ] #11 standing until 11-14: FRM-525 performance topic and cpu watch — anything performance comes to wing 1
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -64,4 +65,6 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 19:02 synced: FRM-503 closed (o49), cli lane 6 handed to wing 2, gate lane 1 lines done; PK-358 rex walkthrough reassigned to main on dima's 19:01 word
 
 19:45 gate tails and the watch-pr undo moved to wing 2's cli lane as riders (dima 19:21); 33+79 branches deleted, tips logged in the wing 1 tree's .scratch/branches-deleted-tips.txt
+
+2026-11-09 19:59 groom (dima 19:58 via wing 2): done and cleared — PK-357 branches closed (status done, every W-line routed, verified by pocket-check green); the open lines rewritten to read alone, ordered by date, each ticket's state read live (all Todo).
 <!-- SECTION:NOTES:END -->
