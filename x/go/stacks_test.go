@@ -231,7 +231,7 @@ func stackedMergeWorld(t *testing.T, base, lower string) *mergeWorld {
 func linkedMergeWorld(t *testing.T) *mergeWorld {
 	t.Helper()
 	w := stackedMergeWorld(t, "coder/x", lowerOpen)
-	write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#8":"`+w.head+`"}`)
+	write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#8":"`+w.head+`","o/r#8:security":"`+w.head+`"}`)
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/stacks"] = `[{"number":5,"base":{"ref":"main"},"pull_requests":[

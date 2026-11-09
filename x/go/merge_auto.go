@@ -263,9 +263,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 		}
 	}
 
-	var sixthSense, ci, round, mergeable, deploy, mainCI, threads mergeCheck
+	var sixthSense, security, ci, round, mergeable, deploy, mainCI, threads mergeCheck
 	if d.Override != nil {
-		r.skip("sixth-sense", "ci", "mergeable", "deploy", "main-ci", "round", "threads")
+		r.skip("sixth-sense", "security", "ci", "mergeable", "deploy", "main-ci", "round", "threads")
 	} else {
 		if !slices.Contains(tier.Asks, "sixth-sense") {
 			r.skip("sixth-sense")
@@ -273,6 +273,15 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 		} else if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
 			sixthSense = d.sixthSenseOf(api, repo, n, pr, paths)
 			return sixthSense.shown()
+		}); err != nil {
+			return nil, err
+		}
+		security = mergeCheck{Name: "security", OK: true, Detail: "no risky path: no security pass asked"}
+		if !slices.Contains(tier.Asks, "security") {
+			r.skip("security")
+		} else if err := r.Step("security", "reading the security pass on the risky paths", func() (string, error) {
+			security = securityCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+			return security.shown()
 		}); err != nil {
 			return nil, err
 		}
@@ -343,6 +352,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 		if !slices.Contains(tier.Asks, "sixth-sense") {
 			d.Checks = d.Checks[1:]
 		}
+		if slices.Contains(tier.Asks, "security") {
+			d.Checks = append(d.Checks, security)
+		}
 	}
 	selfWait := ""
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
@@ -395,7 +407,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 		d.Decision = "merge"
 		return d, nil
 	}
-	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, round, ci, mergeable, deploy, mainCI, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, security, round, ci, mergeable, deploy, mainCI, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -1196,18 +1208,26 @@ func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead, paths []s
 
 // a «clean» in a pr comment or body is never read: only sixth sense and a stamp through watch-pr.sh write this store; a
 // sibling `<repo>#<n>:by` key names a verifier other than sixth sense, and the gate treats both alike, only the detail differs
-func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
-	c := mergeCheck{Name: "sixth-sense"}
+// the store sixth sense and the coordinator's stamp write, through watch-pr.sh --verified only
+func verifiedStore() (store map[string]string, path string, missing bool) {
 	home, _ := os.UserHomeDir()
-	path := filepath.Join(home, ".claude/shelf/pr-verified.json")
+	path = filepath.Join(home, ".claude/shelf/pr-verified.json")
 	if mergeTestEnvOn() {
 		path = cmp.Or(os.Getenv("X_VERIFIED"), path)
 	}
 	raw, err := os.ReadFile(path)
-	var store map[string]string
 	if err != nil || json.Unmarshal(raw, &store) != nil {
+		return nil, path, errors.Is(err, fs.ErrNotExist)
+	}
+	return store, path, false
+}
+
+func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
+	c := mergeCheck{Name: "sixth-sense"}
+	store, path, missing := verifiedStore()
+	if store == nil {
 		c.Detail = "no sixth sense store at " + path
-		c.noClean = errors.Is(err, fs.ErrNotExist)
+		c.noClean = missing
 		return c
 	}
 	verified := store[repo+"#"+n]
@@ -1223,6 +1243,28 @@ func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 		c.OK, c.Detail = true, "clean on "+short(head)+" by "+by
 	default:
 		c.OK, c.Detail = carried(verified, by, head, base, ref)
+	}
+	return c
+}
+
+// a risky path's one /security-review, run by codie before sixth sense's first round and recorded by sixth sense's stamp
+// beside the clean; it carries to a new head by the clean's own rule (FRM-548)
+func securityCheck(repo, n, head, base, ref string) mergeCheck {
+	c := mergeCheck{Name: "security"}
+	stamp := "~/frame/_clio/.claude/hooks/watch-pr.sh --verified " + repo + " " + n + " " + head + " --security <sha>"
+	store, path, _ := verifiedStore()
+	passed := store[repo+"#"+n+":security"]
+	switch {
+	case store == nil:
+		c.Detail = "no sixth sense store at " + path
+	case passed == "":
+		c.Detail = "no security pass recorded for " + repo + "#" + n + ": a risky path asks codie's /security-review before sixth sense's first round, then its stamp: " + stamp
+	case passed == head:
+		c.OK, c.Detail = true, "security pass on "+short(head)
+	default:
+		if c.OK, c.Detail = carried(passed, "the security pass", head, base, ref); !c.OK {
+			c.Detail += "; a new pass and its stamp: " + stamp
+		}
 	}
 	return c
 }

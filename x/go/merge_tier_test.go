@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -31,6 +33,90 @@ func TestMergeAutoAsksNoSixthSenseOfALightPr(t *testing.T) {
 	sixthSense := slices.ContainsFunc(read.Checks, func(c mergeCheck) bool { return c.Name == "sixth-sense" })
 	if got.code != 4 || read.Tier != "light" || slices.Contains(read.Asks, "sixth-sense") || sixthSense {
 		t.Fatalf("exit %d, tier %q, asks %v, want a light plan with no sixth sense asked:\n%s", got.code, read.Tier, read.Asks, got.stdout)
+	}
+}
+
+// FRM-548 exit 3: a risky pr whose clean carries no security pass refuses, naming the pass and its stamp
+func TestMergeAutoRefusesARiskyPrWithNoSecurityPass(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, ".github/workflows/ci.yml")
+	write(t, w.store, `{"o/r#7":"`+w.head+`"}`)
+
+	got := w.run(t, "7", "--apply")
+
+	wait := tierRead(got).Wait
+	if got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(wait, "no security pass") || !strings.Contains(wait, "watch-pr.sh --verified o/r 7 "+w.head+" --security") {
+		t.Fatalf("exit %d, wait %q, want a refusal naming the security pass and its stamp:\n%s", got.code, wait, got.stdout)
+	}
+}
+
+// FRM-548 exit 3: the stamped pass lands on its head, and carries across a rebase that kept the code, as the clean does
+func TestMergeAutoLandsARiskyPrOnItsSecurityPass(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name   string
+		change func(t *testing.T, w *mergeWorld)
+	}{
+		{"on the head", func(*testing.T, *mergeWorld) {}},
+		{"carried by a rebase", func(t *testing.T, w *mergeWorld) {
+			w.mainMoves(t, "one.txt")
+			w.moveHead(t)
+		}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, ".github/workflows/ci.yml")
+			write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#7:security":"`+w.head+`"}`)
+			c.change(t, w)
+
+			if got := w.run(t, "7", "--apply"); got.code != 0 || len(w.hub.sent("PUT ")) != 1 {
+				t.Fatalf("exit %d, want the merge on its security pass:\n%s", got.code, got.stdout)
+			}
+		})
+	}
+}
+
+// FRM-548 exit 3: a pass on other code counts for nothing
+func TestMergeAutoRefusesASecurityPassOnOtherCode(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, ".github/workflows/ci.yml")
+	old := w.head
+	write(t, filepath.Join(w.seed, "fix.ts"), "a change after the pass\n")
+	gitT(t, w.seed, "add", ".")
+	gitT(t, w.seed, "commit", "-q", "-m", "a change after the pass")
+	w.moveHead(t)
+	write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#7:security":"`+old+`"}`)
+
+	got := w.run(t, "7", "--apply")
+
+	if wait := tierRead(got).Wait; got.code != 1 || !strings.Contains(wait, "security pass") {
+		t.Fatalf("exit %d, wait %q, want the moved pass refused:\n%s", got.code, wait, got.stdout)
+	}
+}
+
+// FRM-548 exit 3: a pr that grew past docs into code asks the clean it needs today
+func TestMergeAutoAsksTheCleanOfAPrThatGrewPastLight(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "docs/research/x.md", "x/go/foo.go")
+	write(t, w.store, `{}`)
+
+	got := w.run(t, "7", "--apply")
+
+	if wait := tierRead(got).Wait; got.code != 1 || !strings.Contains(wait, "no clean recorded") {
+		t.Fatalf("exit %d, wait %q, want the missing clean named:\n%s", got.code, wait, got.stdout)
+	}
+}
+
+// FRM-548 exit 3: a self-path pr's dry run with no sign still prints its tier and checks
+func TestMergeAutoPrintsTheChecksOfAnUnsignedSelfEdit(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "x/go/merge_auto.go")
+
+	got := w.run(t, "7")
+
+	read := tierRead(got)
+	if got.code != 1 || read.Tier != "risky" || !slices.Contains(read.Asks, "security") || !strings.Contains(got.stdout, "self-edit") {
+		t.Fatalf("exit %d, tier %q, asks %v, want the self-edit wait carrying the risky tier and its checks:\n%s", got.code, read.Tier, read.Asks, got.stdout)
 	}
 }
 

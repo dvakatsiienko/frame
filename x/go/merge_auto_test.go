@@ -226,7 +226,8 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 	server := h.serve(t)
 
 	store := filepath.Join(t.TempDir(), "pr-verified.json")
-	write(t, store, `{"o/r#7":"`+head+`"}`)
+	// a risky path asks the security pass beside the clean, stamped on the same head
+	write(t, store, `{"o/r#7":"`+head+`","o/r#7:security":"`+head+`"}`)
 	bin := filepath.Join(t.TempDir(), "bin")
 	write(t, filepath.Join(bin, "gh"), "#!/bin/sh\n[ \"$1 $2\" = 'auth token' ] && echo gho_dima && exit 0\necho \"fake gh: $*\" >&2\nexit 1\n")
 	state := t.TempDir()
@@ -1551,7 +1552,7 @@ func TestMergeAutoWaitCarriesTheChecksItRead(t *testing.T) {
 	got := w.run(t, "7", "--apply")
 
 	data := envelopeOf(got).Data
-	if got.code != 1 || data.Decision != "wait" || len(data.Checks) != 6 || !slices.Equal(data.Risky, []string{".github/workflows/ci.yml"}) {
+	if got.code != 1 || data.Decision != "wait" || len(data.Checks) != 7 || !slices.Equal(data.Risky, []string{".github/workflows/ci.yml"}) {
 		t.Fatalf("exit %d, data %+v, want the wait's checks and risky line in the envelope", got.code, data)
 	}
 }
