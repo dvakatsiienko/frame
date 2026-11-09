@@ -4,7 +4,7 @@ title: 'linear labels: a clio label group, top-seven name and emoji'
 status: done
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T13:17:00Z'
+updated_date: '2026-11-09T13:29:00Z'
 labels:
   - s
   - clio-main
@@ -28,4 +28,8 @@ raw drop (2026-11-09 inbox, dima): clio-main, clio-wing-* — group them into la
 2026-11-09 15:20 clio: done on dima's o9 pick: workspace label group «clio owner» made, clio-main and clio-wing-1…4 moved under it, read back; no ticket carried two seat labels before; GLOSSARY label line added
 
 close: PK-365:W1 done (the group made, exclusive, one seat per ticket), PK-365:W2 done (seven names, then his three, his pick «clio owner»)
+
+PK-365:W3 (2026-11-09 15:08, dima): i prefer «owner» or something similar; i want the label to sound action-flavoured: who does this, who owns this. propose more top7; owner is still somewhat blurry, it should be connected to you somehow. (moved from PK-368:W9)
+
+close: PK-365:W3 done (the label group named «clio owner», his pick of his own three)
 <!-- SECTION:NOTES:END -->

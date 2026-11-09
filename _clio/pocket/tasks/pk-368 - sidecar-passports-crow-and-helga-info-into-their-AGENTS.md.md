@@ -4,7 +4,7 @@ title: 'sidecar passports: crow and helga info into their AGENTS.md'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T13:10:00Z'
+updated_date: '2026-11-09T13:29:00Z'
 labels:
   - s
   - clio-main
@@ -40,4 +40,8 @@ PK-368:W8 (2026-11-09 15:08, dima): steamac disk, 256 → 192 gb: reassign this 
 PK-368:W9 (2026-11-09 15:08, dima): i prefer «owner» or something similar; i want the label to sound action-flavoured: who does this, who owns this. propose more top7; owner is still somewhat blurry, it should be connected to you somehow.
 
 PK-368:W10 (2026-11-09 15:08, dima): correction of W7: «in sky» was wispr for «in skill», the skill folders
+
+2026-11-09 15:30 clio: W4 → PK-359:W4, W8 → PK-362:W8, W9 → PK-365:W3, each its own item's line; the 15:08 groom brief named one home for the whole prompt
+
+PK-368:W11 (2026-11-09 15:17, dima): is a pnpm script not redundant? clean up everything redundant after the crow and helga restructure ❓
 <!-- SECTION:NOTES:END -->

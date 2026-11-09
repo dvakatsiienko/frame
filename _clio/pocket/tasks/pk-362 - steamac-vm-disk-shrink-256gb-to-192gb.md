@@ -4,7 +4,7 @@ title: 'steamac vm disk: shrink 256gb to 192gb'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T13:23:00Z'
+updated_date: '2026-11-09T13:29:00Z'
 labels:
   - s
   - clio-wing-2
@@ -41,4 +41,6 @@ PK-362:W7 (2026-11-09 15:23, dima): log your notes and pause until i have more s
 - door 3 a fresh 192 GB disk and re-downloads, sign-ins redone; the old disk's delete door in the app unknown
 - upstream: no shrink issue on fxgl/steamac (v1.9.13); a feature ask drafted on his o10, posts only after his read
 kept: 2026-11-09 — paused on dima's word until the mac has space
+
+PK-362:W8 (2026-11-09 15:08, dima): steamac disk, 256 → 192 gb: reassign this topic to wing 2. your channel is busy and i have clarification questions. (moved from PK-368:W8)
 <!-- SECTION:NOTES:END -->
