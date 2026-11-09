@@ -25,8 +25,9 @@ pre-commit:
     typecheck:
       run: script/index-run.sh pnpm typecheck
     test:
-      # every branch kind (main, codie/*, clio-wing-*, worktree-*, any other; a detached HEAD runs whole): only the tests related to the staged code;
-      # the whole suite stays at push and on ci, and the kill rule's lever is related_kinds in script/test-commit.sh
+      # every branch kind (main, codie/*, clio-wing-*, worktree-*, any other): only the tests related to the staged code, or none when the
+      # import graph cannot judge; the whole suite stays at push and on ci. the kill rule's lever, related_kinds in script/test-commit.sh,
+      # is the one whole run left at commit
       run: script/index-run.sh script/test-commit.sh pnpm test
     x-go-reads:
       # a staged script x/go's tests read (script/lib/x-go-reads.txt, or anything under script/lib/) runs those tests here,

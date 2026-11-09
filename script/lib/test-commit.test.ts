@@ -77,9 +77,22 @@ function runGate(
     ).split('\t');
     return {
         calls: calls.trimEnd(),
+        // branch, mode, staged, commit, seconds, exit, source, paths by kind, the mode before 2026-11-10
         fields: row.slice(2),
         status: got.status,
+        stdout: got.stdout,
     };
+}
+
+const noneLine = 'test-commit: no related tests, the push and ci run the suite';
+
+// what the import graph cannot judge runs nothing at commit, says so once, and leaves the suite to the push and ci
+function expectNone(got: ReturnType<typeof runGate>) {
+    expect(got.calls).toBe('');
+    expect(got.stdout.split(noneLine)).toHaveLength(2);
+    expect(got.fields[1]).toBe('none');
+    expect(got.fields.at(-1)).toBe('whole');
+    expect(got.status).toBe(0);
 }
 
 function staged(files: Record<string, string>, base?: Record<string, string>) {
@@ -113,20 +126,36 @@ describe('test-commit', () => {
         },
     );
 
-    test('a detached HEAD logs its kind as detached', () => {
+    test('a detached HEAD runs none and logs its kind as detached', () => {
         const got = runGate(staged({ 'a.ts': 'a\n' }), '');
-        expect(got.calls).toBe('test');
-        expect(got.fields.slice(0, 3)).toEqual(['detached', 'whole', '1']);
+        expectNone(got);
+        expect(got.fields.slice(0, 3)).toEqual(['detached', 'none', '1']);
     });
 
-    test('staged code no test imports runs the whole suite', () => {
+    test('staged code no test imports runs none, never the whole suite', () => {
         const got = runGate(staged({ 'script/a.ts': 'a\n' }), 'main', '0', {
             STUB_OUT: 'No affected test files found, exiting with code 0',
         });
         expect(got.calls).toBe(
-            'exec|vitest|related|--run|--passWithNoTests|script/a.ts\ntest',
+            'exec|vitest|related|--run|--passWithNoTests|script/a.ts',
         );
-        expect(got.fields.slice(1, 3)).toEqual(['whole', '1']);
+        expect(got.stdout.split(noneLine)).toHaveLength(2);
+        expect(got.fields[1]).toBe('none');
+        expect(got.fields.at(-1)).toBe('whole');
+    });
+
+    test('the row counts its staged paths by kind', () => {
+        const got = runGate(
+            staged({
+                'a.ts': 'a\n',
+                'b.mjs': 'b\n',
+                'c.png': 'c\n',
+                'd.md': 'd\n',
+                'package.json': '{}\n',
+            }),
+            'main',
+        );
+        expect(got.fields.at(-2)).toBe('code=2,config=1,asset=1,other=1');
     });
 
     test('a kind taken off the branch-kind list runs the whole suite', () => {
@@ -164,9 +193,9 @@ describe('test-commit', () => {
         [{ INDEX_RUN_SOURCE: 'other' }, 'other'],
         // this test runs inside a gate at commit, whose own source it would inherit
         [{ INDEX_RUN_SOURCE: undefined }, 'other'],
-    ])('its last column is the source: %j', (extra, source) => {
+    ])('its source column: %j', (extra, source) => {
         const got = runGate(staged({ 'a.ts': 'a\n' }), 'main', '0', extra);
-        expect(got.fields.at(-1)).toBe(source);
+        expect(got.fields[6]).toBe(source);
     });
 
     test.each([
@@ -176,17 +205,9 @@ describe('test-commit', () => {
         'script/lib/a.sh',
         'data.json',
         'rows.tsv',
-    ])(
-        'a staged path off the no-test list runs the whole suite: %s',
-        (path) => {
-            const got = runGate(
-                staged({ [path]: 'x\n', 'a.ts': 'a\n' }),
-                'main',
-            );
-            expect(got.calls).toBe('test');
-            expect(got.fields.slice(1, 2)).toEqual(['whole']);
-        },
-    );
+    ])('a staged path off the no-test list runs none: %s', (path) => {
+        expectNone(runGate(staged({ [path]: 'x\n', 'a.ts': 'a\n' }), 'main'));
+    });
 
     describe('a memory-only commit', () => {
         const memory = '_clio/memory/habit-x.md';
@@ -211,12 +232,10 @@ describe('test-commit', () => {
             expect(got.calls).toMatch(/vitest\|run/);
         });
 
-        test('a code file beside it runs the whole suite', () => {
-            const got = runGate(
-                staged({ [memory]: 'a\n', 'a.ts': 'a\n' }),
-                'main',
+        test('a code file beside it runs none', () => {
+            expectNone(
+                runGate(staged({ [memory]: 'a\n', 'a.ts': 'a\n' }), 'main'),
             );
-            expect(got.calls).toBe('test');
         });
 
         test('a script under skills is code, never memory', () => {
@@ -276,29 +295,31 @@ describe('test-commit', () => {
         test.each([
             ['out of', pocket, 'docs/pk-1.md'],
             ['into', 'docs/pk-1.md', pocket],
-        ])('a rename %s the pocket runs the whole suite', (_name, from, to) => {
+        ])('a rename %s the pocket runs none', (_name, from, to) => {
             const context = fixture({ [from]: 'a body long enough\n' });
             rmSync(join(context.repo, from));
             write(context.repo, to, 'a body long enough\n');
             context.git('add', '-A');
-            expect(runGate(context, 'main').calls).toBe('test');
+            expectNone(runGate(context, 'main'));
         });
 
-        test('a failed read of the staged paths runs the whole suite', () => {
+        test('a failed read of the staged paths runs none', () => {
             const context = staged({ [pocket]: 'a\n' });
-            const got = runGate(context, 'main', '0', {
-                GIT_DIR: join(context.dir, 'missing'),
-            });
-            expect(got.calls).toBe('test');
+            expectNone(
+                runGate(context, 'main', '0', {
+                    GIT_DIR: join(context.dir, 'missing'),
+                }),
+            );
         });
     });
 
-    test('a failed read of the staged paths runs the whole suite', () => {
+    test('a failed read of the staged paths runs none', () => {
         const context = staged({ 'a.ts': 'a\n' });
-        const got = runGate(context, 'main', '0', {
-            GIT_DIR: join(context.dir, 'missing'),
-        });
-        expect(got.calls).toBe('test');
+        expectNone(
+            runGate(context, 'main', '0', {
+                GIT_DIR: join(context.dir, 'missing'),
+            }),
+        );
     });
 
     test('a non-ascii path reaches vitest whole', () => {
@@ -306,17 +327,17 @@ describe('test-commit', () => {
         expect(got.calls).toContain('|é.ts');
     });
 
-    test('a deleted file runs the whole suite', () => {
+    test('a deleted file runs none', () => {
         const context = fixture();
         rmSync(join(context.repo, 'old.ts'));
         context.git('add', '-A');
-        expect(runGate(context, 'main').calls).toBe('test');
+        expectNone(runGate(context, 'main'));
     });
 
-    test('a renamed file runs the whole suite', () => {
+    test('a renamed file runs none', () => {
         const context = fixture();
         context.git('mv', 'old.ts', 'new.ts');
-        expect(runGate(context, 'main').calls).toBe('test');
+        expectNone(runGate(context, 'main'));
     });
 
     test.each([
@@ -328,9 +349,8 @@ describe('test-commit', () => {
         'tsconfig.base.json',
         'lefthook.yaml',
         'script/lib/test-temp-dir.ts',
-    ])('%s runs the whole suite', (path) => {
-        const got = runGate(staged({ [path]: 'x\n' }), 'main');
-        expect(got.calls).toBe('test');
+    ])('%s runs none', (path) => {
+        expectNone(runGate(staged({ [path]: 'x\n' }), 'main'));
     });
 
     test.each([
@@ -339,6 +359,6 @@ describe('test-commit', () => {
     ])('on %s a red hands back its exit and logs it', (branch) => {
         const got = runGate(staged({ 'a.ts': 'a\n' }), branch, '3');
         expect(got.status).toBe(3);
-        expect(got.fields.at(-2)).toBe('3');
+        expect(got.fields[5]).toBe('3');
     });
 });
