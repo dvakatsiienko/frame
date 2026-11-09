@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T18:23:00Z'
+updated_date: '2026-11-09T18:25:00Z'
 labels:
   - s
   - clio-main
@@ -22,8 +22,8 @@ ordinal: 9995
 - [ ] #4 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
 - [ ] #5 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
 - [ ] #6 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
-- [ ] #7 ⏳ boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check — waits for: tomorrow's boot
-- [ ] #8 ⏳ FRM-550: judge it against herdr, then dima's sign — waits for: tomorrow's herdr boot, by 11-11
+- [ ] #7 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check — on: 2026-11-10
+- [ ] #8 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
 - [ ] #9 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
 - [ ] #10 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->

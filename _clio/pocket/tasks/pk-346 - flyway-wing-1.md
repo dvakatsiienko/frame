@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T18:20:00Z'
+updated_date: '2026-11-09T18:25:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,17 +17,17 @@ ordinal: 18998
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 FRM-551 vm go tests: read the second idle sample at ~20:36 (4 vcpus), tell dima build or drop, stop the vm
-- [ ] #2 ⏳ FRM-534 related tests at commit: the day read, then close — waits for: 11-10 17:30
-- [ ] #3 ⏳ FRM-517 temp dir: count against 345, under 100 grown closes it — waits for: 11-10 17:28
-- [ ] #4 ⏳ FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — waits for: 11-10
+- [ ] #2 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
+- [ ] #3 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
+- [ ] #4 📅 FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — on: 2026-11-10
 - [ ] #5 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
 - [ ] #6 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
 - [ ] #7 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
-- [ ] #8 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
-- [ ] #9 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #10 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
-- [ ] #11 💤 FRM-525 performance topic and cpu watch, anything performance comes to wing 1 — later: dima says when he has capacity
-- [ ] #12 ⏳ FRM-555 stash tests: no timeout reruns, idle poll at 30 s — grill and sign — waits for: dima's word, after FRM-505
+- [ ] #8 ⏳ FRM-555 stash tests: no timeout reruns, idle poll at 30 s — grill and sign — waits for: dima's word, after FRM-505
+- [ ] #9 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
+- [ ] #10 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #11 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
+- [ ] #12 💤 FRM-525 performance topic and cpu watch, anything performance comes to wing 1 — later: dima says when he has capacity
 <!-- AC:END -->
 
 ## Implementation Notes
