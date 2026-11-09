@@ -175,8 +175,13 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 			}
 		}
 	}()
+	// the pr is read first and its paths after, so they are its head's or a later push's, never an older one's; a push past
+	// the read leaves the merge pinned to the read head, which github refuses
 	if err := r.Step("tier", "reading the checks the changed paths ask", func() (string, error) {
-		if paths, pathsErr = prPaths(api, n); pathsErr != nil {
+		if _, pathsErr = ghFetch(asDima, api+"/pulls/"+n, &pr); pathsErr == nil {
+			paths, pathsErr = prPaths(api, n)
+		}
+		if pathsErr != nil {
 			if override != nil {
 				// the tier only names; a read that failed stops nothing under the override
 				return "the paths did not read: " + pathsErr.Error(), nil
@@ -189,8 +194,11 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 		return nil, err
 	}
 	if err := r.Step("pr", "reading the pr head", func() (string, error) {
-		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
-			return "", err
+		// read in the tier step, unless that read failed under the override
+		if pr.Head.Sha == "" {
+			if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
+				return "", err
+			}
 		}
 		state := pr.State
 		if pr.Merged {
@@ -290,7 +298,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 			r.skip("wishkeeper")
 		} else if err := r.Step("wishkeeper", "reading clio's wishkeeper read on the memory paths", func() (string, error) {
 			var err error
-			if wishkeeper, err = wishkeeperCheck(api, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref); err != nil {
+			if wishkeeper, err = wishkeeperCheck(api, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref, paths); err != nil {
 				return "", err
 			}
 			return wishkeeper.shown()
@@ -485,13 +493,25 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// a layer lands with the stack, so its own paths ask their checks; its sixth sense stays, as a layer's always did
+	tier := tierOf(paths)
+	security := mergeCheck{Name: "security", OK: true}
+	if slices.Contains(tier.Asks, "security") {
+		security = securityCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+	}
+	wishkeeper := mergeCheck{Name: "wishkeeper", OK: true}
+	if slices.Contains(tier.Asks, "wishkeeper") {
+		if wishkeeper, err = wishkeeperCheck(api, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref, paths); err != nil {
+			return "", err
+		}
+	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
 	// main's deploy is the merged pr's own check, read once for the whole stack
-	decision, wait := decide("", selfWait, sixthSense, round, ci, mergeable, threads)
+	decision, wait := decide("", selfWait, sixthSense, security, wishkeeper, round, ci, mergeable, threads)
 	if decision == "merge" {
 		return "", nil
 	}
-	for _, c := range []mergeCheck{sixthSense, ci, round, mergeable, threads} {
+	for _, c := range []mergeCheck{sixthSense, security, wishkeeper, ci, round, mergeable, threads} {
 		if !c.OK && c.Detail == wait {
 			wait = c.Name + ": " + wait
 		}
@@ -868,7 +888,8 @@ func (d *mergeDecision) summary() string {
 //go:embed risky.json
 var riskyJSON []byte
 
-// light is an allow-list of media under assets and brand, so a code file of any extension there reads normal
+// light is an allow-list: research and test-drive markdown, and media under assets and brand, so a code file of any
+// extension there reads normal
 var riskyList = func() (list struct{ Risky, Self, Light, Memory []*regexp.Regexp }) {
 	var raw struct{ Risky, Self, Light, Memory []string }
 	if err := json.Unmarshal(riskyJSON, &raw); err != nil {
@@ -1291,7 +1312,7 @@ var wishkeeperRead = regexp.MustCompile(`^wishkeeper read ([0-9a-f]{7,40})\b`)
 
 // a memory path's wishkeeper read, clio's before the merge: one pr comment from her app naming the sha it read, which
 // reaches the head as a round does, by its history or a rebase that kept the code; no other author counts (FRM-548)
-func wishkeeperCheck(api, n, head, base, ref string) (mergeCheck, error) {
+func wishkeeperCheck(api, n, head, base, ref string, paths []string) (mergeCheck, error) {
 	c := mergeCheck{Name: "wishkeeper"}
 	type note struct {
 		User struct {
@@ -1313,10 +1334,25 @@ func wishkeeperCheck(api, n, head, base, ref string) (mergeCheck, error) {
 		if nt.User.Login != clioApp || nt.User.Type != "Bot" || read == nil {
 			continue
 		}
-		if roundReaches(read[1], head, base, ref) {
-			c.OK, c.Detail = true, "clio's wishkeeper read on "+short(read[1])
-			return c, nil
+		if !roundReaches(read[1], head, base, ref) {
+			continue
 		}
+		// a read vouches only for the memory it saw: a memory path of the pr changed after it is unread (steer 20:32); a read
+		// a rebase carried saw the same change, and a memory file only main changed is not the pr's
+		changed, _ := gitIn("", "diff", "--name-only", read[1], head)
+		if ok(gitIn("", "merge-base", "--is-ancestor", read[1], head)) && changed.ok {
+			if edited := slices.IndexFunc(strings.Fields(changed.out), func(p string) bool {
+				return slices.Contains(paths, p) && matchesAny(p, riskyList.Memory)
+			}); edited >= 0 {
+				c.Detail = "clio's wishkeeper read on " + short(read[1]) + " is older than a memory edit, " + strings.Fields(changed.out)[edited] + ": a new read reaches " + short(head)
+				continue
+			}
+		}
+		c.OK, c.Detail = true, "clio's wishkeeper read on "+short(read[1])
+		return c, nil
+	}
+	if c.Detail != "" {
+		return c, nil
 	}
 	c.Detail = "no wishkeeper read reaches " + short(head) + ": a memory path asks clio's, posted as " + clioApp + ": «wishkeeper read <sha>: <n> findings»"
 	return c, nil
@@ -1550,33 +1586,42 @@ func deployCheck(api, repo, trunk string) (mergeCheck, error) {
 // so its workflow file is what tells ci from deploy
 func mainRunsCheck(api string, deploys bool) (mergeCheck, error) {
 	c := mergeCheck{Name: "main-ci"}
-	var answer struct {
-		Runs []struct {
-			ID         int64  `json:"id"`
-			Path       string `json:"path"`
-			HeadSha    string `json:"head_sha"`
-			Status     string `json:"status"`
-			Conclusion string `json:"conclusion"`
-		} `json:"workflow_runs"`
+	type run struct {
+		ID         int64  `json:"id"`
+		HeadSha    string `json:"head_sha"`
+		Status     string `json:"status"`
+		Conclusion string `json:"conclusion"`
 	}
-	if _, err := ghFetch(asDima, api+"/actions/runs?branch=main&per_page=30", &answer); err != nil {
+	// each workflow read on its own, so another workflow's runs can never push ci's out of the page
+	runsOf := func(workflow string) ([]run, error) {
+		var answer struct {
+			Runs []run `json:"workflow_runs"`
+		}
+		_, err := ghFetch(asDima, api+"/actions/workflows/"+workflow+"/runs?branch=main&per_page=5", &answer)
+		return answer.Runs, err
+	}
+	ci, err := runsOf("ci.yml")
+	if err != nil {
 		return c, err
 	}
-	for _, run := range answer.Runs {
-		if deploys && run.Status != "completed" && slices.Contains([]string{".github/workflows/ci.yml", ".github/workflows/deploy.yml"}, run.Path) {
-			c.Detail = fmt.Sprintf("main's deploy is running: run %d (%s) on %s", run.ID, strings.TrimPrefix(run.Path, ".github/workflows/"), short(run.HeadSha))
-			return c, nil
+	workflows := map[string][]run{"ci.yml": ci}
+	if deploys {
+		if workflows["deploy.yml"], err = runsOf("deploy.yml"); err != nil {
+			return c, err
 		}
 	}
-	for _, run := range answer.Runs {
-		if run.Path != ".github/workflows/ci.yml" {
-			continue
+	for _, workflow := range []string{"ci.yml", "deploy.yml"} {
+		for _, r := range workflows[workflow] {
+			if deploys && r.Status != "completed" {
+				c.Detail = fmt.Sprintf("main's deploy is running: run %d (%s) on %s", r.ID, workflow, short(r.HeadSha))
+				return c, nil
+			}
 		}
-		if run.Conclusion == "failure" {
-			c.Detail = fmt.Sprintf("main's ci is red on %s, run %d: a merge would stack on it; a fix for main lands under dima's operator-override for prs", short(run.HeadSha), run.ID)
-			return c, nil
-		}
-		break
+	}
+	// a cancelled run is the one a newer push superseded; a timeout or a failed start never proved main
+	if len(ci) > 0 && slices.Contains([]string{"failure", "timed_out", "startup_failure"}, ci[0].Conclusion) {
+		c.Detail = fmt.Sprintf("main's ci is red on %s, run %d (%s): a merge would stack on it; a fix for main lands under dima's operator-override for prs", short(ci[0].HeadSha), ci[0].ID, ci[0].Conclusion)
+		return c, nil
 	}
 	c.OK, c.Detail = true, "main's newest ci is not red"
 	return c, nil

@@ -172,7 +172,7 @@ holds, with these swaps:
 - **the head** is that final sha; the worktree checks it out.
 - **reviewers** — `ci reviewer: n/a (quick lane)`; step 2 shrinks to codie's own
   pre-verification.
-- **the clean** is its `linear` comment with `verified: <sha>`, not `watch-pr.sh`; it shows as «sixth sense», else `x as sixth-sense -- …`.
+- **the clean** is its `linear` comment with `verified: <sha>`, not `watch-pr.sh`, naming codie's `/security-review` on a risky path; it shows as «sixth sense», else `x as sixth-sense -- …`.
 
 ## the next chunk
 

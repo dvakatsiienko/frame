@@ -231,7 +231,7 @@ func stackedMergeWorld(t *testing.T, base, lower string) *mergeWorld {
 func linkedMergeWorld(t *testing.T) *mergeWorld {
 	t.Helper()
 	w := stackedMergeWorld(t, "coder/x", lowerOpen)
-	write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#8":"`+w.head+`","o/r#8:security":"`+w.head+`"}`)
+	write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#7:security":"`+w.head+`","o/r#8":"`+w.head+`","o/r#8:security":"`+w.head+`"}`)
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/stacks"] = `[{"number":5,"base":{"ref":"main"},"pull_requests":[
@@ -579,6 +579,22 @@ func selfEditStack(t *testing.T, upper string) (*mergeWorld, *fakeLinear) {
 	w.hub.pages[repoPath+"/pulls/8/files"] = w.hub.pages[repoPath+"/pulls/7/files"]
 	w.hub.pages[repoPath+"/pulls/8"] = strings.Replace(w.hub.pages[repoPath+"/pulls/8"], `"body":"b"`, `"body":"- ticket: `+upper+`"`, 1)
 	return w, f
+}
+
+// FRM-548: a layer lands with the stack, so its own risky path asks its own security pass
+func TestMergeAutoWaitsOnALowerLayersSecurityPass(t *testing.T) {
+	t.Parallel()
+	w := linkedMergeWorld(t)
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/7/files"] = `[{"filename":".github/workflows/ci.yml","status":"modified"}]`
+	w.hub.mu.Unlock()
+	write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#8":"`+w.head+`"}`)
+
+	got := w.run(t, "8", "--apply")
+
+	if msg := envelopeOf(got).Error; got.code != 1 || len(w.hub.sent("PUT ")) != 0 || !strings.Contains(msg, "#7") || !strings.Contains(msg, "no security pass") {
+		t.Fatalf("exit %d, error %q, want the stack held on #7's missing security pass:\n%s", got.code, msg, got.stdout)
+	}
 }
 
 func TestMergeAutoLandsAStackItsChunkPreApproved(t *testing.T) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"encoding/json"
 	"path/filepath"
 	"slices"
@@ -134,31 +135,35 @@ func comment(login, kind, body string) string {
 // FRM-548 exit 2: a memory path waits for clio's wishkeeper read, counted only from the clio app, on the head or an ancestor
 func TestMergeAutoWaitsForClioWishkeeperRead(t *testing.T) {
 	t.Parallel()
+	clio := func(_ *mergeWorld, ancestor string) []string {
+		return []string{comment("x-clio-cc[bot]", "Bot", "wishkeeper read "+ancestor+": 0 findings")}
+	}
 	for _, c := range []struct {
 		name  string
 		plant func(w *mergeWorld, ancestor string) []string
 		lands bool
+		after string
 	}{
-		{"no comment", func(*mergeWorld, string) []string { return nil }, false},
-		{"clio's read on an ancestor", func(_ *mergeWorld, ancestor string) []string {
-			return []string{comment("x-clio-cc[bot]", "Bot", "wishkeeper read "+ancestor+": 0 findings")}
-		}, true},
+		{"no comment", func(*mergeWorld, string) []string { return nil }, false, ""},
+		{"clio's read on an ancestor", clio, true, ""},
+		{"clio's read before a memory edit", clio, false, "home/.claude/plugin-x/skills/foo/SKILL.md"},
 		{"the same text from codie's app", func(_ *mergeWorld, ancestor string) []string {
 			return []string{comment("x-codie-cc[bot]", "Bot", "wishkeeper read "+ancestor+": 0 findings")}
-		}, false},
+		}, false, ""},
 		{"a user named like the app", func(_ *mergeWorld, ancestor string) []string {
 			return []string{comment("x-clio-cc[bot]", "User", "wishkeeper read "+ancestor+": 0 findings")}
-		}, false},
+		}, false, ""},
 		{"clio's read on other code", func(*mergeWorld, string) []string {
 			return []string{comment("x-clio-cc[bot]", "Bot", "wishkeeper read "+runSha(5)+": 0 findings")}
-		}, false},
+		}, false, ""},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			w := newMergeWorld(t, "x/go/merge_auto.go", "home/.claude/plugin-x/skills/foo/SKILL.md")
 			w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
 			ancestor := w.head
-			write(t, filepath.Join(w.seed, "fix.go"), "package main\n")
+			edited := cmp.Or(c.after, "fix.go")
+			write(t, filepath.Join(w.seed, edited), "an edit after the read\n")
 			gitT(t, w.seed, "add", ".")
 			gitT(t, w.seed, "commit", "-q", "-m", "a fix after the read")
 			w.moveHead(t)
@@ -172,6 +177,21 @@ func TestMergeAutoWaitsForClioWishkeeperRead(t *testing.T) {
 				t.Fatalf("exit %d, landed %v, wait %q, want landed %v, a wait naming the read:\n%s", got.code, landed, wait, c.lands, got.stdout)
 			}
 		})
+	}
+}
+
+// the paths read after the pr head, so a push between them makes the tier newer than the merged head, never older
+func TestMergeAutoReadsThePathsAfterThePrHead(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "docs/research/x.md")
+
+	w.run(t, "7", "--apply")
+
+	w.hub.mu.Lock()
+	defer w.hub.mu.Unlock()
+	head, files := slices.Index(w.hub.calls, "GET "+repoPath+"/pulls/7"), slices.Index(w.hub.calls, "GET "+repoPath+"/pulls/7/files")
+	if head < 0 || files < head {
+		t.Fatalf("the pr read at %d, its files at %d, want the files after the head: %v", head, files, w.hub.calls)
 	}
 }
 

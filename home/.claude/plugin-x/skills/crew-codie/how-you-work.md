@@ -68,7 +68,7 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
 ## before «final»
 
 - **a review card the isolation guard keeps from git** reads a diff file: `git diff <base>...HEAD > .scratch/review.diff` from a scratch script.
-- **coderabbit on a quick lane** reviews the commits on main: `coderabbit review --agent --committed --base-commit <base>^`.
+- **coderabbit is free and skipped silently** with no quota (`coderabbit review --usage`); on a quick lane it reviews the commits on main: `coderabbit review --agent --committed --base-commit <base>^`.
 
 - **open every overlay and every changed view in the browser before its commit** (BYT-103); check a visual
   state the way the eye sees it, never through `aria-*`.

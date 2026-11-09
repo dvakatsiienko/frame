@@ -218,10 +218,11 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 			{"name":"test","status":"completed","conclusion":"success","html_url":"https://ci/1"},
 			{"name":"build","status":"completed","conclusion":"success","html_url":"https://ci/2"}]}`,
 		repoPath + "/commits/" + head + "/statuses": `[]`,
-		"graphql":                  `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[]}}}}}`,
-		repoPath + "/issues":       `[]`,
-		repoPath + "/pulls":        `[]`,
-		repoPath + "/actions/runs": `{"workflow_runs":[]}`,
+		"graphql":            `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[]}}}}}`,
+		repoPath + "/issues": `[]`,
+		repoPath + "/pulls":  `[]`,
+		repoPath + "/actions/workflows/ci.yml/runs":     `{"workflow_runs":[]}`,
+		repoPath + "/actions/workflows/deploy.yml/runs": `{"workflow_runs":[]}`,
 		// a memory path asks clio's wishkeeper read, posted by her app on the head
 		repoPath + "/issues/7/comments": `[{"user":{"login":"x-clio-cc[bot]","type":"Bot"},"body":"wishkeeper read ` + head + `: 0 findings"}]`,
 	}}

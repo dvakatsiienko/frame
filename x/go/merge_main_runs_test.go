@@ -6,17 +6,25 @@ import (
 	"testing"
 )
 
-// main's workflow runs, newest first, as /actions/runs?branch=main answers
-func (w *mergeWorld) mainRuns(runs ...string) {
+type mainRunRow struct{ workflow, body string }
+
+// main's runs, newest first, each workflow's on its own page as /actions/workflows/<file>/runs?branch=main answers
+func (w *mergeWorld) mainRuns(runs ...mainRunRow) {
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
-	w.hub.pages[repoPath+"/actions/runs"] = `{"workflow_runs":[` + strings.Join(runs, ",") + `]}`
+	pages := map[string][]string{"ci.yml": nil, "deploy.yml": nil}
+	for _, r := range runs {
+		pages[r.workflow] = append(pages[r.workflow], r.body)
+	}
+	for workflow, rows := range pages {
+		w.hub.pages[repoPath+"/actions/workflows/"+workflow+"/runs"] = `{"workflow_runs":[` + strings.Join(rows, ",") + `]}`
+	}
 }
 
-// a real row's shape: a run is named by its run-name, so its workflow file is what tells ci from deploy
-func mainRun(id int, workflow, status, conclusion, sha string) string {
-	return fmt.Sprintf(`{"id":%d,"name":"%s %s","path":".github/workflows/%s","event":"push","status":"%s","conclusion":"%s","head_sha":"%s"}`,
-		id, strings.TrimSuffix(workflow, ".yml"), sha, workflow, status, conclusion, sha)
+// a real row's shape: a run is named by its run-name («deploy <sha>»), never by its workflow
+func mainRun(id int, workflow, status, conclusion, sha string) mainRunRow {
+	return mainRunRow{workflow, fmt.Sprintf(`{"id":%d,"name":"%s %s","path":".github/workflows/%s","event":"push","status":"%s","conclusion":"%s","head_sha":"%s"}`,
+		id, strings.TrimSuffix(workflow, ".yml"), sha, workflow, status, conclusion, sha)}
 }
 
 // a sha whose short form tells it apart: 2222222…
@@ -26,16 +34,16 @@ func runSha(n int) string { return strings.Repeat(fmt.Sprint(n), 40) }
 func TestMergeAutoRefusesWhileMainsCIIsRed(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {
-		name    string
-		deploys bool
-	}{{"frame", false}, {"bytes", true}} {
+		name, conclusion string
+		deploys          bool
+	}{{"frame", "failure", false}, {"bytes", "failure", true}, {"a timeout", "timed_out", false}, {"a failed start", "startup_failure", true}} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			w := newMergeWorld(t, "script/foo.ts")
 			if c.deploys {
 				w.mainHistory(vercel("hq", "success", "Deployment has completed"))
 			}
-			w.mainRuns(mainRun(2, "ci.yml", "completed", "failure", runSha(2)), mainRun(1, "ci.yml", "completed", "success", runSha(1)))
+			w.mainRuns(mainRun(2, "ci.yml", "completed", c.conclusion, runSha(2)), mainRun(1, "ci.yml", "completed", "success", runSha(1)))
 
 			got := w.run(t, "7", "--apply")
 
