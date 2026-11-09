@@ -13,7 +13,7 @@ import (
 func preflightResolve(t *testing.T, exits string, env ...string) (asRun, string) {
 	t.Helper()
 	dir := preflightRepo(t)
-	write(t, filepath.Join(dir, "package.json"), `{"scripts":{"retired-names:check":"node check.ts","plant":"touch planted-by-pnpm"}}`)
+	write(t, filepath.Join(dir, "package.json"), `{"scripts":{"names:check":"node check.ts","plant":"touch planted-by-pnpm"}}`)
 	write(t, filepath.Join(dir, "script/real.sh"), "#!/bin/sh\n")
 	write(t, filepath.Join(dir, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-1 — this chunk\n\n### exit lines\n\n"+exits+"\n## Problem Statement\n")
 	raw, _ := json.Marshal("## want\n\na thing\n")
@@ -63,7 +63,7 @@ func TestPreflightRedsAnExitLineWhoseCommandCannotRun(t *testing.T) {
 func TestPreflightPassesAnExitLineWhoseCommandsResolve(t *testing.T) {
 	t.Parallel()
 	cases := []struct{ name, exits string }{
-		{"every command resolves", "1. given a tree, when `pnpm retired-names:check` and `git grep -n 'a|b' docs/` and `go test ./...` and `script/real.sh` run, then they exit 0\n"},
+		{"every command resolves", "1. given a tree, when `pnpm names:check` and `git grep -n 'a|b' docs/` and `go test ./...` and `script/real.sh` run, then they exit 0\n"},
 		{"a (new) verb", "1. given `x brief summon` (new), when `x brief summon brief.md` runs, then it exits 0\n"},
 		{"a (new) verb declared with placeholders", "1. given `x lane dispatch <ticket> --session <sid>` (new), when `x lane dispatch FRM-1 --session s1` runs, then it exits 0\n"},
 		{"value spans only", "1. given a body, when the list reads it, then its sign reads `match`, `## signed` holds `merge: pre-approved` and `spec:`\n"},

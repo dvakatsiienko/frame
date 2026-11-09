@@ -25,9 +25,7 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 - **mods-test**: a changed mod's tests pass, on the commit only, 102 s before its skip
 - **fleet-hazards**: a new hazard note names what guards it
 - **memory-lint**: memory files stay within their size, 2 s
-- **replaced-doors**: memory names no command we retired, 13 s
 - **git-crypt-rename**: a moved secret file stays encrypted, 2 s
-- **retired-names**: old names don't creep back; temporary, 2 s
 - **chords-essentials**, **speak-essentials**: those two apps keep their required parts
 
 ## frame — when you commit, the message
@@ -44,7 +42,7 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 ## frame — on github
 
 - **check + typecheck + test**: the same checks, on ci; required
-- **Test x**: the cli's go tests, on ci; required
+- **Test x**: the cli's go tests, on ci; required; it holds the memory check that no retired command is named, off the commit since 2026-11-09
 - **review-round**: the ci reviewer read the pr
 
 ## bytes — when you commit
@@ -52,7 +50,6 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 - **format**: the staged code is tidy (biome)
 - **package-json-shape**: a manifest keeps our shape
 - **apps-essentials**: an app keeps its required parts
-- **retired-names**: old names don't creep back; temporary
 
 ## bytes — the message and the push
 
