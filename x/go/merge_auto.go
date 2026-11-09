@@ -1323,46 +1323,48 @@ func deployCheck(api, repo, trunk string) (mergeCheck, error) {
 		c.OK, c.Detail = true, "no deploy: skipped"
 		return c, nil
 	}
-	var branch struct {
-		Commit struct {
-			Sha string `json:"sha"`
-		} `json:"commit"`
+	// a ci or docs commit deploys nothing, so the commit read is main's last one that deployed, newest first
+	var history []struct {
+		Sha string `json:"sha"`
 	}
-	if _, err := ghFetch(asDima, api+"/branches/"+trunk, &branch); err != nil {
+	if _, err := ghFetch(asDima, api+"/commits?sha="+trunk+"&per_page="+fmt.Sprint(deployLookback), &history); err != nil {
 		return c, err
 	}
-	tip := branch.Commit.Sha
-	checks, err := checksOf(asDima, api, tip)
-	if err != nil {
-		return c, err
-	}
-	var apps []string
-	for _, check := range checks {
-		app, isDeploy := strings.CutPrefix(check.Name, "Vercel – ")
-		if !isDeploy {
-			continue
+	for _, commit := range history[:min(len(history), deployLookback)] {
+		checks, err := checksOf(asDima, api, commit.Sha)
+		if err != nil {
+			return c, err
 		}
-		apps = append(apps, app)
-		switch {
-		case check.State == "pending":
-			c.Detail = "main's deploy is running: " + app + " on " + short(tip)
-			return c, nil
-		// vercel reports a skipped deploy as success, so its own words decide it ran
-		case check.State == "success" && strings.Contains(strings.ToLower(check.Description), "skipped"):
-			c.Detail = app + " skipped its deploy on main's tip " + short(tip) + ", so nothing proves main deploys"
-			return c, nil
-		case check.State != "success":
-			c.Detail = app + "'s deploy is " + check.State + " on main's tip " + short(tip) + " → fix main before a merge stacks on it"
+		var apps []string
+		for _, check := range checks {
+			app, isDeploy := strings.CutPrefix(check.Name, "Vercel – ")
+			if !isDeploy {
+				continue
+			}
+			apps = append(apps, app)
+			// a skipped deploy reads success and passes: the hold is a red or a running deploy only (dima, o45)
+			switch check.State {
+			case "success":
+			case "pending":
+				c.Detail = "main's deploy is running: " + app + " on " + short(commit.Sha)
+				return c, nil
+			default:
+				// the pr that fixes main meets this same wait, so the door that lands it is named, never «fix main» alone
+				c.Detail = app + "'s deploy is " + check.State + " on main at " + short(commit.Sha) + ": a merge would stack on it; a fix for main lands under dima's operator-override for prs"
+				return c, nil
+			}
+		}
+		if len(apps) > 0 {
+			c.OK, c.Detail = true, strings.Join(apps, ", ")+" deployed on main at "+short(commit.Sha)
 			return c, nil
 		}
 	}
-	if len(apps) == 0 {
-		c.Detail = "no deploy on main's tip " + short(tip) + ", so nothing proves main deploys"
-		return c, nil
-	}
-	c.OK, c.Detail = true, strings.Join(apps, ", ")+" deployed on main's tip "+short(tip)
+	c.Detail = fmt.Sprintf("no deploy in main's last %d commits, so nothing proves main deploys", deployLookback)
 	return c, nil
 }
+
+// how far back main's last deploy is looked for: a run of ci and docs commits is a few, never a release's worth
+const deployLookback = 20
 
 // the one repo whose merges need a reviewer round; frame's round stays advice
 func roundGated(repo string) bool {

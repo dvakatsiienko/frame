@@ -33,6 +33,19 @@ type hub struct {
 	reads map[string]int
 	// github's own refusal of the merge, as «<status> <message>»
 	refuseMerge string
+	// each call's path and query, which calls leaves out
+	queries []string
+}
+
+func (h *hub) lastQuery(path string) string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for i := len(h.queries) - 1; i >= 0; i-- {
+		if p, query, _ := strings.Cut(h.queries[i], "?"); p == path {
+			return query
+		}
+	}
+	return ""
 }
 
 func (h *hub) serve(t *testing.T) *httptest.Server {
@@ -43,6 +56,7 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 		defer h.mu.Unlock()
 		raw, _ := io.ReadAll(r.Body)
 		h.calls = append(h.calls, strings.TrimSpace(r.Method+" "+r.URL.Path+" "+string(raw)))
+		h.queries = append(h.queries, r.URL.Path+"?"+r.URL.RawQuery)
 		h.auth = append(h.auth, r.Header.Get("Authorization"))
 		w.Header().Set("Content-Type", "application/json")
 		switch {
