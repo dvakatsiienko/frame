@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -342,6 +343,9 @@ func (g *goHarness) run(content []byte) (redRun, error) {
 type copyHarness struct {
 	root, copy, file, cwd string
 	command               []string
+	// the clean run's type errors: a mutant is broken only by one it adds, so a repo already red on tsc still proves
+	typeErrors []string
+	typed      bool
 }
 
 func newCopyHarness(file, _ string, command []string) (redHarness, error) {
@@ -378,6 +382,9 @@ func (h *copyHarness) run(content []byte) (redRun, error) {
 	if err := os.WriteFile(h.inCopy(h.file), content, 0o644); err != nil {
 		return redRun{}, err
 	}
+	if added := h.newTypeErrors(); added != "" {
+		return redRun{broken: "a type error: " + added}, nil
+	}
 	command := make([]string, len(h.command))
 	for i, arg := range h.command {
 		command[i] = arg
@@ -394,6 +401,51 @@ func (h *copyHarness) run(content []byte) (redRun, error) {
 	c.Dir = dir
 	got := runTestCmd(c)
 	return redRun{ok: got.ok, log: got.log}, nil
+}
+
+var (
+	typedSource = regexp.MustCompile(`\.[cm]?tsx?$`)
+	// a swap that moves lines moves every error below it, so errors compare without their position
+	tscPosition = regexp.MustCompile(`\(\d+,\d+\)`)
+)
+
+// tsc --noEmit on the nearest tsconfig above the file, read against the clean run's errors; no tsconfig, no check
+func (h *copyHarness) newTypeErrors() string {
+	if !typedSource.MatchString(h.file) {
+		return ""
+	}
+	project := ""
+	for dir := filepath.Dir(h.inCopy(h.file)); strings.HasPrefix(dir, h.copy); dir = filepath.Dir(dir) {
+		if exists(filepath.Join(dir, "tsconfig.json")) {
+			project = dir
+			break
+		}
+	}
+	tsc := nearestBin(project, "tsc")
+	if project == "" || tsc == "" {
+		return ""
+	}
+	c := exec.Command(tsc, "--noEmit", "-p", project)
+	c.Dir = project
+	out, _ := c.CombinedOutput()
+	var errs []string
+	for line := range strings.SplitSeq(string(out), "\n") {
+		if strings.Contains(line, "error TS") {
+			errs = append(errs, strings.TrimSpace(line))
+		}
+	}
+	if !h.typed {
+		h.typed, h.typeErrors = true, errs
+		return ""
+	}
+	for _, err := range errs {
+		if !slices.ContainsFunc(h.typeErrors, func(clean string) bool {
+			return tscPosition.ReplaceAllString(clean, "") == tscPosition.ReplaceAllString(err, "")
+		}) {
+			return err
+		}
+	}
+	return ""
 }
 
 func nearestBin(dir, name string) string {

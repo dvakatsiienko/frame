@@ -266,6 +266,9 @@
 - ⬜ `x verify red <file> <anchor> <replacement> <test>` proves a test reads a line, the real tree never written
   - given a test that passes on the file as it is, when the verb runs, then the clean run and the mutant go through one harness, the swap their only difference, both with `X_VERIFY=1`: a go test through `GOFLAGS=-overlay`, which a `TestMain`'s child build inherits; a js or ts test through vitest in a copy of the repo; a mod's test through `claude plugin test` on the mod's overlay
   - given the mutated run fails on an assertion or throws, then it reads red and names the tests; it passes, still green; the exit is 0 only on red
+  - given a test failing on the clean file, a clean run of no test, or an anchor not found exactly once, then it refuses before any mutant runs and names it
+  - given a swap that breaks the build or the load, then that pair reads broken; a `.ts` or `.tsx` swap gets `tsc --noEmit` on its nearest tsconfig first, and a type error the clean run did not have reads broken, the test never run
+  - limit: a mod's `.ts` gets no type check, only `claude plugin validate`
   - decision: a throw from the mutated code reads red, since the mutant is the run's only change (dima, o82); `--revert` keeps any throw broken
   - limit: a go run reads the mutant only where go builds it, so a file a test opens at runtime stays the real one
   - limit: a head-only row whose title x cannot tie to a row (`'%s'`, `'${x}'`, a computed title) gets a named row and no vote, so it can exit 0; the repo holds none today (dima's tick, 2026-11-07)

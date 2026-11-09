@@ -196,6 +196,58 @@ func TestVerifyRedRefusesBeforeAnyMutant(t *testing.T) {
 	}
 }
 
+// a typed vitest fixture: the test reads the value, tsc reads the type, so a type-only swap passes the test alone
+func typedRedFixture(t *testing.T) redFixture {
+	t.Helper()
+	f := vitestRedFixture(t)
+	write(t, filepath.Join(f.dir, "lib.ts"), "export const limit: number = 3;\n")
+	write(t, filepath.Join(f.dir, "lib.test.ts"), "import { expect, test } from \"vitest\";\nimport { limit } from \"./lib.ts\";\n\ntest(\"limit is three\", () => {\n\texpect(limit).toBe(3);\n});\n")
+	write(t, filepath.Join(f.dir, "tsconfig.json"), `{"compilerOptions": {"strict": true, "noEmit": true, "module": "esnext", "moduleResolution": "bundler", "target": "es2022", "allowImportingTsExtensions": true, "types": []}, "include": ["*.ts"]}`+"\n")
+	commitAll(t, f.dir)
+	return redFixture{dir: f.dir, file: "lib.ts", test: "lib.test.ts"}
+}
+
+// exit line 3: a swap that breaks the build, or only the types, reads broken and exits non-zero
+func TestVerifyRedReadsABuildOrTypeBreakBroken(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, anchor, replacement, says string
+		fixture                         func(*testing.T) redFixture
+	}{
+		{"a go compile error", "Limit = 3", "Limit = ", "build failed", goRedFixture},
+		{"a type-only ts break", "limit: number = 3", "limit: string = 3", "TS2322", typedRedFixture},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			f := c.fixture(t)
+
+			got, _ := verifyRedIn(t, f, nil, f.file, c.anchor, c.replacement, f.test)
+
+			rows := pairRows(t, got)
+			if got.code != 1 || len(rows) != 1 || rows[0]["verdict"] != verdictBroken {
+				t.Fatalf("exit %d, pairs %v, want one broken and exit 1:\n%s", got.code, rows, got.stdout)
+			}
+			if why, _ := rows[0]["why"].(string); !strings.Contains(why, c.says) {
+				t.Fatalf("why %q, want it naming %q", why, c.says)
+			}
+		})
+	}
+}
+
+// a repo already red on tsc still proves: only a type error the mutant adds is broken, wherever the swap moves the old ones
+func TestVerifyRedReadsPastTheCleanRunsTypeErrors(t *testing.T) {
+	t.Parallel()
+	f := typedRedFixture(t)
+	write(t, filepath.Join(f.dir, "lib.ts"), "export const limit: number = 3;\nexport const bad: string = 1;\n")
+	commitAll(t, f.dir)
+
+	got, _ := verifyRedIn(t, f, nil, f.file, "limit: number = 3;", "limit: number = 4;\n", f.test)
+
+	if got.code != 0 || got.data["verdict"] != verdictRed {
+		t.Fatalf("exit %d, data %v, want red:\n%s", got.code, got.data, got.stdout)
+	}
+}
+
 // a mutant the test does not read stays green, and the exit says no proof
 func TestVerifyRedReadsAnUnreadLineStillGreen(t *testing.T) {
 	t.Parallel()
