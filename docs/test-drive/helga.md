@@ -14,11 +14,7 @@ the shape in `.scratch/helga-shape/`); the recipe that keeps it true: `recipes/r
 
 ## the start
 
-- `claude --bg -n '🎀 helga' --model haiku --effort medium --settings '{"worktree":{"bgIsolation":"none"},"autoCompactWindow":130000,"env":{"CLAUDE_CODE_DISABLE_CLAUDE_MDS":"1"}}' "<boot prompt>" --remote-control` — no fleet memory since 2026-10-15 (the charter's floor section stands in; the env goes through `--settings`, a shell var never reaches a `--bg` session); the 130k window compacts near ~97k, under haiku's price line (dima's want, 2026-10-15; 100k thrashed: a ~75k boot refilled the window within 3 turns, 3 times in a row)
-  from `~/.local/state/helga/` — without the flag a `--bg` session's edits in the shared checkout are
-  refused until it isolates (crow, 2026-10-14); the flag replaced a home `.claude/settings.json` that was gone
-  on 2026-10-15
-- the boot prompt is `x:crew-helga` as text, its frontmatter cut
+her passport holds it: `_helga/AGENTS.md` § how she starts and stops (moved 2026-11-09).
 
 ## the measures
 
@@ -393,6 +389,8 @@ retro (14:43 on):
 - 2026-11-06 · groom · yes · 0 · 19:42 + 19:52 groomed (8 W-lines: W1318-W1321, W1322-W1325; ❓ x3); 7 no-wish lines 19:26 19:34 19:37 o42 o52 o53 o54. W1318/W1319 collide with 19:32 groom; pocket-check green, 10 no-home reds on W-lines not yet folded
 - 2026-11-06 · groom · yes · 0 · renumbered 19:42 W1320-W1323, 19:52 W1324-W1327; folded PK-325 W1318-W1327 into notes; 9 reds: 2 no-wish (o20, o25), 7 named to clio (o11 o21 o35 o46 o55 o69 o70) - steer texts not in transcript, judged on 70-char red text
 - 2026-11-06 · groom · yes · 0 · 2014 groom W1328-W1332, o65 steer W1333, 20:00 no-wish
+- 2026-11-09 · inbox-prep · yes · 0 · inbox-helga.md written, 16 items, 30 asks; inbox-prep-check 101/101 exit 0; inbox.md untouched, no commit
+- 2026-11-09 · prompt-groom · yes · 0 · 2026-11-09-1430.groomed.md: PK-326 W452-W461, stamped 14:30, W461 is the one ❓; prompt-groom --check: no red on this prompt (older reds only)
 
 ## rounds
 

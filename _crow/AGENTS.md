@@ -1,10 +1,21 @@
 # crow — clio's parked adviser
 
-a long-lived session «🐦‍⬛ crow» that reads clio's thread on a wake and returns one note or `none`, in either of two modes: a `--bg --remote-control` session clio starts, or a desktop tab dima opens. built for FRM-327. **this file is the mechanics only**: the seat's contract (hunts,
-silence bar, note shape, timing, the consult) is the `x:crew-adviser` skill, which
-`readCharter` sends as the boot prompt with its frontmatter cut — crow loads no plugins, so the
-skill reaches it as text. a contract change goes there, never here.
+🐦‍⬛ **crow**: a long-lived session that reads clio's thread on a wake and returns one note or `none`. this file is the passport, for clio and dima; what crow herself reads at boot and on every wake is the `x:crew-adviser` skill, which `readCharter` sends as the boot prompt with its frontmatter cut. a contract change goes there, never here.
 <!-- why --bg works (o150): mods' hooks load under --bg (mods/engine.md); only a --bg board goes undrawn, and crow's 👀 line draws on clio's card -->
+
+## who
+
+- clio's adviser, Opus 5.5 at medium effort; her goal is everyone's misses (clio's, dima's, any member's), and she advises clio only (dima, 2026-10-08)
+- clio is the fleet's coordinator, a long-lived claude code session dima steers; one clio, many seats: main coordinates (lanes, merges, members) unless dima decides otherwise, a wing takes his chores, grills, plans and research
+- dima may open her session to consult or steer; a steer of his is appended, dated and in his words, to `steers.md` beside this file, and read first on every boot and wake
+- coding is disapproved, not banned: she reads and explores, never edits
+- she co-owns `recipes/refresh-crew-coordinator-adviser` with clio
+
+## where things live
+
+- contract and scripts: `home/.claude/plugin-x/skills/crew-adviser/` — `SKILL.md`, `scripts/` (every `crow:*` verb below, its tests and fixtures)
+- session cwd and state: `~/.local/state/crow/` (`notes.jsonl`, `verdicts.jsonl`, `packets/`, `harvest.log`), outside frame on purpose
+- dima's steers: `steers.md` beside this file
 
 ## how it runs
 
@@ -41,25 +52,13 @@ skill reaches it as text. a contract change goes there, never here.
 - every packet opens with crow's ledger line: notes sent today, the last send's time, today's ok verdicts — `ledgerLine` in `lib.ts`
 - every packet whose delta lost older blocks or capped a tool output opens with one `cut:` line naming the
   transcript; crow reads its tail only then.
-- `pnpm crow:plan-critique <plan file>` — the plan review at `clio:shape-idea` step 4 (FRM-336, the
-  FRM-287 template). never crow's own session, which has read
-  clio's thread: two fresh `claude -p` one-shots on opus,
-  effort high, cwd a fresh `plans/<run>/` in the home. pass 1 gets only the sections whose heading
-  says want, constraints, not or done test; pass 2 gets the whole plan plus pass 1's take and a
-  `--json-schema` for the template. both run with `--tools ''`: a one-shot that can read reaches
-  clio's transcripts and the earlier verdicts through the `~` extra dir. `notes.jsonl` gets one `channel: plan`
-  line for the run (`plan-<run>-0`, the only one with the cost) and one per finding (`plan-<run>-<n>`), with
-  `located` — whether its quote is really in the plan. accepted is a
-  `crow:note-vet` on that id; the full review sits in `plans/<run>/review.json`.
+- `pnpm crow:plan-critique <plan file>` — the blind plan review at `clio:shape-idea` step 4 (FRM-336): two fresh `claude -p` opus one-shots with `--tools ''`, never crow's own session; pass 1 sees only the want, constraints, not and done-test sections, pass 2 the whole plan plus pass 1; `notes.jsonl` gets `plan-<run>-0` for the run (the only row with the cost) and `plan-<run>-<n>` per finding with `located` (its quote is really in the plan); accepted is a `crow:note-vet` on that id, the review in `plans/<run>/review.json`
+<!-- --tools '': a one-shot that can read reaches clio's transcripts through the `~` extra dir and stops being blind -->
+
 - `pnpm crow:note-vet ok|miss <note-id> <why> --changed file|reply|ask|ticket|none --ref <path|id>` — appends the verdict to `verdicts.jsonl`, keyed by
   note id, waiting ≤60 s for a note harvest.ts has not logged yet; `pnpm crow:unvetted`, clio's Stop hook,
   blocks her turn end once per «🔴 sent» note still without a verdict, naming the command; `notes.jsonl` is append-only, so a harvester writing mid-vet loses nothing.
-- `pnpm crow:reconcile <note-id> <evidence>` — clio's answer when her evidence contradicts a note (FRM-396): sends
-  `reconcile <note-id>: <evidence>` to a `--bg` crow, or prints it for clio to send with SendMessage by her registry name (a tab or a terminal resume), and leaves a
-  harvester (`harvest.ts reconcile <id> <evidence>`) that logs crow's one answer as `<note-id>-reconcile`, with
-  `reconciles` and `evidence`, in `notes.jsonl`. an unknown id, a reconciled note, or one whose reconcile is still
-  pending (`reconciles/<id>.json`, younger than the harvester's 15 min) exits 2; a timeout logs no row, only a
-  `harvest.log` line, so the line can be sent again.
+- `pnpm crow:reconcile <note-id> <evidence>` — clio's answer when her evidence contradicts a note (FRM-396): sends `reconcile <note-id>: <evidence>` to crow (or prints it for a tab), and a harvester logs her one answer as `<note-id>-reconcile` in `notes.jsonl`; an unknown, reconciled or pending id (`reconciles/<id>.json`, younger than the harvester's 15 min) exits 2; a timeout logs no row, only a `harvest.log` line, so the line can be sent again
 - `leaves.txt`: one glob per line, `{today}` → `YYYY-MM-DD`, a `latest ` prefix keeps the newest
   match only. clio owns it; the builder never reads under `_clio/`.
 
