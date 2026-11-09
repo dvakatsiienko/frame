@@ -1,0 +1,400 @@
+import { spawn, spawnSync } from 'node:child_process';
+import {
+    chmodSync,
+    copyFileSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    readdirSync,
+    writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { delimiter, join } from 'node:path';
+import { describe, expect, test } from 'vitest';
+
+import { gitEnv } from './git-fixture.ts';
+
+const script = join(import.meta.dirname, '../test-vm-go.sh');
+const budgetScript = join(import.meta.dirname, '../test-cpu-budget.sh');
+const downLine = 'vm-go-test down: ran on the mac';
+const realGo = spawnSync('sh', ['-c', 'command -v go'], {
+    encoding: 'utf8',
+}).stdout.trim();
+
+// the world: a repo with a go module m/, whose test reads m/v.txt; fake limactl, ssh and go on PATH.
+// the fake ssh runs its command on this machine in a guest home, so the vm leg runs end to end with no vm.
+function fixture({
+    goCode = 0,
+    hasLima = true,
+    probeCode = 0,
+    realGoInGuest = false,
+    runCode = 0,
+    vmStatus = 'Running',
+}: {
+    goCode?: number;
+    hasLima?: boolean;
+    probeCode?: number;
+    realGoInGuest?: boolean;
+    runCode?: number;
+    vmStatus?: string;
+} = {}) {
+    const dir = mkdtempSync(
+        join(process.env.TMPDIR ?? tmpdir(), 'test-vm-go-'),
+    );
+    const copy = join(dir, 'test-vm-go.sh');
+    copyFileSync(script, copy);
+    chmodSync(copy, 0o755);
+    const bin = join(dir, 'bin');
+    const guestBin = join(dir, 'guest-bin');
+    const guest = join(dir, 'guest');
+    mkdirSync(bin);
+    mkdirSync(guestBin);
+    mkdirSync(guest);
+    const fake = (at: string, name: string, body: string) => {
+        writeFileSync(join(at, name), `#!/bin/bash\n${body}\n`);
+        chmodSync(join(at, name), 0o755);
+    };
+    const goLog = join(dir, 'go.calls');
+    const goBody = `echo "\${FAKE_GUEST:-mac} $* | $(cat v.txt 2>/dev/null)" >>"${goLog}"
+[ -z "\${FAKE_GUEST:-}" ] || [ -z "\${GO_SLEEP:-}" ] || sleep "$GO_SLEEP"
+[ "$(cat v.txt 2>/dev/null)" != bad ] || { echo '--- FAIL: TestV'; exit 1; }
+echo 'ok  \tm\t0.1s'
+exit ${goCode}`;
+    fake(bin, 'go', goBody);
+    if (realGoInGuest) fake(guestBin, 'go', `exec "${realGo}" "$@"`);
+    else fake(guestBin, 'go', goBody);
+    fake(guestBin, 'flock', 'exit 0');
+    fake(
+        bin,
+        'ssh',
+        `echo "$*" >>"${join(dir, 'ssh.calls')}"
+while [ $# -gt 0 ]; do case $1 in -F | -o) shift 2 ;; -*) shift ;; *) break ;; esac; done
+shift
+cmd="$*"
+case $cmd in "bash -l -s"*) [ "${runCode}" = 0 ] || exit ${runCode} ;; git-receive-pack*) ;; *) [ "${probeCode}" = 0 ] || exit ${probeCode} ;; esac
+cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$PATH" exec bash -c "\${cmd/bash -l -s/bash -s}"`,
+    );
+    if (hasLima) fake(bin, 'limactl', `echo '${vmStatus}'`);
+    const lima = join(dir, 'lima');
+    mkdirSync(join(lima, 'vm-go-test'), { recursive: true });
+
+    const code = join(dir, 'code');
+    mkdirSync(join(code, 'm'), { recursive: true });
+    const git = (...args: string[]) =>
+        spawnSync('git', args, { cwd: code, encoding: 'utf8', env: gitEnv() });
+    git('init', '-q');
+    writeFileSync(join(code, 'm/go.mod'), 'module m\n\ngo 1.21\n');
+    writeFileSync(
+        join(code, 'm/m_test.go'),
+        'package m\n\nimport (\n\t"os"\n\t"testing"\n)\n\nfunc TestV(t *testing.T) {\n\tif b, _ := os.ReadFile("v.txt"); string(b) == "bad" {\n\t\tt.Fatal("v.txt reads bad")\n\t}\n}\n',
+    );
+    writeFileSync(join(code, 'm/v.txt'), 'good');
+    git('add', '.');
+    git('commit', '-q', '-m', 'plant');
+
+    const report = join(dir, 'report');
+    const env = (extra: NodeJS.ProcessEnv = {}) => {
+        const all: NodeJS.ProcessEnv = {
+            ...gitEnv(),
+            GOFLAGS: '-buildvcs=false',
+            LIMA_HOME: lima,
+            PATH: hasLima
+                ? `${bin}${delimiter}${process.env.PATH}`
+                : `${bin}${delimiter}/usr/bin${delimiter}/bin`,
+            TEST_VM_GO_REPORT: report,
+            X_STATE: join(dir, 'state'),
+            ...extra,
+        };
+        if (!('CI' in extra)) delete all.CI;
+        return all;
+    };
+    const cwd = join(code, 'm');
+    const run = (args: string[], extra: NodeJS.ProcessEnv = {}) =>
+        spawnSync(copy, args, { cwd, encoding: 'utf8', env: env(extra) });
+    const runAsync = (args: string[], extra: NodeJS.ProcessEnv = {}) =>
+        new Promise<string>((done) => {
+            const child = spawn(copy, args, {
+                cwd,
+                env: env(extra),
+                stdio: ['ignore', 'ignore', 'pipe'],
+            });
+            let stderr = '';
+            child.stderr.on('data', (chunk) => {
+                stderr += chunk;
+            });
+            child.on('exit', (code) => done(`exit ${code} ${stderr}`.trim()));
+        });
+    const calls = (name: string) =>
+        existsSync(join(dir, `${name}.calls`))
+            ? readFileSync(join(dir, `${name}.calls`), 'utf8')
+                  .trim()
+                  .split('\n')
+            : [];
+    const leg = () =>
+        existsSync(report) ? readFileSync(report, 'utf8').split('\t')[0] : '';
+    const guestRefs = () =>
+        spawnSync('git', ['for-each-ref', 'refs/runs/'], {
+            cwd: join(guest, 'runs.git'),
+            encoding: 'utf8',
+            env: gitEnv(),
+        }).stdout.trim();
+    const guestRuns = () =>
+        existsSync(join(guest, 'runs')) ? readdirSync(join(guest, 'runs')) : [];
+    const guestGit = (...args: string[]) =>
+        spawnSync('git', args, {
+            cwd: join(guest, 'runs.git'),
+            encoding: 'utf8',
+            env: { ...gitEnv(), GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z' },
+        }).stdout.trim();
+    // the runner as its doors reach it, so the budget row is the one a commit writes
+    const budget = (args: string[], extra: NodeJS.ProcessEnv = {}) => {
+        copyFileSync(budgetScript, join(dir, 'test-cpu-budget.sh'));
+        chmodSync(join(dir, 'test-cpu-budget.sh'), 0o755);
+        const got = spawnSync(
+            join(dir, 'test-cpu-budget.sh'),
+            ['--log-only', 'm', ...args],
+            { cwd, encoding: 'utf8', env: env(extra) },
+        );
+        const log = join(dir, 'state/test-cpu-budget.log');
+        const rows = existsSync(log)
+            ? readFileSync(log, 'utf8')
+                  .trim()
+                  .split('\n')
+                  .map((row) => row.split('\t'))
+            : [];
+        return { got, rows };
+    };
+    return {
+        budget,
+        calls,
+        code,
+        git,
+        guest,
+        guestGit,
+        guestRefs,
+        guestRuns,
+        leg,
+        run,
+        runAsync,
+    };
+}
+
+const suite = ['go', 'test', '-count=1', './...'];
+
+describe('the vm is down', () => {
+    test.each([
+        ['limactl reads it stopped', { vmStatus: 'Stopped' }],
+        ['the 5 s ssh probe fails', { probeCode: 255 }],
+    ])(
+        'when %s, the suite runs on the mac with one line said',
+        (_name, world) => {
+            const { calls, leg, run } = fixture({ goCode: 3, ...world });
+
+            const got = run(suite);
+
+            expect(got.status, got.stderr).toBe(3);
+            expect(calls('go')).toEqual([
+                'mac test -count=1 ./... -parallel 5 | good',
+            ]);
+            expect(got.stderr.split(downLine)).toHaveLength(2);
+            expect(leg()).toBe('vm-down');
+        },
+    );
+});
+
+test('with CI set it calls go test directly and says nothing', () => {
+    const { calls, run } = fixture({ goCode: 3, vmStatus: 'Stopped' });
+
+    const got = run(suite, { CI: 'true' });
+
+    expect(got.status).toBe(3);
+    expect(calls('go')).toEqual(['mac test -count=1 ./... | good']);
+    expect(calls('ssh')).toEqual([]);
+    expect(got.stderr).not.toContain(downLine);
+});
+
+test('a machine with no limactl runs on the mac and says nothing', () => {
+    const { calls, leg, run } = fixture({ hasLima: false });
+
+    const got = run(suite);
+
+    expect(got.status, got.stderr).toBe(0);
+    expect(calls('go')).toEqual(['mac test -count=1 ./... -parallel 5 | good']);
+    expect(got.stderr).not.toContain(downLine);
+    expect(leg()).toBe('mac');
+});
+
+describe('the vm leg', () => {
+    test('runs the suite in the guest on its own tree and leaves no ref or tree behind', () => {
+        const { calls, guestRefs, guestRuns, leg, run } = fixture();
+
+        const got = run(suite);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(calls('go')).toEqual([
+            'guest test -count=1 ./... -parallel 7 | good',
+        ]);
+        expect(got.stdout).toContain('ok  \tm');
+        expect(leg()).toBe('vm');
+        expect(guestRefs()).toBe('');
+        expect(guestRuns()).toEqual([]);
+    });
+
+    test('two runs at once each test their own commit and leave nothing behind', async () => {
+        const { calls, code, guestRefs, guestRuns, runAsync } = fixture();
+        // two seats' commits: each its own index, as each hook's GIT_INDEX_FILE names it
+        const staged = (body: string) => {
+            const index = join(code, `.git/index-${body}`);
+            writeFileSync(join(code, 'm/v.txt'), body);
+            spawnSync('git', ['add', 'm/v.txt'], {
+                cwd: code,
+                env: { ...gitEnv(), GIT_INDEX_FILE: index },
+            });
+            return index;
+        };
+        const one = staged('one');
+        const two = staged('two');
+        const [first, second] = [one, two].map((index) =>
+            runAsync(['--index', ...suite], {
+                GIT_INDEX_FILE: index,
+                GO_SLEEP: '1',
+            }),
+        );
+
+        expect(await Promise.all([first, second])).toEqual([
+            'exit 0',
+            'exit 0',
+        ]);
+        expect(calls('go').sort()).toEqual([
+            'guest test -count=1 ./... -parallel 7 | one',
+            'guest test -count=1 ./... -parallel 7 | two',
+        ]);
+        expect(guestRefs()).toBe('');
+        expect(guestRuns()).toEqual([]);
+    });
+
+    test('two runs of the same tree get two refs', () => {
+        const { calls, run } = fixture();
+
+        run(suite);
+        run(suite);
+
+        const pushes = calls('ssh').filter((line) =>
+            line.includes('git-receive-pack'),
+        );
+        expect(pushes).toHaveLength(2);
+        const runIds = calls('ssh')
+            .filter((line) => line.includes('bash -l -s'))
+            .map((line) => line.split('bash -l -s -- ')[1]?.split(' ')[0]);
+        expect(new Set(runIds).size).toBe(2);
+    });
+
+    test('a commit door tests the index alone, never the unstaged edit beside it', () => {
+        const { calls, code, run } = fixture();
+        writeFileSync(join(code, 'm/v.txt'), 'bad');
+
+        const got = run(['--index', ...suite]);
+
+        expect(got.status, got.stdout).toBe(0);
+        expect(calls('go')).toEqual([
+            'guest test -count=1 ./... -parallel 7 | good',
+        ]);
+    });
+
+    test('a by-hand run tests the working tree, as the mac would', () => {
+        const { calls, code, run } = fixture();
+        writeFileSync(join(code, 'm/v.txt'), 'bad');
+
+        const got = run(suite);
+
+        expect(got.status).toBe(1);
+        expect(calls('go')).toEqual([
+            'guest test -count=1 ./... -parallel 7 | bad',
+        ]);
+    });
+});
+
+test('a failing test in the vm exits non-zero and prints its name as go test does on the mac', () => {
+    const { code, run } = fixture({ realGoInGuest: true });
+    writeFileSync(join(code, 'm/v.txt'), 'bad');
+    const onMac = spawnSync(realGo, ['test', '-count=1', './...'], {
+        cwd: join(code, 'm'),
+        encoding: 'utf8',
+        env: { ...process.env, GOFLAGS: '-buildvcs=false' },
+    });
+
+    const got = run(suite);
+
+    expect(onMac.status).toBe(1);
+    expect(got.status).not.toBe(0);
+    const failLines = (out: string) =>
+        out
+            .split('\n')
+            .filter((line) => line.startsWith('--- FAIL'))
+            .map((line) => line.replace(/ \([0-9.]+s\)$/, ''));
+    expect(failLines(got.stdout)).toEqual(['--- FAIL: TestV']);
+    expect(failLines(onMac.stdout)).toEqual(failLines(got.stdout));
+}, 60_000);
+
+describe('a cut vm leg', () => {
+    test('an ssh leg that dies re-runs the suite on the mac once, logged vm-cut', () => {
+        const { budget, calls } = fixture({ goCode: 4, runCode: 255 });
+
+        const { got, rows } = budget(suite);
+
+        expect(got.status, got.stderr).toBe(4);
+        expect(calls('go')).toEqual([
+            'mac test -count=1 ./... -parallel 5 | good',
+        ]);
+        expect(got.stderr).toContain(
+            'vm-go-test cut (exit 255): re-ran on the mac',
+        );
+        expect(rows.map((row) => row[9])).toEqual(['vm-cut']);
+    });
+
+    test('a leg past its deadline re-runs on the mac once, logged vm-cut', () => {
+        const { budget, calls, guestRefs, guestRuns } = fixture({ goCode: 4 });
+
+        const { got, rows } = budget(suite, {
+            GO_SLEEP: '30',
+            TEST_VM_GO_DEADLINE: '1',
+        });
+
+        expect(got.status, got.stderr).toBe(4);
+        expect(calls('go')).toEqual([
+            'guest test -count=1 ./... -parallel 7 | good',
+            'mac test -count=1 ./... -parallel 5 | good',
+        ]);
+        expect(rows.map((row) => row[9])).toEqual(['vm-cut']);
+        expect(guestRefs()).toBe('');
+        expect(guestRuns()).toEqual([]);
+    }, 30_000);
+
+    test('a run sweeps a dead run older than one deadline, its ref and its tree', () => {
+        const { guest, guestGit, guestRefs, guestRuns, run } = fixture();
+        run(suite);
+        const dead = guestGit(
+            'commit-tree',
+            '-m',
+            'a run the vm lost',
+            guestGit('mktree'),
+        );
+        guestGit('update-ref', 'refs/runs/dead', dead);
+        guestGit(
+            'worktree',
+            'add',
+            '-q',
+            '--detach',
+            join(guest, 'runs/dead'),
+            dead,
+        );
+        expect(guestRuns()).toEqual(['dead']);
+
+        const got = run(suite);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(guestRefs()).toBe('');
+        expect(guestRuns()).toEqual([]);
+    });
+});
