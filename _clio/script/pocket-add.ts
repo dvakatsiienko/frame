@@ -5,15 +5,13 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { FLYWAY_SLOTS, flywayOrdinal } from './flyway-done.ts';
+
 const PRIORITIES = ['now', 'next', 'later'] as const;
 const pocket = path.resolve(import.meta.dirname, '..');
 
 // wing 01 would label `clio-wing-01`, which no `--labels clio-wing-1` ever finds
 export const isWingNumber = (value: string) => /^[1-9]\d*$/.test(value);
-
-// a flyway appended to its band sank under the work items and went unseen (PK-372)
-export const startsAtTop = (title: string, top = false) =>
-    top || title.startsWith('flyway:');
 
 export function ordinalFor(
     ordinals: number[],
@@ -21,8 +19,9 @@ export function ordinalFor(
     top = false,
 ) {
     const band = PRIORITIES.indexOf(priority);
-    const floor = 1000 * 10 ** band;
-    const ceiling = floor * 10;
+    const ceiling = 1000 * 10 ** (band + 1);
+    // the now band opens with the flyways' slots, so a --top item lands just under them
+    const floor = 1000 * 10 ** band + (band === 0 ? FLYWAY_SLOTS : 0);
     const inBand = ordinals.filter((n) => n >= floor && n < ceiling);
     if (top)
         return Math.max(
@@ -123,12 +122,13 @@ if (import.meta.main) {
             .filter(Boolean)
             .join(','),
         '--priority',
-        priority,
+        flywayOrdinal(title) ? 'now' : priority,
         '--type',
         values.type,
         '--ordinal',
         String(
-            ordinalFor(ordinals(), priority, startsAtTop(title, values.top)),
+            flywayOrdinal(title) ??
+                ordinalFor(ordinals(), priority, values.top),
         ),
         '--plain',
         ...(values.desc ? ['-d', values.desc] : []),

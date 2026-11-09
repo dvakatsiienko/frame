@@ -240,6 +240,8 @@ describe('checkPocket', () => {
                 task(
                     {
                         labels: ['m', 'clio-wing-1'],
+                        ordinal: '1001',
+                        priority: 'now',
                         title: 'flyway: wing 1',
                         ...fields,
                     },
@@ -248,6 +250,23 @@ describe('checkPocket', () => {
             ],
             today,
         ).join('\n');
+
+    test('a flyway off its seat slot is red, naming the edit', () => {
+        expect(flyway({ ordinal: '10000', priority: 'next' })).toContain(
+            '--priority now --ordinal 1001',
+        );
+        expect(flyway({ ordinal: '1005' })).toContain('--ordinal 1001');
+    });
+
+    test('a work item in a flyway slot is red', () => {
+        expect(
+            checkPocket(
+                config,
+                [task({ ordinal: '1003', priority: 'now' })],
+                today,
+            ).join('\n'),
+        ).toContain("a flyway's slot");
+    });
 
     test('a clean flyway from any earlier day stays, past the stale check', () => {
         expect(
@@ -286,7 +305,13 @@ describe('checkPocket', () => {
     });
 
     test('a wish about flyways is no flyway', () => {
-        expect(flyway({ title: 'flyways board view' })).toBe('');
+        expect(
+            flyway({
+                ordinal: '10000',
+                priority: 'next',
+                title: 'flyways board view',
+            }),
+        ).toBe('');
     });
 
     test('a flyway never closes', () => {
@@ -299,7 +324,11 @@ describe('checkPocket', () => {
             'clio-main',
         );
         expect(
-            flyway({ labels: ['m', 'clio-main'], title: 'flyway: main' }),
+            flyway({
+                labels: ['m', 'clio-main'],
+                ordinal: '1000',
+                title: 'flyway: main',
+            }),
         ).toBe('');
     });
 
@@ -402,7 +431,7 @@ describe('checkPocket', () => {
 
     test('now holds at most three items', () => {
         const four = [1, 2, 3, 4].map((n) =>
-            task({ id: `PK-${n}`, ordinal: `${n}000`, priority: 'now' }),
+            task({ id: `PK-${n}`, ordinal: `${n}100`, priority: 'now' }),
         );
         expect(checkPocket(config, four, today)).toEqual([
             'now holds 4 items, the cap is 3',
@@ -537,7 +566,7 @@ describe('checkPocket', () => {
         );
         const seed = task({
             id: 'PK-9',
-            ordinal: '1000',
+            ordinal: '1100',
             priority: 'now',
             title: '🧬 evergreen turn — 2026-10-09',
         });

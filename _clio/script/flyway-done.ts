@@ -30,6 +30,13 @@ export function flywayLines(text: string): FlywayLine[] {
     );
 }
 
+// every flyway sits on the pocket's top in seat order (dima, 2026-11-09): main 1000, wing N 1000 + N; 1000–1099 are theirs
+export const FLYWAY_SLOTS = 100;
+export function flywayOrdinal(title: string): number | undefined {
+    const seat = title.match(/^flyway: (?:main|wing ([1-9]\d?))$/);
+    return seat ? 1000 + Number(seat[1] ?? 0) : undefined;
+}
+
 // the date a 📅 line waits for, empty when it names none
 export function flywayDate(text: string): string {
     return text.match(DATED_ON)?.[1] ?? '';

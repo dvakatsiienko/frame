@@ -3,9 +3,11 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
+    FLYWAY_SLOTS,
     flywayDate,
     flywayKind,
     flywayLines,
+    flywayOrdinal,
     flywaySorted,
 } from './flyway-done.ts';
 import {
@@ -36,7 +38,6 @@ const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
 const CAP_FREE_TITLE = /^🧬 evergreen turn|^flyway: /;
 // a seat's live plan: never closed, its finished lines cleaned at each halt or boot (PK-351:W69-W75)
 const FLYWAY_TITLE = /^flyway: (main|wing ([1-9]\d*))$/;
-const FLYWAY_OPEN_LINE = /^- \[ \] #\d+ .+$/gm;
 const POCKET_ID = /\bPK-\d+\b/g;
 // the wish-accounting reds apply to items born or touched from this day on
 const WISH_RULES_FROM = '2026-10-22';
@@ -115,6 +116,15 @@ export function checkPocket(
                 );
             if (label && !(front.lists.labels ?? []).includes(label))
                 report(`a flyway carries its seat's label, ${label}`);
+            const slot = flywayOrdinal(title);
+            if (
+                slot &&
+                (front.scalars.priority !== 'now' ||
+                    Number(front.scalars.ordinal) !== slot)
+            )
+                report(
+                    `a flyway sits on the pocket's top in seat order: backlog task edit ${id} --priority now --ordinal ${slot}`,
+                );
             if (flywayTitles.has(title))
                 report(`a second «${title}»: one flyway per seat`);
             flywayTitles.add(title);
@@ -286,6 +296,14 @@ export function checkPocket(
         )
             report(
                 `ordinal ${front.scalars.ordinal || 'missing'} sits outside the ${priority} band (${1000 * 10 ** band}–${1000 * 10 ** (band + 1) - 1}), so --sort ordinal misplaces it`,
+            );
+        if (
+            !flywayOrdinal(title) &&
+            ordinal >= 1000 &&
+            ordinal < 1000 + FLYWAY_SLOTS
+        )
+            report(
+                `ordinal ${ordinal} is a flyway's slot: node script/pocket-move.ts ${id} ${priority}`,
             );
         if (!config.types.includes(front.scalars.type ?? ''))
             report(
