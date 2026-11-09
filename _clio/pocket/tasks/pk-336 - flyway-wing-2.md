@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T17:37:00Z'
+updated_date: '2026-11-09T17:39:00Z'
 labels:
   - m
   - clio-wing-2
@@ -39,6 +39,8 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [x] #15 FRM-553 merge-auto waits on main's running ci/deploy (wing 1's joiner, unsigned): grill + sign it before the lane brief, so it batches into the merge-auto pr with FRM-549/548
 - [x] #16 FRM-384 re-sign with FRM-520's gate tails + watch-pr --verified undo (dima 19:21 via wing 1), on his tick; lefthook tail lands after 11-10 17:28
 - [x] #17 x verify red re-links node_modules/.bin into its temp copy and deletes it (main 19:23: every commit gate red 19:20–19:22): its fix joins the FRM-384 re-sign batch with the gate tails
+- [ ] #18 FRM-546 reopened (wishkeeper 19:36): by 11-10 — #152's codie cards and sixth sense round name REVIEW.md, one coderabbit cli run read, a re-planted slip only REVIEW.md names, then close
+- [ ] #19 redraw the crew-pm board (pocket-check.ts, merge_auto.go, stacks.go changed)
 <!-- AC:END -->
 
 ## Implementation Notes
