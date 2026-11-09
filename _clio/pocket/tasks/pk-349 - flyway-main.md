@@ -22,7 +22,7 @@ ordinal: 9995
 - [ ] #4 PK-363 herder: research, print, his call
 - [x] #5 PK-368 sidecar passports rebalance
 - [ ] #6 FRM-509 live read of the 11-07 lane ends, by 11-10
-- [ ] #7 prove the passport auto-load live: crow's next wake shows charter changed, helga's next boot carries her passport
+- [ ] #7 prove the passport auto-load live: helga's next boot carries her passport (crow's half proven: packet 202611091548w2, charter changed)
 <!-- AC:END -->
 
 ## Implementation Notes

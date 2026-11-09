@@ -4,7 +4,7 @@ title: 'fleet comms update: leaner cafe-chat replies, comms recipe run'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T13:50:00Z'
+updated_date: '2026-11-09T14:23:00Z'
 labels:
   - m
   - clio-wing-3
@@ -118,4 +118,8 @@ PK-364:W29 (2026-11-09 15:40, dima): batch the M3 weekly wish-loss audit with th
 
 PK-364:W30 (2026-11-09 15:49, dima): yes on W24: keep updates very lean, with no technical details, or keep them only when it really matters
 PK-364:W31 (2026-11-09 15:49, dima): think what else we could fold into the recipe update, and what we could miss to hunt, given the current picture, the new winged setup and my wishes; after a final check, approve
+
+PK-364:W32 (2026-11-09 16:23, dima): warmth: make it less warm, or find a way to keep the conversation slightly more natural and engaging for me while removing the 10-30-points-more-errors factor; i want 0 errors
+PK-364:W33 (2026-11-09 16:23, dima): not sure about cc's built-in question for --bg asks: cc probably asks via cards, and those cards often block the cc thread until i answer, which is not good; any comms must be non-blocking
+PK-364:W34 (2026-11-09 16:23, dima): proceed; put extra focus on threads started after clio's «second channel» mode was born (~1 week ago), and more so after winged clio was born (~a few days ago); look at git
 <!-- SECTION:NOTES:END -->
