@@ -1,10 +1,10 @@
 ---
 id: PK-351
 title: 'clio: winged v2'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-09T12:43:00Z'
+updated_date: '2026-11-09T13:34:00Z'
 labels:
   - m
   - clio-wing-2
@@ -208,4 +208,6 @@ PK-351:W85 (2026-11-07 22:36, dima): i go cook. fully finish PK-351. if any post
 kept: 2026-11-09 — winged v2, wing 2's flyway line, its fresh-wing probe rides today's wing opens
 
 kept: 2026-11-09 — dima 14:42 (o2): stays on wing 2's flyway, line #2, after the slipstream habit
+
+close: 2026-11-09 wing 2, on dima's o12 tick (15:33). W1–W76, PK-332:W1–W5 and PK-336:W23 → the nine steps of the plan, all landed 11-07: steps 1–3 the boundaries in clio:wing, the seat and guard in fork-guard.sh, flyways and seat names in habit-shared-files § the flyway, tree-sync.sh (W16, W48); step 4 clio-lanes-radar.ts at every start (W22, W24, W76); step 5 the halt split into halt/SKILL.md and halt/wing.md, a seat branch in checkpoint, siesta and flawlog, the parked-member alarm (W38, W41, W43–W45, W47, W55, W75); step 6 one clio in the passport, fleet-identity, fleet-flow, craft-fleet-flow (W1, W7, W26–W28, W31–W33, W36, W63); step 7 FRM-516, open to 11-14 for the week's read; step 8 the hunt and the fixture end run, then today's fresh boots of wings 1, 2 and 3 (W35, W85); step 9 the groom (W37, W62). W77 → main's halt stops her wings (halt/SKILL.md), autohalt worked 11-07 per dima; the gap he named, a wing's live Monitor blocking its halt, is fixed today in halt/wing.md steps 5 and 8. W78 → siesta on every clio's own stamp (siesta/SKILL.md), fired twice in wing 2 today. W79 → FRM-483, on wing 2's flyway, read by 11-11. W80 → clio:boot: no wing opens by default. W81–W84 → this run's steering, done. the gathered items: PK-332, PK-342, PK-343, PK-345 done; FRM-368 (tilde) on main's flyway, FRM-509 and FRM-501 keep their tickets (the plan's Out). the plan: ~/frame/.claude/worktrees/clio-wing-2/.scratch/winged-v2/plan-v2.md. none dropped.
 <!-- SECTION:NOTES:END -->
