@@ -4,7 +4,7 @@ title: 'REVIEW.md: explore it, set up the convention for us everywhere'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T12:51:00Z'
+updated_date: '2026-11-09T14:00:00Z'
 labels:
   - s
   - clio-wing-2
@@ -40,4 +40,19 @@ plan:
 2026-11-07 23:10 wing 2 halt: handed back to main; PK-351 left: the fresh-wing boot probe at the next boot (W85), FRM-516's live reads by 11-09
 
 kept: 2026-11-09 — dima 14:42 (o2): stays on wing 2's flyway, line #3
+
+PK-348:W1 (2026-11-07 inbox, dima): REVIEW.md is only a part. along with it, let's also sharpen the code reviewing the fleet has overall.
+PK-348:W2 (2026-11-07 inbox, dima): read this video in yt-transcript transit mode: https://www.youtube.com/watch?v=TFCDWrEBaFM
+PK-348:W3 (2026-11-07 inbox, dima): read how anthropic does code review: https://claude.dev/blog/solving-code-review-at-anthropic/
+PK-348:W4 (2026-11-07 inbox, dima): compare to how code review is set up in our fleet, including the one ci code review for side lanes, and propose the top 7 improvements to our system, including cuts.
+PK-348:W5 (2026-11-07 inbox, dima): do we do code reviews the right way? maybe too many code review rounds? ❓
+PK-348:W6 (2026-11-07 inbox, dima): what to add or change to make our code reviews better, and what to remove to make our system lighter and drop unnecessary dead weight? ❓
+PK-348:W7 (2026-11-07 inbox, dima): plan: 1 read the video and docs; 2 discuss the research vectors with me: the current latest agentic code review best practices, neuroarxiv included, a branch for the anthropic 5.5 models, and REVIEW.md: what it is, how it works, power-usage recipes, is it truly good; propose your own vectors; 3 propose improvements from the video, the blog and the research; 4 propose how to set up REVIEW.md everywhere in the fleet; 5 ideally REVIEW.md is applied from the research results.
+PK-348:W8 (2026-11-09 15:58, dima): propose how to solve PK-348 optimally. REVIEW.md seems to be our new convention: how to set it up properly so it improves fleet flows everywhere, and how to improve our code review overall?
+PK-348:W9 (2026-11-09 15:58, dima): any cuts needed? do we do something redundant? too many reviews? ❓
+PK-348:W10 (2026-11-09 15:58, dima): i set up the code review model blindly, following my intuition, but maybe i overextended, because from what i saw in videos everything is automated now.
+PK-348:W11 (2026-11-09 15:58, dima): propose how to optimize it and cut redundant stuff, but preserve the protections code review provides.
+15:59 wing 2: step 1 done: the blog read (web-fetch), the video kept on the shelf (fetch mode, not transit: theo-t3gg-how-claude-fixes-its-own-code-TFCDWrEBaFM), summary at the scratchpad's theo-review-summary.md. a stack map of our review layers is running.
+
+stamp note: W1 to W7 were typed by hand into this item's description on 11-07, not a prompt; «inbox» is the nearest stamp the groom check takes.
 <!-- SECTION:NOTES:END -->
