@@ -4,7 +4,7 @@ title: 'fleet comms update: leaner cafe-chat replies, comms recipe run'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T14:23:00Z'
+updated_date: '2026-11-09T14:25:00Z'
 labels:
   - m
   - clio-wing-3
@@ -122,4 +122,6 @@ PK-364:W31 (2026-11-09 15:49, dima): think what else we could fold into the reci
 PK-364:W32 (2026-11-09 16:23, dima): warmth: make it less warm, or find a way to keep the conversation slightly more natural and engaging for me while removing the 10-30-points-more-errors factor; i want 0 errors
 PK-364:W33 (2026-11-09 16:23, dima): not sure about cc's built-in question for --bg asks: cc probably asks via cards, and those cards often block the cc thread until i answer, which is not good; any comms must be non-blocking
 PK-364:W34 (2026-11-09 16:23, dima): proceed; put extra focus on threads started after clio's «second channel» mode was born (~1 week ago), and more so after winged clio was born (~a few days ago); look at git
+
+PK-364:W35 (2026-11-09 16:24, dima): hunt today's sessions too, they hold valuable comms data: four threads run now and i can't keep up answering everyone, so threads stay parked until i have capacity (while i write this prompt, wing 2 waits for me over 10 min and main clio 15 min)
 <!-- SECTION:NOTES:END -->
