@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T16:34:00Z'
+updated_date: '2026-11-09T16:42:00Z'
 labels:
   - m
   - clio-main
@@ -360,4 +360,8 @@ raw drop (2026-11-09 18:21, dima): approve plan.
 raw drop (2026-11-09 18:21, dima): --
 
 raw drop (2026-11-09 18:21, dima): print grill in thread
+
+PK-363:W56 (2026-11-09 17:58, dima): no browser pane in herdr: agreed for now; we will find a workaround
+
+PK-363:W57 (2026-11-09 17:58, dima): rex gave us many doors, like prefilling terminal prompts or taking snapshots easily; does herdr have any of that, is it at parity with rex in door flexibility? ❓
 <!-- SECTION:NOTES:END -->
