@@ -108,6 +108,7 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-07 · FRM-528, frame#147: clean at 2 rounds, 48 min · the ci reviewer found 0, sixth sense's plants and reading 2 P2s, ci itself a third: `ci-binaries.test.ts`, which a round's fix on a go test could run first · useful
 - 2026-11-07 · FRM-532, quick lane on main: clean at 2 rounds · wisphunter, 4 findings, 3 fixed, useful; built-in and matt's skipped for the weekly window · sixth sense running raw found the door missed the Bash tool, where a clean-reading probe hid it · useful
 - 2026-11-07 · FRM-531, quick lane on main: clean at 4 rounds, the 4th a free one-line doc round under the cap's rule · sixth sense found 4 breaks, one a silent loss, all fixed · matt's code-review 4 useful, built-in 10 with 4 fixed, coderabbit 0 · measure: rounds against the cap, exit 5's terminal half struck, no door could run it
+- 2026-11-09 · FRM-534 + FRM-520, gate lane 1, quick lane on main: clean at 2 rounds · sixth sense found 1 break (x/go tests read skill files through the built x, off the list), fixed in c85ffeb0 · local reviews 2 (built-in 1 useful, matt's 0), coderabbit skipped, no quota · wishkeeper's land read 0 high, 6 low · measure: rounds against the cap, exits proven in throwaway clones
 - 2026-11-07 · BYT-132, bytes#143: clean at 2 rounds, local reviews 3 · exit 1 waits on the first renovate pr, exit 4 about 11-14 · measure: rounds, the post-merge lines outside the clean
 
 ## verdict
