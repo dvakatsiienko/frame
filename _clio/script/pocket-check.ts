@@ -196,20 +196,24 @@ export function checkPocket(
                         report(
                             `dropped ${wishId} with no verdict of dima's: cite the orbit id (oN) or «dima <date|HH:MM>» in the same clause`,
                         );
-            for (const ticket of ticketsOf(text)) {
+            // a line split across several tickets needs one home, not a copy in each
+            const tickets = ticketsOf(text);
+            const blockTexts = tickets.flatMap((ticket) => {
                 const block = wishBlocks.get(ticket);
-                if (block === undefined) continue;
-                const blockText = normalize(block);
+                return block === undefined ? [] : [normalize(block)];
+            });
+            if (blockTexts.length > 0)
                 for (const [wishId, words] of wishLines(text, [home]))
                     if (
                         words &&
                         !dropped.has(wishId) &&
-                        !blockText.includes(normalize(words))
+                        !blockTexts.some((blockText) =>
+                            blockText.includes(normalize(words)),
+                        )
                     )
                         report(
-                            `${wishId} moved to ${ticket} but not in its wish block: copy it there verbatim`,
+                            `${wishId} moved to ${tickets.join(', ')} but in none of their wish blocks: copy it verbatim into the one it belongs to`,
                         );
-            }
         }
         if (status === 'done') {
             if (touched < today)

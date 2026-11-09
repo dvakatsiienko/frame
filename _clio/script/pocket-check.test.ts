@@ -722,7 +722,7 @@ describe('wish accounting', () => {
         test('a W-line missing from the ticket wish block goes red', () => {
             expect(run('* W7 (2026-10-22, dima): keep the dark board')).toEqual(
                 [
-                    'PK-1: W2 moved to FRM-9 but not in its wish block: copy it there verbatim',
+                    'PK-1: W2 moved to FRM-9 but in none of their wish blocks: copy it verbatim into the one it belongs to',
                 ],
             );
         });
@@ -733,6 +733,32 @@ describe('wish accounting', () => {
                     '* W7 (x): keep the dark board\n* W8 (x): and the halt view',
                 ),
             ).toEqual([]);
+        });
+
+        test('a W-line split across two tickets needs one home, not both', () => {
+            const split = {
+                ...moved,
+                text: moved.text
+                    .replace('ticket: FRM-9', 'ticket: FRM-9\nticket: FRM-10')
+                    .replace('moved to FRM-9', 'moved to FRM-9 and FRM-10'),
+            };
+            const runSplit = (other: string) =>
+                checkPocket(
+                    wishConfig,
+                    [split],
+                    wishToday,
+                    '',
+                    () => true,
+                    new Set(),
+                    new Map([
+                        ['FRM-9', '* W7 (x): keep the dark board'],
+                        ['FRM-10', other],
+                    ]),
+                );
+            expect(runSplit('* W1 (x): and the halt view')).toEqual([]);
+            expect(runSplit('* W1 (x): something else')).toEqual([
+                'PK-1: W2 moved to FRM-9, FRM-10 but in none of their wish blocks: copy it verbatim into the one it belongs to',
+            ]);
         });
 
         test('«raw drop kept in the notes» drops no W-line', () => {
@@ -754,7 +780,7 @@ describe('wish accounting', () => {
                     new Map([['FRM-9', '* W7 (x): keep the dark board']]),
                 ),
             ).toEqual([
-                'PK-1: W2 moved to FRM-9 but not in its wish block: copy it there verbatim',
+                'PK-1: W2 moved to FRM-9 but in none of their wish blocks: copy it verbatim into the one it belongs to',
             ]);
         });
     });
