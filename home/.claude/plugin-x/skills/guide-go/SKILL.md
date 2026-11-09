@@ -18,7 +18,7 @@ gofmt -l .                 # prints nothing, or run gofmt -w on what it names
 go vet ./...
 staticcheck ./...          # brew, built with the module's go — see below
 go fix -diff ./...         # the modernizer: SplitSeq, errors.AsType, min/max, range-over-int
-go test -count=1 ./...
+go test -count=1 ./...     # in frame's x/go: pnpm x-go:test instead, it runs in the vm vm-go-test (the mac when it is down)
 ```
 
 - **staticcheck reads only the go it was built with.** it comes from brew (Brewfile), which rebuilds it per go

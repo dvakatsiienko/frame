@@ -156,4 +156,4 @@ recipes/AGENTS.md	8100	seed 2026-10-16, today's size + 15 %
 schedule/AGENTS.md	2700	seed 2026-10-16, today's size + 15 %
 speak/AGENTS.md	3100	seed 2026-10-16, today's size + 15 %
 x/AGENTS.md	10600	seed 2026-10-16, today's size + 15 %; 2026-10-23 +300 B: the cli lanes' verify-recipe line (halt flush o197); 2026-10-30 +200 B: the git archive adequacy line (FRM-467 sixth sense retro); 2026-11-05 +200 B: lane commit's timeout retry (FRM-470); 2026-11-06 +300 B: lane commit --dry (FRM-473)
-x/go/AGENTS.md	6000	2026-11-07 raised: dima's PK-328:W30, the test cost gotchas; seed 2026-10-16
+x/go/AGENTS.md	6300	2026-11-10: +300 the by-hand go run takes the vm doors, never a bare go test (dima o103, FRM-557's rider), on a file 106 B over already; 2026-11-07 raised: dima's PK-328:W30, the test cost gotchas; seed 2026-10-16

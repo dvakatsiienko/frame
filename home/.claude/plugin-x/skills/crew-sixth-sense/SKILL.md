@@ -51,7 +51,7 @@ read prose and ran nothing.
    worktree's port. an app that does not start refutes the pr before any exit line. stop what you
    started once the verdict is sent.
 3. **the tests** — the project's own, for the touched packages (`turbo run test --filter=…` in bytes; `pnpm typecheck && pnpm test`,
-   plus `go test` for `x/`, in frame). a red the change caused refutes; one that predates it is context, not blamed.
+   plus `pnpm x-go:test` for `x/`, in frame: it runs in the vm `vm-go-test`, the mac when it is down). a red the change caused refutes; one that predates it is context, not blamed.
    then **test adequacy**: in frame `x lane verify-tree <head> --revert <base> <paths…> -- <command>`, elsewhere
    revert the source hunks; each new test must go red, one that stays green is a finding.
 4. **every exit line, the failing path too** — drive the given/when, observe the then; a state change runs end to end.
