@@ -31,13 +31,18 @@ func xGoReads(t *testing.T) []string {
 	return paths
 }
 
-// a ../.. read that names no literal path: the shapes known, and the path each reads ("" reads the whole repo, one level only, or a path off the list itself)
-var outsideReadShapes = map[string]string{
-	`"../../" + gateQueueScript`:           gateQueueScript,
-	`readHookGates("../..",`:               "lefthook.yaml",
-	`filepath.Abs("../..")`:                "",
-	`filepath.Join("../..", xGoReadsFile)`: xGoReadsFile,
-	`filepath.Join("../..", path)`:         "",
+// a ../.. read that names no literal path: the shapes known, each keyed by its file so an exemption covers only its own line,
+// and the path each reads ("" reads the whole repo, one level only, or a path off the list itself)
+type outsideReadShape struct{ file, shape string }
+
+var outsideReadShapes = map[outsideReadShape]string{
+	{"gate_turn_test.go", `"../../" + gateQueueScript`}:       gateQueueScript,
+	{"gates_test.go", `readHookGates("../..",`}:               "lefthook.yaml",
+	{"x_go_reads_test.go", `readHookGates("../..",`}:          "lefthook.yaml",
+	{"as_test.go", `filepath.Abs("../..")`}:                   "",
+	{"replaces_test.go", `filepath.Abs("../..")`}:             "",
+	{"gates_test.go", `filepath.Join("../..", xGoReadsFile)`}: xGoReadsFile,
+	{"gates_test.go", `filepath.Join("../..", path)`}:         "",
 }
 
 var outsideLiteral = regexp.MustCompile(`"\.\./\.\./([^"]+)"`)
@@ -55,7 +60,7 @@ func TestXGoReadsNamesEveryPathItsTestsRead(t *testing.T) {
 			t.Fatal(err)
 		}
 		for n, line := range strings.Split(string(raw), "\n") {
-			if !strings.Contains(line, `"../..`) || strings.Contains(line, "outsideReadShapes") || strings.Contains(line, "MustCompile") {
+			if !strings.Contains(line, `"../..`) || strings.Contains(line, "MustCompile") || strings.HasPrefix(strings.TrimSpace(line), `{"`) {
 				continue
 			}
 			var reads []string
@@ -64,8 +69,8 @@ func TestXGoReadsNamesEveryPathItsTestsRead(t *testing.T) {
 			}
 			if len(reads) == 0 {
 				known := false
-				for shape, path := range outsideReadShapes {
-					if strings.Contains(line, shape) {
+				for key, path := range outsideReadShapes {
+					if key.file == file && strings.Contains(line, key.shape) {
 						known = true
 						if path != "" {
 							reads = append(reads, path)
