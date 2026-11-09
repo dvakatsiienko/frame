@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T13:08:00Z'
+updated_date: '2026-11-09T13:29:00Z'
 labels:
   - m
   - clio-wing-2
@@ -26,6 +26,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #2 PK-348 REVIEW.md: explore, set up the convention
 - [ ] #3 FRM-454 helga on Sonnet
 - [ ] #4 PK-362 steamac disk 256 → 192 gb: dima has clarifying questions, main's read is on the item
+- [ ] #5 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -138,4 +139,6 @@ hoist 11-09: proposing, wing 2
 
 14:55 #1 and #5 are one item, both done: the slipstream habit landed in habit-shared-files § the flyway, his five W-lines verbatim. hoist 11-09: done
 2026-11-09 14:55, dima's o7 accepted the split: wing 1 +PK-355 +FRM-383; FRM-503 split by step (o6); wing 3 PK-364 + the wish-loss audit + speak v2 planning, confirmed; main's dup PK-326 yanked and her nine items labelled before his yes, covered by o7; FRM-516 and FRM-454 labelled wing 2. linear Triage/Todo/Backlog not read: flyways and inbox only.
+
+15:30 FRM-483 joined by slipstream from main: label back on, Todo; the one date 2026-11-11, the +1 shift of 11-10.
 <!-- SECTION:NOTES:END -->
