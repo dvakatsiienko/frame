@@ -3,6 +3,7 @@
 import type {
     OrbitAsk,
     OrbitAssumption,
+    RemoteMark,
     StashOrbit,
     StashPlan,
     StashTick,
@@ -58,6 +59,49 @@ export const allAsksTicks = (
         targets: [...text.matchAll(/`([^`]+)`/g)].map((m) => m[1] as string),
         text,
     }));
+
+// herdr's board writes one press per line of `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, each `at` above the line before:
+// the presses past `after`, the first per ask, as the marks a glide card would leave (a steer typed there replaces the
+// ask's own), each with the ask text he pressed on, since a follow keeps the id; a line that is no press is skipped
+const HERDR_MARK = { replay: 'rejected', tick: 'accepted' } as const;
+export function herdrTicks(text: string, after: number) {
+    const marks: Record<string, RemoteMark & { text?: string }> = {};
+    let last = after;
+    for (const line of text.split('\n')) {
+        let press: unknown;
+        try {
+            press = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        if (typeof press !== 'object' || !press) continue;
+        const {
+            at,
+            id,
+            steer,
+            text: asked,
+            verdict,
+        } = press as Record<string, unknown>;
+        if (
+            typeof id !== 'string' ||
+            typeof at !== 'number' ||
+            at <= after ||
+            (verdict !== 'tick' && verdict !== 'replay')
+        )
+            continue;
+        last = Math.max(last, at);
+        if (marks[id]) continue;
+        marks[id] = {
+            at,
+            mark: HERDR_MARK[verdict],
+            ...(typeof steer === 'string' && steer.trim()
+                ? { isSteerEdit: true, steer }
+                : {}),
+            ...(typeof asked === 'string' ? { text: asked } : {}),
+        };
+    }
+    return { last, marks };
+}
 
 // a marked ask no turn has taken yet
 export const isFresh = (a: OrbitAsk) =>
@@ -120,6 +164,7 @@ export function turnEnded(o: StashOrbit): StashOrbit {
                 a.isLocked
                     ? {
                           ...unsteer(a),
+                          isHerdrMark: undefined,
                           isLocked: false,
                           mark: undefined,
                       }
@@ -150,7 +195,7 @@ export const wrongText = (wrong: OrbitAssumption[]) =>
 export function joinText(asks: OrbitAsk[]) {
     const lines = asks.map(
         (a) =>
-            `- ${a.id} ${markWord(a.mark)}: ${a.text} (your pick: ${a.pick})` +
+            `- ${a.id} ${markWord(a.mark)}${a.isHerdrMark ? ' from herdr' : ''}: ${a.text} (your pick: ${a.pick})` +
             (a.steer ? ` · his steer: «${a.steer.trim()}»` : '') +
             (a.hiddenNote ? ` · your note: «${a.hiddenNote}»` : ''),
     );
@@ -358,6 +403,7 @@ export function orbitOp(
                                   ...a,
                                   isChanged: true,
                                   isClosed: undefined,
+                                  isHerdrMark: undefined,
                                   // a new question is no longer the running turn's: dima's next tick on it must land (o88)
                                   isLocked: undefined,
                                   isResolved: false,

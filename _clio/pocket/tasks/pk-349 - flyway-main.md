@@ -4,29 +4,28 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T17:08:00Z'
+updated_date: '2026-11-09T18:44:00Z'
 labels:
   - s
   - clio-main
 dependencies: []
 priority: now
 type: task
-ordinal: 9995
+ordinal: 1000
 ---
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 mods quick lane with its verifier, by load
-- [ ] #2 FRM-491 and FRM-495 behind FRM-505
-- [ ] #3 FRM-368 tilde grill with dima
-- [x] #4 PK-363 herder: research, print, his call
-- [x] #5 PK-368 sidecar passports rebalance
-- [ ] #6 prove the passport auto-load live: helga's next boot carries her passport (crow's half proven: packet 202611091548w2, charter changed)
-- [x] #7 herdr pilot: gate lane codie hosts the probe; Zoo's panel code read, then probe steps for dima
-- [ ] #8 herdr chunk 1: orbit in herdr — ticket + sign from o72, dispatch the herdr codie, sixth sense on (spec ~/frame/.scratch/herdr-orbit/spec.md)
-- [ ] #9 herdr: probe 4b + haiku clio probe, Zoo + board into frame, then tomorrow's boot in herdr (plan ~/frame/_clio/.scratch/herdr/plan.md)
-- [ ] #10 FRM-550 decided-picks: yours to judge against herdr (dima o29); his o30 tick: cut the transcript index, reshape to «a tick lands in its home the same turn»; handover in wing 3 tree .scratch/frm-550/
-- [ ] #11 PK-358 rex settings walkthrough with dima, two at a time, shown live (from wing 1, his 19:01 word)
+- [ ] #1 chunk 2: Zoo's chat into frame as fleet-chatter, a ticket for your sign, the herdr codie builds it
+- [ ] #2 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #3 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
+- [ ] #4 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
+- [ ] #5 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #6 ⏳ next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87) — waits for: herdr, the mods revisit pass
+- [ ] #7 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check prints "" and FRM-542 closes — on: 2026-11-10
+- [ ] #8 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #9 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #10 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -96,4 +95,14 @@ PK-349:W25 (2026-11-09 16:01, dima): habit fix — any time you solve a part of 
 correction (clio, 16:46): W25's clause «; a guard, not an intention (proposed in orbit)» is clio's reasoning, not his words; his 16:01 ends «always tick item in a list». W25 now lives in FRM-538 → FRM-538
 
 2026-11-09 17:18 clio: #4 herdr round 1 done (artifact 98seiwXLa41Z47oBefZnP8, his call: pilot); FRM-509 read moved to wing 3 (clio-wing-3)
+
+done, cleared 19:59 on dima's word: herdr research printed and his call taken (pk-363 lives on); sidecar passports rebalanced (pk-368 done); the herdr pilot probes 1–5 by the gate lane codie; FRM-552 ticketed, signed, dispatched (19:07–19:13); the haiku clio boot in herdr proven (19:20)
+
+done 20:01: crow and helga stopped on dima's o85, crow restarted fresh on opus; FRM-509's last step handed to wing 2 as a rider in its current cli chunk (his o86), the cli lane parks after that chunk merges (his 20:00 word)
+
+20:38 wing 3: its duplicate FRM-542 line (#8, «from wing 3, dima 20:29») merged into the standing FRM-542 close line; dima's 20:29 handover word stands for it
+
+done 2026-11-09 20:38: FRM-552 orbit in herdr landed and closed, dima's o90 tick reached main «accepted from herdr», look card sent; polish steers go to codie in ~/frame/.scratch/herdr-polish/spec.md
+
+done 2026-11-09 20:45: the wish audit reads every chunk section (draftSections, run 3: 98 checked, 1 red, codie's fresh polish spec); low-tide-cuts «park» kept as «nothing new is built on it» (a doubt park keeps a safety net running; «nothing runs it» would switch it off); the weekly M3 reminder is main's (🦉)
 <!-- SECTION:NOTES:END -->

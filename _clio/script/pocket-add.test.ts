@@ -1,24 +1,27 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-    isWingNumber,
-    ordinalFor,
-    searchTerm,
-    startsAtTop,
-} from './pocket-add.ts';
+import { flywayOrdinal } from './flyway-done.ts';
+import { isWingNumber, ordinalFor, searchTerm } from './pocket-add.ts';
 
-describe('startsAtTop', () => {
-    test('a flyway opens its band', () => {
-        expect(startsAtTop('flyway: wing 3')).toBe(true);
+describe('flywayOrdinal', () => {
+    test('the flyways sit on top in seat order', () => {
+        expect(
+            [
+                'flyway: main',
+                'flyway: wing 1',
+                'flyway: wing 2',
+                'flyway: wing 3',
+            ].map(flywayOrdinal),
+        ).toEqual([1000, 1001, 1002, 1003]);
     });
 
-    test('a work item keeps the band order', () => {
-        expect(startsAtTop('herder: a flyway probe')).toBe(false);
+    test('a work item naming a flyway takes no slot', () => {
+        expect(flywayOrdinal('herder: a flyway probe')).toBeUndefined();
     });
+});
 
-    test('--top still wins for any title', () => {
-        expect(startsAtTop('herder: probe', true)).toBe(true);
-    });
+test('a --top item lands under the flyway slots', () => {
+    expect(ordinalFor([1000, 1002], 'now', true)).toBe(1100);
 });
 
 test.each(['1', '12'])('wing %s is a number', (value) => {
@@ -54,8 +57,8 @@ describe('ordinalFor', () => {
         expect(ordinalFor([1500, 8000, 12000], 'now', true)).toBe(1499);
     });
 
-    test('--top opens an empty band at its floor', () => {
-        expect(ordinalFor([12000], 'now', true)).toBe(1000);
+    test('--top opens an empty now band under the flyway slots', () => {
+        expect(ordinalFor([12000], 'now', true)).toBe(1100);
     });
 
     test('never leaves the band when it is full', () => {

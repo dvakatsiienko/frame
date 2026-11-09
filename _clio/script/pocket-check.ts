@@ -3,6 +3,14 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
+    FLYWAY_SLOTS,
+    flywayDate,
+    flywayKind,
+    flywayLines,
+    flywayOrdinal,
+    flywaySorted,
+} from './flyway-done.ts';
+import {
     type Groomed,
     groomStep,
     groomedOnDisk,
@@ -30,11 +38,7 @@ const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
 const CAP_FREE_TITLE = /^🧬 evergreen turn|^flyway: /;
 // a seat's live plan: never closed, its finished lines cleaned at each halt or boot (PK-351:W69-W75)
 const FLYWAY_TITLE = /^flyway: (main|wing ([1-9]\d*))$/;
-const FLYWAY_OPEN_LINE = /^- \[ \] #\d+ .+$/gm;
 const POCKET_ID = /\bPK-\d+\b/g;
-const FLYWAY_STANDING = /^- \[[ x]\] #\d+ standing: (.*)$/gm;
-const FLYWAY_TICKED = /^- \[x\] #\d+ /m;
-const STANDING_ENDS = /\b(?:FRM|BYT)-\d+\b|\buntil:? \d/;
 // the wish-accounting reds apply to items born or touched from this day on
 const WISH_RULES_FROM = '2026-10-22';
 const CLOSE_LINE = /^close:/;
@@ -112,31 +116,62 @@ export function checkPocket(
                 );
             if (label && !(front.lists.labels ?? []).includes(label))
                 report(`a flyway carries its seat's label, ${label}`);
+            const slot = flywayOrdinal(title);
+            if (
+                slot &&
+                (front.scalars.priority !== 'now' ||
+                    Number(front.scalars.ordinal) !== slot)
+            )
+                report(
+                    `a flyway sits on the pocket's top in seat order: backlog task edit ${id} --priority now --ordinal ${slot}`,
+                );
             if (flywayTitles.has(title))
                 report(`a second «${title}»: one flyway per seat`);
             flywayTitles.add(title);
-            for (const [line = ''] of text.matchAll(FLYWAY_OPEN_LINE))
-                for (const [named = ''] of line.matchAll(POCKET_ID))
+            // dima, 2026-11-09 (o66, o68): open lines, then ⏳ waits, then 📅 dated, then 💤 later; a finished line leaves that turn
+            const lines = flywayLines(text);
+            const leave = (n: number) =>
+                `node script/flyway-done.ts ${id} ${n}`;
+            const reword = (n: number) =>
+                `backlog task edit ${id} --remove-ac ${n}, then node script/flyway-done.ts ${id} --add '<line>'`;
+            for (const line of lines.filter((l) => !l.done)) {
+                for (const named of line.text.match(POCKET_ID) ?? [])
                     if (!openIds.has(named))
                         report(
-                            `a line points at ${named}, closed or gone: yank it with backlog task edit --remove-ac`,
+                            `#${line.n} points at ${named}, closed or gone: ${leave(line.n)}`,
                         );
-            for (const [line = ''] of text.matchAll(FLYWAY_OPEN_LINE))
-                for (const [named = ''] of line.matchAll(
-                    /\b(?:FRM|BYT)-\d+\b/g,
-                ))
+                for (const named of line.text.match(/\b(?:FRM|BYT)-\d+\b/g) ??
+                    [])
                     if (closedTickets.has(named))
                         report(
-                            `a line points at ${named}, closed: yank it with backlog task edit --remove-ac`,
+                            `#${line.n} points at ${named}, closed: ${leave(line.n)}`,
                         );
-            for (const [, line] of text.matchAll(FLYWAY_STANDING))
-                if (!STANDING_ENDS.test(line ?? ''))
-                    report(
-                        `a standing line names its ticket or an until: date: «${line}»`,
-                    );
-            if (touched < today && FLYWAY_TICKED.test(text))
+            }
+            for (const line of lines.filter((l) => l.done))
                 report(
-                    `finished lines wait since ${touched}: clean them with backlog task edit --remove-ac`,
+                    `#${line.n} is ticked: move it into the done note, ${leave(line.n)}`,
+                );
+            for (const line of lines) {
+                const kind = flywayKind(line.text);
+                if (kind === 'waits' && !line.text.includes(' — waits for: '))
+                    report(
+                        `#${line.n} ⏳ ends «— waits for: <one thing>»: ${reword(line.n)}`,
+                    );
+                if (kind === 'later' && !line.text.includes(' — later: '))
+                    report(
+                        `#${line.n} 💤 ends «— later: dima <time>»: ${reword(line.n)}`,
+                    );
+                if (kind === 'dated' && !flywayDate(line.text))
+                    report(
+                        `#${line.n} 📅 ends «— on: YYYY-MM-DD»: ${reword(line.n)}`,
+                    );
+            }
+            const texts = lines.filter((l) => !l.done).map((l) => l.text);
+            const sorted = flywaySorted(texts);
+            const misplaced = texts.findIndex((t, i) => t !== sorted[i]);
+            if (misplaced >= 0)
+                report(
+                    `#${lines.filter((l) => !l.done)[misplaced]?.n} is out of order: open, then ⏳, then 📅 by date, then 💤 — node script/flyway-done.ts ${id} --sort`,
                 );
         }
         const born = localDay(front.scalars.created_date ?? '');
@@ -261,6 +296,14 @@ export function checkPocket(
         )
             report(
                 `ordinal ${front.scalars.ordinal || 'missing'} sits outside the ${priority} band (${1000 * 10 ** band}–${1000 * 10 ** (band + 1) - 1}), so --sort ordinal misplaces it`,
+            );
+        if (
+            !flywayOrdinal(title) &&
+            ordinal >= 1000 &&
+            ordinal < 1000 + FLYWAY_SLOTS
+        )
+            report(
+                `ordinal ${ordinal} is a flyway's slot: node script/pocket-move.ts ${id} ${priority}`,
             );
         if (!config.types.includes(front.scalars.type ?? ''))
             report(

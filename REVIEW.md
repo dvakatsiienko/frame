@@ -1,6 +1,6 @@
 # REVIEW.md: frame
 
-what every reviewer of a frame diff reads first: the local cards, the built-in `/code-review` on quick and main lanes only (a pr's ci round is its cold read), and sixth sense, by its path in their brief or skill; the ci reviewer by its prompt in bytes' shared `review-round.yml`, and coderabbit reads it through `.coderabbit.yaml`, its cli run not yet probed. it says what a failure looks like here and how a finding is written. the code's own rules stay where they live, named below.
+what every reviewer of a frame diff reads first: the local cards, the built-in `/code-review` on quick and main lanes only (a pr's ci round is its cold read), and sixth sense, by its path in their brief or skill; the ci reviewer by its prompt in bytes' shared `review-round.yml`, and coderabbit through `.coderabbit.yaml`, though its cli runs on the free allowance, not an org, and likely skips that file (a 2026-11-09 probe, an inference). it says what a failure looks like here and how a finding is written. the code's own rules stay where they live, named below.
 
 ## a finding
 

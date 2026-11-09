@@ -4,31 +4,29 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T17:07:00Z'
+updated_date: '2026-11-09T18:48:00Z'
 labels:
   - s
   - clio-wing-1
 dependencies: []
-priority: next
+priority: now
 type: task
-ordinal: 18998
+ordinal: 1001
 ---
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 PK-300 one complete measuring solution
-- [ ] #2 FRM-497 speak meter: starts with speak v2, not before
-- [ ] #3 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
-- [ ] #4 PK-357 git: old branches, why they gather, a habit, perf effect — with dima, when free
-- [ ] #5 PK-371 gates file name: gates museum
-- [ ] #6 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
-- [ ] #7 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
-- [ ] #8 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
-- [ ] #9 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
-- [ ] #10 FRM-551 vm-go-test: signed; step 1 now, the idle-cost kill gate (dima 19:01)
-- [ ] #11 FRM-383 close: W3 timing run, then x lane landed FRM-383 --pr 150 --apply, by 2026-11-12
-- [ ] #12 gate tail: watch-pr.sh --verified has no undo flag, for the next gate touch
-- [ ] #13 PK-370 perf: tests off pre-commit, to ci or pre-push — with dima, a little later (his 18:43)
+- [ ] #1 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
+- [ ] #2 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
+- [ ] #3 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
+- [ ] #4 ⏳ FRM-551 vm go tests: build at 4 vcpus or drop — waits for: dima's word
+- [ ] #5 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
+- [ ] #6 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
+- [ ] #7 📅 FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — on: 2026-11-10
+- [ ] #8 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
+- [ ] #9 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #10 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
+- [ ] #11 💤 FRM-525 performance topic and cpu watch, anything performance comes to wing 1 — later: dima says when he has capacity
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -65,4 +63,16 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 18:53 cli lane 6 handed to wing 2 (dima o34): handover at .scratch/handover-cli-lane-6.md in the wing 1 tree, glide l55 ended
 
 19:02 synced: FRM-503 closed (o49), cli lane 6 handed to wing 2, gate lane 1 lines done; PK-358 rex walkthrough reassigned to main on dima's 19:01 word
+
+19:45 gate tails and the watch-pr undo moved to wing 2's cli lane as riders (dima 19:21); 33+79 branches deleted, tips logged in the wing 1 tree's .scratch/branches-deleted-tips.txt
+
+2026-11-09 19:59 groom (dima 19:58 via wing 2): done and cleared — PK-357 branches closed (status done, every W-line routed, verified by pocket-check green); the open lines rewritten to read alone, ordered by date, each ticket's state read live (all Todo).
+
+done 2026-11-09: FRM-537 mods test-cost probe — 4 files hold 69 % of 286 user-s, comment on FRM-537, doors-left door 10 (dima's o55). groomed 20:11 to the flyway shape (dima's o68 via wing 2).
+
+done 2026-11-09: mods test trim shaped into FRM-555 (dima's o56, o57); the perf watch moved to 💤 on his 20:18 word
+
+done 2026-11-09: FRM-555 grill 1 answered (o58–o61), kept in its decided; unsigned on dima's 20:32 word — the mods lane waits for main's herdr revisit pass; handed to main, label off
+
+done 2026-11-09: FRM-551 kill gate read 2 — 288 cpu-s a day idle at 4 vcpus, under the 320 line; comment on FRM-551; vm frm536 stopped 20:37
 <!-- SECTION:NOTES:END -->

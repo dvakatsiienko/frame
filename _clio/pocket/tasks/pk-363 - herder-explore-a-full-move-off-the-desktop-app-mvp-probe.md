@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T17:08:00Z'
+updated_date: '2026-11-09T17:54:00Z'
 labels:
   - m
   - clio-main
@@ -454,4 +454,42 @@ PK-363:W79 (2026-11-09 18:58, dima): Also, you currently hold valuable context a
 raw drop (2026-11-09 18:58, dima): Also, you currently hold valuable context about herdr, but you are at 57% of CTX. Do as much useful stuff as possible related to the current context before the second wind, so you can freely second wind and gracefully hand off to other least-context-dependent actions after the second wind, so you can proceed there.
 
 answered 19:03 (main), the 18:58 ❓ lines: PK-363:W76 saved in .scratch/herdr/plan.md; PK-363:W78 main runs FRM-552, wing 3 builds the skills
+
+PK-363:W80 (2026-11-09 19:12, dima): note: let all wings know about what we brew with herder, so no one proposes potentioally redundant stuff that we can have for free or much cheaper in herder.
+
+raw drop (2026-11-09 19:12, dima): note: let all wings know about what we brew with herder, so no one proposes potentioally redundant stuff that we can have for free or much cheaper in herder.
+
+PK-363:W81 (2026-11-09 19:12, dima): o74: do you think FRM 505 still needs to wait for FRM 524? If yes, tell why. ❓
+
+raw drop (2026-11-09 19:12, dima): o74: do you think FRM 505 still needs to wait for FRM 524? If yes, tell why.
+
+PK-363:W82 (2026-11-09 19:12, dima): when herder codie can start? ❓
+
+raw drop (2026-11-09 19:12, dima): when herder codie can start?
+
+PK-363:W83 (2026-11-09 19:33, dima): herder: restarted fully (quit and start).
+
+raw drop (2026-11-09 19:33, dima): herder: restarted fully (quit and start).
+
+PK-363:W84 (2026-11-09 19:33, dima): top 7 names for the herdr chat panel (Zoo's , made ours) (⚙️ a cog, names only) ← is this for custom chatter i asked for? one borrowed from zoo? if yes - let's have it as «chatter». recognizable and clear and short. ❓
+
+raw drop (2026-11-09 19:33, dima): top 7 names for the herdr chat panel (Zoo's , made ours) (⚙️ a cog, names only) ← is this for custom chatter i asked for? one borrowed from zoo? if yes - let's have it as «chatter». recognizable and clear and short.
+
+PK-363:W85 (2026-11-09 19:33, dima): fleet-chatter? so when i say «chatter» its clear? ❓
+
+raw drop (2026-11-09 19:33, dima): fleet-chatter? so when i say «chatter» its clear?
+
+PK-363:W86 (2026-11-09 19:37, dima): cd ~/frame/_clio/.scratch/herdr && claude --resume a99a5470-2157-42a3-99d9-3457b64263ff ← I do not get how to probe it properly because, from what I know, the desktop app doesn't allow resuming sessions gracefully. When I want a session in the desktop app, I resume it in the terminal in remote control, and that way it appears in the terminal. Via path, it is only possible to start a new thread in the desktop app. Can you probe yourself somehow, or print cleaner steps? How to probe? ❓
+
+raw drop (2026-11-09 19:37, dima): cd ~/frame/_clio/.scratch/herdr && claude --resume a99a5470-2157-42a3-99d9-3457b64263ff ← I do not get how to probe it properly because, from what I know, the desktop app doesn't allow resuming sessions gracefully. When I want a session in the desktop app, I resume it in the terminal in remote control, and that way it appears in the terminal. Via path, it is only possible to start a new thread in the desktop app. Can you probe yourself somehow, or print cleaner steps? How to probe?
+
+PK-363:W87 (2026-11-09 19:37, dima): tell when herder codie wants a verifier? ❓
+
+raw drop (2026-11-09 19:37, dima): tell when herder codie wants a verifier?
+
+correction (2026-11-09 19:33, helga): the W84 line and its raw drop above lost the text between the backticks, because the shell ran it as a command. Intended: "top 7 names for the herdr chat panel (Zoo's `claude-chat`, made ours) (⚙️ a cog, names only) ← is this for custom chatter i asked for? one borrowed from zoo? if yes - let's have it as «chatter». recognizable and clear and short. ❓"
+
+answered in main's thread, the 19:12–19:37 ❓ lines: PK-363:W81 at 19:14 (FRM-505 needs no wait on FRM-524, links dropped 19:17) and goes to FRM-505:W1944 as its ending; PK-363:W82 at 19:14 (the herdr codie starts at once, dispatched 19:13); PK-363:W84 and PK-363:W85 at 19:33 (the chat panel is Zoo's, named fleet-chatter, said «chatter»); PK-363:W87 at 19:39 (desktop resume needs dima's sidebar look, the rest probed by main)
+
+moved (dima's tick o81, 19:53): PK-363:W81 is now FRM-505:W1944's ending
 <!-- SECTION:NOTES:END -->

@@ -33,6 +33,7 @@ import {
     PLAN_MAX,
     allAsksTicks,
     hasPlanMark,
+    herdrTicks,
     isAllAsksMarkable,
     isFresh,
     joinText,
@@ -143,6 +144,8 @@ const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 const SUCC = 'succ:';
 // a glide card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
 const MARKS = 'marks:';
+// how far this session read herdr's ticks file for it: the `at` of the newest press taken, one key per session id
+const HERDR_READ = 'herdr-read:';
 // 🛼 a member's lane step from its plan op, one key per registry name, written only by that session (todo 6)
 const LANE_STEP = 'lane-step:';
 // the moves clio's stash made from codie's step, held for her next tool call or prompt
@@ -2325,6 +2328,18 @@ async function currentOrbit($: EngineInterface) {
 // own key and the member deletes only the keys it read — a shared map lost or re-applied marks across sessions
 const markKey = (sid: string, askId: string) => `${MARKS}${sid}:${askId}`;
 
+// herdr's presses for this session past what it read last; the file is herdr's board's alone, so this side only reads
+// and keeps its own watermark. a press is no x-mod-guard tick: any agent can write the file (FRM-552)
+async function herdrMarksOf($: EngineInterface, sid: string) {
+    const home = await $.env.get('HOME').catch(() => undefined);
+    const text = await $.fs
+        .read(`${home}/.claude/shelf/orbit-ticks/${sid}.jsonl`)
+        .catch(() => '');
+    const read = await $.store.get(HERDR_READ + sid).catch(() => undefined);
+    const after = typeof read === 'number' ? read : 0;
+    return { after, ...herdrTicks(text, after) };
+}
+
 async function marksOf($: EngineInterface, sid: string) {
     const marks: Record<string, RemoteMark> = {};
     const keys = (await $.store.keys().catch(() => [] as string[])).filter(
@@ -2353,17 +2368,27 @@ async function absorbMarks($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
     const marks = await marksOf($, sid);
-    if (!Object.keys(marks).length) return;
+    const herdr = await herdrMarksOf($, sid);
+    if (!Object.keys(marks).length && herdr.last <= herdr.after) return;
+    let isSaved = false;
     await inMarking(async () => {
         const o = await currentOrbit($);
-        await saveOrbit($, {
+        isSaved = await saveOrbit($, {
             ...o,
             asks: o.asks.map((a) => {
-                const m = marks[a.id];
+                // a herdr press never overwrites a mark: the first press wins, a desktop one included; and it marks
+                // only the question he read, never the round a follow put under the same id
+                const h = herdr.marks[a.id];
+                const m =
+                    marks[a.id] ??
+                    (a.mark || (h?.text !== undefined && h.text !== a.text)
+                        ? undefined
+                        : h);
                 if (!m || a.isLocked || a.isResolved) return a;
                 return {
                     ...a,
                     isChanged: false,
+                    isHerdrMark: !marks[a.id] || undefined,
                     mark: m.mark,
                     markedAt: m.mark ? m.at : undefined,
                     steer: isTypedHere(a.id)
@@ -2375,6 +2400,9 @@ async function absorbMarks($: EngineInterface) {
             }),
         });
     });
+    // a press the orbit did not keep is read again at the next take
+    if (isSaved && herdr.last > herdr.after)
+        await $.store.set(HERDR_READ + sid, herdr.last).catch(() => undefined);
     // the marks go once the orbit holds them, and only the ones still as read: a steer typed on that board meanwhile
     // stays for the next take, and its card never sees the steer missing in between
     for (const [id, m] of Object.entries(marks)) {
@@ -2644,7 +2672,10 @@ async function pressMarkNow(
     if (isTicked) await recordTicks($, [ask], true);
     const isKept = await markAsksNow(
         $,
-        (a) => (a.id === id ? { ...a, isChanged: false, mark: next } : a),
+        (a) =>
+            a.id === id
+                ? { ...a, isChanged: false, isHerdrMark: undefined, mark: next }
+                : a,
         false,
         undefined,
     );
@@ -2678,7 +2709,12 @@ async function pressAllAsksNow(
         $,
         (a) =>
             asks.some((x) => x.id === a.id)
-                ? { ...a, isChanged: false, mark: 'accepted' }
+                ? {
+                      ...a,
+                      isChanged: false,
+                      isHerdrMark: undefined,
+                      mark: 'accepted',
+                  }
                 : a,
         false,
         undefined,

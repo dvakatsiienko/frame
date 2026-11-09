@@ -20,13 +20,26 @@ import {
 import path from 'node:path';
 
 import { steersOf } from './chat-lines.ts';
+import { seatOf } from './session-registry.ts';
 import { normalize, prefixWish, repeatedIds, unwrapIds } from './wish-cover.ts';
 
 const home = process.env.HOME ?? '';
-const promptDir =
-    process.env.PROMPT_RAW_DIR ?? path.join(home, '.local/state/clio/prompts');
-const groomDir =
+// each clio seat keeps its own prompts and grooms: main at the root, a wing in `wing-<N>/` (FRM-542)
+const seat = seatOf() ?? '';
+const promptDir = path.join(
+    process.env.PROMPT_RAW_DIR ?? path.join(home, '.local/state/clio/prompts'),
+    seat,
+);
+const groomRoot =
     process.env.PROMPT_GROOM_DIR ?? path.join(home, '.local/state/clio/grooms');
+const groomDir = path.join(groomRoot, seat);
+// a groom is written to its own seat's folder and read from every seat's: one made in main counts in a wing
+const groomDirs = () => [
+    groomRoot,
+    ...(existsSync(groomRoot) ? readdirSync(groomRoot) : [])
+        .filter((name) => /^wing-\d+$/.test(name))
+        .map((name) => path.join(groomRoot, name)),
+];
 const pocketDir =
     process.env.POCKET_DIR ?? path.join(import.meta.dirname, '../pocket');
 // the check binds every fold from the day the rules landed (dima's o61–o63) through today
@@ -57,8 +70,11 @@ const bare = (line: string) =>
 // a groom file holds at least one W-line stamped with this very minute; a placeholder file fails
 // an inbox day's groomed file is helga's checked prep, copied in at boot: it must exist and carry every
 // `raw drop (<day> inbox, dima): …` note of the item, or an inbox stamp would pass a raw fold
-export const groomedOnDisk: Groomed = (day, hhmm, item) => {
-    const file = groomFile(day, hhmm, 'groomed');
+export const groomedOnDisk: Groomed = (day, hhmm, item) =>
+    groomDirs().some((dir) => groomedIn(dir, day, hhmm, item));
+
+function groomedIn(dir: string, day: string, hhmm: string, item: string) {
+    const file = path.join(dir, path.basename(groomFile(day, hhmm, 'groomed')));
     if (!existsSync(file)) return false;
     const groomed = readFileSync(file, 'utf8');
     if (hhmm === 'inbox') {
@@ -73,9 +89,9 @@ export const groomedOnDisk: Groomed = (day, hhmm, item) => {
     return groomed
         .matchAll(STAMP)
         .some(([, date, time, id]) => date === day && (id ?? time) === hhmm);
-};
+}
 
-// a wing's prompts reach no prompt log, so a minute the log lacks owes no groom, even after its wing label comes off
+// a minute this seat's log lacks was typed in another seat or before the log existed, so it owes this seat no groom
 export const groomedOrUnlogged: Groomed = (day, key, item) => {
     if (groomedOnDisk(day, key, item)) return true;
     if (!/^\d{2}:\d{2}$/.test(key)) return false;
@@ -469,11 +485,15 @@ function transcriptSteers(transcript?: string) {
         });
 }
 
+// the prompt hook names its own transcript; with none, the newest clio transcript may be another seat's, so no steer is owed
 export const ungroomedSteersToday = (
     day: string,
     noWishText: string,
     transcript?: string,
-) => ungroomedSteers(transcriptSteers(transcript), day, noWishText);
+) =>
+    transcript === undefined
+        ? []
+        : ungroomedSteers(transcriptSteers(transcript), day, noWishText);
 
 // every steer of that id on that day: one ask can take several, and an id can return on a later day
 const steerText = (id: string, day: string, transcript?: string) =>

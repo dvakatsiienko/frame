@@ -146,6 +146,7 @@ describe('groomedOrUnlogged', () => {
         const dir = mkdtempSync(join(tmpdir(), 'prompt-log-'));
         writeFileSync(join(dir, `${day}.md`), '## 09:12\n\na prompt\n');
         vi.stubEnv('PROMPT_RAW_DIR', dir);
+        vi.stubEnv('CLIO_SEAT', '');
         vi.resetModules();
         const { groomedOrUnlogged } = await import('./prompt-groom.ts');
         vi.unstubAllEnvs();
@@ -968,5 +969,38 @@ describe('a pocket wish moving to a ticket is renumbered into its series (PK-312
         expect(() =>
             moveWishes(pocket, ticket, 'PK-3', 'FRM-9', ['W1912', 'W5']),
         ).toThrow(/W5/);
+    });
+});
+
+describe('ungroomedSteersToday', () => {
+    test('with no transcript named, no steer is owed', async () => {
+        const home = mkdtempSync(join(tmpdir(), 'steer-home-'));
+        const dir = join(home, '.claude/projects/-Users-dima-frame--clio');
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(
+            join(dir, 'other-seat.jsonl'),
+            `${steer('o4', 'another seat steer')}\n`,
+        );
+        vi.stubEnv('HOME', home);
+        vi.resetModules();
+        const groom = await import('./prompt-groom.ts');
+        vi.unstubAllEnvs();
+        expect(groom.ungroomedSteersToday('2026-10-26', '')).toEqual([]);
+    });
+});
+
+describe('a groom from another seat', () => {
+    test('a wing finds a groom main made at the root', async () => {
+        const root = mkdtempSync(join(tmpdir(), 'grooms-'));
+        writeFileSync(
+            join(root, '2026-11-09-1412.groomed.md'),
+            'PK-1:W1 (2026-11-09 14:12, dima): ship it\n',
+        );
+        vi.stubEnv('PROMPT_GROOM_DIR', root);
+        vi.stubEnv('CLIO_SEAT', 'wing-1');
+        vi.resetModules();
+        const groom = await import('./prompt-groom.ts');
+        vi.unstubAllEnvs();
+        expect(groom.groomedOnDisk('2026-11-09', '14:12', '')).toBe(true);
     });
 });

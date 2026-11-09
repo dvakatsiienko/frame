@@ -137,6 +137,8 @@ export type OrbitAsk = {
     isResolved?: boolean;
     // when a mark came in from another board: an idle session wakes once dima prompts anywhere after it
     markedAt?: number;
+    // the mark came from herdr's ticks file, which any agent can write: its turn reads it labelled, to weigh (FRM-552)
+    isHerdrMark?: boolean;
     // the closing word a resolve gave it («landed», «dropped: superseded by o58»)
     word?: string;
     // resolved with a word in a turn that has ended: drawn dim for one more turn, then it leaves

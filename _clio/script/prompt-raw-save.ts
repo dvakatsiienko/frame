@@ -10,8 +10,9 @@ import {
 import path from 'node:path';
 
 import { ungroomedPrompts, ungroomedSteersToday } from './prompt-groom.ts';
+import { seatOf } from './session-registry.ts';
 
-const dir =
+const rawRoot =
     process.env.PROMPT_RAW_DIR ??
     path.join(process.env.HOME ?? '', '.local/state/clio/prompts');
 // the fleet's own traffic arrives as a prompt too: a peer, a wake, a background task, a slash command's echo
@@ -107,7 +108,10 @@ if (import.meta.main) {
         readFileSync(0, 'utf8') || '{}',
     ) as { prompt?: string; transcript_path?: string };
     const text = dimasText(prompt);
-    if (text) {
+    // a session that is no clio seat (a plain fork, a sidecar) keeps no log
+    const seat = seatOf();
+    if (text && seat !== undefined) {
+        const dir = path.join(rawRoot, seat);
         const now = new Date();
         const file = path.join(dir, `${now.toLocaleDateString('sv')}.md`);
         mkdirSync(dir, { recursive: true });
@@ -120,6 +124,7 @@ if (import.meta.main) {
         const noWish = path.join(
             process.env.PROMPT_GROOM_DIR ??
                 path.join(process.env.HOME ?? '', '.local/state/clio/grooms'),
+            seat,
             `${day}.no-wish.md`,
         );
         const noWishText = existsSync(noWish)

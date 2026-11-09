@@ -31,15 +31,14 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 
 ## types — JS with a TypeScript check
 
-- 📌 pending: dima's pick on main clio's herdr grill 2b Q7 (TS source in frame, built to JS on save) may replace this section's loop
-- herdr loads only `.js` mods; its guide names no TypeScript (0.1.14)
+- herdr loads only `.js` mods; its guide names no TypeScript and its repo shows no plan for it (0.1.14). dima, PK-363:W69: «ok lets do for now. would be good to have native ts support» — JS with a JSDoc check now, native TS the day herdr ships it
 - each mod's `jsconfig.json` is written once and is ours after: `checkJs` and `strict` on, `strictNullChecks` off by design
 - the check: `pnpm -C ~/frame exec tsc -p ~/.config/herdr-app/mods/<name>/jsconfig.json` (pass the file; `-p <dir>` looks for a `tsconfig.json`). types come from JSDoc: `/** @param {string} path */`
 - `fleet-board` fails it today with 46 implicit-any errors (run 2026-11-09): a mod we own reaches 0 before its chunk closes
 
 ## where our mods live
 
-- 📌 a mod's source belongs in `~/frame/home/.config/herdr-app/mods/<name>/`, linked out by the dotfiles mirror, so it gets git and our gates. that home is main clio's plan item 2, not built yet (2026-11-09): until it lands, a mod lives only in `~/.config/herdr-app/mods/`, with no undo — copy the folder aside before a rewrite
+- 📌 a mod's source belongs in `~/frame/home/.config/herdr-app/mods/<name>/`, linked out by the dotfiles mirror, so it gets git and our gates. `ls ~/frame/home/.config/herdr-app` says whether that home exists yet: until it does, a mod lives only in `~/.config/herdr-app/mods/`, with no undo — copy the folder aside before a rewrite
 - a shipped mod or layout belongs to herdr and is replaced on every start; our copy comes from `mod.clone` or `layout.clone` and never takes upstream fixes, so it is diffed against the new shipped one at each herdr update
 - 📌 `layout.clone` switches dima's shown layout to the clone: ask before running it
 - one mod per idea; touch only the mod or file the job names
@@ -57,7 +56,7 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 ## the fleet's state a mod reads
 
 - `~/.claude/sessions/*.json` — live sessions, one file per pid
-- `~/.claude/plugins/store/x-mod-stash_inline-*.json` — the stash store: keys `model:`, `context:`, `asks:<sid>`, `reply:<sid>`; one shared file, read-only from a mod
+- `~/.claude/plugins/store/x-mod-stash_inline-*.json` — the stash store: keys `model:`, `context:`, `asks:<sid>`, and `reply:<sid>` with its `.wait`; one shared file, read-only from a mod
 - `~/.claude/shelf/lanes.json` — the glide cards
 - a mod never writes a cc session's state; a tick or a steer goes back through the file the stash mod reads for it, or `hc send`
 

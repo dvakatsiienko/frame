@@ -2403,6 +2403,148 @@ test("a tick from another board's glide card joins the running turn at once", as
     expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
+// FRM-552: herdr's board writes one press per line of the session's ticks file, and stash keeps how far it read
+const HERDR_FILE = `/home/.claude/shelf/orbit-ticks/${SID}.jsonl`;
+const press = (p: Record<string, unknown>) => `${JSON.stringify(p)}\n`;
+const turnContext = async ($: Engine) =>
+    ((await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? []).join(
+        '\n',
+    );
+
+test('a herdr tick joins the running turn once, labelled from herdr, with his steer', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'run the long job');
+    const at = w.clock.now();
+    files[HERDR_FILE] = press({
+        at,
+        id: 'o1',
+        steer: 'say "hi"\nthen go',
+        verdict: 'tick',
+    });
+    const first = await turnContext($);
+    const second = await turnContext($);
+    expect([
+        first.match(
+            /o1 🛎️ accepted from herdr: push FRM-1.*his steer: «say "hi"\nthen go»/s,
+        )?.length,
+        second.includes('o1 🛎️'),
+        w.store.get(`herdr-read:${SID}`),
+    ]).toEqual([1, false, at]);
+});
+
+test('a herdr replay on an ask the desktop board already ticked changes nothing', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    files[HERDR_FILE] = press({
+        at: w.clock.now(),
+        id: 'o1',
+        verdict: 'replay',
+    });
+    await say($, 'go on');
+    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted: /);
+});
+
+test('of two herdr presses on one ask read together, the first wins', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const at = w.clock.now();
+    files[HERDR_FILE] =
+        press({ at, id: 'o1', verdict: 'tick' }) +
+        press({ at: at + 1, id: 'o1', verdict: 'replay' });
+    await say($, 'go on');
+    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
+});
+
+test('a herdr tick on a resolved ask changes nothing', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await orbit($, { ids: ['o1'], op: 'resolve', words: { o1: 'done' } });
+    files[HERDR_FILE] = press({ at: w.clock.now(), id: 'o1', verdict: 'tick' });
+    await say($, 'go on');
+    expect([joined(w.contexts), keptMark(w.store, 'o1')]).toEqual([
+        [],
+        undefined,
+    ]);
+});
+
+// the mark the stash kept for an ask, read from the store copy of its orbit
+const keptMark = (store: Map<string, unknown>, id: string) =>
+    (
+        store.get(`kept:${SID}`) as
+            | { orbit?: { asks?: { id: string; mark?: string }[] } }
+            | undefined
+    )?.orbit?.asks?.find((a) => a.id === id)?.mark;
+
+test('a herdr press already taken never marks the round a follow puts under its id', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes'], ['push FRM-2', 'yes']);
+    await say($, 'go');
+    const at = w.clock.now();
+    files[HERDR_FILE] = press({ at, id: 'o1', verdict: 'tick' });
+    await turnContext($);
+    await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'after ci',
+        text: 'push FRM-1',
+    });
+    await endTurn($);
+    // a newer press on another ask makes the file worth reading again; only the watermark keeps o1's old line out
+    files[HERDR_FILE] += press({ at: at + 1, id: 'o2', verdict: 'tick' });
+    await say($, 'go on');
+    expect(joined(w.contexts).join('\n')).toMatch(
+        /^(?![\s\S]*- o1 )[\s\S]*- o2 🛎️/,
+    );
+});
+
+test('a herdr press made on the old question never marks the new one a follow put under its id', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'after ci',
+        text: 'push FRM-1 once ci is green',
+    });
+    files[HERDR_FILE] = press({
+        at: w.clock.now(),
+        id: 'o1',
+        text: 'push FRM-1',
+        verdict: 'tick',
+    });
+    await say($, 'go on');
+    expect(joined(w.contexts)).toEqual([]);
+});
+
+test("a herdr tick on an ask quoting a command writes no record x-mod-guard reads as dima's word", async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    const writes = tickLog(on);
+    await start($);
+    await add($, ['⚠️ push `git push --mirror origin` to the backup', 'yes']);
+    files[HERDR_FILE] = press({ at: w.clock.now(), id: 'o1', verdict: 'tick' });
+    await say($, 'go on');
+    expect([joined(w.contexts).join('\n'), writes]).toEqual([
+        expect.stringMatching(/o1 🛎️ accepted/),
+        [],
+    ]);
+});
+
 test('a phases tick is ready at once', async ($, on) => {
     world(on);
     await start($);

@@ -1,6 +1,17 @@
-// usage: node script/wish-cover.ts <PK-N|FRM-N|BYT-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines exits 2; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
-import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
+// usage: node script/wish-cover.ts --audit-week   the weekly wish-loss audit: every grill, brief and spec under a .scratch of frame and bytes touched in 7 days, checked against each home its wish: line names; exits 1 on a red
+//        node script/wish-cover.ts <PK-N|FRM-N|BYT-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines exits 2; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+    existsSync,
+    globSync,
+    mkdtempSync,
+    readFileSync,
+    readdirSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { TICKET_LINE } from './pocket-check.ts';
@@ -153,8 +164,87 @@ function readItem(items: [string, string][], id: string) {
     )?.[1];
 }
 
+// a first use of a wish: a grill round, a brief or a spec, under any .scratch of frame, its worktrees or bytes
+const FIRST_USE = /(?:^|\/)(?:grill-[\w-]*proposal|[\w-]*brief|spec)\.md$/;
+
+export function weekDrafts(roots: string[], now = Date.now()) {
+    const since = now - 7 * 24 * 60 * 60 * 1000;
+    return roots
+        .filter((root) => existsSync(root))
+        .flatMap((root) =>
+            globSync('**/.scratch/**/*.md', {
+                cwd: root,
+                exclude: (name) => name === 'node_modules' || name === '.git',
+            }).map((rel) => path.join(root, rel)),
+        )
+        .filter(
+            (file) => FIRST_USE.test(file) && statSync(file).mtimeMs >= since,
+        )
+        .sort();
+}
+
+const WISH_ID_LINE = /^wish: *\[?((?:PK|FRM|BYT)-\d+)/i;
+
+// each home a draft's wish lines name, with its section, read the way wish-cover-on-write.sh reads it: the lines above
+// the first wish line join its section, an id beside another on one line gets the whole draft; `none` only while no id
+// line exists anywhere and a `wish: none` sits in the first 10 lines; undefined for neither
+export function draftSections(text: string) {
+    const lines = text.split('\n');
+    const idLines = lines.filter((line) => WISH_ID_LINE.test(line));
+    if (idLines.length === 0) {
+        return lines.slice(0, 10).some((line) => /^wish: *none/i.test(line))
+            ? ('none' as const)
+            : undefined;
+    }
+    const sections = new Map<string, string>();
+    let current = '';
+    let pre = '';
+    for (const line of lines) {
+        current = WISH_ID_LINE.exec(line)?.[1]?.toUpperCase() ?? current;
+        if (!current) {
+            pre += `${line}\n`;
+            continue;
+        }
+        sections.set(current, `${sections.get(current) ?? pre}${line}\n`);
+    }
+    for (const id of idLines.flatMap(
+        (line) => line.toUpperCase().match(/\b(?:PK|FRM|BYT)-\d+\b/g) ?? [],
+    ))
+        if (!sections.has(id)) sections.set(id, text);
+    return sections;
+}
+
+function auditWeek() {
+    const home = homedir();
+    const roots = [path.join(home, 'frame'), path.join(home, 'projects/bytes')];
+    const scratch = mkdtempSync(path.join(tmpdir(), 'wish-audit-'));
+    const rows = weekDrafts(roots).flatMap((file) => {
+        const sections = draftSections(readFileSync(file, 'utf8'));
+        if (sections === undefined) return [[file, '-', 'no wish line']];
+        if (sections === 'none') return [[file, 'none', 'wish: none']];
+        return [...sections].map(([id, section], i) => {
+            const draft = path.join(scratch, `${i}-${id}.md`);
+            writeFileSync(draft, section);
+            const run = spawnSync(
+                process.execPath,
+                [import.meta.filename, id, draft],
+                { encoding: 'utf8', timeout: 60_000 },
+            );
+            return [file, id, run.status === 0 ? 'green' : 'red'];
+        });
+    });
+    rmSync(scratch, { recursive: true });
+    for (const row of rows) console.log(row.join('\t'));
+    const red = rows.filter((row) => row[2] === 'red').length;
+    console.log(
+        `${rows.length} checked · ${rows.filter((row) => row[2] === 'green').length} green · ${red} red · ${rows.filter((row) => row[1] === 'none').length} wish: none · ${rows.filter((row) => row[1] === '-').length} no wish line`,
+    );
+    process.exit(red > 0 ? 1 : 0);
+}
+
 if (import.meta.main) {
     const args = process.argv.slice(2);
+    if (args[0] === '--audit-week') auditWeek();
     const all = args.includes('--all');
     const [id, ...draftPaths] = args.filter((arg) => arg !== '--all');
     if (!id || draftPaths.length === 0) {

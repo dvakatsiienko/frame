@@ -4,6 +4,7 @@ import {
     mkdirSync,
     mkdtempSync,
     rmSync,
+    utimesSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,6 +13,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
     citedIds,
+    draftSections,
     itemsForTicket,
     missingText,
     normalize,
@@ -20,6 +22,7 @@ import {
     sectionsFor,
     uncovered,
     unwrapIds,
+    weekDrafts,
     wishBlock,
     wishLines,
 } from './wish-cover.ts';
@@ -218,6 +221,7 @@ describe('wish-cover', () => {
                 mkdirSync(join(root, 'script'));
                 for (const file of [
                     'wish-cover.ts',
+                    'flyway-done.ts',
                     'pocket-check.ts',
                     'prompt-groom.ts',
                     'chat-lines.ts',
@@ -408,5 +412,57 @@ describe('wish ids in both shapes', () => {
         expect(uncovered(block, ['PK-4:W1 the words'], ['PK-3'])).toEqual([
             ['W1', 'the words'],
         ]);
+    });
+});
+
+describe('the weekly audit', () => {
+    test('a week finds fresh grills, briefs and specs, never an older one or a plain note', () => {
+        const root = mkdtempSync(join(tmpdir(), 'audit-week-'));
+        const dir = join(root, '.scratch/lane');
+        mkdirSync(dir, { recursive: true });
+        for (const name of [
+            'grill-1-proposal.md',
+            'brief.md',
+            'spec.md',
+            'notes.md',
+            'old-brief.md',
+        ])
+            writeFileSync(join(dir, name), 'wish: PK-1\n');
+        const old = new Date(Date.now() - 9 * 24 * 60 * 60 * 1000);
+        utimesSync(join(dir, 'old-brief.md'), old, old);
+        expect(weekDrafts([root]).map((f) => f.slice(dir.length + 1))).toEqual([
+            'brief.md',
+            'grill-1-proposal.md',
+            'spec.md',
+        ]);
+    });
+
+    test('a later chunk section past line 12 is its own home', () => {
+        const filler = Array.from({ length: 15 }, (_, i) => `line ${i}`).join(
+            '\n',
+        );
+        const spec = `# lane\n\nwish: FRM-1\nfirst\n${filler}\n## FRM-2\nwish: FRM-2\nsecond\n`;
+        const sections = draftSections(spec);
+        expect(sections).toBeInstanceOf(Map);
+        if (!(sections instanceof Map)) return;
+        expect([...sections.keys()]).toEqual(['FRM-1', 'FRM-2']);
+        expect(sections.get('FRM-1')).toContain('# lane');
+        expect(sections.get('FRM-2')).toContain('second');
+        expect(sections.get('FRM-2')).not.toContain('first');
+    });
+
+    test('an id beside another on one wish line is checked against the whole draft', () => {
+        const draft = 'wish: PK-1, FRM-2\nbody\n';
+        const sections = draftSections(draft);
+        expect(sections instanceof Map && sections.get('FRM-2')).toBe(draft);
+    });
+
+    test.each([
+        ['wish: none — a mechanical chore\n', 'none'],
+        ['# a title with no wish line\n', undefined],
+        ['wish: none\nlater\nwish: FRM-3\n', 'map'],
+    ])('a draft «%s» reads as %s', (draft, want) => {
+        const got = draftSections(draft);
+        expect(got instanceof Map ? 'map' : got).toBe(want);
     });
 });
