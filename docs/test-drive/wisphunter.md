@@ -86,7 +86,7 @@ group by 1 order by 2 desc;
   - coderabbit, from its own run at the time (`coderabbit review --agent --committed --base-commit f2cb0452`, 2026-10-27 16:06:10, after `c1e9ef0e` and 33 s before the fix `65db63b0`): 0 of 6, one minor finding off the set; on H1 no run maps to `3b749531`, so didn't run
   - didn't run: the built-in `/code-review` (it reviews a live branch or pr, never an old range)
 - tally: plain 2 of 6, spec 2.5 of 6 plus H1, standards 0 of 6; the union 3.5 of 6 plus H1, under the test card's ≥5 of 6 (one run of the 3 asked; the kill rule needs two runs in a row under 4)
-- the trim reading: matt's standards axis added no known slip the other two missed, so the plain card plus the spec axis catch the same known set as all three; its own finds were real but off the set (the milestone rule refusing from day one, which the spec axis also found; an un-gated note; untested parser branches)
+- the trim reading, one run of three so an inference: matt's standards axis added no known slip the other two missed, so the plain card plus the spec axis catch the same known set as all three; its own finds were real but off the set (the milestone rule refusing from day one, which the spec axis also found; an un-gated note; untested parser branches)
 - beyond the set, both the plain card and the spec axis found a nested `bash -c` linear move skipping the milestone check, and the plain card a railway delete behind `-s <service>`: candidates for a live check, not slips of record
 
 ## verdict
