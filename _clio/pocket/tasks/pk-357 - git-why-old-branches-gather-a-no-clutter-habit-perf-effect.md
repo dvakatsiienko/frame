@@ -1,10 +1,10 @@
 ---
 id: PK-357
 title: 'git: why old branches gather, a no-clutter habit, perf effect'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T20:39:00Z'
+updated_date: '2026-11-09T20:54:00Z'
 labels:
   - s
   - clio-wing-1
@@ -56,4 +56,6 @@ PK-357:W6 (2026-11-09 19:35, dima): how to solve efficiently? do you do it, or a
 2026-11-09 22:40 wing 1: bytes refs/remotes/pr125 deleted (o86). gba left: seat branches and live lane branches, each with a worktree; one stray, bytes proof/frm-547-review-cite, asked of wing 2. closes once it is gone.
 
 2026-11-09 22:40 wing 2: proof/frm-547-review-cite is its FRM-547 probe plant (pr #149 closed); the delete is wing 2's orbit ask, run on dima's tick. PK-357 closes once it is gone.
+
+close 2026-11-09 22:55 wing 1: PK-357:W5 done — gba clean in both repos: bytes refs/remotes/pr125 deleted (o86), proof/frm-547-review-cite local (wing 2, 22:46) and origin (dima's typed word, 22:54) deleted; what is left is a live seat or lane branch with a worktree, plus origin badges and renovate's
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T20:36:00Z'
+updated_date: '2026-11-09T20:54:00Z'
 labels:
   - m
   - clio-wing-2
@@ -23,10 +23,9 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 close FRM-548, FRM-549, FRM-553, FRM-509 by closing.md: frame#152 merged, its tree decamped, landed green on 548 and 509; 549 and 553 red only on the guard-refused «look sent» line (main's guard bug)
-- [ ] #2 ⏳ FRM-414 re-grill (its spec read found the messages already fixed, no round record to count, rider 2 against dima's grill 2 Q6); FRM-384 (gate riders, FRM-554), FRM-436, FRM-424 to wing 1's flyway — waits for: dima's tick on the hand-over ask
-- [ ] #3 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
-- [ ] #4 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
-- [ ] #5 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go, stacks.go, habit-shared-files, the siesta skill, prompt-groom.ts, craft-fleet-flow and shape-lane-dispatch changed since its last version — later: dima 20:21 («i tell when»)
+- [ ] #2 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
+- [ ] #3 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
+- [ ] #4 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go, stacks.go, habit-shared-files, the siesta skill, prompt-groom.ts, craft-fleet-flow and shape-lane-dispatch changed since its last version — later: dima 20:21 («i tell when»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -180,4 +179,6 @@ done 2026-11-09 22:23: ⏳ frame#152 (FRM-549, FRM-553 + its riders, FRM-548) me
 done 2026-11-09 22:36: FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card (FRM-546 Done)
 
 done 2026-11-09 22:36: the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25)
+
+done 2026-11-09 22:54: ⏳ FRM-414 re-grill (its spec read found the messages already fixed, no round record to count, rider 2 against dima's grill 2 Q6); FRM-384 (gate riders, FRM-554), FRM-436, FRM-424 to wing 1's flyway — waits for: dima's tick on the hand-over ask (FRM-414 Todo, FRM-384 Todo, FRM-554 Triage, FRM-436 Todo, FRM-424 Todo)
 <!-- SECTION:NOTES:END -->
