@@ -1101,9 +1101,14 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 			return nil, err
 		}
 	}
+	dropped := ""
 	if plan.mergedRef != "" {
 		_ = r.Step("branch", plan.mergedRef, func() (string, error) {
-			return laneBranchNote(asCodie, plan.main, plan.ghRepo, plan.mergedRef, plan.mergedHead), nil
+			note := laneBranchNote(asCodie, plan.main, plan.ghRepo, plan.mergedRef, plan.mergedHead)
+			if note == plan.mergedRef+" gone" {
+				dropped = note
+			}
+			return note, nil
 		})
 	}
 	again, err := landedPlanOf(r, args, flags)
@@ -1111,6 +1116,10 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 		return nil, err
 	}
 	after := again.(landedPlan)
+	// a branch that stays is the re-read's own red line; a gone one leaves no trace there, so it is named here
+	if dropped != "" {
+		after.Lines = append(after.Lines, landedLine{name: "branch", ok: true, detail: dropped}.String())
+	}
 	var red []landedLine
 	for _, line := range after.lines {
 		if !line.ok {

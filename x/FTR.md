@@ -333,7 +333,7 @@
   - given the main checkout itself
   - then it is refused as a usage error
 - ⬜ a lane's end leaves nothing behind (FRM-509)
-  - given `x lane merge-auto` merges a pr, then its clean tree and its local and remote `codie/*` or `coder/*` branch go in that run; a tree on it, a rebase or bisect stopped on it in another tree, an open pr based on it, or a commit past the merged head keeps the branch, named; `x lane landed <ticket> --pr <n> --apply` takes what the reason no longer holds
+  - given `x lane merge-auto` merges a pr, then its clean tree and its local and remote `codie/*` or `coder/*` branch go in that run; a tree on it, a rebase or bisect stopped on it in another tree, an open pr based on it, or a commit past the merged head keeps the branch, named; `x lane landed <ticket> --pr <n> --apply` takes what the reason no longer holds, its tree gone since or never there, through a delete leased on the read sha, never a force, and its lines name «branch — <ref> gone» (FRM-553)
   - given a `worktree-fork-*` tree, when `x lane decamp <path> --apply` runs, then its branch goes when main holds every commit, by ancestry or a squash, read commit by commit; else it stays, named. a tree holding a change, an ignored file or a `.scratch` file stays, on any branch; the seed's link does not count
   - given `x lane decamp --list-stale`, then each `worktree-*`, `codie/*` and `coder/*` branch prints with merged or not and its age; nothing is removed
   - given a quick lane mid-verify, then `x lane landed` names its verify tree as under review, and it stays

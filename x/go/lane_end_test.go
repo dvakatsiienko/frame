@@ -251,6 +251,79 @@ func TestLandedNamesWhatHoldsABranchItCannotTake(t *testing.T) {
 	}
 }
 
+// FRM-553 exit 3b: a branch the merge kept, its tree gone since or never there, is taken by landed alone
+func TestLandedApplyTakesAMergedBranchWithNoTree(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name string
+		keep func(t *testing.T, w *mergeWorld) (release func())
+	}{
+		{"its tree decamped after the merge", func(t *testing.T, w *mergeWorld) func() {
+			tree := w.treeOn(t, "codie/FRM-1-x")
+			write(t, filepath.Join(tree, "loose.txt"), "not committed\n")
+			return func() { gitT(t, w.clone, "worktree", "remove", "--force", tree) }
+		}},
+		{"never a tree", func(t *testing.T, w *mergeWorld) func() {
+			gitT(t, w.clone, "fetch", "-q", "origin", "codie/FRM-1-x:codie/FRM-1-x")
+			w.hub.pages[repoPath+"/pulls"] = `[{"number":9}]`
+			return func() { w.hub.pages[repoPath+"/pulls"] = `[]` }
+		}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			w.withPnpm(t, "exit 0")
+			w.laneBranch(t, "codie/FRM-1-x")
+			release := c.keep(t, w)
+			if got := w.run(t, "7", "--apply"); got.code != 0 || !w.onClone(t, "codie/FRM-1-x") {
+				t.Fatalf("exit %d: want the merge to keep the branch\n%s", got.code, got.stdout)
+			}
+			release()
+
+			got := w.landedAfterMerge(t, "--apply")
+
+			if w.onClone(t, "codie/FRM-1-x") || w.onOrigin(t, "codie/FRM-1-x") || !strings.Contains(got.stdout, "✅ branch — codie/FRM-1-x gone") {
+				t.Fatalf("exit %d, local %v, remote %v: want the branch gone and said so\n%s", got.code, w.onClone(t, "codie/FRM-1-x"), w.onOrigin(t, "codie/FRM-1-x"), got.stdout)
+			}
+		})
+	}
+}
+
+// FRM-553 exit 3b: a branch a tree holds, or one holding a commit the merge did not carry, stays and is named
+func TestLandedApplyKeepsAndNamesABranchItCannotTake(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, says string
+		hold       func(t *testing.T, w *mergeWorld)
+	}{
+		{"a tree holds it", "a tree holds it", func(t *testing.T, w *mergeWorld) {
+			write(t, filepath.Join(w.treeOn(t, "codie/FRM-1-x"), "loose.txt"), "not committed\n")
+		}},
+		{"an unmerged commit", "holds a commit the merge did not carry", func(t *testing.T, w *mergeWorld) {
+			gitT(t, w.clone, "fetch", "-q", "origin", "codie/FRM-1-x:codie/FRM-1-x")
+			extra := gitT(t, w.clone, "commit-tree", "-p", "codie/FRM-1-x", "-m", "after the merge", "codie/FRM-1-x^{tree}")
+			gitT(t, w.clone, "update-ref", "refs/heads/codie/FRM-1-x", extra)
+		}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			w.withPnpm(t, "exit 0")
+			w.laneBranch(t, "codie/FRM-1-x")
+			c.hold(t, w)
+			if got := w.run(t, "7", "--apply"); got.code != 0 || !w.onClone(t, "codie/FRM-1-x") {
+				t.Fatalf("exit %d: want the merge to keep the branch\n%s", got.code, got.stdout)
+			}
+
+			got := w.landedAfterMerge(t, "--apply")
+
+			if !w.onClone(t, "codie/FRM-1-x") || !strings.Contains(got.stdout, c.says) {
+				t.Fatalf("exit %d, local %v: want the branch kept and %q named\n%s", got.code, w.onClone(t, "codie/FRM-1-x"), c.says, got.stdout)
+			}
+		})
+	}
+}
+
 // x lane landed on the merged pr, with a linear that knows FRM-1
 func (w *mergeWorld) landedAfterMerge(t *testing.T, args ...string) ran {
 	t.Helper()
