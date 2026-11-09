@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T12:56:00Z'
+updated_date: '2026-11-09T13:08:00Z'
 labels:
   - m
   - clio-wing-2
@@ -25,6 +25,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #1 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
 - [ ] #2 PK-348 REVIEW.md: explore, set up the convention
 - [ ] #3 FRM-454 helga on Sonnet
+- [ ] #4 PK-362 steamac disk 256 → 192 gb: dima has clarifying questions, main's read is on the item
 <!-- AC:END -->
 
 ## Implementation Notes
