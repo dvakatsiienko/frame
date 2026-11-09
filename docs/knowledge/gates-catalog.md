@@ -33,6 +33,7 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 - **commit-msg-lint**: the message has our format
 - **lane-gate**: a product change comes with its docs (`x lane gate`)
 - **no-ci-skip-marker**: the message can't turn ci off by accident
+- **session-trailer**, **agent-trailer**: not gates, listed so the siesta's gates drift check finds every hook; they strip the session trailer and stamp the `Agent:` one, never refusing
 
 ## frame — when you push
 

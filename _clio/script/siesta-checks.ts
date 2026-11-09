@@ -26,6 +26,7 @@ function main(home: string, since: string) {
         ]),
         script(scripts, 'helper count', 'helper-count', ['--since', since]),
         auditCodie(home, since),
+        gatesDrift(home),
         retros(home),
     ];
     for (const s of sections)
@@ -113,6 +114,58 @@ function wishCover(home: string, scripts: string, since: string) {
                 ? `${unchecked} not checked`
                 : undefined,
     };
+}
+
+// a git hook in frame or bytes that the gates catalog never names: the page is the one list (FRM-530), fixed in place
+function gatesDrift(home: string) {
+    const name = 'gates drift';
+    const page = readText(
+        path.join(home, 'frame/docs/knowledge/gates-catalog.md'),
+    );
+    const named = new Set(
+        [...page.matchAll(/\*\*([a-z0-9-]+)\*\*/g)].map((m) => m[1]),
+    );
+    const hooks = ['frame', 'projects/bytes'].flatMap((repo) =>
+        hookNames(path.join(home, repo, 'lefthook.yaml')).map((hook) => ({
+            hook,
+            repo,
+        })),
+    );
+    if (!page || !hooks.length)
+        return { exit: 0, name, output: '', status: 'not checked' };
+    const missing = hooks.filter(({ hook }) => !named.has(hook));
+    return {
+        exit: missing.length ? 1 : 0,
+        name,
+        output: missing.length
+            ? missing
+                  .map(
+                      ({ hook, repo }) =>
+                          `🔴 ${repo} hook ${hook} is missing from docs/knowledge/gates-catalog.md`,
+                  )
+                  .join('\n')
+            : `${hooks.length} hook(s), every one on the page`,
+    };
+}
+
+// lefthook's two shapes: `commands:` keys (frame) and named `jobs:` entries (bytes)
+function hookNames(file: string): string[] {
+    if (!existsSync(file)) return [];
+    const out = spawnSync('yq', ['-o', 'json', '.', file], {
+        encoding: 'utf8',
+        timeout: RUN_TIMEOUT_MS,
+    });
+    return Object.values(parsed(out.stdout ?? '')).flatMap((stage) => {
+        if (!stage || typeof stage !== 'object') return [];
+        const { commands, jobs } = stage as {
+            commands?: Record<string, unknown>;
+            jobs?: { name?: string }[];
+        };
+        return [
+            ...Object.keys(commands ?? {}),
+            ...(jobs ?? []).flatMap((j) => (j.name ? [j.name] : [])),
+        ];
+    });
 }
 
 // an open orbit ask of clio's that names a pocket item already done: the board and the pocket disagree

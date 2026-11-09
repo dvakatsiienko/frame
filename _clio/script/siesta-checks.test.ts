@@ -35,7 +35,20 @@ function fixtureHome(exits: Partial<Record<string, number>> = {}) {
         `pid=1\nsession=${SID}\n`,
     );
     mkdirSync(join(home, 'frame/_clio/pocket/tasks'), { recursive: true });
+    gates(
+        home,
+        'pre-commit:\n  commands:\n    format:\n      run: true\n',
+        '- **format**: tidy\n',
+    );
     return home;
+}
+
+// a frame lefthook and a catalog page; bytes is left out unless a test plants it
+function gates(home: string, hooks: string, page: string, repo = 'frame') {
+    mkdirSync(join(home, repo), { recursive: true });
+    writeFileSync(join(home, repo, 'lefthook.yaml'), hooks);
+    mkdirSync(join(home, 'frame/docs/knowledge'), { recursive: true });
+    writeFileSync(join(home, 'frame/docs/knowledge/gates-catalog.md'), page);
 }
 
 function spec(
@@ -104,6 +117,7 @@ describe('siesta-checks', () => {
             '## blueprint drift',
             '## helper count',
             '## audit-codie',
+            '## gates drift',
             '## retros',
         ]);
         expect(heads.every((h) => h.endsWith('exit 0'))).toBe(true);
@@ -323,5 +337,29 @@ describe('siesta-checks', () => {
     test('a missing audit verb reads not checked, never red', () => {
         const out = section(run(fixtureHome()).stdout, 'audit-codie');
         expect(out).toMatch(/· not checked\n/);
+    });
+
+    test('gates drift names a hook the catalog page never names, in either repo shape', () => {
+        const home = fixtureHome();
+        gates(
+            home,
+            'pre-commit:\n  jobs:\n    - name: package-json-shape\n      run: true\n    - run: true\n',
+            '- **format**: tidy\n',
+            'projects/bytes',
+        );
+        const out = section(run(home).stdout, 'gates drift');
+        expect(out).toMatch(/· exit 1\n/);
+        expect(out).toContain(
+            'projects/bytes hook package-json-shape is missing',
+        );
+        expect(out).not.toContain('hook format');
+    });
+
+    test('gates drift with no catalog page reads not checked, never red', () => {
+        const home = fixtureHome();
+        writeFileSync(join(home, 'frame/docs/knowledge/gates-catalog.md'), '');
+        expect(section(run(home).stdout, 'gates drift')).toMatch(
+            /· not checked\n/,
+        );
     });
 });
