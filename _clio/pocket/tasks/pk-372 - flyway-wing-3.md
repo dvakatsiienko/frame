@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T17:44:00Z'
+updated_date: '2026-11-09T17:59:00Z'
 labels:
   - s
   - clio-wing-3
@@ -16,18 +16,10 @@ ordinal: 18999
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 PK-364 fleet comms update: research today's practice first, then the operator comms recipe, the hunts, one comms steer proposal
-- [x] #2 M3 weekly wish-loss audit, run 2 (the _reminders line): wish-cover over the week's first uses plus a blur read, beside PK-364
-- [ ] #3 speak v2 planning with dima once this flyway is solved, if he is not too tired (his o5, via main)
-- [x] #4 FRM-509 live read of the 11-07 lane: close or name the one step left, by 11-10 (from main)
-- [x] #5 x-mod-guard dima-ok-flag rule misreads a followed ask: fold as one ticket under 🐋 safer, quieter mods (from main, wing 1's o40)
-- [x] #6 PK-369 perf: can turbo remote cache or another cache reuse test results, against FRM-533's own key; a read, verdict line to wing 1 (from wing 1)
-- [x] #7 PK-366 linear: delete the «model» label group (his o19), the GLOSSARY label line with it; ⚠️ ask first (from wing 2)
-- [x] #8 crew-pm board redraw: re-check and re-stamp after the label cut and winged v2, via a helper card (yanked from wing 2 #6, dima o19)
-- [ ] #9 FRM-542 every seat's prompt log, wing 2 #10 folded in (yanked, dima o19)
-- [x] #10 FRM-550 decided-pattern read-back: a short grill, then build (dima 17:33)
-- [x] #11 herdr skills: x:herdr + x:herdr-customize built, x:rex rebuilt, verified, landed (from main 19:00, dima W67)
-- [ ] #12 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first (yanked from wing 2 #2, dima 19:43)
+- [ ] #1 speak v2 planning with dima, once this flyway is clear and if he is up (his o5, via main)
+- [ ] #2 FRM-542 every seat's prompt log: built and on main; it closes once main's first herdr boot reads its own seat and one wing prompt reaches helga, by 11-11
+- [ ] #3 PK-367 cut process: dima answers grill 1 (what stays, when the pass runs, where it lives), then the rename to clio:low-tide-cuts with its filter test
+- [ ] #4 M3 wish-loss audit: its run.sh leaves wing 3's scratch for a tracked home, seven names first, before the wing halts
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -42,4 +34,6 @@ ordinal: 18999
 19:28 #11 correction: wisphunter read the first drafts; hc keys and tsc probed by me; the 19:13 rewrite was read by wishkeeper (two siestas), not re-run against the clis
 
 19:30 #6 PK-369 moved to wing 1's flyway PK-346 (dima: «your flyway #6 is wing 1 property. move it»)
+
+2026-11-09 19:59 done, each checked in its store: PK-364 comms run (done); M3 audit run 2 (reminders line); FRM-509 read (its 19:26 comment, back to main); FRM-544 filed (Todo); PK-366 label group cut (done); crew-pm board v18; FRM-550 to main (clio-main); PK-369 to wing 1; herdr skills on origin/main
 <!-- SECTION:NOTES:END -->
