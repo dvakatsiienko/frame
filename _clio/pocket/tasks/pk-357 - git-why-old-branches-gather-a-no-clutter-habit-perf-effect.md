@@ -4,7 +4,7 @@ title: 'git: why old branches gather, a no-clutter habit, perf effect'
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T12:37:00Z'
+updated_date: '2026-11-09T12:38:00Z'
 labels:
   - s
   - clio-wing-1
@@ -32,4 +32,12 @@ raw drop (11-09 inbox, dima): when: after wing 1 solves its pending perf related
 raw drop (11-09 inbox, dima): what: i've run `gba` and discovered a lot of old branches. why they gathering? i want git branches clean. (do not delete them upfront. first i want to know why deleted, and proper habit for them to not clutter, then i delete).
 
 raw drop (11-09 inbox, dima): plus: does all these strays it affect perf?
+
+raw drop (2026-11-09 inbox, dima): **wing 1: git**
+
+raw drop (2026-11-09 inbox, dima): when: after wing 1 solves its pending perf related action items, when free, with me.
+
+raw drop (2026-11-09 inbox, dima): what: i've run `gba` and discovered a lot of old branches. why they gathering? i want git branches clean. (do not delete them upfront. first i want to know why deleted, and proper habit for them to not clutter, then i delete).
+
+raw drop (2026-11-09 inbox, dima): plus: does all these strays it affect perf?
 <!-- SECTION:NOTES:END -->
