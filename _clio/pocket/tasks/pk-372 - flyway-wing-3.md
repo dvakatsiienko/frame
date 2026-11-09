@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T18:48:00Z'
+updated_date: '2026-11-09T18:57:00Z'
 labels:
   - s
   - clio-wing-3
@@ -34,4 +34,8 @@ done 2026-11-09: PK-367 cut process, clio:low-tide-cuts on origin/main
 done 2026-11-09: FRM-542's close handed to main (PK-349, clio-main), speak v2 planning handed to wing 2 (PK-336), dima 20:29
 
 done 2026-11-09: the wish-loss audit folded into wish-cover --audit-week, on origin/main, the M3 reminder its caller
+
+closed 2026-11-09 20:57 by main: wing 3 halted 20:42 and archived 20:48, its flyway empty, every tail handed to main's PK-349
+
+reopened 20:57: a flyway never closes; it waits empty for the next wing 3
 <!-- SECTION:NOTES:END -->
