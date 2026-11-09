@@ -1253,7 +1253,7 @@ func TestMergeAutoAsksACleanOfARenovateWorkflowBump(t *testing.T) {
 	cases := []struct{ name, files, want string }{
 		{"a workflow file", `[{"filename":"pnpm-lock.yaml"},{"filename":".github/workflows/ci.yml"}]`, "it changes a workflow file, so a clean reads it: .github/workflows/ci.yml"},
 		{"a workflow file moved away", `[{"filename":"old/ci.yml","previous_filename":".github/workflows/ci.yml"}]`, "it changes a workflow file, so a clean reads it: .github/workflows/ci.yml"},
-		{"the files do not read", "", "its files did not read"},
+		{"the files do not read", "", "github answered 500 for repos/o/r/pulls/7/files"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -1263,8 +1263,6 @@ func TestMergeAutoAsksACleanOfARenovateWorkflowBump(t *testing.T) {
 			w.hub.mu.Lock()
 			w.hub.pages[repoPath+"/pulls/7/files"] = c.files
 			if c.files == "" {
-				// the risky step reads the same list next, and that read answers
-				w.hub.later = map[string]string{repoPath + "/pulls/7/files": `[{"filename":"pnpm-lock.yaml"}]`}
 				w.hub.pages[repoPath+"/pulls/7/files"] = serverDown
 			}
 			w.hub.mu.Unlock()

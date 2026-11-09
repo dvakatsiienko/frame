@@ -46,6 +46,8 @@ type mergeDecision struct {
 	Wait     string       `json:"wait,omitempty"`
 	Checks   []mergeCheck `json:"checks"`
 	Risky    []string     `json:"risky"`
+	Tier     string       `json:"tier,omitempty"`
+	Asks     []string     `json:"asks,omitempty"`
 	Merged   string       `json:"merged,omitempty"`
 	Sign     string       `json:"sign,omitempty"`
 	// set while operator-override prs is on: every check below hold and brake goes unread
@@ -87,7 +89,7 @@ type pullHead struct {
 }
 
 /* Verbs */
-func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
+func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 	off, _ := flags["override-off"].(bool)
 	shiftOnly, _ := flags["shift-only"].(bool)
 	check, _ := flags["override-check"].(bool)
@@ -160,6 +162,32 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	if grant, on := overrideOn(overrideScopePrs, ""); on {
 		override = &overrideUsed{Scope: overrideScopePrs, By: grant.By, At: grant.At, DevBuild: isDevBuild()}
 	}
+	// the tier reads before any refusal, so a dry run names its checks before a sign is asked; every refusal carries it
+	var paths []string
+	var pathsErr error
+	var tier prTier
+	var d *mergeDecision
+	defer func() {
+		if f, failed := errors.AsType[*Fail](err); failed && f.Data == nil {
+			f.Data = tier
+			if d != nil {
+				f.Data = d
+			}
+		}
+	}()
+	if err := r.Step("tier", "reading the checks the changed paths ask", func() (string, error) {
+		if paths, pathsErr = prPaths(api, n); pathsErr != nil {
+			if override != nil {
+				// the tier only names; a read that failed stops nothing under the override
+				return "the paths did not read: " + pathsErr.Error(), nil
+			}
+			return "", pathsErr
+		}
+		tier = tierOf(paths)
+		return tier.shown(), nil
+	}); err != nil {
+		return nil, err
+	}
 	if err := r.Step("pr", "reading the pr head", func() (string, error) {
 		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
 			return "", err
@@ -192,7 +220,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body, headRef: pr.Head.Ref, signs: map[string]chunkSign{}, dimaOK: word != ""}
+	d = &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, Tier: tier.Tier, Asks: tier.Asks, title: pr.Title, body: pr.Body, headRef: pr.Head.Ref, signs: map[string]chunkSign{}, dimaOK: word != ""}
 	if override != nil {
 		d.Override, d.Sign = override, override.named()
 	}
@@ -239,8 +267,11 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	if d.Override != nil {
 		r.skip("sixth-sense", "ci", "mergeable", "deploy", "main-ci", "round", "threads")
 	} else {
-		if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
-			sixthSense = d.sixthSenseOf(api, repo, n, pr)
+		if !slices.Contains(tier.Asks, "sixth-sense") {
+			r.skip("sixth-sense")
+			sixthSense = mergeCheck{Name: "sixth-sense", OK: true, Detail: "light: no sixth sense asked"}
+		} else if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
+			sixthSense = d.sixthSenseOf(api, repo, n, pr, paths)
 			return sixthSense.shown()
 		}); err != nil {
 			return nil, err
@@ -309,10 +340,14 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		if roundGated(repo) {
 			d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, mainCI, round, threads}
 		}
+		if !slices.Contains(tier.Asks, "sixth-sense") {
+			d.Checks = d.Checks[1:]
+		}
 	}
 	selfWait := ""
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
-		own, ownSelf, err := riskyPaths(api, n)
+		own, ownSelf := riskyOf(paths)
+		err := pathsErr
 		if d.Override != nil {
 			// the list only names; a read that failed stops nothing under the override
 			if err != nil {
@@ -393,7 +428,11 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 		return "", err
 	}
 	d.heads[n] = pr.Head.Sha
-	sixthSense := d.sixthSenseOf(api, repo, n, pr)
+	paths, err := prPaths(api, n)
+	if err != nil {
+		return "", err
+	}
+	sixthSense := d.sixthSenseOf(api, repo, n, pr, paths)
 	ci, err := ciCheck(api, trunk, pr.Head.Sha)
 	if err != nil {
 		return "", err
@@ -411,10 +450,7 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	risky, ownSelf, err := riskyPaths(api, n)
-	if err != nil {
-		return "", err
-	}
+	risky, ownSelf := riskyOf(paths)
 	for _, path := range risky {
 		d.Risky = append(d.Risky, "#"+n+" "+path)
 	}
@@ -805,8 +841,9 @@ func (d *mergeDecision) summary() string {
 //go:embed risky.json
 var riskyJSON []byte
 
-var riskyList = func() (list struct{ Risky, Self []*regexp.Regexp }) {
-	var raw struct{ Risky, Self []string }
+// light's `!` globs carve code out of it: an asset dir's script is never light
+var riskyList = func() (list struct{ Risky, Self, Light, LightNot, Memory []*regexp.Regexp }) {
+	var raw struct{ Risky, Self, Light, Memory []string }
 	if err := json.Unmarshal(riskyJSON, &raw); err != nil {
 		panic("risky.json: " + err.Error())
 	}
@@ -816,7 +853,16 @@ var riskyList = func() (list struct{ Risky, Self []*regexp.Regexp }) {
 		}
 		return out
 	}
-	list.Risky, list.Self = compile(raw.Risky), compile(raw.Self)
+	var light, lightNot []string
+	for _, g := range raw.Light {
+		if not, ok := strings.CutPrefix(g, "!"); ok {
+			lightNot = append(lightNot, not)
+		} else {
+			light = append(light, g)
+		}
+	}
+	list.Risky, list.Self, list.Memory = compile(raw.Risky), compile(raw.Self), compile(raw.Memory)
+	list.Light, list.LightNot = compile(light), compile(lightNot)
 	return list
 }()
 
@@ -847,32 +893,83 @@ func matchesAny(path string, globs []*regexp.Regexp) bool {
 	return slices.ContainsFunc(globs, func(g *regexp.Regexp) bool { return g.MatchString(path) })
 }
 
-// a rename's old name counts: a file moved out of a risky dir is still a change to it
-func riskyPaths(api, n string) (risky, self []string, err error) {
+// every path a pr changes, a rename's old name included: a file moved out of a risky dir is still a change to it
+func prPaths(api, n string) ([]string, error) {
 	type file struct {
 		Filename         string `json:"filename"`
 		PreviousFilename string `json:"previous_filename"`
 	}
 	files, err := ghPages[file](asDima, api+"/pulls/"+n+"/files", "")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	risky = []string{}
+	var paths []string
 	for _, f := range files {
 		for _, path := range []string{f.PreviousFilename, f.Filename} {
-			if path == "" || slices.Contains(risky, path) {
-				continue
-			}
-			isSelf := matchesAny(path, riskyList.Self)
-			if isSelf {
-				self = append(self, path)
-			}
-			if isSelf || matchesAny(path, riskyList.Risky) {
-				risky = append(risky, path)
+			if path != "" && !slices.Contains(paths, path) {
+				paths = append(paths, path)
 			}
 		}
 	}
-	return risky, self, nil
+	return paths, nil
+}
+
+func riskyOf(paths []string) (risky, self []string) {
+	risky = []string{}
+	for _, path := range paths {
+		isSelf := matchesAny(path, riskyList.Self)
+		if isSelf {
+			self = append(self, path)
+		}
+		if isSelf || matchesAny(path, riskyList.Risky) {
+			risky = append(risky, path)
+		}
+	}
+	return risky, self
+}
+
+// the checks a pr's paths ask, the union over every path, never one tier's: a risky path asks the security pass, a
+// memory path clio's wishkeeper read, and only an all-light pr drops its sixth sense; the tier is the highest, for the
+// card. read off the final diff, so a pr grown past light asks the clean it needs today (FRM-548)
+type prTier struct {
+	Tier string   `json:"tier"`
+	Asks []string `json:"asks"`
+}
+
+func tierOf(paths []string) prTier {
+	risky, memory, light := false, false, len(paths) > 0
+	for _, path := range paths {
+		isRisky := matchesAny(path, riskyList.Risky) || matchesAny(path, riskyList.Self)
+		isMemory := matchesAny(path, riskyList.Memory)
+		risky, memory = risky || isRisky, memory || isMemory
+		light = light && !isRisky && !isMemory && matchesAny(path, riskyList.Light) && !matchesAny(path, riskyList.LightNot)
+	}
+	t := prTier{Tier: "normal", Asks: []string{}}
+	if !light {
+		t.Asks = append(t.Asks, "sixth-sense")
+	}
+	if risky {
+		t.Asks = append(t.Asks, "security")
+	}
+	if memory {
+		t.Asks = append(t.Asks, "wishkeeper")
+	}
+	switch {
+	case risky:
+		t.Tier = "risky"
+	case memory:
+		t.Tier = "memory"
+	case light:
+		t.Tier = "light"
+	}
+	return t
+}
+
+func (t prTier) shown() string {
+	if len(t.Asks) == 0 {
+		return t.Tier + ": no sixth sense, the round only"
+	}
+	return t.Tier + ": asks " + strings.Join(t.Asks, ", ")
 }
 
 /* The brake */
@@ -1063,7 +1160,7 @@ func renovateAuthor(login string) bool {
 // a renovate pr needs no clean while every commit is renovate's own, signed by github: a member's push onto its branch
 // makes it a member's pr; an unread list, or one cut short of the head (github
 // stops at 250, a push can land between reads), counts as that push; a changed workflow file asks the clean too
-func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeCheck {
+func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead, paths []string) mergeCheck {
 	c := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
 	if c.OK || !renovateAuthor(pr.User.Login) {
 		return c
@@ -1095,22 +1192,11 @@ func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeChec
 		c.Detail += "; its commit list does not end at the head"
 		return c
 	}
-	type file struct {
-		Filename         string `json:"filename"`
-		PreviousFilename string `json:"previous_filename"`
-	}
-	files, err := ghPages[file](asDima, api+"/pulls/"+n+"/files", "")
-	if err != nil {
-		c.Detail += "; its files did not read: " + err.Error()
-		return c
-	}
-	for _, f := range files {
-		for _, path := range []string{f.PreviousFilename, f.Filename} {
-			// a bumped action runs with the repo's secrets, and ci running it proves nothing about what it took
-			if strings.HasPrefix(path, ".github/workflows/") {
-				c.Detail += "; it changes a workflow file, so a clean reads it: " + path
-				return c
-			}
+	for _, path := range paths {
+		// a bumped action runs with the repo's secrets, and ci running it proves nothing about what it took
+		if strings.HasPrefix(path, ".github/workflows/") {
+			c.Detail += "; it changes a workflow file, so a clean reads it: " + path
+			return c
 		}
 	}
 	c.OK, c.Detail, c.renovateExempt = true, "renovate's own commits, ci is their review", true
