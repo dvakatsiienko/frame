@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T15:49:00Z'
+updated_date: '2026-11-09T15:51:00Z'
 labels:
   - m
   - clio-main
@@ -186,4 +186,6 @@ PK-363:W33 (2026-11-09 17:43, dima): zoo's chat and terminal must stay in sync b
 PK-363:W34 (2026-11-09 17:48, dima, in the herdr codie's pane): images paste with cmd+v but not by drag and drop; wish: drag-and-drop images in the chatter
 
 probe 1 result (17:48, codie relay): the ps fix is live, proven by dima: the Chat tab shows the whole history, a chat-box message lands in the chat, a cmd+v image arrives as text+image. dnd door: gpui-kit on_drop gives file paths (gpui-kit.d.ts:782), append each image path to the message
+
+probe 2 (17:51, gate codie, ~18 min): mods/fleet-board draws live, read-only: 2 glide cards from ~/.claude/shelf/lanes.json, 10 sessions from ~/.claude/sessions/*.json with model + ctx %, open orbit ask texts from the stash store. not on disk: phases, an ask's id/pick/state, the band. ticks: none yet, cost in the codie's reply to dima
 <!-- SECTION:NOTES:END -->
