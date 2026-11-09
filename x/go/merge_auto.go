@@ -46,6 +46,8 @@ type mergeDecision struct {
 	Wait     string       `json:"wait,omitempty"`
 	Checks   []mergeCheck `json:"checks"`
 	Risky    []string     `json:"risky"`
+	Tier     string       `json:"tier,omitempty"`
+	Asks     []string     `json:"asks,omitempty"`
 	Merged   string       `json:"merged,omitempty"`
 	Sign     string       `json:"sign,omitempty"`
 	// set while operator-override prs is on: every check below hold and brake goes unread
@@ -87,7 +89,7 @@ type pullHead struct {
 }
 
 /* Verbs */
-func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
+func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 	off, _ := flags["override-off"].(bool)
 	shiftOnly, _ := flags["shift-only"].(bool)
 	check, _ := flags["override-check"].(bool)
@@ -160,9 +162,40 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	if grant, on := overrideOn(overrideScopePrs, ""); on {
 		override = &overrideUsed{Scope: overrideScopePrs, By: grant.By, At: grant.At, DevBuild: isDevBuild()}
 	}
+	// the tier reads before any refusal, so a dry run names its checks before a sign is asked; every refusal carries it
+	var paths []string
+	var pathsErr error
+	var tier prTier
+	var d *mergeDecision
+	defer func() {
+		if f, failed := errors.AsType[*Fail](err); failed && f.Data == nil {
+			f.Data = tier
+			if d != nil {
+				f.Data = d
+			}
+		}
+	}()
+	// the pr is read first and its paths after, so they are its head's or a later push's, never an older one's; a push past
+	// the read leaves the merge pinned to the read head, which github refuses
+	if err := r.Step("tier", "reading the checks the changed paths ask", func() (string, error) {
+		if paths, pathsErr = headAndPaths(api, n, &pr); pathsErr != nil {
+			if override != nil {
+				// the tier only names; a read that failed stops nothing under the override
+				return "the paths did not read: " + pathsErr.Error(), nil
+			}
+			return "", pathsErr
+		}
+		tier = tierOf(paths)
+		return tier.shown(), nil
+	}); err != nil {
+		return nil, err
+	}
 	if err := r.Step("pr", "reading the pr head", func() (string, error) {
-		if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
-			return "", err
+		// read in the tier step, unless that read failed under the override
+		if pr.Head.Sha == "" {
+			if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
+				return "", err
+			}
 		}
 		state := pr.State
 		if pr.Merged {
@@ -192,7 +225,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	d := &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, title: pr.Title, body: pr.Body, headRef: pr.Head.Ref, signs: map[string]chunkSign{}, dimaOK: word != ""}
+	d = &mergeDecision{Repo: repo, PR: n, Head: pr.Head.Sha, Risky: []string{}, Tier: tier.Tier, Asks: tier.Asks, title: pr.Title, body: pr.Body, headRef: pr.Head.Ref, signs: map[string]chunkSign{}, dimaOK: word != ""}
 	if override != nil {
 		d.Override, d.Sign = override, override.named()
 	}
@@ -235,13 +268,37 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 
-	var sixthSense, ci, round, mergeable, deploy, threads mergeCheck
+	var sixthSense, security, wishkeeper, ci, round, mergeable, deploy, mainCI, threads mergeCheck
 	if d.Override != nil {
-		r.skip("sixth-sense", "ci", "mergeable", "deploy", "round", "threads")
+		r.skip("sixth-sense", "security", "wishkeeper", "ci", "mergeable", "deploy", "main-ci", "round", "threads")
 	} else {
-		if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
-			sixthSense = d.sixthSenseOf(api, repo, n, pr)
+		if !slices.Contains(tier.Asks, "sixth-sense") {
+			r.skip("sixth-sense")
+			sixthSense = mergeCheck{Name: "sixth-sense", OK: true, Detail: "light: no sixth sense asked"}
+		} else if err := r.Step("sixth-sense", "reading sixth sense's clean", func() (string, error) {
+			sixthSense = d.sixthSenseOf(api, repo, n, pr, paths)
 			return sixthSense.shown()
+		}); err != nil {
+			return nil, err
+		}
+		security = mergeCheck{Name: "security", OK: true, Detail: "no risky path: no security pass asked"}
+		if !slices.Contains(tier.Asks, "security") {
+			r.skip("security")
+		} else if err := r.Step("security", "reading the security pass on the risky paths", func() (string, error) {
+			security = securityCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+			return security.shown()
+		}); err != nil {
+			return nil, err
+		}
+		wishkeeper = mergeCheck{Name: "wishkeeper", OK: true, Detail: "no memory path: no wishkeeper read asked"}
+		if !slices.Contains(tier.Asks, "wishkeeper") {
+			r.skip("wishkeeper")
+		} else if err := r.Step("wishkeeper", "reading clio's wishkeeper read on the memory paths", func() (string, error) {
+			var err error
+			if wishkeeper, err = wishkeeperCheck(api, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref, paths); err != nil {
+				return "", err
+			}
+			return wishkeeper.shown()
 		}); err != nil {
 			return nil, err
 		}
@@ -278,6 +335,15 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}); err != nil {
 			return nil, err
 		}
+		if err := r.Step("main-ci", "reading main's ci and deploy runs", func() (string, error) {
+			var err error
+			if mainCI, err = mainRunsCheck(api, deployGated(repo)); err != nil {
+				return "", err
+			}
+			return mainCI.shown()
+		}); err != nil {
+			return nil, err
+		}
 		if err := r.Step("round", "reading the reviewer's round on the branch", func() (string, error) {
 			var err error
 			if round, err = roundCheck(api, repo, n, pr.Base.Ref, pr.Head.Ref, pr.Head.Sha, pr.User.Login, d.dimaOK); err != nil {
@@ -296,14 +362,24 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		}); err != nil {
 			return nil, err
 		}
-		d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, threads}
+		d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, mainCI, threads}
 		if roundGated(repo) {
-			d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, round, threads}
+			d.Checks = []mergeCheck{sixthSense, ci, mergeable, deploy, mainCI, round, threads}
+		}
+		if !slices.Contains(tier.Asks, "sixth-sense") {
+			d.Checks = d.Checks[1:]
+		}
+		if slices.Contains(tier.Asks, "security") {
+			d.Checks = append(d.Checks, security)
+		}
+		if slices.Contains(tier.Asks, "wishkeeper") {
+			d.Checks = append(d.Checks, wishkeeper)
 		}
 	}
 	selfWait := ""
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
-		own, ownSelf, err := riskyPaths(api, n)
+		own, ownSelf := riskyOf(paths)
+		err := pathsErr
 		if d.Override != nil {
 			// the list only names; a read that failed stops nothing under the override
 			if err != nil {
@@ -351,7 +427,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (any, error) {
 		d.Decision = "merge"
 		return d, nil
 	}
-	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, round, ci, mergeable, deploy, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, security, wishkeeper, round, ci, mergeable, deploy, mainCI, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -380,11 +456,12 @@ func decide(brake, selfWait string, checks ...mergeCheck) (decision, wait string
 // why a layer under the merged pr holds the merge, as the same gate reads it; "" when it passes
 func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	var pr pullHead
-	if _, err := ghFetch(asDima, api+"/pulls/"+n, &pr); err != nil {
+	paths, err := headAndPaths(api, n, &pr)
+	if err != nil {
 		return "", err
 	}
 	d.heads[n] = pr.Head.Sha
-	sixthSense := d.sixthSenseOf(api, repo, n, pr)
+	sixthSense := d.sixthSenseOf(api, repo, n, pr, paths)
 	ci, err := ciCheck(api, trunk, pr.Head.Sha)
 	if err != nil {
 		return "", err
@@ -402,10 +479,7 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	risky, ownSelf, err := riskyPaths(api, n)
-	if err != nil {
-		return "", err
-	}
+	risky, ownSelf := riskyOf(paths)
 	for _, path := range risky {
 		d.Risky = append(d.Risky, "#"+n+" "+path)
 	}
@@ -413,13 +487,25 @@ func layerWait(repo, api, trunk, n string, d *mergeDecision) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// a layer lands with the stack, so its own paths ask their checks; its sixth sense stays, as a layer's always did
+	tier := tierOf(paths)
+	security := mergeCheck{Name: "security", OK: true}
+	if slices.Contains(tier.Asks, "security") {
+		security = securityCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
+	}
+	wishkeeper := mergeCheck{Name: "wishkeeper", OK: true}
+	if slices.Contains(tier.Asks, "wishkeeper") {
+		if wishkeeper, err = wishkeeperCheck(api, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref, paths); err != nil {
+			return "", err
+		}
+	}
 	layer := "#" + n + " (" + pr.Head.Ref + ")"
 	// main's deploy is the merged pr's own check, read once for the whole stack
-	decision, wait := decide("", selfWait, sixthSense, round, ci, mergeable, threads)
+	decision, wait := decide("", selfWait, sixthSense, security, wishkeeper, round, ci, mergeable, threads)
 	if decision == "merge" {
 		return "", nil
 	}
-	for _, c := range []mergeCheck{sixthSense, ci, round, mergeable, threads} {
+	for _, c := range []mergeCheck{sixthSense, security, wishkeeper, ci, round, mergeable, threads} {
 		if !c.OK && c.Detail == wait {
 			wait = c.Name + ": " + wait
 		}
@@ -796,18 +882,25 @@ func (d *mergeDecision) summary() string {
 //go:embed risky.json
 var riskyJSON []byte
 
-var riskyList = func() (list struct{ Risky, Self []*regexp.Regexp }) {
-	var raw struct{ Risky, Self []string }
+// light is an allow-list: research and test-drive markdown, and media under assets and brand, so a code file of any
+// extension there reads normal
+var riskyList = func() (list struct{ Risky, Self, Light, Memory []*regexp.Regexp }) {
+	var raw struct{ Risky, Self, Light, Memory []string }
 	if err := json.Unmarshal(riskyJSON, &raw); err != nil {
 		panic("risky.json: " + err.Error())
 	}
-	compile := func(globs []string) (out []*regexp.Regexp) {
+	compile := func(globs []string, fold bool) (out []*regexp.Regexp) {
 		for _, g := range globs {
-			out = append(out, globRegexp(g))
+			re := globRegexp(g)
+			if fold {
+				re = regexp.MustCompile("(?i)" + re.String())
+			}
+			out = append(out, re)
 		}
 		return out
 	}
-	list.Risky, list.Self = compile(raw.Risky), compile(raw.Self)
+	// the mac's filesystem folds case, so a `claude.md` loads as memory: the gated lists fold, the light allow-list stays exact
+	list.Risky, list.Self, list.Light, list.Memory = compile(raw.Risky, true), compile(raw.Self, true), compile(raw.Light, false), compile(raw.Memory, true)
 	return list
 }()
 
@@ -838,32 +931,107 @@ func matchesAny(path string, globs []*regexp.Regexp) bool {
 	return slices.ContainsFunc(globs, func(g *regexp.Regexp) bool { return g.MatchString(path) })
 }
 
-// a rename's old name counts: a file moved out of a risky dir is still a change to it
-func riskyPaths(api, n string) (risky, self []string, err error) {
+// the pr's head and the paths it changes, read again after the paths: a push between the two reads would tier one head
+// and merge another, so a moved head refuses
+func headAndPaths(api, n string, pr *pullHead) ([]string, error) {
+	if _, err := ghFetch(asDima, api+"/pulls/"+n, pr); err != nil {
+		return nil, err
+	}
+	paths, err := prPaths(api, n)
+	if err != nil {
+		return nil, err
+	}
+	var again pullHead
+	if _, err := ghFetch(asDima, api+"/pulls/"+n, &again); err != nil {
+		return nil, err
+	}
+	if again.Head.Sha != pr.Head.Sha {
+		return nil, &Fail{Refused: true, Msg: fmt.Sprintf("#%s's head moved while its paths were read, %s → %s: the tier would name one head and the merge another", n, short(pr.Head.Sha), short(again.Head.Sha)), Next: "x lane merge-auto " + n}
+	}
+	return paths, nil
+}
+
+// every path a pr changes, a rename's old name included: a file moved out of a risky dir is still a change to it
+func prPaths(api, n string) ([]string, error) {
 	type file struct {
 		Filename         string `json:"filename"`
 		PreviousFilename string `json:"previous_filename"`
 	}
 	files, err := ghPages[file](asDima, api+"/pulls/"+n+"/files", "")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	risky = []string{}
+	// github lists at most 3000 files and never says it cut: a full list may hide a risky path
+	if len(files) >= 3000 {
+		return nil, fmt.Errorf("pr %s changes %d files, github's whole 3000-file list, so its tier is unreadable: split the pr", n, len(files))
+	}
+	var paths []string
 	for _, f := range files {
 		for _, path := range []string{f.PreviousFilename, f.Filename} {
-			if path == "" || slices.Contains(risky, path) {
-				continue
-			}
-			isSelf := matchesAny(path, riskyList.Self)
-			if isSelf {
-				self = append(self, path)
-			}
-			if isSelf || matchesAny(path, riskyList.Risky) {
-				risky = append(risky, path)
+			if path != "" && !slices.Contains(paths, path) {
+				paths = append(paths, path)
 			}
 		}
 	}
-	return risky, self, nil
+	return paths, nil
+}
+
+func riskyOf(paths []string) (risky, self []string) {
+	risky = []string{}
+	for _, path := range paths {
+		isSelf := matchesAny(path, riskyList.Self)
+		if isSelf {
+			self = append(self, path)
+		}
+		if isSelf || matchesAny(path, riskyList.Risky) {
+			risky = append(risky, path)
+		}
+	}
+	return risky, self
+}
+
+// the checks a pr's paths ask, the union over every path, never one tier's: a risky path asks the security pass, a
+// memory path clio's wishkeeper read, and only an all-light pr drops its sixth sense; the tier is the highest, for the
+// card. read off the final diff, so a pr grown past light asks the clean it needs today (FRM-548)
+type prTier struct {
+	Tier string   `json:"tier"`
+	Asks []string `json:"asks"`
+}
+
+func tierOf(paths []string) prTier {
+	risky, memory, light := false, false, len(paths) > 0
+	for _, path := range paths {
+		isRisky := matchesAny(path, riskyList.Risky) || matchesAny(path, riskyList.Self)
+		isMemory := matchesAny(path, riskyList.Memory)
+		risky, memory = risky || isRisky, memory || isMemory
+		light = light && !isRisky && !isMemory && matchesAny(path, riskyList.Light)
+	}
+	t := prTier{Tier: "normal", Asks: []string{}}
+	if !light {
+		t.Asks = append(t.Asks, "sixth-sense")
+	}
+	if risky {
+		t.Asks = append(t.Asks, "security")
+	}
+	if memory {
+		t.Asks = append(t.Asks, "wishkeeper")
+	}
+	switch {
+	case risky:
+		t.Tier = "risky"
+	case memory:
+		t.Tier = "memory"
+	case light:
+		t.Tier = "light"
+	}
+	return t
+}
+
+func (t prTier) shown() string {
+	if len(t.Asks) == 0 {
+		return t.Tier + ": no sixth sense, the round only"
+	}
+	return t.Tier + ": asks " + strings.Join(t.Asks, ", ")
 }
 
 /* The brake */
@@ -1054,7 +1222,7 @@ func renovateAuthor(login string) bool {
 // a renovate pr needs no clean while every commit is renovate's own, signed by github: a member's push onto its branch
 // makes it a member's pr; an unread list, or one cut short of the head (github
 // stops at 250, a push can land between reads), counts as that push; a changed workflow file asks the clean too
-func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeCheck {
+func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead, paths []string) mergeCheck {
 	c := d.wordOpens(pr, sixthSenseCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref))
 	if c.OK || !renovateAuthor(pr.User.Login) {
 		return c
@@ -1086,22 +1254,11 @@ func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeChec
 		c.Detail += "; its commit list does not end at the head"
 		return c
 	}
-	type file struct {
-		Filename         string `json:"filename"`
-		PreviousFilename string `json:"previous_filename"`
-	}
-	files, err := ghPages[file](asDima, api+"/pulls/"+n+"/files", "")
-	if err != nil {
-		c.Detail += "; its files did not read: " + err.Error()
-		return c
-	}
-	for _, f := range files {
-		for _, path := range []string{f.PreviousFilename, f.Filename} {
-			// a bumped action runs with the repo's secrets, and ci running it proves nothing about what it took
-			if strings.HasPrefix(path, ".github/workflows/") {
-				c.Detail += "; it changes a workflow file, so a clean reads it: " + path
-				return c
-			}
+	for _, path := range paths {
+		// a bumped action runs with the repo's secrets, and ci running it proves nothing about what it took
+		if strings.HasPrefix(path, ".github/workflows/") {
+			c.Detail += "; it changes a workflow file, so a clean reads it: " + path
+			return c
 		}
 	}
 	c.OK, c.Detail, c.renovateExempt = true, "renovate's own commits, ci is their review", true
@@ -1110,18 +1267,26 @@ func (d *mergeDecision) sixthSenseOf(api, repo, n string, pr pullHead) mergeChec
 
 // a «clean» in a pr comment or body is never read: only sixth sense and a stamp through watch-pr.sh write this store; a
 // sibling `<repo>#<n>:by` key names a verifier other than sixth sense, and the gate treats both alike, only the detail differs
-func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
-	c := mergeCheck{Name: "sixth-sense"}
+// the store sixth sense and the coordinator's stamp write, through watch-pr.sh --verified only
+func verifiedStore() (store map[string]string, path string, missing bool) {
 	home, _ := os.UserHomeDir()
-	path := filepath.Join(home, ".claude/shelf/pr-verified.json")
+	path = filepath.Join(home, ".claude/shelf/pr-verified.json")
 	if mergeTestEnvOn() {
 		path = cmp.Or(os.Getenv("X_VERIFIED"), path)
 	}
 	raw, err := os.ReadFile(path)
-	var store map[string]string
 	if err != nil || json.Unmarshal(raw, &store) != nil {
+		return nil, path, errors.Is(err, fs.ErrNotExist)
+	}
+	return store, path, false
+}
+
+func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
+	c := mergeCheck{Name: "sixth-sense"}
+	store, path, missing := verifiedStore()
+	if store == nil {
 		c.Detail = "no sixth sense store at " + path
-		c.noClean = errors.Is(err, fs.ErrNotExist)
+		c.noClean = missing
 		return c
 	}
 	verified := store[repo+"#"+n]
@@ -1139,6 +1304,91 @@ func sixthSenseCheck(repo, n, head, base, ref string) mergeCheck {
 		c.OK, c.Detail = carried(verified, by, head, base, ref)
 	}
 	return c
+}
+
+// a risky path's one /security-review, run by codie before sixth sense's first round and recorded by sixth sense's stamp
+// beside the clean; it carries to a new head by the clean's own rule (FRM-548)
+func securityCheck(repo, n, head, base, ref string) mergeCheck {
+	c := mergeCheck{Name: "security"}
+	stamp := "~/frame/_clio/.claude/hooks/watch-pr.sh --verified " + repo + " " + n + " " + head + " --security <sha>"
+	store, path, _ := verifiedStore()
+	passed := store[repo+"#"+n+":security"]
+	switch {
+	case store == nil:
+		c.Detail = "no sixth sense store at " + path
+	case passed == "":
+		c.Detail = "no security pass recorded for " + repo + "#" + n + ": a risky path asks codie's /security-review before sixth sense's first round, then its stamp: " + stamp
+	case passed == head:
+		c.OK, c.Detail = true, "security pass on "+short(head)
+	// one pass a risky pr, never rerun (dima, grill 2 Q6): a pass on the head's history holds after a later push
+	case ok(gitIn("", "fetch", "-q", "origin", "refs/heads/"+ref)) && ok(gitIn("", "merge-base", "--is-ancestor", passed, head)):
+		c.OK, c.Detail = true, "security pass on "+short(passed)+", on the history of "+short(head)
+	default:
+		if c.OK, c.Detail = carried(passed, "the security pass", head, base, ref); !c.OK {
+			c.Detail += "; a new pass and its stamp: " + stamp
+		}
+	}
+	return c
+}
+
+// clio's app posts the read; a person could name an account like it, but never make it a Bot
+const clioApp = "x-clio-cc[bot]"
+
+var wishkeeperRead = regexp.MustCompile(`^wishkeeper read ([0-9a-f]{7,40})\b`)
+
+// a memory path's wishkeeper read, clio's before the merge: one pr comment from her app naming the sha it read, which
+// reaches the head as a round does, by its history or a rebase that kept the code; no other author counts (FRM-548)
+func wishkeeperCheck(api, n, head, base, ref string, paths []string) (mergeCheck, error) {
+	c := mergeCheck{Name: "wishkeeper"}
+	type note struct {
+		User struct {
+			Login string `json:"login"`
+			Type  string `json:"type"`
+		} `json:"user"`
+		Body string `json:"body"`
+	}
+	notes, err := ghPages[note](asDima, api+"/issues/"+n+"/comments", "")
+	if err != nil {
+		return c, err
+	}
+	if got, _ := gitIn("", "fetch", "-q", "origin", "refs/heads/"+ref); !got.ok {
+		c.Detail = "git could not fetch " + ref + " to read the wishkeeper read's history: " + logLine(got.log)
+		return c, nil
+	}
+	for _, nt := range notes {
+		read := wishkeeperRead.FindStringSubmatch(nt.Body)
+		if nt.User.Login != clioApp || nt.User.Type != "Bot" || read == nil {
+			continue
+		}
+		if !roundReaches(read[1], head, base, ref) {
+			continue
+		}
+		// a read vouches only for the memory it saw: a memory path of the pr changed after it is unread (steer 20:32); a read
+		// a rebase carried saw the same change, and a memory file only main changed is not the pr's
+		// no rename folding: a memory file moved off its path still names its old one; a diff git could not read vouches nothing
+		if ok(gitIn("", "merge-base", "--is-ancestor", read[1], head)) {
+			// -z: a path with a space or a non-ascii byte comes whole and unquoted, as github names it
+			changed, _ := gitIn("", "diff", "-z", "--name-only", "--no-renames", read[1], head)
+			if !changed.ok {
+				c.Detail = "git could not diff clio's wishkeeper read on " + short(read[1]) + " against " + short(head) + ": " + logLine(changed.log)
+				continue
+			}
+			names := strings.Split(strings.Trim(changed.out, "\x00"), "\x00")
+			if edited := slices.IndexFunc(names, func(p string) bool {
+				return slices.Contains(paths, p) && matchesAny(p, riskyList.Memory)
+			}); edited >= 0 {
+				c.Detail = "clio's wishkeeper read on " + short(read[1]) + " is older than a memory edit, " + names[edited] + ": a new read reaches " + short(head)
+				continue
+			}
+		}
+		c.OK, c.Detail = true, "clio's wishkeeper read on "+short(read[1])
+		return c, nil
+	}
+	if c.Detail != "" {
+		return c, nil
+	}
+	c.Detail = "no wishkeeper read reaches " + short(head) + ": a memory path asks clio's, posted as " + clioApp + ": «wishkeeper read <sha>: <n> findings»"
+	return c, nil
 }
 
 // the whole branch change is compared, merges included: per-commit patch-ids let an edit inside a merge slip
@@ -1363,15 +1613,72 @@ func deployCheck(api, repo, trunk string) (mergeCheck, error) {
 	return c, nil
 }
 
+// main's own ci and deploy runs, newest first: a red ci on main holds every merge onto it, and in a repo that deploys
+// a ci or deploy still queued or running holds it too, for door 1's deploy read sees only the older green one then.
+// one read, the wait a pr's own pending ci gets, no poll (dima o53). a run is named by its run-name («deploy <sha>»),
+// so its workflow file is what tells ci from deploy
+func mainRunsCheck(api string, deploys bool) (mergeCheck, error) {
+	c := mergeCheck{Name: "main-ci"}
+	type run struct {
+		ID         int64  `json:"id"`
+		HeadSha    string `json:"head_sha"`
+		Status     string `json:"status"`
+		Conclusion string `json:"conclusion"`
+		Event      string `json:"event"`
+	}
+	// each workflow read on its own, so another workflow's runs can never push ci's out of the page; branch=main also
+	// matches a fork's pr from a branch it named main, so only main's own events count: ci's push, and deploy's
+	// workflow_run (it starts off ci's finished run), push or dispatch
+	runsOf := func(workflow, query string, events ...string) ([]run, error) {
+		var answer struct {
+			Runs []run `json:"workflow_runs"`
+		}
+		_, err := ghFetch(asDima, api+"/actions/workflows/"+workflow+"/runs?branch=main"+query+"&per_page=5", &answer)
+		return slices.DeleteFunc(answer.Runs, func(r run) bool { return !slices.Contains(events, r.Event) }), err
+	}
+	ci, err := runsOf("ci.yml", "&event=push", "push")
+	if err != nil {
+		return c, err
+	}
+	workflows := map[string][]run{"ci.yml": ci}
+	if deploys {
+		if workflows["deploy.yml"], err = runsOf("deploy.yml", "", "workflow_run", "push", "workflow_dispatch"); err != nil {
+			return c, err
+		}
+	}
+	for _, workflow := range []string{"ci.yml", "deploy.yml"} {
+		for _, r := range workflows[workflow] {
+			if deploys && r.Status != "completed" {
+				c.Detail = fmt.Sprintf("main's deploy is running: run %d (%s) on %s", r.ID, workflow, short(r.HeadSha))
+				return c, nil
+			}
+		}
+	}
+	// the newest run that finished on its own decides: one still running, or one a newer push cancelled (ci.yml cancels in
+	// progress), would hide a red under it; a timeout or a failed start never proved main
+	i := slices.IndexFunc(ci, func(r run) bool { return r.Status == "completed" && r.Conclusion != "cancelled" })
+	// a page with no such run proves nothing, so it waits like a running ci (steer 21:15)
+	if i < 0 && len(ci) > 0 {
+		c.Detail = fmt.Sprintf("no ci run on main finished on its own in its newest %d: each is running or cancelled, so nothing proves main green; run %d is newest", len(ci), ci[0].ID)
+		return c, nil
+	}
+	if i >= 0 && slices.Contains([]string{"failure", "timed_out", "startup_failure"}, ci[i].Conclusion) {
+		c.Detail = fmt.Sprintf("main's ci is red on %s, run %d (%s): a merge would stack on it; a fix for main lands under dima's operator-override for prs", short(ci[i].HeadSha), ci[i].ID, ci[i].Conclusion)
+		return c, nil
+	}
+	c.OK, c.Detail = true, "main's newest ci is not red"
+	return c, nil
+}
+
 // how far back main's last deploy is looked for: a run of ci and docs commits is a few, never a release's worth
 const deployLookback = 20
 
-// the one repo whose merges need a reviewer round; frame's round stays advice
+// the repos whose merges need a reviewer round: the one cold read every tier keeps
 func roundGated(repo string) bool {
 	if mergeTestEnvOn() {
 		return repo == os.Getenv("X_ROUND_REPO")
 	}
-	return repo == "dvakatsiienko/bytes"
+	return slices.Contains([]string{"dvakatsiienko/bytes", "dvakatsiienko/frame"}, repo)
 }
 
 // a run's jobs, as github answers /actions/runs/<id>/jobs
@@ -1431,7 +1738,7 @@ func roundCheck(api, repo, n, base, ref, head, author string, dimaOK bool) (merg
 	if err != nil {
 		return c, err
 	}
-	if got, _ := gitIn("", "fetch", "-q", "origin", ref); !got.ok {
+	if got, _ := gitIn("", "fetch", "-q", "origin", "refs/heads/"+ref); !got.ok {
 		c.Detail = "git could not fetch " + ref + " to read the round's history: " + logLine(got.log)
 		return c, nil
 	}

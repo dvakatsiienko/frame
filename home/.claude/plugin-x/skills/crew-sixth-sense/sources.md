@@ -9,6 +9,7 @@ why each rule in `SKILL.md` holds; read when grooming the skill, never at run ti
 - **no merge policy** (step 3): a decision rule in the prompt shifts reported failure probabilities by 13.6–16.9 pp, arXiv 2608.02677
 - **a clean bound to its head**: #82 merged two commits past a clean; FRM-352, 5 red on the ubuntu runner after a mac clean; FRM-342, a locked-tree verb proven through the prebuilt binary
 - **an exit line is a rule**: on #96, surface vs object became a decision round
+- **your tree stays** (exit): `git worktree remove` drops gitignored `.scratch/` plans without a word, so the guard refuses it
 - **no patch** (step 4): codie handed the fix special-cases the oracle — reward hacking, cursor 2026
 - **the wall clock** (rounds): dima's concern, folded so the trial answers it — the ci reviewer ran 7–14 min per round then; on #111–#114 it ran 30–60 s
 - **the quick lane** (was «main lane»): dima's yes, 2026-10-10, mods watched live

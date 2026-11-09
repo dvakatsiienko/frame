@@ -64,6 +64,7 @@ const STORE = '/home/.claude/shelf/pr-verified.json';
 const WRITES = [
     '/home/frame/_clio/.claude/hooks/watch-pr.sh --verified 7 abc',
     'bash ~/frame/_clio/.claude/hooks/watch-pr.sh --verified 7 abc',
+    '~/frame/_clio/.claude/hooks/watch-pr.sh --verified o/r 7 abc --security abc',
     './watch-pr.sh 7 --verified',
     `echo '{}' > ${STORE}`,
     `echo '{}' >> ~/.claude/shelf/pr-verified.json`,

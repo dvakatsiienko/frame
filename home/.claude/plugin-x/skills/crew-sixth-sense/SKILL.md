@@ -120,8 +120,7 @@ one message per round, ≤12 lines: the verdict object, then one line per surviv
 <the exit line or behaviour that fails> — <how to reproduce, file:line when confirmed> — P0 | P1 | P2 — defect | decision
 ```
 
-- **the failing criterion and the repro, never a patch** — a withheld fix keeps codie from
-  special-casing your oracle.
+- **the failing criterion and the repro, never a patch**.
 - your findings and the reviewer's, merged, deduplicated, ranked by cost, with no restatement of
   the diff.
 - a `decision` goes to dima as a look call, with no fix demanded.
@@ -143,10 +142,10 @@ are the dna's pr pair.
 ## exit
 
 - **record the clean** before it reaches codie (a quick lane: § the quick lane):
-  `~/frame/_clio/.claude/hooks/watch-pr.sh --verified <owner/repo> <pr> <head sha>`. clio's pr
+  `~/frame/_clio/.claude/hooks/watch-pr.sh --verified <owner/repo> <pr> <head sha>`, plus
+  `--security <sha>` on a risky tier once codie's `/security-review` ran. clio's pr
   watch and merge hook read it, so a later push shows as an unverified delta, never «ready».
-- **your tree stays** — the guard refuses `git worktree remove` (it drops gitignored `.scratch/`
-  plans without a word); the merge or clio decamps it when the lane lands, and a quick lane's
+- **your tree stays** — the guard refuses `git worktree remove`; the merge or clio decamps it when the lane lands, and a quick lane's
   `verify-<sha>` tree at each clean, once that sha is on origin/main (FRM-476). a probe
   you want kept is copied out first and named in your `[done]`. codie's tree is codie's.
 - **the retro**, its standing focus: the exit lines' sharpness (which were unverifiable, which
@@ -173,7 +172,7 @@ holds, with these swaps:
 - **the head** is that final sha; the worktree checks it out.
 - **reviewers** — `ci reviewer: n/a (quick lane)`; step 2 shrinks to codie's own
   pre-verification.
-- **the clean** is its `linear` comment with `verified: <sha>`, not `watch-pr.sh`; it shows as «sixth sense», else `x as sixth-sense -- …`.
+- **the clean** is its `linear` comment with `verified: <sha>`, not `watch-pr.sh`, naming codie's `/security-review` on a risky path; it shows as «sixth sense», else `x as sixth-sense -- …`.
 
 ## the next chunk
 
