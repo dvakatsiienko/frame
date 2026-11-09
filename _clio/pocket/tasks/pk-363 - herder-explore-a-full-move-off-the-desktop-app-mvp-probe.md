@@ -166,4 +166,10 @@ raw drop (2026-11-09 16:37 screenshots, dima): SS3 cc in herdr: how cc thread lo
 raw drop (2026-11-09 16:37 screenshots, dima): SS4 rex: how rex cc thread looks. rex by itself is very pretty i like it. but mods representation and actual cc UI is ugly for me.
 
 raw drop (2026-11-09 16:37 screenshots, dima): SS5-6: herdr layout gallery examples, Kaiju City by Jiqize (7 of 30) and an Aperture Science layout, no annotation
+
+app differences that matter for the herdr steps (clio, 16:40, read off his 4 screenshots, W30):
+- claude desktop app: replies render as rich markdown in a chat column; mods draw as native panes (board: sessions, orbit with tick/replay/steer buttons, glide) and a band above the input (waiting on, 5h, ctx bar); fixed layout, board pane cramped
+- herdr desktop app: sidebar of Spaces and Agents (agents self-report status; agents inside tmux may not), tabs, Files and Changes panes, ⌘⇧P command palette, This computer / Add machine; cc runs as its terminal TUI in a pane, so our mods render terminal-native there, orbit has no buttons
+- rex: project tabs, same cc TUI and terminal-native board, glide shows [ tick ] as text
+- herdr gallery layouts (Kaiju City, Aperture): custom chrome around the panes (agent cards, status bars, facility feed), yet the cc and codex panes inside stay TUIs: no example yet of a rendered chatter, so W23's probe is the crux
 <!-- SECTION:NOTES:END -->
