@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T18:28:00Z'
+updated_date: '2026-11-09T18:32:00Z'
 labels:
   - s
   - clio-wing-1
@@ -20,14 +20,13 @@ ordinal: 18998
 - [ ] #2 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
 - [ ] #3 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
 - [ ] #4 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
-- [ ] #5 ⏳ FRM-555 stash tests: no timeout reruns, idle poll at 30 s — grill and sign — waits for: dima's word, after FRM-505
-- [ ] #6 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
-- [ ] #7 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
-- [ ] #8 📅 FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — on: 2026-11-10
-- [ ] #9 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
-- [ ] #10 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #11 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
-- [ ] #12 💤 FRM-525 performance topic and cpu watch, anything performance comes to wing 1 — later: dima says when he has capacity
+- [ ] #5 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
+- [ ] #6 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
+- [ ] #7 📅 FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — on: 2026-11-10
+- [ ] #8 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
+- [ ] #9 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #10 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
+- [ ] #11 💤 FRM-525 performance topic and cpu watch, anything performance comes to wing 1 — later: dima says when he has capacity
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -72,4 +71,6 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 done 2026-11-09: FRM-537 mods test-cost probe — 4 files hold 69 % of 286 user-s, comment on FRM-537, doors-left door 10 (dima's o55). groomed 20:11 to the flyway shape (dima's o68 via wing 2).
 
 done 2026-11-09: mods test trim shaped into FRM-555 (dima's o56, o57); the perf watch moved to 💤 on his 20:18 word
+
+done 2026-11-09: FRM-555 grill 1 answered (o58–o61), kept in its decided; unsigned on dima's 20:32 word — the mods lane waits for main's herdr revisit pass; handed to main, label off
 <!-- SECTION:NOTES:END -->
