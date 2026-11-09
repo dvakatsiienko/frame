@@ -1,6 +1,6 @@
 ---
 name: low-tide-cuts
-description: load BEFORE weighing whether planned or built work stays, and before printing dima any cut, trim, merge, move, park or close proposal — «what can we cut?», «dead weight», «worth it?», «cut», a low tide's cut pass, a milestone close's kill side, a reorg, a revisit, a groom, a batch of close asks.
+description: load before weighing whether planned or built work stays, and before printing dima any cut, trim, merge, move, park or close proposal — «what can we cut?», «dead weight», «is it worth it», «cut it», a low tide's cut pass, a milestone close's kill side, a reorg of planned work, a batch of close asks.
 ---
 
 # low-tide-cuts — what stays, what goes, and a print he can judge alone
@@ -22,8 +22,9 @@ dima, PK-367:W2 (2026-11-09 inbox, dima): why: we started a practice of cuts, si
 - **built work** passes the same, plus one real use in 30 days:
   - a use is a run that ran: posted output, a read, a call in a log; never a launch, a scheduled slot or silence
   - say which it is before a «0 uses»: built and unused, built and unwired, or never built
-  - a thing rare by design (a halt step, a recovery door, a safety net) keeps his rare-event exemption and is weighed on worth it alone
-- a fail is ✂️ cut, 🪶 trim or 💤 park, never a quiet keep; a pass is ✅ stay. his own ask on an item fails only to him: it prints with «you lose» and waits for his tick
+  - a thing rare by design (a halt step, a recovery door, a safety net) is weighed on worth it alone once dima's word exempts it as a rare event; without his word it prints as 💤 park with «rare by design?» in its why
+  - a built thing that fails gets one revive try first (wire it to a caller), and one with no counter prints «unmeasured», never «kept» (`craft-pm` § the freebie rule)
+- a fail is ✂️ cut or 🪶 trim, a doubt 💤 park, never a quiet keep; a pass is ✅ stay. his own ask on an item fails only to him: it prints with «you lose» and waits for his tick
 
 ## the print — a cut he can judge from the list alone
 
