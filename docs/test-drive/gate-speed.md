@@ -52,7 +52,7 @@ baseline is 2026-10-30 to 2026-11-06, before the fixes, unless the row says othe
 - red-proofs: n=227, p50 32 s, p90 391 s, 468 min → p90 under 240 s
 - red-proof per pair on vitest: 15 → 8 s on one mutant, load 38 → holds over real rounds
 - red-proof per pair on `--cmd`: about 64 s, inferred → FRM-383's W3 and exit 11 build it; read after that lands
-- the time budget, his FRM-521:W4: first read 2026-11-09 (moved a day), two days of `gate-steps.log` and `gate-queue.log` with load beside them, by `gate-speed/budget-read.sql`; never a red on a commit, since load would false-red it
+- the time budget, his FRM-521:W4: first read 2026-11-09 (moved a day), two days of `gate-steps.log` and `gate-queue.log` with load beside them, by `gate-speed/budget-read.sql`; then a `siesta-checks` line reading p90 per step against its budget (his «goes red when exceeded»), an empty log reads unmeasured; never a red on a commit, since load would false-red it; the budget numbers wait on his word (FRM-525)
 - go mutant rounds: 17.5 min, void → with `GOFLAGS=-overlay`, each round's minutes and bugs found; no bug in a week reopens the default
 - foreground commits: 466 of 490 → under 20 % once FRM-519's guard row lands; before that, read only
 - gates in the foreground, share of active time: 8.3 %, per session p90 23.7 % → under 5 %, p90 under 15 %

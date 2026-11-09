@@ -16,21 +16,22 @@ Asked 2026-11-07: exa, parallel, an opus source lane, on our own rows. Raw lanes
 
 1. **Results shared by byte hash, for go, vitest and the twin.** A suite on bytes already proved never runs again
    - gain: 27 of 69 whole mods runs repeat a head, an upper bound, measured; 30 to 50 % of heavy runs, inference
-   - test: add `git rev-parse HEAD:x/go` and a dirty flag to each `test-cpu-budget.log` row, read a day's repeats
+   - test: landed 2026-11-09 (FRM-533 step 1), each `test-cpu-budget.log` row carries a code key and clean or dirty; the first hours read 2 repeats of a passing key in 8 passing runs; the day's read decides step 2
    - risk: a test reads what the key misses, toolchain, fixtures or env
 2. **Vitest selection at commit.** Whole on 260 of 368 commit rows, `related` on 29, measured; about 26,000 cpu-s in 26 h, inference
-   - test: read `script/test-commit.sh`'s reasons against `test-commit.log`, replay a day
-   - risk: a missed test reaches main, ci still catches it
+   - landed 2026-11-09 (FRM-534, gate lane 1): `related` on every branch, an allow-list of kinds; the cause was a `codie/*`-only switch, 132 of 136 whole commit runs off it; the day's read lands 2026-11-10
+   - risk: a missed test reaches main, the push twin and ci still catch it
 3. **A Linux VM with the checkout on its own disk.** Measured 2026-11-09, FRM-536: a Lima vz VM, 10 cpus, 8 GiB, the whole tree on its disk, two runs a side, mac load 20 to 50
-   - spawn: `git --version` 0.5 ms against 5.2 on the mac, cpu per spawn; Ubuntu's git against slim, unsplit
+   - spawn: `git --version` 0.5 ms against 5.2 on the mac, cpu per spawn; Ubuntu's git against Homebrew's, unsplit (slim ran only in the suite rows)
    - go suite: 74 to 85 cpu-s against 235 to 242, wall 27 to 29 s against 82 to 89; sys 30 against 147. about 3× less
    - vitest: 133 cpu-s against 123 to 128, the same 2,102 tests (30 skipped in the VM); wall 20 s against 31 to 37 under load. no cpu win
    - so the win is go's spawn-heavy suite only. costs: 8 GiB held, a code sync per run, a toolchain kept matched; nothing that needs macOS (Keychain, launchd, 1Password, git-crypt, claude) moves. reported: bind mounts about 2.5× slower than the VM's disk (Mainardi, 2025). It adds no cores
+   - raw rows, the scripts and the three research lanes: [linux-vm/](linux-vm/); its shaping is PK-373
 4. **A remote Linux box.** The cleanest added capacity, the one door that adds cores. Hetzner AX102, 16 cores, from €159 a month, reported, no suite measured there
-5. **The `nostacks` pass at merge.** `pnpm x-go:test` reruns 29 of 57 test files outside the budget row, measured; cost unread. Test: `time sh x/go/nostacks-pass.sh`
+5. **The `nostacks` pass at merge.** landed 2026-11-09 (FRM-535): 235 cpu-s a run, as much as the whole suite, measured; it now runs on ci only
 6. **The queue's ad hoc scripts get a budget.** 42 % of run wall in 26 h, measured, FRM-525's own trials included
 7. **Each `x` verb stops asking git the same thing.** 5.9 git spawns a verb, 3,047 of 7,066 are `rev-parse`, measured before `LANG` and slim; 20 to 35 cpu-s, inference
-8. **Cut `x`'s start.** 16 ms cpu against slim git's 2.8, measured. `GOGC=off` alone reads 12.2; chroma's tables take about 5.8 of init. 5 to 13 cpu-s, inference
+8. **Cut `x`'s start.** 16 ms cpu against slim git's 2.8, measured. `GOGC=off` landed 2026-11-09 (FRM-535): 19.6 → 13.8 cpu ms a start through the shim, a 256 MiB limit; chroma's 5.8 ms stays, glamour needs it
 9. **Fixture setup through `git fast-import` or go-git.** 20 to 40 cpu-s, inference; 702 sites behind one helper, measured
 10. **Find the mods' heavy test files.** Start is at most 13 % of 527, so at least 87 % is test bodies, measured bound. `orbit.test.ts` is 5,234 lines
 11. **Vitest pools and isolation.** Default today, `threads` and no isolate untried, no number. `vitest doctor` compares them, reported
@@ -69,4 +70,4 @@ Asked 2026-11-07: exa, parallel, an opus source lane, on our own rows. Raw lanes
 
 ## not found
 
-A primary fork or exec rate in a Linux VM on Apple silicon. Any 16-lane run on one Mac, by anyone. First-hand sessions per machine from any platform. Repeats by bytes in our logs: door 1's size stays inference until the log column lands.
+Any 16-lane run on one Mac, by anyone. First-hand sessions per machine from any platform. A published same-Mac spawn rate, macOS against a Linux guest: ours (door 3) looks like the only one.
