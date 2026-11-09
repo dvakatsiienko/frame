@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T17:52:00Z'
+updated_date: '2026-11-09T17:54:00Z'
 labels:
   - m
   - clio-main
@@ -490,4 +490,6 @@ raw drop (2026-11-09 19:37, dima): tell when herder codie wants a verifier?
 correction (2026-11-09 19:33, helga): the W84 line and its raw drop above lost the text between the backticks, because the shell ran it as a command. Intended: "top 7 names for the herdr chat panel (Zoo's `claude-chat`, made ours) (⚙️ a cog, names only) ← is this for custom chatter i asked for? one borrowed from zoo? if yes - let's have it as «chatter». recognizable and clear and short. ❓"
 
 answered in main's thread, the 19:12–19:37 ❓ lines: PK-363:W81 at 19:14 (FRM-505 needs no wait on FRM-524, links dropped 19:17) and goes to FRM-505:W1944 as its ending; PK-363:W82 at 19:14 (the herdr codie starts at once, dispatched 19:13); PK-363:W84 and PK-363:W85 at 19:33 (the chat panel is Zoo's, named fleet-chatter, said «chatter»); PK-363:W87 at 19:39 (desktop resume needs dima's sidebar look, the rest probed by main)
+
+moved (dima's tick o81, 19:53): PK-363:W81 is now FRM-505:W1944's ending
 <!-- SECTION:NOTES:END -->

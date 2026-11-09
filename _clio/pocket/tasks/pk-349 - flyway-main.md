@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T17:26:00Z'
+updated_date: '2026-11-09T17:54:00Z'
 labels:
   - s
   - clio-main
@@ -29,6 +29,7 @@ ordinal: 9995
 - [ ] #11 PK-358 rex settings walkthrough with dima, two at a time, shown live (from wing 1, his 19:01 word)
 - [ ] #12 FRM-509: the one step left, x lane landed clears a quick lane's verify-<sha> tree and a merged worktree-* branch; place it in a lane by 11-12 (wing 3's live read, 19:26)
 - [ ] #13 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun); dima's o12 on wing 1's monitors; moved from wing 2 on his 19:26 word
+- [ ] #14 FRM-550: judge it against herdr after tomorrow's herdr boot, then a sign round with dima by 11-11 (his tick o82)
 <!-- AC:END -->
 
 ## Implementation Notes
