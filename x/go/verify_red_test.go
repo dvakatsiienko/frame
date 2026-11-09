@@ -361,6 +361,34 @@ func TestVerifyRedRunsACommandAfterTheDash(t *testing.T) {
 	}
 }
 
+// ported from red-proof's suite: an anchor keeps its leading tabs, as go is indented, since the last tab splits a pair
+func TestVerifyRedTakesAnAnchorOpeningOnATab(t *testing.T) {
+	t.Parallel()
+	f := goRedFixture(t)
+	write(t, filepath.Join(f.dir, "lib.go"), "package p\n\nconst (\n\tLimit = 3\n)\n")
+	commitAll(t, f.dir)
+
+	got, _ := verifyRedIn(t, f, nil, f.file, "--pairs", pairsFile(t, "\tLimit = 3\tLimit = 4"), f.test)
+
+	if rows := pairRows(t, got); got.code != 0 || len(rows) != 1 || rows[0]["pair"] != "«Limit = 3»" {
+		t.Fatalf("exit %d, pairs %v, want one red pair on the tabbed anchor:\n%s", got.code, rows, got.stdout)
+	}
+}
+
+// ported from red-proof's suite: a mod's red base names the failed test and runs it once
+func TestVerifyRedRefusesAModsRedBase(t *testing.T) {
+	t.Parallel()
+	f := modRedFixture(t)
+	write(t, filepath.Join(f.dir, f.file), "export const register = () => { /* MUTANT */ };\n")
+	commitAll(t, f.dir)
+
+	got, log := verifyRedIn(t, f, nil, f.file, "/* MUTANT */", "", f.test)
+
+	if got.code != 1 || !strings.Contains(got.stdout, "a.test.ts reads the hook") || strings.Count(log, "\n") != 1 {
+		t.Fatalf("exit %d, %d runs, want a refusal naming the failed test after one run:\n%s", got.code, strings.Count(log, "\n"), got.stdout)
+	}
+}
+
 // a form with nothing to run, or both a test and a command, exits 2
 func TestVerifyRedArgsOutsideItsFormsExitUsage(t *testing.T) {
 	t.Parallel()
@@ -505,7 +533,12 @@ func TestVerifyRedResumesACutRun(t *testing.T) {
 			log := filepath.Join(t.TempDir(), "verify.log")
 			env := []string{"VERIFY_LOG=" + log, "HANG_MARKER=" + marker, "X_STATE=" + t.TempDir()}
 			args := []string{f.file, "--pairs", pairs, f.test}
+			before, _ := os.Stat(filepath.Join(f.dir, f.file))
 			cutAt(t, f, env, 3, args...)
+			// red-proof's kill left its mutant in the file; this run never wrote it
+			if after, _ := os.Stat(filepath.Join(f.dir, f.file)); !after.ModTime().Equal(before.ModTime()) || readOr(filepath.Join(f.dir, f.file), "") != "package p\n\nconst Limit = 3\n" {
+				t.Fatalf("the kill left %s changed", f.file)
+			}
 			c.change(f, pairs)
 
 			got := xIn(t, f.dir, append(f.env, env...), append([]string{"verify", "red"}, args...)...)
