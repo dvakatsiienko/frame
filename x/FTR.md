@@ -263,6 +263,11 @@
   - decision: an assertion is the runner's word, so `expect(LIMIT).toBe(3)` on a const base lacks reads red
   - limit: a helper call in the same hunk as a named test gets no row, so it can exit 0
   - limit: a skip on head under `sh -c 'go test'` with no other head failure reads red, exit 0, since nothing prints the skip
+- ⬜ `x verify red <file> <anchor> <replacement> <test>` proves a test reads a line, the real tree never written
+  - given a test that passes on the file as it is, when the verb runs, then the clean run and the mutant go through one harness, the swap their only difference, both with `X_VERIFY=1`: a go test through `GOFLAGS=-overlay`, which a `TestMain`'s child build inherits; a js or ts test through vitest in a copy of the repo; a mod's test through `claude plugin test` on the mod's overlay
+  - given the mutated run fails on an assertion or throws, then it reads red and names the tests; it passes, still green; the exit is 0 only on red
+  - decision: a throw from the mutated code reads red, since the mutant is the run's only change (dima, o82); `--revert` keeps any throw broken
+  - limit: a go run reads the mutant only where go builds it, so a file a test opens at runtime stays the real one
   - limit: a head-only row whose title x cannot tie to a row (`'%s'`, `'${x}'`, a computed title) gets a named row and no vote, so it can exit 0; the repo holds none today (dima's tick, 2026-11-07)
 - ⬜ the stacks add-on: a pr opens onto the layer below, and gh-stack links and shows the layers
   - given branch `codie/FRM-1-a-2` on top of `codie/FRM-1-a`, when `x lane pr-open --apply --base codie/FRM-1-a <title> <body-file>` runs, then one pr opens with base `codie/FRM-1-a`; a base origin lacks refuses before gh runs

@@ -1,0 +1,544 @@
+package main
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/fs"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"slices"
+	"strings"
+	"time"
+
+	"golang.org/x/sys/unix"
+)
+
+const verifyRedHelp = "x verify red --help"
+
+type redPair struct{ anchor, replacement string }
+
+type pairRow struct {
+	Pair    string   `json:"pair"`
+	Verdict string   `json:"verdict"`
+	Tests   []string `json:"tests,omitempty"`
+	Why     string   `json:"why,omitempty"`
+	Seconds float64  `json:"seconds"`
+}
+
+// one run of the test on one content of the file; broken holds a check that failed before the test ran
+type redRun struct {
+	ok          bool
+	log, broken string
+}
+
+// the clean run and every mutant go through one harness, the file's content their only difference; none writes the real tree
+type redHarness interface {
+	run(content []byte) (redRun, error)
+	close()
+}
+
+func verifyRed(r *Run, args []string, flags Flags) (any, error) {
+	// a paid lane or a live write checks this and stands down; both runs carry it, so the clean run proves nothing the mutant skips
+	if err := os.Setenv("X_VERIFY", "1"); err != nil {
+		return nil, err
+	}
+	file, pairs, test, command, err := redArgs(args, flags)
+	if err != nil {
+		return nil, err
+	}
+	original, err := os.ReadFile(file)
+	if err != nil {
+		return nil, usageFail("no file "+file, verifyRedHelp)
+	}
+	var harness redHarness
+	if err := r.Step("check", "the anchors and the runner", func() (string, error) {
+		for _, pair := range pairs {
+			if n := strings.Count(string(original), pair.anchor); n != 1 {
+				return "", usageFail(fmt.Sprintf("anchor «%s» found %d times in %s, needs exactly 1", pair.anchor, n, file), "pick a longer anchor, unique in "+file)
+			}
+		}
+		harness, err = pickHarness(file, test, command, flags)
+		return fmt.Sprintf("%d pairs", len(pairs)), err
+	}); err != nil {
+		return nil, err
+	}
+	defer harness.close()
+
+	if err := r.Step("clean", "the test on the file as it is", func() (string, error) {
+		got, err := harness.run(original)
+		if err != nil {
+			return "", err
+		}
+		return "it passed", cleanHolds(file, got)
+	}); err != nil {
+		return nil, err
+	}
+
+	rows := make([]pairRow, 0, len(pairs))
+	_ = r.Step("mutate", "each pair alone", func() (string, error) {
+		for _, pair := range pairs {
+			started := time.Now()
+			got, err := harness.run([]byte(strings.Replace(string(original), pair.anchor, pair.replacement, 1)))
+			if err != nil {
+				return "", err
+			}
+			row := judgeMutant(got)
+			row.Pair, row.Seconds = pairLabel(pair.anchor), time.Since(started).Round(100*time.Millisecond).Seconds()
+			rows = append(rows, row)
+		}
+		if verdict := worstPair(rows); verdict != verdictRed {
+			return "", notHeld(verdict)
+		}
+		return verdictRed, nil
+	})
+
+	verdict := worstPair(rows)
+	lines := make([]string, len(rows))
+	for i, row := range rows {
+		lines[i] = ui.fg.Render(fmt.Sprintf("%-11s %s  %.1fs  %s", row.Verdict, row.Pair, row.Seconds, strings.Join(append(row.Tests, row.Why), " ")))
+	}
+	r.Show(lines, nameCell+2)
+	data := ordered{{"file", file}, {"verdict", verdict}, {"pairs", rows}}
+	if verdict != verdictRed {
+		return nil, &Fail{Refused: true, Msg: "no proof: " + pairsLine(rows), Next: "x verify red " + file + " <anchor> <replacement> <test>: a line the test reads", Data: data}
+	}
+	r.Done(pairsLine(rows)+"; "+file+" never written", "")
+	return data, nil
+}
+
+func redArgs(args []string, flags Flags) (file string, pairs []redPair, test string, command []string, err error) {
+	dash, _ := flags[argsBeforeDash].(int)
+	before := args
+	if dash >= 0 {
+		before, command = args[:dash], args[dash:]
+		if len(command) == 0 {
+			return "", nil, "", nil, usageFail("a -- needs a command after it", verifyRedHelp)
+		}
+	}
+	pairsFile, _ := flags["pairs"].(string)
+	want := 3
+	if pairsFile != "" {
+		want = 1
+	}
+	if command == nil {
+		want++
+	}
+	if len(before) != want {
+		return "", nil, "", nil, usageFail("expected <file> <anchor> <replacement> <test>, <file> --pairs <pairs> <test>, or either with -- <command> for <test>", verifyRedHelp)
+	}
+	file = before[0]
+	if command == nil {
+		test = before[len(before)-1]
+	}
+	if pairsFile == "" {
+		return file, []redPair{{before[1], before[2]}}, test, command, nil
+	}
+	pairs, err = readPairs(pairsFile)
+	return file, pairs, test, command, err
+}
+
+// the last tab splits a pair, so an anchor keeps its leading tabs (go is tab-indented); a replacement holds none
+func readPairs(path string) ([]redPair, error) {
+	body, err := os.ReadFile(path)
+	if err != nil {
+		return nil, usageFail("no pairs file "+path, verifyRedHelp)
+	}
+	var pairs []redPair
+	for i, line := range strings.Split(strings.TrimSuffix(string(body), "\n"), "\n") {
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		cut := strings.LastIndex(line, "\t")
+		if cut < 0 {
+			return nil, usageFail(fmt.Sprintf("%s:%d has no tab between anchor and replacement", path, i+1), verifyRedHelp)
+		}
+		if cut == 0 {
+			return nil, usageFail(fmt.Sprintf("%s:%d has an empty anchor", path, i+1), verifyRedHelp)
+		}
+		pairs = append(pairs, redPair{line[:cut], line[cut+1:]})
+	}
+	if len(pairs) == 0 {
+		return nil, usageFail(path+" holds no pairs", verifyRedHelp)
+	}
+	return pairs, nil
+}
+
+func pairLabel(anchor string) string {
+	label, _, cut := strings.Cut(strings.TrimSpace(anchor), "\n")
+	if cut || len(label) > 48 {
+		label = label[:min(len(label), 47)] + "…"
+	}
+	return "«" + label + "»"
+}
+
+// a base already red reads every swap red whatever it does, so the run refuses before the first mutant
+func cleanHolds(file string, got redRun) error {
+	read := readTestOutput(got.log)
+	switch {
+	case got.broken != "":
+		return &Fail{Refused: true, Msg: "the clean run is broken, nothing swapped: " + got.broken, Next: "fix " + file + " until its own check passes", Log: nonBlank(got.log)}
+	case !got.ok:
+		names := failedNames(read)
+		msg := "the clean run is red, nothing swapped: " + strings.Join(names, ", ")
+		if len(names) == 0 {
+			msg = "the clean run is red, nothing swapped: no failed test named"
+		}
+		return &Fail{Refused: true, Msg: msg, Next: "run the test until it passes on " + file + " as it is", Log: nonBlank(got.log)}
+	case read.none && !read.ran:
+		return &Fail{Refused: true, Msg: "the clean run ran no test, nothing swapped", Next: "name a test that runs: its file, or --run with a name it holds", Log: nonBlank(got.log)}
+	}
+	return nil
+}
+
+func failedNames(read testOutput) []string {
+	var names []string
+	for _, failed := range read.failed {
+		if failed.name != "the file did not load" && !strings.Contains(failed.name, " [ ") && !slices.Contains(names, failed.name) {
+			names = append(names, failed.name)
+		}
+	}
+	return names
+}
+
+// a mutant reads red when a test failed on an assertion or threw: the mutation is the only change, so a throw is it doing its
+// job; a check before the run, or a test file that never loaded, reads broken, which proves nothing
+func judgeMutant(got redRun) pairRow {
+	if got.broken != "" {
+		return pairRow{Verdict: verdictBroken, Why: got.broken}
+	}
+	if got.ok {
+		return pairRow{Verdict: verdictStillGreen, Why: "the test passed with the line swapped: it does not read it"}
+	}
+	read := readTestOutput(got.log)
+	names := failedNames(read)
+	asserted := slices.ContainsFunc(read.failed, func(failed failedTest) bool {
+		return slices.Contains(names, failed.name) && failedOnAssertion(failed)
+	})
+	switch {
+	case asserted:
+		return pairRow{Verdict: verdictRed, Tests: names}
+	case read.load != "":
+		return pairRow{Verdict: verdictBroken, Why: read.load}
+	case len(names) > 0:
+		return pairRow{Verdict: verdictRed, Tests: names, Why: "it threw"}
+	}
+	return pairRow{Verdict: verdictFailed, Why: "the command failed and its output names no failed test"}
+}
+
+func worstPair(rows []pairRow) string {
+	verdicts := make([]string, len(rows))
+	for i, row := range rows {
+		verdicts[i] = row.Verdict
+	}
+	for _, verdict := range []string{verdictBroken, verdictFailed, verdictStillGreen} {
+		if slices.Contains(verdicts, verdict) {
+			return verdict
+		}
+	}
+	if len(rows) == 0 {
+		return verdictBroken
+	}
+	return verdictRed
+}
+
+func pairsLine(rows []pairRow) string {
+	var parts []string
+	for _, verdict := range []string{verdictRed, verdictStillGreen, verdictBroken, verdictFailed} {
+		n := 0
+		for _, row := range rows {
+			if row.Verdict == verdict {
+				n++
+			}
+		}
+		if n > 0 {
+			parts = append(parts, fmt.Sprintf("%d %s", n, verdict))
+		}
+	}
+	return strings.Join(parts, ", ")
+}
+
+// the runner comes from the test: a go test file, a mod's test, any other js or ts test; -- names its own
+func pickHarness(file, test string, command []string, flags Flags) (redHarness, error) {
+	abs, err := filepath.Abs(file)
+	if err != nil {
+		return nil, err
+	}
+	name, _ := flags["run"].(string)
+	switch {
+	case command != nil && filepath.Base(command[0]) == "go":
+		if len(command) > 1 && command[1] == "test" && !slices.ContainsFunc(command, func(arg string) bool { return strings.HasPrefix(arg, "-count") }) {
+			command = slices.Insert(slices.Clone(command), 2, "-count=1")
+		}
+		return newGoHarness(abs, "", command)
+	case command != nil:
+		return newCopyHarness(abs, "", command)
+	case strings.HasSuffix(test, "_test.go"):
+		goTest := []string{"go", "test", "-count=1", "-failfast", "-v"}
+		if name != "" {
+			goTest = append(goTest, "-run", name)
+		}
+		dir, err := filepath.Abs(filepath.Dir(test))
+		if err != nil {
+			return nil, err
+		}
+		return newGoHarness(abs, dir, append(goTest, "."))
+	case isModTest(test):
+		return newModHarness(abs, test)
+	case testFile.MatchString(test):
+		vitest := []string{"vitest", "run", "--bail=1"}
+		if name != "" {
+			vitest = append(vitest, "-t", name)
+		}
+		return newCopyHarness(abs, "", append(vitest, test))
+	}
+	return nil, usageFail("x picks no runner for "+test+": a _test.go, a mod's test or a .test.ts", "x verify red <file> <anchor> <replacement> -- <command>")
+}
+
+func isModTest(test string) bool {
+	abs, err := filepath.Abs(test)
+	if err != nil {
+		return false
+	}
+	return strings.Contains(filepath.ToSlash(abs), "/"+modsDir) && isTestFile(abs)
+}
+
+// go reads the mutant through -overlay in GOFLAGS, which the child build a TestMain runs inherits; the real file stays
+type goHarness struct {
+	file, dir, scratch string
+	command            []string
+}
+
+func newGoHarness(file, dir string, command []string) (redHarness, error) {
+	scratch, err := os.MkdirTemp("", "x-verify-go-")
+	if err != nil {
+		return nil, err
+	}
+	return &goHarness{file: file, dir: dir, scratch: scratch, command: command}, nil
+}
+
+func (g *goHarness) close() { _ = os.RemoveAll(g.scratch) }
+
+func (g *goHarness) run(content []byte) (redRun, error) {
+	mutant := filepath.Join(g.scratch, "content"+filepath.Ext(g.file))
+	overlay := filepath.Join(g.scratch, "overlay.json")
+	body, err := json.Marshal(map[string]map[string]string{"Replace": {g.file: mutant}})
+	if err == nil {
+		err = errors.Join(os.WriteFile(mutant, content, 0o644), os.WriteFile(overlay, body, 0o644))
+	}
+	if err != nil {
+		return redRun{}, err
+	}
+	c := exec.Command(g.command[0], g.command[1:]...)
+	c.Dir = g.dir
+	c.Env = append(os.Environ(), "GOFLAGS="+strings.TrimSpace(os.Getenv("GOFLAGS")+" -overlay="+overlay))
+	got := runTestCmd(c)
+	return redRun{ok: got.ok, log: got.log}, nil
+}
+
+// any other runner reads a copy of the repo: apfs clones of its files, each node_modules a real dir of links to the real
+// entries, so a cache a runner writes lands in the copy. the git-crypt set stays out: plain text never leaves the tree
+type copyHarness struct {
+	root, copy, file, cwd string
+	command               []string
+}
+
+func newCopyHarness(file, _ string, command []string) (redHarness, error) {
+	root, err := mustGitIn(filepath.Dir(file), "rev-parse", "rev-parse", "--show-toplevel")
+	if err != nil {
+		return nil, err
+	}
+	root, _ = filepath.EvalSymlinks(root)
+	file, _ = filepath.EvalSymlinks(file)
+	cwd, _ := os.Getwd()
+	cwd, _ = filepath.EvalSymlinks(cwd)
+	scratch, err := os.MkdirTemp("", "x-verify-copy-")
+	if err != nil {
+		return nil, err
+	}
+	h := &copyHarness{root: root, copy: filepath.Join(scratch, filepath.Base(root)), file: file, cwd: cwd, command: command}
+	if err := copyRepo(root, h.copy); err != nil {
+		h.close()
+		return nil, err
+	}
+	return h, nil
+}
+
+func (h *copyHarness) close() { _ = os.RemoveAll(filepath.Dir(h.copy)) }
+
+func (h *copyHarness) inCopy(path string) string {
+	if rel, err := filepath.Rel(h.root, path); err == nil && !strings.HasPrefix(rel, "..") {
+		return filepath.Join(h.copy, rel)
+	}
+	return path
+}
+
+func (h *copyHarness) run(content []byte) (redRun, error) {
+	if err := os.WriteFile(h.inCopy(h.file), content, 0o644); err != nil {
+		return redRun{}, err
+	}
+	command := make([]string, len(h.command))
+	for i, arg := range h.command {
+		command[i] = arg
+		if filepath.IsAbs(arg) {
+			command[i] = h.inCopy(arg)
+		}
+	}
+	dir := h.inCopy(h.cwd)
+	// the copy's own bin, never npx: a copy missing its node_modules would fetch a runner from the registry
+	if bin := nearestBin(dir, command[0]); bin != "" && !strings.Contains(command[0], "/") {
+		command[0] = bin
+	}
+	c := exec.Command(command[0], command[1:]...)
+	c.Dir = dir
+	got := runTestCmd(c)
+	return redRun{ok: got.ok, log: got.log}, nil
+}
+
+func nearestBin(dir, name string) string {
+	for ; ; dir = filepath.Dir(dir) {
+		if bin := filepath.Join(dir, "node_modules/.bin", name); exists(bin) {
+			return bin
+		}
+		if dir == filepath.Dir(dir) {
+			return ""
+		}
+	}
+}
+
+func copyRepo(root, to string) error {
+	locked, err := gitCryptSet(root)
+	if err != nil {
+		return err
+	}
+	return filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, _ := filepath.Rel(root, path)
+		dest := filepath.Join(to, rel)
+		switch name := entry.Name(); {
+		case entry.IsDir() && (name == ".git" || rel == ".claude"):
+			return filepath.SkipDir
+		case name == "node_modules" && path != root:
+			return errors.Join(linkEntries(path, dest), skipIfDir(entry))
+		case entry.IsDir():
+			return os.MkdirAll(dest, 0o755)
+		case name == ".git" || locked[filepath.ToSlash(rel)]:
+			return nil
+		case entry.Type()&fs.ModeSymlink != 0:
+			target, err := os.Readlink(path)
+			if err != nil {
+				return err
+			}
+			return os.Symlink(target, dest)
+		}
+		if err := unix.Clonefile(path, dest, unix.CLONE_NOFOLLOW); err != nil {
+			return copyFile(path, dest)
+		}
+		return nil
+	})
+}
+
+func skipIfDir(entry fs.DirEntry) error {
+	if entry.IsDir() {
+		return filepath.SkipDir
+	}
+	return nil
+}
+
+// a node_modules link straight to the real one lets a runner write its caches there; a real dir of links per entry keeps them here
+func linkEntries(modules, dest string) error {
+	real, err := filepath.EvalSymlinks(modules)
+	if err != nil {
+		return err
+	}
+	entries, err := os.ReadDir(real)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dest, 0o755); err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".vite") || entry.Name() == ".vitest-cache" || entry.Name() == ".cache" {
+			continue
+		}
+		if err := os.Symlink(filepath.Join(real, entry.Name()), filepath.Join(dest, entry.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func gitCryptSet(root string) (map[string]bool, error) {
+	files, err := mustGitIn(root, "ls-files", "ls-files")
+	if err != nil || files == "" {
+		return map[string]bool{}, err
+	}
+	c := exec.Command("git", "check-attr", "filter", "--stdin")
+	c.Dir, c.Stdin = root, strings.NewReader(files+"\n")
+	out, err := c.Output()
+	if err != nil {
+		return nil, err
+	}
+	locked := map[string]bool{}
+	for line := range strings.SplitSeq(string(out), "\n") {
+		if path, ok := strings.CutSuffix(line, ": filter: git-crypt"); ok {
+			locked[path] = true
+		}
+	}
+	return locked, nil
+}
+
+// a mod runs as `x mods edit test` runs it: the mod copied off the tree, validated, then claude plugin test on the copy
+type modHarness struct {
+	repo, file, test, scratch string
+}
+
+func newModHarness(file, test string) (redHarness, error) {
+	repo, err := mustGitIn(filepath.Dir(file), "rev-parse", "rev-parse", "--show-toplevel")
+	if err != nil {
+		return nil, err
+	}
+	repo, _ = filepath.EvalSymlinks(repo)
+	file, _ = filepath.EvalSymlinks(file)
+	testAbs, _ := filepath.Abs(test)
+	testAbs, _ = filepath.EvalSymlinks(testAbs)
+	relFile, _ := filepath.Rel(repo, file)
+	relTest, _ := filepath.Rel(repo, testAbs)
+	fileMod, inMod := modOf(filepath.ToSlash(relFile))
+	if testMod, _ := modOf(filepath.ToSlash(relTest)); !inMod || fileMod != testMod {
+		return nil, usageFail(file+" is no file of "+test+"'s mod; a mod's test reads only its own mod", "x verify red <file> <anchor> <replacement> -- <command>")
+	}
+	scratch, err := os.MkdirTemp("", "x-verify-mod-")
+	if err != nil {
+		return nil, err
+	}
+	return &modHarness{repo: repo, file: filepath.ToSlash(relFile), test: filepath.ToSlash(relTest), scratch: scratch}, nil
+}
+
+func (m *modHarness) close() { _ = os.RemoveAll(m.scratch) }
+
+func (m *modHarness) run(content []byte) (redRun, error) {
+	mutant := filepath.Join(m.scratch, filepath.Base(m.file))
+	if err := os.WriteFile(mutant, content, 0o644); err != nil {
+		return redRun{}, err
+	}
+	// the copies are laid as given: a mutant passed through the format step could lose the swap
+	copies := &formattedCopies{repo: m.repo, out: map[string]string{m.file: mutant}}
+	reports, err := overlayTest(m.repo, copies, []string{m.file}, m.test)
+	if err != nil {
+		return redRun{}, err
+	}
+	got := redRun{ok: true}
+	for _, report := range reports {
+		got.log += report.log + "\n"
+		if report.Validate != "ok" {
+			got.broken = "the mod does not validate: " + report.Validate
+		}
+		got.ok = got.ok && !report.isRed()
+	}
+	return got, nil
+}

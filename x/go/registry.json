@@ -59,6 +59,11 @@
             "name": "mods"
         },
         {
+            "example": "x verify red lib.go 'n > 0' 'n >= 0' lib_test.go",
+            "gist": "a test proven real: the code broken on purpose off the real tree, the test must go red",
+            "name": "verify"
+        },
+        {
             "example": "x schema lane --level short",
             "gist": "the registry as json",
             "name": "schema"
@@ -1301,6 +1306,56 @@
             "steps": ["plan", "test", "write"],
             "touches": [
                 "the job tmp (or the os tmp): the scratch copies and the overlay mods the tests run on"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the source file to break, from the cwd",
+                    "name": "file"
+                },
+                {
+                    "description": "without --pairs: the exact text to swap, found exactly once in the file",
+                    "isOptional": true,
+                    "name": "anchor"
+                },
+                {
+                    "description": "without --pairs: what the anchor becomes",
+                    "isOptional": true,
+                    "name": "replacement"
+                },
+                {
+                    "description": "the test file that should read the line; it picks the runner: go test, vitest, or claude plugin test for a mod",
+                    "isOptional": true,
+                    "name": "test"
+                },
+                {
+                    "afterDash": true,
+                    "description": "in place of <test>: any command, run with the same mutation",
+                    "isOptional": true,
+                    "isVariadic": true,
+                    "name": "command"
+                }
+            ],
+            "flags": {
+                "pairs": {
+                    "description": "many swaps, each alone: one 'anchor<TAB>replacement' per line, split on the last tab, # and blank lines skipped",
+                    "type": "string",
+                    "value": "file"
+                },
+                "run": {
+                    "description": "run only the tests of this name: go -run, vitest -t",
+                    "type": "string",
+                    "value": "name"
+                }
+            },
+            "name": "verify red",
+            "needsApply": false,
+            "purpose": "prove a test reads a line: it passes on the file as it is and goes red with the line swapped, the real tree never written",
+            "steps": ["check", "clean", "mutate"],
+            "touches": [
+                "the os tmp: the mutant, a go overlay or a copy of the tree the runs read",
+                "$X_STATE/verify/: a cut run's finished pairs, read back on the same inputs, gone once a run ends"
             ]
         }
     ]
