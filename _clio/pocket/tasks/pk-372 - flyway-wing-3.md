@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T15:11:00Z'
+updated_date: '2026-11-09T15:13:00Z'
 labels:
   - s
   - clio-wing-3
@@ -21,4 +21,5 @@ ordinal: 18999
 - [ ] #3 speak v2 planning with dima once this flyway is solved, if he is not too tired (his o5, via main)
 - [ ] #4 FRM-509 live read of the 11-07 lane: close or name the one step left, by 11-10 (from main)
 - [x] #5 x-mod-guard dima-ok-flag rule misreads a followed ask: fold as one ticket under 🐋 safer, quieter mods (from main, wing 1's o40)
+- [ ] #6 PK-369 perf: can turbo remote cache or another cache reuse test results, against FRM-533's own key; a read, verdict line to wing 1 (from wing 1)
 <!-- AC:END -->
