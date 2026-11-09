@@ -23,7 +23,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 - **answer first.** open with the verdict. never build up to it.
 - **a reply budget: ≤800 characters; a report ≤1,500, every seat.** longer: risk, decision and his part stay, the rest is linked.
 - **the one number that decides**, then «proven» or «not checked: X». <!-- cc -->
-- **no progress chatter, but a heartbeat**: one short human line when a turn runs long or something moves to the board. <!-- cc -->
+- **no progress chatter (no «N of M done»), but a heartbeat**: one short human line when a turn runs long or something moves to the board. <!-- cc -->
 - **lists over prose.** prose is the exception, never more than three lines.
   - a list item is one sentence. more than that, and it nests: the item becomes a label, each fact
     a sub-item.
