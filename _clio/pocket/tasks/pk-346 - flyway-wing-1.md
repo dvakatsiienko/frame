@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T22:01:00Z'
+updated_date: '2026-11-09T22:08:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,20 +16,21 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ⏳ FRM-537 next probes, by hand, the vitest pools now ride FRM-557 — waits for: spare usage
-- [ ] #2 ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next frame pr's merge-auto run, the first live read of #152's checks (549, 553 red only on the guard-refused «look sent» line, main's guard bug) — waits for: #153's merge
-- [ ] #3 ⏳ cli lane 6's rest, all signed: FRM-384 (gate runner, body guard, own-branch push, brief lint, the 19:27 gate riders, FRM-554), FRM-436, FRM-424; no codie, its sixth sense «cli lane | #150» idle — waits for: dima's word on a new cli codie
-- [ ] #4 ⏳ FRM-557 test hooks trimmed: 🟢 greenlit, slices 06–11 in the vm lane; the build starts first thing tomorrow (o110), then pr, sixth sense, merge — waits for: wing 1 opening tomorrow
-- [ ] #5 ⏳ the stray FRM-383 tree and branch (16 squashed lane commits, held by cli lane 6's stopped codie): decamp on dima's word — waits for: dima's word
-- [ ] #6 ⏳ FRM-551 vm lane: #153 held for codie's two by-hand fixes (--no-gpg-sign, the INT trap); I read that diff, then merge-auto on green ci and the review round, then x lane landed — waits for: codie's push
-- [ ] #7 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
-- [ ] #8 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
-- [ ] #9 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
-- [ ] #10 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
-- [ ] #11 📅 speak v2 planning with dima, after herdr's move and the mods scope (dima 23:50); FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-11
-- [ ] #12 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #13 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #14 💤 FRM-560 x verify red: a mods red proof under half its 64 s (W3 moved from FRM-383) — later: dima
+- [ ] #1 ⏳ perf lane 1/5 FRM-551: #153 at f36c25ba, all green but sixth sense's stamp past the 3-round cap; then merge-auto, x lane landed — waits for: dima's o99 tick
+- [ ] #2 ⏳ perf lane 2/5 FRM-557 test hooks trimmed: 🟢 greenlit, slices 06–11, the vm codie, first thing tomorrow; FRM-537's vitest-pools rider inside — waits for: FRM-551 landed
+- [ ] #3 ⏳ perf lane 3/5 FRM-539 gate step time budget: signed, quick, same codie by a next: message — waits for: FRM-534 closed (11-10 read)
+- [ ] #4 ⏳ perf lane 4/5 FRM-533 reuse proven results: needs a sign, same codie, after FRM-557 — waits for: its 11-10 day read and dima's sign
+- [ ] #5 ⏳ perf lane 5/5 FRM-535 small go trims: needs a sign, same codie, each slice on a budget row — waits for: dima's sign; herdr first, so 3–5 may park
+- [ ] #6 ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next frame pr's merge-auto run, the first live read of #152's checks — waits for: #153's merge
+- [ ] #7 ⏳ cli lane 6's rest, all signed: FRM-384 (gate runner, body guard, own-branch push, brief lint, the 19:27 gate riders, FRM-554), FRM-436, FRM-424, plus FRM-560 (main's call) — waits for: dima's word on a new cli codie
+- [ ] #8 ⏳ FRM-537 other probes, by hand, no lane — waits for: spare usage
+- [ ] #9 ⏳ the stray FRM-383 tree and branch (16 squashed lane commits, held by cli lane 6's stopped codie): decamp — waits for: dima's word
+- [ ] #10 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
+- [ ] #11 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
+- [ ] #12 📅 speak v2 planning with dima, after herdr's move and the mods scope (dima 23:50); FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-11
+- [ ] #13 📅 FRM-525 cpu overload, the week's read in gate-speed.md — on: 2026-11-14
+- [ ] #14 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #15 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -96,4 +97,6 @@ done 2026-11-09 22:54: ⏳ PK-357 branches: W5 «gba prints clean», the last st
 2026-11-09 22:59: the FRM-414 re-grill line went back to wing 2 (dima 22:57 «let's regrill now so it is not a tail»)
 
 done 2026-11-09 23:18: FRM-383 x verify: time W3 «faster», one pair through x verify red and the old red-proof from 0bd86a17, on a quiet mac, then x lane landed FRM-383 --pr 150 --apply, by 11-12 (FRM-383 Done)
+
+2026-11-10 00:09 wing 1: the perf order, adopted by main (dima's reuse-before-summon rule, 00:01/00:07): one lane, the vm codie and its sixth sense, sequential; FRM-555 to main's herdr mods pass, FRM-560 to cli lane 6's next codie
 <!-- SECTION:NOTES:END -->
