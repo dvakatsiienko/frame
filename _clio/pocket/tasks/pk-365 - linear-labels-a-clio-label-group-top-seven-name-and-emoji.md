@@ -26,4 +26,6 @@ raw drop (2026-11-09 inbox, dima): **clio main: linear labels — «clio» group
 raw drop (2026-11-09 inbox, dima): clio-main, clio-wing-* — group them into label group? (so only one of you can be a ticker owner?) propose top7 name and emoji for new group.
 
 2026-11-09 15:20 clio: done on dima's o9 pick: workspace label group «clio owner» made, clio-main and clio-wing-1…4 moved under it, read back; no ticket carried two seat labels before; GLOSSARY label line added
+
+close: PK-365:W1 done (the group made, exclusive, one seat per ticket), PK-365:W2 done (seven names, then his three, his pick «clio owner»)
 <!-- SECTION:NOTES:END -->
