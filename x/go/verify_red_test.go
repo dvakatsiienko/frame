@@ -20,7 +20,8 @@ type redFixture struct {
 
 func frameNodeModules(t *testing.T) string {
 	t.Helper()
-	dir, err := filepath.Abs("../../node_modules")
+	// the trailing slash marks a tool dir to the reads list test, never a repo file
+	dir, err := filepath.Abs("../../node_modules/")
 	if err != nil || !exists(filepath.Join(dir, ".bin/vitest")) {
 		t.Fatalf("no vitest under %s: run the tree's install", dir)
 	}
