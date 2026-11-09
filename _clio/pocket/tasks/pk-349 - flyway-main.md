@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T15:18:00Z'
+updated_date: '2026-11-09T17:00:00Z'
 labels:
   - s
   - clio-main
@@ -22,7 +22,9 @@ ordinal: 9995
 - [x] #4 PK-363 herder: research, print, his call
 - [x] #5 PK-368 sidecar passports rebalance
 - [ ] #6 prove the passport auto-load live: helga's next boot carries her passport (crow's half proven: packet 202611091548w2, charter changed)
-- [ ] #7 herdr pilot: gate lane codie hosts the probe; Zoo's panel code read, then probe steps for dima
+- [x] #7 herdr pilot: gate lane codie hosts the probe; Zoo's panel code read, then probe steps for dima
+- [ ] #8 herdr chunk 1: orbit in herdr — ticket + sign from o72, dispatch the herdr codie, sixth sense on (spec ~/frame/.scratch/herdr-orbit/spec.md)
+- [ ] #9 herdr: probe 4b + haiku clio probe, Zoo + board into frame, then tomorrow's boot in herdr (plan ~/frame/_clio/.scratch/herdr/plan.md)
 <!-- AC:END -->
 
 ## Implementation Notes
