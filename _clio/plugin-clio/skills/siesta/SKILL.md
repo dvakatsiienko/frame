@@ -6,7 +6,7 @@ description: load at every siesta — a lane member's done lands, 15 files of cl
 
 dima, 2026-10-10: a siesta should be useful with the least noise — once we kick off from it, the next thing is already picked. this skill is the whole flow and its «when» is the one trigger list; `fleet-vibe` holds the word.
 
-🪽 **every clio runs it, on its own stamp** (PK-351:W78): the gate finds the seat. a wing's batch, tickets, lanes and flyway are its own, and it never moves or touches main's; steps 3.2 and 3.3 and the chores line are main's alone.
+🪽 **every clio runs it, on its own stamp** (PK-351:W78): the gate finds the seat. a wing's batch, tickets, lanes and flyway are its own, and it never moves or touches main's; step 3.2 and the chores line are main's alone; 3.3 runs in every seat (o76).
 
 ## when
 
@@ -30,7 +30,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 2.7 ⏭️ **the retros, paused** (dima, 2026-11-07): a filed one waits for `clio:boot`'s weekly card
 3. **5h window**, unless paused (`habit-ctx-load-balancing`); back on pace, each spec holding a pace-park line resumes: its codie gets one «resume» message, the line gets `resumed <HH:MM>`
 3.2 **ci reds**: the unseen rows of n8n's 🔴 ci watch, the same read as the boot digest's n8n section; a red gets one card line and a fix or an ask
-3.3 **the groom check**: `node ~/frame/_clio/script/prompt-groom.ts --day`; each red prompt is groomed with helga or gets a `HH:MM — <why>` no-wish line, each homeless W-line gets its home
+3.3 **the groom check**: `node ~/frame/_clio/script/prompt-groom.ts --day`; each red prompt groomed with helga or given `prompt-groom.ts --no-wish <HH:MM|oN> '<why>'`, each homeless W-line its home; the card closes on green
 3.5 **the helper count**: step 1's helper count section: `helper` and `helper-lite` spawns per live session; a member with real work and zero is nudged the same turn, and the count joins the card
 4. **check before acting** — wishkeeper owns the files and the tracker, crow owns intent, process and claims; every high finding from either, and any finding that would change a rule or a claim made to dima, is opened at its cited spot first; one not checked is printed as `unchecked`; a high's fix names its cause, «fixed» or «ticketed FRM-N», before its commit
 5. **the card**, one reply when wishkeeper is back, after `node ~/frame/_clio/script/siesta-gate.ts card '<high 1>' …` (one quoted arg each; a high settled later: `… high <n> fixed|parked <why>`):

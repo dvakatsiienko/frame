@@ -103,7 +103,69 @@ export function entryFor(prompt: string, at: Date) {
     return `## ${hh}:${mm}\n\n${prompt.trim()}\n\n`;
 }
 
-if (import.meta.main) {
+// a seat's turn cannot end while 5 or more prompts or steers wait past 30 minutes for a groom (dima's o76, 2026-11-09)
+export const GROOM_BLOCK_AT = 5;
+export function groomBlock(
+    dayText: string,
+    day: string,
+    now: string,
+    noWishText: string,
+    steerIds: string[] = [],
+) {
+    const [hh = 0, mm = 0] = now.split(':').map(Number);
+    const minutes = Math.max(0, hh * 60 + mm - 20);
+    const cutoff = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+    const late = [
+        ...ungroomedPrompts(dayText, day, cutoff, noWishText).map(
+            (p) => p.hhmm,
+        ),
+        ...steerIds,
+    ];
+    return late.length >= GROOM_BLOCK_AT
+        ? `🔴 ${late.length} prompt(s) or steer(s) wait past 30 min for a groom: ${late.join(' ')}. groom them before the turn ends: node script/prompt-groom.ts <HH:MM|oN>, or prompt-groom.ts --no-wish <HH:MM|oN> '<why>'`
+        : undefined;
+}
+
+function seatDay(seat: string, now: Date, transcriptPath?: string) {
+    const day = now.toLocaleDateString('sv');
+    const file = path.join(rawRoot, seat, `${day}.md`);
+    const noWish = path.join(
+        process.env.PROMPT_GROOM_DIR ??
+            path.join(process.env.HOME ?? '', '.local/state/clio/grooms'),
+        seat,
+        `${day}.no-wish.md`,
+    );
+    const noWishText = existsSync(noWish) ? readFileSync(noWish, 'utf8') : '';
+    return {
+        day,
+        dayText: existsSync(file) ? readFileSync(file, 'utf8') : '',
+        file,
+        noWishText,
+        now: now.toLocaleTimeString('sv').slice(0, 5),
+        steerIds: ungroomedSteersToday(day, noWishText, transcriptPath).map(
+            (s) => s.id,
+        ),
+    };
+}
+
+if (import.meta.main && process.argv[2] === '--stop') {
+    const input = JSON.parse(readFileSync(0, 'utf8') || '{}') as {
+        stop_hook_active?: boolean;
+        transcript_path?: string;
+    };
+    const seat = seatOf();
+    if (!input.stop_hook_active && seat !== undefined) {
+        const d = seatDay(seat, new Date(), input.transcript_path);
+        const reason = groomBlock(
+            d.dayText,
+            d.day,
+            d.now,
+            d.noWishText,
+            d.steerIds,
+        );
+        if (reason) console.log(JSON.stringify({ decision: 'block', reason }));
+    }
+} else if (import.meta.main) {
     const { prompt = '', transcript_path } = JSON.parse(
         readFileSync(0, 'utf8') || '{}',
     ) as { prompt?: string; transcript_path?: string };
@@ -111,33 +173,21 @@ if (import.meta.main) {
     // a session that is no clio seat (a plain fork, a sidecar) keeps no log
     const seat = seatOf();
     if (text && seat !== undefined) {
-        const dir = path.join(rawRoot, seat);
         const now = new Date();
-        const file = path.join(dir, `${now.toLocaleDateString('sv')}.md`);
-        mkdirSync(dir, { recursive: true });
+        const { file } = seatDay(seat, now);
+        mkdirSync(path.dirname(file), { recursive: true });
         const line = existsSync(file)
             ? readFileSync(file, 'utf8').split('\n').length
             : 1;
         appendFileSync(file, entryFor(text, now));
         console.log(`raw saved · ${file}:${line}`);
-        const day = now.toLocaleDateString('sv');
-        const noWish = path.join(
-            process.env.PROMPT_GROOM_DIR ??
-                path.join(process.env.HOME ?? '', '.local/state/clio/grooms'),
-            seat,
-            `${day}.no-wish.md`,
-        );
-        const noWishText = existsSync(noWish)
-            ? readFileSync(noWish, 'utf8')
-            : '';
+        const d = seatDay(seat, now, transcript_path);
         const nudge = groomNudge(
-            readFileSync(file, 'utf8'),
-            day,
-            now.toLocaleTimeString('sv').slice(0, 5),
-            noWishText,
-            ungroomedSteersToday(day, noWishText, transcript_path).map(
-                (s) => s.id,
-            ),
+            d.dayText,
+            d.day,
+            d.now,
+            d.noWishText,
+            d.steerIds,
         );
         if (nudge) console.log(nudge);
         const wing = wingNudge(text, process.env.HOME ?? '');

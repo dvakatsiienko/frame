@@ -2,6 +2,7 @@
 // usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
 //        node prompt-groom.ts --next <PK-N|FRM-N|BYT-N>      print the home's next full wish id, <home>:W1 for an empty home (PK-312, PK-338)
 //        node prompt-groom.ts --move <PK-N> <FRM-N|BYT-N> <W-id…>   print the wishes renumbered into the ticket's series and the pocket's «moved:» line (o98); writes nothing
+//        node prompt-groom.ts --no-wish <HH:MM|oN> '<why>'     write today's no-wish line for a prompt minute or an orbit steer, one call (dima's o76)
 //        node prompt-groom.ts --standing [YYYY-MM-DD]       print the day's open ` #standing` W-lines, one a line (FRM-482; a new day starts empty)
 //        node prompt-groom.ts --tag <W-id>                 clio's hand: end today's W-line with ` #standing`
 //        node prompt-groom.ts --lift <W-id|all>            turn today's ` #standing` W-line(s) ` #lifted`; exit 1 when none matched
@@ -9,6 +10,7 @@
 //        node prompt-groom.ts --day [YYYY-MM-DD] [--now HH:MM] [--transcript <jsonl>]   red each prompt of that day (default today; a past day's now is its 23:59) older than 10 minutes with no groom and no `HH:MM — <why>` line in grooms/<day>.no-wish.md (slash-command-only and harness-event-only prompts skipped), each orbit steer of that day with no groom and no `oN — <why>` line, and each W-line of that day's groomed files whose id and text share no line of a pocket task file, no .scratch spec.md and no linear ticket body updated yesterday or today (linear unreachable: a 🟡 line, the no-home check skipped)
 import { execFileSync } from 'node:child_process';
 import {
+    appendFileSync,
     existsSync,
     globSync,
     mkdirSync,
@@ -642,6 +644,22 @@ if (import.meta.main) {
             ids,
         );
         console.log([...lines, '', note].join('\n'));
+        process.exit(0);
+    }
+    if (args[0] === '--no-wish') {
+        const [, key = '', why = ''] = args;
+        if (!/^(\d{2}:\d{2}|o\d+)$/.test(key) || !why.trim()) {
+            console.error(
+                "usage: node prompt-groom.ts --no-wish <HH:MM|oN> '<why>'",
+            );
+            process.exit(2);
+        }
+        mkdirSync(groomDir, { recursive: true });
+        appendFileSync(
+            path.join(groomDir, `${today}.no-wish.md`),
+            `${key} — ${why.trim()}\n`,
+        );
+        console.log(`${key} — no wish, today`);
         process.exit(0);
     }
     if (args[0] === '--standing') {

@@ -10,7 +10,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { dimasText, groomNudge, wingNudge } from './prompt-raw-save.ts';
+import {
+    dimasText,
+    groomBlock,
+    groomNudge,
+    wingNudge,
+} from './prompt-raw-save.ts';
 import { seatOf } from './session-registry.ts';
 
 const notice =
@@ -34,6 +39,39 @@ describe('groomNudge', () => {
         expect(
             groomNudge(dayText, day, '19:00', '18:00 — a go\n', ['o1']),
         ).toContain('1 prompt(s) or steer(s) ungroomed: o1');
+    });
+});
+
+describe('groomBlock', () => {
+    const day = '2026-10-30';
+    const prompts = (times: string[]) =>
+        times.map((t) => `## ${t}\n\nwish ${t}\n\n`).join('');
+    test('five items past 30 minutes block the turn end', () => {
+        expect(
+            groomBlock(prompts(['18:00', '18:05', '18:10']), day, '19:00', '', [
+                'o1',
+                'o2',
+            ]),
+        ).toContain('5 prompt(s) or steer(s) wait past 30 min');
+    });
+    test('four do not', () => {
+        expect(
+            groomBlock(prompts(['18:00', '18:05']), day, '19:00', '', [
+                'o1',
+                'o2',
+            ]),
+        ).toBeUndefined();
+    });
+    test('a prompt younger than 30 minutes is not counted yet', () => {
+        expect(
+            groomBlock(
+                prompts(['18:00', '18:05', '18:10', '18:45']),
+                day,
+                '19:00',
+                '',
+                ['o1'],
+            ),
+        ).toBeUndefined();
     });
 });
 
