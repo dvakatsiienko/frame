@@ -476,11 +476,15 @@ function transcriptSteers(transcript?: string) {
         });
 }
 
+// the prompt hook names its own transcript; with none, the newest clio transcript may be another seat's, so no steer is owed
 export const ungroomedSteersToday = (
     day: string,
     noWishText: string,
     transcript?: string,
-) => ungroomedSteers(transcriptSteers(transcript), day, noWishText);
+) =>
+    transcript === undefined
+        ? []
+        : ungroomedSteers(transcriptSteers(transcript), day, noWishText);
 
 // every steer of that id on that day: one ask can take several, and an id can return on a later day
 const steerText = (id: string, day: string, transcript?: string) =>

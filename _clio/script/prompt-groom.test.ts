@@ -971,3 +971,20 @@ describe('a pocket wish moving to a ticket is renumbered into its series (PK-312
         ).toThrow(/W5/);
     });
 });
+
+describe('ungroomedSteersToday', () => {
+    test('with no transcript named, no steer is owed', async () => {
+        const home = mkdtempSync(join(tmpdir(), 'steer-home-'));
+        const dir = join(home, '.claude/projects/-Users-dima-frame--clio');
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(
+            join(dir, 'other-seat.jsonl'),
+            `${steer('o4', 'another seat steer')}\n`,
+        );
+        vi.stubEnv('HOME', home);
+        vi.resetModules();
+        const groom = await import('./prompt-groom.ts');
+        vi.unstubAllEnvs();
+        expect(groom.ungroomedSteersToday('2026-10-26', '')).toEqual([]);
+    });
+});
