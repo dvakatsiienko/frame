@@ -4,7 +4,7 @@ title: 'linux vm: frame''s go tests run in a persistent vm on this mac, shape-id
 status: open
 assignee: []
 created_date: '2026-11-09T14:19:00Z'
-updated_date: '2026-11-09T14:27:00Z'
+updated_date: '2026-11-09T14:44:00Z'
 labels:
   - s
   - clio-wing-1
@@ -36,4 +36,6 @@ grill 1 settled 2026-11-09 16:27, dima's ticks o24-o31, all as picked:
 - Q5 ubuntu 26.04 minimal arm64, --containerd none --mount-none, snapd and unattended-upgrades off, cpus and ram from a 4/6/8/10 vcpu sweep
 - Q6 the name: round 2, seven candidates
 - Q7 no tools inside past go, git and rsync
+
+PK-373 name, dima's o32 steer 16:44: vm-go-test (over my go-test-vm pick)
 <!-- SECTION:NOTES:END -->
