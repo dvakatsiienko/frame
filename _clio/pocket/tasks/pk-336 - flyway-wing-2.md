@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T19:21:00Z'
+updated_date: '2026-11-09T19:23:00Z'
 labels:
   - m
   - clio-wing-2
@@ -25,13 +25,10 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #1 ⏳ FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card — waits for: frame#152's review run
 - [ ] #2 ⏳ the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25) — waits for: frame#152's merge
 - [ ] #3 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
-- [ ] #4 ⏳ frame#152 (FRM-549, FRM-553 + its riders, FRM-548) merges by merge-auto — waits for: sixth sense's clean on codie's round-1 fixes
-- [ ] #5 📅 FRM-483 boot-prefetch stall, the 3-day read — on: 2026-11-11
-- [ ] #6 📅 FRM-516 crow on every wing, the week's read — on: 2026-11-14
-- [ ] #7 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
-- [ ] #8 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
-- [ ] #9 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go and stacks.go changed since its last version — later: dima 20:21 («i tell when»)
-- [ ] #10 💤 speak v2 planning with dima — later: dima, when he picks it up (moved from wing 3, dima 20:29)
+- [ ] #4 ⏳ frame#152 (FRM-549, FRM-553 + its riders, FRM-548) merges by merge-auto — waits for: sixth sense's round-4 clean and my wishkeeper read
+- [ ] #5 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
+- [ ] #6 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
+- [ ] #7 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go and stacks.go changed since its last version — later: dima 20:21 («i tell when»)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -176,4 +173,7 @@ PK-336:W31 (2026-11-09 20:53, dima): why are they staying ungroomed? habit lag, 
 — answered: the hook only warned and a wing's siesta skipped the groom check; built 21:04 (o76): a seat's turn holds at 5 waiting past 30 min, every seat's siesta checks, a one-call no-wish
 
 hoist 11-09 21:20: proposing, wing 2 (re-triage on dima's ask)
+
+moved 2026-11-09 21:23 (low tide triage, dima's ask): 📅 FRM-483 and 📅 FRM-516 to main's PK-349, 💤 speak v2 planning to wing 1's PK-346 (its 11-10 first line); main and wing 1 confirmed
+hoist 11-09: done
 <!-- SECTION:NOTES:END -->
