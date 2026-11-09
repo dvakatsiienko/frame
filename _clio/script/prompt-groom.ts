@@ -283,6 +283,8 @@ export function homelessWishes(
                 readFileSync(path.join(groomDir, name), 'utf8').match(W_LINE) ??
                 []
             )
+                // an unstamped line is helga's prep note or section id («- W1 has no bold title»), never his W-line
+                .filter((line) => new RegExp(STAMP.source, 'm').test(line))
                 .filter((line) => !isHomed(line))
                 .map(
                     (line) =>

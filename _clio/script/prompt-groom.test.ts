@@ -472,6 +472,18 @@ describe('--day', () => {
         ).toBe(0);
     });
 
+    test('a prep note opening with a W-id is no W-line', () => {
+        const out = run({
+            grooms: {
+                ...groomed(),
+                [`${day}-inbox.groomed.md`]:
+                    '- W1 has no bold title in his file\n',
+            },
+            pocket: { 'a.md': 'W1 ship it' },
+        });
+        expect(out.status).toBe(0);
+    });
+
     test('a groomed W-id with no home reds', () => {
         const out = run({ grooms: groomed('W7'), pocket: { 'a.md': 'W8' } });
         expect(out.status).toBe(1);
