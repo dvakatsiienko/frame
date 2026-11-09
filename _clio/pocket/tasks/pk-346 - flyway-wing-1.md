@@ -4,14 +4,14 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T18:37:00Z'
+updated_date: '2026-11-09T18:48:00Z'
 labels:
   - s
   - clio-wing-1
 dependencies: []
-priority: next
+priority: now
 type: task
-ordinal: 18998
+ordinal: 1001
 ---
 
 ## Acceptance Criteria
