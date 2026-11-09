@@ -99,8 +99,9 @@ commit-msg:
   commands:
     commit-msg-lint:
       # the x:cmt format, refused before the commit lands: emoji canon, a domain scope, no closing
-      # keyword beside a ticket id — script/lib/commit-msg-lint.ts holds the rules and why each blocks
-      run: node ./script/commit-msg-lint.ts {1}
+      # keyword beside a ticket id — script/lib/commit-msg-lint.ts holds the rules and why each blocks.
+      # it runs from the commit's index copy: from the working tree, a peer's half-done lint edit blocked every commit (11-09)
+      run: m={1}; case $m in /*) ;; *) m=$PWD/$m ;; esac; script/index-run.sh node ./script/commit-msg-lint.ts "$m"
     lane-gate:
       # a remembered rule fails, a gate does not (FRM-367): a context's contract lands with its glossary or adr,
       # a crew-/guide- skill never only grows, an app's code lands with its FTR.md — each half has a message line
@@ -127,4 +128,5 @@ commit-msg:
       # an agent's commit gets `Agent: <role> · <model>` here, because `attribution.commit: ""`
       # tells every model to write no attribution line — the why: script/commit-agent-trailer.ts.
       # last in the block (commit-msg runs in sequence), and a human commit is left untouched
-      run: node ./script/commit-agent-trailer.ts {1}
+      # from the commit's index copy too, like the lint above; the message path is made absolute before the copy moves the cwd
+      run: m={1}; case $m in /*) ;; *) m=$PWD/$m ;; esac; script/index-run.sh node ./script/commit-agent-trailer.ts "$m"
