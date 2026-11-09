@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T17:54:00Z'
+updated_date: '2026-11-09T19:47:00Z'
 labels:
   - m
   - clio-main
@@ -492,4 +492,14 @@ correction (2026-11-09 19:33, helga): the W84 line and its raw drop above lost t
 answered in main's thread, the 19:12–19:37 ❓ lines: PK-363:W81 at 19:14 (FRM-505 needs no wait on FRM-524, links dropped 19:17) and goes to FRM-505:W1944 as its ending; PK-363:W82 at 19:14 (the herdr codie starts at once, dispatched 19:13); PK-363:W84 and PK-363:W85 at 19:33 (the chat panel is Zoo's, named fleet-chatter, said «chatter»); PK-363:W87 at 19:39 (desktop resume needs dima's sidebar look, the rest probed by main)
 
 moved (dima's tick o81, 19:53): PK-363:W81 is now FRM-505:W1944's ending
+
+PK-363:W88 (2026-11-09 21:36, dima): whats in fleet-chatter? ❓
+PK-363:W89 (2026-11-09 21:36, dima): For the chatter, I don't want anything special at this point because the base shape is working and I have a pretty window. Every surface in herdr needs polishing by me, but I don't want to spend effort on this now because I want a working MVP so we can smoothly start tomorrow.
+PK-363:W90 (2026-11-09 21:36, dima): What's left to have that MVP? ❓
+PK-363:W91 (2026-11-09 21:36, dima): From what I saw, sessions are present and plus/minus fine.
+PK-363:W92 (2026-11-09 21:36, dima): orbit: steer boxes are slightly off currently is like this:
+PK-363:W93 (2026-11-09 21:36, dima): 1. steer is a button
+PK-363:W94 (2026-11-09 21:36, dima): 2. when i press → text is possible to enter
+PK-363:W95 (2026-11-09 21:36, dima): 3. what i want: steer box is a text box right away. it also currently does not shows any UI signs that it is actually a text box (inivisble text entry) i want to as a text box (i steer herder codie for UI)
+PK-363:W96 (2026-11-09 21:36, dima): Let's shape everything that is needed to have herdr MVP, and let's see what we can do from there.
 <!-- SECTION:NOTES:END -->
