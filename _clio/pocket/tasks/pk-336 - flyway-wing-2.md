@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T18:14:00Z'
+updated_date: '2026-11-09T18:17:00Z'
 labels:
   - m
   - clio-wing-2
@@ -30,8 +30,8 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #6 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
 - [ ] #7 ⏳ FRM-483 boot-prefetch stall, the 3-day read — waits for: 2026-11-11
 - [ ] #8 ⏳ FRM-516 crow on every wing, the week's read — waits for: 2026-11-14
-- [ ] #9 ⏳ PK-362 steamac disk 256 → 192 gb — waits for: free space on the mac (dima 15:23)
-- [ ] #10 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
+- [ ] #9 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
+- [ ] #10 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
 <!-- AC:END -->
 
 ## Implementation Notes
