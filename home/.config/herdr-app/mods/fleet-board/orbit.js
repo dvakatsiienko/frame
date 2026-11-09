@@ -73,6 +73,16 @@ export const runningPids = (stdout) =>
     );
 
 /**
+ * an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command — takes that
+ * tick on the desktop board only, since a herdr tick never opens the guard (FRM-552 Decision 4)
+ * @param {string} text
+ */
+export const isGuardGated = (text) =>
+    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|github\.com\/[\w.-]+\/[\w.-]+\/pull\/\d+|`[^`]+`/iu.test(
+        text,
+    );
+
+/**
  * the session's phases, as its stash kept them
  * @param {Record<string, any>} store
  * @param {string} sid

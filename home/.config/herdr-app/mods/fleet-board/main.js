@@ -16,6 +16,7 @@ import {
 import {
     asksOf,
     currentSid,
+    isGuardGated,
     phasesOf,
     runningPids,
     savePress,
@@ -403,15 +404,29 @@ export default class FleetBoard extends View {
                             .pl(20)
                             .gap(6)
                             .child(
-                                button(
-                                    'tick',
-                                    '🛎️ tick',
-                                    'good to go: the session takes the pick',
-                                    (cx) =>
-                                        cx.spawn((cx) =>
-                                            this.press(cx, s, ask, 'tick'),
-                                        ),
-                                ),
+                                isGuardGated(ask.text)
+                                    ? div()
+                                          .id(`desk-${key}`)
+                                          .text_size(SIZE.meta)
+                                          .text_color(t.dim)
+                                          .tooltip(
+                                              'x-mod-guard reads this tick as your word, so it goes on the desktop board',
+                                          )
+                                          .child('🖥️ tick on desktop')
+                                    : button(
+                                          'tick',
+                                          '🛎️ tick',
+                                          'good to go: the session takes the pick',
+                                          (cx) =>
+                                              cx.spawn((cx) =>
+                                                  this.press(
+                                                      cx,
+                                                      s,
+                                                      ask,
+                                                      'tick',
+                                                  ),
+                                              ),
+                                      ),
                             )
                             .child(
                                 button(
