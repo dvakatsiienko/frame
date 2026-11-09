@@ -417,8 +417,8 @@ func TestCommitOnMainLogsAGoRunPastItsBudgetAndStillCommits(t *testing.T) {
 		t.Fatalf("exit %d, want the commit to land past its budget:\n%s", got.code, got.stdout)
 	}
 	row := strings.Split(strings.TrimSpace(readOr(filepath.Join(state, "test-cpu-budget.log"), "")), "\t")
-	// mac where no limactl is (a run inside vm-go-test itself), vm-down beside one: a fixture never reaches the vm
-	if len(row) != 10 || row[2] != "mod" || row[4] != "0" || row[5] != "0" || (row[9] != "vm-down" && row[9] != "mac") {
+	// - in ci, mac where no limactl is (a run inside vm-go-test itself), vm-down beside one: a fixture never reaches the vm
+	if len(row) != 10 || row[2] != "mod" || row[4] != "0" || row[5] != "0" || !slices.Contains([]string{"-", "mac", "vm-down"}, row[9]) {
 		t.Errorf("the log row reads %q, want suite mod, budget 0, exit 0, a mac leg", row)
 	}
 }

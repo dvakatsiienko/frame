@@ -10,13 +10,14 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { delimiter, join } from 'node:path';
+import { delimiter, dirname, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { gitEnv } from './git-fixture.ts';
 
 const script = join(import.meta.dirname, '../test-vm-go.sh');
 const budgetScript = join(import.meta.dirname, '../test-cpu-budget.sh');
+const indexRun = join(import.meta.dirname, '../index-run.sh');
 const downLine = 'vm-go-test down: ran on the mac';
 const realGo = spawnSync('sh', ['-c', 'command -v go'], {
     encoding: 'utf8',
@@ -57,6 +58,7 @@ function fixture({
     };
     const goLog = join(dir, 'go.calls');
     const goBody = `echo "\${FAKE_GUEST:-mac} $* | $(cat v.txt 2>/dev/null)" >>"${goLog}"
+[ -z "\${FAKE_GUEST:-}" ] || date +%s >>"${goLog}.starts"
 [ -z "\${FAKE_GUEST:-}" ] || [ -z "\${GO_SLEEP:-}" ] || sleep "$GO_SLEEP"
 [ "$(cat v.txt 2>/dev/null)" != bad ] || { echo '--- FAIL: TestV'; exit 1; }
 echo 'ok  \tm\t0.1s'
@@ -64,7 +66,18 @@ exit ${goCode}`;
     fake(bin, 'go', goBody);
     if (realGoInGuest) fake(guestBin, 'go', `exec "${realGo}" "$@"`);
     else fake(guestBin, 'go', goBody);
-    fake(guestBin, 'flock', 'exit 0');
+    // util-linux flock on an inherited fd, for a mac with none: the lock sits on the open file the guest shell holds, as the real one's does
+    writeFileSync(
+        join(guestBin, 'flock'),
+        `#!/usr/bin/perl
+use Fcntl ':flock';
+my ($op, $nb) = (LOCK_EX, 0);
+while (@ARGV > 1) { my $a = shift; $op = LOCK_SH if $a eq '-s' || $a eq '--shared'; $op = LOCK_UN if $a eq '-u'; $nb = LOCK_NB if $a eq '-n'; }
+open(my $fh, '>&=', $ARGV[0]) or die "flock: fd $ARGV[0]: $!";
+flock($fh, $op | $nb) or exit 1;
+`,
+    );
+    chmodSync(join(guestBin, 'flock'), 0o755);
     fake(
         bin,
         'ssh',
@@ -73,6 +86,8 @@ while [ $# -gt 0 ]; do case $1 in -F | -o) shift 2 ;; -*) shift ;; *) break ;; e
 shift
 cmd="$*"
 case $cmd in "bash -l -s"*) [ "${runCode}" = 0 ] || exit ${runCode} ;; git-receive-pack*) ;; *) [ "${probeCode}" = 0 ] || exit ${probeCode} ;; esac
+# a real ssh carries none of the host's env: a hook's GIT_INDEX_FILE never reaches the guest's git
+unset $(compgen -e | grep '^GIT_')
 cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$PATH" exec bash -c "\${cmd/bash -l -s/bash -s}"`,
     );
     if (hasLima) fake(bin, 'limactl', `echo '${vmStatus}'`);
@@ -139,8 +154,33 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
             encoding: 'utf8',
             env: gitEnv(),
         }).stdout.trim();
+    // what a run left in the slot trees: a file outside the commit, ignored or not; the node_modules link is the slot's own
     const guestRuns = () =>
-        existsSync(join(guest, 'runs')) ? readdirSync(join(guest, 'runs')) : [];
+        existsSync(join(guest, 'runs'))
+            ? readdirSync(join(guest, 'runs'))
+                  .filter((name) => !name.endsWith('.lock'))
+                  .flatMap((slot) =>
+                      spawnSync(
+                          'git',
+                          [
+                              'status',
+                              '--porcelain',
+                              '--ignored',
+                              '--untracked-files=all',
+                          ],
+                          {
+                              cwd: join(guest, 'runs', slot),
+                              encoding: 'utf8',
+                              env: gitEnv(),
+                          },
+                      )
+                          .stdout.split('\n')
+                          .filter(
+                              (line) => line && !line.endsWith(' node_modules'),
+                          )
+                          .map((line) => `${slot}: ${line}`),
+                  )
+            : [];
     const guestGit = (...args: string[]) =>
         spawnSync('git', args, {
             cwd: join(guest, 'runs.git'),
@@ -148,14 +188,33 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
             env: { ...gitEnv(), GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z' },
         }).stdout.trim();
     // the runner as its doors reach it, so the budget row is the one a commit writes
-    const budget = (args: string[], extra: NodeJS.ProcessEnv = {}) => {
+    // door lane: x lane commit's go step, the budget argv cpuBudgetLog builds, in the module dir over the real index.
+    // door hook: lefthook's x-go-reads job, the same argv inside index-run.sh's private index copy
+    const budget = (
+        args: string[],
+        extra: NodeJS.ProcessEnv = {},
+        door: 'hook' | 'lane' = 'lane',
+    ) => {
         copyFileSync(budgetScript, join(dir, 'test-cpu-budget.sh'));
         chmodSync(join(dir, 'test-cpu-budget.sh'), 0o755);
-        const got = spawnSync(
+        const argv = [
             join(dir, 'test-cpu-budget.sh'),
-            ['--log-only', 'm', ...args],
-            { cwd, encoding: 'utf8', env: env(extra) },
-        );
+            '--log-only',
+            'm',
+            ...args,
+        ];
+        const got =
+            door === 'lane'
+                ? spawnSync(argv[0] ?? '', argv.slice(1), {
+                      cwd,
+                      encoding: 'utf8',
+                      env: env(extra),
+                  })
+                : spawnSync(
+                      indexRun,
+                      ['sh', '-c', 'cd m && exec "$@"', 'sh', ...argv],
+                      { cwd: code, encoding: 'utf8', env: env(extra) },
+                  );
         const log = join(dir, 'state/test-cpu-budget.log');
         const rows = existsSync(log)
             ? readFileSync(log, 'utf8')
@@ -177,6 +236,7 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
         leg,
         run,
         runAsync,
+        windows: join(dir, 'state/test-vm-go.log'),
     };
 }
 
@@ -241,6 +301,30 @@ describe('the vm leg', () => {
         expect(guestRuns()).toEqual([]);
     });
 
+    test.each([
+        [
+            'another run still in its window marks the row vm-overlap',
+            0,
+            'vm-overlap',
+        ],
+        [
+            'a killed run, its start past the leg bound with no end, marks nothing',
+            600,
+            'vm',
+        ],
+    ])('%s', (_name, ageSeconds, want) => {
+        const { leg, run, windows } = fixture();
+        mkdirSync(dirname(windows), { recursive: true });
+        writeFileSync(
+            windows,
+            `start ${Math.floor(Date.now() / 1000) - ageSeconds} 1-other\n`,
+        );
+
+        run(suite);
+
+        expect(leg()).toBe(want);
+    });
+
     test('two runs at once each test their own commit and leave nothing behind', async () => {
         const { calls, code, guestRefs, guestRuns, runAsync } = fixture();
         // two seats' commits: each its own index, as each hook's GIT_INDEX_FILE names it
@@ -255,10 +339,15 @@ describe('the vm leg', () => {
         };
         const one = staged('one');
         const two = staged('two');
-        const [first, second] = [one, two].map((index) =>
+        const reports = [
+            join(code, '../report-one'),
+            join(code, '../report-two'),
+        ];
+        const [first, second] = [one, two].map((index, n) =>
             runAsync(['--index', ...suite], {
                 GIT_INDEX_FILE: index,
-                GO_SLEEP: '1',
+                GO_SLEEP: '3',
+                TEST_VM_GO_REPORT: reports[n],
             }),
         );
 
@@ -270,6 +359,15 @@ describe('the vm leg', () => {
             'guest test -count=1 ./... -parallel 7 | one',
             'guest test -count=1 ./... -parallel 7 | two',
         ]);
+        // side by side, never one after the other: each suite sleeps 3 s
+        const [a, b] = readFileSync(join(code, '../go.calls.starts'), 'utf8')
+            .trim()
+            .split('\n')
+            .map(Number);
+        expect(Math.abs((a ?? 0) - (b ?? 99))).toBeLessThanOrEqual(1);
+        expect(
+            reports.map((path) => readFileSync(path, 'utf8').split('\t')[0]),
+        ).toEqual(['vm-overlap', 'vm-overlap']);
         expect(guestRefs()).toBe('');
         expect(guestRuns()).toEqual([]);
     });
@@ -280,27 +378,33 @@ describe('the vm leg', () => {
         run(suite);
         run(suite);
 
-        const pushes = calls('ssh').filter((line) =>
-            line.includes('git-receive-pack'),
-        );
-        expect(pushes).toHaveLength(2);
+        // the run id names its ref, refs/runs/<id>
         const runIds = calls('ssh')
             .filter((line) => line.includes('bash -l -s'))
             .map((line) => line.split('bash -l -s -- ')[1]?.split(' ')[0]);
         expect(new Set(runIds).size).toBe(2);
     });
 
-    test('a commit door tests the index alone, never the unstaged edit beside it', () => {
-        const { calls, code, run } = fixture();
-        writeFileSync(join(code, 'm/v.txt'), 'bad');
+    test.each([
+        ['lane', "x lane commit's go step"],
+        ['hook', 'the x-go-reads hook job'],
+    ] as const)(
+        'through %s (%s), a commit tests its staged file, never the unstaged edit beside it',
+        (door, _name) => {
+            const { budget, calls, code, git } = fixture();
+            writeFileSync(join(code, 'm/v.txt'), 'fine');
+            git('add', 'm/v.txt');
+            writeFileSync(join(code, 'm/v.txt'), 'bad');
 
-        const got = run(['--index', ...suite]);
+            const { got, rows } = budget(suite, {}, door);
 
-        expect(got.status, got.stdout).toBe(0);
-        expect(calls('go')).toEqual([
-            'guest test -count=1 ./... -parallel 7 | good',
-        ]);
-    });
+            expect(got.status, got.stderr).toBe(0);
+            expect(calls('go')).toEqual([
+                'guest test -count=1 ./... -parallel 7 | fine',
+            ]);
+            expect(rows.map((row) => row[9])).toEqual(['vm']);
+        },
+    );
 
     test('a by-hand run tests the working tree, as the mac would', () => {
         const { calls, code, run } = fixture();
@@ -371,8 +475,8 @@ describe('a cut vm leg', () => {
         expect(guestRuns()).toEqual([]);
     }, 30_000);
 
-    test('a run sweeps a dead run older than one deadline, its ref and its tree', () => {
-        const { guest, guestGit, guestRefs, guestRuns, run } = fixture();
+    test('a run sweeps the ref of a dead run older than one deadline', () => {
+        const { guestGit, guestRefs, run } = fixture();
         run(suite);
         const dead = guestGit(
             'commit-tree',
@@ -381,20 +485,28 @@ describe('a cut vm leg', () => {
             guestGit('mktree'),
         );
         guestGit('update-ref', 'refs/runs/dead', dead);
-        guestGit(
-            'worktree',
-            'add',
-            '-q',
-            '--detach',
-            join(guest, 'runs/dead'),
-            dead,
-        );
-        expect(guestRuns()).toEqual(['dead']);
 
         const got = run(suite);
 
         expect(got.status, got.stderr).toBe(0);
         expect(guestRefs()).toBe('');
+    });
+
+    test('a file a cut run left in its slot dies before the next run reads it', () => {
+        const { calls, guest, guestRuns, run } = fixture();
+        run(suite);
+        writeFileSync(join(guest, 'runs/slot-0/m/v.txt'), 'bad');
+        writeFileSync(
+            join(guest, 'runs/slot-0/m/left.txt'),
+            'a cut run wrote me',
+        );
+
+        const got = run(suite);
+
+        expect(got.status, got.stdout).toBe(0);
+        expect(calls('go').at(-1)).toBe(
+            'guest test -count=1 ./... -parallel 7 | good',
+        );
         expect(guestRuns()).toEqual([]);
     });
 });

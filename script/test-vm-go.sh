@@ -122,50 +122,68 @@ sync_tree() {
     parent=$(git rev-parse -q --verify HEAD)
     commit=$(GIT_AUTHOR_NAME=test-vm-go GIT_AUTHOR_EMAIL=test-vm-go@localhost GIT_COMMITTER_NAME=test-vm-go \
         GIT_COMMITTER_EMAIL=test-vm-go@localhost git commit-tree ${parent:+-p "$parent"} -m "test-vm-go $id" "$tree") || return
-    # send-pack is the transport alone: a push into our own vm runs none of the repo's pre-push gates; its words print only on a failure
+    # send-pack is the transport alone: a push into our own vm runs none of the repo's pre-push gates; its words print only on a failure.
+    # refs/base/head holds a parent for the next push to negotiate against, or every run would send the whole history again;
+    # its own push after, best effort, since two seats moving it at once refuse each other
     local pushed
-    pushed=$(GIT_SSH_COMMAND="ssh -F $lima_home/$vm/ssh.config -o BatchMode=yes" \
-        git send-pack --force "lima-$vm:runs.git" "$commit:refs/runs/$id" 2>&1) || {
+    export GIT_SSH_COMMAND="ssh -F $lima_home/$vm/ssh.config -o BatchMode=yes -o ConnectTimeout=5"
+    pushed=$(timeout "$deadline" git send-pack --force "lima-$vm:runs.git" "$commit:refs/runs/$id" 2>&1) || {
         echo "$pushed" >&2
         return 1
     }
+    [ -z "$parent" ] || timeout 10 git send-pack --force "lima-$vm:runs.git" "$parent:refs/base/head" >/dev/null 2>&1 || true
 }
 
-# the guest side, fed to bash on stdin: its own worktree of the run's commit, the shared node_modules for the lock, the suite under the deadline.
-# a cut leaves its ref and tree behind; the next run sweeps every run older than one deadline, by when its own timeout has killed it.
+# the guest side, fed to bash on stdin. a run takes a free slot, a worktree it alone holds (its lock) for the run, checked out at the
+# run's commit and cleaned before and after: a fixed path keeps go's build cache warm, which keys a package on its dir.
+# the shared node_modules for the lock hash sit under a shared lock, taken exclusive only to install. a cut leaves its ref behind;
+# the next run deletes every run ref older than one deadline. 125 is a cut: no slot, no checkout, no install.
 guest=$(
     cat <<'GUEST'
 set -u
 id=$1 commit=$2 prefix=$3 deadline=$4 goflags=$5 git_config_global=$6
 shift 6
 repo=$HOME/runs.git runs=$HOME/runs deps=$HOME/deps
-drop() {
-    git -C "$repo" worktree remove --force "$runs/$1" >/dev/null 2>&1
-    git -C "$repo" update-ref -d "refs/runs/$1" 2>/dev/null
-}
-trap 'drop "$id"; git -C "$repo" worktree prune' EXIT
+mkdir -p "$runs"
+for n in 0 1 2 3 4 5 6 7; do
+    exec 8>"$runs/slot-$n.lock"
+    flock -n 8 && break
+    exec 8>&-
+    [ "$n" -lt 7 ] || exit 125
+done
+tree=$runs/slot-$n
+clean() { git -C "$tree" clean -ffdxq -e /node_modules 2>/dev/null; }
+trap 'clean; git -C "$repo" update-ref -d "refs/runs/$id" 2>/dev/null' EXIT
 trap 'exit 143' HUP INT TERM
 now=$(date +%s)
 git -C "$repo" for-each-ref --format='%(committerdate:unix) %(refname:strip=2)' refs/runs/ |
     while read -r at name; do
-        [ "$name" = "$id" ] || [ $((now - at)) -le "$deadline" ] || drop "$name"
+        [ "$name" = "$id" ] || [ $((now - at)) -le "$deadline" ] || git -C "$repo" update-ref -d "refs/runs/$name"
     done
-git -C "$repo" worktree prune
-mkdir -p "$runs"
-git -C "$repo" worktree add -q --detach "$runs/$id" "$commit" >/dev/null 2>&1 || exit 125
+if [ -d "$tree" ]; then
+    git -C "$tree" checkout -q --detach --force "$commit" || exit 125
+else
+    git -C "$repo" worktree add -q --detach "$tree" "$commit" >/dev/null 2>&1 || exit 125
+fi
+clean
 want=$(git -C "$repo" show "$commit:pnpm-lock.yaml" 2>/dev/null | sha1sum | cut -c1-12)
 exec 9>"$HOME/deps.lock"
-flock 9
+flock --shared 9
 if [ "$(cat "$deps/.lock-hash" 2>/dev/null)" != "$want" ] && [ -n "$(git -C "$repo" ls-tree "$commit" pnpm-lock.yaml)" ]; then
-    echo "$id: pnpm-lock.yaml moved, installing node_modules in the vm" >&2
-    [ -d "$deps" ] || git -C "$repo" worktree add -q --detach "$deps" "$commit" >/dev/null 2>&1
-    git -C "$deps" checkout -q --detach --force "$commit" &&
-        (cd "$deps" && CI=1 pnpm install --frozen-lockfile --ignore-scripts >&2) && echo "$want" >"$deps/.lock-hash"
+    flock -u 9
+    flock 9
+    if [ "$(cat "$deps/.lock-hash" 2>/dev/null)" != "$want" ]; then
+        echo "$id: pnpm-lock.yaml moved, installing node_modules in the vm" >&2
+        [ -d "$deps" ] || git -C "$repo" worktree add -q --detach "$deps" "$commit" >/dev/null 2>&1
+        { git -C "$deps" checkout -q --detach --force "$commit" &&
+            (cd "$deps" && CI=1 pnpm install --frozen-lockfile --ignore-scripts </dev/null >&2) && echo "$want" >"$deps/.lock-hash"; } || exit 125
+    fi
+    # shared to the run's end, so no install swaps node_modules under a running suite; a peer's install in the gap is a cut
+    flock -s 9
+    [ "$(cat "$deps/.lock-hash" 2>/dev/null)" = "$want" ] || exit 125
 fi
-# shared from here to the run's end, so no install swaps node_modules under a running suite
-flock -s 9
-[ ! -d "$deps/node_modules" ] || ln -s "$deps/node_modules" "$runs/$id/node_modules"
-cd "$runs/$id/$prefix" || exit 125
+[ ! -d "$deps/node_modules" ] || [ -e "$tree/node_modules" ] || ln -s "$deps/node_modules" "$tree/node_modules"
+cd "$tree/$prefix" || exit 125
 [ -z "$goflags" ] || export GOFLAGS=$goflags
 [ -z "$git_config_global" ] || export GIT_CONFIG_GLOBAL=$git_config_global
 timeout -k 5 "$deadline" "$@" </dev/null
@@ -181,7 +199,8 @@ if ! sync_tree; then
     on_mac vm-cut "$(($(vm_cpu_ms) - cpu_before))"
 fi
 remote=$(printf '%q ' "$id" "$commit" "$(git rev-parse --show-prefix)" "$deadline" "${GOFLAGS-}" "${GIT_CONFIG_GLOBAL-}" "$@" -parallel "$vm_parallel")
-timeout -k 5 $((deadline + 15)) "${ssh_vm[@]}" "bash -l -s -- $remote" <<<"$guest"
+# --foreground: a ctrl-c on a by-hand run reaches ssh, and through it the guest
+timeout --foreground -k 5 $((deadline + 15)) "${ssh_vm[@]}" "bash -l -s -- $remote" <<<"$guest"
 code=$?
 ended=$(date +%s)
 echo "end $ended $id" >>"$windows"
@@ -195,11 +214,12 @@ case $code in
     ;;
 esac
 
-# another run's window overlapping this one shares the process-wide VZ counter, so this row's number is not its own
-overlap=$(awk -v me="$id" -v from="$started" -v to="$ended" '
+# another run's window overlapping this one shares the process-wide VZ counter, so this row's number is not its own;
+# a start with no end past the leg's own bound is a killed run, never one still going
+overlap=$(awk -v me="$id" -v from="$started" -v to="$ended" -v bound=$((2 * deadline + 30)) '
     $3 != me && $1 == "start" { start[$3] = $2 }
     $3 != me && $1 == "end" { end[$3] = $2 }
-    END { for (run in start) if (start[run] <= to && (!(run in end) || end[run] >= from)) { print "yes"; exit } }' "$windows")
+    END { for (run in start) if (start[run] <= to && ((run in end) ? end[run] >= from : start[run] + bound >= from)) { print "yes"; exit } }' "$windows")
 on_mac "vm${overlap:+-overlap}" "$used"
 # the log keeps its last day or so
 [ "$(wc -l <"$windows")" -lt 2000 ] || { tail -n 400 "$windows" >"$windows.new" && mv "$windows.new" "$windows"; }

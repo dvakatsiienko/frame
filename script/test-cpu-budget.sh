@@ -106,7 +106,8 @@ case $git_path in
     ;;
 esac
 
-if [ "$code" -eq 0 ] && [ -z "$log_only" ] && [ -n "${red_past:-}" ] && [ "$used_ms" -gt "$red_past" ]; then
+# a vm-overlap row shares the VZ counter with another run, so its number is never this run's own to red on
+if [ "$code" -eq 0 ] && [ -z "$log_only" ] && [ "$leg" != vm-overlap ] && [ -n "${red_past:-}" ] && [ "$used_ms" -gt "$red_past" ]; then
     cat >&2 <<EOF
 test-cpu-budget: $suite used $used cpu-s, its budget is $budget cpu-s.
 read what grew first; a later lane may read a cost it did not add, since a related run never counts.

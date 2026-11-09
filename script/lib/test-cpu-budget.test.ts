@@ -119,6 +119,27 @@ describe('the runner it hands the suite to', () => {
             handed,
         );
     });
+
+    test.each([
+        ['a solo vm row past its line goes red', 'vm', 1],
+        [
+            'a vm-overlap row past its line never reds: its number is shared',
+            'vm-overlap',
+            0,
+        ],
+    ])('%s', (_name, leg, status) => {
+        const { dir, rows, run } = fixture();
+        writeFileSync(
+            join(dir, 'test-vm-go.sh'),
+            `#!/bin/bash\nprintf '${leg}\\t5000\\n' >"$TEST_VM_GO_REPORT"\necho 'ok  \tx\t1s'\n`,
+        );
+
+        const got = run(whole);
+
+        expect(got.status, got.stderr).toBe(status);
+        expect(rows()[0]?.[9]).toBe(leg);
+        expect(Number(rows()[0]?.[3])).toBeGreaterThanOrEqual(5);
+    });
 });
 
 describe('the worker cap', () => {
