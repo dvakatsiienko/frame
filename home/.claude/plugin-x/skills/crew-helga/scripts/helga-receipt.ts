@@ -40,7 +40,7 @@ if (import.meta.main) {
     }
     const file = path.resolve(
         import.meta.dirname,
-        '../../docs/test-drive/helga.md',
+        '../../../../../../docs/test-drive/helga.md',
     );
     const day = new Date().toLocaleDateString('sv');
     writeFileSync(file, addReceipt(readFileSync(file, 'utf8'), fields, day));

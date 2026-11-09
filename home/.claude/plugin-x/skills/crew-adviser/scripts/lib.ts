@@ -111,10 +111,7 @@ export function clearHot(storePath: string, sessionId: string) {
 
 // crow runs without user plugins, so its contract arrives as the boot prompt, frontmatter cut
 // a /clear drops the boot prompt, so every wake line names the charter a fresh session reads first
-const CHARTER_PATH = join(
-    import.meta.dirname,
-    '../home/.claude/plugin-x/skills/crew-adviser/SKILL.md',
-);
+const CHARTER_PATH = join(import.meta.dirname, '../SKILL.md');
 
 export function readCharter() {
     return readFileSync(CHARTER_PATH, 'utf8').replace(

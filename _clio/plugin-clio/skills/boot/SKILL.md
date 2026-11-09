@@ -94,7 +94,7 @@ and habits live in `/clio:flawlog`, which loads alongside this boot.
 **the board prints once, after both reviews are folded** (dima, 2026-10-12: «first gather all
 reviews from wishkeeper and crow, only then print a plan»; the boot is the session's planning step):
 - write the draft board to `~/frame/_clio/.scratch/boot-<YYYY-MM-DD>/board-proposal.md` — the write
-  fires crow's `proposal` decision wake (`_crow/decision.ts`), the whole thread in her packet: she
+  fires crow's `proposal` decision wake (`x:crew-adviser/scripts/decision.ts`), the whole thread in her packet: she
   checks the parse, the plan, and how clio read his prompt
 - in the same step, `wishkeeper` 🐬 in boot mode at `effort: high`, with the raw inbox text, his
   boot prompt and each item's landing spot (pocket id, ticket, or answer): data loss of his drops is

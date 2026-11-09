@@ -45,17 +45,25 @@ test('a receipt lands as one line in clio’s receipts log', () => {
 
 test('the cli writes both logs, the trial file beside the script and clio’s under HOME', () => {
     const root = mkdtempSync(join(tmpdir(), 'receipt-cli-'));
-    mkdirSync(join(root, '_clio/script'), { recursive: true });
+    mkdirSync(join(root, 'home/.claude/plugin-x/skills/crew-helga/scripts'), {
+        recursive: true,
+    });
     mkdirSync(join(root, 'docs/test-drive'), { recursive: true });
     copyFileSync(
         join(import.meta.dirname, 'helga-receipt.ts'),
-        join(root, '_clio/script/helga-receipt.ts'),
+        join(
+            root,
+            'home/.claude/plugin-x/skills/crew-helga/scripts/helga-receipt.ts',
+        ),
     );
     writeFileSync(join(root, 'docs/test-drive/helga.md'), log);
     const out = spawnSync(
         'node',
         [
-            join(root, '_clio/script/helga-receipt.ts'),
+            join(
+                root,
+                'home/.claude/plugin-x/skills/crew-helga/scripts/helga-receipt.ts',
+            ),
             'pocket-write',
             '1',
             '0',
@@ -74,17 +82,25 @@ test('the cli writes both logs, the trial file beside the script and clio’s un
 
 test('a multi-line note stays one row in both logs', () => {
     const root = mkdtempSync(join(tmpdir(), 'receipt-note-'));
-    mkdirSync(join(root, '_clio/script'), { recursive: true });
+    mkdirSync(join(root, 'home/.claude/plugin-x/skills/crew-helga/scripts'), {
+        recursive: true,
+    });
     mkdirSync(join(root, 'docs/test-drive'), { recursive: true });
     copyFileSync(
         join(import.meta.dirname, 'helga-receipt.ts'),
-        join(root, '_clio/script/helga-receipt.ts'),
+        join(
+            root,
+            'home/.claude/plugin-x/skills/crew-helga/scripts/helga-receipt.ts',
+        ),
     );
     writeFileSync(join(root, 'docs/test-drive/helga.md'), log);
     spawnSync(
         'node',
         [
-            join(root, '_clio/script/helga-receipt.ts'),
+            join(
+                root,
+                'home/.claude/plugin-x/skills/crew-helga/scripts/helga-receipt.ts',
+            ),
             'groom',
             '1',
             '0',

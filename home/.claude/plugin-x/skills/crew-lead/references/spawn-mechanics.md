@@ -240,7 +240,7 @@ directory in the brief, every path absolute.**
   inside — an agent ping is always distinguishable from a human one.
 - ✅ non-intrusive in practice. dima: *«does not look like spamming»*.
 - **a script can write to a session's inbox socket directly, no cc in between** [verified 2.1.291,
-  `_crow/lib.ts` `sendLine`]: one newline-terminated json frame per connection —
+  `x:crew-adviser/scripts/lib.ts` `sendLine`]: one newline-terminated json frame per connection —
 
       {"type":"user","message":{"content":"<text>"},"from_name":"<label>","priority":"next","uuid":"<uuid v4>"}
 

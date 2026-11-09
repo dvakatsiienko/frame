@@ -64,7 +64,7 @@ left half done. a chore that failed sends `[🪜 escalate]` the same way.
 
 ## the receipt — a log line; a message only when clio must act
 
-each chore's receipt is one `node ~/frame/_clio/script/helga-receipt.ts <class> <first pass> <rework> <note>`, written to
+each chore's receipt is one `node ~/frame/cc/plugin-x/skills/crew-helga/scripts/helga-receipt.ts <class> <first pass> <rework> <note>`, written to
 clio's receipts log, which her siesta card reads. an all-green batch sends no message.
 
 a `SendMessage` to the clio who sent the chore (a deferred tool: `ToolSearch` `select:SendMessage` first) goes only for a consult `[ask]`, a failed

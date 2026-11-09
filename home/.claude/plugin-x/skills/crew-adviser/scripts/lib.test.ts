@@ -108,7 +108,10 @@ test('a wake line names a charter a cleared session can read', () => {
 });
 
 test('_crow/AGENTS.md holds the mechanics, never the hunts', () => {
-    const agents = readFileSync(join(import.meta.dirname, 'AGENTS.md'), 'utf8');
+    const agents = readFileSync(
+        join(import.meta.dirname, '../../../../../../_crow/AGENTS.md'),
+        'utf8',
+    );
     expect(agents).not.toMatch(/a dropped ask|the silence bar/);
 });
 const lines = readLines(join(fixtures, 'transcript.jsonl'));
