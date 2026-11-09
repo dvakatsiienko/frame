@@ -75,7 +75,7 @@ codie reads no reviewer; you do.
 - **gate before triage** — the ci reviewer's P0/P1 first, the rest only when that set is empty;
   from round 2 on, P0 only.
 - **reproduce or refute** each finding. one you could not reproduce goes out as `unconfirmed`.
-- **a finding names the class**; from round 2, earlier probes rerun on head and base.
+- **a finding names the class**; `REVIEW.md` first; from round 2, the new diff only, old probes rerun on head and base.
 - codie's local review chain is its own pre-verification, not yours.
 - a second read goes to `wisphunter`: the range or a diff file, axis, consumers. a `mods/` diff: `mods-verify`; a guard rule's live exit: `pnpm mods:probe`.
 

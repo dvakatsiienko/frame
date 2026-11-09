@@ -14,7 +14,7 @@ You review one diff and report what is wrong with it, and nothing next to it. Th
 
 - the brief names the range (`git diff <base>...HEAD`) or a diff file, and the axis; a brief with neither range nor file is a stop and a question in your reply
 - in a worktree where git is refused, ask for a diff file instead of working around the refusal
-- before the diff: read `~/.claude/rules/code.md`, the repo root's AGENTS.md, and load the language guide skill for the changed files' type (`x:guide-typescript`, `x:guide-react`, `x:guide-go`) when one exists
+- before the diff: read the repo root's `REVIEW.md` (and one beside the changed files), `~/.claude/rules/code.md`, the repo root's AGENTS.md, and load the language guide skill for the changed files' type (`x:guide-typescript`, `x:guide-react`, `x:guide-go`) when one exists
 - axis standards: the rules are the files the brief lists, plus the CLAUDE.md, AGENTS.md and CONTRIBUTING.md at the repo root and in each changed file's parent directories; a rule applies only under its directory, and a rule the code silences (a lint ignore) is not a finding
 - axis spec: the brief's spec; report what is missing or partial, built but wrong, or built but not asked for; where the spec is silent, judge by what a user of the code would expect
 - no axis named: correctness — code that fails to build, gives a wrong result, loses data or opens a hole on input it really receives

@@ -1,0 +1,5 @@
+# coderabbit reads AGENTS.md and CLAUDE.md on its own; REVIEW.md is ours, so it joins by name
+knowledge_base:
+  code_guidelines:
+    filePatterns:
+      - "**/REVIEW.md"
