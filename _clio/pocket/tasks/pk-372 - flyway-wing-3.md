@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T18:19:00Z'
+updated_date: '2026-11-09T18:32:00Z'
 labels:
   - s
   - clio-wing-3
@@ -17,8 +17,6 @@ ordinal: 18999
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 the wish-loss audit script: fold it into wish-cover as a weekly audit mode, after dima's worth-it word and seven flag names
-- [ ] #2 ⏳ FRM-542 every seat's prompt log, on main: its close — waits for: main's first herdr boot reading its own seat, by 11-11
-- [ ] #3 💤 speak v2 planning with dima — later: dima, after this flyway's open lines
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -37,4 +35,6 @@ ordinal: 18999
 2026-11-09 19:59 done, each checked in its store: PK-364 comms run (done); M3 audit run 2 (reminders line); FRM-509 read (its 19:26 comment, back to main); FRM-544 filed (Todo); PK-366 label group cut (done); crew-pm board v18; FRM-550 to main (clio-main); PK-369 to wing 1; herdr skills on origin/main
 
 done 2026-11-09: PK-367 cut process, clio:low-tide-cuts on origin/main
+
+done 2026-11-09: FRM-542's close handed to main (PK-349, clio-main), speak v2 planning handed to wing 2 (PK-336), dima 20:29
 <!-- SECTION:NOTES:END -->

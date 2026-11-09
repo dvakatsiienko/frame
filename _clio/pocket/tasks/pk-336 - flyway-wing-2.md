@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T18:29:00Z'
+updated_date: '2026-11-09T18:31:00Z'
 labels:
   - m
   - clio-wing-2
@@ -32,6 +32,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #8 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
 - [ ] #9 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
 - [ ] #10 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go and stacks.go changed since its last version — later: dima 20:21 («i tell when»)
+- [ ] #11 💤 speak v2 planning with dima — later: dima, when he picks it up (moved from wing 3, dima 20:29)
 <!-- AC:END -->
 
 ## Implementation Notes
