@@ -4,7 +4,7 @@ title: 'slipstream contract: main asks join a wing flyway after its current item
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T12:39:00Z'
+updated_date: '2026-11-09T12:44:00Z'
 labels:
   - s
   - clio-wing-2
@@ -66,4 +66,8 @@ raw drop (2026-11-09 inbox, dima): clio main, wing 2 and wing 3 goes through the
 raw drop (2026-11-09 inbox, dima): i placed markers across inbox who does what — fold each action item into correpsonding flyway.
 
 raw drop (2026-11-09 inbox, dima): then - wing 2 starts with lowtide triage — to seal all flyways. then wing 2 starts low-tide over its flyways. main clio also does low-tide over flyway plan. wing 1 have its plan it just solves.
+
+PK-356:W10 (2026-11-09 inbox, dima): correction of W3: a main clio ask joins the wing's flyway solve queue, any wing, not only wing 2
+
+note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-09», the second «2026-11-09» for the groom check; notes are append-only, so both stay
 <!-- SECTION:NOTES:END -->

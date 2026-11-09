@@ -4,7 +4,7 @@ title: 'fleet comms update: leaner cafe-chat replies, comms recipe run'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T12:39:00Z'
+updated_date: '2026-11-09T12:44:00Z'
 labels:
   - m
   - clio-wing-3
@@ -100,4 +100,6 @@ raw drop (2026-11-09 inbox, dima): - plus — how many tokens spent on our mods 
 raw drop (2026-11-09 inbox, dima): and propose a solid fleet and clio comms steer. consider that we have orbit.
 
 raw drop (2026-11-09 inbox, dima): use all tools and all doors - transcripts, duckdb, our telemetry.
+
+PK-364:W19 (2026-11-09 inbox, dima): correction of W2's third point: replies carry more tech detail than i want
 <!-- SECTION:NOTES:END -->

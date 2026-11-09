@@ -4,7 +4,7 @@ title: rex settings walkthrough, two items at a time, shown live
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T12:38:00Z'
+updated_date: '2026-11-09T12:44:00Z'
 labels:
   - s
   - clio-wing-1
@@ -88,4 +88,10 @@ raw drop (2026-11-09 inbox, dima): rex: how to understand
 raw drop (2026-11-09 inbox, dima): note: you walkthrough me thorugh rex settings. i want explore and see how settings work in action. lots of quetions so two items at a time.
 
 raw drop (2026-11-09 inbox, dima): note: for all «i can't see effect» — find a way to see an effect, take snapshot and show it in thread yourself if you can. if can't - tell how to see it myself.
+
+PK-358:W11 (2026-11-09 inbox, dima): it joins the herder research; walk me through it, maybe with computer use («cum utter use» was wispr for computer use)
+
+PK-358:W12 (2026-11-09 inbox, dima): the asks in W2, W4 and W7 are questions to answer ❓
+
+note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-09», the second «2026-11-09» for the groom check; notes are append-only, so both stay
 <!-- SECTION:NOTES:END -->
