@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T15:05:00Z'
+updated_date: '2026-11-09T15:10:00Z'
 labels:
   - s
   - clio-wing-1
@@ -22,14 +22,13 @@ ordinal: 18998
 - [ ] #4 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
 - [ ] #5 PK-357 git: old branches, why they gather, a habit, perf effect — with dima, when free
 - [ ] #6 PK-358 rex settings walkthrough with dima, two at a time, shown live
-- [ ] #7 PK-369 perf: turborepo remote cache or another cache for tests
-- [ ] #8 PK-370 perf: tests off pre-commit, to ci or pre-push
-- [ ] #9 PK-371 gates file name: gates museum
-- [ ] #10 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
-- [ ] #11 gate lane 1: FRM-534 + FRM-520 on main, sixth sense clean then land FRM-520; FRM-534 closes 11-10 on its day read
-- [ ] #12 cli lane 6: FRM-383 then FRM-503 door 1 (signed o22), wing 1 coordinates
-- [ ] #13 PK-373 linux vm for go tests: name, then shape-idea steps 4-7 and its ticket
-- [ ] #14 perf left in order: FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
+- [ ] #7 PK-370 perf: tests off pre-commit, to ci or pre-push
+- [ ] #8 PK-371 gates file name: gates museum
+- [ ] #9 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
+- [ ] #10 gate lane 1: FRM-534 + FRM-520 on main, sixth sense clean then land FRM-520; FRM-534 closes 11-10 on its day read
+- [ ] #11 cli lane 6: FRM-383 then FRM-503 door 1 (signed o22), wing 1 coordinates
+- [ ] #12 PK-373 linux vm for go tests: name, then shape-idea steps 4-7 and its ticket
+- [ ] #13 perf left in order: FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
 <!-- AC:END -->
 
 ## Implementation Notes
