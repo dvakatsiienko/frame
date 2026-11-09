@@ -22,13 +22,13 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ⏳ FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card — waits for: frame#152's review run
-- [ ] #2 ⏳ the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25) — waits for: frame#152's merge
+- [ ] #1 FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card
+- [ ] #2 the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25)
 - [ ] #3 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
-- [ ] #4 ⏳ frame#152 (FRM-549, FRM-553 + its riders, FRM-548) merges by merge-auto — waits for: sixth sense's round-4 clean and my wishkeeper read
+- [ ] #4 ⏳ FRM-548, FRM-549, FRM-553 close by x lane landed (frame#152 merged 22:03) — waits for: codie's stop and its tree's decamp
 - [ ] #5 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
 - [ ] #6 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
-- [ ] #7 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go and stacks.go changed since its last version — later: dima 20:21 («i tell when»)
+- [ ] #7 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go, stacks.go, habit-shared-files, the siesta skill, prompt-groom.ts, craft-fleet-flow and shape-lane-dispatch changed since its last version — later: dima 20:21 («i tell when»)
 <!-- AC:END -->
 
 ## Implementation Notes
