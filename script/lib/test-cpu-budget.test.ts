@@ -9,7 +9,7 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { delimiter, join } from 'node:path';
+import { delimiter, dirname, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 const script = join(import.meta.dirname, '../test-cpu-budget.sh');
@@ -63,6 +63,7 @@ function fixture({
         args: string[],
         extra: NodeJS.ProcessEnv = {},
         gitBin = slimBin,
+        cwd = dir,
     ) => {
         const env: NodeJS.ProcessEnv = {
             ...process.env,
@@ -72,7 +73,7 @@ function fixture({
             ...extra,
         };
         if (!('CI' in extra)) delete env.CI;
-        return spawnSync(copy, args, { encoding: 'utf8', env });
+        return spawnSync(copy, args, { cwd, encoding: 'utf8', env });
     };
     const rows = () =>
         existsSync(join(state, 'test-cpu-budget.log'))
@@ -82,7 +83,7 @@ function fixture({
                   .map((row) => row.split('\t'))
             : [];
     const goArgs = () => readFileSync(join(dir, 'times.args'), 'utf8').trim();
-    return { brewBin, goArgs, rows, run, slimBin };
+    return { brewBin, dir, goArgs, rows, run, slimBin };
 }
 
 const whole = ['x-go', 'go', 'test', '-count=1', './...'];
@@ -131,6 +132,45 @@ describe('a whole run past its line', () => {
         expect(got.status, got.stderr).toBe(0);
         expect(rows()).toHaveLength(1);
         expect(rows()[0]?.[2]).toBe('x-go');
+    });
+});
+
+describe('a whole run keys the code it ran on', () => {
+    const realGit = dirname(
+        spawnSync('sh', ['-c', 'command -v git'], {
+            encoding: 'utf8',
+        }).stdout.trim(),
+    );
+    const git = (cwd: string, ...args: string[]) =>
+        spawnSync(join(realGit, 'git'), args, { cwd, encoding: 'utf8' });
+
+    test('the same bytes keep one key, an edit reads dirty, a staged edit moves the key', () => {
+        const { dir, rows, run } = fixture({
+            budget: '60\t2026-11-07\troomy',
+        });
+        const code = join(dir, 'code');
+        mkdirSync(code);
+        git(code, 'init', '-q');
+        writeFileSync(join(code, 'a.go'), 'package a\n');
+        git(code, 'add', '.');
+        const keyed = () => run(whole, {}, realGit, code);
+
+        keyed();
+        keyed();
+        writeFileSync(join(code, 'a.go'), 'package a // edited\n');
+        keyed();
+        git(code, 'add', '.');
+        keyed();
+
+        const [first, again, edited, staged] = rows().map((row) =>
+            row.slice(7),
+        );
+        expect(first?.[0]).toMatch(/^[0-9a-f]{12}$/);
+        expect(first?.[1]).toBe('clean');
+        expect(again).toEqual(first);
+        expect(edited).toEqual([first?.[0], 'dirty']);
+        expect(staged?.[0]).not.toBe(first?.[0]);
+        expect(staged?.[1]).toBe('clean');
     });
 });
 
