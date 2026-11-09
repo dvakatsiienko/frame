@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T21:01:00Z'
+updated_date: '2026-11-09T21:08:00Z'
 labels:
   - m
   - clio-main
@@ -570,4 +570,24 @@ answered 22:40: W144–W148 in the reply and orbit o107; W149 → o105 resolved;
 PK-363:W155 (2026-11-09 22:38, dima, o105 steer): herder lane can tell what it want and mods lane tries to fulfill that as soon as possible (delegation)
 
 PK-363:W156 (2026-11-09 22:43, dima): I assumed that if you start them in --bg mode, they won't show in the order list, which is not good. I want to see everyone in order.
+
+PK-363:W157 (2026-11-09 23:07, dima): im planning go to cook. lots of stuff, especially for tomorrow. gather states of where everyone at.
+PK-363:W158 (2026-11-09 23:07, dima): wing 2 finishes a tail and plan to park halt it once its done.
+PK-363:W159 (2026-11-09 23:07, dima): wing 1 — ask whats left out of its lane for tomorrow (it have to finish agreed scope). how long it takes for its lane to finish? ❓
+PK-363:W160 (2026-11-09 23:07, dima): look at plan for tomorrow. for me looks intimidating. how do you propose to solve everything? ❓
+PK-363:W161 (2026-11-09 23:07, dima): in my mind, some parts of CLI chunks may be affected by herdr too, because some stuff probably will become easier in herdr.
+PK-363:W162 (2026-11-09 23:07, dima): some chunks in CLI can fall off, or even trivialize our previous implementations in CLI, but we have planned a lot already.
+PK-363:W163 (2026-11-09 23:07, dima): how would you propose to solve it gradually in a non-blocking nature? ❓
+PK-363:W164 (2026-11-09 23:07, dima): i think you yourself will not be enough in terms of capacity for tomorrow.
+PK-363:W165 (2026-11-09 23:07, dima): you will be very busy, so probably let's have wing 1 to help you, but prioritize blocking us stuff with herdr and chores.
+PK-363:W166 (2026-11-09 23:07, dima): you will maintain herdr lane and mods lane in parallel.
+PK-363:W167 (2026-11-09 23:07, dima): when one can, do assist you with planning chores and solve its own part.
+PK-363:W168 (2026-11-09 23:07, dima): how to approach everything gradually in a non-blocking manner? ❓
+PK-363:W169 (2026-11-09 23:07, dima): in my mind, i think we should:
+PK-363:W170 (2026-11-09 23:07, dima): 1. unblock ourselves in herdr so you can operate.
+PK-363:W171 (2026-11-09 23:07, dima): 2. unblock mods lane and start revisiting it and translating to herdr, and do cuts along the way when matters.
+PK-363:W172 (2026-11-09 23:07, dima): 3. somehow revisit the CLI lane because it has a lot of stuff.
+PK-363:W173 (2026-11-09 23:07, dima): 4. in parallel, we have to adapt herdr to a new shape as well.
+PK-363:W174 (2026-11-09 23:07, dima): first - tell where everyone at and estimates when we can halt. then print proposal how to unwind everything tmrw.
+answered 23:10: W157–W160, W163, W168, W174 in the reply; W161–W173 → orbit o109, tomorrow's four phases
 <!-- SECTION:NOTES:END -->
