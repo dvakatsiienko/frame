@@ -16,19 +16,18 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-525 perf line: talk it through with dima, his «drop it» (21:24) — after the PK-370 call, now FRM-557
+- [ ] #1 FRM-525 perf line: talk it through with dima, his «drop it» (21:24), right after the FRM-557 call
 - [ ] #2 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
 - [ ] #3 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
 - [ ] #4 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
 - [ ] #5 ⏳ FRM-551 vm lane: codie 25b0e95c summoned 20:52, greenlight its lane plan, sixth sense at its first pr — waits for: codie's lane plan
 - [ ] #6 ⏳ FRM-557 test hooks trimmed (related at commit, twin on main code): sign, then it joins the vm lane after FRM-551 — waits for: dima's sign
-- [ ] #7 ⏳ FRM-533 step 2 reuse proven results: shape after the day read, joins the vm lane after FRM-557 — waits for: the 11-10 day read
-- [ ] #8 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
-- [ ] #9 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
-- [ ] #10 📅 FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — on: 2026-11-10
-- [ ] #11 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
-- [ ] #12 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #13 💤 FRM-530 gates page — later: dima, parked on his 11-07 word
+- [ ] #7 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
+- [ ] #8 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
+- [ ] #9 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
+- [ ] #10 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
+- [ ] #11 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #12 💤 FRM-530 gates page — later: dima, parked on his 11-07 word
 <!-- AC:END -->
 
 ## Implementation Notes
