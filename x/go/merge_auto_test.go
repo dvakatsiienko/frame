@@ -33,6 +33,19 @@ type hub struct {
 	reads map[string]int
 	// github's own refusal of the merge, as «<status> <message>»
 	refuseMerge string
+	// each call's path and query, which calls leaves out
+	queries []string
+}
+
+func (h *hub) lastQuery(path string) string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for i := len(h.queries) - 1; i >= 0; i-- {
+		if p, query, _ := strings.Cut(h.queries[i], "?"); p == path {
+			return query
+		}
+	}
+	return ""
 }
 
 func (h *hub) serve(t *testing.T) *httptest.Server {
@@ -43,6 +56,7 @@ func (h *hub) serve(t *testing.T) *httptest.Server {
 		defer h.mu.Unlock()
 		raw, _ := io.ReadAll(r.Body)
 		h.calls = append(h.calls, strings.TrimSpace(r.Method+" "+r.URL.Path+" "+string(raw)))
+		h.queries = append(h.queries, r.URL.Path+"?"+r.URL.RawQuery)
 		h.auth = append(h.auth, r.Header.Get("Authorization"))
 		w.Header().Set("Content-Type", "application/json")
 		switch {
@@ -195,7 +209,8 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 		files = append(files, `{"filename":"`+p+`","status":"modified"}`)
 	}
 	h := &hub{head: head, pages: map[string]string{
-		repoPath + "/pulls/7": `{"number":7,"title":"a pr","state":"open","merged":false,"body":"the body",
+		// mergeable leads, so a test that plants its own value after "number" wins: go's json keeps a key's last value
+		repoPath + "/pulls/7": `{"mergeable":true,"mergeable_state":"clean","number":7,"title":"a pr","state":"open","merged":false,"body":"the body",
 			"head":{"sha":"` + head + `","ref":"coder/x"},"base":{"ref":"main"}}`,
 		repoPath + "/pulls/7/files":                                   "[" + strings.Join(files, ",") + "]",
 		repoPath + "/branches/main/protection/required_status_checks": `{"contexts":["test","build"]}`,
@@ -252,8 +267,8 @@ func TestMergeAutoMergesACleanGreenPrNamingTheThreeChecks(t *testing.T) {
 		}
 		names = append(names, c.Name)
 	}
-	if !slices.Equal(names, []string{"sixth-sense", "ci", "threads"}) {
-		t.Errorf("checks %v, want sixth-sense, ci, threads:\n%s", names, got.stdout)
+	if !slices.Equal(names, []string{"sixth-sense", "ci", "mergeable", "deploy", "threads"}) {
+		t.Errorf("checks %v, want sixth-sense, ci, mergeable, deploy, threads:\n%s", names, got.stdout)
 	}
 }
 
@@ -1527,7 +1542,7 @@ func TestMergeAutoWaitCarriesTheChecksItRead(t *testing.T) {
 	got := w.run(t, "7", "--apply")
 
 	data := envelopeOf(got).Data
-	if got.code != 1 || data.Decision != "wait" || len(data.Checks) != 3 || !slices.Equal(data.Risky, []string{".github/workflows/ci.yml"}) {
+	if got.code != 1 || data.Decision != "wait" || len(data.Checks) != 5 || !slices.Equal(data.Risky, []string{".github/workflows/ci.yml"}) {
 		t.Fatalf("exit %d, data %+v, want the wait's checks and risky line in the envelope", got.code, data)
 	}
 }

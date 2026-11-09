@@ -219,7 +219,7 @@ func stackedMergeWorld(t *testing.T, base, lower string) *mergeWorld {
 	w := newMergeWorld(t, "script/foo.ts")
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
-	w.hub.pages[repoPath+"/pulls/8"] = `{"number":8,"title":"part 2","state":"open","merged":false,"body":"b",
+	w.hub.pages[repoPath+"/pulls/8"] = `{"mergeable":true,"mergeable_state":"clean","number":8,"title":"part 2","state":"open","merged":false,"body":"b",
 		"head":{"sha":"` + w.head + `","ref":"coder/x-2"},"base":{"ref":"` + base + `"}}`
 	w.hub.pages[repoPath+"/pulls"] = `[{"number":9,"state":"open","head":{"ref":"coder/y"}},` + lower + `]`
 	w.hub.pages[repoPath+"/pulls/8/files"] = w.hub.pages[repoPath+"/pulls/7/files"]
@@ -356,7 +356,7 @@ func TestMergeAutoReadsEachLayersOwnRound(t *testing.T) {
 				runs = append(runs, strings.ReplaceAll(run, "%s", w.head))
 			}
 			w.hub.mu.Lock()
-			w.hub.pages[repoPath+"/pulls/7"] = `{"number":7,"title":"part 1","state":"open","merged":false,"body":"b",
+			w.hub.pages[repoPath+"/pulls/7"] = `{"mergeable":true,"mergeable_state":"clean","number":7,"title":"part 1","state":"open","merged":false,"body":"b",
 				"head":{"sha":"` + w.head + `","ref":"coder/x"},"base":{"ref":"main"}}`
 			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[` + strings.Join(runs, ",") + `]}`
 			w.hub.pages[repoPath+"/actions/runs/1/jobs"] = jobOf("success", "")

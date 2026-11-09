@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T17:01:00Z'
+updated_date: '2026-11-09T17:07:00Z'
 labels:
   - s
   - clio-wing-1
@@ -20,14 +20,15 @@ ordinal: 18998
 - [ ] #2 FRM-497 speak meter: starts with speak v2, not before
 - [ ] #3 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
 - [ ] #4 PK-357 git: old branches, why they gather, a habit, perf effect — with dima, when free
-- [ ] #5 PK-370 perf: tests off pre-commit, to ci or pre-push
-- [ ] #6 PK-371 gates file name: gates museum
-- [ ] #7 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
-- [ ] #8 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
-- [ ] #9 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
-- [ ] #10 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
-- [ ] #11 FRM-551 vm-go-test: signed; step 1 now, the idle-cost kill gate (dima 19:01)
-- [ ] #12 FRM-383 close: W3 timing run, then x lane landed FRM-383 --pr 150 --apply, by 2026-11-12
+- [ ] #5 PK-371 gates file name: gates museum
+- [ ] #6 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
+- [ ] #7 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
+- [ ] #8 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
+- [ ] #9 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
+- [ ] #10 FRM-551 vm-go-test: signed; step 1 now, the idle-cost kill gate (dima 19:01)
+- [ ] #11 FRM-383 close: W3 timing run, then x lane landed FRM-383 --pr 150 --apply, by 2026-11-12
+- [ ] #12 gate tail: watch-pr.sh --verified has no undo flag, for the next gate touch
+- [ ] #13 PK-370 perf: tests off pre-commit, to ci or pre-push — with dima, a little later (his 18:43)
 <!-- AC:END -->
 
 ## Implementation Notes

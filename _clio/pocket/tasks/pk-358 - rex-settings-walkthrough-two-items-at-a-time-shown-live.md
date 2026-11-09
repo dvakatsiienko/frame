@@ -4,9 +4,10 @@ title: rex settings walkthrough, two items at a time, shown live
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T17:01:00Z'
+updated_date: '2026-11-09T17:06:00Z'
 labels:
   - s
+  - clio-main
 dependencies: []
 priority: next
 type: task
