@@ -157,6 +157,45 @@ func TestVerifyRedReadsAMutantRedPerRunner(t *testing.T) {
 	}
 }
 
+// exit line 2: a red clean run, an anchor not found exactly once, or a clean run of no test refuse before any mutant runs
+func TestVerifyRedRefusesBeforeAnyMutant(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, anchor, run, says string
+		breakClean, twice       bool
+		code, runs              int
+	}{
+		{name: "a red clean run", anchor: "Limit = 3", breakClean: true, code: 1, runs: 1, says: "TestLimit"},
+		{name: "an anchor not found", anchor: "Limit = 9", code: 2, says: "found 0 times"},
+		{name: "an anchor found twice", anchor: "= 3", twice: true, code: 2, says: "found 2 times"},
+		{name: "a clean run of no test", anchor: "Limit = 3", run: "TestNone", code: 1, says: "ran no test"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			f := goRedFixture(t)
+			if c.breakClean {
+				write(t, filepath.Join(f.dir, "lib_test.go"), strings.Replace(readOr(filepath.Join(f.dir, "lib_test.go"), ""), "Limit != 3", "Limit != 5", 1))
+			}
+			if c.twice {
+				write(t, filepath.Join(f.dir, "lib.go"), "package p\n\nconst Limit = 3\n\nconst Other = 3\n")
+			}
+			args := []string{f.file, c.anchor, "Limit = 4", f.test}
+			if c.run != "" {
+				args = append(args, "--run", c.run)
+			}
+
+			got, log := verifyRedIn(t, f, nil, args...)
+
+			if got.code != c.code || !strings.Contains(got.stdout, c.says) {
+				t.Fatalf("exit %d, want %d naming %q:\n%s", got.code, c.code, c.says, got.stdout)
+			}
+			if runs := strings.Count(log, "\n"); runs != c.runs {
+				t.Fatalf("the test ran %d times, want %d: no mutant after a refusal", runs, c.runs)
+			}
+		})
+	}
+}
+
 // a mutant the test does not read stays green, and the exit says no proof
 func TestVerifyRedReadsAnUnreadLineStillGreen(t *testing.T) {
 	t.Parallel()
