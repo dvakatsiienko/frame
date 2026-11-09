@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T17:47:00Z'
+updated_date: '2026-11-09T17:58:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,24 +22,15 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 FRM-538 two guards (public posts name sources, finished flyway lines tick): proposed for his sign
-- [x] #2 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first
-- [ ] #3 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
-- [ ] #4 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
-- [ ] #5 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
-- [ ] #6 FRM-538 quick lane, on his word (mods lane paused today)
-- [ ] #7 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
-- [x] #8 main's ask: x-mod-guard fail-closed on parse.ts fixed and landed; badge swap written, main commits the 7
-- [x] #9 cli lane 6 and its codie move to wing 2 after FRM-503 lands, for 🐉 review loop gets verbs (main 17:27, agreed)
-- [x] #10 review tickets wish-line trim + pocket-check one-home fix, on dima's o43 tick
-- [x] #11 FRM-548 → FRM-549 codie side lane: spec now, summon on o45
-- [ ] #12 cli lane 6 is mine (wing 1's handover 19:05): after FRM-548/549, walk FRM-414 (+ round counter rider), FRM-384, FRM-436, FRM-424; door 1 tails in /Users/dima/frame/.claude/worktrees/clio-wing-1/.scratch/handover-cli-lane-6.md
-- [x] #13 FRM-553 merge-auto waits on main's running ci/deploy (wing 1's joiner, unsigned): grill + sign it before the lane brief, so it batches into the merge-auto pr with FRM-549/548
-- [x] #14 FRM-384 re-sign with FRM-520's gate tails + watch-pr --verified undo (dima 19:21 via wing 1), on his tick; lefthook tail lands after 11-10 17:28
-- [x] #15 x verify red re-links node_modules/.bin into its temp copy and deletes it (main 19:23: every commit gate red 19:20–19:22): its fix joins the FRM-384 re-sign batch with the gate tails
-- [ ] #16 FRM-546 reopened (wishkeeper 19:36): by 11-10 — #152's codie cards and sixth sense round name REVIEW.md, one coderabbit cli run read, a re-planted slip only REVIEW.md names, then close
-- [ ] #17 redraw the crew-pm board (pocket-check.ts, merge_auto.go, stacks.go changed)
-- [ ] #18 review contract notice to every clio and member once frame#152 lands (the review-tiers pr; dima o25)
+- [ ] #1 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
+- [ ] #2 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
+- [ ] #3 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
+- [ ] #4 FRM-538 quick lane, on his word (mods lane paused today)
+- [ ] #5 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
+- [ ] #6 cli lane 6 is mine (wing 1's handover 19:05): after FRM-548/549, walk FRM-414 (+ round counter rider), FRM-384, FRM-436, FRM-424; door 1 tails in /Users/dima/frame/.claude/worktrees/clio-wing-1/.scratch/handover-cli-lane-6.md
+- [ ] #7 FRM-546 reopened (wishkeeper 19:36): by 11-10 — #152's codie cards and sixth sense round name REVIEW.md, one coderabbit cli run read, a re-planted slip only REVIEW.md names, then close
+- [ ] #8 redraw the crew-pm board (pocket-check.ts, merge_auto.go, stacks.go changed)
+- [ ] #9 review contract notice to every clio and member once frame#152 lands (the review-tiers pr; dima o25)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -170,4 +161,6 @@ hoist 11-09: proposing, wing 2
 19:26 #6 «tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)» moved to main clio on dima's word
 
 19:44 #2 PK-367 yanked to wing 3 on dima's word («yank #2 from wing 2 flyway into yours and solve»)
+
+done 2026-11-09 19:59, verified then cleared: FRM-538 proposed and signed; PK-367 to wing 3; x-mod-guard fail-closed fix landed (cc5f9529); cli lane 6 moved to wing 2; the review tickets' wish trim + pocket-check one-home rule; FRM-548 → FRM-549 dispatched (frame#152); FRM-553 signed and dispatched; FRM-384 re-signed with the gate tails; x verify relink filed as FRM-554
 <!-- SECTION:NOTES:END -->
