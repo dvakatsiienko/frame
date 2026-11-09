@@ -2,7 +2,7 @@
 // usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
 //        node prompt-groom.ts --next <PK-N|FRM-N|BYT-N>      print the home's next full wish id, <home>:W1 for an empty home (PK-312, PK-338)
 //        node prompt-groom.ts --move <PK-N> <FRM-N|BYT-N> <W-id…>   print the wishes renumbered into the ticket's series and the pocket's «moved:» line (o98); writes nothing
-//        node prompt-groom.ts --no-wish <HH:MM|oN> '<why>'     write today's no-wish line for a prompt minute or an orbit steer, one call (dima's o76)
+//        node prompt-groom.ts --no-wish <HH:MM|HH:MM ×N|oN> '<why>'     write today's no-wish line for a prompt minute or an orbit steer, one call (dima's o76)
 //        node prompt-groom.ts --standing [YYYY-MM-DD]       print the day's open ` #standing` W-lines, one a line (FRM-482; a new day starts empty)
 //        node prompt-groom.ts --tag <W-id>                 clio's hand: end today's W-line with ` #standing`
 //        node prompt-groom.ts --lift <W-id|all>            turn today's ` #standing` W-line(s) ` #lifted`; exit 1 when none matched
@@ -227,7 +227,7 @@ export function ungroomedPrompts(
                 .every((line) => /^\s*(?:\/|<local-command)/.test(line))
         )
             return [];
-        return [{ hhmm, text }];
+        return [{ hhmm, key: noWishKey(hhmm, text), text }];
     });
 }
 
@@ -688,9 +688,9 @@ if (import.meta.main) {
     }
     if (args[0] === '--no-wish') {
         const [, key = '', why = ''] = args;
-        if (!/^(\d{2}:\d{2}|o\d+)$/.test(key) || !why.trim()) {
+        if (!/^(\d{2}:\d{2}(?: ×\d+)?|o\d+)$/.test(key) || !why.trim()) {
             console.error(
-                "usage: node prompt-groom.ts --no-wish <HH:MM|oN> '<why>'",
+                "usage: node prompt-groom.ts --no-wish <HH:MM|HH:MM ×N|oN> '<why>'",
             );
             process.exit(2);
         }
@@ -748,14 +748,14 @@ if (import.meta.main) {
                 day,
                 now,
                 noWishText,
-            ).map(({ hhmm, text }) => ({ id: hhmm, text })),
+            ).map(({ hhmm, key, text }) => ({ id: hhmm, key, text })),
             ...ungroomedSteers(
                 transcriptSteers(
                     transcriptAt >= 0 ? args[transcriptAt + 1] : undefined,
                 ),
                 day,
                 noWishText,
-            ),
+            ).map((steer) => ({ ...steer, key: steer.id })),
         ];
         let linear: [string, string][] | undefined;
         try {
@@ -769,9 +769,9 @@ if (import.meta.main) {
             linear && existsSync(groomDir)
                 ? homelessWishes(day, path.join(home, 'frame/.scratch'), linear)
                 : [];
-        for (const { id, text } of missing)
+        for (const { id, key, text } of missing)
             console.log(
-                `🔴 ${id} — no groom: ${text.replace(/\s+/g, ' ').slice(0, 60)} — ${groomStep(`${id} --date ${day}`)}, or add «${id} — <why>» to ${path.join(groomDir, `${day}.no-wish.md`)}`,
+                `🔴 ${id} — no groom: ${text.replace(/\s+/g, ' ').slice(0, 60)} — ${groomStep(`${id} --date ${day}`)}, or add «${key} — <why>» to ${path.join(groomDir, `${day}.no-wish.md`)}`,
             );
         for (const [id, file] of homeless)
             console.log(

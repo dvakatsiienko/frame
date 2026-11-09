@@ -45,6 +45,13 @@ describe('a no-wish line on a minute with two prompts', () => {
         expect(reds('10:00 ×2 — both answered\n')).toBe(0);
     });
 
+    test('a red prompt names the ×N key its no-wish line needs', () => {
+        expect(
+            ungroomedPrompts(day, '2026-11-06', '11:00', '', () => false)[0]
+                ?.key,
+        ).toBe('10:00 ×2');
+    });
+
     test('a side note beside one prompt counts as one', () => {
         const noted =
             '## 10:00\n\na wish\n\n## 10:00\n\n<side-sessions-event>x</side-sessions-event>\n';
