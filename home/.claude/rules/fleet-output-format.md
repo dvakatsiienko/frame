@@ -168,7 +168,7 @@ file he names.
 
 - every question round ends with a ➡️ recommendation.
 - **one home for the next move**: an orbit ask holds it and its pick, one he ticks; never both. <!-- cc -->
-- nothing to ask → one ➡️ line; a quick answer carries neither.
+- nothing to ask → a ➡️ line only for a take; quick answers and status carry neither.
 - **the ➡️ line carries the take or the need** — an insight, an opinion, a proposal, or what the seat needs from him; pure status gets none, never a second closer.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
