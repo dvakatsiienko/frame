@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T12:45:00Z'
+updated_date: '2026-11-09T12:51:00Z'
 labels:
   - s
   - clio-main
@@ -89,4 +89,6 @@ PK-349:W23 (2026-11-09 14:30, dima): wing 3 has to solve the comms issues (inbox
 PK-349:W24 (2026-11-09 14:30, dima): who can lead the x verify cli chunk, you or wing 1? it is better to be stated by someone. i think wing 1 can do it, or you; pick wing 1 if it is close to cpu/perf issues ❓
 
 2026-11-09 14:45 clio: #1 mods quick lane paused by PK-349:W17, kept as a line until he restarts it
+
+2026-11-09 14:55 clio, his +1 day word (PK-349:W16): the CST's dated reads now read FRM-501 11-09, FRM-509 11-09, BYT-132 11-10, FRM-483 11-11, FRM-465 11-12, FRM-503 and FRM-504 11-14, BYT-94 11-15, unbash trial 11-22; FRM-501 and FRM-504 ride the paused mods lane, so their dates wait for its restart
 <!-- SECTION:NOTES:END -->
