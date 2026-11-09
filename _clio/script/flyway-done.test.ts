@@ -13,6 +13,15 @@ import { flywayKind, flywayLines, flywaySorted } from './flyway-done.ts';
 
 const script = path.join(import.meta.dirname, 'flyway-done.ts');
 const config = path.join(import.meta.dirname, '..', 'backlog.config.yml');
+// ci has no backlog cli; every local commit runs these through its gate
+const hasBacklog = (() => {
+    try {
+        execFileSync('backlog', ['--version'], { stdio: 'ignore' });
+        return true;
+    } catch {
+        return false;
+    }
+})();
 
 // a temp pocket holding one flyway, run through the real backlog cli
 function pocketWith(lines: string[]) {
@@ -54,7 +63,7 @@ describe('flyway-done', () => {
         ]);
     });
 
-    test('--sort rewrites the flyway in kind order', () => {
+    test.skipIf(!hasBacklog)('--sort rewrites the flyway in kind order', () => {
         const { read, run } = pocketWith([
             '💤 c — later: dima 1',
             '⏳ a — waits for: x',
@@ -70,11 +79,14 @@ describe('flyway-done', () => {
         ]);
     });
 
-    test('--add places a new open line above the waits', () => {
-        const { read, run } = pocketWith(['one', '💤 c — later: dima 1']);
-        run('--add', 'two');
-        expect(read()).toEqual(['one', 'two', '💤 c — later: dima 1']);
-    });
+    test.skipIf(!hasBacklog)(
+        '--add places a new open line above the waits',
+        () => {
+            const { read, run } = pocketWith(['one', '💤 c — later: dima 1']);
+            run('--add', 'two');
+            expect(read()).toEqual(['one', 'two', '💤 c — later: dima 1']);
+        },
+    );
 
     test('lines read with their number and tick', () => {
         expect(
