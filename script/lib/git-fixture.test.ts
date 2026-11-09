@@ -131,7 +131,7 @@ test('every tracked test outside _clio/ gives each spawnSync and execFileSync a 
         '*.test.ts',
         '*.test.mjs',
         '*.test.tsx',
-        ':!_clio/',
+        ':(exclude)_clio/',
     ).flatMap((file) =>
         untimedSpawns(readFileSync(path.join(root, file), 'utf8')).map(
             (line) => `${file}:${line}`,

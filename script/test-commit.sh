@@ -2,9 +2,9 @@
 # test-commit <whole-suite command…> — the commit gate's test step, run inside script/index-run.sh's copy.
 # a commit whose every staged path sits under _clio/pocket/ runs no suite, on any branch: the whole suite stays at push.
 # a commit of only memory runs only the tests that read memory, on any branch (script/lib/memory-only.sh); ci keeps the whole suite.
-# every branch runs only the tests importing its staged code. what the import graph cannot judge (a path off the no-test list,
-# a config path, a delete, a rename, code no test imports, a failed read, a detached HEAD) runs none and says so: the whole suite
-# stays at push (the twin) and on ci. the one whole run left is a branch kind taken off related_kinds.
+# every branch runs only the tests importing its staged code, whatever sits beside it. a commit with no code the import graph can
+# judge (only paths off the no-test list, config, deletes, renames; code no test imports; a failed read; a detached HEAD) runs
+# none and says so: the whole suite stays at push (the twin) and on ci. the one whole run left is a branch kind taken off related_kinds.
 # one row a run in test-commit.log, tab-separated: start, 1-min load, branch, mode, staged paths, commit it sits on, seconds, exit,
 # source, then from 2026-11-10 the staged paths by kind (code=N,config=N,asset=N,other=N) and the mode the rules before that day ran.
 set -u
@@ -69,21 +69,28 @@ if [ -z "${read_failed:-}" ] && [ "$kind" != detached ]; then
     *) mode=whole ;;
     esac
 fi
+# a path the import graph cannot judge never clears the code beside it: the code's related tests still run, and a commit
+# with no code left to judge runs none
 if [ "$mode" = related ]; then
+    unjudged=
     while IFS=$'\t' read -r status path; do
         [ -n "$status" ] || continue
         case $status in
-        D* | R*) mode=none was=whole ;;
+        D* | R*)
+            unjudged=1
+            continue
+            ;;
         esac
         path_kind "$path"
         case $kind_of in
-        config) mode=none was=whole ;;
         code) code_paths+=("$path") ;;
         asset) ;;
-        *) mode=none was=whole ;;
+        *) unjudged=1 ;;
         esac
     done <<<"$changes"
-    [ "$mode" = related ] && [ ${#code_paths[@]} -eq 0 ] && mode=none was=none
+    [ -z "$unjudged" ] || was=whole
+    [ ${#code_paths[@]} -gt 0 ] || mode=none
+    [ -n "$unjudged" ] || [ "$mode" = related ] || was=none
 fi
 if [ -n "$pocket_only" ]; then
     mode=none was=none

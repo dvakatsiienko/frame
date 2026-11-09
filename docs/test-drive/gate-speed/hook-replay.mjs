@@ -115,13 +115,12 @@ function commitMode(branch, changes) {
     if (!relatedKinds.includes(kind)) return 'whole';
     if (changes.every(([, path]) => kindOf(path) === 'asset')) return 'none';
     if (changes.every(([, path]) => isMemory(path))) return 'memory';
-    let mode = 'related';
-    for (const [status, path] of changes) {
-        if (/^[DR]/.test(status)) mode = 'none';
-        const kind = kindOf(path);
-        if (kind === 'config' || kind === 'other') mode = 'none';
-    }
-    return changes.some(([, path]) => kindOf(path) === 'code') ? mode : 'none';
+    // a path the graph cannot judge never clears the code beside it
+    return changes.some(
+        ([status, path]) => !/^[DR]/.test(status) && kindOf(path) === 'code',
+    )
+        ? 'related'
+        : 'none';
 }
 
 const days = new Map();

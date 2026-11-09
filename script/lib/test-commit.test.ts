@@ -208,8 +208,19 @@ describe('test-commit', () => {
         'script/lib/a.sh',
         'data.json',
         'rows.tsv',
-    ])('a staged path off the no-test list runs none: %s', (path) => {
-        expectNone(runGate(staged({ [path]: 'x\n', 'a.ts': 'a\n' }), 'main'));
+    ])('a staged path off the no-test list, alone, runs none: %s', (path) => {
+        expectNone(runGate(staged({ [path]: 'x\n' }), 'main'));
+    });
+
+    test.each([
+        ['an AGENTS.md', 'AGENTS.md'],
+        ['a .sh', 'script/a.sh'],
+        ['a config path', 'package.json'],
+    ])('code beside %s still runs its related tests', (_name, path) => {
+        const got = runGate(staged({ [path]: 'x\n', 'a.ts': 'a\n' }), 'main');
+        expect(got.calls).toBe(`${related}|a.ts`);
+        expect(got.fields[1]).toBe('related');
+        expect(got.fields.at(-1)).toBe('whole');
     });
 
     describe('a memory-only commit', () => {
@@ -235,10 +246,12 @@ describe('test-commit', () => {
             expect(got.calls).toMatch(/vitest\|run/);
         });
 
-        test('a code file beside it runs none', () => {
-            expectNone(
-                runGate(staged({ [memory]: 'a\n', 'a.ts': 'a\n' }), 'main'),
+        test('a code file beside it runs its related tests', () => {
+            const got = runGate(
+                staged({ [memory]: 'a\n', 'a.ts': 'a\n' }),
+                'main',
             );
+            expect(got.calls).toBe(`${related}|a.ts`);
         });
 
         test('a script under skills is code, never memory', () => {

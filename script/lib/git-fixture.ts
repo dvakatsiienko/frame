@@ -92,12 +92,14 @@ export function untimedSpawns(source: string) {
     return lines;
 }
 
+// a failed ls-files throws: an empty list would pass every lint that scans it
 export function trackedFiles(root: string, ...patterns: string[]) {
-    return spawnSync('git', ['ls-files', ...patterns], {
+    const listed = spawnSync('git', ['ls-files', ...patterns], {
         cwd: root,
         encoding: 'utf8',
         env: gitEnv(),
-    })
-        .stdout.split('\n')
-        .filter(Boolean);
+    });
+    if (listed.status !== 0)
+        throw new Error(`git ls-files ${patterns.join(' ')}: ${listed.stderr}`);
+    return listed.stdout.split('\n').filter(Boolean);
 }
