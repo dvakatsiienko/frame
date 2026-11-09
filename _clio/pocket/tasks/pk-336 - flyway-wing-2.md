@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T12:54:00Z'
+updated_date: '2026-11-09T12:56:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,11 +22,9 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 slipstream contract as a habit main and every wing know: PK-336:W25, PK-336:W26, PK-336:W27, PK-336:W28, PK-336:W29
-- [ ] #2 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
-- [ ] #3 PK-348 REVIEW.md: explore, set up the convention
-- [ ] #4 FRM-454 helga on Sonnet
-- [x] #5 PK-356 slipstream contract as a habit, main and every wing
+- [ ] #1 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
+- [ ] #2 PK-348 REVIEW.md: explore, set up the convention
+- [ ] #3 FRM-454 helga on Sonnet
 <!-- AC:END -->
 
 ## Implementation Notes
