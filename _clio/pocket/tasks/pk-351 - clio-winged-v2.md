@@ -4,9 +4,10 @@ title: 'clio: winged v2'
 status: open
 assignee: []
 created_date: '2026-11-07T14:57:00Z'
-updated_date: '2026-11-09T12:36:00Z'
+updated_date: '2026-11-09T12:43:00Z'
 labels:
   - m
+  - clio-wing-2
 dependencies: []
 priority: next
 type: task
@@ -205,4 +206,6 @@ PK-351:W85 (2026-11-07 22:36, dima): i go cook. fully finish PK-351. if any post
 2026-11-07 23:10 wing 2 halt: handed back to main; PK-351 left: the fresh-wing boot probe at the next boot (W85), FRM-516's live reads by 11-09
 
 kept: 2026-11-09 — winged v2, wing 2's flyway line, its fresh-wing probe rides today's wing opens
+
+kept: 2026-11-09 — dima 14:42 (o2): stays on wing 2's flyway, line #2, after the slipstream habit
 <!-- SECTION:NOTES:END -->

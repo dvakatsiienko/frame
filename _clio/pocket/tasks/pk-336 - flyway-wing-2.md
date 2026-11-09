@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T12:34:00Z'
+updated_date: '2026-11-09T12:43:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,10 +22,11 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 slipstream contract as a habit main and every wing know: main's asks join a wing's flyway right after the item it is on, never mid-turn, unless urgent or dima says so
+- [ ] #1 slipstream contract as a habit main and every wing know: PK-336:W25, PK-336:W26, PK-336:W27, PK-336:W28, PK-336:W29
 - [ ] #2 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
 - [ ] #3 PK-348 REVIEW.md: explore, set up the convention
 - [ ] #4 FRM-454 helga on Sonnet
+- [ ] #5 PK-356 slipstream contract as a habit, main and every wing
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -122,4 +123,13 @@ line 4 done 17:48: low-tide and low-tide-triage live in clio 0.3.438; the first 
 PK-336:W24 (2026-11-07 21:48, dima): fix the habit: an action that folds or dissolves an item into another area does a sanity check across flyways and yanks it out of the flyway plan, so no confusions.
 
 2026-11-09 14:36 wing 2: booted, low tide mode (his 14:30 word). no finished line to clear. new #1 from his inbox: the slipstream contract. PK-351 and PK-348 lost the clio-wing-2 label at the 11-07 hand-back to main; asked whether they stay here.
+
+PK-336:W25 (2026-11-09 inbox, dima): main clio can delegate operational work to a wing, but, important: only via slipstream mode.
+PK-336:W26 (2026-11-09 inbox, dima): it is a contract, both main clio and all wings should know it; writing it as a habit is wing 2's todo.
+PK-336:W27 (2026-11-09 inbox, dima): any main clio wish joins a wing in slipstream mode, unless urgent or i tell.
+PK-336:W28 (2026-11-09 inbox, dima): why? because sometimes the model starts to solve clio's asks immediately, mid-turn, while we were solving something else with a wing. not good.
+PK-336:W29 (2026-11-09 inbox, dima): instead, main clio's asks join the wing's flyway solve queue, right after the current solve item.
+14:40 wing 2 siesta: wishkeeper high fixed, line #1 was written from main's brief with no W-lines; W25–W29 folded from inbox.md, #1 cites them.
+
+14:44 wing 2, his ticks: o1 slipstream habit yes; o2 PK-351 and PK-348 stay here, labels back on; o4 no skip: wing 2 runs the low tide triage now, checking every flyway is compiled right and every item sits with the right seat, then again once main compiles today's inbox.
 <!-- SECTION:NOTES:END -->

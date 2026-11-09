@@ -66,5 +66,6 @@ Ticket: none
 - 2026-11-07 · bytes#138, the one-round review gate · wishkeeper 2 min, 83k tokens, 5 findings: 1 high real but moot, the pr merged while it read, on my 03:36 order · named to dima
 - 2026-11-07 · main, 15:51–21:51: 16 findings, 2 high (a false home claim on FRM-503 door 1, wishes with no W-line), 262k tokens, 7.5 min; both highs real at their spots
 - 2026-11-07 · main, 21:51–22:22, a narrow read at weekly 97 %: 2 findings, 0 high (a ready claim on FRM-505 with W1941 uncited, joiners left out), 46k tokens, 1.5 min; both real
+- 2026-11-09 · wing 2's boot batch, one pocket write · wishkeeper 3 min, 67k tokens, 5 findings: 1 high real (a wish written onto the flyway from main's brief with no W-lines, three of his points lost → PK-336:W25–W29 folded from the inbox), 1 medium (his inbox's triage order dropped unoffered → asked), 3 low · hit: a one-write batch still carried a lost wish
 
 ## verdict
