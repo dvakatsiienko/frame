@@ -222,6 +222,8 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 		repoPath + "/issues":       `[]`,
 		repoPath + "/pulls":        `[]`,
 		repoPath + "/actions/runs": `{"workflow_runs":[]}`,
+		// a memory path asks clio's wishkeeper read, posted by her app on the head
+		repoPath + "/issues/7/comments": `[{"user":{"login":"x-clio-cc[bot]","type":"Bot"},"body":"wishkeeper read ` + head + `: 0 findings"}]`,
 	}}
 	server := h.serve(t)
 

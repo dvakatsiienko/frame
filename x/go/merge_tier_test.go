@@ -120,6 +120,61 @@ func TestMergeAutoPrintsTheChecksOfAnUnsignedSelfEdit(t *testing.T) {
 	}
 }
 
+// the pr's comments, as /issues/7/comments answers: a github app posts as `<slug>[bot]`, type Bot
+func (w *mergeWorld) comments(entries ...string) {
+	w.hub.mu.Lock()
+	defer w.hub.mu.Unlock()
+	w.hub.pages[repoPath+"/issues/7/comments"] = "[" + strings.Join(entries, ",") + "]"
+}
+
+func comment(login, kind, body string) string {
+	return `{"user":{"login":"` + login + `","type":"` + kind + `"},"body":"` + body + `"}`
+}
+
+// FRM-548 exit 2: a memory path waits for clio's wishkeeper read, counted only from the clio app, on the head or an ancestor
+func TestMergeAutoWaitsForClioWishkeeperRead(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name  string
+		plant func(w *mergeWorld, ancestor string) []string
+		lands bool
+	}{
+		{"no comment", func(*mergeWorld, string) []string { return nil }, false},
+		{"clio's read on an ancestor", func(_ *mergeWorld, ancestor string) []string {
+			return []string{comment("x-clio-cc[bot]", "Bot", "wishkeeper read "+ancestor+": 0 findings")}
+		}, true},
+		{"the same text from codie's app", func(_ *mergeWorld, ancestor string) []string {
+			return []string{comment("x-codie-cc[bot]", "Bot", "wishkeeper read "+ancestor+": 0 findings")}
+		}, false},
+		{"a user named like the app", func(_ *mergeWorld, ancestor string) []string {
+			return []string{comment("x-clio-cc[bot]", "User", "wishkeeper read "+ancestor+": 0 findings")}
+		}, false},
+		{"clio's read on other code", func(*mergeWorld, string) []string {
+			return []string{comment("x-clio-cc[bot]", "Bot", "wishkeeper read "+runSha(5)+": 0 findings")}
+		}, false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "x/go/merge_auto.go", "home/.claude/plugin-x/skills/foo/SKILL.md")
+			w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
+			ancestor := w.head
+			write(t, filepath.Join(w.seed, "fix.go"), "package main\n")
+			gitT(t, w.seed, "add", ".")
+			gitT(t, w.seed, "commit", "-q", "-m", "a fix after the read")
+			w.moveHead(t)
+			write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#7:security":"`+w.head+`"}`)
+			w.comments(c.plant(w, ancestor)...)
+
+			got := w.run(t, "7", "--apply")
+
+			landed := got.code == 0 && len(w.hub.sent("PUT ")) == 1
+			if wait := tierRead(got).Wait; landed != c.lands || (!c.lands && !strings.Contains(wait, "wishkeeper read")) {
+				t.Fatalf("exit %d, landed %v, wait %q, want landed %v, a wait naming the read:\n%s", got.code, landed, wait, c.lands, got.stdout)
+			}
+		})
+	}
+}
+
 // FRM-548 exit 1: the lockfile, code beside a doc, and a doc an agent reads as instructions are never light
 func TestMergeAutoNeverReadsTheseAsLight(t *testing.T) {
 	t.Parallel()

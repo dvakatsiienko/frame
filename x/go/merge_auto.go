@@ -263,9 +263,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 		}
 	}
 
-	var sixthSense, security, ci, round, mergeable, deploy, mainCI, threads mergeCheck
+	var sixthSense, security, wishkeeper, ci, round, mergeable, deploy, mainCI, threads mergeCheck
 	if d.Override != nil {
-		r.skip("sixth-sense", "security", "ci", "mergeable", "deploy", "main-ci", "round", "threads")
+		r.skip("sixth-sense", "security", "wishkeeper", "ci", "mergeable", "deploy", "main-ci", "round", "threads")
 	} else {
 		if !slices.Contains(tier.Asks, "sixth-sense") {
 			r.skip("sixth-sense")
@@ -282,6 +282,18 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 		} else if err := r.Step("security", "reading the security pass on the risky paths", func() (string, error) {
 			security = securityCheck(repo, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref)
 			return security.shown()
+		}); err != nil {
+			return nil, err
+		}
+		wishkeeper = mergeCheck{Name: "wishkeeper", OK: true, Detail: "no memory path: no wishkeeper read asked"}
+		if !slices.Contains(tier.Asks, "wishkeeper") {
+			r.skip("wishkeeper")
+		} else if err := r.Step("wishkeeper", "reading clio's wishkeeper read on the memory paths", func() (string, error) {
+			var err error
+			if wishkeeper, err = wishkeeperCheck(api, n, pr.Head.Sha, pr.Base.Ref, pr.Head.Ref); err != nil {
+				return "", err
+			}
+			return wishkeeper.shown()
 		}); err != nil {
 			return nil, err
 		}
@@ -355,6 +367,9 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 		if slices.Contains(tier.Asks, "security") {
 			d.Checks = append(d.Checks, security)
 		}
+		if slices.Contains(tier.Asks, "wishkeeper") {
+			d.Checks = append(d.Checks, wishkeeper)
+		}
 	}
 	selfWait := ""
 	if err := r.Step("risky", "matching the changed paths on the risky list", func() (string, error) {
@@ -407,7 +422,7 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 		d.Decision = "merge"
 		return d, nil
 	}
-	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, security, round, ci, mergeable, deploy, mainCI, threads)
+	d.Decision, d.Wait = decide(brake, selfWait, sixthSense, security, wishkeeper, round, ci, mergeable, deploy, mainCI, threads)
 	if d.Decision == "wait" {
 		// --apply could only refuse a wait, so it never prints as a plan to confirm
 		return nil, &Fail{Refused: true, Msg: "wait: " + d.Wait + "\n" + d.summary(), Next: "x lane merge-auto " + n, Data: d}
@@ -1267,6 +1282,44 @@ func securityCheck(repo, n, head, base, ref string) mergeCheck {
 		}
 	}
 	return c
+}
+
+// clio's app posts the read; a person could name an account like it, but never make it a Bot
+const clioApp = "x-clio-cc[bot]"
+
+var wishkeeperRead = regexp.MustCompile(`^wishkeeper read ([0-9a-f]{7,40})\b`)
+
+// a memory path's wishkeeper read, clio's before the merge: one pr comment from her app naming the sha it read, which
+// reaches the head as a round does, by its history or a rebase that kept the code; no other author counts (FRM-548)
+func wishkeeperCheck(api, n, head, base, ref string) (mergeCheck, error) {
+	c := mergeCheck{Name: "wishkeeper"}
+	type note struct {
+		User struct {
+			Login string `json:"login"`
+			Type  string `json:"type"`
+		} `json:"user"`
+		Body string `json:"body"`
+	}
+	notes, err := ghPages[note](asDima, api+"/issues/"+n+"/comments", "")
+	if err != nil {
+		return c, err
+	}
+	if got, _ := gitIn("", "fetch", "-q", "origin", ref); !got.ok {
+		c.Detail = "git could not fetch " + ref + " to read the wishkeeper read's history: " + logLine(got.log)
+		return c, nil
+	}
+	for _, nt := range notes {
+		read := wishkeeperRead.FindStringSubmatch(nt.Body)
+		if nt.User.Login != clioApp || nt.User.Type != "Bot" || read == nil {
+			continue
+		}
+		if roundReaches(read[1], head, base, ref) {
+			c.OK, c.Detail = true, "clio's wishkeeper read on "+short(read[1])
+			return c, nil
+		}
+	}
+	c.Detail = "no wishkeeper read reaches " + short(head) + ": a memory path asks clio's, posted as " + clioApp + ": «wishkeeper read <sha>: <n> findings»"
+	return c, nil
 }
 
 // the whole branch change is compared, merges included: per-commit patch-ids let an edit inside a merge slip
