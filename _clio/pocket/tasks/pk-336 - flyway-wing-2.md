@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T13:45:00Z'
+updated_date: '2026-11-09T14:02:00Z'
 labels:
   - m
   - clio-wing-2
@@ -23,12 +23,17 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 PK-348 REVIEW.md: explore, set up the convention
-- [ ] #2 FRM-454 helga on Sonnet
-- [ ] #3 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
-- [ ] #4 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
-- [ ] #5 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)
-- [ ] #6 side prompts join the prompt log (his winged v2 wish, never landed): ask dima if it still stands
-- [ ] #7 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
+- [ ] #2 PK-326 close: route its 50 W-lines (the ask-guard), then close; its re-measure is done, notes 11-09 15:58
+- [ ] #3 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first
+- [ ] #4 PK-366 delete the model label group: his o19 tick, 9 tickets lose fable 5 / opus 5
+- [ ] #5 trial reads with dima: skill-named-load (due 11-09), delve (11-10), unbash (11-22) — his word: probably mostly solved 2-3 days ago, double-check
+- [ ] #6 redraw the crew-pm blueprint after winged v2 and the sidecar changes
+- [ ] #7 FRM-454 helga on Sonnet
+- [ ] #8 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
+- [ ] #9 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
+- [ ] #10 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)
+- [ ] #11 side prompts join the prompt log (his winged v2 wish, never landed): ask dima if it still stands
+- [ ] #12 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -143,4 +148,6 @@ hoist 11-09: proposing, wing 2
 2026-11-09 14:55, dima's o7 accepted the split: wing 1 +PK-355 +FRM-383; FRM-503 split by step (o6); wing 3 PK-364 + the wish-loss audit + speak v2 planning, confirmed; main's dup PK-326 yanked and her nine items labelled before his yes, covered by o7; FRM-516 and FRM-454 labelled wing 2. linear Triage/Todo/Backlog not read: flyways and inbox only.
 
 15:30 FRM-483 joined by slipstream from main: label back on, Todo; the one date 2026-11-11, the +1 shift of 11-10.
+
+16:02 main's five lines (dima's o17, o19) moved up, right after PK-348, the slipstream habit.
 <!-- SECTION:NOTES:END -->
