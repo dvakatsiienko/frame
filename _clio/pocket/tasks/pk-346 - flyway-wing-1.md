@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T15:17:00Z'
+updated_date: '2026-11-09T15:18:00Z'
 labels:
   - s
   - clio-wing-1
@@ -25,12 +25,13 @@ ordinal: 18998
 - [ ] #7 PK-370 perf: tests off pre-commit, to ci or pre-push
 - [ ] #8 PK-371 gates file name: gates museum
 - [ ] #9 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
-- [ ] #10 gate lane 1: FRM-534 + FRM-520 on main, sixth sense clean then land FRM-520; FRM-534 closes 11-10 on its day read
-- [ ] #11 PK-373 linux vm for go tests: name, then shape-idea steps 4-7 and its ticket
-- [ ] #12 perf left in order: FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
-- [ ] #13 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
-- [ ] #14 cli lane 6: land FRM-383, then FRM-503 door 1 joins, then its next signed chunk (dima 17:16)
-- [ ] #15 gate lane 1: its codie stays parked as dima's herdr probe host, sixth sense parked (dima 17:16)
+- [x] #10 gate lane 1: FRM-534 + FRM-520 on main, sixth sense clean then land FRM-520; FRM-534 closes 11-10 on its day read
+- [ ] #11 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
+- [ ] #12 cli lane 6: land FRM-383, then FRM-503 door 1 joins, then its next signed chunk (dima 17:16)
+- [x] #13 gate lane 1: its codie stays parked as dima's herdr probe host, sixth sense parked (dima 17:16)
+- [ ] #14 PK-373 linux vm: named vm-go-test; shape-idea steps 4-7 and its ticket
+- [ ] #15 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
+- [ ] #16 FRM-520 close on dima's o43; FRM-517 reopen or not on his o44
 <!-- AC:END -->
 
 ## Implementation Notes
