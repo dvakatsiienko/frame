@@ -30,10 +30,16 @@ const promptDir = path.join(
     process.env.PROMPT_RAW_DIR ?? path.join(home, '.local/state/clio/prompts'),
     seat,
 );
-const groomDir = path.join(
-    process.env.PROMPT_GROOM_DIR ?? path.join(home, '.local/state/clio/grooms'),
-    seat,
-);
+const groomRoot =
+    process.env.PROMPT_GROOM_DIR ?? path.join(home, '.local/state/clio/grooms');
+const groomDir = path.join(groomRoot, seat);
+// a groom is written to its own seat's folder and read from every seat's: one made in main counts in a wing
+const groomDirs = () => [
+    groomRoot,
+    ...(existsSync(groomRoot) ? readdirSync(groomRoot) : [])
+        .filter((name) => /^wing-\d+$/.test(name))
+        .map((name) => path.join(groomRoot, name)),
+];
 const pocketDir =
     process.env.POCKET_DIR ?? path.join(import.meta.dirname, '../pocket');
 // the check binds every fold from the day the rules landed (dima's o61–o63) through today
@@ -64,8 +70,11 @@ const bare = (line: string) =>
 // a groom file holds at least one W-line stamped with this very minute; a placeholder file fails
 // an inbox day's groomed file is helga's checked prep, copied in at boot: it must exist and carry every
 // `raw drop (<day> inbox, dima): …` note of the item, or an inbox stamp would pass a raw fold
-export const groomedOnDisk: Groomed = (day, hhmm, item) => {
-    const file = groomFile(day, hhmm, 'groomed');
+export const groomedOnDisk: Groomed = (day, hhmm, item) =>
+    groomDirs().some((dir) => groomedIn(dir, day, hhmm, item));
+
+function groomedIn(dir: string, day: string, hhmm: string, item: string) {
+    const file = path.join(dir, path.basename(groomFile(day, hhmm, 'groomed')));
     if (!existsSync(file)) return false;
     const groomed = readFileSync(file, 'utf8');
     if (hhmm === 'inbox') {
@@ -80,7 +89,7 @@ export const groomedOnDisk: Groomed = (day, hhmm, item) => {
     return groomed
         .matchAll(STAMP)
         .some(([, date, time, id]) => date === day && (id ?? time) === hhmm);
-};
+}
 
 // a minute this seat's log lacks was typed in another seat or before the log existed, so it owes this seat no groom
 export const groomedOrUnlogged: Groomed = (day, key, item) => {

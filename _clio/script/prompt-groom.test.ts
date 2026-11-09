@@ -988,3 +988,19 @@ describe('ungroomedSteersToday', () => {
         expect(groom.ungroomedSteersToday('2026-10-26', '')).toEqual([]);
     });
 });
+
+describe('a groom from another seat', () => {
+    test('a wing finds a groom main made at the root', async () => {
+        const root = mkdtempSync(join(tmpdir(), 'grooms-'));
+        writeFileSync(
+            join(root, '2026-11-09-1412.groomed.md'),
+            'PK-1:W1 (2026-11-09 14:12, dima): ship it\n',
+        );
+        vi.stubEnv('PROMPT_GROOM_DIR', root);
+        vi.stubEnv('CLIO_SEAT', 'wing-1');
+        vi.resetModules();
+        const groom = await import('./prompt-groom.ts');
+        vi.unstubAllEnvs();
+        expect(groom.groomedOnDisk('2026-11-09', '14:12', '')).toBe(true);
+    });
+});
