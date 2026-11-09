@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -543,6 +544,10 @@ func (h *copyHarness) run(content []byte) (redRun, error) {
 			return redRun{}, err
 		}
 		h.typed, h.typeErrors = true, h.typeErrorsNow()
+		// the clean run's own content is the baseline just read, so its check is already done
+		if bytes.Equal(original, content) {
+			return h.runCommand(), nil
+		}
 	}
 	if err := os.WriteFile(h.inCopy(h.file), content, 0o644); err != nil {
 		return redRun{}, err
@@ -550,6 +555,11 @@ func (h *copyHarness) run(content []byte) (redRun, error) {
 	if added := h.newTypeErrors(); added != "" {
 		return redRun{broken: "a type error: " + added}, nil
 	}
+	return h.runCommand(), nil
+}
+
+// the command on the copy as it holds the file now
+func (h *copyHarness) runCommand() redRun {
 	command := make([]string, len(h.command))
 	for i, arg := range h.command {
 		command[i] = arg
@@ -568,7 +578,7 @@ func (h *copyHarness) run(content []byte) (redRun, error) {
 	c := exec.Command(command[0], command[1:]...)
 	c.Dir = dir
 	got := runTestCmd(c)
-	return redRun{ok: got.ok, log: got.log, note: h.unchecked}, nil
+	return redRun{ok: got.ok, log: got.log, note: h.unchecked}
 }
 
 var (
@@ -604,7 +614,10 @@ func (h *copyHarness) typeErrorsNow() []string {
 		return nil
 	}
 	rel, _ := filepath.Rel(h.root, h.file)
-	for dir := filepath.Dir(h.inCopy(h.file)); inside(h.copy, dir); dir = filepath.Dir(dir) {
+	// tsc lists each file by its full path, resolved or as reached, so the file is its copy's path in either form
+	target := h.inCopy(h.file)
+	resolved, _ := filepath.EvalSymlinks(target)
+	for dir := filepath.Dir(target); inside(h.copy, dir); dir = filepath.Dir(dir) {
 		tsc := nearestBin(dir, "tsc")
 		if (h.project != "" && dir != h.project) || !exists(filepath.Join(dir, "tsconfig.json")) || tsc == "" {
 			continue
@@ -616,7 +629,8 @@ func (h *copyHarness) typeErrorsNow() []string {
 		holds := false
 		var errs []string
 		for line := range strings.SplitSeq(string(out), "\n") {
-			holds = holds || strings.HasSuffix(strings.TrimSpace(line), string(filepath.Separator)+rel)
+			listed := strings.TrimSpace(line)
+			holds = holds || listed == target || listed == resolved
 			if strings.Contains(line, "error TS") {
 				errs = append(errs, strings.TrimSpace(line))
 			}

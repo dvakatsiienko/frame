@@ -624,6 +624,26 @@ func TestVerifyRedCountsTypeErrorsAndNamesAnUncheckedFile(t *testing.T) {
 	}
 }
 
+// ci review: a dependency's file of the same name in the program never stands in for the file itself
+func TestVerifyRedNeverTakesADependencysFileForTheMutated(t *testing.T) {
+	t.Parallel()
+	f := typedRedFixture(t)
+	write(t, filepath.Join(f.dir, "tsconfig.json"), `{"compilerOptions": {"strict": true, "noEmit": true, "module": "esnext", "moduleResolution": "bundler", "target": "es2022", "allowImportingTsExtensions": true, "types": []}, "include": ["src/**/*.ts"]}`+"\n")
+	write(t, filepath.Join(f.dir, "src/keep.ts"), "import { other } from \"pkg/lib.ts\";\nexport const kept = other;\n")
+	write(t, filepath.Join(f.dir, "deps/pkg/package.json"), `{"name": "pkg", "type": "module"}`+"\n")
+	write(t, filepath.Join(f.dir, "deps/pkg/lib.ts"), "export const other = 1;\n")
+	if err := os.Symlink(filepath.Join(f.dir, "deps/pkg"), filepath.Join(f.dir, "node_modules/pkg")); err != nil {
+		t.Fatal(err)
+	}
+	commitAll(t, f.dir)
+
+	got, _ := verifyRedIn(t, f, nil, f.file, "limit: number = 3", "limit: string = 3", f.test)
+
+	if rows := pairRows(t, got); len(rows) != 1 || !strings.Contains(fmt.Sprint(rows[0]["why"]), "unchecked") {
+		t.Fatalf("pairs %v, want the row to say no tsconfig checks lib.ts:\n%s", rows, got.stdout)
+	}
+}
+
 // round 2: a dash command reads a runtime file and a flag's absolute value from the copy
 func TestVerifyRedRunsADashCommandOnTheCopy(t *testing.T) {
 	t.Parallel()
