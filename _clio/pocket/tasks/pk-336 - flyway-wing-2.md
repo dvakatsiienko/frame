@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T17:39:00Z'
+updated_date: '2026-11-09T17:44:00Z'
 labels:
   - m
   - clio-wing-2
@@ -23,7 +23,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 FRM-538 two guards (public posts name sources, finished flyway lines tick): proposed for his sign
-- [ ] #2 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first
+- [x] #2 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first
 - [ ] #3 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
 - [ ] #4 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
 - [ ] #5 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
@@ -169,4 +169,6 @@ hoist 11-09: proposing, wing 2
 19:21 #4 trial reads closed on dima's «let's do it and finish it»: skill-named-load adopted 11-07 (o44), delve dropped 11-07 (o43), both read in their docs; unbash's verdict lands at FRM-472's close, the trial live until 11-22, which test-drive:check tracks — no flyway line
 
 19:26 #6 «tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)» moved to main clio on dima's word
+
+19:44 #2 PK-367 yanked to wing 3 on dima's word («yank #2 from wing 2 flyway into yours and solve»)
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T17:30:00Z'
+updated_date: '2026-11-09T17:44:00Z'
 labels:
   - s
   - clio-wing-3
@@ -27,6 +27,7 @@ ordinal: 18999
 - [ ] #9 FRM-542 every seat's prompt log, wing 2 #10 folded in (yanked, dima o19)
 - [x] #10 FRM-550 decided-pattern read-back: a short grill, then build (dima 17:33)
 - [x] #11 herdr skills: x:herdr + x:herdr-customize built, x:rex rebuilt, verified, landed (from main 19:00, dima W67)
+- [ ] #12 PK-367 rename cut-proposals-print → low-tide-cuts (his o10 pick), a quick shape of the cut process with dima first (yanked from wing 2 #2, dima 19:43)
 <!-- AC:END -->
 
 ## Implementation Notes
