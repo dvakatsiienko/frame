@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T17:59:00Z'
+updated_date: '2026-11-09T18:11:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,17 +16,18 @@ ordinal: 18998
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 now: FRM-551 vm go tests — second idle read lands ~20:36 at 4 vcpus, then build or drop, the vm stopped
-- [ ] #2 11-10 17:28: FRM-517 temp dir — count again against 345, under 100 grown closes it
-- [ ] #3 11-10 17:30: FRM-534 related tests at commit — day read, then close
-- [ ] #4 11-10: FRM-533 reuse proven results — day read, then shape step 2 (reuse on our own key)
-- [ ] #5 after FRM-534 closes: FRM-539 gate step time budget — build as a quick lane (signed)
-- [ ] #6 by 11-12: FRM-383 x verify — time W3 «faster», see one real red call, then x lane landed FRM-383 --pr 150 --apply
-- [ ] #7 on spare usage: FRM-537 perf probes (mods test cost first, asked in orbit), then FRM-535 go -parallel grid
-- [ ] #8 with dima, a little later: PK-370 move tests off pre-commit, to ci or pre-push
-- [ ] #9 11-11: PK-300 one complete measuring solution — parked on his word, touch again
-- [ ] #10 with speak v2: FRM-497 speak meter 120 → 60 fps
-- [ ] #11 standing until 11-14: FRM-525 performance topic and cpu watch — anything performance comes to wing 1
+- [ ] #1 FRM-551 vm go tests: read the second idle sample at ~20:36 (4 vcpus), tell dima build or drop, stop the vm
+- [ ] #2 ⏳ FRM-534 related tests at commit: the day read, then close — waits for: 11-10 17:30
+- [ ] #3 ⏳ FRM-517 temp dir: count against 345, under 100 grown closes it — waits for: 11-10 17:28
+- [ ] #4 ⏳ FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — waits for: 11-10
+- [ ] #5 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
+- [ ] #6 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
+- [ ] #7 ⏳ mods test trim (quiet, hot, the timeout retries): shape a chunk — waits for: dima's word
+- [ ] #8 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
+- [ ] #9 ⏳ FRM-525 performance topic and cpu watch, anything performance comes to wing 1 — waits for: 11-14
+- [ ] #10 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
+- [ ] #11 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #12 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -67,4 +68,6 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 19:45 gate tails and the watch-pr undo moved to wing 2's cli lane as riders (dima 19:21); 33+79 branches deleted, tips logged in the wing 1 tree's .scratch/branches-deleted-tips.txt
 
 2026-11-09 19:59 groom (dima 19:58 via wing 2): done and cleared — PK-357 branches closed (status done, every W-line routed, verified by pocket-check green); the open lines rewritten to read alone, ordered by date, each ticket's state read live (all Todo).
+
+done 2026-11-09: FRM-537 mods test-cost probe — 4 files hold 69 % of 286 user-s, comment on FRM-537, doors-left door 10 (dima's o55). groomed 20:11 to the flyway shape (dima's o68 via wing 2).
 <!-- SECTION:NOTES:END -->
