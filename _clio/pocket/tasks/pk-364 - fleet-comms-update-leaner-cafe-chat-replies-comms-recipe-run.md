@@ -72,4 +72,32 @@ raw drop (2026-11-09 inbox, dima): instead — tell me your opinions, interestin
 raw drop (2026-11-09 inbox, dima): for exampe, instead of updating me on every detailed perf metric stats (before/after), and dropping a bunch of numbers on me — tell that fleet became faster at **this** and **that** area by **7% median** (you provide interesting insights instead of overloading me with tech details). and fleet would be even faster **if we would do this and that** (you propose further optimizations, advice and suggest me how to make fleet better). why (your explanation)? because of **this** and **that** (you provide slight context about stuff).
 
 raw drop (2026-11-09 inbox, dima): ^ something like this. so you update me, but with slightly less tech details. instead - tell, ask or propose of how to improve a fleet. do not terrorize me with proposals. stay lean. if nothing worthy to propose don't. only useful proposals.
+
+raw drop (2026-11-09 inbox, dima): but with cutting your responses, we may recive a cooms wisp - you hide (not tell) important data to me becase i asked to stay leaner (true ask). a true possible pitfall. fix: i still want to know important bits, info should reach me just in leaner way.
+
+raw drop (2026-11-09 inbox, dima): also i just ask around when interested in details: you detailze, gradually, as i ask. so we can dig deeper, when i am interested in.
+
+raw drop (2026-11-09 inbox, dima): applies to all fleet.
+
+raw drop (2026-11-09 inbox, dima): so default comms nice down. replies  to me are natural. like we are doing a tech smalltalks, overview-mode. its enough for us to take care of stuff usually. keep our threads in a cafe chat mode. i we would go to cafe, sit and discuss some stuff - how to solve better, we are not drawing tech diagrams in threads — we do that in actual diagrams (you draw).
+
+raw drop (2026-11-09 inbox, dima): actions:
+
+raw drop (2026-11-09 inbox, dima): - run fleet operator comms recipe. i want to know how we talk. gather analysis info and provide proposals to keep our comms leaner.
+
+raw drop (2026-11-09 inbox, dima): - before hunting transcripts and other stuff across my filesystem — refresh actual knowledge, how human/model comms issues are being solved nowadays, best practices
+
+raw drop (2026-11-09 inbox, dima): - plus: hunt our comms inefficiencies. ask hunters to hunt about orbit comms flaw. occasions when you sent me a reply and orbit asks, what and how i tick, what being missed. when asks in orbit diverges with replies, or when replies does not contain enough of useful context, while asks are asked in orbit. for example you sometimes forget to print grill questions into thread but set then in orbit. cases like this.
+
+raw drop (2026-11-09 inbox, dima): - also: overall comms gaps hunting. how to make you not overwhelm me with info?
+
+raw drop (2026-11-09 inbox, dima): - hunt what I complain in my promps to you and  how i ask for wishes — and how and if they are solved?
+
+raw drop (2026-11-09 inbox, dima): - also a thing i would like to know about. orbit for --bg. how often --bg threads uses orbit? desktop app does not shows me the UI of mods for --bg threads so i do not see their orbits. the only door for me - is glide (i see thread asks there). how many of them unanswered?
+
+raw drop (2026-11-09 inbox, dima): - plus — how many tokens spent on our mods system? how much chore effort orbit, phases, glide costs for everyone?
+
+raw drop (2026-11-09 inbox, dima): and propose a solid fleet and clio comms steer. consider that we have orbit.
+
+raw drop (2026-11-09 inbox, dima): use all tools and all doors - transcripts, duckdb, our telemetry.
 <!-- SECTION:NOTES:END -->
