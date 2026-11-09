@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T14:38:00Z'
+updated_date: '2026-11-09T14:45:00Z'
 labels:
   - m
   - clio-main
@@ -172,4 +172,6 @@ app differences that matter for the herdr steps (clio, 16:40, read off his 4 scr
 - herdr desktop app: sidebar of Spaces and Agents (agents self-report status; agents inside tmux may not), tabs, Files and Changes panes, ⌘⇧P command palette, This computer / Add machine; cc runs as its terminal TUI in a pane, so our mods render terminal-native there, orbit has no buttons
 - rex: project tabs, same cc TUI and terminal-native board, glide shows [ tick ] as text
 - herdr gallery layouts (Kaiju City, Aperture): custom chrome around the panes (agent cards, status bars, facility feed), yet the cc and codex panes inside stay TUIs: no example yet of a rendered chatter, so W23's probe is the crux
+
+corrections (clio, 16:46): W26's arrows in screenshot 1 point at the band (waiting on, 5h, ctx) and the orbit pane too, not only the board UI; the app-differences line «orbit has no buttons» in herdr is [inference]: SS3's orbit pane is empty
 <!-- SECTION:NOTES:END -->

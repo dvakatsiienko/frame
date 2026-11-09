@@ -4,7 +4,7 @@ title: 'linux vm: frame''s go tests run in a persistent vm on this mac, shape-id
 status: open
 assignee: []
 created_date: '2026-11-09T14:19:00Z'
-updated_date: '2026-11-09T14:44:00Z'
+updated_date: '2026-11-09T14:45:00Z'
 labels:
   - s
   - clio-wing-1
@@ -38,4 +38,6 @@ grill 1 settled 2026-11-09 16:27, dima's ticks o24-o31, all as picked:
 - Q7 no tools inside past go, git and rsync
 
 PK-373 name, dima's o32 steer 16:44: vm-go-test (over my go-test-vm pick)
+
+16:46 name: vm-go-test (dima's 16:44 steer over go-test-vm); the lima instance frm536 is renamed at the build, never before
 <!-- SECTION:NOTES:END -->

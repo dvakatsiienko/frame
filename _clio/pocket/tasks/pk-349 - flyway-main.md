@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T14:22:00Z'
+updated_date: '2026-11-09T14:45:00Z'
 labels:
   - s
   - clio-main
@@ -88,4 +88,6 @@ PK-349:W24 (2026-11-09 14:30, dima): who can lead the x verify cli chunk, you or
 2026-11-09 16:03 clio, his o17 o18 o19: PK-326 close, PK-367, PK-366, the trial reads and the redraw moved to wing 2 (PK-336); FRM-503 moved to wing 1 (clio-wing-1). PK-368 passports ticked done
 
 PK-349:W25 (2026-11-09 16:01, dima): habit fix — any time you solve a part of your flyway, always tick its item in the list; a guard, not an intention (proposed in orbit)
+
+correction (clio, 16:46): W25's clause «; a guard, not an intention (proposed in orbit)» is clio's reasoning, not his words; his 16:01 ends «always tick item in a list». W25 now lives in FRM-538 → FRM-538
 <!-- SECTION:NOTES:END -->
