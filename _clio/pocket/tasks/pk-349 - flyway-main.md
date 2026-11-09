@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T13:48:00Z'
+updated_date: '2026-11-09T14:01:00Z'
 labels:
   - s
   - clio-main
@@ -17,19 +17,11 @@ ordinal: 9995
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 mods quick lane with its verifier, by load
-- [ ] #2 cli lane by load
-- [ ] #3 FRM-491 and FRM-495 behind FRM-505
-- [ ] #4 FRM-368 tilde grill with dima
-- [ ] #5 FRM-503 lane loop, by load
-- [ ] #6 redraws after winged v2 lands
-- [ ] #7 trial reads with dima: delve, skill-named-load, unbash
-- [ ] #8 PK-360 _crow cleanup
-- [ ] #9 PK-363 herder: research, print, his call
-- [ ] #10 PK-366 delete the model label group, his word
-- [ ] #11 PK-367 rename cut-proposals-print, shape the cuts
-- [ ] #12 PK-368 sidecar passports rebalance
-- [ ] #13 PK-326 quiet comms re-measure and close
-- [ ] #14 FRM-509 live read of the 11-07 lane ends, by 11-10
+- [ ] #2 FRM-491 and FRM-495 behind FRM-505
+- [ ] #3 FRM-368 tilde grill with dima
+- [ ] #4 PK-363 herder: research, print, his call
+- [x] #5 PK-368 sidecar passports rebalance
+- [ ] #6 FRM-509 live read of the 11-07 lane ends, by 11-10
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -91,4 +83,6 @@ PK-349:W24 (2026-11-09 14:30, dima): who can lead the x verify cli chunk, you or
 2026-11-09 14:55 wing 2 triage, dima's o6: FRM-503 split by step, #5 the lane run here, door 1 on wing 1's PK-346 #8.
 
 2026-11-09 15:00 clio, correction of the 14:55 note: the dated reads now sit as ticket comments: BYT-132 11-10, FRM-509 11-10, FRM-483 11-11, FRM-465 11-12, FRM-503 11-14, BYT-94 11-15, FRM-501 and FRM-504 11-16 (mods paused); unbash 11-22 in its test-drive file
+
+2026-11-09 16:03 clio, his o17 o18 o19: PK-326 close, PK-367, PK-366, the trial reads and the redraw moved to wing 2 (PK-336); FRM-503 moved to wing 1 (clio-wing-1). PK-368 passports ticked done
 <!-- SECTION:NOTES:END -->
