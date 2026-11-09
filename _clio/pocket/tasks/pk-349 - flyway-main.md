@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T14:45:00Z'
+updated_date: '2026-11-09T15:18:00Z'
 labels:
   - s
   - clio-main
@@ -19,10 +19,10 @@ ordinal: 9995
 - [ ] #1 mods quick lane with its verifier, by load
 - [ ] #2 FRM-491 and FRM-495 behind FRM-505
 - [ ] #3 FRM-368 tilde grill with dima
-- [ ] #4 PK-363 herder: research, print, his call
+- [x] #4 PK-363 herder: research, print, his call
 - [x] #5 PK-368 sidecar passports rebalance
-- [ ] #6 FRM-509 live read of the 11-07 lane ends, by 11-10
-- [ ] #7 prove the passport auto-load live: helga's next boot carries her passport (crow's half proven: packet 202611091548w2, charter changed)
+- [ ] #6 prove the passport auto-load live: helga's next boot carries her passport (crow's half proven: packet 202611091548w2, charter changed)
+- [ ] #7 herdr pilot: gate lane codie hosts the probe; Zoo's panel code read, then probe steps for dima
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -90,4 +90,6 @@ PK-349:W24 (2026-11-09 14:30, dima): who can lead the x verify cli chunk, you or
 PK-349:W25 (2026-11-09 16:01, dima): habit fix — any time you solve a part of your flyway, always tick its item in the list; a guard, not an intention (proposed in orbit)
 
 correction (clio, 16:46): W25's clause «; a guard, not an intention (proposed in orbit)» is clio's reasoning, not his words; his 16:01 ends «always tick item in a list». W25 now lives in FRM-538 → FRM-538
+
+2026-11-09 17:18 clio: #4 herdr round 1 done (artifact 98seiwXLa41Z47oBefZnP8, his call: pilot); FRM-509 read moved to wing 3 (clio-wing-3)
 <!-- SECTION:NOTES:END -->
