@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T18:32:00Z'
+updated_date: '2026-11-09T18:34:00Z'
 labels:
   - s
   - clio-wing-3
@@ -13,11 +13,6 @@ priority: next
 type: task
 ordinal: 18999
 ---
-
-## Acceptance Criteria
-<!-- AC:BEGIN -->
-- [ ] #1 the wish-loss audit script: fold it into wish-cover as a weekly audit mode, after dima's worth-it word and seven flag names
-<!-- AC:END -->
 
 ## Implementation Notes
 
@@ -37,4 +32,6 @@ ordinal: 18999
 done 2026-11-09: PK-367 cut process, clio:low-tide-cuts on origin/main
 
 done 2026-11-09: FRM-542's close handed to main (PK-349, clio-main), speak v2 planning handed to wing 2 (PK-336), dima 20:29
+
+done 2026-11-09: the wish-loss audit folded into wish-cover --audit-week, on origin/main, the M3 reminder its caller
 <!-- SECTION:NOTES:END -->

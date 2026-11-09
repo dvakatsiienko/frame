@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T18:32:00Z'
+updated_date: '2026-11-09T18:37:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,10 +16,10 @@ ordinal: 18998
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-551 vm go tests: read the second idle sample at ~20:36 (4 vcpus), tell dima build or drop, stop the vm
-- [ ] #2 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
-- [ ] #3 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
-- [ ] #4 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
+- [ ] #1 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
+- [ ] #2 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
+- [ ] #3 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
+- [ ] #4 ⏳ FRM-551 vm go tests: build at 4 vcpus or drop — waits for: dima's word
 - [ ] #5 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
 - [ ] #6 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
 - [ ] #7 📅 FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — on: 2026-11-10
@@ -73,4 +73,6 @@ done 2026-11-09: FRM-537 mods test-cost probe — 4 files hold 69 % of 286 user-
 done 2026-11-09: mods test trim shaped into FRM-555 (dima's o56, o57); the perf watch moved to 💤 on his 20:18 word
 
 done 2026-11-09: FRM-555 grill 1 answered (o58–o61), kept in its decided; unsigned on dima's 20:32 word — the mods lane waits for main's herdr revisit pass; handed to main, label off
+
+done 2026-11-09: FRM-551 kill gate read 2 — 288 cpu-s a day idle at 4 vcpus, under the 320 line; comment on FRM-551; vm frm536 stopped 20:37
 <!-- SECTION:NOTES:END -->

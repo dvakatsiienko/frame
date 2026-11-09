@@ -4,6 +4,7 @@ import {
     type Ask,
     asksOf,
     currentSid,
+    isGuardGated,
     phasesOf,
     runningPids,
     savePress,
@@ -54,6 +55,26 @@ describe('the panel reads what the stash stores', () => {
             },
         };
         expect(phasesOf(store, SID)).toEqual(['now: a', 'next: b']);
+    });
+});
+
+describe('an ask the guard reads takes its tick on the desktop', () => {
+    test.each([
+        '✍️ sign FRM-552: orbit works in herdr',
+        '⚠️ push the backup mirror',
+        'merge #150 now that ci is green',
+        'land https://github.com/x/y/pull/9',
+        'run `git push --mirror origin`',
+    ])('%s is gated', (text) => {
+        expect(isGuardGated(text)).toBe(true);
+    });
+
+    test.each([
+        'FRM-505: drop its 524/529 links',
+        'sign-in page: keep the old copy?',
+        'emerge the two lists into one',
+    ])('%s takes a herdr tick', (text) => {
+        expect(isGuardGated(text)).toBe(false);
     });
 });
 
