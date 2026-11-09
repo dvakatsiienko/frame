@@ -3,7 +3,7 @@
 // session's next turn (FRM-552)
 
 /** @typedef {{ id: string | null, text: string, pick: string | null, mark: string | null, isLocked: boolean }} Ask */
-/** @typedef {{ id: string, verdict: 'tick' | 'replay', steer?: string, at: number }} Press */
+/** @typedef {{ id: string, verdict: 'tick' | 'replay', steer?: string, text?: string, at: number }} Press */
 
 /**
  * the open asks the stash keeps for a session; an entry stored before items carried ids has text alone and cannot be
@@ -86,20 +86,20 @@ export function phasesOf(store, sid) {
 }
 
 /**
- * the ticks file after one more press: its lines for asks still open, then the press, its `at` above every line kept,
- * since the stash reads only presses past the newest `at` it took; JSON.stringify keeps a steer holding quotes or a
- * newline on one line
+ * the ticks file after one more press: the lines the stash has not taken yet (`at` past its `herdr-read:<sid>`), then
+ * the press, its `at` above every line in the file, since the stash reads only presses past the newest `at` it took;
+ * JSON.stringify keeps a steer holding quotes or a newline on one line
  * @param {string | null} text
  * @param {Press} press
- * @param {string[]} openIds
+ * @param {number} taken
  */
-export function withPress(text, press, openIds) {
+export function withPress(text, press, taken) {
     let last = 0;
     const kept = (text ?? '').split('\n').filter((line) => {
         try {
             const { at, id } = JSON.parse(line);
             if (typeof at === 'number') last = Math.max(last, at);
-            return openIds.includes(id);
+            return typeof at === 'number' && at > taken && Boolean(id);
         } catch {
             return false;
         }
@@ -116,13 +116,13 @@ export function withPress(text, press, openIds) {
  * @param {{ read: (path: string) => Promise<string | null>, write: (path: string, text: string, expected: string | null) => Promise<unknown> }} io
  * @param {string} path
  * @param {Press} press
- * @param {string[]} openIds
+ * @param {number} taken
  */
-export async function savePress(io, path, press, openIds) {
+export async function savePress(io, path, press, taken) {
     for (let tries = 2; ; tries--) {
         const text = await io.read(path);
         try {
-            return await io.write(path, withPress(text, press, openIds), text);
+            return await io.write(path, withPress(text, press, taken), text);
         } catch (err) {
             if (tries <= 1) throw err;
         }

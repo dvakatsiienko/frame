@@ -2376,13 +2376,19 @@ async function absorbMarks($: EngineInterface) {
         isSaved = await saveOrbit($, {
             ...o,
             asks: o.asks.map((a) => {
-                // a herdr press never overwrites a mark: the first press wins, a desktop one included
+                // a herdr press never overwrites a mark: the first press wins, a desktop one included; and it marks
+                // only the question he read, never the round a follow put under the same id
+                const h = herdr.marks[a.id];
                 const m =
-                    marks[a.id] ?? (a.mark ? undefined : herdr.marks[a.id]);
+                    marks[a.id] ??
+                    (a.mark || (h?.text !== undefined && h.text !== a.text)
+                        ? undefined
+                        : h);
                 if (!m || a.isLocked || a.isResolved) return a;
                 return {
                     ...a,
                     isChanged: false,
+                    isHerdrMark: !marks[a.id] || undefined,
                     mark: m.mark,
                     markedAt: m.mark ? m.at : undefined,
                     steer: isTypedHere(a.id)
@@ -2666,7 +2672,10 @@ async function pressMarkNow(
     if (isTicked) await recordTicks($, [ask], true);
     const isKept = await markAsksNow(
         $,
-        (a) => (a.id === id ? { ...a, isChanged: false, mark: next } : a),
+        (a) =>
+            a.id === id
+                ? { ...a, isChanged: false, isHerdrMark: undefined, mark: next }
+                : a,
         false,
         undefined,
     );
@@ -2700,7 +2709,12 @@ async function pressAllAsksNow(
         $,
         (a) =>
             asks.some((x) => x.id === a.id)
-                ? { ...a, isChanged: false, mark: 'accepted' }
+                ? {
+                      ...a,
+                      isChanged: false,
+                      isHerdrMark: undefined,
+                      mark: 'accepted',
+                  }
                 : a,
         false,
         undefined,

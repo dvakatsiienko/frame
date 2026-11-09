@@ -2411,7 +2411,7 @@ const turnContext = async ($: Engine) =>
         '\n',
     );
 
-test('a herdr tick joins the running turn once, with his steer', async ($, on) => {
+test('a herdr tick joins the running turn once, labelled from herdr, with his steer', async ($, on) => {
     const files: Record<string, string> = {};
     const w = world(on, files);
     await start($);
@@ -2427,7 +2427,9 @@ test('a herdr tick joins the running turn once, with his steer', async ($, on) =
     const first = await turnContext($);
     const second = await turnContext($);
     expect([
-        first.match(/o1 🛎️ accepted.*his steer: «say "hi"\nthen go»/s)?.length,
+        first.match(
+            /o1 🛎️ accepted from herdr: push FRM-1.*his steer: «say "hi"\nthen go»/s,
+        )?.length,
         second.includes('o1 🛎️'),
         w.store.get(`herdr-read:${SID}`),
     ]).toEqual([1, false, at]);
@@ -2446,7 +2448,7 @@ test('a herdr replay on an ask the desktop board already ticked changes nothing'
         verdict: 'replay',
     });
     await say($, 'go on');
-    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
+    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted: /);
 });
 
 test('of two herdr presses on one ask read together, the first wins', async ($, on) => {
@@ -2469,6 +2471,57 @@ test('a herdr tick on a resolved ask changes nothing', async ($, on) => {
     await add($, ['push FRM-1', 'yes']);
     await orbit($, { ids: ['o1'], op: 'resolve', words: { o1: 'done' } });
     files[HERDR_FILE] = press({ at: w.clock.now(), id: 'o1', verdict: 'tick' });
+    await say($, 'go on');
+    expect([joined(w.contexts), keptMark(w.store, 'o1')]).toEqual([
+        [],
+        undefined,
+    ]);
+});
+
+// the mark the stash kept for an ask, read from the store copy of its orbit
+const keptMark = (store: Map<string, unknown>, id: string) =>
+    (
+        store.get(`kept:${SID}`) as
+            | { orbit?: { asks?: { id: string; mark?: string }[] } }
+            | undefined
+    )?.orbit?.asks?.find((a) => a.id === id)?.mark;
+
+test('a herdr press already taken never marks the round a follow puts under its id', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'go');
+    files[HERDR_FILE] = press({ at: w.clock.now(), id: 'o1', verdict: 'tick' });
+    await turnContext($);
+    await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'after ci',
+        text: 'push FRM-1',
+    });
+    await endTurn($);
+    await say($, 'go on');
+    expect(joined(w.contexts)).toEqual([]);
+});
+
+test('a herdr press made on the old question never marks the new one a follow put under its id', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'after ci',
+        text: 'push FRM-1 once ci is green',
+    });
+    files[HERDR_FILE] = press({
+        at: w.clock.now(),
+        id: 'o1',
+        text: 'push FRM-1',
+        verdict: 'tick',
+    });
     await say($, 'go on');
     expect(joined(w.contexts)).toEqual([]);
 });

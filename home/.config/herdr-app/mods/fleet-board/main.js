@@ -25,7 +25,7 @@ import {
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {Record<string, Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
-/** @typedef {{ asks: Ask[], context: number | null, model: string | null, name: string, phases: string[], sid: string, status: string, wait: string | null }} Row */
+/** @typedef {{ asks: Ask[], context: number | null, model: string | null, name: string, phases: string[], sid: string, status: string, taken: number, wait: string | null }} Row */
 /** @typedef {{ id?: string, title: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
 
 const CLAUDE = `${home()}/.claude`;
@@ -82,6 +82,7 @@ async function sessions(store) {
                     phases: phasesOf(store, sid),
                     sid,
                     status: s.status ?? 'unknown',
+                    taken: store[`herdr-read:${sid}`] ?? 0,
                     wait: store[`reply:${sid}`]?.wait ?? null,
                 };
             },
@@ -325,8 +326,14 @@ export default class FleetBoard extends View {
             await savePress(
                 { read: readTextFile, write: writeTextFile },
                 `${TICKS}/${s.sid}.jsonl`,
-                { at, id: ask.id, verdict, ...(steer ? { steer } : {}) },
-                s.asks.map((a) => a.id).filter(Boolean),
+                {
+                    at,
+                    id: ask.id,
+                    text: ask.text,
+                    verdict,
+                    ...(steer ? { steer } : {}),
+                },
+                s.taken,
             );
             this.steers.delete(key);
         } catch (err) {

@@ -79,7 +79,7 @@ describe('a press lands as one line of the ticks file', () => {
         const text = withPress(
             null,
             { at: 1, id: 'o1', steer: 'say "hi"\nthen go', verdict: 'replay' },
-            ['o1'],
+            0,
         );
         expect(
             text
@@ -91,27 +91,21 @@ describe('a press lands as one line of the ticks file', () => {
         ]);
     });
 
-    test("a gone ask's lines are pruned, an open one's kept", () => {
-        const before = withPress(null, { at: 1, id: 'o1', verdict: 'tick' }, [
-            'o1',
-        ]);
-        const both = withPress(before, { at: 2, id: 'o2', verdict: 'tick' }, [
-            'o1',
-            'o2',
-        ]);
-        expect(
-            withPress(both, { at: 3, id: 'o3', verdict: 'tick' }, ['o2', 'o3']),
-        ).toBe(
+    test('a line the stash already took is pruned, an untaken one kept', () => {
+        const both =
+            '{"at":1,"id":"o1","verdict":"tick"}\n{"at":2,"id":"o2","verdict":"tick"}\n';
+        expect(withPress(both, { at: 3, id: 'o3', verdict: 'tick' }, 1)).toBe(
             '{"at":2,"id":"o2","verdict":"tick"}\n{"at":3,"id":"o3","verdict":"tick"}\n',
         );
     });
 
     test("a press stamped at or below the file's newest line lands above it, so the stash still reads it", () => {
         const before = '{"at":160,"id":"o2","verdict":"tick"}\n';
-        const text = withPress(before, { at: 150, id: 'o1', verdict: 'tick' }, [
-            'o1',
-            'o2',
-        ]);
+        const text = withPress(
+            before,
+            { at: 150, id: 'o1', verdict: 'tick' },
+            0,
+        );
         expect(JSON.parse(text.trimEnd().split('\n')[1] ?? '').at).toBe(161);
     });
 
@@ -140,7 +134,7 @@ describe('a press lands as one line of the ticks file', () => {
             staleIo(file, [fresh]),
             'f',
             { at: 6, id: 'o1', verdict: 'tick' },
-            ['o1', 'o2'],
+            0,
         );
         expect(file.text).toBe(`${fresh}{"at":6,"id":"o1","verdict":"tick"}\n`);
     });
@@ -151,7 +145,7 @@ describe('a press lands as one line of the ticks file', () => {
             staleIo(file, ['a\n', 'b\n']),
             'f',
             { at: 6, id: 'o1', verdict: 'tick' },
-            ['o1'],
+            0,
         );
         await expect(press).rejects.toThrow('stale snapshot');
         expect(file.text).toBe('b\n');
