@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T12:54:00Z'
+updated_date: '2026-11-09T12:55:00Z'
 labels:
   - s
   - clio-main
@@ -94,4 +94,6 @@ PK-349:W24 (2026-11-09 14:30, dima): who can lead the x verify cli chunk, you or
 2026-11-09 14:55 clio, his +1 day word (PK-349:W16): the CST's dated reads now read FRM-501 11-09, FRM-509 11-09, BYT-132 11-10, FRM-483 11-11, FRM-465 11-12, FRM-503 and FRM-504 11-14, BYT-94 11-15, unbash trial 11-22; FRM-501 and FRM-504 ride the paused mods lane, so their dates wait for its restart
 
 2026-11-09 14:55 wing 2 triage, dima's o6: FRM-503 split by step, #5 the lane run here, door 1 on wing 1's PK-346 #8.
+
+2026-11-09 15:00 clio, correction of the 14:55 note: the dated reads now sit as ticket comments: BYT-132 11-10, FRM-509 11-10, FRM-483 11-11, FRM-465 11-12, FRM-503 11-14, BYT-94 11-15, FRM-501 and FRM-504 11-16 (mods paused); unbash 11-22 in its test-drive file
 <!-- SECTION:NOTES:END -->
