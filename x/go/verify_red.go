@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -64,8 +65,12 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	defer harness.close()
+	saved := resumeFrom(file, pairs, test, command, flags)
 
 	if err := r.Step("clean", "the test on the file as it is", func() (string, error) {
+		if saved.Clean {
+			return "passed in the cut run", nil
+		}
 		got, err := harness.run(original)
 		if err != nil {
 			return "", err
@@ -75,9 +80,12 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	rows := make([]pairRow, 0, len(pairs))
+	saved.Clean = true
+	rows := slices.Clone(saved.Pairs)
 	_ = r.Step("mutate", "each pair alone", func() (string, error) {
-		for _, pair := range pairs {
+		for _, pair := range pairs[len(rows):] {
+			saved.Pairs = rows
+			saved.save()
 			started := time.Now()
 			got, err := harness.run([]byte(strings.Replace(string(original), pair.anchor, pair.replacement, 1)))
 			if err != nil {
@@ -87,6 +95,7 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 			row.Pair, row.Seconds = pairLabel(pair.anchor), time.Since(started).Round(100*time.Millisecond).Seconds()
 			rows = append(rows, row)
 		}
+		saved.drop()
 		if verdict := worstPair(rows); verdict != verdictRed {
 			return "", notHeld(verdict)
 		}
@@ -106,6 +115,51 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 	r.Done(pairsLine(rows)+"; "+file+" never written", "")
 	return data, nil
 }
+
+// a cut run's finished pairs, keyed by every input a verdict reads, so a resume never replays a pair onto changed ones
+type redProgress struct {
+	path  string
+	Clean bool      `json:"clean"`
+	Pairs []pairRow `json:"pairs"`
+}
+
+func resumeFrom(file string, pairs []redPair, test string, command []string, flags Flags) *redProgress {
+	hash := sha256.New()
+	abs, _ := filepath.Abs(file)
+	dir := filepath.Dir(abs)
+	name, _ := flags["run"].(string)
+	fmt.Fprintf(hash, "%s\n%s\n%q\n%s\n", abs, test, command, name)
+	for _, git := range [][]string{{"rev-parse", "HEAD"}, {"status", "--porcelain", "--untracked-files=all"}, {"diff", "HEAD", "--binary"}} {
+		got, _ := run(dir, nil, "", "git", git...)
+		fmt.Fprintf(hash, "%s\n", got.out)
+	}
+	for _, pair := range pairs {
+		fmt.Fprintf(hash, "%q %q\n", pair.anchor, pair.replacement)
+	}
+	for _, read := range []string{abs, test} {
+		body, _ := os.ReadFile(read)
+		fmt.Fprintf(hash, "%d\n", len(body))
+		hash.Write(body)
+	}
+	saved := &redProgress{path: filepath.Join(stateDir(), "verify", fmt.Sprintf("%x.json", hash.Sum(nil)[:12]))}
+	if body, err := os.ReadFile(saved.path); err == nil && json.Unmarshal(body, saved) == nil && len(saved.Pairs) <= len(pairs) {
+		return saved
+	}
+	return &redProgress{path: saved.path}
+}
+
+func (p *redProgress) save() {
+	body, err := json.Marshal(p)
+	if err != nil || os.MkdirAll(filepath.Dir(p.path), 0o755) != nil {
+		return
+	}
+	temp := fmt.Sprintf("%s.%d", p.path, os.Getpid())
+	if os.WriteFile(temp, body, 0o644) == nil {
+		_ = os.Rename(temp, p.path)
+	}
+}
+
+func (p *redProgress) drop() { _ = os.Remove(p.path) }
 
 func redArgs(args []string, flags Flags) (file string, pairs []redPair, test string, command []string, err error) {
 	dash, _ := flags[argsBeforeDash].(int)
