@@ -32,8 +32,13 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 - a standing line is what the seat maintains: `standing: FRM-525 cpu, watch until 11-14`, its detail in the ticket
 - a parked wing's flyway waits for the next wing of its number; dima may flip its number
 - an action that folds an item into another area reads every flyway for its id and yanks the line that turn (dima, 2026-11-07: «sanity check across flyways, yank it out of flyway plan so no confusions»); `pocket-check` reds a PK id left behind
-- **main's ask reaches a wing by slipstream**: main sends it, the wing puts it in its flyway right after the line it is solving, finishes that line, then takes it; an urgent ask, or dima's word, goes first
-<!-- failure: a wing dropped what it was solving with dima mid-turn for main's ask · his words: PK-356:W2 to PK-356:W5, PK-356:W10 -->
+- **main delegates operational work to a wing by slipstream**: the wing puts main's ask in its flyway right after the line it is solving, finishes that line, then takes it; unless it is urgent, or dima says otherwise
+<!-- failure: a wing dropped what it was solving with dima mid-turn for main's ask. his words:
+PK-356:W2 (2026-11-09 inbox, dima): wing 2: i steer piles of chores, the solve queue; main clio can delegate operational work to it, but only via slipstream mode
+PK-356:W3 (2026-11-09 inbox, dima): why slipstream: main clio sometimes starts solving its asks mid-turn while a wing is solving something else; not good. instead, a main clio ask joins wing 2's flyway solve queue, right after the current item
+PK-356:W4 (2026-11-09 inbox, dima): contract: main clio and all wings should know it; for wing 2 it is a habit to keep
+PK-356:W5 (2026-11-09 inbox, dima): main clio asks join the wings in slipstream mode, unless urgent or i say otherwise
+PK-356:W10 (2026-11-09 inbox, dima): correction of W3: a main clio ask joins the wing's flyway solve queue, any wing, not only wing 2 -->
 
 ## the stash hierarchy — dima's, 2026-09-27
 
