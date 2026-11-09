@@ -4,7 +4,7 @@ title: 'steamac vm disk: shrink 256gb to 192gb'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T13:20:00Z'
+updated_date: '2026-11-09T13:23:00Z'
 labels:
   - s
   - clio-wing-2
@@ -31,4 +31,14 @@ PK-362:W4 (2026-11-09 15:20, dima): the vm shows 12.3 GB free of 254.4 GB (lots 
 PK-362:W5 (2026-11-09 15:20, dima): i want an answer to how to reduce the vm's allocated size: to have a smaller one, do i create a new slice, download the games there, then delete the old one? ❓
 PK-362:W6 (2026-11-09 15:20, dima): are you sure there is no way to reduce the allocated size to the current disk? it would be good to grow and shrink the vm's allocated size both ways.
 15:22 wing 2: gh search fxgl/steamac shrink and «disk size»: no issue; latest v1.9.13; README names Grow Disk and new disks only. answered in the thread.
+
+PK-362:W7 (2026-11-09 15:23, dima): log your notes and pause until i have more space; can't probe it, no space.
+15:23 wing 2, the state to resume from:
+- vm /home: 12.3 GB free of 254.4 GB (dima's read); steamos.img 299 GB apparent, 252 GB allocated; mac 184 GiB free
+- the cap can't drop to 192 today: ~242 GB used; first under ~180 GB
+- door 1 trim: fstrim -v /home over ssh, then du the img; gives the mac space back only if libkrun passes discard, unprobed
+- door 2 shrink in place, vm off: resize2fs (ext4 inferred, lsblk unread), then the partition, then truncate the img and sgdisk -e; back up the img first
+- door 3 a fresh 192 GB disk and re-downloads, sign-ins redone; the old disk's delete door in the app unknown
+- upstream: no shrink issue on fxgl/steamac (v1.9.13); a feature ask drafted on his o10, posts only after his read
+kept: 2026-11-09 — paused on dima's word until the mac has space
 <!-- SECTION:NOTES:END -->
