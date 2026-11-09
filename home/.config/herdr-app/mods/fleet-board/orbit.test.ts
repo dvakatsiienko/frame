@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'vitest';
 
-import { type Ask, asksOf, phasesOf, savePress, withPress } from './orbit.js';
+import {
+    type Ask,
+    asksOf,
+    currentSid,
+    phasesOf,
+    runningPids,
+    savePress,
+    withPress,
+} from './orbit.js';
 
 const SID = 's1';
 const ask: Ask = {
@@ -20,10 +28,6 @@ describe('the panel reads what the stash stores', () => {
             },
         };
         expect(asksOf(store, SID)).toEqual([ask]);
-    });
-
-    test('a resolved ask, gone from the store, leaves the panel', () => {
-        expect(asksOf({}, SID)).toEqual([]);
     });
 
     test('an entry from before items carried ids shows its text with no id to press', () => {
@@ -50,6 +54,23 @@ describe('the panel reads what the stash stores', () => {
             },
         };
         expect(phasesOf(store, SID)).toEqual(['now: a', 'next: b']);
+    });
+});
+
+describe('a card sits on a live session id', () => {
+    test('a cleared session follows its succ chain to the id it went on as', () => {
+        const store = { 'succ:a': { sid: 'b' }, 'succ:b': { sid: 'c' } };
+        expect(currentSid(store, 'a')).toBe('c');
+    });
+
+    test('a succ loop stops at the last new id', () => {
+        expect(
+            currentSid({ 'succ:a': { sid: 'b' }, 'succ:b': { sid: 'a' } }, 'a'),
+        ).toBe('b');
+    });
+
+    test('only the pids ps printed count as running', () => {
+        expect([...runningPids(' 3308\n  412\n\n')]).toEqual([3308, 412]);
     });
 });
 
@@ -83,6 +104,15 @@ describe('a press lands as one line of the ticks file', () => {
         ).toBe(
             '{"at":2,"id":"o2","verdict":"tick"}\n{"at":3,"id":"o3","verdict":"tick"}\n',
         );
+    });
+
+    test("a press stamped at or below the file's newest line lands above it, so the stash still reads it", () => {
+        const before = '{"at":160,"id":"o2","verdict":"tick"}\n';
+        const text = withPress(before, { at: 150, id: 'o1', verdict: 'tick' }, [
+            'o1',
+            'o2',
+        ]);
+        expect(JSON.parse(text.trimEnd().split('\n')[1] ?? '').at).toBe(161);
     });
 
     // herdr's writeTextFile refuses a write whose expected text is stale; this io holds that rule

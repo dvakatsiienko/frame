@@ -60,8 +60,9 @@ export const allAsksTicks = (
         text,
     }));
 
-// herdr's board writes one press per line of `~/.claude/shelf/orbit-ticks/<sid>.jsonl`: the presses past `after`, the
-// newest per ask, as the marks a glide card would leave; a line that is no press is skipped, never fatal
+// herdr's board writes one press per line of `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, each `at` above the line before:
+// the presses past `after`, the first per ask, as the marks a glide card would leave (a steer typed there replaces the
+// ask's own); a line that is no press is skipped, never fatal
 const HERDR_MARK = { replay: 'rejected', tick: 'accepted' } as const;
 export function herdrTicks(text: string, after: number) {
     const marks: Record<string, RemoteMark> = {};
@@ -83,11 +84,13 @@ export function herdrTicks(text: string, after: number) {
         )
             continue;
         last = Math.max(last, at);
-        if ((marks[id]?.at ?? 0) > at) continue;
+        if (marks[id]) continue;
         marks[id] = {
             at,
             mark: HERDR_MARK[verdict],
-            ...(typeof steer === 'string' && steer.trim() ? { steer } : {}),
+            ...(typeof steer === 'string' && steer.trim()
+                ? { isSteerEdit: true, steer }
+                : {}),
         };
     }
     return { last, marks };

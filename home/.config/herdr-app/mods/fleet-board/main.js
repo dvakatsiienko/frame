@@ -13,7 +13,13 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import { asksOf, phasesOf, savePress } from './orbit.js';
+import {
+    asksOf,
+    currentSid,
+    phasesOf,
+    runningPids,
+    savePress,
+} from './orbit.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').Color} Color */
@@ -27,8 +33,12 @@ const STORE = `${CLAUDE}/plugins/store/x-mod-stash_inline-99d499f0f4e0.json`;
 const LANES = `${CLAUDE}/shelf/lanes.json`;
 const SESSIONS = `${CLAUDE}/sessions`;
 const TICKS = `${CLAUDE}/shelf/orbit-ticks`;
+const SENT_MS = 2 * 60 * 1000;
 
-/** @param {string} path */
+/**
+ * @param {string} path
+ * @returns {Promise<any>}
+ */
 async function json(path) {
     try {
         return JSON.parse((await readTextFile(path)) ?? 'null');
@@ -45,19 +55,37 @@ async function sessions(store) {
     const names = (
         await readdir(SESSIONS).catch(() => /** @type {string[]} */ ([]))
     ).filter((f) => f.endsWith('.json'));
-    const rows = await Promise.all(names.map((f) => json(`${SESSIONS}/${f}`)));
+    const rows = (
+        await Promise.all(names.map((f) => json(`${SESSIONS}/${f}`)))
+    ).filter((s) => s?.sessionId && s.name);
+    // a registry file can outlive its process: only a running pid draws a card, so no press goes to a dead session
+    /** @type {Set<number> | null} */
+    let live = null;
+    try {
+        const pids = rows.map((/** @type {{ pid: number }} */ s) => s.pid);
+        live = runningPids(
+            (await exec('ps', ['-o', 'pid=', '-p', pids.join(',')])).stdout,
+        );
+    } catch {
+        // no answer from ps: every row stays, as before the liveness read
+    }
     return rows
-        .filter((s) => s?.sessionId && s.name)
-        .map((s) => ({
-            asks: asksOf(store, s.sessionId),
-            context: store[`context:${s.sessionId}`] ?? null,
-            model: store[`model:${s.sessionId}`] ?? null,
-            name: s.name,
-            phases: phasesOf(store, s.sessionId),
-            sid: s.sessionId,
-            status: s.status ?? 'unknown',
-            wait: store[`reply:${s.sessionId}`]?.wait ?? null,
-        }))
+        .filter((s) => !live || live.has(s.pid))
+        .map(
+            /** @returns {Row} */ (s) => {
+                const sid = currentSid(store, s.sessionId);
+                return {
+                    asks: asksOf(store, sid),
+                    context: store[`context:${sid}`] ?? null,
+                    model: store[`model:${sid}`] ?? null,
+                    name: s.name,
+                    phases: phasesOf(store, sid),
+                    sid,
+                    status: s.status ?? 'unknown',
+                    wait: store[`reply:${sid}`]?.wait ?? null,
+                };
+            },
+        )
         .sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -122,7 +150,7 @@ export default class FleetBoard extends View {
         /** @type {Map<string, import('gpui-base').InputState>} */
         this.steers = new Map();
         // presses written and not yet taken by the session's stash, so a second press waits
-        /** @type {Map<string, 'tick' | 'replay'>} */
+        /** @type {Map<string, { verdict: 'tick' | 'replay', at: number }>} */
         this.sent = new Map();
         /** @type {string | null} */
         this.pressError = null;
@@ -159,13 +187,23 @@ export default class FleetBoard extends View {
                     a.name.localeCompare(b.name),
             );
             this.lanes = lanes.filter((/** @type {Lane} */ l) => !l.endedAt);
-            // a press is done once the stash marked its ask, or the ask left
-            for (const key of this.sent.keys()) {
+            // a press is done once the stash marked its ask or the ask left; one the session never took gives the
+            // buttons back after SENT_MS, and a steer box goes with its ask's mark
+            /** @param {string} key */
+            const askOf = (key) => {
                 const [sid, id] = key.split(':');
-                const ask = this.rows
+                return this.rows
                     .find((s) => s.sid === sid)
                     ?.asks.find((a) => a.id === id);
-                if (!ask || ask.mark) this.sent.delete(key);
+            };
+            for (const [key, press] of this.sent) {
+                const ask = askOf(key);
+                if (!ask || ask.mark || Date.now() - press.at > SENT_MS)
+                    this.sent.delete(key);
+            }
+            for (const key of this.steers.keys()) {
+                const ask = askOf(key);
+                if (!ask || ask.mark) this.steers.delete(key);
             }
             this.loadedAt = new Date();
             cx.notify();
@@ -279,7 +317,7 @@ export default class FleetBoard extends View {
         const key = `${s.sid}:${ask.id}`;
         const steer = this.steers.get(key)?.value().trim();
         const at = Date.now();
-        this.sent.set(key, verdict);
+        this.sent.set(key, { at, verdict });
         this.pressError = null;
         cx.notify();
         try {
@@ -301,7 +339,7 @@ export default class FleetBoard extends View {
     /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j @param {Context} cx */
     ask(t, s, ask, i, j, cx) {
         const key = `${s.sid}:${ask.id}`;
-        const sent = this.sent.get(key);
+        const sent = this.sent.get(key)?.verdict;
         const steer = this.steers.get(key);
         const done = ask.mark ?? sent;
         /** @param {string} id @param {string} label @param {string} tip @param {() => void} onClick */
@@ -345,7 +383,7 @@ export default class FleetBoard extends View {
                         ),
                 ),
             )
-            .when(Boolean(ask.id) && !ask.isLocked && !done, (el) =>
+            .when(Boolean(ask.id) && !done, (el) =>
                 el
                     .child(
                         h_flex()
@@ -406,15 +444,6 @@ export default class FleetBoard extends View {
                                 ? `🛎️ ticked${ask.mark ? '' : ', waiting for the session'}`
                                 : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
                         ),
-                ),
-            )
-            .when(ask.isLocked && !done, (el) =>
-                el.child(
-                    div()
-                        .pl(20)
-                        .text_size(SIZE.meta)
-                        .text_color(t.dim)
-                        .child('🔒 its turn is running'),
                 ),
             );
     }

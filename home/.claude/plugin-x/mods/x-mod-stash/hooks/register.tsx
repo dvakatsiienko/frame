@@ -2370,9 +2370,10 @@ async function absorbMarks($: EngineInterface) {
     const marks = await marksOf($, sid);
     const herdr = await herdrMarksOf($, sid);
     if (!Object.keys(marks).length && herdr.last <= herdr.after) return;
+    let isSaved = false;
     await inMarking(async () => {
         const o = await currentOrbit($);
-        await saveOrbit($, {
+        isSaved = await saveOrbit($, {
             ...o,
             asks: o.asks.map((a) => {
                 // a herdr press never overwrites a mark: the first press wins, a desktop one included
@@ -2393,7 +2394,8 @@ async function absorbMarks($: EngineInterface) {
             }),
         });
     });
-    if (herdr.last > herdr.after)
+    // a press the orbit did not keep is read again at the next take
+    if (isSaved && herdr.last > herdr.after)
         await $.store.set(HERDR_READ + sid, herdr.last).catch(() => undefined);
     // the marks go once the orbit holds them, and only the ones still as read: a steer typed on that board meanwhile
     // stays for the next take, and its card never sees the steer missing in between

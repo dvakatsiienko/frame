@@ -2449,6 +2449,19 @@ test('a herdr replay on an ask the desktop board already ticked changes nothing'
     expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
+test('of two herdr presses on one ask read together, the first wins', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const at = w.clock.now();
+    files[HERDR_FILE] =
+        press({ at, id: 'o1', verdict: 'tick' }) +
+        press({ at: at + 1, id: 'o1', verdict: 'replay' });
+    await say($, 'go on');
+    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
+});
+
 test('a herdr tick on a resolved ask changes nothing', async ($, on) => {
     const files: Record<string, string> = {};
     const w = world(on, files);

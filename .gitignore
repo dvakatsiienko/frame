@@ -28,6 +28,8 @@ home/.claude/shelf/lanes.json
 home/.claude/shelf/lanes/
 home/.claude/shelf/pr-verified.json
 home/.claude/shelf/stash/
+# herdr's board writes dima's orbit presses here, his steers included
+home/.claude/shelf/orbit-ticks/
 # a stray `go build` output; the x shim builds and runs x/go/bin/x
 x/go/x
 

@@ -45,6 +45,34 @@ export function asksOf(store, sid) {
 }
 
 /**
+ * the id a session's state lives under now: a `/clear` or `/resume` leaves `succ:<old id>` naming the id it went on as
+ * @param {Record<string, any>} store
+ * @param {string} sid
+ */
+export function currentSid(store, sid) {
+    const seen = new Set([sid]);
+    let now = sid;
+    for (;;) {
+        const next = store[`succ:${now}`]?.sid;
+        if (typeof next !== 'string' || seen.has(next)) return now;
+        seen.add(next);
+        now = next;
+    }
+}
+
+/**
+ * the pids `ps -o pid= -p <pids>` printed, the ones still running
+ * @param {string} stdout
+ */
+export const runningPids = (stdout) =>
+    new Set(
+        stdout
+            .split('\n')
+            .map((l) => Number(l.trim()))
+            .filter((n) => n > 0),
+    );
+
+/**
  * the session's phases, as its stash kept them
  * @param {Record<string, any>} store
  * @param {string} sid
@@ -58,21 +86,28 @@ export function phasesOf(store, sid) {
 }
 
 /**
- * the ticks file after one more press: its lines for asks still open, then the press; JSON.stringify keeps a steer
- * holding quotes or a newline on one line
+ * the ticks file after one more press: its lines for asks still open, then the press, its `at` above every line kept,
+ * since the stash reads only presses past the newest `at` it took; JSON.stringify keeps a steer holding quotes or a
+ * newline on one line
  * @param {string | null} text
  * @param {Press} press
  * @param {string[]} openIds
  */
 export function withPress(text, press, openIds) {
+    let last = 0;
     const kept = (text ?? '').split('\n').filter((line) => {
         try {
-            return openIds.includes(JSON.parse(line).id);
+            const { at, id } = JSON.parse(line);
+            if (typeof at === 'number') last = Math.max(last, at);
+            return openIds.includes(id);
         } catch {
             return false;
         }
     });
-    return [...kept, JSON.stringify(press)].map((line) => `${line}\n`).join('');
+    const stamped = { ...press, at: Math.max(press.at, last + 1) };
+    return [...kept, JSON.stringify(stamped)]
+        .map((line) => `${line}\n`)
+        .join('');
 }
 
 /**
