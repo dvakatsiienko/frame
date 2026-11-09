@@ -4,14 +4,14 @@ title: 'slipstream contract: main asks join a wing flyway after its current item
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T12:38:00Z'
+updated_date: '2026-11-09T12:39:00Z'
 labels:
   - s
   - clio-wing-2
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 54000
 ---
 
 ## Implementation Notes

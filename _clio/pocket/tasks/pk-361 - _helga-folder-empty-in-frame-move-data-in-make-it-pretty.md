@@ -4,13 +4,13 @@ title: '_helga folder empty in frame: move data in, make it pretty'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T12:38:00Z'
+updated_date: '2026-11-09T12:39:00Z'
 labels:
   - s
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 57000
 ---
 
 ## Implementation Notes

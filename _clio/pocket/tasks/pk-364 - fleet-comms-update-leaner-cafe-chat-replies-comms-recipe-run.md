@@ -9,9 +9,9 @@ labels:
   - m
   - clio-wing-3
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 58000
 ---
 
 ## Implementation Notes

@@ -4,13 +4,13 @@ title: '_crow folder: clean up and structure it'
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T12:38:00Z'
+updated_date: '2026-11-09T12:39:00Z'
 labels:
   - s
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 56000
 ---
 
 ## Implementation Notes

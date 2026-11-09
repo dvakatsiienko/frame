@@ -8,9 +8,9 @@ updated_date: '2026-11-09T12:39:00Z'
 labels:
   - s
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 59000
 ---
 
 ## Implementation Notes
