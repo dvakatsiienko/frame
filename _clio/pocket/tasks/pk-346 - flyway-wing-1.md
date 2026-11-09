@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T20:39:00Z'
+updated_date: '2026-11-09T20:50:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,11 +16,11 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-383 x verify: the real call happened (38 today outside its own tree, 6–154 s); time W3 «faster» against red-proof, then x lane landed FRM-383 --pr 150 --apply, by 11-12
-- [ ] #2 PK-357 branches: W5 «gba prints clean» — bytes' stray refs/remotes/pr125 deleted on his tick, then close
-- [ ] #3 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
-- [ ] #4 ⏳ FRM-557 test hooks trimmed, signed: joins the vm lane as its next chunk, spec section and lane-plan lines at FRM-551's final — waits for: FRM-551's final
-- [ ] #5 ⏳ FRM-551 vm lane: #153 open, sixth sense a83e4792 summoned, merge on clean (dima 22:14) — waits for: sixth sense's clean
+- [ ] #1 FRM-383 x verify: time W3 «faster», one pair through x verify red and the old red-proof from 0bd86a17, on a quiet mac, then x lane landed FRM-383 --pr 150 --apply, by 11-12
+- [ ] #2 ⏳ PK-357 branches: W5 «gba prints clean», the last stray is bytes' proof/frm-547-review-cite, then close — waits for: dima's delete tick
+- [ ] #3 ⏳ FRM-551 vm lane: #153's fixes and slot trees pushed, sixth sense's clean, wishkeeper's read, merge-auto, landed (dima 22:14) — waits for: sixth sense's clean
+- [ ] #4 ⏳ FRM-557 test hooks trimmed: sealed and dispatched into the vm lane; codie second-winds, to-tickets, my greenlight, build, pr, merge — waits for: codie's lane plan
+- [ ] #5 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
 - [ ] #6 ⏳ FRM-537 next probes, by hand, the vitest pools now ride FRM-557 — waits for: spare usage
 - [ ] #7 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
 - [ ] #8 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
@@ -86,4 +86,6 @@ done 2026-11-09 21:29: FRM-525 perf line: talk it through with dima, his «drop 
 2026-11-09 21:29: FRM-525 line dropped on dima's word (21:24, «drop the FRM-525 line»; 21:28 «proceed»): the cpu watch until 11-14 ends; the ticket stays open as the performance umbrella (parent of FRM-533, 537, 551, 555, 557)
 
 done 2026-11-09 22:39: FRM-530 gates catalog: fold o74–o87 into decided, refresh its body (the page, not the old gates.md), then close it naming 78d1d545 and 7abb406d (FRM-530 Done)
+
+2026-11-09 22:50 wing 1, dima's «sync your flyway with actual scope»: FRM-530 closed and out; FRM-383's real call done (wing 2's three runs, 22:18–22:20); FRM-557 dispatched; the mods-tests follow-up from o91 is FRM-555, main's
 <!-- SECTION:NOTES:END -->
