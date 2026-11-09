@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T19:22:00Z'
+updated_date: '2026-11-09T19:52:00Z'
 labels:
   - s
   - clio-main
@@ -17,12 +17,12 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 PK-363 herdr move: the wish behind the herdr lane and tomorrow's boot, its state in .scratch/herdr/plan.md
-- [ ] #2 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #3 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
-- [ ] #4 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
-- [ ] #5 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #6 ⏳ next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87) — waits for: herdr, the mods revisit pass
-- [ ] #7 ⏳ FRM-556 fleet-chatter, signed: spec and dispatch to the herdr codie — waits for: dima's polish batches to end
+- [ ] #2 herdr MVP doors: fold codie's summon probe into clio:wing, halt/main.md and crew-lead, then bump clio and x before tomorrow's boot
+- [ ] #3 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #4 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
+- [ ] #5 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
+- [ ] #6 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #7 ⏳ next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87) — waits for: herdr, the mods revisit pass
 - [ ] #8 ⏳ FRM-524 operator-override switch, needs human — waits for: dima's flip word
 - [ ] #9 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check prints "" and FRM-542 closes — on: 2026-11-10
 - [ ] #10 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
@@ -30,6 +30,7 @@ ordinal: 1000
 - [ ] #12 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
 - [ ] #13 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
 - [ ] #14 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #15 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -111,4 +112,6 @@ done 2026-11-09 20:38: FRM-552 orbit in herdr landed and closed, dima's o90 tick
 done 2026-11-09 20:45: the wish audit reads every chunk section (draftSections, run 3: 98 checked, 1 red, codie's fresh polish spec); low-tide-cuts «park» kept as «nothing new is built on it» (a doubt park keeps a safety net running; «nothing runs it» would switch it off); the weekly M3 reminder is main's (🦉)
 
 PK-349:W26 (2026-11-09 20:20, dima, o12 steer): last time i already autohalted it went fine. The only flaw was that Wing 1 had some monitors active, monitoring for some perf-related activity. You can ask around Wing 1 what that was: those monitors prevented its halt step, so I had to archive it manually.
+
+done 2026-11-09 21:52: ⏳ FRM-556 fleet-chatter, signed: spec and dispatch to the herdr codie — waits for: dima's polish batches to end (FRM-556 Triage)
 <!-- SECTION:NOTES:END -->
