@@ -4,10 +4,9 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-09T12:43:00Z'
+updated_date: '2026-11-09T22:15:00Z'
 labels:
   - m
-  - clio-wing-1
 dependencies: []
 priority: next
 type: task
