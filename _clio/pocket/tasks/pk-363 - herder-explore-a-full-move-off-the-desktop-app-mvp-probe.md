@@ -189,7 +189,7 @@ probe 1 result (17:48, codie relay): the ps fix is live, proven by dima: the Cha
 
 probe 2 (17:51, gate codie, ~18 min): mods/fleet-board draws live, read-only: 2 glide cards from ~/.claude/shelf/lanes.json, 10 sessions from ~/.claude/sessions/*.json with model + ctx %, open orbit ask texts from the stash store. not on disk: phases, an ask's id/pick/state, the band. ticks: none yet, cost in the codie's reply to dima
 
-PK-363:W35 (2026-11-09 o36 steer, dima): image drag-and-drop can be solved later; it blurs the scope; let's explore the other parts of herdr
+PK-363:W35 (2026-11-09 17:51, dima, o36 steer): image drag-and-drop can be solved later; it blurs the scope; let's explore the other parts of herdr
 
-PK-363:W36 (2026-11-09 o36 steer, dima): our main goal is to move everyone to herdr as soon as possible: first see that everything works, and measure how hard herdr loads cc compared to the claude desktop app (its mcp tools, for example)
+PK-363:W36 (2026-11-09 17:51, dima, o36 steer): our main goal is to move everyone to herdr as soon as possible: first see that everything works, and measure how hard herdr loads cc compared to the claude desktop app (its mcp tools, for example)
 <!-- SECTION:NOTES:END -->
