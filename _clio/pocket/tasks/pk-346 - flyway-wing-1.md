@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T20:04:00Z'
+updated_date: '2026-11-09T20:06:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,8 +16,8 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
-- [ ] #2 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
+- [ ] #1 FRM-383 x verify: the real call happened (38 today outside its own tree, 6–154 s); time W3 «faster» against red-proof, then x lane landed FRM-383 --pr 150 --apply, by 11-12
+- [ ] #2 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
 - [ ] #3 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
 - [ ] #4 ⏳ FRM-551 vm lane: codie 25b0e95c summoned 20:52, greenlight its lane plan, sixth sense at its first pr — waits for: codie's lane plan
 - [ ] #5 ⏳ FRM-557 test hooks trimmed, signed: joins the vm lane as its next chunk, spec section and lane-plan lines at FRM-551's final — waits for: FRM-551's final
