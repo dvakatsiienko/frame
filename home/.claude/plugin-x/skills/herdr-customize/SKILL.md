@@ -26,6 +26,7 @@ herdr-app status                                   # mod and file errors the win
 herdr-app shot /tmp/<name>.png                     # then read the png
 ```
 
+- 📌 a linked mod's save needs a herdr restart before the shot shows it (§ where our mods live)
 - 📌 `check` renders the mod once and never runs async reads, deferred rows or later states: only the shot proves the data arrived, so «check passed» is never «it works»
 - herdr's manual holds the rest of the loop (a broken save, the reset key): `herdr-app --skill`, «Customize»
 
@@ -39,7 +40,8 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 ## where our mods live
 
 - 📌 a mod's source belongs in `~/frame/home/.config/herdr-app/mods/<name>/`, linked out by the dotfiles mirror, so it gets git and our gates
-- 📌 a linked mod never hot-reloads: a commit reaches dima's window only after he quits herdr (⌘Q) and reopens it, his terminals living on in hc; cmd-p is the Go to box and a pane hide/show keeps the old build (2026-11-09, FRM-558; the watcher not following the link is the likely cause, unproven)
+- 📌 a mod outside the mirror (every one but fleet-board today) has no undo: copy the folder aside before a rewrite
+- 📌 a linked mod never hot-reloads: a changed file reaches dima's window only after he quits herdr (⌘Q) and reopens it, his terminals living on in hc; cmd-p is the Go to box and a pane hide/show keeps the old build (inference: the watcher does not follow the link)
 - a shipped mod or layout belongs to herdr and is replaced on every start; our copy comes from `mod.clone` or `layout.clone` and never takes upstream fixes, so it is diffed against the new shipped one at each herdr update
 - 📌 `layout.clone` switches dima's shown layout to the clone: ask before running it
 - one mod per idea; touch only the mod or file the job names
@@ -65,4 +67,4 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 
 - draw into a pane from an outside process: every native pane is an in-app mod
 - show a web page: the near door is an `agent-browser` screenshot shown in a pane
-- undo an edit outside the mirror home: git covers only `~/frame/home/.config/herdr-app`
+- undo an edit to a mod outside the mirror: only the copy you set aside
