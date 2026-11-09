@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T12:45:00Z'
+updated_date: '2026-11-09T12:54:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,11 +22,11 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 slipstream contract as a habit main and every wing know: PK-336:W25, PK-336:W26, PK-336:W27, PK-336:W28, PK-336:W29
+- [x] #1 slipstream contract as a habit main and every wing know: PK-336:W25, PK-336:W26, PK-336:W27, PK-336:W28, PK-336:W29
 - [ ] #2 PK-351 clio: winged v2, with FRM-516 folded in, wing 2 the owner
 - [ ] #3 PK-348 REVIEW.md: explore, set up the convention
 - [ ] #4 FRM-454 helga on Sonnet
-- [ ] #5 PK-356 slipstream contract as a habit, main and every wing
+- [x] #5 PK-356 slipstream contract as a habit, main and every wing
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -136,4 +136,7 @@ PK-336:W29 (2026-11-09 inbox, dima): instead, main clio's asks join the wing's f
 14:50 wing 2 triage: PK-336:W25–W29 above copy PK-356:W2–W5 and PK-356:W10, main's parse, the home; the habit cites PK-356. lines #1 and #5 are one item.
 
 hoist 11-09: proposing, wing 2
+
+14:55 #1 and #5 are one item, both done: the slipstream habit landed in habit-shared-files § the flyway, his five W-lines verbatim. hoist 11-09: done
+2026-11-09 14:55, dima's o7 accepted the split: wing 1 +PK-355 +FRM-383; FRM-503 split by step (o6); wing 3 PK-364 + the wish-loss audit + speak v2 planning, confirmed; main's dup PK-326 yanked and her nine items labelled before his yes, covered by o7; FRM-516 and FRM-454 labelled wing 2. linear Triage/Todo/Backlog not read: flyways and inbox only.
 <!-- SECTION:NOTES:END -->

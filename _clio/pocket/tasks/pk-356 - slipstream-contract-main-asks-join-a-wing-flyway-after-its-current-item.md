@@ -1,10 +1,10 @@
 ---
 id: PK-356
 title: 'slipstream contract: main asks join a wing flyway after its current item'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T12:44:00Z'
+updated_date: '2026-11-09T12:54:00Z'
 labels:
   - s
   - clio-wing-2
@@ -70,4 +70,6 @@ raw drop (2026-11-09 inbox, dima): then - wing 2 starts with lowtide triage — 
 PK-356:W10 (2026-11-09 inbox, dima): correction of W3: a main clio ask joins the wing's flyway solve queue, any wing, not only wing 2
 
 note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-09», the second «2026-11-09» for the groom check; notes are append-only, so both stay
+
+close: 2026-11-09 wing 2, on dima's o7. W1 → wing 1's flyway PK-346 (perf tails). W2, W3, W4, W5, W10 → memory/habit-shared-files.md § the flyway, the slipstream line, verbatim. W6 → wing 3's PK-372, open since 14:52. W7 → every flyway runs low-tide. W8 → main's inbox fold, every marker on its flyway, checked by the triage. W9 → this triage, hoist 11-09 done on PK-336. none dropped.
 <!-- SECTION:NOTES:END -->

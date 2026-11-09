@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T12:39:00Z'
+updated_date: '2026-11-09T12:54:00Z'
 labels:
   - s
   - clio-wing-1
@@ -29,6 +29,8 @@ ordinal: 18998
 - [ ] #11 PK-369 perf: turborepo remote cache or another cache for tests
 - [ ] #12 PK-370 perf: tests off pre-commit, to ci or pre-push
 - [ ] #13 PK-371 gates file name: gates museum
+- [ ] #14 PK-355 commit gate: simple memory edits must not block for minutes, today (dima 14:42)
+- [ ] #15 FRM-383 cli lane: dispatch alongside the cpu plan (main's move, dima 14:51)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -45,4 +47,6 @@ ordinal: 18998
 low tide split 11-07, dima's yes 17:36: FRM-517 joins; PK-300 and FRM-530 parked on his word.
 
 PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance issues topic, so anything performance-related can go to wing one.
+
+2026-11-09 14:55 wing 2 triage, settled on dima's o7: +PK-355, +FRM-383. FRM-503 stays split by step (dima o6): #8 door 1 here, the lane run on main's PK-349 #5.
 <!-- SECTION:NOTES:END -->
