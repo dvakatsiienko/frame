@@ -268,7 +268,9 @@
   - given the mutated run fails on an assertion or throws, then it reads red and names the tests; it passes, still green; the exit is 0 only on red
   - given a test failing on the clean file, a clean run of no test, or an anchor not found exactly once, then it refuses before any mutant runs and names it
   - given a swap that breaks the build or the load, then that pair reads broken; a `.ts` or `.tsx` swap gets `tsc --noEmit` on its nearest tsconfig first, and a type error the clean run did not have reads broken, the test never run
-  - limit: a mod's `.ts` gets no type check, only `claude plugin validate`
+  - given `--pairs <file>`, one `anchor<TAB>replacement` a line split on the last tab, then each pair runs alone and prints its row in order, in the envelope and the human view: red with the tests it reddened, still green, broken or failed, and its seconds; the exit is 0 only when every pair is red
+  - given `-- <command>` in place of the test, then the command runs with the same mutation, a `go` command through the overlay, any other in the copy; a command that fails naming no test x can read reads failed, never red
+  - given a mod's test, then only that test file runs on the mod's overlay, and the runner's own load error reads broken whatever it reddened; an assertion whose message quotes a load word, a go `t.Fatalf` line included, reads red
   - decision: a throw from the mutated code reads red, since the mutant is the run's only change (dima, o82); `--revert` keeps any throw broken
   - limit: a go run reads the mutant only where go builds it, so a file a test opens at runtime stays the real one
   - limit: a head-only row whose title x cannot tie to a row (`'%s'`, `'${x}'`, a computed title) gets a named row and no vote, so it can exit 0; the repo holds none today (dima's tick, 2026-11-07)

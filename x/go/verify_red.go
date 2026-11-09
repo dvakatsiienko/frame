@@ -12,8 +12,6 @@ import (
 	"slices"
 	"strings"
 	"time"
-
-	"golang.org/x/sys/unix"
 )
 
 const verifyRedHelp = "x verify red --help"
@@ -214,14 +212,35 @@ func judgeMutant(got redRun) pairRow {
 	}
 	read := readTestOutput(got.log)
 	names := failedNames(read)
-	asserted := slices.ContainsFunc(read.failed, func(failed failedTest) bool {
-		return slices.Contains(names, failed.name) && failedOnAssertion(failed)
-	})
+	var asserted []failedTest
+	for _, failed := range read.failed {
+		if slices.Contains(names, failed.name) && failedOnAssertion(failed) {
+			asserted = append(asserted, failed)
+		}
+	}
+	// a load word inside an assertion's own output is what the test compared, never the runner saying a file did not load
+	load := ""
+	if read.load != "" {
+		inLog := false
+		for line := range strings.SplitSeq(ansiColor.ReplaceAllString(got.log, ""), "\n") {
+			// a t.Fatalf message runs on over indented lines until the runner's next row
+			inLog = goTestLog.MatchString(line) || inLog && strings.HasPrefix(line, " ") && failedName(line) == "" && !strings.HasPrefix(strings.TrimSpace(line), "=== ")
+			if inLog {
+				continue
+			}
+			isTitle := failedName(line) != "" && failedName(line) != "the file did not load" && !strings.Contains(failedName(line), " [ ")
+			quoted := slices.ContainsFunc(asserted, func(failed failedTest) bool { return strings.Contains(failed.output, line+"\n") })
+			if loadError.MatchString(line) && !isTitle && !quoted && firstRowName(passedRows, line) == "" && !strings.Contains(line, "JSON") {
+				load = strings.TrimSpace(line)
+				break
+			}
+		}
+	}
 	switch {
-	case asserted:
+	case load != "":
+		return pairRow{Verdict: verdictBroken, Why: load}
+	case len(asserted) > 0:
 		return pairRow{Verdict: verdictRed, Tests: names}
-	case read.load != "":
-		return pairRow{Verdict: verdictBroken, Why: read.load}
 	case len(names) > 0:
 		return pairRow{Verdict: verdictRed, Tests: names, Why: "it threw"}
 	}
@@ -407,6 +426,8 @@ var (
 	typedSource = regexp.MustCompile(`\.[cm]?tsx?$`)
 	// a swap that moves lines moves every error below it, so errors compare without their position
 	tscPosition = regexp.MustCompile(`\(\d+,\d+\)`)
+	// a go test's own t.Log or t.Fatal line, which -v prints apart from its --- FAIL row when tests run in parallel
+	goTestLog = regexp.MustCompile(`^\s+\S+_test\.go:\d+: `)
 )
 
 // tsc --noEmit on the nearest tsconfig above the file, read against the clean run's errors; no tsconfig, no check
@@ -486,10 +507,7 @@ func copyRepo(root, to string) error {
 			}
 			return os.Symlink(target, dest)
 		}
-		if err := unix.Clonefile(path, dest, unix.CLONE_NOFOLLOW); err != nil {
-			return copyFile(path, dest)
-		}
-		return nil
+		return cloneFile(path, dest)
 	})
 }
 
