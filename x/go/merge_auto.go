@@ -841,8 +841,8 @@ func (d *mergeDecision) summary() string {
 //go:embed risky.json
 var riskyJSON []byte
 
-// light's `!` globs carve code out of it: an asset dir's script is never light
-var riskyList = func() (list struct{ Risky, Self, Light, LightNot, Memory []*regexp.Regexp }) {
+// light is an allow-list of media under assets and brand, so a code file of any extension there reads normal
+var riskyList = func() (list struct{ Risky, Self, Light, Memory []*regexp.Regexp }) {
 	var raw struct{ Risky, Self, Light, Memory []string }
 	if err := json.Unmarshal(riskyJSON, &raw); err != nil {
 		panic("risky.json: " + err.Error())
@@ -853,16 +853,7 @@ var riskyList = func() (list struct{ Risky, Self, Light, LightNot, Memory []*reg
 		}
 		return out
 	}
-	var light, lightNot []string
-	for _, g := range raw.Light {
-		if not, ok := strings.CutPrefix(g, "!"); ok {
-			lightNot = append(lightNot, not)
-		} else {
-			light = append(light, g)
-		}
-	}
-	list.Risky, list.Self, list.Memory = compile(raw.Risky), compile(raw.Self), compile(raw.Memory)
-	list.Light, list.LightNot = compile(light), compile(lightNot)
+	list.Risky, list.Self, list.Light, list.Memory = compile(raw.Risky), compile(raw.Self), compile(raw.Light), compile(raw.Memory)
 	return list
 }()
 
@@ -942,7 +933,7 @@ func tierOf(paths []string) prTier {
 		isRisky := matchesAny(path, riskyList.Risky) || matchesAny(path, riskyList.Self)
 		isMemory := matchesAny(path, riskyList.Memory)
 		risky, memory = risky || isRisky, memory || isMemory
-		light = light && !isRisky && !isMemory && matchesAny(path, riskyList.Light) && !matchesAny(path, riskyList.LightNot)
+		light = light && !isRisky && !isMemory && matchesAny(path, riskyList.Light)
 	}
 	t := prTier{Tier: "normal", Asks: []string{}}
 	if !light {

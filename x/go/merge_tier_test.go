@@ -44,6 +44,13 @@ func TestMergeAutoNeverReadsTheseAsLight(t *testing.T) {
 		{"docs/test-drive/gate-speed/analyze.mjs", "normal"},
 		{".claude/rules/scripts.md", "memory"},
 		{"brand/avatars/make.ts", "normal"},
+		{"assets/x.js", "normal"},
+		{"brand/x.tsx", "normal"},
+		{"assets/x.cjs", "normal"},
+		{"brand/x.jsx", "normal"},
+		{"assets/x.mts", "normal"},
+		{"assets/x.rb", "normal"},
+		{"assets/README.txt", "normal"},
 	} {
 		t.Run(c.path, func(t *testing.T) {
 			t.Parallel()
@@ -71,6 +78,7 @@ func TestMergeAutoAsksTheUnionOfItsPathsChecks(t *testing.T) {
 		{"memory beside light", []string{"docs/research/x.md", "home/.claude/plugin-x/skills/foo/SKILL.md"}, "memory", []string{"sixth-sense", "wishkeeper"}},
 		{"risky beside memory", []string{".github/workflows/ci.yml", "docs/knowledge/x.md"}, "risky", []string{"sixth-sense", "security", "wishkeeper"}},
 		{"an assets image", []string{"assets/badges/x.svg"}, "light", []string{}},
+		{"brand media", []string{"brand/avatars/x.png", "assets/clips/x.mp4", "assets/fonts/x.woff2"}, "light", []string{}},
 		{"a secret under assets", []string{"assets/.env"}, "risky", []string{"sixth-sense", "security"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
