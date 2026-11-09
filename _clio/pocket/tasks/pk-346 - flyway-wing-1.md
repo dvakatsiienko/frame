@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T22:11:00Z'
+updated_date: '2026-11-09T22:18:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,13 +16,11 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ⏳ perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 539 → 533 → 535, the dated reads ride it (FRM-534, FRM-517 on 11-10; FRM-525 on 11-14); resume by reading the milestone — waits for: FRM-551's merge tonight, herdr first after
-- [ ] #2 ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next frame pr's merge-auto run, the first live read of #152's checks — waits for: #153's merge
-- [ ] #3 ⏳ cli lane 6's rest, all signed: FRM-384 (gate runner, body guard, own-branch push, brief lint, the 19:27 gate riders, FRM-554), FRM-436, FRM-424, plus FRM-560 (main's call) — waits for: dima's word on a new cli codie
-- [ ] #4 ⏳ the stray FRM-383 tree and branch (16 squashed lane commits, held by cli lane 6's stopped codie): decamp — waits for: dima's word
-- [ ] #5 📅 speak v2 planning with dima, after herdr's move and the mods scope (dima 23:50); FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-11
-- [ ] #6 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #7 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #1 ⏳ the stray FRM-383 tree and branch (16 squashed lane commits, held by cli lane 6's stopped codie): decamp — waits for: dima's word
+- [ ] #2 📅 speak v2 planning with dima, after herdr's move and the mods scope (dima 23:50); FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-11
+- [ ] #3 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #4 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #5 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 539 → 533 → 535, the dated reads ride it (FRM-534, FRM-517 on 11-10; FRM-525 on 11-14); resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -93,4 +91,8 @@ done 2026-11-09 23:18: FRM-383 x verify: time W3 «faster», one pair through x 
 2026-11-10 00:09 wing 1: the perf order, adopted by main (dima's reuse-before-summon rule, 00:01/00:07): one lane, the vm codie and its sixth sense, sequential; FRM-555 to main's herdr mods pass, FRM-560 to cli lane 6's next codie
 
 2026-11-10 00:11 wing 1 (dima 00:10 «unload your flyway into the linear mil»): the 5 perf lane lines, FRM-537's probes and the three dated reads moved into milestone «🐉 the mac runs tests cheaper»; one pointer line stays
+
+done 2026-11-10 00:15: ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next frame pr's merge-auto run, the first live read of #152's checks — waits for: #153's merge (FRM-548 Done, FRM-549 Done, FRM-553 Done, FRM-509 Done)
+
+2026-11-10 00:19 wing 1 (dima 00:18 «is it perf-related or just cli lane?»): cli lane 6's rest (FRM-384 with its riders and FRM-554, FRM-436, FRM-424, FRM-560) is cli, not perf; handed to main in the halt report
 <!-- SECTION:NOTES:END -->
