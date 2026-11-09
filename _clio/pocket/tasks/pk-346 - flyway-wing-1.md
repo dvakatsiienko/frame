@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T16:52:00Z'
+updated_date: '2026-11-09T17:01:00Z'
 labels:
   - s
   - clio-wing-1
@@ -20,19 +20,14 @@ ordinal: 18998
 - [ ] #2 FRM-497 speak meter: starts with speak v2, not before
 - [ ] #3 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
 - [ ] #4 PK-357 git: old branches, why they gather, a habit, perf effect — with dima, when free
-- [ ] #5 PK-358 rex settings walkthrough with dima, two at a time, shown live
-- [ ] #6 PK-370 perf: tests off pre-commit, to ci or pre-push
-- [ ] #7 PK-371 gates file name: gates museum
-- [ ] #8 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
-- [x] #9 gate lane 1: FRM-534 + FRM-520 on main, sixth sense clean then land FRM-520; FRM-534 closes 11-10 on its day read
-- [ ] #10 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
-- [x] #11 gate lane 1: its codie stays parked as dima's herdr probe host, sixth sense parked (dima 17:16)
-- [x] #12 FRM-520 close on dima's o43; FRM-517 reopen or not on his o44
-- [ ] #13 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
-- [x] #14 cli lane 6: FRM-503 door 1, then x lane landed FRM-383 --apply, then hand the lane to wing 2 (dima o34); its queue FRM-384, FRM-436, FRM-414, FRM-424 (o32) is wing 2's
-- [ ] #15 FRM-551 vm-go-test: dima's sign, then its first step, the idle-cost kill gate
-- [ ] #16 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
-- [ ] #17 FRM-383 close: date its W3 timing run, then x lane landed FRM-383 --pr 150 --apply; FRM-503 close on dima's o49
+- [ ] #5 PK-370 perf: tests off pre-commit, to ci or pre-push
+- [ ] #6 PK-371 gates file name: gates museum
+- [ ] #7 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
+- [ ] #8 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
+- [ ] #9 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
+- [ ] #10 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
+- [ ] #11 FRM-551 vm-go-test: signed; step 1 now, the idle-cost kill gate (dima 19:01)
+- [ ] #12 FRM-383 close: W3 timing run, then x lane landed FRM-383 --pr 150 --apply, by 2026-11-12
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -67,4 +62,6 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 17:36 dima o32: the lane walks 🐉 review loop gets verbs after door 1; o34: after FRM-503 lands, cli lane 6 and its codie move to wing 2. FRM-383 reopened In Progress, blocked by FRM-503: W3 kept open on his «do»
 
 18:53 cli lane 6 handed to wing 2 (dima o34): handover at .scratch/handover-cli-lane-6.md in the wing 1 tree, glide l55 ended
+
+19:02 synced: FRM-503 closed (o49), cli lane 6 handed to wing 2, gate lane 1 lines done; PK-358 rex walkthrough reassigned to main on dima's 19:01 word
 <!-- SECTION:NOTES:END -->

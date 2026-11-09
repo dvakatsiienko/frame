@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T16:45:00Z'
+updated_date: '2026-11-09T17:00:00Z'
 labels:
   - m
   - clio-main
@@ -428,4 +428,28 @@ raw drop (2026-11-09 18:43, dima): what other stuff gets deprecated or potential
 PK-363:W73 (2026-11-09 18:43, dima): you again printed double gril. answering first large grill took me ~20min. i replied to first grill. so i will not reply to second grill. clarfiy me with anything drifts. and propose next actions with efficiency in mind.
 
 raw drop (2026-11-09 18:43, dima): you again printed double gril. answering first large grill took me ~20min. i replied to first grill. so i will not reply to second grill. clarfiy me with anything drifts. and propose next actions with efficiency in mind.
+
+PK-363:W74 (2026-11-09 18:58, dima): q2: then i want a clear recipe on how to boot you tomorrow. i expect hiccups its fine we will adjust along the way. do not probe fresh clio in herder today - botting you is expensive only for probe. or better idea: probe yourself (clio) in herder via haiku 5.5 💡
+
+raw drop (2026-11-09 18:58, dima): q2: then i want a clear recipe on how to boot you tomorrow. i expect hiccups its fine we will adjust along the way. do not probe fresh clio in herder today - botting you is expensive only for probe. or better idea: probe yourself (clio) in herder via haiku 5.5 💡
+
+PK-363:W75 (2026-11-09 18:58, dima): Q4: mods lane. so some few most wanted stuff is pending (held by me because of herder). I paused the mods lane because I thought that some stuff can be redundant with herdr. Can you now spot what in planned mods scope is redundant? For example, that 505 ticket that you have pending blocks some of your tickets. Can we dispatch it? Will it be useful still, with herdr in mind?  or better to want for full review of what keep/what delete?
+
+raw drop (2026-11-09 18:58, dima): Q4: mods lane. so some few most wanted stuff is pending (held by me because of herder). I paused the mods lane because I thought that some stuff can be redundant with herdr. Can you now spot what in planned mods scope is redundant? For example, that 505 ticket that you have pending blocks some of your tickets. Can we dispatch it? Will it be useful still, with herdr in mind?  or better to want for full review of what keep/what delete?
+
+PK-363:W76 (2026-11-09 18:58, dima): so doors should be described in a skill instead of re-describing? save this into a plan. ❓
+
+raw drop (2026-11-09 18:58, dima): so doors should be described in a skill instead of re-describing? save this into a plan.
+
+PK-363:W77 (2026-11-09 18:58, dima): let's proceed. i want essentials in herder so we can move there.
+
+raw drop (2026-11-09 18:58, dima): let's proceed. i want essentials in herder so we can move there.
+
+PK-363:W78 (2026-11-09 18:58, dima): what's on you? propose what to do — skills? ❓
+
+raw drop (2026-11-09 18:58, dima): what's on you? propose what to do — skills?
+
+PK-363:W79 (2026-11-09 18:58, dima): Also, you currently hold valuable context about herdr, but you are at 57% of CTX. Do as much useful stuff as possible related to the current context before the second wind, so you can freely second wind and gracefully hand off to other least-context-dependent actions after the second wind, so you can proceed there.
+
+raw drop (2026-11-09 18:58, dima): Also, you currently hold valuable context about herdr, but you are at 57% of CTX. Do as much useful stuff as possible related to the current context before the second wind, so you can freely second wind and gracefully hand off to other least-context-dependent actions after the second wind, so you can proceed there.
 <!-- SECTION:NOTES:END -->
