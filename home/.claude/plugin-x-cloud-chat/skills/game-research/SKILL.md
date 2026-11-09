@@ -25,6 +25,7 @@ his rules live in project memory; this skill is the order. read the leaves it na
 - label each claim official, insider or rumour; an «official» article with no studio post behind it is a rumour
 - console mods and jailbreaks prove the hardware can; they are never his path
 - trophies → memory `trophy-sources`; every game named → memory `native-platform-rule`
+- 🕵️ a game he might play: scan the whole trophy or achievement list for one the game gives no way to track (visit all, talk to all, collect all with no counter); signals are a guide saying «note down» or «keep track», and a rarity far below the story trophies. his rule and cloudpunk's Nivalis Tourist: memory `game-seed-framework`
 - a «why hasn't X happened» answer ranks the reasons and marks each fact or inference
 - a number he will repeat (sales, date, version) gets one confirming page, else 🔎
 
@@ -40,3 +41,4 @@ his rules live in project memory; this skill is the order. read the leaves it na
 - each game touched: its `index.md` gets today's state and ▶ next
 - a verdict or wish of his → the memory leaf that owns it, dated, his words
 - the reply: verdict, three to five reasons, the file attached
+- a game he might play: the file and the reply carry a «🕵️ track from day one» line, each untrackable trophy named with what to log, or «none found» said plainly; `game-seed` turns it into a checklist tab
