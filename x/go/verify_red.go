@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -47,6 +48,11 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 	file, pairs, test, command, err := redArgs(args, flags)
 	if err != nil {
 		return nil, err
+	}
+	if pairsFile, _ := flags["pairs"].(string); pairsFile != "" {
+		if err := inLongTurn(); err != nil {
+			return nil, err
+		}
 	}
 	original, err := os.ReadFile(file)
 	if err != nil {
@@ -114,6 +120,20 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 	}
 	r.Done(pairsLine(rows)+"; "+file+" never written", "")
 	return data, nil
+}
+
+// a pairs round is a long round: the verb runs again inside the gate queue's long slot, one turn for every pair, so a commit
+// never waits behind it; inside the slot the queue says so, and a test stays off the real slot unless it plants a queue
+func inLongTurn() error {
+	if os.Getenv("GATE_QUEUE_HELD") == "long" || os.Getenv("X_TEST") != "" && os.Getenv("X_FRAME_ROOT") == "" {
+		return nil
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	queue := filepath.Join(frameRoot(), "script/gate-queue.sh")
+	return syscall.Exec(queue, append([]string{queue, "--long", exe}, os.Args[1:]...), os.Environ())
 }
 
 // a cut run's finished pairs, keyed by every input a verdict reads, so a resume never replays a pair onto changed ones

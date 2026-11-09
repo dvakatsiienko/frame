@@ -209,7 +209,7 @@ func filterEnv(env []string) []string {
 	var kept []string
 	for _, pair := range env {
 		name, _, _ := strings.Cut(pair, "=")
-		if !slices.Contains([]string{"CLAUDECODE", "AI_AGENT", "CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_ROOT", "SSH_CONNECTION", "CLAUDE_CODE_SESSION_ID", "X_VERIFY"}, name) {
+		if !slices.Contains([]string{"CLAUDECODE", "AI_AGENT", "CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_ROOT", "SSH_CONNECTION", "CLAUDE_CODE_SESSION_ID", "X_VERIFY", "GATE_QUEUE_HELD"}, name) {
 			kept = append(kept, pair)
 		}
 	}

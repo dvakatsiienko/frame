@@ -389,6 +389,113 @@ func TestVerifyRedRefusesAModsRedBase(t *testing.T) {
 	}
 }
 
+// exit line 9, the want line: a test whose code runs the real paid-lane script, and a typo, through one pairs round: the paid call
+// is skipped on every run, the typo reads broken, and no script was written by hand
+func TestVerifyRedNeverPaysAndReadsATypoBroken(t *testing.T) {
+	t.Parallel()
+	f := vitestRedFixture(t)
+	lanes, err := filepath.Abs("../../script/research-lanes.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	spent := filepath.Join(t.TempDir(), "spent")
+	write(t, filepath.Join(f.dir, "script/research-lanes.sh"), readOr(lanes, ""))
+	write(t, filepath.Join(f.dir, "script/op-run.sh"), "#!/bin/sh\necho \"$3\" >> "+spent+"\n")
+	write(t, filepath.Join(f.dir, "brief.md"), "the question\n")
+	write(t, filepath.Join(f.dir, "lib.js"), "import { spawnSync } from \"node:child_process\";\n\nexport const limit = 3;\nexport const lanes = () => spawnSync(\"sh\", [\"script/research-lanes.sh\", \"brief.md\"], { encoding: \"utf8\" }).status;\n")
+	write(t, filepath.Join(f.dir, "lib.test.js"), "import { expect, test } from \"vitest\";\nimport { lanes, limit } from \"./lib.js\";\n\ntest(\"the lanes run and the limit is three\", () => {\n\tlanes();\n\texpect(limit).toBe(3);\n});\n")
+	commitAll(t, f.dir)
+
+	got, _ := verifyRedIn(t, f, nil, f.file, "--pairs", pairsFile(t, "limit = 3;\tlimit = 4;", "limit = 3;\tlimit = 3;;(("), f.test)
+
+	verdicts := []string{}
+	for _, row := range pairRows(t, got) {
+		verdicts = append(verdicts, row["verdict"].(string))
+	}
+	if got.code != 1 || strings.Join(verdicts, ",") != "red,broken" {
+		t.Fatalf("exit %d, verdicts %v, want red, broken and exit 1:\n%s", got.code, verdicts, got.stdout)
+	}
+	if calls := readOr(spent, ""); calls != "" {
+		t.Fatalf("a verify run paid for lanes:\n%s", calls)
+	}
+}
+
+// a go module whose test runs the source only through a binary its TestMain builds, as x's own suite does
+func childBuildFixture(t *testing.T) redFixture {
+	t.Helper()
+	f := goRedFixture(t)
+	write(t, filepath.Join(f.dir, "lib.go"), "package main\n\nimport \"fmt\"\n\nfunc main() { fmt.Print(3) }\n")
+	write(t, filepath.Join(f.dir, "lib_test.go"), `package main
+
+import (
+	"os"
+	"os/exec"
+	"path/filepath"
+	"testing"
+)
+
+var bin string
+
+func TestMain(m *testing.M) {
+	dir, _ := os.MkdirTemp("", "child-")
+	bin = filepath.Join(dir, "p")
+	if out, err := exec.Command("go", "build", "-o", bin, ".").CombinedOutput(); err != nil {
+		panic(string(out))
+	}
+	os.Exit(m.Run())
+}
+
+func TestPrintsThree(t *testing.T) {
+	if out, _ := exec.Command(bin).Output(); string(out) != "3" {
+		t.Fatalf("printed %q", out)
+	}
+}
+
+func TestPrintsSomething(t *testing.T) {
+	if out, _ := exec.Command(bin).Output(); string(out) != "3" {
+		t.Fatalf("printed %q", out)
+	}
+}
+`)
+	commitAll(t, f.dir)
+	return redFixture{dir: f.dir, file: "lib.go", test: "lib_test.go", anchor: "fmt.Print(3)", replacement: "fmt.Print(4)"}
+}
+
+// exit line 10: a mutant only a TestMain's child build runs reads red, the run stops at its first failure
+func TestVerifyRedReachesATestMainsChildBuild(t *testing.T) {
+	t.Parallel()
+	f := childBuildFixture(t)
+
+	got, _ := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, f.test)
+
+	rows := pairRows(t, got)
+	if got.code != 0 || len(rows) != 1 || rows[0]["verdict"] != verdictRed {
+		t.Fatalf("exit %d, pairs %v, want red through the child build:\n%s", got.code, rows, got.stdout)
+	}
+	if tests, _ := rows[0]["tests"].([]any); len(tests) != 1 {
+		t.Fatalf("the row names %v, want one test: -failfast stops at the first", tests)
+	}
+}
+
+// exit line 10: a pairs round takes the gate queue's long slot itself, once for the whole round
+func TestVerifyRedPairsTakeTheLongSlot(t *testing.T) {
+	t.Parallel()
+	f := goRedFixture(t)
+	root := t.TempDir()
+	calls := filepath.Join(t.TempDir(), "calls")
+	write(t, filepath.Join(root, "script/gate-queue.sh"), "#!/bin/sh\necho \"$1\" >> "+calls+"\nshift\nGATE_QUEUE_HELD=long exec \"$@\"\n")
+	pairs := pairsFile(t, "Limit = 3\tLimit = 4", "Limit = 3\tLimit = 5")
+
+	got, _ := verifyRedIn(t, f, []string{"X_FRAME_ROOT=" + root}, f.file, "--pairs", pairs, f.test)
+
+	if got.code != 0 || len(pairRows(t, got)) != 2 {
+		t.Fatalf("exit %d, want both pairs red inside the slot:\n%s", got.code, got.stdout)
+	}
+	if read := readOr(calls, ""); read != "--long\n" {
+		t.Fatalf("the queue heard %q, want one turn on the long slot", read)
+	}
+}
+
 // a form with nothing to run, or both a test and a command, exits 2
 func TestVerifyRedArgsOutsideItsFormsExitUsage(t *testing.T) {
 	t.Parallel()
