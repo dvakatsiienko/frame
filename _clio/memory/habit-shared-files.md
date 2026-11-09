@@ -27,7 +27,7 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 
 ## the flyway — a clio lane's live plan
 
-- one pocket item per seat, never closed, always live: `flyway: main` + `clio-main`, `flyway: wing 2` + `clio-wing-2`; none yet: `node script/pocket-add.ts "flyway: wing 2" --priority next --wing 2`
+- one pocket item per seat, never closed, always live: `flyway: main` + `clio-main`, `flyway: wing 2` + `clio-wing-2`; none yet: `node script/pocket-add.ts "flyway: wing 2" --wing 2`
 - order: open lines (no marker, most important first), then ⏳ near (`— waits for: <one thing>`), then 📅 dated (`— on: YYYY-MM-DD`, by date), then 💤 (`— later: dima <time>`); a cleared wait moves up
 - a finished line leaves the turn it ticks: `node script/flyway-done.ts <PK> <n>`; a line joins by `--add '<line>'`, a stray order by `--sort`
 - a parked wing's flyway waits for the next wing of its number; dima may flip its number

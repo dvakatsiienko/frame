@@ -12,7 +12,7 @@ prefix (renovate writes it), 🧬 her voice here. cadence: **wednesday, plus any
 
 ## the day — four turns
 
-the boot digest seeds «🧬 evergreen turn» on top of the pocket (`boot-prefetch.sh`), so the board's order carries it as item 1.
+the boot digest seeds «🧬 evergreen turn» first under the flyways (`boot-prefetch.sh`), so the board's order carries it as the first work item (dima's o77).
 
 1. **boot turn** — beside the boot, the read starts in the background on the `helper` card (Sonnet 5.5, no fleet memory), its brief the path of [references/read.md](references/read.md); when it lands, `timeout 2400 brew upgrade` (pinned never) runs in the background, then `open -g -a 1Password` and `ssh-add -l` on its socket, since an upgrade once left signing refused, and `wishkeeper` reads the report for its own picks — fixes it would make, borrows it would take
 2. **evergreen turn** — the turn after the board, before anything else: the report whole in the chat with wishkeeper's picks folded in, the standing page republished, every borrow a line he can steer
