@@ -1,10 +1,10 @@
 ---
 id: PK-348
 title: 'REVIEW.md: explore it, set up the convention for us everywhere'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T16:24:00Z'
+updated_date: '2026-11-09T16:25:00Z'
 labels:
   - s
   - clio-wing-2
