@@ -4,7 +4,7 @@ title: 'REVIEW.md: explore it, set up the convention for us everywhere'
 status: done
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T16:25:00Z'
+updated_date: '2026-11-09T17:39:00Z'
 labels:
   - s
   - clio-wing-2
@@ -77,4 +77,6 @@ held: 2026-11-09 — FRM-546 his o38 close stands; left: each moved W-line copie
 close: 2026-11-09 18:26 — PK-348:W2 PK-348:W3 PK-348:W4 PK-348:W5 PK-348:W7 PK-348:W10 answered by the proposal and the escape replay, dropped from the tickets (dima o38)
 
 close: 2026-11-09 18:27 — PK-348:W2 PK-348:W3 PK-348:W4 PK-348:W5 PK-348:W7 PK-348:W10 dropped from the tickets as answered by the proposal and the escape replay (dima o38)
+
+ticket: FRM-414
 <!-- SECTION:NOTES:END -->
