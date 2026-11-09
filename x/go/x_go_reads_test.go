@@ -118,3 +118,34 @@ func TestCommitRunsNoXGoTestsForAPathOffTheList(t *testing.T) {
 		t.Errorf("go ran %q, want none", got)
 	}
 }
+
+func TestCommitRunsXGoTestsForAPathUnderADirTheListNames(t *testing.T) {
+	t.Parallel()
+	dir, env, goCalls := xGoReadsWorld(t, "0")
+	write(t, filepath.Join(dir, xGoReadsFile), readFile(t, filepath.Join(dir, xGoReadsFile))+"docs/shelf/\n")
+	gitT(t, dir, "add", xGoReadsFile)
+	gitT(t, dir, "commit", "-q", "--no-verify", "-m", "list")
+	write(t, filepath.Join(dir, "docs/shelf/deep/a.md"), "a\n")
+
+	if code := commitThrough(t, "lane commit", dir, env, "docs/shelf/deep/a.md"); code != 0 {
+		t.Fatalf("exit %d, want a green go run to let it land", code)
+	}
+	if got := goCalls(); !uncachedWholeRun(got) {
+		t.Errorf("go ran %q, want a dir entry to cover a path under it", got)
+	}
+}
+
+func TestCommitRunsXGoTestsWhenTheListItselfIsDeleted(t *testing.T) {
+	t.Parallel()
+	dir, env, goCalls := xGoReadsWorld(t, "1")
+	gitT(t, dir, "rm", "-q", xGoReadsFile)
+	c := exec.Command("git", "commit", "-q", "-m", "fixture commit")
+	c.Dir, c.Env = dir, append(cleanEnv(), env...)
+
+	if out, err := c.CombinedOutput(); err == nil {
+		t.Errorf("the commit landed, want a red go run to refuse it:\n%s", out)
+	}
+	if got := goCalls(); !uncachedWholeRun(got) {
+		t.Errorf("go ran %q, want a list awk cannot read to run the tests", got)
+	}
+}

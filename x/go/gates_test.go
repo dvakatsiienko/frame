@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -47,6 +48,79 @@ var outsideReadShapes = map[outsideReadShape]string{
 
 var outsideLiteral = regexp.MustCompile(`"\.\./\.\./([^"]+)"`)
 
+// what the built x reads from the frame tree it was built in: a test that runs x with no X_FRAME_ROOT reads the real file
+var builtXRead = regexp.MustCompile(`filepath\.Join\((frameRoot|sourceDir)\(\), (\S+?)[,)]`)
+
+// a list entry covers a read when it is the path, a file under the read's dir, or a dir holding the path
+func covered(listed []string, read string) bool {
+	for _, entry := range listed {
+		if entry == read || strings.HasPrefix(entry, read+"/") || strings.HasSuffix(entry, "/") && strings.HasPrefix(read, entry) {
+			return true
+		}
+	}
+	return false
+}
+
+const skillsDir = "home/.claude/plugin-x/skills"
+
+var testedSkill = regexp.MustCompile(`/x:([a-z][a-z-]*)`)
+
+func TestXGoReadsNamesWhatTheBuiltXReadsFromTheFrameTree(t *testing.T) {
+	t.Parallel()
+	listed := xGoReads(t)
+	consts := map[string]string{"gateQueueScript": gateQueueScript}
+	files, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	skillReads := false
+	for _, file := range files {
+		if strings.HasSuffix(file, "_test.go") {
+			continue
+		}
+		raw, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for n, line := range strings.Split(string(raw), "\n") {
+			for _, m := range builtXRead.FindAllStringSubmatch(line, -1) {
+				read, isConst := consts[m[2]]
+				if !isConst {
+					literal, err := strconv.Unquote(m[2])
+					if err != nil {
+						t.Errorf("%s:%d joins %s onto %s(), a value the list test cannot name:\n%s", file, n+1, m[2], m[1], line)
+						continue
+					}
+					read = strings.TrimPrefix(literal, filepath.Join("..", "..")+"/")
+				}
+				if !covered(listed, read) {
+					t.Errorf("%s:%d: the built x reads %s from the frame tree, missing from %s", file, n+1, read, xGoReadsFile)
+				}
+				if read == skillsDir {
+					skillReads = true
+				}
+			}
+		}
+	}
+	if !skillReads {
+		return
+	}
+	// the dir read takes a skill name: each one a test names, and the real tree holds, is a file the list names
+	tests, _ := filepath.Glob("*_test.go")
+	for _, file := range tests {
+		raw, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, m := range testedSkill.FindAllStringSubmatch(string(raw), -1) {
+			skill := skillsDir + "/" + m[1] + "/SKILL.md"
+			if _, err := os.Stat(filepath.Join("..", "..", skill)); err == nil && !slices.Contains(listed, skill) {
+				t.Errorf("%s names /x:%s, whose %s the built x reads; missing from %s", file, m[1], skill, xGoReadsFile)
+			}
+		}
+	}
+}
+
 func TestXGoReadsNamesEveryPathItsTestsRead(t *testing.T) {
 	t.Parallel()
 	listed := xGoReads(t)
@@ -60,7 +134,7 @@ func TestXGoReadsNamesEveryPathItsTestsRead(t *testing.T) {
 			t.Fatal(err)
 		}
 		for n, line := range strings.Split(string(raw), "\n") {
-			if !strings.Contains(line, `"../..`) || strings.Contains(line, "MustCompile") || strings.HasPrefix(strings.TrimSpace(line), `{"`) {
+			if !strings.Contains(line, `"../..`) || strings.Contains(line, "MustCompile") || file == "gates_test.go" && strings.HasPrefix(strings.TrimSpace(line), `{"`) {
 				continue
 			}
 			var reads []string
@@ -119,6 +193,9 @@ func gateFixture(t *testing.T, hook string) (string, []string) {
 	dir, env := modsFixture(t)
 	// copied so a row reads what the commit hook reads
 	for _, path := range xGoReads(t) {
+		if strings.HasSuffix(path, "/") {
+			continue
+		}
 		body, err := os.ReadFile(filepath.Join("../..", path))
 		if err != nil {
 			t.Fatal(err)

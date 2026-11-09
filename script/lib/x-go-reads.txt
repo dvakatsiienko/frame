@@ -1,8 +1,16 @@
-# every path outside x/go that an x/go test reads; the commit hook runs x/go's tests when one is staged
+# every path outside x/go that an x/go test reads, itself or through the built x; the commit hook runs x/go's tests when one is staged
+# a line ending in / names a dir: any staged path under it counts
 lefthook.yaml
+_clio/script/quote-diff.py
+docs/knowledge/
 home/.claude/plugin-x/mods/plugin-test-timeout.sample.txt
 home/.claude/plugin-x/mods/plugin-test.sample.txt
 home/.claude/plugin-x/mods/test.ts
+home/.claude/plugin-x/skills/crew-codie/SKILL.md
+home/.claude/plugin-x/skills/crew-designer/SKILL.md
+home/.claude/plugin-x/skills/crew-sixth-sense/SKILL.md
+home/.claude/plugin-x/skills/handoff-ingest/SKILL.md
+home/.claude/shelf/hooks/worktree-seed.sh
 home/.config/zsh-custom/x-trace.zsh
 recipes/nurture-memory/scripts/memory-lint.ts
 script/gate-queue.sh
