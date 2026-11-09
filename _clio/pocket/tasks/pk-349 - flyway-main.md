@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T14:01:00Z'
+updated_date: '2026-11-09T14:06:00Z'
 labels:
   - s
   - clio-main
@@ -22,6 +22,7 @@ ordinal: 9995
 - [ ] #4 PK-363 herder: research, print, his call
 - [x] #5 PK-368 sidecar passports rebalance
 - [ ] #6 FRM-509 live read of the 11-07 lane ends, by 11-10
+- [ ] #7 prove the passport auto-load live: crow's next wake shows charter changed, helga's next boot carries her passport
 <!-- AC:END -->
 
 ## Implementation Notes
