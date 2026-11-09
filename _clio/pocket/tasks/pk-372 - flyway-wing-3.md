@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T18:11:00Z'
+updated_date: '2026-11-09T18:16:00Z'
 labels:
   - s
   - clio-wing-3
@@ -16,10 +16,9 @@ ordinal: 18999
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 PK-367 cut process: clio:low-tide-cuts built with your three answers; it lands on your word that the quotes were shown
-- [ ] #2 the wish-loss audit script: fold it into wish-cover as a weekly audit mode, then its flag name in a top-7 round — waits for: your tick in orbit
-- [ ] #3 FRM-542 every seat's prompt log, built and on main: its close — waits for: main's first herdr boot reading its own seat, by 11-11
-- [ ] #4 speak v2 planning with you — later: dima, once this flyway is clear and you're up
+- [ ] #1 the wish-loss audit script: fold it into wish-cover as a weekly audit mode, then its flag name in a top-7 round — waits for: your tick in orbit
+- [ ] #2 FRM-542 every seat's prompt log, built and on main: its close — waits for: main's first herdr boot reading its own seat, by 11-11
+- [ ] #3 speak v2 planning with you — later: dima, once this flyway is clear and you're up
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -36,4 +35,6 @@ ordinal: 18999
 19:30 #6 PK-369 moved to wing 1's flyway PK-346 (dima: «your flyway #6 is wing 1 property. move it»)
 
 2026-11-09 19:59 done, each checked in its store: PK-364 comms run (done); M3 audit run 2 (reminders line); FRM-509 read (its 19:26 comment, back to main); FRM-544 filed (Todo); PK-366 label group cut (done); crew-pm board v18; FRM-550 to main (clio-main); PK-369 to wing 1; herdr skills on origin/main
+
+done 2026-11-09: PK-367 cut process, clio:low-tide-cuts on origin/main
 <!-- SECTION:NOTES:END -->
