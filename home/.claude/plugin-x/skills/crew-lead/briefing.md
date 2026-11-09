@@ -28,7 +28,7 @@
 - **a ui-shaped ask gets its data measured before anything is drawn**.
 - **a comparison brief names the question and the cheapest artifact that answers it** — one showcase screen per arm, never three full builds. a tui brief asks for vhs pngs (freeze cannot replay ink or bubbletea) and says «the shots are the test for redraws»; parallel arms share one shooter and one registry, said up front.
 - **a no-pr lane still runs a local code review before its report**.
-- **a brief names the review by its job**: matt's `code-review` grades against his wishes and the spec, the built-in `/code-review` against the code itself, both on every chunk, a plain `wisphunter` card on a big change (`x:crew-codie` § the list, step 2; dima, 2026-11-05).
+- **a brief names the review by its job and names `REVIEW.md`**: the chain itself is `x:crew-codie` § the list, step 2.
 - **a verify-kit brief for an app that moves in-page says «cold open and in-page move»**.
 - **a latency-bound tool measures each stage before the stack is chosen**.
 - **a capability is chosen after grepping its word across the whole types file**.
