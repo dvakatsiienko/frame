@@ -27,11 +27,6 @@ a story is a parent with sub-tickets, the parent doubling as the batch id; order
 x as clio -- linear issue update FRM-N --parent FRM-M
 ```
 
-## model labels
-
-`fable 5` · `opus 5` · `sonnet 5` · `haiku 5.5` — dima's note of which model a ticket wants; set one
-only on a real preference. when he asks what to grab, read them and say which ticket wants which model.
-
 ## execution order — `sortOrder`
 
 one float per issue, lower first, shared by every view (never per milestone). read the current

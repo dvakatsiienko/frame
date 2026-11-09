@@ -11,6 +11,7 @@ mutually exclusive — one label per group on a ticket, an update carrying two i
 - `domain` = `memory` · `skill` · `tools` — which system it touches; the project field says where the work lives
 - `model` = `fable 5` · `opus 5` · `sonnet 5` · `haiku 4.5` — dima's routing notation
   - 2026-10-08: `haiku 4.5` → `haiku 5.5` (dima: haiku 5.5 is the pick everywhere; 4.5 retires 2026-10-15)
+  - 2026-11-09: the group and its four labels deleted on dima's word (PK-366, o19); 9 tickets lost theirs
 
 `needs data` is **folded into `research`**: both described «output is knowledge, not code», and
 `needs data` had no distinct use since TRK-0004 created it. seven tickets relabelled, the label deleted,

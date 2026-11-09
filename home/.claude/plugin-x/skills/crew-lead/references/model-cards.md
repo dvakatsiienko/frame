@@ -65,5 +65,4 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 - verdict-shaped deliverables: opus researches upfront, **fable verdicts** — split the ticket's phases across models
 - haiku 5.5 over 4.5 everywhere (2026-10-08)
 - his idea, open: «fable as an adviser in shape-idea» (the vendor's architect split, fable with opus, is the same shape)
-- model labels (`fable 5`, `opus 5`) ARE the assignment mechanism — self-descriptive, no extra vocab
 - opus 5.5's clearer prose is **[?]** until Dima reads a week of it
