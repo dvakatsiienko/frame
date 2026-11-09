@@ -1061,8 +1061,8 @@ func githubRevert(t *testing.T, w *mergeWorld, _, at string) string {
 	return commitAt(t, w, at, "commit", "-q", "-m", "Revert \"an earlier pr (#5)\" (#6)\n\nReverts o/r#5")
 }
 
-// bytes: its merges need a reviewer round
-func bytesWorld(t *testing.T) *mergeWorld {
+// a gated repo, frame or bytes: its merges need a reviewer round
+func roundWorld(t *testing.T) *mergeWorld {
 	w := newMergeWorld(t, "apps/speak/src/a.ts")
 	// the server already runs: a write after it takes the lock, the only edge the race detector sees, since
 	// the request that reads it comes from a child process
@@ -1092,9 +1092,9 @@ func (w *mergeWorld) reviewRun(conclusion, job, failedStep string) {
 	w.hub.pages[repoPath+"/actions/runs/1/jobs"] = jobOf(job, failedStep)
 }
 
-func TestMergeAutoLandsABytesPrOnItsRoundWithNoApprove(t *testing.T) {
+func TestMergeAutoLandsAGatedPrOnItsRoundWithNoApprove(t *testing.T) {
 	t.Parallel()
-	w := bytesWorld(t)
+	w := roundWorld(t)
 
 	planned := w.run(t, "7")
 	got := w.run(t, "7", "--apply")
@@ -1112,7 +1112,7 @@ func TestMergeAutoLandsABytesPrOnItsRoundWithNoApprove(t *testing.T) {
 	}
 }
 
-func TestMergeAutoRefusesABytesPrWithNoFinishedRound(t *testing.T) {
+func TestMergeAutoRefusesAGatedPrWithNoFinishedRound(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
 		name   string
@@ -1147,13 +1147,13 @@ func TestMergeAutoRefusesABytesPrWithNoFinishedRound(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			w := bytesWorld(t)
+			w := roundWorld(t)
 			c.change(w)
 
 			got := w.run(t, "7")
 
-			if err := envelopeOf(got).Error; got.code != 1 || !strings.Contains(err, "x lane review 7") || strings.Contains(err, "stood down") {
-				t.Fatalf("exit %d, want a refusal naming x lane review 7 and no stand-down:\n%s", got.code, got.stdout)
+			if err := envelopeOf(got).Error; got.code != 1 || !strings.Contains(err, "no reviewer round finished") || !strings.Contains(err, "x lane review 7") || strings.Contains(err, "stood down") {
+				t.Fatalf("exit %d, want a refusal naming the missing round, x lane review 7 and no stand-down:\n%s", got.code, got.stdout)
 			}
 		})
 	}
@@ -1164,7 +1164,7 @@ func TestMergeAutoNamesTheDoorForAStandDown(t *testing.T) {
 	for _, step := range []string{"A green review means a clean review", "A round with no review is red"} {
 		t.Run(step, func(t *testing.T) {
 			t.Parallel()
-			w := bytesWorld(t)
+			w := roundWorld(t)
 			w.reviewRun("failure", "failure", step)
 
 			got := w.run(t, "7")
@@ -1181,7 +1181,7 @@ func TestMergeAutoNamesTheDoorForAStandDown(t *testing.T) {
 
 func TestMergeAutoNamesNoStandDownDoorOffTheHeadsHistory(t *testing.T) {
 	t.Parallel()
-	w := bytesWorld(t)
+	w := roundWorld(t)
 	w.reviewRun("failure", "failure", "A round with no review is red")
 	w.rebaseWithANewCommit(t)
 
@@ -1197,7 +1197,7 @@ func TestMergeAutoExemptsARenovatePrFromTheRound(t *testing.T) {
 	for _, login := range []string{"x-renovate[bot]", "renovate[bot]"} {
 		t.Run(login, func(t *testing.T) {
 			t.Parallel()
-			w := bytesWorld(t)
+			w := roundWorld(t)
 			w.hub.mu.Lock()
 			w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"number":7,`, `"number":7,"user":{"login":"`+login+`"},`, 1)
 			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[]}`
@@ -1308,7 +1308,7 @@ func TestMergeAutoAsksACleanOfARenovatePrItCannotTrust(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			w := bytesWorld(t)
+			w := roundWorld(t)
 			w.renovatePr(t, c.login, c.commits)
 
 			got := w.run(t, "7", "--apply")
@@ -1363,7 +1363,7 @@ func TestMergeAutoKeepsTheOtherGatesOnARenovatePr(t *testing.T) {
 
 func TestMergeAutoRefusesAFinishedRoundWithAnOpenThread(t *testing.T) {
 	t.Parallel()
-	w := bytesWorld(t)
+	w := roundWorld(t)
 	w.hub.mu.Lock()
 	w.hub.pages["graphql"] = `{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[
 		{"isResolved":false,"path":"a.ts","line":1,"comments":{"nodes":[{"url":"https://t/1"}]}}]}}}}}`
@@ -1376,7 +1376,7 @@ func TestMergeAutoRefusesAFinishedRoundWithAnOpenThread(t *testing.T) {
 
 func TestMergeAutoCountsARoundOnAnAncestorOfTheHead(t *testing.T) {
 	t.Parallel()
-	w := bytesWorld(t)
+	w := roundWorld(t)
 	write(t, filepath.Join(w.seed, "fix.ts"), "a fix after the round\n")
 	gitT(t, w.seed, "add", ".")
 	gitT(t, w.seed, "commit", "-q", "-m", "a fix after the round")
@@ -1390,7 +1390,7 @@ func TestMergeAutoCountsARoundOnAnAncestorOfTheHead(t *testing.T) {
 
 func TestMergeAutoCarriesARoundAcrossARebaseWithTheSameCode(t *testing.T) {
 	t.Parallel()
-	w := bytesWorld(t)
+	w := roundWorld(t)
 	w.mainMoves(t, "one.txt")
 	w.moveHead(t)
 
@@ -1412,7 +1412,7 @@ func (w *mergeWorld) rebaseWithANewCommit(t *testing.T) {
 
 func TestMergeAutoCountsNoRoundWhenARebaseChangedTheCode(t *testing.T) {
 	t.Parallel()
-	w := bytesWorld(t)
+	w := roundWorld(t)
 	w.rebaseWithANewCommit(t)
 
 	if got := w.run(t, "7"); got.code != 1 || !strings.Contains(envelopeOf(got).Error, "x lane review 7") {
@@ -1420,7 +1420,17 @@ func TestMergeAutoCountsNoRoundWhenARebaseChangedTheCode(t *testing.T) {
 	}
 }
 
-func TestMergeAutoAsksNoRoundOutsideBytes(t *testing.T) {
+func TestRoundGatedNamesFrameAndBytes(t *testing.T) {
+	// serial: t.Setenv clears X_TEST, so the real repo list is read
+	t.Setenv("X_TEST", "")
+	for repo, want := range map[string]bool{"dvakatsiienko/frame": true, "dvakatsiienko/bytes": true, "o/other": false} {
+		if got := roundGated(repo); got != want {
+			t.Errorf("roundGated(%q) = %v, want %v", repo, got, want)
+		}
+	}
+}
+
+func TestMergeAutoAsksNoRoundOutsideAGatedRepo(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.hub.mu.Lock()
@@ -1456,7 +1466,7 @@ func TestMergeAutoMergesNothingUnlessTheRestHolds(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			w := bytesWorld(t)
+			w := roundWorld(t)
 			c.change(t, w)
 
 			got := w.run(t, "7", "--apply")
@@ -1471,7 +1481,7 @@ func TestMergeAutoMergesNothingUnlessTheRestHolds(t *testing.T) {
 // a repo that still requires it waits as on any check: nothing here approves its way past
 func TestMergeAutoWaitsOnARequiredReviewClean(t *testing.T) {
 	t.Parallel()
-	w := bytesWorld(t)
+	w := roundWorld(t)
 	w.hub.mu.Lock()
 	w.hub.pages[repoPath+"/branches/main/protection/required_status_checks"] = `{"contexts":["test","build","review:clean"]}`
 	w.hub.mu.Unlock()

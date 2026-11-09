@@ -1366,12 +1366,12 @@ func deployCheck(api, repo, trunk string) (mergeCheck, error) {
 // how far back main's last deploy is looked for: a run of ci and docs commits is a few, never a release's worth
 const deployLookback = 20
 
-// the one repo whose merges need a reviewer round; frame's round stays advice
+// the repos whose merges need a reviewer round: the one cold read every tier keeps
 func roundGated(repo string) bool {
 	if mergeTestEnvOn() {
 		return repo == os.Getenv("X_ROUND_REPO")
 	}
-	return repo == "dvakatsiienko/bytes"
+	return slices.Contains([]string{"dvakatsiienko/bytes", "dvakatsiienko/frame"}, repo)
 }
 
 // a run's jobs, as github answers /actions/runs/<id>/jobs
