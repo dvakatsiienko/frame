@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T19:47:00Z'
+updated_date: '2026-11-09T20:00:00Z'
 labels:
   - m
   - clio-main
@@ -502,4 +502,11 @@ PK-363:W93 (2026-11-09 21:36, dima): 1. steer is a button
 PK-363:W94 (2026-11-09 21:36, dima): 2. when i press → text is possible to enter
 PK-363:W95 (2026-11-09 21:36, dima): 3. what i want: steer box is a text box right away. it also currently does not shows any UI signs that it is actually a text box (inivisble text entry) i want to as a text box (i steer herder codie for UI)
 PK-363:W96 (2026-11-09 21:36, dima): Let's shape everything that is needed to have herdr MVP, and let's see what we can do from there.
+
+PK-363:W97 (2026-11-09 21:51, dima): proceed.
+PK-363:W98 (2026-11-09 21:51, dima): What I was thinking to unblock today to do is the spawning, because you told that you summon everyone from the C desktop app in one way, but herdr has another API.
+PK-363:W99 (2026-11-09 21:51, dima): Maybe you can ask Codie to probe the summon doors for you, so tomorrow you can boot and summon anyone without issues? ❓
+PK-363:W100 (2026-11-09 21:51, dima): You can tell Codie all the stuff you want to have for summoning and spawning, and Codie will probe with cheap probes via haiku 5.5? ❓
+PK-363:W101 (2026-11-09 21:51, dima): what else do we want for mvp? ❓
+answered 21:52: W99–W100 → codie's summon probe (~/frame/.scratch/herdr-summon-probe/), W101 → the MVP list in the 21:52 reply
 <!-- SECTION:NOTES:END -->
