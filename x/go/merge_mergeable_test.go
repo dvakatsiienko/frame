@@ -32,7 +32,7 @@ func TestMergeAutoWaitsOnGithubsMergeableState(t *testing.T) {
 		{"branch protection", "true", "blocked", "github's branch protection holds it"},
 		{"a draft", "true", "draft", "draft"},
 		{"a hook", "true", "has_hooks", "has_hooks"},
-		{"behind main", "true", "behind", "x lane merge-main"},
+		{"behind main", "true", "behind", "is behind main → x lane merge-main"},
 		{"no state at all", "true", "", "no mergeable state"},
 	} {
 		t.Run(c.name, func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestMergeAutoReadsANullMergeableAgain(t *testing.T) {
 
 		started := time.Now()
 		got := w.run(t, "7", "--apply")
-		if reads := w.hub.reads[repoPath+"/pulls/7"]; got.code == 0 || !strings.Contains(got.stdout, "github is still computing") || reads < 3 {
+		if reads := w.hub.reads[repoPath+"/pulls/7"]; got.code == 0 || !strings.Contains(got.stdout, "github is still computing") || reads != 3 {
 			t.Fatalf("mergeable %s: exit %d, %d reads, want a wait «github is still computing» after 3 reads:\n%s", mergeable, got.code, reads, got.stdout)
 		}
 		if took := time.Since(started); took > 3*time.Second {

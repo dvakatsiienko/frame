@@ -26,3 +26,16 @@ func TestMergeAutoNamesGithubsRefusalAndTheRerun(t *testing.T) {
 		})
 	}
 }
+
+// review round: a refusal a rerun meets again, a draft under the override, keeps github's own words, never the rerun door
+func TestMergeAutoKeepsARefusalARerunCannotFix(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.hub.refuseMerge = "405 Pull Request is still a draft"
+
+	got := w.run(t, "7", "--apply")
+
+	if got.code == 0 || !strings.Contains(got.stdout, "still a draft") || strings.Contains(got.stdout, ", again") {
+		t.Fatalf("exit %d, want github's words with no rerun door:\n%s", got.code, got.stdout)
+	}
+}

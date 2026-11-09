@@ -27,7 +27,7 @@ func TestMergeAutoWaitsOnMainsDeploy(t *testing.T) {
 	for _, c := range []struct{ name, statuses, says string }{
 		{"a red deploy", vercel("speak", "success", "Deployment has completed") + "," + vercel("hq", "failure", "Deployment has failed"), "hq"},
 		{"an error", vercel("hq", "error", "Deployment errored"), "hq"},
-		{"a running deploy", vercel("hq", "pending", "Building"), "main's deploy is running"},
+		{"a running deploy", vercel("hq", "pending", "Building"), "main's deploy is running: hq"},
 		{"a skipped deploy", vercel("hq", "success", "Deployment was skipped"), "hq"},
 		{"no deploy at all", `{"context":"ci","state":"success","description":"","target_url":""}`, "no deploy on main's tip " + short(mainTip)},
 	} {
@@ -42,7 +42,7 @@ func TestMergeAutoWaitsOnMainsDeploy(t *testing.T) {
 			if merges := w.hub.sent("PUT "); got.code == 0 || len(merges) != 0 || !strings.Contains(wait, c.says) || !strings.Contains(wait, "deploy") {
 				t.Fatalf("exit %d, %d merge calls, wait %q, want a deploy wait naming %q:\n%s", got.code, len(merges), wait, c.says, got.stdout)
 			}
-			if c.name != "a running deploy" && !strings.Contains(wait, short(mainTip)) {
+			if !strings.Contains(wait, short(mainTip)) {
 				t.Errorf("wait %q names no main tip %s", wait, short(mainTip))
 			}
 		})
@@ -62,6 +62,24 @@ func TestMergeAutoMergesOntoAGreenDeploy(t *testing.T) {
 	}
 	if !hasCheck(envelopeOf(got).Data.Checks, "deploy", true) {
 		t.Errorf("checks %+v, want a green deploy row", envelopeOf(got).Data.Checks)
+	}
+}
+
+// review round: a pr onto another branch still lands on main in the end, so main's tip is the deploy it reads
+func TestMergeAutoReadsMainsDeployForAPrOffMain(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.mainDeploys(vercel("hq", "failure", "Deployment has failed"))
+	gitT(t, w.seed, "push", "-q", "origin", "main:release")
+	w.hub.mu.Lock()
+	w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"base":{"ref":"main"}`, `"base":{"ref":"release"}`, 1)
+	w.hub.pages[repoPath+"/branches/release/protection/required_status_checks"] = w.hub.pages[repoPath+"/branches/main/protection/required_status_checks"]
+	w.hub.mu.Unlock()
+
+	got := w.run(t, "7", "--apply")
+
+	if wait := envelopeOf(got).Data.Wait; got.code == 0 || !strings.Contains(wait, "hq") {
+		t.Fatalf("exit %d, wait %q, want main's red hq deploy to hold a pr onto release:\n%s", got.code, wait, got.stdout)
 	}
 }
 
