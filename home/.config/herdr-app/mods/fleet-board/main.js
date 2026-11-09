@@ -148,7 +148,7 @@ export default class FleetBoard extends View {
         this.lanes = [];
         /** @type {Set<string>} */
         this.open = new Set();
-        // a steer box per ask, made on its ✏️ press: an InputState is never made while drawing
+        // a steer box per open ask, made when a read finds the ask: an InputState is never made while drawing
         /** @type {Map<string, import('gpui-base').InputState>} */
         this.steers = new Map();
         // presses written and not yet taken by the session's stash, so a second press waits
@@ -207,6 +207,15 @@ export default class FleetBoard extends View {
                 const ask = askOf(key);
                 if (!ask || ask.mark) this.steers.delete(key);
             }
+            for (const s of this.rows)
+                for (const ask of s.asks) {
+                    const key = `${s.sid}:${ask.id}`;
+                    if (ask.id && !ask.mark && !this.steers.has(key))
+                        this.steers.set(
+                            key,
+                            InputState.new({ placeholder: 'steer…' }),
+                        );
+                }
             this.loadedAt = new Date();
             cx.notify();
         });
@@ -438,31 +447,34 @@ export default class FleetBoard extends View {
                                             this.press(cx, s, ask, 'replay'),
                                         ),
                                 ),
-                            )
-                            .when(!steer, (row) =>
-                                row.child(
-                                    button(
-                                        'steer',
-                                        '✏️ steer',
-                                        'add a steer to send with the press',
-                                        (cx) => {
-                                            const box = InputState.new({
-                                                placeholder:
-                                                    'your steer, sent with the press',
-                                            });
-                                            this.steers.set(key, box);
-                                            box.focus();
-                                            cx.notify();
-                                        },
-                                    ),
-                                ),
                             ),
                     )
                     .when(Boolean(steer), (el) =>
                         el.child(
                             div()
-                                .pl(20)
-                                .child(Input.new(steer).text_size(SIZE.body)),
+                                .id(`steer-${key}`)
+                                .ml(20)
+                                .h(28)
+                                .px(8)
+                                .flex()
+                                .items_center()
+                                .rounded(6)
+                                .border_1()
+                                .border_color(t.border)
+                                .bg(t.input)
+                                .cursor_text()
+                                .tooltip(
+                                    'your steer, sent with 🛎️ tick or 🔁 replay',
+                                )
+                                .on_mouse_down('left', (_e, cx) =>
+                                    cx.stop_propagation(),
+                                )
+                                .child(
+                                    Input.new(steer)
+                                        .w_full()
+                                        .text_size(SIZE.body)
+                                        .text_color(t.foreground),
+                                ),
                         ),
                     ),
             )
