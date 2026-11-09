@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T20:29:00Z'
+updated_date: '2026-11-09T20:44:00Z'
 labels:
   - s
   - clio-main
@@ -17,24 +17,27 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 PK-363 herdr move: the wish behind the herdr lane and tomorrow's boot, its state in .scratch/herdr/plan.md
-- [ ] #2 herdr MVP doors: fold codie's summon probe into clio:wing, halt/main.md and crew-lead, then bump clio and x before tomorrow's boot
-- [ ] #3 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #4 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
-- [ ] #5 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
-- [ ] #6 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #7 ⏳ next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87) — waits for: herdr, the mods revisit pass
-- [ ] #8 ⏳ FRM-524 operator-override switch, needs human — waits for: dima's flip word
-- [ ] #9 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check prints "" and FRM-542 closes — on: 2026-11-10
-- [ ] #10 📅 boot clio in herdr carefully (plan.md recipe), fix what breaks as it boots, start only crow and helga (both --bg) — on: 2026-11-10
-- [ ] #11 📅 herdr quick lane: main drives, dima steers the looks, scope seeded by codie's herdr map — on: 2026-11-10
-- [ ] #12 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
-- [ ] #13 📅 wing 1 opens after the herdr explore: its tails, then speak v2 — on: 2026-11-10
-- [ ] #14 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #15 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
-- [ ] #16 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #17 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #18 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #19 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
+- [ ] #2 the guard refuses a ✏️ changed «👀 look sent» body write on FRM-549 and FRM-553 as a sign needing dima's tick (wing 2, 22:22): ticket it as a guard bug before the halt
+- [ ] #3 📎 the for-you row on fleet-board (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #4 the groom check takes one no-wish line per minute, so a second prompt in the same minute (21:06, 22:04 today) stays red: ticket it beside the look-sent guard bug
+- [ ] #5 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #6 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
+- [ ] #7 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
+- [ ] #8 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #9 ⏳ FRM-524 operator-override switch, needs human — waits for: dima's flip word
+- [ ] #10 📅 mods lane beside the herdr lane (o105, PK-363:W142, W149, W155): one fresh codie with its sixth sense on (FRM-505:W1941), the herdr lane's x-mod-stash asks first, as soon as possible, then FRM-538's public-post guard half, FRM-544 after its sign grill, FRM-505, FRM-491, FRM-495 (his o87); first ask: orbit's follow keeps its hiddenNote (wishkeeper 22:44) — on: 2026-11-10
+- [ ] #11 📅 boot clio in herdr carefully from .scratch/herdr/plan.md's recipe, `--remote-control` on (PK-363:W117–W118, W145), fix what breaks as it boots, then FRM-542's main-seat check prints "" and FRM-542 closes — on: 2026-11-10
+- [ ] #12 📅 start only crow and helga, in herdr panes with -n and --remote-control per o107 (PK-363:W119, W146–W148); their start scripts get a pane door first — on: 2026-11-10
+- [ ] #13 📅 herdr quick lane: main drives, dima steers the looks, scope seeded by codie's herdr map — on: 2026-11-10
+- [ ] #14 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
+- [ ] #15 📅 wing 1 opens after the herdr explore: its tails, then speak v2 — on: 2026-11-10
+- [ ] #16 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
+- [ ] #17 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #18 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
+- [ ] #19 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #20 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #21 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #22 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -120,4 +123,6 @@ PK-349:W26 (2026-11-09 20:20, dima, o12 steer): last time i already autohalted i
 done 2026-11-09 21:52: ⏳ FRM-556 fleet-chatter, signed: spec and dispatch to the herdr codie — waits for: dima's polish batches to end (FRM-556 Triage)
 
 PK-349:W27 (2026-11-09 21:20, dima, via wing 2): we are kind of ahead of pace, so I plan more economic moves starting from tomorrow. Most likely, we will have main clio and wing 1. it is important to hunt all tails so no chores are left.
+
+done 2026-11-09 22:44: herdr MVP doors: fold codie's summon probe into clio:wing, halt/main.md and crew-lead, then bump clio and x before tomorrow's boot
 <!-- SECTION:NOTES:END -->

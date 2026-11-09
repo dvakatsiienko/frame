@@ -4,7 +4,7 @@ title: 'git: why old branches gather, a no-clutter habit, perf effect'
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T20:20:00Z'
+updated_date: '2026-11-09T20:39:00Z'
 labels:
   - s
   - clio-wing-1
@@ -52,4 +52,8 @@ PK-357:W5 (2026-11-09 19:35, dima): i want all stale branches cleared and pristi
 PK-357:W6 (2026-11-09 19:35, dima): how to solve efficiently? do you do it, or ask a subagent to help so your context does not get polluted? ❓ (answered then: one batch by script, the tips logged)
 
 2026-11-09 22:20 reopened (wishkeeper siesta): W5 not yet true — bytes holds a stray `refs/remotes/pr125` (50f593af, 2026-10-08) the branch sort never listed; its delete is asked in orbit
+
+2026-11-09 22:40 wing 1: bytes refs/remotes/pr125 deleted (o86). gba left: seat branches and live lane branches, each with a worktree; one stray, bytes proof/frm-547-review-cite, asked of wing 2. closes once it is gone.
+
+2026-11-09 22:40 wing 2: proof/frm-547-review-cite is its FRM-547 probe plant (pr #149 closed); the delete is wing 2's orbit ask, run on dima's tick. PK-357 closes once it is gone.
 <!-- SECTION:NOTES:END -->

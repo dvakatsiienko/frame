@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T20:36:00Z'
+updated_date: '2026-11-09T20:44:00Z'
 labels:
   - m
   - clio-main
@@ -553,4 +553,19 @@ PK-363:W141 (2026-11-09 22:28, dima): for example, if herdr lane is close to mod
 PK-363:W142 (2026-11-09 22:28, dima): (i still accept two lanes at once -mods and herdr. because we need to stabilize herdr, it is a prio, so i accept having two parallel lanes).
 PK-363:W143 (2026-11-09 22:28, dima): either way, propose how to have this tmrw.
 answered 22:30 and 22:40: W104, W108, W112–W113, W119–W124, W131–W135 in the replies; W114–W115 → PK-349 (the for-you row after herdr is stable); W117–W118, W126, W129–W131 → PK-349 📅 11-10 lines
+
+PK-363:W144 (2026-11-09 22:38, dima): hc run ← supports --remote-control? ❓
+PK-363:W145 (2026-11-09 22:38, dima): i want all threads remote controlled so i see them in c mobile app and in desktop app too (why not).
+PK-363:W146 (2026-11-09 22:38, dima): tomorrow, `--bg` for both: crow and helga are always background helpers that you never watch ← yes but i want to see them and be able to peek in.
+PK-363:W147 (2026-11-09 22:38, dima): i peek in crow window sometimes.
+PK-363:W148 (2026-11-09 22:38, dima): ← I still don't understand why you want to start them as `--bg session` but not via the herdr native way. ❓
+PK-363:W149 (2026-11-09 22:38, dima): two lanes, decided. herdr one and mods lane.
+PK-363:W150 (2026-11-09 22:38, dima): o106: lets do.
+PK-363:W151 (2026-11-09 22:38, dima): What I want is the band, the one that is above my text prompt, that shows the CTX of the thread and the buttons like Second Wind, Keep Hot, Waker AFK settings button, and Board button.
+PK-363:W152 (2026-11-09 22:38, dima): Although the settings button and Board button are tricky because they can be made simpler and harder, overall, I propose to build the UI and the harder kind from scratch, because we have a chance to start my mods UI from scratch.
+PK-363:W153 (2026-11-09 22:38, dima): Let's build them in a prettier way and use better doors and better flexibility that herdr has.
+PK-363:W154 (2026-11-09 22:38, dima): I would start with a band that shows the CTX and the status, like Waiting For, and the buttons for Second Wind, Keep Hot, Waker, AFK switch, and master override switch to (cut off)
+answered 22:40: W144–W148 in the reply and orbit o107; W149 → o105 resolved; W151–W154 → PK-349 📅 herdr lane chunk 1 (the band), W154 cut off, asked at the shaping
+
+PK-363:W155 (2026-11-09 22:38, dima, o105 steer): herder lane can tell what it want and mods lane tries to fulfill that as soon as possible (delegation)
 <!-- SECTION:NOTES:END -->
