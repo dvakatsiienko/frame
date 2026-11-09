@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T17:27:00Z'
+updated_date: '2026-11-09T17:30:00Z'
 labels:
   - s
   - clio-wing-3
@@ -21,7 +21,7 @@ ordinal: 18999
 - [ ] #3 speak v2 planning with dima once this flyway is solved, if he is not too tired (his o5, via main)
 - [x] #4 FRM-509 live read of the 11-07 lane: close or name the one step left, by 11-10 (from main)
 - [x] #5 x-mod-guard dima-ok-flag rule misreads a followed ask: fold as one ticket under 🐋 safer, quieter mods (from main, wing 1's o40)
-- [ ] #6 PK-369 perf: can turbo remote cache or another cache reuse test results, against FRM-533's own key; a read, verdict line to wing 1 (from wing 1)
+- [x] #6 PK-369 perf: can turbo remote cache or another cache reuse test results, against FRM-533's own key; a read, verdict line to wing 1 (from wing 1)
 - [x] #7 PK-366 linear: delete the «model» label group (his o19), the GLOSSARY label line with it; ⚠️ ask first (from wing 2)
 - [x] #8 crew-pm board redraw: re-check and re-stamp after the label cut and winged v2, via a helper card (yanked from wing 2 #6, dima o19)
 - [ ] #9 FRM-542 every seat's prompt log, wing 2 #10 folded in (yanked, dima o19)
@@ -39,4 +39,6 @@ ordinal: 18999
 19:26 #4 FRM-509 read done: not closable, one step named in its comment (verify-<sha> tree + merged worktree-* branch); ⏰ due 11-12
 
 19:28 #11 correction: wisphunter read the first drafts; hc keys and tsc probed by me; the 19:13 rewrite was read by wishkeeper (two siestas), not re-run against the clis
+
+19:30 #6 PK-369 moved to wing 1's flyway PK-346 (dima: «your flyway #6 is wing 1 property. move it»)
 <!-- SECTION:NOTES:END -->
