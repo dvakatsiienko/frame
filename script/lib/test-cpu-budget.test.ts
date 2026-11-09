@@ -140,6 +140,21 @@ describe('the runner it hands the suite to', () => {
         expect(rows()[0]?.[9]).toBe(leg);
         expect(Number(rows()[0]?.[3])).toBeGreaterThanOrEqual(5);
     });
+
+    test('a report whose cpu is no number adds nothing and runs nothing', () => {
+        const { dir, rows, run } = fixture({ budget: '60\t2026-11-07\troomy' });
+        const ran = join(dir, 'ran');
+        writeFileSync(
+            join(dir, 'test-vm-go.sh'),
+            `#!/bin/bash\nprintf 'vm\\ta[$(touch ${ran})]\\n' >"$TEST_VM_GO_REPORT"\necho 'ok  \tx\t1s'\n`,
+        );
+
+        const got = run(whole);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(existsSync(ran)).toBe(false);
+        expect(Number(rows()[0]?.[3])).toBeLessThan(5);
+    });
 });
 
 describe('the worker cap', () => {

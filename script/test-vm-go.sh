@@ -2,7 +2,7 @@
 # test-vm-go [--index] go test <args…> | --create — runs a go suite in vm-go-test, the persistent lima vm, and on the mac when it is down.
 # test-cpu-budget.sh calls it where it ran go test, so every door keeps its flags and its row (FRM-551).
 # the tree under test becomes a commit of its own, pushed to refs/runs/<id> in ~/runs.git in the vm and checked out for that run alone:
-# --index, a commit door's, holds the index only; without it a by-hand run's adds the module's working tree, as the mac would see it.
+# --index, a commit door's, holds the index only; without it a by-hand run's adds the whole working tree, as the mac would see it.
 # a down vm runs on the mac and says so; a cut or overdue vm leg re-runs on the mac once, never a red.
 # with CI set it is plain go test. TEST_VM_GO_REPORT names a file that gets «<leg>\t<vm cpu ms>» for the budget row:
 # the VZ process's and the hostagent's cpu across the vm leg, which no rusage on the mac sees.
@@ -23,6 +23,11 @@ if [ "${1-}" = --create ]; then
     go_version=$(sed -n 's/^go //p' "$root/x/go/go.mod")
     node_major=$(cat "$root/.node-version")
     pnpm_version=$(sed -n 's/.*"packageManager": "pnpm@\([0-9.]*\)".*/\1/p' "$root/package.json")
+    # a repo file reaches a root shell in the vm: only version shapes pass
+    [[ $go_version =~ ^[0-9]+(\.[0-9]+)+$ && $node_major =~ ^[0-9]+$ && $pnpm_version =~ ^[0-9]+(\.[0-9]+)+$ ]] || {
+        echo "test-vm-go: a pin is not a version: go '$go_version', node '$node_major', pnpm '$pnpm_version'" >&2
+        exit 2
+    }
     if limactl list -q | grep -qx "$vm"; then
         echo "$vm exists: $(limactl list --format '{{.Status}}, {{.CPUs}} cpus, {{.Memory}} bytes' "$vm")"
     else
@@ -45,15 +50,25 @@ if [ -n "$missing" ]; then
     # shellcheck disable=SC2086
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends $missing >/dev/null
 fi
+# every download is checked against its publisher's sha256 before it unpacks as root: the guest's go decides every commit's gate
+fetch() {
+    curl -fsSL -o "$2" "$1"
+    echo "$3  $2" | sha256sum -c --quiet -
+}
 if ! /usr/local/go/bin/go version 2>/dev/null | grep -q "go$go_version "; then
+    file=go$go_version.linux-arm64.tar.gz
+    sum=$(curl -fsSL 'https://go.dev/dl/?mode=json&include=all' | jq -r --arg f "$file" '.[].files[] | select(.filename == $f) | .sha256')
+    fetch "https://go.dev/dl/$file" "/tmp/$file" "$sum"
     sudo rm -rf /usr/local/go
-    curl -fsSL "https://go.dev/dl/go$go_version.linux-arm64.tar.gz" | sudo tar -C /usr/local -xz
+    sudo tar -C /usr/local -xzf "/tmp/$file"
 fi
-node_tar=$(curl -fsSL "https://nodejs.org/dist/latest-v$node_major.x/" | grep -o "node-v$node_major\.[0-9.]*-linux-arm64\.tar\.xz" | sed -n 1p)
+sums=$(curl -fsSL "https://nodejs.org/dist/latest-v$node_major.x/SHASUMS256.txt")
+node_tar=$(echo "$sums" | grep -o "node-v$node_major\.[0-9.]*-linux-arm64\.tar\.xz" | sed -n 1p)
 if [ "$(/usr/local/node/bin/node --version 2>/dev/null)" != "$(echo "$node_tar" | sed -E 's/^node-(v[0-9.]+)-.*/\1/')" ]; then
+    fetch "https://nodejs.org/dist/latest-v$node_major.x/$node_tar" "/tmp/$node_tar" "$(echo "$sums" | awk -v f="$node_tar" '$2 == f { print $1 }')"
     sudo rm -rf /usr/local/node
     sudo mkdir -p /usr/local/node
-    curl -fsSL "https://nodejs.org/dist/latest-v$node_major.x/$node_tar" | sudo tar -C /usr/local/node --strip-components=1 -xJ
+    sudo tar -C /usr/local/node --strip-components=1 -xJf "/tmp/$node_tar"
 fi
 export PATH=/usr/local/node/bin:/usr/local/go/bin:$PATH
 [ "$(pnpm --version 2>/dev/null)" = "$pnpm_version" ] || sudo env PATH="$PATH" npm install -g --silent "pnpm@$pnpm_version"
@@ -114,7 +129,8 @@ sync_tree() {
     else
         index=$(mktemp "${TMPDIR:-/tmp}/test-vm-go-index.XXXX")
         cp "$(git rev-parse --path-format=absolute --git-path index)" "$index" 2>/dev/null
-        tree=$(GIT_INDEX_FILE=$index git add -A -- . && GIT_INDEX_FILE=$index git write-tree)
+        # the whole working tree, as the mac run reads it: x/go's tests read files outside the module too (x-go-reads.txt)
+        tree=$(GIT_INDEX_FILE=$index git add -A -- :/ && GIT_INDEX_FILE=$index git write-tree)
         local code=$?
         rm -f "$index"
         [ "$code" -eq 0 ] || return "$code"
@@ -126,12 +142,12 @@ sync_tree() {
     # refs/base/head holds a parent for the next push to negotiate against, or every run would send the whole history again;
     # its own push after, best effort, since two seats moving it at once refuse each other
     local pushed
-    export GIT_SSH_COMMAND="ssh -F $lima_home/$vm/ssh.config -o BatchMode=yes -o ConnectTimeout=5"
-    pushed=$(timeout "$deadline" git send-pack --force "lima-$vm:runs.git" "$commit:refs/runs/$id" 2>&1) || {
+    local ssh_command="ssh -F '$lima_home/$vm/ssh.config' -o BatchMode=yes -o ConnectTimeout=5"
+    pushed=$(GIT_SSH_COMMAND=$ssh_command timeout "$deadline" git send-pack --force "lima-$vm:runs.git" "$commit:refs/runs/$id" 2>&1) || {
         echo "$pushed" >&2
         return 1
     }
-    [ -z "$parent" ] || timeout 10 git send-pack --force "lima-$vm:runs.git" "$parent:refs/base/head" >/dev/null 2>&1 || true
+    [ -z "$parent" ] || GIT_SSH_COMMAND=$ssh_command timeout 10 git send-pack --force "lima-$vm:runs.git" "$parent:refs/base/head" >/dev/null 2>&1 || true
 }
 
 # the guest side, fed to bash on stdin. a run takes a free slot, a worktree it alone holds (its lock) for the run, checked out at the

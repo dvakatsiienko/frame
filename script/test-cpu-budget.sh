@@ -37,7 +37,8 @@ fi
 
 here=$(cd "$(dirname "$0")" && pwd)
 scratch=$(mktemp "${TMPDIR:-/tmp}/test-cpu-budget.XXXX")
-trap 'rm -f "$scratch" "$scratch.out" "$scratch.leg"' EXIT
+report=$(mktemp "${TMPDIR:-/tmp}/test-vm-go-report.XXXX")
+trap 'rm -f "$scratch" "$scratch.out" "$report"' EXIT
 
 ms_of() {
     local minutes=${1%%m*} seconds=${1#*m}
@@ -62,11 +63,13 @@ children_ms() {
 
 children_ms
 before=$children
-TEST_VM_GO_REPORT=$scratch.leg "$here/test-vm-go.sh" $index "$@" | tee "$scratch.out"
+TEST_VM_GO_REPORT=$report "$here/test-vm-go.sh" $index "$@" | tee "$scratch.out"
 code=${PIPESTATUS[0]}
 children_ms
 leg=- guest_ms=0
-[ -s "$scratch.leg" ] && IFS=$'\t' read -r leg guest_ms <"$scratch.leg"
+[ -s "$report" ] && IFS=$'\t' read -r leg guest_ms <"$report"
+# a number only: bash arithmetic would run anything else
+[[ $guest_ms =~ ^[0-9]+$ ]] || guest_ms=0
 used_ms=$((children - before + guest_ms))
 
 if grep -Eq '(^|")ok .*\(cached\)' "$scratch.out"; then

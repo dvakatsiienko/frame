@@ -59,6 +59,7 @@ function fixture({
     const goLog = join(dir, 'go.calls');
     const goBody = `echo "\${FAKE_GUEST:-mac} $* | $(cat v.txt 2>/dev/null)" >>"${goLog}"
 [ -z "\${FAKE_GUEST:-}" ] || date +%s >>"${goLog}.starts"
+[ -z "\${READ:-}" ] || cat "$READ" >>"${goLog}.read"
 [ -z "\${FAKE_GUEST:-}" ] || [ -z "\${GO_SLEEP:-}" ] || sleep "$GO_SLEEP"
 [ "$(cat v.txt 2>/dev/null)" != bad ] || { echo '--- FAIL: TestV'; exit 1; }
 echo 'ok  \tm\t0.1s'
@@ -416,6 +417,20 @@ describe('the vm leg', () => {
         expect(calls('go')).toEqual([
             'guest test -count=1 ./... -parallel 7 | bad',
         ]);
+    });
+
+    test('a by-hand run carries an unstaged edit outside the module, a file its tests read', () => {
+        const { code, git, run } = fixture();
+        writeFileSync(join(code, 'reads.txt'), 'committed');
+        git('add', 'reads.txt');
+        git('commit', '-q', '-m', 'a file x/go tests read');
+        writeFileSync(join(code, 'reads.txt'), 'unstaged');
+
+        run(suite, { READ: '../reads.txt' });
+
+        expect(readFileSync(join(code, '../go.calls.read'), 'utf8')).toBe(
+            'unstaged',
+        );
     });
 });
 
