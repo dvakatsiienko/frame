@@ -32,8 +32,8 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 - a standing line is what the seat maintains: `standing: FRM-525 cpu, watch until 11-14`, its detail in the ticket
 - a parked wing's flyway waits for the next wing of its number; dima may flip its number
 - an action that folds an item into another area reads every flyway for its id and yanks the line that turn (dima, 2026-11-07: «sanity check across flyways, yank it out of flyway plan so no confusions»); `pocket-check` reds a PK id left behind
-- **main's ask reaches a wing by slipstream**: main sends it, the wing writes it into its flyway right after the line it is solving, finishes that line, then takes it; an urgent ask, or dima's word, goes first
-<!-- failure: a wing dropped what it was solving with dima mid-turn for main's ask · his words: PK-336:W25 to PK-336:W29 -->
+- **main's ask reaches a wing by slipstream**: main sends it, the wing puts it in its flyway right after the line it is solving, finishes that line, then takes it; an urgent ask, or dima's word, goes first
+<!-- failure: a wing dropped what it was solving with dima mid-turn for main's ask · his words: PK-356:W2 to PK-356:W5, PK-356:W10 -->
 
 ## the stash hierarchy — dima's, 2026-09-27
 
