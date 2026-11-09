@@ -4,7 +4,7 @@ title: 'steamac vm disk: shrink 256gb to 192gb'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T13:45:00Z'
+updated_date: '2026-11-09T14:59:00Z'
 labels:
   - s
   - clio-wing-2
@@ -49,4 +49,6 @@ PK-362:W8 (2026-11-09 15:08, dima): steamac disk, 256 → 192 gb: reassign this 
 15:46 wing 2, a correction, wishkeeper siesta 3: my 15:22 «no shrink door, README only Grow Disk» came from a README read cut at line 219. steamac v1.9.13 has Settings → Advanced → Reclaim Disk Space… (SteamOS running): the guest fstraps /home, virtio-blk discard punches holes, the file shrinks on APFS only, capacity stays (README 338–343, release notes «Closes #73»). so door 1 is that button, no ssh. today it frees about 12 GB at most (dima: 12.3 GB free of 254.4). the ext4 /home is the README's word (line 332), no longer an inference. units: the image is 299 GB = 278 GiB apparent, 252 GiB on disk (du -h). #91 asks a question #73 already answered: a correcting comment goes to dima first.
 
 typo above: «fstraps» reads «fstrims».
+
+15:57 the correction comment on fxgl/steamac#91 posted on his o15 tick: https://github.com/fxgl/steamac/issues/91#issuecomment-6741843407
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T14:36:00Z'
+updated_date: '2026-11-09T14:58:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,7 +17,7 @@ ordinal: 18998
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 PK-300 one complete measuring solution
-- [ ] #2 FRM-517 temp dir: the day's count read 11-08, close or one step named, from wing 2
+- [x] #2 FRM-517 temp dir: the day's count read 11-08, close or one step named, from wing 2
 - [ ] #3 FRM-497 speak meter: starts with speak v2, not before
 - [ ] #4 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
 - [ ] #5 PK-357 git: old branches, why they gather, a habit, perf effect — with dima, when free
