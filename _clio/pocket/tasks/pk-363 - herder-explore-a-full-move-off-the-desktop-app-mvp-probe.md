@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T17:24:00Z'
+updated_date: '2026-11-09T17:40:00Z'
 labels:
   - m
   - clio-main
@@ -466,4 +466,26 @@ raw drop (2026-11-09 19:12, dima): o74: do you think FRM 505 still needs to wait
 PK-363:W82 (2026-11-09 19:12, dima): when herder codie can start? ❓
 
 raw drop (2026-11-09 19:12, dima): when herder codie can start?
+
+PK-363:W83 (2026-11-09 19:33, dima): herder: restarted fully (quit and start).
+
+raw drop (2026-11-09 19:33, dima): herder: restarted fully (quit and start).
+
+PK-363:W84 (2026-11-09 19:33, dima): top 7 names for the herdr chat panel (Zoo's , made ours) (⚙️ a cog, names only) ← is this for custom chatter i asked for? one borrowed from zoo? if yes - let's have it as «chatter». recognizable and clear and short. ❓
+
+raw drop (2026-11-09 19:33, dima): top 7 names for the herdr chat panel (Zoo's , made ours) (⚙️ a cog, names only) ← is this for custom chatter i asked for? one borrowed from zoo? if yes - let's have it as «chatter». recognizable and clear and short.
+
+PK-363:W85 (2026-11-09 19:33, dima): fleet-chatter? so when i say «chatter» its clear? ❓
+
+raw drop (2026-11-09 19:33, dima): fleet-chatter? so when i say «chatter» its clear?
+
+PK-363:W86 (2026-11-09 19:37, dima): cd ~/frame/_clio/.scratch/herdr && claude --resume a99a5470-2157-42a3-99d9-3457b64263ff ← I do not get how to probe it properly because, from what I know, the desktop app doesn't allow resuming sessions gracefully. When I want a session in the desktop app, I resume it in the terminal in remote control, and that way it appears in the terminal. Via path, it is only possible to start a new thread in the desktop app. Can you probe yourself somehow, or print cleaner steps? How to probe? ❓
+
+raw drop (2026-11-09 19:37, dima): cd ~/frame/_clio/.scratch/herdr && claude --resume a99a5470-2157-42a3-99d9-3457b64263ff ← I do not get how to probe it properly because, from what I know, the desktop app doesn't allow resuming sessions gracefully. When I want a session in the desktop app, I resume it in the terminal in remote control, and that way it appears in the terminal. Via path, it is only possible to start a new thread in the desktop app. Can you probe yourself somehow, or print cleaner steps? How to probe?
+
+PK-363:W87 (2026-11-09 19:37, dima): tell when herder codie wants a verifier? ❓
+
+raw drop (2026-11-09 19:37, dima): tell when herder codie wants a verifier?
+
+correction (2026-11-09 19:33, helga): the W84 line and its raw drop above lost the text between the backticks, because the shell ran it as a command. Intended: "top 7 names for the herdr chat panel (Zoo's `claude-chat`, made ours) (⚙️ a cog, names only) ← is this for custom chatter i asked for? one borrowed from zoo? if yes - let's have it as «chatter». recognizable and clear and short. ❓"
 <!-- SECTION:NOTES:END -->

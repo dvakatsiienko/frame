@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T17:30:00Z'
+updated_date: '2026-11-09T17:43:00Z'
 labels:
   - s
   - clio-wing-1
@@ -19,16 +19,14 @@ ordinal: 18998
 - [ ] #1 PK-300 one complete measuring solution
 - [ ] #2 FRM-497 speak meter: starts with speak v2, not before
 - [ ] #3 standing: FRM-525 performance topic, wing 1 owns it, anything performance comes here
-- [ ] #4 PK-357 git: old branches, why they gather, a habit, perf effect — with dima, when free
-- [ ] #5 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
-- [ ] #6 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
-- [ ] #7 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
-- [ ] #8 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
-- [ ] #9 FRM-551 vm-go-test: signed; step 1 now, the idle-cost kill gate (dima 19:01)
-- [ ] #10 FRM-383 close: W3 timing run, then x lane landed FRM-383 --pr 150 --apply, by 2026-11-12
-- [ ] #11 gate tail: watch-pr.sh --verified has no undo flag, for the next gate touch
-- [ ] #12 PK-370 perf: tests off pre-commit, to ci or pre-push — with dima, a little later (his 18:43)
-- [ ] #13 PK-369 perf: can turbo remote cache or another cache reuse test results, against FRM-533's own key; read it blind, verdict: a line in FRM-533 or a new ticket (moved from wing 3 on dima's 19:30 word: «wing 1 property»)
+- [ ] #4 standing: FRM-525 cpu, watch until 2026-11-14 (moved a day)
+- [ ] #5 FRM-517 temp dir: the top-level count 11-10 17:28 against 345, under 100 grown closes it
+- [ ] #6 perf left in order: FRM-534 close and FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
+- [ ] #7 FRM-551 vm-go-test: signed; step 1 now, the idle-cost kill gate (dima 19:01)
+- [ ] #8 FRM-383 close: W3 timing run, then x lane landed FRM-383 --pr 150 --apply, by 2026-11-12
+- [ ] #9 PK-370 perf: tests off pre-commit, to ci or pre-push — with dima, a little later (his 18:43)
+- [ ] #10 PK-369 perf: can turbo remote cache or another cache reuse test results, against FRM-533's own key; read it blind, verdict: a line in FRM-533 or a new ticket (moved from wing 3 on dima's 19:30 word: «wing 1 property»)
+- [ ] #11 PK-357 branches: 112 deleted local (dima o52, o53), bytes remote renovate/minors waits on his typed word; the habit is wing 2's rider
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -65,4 +63,6 @@ PK-346:W1 (2026-11-07 21:48, dima): wing 1 can be an owner of the performance is
 18:53 cli lane 6 handed to wing 2 (dima o34): handover at .scratch/handover-cli-lane-6.md in the wing 1 tree, glide l55 ended
 
 19:02 synced: FRM-503 closed (o49), cli lane 6 handed to wing 2, gate lane 1 lines done; PK-358 rex walkthrough reassigned to main on dima's 19:01 word
+
+19:45 gate tails and the watch-pr undo moved to wing 2's cli lane as riders (dima 19:21); 33+79 branches deleted, tips logged in the wing 1 tree's .scratch/branches-deleted-tips.txt
 <!-- SECTION:NOTES:END -->
