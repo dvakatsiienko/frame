@@ -4,10 +4,9 @@ title: 'gates: one naming convention everywhere, one big sweep'
 status: open
 assignee: []
 created_date: '2026-11-09T20:03:00Z'
-updated_date: '2026-11-09T20:40:00Z'
+updated_date: '2026-11-09T22:15:00Z'
 labels:
   - s
-  - clio-wing-1
 dependencies: []
 priority: later
 type: task
