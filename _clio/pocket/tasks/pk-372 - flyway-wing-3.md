@@ -4,14 +4,14 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T18:34:00Z'
+updated_date: '2026-11-09T18:48:00Z'
 labels:
   - s
   - clio-wing-3
 dependencies: []
-priority: next
+priority: now
 type: task
-ordinal: 18999
+ordinal: 1003
 ---
 
 ## Implementation Notes
