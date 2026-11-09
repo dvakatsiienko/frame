@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T15:44:00Z'
+updated_date: '2026-11-09T15:49:00Z'
 labels:
   - m
   - clio-main
@@ -182,4 +182,8 @@ PK-363:W31 (2026-11-09 17:43, dima): is what we build in herdr portable back to 
 PK-363:W32 (2026-11-09 17:43, dima): i worry that herdr's desktop app, or the claude desktop app, gets dropped at some point, and then we struggle to find another place to code
 
 PK-363:W33 (2026-11-09 17:43, dima): zoo's chat and terminal must stay in sync both ways: a turn typed in the terminal shows in the chat, a message sent from the chat lands in the chat
+
+PK-363:W34 (2026-11-09 17:48, dima, in the herdr codie's pane): images paste with cmd+v but not by drag and drop; wish: drag-and-drop images in the chatter
+
+probe 1 result (17:48, codie relay): the ps fix is live, proven by dima: the Chat tab shows the whole history, a chat-box message lands in the chat, a cmd+v image arrives as text+image. dnd door: gpui-kit on_drop gives file paths (gpui-kit.d.ts:782), append each image path to the message
 <!-- SECTION:NOTES:END -->
