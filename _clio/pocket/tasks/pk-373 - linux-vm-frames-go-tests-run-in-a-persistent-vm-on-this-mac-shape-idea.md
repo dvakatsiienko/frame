@@ -4,7 +4,7 @@ title: 'linux vm: frame''s go tests run in a persistent vm on this mac, shape-id
 status: done
 assignee: []
 created_date: '2026-11-09T14:19:00Z'
-updated_date: '2026-11-09T15:58:00Z'
+updated_date: '2026-11-09T15:59:00Z'
 labels:
   - s
   - clio-wing-1
@@ -43,4 +43,6 @@ PK-373 name, dima's o32 steer 16:44: vm-go-test (over my go-test-vm pick)
 
 ticket: FRM-551
 close: 2026-11-09 17:58 — shaped (grill 1 o24-o31, name o32, crow critique folded) into FRM-551, all 8 W-lines carried as FRM-551:W1-W8; the raw drop stays here
+
+close: W1-W8 moved to FRM-551 as FRM-551:W1-W8 (W1 cost, W2 scope, W3 distro, W4 research, W5 tools, W6 name and life, W7 a clean win, W8 boot and halt)
 <!-- SECTION:NOTES:END -->
