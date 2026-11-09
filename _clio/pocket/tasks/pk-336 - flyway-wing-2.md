@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T18:21:00Z'
+updated_date: '2026-11-09T18:29:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,13 +22,13 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-538's flyway half: two pocket-check rules + flyway-done.ts, built in my tree (o69)
+- [ ] #1 FRM-538's flyway half, wishkeeper's 5 fixes: verify a line's ticket or PK before it leaves, reds name #n and the command, --add/--sort run in a test, 3 skills name flyway-done.ts, --sort in one edit
 - [ ] #2 ⏳ frame#152 (FRM-549, FRM-553 + its riders, FRM-548) merges by merge-auto — waits for: codie's final, then sixth sense's clean
 - [ ] #3 ⏳ FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card — waits for: frame#152's review run
 - [ ] #4 ⏳ the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25) — waits for: frame#152's merge
 - [ ] #5 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
-- [ ] #6 ⏳ FRM-483 boot-prefetch stall, the 3-day read — waits for: 2026-11-11
-- [ ] #7 ⏳ FRM-516 crow on every wing, the week's read — waits for: 2026-11-14
+- [ ] #6 📅 FRM-483 boot-prefetch stall, the 3-day read — on: 2026-11-11
+- [ ] #7 📅 FRM-516 crow on every wing, the week's read — on: 2026-11-14
 - [ ] #8 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
 - [ ] #9 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
 - [ ] #10 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go and stacks.go changed since its last version — later: dima 20:21 («i tell when»)

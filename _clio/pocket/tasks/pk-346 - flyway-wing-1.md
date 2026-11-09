@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T18:25:00Z'
+updated_date: '2026-11-09T18:28:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,13 +17,13 @@ ordinal: 18998
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 FRM-551 vm go tests: read the second idle sample at ~20:36 (4 vcpus), tell dima build or drop, stop the vm
-- [ ] #2 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
-- [ ] #3 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
-- [ ] #4 📅 FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — on: 2026-11-10
-- [ ] #5 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
-- [ ] #6 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
-- [ ] #7 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
-- [ ] #8 ⏳ FRM-555 stash tests: no timeout reruns, idle poll at 30 s — grill and sign — waits for: dima's word, after FRM-505
+- [ ] #2 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
+- [ ] #3 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
+- [ ] #4 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
+- [ ] #5 ⏳ FRM-555 stash tests: no timeout reruns, idle poll at 30 s — grill and sign — waits for: dima's word, after FRM-505
+- [ ] #6 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
+- [ ] #7 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
+- [ ] #8 📅 FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — on: 2026-11-10
 - [ ] #9 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
 - [ ] #10 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #11 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
