@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T21:18:00Z'
+updated_date: '2026-11-09T22:01:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,17 +16,17 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ⏳ FRM-551 vm lane: #153's fixes and slot trees pushed, sixth sense's clean, wishkeeper's read, merge-auto, landed (dima 22:14) — waits for: sixth sense's clean
-- [ ] #2 ⏳ FRM-557 test hooks trimmed: sealed and dispatched into the vm lane; codie second-winds, to-tickets, my greenlight, build, pr, merge — waits for: codie's lane plan
-- [ ] #3 ⏳ FRM-537 next probes, by hand, the vitest pools now ride FRM-557 — waits for: spare usage
-- [ ] #4 ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next frame pr's merge-auto run, the first live read of #152's checks (549, 553 red only on the guard-refused «look sent» line, main's guard bug) — waits for: #153's merge
-- [ ] #5 ⏳ cli lane 6's rest, all signed: FRM-384 (gate runner, body guard, own-branch push, brief lint, the 19:27 gate riders, FRM-554), FRM-436, FRM-424; no codie, its sixth sense «cli lane | #150» idle — waits for: dima's word on a new cli codie
-- [ ] #6 ⏳ FRM-557 test hooks trimmed: 🟢 greenlit, slices 06–11 in the vm lane; the build starts first thing tomorrow (o110), then pr, sixth sense, merge — waits for: wing 1 opening tomorrow
-- [ ] #7 ⏳ the stray FRM-383 tree and branch (16 squashed lane commits, held by cli lane 6's stopped codie): decamp on dima's word — waits for: dima's word
+- [ ] #1 ⏳ FRM-537 next probes, by hand, the vitest pools now ride FRM-557 — waits for: spare usage
+- [ ] #2 ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next frame pr's merge-auto run, the first live read of #152's checks (549, 553 red only on the guard-refused «look sent» line, main's guard bug) — waits for: #153's merge
+- [ ] #3 ⏳ cli lane 6's rest, all signed: FRM-384 (gate runner, body guard, own-branch push, brief lint, the 19:27 gate riders, FRM-554), FRM-436, FRM-424; no codie, its sixth sense «cli lane | #150» idle — waits for: dima's word on a new cli codie
+- [ ] #4 ⏳ FRM-557 test hooks trimmed: 🟢 greenlit, slices 06–11 in the vm lane; the build starts first thing tomorrow (o110), then pr, sixth sense, merge — waits for: wing 1 opening tomorrow
+- [ ] #5 ⏳ the stray FRM-383 tree and branch (16 squashed lane commits, held by cli lane 6's stopped codie): decamp on dima's word — waits for: dima's word
+- [ ] #6 ⏳ FRM-551 vm lane: #153 held for codie's two by-hand fixes (--no-gpg-sign, the INT trap); I read that diff, then merge-auto on green ci and the review round, then x lane landed — waits for: codie's push
+- [ ] #7 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
 - [ ] #8 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
 - [ ] #9 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
-- [ ] #10 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
-- [ ] #11 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
+- [ ] #10 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
+- [ ] #11 📅 speak v2 planning with dima, after herdr's move and the mods scope (dima 23:50); FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-11
 - [ ] #12 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #13 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 - [ ] #14 💤 FRM-560 x verify red: a mods red proof under half its 64 s (W3 moved from FRM-383) — later: dima
