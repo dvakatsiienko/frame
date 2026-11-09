@@ -11,14 +11,14 @@ Ticket: FRM-521 (PK-328 in clio's pocket holds his words)
 PK-328:W12 (2026-11-06 19:58, dima): well, i read your reply. let's try. but i want everything measured for 1 week. ensure measures are present, so we don't do stuff blindly. and ideally nothing is broken.
 PK-328:W15 (2026-11-06 20:49, dima, on the expected gains): ensure all these points, and think what else, to measure and compare after 1 week.
 
-**test card:** we believe a fair queue, a long slot, related tests on `codie/*`, higher timeouts and stop-early red-proofs cut the time a coder waits, with no red reaching main · we test it by every real commit, push and red-proof of the week · we measure each row below against its baseline, per lane, with load beside it · we're right if the safety rows hold and at least the queue, red-proof and commit rows reach their targets
-**kill rule:** any safety row breaks, or related tests cost more than they save (reds at push over 1 per 10 commits on `codie/*`, break-even is about 1 per 7: 12 s saved a commit against about 84 s a push; at load the whole test step is 28 to 32 s, so read the saving from `test-commit.log`): `lefthook.yaml`'s `test` goes back to the whole suite that day
+**test card:** we believe a fair queue, a long slot, related tests at commit on every branch kind (`main`, `codie/*`, `clio-wing-*`, `worktree-*`, any other; FRM-534 from 2026-11-09), higher timeouts and stop-early red-proofs cut the time a coder waits, with no red reaching main · we test it by every real commit, push and red-proof of the week · we measure each row below against its baseline, per lane, with load beside it · we're right if the safety rows hold and at least the queue, red-proof and commit rows reach their targets
+**kill rule:** any safety row breaks, or related tests cost more than they save (reds at push over 1 per 10 commits on a branch kind (`main`, `codie/*`, `clio-wing-*`, `worktree-*`, other), break-even is about 1 per 7: 12 s saved a commit against about 84 s a push; at load the whole test step is 28 to 32 s, so read the saving from `test-commit.log`): that kind leaves `related_kinds` in `script/test-commit.sh` and runs the whole suite at commit that day. a push red finds its kind by joining the pushed commit's sha to `test-commit.log`'s branch, since the twin row logs the remote ref
 
 ## where the numbers come from
 
 - `~/.local/state/x/gate-queue.log`: start, load, slot (`gate`, `long`, `none`), wait, run, exit, session (first 8 characters, or `-`), command; each commit, push, long round and wrapped run; rows before FRM-521's turn change have no session column. `x lane rebase-main` and the stack push take no turn and log no row
 - `~/.local/state/x/gate-steps.log`: start, load, source (`commit` a real commit's hook, `push` a real push, `other` the rest, `x lane commit --dry` and `x mods edit test` included), branch or remote ref (`unnamed` on a hand twin), commit, seconds, exit, command; each gate run through `script/index-run.sh`, each twin's whole suite. rows before FRM-521's pr 3 say `commit` for any cc session and a sha for the ref. from 2026-11-07 a whole test or mods step adds user + sys as a ninth column, any other step `-`; a `test:twin` row keeps 8. `~/.local/state/x/test-cpu-budget.log`: start, load, suite, user + sys, budget, exit, git path, then from 2026-11-09 a code key and `clean` or `dirty` (FRM-533's repeat count); one row a whole go run.
-- `~/.local/state/x/test-commit.log`: start, load, branch, mode (`whole`, `related`, `none`, pocket-only commits included), staged paths, commit, seconds, exit, source (as `gate-steps.log`); rows before FRM-521's pr 3 have no source
+- `~/.local/state/x/test-commit.log`: start, load, branch (`detached` for a commit with no branch, from 2026-11-09), mode (`whole`, `related`, `none` pocket-only commits and media-only ones included, `memory`), staged paths, commit, seconds, exit, source (as `gate-steps.log`); rows before FRM-521's pr 3 have no source
 - `~/.local/state/x/mods-test.log`: each mods test run, its skips and timed-out reruns; under `--skip-tested`, each mod that ran says why: `<mod> ran: no record`, `other bytes`, `past its hour` or `a shared path`
 - transcripts: `GATE_SPEED_DIR=<tmp> node docs/test-drive/gate-speed/collect.mjs`, then `analyze.mjs`, `slow-collect.mjs`, `slow-analyze.mjs`: the same scripts as the baseline, so the classes match
 - an empty or missing log reads «unmeasured», never green; a row's load decides whether a slow day is the gate or the machine
@@ -40,7 +40,7 @@ baseline is 2026-10-30 to 2026-11-06, before the fixes, unless the row says othe
 - commit-call minutes per 10 commits, mods lanes: median 10.4, worst 24.6 → median under 7, worst under 15
 - the same, other sessions: median 5.2, worst 11.5 → no worse
 - wall time per 10 commits, mods lanes: median 65 min, 8 of 9 runs at 30+ min → read only: mostly edit and review between commits
-- the commit's test step on `codie/*`: about 13 s whole → median under 5 s, from `test-commit.log`
+- the commit's test step per branch kind (`main`, `codie/*`, `clio-wing-*`, `worktree-*`, other): about 13 s whole → median under 5 s, from `test-commit.log`; on `codie/*` from 11-06, on every kind from 11-09
 - gate step seconds at commit, per gate: unknown → the first baseline, from `gate-steps.log`
 - mods tests at commit: unknown per step → p50 from `gate-steps.log`; the skip share on tested bytes: 21 of the 61 `--skip-tested` runs in `mods-test.log` → all that follow a green overlay within its hour; FRM-521 builds it
 - queue wait, gate slot: 18 to 1,500 s, one evening, 11-06 only → p90 under 120 s, none over 600 s
@@ -66,7 +66,7 @@ baseline is 2026-10-30 to 2026-11-06, before the fixes, unless the row says othe
 
 **the safety rows, a break here kills the trial**
 - reds on main from a commit whose test step was `related`: 0 → 0; `gh run list --branch main --status failure` joined on `test-commit.log`'s commit
-- reds at push on `codie/*`: unknown, the push tested main's HEAD before 11-06 → at most 1 per 10 commits
+- reds at push per branch kind (`main`, `codie/*`, `clio-wing-*`, `worktree-*`, other): unknown, the push tested main's HEAD before 11-06 → at most 1 per 10 commits each; a kind under 10 commits reads «unmeasured»
 - pr ci reds a push let through: `gh run list --event pull_request` → read per lane
 - must-fix findings on a head with green gates: 6 in one round on 11-06 → read only: gates do not catch these, sixth sense does
 - the real repo's config: `git -C ~/frame config --local core.bare` false, no `user.*` key → daily, at the siesta; one breach reopens the fixture guard. a test with its cwd inside the gate copy can still write the shared config: no sighting, left open
@@ -86,7 +86,7 @@ dima explores how to balance the load across clio main and her wings; FRM-521 is
 - `--long` slot — a mutant round during commits — commit wait during it
 - 30 s testTimeout — commits at load over 30 — timeout reds
 - red-proof stopping at its first red — a vitest `--pairs` round — seconds per pair
-- related tests — the first commits on a `codie/*` branch — mode row, seconds, whether its push went red
+- related tests — the first commits on each branch kind (`main`, `codie/*`, `clio-wing-*`, `worktree-*`) — mode row, seconds, whether its push went red
 - the pushed-commit twin — the first lane push from a worktree — the tested commit is the branch's
 
 ## rounds

@@ -10,7 +10,8 @@ import (
 
 func goBuild(tree string) ([]byte, error) {
 	c := exec.Command("go", "build", "./...")
-	c.Dir, c.Env = tree, cleanEnv()
+	// go's default stamping, whatever GOFLAGS the gate that runs this suite sets
+	c.Dir, c.Env = tree, append(cleanEnv(), "GOFLAGS=-buildvcs=auto")
 	return c.CombinedOutput()
 }
 

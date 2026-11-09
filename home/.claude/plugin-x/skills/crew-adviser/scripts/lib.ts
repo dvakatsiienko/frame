@@ -111,21 +111,25 @@ export function clearHot(storePath: string, sessionId: string) {
 
 // crow runs without user plugins, so its contract arrives as the boot prompt, frontmatter cut
 // a /clear drops the boot prompt, so every wake line names the charter a fresh session reads first
-const CHARTER_PATH = join(
+const CHARTER_PATH = join(import.meta.dirname, '../SKILL.md');
+// crow's cwd sits outside frame, so her passport never autoloads: the charter carries it
+const PASSPORT_PATH = join(
     import.meta.dirname,
-    '../home/.claude/plugin-x/skills/crew-adviser/SKILL.md',
+    '../../../../../../_crow/AGENTS.md',
 );
 
 export function readCharter() {
-    return readFileSync(CHARTER_PATH, 'utf8').replace(
+    const skill = readFileSync(CHARTER_PATH, 'utf8').replace(
         /^---\n[\s\S]*?\n---\n+/,
         '',
     );
+    return `${skill}\n\n---\n\n${readFileSync(PASSPORT_PATH, 'utf8')}`;
 }
 
 export function charterHash() {
     return createHash('sha256')
         .update(readFileSync(CHARTER_PATH))
+        .update(readFileSync(PASSPORT_PATH))
         .digest('hex')
         .slice(0, 8);
 }
@@ -413,11 +417,6 @@ export function spawnHarvester(args: string[]) {
         [new URL('harvest.ts', import.meta.url).pathname, ...args],
         { detached: true, stdio: 'ignore' },
     ).unref();
-}
-
-// the harvester finds crow's answer by this prefix; the evidence after it is free text
-export function reconcileMarker(noteId: string) {
-    return `reconcile ${noteId}:`;
 }
 
 export function newestTranscript() {
@@ -1291,16 +1290,13 @@ export function sendLine(socketPath: string, text: string) {
     });
 }
 
-export function appendJsonl(
-    path: string,
-    value: Note | PlanNote | ReconcileNote | Verdict,
-) {
+export function appendJsonl(path: string, value: Note | PlanNote | Verdict) {
     mkdirSync(STATE_DIR, { recursive: true });
     writeFileSync(path, `${JSON.stringify(value)}\n`, { flag: 'a' });
 }
 
 // two harvesters on one wake wrote the same note 2 ms apart (11-03, 11-04), past a read of the file, so a claim file decides
-export function appendNoteOnce(path: string, value: Note | ReconcileNote) {
+export function appendNoteOnce(path: string, value: Note) {
     if (jsonlOf<{ id?: string }>(path).some((row) => row.id === value.id))
         return;
     const claims = `${path}.ids`;
@@ -1832,15 +1828,6 @@ export interface Note {
     mode: Mode;
     phase: Phase;
     note: string;
-    at: string;
-}
-
-export interface ReconcileNote extends Run {
-    id: string;
-    reconciles: string;
-    evidence: string;
-    arm: Arm;
-    channel: 'reconcile';
     at: string;
 }
 

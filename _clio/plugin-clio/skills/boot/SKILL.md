@@ -37,7 +37,7 @@ and the next ticket from it; never re-query what it already printed.
 ## 3. inbox sweep 📬
 - the boot prompt itself, past its slash line, carries his wishes: `node script/prompt-groom.ts <its HH:MM>` rides helga's first chore, so the board plans from groomed lines
 - non-empty → helga preps it first: start or revive **🎀 helga** right after the digest (the start
-  command: `docs/test-drive/helga.md` § the start; a sidecar needs no `x:crew-lead`), send it an
+  command: `_helga/AGENTS.md` § how she starts and stops; a sidecar needs no `x:crew-lead`), send it an
   `inbox-prep` brief (blocking) that names the coordinator as `🦉 clio`, exactly as ListAgents prints it (a session id or the desktop title bounced its receipt, 2026-10-18), and do steps 4–5 while it runs; its receipt lands → read `inbox-helga.md`
   first, then `inbox.md` for the parse. step 8's wishkeeper brief adds the prep: every ask and idea of
   the raw inbox kept in meaning, not only present (the check proves presence alone); wishkeeper is the one meaning check, clio scores nothing
@@ -94,7 +94,7 @@ and habits live in `/clio:flawlog`, which loads alongside this boot.
 **the board prints once, after both reviews are folded** (dima, 2026-10-12: «first gather all
 reviews from wishkeeper and crow, only then print a plan»; the boot is the session's planning step):
 - write the draft board to `~/frame/_clio/.scratch/boot-<YYYY-MM-DD>/board-proposal.md` — the write
-  fires crow's `proposal` decision wake (`_crow/decision.ts`), the whole thread in her packet: she
+  fires crow's `proposal` decision wake (`x:crew-adviser/scripts/decision.ts`), the whole thread in her packet: she
   checks the parse, the plan, and how clio read his prompt
 - in the same step, `wishkeeper` 🐬 in boot mode at `effort: high`, with the raw inbox text, his
   boot prompt and each item's landing spot (pocket id, ticket, or answer): data loss of his drops is

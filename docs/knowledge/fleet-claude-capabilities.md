@@ -172,7 +172,7 @@ since.
   results come back in the next `user` line as `tool_result`. one model response is written as
   several `assistant` lines (one per content block) that share `.message.id` and repeat the same
   `.message.usage` — sum usage once per id, never per line (a per-line sum read ~4× too high,
-  2026-10-08). `x fleet ops` and `_crow/harvest.ts` dedupe this way; `x/go/probe.go` reads
+  2026-10-08). `x fleet ops` and `x:crew-adviser/scripts/harvest.ts` dedupe this way; `x/go/probe.go` reads
   one answer.
 - **cc re-appends old rows to a transcript**, the same `.uuid` twice: 3,980 of 12,823 uuids in clio's
   11-03 file. a whole-day count dedupes by uuid (FRM-494).

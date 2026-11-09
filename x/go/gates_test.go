@@ -12,14 +12,86 @@ import (
 
 const modAgents = modsDir + "m/AGENTS.md"
 
-// the real gate scripts this file reds through, copied so a row reads what the commit hook reads
-var realGateScripts = []string{
-	"script/index-run.sh",
-	"script/retired-names-check.ts",
-	"script/lib/retired-names.ts",
-	"script/lib/test-temp-dir.ts",
-	"script/lib/fleet-hazards-check.ts",
-	"recipes/nurture-memory/scripts/memory-lint.ts",
+// every path outside x/go its tests read, one list the commit hook reads too
+const xGoReadsFile = "script/lib/x-go-reads.txt"
+
+func xGoReads(t *testing.T) []string {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join("../..", xGoReadsFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var paths []string
+	for line := range strings.Lines(string(raw)) {
+		line = strings.TrimSpace(line)
+		if line != "" && !strings.HasPrefix(line, "#") {
+			paths = append(paths, line)
+		}
+	}
+	return paths
+}
+
+// a ../.. read that names no literal path: the shapes known, each keyed by its file so an exemption covers only its own line,
+// and the path each reads ("" reads the whole repo, one level only, or a path off the list itself)
+type outsideReadShape struct{ file, shape string }
+
+var outsideReadShapes = map[outsideReadShape]string{
+	{"gate_turn_test.go", `"../../" + gateQueueScript`}:       gateQueueScript,
+	{"gates_test.go", `readHookGates("../..",`}:               "lefthook.yaml",
+	{"x_go_reads_test.go", `readHookGates("../..",`}:          "lefthook.yaml",
+	{"as_test.go", `filepath.Abs("../..")`}:                   "",
+	{"replaces_test.go", `filepath.Abs("../..")`}:             "",
+	{"gates_test.go", `filepath.Join("../..", xGoReadsFile)`}: xGoReadsFile,
+	{"gates_test.go", `filepath.Join("../..", path)`}:         "",
+}
+
+var outsideLiteral = regexp.MustCompile(`"\.\./\.\./([^"]+)"`)
+
+func TestXGoReadsNamesEveryPathItsTestsRead(t *testing.T) {
+	t.Parallel()
+	listed := xGoReads(t)
+	files, err := filepath.Glob("*_test.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range files {
+		raw, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for n, line := range strings.Split(string(raw), "\n") {
+			if !strings.Contains(line, `"../..`) || strings.Contains(line, "MustCompile") || strings.HasPrefix(strings.TrimSpace(line), `{"`) {
+				continue
+			}
+			var reads []string
+			for _, m := range outsideLiteral.FindAllStringSubmatch(line, -1) {
+				reads = append(reads, m[1])
+			}
+			if len(reads) == 0 {
+				known := false
+				for key, path := range outsideReadShapes {
+					if key.file == file && strings.Contains(line, key.shape) {
+						known = true
+						if path != "" {
+							reads = append(reads, path)
+						}
+					}
+				}
+				if !known {
+					t.Errorf("%s:%d reads outside x/go in a shape the list test cannot name; add it to outsideReadShapes:\n%s", file, n+1, line)
+				}
+			}
+			for _, path := range reads {
+				// a tool binary, a symlink target inside a fixture, a title string: none reads a repo file
+				if strings.HasPrefix(path, "node_modules/") || strings.Contains(line, "os.Symlink(") || strings.Contains(line, `"title":`) {
+					continue
+				}
+				if !slices.Contains(listed, path) {
+					t.Errorf("%s:%d reads %s, missing from %s", file, n+1, path, xGoReadsFile)
+				}
+			}
+		}
+	}
 }
 
 // the hook's shape: tsc with the mods' strict flags, the real retired-names and memory-lint, a commit-only suite
@@ -45,7 +117,8 @@ const realGatesHook = `pre-commit:
 func gateFixture(t *testing.T, hook string) (string, []string) {
 	t.Helper()
 	dir, env := modsFixture(t)
-	for _, path := range realGateScripts {
+	// copied so a row reads what the commit hook reads
+	for _, path := range xGoReads(t) {
 		body, err := os.ReadFile(filepath.Join("../..", path))
 		if err != nil {
 			t.Fatal(err)
@@ -217,15 +290,11 @@ func TestModsEditTestRedsAThrowingHookInATouchedTest(t *testing.T) {
 func modsChain(t *testing.T) (dir string, env []string, tests func() int) {
 	t.Helper()
 	const suite = modsDir + "test.ts"
-	dir, env = gateFixture(t, "pre-commit:\n  commands:\n    mods-test:\n      glob: \""+modsDir+"**\"\n      tags: [commit-only]\n      run: script/index-run.sh node "+suite+" --skip-tested\n")
-	body, err := os.ReadFile(filepath.Join("../..", suite))
-	if err != nil {
-		t.Fatal(err)
+	if !slices.Contains(xGoReads(t), suite) {
+		t.Fatalf("modsChain reads %s, which is off %s", suite, xGoReadsFile)
 	}
-	write(t, filepath.Join(dir, suite), string(body))
+	dir, env = gateFixture(t, "pre-commit:\n  commands:\n    mods-test:\n      glob: \""+modsDir+"**\"\n      tags: [commit-only]\n      run: script/index-run.sh node "+suite+" --skip-tested\n")
 	gitT(t, dir, "checkout", "-q", "-b", "codie/chain")
-	gitT(t, dir, "add", ".")
-	gitT(t, dir, "commit", "-q", "-m", "suite")
 	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\nexec script/index-run.sh node "+suite+" --skip-tested >> \"$CLAUDE_CALLS.out\"\n")
 	calls := filepath.Join(t.TempDir(), "calls")
 	return dir, append(env, "CLAUDE_CALLS="+calls), func() int {

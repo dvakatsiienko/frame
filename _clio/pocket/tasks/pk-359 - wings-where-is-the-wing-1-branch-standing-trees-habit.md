@@ -4,7 +4,7 @@ title: 'wings: where is the wing-1 branch, standing trees habit'
 status: done
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T13:10:00Z'
+updated_date: '2026-11-09T13:29:00Z'
 labels:
   - s
   - clio-wing-1
@@ -40,4 +40,8 @@ note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-
 close: W1 done — the habit stands, every wing takes clio-wing-<N> (4ce50b68); W2 done — the old wing 1 ran in fork-483eb11c, decamped on dima's o8; W3 done — answered in this item's notes
 
 close: PK-359:W1 done, PK-359:W2 done, PK-359:W3 done — as the line above
+
+PK-359:W4 (2026-11-09 15:08, dima): PK-359 is reassigned to wing 1; it is a chore and you are busy. tell it to solve it as one of the first action items. (moved from PK-368:W4)
+
+close: PK-359:W4 done (the routing ran: wing 1 took PK-359 and answered it at 15:12)
 <!-- SECTION:NOTES:END -->

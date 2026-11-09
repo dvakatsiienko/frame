@@ -4,7 +4,7 @@ title: 'fleet comms update: leaner cafe-chat replies, comms recipe run'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T12:44:00Z'
+updated_date: '2026-11-09T13:50:00Z'
 labels:
   - m
   - clio-wing-3
@@ -102,4 +102,20 @@ raw drop (2026-11-09 inbox, dima): and propose a solid fleet and clio comms stee
 raw drop (2026-11-09 inbox, dima): use all tools and all doors - transcripts, duckdb, our telemetry.
 
 PK-364:W19 (2026-11-09 inbox, dima): correction of W2's third point: replies carry more tech detail than i want
+
+PK-364:W20 (2026-11-09 15:28, dima): groom the recipe too: it is fairly new but rarely run, only once since its birth; sync its wants, research vectors and run steps with my fresh request, so the recipe reflects the current picture
+PK-364:W21 (2026-11-09 15:28, dima): the recipe was born when i ran clio single-thread; now we have multi-wing clio, which changes the comms a lot: i have at least four parallel threads to solve stuff, and the recipe has to consider this and optimize my comms for the current setup
+PK-364:W22 (2026-11-09 15:28, dima): don't cut the comms to the floor, or my comms with everyone get too machinic; keep them at least slightly live and human-flavored
+PK-364:W23 (2026-11-09 15:28, dima): comms that steer: fewer technical details, a more advisory nature; instead of informing me about a lot of tech updates, suggest action items, your opinions about changes, and suggestions on how to actually improve the system
+PK-364:W24 (2026-11-09 15:28, dima): ❓ «delete the comms and everything else related to ongoing activities» (wispr, unclear: read as «drop the progress chatter about ongoing activities»)
+PK-364:W25 (2026-11-09 15:28, dima): groom the recipe: make it good, pretty, clean; cut fluff; sync it to the current state of multi-winged clio; my comms steering is based on this recipe, so it must be pristine; then research and proceed with PK-364
+note (wing 3): prompt-groom.ts sees only main's prompt log, so wing 3's 15:28 prompt was folded by hand; a gap for the comms run
+
+PK-364:W26 (2026-11-09 15:40, dima): orbit matters because our comms are built mostly around it; the flaw: --bg threads have no desktop orbit, only the terminal one; i assume they write into orbit and phases, but i don't see it, so i treated it as a wasted part
+PK-364:W27 (2026-11-09 15:40, dima): i want to know how much effort --bg sessions spend on orbit and phases, and what important thing i do not see there
+PK-364:W28 (2026-11-09 15:40, dima): the clunky fix today is glide: a --bg thread's orbit asks show up in glide, a workaround for now
+PK-364:W29 (2026-11-09 15:40, dima): batch the M3 weekly wish-loss audit with this recipe run
+
+PK-364:W30 (2026-11-09 15:49, dima): yes on W24: keep updates very lean, with no technical details, or keep them only when it really matters
+PK-364:W31 (2026-11-09 15:49, dima): think what else we could fold into the recipe update, and what we could miss to hunt, given the current picture, the new winged setup and my wishes; after a final check, approve
 <!-- SECTION:NOTES:END -->

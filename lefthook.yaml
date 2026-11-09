@@ -25,8 +25,13 @@ pre-commit:
     typecheck:
       run: script/index-run.sh pnpm typecheck
     test:
-      # a codie/* branch: only the tests related to the staged code; the whole suite stays at push and on ci
+      # every branch kind (main, codie/*, clio-wing-*, worktree-*, any other; a detached HEAD runs whole): only the tests related to the staged code;
+      # the whole suite stays at push and on ci, and the kill rule's lever is related_kinds in script/test-commit.sh
       run: script/index-run.sh script/test-commit.sh pnpm test
+    x-go-reads:
+      # a staged script x/go's tests read (script/lib/x-go-reads.txt, or anything under script/lib/) runs those tests here,
+      # uncached: go's test cache cannot see a file outside the module, and ci was the first to see it (11-06, FRM-520)
+      run: 'script/index-run.sh sh -c "git diff --cached --name-only --no-renames | awk ''NR == FNR { listed[\$0]; next } \$0 in listed || /^script\/lib\// { hit = 1 } END { exit !hit }'' script/lib/x-go-reads.txt - || exit 0; cd x/go && GIT_CONFIG_GLOBAL=/dev/null GOFLAGS=-buildvcs=false ../../script/test-cpu-budget.sh --log-only x-go go test -count=1 ./..."'
     mods:
       # the mods sit outside vitest and the root tsconfig: their own runner and their engine-written types gate them.
       # a cc bump made fields required and 11 test fixtures went untyped for days before this ran (2026-10-08)
@@ -94,8 +99,9 @@ commit-msg:
   commands:
     commit-msg-lint:
       # the x:cmt format, refused before the commit lands: emoji canon, a domain scope, no closing
-      # keyword beside a ticket id — script/lib/commit-msg-lint.ts holds the rules and why each blocks
-      run: node ./script/commit-msg-lint.ts {1}
+      # keyword beside a ticket id — script/lib/commit-msg-lint.ts holds the rules and why each blocks.
+      # it runs from the commit's index copy: from the working tree, a peer's half-done lint edit blocked every commit (11-09)
+      run: m={1}; case $m in /*) ;; *) m=$PWD/$m ;; esac; script/index-run.sh node ./script/commit-msg-lint.ts "$m"
     lane-gate:
       # a remembered rule fails, a gate does not (FRM-367): a context's contract lands with its glossary or adr,
       # a crew-/guide- skill never only grows, an app's code lands with its FTR.md — each half has a message line
@@ -122,4 +128,5 @@ commit-msg:
       # an agent's commit gets `Agent: <role> · <model>` here, because `attribution.commit: ""`
       # tells every model to write no attribution line — the why: script/commit-agent-trailer.ts.
       # last in the block (commit-msg runs in sequence), and a human commit is left untouched
-      run: node ./script/commit-agent-trailer.ts {1}
+      # from the commit's index copy too, like the lint above; the message path is made absolute before the copy moves the cwd
+      run: m={1}; case $m in /*) ;; *) m=$PWD/$m ;; esac; script/index-run.sh node ./script/commit-agent-trailer.ts "$m"

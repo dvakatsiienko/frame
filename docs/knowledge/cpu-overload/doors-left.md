@@ -21,9 +21,11 @@ Asked 2026-11-07: exa, parallel, an opus source lane, on our own rows. Raw lanes
 2. **Vitest selection at commit.** Whole on 260 of 368 commit rows, `related` on 29, measured; about 26,000 cpu-s in 26 h, inference
    - test: read `script/test-commit.sh`'s reasons against `test-commit.log`, replay a day
    - risk: a missed test reaches main, ci still catches it
-3. **A Linux VM with the checkout on its own disk.** The one door that could change kernel cost per spawn, 60 % of the suite. No primary number exists anywhere
-   - reported: bind mounts about 2.5× slower than the VM's disk (Mainardi, 2025). It adds no cores
-   - test: half a day, Lima is installed, the 2,000-spawn program from `cases.md`, then one suite
+3. **A Linux VM with the checkout on its own disk.** Measured 2026-11-09, FRM-536: a Lima vz VM, 10 cpus, 8 GiB, the whole tree on its disk, two runs a side, mac load 20 to 50
+   - spawn: `git --version` 0.5 ms against 5.2 on the mac, cpu per spawn; Ubuntu's git against slim, unsplit
+   - go suite: 74 to 85 cpu-s against 235 to 242, wall 27 to 29 s against 82 to 89; sys 30 against 147. about 3× less
+   - vitest: 133 cpu-s against 123 to 128, the same 2,102 tests (30 skipped in the VM); wall 20 s against 31 to 37 under load. no cpu win
+   - so the win is go's spawn-heavy suite only. costs: 8 GiB held, a code sync per run, a toolchain kept matched; nothing that needs macOS (Keychain, launchd, 1Password, git-crypt, claude) moves. reported: bind mounts about 2.5× slower than the VM's disk (Mainardi, 2025). It adds no cores
 4. **A remote Linux box.** The cleanest added capacity, the one door that adds cores. Hetzner AX102, 16 cores, from €159 a month, reported, no suite measured there
 5. **The `nostacks` pass at merge.** `pnpm x-go:test` reruns 29 of 57 test files outside the budget row, measured; cost unread. Test: `time sh x/go/nostacks-pass.sh`
 6. **The queue's ad hoc scripts get a budget.** 42 % of run wall in 26 h, measured, FRM-525's own trials included

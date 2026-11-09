@@ -283,6 +283,8 @@ export function homelessWishes(
                 readFileSync(path.join(groomDir, name), 'utf8').match(W_LINE) ??
                 []
             )
+                // an unstamped line is helga's prep note or section id («- W1 has no bold title»), never his W-line
+                .filter((line) => new RegExp(STAMP.source, 'm').test(line))
                 .filter((line) => !isHomed(line))
                 .map(
                     (line) =>
@@ -495,14 +497,18 @@ function helgaUp() {
     );
 }
 
-function startHelga() {
+// helga's cwd sits outside frame with CLAUDE.md loading off, so her passport rides the boot prompt
+export function helgaBootPrompt(frame: string) {
     const skill = readFileSync(
-        path.join(
-            home,
-            'frame/home/.claude/plugin-x/skills/crew-helga/SKILL.md',
-        ),
+        path.join(frame, 'home/.claude/plugin-x/skills/crew-helga/SKILL.md'),
         'utf8',
-    ).replace(/^---\n[\s\S]*?\n---\n/, '');
+    ).replace(/^---\n[\s\S]*?\n---\n+/, '');
+    const passport = readFileSync(path.join(frame, '_helga/AGENTS.md'), 'utf8');
+    return `${skill}\n\n---\n\n${passport}`;
+}
+
+function startHelga() {
+    const skill = helgaBootPrompt(path.join(home, 'frame'));
     const cwd = path.join(home, '.local/state/helga');
     mkdirSync(cwd, { recursive: true });
     const settings = JSON.stringify({

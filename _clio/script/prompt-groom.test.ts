@@ -13,6 +13,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 import {
     dayBefore,
+    helgaBootPrompt,
     liftStanding,
     newUnstamped,
     openStanding,
@@ -23,6 +24,12 @@ import {
     ungroomedStamps,
     unnumberedAsks,
 } from './prompt-groom.ts';
+
+test('helga boots with her skill, then her passport', () => {
+    const prompt = helgaBootPrompt(join(import.meta.dirname, '../..'));
+    expect(prompt.startsWith('you are helga')).toBe(true);
+    expect(prompt).toContain("# helga — clio's editing sidecar");
+});
 
 describe('a no-wish line on a minute with two prompts', () => {
     const day = '## 10:00\n\nfirst wish\n\n## 10:00\n\nsecond wish\n';
@@ -463,6 +470,18 @@ describe('--day', () => {
         expect(
             run({ prompts: '## 10:00\n\n/x:mobile-mode 10min\n\n' }).status,
         ).toBe(0);
+    });
+
+    test('a prep note opening with a W-id is no W-line', () => {
+        const out = run({
+            grooms: {
+                ...groomed(),
+                [`${day}-inbox.groomed.md`]:
+                    '- W1 has no bold title in his file\n',
+            },
+            pocket: { 'a.md': 'W1 ship it' },
+        });
+        expect(out.status).toBe(0);
     });
 
     test('a groomed W-id with no home reds', () => {

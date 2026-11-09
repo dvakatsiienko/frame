@@ -4,96 +4,97 @@ owner: coordinator
 artifacts:
   - docs/knowledge/fleet-operator-comms.md
   - home/.claude/rules/fleet-output-format.md
+  - home/.claude/rules/fleet-voice.md
+  - home/.claude/rules/fleet-mods.md
+  - home/.claude/rules/fleet-flow.md
+  - home/.claude/rules/dima-signals.md
   - home/.claude/output-styles/output-fun.md
   - _clio/memory/habit-dima-comms.md
+  - x:crew-dna
 script: none
-groomed: 2026-10-10 (dima)
+groomed: 2026-11-09 (dima)
 was: [refresh-comms, refresh-fleet-comms]
 ---
 
 # refresh-fleet-operator-comms
 
-keeps the talk between dima and the fleet cheap to read and cheap to steer: what he asks, how the replies land, what costs him turns.
+keeps dima's talk with a many-thread fleet light, human and advisory: every seat speaks one shape, the thread and the board tell one story, and nothing important gets lost to leanness.
 
 born 2026-10-10 from the operator ledger and the reply analysis (pocket PK-50).
 
 ## the want
 
-dima, 2026-10-10: «the recent sweeps that gathered data about our communications were very useful and should be saved in this shape for future runs … the findings are extremely useful. what else could we hunt to improve our communications, and what else interesting could we search for along with this run, because it's wide?»
+dima, 2026-10-10: «after we ran this recipe the first time, i got the most meaningful fleet/me comms upgrade i ever had … the comms chaos almost stopped.»
 
-dima, 2026-10-10: «designed to improve communications between humans and agents.»
-dima, 2026-10-10: «after we run this recipe first time, i get the most meaningful fleet/me comms upgrade i ever had. after the data was scraped, and cclio tweaked the fleet output knobs, the comms chaos almost stopped, let's evolve this recipe even more!»
+dima, 2026-11-09:
+- «with multiple wings, solving speed is multiplied, but i now read 2-3 times more per wing, and reply; i get overloaded by your differently formatted, verbose replies.»
+- «the recipe was born when i ran clio single-thread; now we have multi-wing clio, which changes the comms a lot: i have at least four parallel threads, and the recipe has to optimize my comms for the current setup.»
+- «reply in smaller shapes, with less tech detail; tell me your opinions, interesting insights about our regular work, and suggestions for better decisions.» «don't cut the comms to the floor, or my comms with everyone get too machinic; keep them at least slightly live and human-flavored.»
+- «leaner replies may hide important data. i still want the important bits, delivered in a leaner way. i ask for details when i am interested; detail gradually as i ask.» «keep updates very lean, with no technical details, or keep them only when it really matters.»
+- «our comms are built mostly around orbit»; --bg threads have no desktop orbit, so «what important thing do i not see there?» «the whole fleet follows the same comms model, so each comms fix is multiplied per thread.» «my comms steering is based on this recipe, so it must be pristine.»
 
 ## the run
 
-- the research lands before the scrape: its findings add or sharpen the scrape's hunts for this run
-- dima's own trackers (🔭, the stat boards, the 📄 stamp) are info he reads, never cut as noise (dima, 2026-10-10)
-- cheap by default (dima, 2026-10-10: «the scrape is big and expensive, how to optimize it»; the first run cost ~830k sonnet tokens of labelling and ~350k opus of reading):
-  - the extract and every number are `jq` + `duckdb`, free; a model only labels or reads
-  - incremental: only prompts since the last run get labelled; labels persist in `~/.local/state/refresh-fleet-operator-comms/labels.parquet`, never re-bought
-  - free labels first: bare approvals, slash commands and status words by pattern; the model labels the rest from the first 330 characters
-  - the model labels only pushback and the gap (4–7 values, where agreement holds); the 9 kinds come from patterns where mechanical (approve, command, status); the cheapest model that agrees 85 % with the gold set does it (run 1: sonnet, 91 % and 89 %; haiku failed), jev when its credit is back
-  - the reply read samples 100 pairs, opus only there
+- thread and board are one comms surface: orbit, phases and glide are read with the replies, every run
+- every seat's transcript is read — main, each wing, members, `--bg` sessions; clio's prompt log holds main's prompts only
+- dima's trackers (🔭, the stat boards, the 📄 stamp) are info he reads, never cut as noise (dima, 2026-10-10)
+- cheap by default: `jq` + `duckdb` count, a model only labels or reads; labels persist in `~/.local/state/refresh-fleet-operator-comms/labels.parquet` and are never re-bought; the cheapest model that agrees 85 % with the gold set labels (run 1: sonnet; haiku failed)
+- suggest a run when: a new seat kind joins the fleet (a wing, cap, tilde) or a month passes since the last line of `log.md`
 
-1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the vectors. (open)
-2. research fan-out: one brief quoting the want and the research vectors, through `pnpm research:lanes <brief>` (exa + parallel) and one `researcher` lane on sources + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper. done: every lane landed or failed out loud. (script)
-3. sharpen the hunts: each research finding that names something measurable becomes a scrape hunt for this run, or is named «not measurable here». done: the hunt list for this run is written in `last/`. (open)
-4. scrape: `scripts/prompts-extract.sh` and `scripts/replies-extract.sh` over the transcripts since the last run, then labelling lanes (sonnet over his prompts, opus over reply → reaction pairs). done: the numbers and the labels sit in `last/`. (script)
-   - the judge sees the 3 turns before each prompt, never the prompt alone: a correction or a re-ask reads as a steer without its context
-   - labels use the SWE-chat pushback kinds (correction, rejection, failure report) beside ours, so rates compare with published ones, and tag the communication challenge a prompt shows (what can the agent do, what is it doing, did it land, which past decision applies)
-   - the gold set in the label store (`gold-<date>.csv`, the disputed prompts labelled by clio from context) grows by each run's new disputes: a labelling lane counts only at 85 % agreement or more
-   - the relational numbers come from `duckdb`, no model: ask → answer latency, unanswered asks, the repair span after a correction, turns per decision, a new agent message before his reply
-5. distill into `docs/knowledge/fleet-operator-comms.md` (the ledger, its trend against the last run) and propose the rule, style and habit lines the run showed wrong; a rule changes only on his word. done: every artifact read and touched or named «unchanged». (open)
-6. findings print, the shared parts plus this recipe's checklist. done: printed. (template)
-7. log today's line in `log.md`. done: the line is there. (open)
+1. **groom**: `clio:shape-recipe` step 0. done: his word on the want, the vectors and the steps. (open)
+2. **research**: `clio:shape-recipe` step 1, plus a `neuroarxiv` lane every run (dima, 2026-10-21), one `helper-lite` per paper. done: every lane landed or failed out loud. (script)
+3. **sharpen the hunts**: each research finding that names something measurable becomes a hunt for this run, or is named «not measurable here». done: the hunt list is in `last/`. (open)
+4. **scrape**: `scripts/prompts-extract.sh` and `scripts/replies-extract.sh` over every seat since the last run, plus the orbit, phases and glide stores, then the labelling lanes. done: the numbers and the labels sit in `last/`. (script)
+   - the judge sees the 3 turns before each prompt, never the prompt alone
+   - pushback uses the SWE-chat kinds (correction, rejection, failure report) beside ours, so rates compare with published ones; the gold set (`gold-<date>.csv` in the label store) grows by each run's disputes
+5. **distill**: one lean comms steer — a handful of proposed lines across the artifacts, each with its why; the numbers merge into the ledger, a side file he never has to read; a rule changes only on his word. done: every artifact read and touched or named «unchanged». (open)
+6. **print**: cafe-chat, the findings shape below. done: printed. (template)
+7. **log** today's line in `log.md`. done: the line is there. (open)
 
 ## vectors
 
 ### research
 
-1. how to improve communication between a human operator and a fleet of coding agents: reading load, reply length, batching asks, decision fatigue, approval queues — what is proven, by whom
-2. how practitioners and vendors measure the quality of human ↔ agent communication from transcripts: metrics, taxonomies, the signals that a reply failed, and how to check an LLM judge on a small gold set
-3. prior art: fleet views and verdict UIs a Claude Code mod can borrow (side panes, ask queues, inboxes, status bars) from Claude Code, Cursor, Devin, Factory, Conductor and others
-4. a non-native English operator who dictates by voice: plain-language and readability practice that cuts load without losing precision
-5. interruption and async research: when an agent should interrupt a human, how to batch, what a good digest holds
-6. how an agent should ask: defaults, structured choices, when not to ask at all
+1. one operator, many parallel agents: the reading load, digests, when an agent speaks and when it stays quiet
+2. the advisory register: agents that advise instead of report, lean but warm, plain language for a non-native operator who dictates
+3. asks outside the chat: side panels, ask queues, inboxes, and how they stay in sync with the thread
+4. measuring comms from transcripts: pushback kinds, the signals a reply failed, checking an LLM judge on a small gold set
 
 ### analysis
 
-- **his prompts**: kinds, domains, corrections, frustration, re-asks; the meta vs product share by week
-- **my replies**: length, asks per reply, add-ons, and what his next prompt did with each part
-- **asks that never landed**: he asked, nothing answered or shipped
-- **turns per decision**: messages one verdict costs, the bare approvals among them
-- **fatigue against the hour**: when corrections spike
-- **wispr misses**: misheard words not yet in the dictionary
-- **repeated asks and repeated agent commands**: the same shape asked or run by hand again, each an `x` verb or a raycast candidate
-- **his felt-sense catches**: a story or a hazard line waiting to be written
-- **pushback by published kind**: correction, rejection, failure report, comparable with the SWE-chat rates
-- **status lines vs his status-check prompts**: do the trackers answer «are bg agents ok?» before he asks
-- **re-asks against recorded decisions**: a re-ask matched to the pocket's decisions and memory, so the decision log gets consulted
-- **member reports that reach him**: the length of codie and sixth sense reports in his thread (an output style never reaches them)
+- **thread ↔ board drift**: an ask only in orbit, a grill only on the board, a reply and its ask telling different things
+- **overload per seat**: what he reads per hour across main, the wings and the members; shapes that differ by seat
+- **advice vs report**: the share of replies carrying an opinion, an insight or a proposal against pure status
+- **his complaints and wishes**: what he complained about or asked for, and whether it got solved
+- **--bg on the board**: orbit and phases writes he never sees, asks answered only through glide or never
+- **what the mods cost**: tokens and chore calls for orbit, phases and glide, per seat
+- **relayed words**: a seat acting on his word relayed by another seat, and one piece of news reaching him from two seats
+- **the comms guards**: what the reply check, crow and `wish-cover.ts` catch, and what still reaches him; a repeat catch becomes a guard
+- **pushback by kind**: its trend since the last run; **silent turns**: a long turn with no word in the thread
 
 ### cut
 
-- skill misses (dima, 2026-10-10): the skill-router vet already counts them
+- skill misses (dima, 2026-10-10): the skill-router vet already counts them; wispr misses, repeated commands as verbs, fatigue by hour, felt-sense catches, re-asks against decisions (dima, 2026-11-09): other doors cover them, or they no longer move the comms
 
 ## artifacts
 
-- `docs/knowledge/fleet-operator-comms.md` — the ledger: the numbers, their trend run over run, the open levers; the distill merges, never appends a second copy
-- `home/.claude/rules/fleet-output-format.md` — the reply shape; the run proposes line changes, dima approves
-- `home/.claude/output-styles/output-fun.md` — the voice; same, his word only
-- `_clio/memory/habit-dima-comms.md` — clio's pacing habits; proposals announced, edited on his word
+- `docs/knowledge/fleet-operator-comms.md` — the ledger: the numbers and their trend run over run; the distill merges, never appends a second copy
+- `home/.claude/rules/fleet-output-format.md` — the reply shape; the steer proposes lines, dima approves
+- `home/.claude/rules/fleet-voice.md` — the tone, the human flavour; same, his word only
+- `home/.claude/rules/fleet-mods.md` — how orbit, phases and glide carry asks and plans; same
+- `home/.claude/rules/fleet-flow.md` — who talks to whom, and how a member's word reaches him; same
+- `home/.claude/rules/dima-signals.md` — how his own messages are read (markers, dictation); same
+- `home/.claude/output-styles/output-fun.md` — the voice; same
+- `_clio/memory/habit-dima-comms.md` — clio's pacing and reply habits; proposals announced, edited on his word
+- `x:crew-dna` — how every member talks; the steer's member lines land here, so a fix reaches every lane
 
 ## findings
 
-the print is a report, never a bare list (dima, 2026-10-10): the research results, the facts he would find interesting, what was off in our previous shape and why, and what the new findings let us improve.
+the print is cafe-chat (dima, 2026-11-09): the insight first («the fleet got faster at X by 7 % median»), the proposal («faster still if we did Y»), the why in a clause; numbers only when one decides; details when he asks.
 
-this recipe's print adds:
-- the ledger delta: each number against the last run, the direction named
-- the hunts the research added this run, and what each found
+this recipe's print adds the steer, at most a handful of lines each with its why, and what moved since the last run, in words.
 
 checklist, re-checked every run:
-- median reply length and asks per reply against the budget in `fleet-output-format.md`
-- bare approvals, questions and re-asks as a share of his prompts
-- the meta vs product share of the last two weeks
+- reply length and asks per reply, per seat, against `fleet-output-format.md`
+- the advice vs report share, thread ↔ board drift and unanswered `--bg` asks, counted
 - every lever from the last run: landed, moved, or still open

@@ -4,10 +4,10 @@ title: 'first at boot: prove quiet comms live, and tilde blockers next'
 status: open
 assignee: []
 created_date: '2026-11-05T22:01:00Z'
-updated_date: '2026-11-09T12:36:00Z'
+updated_date: '2026-11-09T14:01:00Z'
 labels:
   - s
-  - clio-main
+  - clio-wing-2
 dependencies: []
 priority: next
 type: task
@@ -127,4 +127,6 @@ handed over 17:47 to main. read so far by wing 2, 11-07: `quiet-log:2026-11-07` 
 2026-11-07 18:00 wing 2: W446's stamp back to its minute; the o34 restamp was mine, a slip.
 
 kept: 2026-11-09 — a CST first-act, today's read of 11-07's quiet log, then closed
+
+2026-11-09 15:58 clio: re-measured on dima's o16 tick — quiet comms holds for member pings (11-07: 63 held, 63 flushed, every push carries a reason); the leak is the app's session-done notices, 55 turns on 11-07, 45 % bare, a rider on FRM-501; the read: scratchpad quiet-read.md. its close waits on the ask-guard over its 50 W-lines
 <!-- SECTION:NOTES:END -->

@@ -1,0 +1,17 @@
+# every path outside x/go that an x/go test reads; the commit hook runs x/go's tests when one is staged
+lefthook.yaml
+home/.claude/plugin-x/mods/plugin-test-timeout.sample.txt
+home/.claude/plugin-x/mods/plugin-test.sample.txt
+home/.claude/plugin-x/mods/test.ts
+home/.config/zsh-custom/x-trace.zsh
+recipes/nurture-memory/scripts/memory-lint.ts
+script/gate-queue.sh
+script/index-run.sh
+script/lib/fleet-hazards-check.ts
+script/lib/handoff-names.json
+script/lib/retired-names.ts
+script/lib/test-temp-dir.ts
+script/lib/x-go-reads.txt
+script/retired-names-check.ts
+script/test-cpu-budget.sh
+script/test-drive-list.ts

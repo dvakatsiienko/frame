@@ -37,7 +37,7 @@ function fixture(files: Record<string, string> = { 'old.ts': 'old\n' }) {
     // a stub on PATH: the suite is never really run
     writeFileSync(
         join(bin, 'pnpm'),
-        `#!/bin/sh\nIFS='|'; printf '%s\\n' "$*" >>"${dir}/calls"\nexit "\${STUB_EXIT:-0}"\n`,
+        `#!/bin/sh\nIFS='|'; printf '%s\\n' "$*" >>"${dir}/calls"\n[ -z "\${STUB_OUT:-}" ] || echo "$STUB_OUT"\nexit "\${STUB_EXIT:-0}"\n`,
     );
     chmodSync(join(bin, 'pnpm'), 0o755);
     return { bin, dir, git, repo };
@@ -53,8 +53,9 @@ function runGate(
     branch: string,
     stubExit = '0',
     extra: NodeJS.ProcessEnv = {},
+    gateDir = dirname(script),
 ) {
-    const got = spawnSync(script, ['pnpm', 'test'], {
+    const got = spawnSync(join(gateDir, 'test-commit.sh'), ['pnpm', 'test'], {
         cwd: repo,
         encoding: 'utf8',
         env: {
@@ -68,9 +69,12 @@ function runGate(
     });
     const callsFile = join(dir, 'calls');
     const calls = existsSync(callsFile) ? readFileSync(callsFile, 'utf8') : '';
-    const row = readFileSync(join(dir, 'state/test-commit.log'), 'utf8')
-        .trimEnd()
-        .split('\t');
+    const row = (
+        readFileSync(join(dir, 'state/test-commit.log'), 'utf8')
+            .trimEnd()
+            .split('\n')
+            .at(-1) ?? ''
+    ).split('\t');
     return {
         calls: calls.trimEnd(),
         fields: row.slice(2),
@@ -86,30 +90,74 @@ function staged(files: Record<string, string>, base?: Record<string, string>) {
     return context;
 }
 
+const branchKinds = [
+    'main',
+    'clio-wing-1',
+    'worktree-fork-x',
+    'codie/FRM-1-x',
+    'scratch/x',
+];
+
 describe('test-commit', () => {
-    test.each(['main', 'worktree-fork-1', ''])(
-        'branch «%s» runs the whole suite',
+    test.each(branchKinds)(
+        'on «%s» staged code runs only the tests related to it',
         (branch) => {
-            const got = runGate(staged({ 'a.ts': 'a\n' }), branch);
-            expect(got.calls).toBe('test');
-            expect(got.fields.slice(1, 3)).toEqual(['whole', '0']);
+            const got = runGate(
+                staged({ 'a b.ts': 'a\n', 'c.tsx': 'c\n', 'e.png': 'e\n' }),
+                branch,
+            );
+            expect(got.calls).toBe(
+                'exec|vitest|related|--run|--passWithNoTests|a b.ts|c.tsx',
+            );
+            expect(got.fields.slice(0, 3)).toEqual([branch, 'related', '3']);
         },
     );
 
-    test('a codie branch runs only the tests related to its staged code', () => {
-        const got = runGate(
-            staged({ 'a b.ts': 'a\n', 'c.tsx': 'c\n', 'd.md': 'd\n' }),
-            'codie/FRM-1-x',
-        );
-        expect(got.calls).toBe(
-            'exec|vitest|related|--run|--passWithNoTests|a b.ts|c.tsx',
-        );
-        expect(got.fields.slice(0, 3)).toEqual([
-            'codie/FRM-1-x',
-            'related',
-            '3',
-        ]);
+    test('a detached HEAD logs its kind as detached', () => {
+        const got = runGate(staged({ 'a.ts': 'a\n' }), '');
+        expect(got.calls).toBe('test');
+        expect(got.fields.slice(0, 3)).toEqual(['detached', 'whole', '1']);
     });
+
+    test('staged code no test imports runs the whole suite', () => {
+        const got = runGate(staged({ 'script/a.ts': 'a\n' }), 'main', '0', {
+            STUB_OUT: 'No affected test files found, exiting with code 0',
+        });
+        expect(got.calls).toBe(
+            'exec|vitest|related|--run|--passWithNoTests|script/a.ts\ntest',
+        );
+        expect(got.fields.slice(1, 3)).toEqual(['whole', '1']);
+    });
+
+    test('a kind taken off the branch-kind list runs the whole suite', () => {
+        const context = staged({ 'a.ts': 'a\n' });
+        const copy = join(context.dir, 'gate');
+        mkdirSync(join(copy, 'lib'), { recursive: true });
+        const body = readFileSync(script, 'utf8');
+        const lever = body.replace(/^(related_kinds=.*) codie /m, '$1 ');
+        expect(lever).not.toBe(body);
+        writeFileSync(join(copy, 'test-commit.sh'), lever, { mode: 0o755 });
+        writeFileSync(
+            join(copy, 'lib/memory-only.sh'),
+            readFileSync(join(dirname(script), 'lib/memory-only.sh')),
+        );
+        expect(runGate(context, 'codie/FRM-1-x', '0', {}, copy).calls).toBe(
+            'test',
+        );
+        expect(runGate(context, 'main', '0', {}, copy).fields[1]).toBe(
+            'related',
+        );
+    });
+
+    test.each(['e.png', 'f.svg', 'g/h.jpg', 'i.gif', 'j.webp'])(
+        'a staged set wholly on the no-test list runs nothing: %s',
+        (path) => {
+            const got = runGate(staged({ [path]: 'x\n' }), 'main');
+            expect(got.calls).toBe('');
+            expect(got.status).toBe(0);
+            expect(got.fields.slice(1, 2)).toEqual(['none']);
+        },
+    );
 
     test.each([
         [{ INDEX_RUN_SOURCE: 'commit' }, 'commit'],
@@ -121,19 +169,31 @@ describe('test-commit', () => {
         expect(got.fields.at(-1)).toBe(source);
     });
 
-    test('a codie commit with no code staged runs nothing and logs it', () => {
-        const got = runGate(staged({ 'd.md': 'd\n' }), 'codie/FRM-1-x');
-        expect(got.calls).toBe('');
-        expect(got.status).toBe(0);
-        expect(got.fields.slice(1, 2)).toEqual(['none']);
-    });
+    test.each([
+        'd.md',
+        'x/go/a.go',
+        'script/a.sh',
+        'script/lib/a.sh',
+        'data.json',
+        'rows.tsv',
+    ])(
+        'a staged path off the no-test list runs the whole suite: %s',
+        (path) => {
+            const got = runGate(
+                staged({ [path]: 'x\n', 'a.ts': 'a\n' }),
+                'main',
+            );
+            expect(got.calls).toBe('test');
+            expect(got.fields.slice(1, 2)).toEqual(['whole']);
+        },
+    );
 
     describe('a memory-only commit', () => {
         const memory = '_clio/memory/habit-x.md';
         const skill = 'home/.claude/plugin-x/skills/a/SKILL.md';
         const manifest = '_clio/plugin-clio/.claude-plugin/plugin.json';
 
-        test.each(['main', 'codie/x'])(
+        test.each(['main', 'clio-wing-1'])(
             'runs only the tests that read memory on «%s»',
             (branch) => {
                 const got = runGate(
@@ -159,12 +219,12 @@ describe('test-commit', () => {
             expect(got.calls).toBe('test');
         });
 
-        test('a script under skills runs the whole suite', () => {
+        test('a script under skills is code, never memory', () => {
             const got = runGate(
                 staged({ 'home/.claude/plugin-x/skills/a/run.ts': 'a\n' }),
                 'main',
             );
-            expect(got.calls).toBe('test');
+            expect(got.fields.slice(1, 2)).toEqual(['related']);
         });
 
         test('a red in the memory tests reds the commit', () => {
@@ -177,17 +237,20 @@ describe('test-commit', () => {
         const pocket = '_clio/pocket/tasks/pk-1.md';
         const moved = '_clio/pocket/archive/pk-1.md';
 
-        test.each(['main', 'codie/FRM-1-x', 'worktree-fork-1', ''])(
-            'on branch «%s» runs no suite',
-            (branch) => {
-                const got = runGate(staged({ [pocket]: 'a\n' }), branch);
-                expect(got.calls).toBe('');
-                expect(got.status).toBe(0);
-                expect(got.fields.slice(1, 3)).toEqual(['none', '1']);
-            },
-        );
+        test.each([
+            'main',
+            'clio-wing-1',
+            'codie/FRM-1-x',
+            'worktree-fork-1',
+            '',
+        ])('on branch «%s» runs no suite', (branch) => {
+            const got = runGate(staged({ [pocket]: 'a\n' }), branch);
+            expect(got.calls).toBe('');
+            expect(got.status).toBe(0);
+            expect(got.fields.slice(1, 3)).toEqual(['none', '1']);
+        });
 
-        test.each(['main', 'codie/FRM-1-x'])(
+        test.each(['main', 'clio-wing-1'])(
             'a rename with both ends in the pocket runs no suite on «%s»',
             (branch) => {
                 const context = fixture({ [pocket]: 'a body long enough\n' });
@@ -200,21 +263,14 @@ describe('test-commit', () => {
             },
         );
 
-        test('one path outside runs the whole suite on main', () => {
+        test('a pocket path beside code adds no test', () => {
             const got = runGate(
                 staged({ [pocket]: 'a\n', 'a.ts': 'a\n' }),
                 'main',
             );
-            expect(got.calls).toBe('test');
-            expect(got.fields.slice(1, 2)).toEqual(['whole']);
-        });
-
-        test('one path outside runs the related tests on a codie branch', () => {
-            const got = runGate(
-                staged({ [pocket]: 'a\n', 'a.ts': 'a\n' }),
-                'codie/FRM-1-x',
+            expect(got.calls).toBe(
+                'exec|vitest|related|--run|--passWithNoTests|a.ts',
             );
-            expect(got.fields.slice(1, 2)).toEqual(['related']);
         });
 
         test.each([
@@ -239,14 +295,14 @@ describe('test-commit', () => {
 
     test('a failed read of the staged paths runs the whole suite', () => {
         const context = staged({ 'a.ts': 'a\n' });
-        const got = runGate(context, 'codie/FRM-1-x', '0', {
+        const got = runGate(context, 'main', '0', {
             GIT_DIR: join(context.dir, 'missing'),
         });
         expect(got.calls).toBe('test');
     });
 
     test('a non-ascii path reaches vitest whole', () => {
-        const got = runGate(staged({ 'é.ts': 'a\n' }), 'codie/FRM-1-x');
+        const got = runGate(staged({ 'é.ts': 'a\n' }), 'main');
         expect(got.calls).toContain('|é.ts');
     });
 
@@ -254,30 +310,32 @@ describe('test-commit', () => {
         const context = fixture();
         rmSync(join(context.repo, 'old.ts'));
         context.git('add', '-A');
-        expect(runGate(context, 'codie/FRM-1-x').calls).toBe('test');
+        expect(runGate(context, 'main').calls).toBe('test');
     });
 
     test('a renamed file runs the whole suite', () => {
         const context = fixture();
         context.git('mv', 'old.ts', 'new.ts');
-        expect(runGate(context, 'codie/FRM-1-x').calls).toBe('test');
+        expect(runGate(context, 'main').calls).toBe('test');
     });
 
     test.each([
         'package.json',
         'pnpm-lock.yaml',
+        'pnpm-workspace.yaml',
         'vitest.config.ts',
         'tsconfig.json',
+        'tsconfig.base.json',
         'lefthook.yaml',
         'script/lib/test-temp-dir.ts',
     ])('%s runs the whole suite', (path) => {
-        const got = runGate(staged({ [path]: 'x\n' }), 'codie/FRM-1-x');
+        const got = runGate(staged({ [path]: 'x\n' }), 'main');
         expect(got.calls).toBe('test');
     });
 
     test.each([
         ['main', {}],
-        ['codie/FRM-1-x', {}],
+        ['clio-wing-1', {}],
     ])('on %s a red hands back its exit and logs it', (branch) => {
         const got = runGate(staged({ 'a.ts': 'a\n' }), branch, '3');
         expect(got.status).toBe(3);

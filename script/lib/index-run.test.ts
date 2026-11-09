@@ -245,12 +245,13 @@ test.each([
 );
 
 test.each([
-    ['a whole test step logs its cpu', 'main', /^\d+\.\d$/],
-    ['a related test step logs a dash', 'codie/FRM-1-x', /^-$/],
-])('%s', (_name, branch, want) => {
+    // staged code on main runs related; a detached HEAD runs the whole suite
+    ['a whole test step logs its cpu', ['--detach'], /^\d+\.\d$/],
+    ['a related test step logs a dash', ['-C', 'main'], /^-$/],
+])('%s', (_name, switchArgs, want) => {
     const { gate, repo } = peerStaged();
     const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
-    execFileSync('git', ['switch', '-q', '-C', branch], {
+    execFileSync('git', ['switch', '-q', ...switchArgs], {
         cwd: repo,
         env: gitEnv(),
     });
