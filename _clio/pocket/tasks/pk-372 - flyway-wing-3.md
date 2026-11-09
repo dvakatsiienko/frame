@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T17:15:00Z'
+updated_date: '2026-11-09T17:22:00Z'
 labels:
   - s
   - clio-wing-3
@@ -33,4 +33,6 @@ ordinal: 18999
 
 <!-- SECTION:NOTES:BEGIN -->
 18:5x FRM-550 → main clio on dima's o29 steer «reassign to main clio»; handover: wing 3 tree .scratch/frm-550/grill-2-proposal.md, frame .scratch/decided-picks/spec.md (parked), cut ask o30 open
+
+19:2x #10 FRM-550 was moved, not built: it is main's (dima o29), ticked only to leave this flyway; #11 skills landed 14ad7514, the fix round after wishkeeper's 19:21 card follows
 <!-- SECTION:NOTES:END -->
