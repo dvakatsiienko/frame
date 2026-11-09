@@ -38,4 +38,6 @@ PK-368:W7 (2026-11-09 15:08, dima): i've read both skills for crow and helga. th
 PK-368:W8 (2026-11-09 15:08, dima): steamac disk, 256 → 192 gb: reassign this topic to wing 2. your channel is busy and i have clarification questions.
 
 PK-368:W9 (2026-11-09 15:08, dima): i prefer «owner» or something similar; i want the label to sound action-flavoured: who does this, who owns this. propose more top7; owner is still somewhat blurry, it should be connected to you somehow.
+
+PK-368:W10 (2026-11-09 15:08, dima): correction of W7: «in sky» was wispr for «in skill», the skill folders
 <!-- SECTION:NOTES:END -->
