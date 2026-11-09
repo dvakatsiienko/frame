@@ -4,11 +4,14 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import {
     existsSync,
     globSync,
+    mkdtempSync,
     readFileSync,
     readdirSync,
+    rmSync,
     statSync,
+    writeFileSync,
 } from 'node:fs';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { TICKET_LINE } from './pocket-check.ts';
@@ -180,34 +183,57 @@ export function weekDrafts(roots: string[], now = Date.now()) {
         .sort();
 }
 
-// the homes a draft's `wish:` line names, `none` for a draft no wish stands behind, undefined for no line
-export function draftHomes(text: string) {
-    const line = text
-        .split('\n')
-        .slice(0, 12)
-        .find((l) => l.startsWith('wish:'));
-    if (line === undefined) return undefined;
-    const value = line.slice('wish:'.length).trim();
-    if (value.startsWith('none')) return 'none' as const;
-    return [...new Set(value.match(/\b(?:PK|FRM|BYT)-\d+\b/g) ?? [])];
+const WISH_ID_LINE = /^wish: *\[?((?:PK|FRM|BYT)-\d+)/i;
+
+// each home a draft's wish lines name, with its section, read the way wish-cover-on-write.sh reads it: the lines above
+// the first wish line join its section, an id beside another on one line gets the whole draft; `none` only while no id
+// line exists anywhere and a `wish: none` sits in the first 10 lines; undefined for neither
+export function draftSections(text: string) {
+    const lines = text.split('\n');
+    const idLines = lines.filter((line) => WISH_ID_LINE.test(line));
+    if (idLines.length === 0) {
+        return lines.slice(0, 10).some((line) => /^wish: *none/i.test(line))
+            ? ('none' as const)
+            : undefined;
+    }
+    const sections = new Map<string, string>();
+    let current = '';
+    let pre = '';
+    for (const line of lines) {
+        current = WISH_ID_LINE.exec(line)?.[1]?.toUpperCase() ?? current;
+        if (!current) {
+            pre += `${line}\n`;
+            continue;
+        }
+        sections.set(current, `${sections.get(current) ?? pre}${line}\n`);
+    }
+    for (const id of idLines.flatMap(
+        (line) => line.toUpperCase().match(/\b(?:PK|FRM|BYT)-\d+\b/g) ?? [],
+    ))
+        if (!sections.has(id)) sections.set(id, text);
+    return sections;
 }
 
 function auditWeek() {
     const home = homedir();
     const roots = [path.join(home, 'frame'), path.join(home, 'projects/bytes')];
+    const scratch = mkdtempSync(path.join(tmpdir(), 'wish-audit-'));
     const rows = weekDrafts(roots).flatMap((file) => {
-        const homes = draftHomes(readFileSync(file, 'utf8'));
-        if (homes === undefined) return [[file, '-', 'no wish line']];
-        if (homes === 'none') return [[file, 'none', 'wish: none']];
-        return homes.map((id) => {
+        const sections = draftSections(readFileSync(file, 'utf8'));
+        if (sections === undefined) return [[file, '-', 'no wish line']];
+        if (sections === 'none') return [[file, 'none', 'wish: none']];
+        return [...sections].map(([id, section], i) => {
+            const draft = path.join(scratch, `${i}-${id}.md`);
+            writeFileSync(draft, section);
             const run = spawnSync(
                 process.execPath,
-                [import.meta.filename, id, file],
+                [import.meta.filename, id, draft],
                 { encoding: 'utf8', timeout: 60_000 },
             );
             return [file, id, run.status === 0 ? 'green' : 'red'];
         });
     });
+    rmSync(scratch, { recursive: true });
     for (const row of rows) console.log(row.join('\t'));
     const red = rows.filter((row) => row[2] === 'red').length;
     console.log(
