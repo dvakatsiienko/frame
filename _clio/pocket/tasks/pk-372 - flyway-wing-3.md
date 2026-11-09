@@ -4,7 +4,7 @@ title: 'flyway: wing 3'
 status: open
 assignee: []
 created_date: '2026-11-09T12:39:00Z'
-updated_date: '2026-11-09T17:26:00Z'
+updated_date: '2026-11-09T17:27:00Z'
 labels:
   - s
   - clio-wing-3
@@ -37,4 +37,6 @@ ordinal: 18999
 19:2x #10 FRM-550 was moved, not built: it is main's (dima o29), ticked only to leave this flyway; #11 skills landed 14ad7514, the fix round after wishkeeper's 19:21 card follows
 
 19:26 #4 FRM-509 read done: not closable, one step named in its comment (verify-<sha> tree + merged worktree-* branch); ⏰ due 11-12
+
+19:28 #11 correction: wisphunter read the first drafts; hc keys and tsc probed by me; the 19:13 rewrite was read by wishkeeper (two siestas), not re-run against the clis
 <!-- SECTION:NOTES:END -->
