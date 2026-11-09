@@ -351,6 +351,12 @@ describe('checkPocket', () => {
             false,
         ],
         ['a later with no tail', '- [ ] #1 💤 helga grill', true],
+        [
+            'a dated with its date',
+            '- [ ] #1 📅 crow read — on: 2026-11-14',
+            false,
+        ],
+        ['a dated with no date', '- [ ] #1 📅 crow read, next week', true],
     ])('%s', (_, line, isRed) => {
         expect(flyway({}, line).includes(' ends «')).toBe(isRed);
     });
@@ -365,6 +371,26 @@ describe('checkPocket', () => {
         [
             'a wait under a later',
             ['💤 b — later: dima 1', '⏳ a — waits for: x'],
+            true,
+        ],
+        [
+            'dated by date',
+            [
+                '⏳ a — waits for: x',
+                '📅 b — on: 2026-11-11',
+                '📅 c — on: 2026-11-14',
+                '💤 d — later: dima 1',
+            ],
+            false,
+        ],
+        [
+            'dated out of date order',
+            ['📅 c — on: 2026-11-14', '📅 b — on: 2026-11-11'],
+            true,
+        ],
+        [
+            'a dated above a wait',
+            ['📅 b — on: 2026-11-11', '⏳ a — waits for: x'],
             true,
         ],
     ])('lines in the order %s', (_, lines, isRed) => {

@@ -5,12 +5,14 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
 const pocket = path.resolve(import.meta.dirname, '..');
-const kinds = ['open', 'waits', 'later'] as const;
+const kinds = ['open', 'waits', 'dated', 'later'] as const;
+const DATED_ON = / — on: (\d{4}-\d{2}-\d{2})\b/;
 const usage =
     "usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' | <PK-N> --sort";
 
 export function flywayKind(text: string): (typeof kinds)[number] {
     if (text.startsWith('💤')) return 'later';
+    if (text.startsWith('📅')) return 'dated';
     if (text.startsWith('⏳')) return 'waits';
     return 'open';
 }
@@ -25,12 +27,22 @@ export function flywayLines(text: string): FlywayLine[] {
     );
 }
 
-// a stable sort: open lines keep their own order, then waits, then later
+// the date a 📅 line waits for, empty when it names none
+export function flywayDate(text: string): string {
+    return text.match(DATED_ON)?.[1] ?? '';
+}
+
+// a stable sort: open lines keep their own order, then waits, then dated by date, then later
 export function flywaySorted(lines: string[]): string[] {
     const rank = (line: string) => kinds.indexOf(flywayKind(line));
     return lines
         .map((line, index) => ({ index, line }))
-        .sort((a, b) => rank(a.line) - rank(b.line) || a.index - b.index)
+        .sort(
+            (a, b) =>
+                rank(a.line) - rank(b.line) ||
+                flywayDate(a.line).localeCompare(flywayDate(b.line)) ||
+                a.index - b.index,
+        )
         .map(({ line }) => line);
 }
 

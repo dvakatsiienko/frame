@@ -6,6 +6,7 @@ describe('flyway-done', () => {
     test('a line takes its kind from its marker', () => {
         expect(flywayKind('⏳ a — waits for: x')).toBe('waits');
         expect(flywayKind('💤 b — later: dima 1')).toBe('later');
+        expect(flywayKind('📅 c — on: 2026-11-14')).toBe('dated');
         expect(flywayKind('redraw the board')).toBe('open');
     });
 

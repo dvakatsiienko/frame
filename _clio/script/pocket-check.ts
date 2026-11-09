@@ -2,7 +2,12 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { flywayKind, flywayLines, flywaySorted } from './flyway-done.ts';
+import {
+    flywayDate,
+    flywayKind,
+    flywayLines,
+    flywaySorted,
+} from './flyway-done.ts';
 import {
     type Groomed,
     groomStep,
@@ -139,11 +144,13 @@ export function checkPocket(
                     report(`#${line.n} ⏳ ends «— waits for: <one thing>»`);
                 if (kind === 'later' && !line.text.includes(' — later: '))
                     report(`#${line.n} 💤 ends «— later: dima <time>»`);
+                if (kind === 'dated' && !flywayDate(line.text))
+                    report(`#${line.n} 📅 ends «— on: YYYY-MM-DD»`);
             }
             const texts = lines.filter((l) => !l.done).map((l) => l.text);
             if (flywaySorted(texts).some((t, i) => t !== texts[i]))
                 report(
-                    `lines out of order: open, then ⏳, then 💤 — node script/flyway-done.ts ${id} --sort`,
+                    `lines out of order: open, then ⏳, then 📅 by date, then 💤 — node script/flyway-done.ts ${id} --sort`,
                 );
         }
         const born = localDay(front.scalars.created_date ?? '');
