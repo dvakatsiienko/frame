@@ -21,4 +21,5 @@ script/lib/test-temp-dir.ts
 script/lib/x-go-reads.txt
 script/research-lanes.sh
 script/test-cpu-budget.sh
+script/test-vm-go.sh
 script/test-drive-list.ts
