@@ -107,10 +107,13 @@ home/.claude/plugin-x/skills/guide-typescript/SKILL.md	6200	seed 2026-10-16, tod
 home/.claude/plugin-x/skills/guide-ui-ux/SKILL.md	7400	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/handoff-ingest/SKILL.md	8000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/handoff/SKILL.md	9800	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/herdr-customize/SKILL.md	5600	seed 2026-11-09, its size + 15 % (dima PK-363:W67, W68)
+home/.claude/plugin-x/skills/herdr/SKILL.md	6300	seed 2026-11-09, its size + 15 % (dima PK-363:W67, W68)
 home/.claude/plugin-x/skills/mobile-mode/SKILL.md	2100	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/notes/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/research/SKILL.md	5200	2026-10-21: the wish-cover line (PK-240, a pocket-born brief cites its W-lines); before: 5000, dima's cloud-chat-test adds
-home/.claude/plugin-x/skills/rex/SKILL.md	4200	seed 2026-11-06, its size + 15 %
+home/.claude/plugin-x/skills/rex/references/lua.md	2700	seed 2026-11-09, its size + 15 % (dima PK-363:W61)
+home/.claude/plugin-x/skills/rex/SKILL.md	5000	+800 2026-11-09: run it or prefill it in his tab, one recipe (dima PK-363:W37), and the Lua pointer (W61); seed 2026-11-06, its size + 15 %
 home/.claude/plugin-x/skills/step-by-step/SKILL.md	2400	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/top-seven/SKILL.md	2900	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/walkthrough/SKILL.md	3500	seed 2026-10-16, today's size + 15 %
