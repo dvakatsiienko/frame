@@ -332,20 +332,46 @@ describe('checkPocket', () => {
         );
     });
 
-    test.each([
-        ['a ticket', '- [ ] #1 standing: FRM-525 cpu, watch', false],
-        ['a date', '- [ ] #1 standing: cpu, until 11-14', false],
-        ['neither', '- [ ] #1 standing: cpu, watch', true],
-    ])('a standing line naming %s', (_, line, isRed) => {
-        expect(flyway({}, line).includes('standing line')).toBe(isRed);
+    test('a ticked line reds the same day, naming the move', () => {
+        expect(flyway({}, '- [x] #1 shipped')).toContain(
+            'flyway-done.ts PK-1 1',
+        );
     });
 
-    test('finished lines from an earlier day red, from today wait for the halt', () => {
-        const done = '- [x] #1 shipped';
-        expect(flyway({ updated_date: '2026-10-08 10:00' }, done)).toContain(
-            'remove-ac',
-        );
-        expect(flyway({}, done)).toBe('');
+    test.each([
+        [
+            'a wait with its tail',
+            '- [ ] #1 ⏳ cpu read — waits for: 2026-11-14',
+            false,
+        ],
+        ['a wait with no tail', '- [ ] #1 ⏳ cpu read, until 11-14', true],
+        [
+            'a later with its tail',
+            '- [ ] #1 💤 helga grill — later: dima 19:58',
+            false,
+        ],
+        ['a later with no tail', '- [ ] #1 💤 helga grill', true],
+    ])('%s', (_, line, isRed) => {
+        expect(flyway({}, line).includes(' ends «')).toBe(isRed);
+    });
+
+    test.each([
+        [
+            'open, waits, later',
+            ['redraw', '⏳ a — waits for: x', '💤 b — later: dima 1'],
+            false,
+        ],
+        ['an open line under a wait', ['⏳ a — waits for: x', 'redraw'], true],
+        [
+            'a wait under a later',
+            ['💤 b — later: dima 1', '⏳ a — waits for: x'],
+            true,
+        ],
+    ])('lines in the order %s', (_, lines, isRed) => {
+        const body = lines
+            .map((line, i) => `- [ ] #${i + 1} ${line}`)
+            .join('\n');
+        expect(flyway({}, body).includes('out of order')).toBe(isRed);
     });
 
     test('now holds at most three items', () => {
@@ -553,6 +579,7 @@ describe('the triage stamp (--triaged)', () => {
                 mkdirSync(join(root, 'script'));
                 for (const file of [
                     'chat-lines.ts',
+                    'flyway-done.ts',
                     'pocket-check.ts',
                     'prompt-groom.ts',
                     'session-registry.ts',
@@ -1097,6 +1124,7 @@ describe('the closed-ticket net, with linear unreachable', () => {
             mkdirSync(join(root, 'script'));
             for (const file of [
                 'chat-lines.ts',
+                'flyway-done.ts',
                 'pocket-check.ts',
                 'prompt-groom.ts',
                 'session-registry.ts',

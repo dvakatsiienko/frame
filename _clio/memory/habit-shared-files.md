@@ -29,7 +29,8 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 
 - one pocket item per seat, never closed, always live: `flyway: main` + `clio-main`, `flyway: wing 2` + `clio-wing-2`; none yet: `node script/pocket-add.ts "flyway: wing 2" --priority next --wing 2`
 - order: open lines (no marker, most important first), then ⏳ (`— waits for: <one thing>`, a standing watch too), then 💤 (`— later: dima <time>`); a cleared wait moves up (dima, 2026-11-09)
-- a finished line leaves the turn it ticks (`--remove-ac`), into one `done <date>: <line>` note; never a ✓ among open ones
+- a finished line leaves the turn it ticks into a `done` note: `flyway-done.ts <PK> <n>`; a line joins by `--add`
+<!-- dima, 2026-11-09 (FRM-538:W4–W6): «✓ items get mixed up with the unfinished ones … they make my reading harder»; «standing items, the ones that wait for something, go to the end, so the order of a flyway is always relevant»; «it should be a habit» -->
 - a parked wing's flyway waits for the next wing of its number; dima may flip its number
 - an action that folds an item into another area reads every flyway for its id and yanks the line that turn (dima, 2026-11-07: «sanity check across flyways, yank it out of flyway plan so no confusions»); `pocket-check` reds a PK id left behind
 - **main delegates operational work to a wing by slipstream**: the wing puts main's ask in its flyway right after the line it is solving, finishes that line, then takes it; unless it is urgent, or dima says otherwise

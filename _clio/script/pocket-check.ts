@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { flywayKind, flywayLines, flywaySorted } from './flyway-done.ts';
 import {
     type Groomed,
     groomStep,
@@ -32,9 +33,6 @@ const CAP_FREE_TITLE = /^🧬 evergreen turn|^flyway: /;
 const FLYWAY_TITLE = /^flyway: (main|wing ([1-9]\d*))$/;
 const FLYWAY_OPEN_LINE = /^- \[ \] #\d+ .+$/gm;
 const POCKET_ID = /\bPK-\d+\b/g;
-const FLYWAY_STANDING = /^- \[[ x]\] #\d+ standing: (.*)$/gm;
-const FLYWAY_TICKED = /^- \[x\] #\d+ /m;
-const STANDING_ENDS = /\b(?:FRM|BYT)-\d+\b|\buntil:? \d/;
 // the wish-accounting reds apply to items born or touched from this day on
 const WISH_RULES_FROM = '2026-10-22';
 const CLOSE_LINE = /^close:/;
@@ -129,14 +127,23 @@ export function checkPocket(
                         report(
                             `a line points at ${named}, closed: yank it with backlog task edit --remove-ac`,
                         );
-            for (const [, line] of text.matchAll(FLYWAY_STANDING))
-                if (!STANDING_ENDS.test(line ?? ''))
-                    report(
-                        `a standing line names its ticket or an until: date: «${line}»`,
-                    );
-            if (touched < today && FLYWAY_TICKED.test(text))
+            // dima, 2026-11-09 (o66, o68): open lines, then ⏳ waits, then 💤 later; a finished line leaves that turn
+            const lines = flywayLines(text);
+            for (const line of lines.filter((l) => l.done))
                 report(
-                    `finished lines wait since ${touched}: clean them with backlog task edit --remove-ac`,
+                    `#${line.n} is ticked: move it into the done note, node script/flyway-done.ts ${id} ${line.n}`,
+                );
+            for (const line of lines) {
+                const kind = flywayKind(line.text);
+                if (kind === 'waits' && !line.text.includes(' — waits for: '))
+                    report(`#${line.n} ⏳ ends «— waits for: <one thing>»`);
+                if (kind === 'later' && !line.text.includes(' — later: '))
+                    report(`#${line.n} 💤 ends «— later: dima <time>»`);
+            }
+            const texts = lines.filter((l) => !l.done).map((l) => l.text);
+            if (flywaySorted(texts).some((t, i) => t !== texts[i]))
+                report(
+                    `lines out of order: open, then ⏳, then 💤 — node script/flyway-done.ts ${id} --sort`,
                 );
         }
         const born = localDay(front.scalars.created_date ?? '');
