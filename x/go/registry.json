@@ -44,7 +44,7 @@
         },
         {
             "example": "x gh pr 12 --since 2026-10-09T15:00:00Z",
-            "gist": "github reads in one call: a pr's checks and its comment feeds",
+            "gist": "github reads in one call: a pr's checks and comments",
             "identity": "every read acts as the x-codie-cc app, its token from the keychain (keys.go); writes stay with x as codie -- gh",
             "name": "gh"
         },
@@ -59,6 +59,11 @@
             "name": "mods"
         },
         {
+            "example": "x verify red lib.go 'n > 0' 'n >= 0' lib_test.go",
+            "gist": "a test proven real by a mutant, off the tree",
+            "name": "verify"
+        },
+        {
             "example": "x schema lane --level short",
             "gist": "the registry as json",
             "name": "schema"
@@ -70,7 +75,7 @@
         },
         {
             "example": "x stats --days 7",
-            "gist": "which verbs are used, by whom, how fast, how they fail",
+            "gist": "which verbs are used, by whom, how they fail",
             "name": "stats"
         },
         {
@@ -1301,6 +1306,57 @@
             "steps": ["plan", "test", "write"],
             "touches": [
                 "the job tmp (or the os tmp): the scratch copies and the overlay mods the tests run on"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the source file to break, from the cwd",
+                    "name": "file"
+                },
+                {
+                    "description": "without --pairs: the exact text to swap, found exactly once in the file",
+                    "isOptional": true,
+                    "name": "anchor"
+                },
+                {
+                    "description": "without --pairs: what the anchor becomes",
+                    "isOptional": true,
+                    "name": "replacement"
+                },
+                {
+                    "description": "the test file that should read the line; it picks the runner: go test, vitest, or claude plugin test for a mod",
+                    "isOptional": true,
+                    "name": "test"
+                },
+                {
+                    "afterDash": true,
+                    "description": "in place of <test>: any command, run with the same mutation",
+                    "isOptional": true,
+                    "isVariadic": true,
+                    "name": "command"
+                }
+            ],
+            "flags": {
+                "pairs": {
+                    "description": "many swaps, each alone: one 'anchor<TAB>replacement' per line, split on the last tab, # and blank lines skipped",
+                    "type": "string",
+                    "value": "file"
+                },
+                "run": {
+                    "description": "run only the tests of this name: go -run, vitest -t",
+                    "type": "string",
+                    "value": "name"
+                }
+            },
+            "name": "verify red",
+            "needsApply": false,
+            "purpose": "prove a test reads a line: green on the file, red with the line swapped, the real tree never written",
+            "replaces": ["home/.claude/plugin-x/bin/red-proof"],
+            "steps": ["check", "clean", "mutate"],
+            "touches": [
+                "the os tmp: the mutant, a go overlay or a copy of the tree the runs read",
+                "$X_STATE/verify/: a cut run's finished pairs, read back on the same inputs, gone once a run ends"
             ]
         }
     ]

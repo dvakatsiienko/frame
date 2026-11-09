@@ -54,7 +54,7 @@ Ticket: PK-334. A gate here is a check that refuses: it stops a commit, a push, 
 ## by hand before a lane or a proof
 
 - `pnpm x-go:gate`: gofmt, vet, staticcheck, go fix, go test
-- `red-proof`: a test goes red when its line is mutated
+- `x verify red`: a test goes red when its line is mutated
 - `x brief check`, `x brief summon`, `x brief preflight`: a brief's names, a summon's steps, a spec's exit lines
 - `x lane dispatch`: a chunk carries its sign
 - `pocket-check`, `script/wish-cover.ts`, `prompt-groom.ts --day`: the pocket, a wish's lines, the day's prompts

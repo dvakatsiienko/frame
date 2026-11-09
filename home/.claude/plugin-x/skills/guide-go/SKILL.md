@@ -60,7 +60,7 @@ go test -count=1 ./...
   neither env nor cwd.
 - **a terminal view is tested on a pty** (`github.com/creack/pty`): size it, feed keys after the
   screen settles, assert on the bytes. a real zsh `<Tab>` runs the same way.
-- **a test is proven by making it fail**: `red-proof --cmd <file> <anchor> <replacement> -- go test -count=1 -run <Test> ./`.
+- **a test is proven by making it fail**: `x verify red <file> <anchor> <replacement> <pkg>_test.go --run <Test>`; the mutant reaches a `TestMain`'s child build through `GOFLAGS=-overlay`.
 - the child of a test runs with `CLAUDECODE` and `AI_AGENT` unset, or x answers in json and the
   human-view assertion lies.
 
