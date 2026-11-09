@@ -271,6 +271,8 @@
   - given `--pairs <file>`, one `anchor<TAB>replacement` a line split on the last tab, then each pair runs alone and prints its row in order, in the envelope and the human view: red with the tests it reddened, still green, broken or failed, and its seconds; the exit is 0 only when every pair is red
   - given `-- <command>` in place of the test, then the command runs with the same mutation, a `go` command through the overlay, any other in the copy; a command that fails naming no test x can read reads failed, never red
   - given a run cut by a timeout or a kill, when it runs again on the same head, file, pairs, test, command and uncommitted state, then it resumes from its first unfinished pair, the clean run not repeated; a change to any of them starts over, and a finished run saves nothing to replay
+  - given any run, then the real tree sees zero writes, a cache vitest keeps in `node_modules` included: the copy's `node_modules` is a real dir of links, so the caches land in the copy
+  - given `X_VERIFY=1`, then `script/research-lanes.sh` makes no exa or parallel call and says it skipped
   - given a mod's test, then only that test file runs on the mod's overlay, and the runner's own load error reads broken whatever it reddened; an assertion whose message quotes a load word, a go `t.Fatalf` line included, reads red
   - decision: a throw from the mutated code reads red, since the mutant is the run's only change (dima, o82); `--revert` keeps any throw broken
   - limit: a go run reads the mutant only where go builds it, so a file a test opens at runtime stays the real one

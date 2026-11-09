@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -56,14 +58,42 @@ func TestLimit(t *testing.T) {
 	return redFixture{dir: dir, file: "lib.go", test: "lib_test.go", anchor: "Limit = 3", replacement: "Limit = 4"}
 }
 
+// node_modules as pnpm leaves it, a real dir of links into the store
 func vitestRedFixture(t *testing.T) redFixture {
+	t.Helper()
+	f := vitestFixtureOn(t, func(modules string) {
+		entries, err := os.ReadDir(frameNodeModules(t))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, entry := range entries {
+			if err := os.MkdirAll(modules, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Symlink(filepath.Join(frameNodeModules(t), entry.Name()), filepath.Join(modules, entry.Name())); err != nil {
+				t.Fatal(err)
+			}
+		}
+	})
+	return f
+}
+
+// node_modules as one link to another tree's
+func vitestLinkedFixture(t *testing.T) redFixture {
+	t.Helper()
+	return vitestFixtureOn(t, func(modules string) {
+		if err := os.Symlink(frameNodeModules(t), modules); err != nil {
+			t.Fatal(err)
+		}
+	})
+}
+
+func vitestFixtureOn(t *testing.T, plant func(modules string)) redFixture {
 	t.Helper()
 	dir := repo(t)
 	write(t, filepath.Join(dir, ".gitignore"), "node_modules\n")
 	write(t, filepath.Join(dir, "package.json"), `{"name": "p", "type": "module"}`+"\n")
-	if err := os.Symlink(frameNodeModules(t), filepath.Join(dir, "node_modules")); err != nil {
-		t.Fatal(err)
-	}
+	plant(filepath.Join(dir, "node_modules"))
 	write(t, filepath.Join(dir, "lib.js"), "export const limit = 3;\n")
 	write(t, filepath.Join(dir, "lib.test.js"), `import { appendFileSync } from "node:fs";
 import { expect, test } from "vitest";
@@ -85,7 +115,10 @@ func modRedFixture(t *testing.T) redFixture {
 	bin := t.TempDir()
 	write(t, filepath.Join(bin, "claude"), `#!/bin/sh
 d="$3"
-[ "$2" = validate ] && { echo "✔ Validation passed"; exit 0; }
+if [ "$2" = validate ]; then
+  grep -q PARSE-ERROR "$d"/hooks/* && { echo "  ❯ modules../register.ts: m: does not parse: PARSE-ERROR (line 1)"; echo "✘ Validation failed"; exit 1; }
+  echo "✔ Validation passed"; exit 0
+fi
 echo "$X_VERIFY" >> "$VERIFY_LOG"
 red=0
 for f in "$d"/tests/*.test.ts; do
@@ -358,6 +391,7 @@ func TestVerifyRedReadsAModsLoadErrorApartFromARed(t *testing.T) {
 		{"one named test went red", "() => { /* MUTANT */ }", verdictRed, 0, []string{"a.test.ts reads the hook"}},
 		{"a load error beside a failed assertion", "() => { /* LOAD-BREAK */ }", verdictBroken, 1, nil},
 		{"an assertion quoting a load word", "() => { /* QUOTES-LOAD */ }", verdictRed, 0, []string{"a.test.ts names the load error"}},
+		{"a hook that does not parse", "() => { PARSE-ERROR }", verdictBroken, 1, nil},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -484,6 +518,74 @@ func TestVerifyRedResumesACutRun(t *testing.T) {
 			}
 			if again := xIn(t, f.dir, append(f.env, env...), append([]string{"verify", "red"}, args...)...); strings.Count(readOr(log, ""), "\n")-3-c.runs != len(pairRows(t, again))+1 {
 				t.Fatalf("a run after a finished one replayed saved pairs: the log reads\n%s", readOr(log, ""))
+			}
+		})
+	}
+}
+
+// every file's size, mode and mtime under the roots, links not followed; git's own dir is git's, so it stays out
+func treeWrites(t *testing.T, roots ...string) map[string]string {
+	t.Helper()
+	seen := map[string]string{}
+	for _, root := range roots {
+		_ = filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return nil
+			}
+			if entry.IsDir() && entry.Name() == ".git" {
+				return filepath.SkipDir
+			}
+			if info, err := os.Lstat(path); err == nil {
+				seen[path] = fmt.Sprintf("%d %v %d", info.Size(), info.Mode(), info.ModTime().UnixNano())
+			}
+			return nil
+		})
+	}
+	return seen
+}
+
+// exit line 6: neither the clean run nor a mutant writes the real tree, the caches a runner keeps in node_modules included
+func TestVerifyRedWritesNothingInTheRealTree(t *testing.T) {
+	t.Parallel()
+	modules := frameNodeModules(t)
+	for _, c := range []struct {
+		name    string
+		fixture func(*testing.T) redFixture
+		caches  []string
+	}{
+		{"go test", goRedFixture, nil},
+		{"a mod's test", modRedFixture, nil},
+		{"vitest", vitestRedFixture, []string{".vite", ".vite-temp", ".vitest-cache"}},
+		{"vitest on a linked node_modules", vitestLinkedFixture, []string{".vite", ".vite-temp", ".vitest-cache"}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			f := c.fixture(t)
+			watched := []string{f.dir}
+			for _, cache := range c.caches {
+				watched = append(watched, filepath.Join(modules, cache))
+			}
+			before := treeWrites(t, watched...)
+			nodeModules, _ := os.Lstat(modules)
+
+			got, _ := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, f.test)
+
+			if got.code != 0 {
+				t.Fatalf("exit %d, want red:\n%s", got.code, got.stdout)
+			}
+			after := treeWrites(t, watched...)
+			for path, was := range before {
+				if after[path] != was {
+					t.Errorf("%s changed: %s → %s", path, was, after[path])
+				}
+			}
+			for path := range after {
+				if _, ok := before[path]; !ok {
+					t.Errorf("%s appeared", path)
+				}
+			}
+			if now, _ := os.Lstat(modules); c.caches != nil && !now.ModTime().Equal(nodeModules.ModTime()) {
+				t.Errorf("%s gained or lost an entry", modules)
 			}
 		})
 	}

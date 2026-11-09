@@ -4,6 +4,11 @@
 # writes <out>/exa.md and <out>/parallel.md, then prints one line per lane: status, seconds, chars, cost.
 set -u
 self=$(cd "$(dirname "$0")" && pwd)/$(basename "$0")
+# x verify red sets it on both its runs: a mutant of this script, or of a test calling it, must never pay for a lane
+if [ "${X_VERIFY:-}" = 1 ]; then
+  echo "research-lanes: X_VERIFY is set, a verify run: no exa or parallel call, skipped"
+  exit 0
+fi
 
 if [ "${1:-}" = "--lane" ]; then
   lane=$2 brief=$3 out=$4 s=$(date +%s)

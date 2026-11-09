@@ -549,7 +549,11 @@ func copyRepo(root, to string) error {
 		case entry.IsDir() && (name == ".git" || rel == ".claude"):
 			return filepath.SkipDir
 		case name == "node_modules" && path != root:
-			return errors.Join(linkEntries(path, dest), skipIfDir(entry))
+			// WalkDir knows SkipDir only bare, never joined to a nil
+			if err := linkEntries(path, dest); err != nil {
+				return err
+			}
+			return skipIfDir(entry)
 		case entry.IsDir():
 			return os.MkdirAll(dest, 0o755)
 		case name == ".git" || locked[filepath.ToSlash(rel)]:
