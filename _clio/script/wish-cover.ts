@@ -1,6 +1,14 @@
-// usage: node script/wish-cover.ts <PK-N|FRM-N|BYT-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines exits 2; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
-import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
+// usage: node script/wish-cover.ts --audit-week   the weekly wish-loss audit: every grill, brief and spec under a .scratch of frame and bytes touched in 7 days, checked against each home its wish: line names; exits 1 on a red
+//        node script/wish-cover.ts <PK-N|FRM-N|BYT-N> [--all] <draft…> — an FRM id resolves to the ticket's «## wish» block (x linear read), else to the one pocket item whose «ticket:» or «moved to linear:» line names it; a block with no W-lines exits 2; reds every cited W-line whose text no draft carries; --all also reds a W-line no draft cites
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+    existsSync,
+    globSync,
+    readFileSync,
+    readdirSync,
+    statSync,
+} from 'node:fs';
+import { homedir } from 'node:os';
 import path from 'node:path';
 
 import { TICKET_LINE } from './pocket-check.ts';
@@ -153,8 +161,64 @@ function readItem(items: [string, string][], id: string) {
     )?.[1];
 }
 
+// a first use of a wish: a grill round, a brief or a spec, under any .scratch of frame, its worktrees or bytes
+const FIRST_USE = /(?:^|\/)(?:grill-[\w-]*proposal|[\w-]*brief|spec)\.md$/;
+
+export function weekDrafts(roots: string[], now = Date.now()) {
+    const since = now - 7 * 24 * 60 * 60 * 1000;
+    return roots
+        .filter((root) => existsSync(root))
+        .flatMap((root) =>
+            globSync('**/.scratch/**/*.md', {
+                cwd: root,
+                exclude: (name) => name === 'node_modules' || name === '.git',
+            }).map((rel) => path.join(root, rel)),
+        )
+        .filter(
+            (file) => FIRST_USE.test(file) && statSync(file).mtimeMs >= since,
+        )
+        .sort();
+}
+
+// the homes a draft's `wish:` line names, `none` for a draft no wish stands behind, undefined for no line
+export function draftHomes(text: string) {
+    const line = text
+        .split('\n')
+        .slice(0, 12)
+        .find((l) => l.startsWith('wish:'));
+    if (line === undefined) return undefined;
+    const value = line.slice('wish:'.length).trim();
+    if (value.startsWith('none')) return 'none' as const;
+    return [...new Set(value.match(/\b(?:PK|FRM|BYT)-\d+\b/g) ?? [])];
+}
+
+function auditWeek() {
+    const home = homedir();
+    const roots = [path.join(home, 'frame'), path.join(home, 'projects/bytes')];
+    const rows = weekDrafts(roots).flatMap((file) => {
+        const homes = draftHomes(readFileSync(file, 'utf8'));
+        if (homes === undefined) return [[file, '-', 'no wish line']];
+        if (homes === 'none') return [[file, 'none', 'wish: none']];
+        return homes.map((id) => {
+            const run = spawnSync(
+                process.execPath,
+                [import.meta.filename, id, file],
+                { encoding: 'utf8', timeout: 60_000 },
+            );
+            return [file, id, run.status === 0 ? 'green' : 'red'];
+        });
+    });
+    for (const row of rows) console.log(row.join('\t'));
+    const red = rows.filter((row) => row[2] === 'red').length;
+    console.log(
+        `${rows.length} checked · ${rows.filter((row) => row[2] === 'green').length} green · ${red} red · ${rows.filter((row) => row[1] === 'none').length} wish: none · ${rows.filter((row) => row[1] === '-').length} no wish line`,
+    );
+    process.exit(red > 0 ? 1 : 0);
+}
+
 if (import.meta.main) {
     const args = process.argv.slice(2);
+    if (args[0] === '--audit-week') auditWeek();
     const all = args.includes('--all');
     const [id, ...draftPaths] = args.filter((arg) => arg !== '--all');
     if (!id || draftPaths.length === 0) {

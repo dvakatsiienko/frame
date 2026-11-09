@@ -4,6 +4,7 @@ import {
     mkdirSync,
     mkdtempSync,
     rmSync,
+    utimesSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,6 +13,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
     citedIds,
+    draftHomes,
     itemsForTicket,
     missingText,
     normalize,
@@ -20,6 +22,7 @@ import {
     sectionsFor,
     uncovered,
     unwrapIds,
+    weekDrafts,
     wishBlock,
     wishLines,
 } from './wish-cover.ts';
@@ -409,5 +412,36 @@ describe('wish ids in both shapes', () => {
         expect(uncovered(block, ['PK-4:W1 the words'], ['PK-3'])).toEqual([
             ['W1', 'the words'],
         ]);
+    });
+});
+
+describe('the weekly audit', () => {
+    test('a week finds fresh grills, briefs and specs, never an older one or a plain note', () => {
+        const root = mkdtempSync(join(tmpdir(), 'audit-week-'));
+        const dir = join(root, '.scratch/lane');
+        mkdirSync(dir, { recursive: true });
+        for (const name of [
+            'grill-1-proposal.md',
+            'brief.md',
+            'spec.md',
+            'notes.md',
+            'old-brief.md',
+        ])
+            writeFileSync(join(dir, name), 'wish: PK-1\n');
+        const old = new Date(Date.now() - 9 * 24 * 60 * 60 * 1000);
+        utimesSync(join(dir, 'old-brief.md'), old, old);
+        expect(weekDrafts([root]).map((f) => f.slice(dir.length + 1))).toEqual([
+            'brief.md',
+            'grill-1-proposal.md',
+            'spec.md',
+        ]);
+    });
+
+    test.each([
+        ['wish: PK-1, FRM-2 and PK-1', ['PK-1', 'FRM-2']],
+        ['wish: none — a mechanical chore', 'none'],
+        ['# a title with no wish line', undefined],
+    ])('a draft headed «%s» names its homes', (head, homes) => {
+        expect(draftHomes(`${head}\n\nbody\n`)).toEqual(homes);
     });
 });

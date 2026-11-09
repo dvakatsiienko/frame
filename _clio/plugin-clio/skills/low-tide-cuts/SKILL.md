@@ -22,8 +22,8 @@ dima, PK-367:W2 (2026-11-09 inbox, dima): why: we started a practice of cuts, si
 - **built work** passes the same, plus one real use in 30 days:
   - a use is a run that ran: posted output, a read, a call in a log; never a launch, a scheduled slot or silence
   - say which it is before a «0 uses»: built and unused, built and unwired, or never built
-  - a thing rare by design (a halt step, a recovery door, a safety net) is weighed on worth it alone once dima's word exempts it as a rare event; without his word it prints as 💤 park with «rare by design?» in its why
-  - a built thing that fails gets one revive try first (wire it to a caller), and one with no counter prints «unmeasured», never «kept» (`craft-pm` § the freebie rule)
+  - a thing rare by design (a halt step, a recovery door, a safety net) is weighed on worth it alone once dima's word exempts it as a rare event; without his word it prints as 💤 park with «rare by design?» in its why, and keeps running as now until his word
+  - a built thing with 0 uses gets one revive try first (wire it to a caller), and one with no counter prints «unmeasured», never «kept» (`craft-pm` § the freebie rule)
 - a fail is ✂️ cut or 🪶 trim, a doubt 💤 park, never a quiet keep; a pass is ✅ stay. his own ask on an item fails only to him: it prints with «you lose» and waits for his tick
 
 ## the print — a cut he can judge from the list alone
@@ -47,7 +47,7 @@ the verdict words:
 - 🪶 **trim**: part of it goes; name the part
 - 🧩 **merge**: it joins another ticket, its words with it
 - 🚚 **move**: another lane, milestone or order
-- 💤 **park**: it stays, nothing runs it
+- 💤 **park**: it stays and nothing new is built on it; a doubt park keeps running as now, until his word
 - ✅ **stay**: one line, no block
 
 - **what it is** comes first, in words he would use: a newcomer knows the thing from this line
