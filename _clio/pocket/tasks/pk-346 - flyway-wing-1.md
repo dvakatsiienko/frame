@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T18:51:00Z'
+updated_date: '2026-11-09T19:22:00Z'
 labels:
   - s
   - clio-wing-1
@@ -23,10 +23,11 @@ ordinal: 1001
 - [ ] #5 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
 - [ ] #6 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
 - [ ] #7 📅 FRM-533 reuse proven results: the day read, then shape step 2 (reuse on our own key) — on: 2026-11-10
-- [ ] #8 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
-- [ ] #9 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #10 💤 FRM-497 speak meter 120 → 60 fps — later: dima, with speak v2
+- [ ] #8 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
+- [ ] #9 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43)
+- [ ] #10 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #11 💤 FRM-525 performance topic and cpu watch, anything performance comes to wing 1 — later: dima says when he has capacity
+- [ ] #12 💤 FRM-530 gates page — later: dima, parked on his 11-07 word
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -75,4 +76,6 @@ done 2026-11-09: mods test trim shaped into FRM-555 (dima's o56, o57); the perf 
 done 2026-11-09: FRM-555 grill 1 answered (o58–o61), kept in its decided; unsigned on dima's 20:32 word — the mods lane waits for main's herdr revisit pass; handed to main, label off
 
 done 2026-11-09: FRM-551 kill gate read 2 — 288 cpu-s a day idle at 4 vcpus, under the 320 line; comment on FRM-551; vm frm536 stopped 20:37
+
+2026-11-09 21:21: speak v2 moves to wing 1 (dima 21:17 PK-370:W5, via wing 2's low tide triage); FRM-530 back on the flyway as 💤
 <!-- SECTION:NOTES:END -->
