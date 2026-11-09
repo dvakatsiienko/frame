@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T18:33:00Z'
+updated_date: '2026-11-09T18:37:00Z'
 labels:
   - s
   - clio-main
@@ -18,16 +18,17 @@ ordinal: 9995
 <!-- AC:BEGIN -->
 - [ ] #1 chunk 2: Zoo's chat into frame as fleet-chatter, a ticket for your sign, the herdr codie builds it
 - [ ] #2 next mods lane, one fresh codie with its sixth sense on (FRM-505:W1941), fixes first: FRM-538's public-post guard half, FRM-544 after its sign grill, then FRM-505, FRM-491, FRM-495 (his o87)
-- [ ] #3 ⏳ FRM-552 orbit in herdr, the want line: you tick the 🧪 ask in herdr's fleet-board — waits for: dima's herdr tick
-- [ ] #4 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #5 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
-- [ ] #6 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
-- [ ] #7 ⏳ FRM-542 every seat's prompt log, on main: its close — waits for: your first herdr boot reading your own seat as "" (from wing 3, dima 20:29)
-- [ ] #8 ⏳ FRM-542 close: in main's first herdr boot the seatOf check prints "" — waits for: tomorrow's herdr boot
-- [ ] #9 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check — on: 2026-11-10
-- [ ] #10 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #11 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #12 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #3 FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep, ~89 cpu-s a run)
+- [ ] #4 the wish-loss audit's reader: align wish-cover --audit-week to the write hook's rule (every section's «wish: <id>» line, none only when no id line exists), then the M3 reminder's owner after wing 3 halts (from wing 3, 20:38)
+- [ ] #5 ⏳ FRM-552 orbit in herdr, the want line: you tick the 🧪 ask in herdr's fleet-board — waits for: dima's herdr tick
+- [ ] #6 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #7 ⏳ helga's passport loads by itself at boot — waits for: her fresh boot on the next groom chore
+- [ ] #8 ⏳ tonight's halt: every wing halts on its own, no running watcher blocks it — waits for: dima's halt word
+- [ ] #9 ⏳ FRM-542 close: in main's first herdr boot the seatOf check prints "" — waits for: tomorrow's herdr boot
+- [ ] #10 📅 boot clio in herdr from .scratch/herdr/plan.md's recipe, then FRM-542's main-seat check — on: 2026-11-10
+- [ ] #11 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #12 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #13 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -101,4 +102,6 @@ correction (clio, 16:46): W25's clause «; a guard, not an intention (proposed i
 done, cleared 19:59 on dima's word: herdr research printed and his call taken (pk-363 lives on); sidecar passports rebalanced (pk-368 done); the herdr pilot probes 1–5 by the gate lane codie; FRM-552 ticketed, signed, dispatched (19:07–19:13); the haiku clio boot in herdr proven (19:20)
 
 done 20:01: crow and helga stopped on dima's o85, crow restarted fresh on opus; FRM-509's last step handed to wing 2 as a rider in its current cli chunk (his o86), the cli lane parks after that chunk merges (his 20:00 word)
+
+20:38 wing 3: its duplicate FRM-542 line (#8, «from wing 3, dima 20:29») merged into the standing FRM-542 close line; dima's 20:29 handover word stands for it
 <!-- SECTION:NOTES:END -->
