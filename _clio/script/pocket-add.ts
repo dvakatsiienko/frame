@@ -11,6 +11,10 @@ const pocket = path.resolve(import.meta.dirname, '..');
 // wing 01 would label `clio-wing-01`, which no `--labels clio-wing-1` ever finds
 export const isWingNumber = (value: string) => /^[1-9]\d*$/.test(value);
 
+// a flyway appended to its band sank under the work items and went unseen (PK-372)
+export const startsAtTop = (title: string, top = false) =>
+    top || title.startsWith('flyway:');
+
 export function ordinalFor(
     ordinals: number[],
     priority: Priority,
@@ -123,7 +127,9 @@ if (import.meta.main) {
         '--type',
         values.type,
         '--ordinal',
-        String(ordinalFor(ordinals(), priority, values.top)),
+        String(
+            ordinalFor(ordinals(), priority, startsAtTop(title, values.top)),
+        ),
         '--plain',
         ...(values.desc ? ['-d', values.desc] : []),
         ...(due ? ['--due-date', due] : []),

@@ -1,6 +1,25 @@
 import { describe, expect, test } from 'vitest';
 
-import { isWingNumber, ordinalFor, searchTerm } from './pocket-add.ts';
+import {
+    isWingNumber,
+    ordinalFor,
+    searchTerm,
+    startsAtTop,
+} from './pocket-add.ts';
+
+describe('startsAtTop', () => {
+    test('a flyway opens its band', () => {
+        expect(startsAtTop('flyway: wing 3')).toBe(true);
+    });
+
+    test('a work item keeps the band order', () => {
+        expect(startsAtTop('herder: a flyway probe')).toBe(false);
+    });
+
+    test('--top still wins for any title', () => {
+        expect(startsAtTop('herder: probe', true)).toBe(true);
+    });
+});
 
 test.each(['1', '12'])('wing %s is a number', (value) => {
     expect(isWingNumber(value)).toBe(true);
