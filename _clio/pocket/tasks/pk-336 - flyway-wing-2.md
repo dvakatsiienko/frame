@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T18:44:00Z'
+updated_date: '2026-11-09T19:02:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,10 +22,10 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ⏳ frame#152 (FRM-549, FRM-553 + its riders, FRM-548) merges by merge-auto — waits for: codie's final, then sixth sense's clean
-- [ ] #2 ⏳ FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card — waits for: frame#152's review run
-- [ ] #3 ⏳ the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25) — waits for: frame#152's merge
-- [ ] #4 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
+- [ ] #1 ⏳ FRM-546 frame REVIEW.md closes: #152's cards and sixth sense name REVIEW.md, a re-planted slip only REVIEW.md names is caught by a fresh wisphunter card — waits for: frame#152's review run
+- [ ] #2 ⏳ the review contract notice to every clio and member, drafted in .scratch/review-contract-notice.md (dima o25) — waits for: frame#152's merge
+- [ ] #3 ⏳ cli lane 6 parked after #152: FRM-414 (+ round counter), FRM-384 (+ riders, FRM-554), FRM-436, FRM-424 — waits for: your word (dima 20:00)
+- [ ] #4 ⏳ frame#152 (FRM-549, FRM-553 + its riders, FRM-548) merges by merge-auto — waits for: sixth sense's clean on codie's round-1 fixes
 - [ ] #5 📅 FRM-483 boot-prefetch stall, the 3-day read — on: 2026-11-11
 - [ ] #6 📅 FRM-516 crow on every wing, the week's read — on: 2026-11-14
 - [ ] #7 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
