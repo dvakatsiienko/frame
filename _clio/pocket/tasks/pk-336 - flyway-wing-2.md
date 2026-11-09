@@ -171,4 +171,7 @@ done 2026-11-09 20:44: FRM-538's flyway half, wishkeeper's 5 fixes: verify a lin
 
 PK-336:W30 (2026-11-09 20:46, dima): your cli lane codie needs a SW. ask when he wants it.
 done 2026-11-09 20:48: codie second-winded before its #152 final (cst cli-lane-6-7)
+
+PK-336:W31 (2026-11-09 20:53, dima): why are they staying ungroomed? habit lag, or what? i thought every prompt gets groomed right away. it's not good that they pile up. how to solve? ❓
+— answered: the hook only warned and a wing's siesta skipped the groom check; built 21:04 (o76): a seat's turn holds at 5 waiting past 30 min, every seat's siesta checks, a one-call no-wish
 <!-- SECTION:NOTES:END -->
