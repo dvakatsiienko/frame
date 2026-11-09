@@ -79,20 +79,34 @@ func TestMergeAutoLandsARiskyPrOnItsSecurityPass(t *testing.T) {
 }
 
 // FRM-548 exit 3: a pass on other code counts for nothing
+// one security pass a risky pr (dima, grill 2 Q6): a pass on the head's history holds after a later push; one on other
+// code refuses
 func TestMergeAutoRefusesASecurityPassOnOtherCode(t *testing.T) {
 	t.Parallel()
-	w := newMergeWorld(t, ".github/workflows/ci.yml")
-	old := w.head
-	write(t, filepath.Join(w.seed, "fix.ts"), "a change after the pass\n")
-	gitT(t, w.seed, "add", ".")
-	gitT(t, w.seed, "commit", "-q", "-m", "a change after the pass")
-	w.moveHead(t)
-	write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#7:security":"`+old+`"}`)
+	for _, c := range []struct {
+		name  string
+		lands bool
+	}{{"a pass on an ancestor", true}, {"a pass on other code", false}} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, ".github/workflows/ci.yml")
+			passed := w.head
+			if !c.lands {
+				passed = runSha(5)
+			}
+			write(t, filepath.Join(w.seed, "fix.ts"), "a change after the pass\n")
+			gitT(t, w.seed, "add", ".")
+			gitT(t, w.seed, "commit", "-q", "-m", "a change after the pass")
+			w.moveHead(t)
+			write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#7:security":"`+passed+`"}`)
 
-	got := w.run(t, "7", "--apply")
+			got := w.run(t, "7", "--apply")
 
-	if wait := tierRead(got).Wait; got.code != 1 || !strings.Contains(wait, "security pass") {
-		t.Fatalf("exit %d, wait %q, want the moved pass refused:\n%s", got.code, wait, got.stdout)
+			landed := got.code == 0 && len(w.hub.sent("PUT ")) == 1
+			if wait := tierRead(got).Wait; landed != c.lands || (!c.lands && !strings.Contains(wait, "security pass")) {
+				t.Fatalf("exit %d, landed %v, wait %q, want landed %v:\n%s", got.code, landed, wait, c.lands, got.stdout)
+			}
+		})
 	}
 }
 

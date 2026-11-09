@@ -21,10 +21,15 @@ func (w *mergeWorld) mainRuns(runs ...mainRunRow) {
 	}
 }
 
-// a real row's shape: a run is named by its run-name («deploy <sha>»), never by its workflow
+// a real row's shape: a run is named by its run-name («deploy <sha>»), never by its workflow; bytes' deploy.yml starts
+// off ci's finished run, so its rows are workflow_run (every one since 2026-11-06)
 func mainRun(id int, workflow, status, conclusion, sha string) mainRunRow {
-	return mainRunRow{workflow, fmt.Sprintf(`{"id":%d,"name":"%s %s","path":".github/workflows/%s","event":"push","status":"%s","conclusion":"%s","head_sha":"%s"}`,
-		id, strings.TrimSuffix(workflow, ".yml"), sha, workflow, status, conclusion, sha)}
+	event := "push"
+	if workflow == "deploy.yml" {
+		event = "workflow_run"
+	}
+	return mainRunRow{workflow, fmt.Sprintf(`{"id":%d,"name":"%s %s","path":".github/workflows/%s","event":"%s","status":"%s","conclusion":"%s","head_sha":"%s"}`,
+		id, strings.TrimSuffix(workflow, ".yml"), sha, workflow, event, status, conclusion, sha)}
 }
 
 // a sha whose short form tells it apart: 2222222…

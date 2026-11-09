@@ -1320,6 +1320,9 @@ func securityCheck(repo, n, head, base, ref string) mergeCheck {
 		c.Detail = "no security pass recorded for " + repo + "#" + n + ": a risky path asks codie's /security-review before sixth sense's first round, then its stamp: " + stamp
 	case passed == head:
 		c.OK, c.Detail = true, "security pass on "+short(head)
+	// one pass a risky pr, never rerun (dima, grill 2 Q6): a pass on the head's history holds after a later push
+	case ok(gitIn("", "fetch", "-q", "origin", "refs/heads/"+ref)) && ok(gitIn("", "merge-base", "--is-ancestor", passed, head)):
+		c.OK, c.Detail = true, "security pass on "+short(passed)+", on the history of "+short(head)
 	default:
 		if c.OK, c.Detail = carried(passed, "the security pass", head, base, ref); !c.OK {
 			c.Detail += "; a new pass and its stamp: " + stamp
@@ -1624,21 +1627,22 @@ func mainRunsCheck(api string, deploys bool) (mergeCheck, error) {
 		Event      string `json:"event"`
 	}
 	// each workflow read on its own, so another workflow's runs can never push ci's out of the page; branch=main also
-	// matches a fork's pr from a branch it named main, so only push runs are main's own
-	runsOf := func(workflow string) ([]run, error) {
+	// matches a fork's pr from a branch it named main, so only main's own events count: ci's push, and deploy's
+	// workflow_run (it starts off ci's finished run), push or dispatch
+	runsOf := func(workflow, query string, events ...string) ([]run, error) {
 		var answer struct {
 			Runs []run `json:"workflow_runs"`
 		}
-		_, err := ghFetch(asDima, api+"/actions/workflows/"+workflow+"/runs?branch=main&event=push&per_page=5", &answer)
-		return slices.DeleteFunc(answer.Runs, func(r run) bool { return r.Event != "push" }), err
+		_, err := ghFetch(asDima, api+"/actions/workflows/"+workflow+"/runs?branch=main"+query+"&per_page=5", &answer)
+		return slices.DeleteFunc(answer.Runs, func(r run) bool { return !slices.Contains(events, r.Event) }), err
 	}
-	ci, err := runsOf("ci.yml")
+	ci, err := runsOf("ci.yml", "&event=push", "push")
 	if err != nil {
 		return c, err
 	}
 	workflows := map[string][]run{"ci.yml": ci}
 	if deploys {
-		if workflows["deploy.yml"], err = runsOf("deploy.yml"); err != nil {
+		if workflows["deploy.yml"], err = runsOf("deploy.yml", "", "workflow_run", "push", "workflow_dispatch"); err != nil {
 			return c, err
 		}
 	}
