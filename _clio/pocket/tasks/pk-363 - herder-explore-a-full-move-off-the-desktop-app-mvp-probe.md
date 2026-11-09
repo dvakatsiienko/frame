@@ -188,4 +188,8 @@ PK-363:W34 (2026-11-09 17:48, dima, in the herdr codie's pane): images paste wit
 probe 1 result (17:48, codie relay): the ps fix is live, proven by dima: the Chat tab shows the whole history, a chat-box message lands in the chat, a cmd+v image arrives as text+image. dnd door: gpui-kit on_drop gives file paths (gpui-kit.d.ts:782), append each image path to the message
 
 probe 2 (17:51, gate codie, ~18 min): mods/fleet-board draws live, read-only: 2 glide cards from ~/.claude/shelf/lanes.json, 10 sessions from ~/.claude/sessions/*.json with model + ctx %, open orbit ask texts from the stash store. not on disk: phases, an ask's id/pick/state, the band. ticks: none yet, cost in the codie's reply to dima
+
+PK-363:W35 (2026-11-09 o36 steer, dima): image drag-and-drop can be solved later; it blurs the scope; let's explore the other parts of herdr
+
+PK-363:W36 (2026-11-09 o36 steer, dima): our main goal is to move everyone to herdr as soon as possible: first see that everything works, and measure how hard herdr loads cc compared to the claude desktop app (its mcp tools, for example)
 <!-- SECTION:NOTES:END -->
