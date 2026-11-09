@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T18:50:00Z'
+updated_date: '2026-11-09T18:55:00Z'
 labels:
   - s
   - clio-main
@@ -105,4 +105,6 @@ done 20:01: crow and helga stopped on dima's o85, crow restarted fresh on opus; 
 done 2026-11-09 20:38: FRM-552 orbit in herdr landed and closed, dima's o90 tick reached main «accepted from herdr», look card sent; polish steers go to codie in ~/frame/.scratch/herdr-polish/spec.md
 
 done 2026-11-09 20:45: the wish audit reads every chunk section (draftSections, run 3: 98 checked, 1 red, codie's fresh polish spec); low-tide-cuts «park» kept as «nothing new is built on it» (a doubt park keeps a safety net running; «nothing runs it» would switch it off); the weekly M3 reminder is main's (🦉)
+
+PK-349:W26 (2026-11-09 20:20, dima, o12 steer): last time i already autohalted it went fine. The only flaw was that Wing 1 had some monitors active, monitoring for some perf-related activity. You can ask around Wing 1 what that was: those monitors prevented its halt step, so I had to archive it manually.
 <!-- SECTION:NOTES:END -->
