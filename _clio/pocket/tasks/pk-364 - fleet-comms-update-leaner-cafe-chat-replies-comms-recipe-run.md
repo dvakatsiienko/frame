@@ -1,10 +1,10 @@
 ---
 id: PK-364
 title: 'fleet comms update: leaner cafe-chat replies, comms recipe run'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T14:25:00Z'
+updated_date: '2026-11-09T15:23:00Z'
 labels:
   - m
   - clio-wing-3
@@ -124,4 +124,8 @@ PK-364:W33 (2026-11-09 16:23, dima): not sure about cc's built-in question for -
 PK-364:W34 (2026-11-09 16:23, dima): proceed; put extra focus on threads started after clio's «second channel» mode was born (~1 week ago), and more so after winged clio was born (~a few days ago); look at git
 
 PK-364:W35 (2026-11-09 16:24, dima): hunt today's sessions too, they hold valuable comms data: four threads run now and i can't keep up answering everyone, so threads stay parked until i have capacity (while i write this prompt, wing 2 waits for me over 10 min and main clio 15 min)
+
+moved: PK-364:W16 → FRM-540:W1, PK-364:W26 → FRM-540:W2, PK-364:W27 → FRM-540:W3, PK-364:W28 → FRM-540:W4
+moved: PK-364:W2 → FRM-541:W1, PK-364:W13 → FRM-541:W2
+close: 2026-11-09 wing 3 — done: PK-364:W1 PK-364:W3 PK-364:W4 PK-364:W5 PK-364:W6 PK-364:W7 PK-364:W8 PK-364:W9 PK-364:W10 PK-364:W11 PK-364:W12 PK-364:W14 PK-364:W15 PK-364:W17 PK-364:W18 PK-364:W19 PK-364:W20 PK-364:W21 PK-364:W22 PK-364:W23 PK-364:W24 PK-364:W25 PK-364:W29 PK-364:W30 PK-364:W31 PK-364:W32 PK-364:W33 PK-364:W34 PK-364:W35 — the recipe groomed and run 2 landed (rules, output-crew/glados, ledger, FRM-542/543/544); moved: W2 W13 → FRM-541, W16 W26 W27 W28 → FRM-540
 <!-- SECTION:NOTES:END -->
