@@ -27,7 +27,7 @@ ordinal: 1000
 - [ ] #9 ⏳ FRM-524 operator-override switch, needs human — waits for: dima's flip word
 - [ ] #10 📅 mods lane beside the herdr lane (o105, PK-363:W142, W149, W155): one fresh codie with its sixth sense on (FRM-505:W1941), the herdr lane's x-mod-stash asks first, as soon as possible, then FRM-538's public-post guard half, FRM-544 after its sign grill, FRM-505, FRM-491, FRM-495 (his o87); first ask: orbit's follow keeps its hiddenNote (wishkeeper 22:44) — on: 2026-11-10
 - [ ] #11 📅 boot clio in herdr carefully from .scratch/herdr/plan.md's recipe, `--remote-control` on (PK-363:W117–W118, W145), fix what breaks as it boots, then FRM-542's main-seat check prints "" and FRM-542 closes — on: 2026-11-10
-- [ ] #12 📅 start only crow and helga, in herdr panes with -n and --remote-control per o107 (PK-363:W119, W146–W148); their start scripts get a pane door first — on: 2026-11-10
+- [ ] #12 📅 start only crow and helga, in herdr panes with -n and --remote-control per o107 (PK-363:W119, W146–W148, W156), the boot skill's herdr line, by hand until their start scripts get a pane door — on: 2026-11-10
 - [ ] #13 📅 herdr quick lane: main drives, dima steers the looks, scope seeded by codie's herdr map — on: 2026-11-10
 - [ ] #14 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
 - [ ] #15 📅 wing 1 opens after the herdr explore: its tails, then speak v2 — on: 2026-11-10
