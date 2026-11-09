@@ -66,7 +66,7 @@ home/.claude/agents/fresh-eyes.md	2600	seed 2026-10-21, its size + 15 %
 home/.claude/agents/helper-lite.md	2400	seed 2026-10-16, its size + 15 %
 home/.claude/agents/helper.md	1900	seed 2026-10-16, its size + 15 %
 home/.claude/agents/researcher.md	2100	seed 2026-10-16, its size + 15 %
-home/.claude/agents/retro.md	1800	seed 2026-10-16, its size + 15 %
+home/.claude/agents/retro.md	2350	2026-11-10: +550 the weekly retro's rubric (score, cost-to-dima first, ≥3 sightings, the missing guard, a ready diff), dima's o105 go
 home/.claude/agents/scout.md	2300	2026-10-19: the scout shaping (dima's ticks o25–o29) — a proactive trigger and a map answer contract; its size + 15 %
 home/.claude/agents/wisphunter.md	4400	seed 2026-10-29, its size + 15 %
 home/.claude/CLAUDE.md	16100	seed 2026-10-16, today's size + 15 %
@@ -143,7 +143,7 @@ home/.claude/rules/fleet-hazards.md	7700	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-identity.md	4550	+50 2026-11-07: his 3 wing lines, PK-351. seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-mods.md	4500	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-output-format.md	14900	seed 2026-10-16, today's size + 15 %
-home/.claude/rules/fleet-tooling.md	7000	seed 2026-10-16, today's size + 15 %
+home/.claude/rules/fleet-tooling.md	7200	2026-11-10: +200 desktop checks read the a11y tree first, dima's o105 go
 home/.claude/rules/fleet-vibe.md	8200	+200 2026-11-09: ⛩️ gate (dima o81, FRM-530); +50 2026-11-07: his 3 wing lines, PK-351. +200 2026-11-07: park vs ⏹️ stop (dima, 18:23); +200 2026-11-06: 🪽 wing, dima's name; +200 2026-11-03: verdicts 🌼 clean, 🩹 fix, 🪜 escalate (dima o11); +100 2026-11-02: ⚖️ worth it + 🔌 fleet wired, wishkeeper folds; +450 2026-11-02: ⚖️ worth it, 🔌 fleet wired (dima o61); 2026-10-29: 🔮 summon, 🫧 spawn, ⏹️ stop, ⚗️ facility (the rename sweep spec); 2026-10-25: ☘️ almost-freebie (dima o77); 2026-10-23: 🐦‍🔥 second wind (o84) + the six lane-init words (o93)
 home/.claude/rules/fleet-voice.md	2700	seed 2026-10-16, today's size + 15 %
 home/.claude/sline/AGENTS.md	900	seed 2026-10-16, today's size + 15 %

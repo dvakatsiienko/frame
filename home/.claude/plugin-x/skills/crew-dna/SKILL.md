@@ -34,6 +34,7 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 
 **evidence**
 - every claim carries a `file:line` or a command with its output; anything else is labelled inference
+- a «done» carries one read-back line: the state it changed, read after the write (the file on disk, the pr head, the ticket's state), never the tool's own success line
 - a number from another member is measured again before you repeat it; your own comes from the run's output
 - one run is evidence of more than one thing: name what else it shows before calling it proof
 - a cross-repo subject (go, charm, monorepo, pr flow) starts at `x knowledge list`, then `x knowledge read <name>` <!-- mac -->
