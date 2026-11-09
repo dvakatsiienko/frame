@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T19:29:00Z'
+updated_date: '2026-11-09T20:04:00Z'
 labels:
   - s
   - clio-wing-1
@@ -27,6 +27,7 @@ ordinal: 1001
 - [ ] #9 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
 - [ ] #10 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #11 💤 FRM-530 gates page — later: dima, parked on his 11-07 word
+- [ ] #12 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 <!-- AC:END -->
 
 ## Implementation Notes
