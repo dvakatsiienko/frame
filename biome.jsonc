@@ -69,6 +69,17 @@
       }
     },
     {
+      // herdr mods import `herdr`, `gpui-kit` and `gpui-base`, modules the Herdr app provides at load, and herdr loads a
+      // mod through its default export.
+      "includes": ["home/.config/herdr-app/mods/**"],
+      "linter": {
+        "rules": {
+          "correctness": { "noUndeclaredDependencies": "off" },
+          "style": { "noDefaultExport": "off" }
+        }
+      }
+    },
+    {
       // Two shapes the dependency rule cannot see.
       //
       // The vite config imports the bundler and its plugins, which are workspace-root
