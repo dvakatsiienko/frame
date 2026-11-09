@@ -277,7 +277,8 @@
   - given `--pairs`, then the round takes the gate queue's long slot itself, one turn for every pair
   - given a mod's test, then only that test file runs on the mod's overlay, each pair's seconds in its row (about 10 s a pair on `x-mod-guard`, against red-proof's inferred 64 s), and the runner's own load error reads broken whatever it reddened; an assertion whose message quotes a load word, a go `t.Fatalf` line included, reads red
   - decision: a throw from the mutated code reads red, since the mutant is the run's only change (dima, o82); `--revert` keeps any throw broken
-  - given a file a go test opens at runtime, not one go builds, then its mutant runs in the copy, since an overlay never reaches it
+  - given a file a go test opens at runtime, not one go builds, then its mutant runs in the copy, a `-- go …` command included, since an overlay never reaches it
+  - given a `.ts` file no tsconfig above it includes, then no type check runs and a still green row says so; type errors count, so a second one worded like a clean one reads broken
   - given a link in the repo, an absolute one or a workspace package's in `node_modules`, then the copy's link points at the copy; a file that resolves outside the repo, or a cwd outside it, refuses before any run
   - given a picked runner whose clean run names no test that ran, `--run` matching nothing included, then it refuses; `--run` beside a mod's test exits 2, its run being the one file
   - limit: a mod's `.ts` gets no type check, only `claude plugin validate`

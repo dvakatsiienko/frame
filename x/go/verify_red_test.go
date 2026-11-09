@@ -603,6 +603,44 @@ func TestVerifyRedReadsATimeoutBrokenAndANoMatchRefused(t *testing.T) {
 	}
 }
 
+// round 2: a type error worded like one the clean file has still counts; a file no tsconfig includes says it went unchecked
+func TestVerifyRedCountsTypeErrorsAndNamesAnUncheckedFile(t *testing.T) {
+	t.Parallel()
+	f := typedRedFixture(t)
+	write(t, filepath.Join(f.dir, "lib.ts"), "export const limit: number = 3;\nexport const bad: number = \"x\" as unknown as string;\n")
+	commitAll(t, f.dir)
+	got, _ := verifyRedIn(t, f, nil, f.file, "limit: number = 3", "limit: number = \"x\" as unknown as string", f.test)
+	if rows := pairRows(t, got); got.code != 1 || len(rows) != 1 || rows[0]["verdict"] != verdictBroken {
+		t.Fatalf("exit %d, pairs %v, want the second same-worded error broken:\n%s", got.code, rows, got.stdout)
+	}
+
+	g := typedRedFixture(t)
+	write(t, filepath.Join(g.dir, "tsconfig.json"), `{"compilerOptions": {"strict": true, "noEmit": true, "module": "esnext", "moduleResolution": "bundler", "target": "es2022", "allowImportingTsExtensions": true, "types": []}, "include": ["src/**/*.ts"]}`+"\n")
+	write(t, filepath.Join(g.dir, "src/keep.ts"), "export {};\n")
+	commitAll(t, g.dir)
+	got, _ = verifyRedIn(t, g, nil, g.file, "limit: number = 3", "limit: string = 3", g.test)
+	if rows := pairRows(t, got); len(rows) != 1 || !strings.Contains(fmt.Sprint(rows[0]["why"]), "unchecked") {
+		t.Fatalf("pairs %v, want the row to say no tsconfig checks lib.ts:\n%s", rows, got.stdout)
+	}
+}
+
+// round 2: a dash command reads a runtime file and a flag's absolute value from the copy
+func TestVerifyRedRunsADashCommandOnTheCopy(t *testing.T) {
+	t.Parallel()
+	g := goRedFixture(t)
+	write(t, filepath.Join(g.dir, "limit.txt"), "3\n")
+	write(t, filepath.Join(g.dir, "lib_test.go"), "package p\n\nimport (\n\t\"os\"\n\t\"testing\"\n)\n\nfunc TestLimit(t *testing.T) {\n\tif body, _ := os.ReadFile(\"limit.txt\"); string(body) != \"3\\n\" {\n\t\tt.Fatalf(\"read %q\", body)\n\t}\n}\n")
+	commitAll(t, g.dir)
+	if got, _ := verifyRedIn(t, g, nil, "limit.txt", "3", "4", "--", "go", "test", "-v", "."); got.code != 0 {
+		t.Fatalf("a runtime file through -- go test: exit %d, want red:\n%s", got.code, got.stdout)
+	}
+
+	v := vitestRedFixture(t)
+	if got, _ := verifyRedIn(t, v, nil, v.file, v.anchor, v.replacement, "--", "vitest", "run", "--root="+v.dir, "lib.test.js"); got.code != 0 {
+		t.Fatalf("a --root=<abs> flag: exit %d, want red, its value read in the copy:\n%s", got.code, got.stdout)
+	}
+}
+
 // review round: a go tree reached through a symlinked dir still reads the mutant
 func TestVerifyRedOverlaysThroughASymlinkedDir(t *testing.T) {
 	t.Parallel()

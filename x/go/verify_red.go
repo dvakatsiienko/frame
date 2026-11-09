@@ -33,6 +33,8 @@ type pairRow struct {
 type redRun struct {
 	ok          bool
 	log, broken string
+	// what the run could not check, named on a still green row
+	note string
 }
 
 // the clean run and every mutant go through one harness, the file's content their only difference; none writes the real tree
@@ -315,7 +317,7 @@ func judgeMutant(got redRun) pairRow {
 		return pairRow{Verdict: verdictBroken, Why: got.broken}
 	}
 	if got.ok {
-		return pairRow{Verdict: verdictStillGreen, Why: "the test passed with the line swapped: it does not read it"}
+		return pairRow{Verdict: verdictStillGreen, Why: strings.TrimSuffix("the test passed with the line swapped: it does not read it; "+got.note, "; ")}
 	}
 	read := readTestOutput(got.log)
 	names := failedNames(read)
@@ -395,11 +397,14 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 		return nil, err
 	}
 	name, _ := flags["run"].(string)
+	isGo := command != nil && filepath.Base(command[0]) == "go"
+	// a cached go test result hides the mutant
+	if isGo && len(command) > 1 && command[1] == "test" && !slices.ContainsFunc(command, func(arg string) bool { return strings.HasPrefix(arg, "-count") }) {
+		command = slices.Insert(slices.Clone(command), 2, "-count=1")
+	}
 	switch {
-	case command != nil && filepath.Base(command[0]) == "go":
-		if len(command) > 1 && command[1] == "test" && !slices.ContainsFunc(command, func(arg string) bool { return strings.HasPrefix(arg, "-count") }) {
-			command = slices.Insert(slices.Clone(command), 2, "-count=1")
-		}
+	// an overlay reaches only what go builds; a file a test opens at runtime is read from the copy
+	case isGo && filepath.Ext(abs) == ".go":
 		return newGoHarness(abs, "", command)
 	case command != nil:
 		return newCopyHarness(abs, command)
@@ -480,6 +485,8 @@ type copyHarness struct {
 	// the clean run's type errors: a mutant is broken only by one it adds, so a repo already red on tsc still proves
 	typeErrors []string
 	typed      bool
+	// the tsconfig whose program holds the file, found on the clean file; unchecked says why none does
+	project, unchecked string
 }
 
 func newCopyHarness(file string, command []string) (redHarness, error) {
@@ -546,7 +553,10 @@ func (h *copyHarness) run(content []byte) (redRun, error) {
 	command := make([]string, len(h.command))
 	for i, arg := range h.command {
 		command[i] = arg
-		if filepath.IsAbs(arg) {
+		// a path as its own arg or as a flag's value, `--root=/repo/x`, both read the copy
+		if flag, value, isFlag := strings.Cut(arg, "="); isFlag && strings.HasPrefix(flag, "-") && filepath.IsAbs(value) {
+			command[i] = flag + "=" + h.inCopy(value)
+		} else if filepath.IsAbs(arg) {
 			command[i] = h.inCopy(arg)
 		}
 	}
@@ -558,7 +568,7 @@ func (h *copyHarness) run(content []byte) (redRun, error) {
 	c := exec.Command(command[0], command[1:]...)
 	c.Dir = dir
 	got := runTestCmd(c)
-	return redRun{ok: got.ok, log: got.log}, nil
+	return redRun{ok: got.ok, log: got.log, note: h.unchecked}, nil
 }
 
 var (
@@ -569,45 +579,55 @@ var (
 	goTestLog = regexp.MustCompile(`^\s+\S+_test\.go:\d+: `)
 )
 
-// a type error the clean file did not have; no tsconfig, no check
+// a type error the clean file did not have, counted, so a second error worded like a clean one still reads; no tsconfig, no check
 func (h *copyHarness) newTypeErrors() string {
 	if !typedSource.MatchString(h.file) {
 		return ""
 	}
+	clean := map[string]int{}
+	for _, err := range h.typeErrors {
+		clean[tscPosition.ReplaceAllString(err, "")]++
+	}
 	for _, err := range h.typeErrorsNow() {
-		if !slices.ContainsFunc(h.typeErrors, func(clean string) bool {
-			return tscPosition.ReplaceAllString(clean, "") == tscPosition.ReplaceAllString(err, "")
-		}) {
+		key := tscPosition.ReplaceAllString(err, "")
+		if clean[key] == 0 {
 			return err
 		}
+		clean[key]--
 	}
 	return ""
 }
 
-// tsc --noEmit on the nearest tsconfig above the file, as the copy holds it now
+// tsc --noEmit on the nearest tsconfig whose program holds the file: a tsconfig whose include misses it checks nothing
 func (h *copyHarness) typeErrorsNow() []string {
-	project := ""
-	for dir := filepath.Dir(h.inCopy(h.file)); strings.HasPrefix(dir, h.copy); dir = filepath.Dir(dir) {
-		if exists(filepath.Join(dir, "tsconfig.json")) {
-			project = dir
-			break
-		}
-	}
-	tsc := nearestBin(project, "tsc")
-	if project == "" || tsc == "" {
+	if h.unchecked != "" {
 		return nil
 	}
-	c := exec.Command(tsc, "--noEmit", "-p", project)
-	c.Dir = project
-	// tsc prints its errors on stdout; stderr holds its own crash, never a type error
-	out, _ := c.Output()
-	var errs []string
-	for line := range strings.SplitSeq(string(out), "\n") {
-		if strings.Contains(line, "error TS") {
-			errs = append(errs, strings.TrimSpace(line))
+	rel, _ := filepath.Rel(h.root, h.file)
+	for dir := filepath.Dir(h.inCopy(h.file)); inside(h.copy, dir); dir = filepath.Dir(dir) {
+		tsc := nearestBin(dir, "tsc")
+		if (h.project != "" && dir != h.project) || !exists(filepath.Join(dir, "tsconfig.json")) || tsc == "" {
+			continue
+		}
+		c := exec.Command(tsc, "--noEmit", "--listFiles", "-p", dir)
+		c.Dir = dir
+		// tsc prints its errors and its file list on stdout; stderr holds its own crash, never a type error
+		out, _ := c.Output()
+		holds := false
+		var errs []string
+		for line := range strings.SplitSeq(string(out), "\n") {
+			holds = holds || strings.HasSuffix(strings.TrimSpace(line), string(filepath.Separator)+rel)
+			if strings.Contains(line, "error TS") {
+				errs = append(errs, strings.TrimSpace(line))
+			}
+		}
+		if holds || h.project != "" {
+			h.project = dir
+			return errs
 		}
 	}
-	return errs
+	h.unchecked = "no tsconfig above " + rel + " includes it, so its types go unchecked"
+	return nil
 }
 
 func nearestBin(dir, name string) string {
