@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T19:26:00Z'
+updated_date: '2026-11-09T19:29:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,18 +16,17 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-525 perf line: talk it through with dima, his «drop it» (21:24), right after the FRM-557 call
-- [ ] #2 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
-- [ ] #3 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
-- [ ] #4 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
-- [ ] #5 ⏳ FRM-551 vm lane: codie 25b0e95c summoned 20:52, greenlight its lane plan, sixth sense at its first pr — waits for: codie's lane plan
-- [ ] #6 ⏳ FRM-557 test hooks trimmed (related at commit, twin on main code): sign, then it joins the vm lane after FRM-551 — waits for: dima's sign
-- [ ] #7 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
-- [ ] #8 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
-- [ ] #9 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
-- [ ] #10 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
-- [ ] #11 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #12 💤 FRM-530 gates page — later: dima, parked on his 11-07 word
+- [ ] #1 ⏳ FRM-539 gate step time budget: build as a quick lane, signed — waits for: FRM-534 closed
+- [ ] #2 ⏳ FRM-383 x verify: time W3 «faster», then x lane landed FRM-383 --pr 150 --apply, by 11-12 — waits for: one real x verify red call
+- [ ] #3 ⏳ FRM-537 next probes: vitest pools, then FRM-535 go -parallel grid — waits for: spare usage
+- [ ] #4 ⏳ FRM-551 vm lane: codie 25b0e95c summoned 20:52, greenlight its lane plan, sixth sense at its first pr — waits for: codie's lane plan
+- [ ] #5 ⏳ FRM-557 test hooks trimmed, signed: joins the vm lane as its next chunk, spec section and lane-plan lines at FRM-551's final — waits for: FRM-551's final
+- [ ] #6 📅 FRM-517 temp dir: count at 17:28 against 345, under 100 grown closes it — on: 2026-11-10
+- [ ] #7 📅 FRM-534 related tests at commit: the day read at 17:30, then close — on: 2026-11-10
+- [ ] #8 📅 speak v2 planning with dima, first open line of the day; FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-10
+- [ ] #9 📅 FRM-533 reuse proven results: the day read, then shape step 2; it joins the vm lane after FRM-557 — on: 2026-11-10
+- [ ] #10 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #11 💤 FRM-530 gates page — later: dima, parked on his 11-07 word
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -80,4 +79,8 @@ done 2026-11-09: FRM-551 kill gate read 2 — 288 cpu-s a day idle at 4 vcpus, u
 2026-11-09 21:21: speak v2 moves to wing 1 (dima 21:17 PK-370:W5, via wing 2's low tide triage); FRM-530 back on the flyway as 💤
 
 done 2026-11-09 21:26: 💤 PK-370 move tests off pre-commit, to ci or pre-push — later: dima, a little later (his 18:43) (PK-370 done)
+
+done 2026-11-09 21:29: FRM-525 perf line: talk it through with dima, his «drop it» (21:24), right after the FRM-557 call (FRM-525 Todo, FRM-557 Todo)
+
+2026-11-09 21:29: FRM-525 line dropped on dima's word (21:24, «drop the FRM-525 line»; 21:28 «proceed»): the cpu watch until 11-14 ends; the ticket stays open as the performance umbrella (parent of FRM-533, 537, 551, 555, 557)
 <!-- SECTION:NOTES:END -->
