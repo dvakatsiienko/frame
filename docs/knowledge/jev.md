@@ -73,7 +73,7 @@ re-check this list first**; the hook already tags these picks «⚠ read first»
 2. any change → `RUNS=3` on the live input, then commit with the numbers in the body.
 
 **verify — what a jev change's sixth sense runs (the 10-05 retros)**
-- unit test + `red-proof` + one live `suggest()` for every ⚠ line; an exit line names the hook timeout the flow must fit (the router hook: 8 s, two sequential calls ~1.5 s)
+- unit test + `x verify red` + one live `suggest()` for every ⚠ line; an exit line names the hook timeout the flow must fit (the router hook: 8 s, two sequential calls ~1.5 s)
 - a multi-stage flow ships its per-stage reason (`stage` field) in the first build
 - jev down or out of credit: verify from saved raws — copy the raws, put a stub `claude` first on PATH, unset the jev key
 - «0 requests» is proven by a fetch-stub preload (`NODE_OPTIONS=--import`, every request logged to a file), across scripts and vitest workers

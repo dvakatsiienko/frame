@@ -44,7 +44,7 @@
         },
         {
             "example": "x gh pr 12 --since 2026-10-09T15:00:00Z",
-            "gist": "github reads in one call: a pr's checks and its comment feeds",
+            "gist": "github reads in one call: a pr's checks and comments",
             "identity": "every read acts as the x-codie-cc app, its token from the keychain (keys.go); writes stay with x as codie -- gh",
             "name": "gh"
         },
@@ -60,7 +60,7 @@
         },
         {
             "example": "x verify red lib.go 'n > 0' 'n >= 0' lib_test.go",
-            "gist": "a test proven real: the code broken on purpose off the real tree, the test must go red",
+            "gist": "a test proven real by a mutant, off the tree",
             "name": "verify"
         },
         {
@@ -75,7 +75,7 @@
         },
         {
             "example": "x stats --days 7",
-            "gist": "which verbs are used, by whom, how fast, how they fail",
+            "gist": "which verbs are used, by whom, how they fail",
             "name": "stats"
         },
         {
@@ -1351,7 +1351,8 @@
             },
             "name": "verify red",
             "needsApply": false,
-            "purpose": "prove a test reads a line: it passes on the file as it is and goes red with the line swapped, the real tree never written",
+            "purpose": "prove a test reads a line: green on the file, red with the line swapped, the real tree never written",
+            "replaces": ["home/.claude/plugin-x/bin/red-proof"],
             "steps": ["check", "clean", "mutate"],
             "touches": [
                 "the os tmp: the mutant, a go overlay or a copy of the tree the runs read",

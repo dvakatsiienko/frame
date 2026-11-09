@@ -5,7 +5,7 @@ import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
 // warn mode is the code's to give (WARN_ONLY), never the store's: a test cannot reach the hook's module, so the warn
-// path is proven by red-proof listing a rule there, which turns the first test below red
+// path is proven by `x verify red` listing a rule there, which turns the first test below red
 function world(on: On) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
