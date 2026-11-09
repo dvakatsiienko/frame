@@ -445,6 +445,66 @@ func TestDecampLeavesABranchOutsideTheForkShape(t *testing.T) {
 	}
 }
 
+// a squash-merged lane: the branch on origin at the pr's head, a clean tree on it, github naming the merged pr
+func squashedLane(t *testing.T) (*mergeWorld, string) {
+	t.Helper()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	w.laneBranch(t, "codie/FRM-1-x")
+	tree := w.treeOn(t, "codie/FRM-1-x")
+	w.hub.mu.Lock()
+	defer w.hub.mu.Unlock()
+	w.hub.pages[repoPath+"/commits/"+w.head+"/pulls"] = `[{"number":7,"merged_at":"2026-11-09T12:00:00Z","head":{"sha":"` + w.head + `","ref":"codie/FRM-1-x"}}]`
+	return w, tree
+}
+
+func (w *mergeWorld) decamp(t *testing.T, tree string) ran {
+	t.Helper()
+	return xIn(t, w.clone, w.env, "lane", "decamp", tree, "--apply")
+}
+
+// FRM-553 exit 3c: decamp takes the merged lane branch of the tree it takes, local and on origin, and says so
+func TestDecampTakesTheMergedLaneBranchOfItsTree(t *testing.T) {
+	t.Parallel()
+	w, tree := squashedLane(t)
+
+	got := w.decamp(t, tree)
+
+	if got.code != 0 || exists(tree) || w.onClone(t, "codie/FRM-1-x") || w.onOrigin(t, "codie/FRM-1-x") || !strings.Contains(got.stdout, "codie/FRM-1-x gone") {
+		t.Fatalf("exit %d, tree %v, local %v, remote %v: want all gone and said so\n%s", got.code, exists(tree), w.onClone(t, "codie/FRM-1-x"), w.onOrigin(t, "codie/FRM-1-x"), got.stdout)
+	}
+}
+
+// FRM-553 exit 3c: a commit past the merged head, or a branch no merged pr carries, keeps the branch, named
+func TestDecampKeepsAndNamesALaneBranchTheMergeDidNotCarry(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, says string
+		change     func(t *testing.T, w *mergeWorld, tree string)
+	}{
+		{"a commit past the merge", "holds a commit the merge did not carry", func(t *testing.T, w *mergeWorld, tree string) {
+			gitT(t, tree, "commit", "-q", "--allow-empty", "-m", "after the merge")
+		}},
+		{"no merged pr", "no merged pr carries", func(t *testing.T, w *mergeWorld, _ string) {
+			w.hub.mu.Lock()
+			defer w.hub.mu.Unlock()
+			w.hub.pages[repoPath+"/commits/"+w.head+"/pulls"] = `[{"number":7,"merged_at":null,"head":{"sha":"` + w.head + `","ref":"codie/FRM-1-x"}}]`
+		}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w, tree := squashedLane(t)
+			c.change(t, w, tree)
+
+			got := w.decamp(t, tree)
+
+			if got.code != 0 || exists(tree) || !w.onClone(t, "codie/FRM-1-x") || !strings.Contains(got.stdout, c.says) {
+				t.Fatalf("exit %d, tree %v, local %v: want the tree gone, the branch kept and %q named\n%s", got.code, exists(tree), w.onClone(t, "codie/FRM-1-x"), c.says, got.stdout)
+			}
+		})
+	}
+}
+
 func TestDecampFailsWhenOriginRefusesTheForksDelete(t *testing.T) {
 	t.Parallel()
 	main, tree := forkWorld(t, "ancestor")
