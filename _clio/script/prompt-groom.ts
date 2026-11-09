@@ -20,13 +20,20 @@ import {
 import path from 'node:path';
 
 import { steersOf } from './chat-lines.ts';
+import { seatOf } from './session-registry.ts';
 import { normalize, prefixWish, repeatedIds, unwrapIds } from './wish-cover.ts';
 
 const home = process.env.HOME ?? '';
-const promptDir =
-    process.env.PROMPT_RAW_DIR ?? path.join(home, '.local/state/clio/prompts');
-const groomDir =
-    process.env.PROMPT_GROOM_DIR ?? path.join(home, '.local/state/clio/grooms');
+// each clio seat keeps its own prompts and grooms: main at the root, a wing in `wing-<N>/` (FRM-542)
+const seat = seatOf() ?? '';
+const promptDir = path.join(
+    process.env.PROMPT_RAW_DIR ?? path.join(home, '.local/state/clio/prompts'),
+    seat,
+);
+const groomDir = path.join(
+    process.env.PROMPT_GROOM_DIR ?? path.join(home, '.local/state/clio/grooms'),
+    seat,
+);
 const pocketDir =
     process.env.POCKET_DIR ?? path.join(import.meta.dirname, '../pocket');
 // the check binds every fold from the day the rules landed (dima's o61–o63) through today
@@ -75,7 +82,7 @@ export const groomedOnDisk: Groomed = (day, hhmm, item) => {
         .some(([, date, time, id]) => date === day && (id ?? time) === hhmm);
 };
 
-// a wing's prompts reach no prompt log, so a minute the log lacks owes no groom, even after its wing label comes off
+// a minute this seat's log lacks was typed in another seat or before the log existed, so it owes this seat no groom
 export const groomedOrUnlogged: Groomed = (day, key, item) => {
     if (groomedOnDisk(day, key, item)) return true;
     if (!/^\d{2}:\d{2}$/.test(key)) return false;

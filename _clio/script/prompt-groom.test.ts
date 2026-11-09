@@ -146,6 +146,7 @@ describe('groomedOrUnlogged', () => {
         const dir = mkdtempSync(join(tmpdir(), 'prompt-log-'));
         writeFileSync(join(dir, `${day}.md`), '## 09:12\n\na prompt\n');
         vi.stubEnv('PROMPT_RAW_DIR', dir);
+        vi.stubEnv('CLIO_SEAT', '');
         vi.resetModules();
         const { groomedOrUnlogged } = await import('./prompt-groom.ts');
         vi.unstubAllEnvs();

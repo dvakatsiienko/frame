@@ -1,10 +1,17 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { dimasText, groomNudge, wingNudge } from './prompt-raw-save.ts';
+import { seatOf } from './session-registry.ts';
 
 const notice =
     '<system-reminder>\nThe user\'s fork "🦉 clio (fork)" finished a turn.\n</system-reminder>\n';
@@ -107,6 +114,7 @@ describe('wingNudge', () => {
                 encoding: 'utf8',
                 env: {
                     ...process.env,
+                    CLIO_SEAT: '',
                     HOME: home,
                     PROMPT_GROOM_DIR: join(home, 'grooms'),
                     PROMPT_RAW_DIR: join(home, 'prompts'),
@@ -125,5 +133,67 @@ describe('wingNudge', () => {
         expect(
             wingNudge('what should i buy now', fixture(undefined)),
         ).toBeUndefined();
+    });
+});
+
+describe('seatOf', () => {
+    function seatHome(mainPid: number, sessions: Record<number, string>) {
+        const home = mkdtempSync(join(tmpdir(), 'seat-'));
+        mkdirSync(join(home, '.local/state/clio'), { recursive: true });
+        mkdirSync(join(home, '.claude/sessions'), { recursive: true });
+        writeFileSync(
+            join(home, '.local/state/clio/main-session'),
+            `pid=${mainPid}\nsession=abc\n`,
+        );
+        for (const [pid, name] of Object.entries(sessions))
+            writeFileSync(
+                join(home, '.claude/sessions', `${pid}.json`),
+                JSON.stringify({ name, pid: Number(pid) }),
+            );
+        return home;
+    }
+
+    test('the main seat writes at the root', () => {
+        expect(seatOf(seatHome(10, { 10: '🦉 clio' }), 10)).toBe('');
+    });
+
+    test('a wing writes in its own folder', () => {
+        expect(seatOf(seatHome(10, { 11: '🦉🪽 clio: wing 3' }), 11)).toBe(
+            'wing-3',
+        );
+    });
+
+    test.each([
+        ['a plain fork', '🦉 clio (fork)'],
+        ['a lane member', '🌗 🔧 codie: cli lane | FRM-383'],
+    ])('%s keeps no log', (_kind, name) => {
+        expect(seatOf(seatHome(10, { 12: name }), 12)).toBeUndefined();
+    });
+});
+
+describe('the hook in a wing', () => {
+    test('a wing prompt lands in the wing folder, never in main log', () => {
+        const home = mkdtempSync(join(tmpdir(), 'seat-hook-'));
+        const out = spawnSync(
+            'node',
+            [join(import.meta.dirname, 'prompt-raw-save.ts')],
+            {
+                encoding: 'utf8',
+                env: {
+                    ...process.env,
+                    CLIO_SEAT: 'wing-3',
+                    HOME: home,
+                    PROMPT_GROOM_DIR: join(home, 'grooms'),
+                    PROMPT_RAW_DIR: join(home, 'prompts'),
+                },
+                input: JSON.stringify({ prompt: 'lets do #9' }),
+            },
+        );
+        expect(out.status).toBe(0);
+        const day = new Date().toLocaleDateString('sv');
+        expect(
+            readFileSync(join(home, 'prompts/wing-3', `${day}.md`), 'utf8'),
+        ).toContain('lets do #9');
+        expect(existsSync(join(home, 'prompts', `${day}.md`))).toBe(false);
     });
 });
