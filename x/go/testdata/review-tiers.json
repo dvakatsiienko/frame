@@ -1,0 +1,403 @@
+{
+    "chunks": [
+        {
+            "paths": [
+                "x/FTR.md",
+                "x/go/gh.go",
+                "x/go/gh_test.go",
+                "x/go/merge_auto.go",
+                "x/go/merge_auto_test.go",
+                "x/go/merge_deploy_test.go",
+                "x/go/merge_mergeable_stacks_test.go",
+                "x/go/merge_mergeable_test.go",
+                "x/go/merge_refusal_stacks_test.go",
+                "x/go/merge_refusal_test.go",
+                "x/go/registry.json",
+                "x/go/stacks.go",
+                "x/go/stacks_test.go",
+                "x/go/wait_clock.go"
+            ],
+            "pr": 151,
+            "title": "🔧 x: merge-auto reads github's mergeable state before it merges"
+        },
+        {
+            "paths": [
+                "docs/knowledge/gates.md",
+                "docs/knowledge/jev.md",
+                "docs/test-drive/gate-speed.md",
+                "home/.claude/plugin-x/bin/red-proof",
+                "home/.claude/plugin-x/mods/.claude/skills/mods-verify/SKILL.md",
+                "home/.claude/plugin-x/mods/AGENTS.md",
+                "home/.claude/plugin-x/mods/red-proof.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/tests/warn.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-stash/tests/quiet.test.ts",
+                "home/.claude/plugin-x/skills/guide-code/SKILL.md",
+                "home/.claude/plugin-x/skills/guide-go/SKILL.md",
+                "script/gate-queue.sh",
+                "script/lib/red-proof.test.ts",
+                "script/lib/research-lanes.test.ts",
+                "script/lib/x-go-reads.txt",
+                "script/research-lanes.sh",
+                "x/.claude/skills/x-verify/SKILL.md",
+                "x/FTR.md",
+                "x/GLOSSARY.md",
+                "x/go/clone_darwin.go",
+                "x/go/clone_other.go",
+                "x/go/go.mod",
+                "x/go/main.go",
+                "x/go/registry.json",
+                "x/go/stats_outside_test.go",
+                "x/go/verify_red.go",
+                "x/go/verify_red_test.go",
+                "x/go/verify_revert.go",
+                "x/go/x_test.go"
+            ],
+            "pr": 150,
+            "title": "🔧 x: x verify red, red proofs and mutation rounds off the real tree"
+        },
+        {
+            "paths": ["package.json", "pnpm-lock.yaml"],
+            "pr": 149,
+            "title": "🌲 evergreen: Update dependency vite to v8.3.6"
+        },
+        {
+            "paths": ["package.json", "pnpm-lock.yaml"],
+            "pr": 148,
+            "title": "🌲 evergreen: Update dependency @biomejs/biome to v2.6.5"
+        },
+        {
+            "paths": [
+                "docs/test-drive/gate-speed.md",
+                "home/.claude/plugin-x/mods/test.ts",
+                "package.json",
+                "script/index-run.sh",
+                "script/lib/index-run.test.ts",
+                "script/lib/test-cpu-budget.test.ts",
+                "script/test-commit.sh",
+                "script/test-cpu-budget.sh",
+                "script/test-cpu-budget.tsv",
+                "x/FTR.md",
+                "x/GLOSSARY.md",
+                "x/go/AGENTS.md",
+                "x/go/gates_test.go",
+                "x/go/lane.go",
+                "x/go/lane_test.go",
+                "x/go/merge_auto.go",
+                "x/go/merge_auto_test.go",
+                "x/go/rebase_main.go",
+                "x/go/verify_revert_test.go",
+                "x/go/verify_tree_test.go"
+            ],
+            "pr": 147,
+            "title": "🔧 x: fewer git spawns per go fixture, a cpu budget at its doors"
+        },
+        {
+            "paths": [
+                "docs/knowledge/pr-flow.md",
+                "home/.claude/plugin-x/mods/AGENTS.md",
+                "home/.claude/plugin-x/mods/twins.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/FTR.md",
+                "home/.claude/plugin-x/mods/x-mod-guard/GLOSSARY.md",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/operator-override.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/tests/operator-override.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-stash/FTR.md",
+                "home/.claude/plugin-x/mods/x-mod-stash/GLOSSARY.md",
+                "home/.claude/plugin-x/mods/x-mod-stash/hooks/register.tsx",
+                "home/.claude/plugin-x/mods/x-mod-stash/tests/operator-override.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-stash/types/stash.d.ts",
+                "x/FTR.md",
+                "x/GLOSSARY.md",
+                "x/go/AGENTS.md",
+                "x/go/lane_landed.go",
+                "x/go/main.go",
+                "x/go/merge_auto.go",
+                "x/go/merge_auto_test.go",
+                "x/go/merge_hold.go",
+                "x/go/merge_hold_test.go",
+                "x/go/merge_sign.go",
+                "x/go/merge_sign_test.go",
+                "x/go/operator_override.go",
+                "x/go/operator_override_replay_test.go",
+                "x/go/operator_override_test.go",
+                "x/go/registry.json",
+                "x/go/stacks_test.go"
+            ],
+            "pr": 146,
+            "title": "🔧 x: operator-override, one switch only dima flips, prs first"
+        },
+        {
+            "paths": [
+                "_clio/pocket/tasks/pk-308 - shift-skill-review-with-dima-after-the-afk-hour-shift.md",
+                "_clio/pocket/tasks/pk-310 - finder-cpu-bursts-restart-the-mac-after-halt-re-run-the-5-min-finder-watch.md",
+                "_clio/pocket/tasks/pk-336 - day-plan-11-06-side-channel.md",
+                "_clio/pocket/tasks/pk-342 - wire-what-we-built-read-the-cli-chunks-wiring-mains.md",
+                "_clio/pocket/tasks/pk-343 - wing-hand-back-a-label-off-an-item-with-same-day-wish-lines-reds-the-groom-check.md",
+                "_clio/pocket/tasks/pk-344 - retro-leftovers-from-11-06-four-lines-with-no-home-yet.md",
+                "_clio/pocket/tasks/pk-346 - day-plan-11-07-wing-1.md",
+                "_clio/pocket/tasks/pk-349 - day-plan-11-07-main.md",
+                "docs/test-drive/gate-speed.md",
+                "docs/test-drive/gate-speed/queue-budget.mjs",
+                "home/.claude/plugin-x/mods/AGENTS.md",
+                "home/.claude/plugin-x/mods/test.test.ts",
+                "home/.claude/plugin-x/mods/test.ts",
+                "lefthook.yaml",
+                "script/index-run.sh",
+                "script/lib/gate-queue.test.ts",
+                "script/lib/index-run.test.ts",
+                "script/lib/runner-twin.test.ts",
+                "script/lib/test-commit.test.ts",
+                "script/runner-twin.sh",
+                "script/test-commit.sh",
+                "x/FTR.md",
+                "x/go/gates.go",
+                "x/go/gates_test.go",
+                "x/go/lane_dry_test.go",
+                "x/go/lane_stdin_test.go",
+                "x/go/mods.go",
+                "x/go/mods_test.go",
+                "x/go/registry.json"
+            ],
+            "pr": 145,
+            "title": "🐞 gates: a mods commit skips what its overlay passed, the logs read true"
+        },
+        {
+            "paths": [
+                ".github/workflows/review.yml",
+                "docs/knowledge/pr-flow.md",
+                "home/.claude/plugin-x/skills/crew-codie/SKILL.md",
+                "home/.claude/plugin-x/skills/crew-dna/SKILL.md",
+                "home/.claude/plugin-x/skills/crew-lead/briefing.md",
+                "home/.claude/plugin-x/skills/github-contrib/SKILL.md",
+                "x/FTR.md",
+                "x/go/gh.go",
+                "x/go/merge_auto.go",
+                "x/go/merge_auto_test.go",
+                "x/go/merge_hold_test.go",
+                "x/go/registry.json",
+                "x/go/review_test.go"
+            ],
+            "pr": 144,
+            "title": "🗑️ merge-auto: the approve path goes, with the docs teaching it"
+        },
+        {
+            "paths": [
+                ".github/workflows/renovate.yml",
+                "renovate/default.json",
+                "x/FTR.md",
+                "x/go/merge_auto.go",
+                "x/go/merge_auto_test.go"
+            ],
+            "pr": 142,
+            "title": "🐞 merge-auto: a renovate workflow bump waits for a clean, its job gets a main-only environment"
+        },
+        {
+            "paths": [
+                "x/FTR.md",
+                "x/go/merge_auto.go",
+                "x/go/merge_auto_test.go",
+                "x/go/stacks_test.go"
+            ],
+            "pr": 140,
+            "title": "🐞 merge-auto: a renovate pr made only of renovate's commits needs no clean"
+        },
+        {
+            "paths": [
+                "docs/test-drive/gate-speed.md",
+                "docs/test-drive/gate-speed/queue-read.mjs",
+                "script/gate-queue.sh",
+                "script/lib/gate-queue.test.ts",
+                "script/lib/test-commit.test.ts",
+                "script/test-commit.sh",
+                "x/go/fixture_template_test.go",
+                "x/go/gate_turn_test.go",
+                "x/go/lane_test.go",
+                "x/go/mods_test.go",
+                "x/go/rebase_main_test.go",
+                "x/go/x_test.go"
+            ],
+            "pr": 139,
+            "title": "✨ x: go test fixtures spawn less, pocket-only commits skip tests"
+        },
+        {
+            "paths": [
+                "home/.claude/plugin-x/mods/AGENTS.md",
+                "x/FTR.md",
+                "x/go/mods.go",
+                "x/go/mods_test.go",
+                "x/go/registry.json"
+            ],
+            "pr": 138,
+            "title": "🔧 x mods edit: test one file with --only, a header naming the overlay"
+        },
+        {
+            "paths": [
+                "x/go/merge_auto.go",
+                "x/go/review.go",
+                "x/go/review_test.go"
+            ],
+            "pr": 137,
+            "title": "🐞 x: the round gate takes no env in a real run"
+        },
+        {
+            "paths": [
+                "_clio/blueprints/excalidraw/package.json",
+                "_clio/blueprints/excalidraw/pnpm-lock.yaml",
+                "package.json",
+                "pnpm-lock.yaml"
+            ],
+            "pr": 136,
+            "title": "🌲 evergreen: Update minors (minor)"
+        },
+        {
+            "paths": [
+                ".github/workflows/renovate.yml",
+                "hotkeys/chords/package.json",
+                "package.json",
+                "pnpm-lock.yaml",
+                "speak/package.json"
+            ],
+            "pr": 135,
+            "title": "🌲 evergreen: Update patches (patch)"
+        },
+        {
+            "paths": [
+                "hotkeys/chords/package.json",
+                "pnpm-lock.yaml",
+                "speak/package.json"
+            ],
+            "pr": 134,
+            "title": "🌲 evergreen: Update minors to v0.5.3"
+        },
+        {
+            "paths": [
+                "script/lib/index-run.test.ts",
+                "x/FTR.md",
+                "x/docs/adr/X-0003-apply-gate-and-its-exceptions.md",
+                "x/go/decamp.go",
+                "x/go/lane.go",
+                "x/go/lane_end_test.go",
+                "x/go/lane_landed.go",
+                "x/go/lane_landed_test.go",
+                "x/go/main.go",
+                "x/go/merge_auto.go",
+                "x/go/merge_auto_test.go",
+                "x/go/rebase_main.go",
+                "x/go/registry.json",
+                "x/go/risky.json",
+                "x/go/stacks.go",
+                "x/go/stacks_test.go"
+            ],
+            "pr": 133,
+            "title": "🔧 x lane: a lane end leaves no tree and no branch"
+        },
+        {
+            "paths": [
+                "docs/test-drive/gate-speed.md",
+                "docs/test-drive/gate-speed/queue-budget.mjs",
+                "docs/test-drive/gate-speed/queue-read.mjs",
+                "home/.claude/plugin-x/skills/crew-dna/SKILL.md",
+                "script/gate-queue.sh",
+                "script/lib/gate-queue.test.ts",
+                "x/FTR.md",
+                "x/GLOSSARY.md",
+                "x/go/gate_turn_test.go",
+                "x/go/lane.go",
+                "x/go/registry.json",
+                "x/go/trace_test.go"
+            ],
+            "pr": 132,
+            "title": "🔧 x: the gate owns its turn, a wrapper holds none"
+        },
+        {
+            "paths": [
+                "home/.claude/plugin-x/mods/AGENTS.md",
+                "home/.claude/plugin-x/mods/replay.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/FTR.md",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/clean-stamp.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/command.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/merge-hold.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/tests/clean-stamp.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/tests/hint.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/tests/merge-hold.test.ts",
+                "home/.claude/shelf/hooks/memory-load-agents-md.py",
+                "script/lib/memory-load-agents-md.test.ts",
+                "x/FTR.md",
+                "x/GLOSSARY.md",
+                "x/go/lane_landed.go",
+                "x/go/lane_landed_warn_test.go",
+                "x/go/merge_auto.go",
+                "x/go/merge_auto_test.go",
+                "x/go/merge_hold.go",
+                "x/go/merge_hold_test.go",
+                "x/go/merge_sign.go",
+                "x/go/panic_seam.go",
+                "x/go/panic_seam_release.go",
+                "x/go/rebase_main.go",
+                "x/go/rebase_onto_test.go",
+                "x/go/registry.json",
+                "x/go/review.go",
+                "x/go/review_test.go",
+                "x/go/risky.json",
+                "x/go/stacks_test.go"
+            ],
+            "pr": 131,
+            "title": "🔧 x: merge-auto reads a reviewer round on every bytes pr"
+        },
+        {
+            "paths": [
+                "home/.claude/plugin-x/mods/.claude/skills/mods-verify/SKILL.md",
+                "home/.claude/plugin-x/skills/crew-sixth-sense/SKILL.md",
+                "x/.claude/skills/x-verify/SKILL.md",
+                "x/AGENTS.md",
+                "x/FTR.md",
+                "x/GLOSSARY.md",
+                "x/go/boards.go",
+                "x/go/main.go",
+                "x/go/registry.go",
+                "x/go/registry.json",
+                "x/go/verify_revert.go",
+                "x/go/verify_revert_test.go",
+                "x/go/verify_tree.go",
+                "x/go/verify_verdict.go",
+                "x/go/verify_verdict_test.go"
+            ],
+            "pr": 130,
+            "title": "🔧 x: lane verify-tree --revert proves new tests red on base"
+        }
+    ],
+    "escapes": [
+        {
+            "name": "FRM-425 S1-S6",
+            "paths": [
+                "home/.claude/plugin-x/mods/x-mod-guard/FTR.md",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/command.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/floor.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/hazard.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/milestone.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/spec.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/tests/holes.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/tests/notes.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-guard/tests/spec.test.ts"
+            ],
+            "range": "d2d0a87c..c1e9ef0e"
+        },
+        {
+            "name": "FRM-545 H1",
+            "paths": [
+                "home/.claude/plugin-x/mods/x-mod-stash/FTR.md",
+                "home/.claude/plugin-x/mods/x-mod-stash/hooks/register.tsx",
+                "home/.claude/plugin-x/mods/x-mod-stash/hooks/tree.ts",
+                "home/.claude/plugin-x/mods/x-mod-stash/tests/lane.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-stash/tests/orbit.test.ts",
+                "home/.claude/plugin-x/mods/x-mod-stash/tests/tree.test.ts"
+            ],
+            "range": "d9b056e5..3b749531"
+        }
+    ],
+    "source": "gh pr list --state merged --limit 20, each pr's files; the escapes of docs/test-drive/wisphunter.md round 6",
+    "taken": "2026-11-09"
+}

@@ -102,7 +102,7 @@ func decampPlan(r *Run, args []string, flags Flags) (any, error) {
 			if why := treeStay(e, main, nil, merged); why != "" {
 				return "", &Fail{Refused: true, Msg: home(tree) + " stays: " + why, Next: "settle it, then x lane decamp " + home(tree) + " --apply"}
 			}
-			if strings.HasPrefix(e.branch, forkBranch) {
+			if strings.HasPrefix(e.branch, forkBranch) || isLaneBranch(e.branch) {
 				branch = e.branch
 			}
 		}
@@ -130,6 +130,41 @@ func onMain(main, sha string) bool {
 		}
 	}
 	return true
+}
+
+// a squash leaves a lane's commits off main, so its merged pr is what vouches for them: the pr github names for the
+// branch's origin tip (its local one with no origin), then the same rule and lease as lane landed. a branch decamp kept
+// while landed ran on its tree is the case this closes (FRM-553)
+func mergedLaneBranchNote(main, branch string) string {
+	tip, err := remoteBranch(main, branch)
+	if err != nil {
+		return branch + " stays: origin did not read"
+	}
+	if tip == "" {
+		if local, _ := gitIn(main, "rev-parse", "--verify", "-q", "refs/heads/"+branch); local.ok {
+			tip = local.out
+		}
+	}
+	slug := originSlugIn(main)
+	var prs []struct {
+		MergedAt *string `json:"merged_at"`
+		Head     struct {
+			Ref string `json:"ref"`
+		} `json:"head"`
+	}
+	if tip == "" || slug == "" {
+		return branch + " stays: no tip or no github origin to find its pr"
+	}
+	if _, err := ghFetch(asDima, githubBase()+"/repos/"+slug+"/commits/"+tip+"/pulls", &prs); err != nil {
+		return branch + " stays: its prs did not read"
+	}
+	for _, pr := range prs {
+		if pr.MergedAt != nil && pr.Head.Ref == branch {
+			// github names the prs holding the tip, so the merged one carries it: the tip is the head the rule reads
+			return laneBranchNote(asDima, main, slug, branch, tip)
+		}
+	}
+	return branch + " stays: no merged pr carries " + short(tip)
 }
 
 type staleBranch struct {
@@ -193,11 +228,16 @@ func decamp(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	result := ordered{{"tree", tree}, {"main", main}}
 	if branch := fields[2].value.(string); branch != "" {
 		if err := r.Step("branch", branch, func() (string, error) {
-			_, _ = gitIn(main, "fetch", "-q", "origin", "main")
-			why, tips := branchStay(main, branch, "main does not hold", func(sha string) bool { return onMain(main, sha) })
-			note := branch + " stays: " + why
-			if why == "" {
-				note = branchDrop(main, branch, tips)
+			var note string
+			if isLaneBranch(branch) {
+				note = mergedLaneBranchNote(main, branch)
+			} else {
+				_, _ = gitIn(main, "fetch", "-q", "origin", "main")
+				why, tips := branchStay(main, branch, "main does not hold", func(sha string) bool { return onMain(main, sha) })
+				note = branch + " stays: " + why
+				if why == "" {
+					note = branchDrop(main, branch, tips)
+				}
 			}
 			if strings.HasPrefix(note, "⚠") {
 				return "", &Fail{Msg: note, Next: "git branch --list " + branch}
