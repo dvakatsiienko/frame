@@ -4,7 +4,7 @@ title: '_helga folder empty in frame: move data in, make it pretty'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T12:45:00Z'
+updated_date: '2026-11-09T12:57:00Z'
 labels:
   - s
   - clio-main
@@ -24,4 +24,6 @@ PK-361:W2 (2026-11-09 inbox, dima): if it was forgotten to be moved into frame, 
 raw drop (2026-11-09 inbox, dima): **clio main:** why `_helga` folder is empty in frame i exepcted to see helga data there. if it is forgoten to be moved in frame - move. if its folder is same messy as `_crow` — take care of it. and make pretty.
 
 PK-361:W3 (2026-11-09 inbox, dima): why is the _helga folder empty? ❓
+
+2026-11-09 15:05 clio, the answer: _helga emptied on 10-30 (commit d8374fec): its one file was a stale copy of the crew-helga contract that nothing read. helga's runtime state lives in ~/.local/state/helga (msg-watch.txt, skill-lock.bak.json), her contract is the x:crew-helga skill, her start command docs/test-drive/helga.md § the start. nothing was forgotten to move; the empty dir waits for the passport PK-368 proposes
 <!-- SECTION:NOTES:END -->
