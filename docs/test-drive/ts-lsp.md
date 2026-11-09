@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-11
+until: 2026-11-12
 fits: codie:ts
 ---
 
