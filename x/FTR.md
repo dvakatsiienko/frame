@@ -282,7 +282,8 @@
   - given a link in the repo, an absolute one or a workspace package's in `node_modules`, then the copy's link points at the copy; a file that resolves outside the repo, or a cwd outside it, refuses before any run
   - given a picked runner whose clean run names no test that ran, `--run` matching nothing included, then it refuses; `--run` beside a mod's test exits 2, its run being the one file
   - limit: a mod's `.ts` gets no type check, only `claude plugin validate`
-  - limit: an ignored file is copied with the rest, and the copy dies with the run, an interrupt included; a kill -9 leaves it in the os tmp
+  - limit: an ignored file is copied with the rest; the copy dies with the run and with an interrupt during the pairs, while an interrupt during the repo copy, or a kill -9, leaks that copy into the os tmp
+  - limit: a swap that fixes one type error and adds a same-worded one reads still green, reachable only where the file's project already fails tsc
   - limit: a head-only row whose title x cannot tie to a row (`'%s'`, `'${x}'`, a computed title) gets a named row and no vote, so it can exit 0; the repo holds none today (dima's tick, 2026-11-07)
 - ⬜ the stacks add-on: a pr opens onto the layer below, and gh-stack links and shows the layers
   - given branch `codie/FRM-1-a-2` on top of `codie/FRM-1-a`, when `x lane pr-open --apply --base codie/FRM-1-a <title> <body-file>` runs, then one pr opens with base `codie/FRM-1-a`; a base origin lacks refuses before gh runs

@@ -1,6 +1,6 @@
 ---
 name: mods-verify
-description: Load BEFORE verifying a change under `home/.claude/plugin-x/mods/` — «verify a mod», «prove the mod», «mods:typecheck is green», «claude plugin test», «red-proof», a sixth sense round on a mod pr.
+description: Load BEFORE verifying a change under `home/.claude/plugin-x/mods/` — «verify a mod», «prove the mod», «mods:typecheck is green», «claude plugin test», «x verify red», «red-proof», a sixth sense round on a mod pr.
 ---
 
 # mods-verify
@@ -23,7 +23,7 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 - a change to a list other hooks grow gets a `Promise.all` row with a prompt in it (FRM-501 sixth sense)
 - a rows probe of a Bash rule runs `pnpm mods:probe <mod> --rows <tsv>`; a row needing a test's setup runs `pnpm mods:test <mod> --extra <file>`, its setup copied from `ticks.test.ts` or `orbit.test.ts` until FRM-489 makes it importable, never a `cp -R` of the mods tree (FRM-510 sixth sense)
 - a change to quiet's hold or delivery ends on `pnpm mods:quiet-delivery-test`: a model-free test ping to clio, read held → delivered (FRM-501)
-- a 5 s timeout on a shifting set of tests, or the retired bash door's «restored fails» at load over 15, is load: rerun serially before judging, until FRM-470's bound lands (FRM-498, FRM-499 sixth sense)
+- a 5 s timeout on a shifting set of tests, or an `x verify red` row broken on a timeout at load over 15 (the retired door printed «restored fails»), is load: rerun serially before judging, until FRM-470's bound lands (FRM-498, FRM-499 sixth sense)
 
 ## typecheck
 
