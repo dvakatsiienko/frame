@@ -163,7 +163,7 @@ func TestGhPrNamesEachCheckByItsLatestState(t *testing.T) {
 	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
 
-	want := []prCheck{{"Vercel", "success", "https://v/2"}, {"review", "in_progress", "https://ci/2"}, {"test", "failure", "https://ci/1"}}
+	want := []prCheck{{Name: "Vercel", State: "success", URL: "https://v/2"}, {Name: "review", State: "in_progress", URL: "https://ci/2"}, {Name: "test", State: "failure", URL: "https://ci/1"}}
 	if len(got.data.Checks) != len(want) {
 		t.Fatalf("checks %+v, want %+v", got.data.Checks, want)
 	}

@@ -437,6 +437,7 @@
                 "sixth-sense",
                 "ci",
                 "mergeable",
+                "deploy",
                 "round",
                 "threads",
                 "risky",

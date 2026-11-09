@@ -253,8 +253,8 @@ func TestMergeAutoMergesACleanGreenPrNamingTheThreeChecks(t *testing.T) {
 		}
 		names = append(names, c.Name)
 	}
-	if !slices.Equal(names, []string{"sixth-sense", "ci", "mergeable", "threads"}) {
-		t.Errorf("checks %v, want sixth-sense, ci, mergeable, threads:\n%s", names, got.stdout)
+	if !slices.Equal(names, []string{"sixth-sense", "ci", "mergeable", "deploy", "threads"}) {
+		t.Errorf("checks %v, want sixth-sense, ci, mergeable, deploy, threads:\n%s", names, got.stdout)
 	}
 }
 
@@ -1528,7 +1528,7 @@ func TestMergeAutoWaitCarriesTheChecksItRead(t *testing.T) {
 	got := w.run(t, "7", "--apply")
 
 	data := envelopeOf(got).Data
-	if got.code != 1 || data.Decision != "wait" || len(data.Checks) != 4 || !slices.Equal(data.Risky, []string{".github/workflows/ci.yml"}) {
+	if got.code != 1 || data.Decision != "wait" || len(data.Checks) != 5 || !slices.Equal(data.Risky, []string{".github/workflows/ci.yml"}) {
 		t.Fatalf("exit %d, data %+v, want the wait's checks and risky line in the envelope", got.code, data)
 	}
 }
