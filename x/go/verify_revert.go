@@ -488,7 +488,12 @@ func revertRun(r *Run, main, tree, head, base string, paths, command []string) (
 // a background child holding the command's output must not hold the tree on base's source with it
 func runTests(tree string, command []string) result {
 	c := exec.Command(command[0], command[1:]...)
-	c.Dir, c.WaitDelay = tree, 5*time.Second
+	c.Dir = tree
+	return runTestCmd(c)
+}
+
+func runTestCmd(c *exec.Cmd) result {
+	c.WaitDelay = 5 * time.Second
 	got, err := runCmd(c)
 	// the command itself exited 0: the child is what is left
 	if errors.Is(err, exec.ErrWaitDelay) {

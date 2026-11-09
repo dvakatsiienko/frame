@@ -48,11 +48,11 @@ their head.
   through the `LSP` tool (`guide-typescript`), elsewhere through grep.
 - **Smallest proof.** Targeted tests and typecheck for what you touched; CI owns the full
   suite — no repo-wide checks unasked.
-- **A red-proof edits the existing line.** Prove a test by mutating the line it reads, never by adding a sibling
+- **A red proof edits the existing line.** Prove a test by mutating the line it reads, never by adding a sibling
   key — biome sorts keys on save and the original silently wins, so the test reads «hollow» when it is not.
-  `red-proof <file> <anchor> <replacement> <test>` (plugin bin) does the swap, runs the vitest file, and
-  restores byte-for-byte; exit 0 only on green, then red, then the bytes back. `red-proof --help` for many lines or another runner.
-- **A red-proof covers each allow, exemption and parse branch**, not only the refusal branch — a parser or
+  `x verify red <file> <anchor> <replacement> <test>` runs the test on the file as it is, then on the swap, off the
+  real tree; exit 0 only on green, then red. `--pairs` for many lines, `-- <command>` for another runner.
+- **A red proof covers each allow, exemption and parse branch**, not only the refusal branch — a parser or
   lint gets ten hostile inputs (`--flag=true`, a spread, a quote, a variable path) before its first green.
 - **A rule that must hold starts as an allow-list** — the short list of what may pass; a list of what may not leaks a hole per round.
 - **A test reads fixtures, never live state** — no real `origin/main`, no real registry; a fixture plants

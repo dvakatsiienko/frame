@@ -27,7 +27,7 @@ prove an `x` verb by running it, not reading it. the checks `x/AGENTS.md` § ver
 - an audit verb's misses are opened in their transcripts before a clean, a sample at least, never only counted: 10 of 11 passed as real (FRM-434 sixth sense)
 - a gate's row carries one real plant through the real hook before a clean: a fixture's strict flag hid a gate the hook lacked (FRM-473 sixth sense)
 - a go test that reads an `INDEX_RUN_*` var runs once with it set: green by hand and red in the real hook is the shape (FRM-521, twice)
-- a test's adequacy is `x lane verify-tree <pr url | main:<sha>> --revert <base> <src paths> -- <test command>`, a bare sha is a usage exit; a by-hand mutation of a file you hold stays `red-proof` until `x verify red` lands
+- a test's adequacy is `x lane verify-tree <pr url | main:<sha>> --revert <base> <src paths> -- <test command>`, a bare sha is a usage exit; a mutation is `x verify red <file> <anchor> <replacement> <test>`, `--pairs` for a round, off the real tree
 - mutants batch by 8 when the filter runs many go tests: 12 at load 38 took 585 s (FRM-473 sixth sense)
 - a pr's dry-run runs with its verify tree as cwd, since the shim picks the cwd's tree; `.x` in the envelope names the source that ran (BYT-94 sixth sense)
 - `verify-tree --revert` lists other lanes' tests as «still green» when the command runs one mod: its `red` list is the verdict (FRM-510 sixth sense)

@@ -2,8 +2,10 @@
 import { spawnSync } from 'node:child_process';
 import {
     copyFileSync,
+    existsSync,
     mkdirSync,
     mkdtempSync,
+    readFileSync,
     readdirSync,
     rmSync,
     writeFileSync,
@@ -48,8 +50,10 @@ function runLanes(
             'refresh-probe',
         ]);
     } else writeFileSync(path.join(dir, 'brief.md'), brief);
+    // the copy has no spender, so these rows read the gates even under a verify run's X_VERIFY
     const run = spawnSync('sh', [copy, path.join(dir, 'brief.md')], {
         encoding: 'utf8',
+        env: { ...process.env, X_VERIFY: '' },
     });
     return { entries: readdirSync(dir), run };
 }
@@ -107,4 +111,34 @@ test('a brief built by recipe:brief lets the lanes start', () => {
     expect(run.stderr).not.toContain('recipe:brief');
     expect(entries.some((entry) => entry.startsWith('lanes-'))).toBe(true);
     expect(run.stdout).not.toMatch(/^(exa|parallel): /m);
+});
+
+// x verify red sets X_VERIFY=1 on both its runs, so a mutant of a paid script never spends
+test.each([
+    ['X_VERIFY=1 skips both paid lanes, saying so', '1', 0],
+    ['no X_VERIFY reaches the stubbed spender', '', 2],
+])('%s', (_, verify, calls) => {
+    const root = mkdtempSync(path.join(tmpdir(), 'lanes-verify-'));
+    onTestFinished(() => rmSync(root, { recursive: true }));
+    const copy = path.join(root, 'research-lanes.sh');
+    copyFileSync(script, copy);
+    const log = path.join(root, 'op-run.calls');
+    writeFileSync(
+        path.join(root, 'op-run.sh'),
+        `#!/bin/sh\necho "$3" >> ${log}\n`,
+        { mode: 0o755 },
+    );
+    writeFileSync(path.join(root, 'brief.md'), 'the question\n');
+
+    const run = spawnSync('sh', [copy, path.join(root, 'brief.md')], {
+        encoding: 'utf8',
+        env: { ...process.env, X_VERIFY: verify },
+    });
+
+    const made = existsSync(log) ? readFileSync(log, 'utf8') : '';
+    expect(made.split('\n').filter(Boolean)).toHaveLength(calls);
+    if (verify) {
+        expect(run.status).toBe(0);
+        expect(run.stdout).toContain('X_VERIFY');
+    }
 });

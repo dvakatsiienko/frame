@@ -121,7 +121,7 @@ func TestStatsOutsideHeadsSkipTheSetup(t *testing.T) {
 		{"cd '/a b'; cd c && git -C /d log", "git log"},
 		{"J=/tmp/j; cat $J/f", "cat"},
 		{`S="/a b"; T=1 && pnpm --silent test`, "pnpm test"},
-		{"FOO=1 /Users/a/bin/red-proof f a b", "red-proof"},
+		{"FOO=1 /Users/a/bin/edit-batch f a b", "edit-batch"},
 		{"export S=/a; gh pr view 1", "gh pr"},
 		{"claude plugin list", "claude plugin"},
 		{"/usr/local/bin/x stats", ""},
