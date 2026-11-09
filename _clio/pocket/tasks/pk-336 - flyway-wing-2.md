@@ -31,15 +31,15 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [ ] #7 FRM-454 helga on Sonnet, unsigned: shape-idea first, then his sign
 - [x] #8 main's ask: x-mod-guard fail-closed on parse.ts fixed and landed; badge swap written, main commits the 7
 - [x] #9 cli lane 6 and its codie move to wing 2 after FRM-503 lands, for 🐉 review loop gets verbs (main 17:27, agreed)
-- [ ] #10 review contract notice to every clio and member once FRM-547, FRM-548 and FRM-549 land (dima o25)
-- [x] #11 review tickets wish-line trim + pocket-check one-home fix, on dima's o43 tick
-- [x] #12 FRM-548 → FRM-549 codie side lane: spec now, summon on o45
-- [ ] #13 cli lane 6 is mine (wing 1's handover 19:05): after FRM-548/549, walk FRM-414 (+ round counter rider), FRM-384, FRM-436, FRM-424; door 1 tails in /Users/dima/frame/.claude/worktrees/clio-wing-1/.scratch/handover-cli-lane-6.md
-- [x] #14 FRM-553 merge-auto waits on main's running ci/deploy (wing 1's joiner, unsigned): grill + sign it before the lane brief, so it batches into the merge-auto pr with FRM-549/548
-- [x] #15 FRM-384 re-sign with FRM-520's gate tails + watch-pr --verified undo (dima 19:21 via wing 1), on his tick; lefthook tail lands after 11-10 17:28
-- [x] #16 x verify red re-links node_modules/.bin into its temp copy and deletes it (main 19:23: every commit gate red 19:20–19:22): its fix joins the FRM-384 re-sign batch with the gate tails
-- [ ] #17 FRM-546 reopened (wishkeeper 19:36): by 11-10 — #152's codie cards and sixth sense round name REVIEW.md, one coderabbit cli run read, a re-planted slip only REVIEW.md names, then close
-- [ ] #18 redraw the crew-pm board (pocket-check.ts, merge_auto.go, stacks.go changed)
+- [x] #10 review tickets wish-line trim + pocket-check one-home fix, on dima's o43 tick
+- [x] #11 FRM-548 → FRM-549 codie side lane: spec now, summon on o45
+- [ ] #12 cli lane 6 is mine (wing 1's handover 19:05): after FRM-548/549, walk FRM-414 (+ round counter rider), FRM-384, FRM-436, FRM-424; door 1 tails in /Users/dima/frame/.claude/worktrees/clio-wing-1/.scratch/handover-cli-lane-6.md
+- [x] #13 FRM-553 merge-auto waits on main's running ci/deploy (wing 1's joiner, unsigned): grill + sign it before the lane brief, so it batches into the merge-auto pr with FRM-549/548
+- [x] #14 FRM-384 re-sign with FRM-520's gate tails + watch-pr --verified undo (dima 19:21 via wing 1), on his tick; lefthook tail lands after 11-10 17:28
+- [x] #15 x verify red re-links node_modules/.bin into its temp copy and deletes it (main 19:23: every commit gate red 19:20–19:22): its fix joins the FRM-384 re-sign batch with the gate tails
+- [ ] #16 FRM-546 reopened (wishkeeper 19:36): by 11-10 — #152's codie cards and sixth sense round name REVIEW.md, one coderabbit cli run read, a re-planted slip only REVIEW.md names, then close
+- [ ] #17 redraw the crew-pm board (pocket-check.ts, merge_auto.go, stacks.go changed)
+- [ ] #18 review contract notice to every clio and member once frame#152 lands (the review-tiers pr; dima o25)
 <!-- AC:END -->
 
 ## Implementation Notes
