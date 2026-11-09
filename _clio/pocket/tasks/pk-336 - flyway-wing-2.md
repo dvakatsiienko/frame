@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T16:25:00Z'
+updated_date: '2026-11-09T16:34:00Z'
 labels:
   - m
   - clio-wing-2
@@ -35,6 +35,7 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 - [x] #11 main's ask: x-mod-guard fail-closed on parse.ts fixed and landed; badge swap written, main commits the 7
 - [ ] #12 cli lane 6 and its codie move to wing 2 after FRM-503 lands, for 🐉 review loop gets verbs (main 17:27, agreed)
 - [ ] #13 FRM-546 live proof: a fresh session's first wisphunter card lists REVIEW.md in its read files (this session caches the old card, inference)
+- [ ] #14 review contract notice to every clio and member once FRM-546–549 land (dima o25)
 <!-- AC:END -->
 
 ## Implementation Notes
