@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-09T17:59:00Z'
+updated_date: '2026-11-09T18:01:00Z'
 labels:
   - s
   - clio-main
@@ -22,11 +22,10 @@ ordinal: 9995
 - [ ] #4 tomorrow: boot clio in herdr (recipe in .scratch/herdr/plan.md), then FRM-542's main-seat check
 - [ ] #5 FRM-505 second wind runs itself: a fresh mods codie, seal first; then FRM-491 and FRM-495 behind it
 - [ ] #6 FRM-550: judge it against herdr after tomorrow's boot, then your sign, by 11-11
-- [ ] #7 crow and helga restart on your tick: closes the passport auto-load proof (helga's next boot)
-- [ ] #8 FRM-509's last step rides FRM-384 in wing 2's cli lane, on your tick
-- [ ] #9 PK-358 rex settings walkthrough with you, two at a time, shown live
-- [ ] #10 FRM-368 tilde grill with you, after the herdr move
-- [ ] #11 tonight's halt: every wing halts on its own, no running watcher blocks it
+- [ ] #7 PK-358 rex settings walkthrough with you, two at a time, shown live
+- [ ] #8 FRM-368 tilde grill with you, after the herdr move
+- [ ] #9 tonight's halt: every wing halts on its own, no running watcher blocks it
+- [ ] #10 helga's fresh boot on the next groom: her passport loaded proves the auto-load (crow restarted 20:01, job 4fb442fe)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -98,4 +97,6 @@ correction (clio, 16:46): W25's clause «; a guard, not an intention (proposed i
 2026-11-09 17:18 clio: #4 herdr round 1 done (artifact 98seiwXLa41Z47oBefZnP8, his call: pilot); FRM-509 read moved to wing 3 (clio-wing-3)
 
 done, cleared 19:59 on dima's word: herdr research printed and his call taken (pk-363 lives on); sidecar passports rebalanced (pk-368 done); the herdr pilot probes 1–5 by the gate lane codie; FRM-552 ticketed, signed, dispatched (19:07–19:13); the haiku clio boot in herdr proven (19:20)
+
+done 20:01: crow and helga stopped on dima's o85, crow restarted fresh on opus; FRM-509's last step handed to wing 2 as a rider in its current cli chunk (his o86), the cli lane parks after that chunk merges (his 20:00 word)
 <!-- SECTION:NOTES:END -->
