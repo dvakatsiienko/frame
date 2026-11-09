@@ -22,7 +22,7 @@ one language for the config, for scripts and for live watchers; the guide is `ht
 - a failed api call returns `nil` and a message, never an error: check the second value
 - an `init.lua` change is his file: name the lines, he says go; themes and fonts stay his
 
-## his open rex questions
+## his rex questions, answered
 
 - **reopen a closed tab** (PK-358:W8, Warp's cmd+shift+t): no built-in action does it (`rex actions`, 2026-11-09). inference, unbuilt: a `rex do --all` watcher maps each block to its last `pwd` from `terminal.pwd_changed` (a `file://` url) and each window to its blocks from `block_created`; `window_closed` carries only `window_id`, so the map names the folder, and an action bound to cmd+shift+t opens a window there
-- **rex or herdr** (PK-363:W42): rex blocks are terminals only (`rex block types`); herdr mods are native panels. rex keeps his daily terminal, any-character prefill and Lua; herdr hosts seats side by side and our custom boards (`x:herdr`)
+- **rex or herdr**: `x:herdr`, «herdr or rex»

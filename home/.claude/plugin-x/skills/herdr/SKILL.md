@@ -29,7 +29,7 @@ they ship with each herdr update and are the truth for the installed version: sy
 
 ## recipes
 
-**start a seat that outlives its starter and the window**
+**start a seat that outlives its starter and the window** (inference from `hc run --help`: not run end to end yet)
 
 ```sh
 hc run --bg --no-parent --no-notify --name <name> --cwd <dir> --label seat=<seat> -- claude "<its first task>"
@@ -46,7 +46,7 @@ hc run --bg --no-parent --no-notify --name <name> --cwd <dir> --label seat=<seat
 
 - `hc keys <t> g i t space s t a t u s` types without Enter; `hc keys <t> enter` submits (proven 2026-11-09, a scratch shell)
 - it takes letters, digits, `space`, `- / . ' =`, and `shift+<letter>` for a capital; it types `4` for `shift+4` and refuses `~ " | $`
-- a command with a pipe, a quote, `$` or `~` goes to a Rex tab instead (`x:rex`)
+- a command with a pipe, a double quote, `$` or `~` goes to a Rex tab instead (`x:rex`)
 - aim it only at a terminal you started for this; his own seats are his
 
 **report a script's status into herdr's agents list** (rex reads the same sequence): from a script whose output goes to the terminal, never from a tool call, and always with an `id`, or it overwrites the pane's own Claude Code record:
