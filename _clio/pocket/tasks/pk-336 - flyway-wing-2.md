@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T13:34:00Z'
+updated_date: '2026-11-09T13:45:00Z'
 labels:
   - m
   - clio-wing-2
@@ -24,8 +24,11 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 <!-- AC:BEGIN -->
 - [ ] #1 PK-348 REVIEW.md: explore, set up the convention
 - [ ] #2 FRM-454 helga on Sonnet
-- [ ] #3 PK-362 steamac disk 256 → 192 gb: dima has clarifying questions, main's read is on the item
-- [ ] #4 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
+- [ ] #3 standing: FRM-483 boot-prefetch stall, the 3-day read by 2026-11-11 (main's date, today's +1 shift)
+- [ ] #4 standing: FRM-516 crow on every wing, the week's read by 2026-11-14
+- [ ] #5 tonight's halt: every wing autohalts, no live Monitor blocks it (halt/wing.md step 5, unrun)
+- [ ] #6 side prompts join the prompt log (his winged v2 wish, never landed): ask dima if it still stands
+- [ ] #7 PK-362 steamac disk 256 → 192 gb: paused until the mac has space (his 15:23 word)
 <!-- AC:END -->
 
 ## Implementation Notes
