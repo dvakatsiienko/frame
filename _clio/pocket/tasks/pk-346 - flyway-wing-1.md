@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T15:10:00Z'
+updated_date: '2026-11-09T15:15:00Z'
 labels:
   - s
   - clio-wing-1
@@ -29,6 +29,7 @@ ordinal: 18998
 - [ ] #11 cli lane 6: FRM-383 then FRM-503 door 1 (signed o22), wing 1 coordinates
 - [ ] #12 PK-373 linux vm for go tests: name, then shape-idea steps 4-7 and its ticket
 - [ ] #13 perf left in order: FRM-533 day read 11-10, FRM-537 probes, FRM-535 -parallel grid
+- [ ] #14 gate tails: wishkeeper's 4 lows on FRM-520's 11-09 comment, for the next gate touch
 <!-- AC:END -->
 
 ## Implementation Notes
