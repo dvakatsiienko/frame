@@ -309,6 +309,7 @@ export function findSessions(): LiveSession[] {
             ) {
                 found.push({
                     cwd: entry.cwd,
+                    entrypoint: entry.entrypoint,
                     jobId: entry.jobId,
                     messagingSocketPath: entry.messagingSocketPath,
                     name: entry.name,
@@ -332,29 +333,75 @@ function copyRules() {
     }
 }
 
-export async function startCrow(arm: Arm) {
+// a live crow in a plain interactive pane takes socket lines like a --bg one; a desktop tab does not
+export function takesSocketLines(
+    session?: Pick<LiveSession, 'entrypoint' | 'jobId'>,
+) {
+    return Boolean(session?.jobId) || session?.entrypoint === 'cli';
+}
+
+// a pane crow has no job id: its herdr terminal is found by cwd, as hc ls --json lists no pid
+export function findPaneTerminal(cwd: string): string | undefined {
+    const listed = spawnSync('hc', ['ls', '--json'], { encoding: 'utf8' });
+    if (listed.status !== 0) return undefined;
+    try {
+        const { terminals }: { terminals: PaneTerminal[] } = JSON.parse(
+            listed.stdout,
+        );
+        return terminals.find(
+            (terminal) => terminal.agent === 'claude' && terminal.cwd === cwd,
+        )?.address;
+    } catch {}
+}
+
+export async function startCrow(arm: Arm, isPane = false) {
     mkdirSync(STATE_DIR, { recursive: true });
     copyRules();
     const stash = stashModOf(userPluginDirs());
-    const result = spawnSync(
-        'claude',
-        [
-            '--bg',
-            '-n',
-            SESSION_NAME,
-            ...claudeArgs(arm, stash?.dir),
-            '--remote-control',
-            SESSION_NAME,
-            readCharter(),
-        ],
-        { cwd: STATE_DIR, encoding: 'utf8' },
-    );
-    if (result.error) fail(`cannot run claude: ${result.error.message}`);
-    const jobId = /backgrounded · (\S+)/.exec(
-        stripVTControlCharacters(result.stdout),
-    )?.[1];
-    if (result.status !== 0 || !jobId) {
-        fail(`claude --bg failed: ${(result.stderr || result.stdout).trim()}`);
+    const claudeArgv = [
+        '-n',
+        SESSION_NAME,
+        ...claudeArgs(arm, stash?.dir),
+        '--remote-control',
+        SESSION_NAME,
+        readCharter(),
+    ];
+    const result = isPane
+        ? spawnSync(
+              'hc',
+              [
+                  'run',
+                  '--bg',
+                  '--no-parent',
+                  '--no-notify',
+                  '--name',
+                  'crow',
+                  '--cwd',
+                  STATE_DIR,
+                  '--label',
+                  'seat=crow',
+                  '--',
+                  'claude',
+                  ...claudeArgv,
+              ],
+              { encoding: 'utf8' },
+          )
+        : spawnSync('claude', ['--bg', ...claudeArgv], {
+              cwd: STATE_DIR,
+              encoding: 'utf8',
+          });
+    if (result.error) {
+        fail(`cannot run ${isPane ? 'hc' : 'claude'}: ${result.error.message}`);
+    }
+    const jobId = isPane
+        ? undefined
+        : /backgrounded · (\S+)/.exec(
+              stripVTControlCharacters(result.stdout),
+          )?.[1];
+    if (result.status !== 0 || (!isPane && !jobId)) {
+        fail(
+            `${isPane ? 'hc run' : 'claude --bg'} failed: ${(result.stderr || result.stdout).trim()}`,
+        );
     }
     writeState({
         ...readState(),
@@ -364,7 +411,7 @@ export async function startCrow(arm: Arm) {
         startedAt: Date.now(),
     });
     console.log(
-        `crow started on ${arm} (${armModels[arm]}, effort medium), job ${jobId}`,
+        `crow started on ${arm} (${armModels[arm]}, effort medium), ${isPane ? 'in a herdr pane' : `job ${jobId}`}`,
     );
 
     // --bg ignores --session-id, so the id is known only once the registry lists crow
@@ -1702,7 +1749,15 @@ export interface LiveSession {
     cwd: string;
     sessionId: string;
     jobId?: string;
+    entrypoint?: string;
     messagingSocketPath: string;
+}
+
+// the fields of one `hc ls --json` terminal that the pane stop reads
+interface PaneTerminal {
+    address: string;
+    agent?: string;
+    cwd: string;
 }
 
 export interface Usage {

@@ -32,6 +32,7 @@ import {
     readState,
     sendLine,
     spawnHarvest,
+    takesSocketLines,
     transcriptDelta,
     wakeIdOf,
     wakeLine,
@@ -115,9 +116,9 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
         skip(`paused (${join(STATE_DIR, 'paused')} exists)`);
     }
     const state = readState();
-    // a --bg crow takes socket lines; a desktop tab takes only the desktop's own door, so clio relays
+    // a --bg or pane (cli) crow takes socket lines; a desktop tab takes only the desktop's own door, so clio relays
     const session = oneCrow();
-    const viaSocket = Boolean(session?.jobId);
+    const viaSocket = takesSocketLines(session);
     const lastWakeAt = state.lastWakeAt?.[threadId];
     if (lastWakeAt && now.getTime() - lastWakeAt < WAKE_GAP_MS) {
         skip(

@@ -44,6 +44,7 @@ import {
     resolveLeaves,
     setHot,
     stashModOf,
+    takesSocketLines,
     threadOfNoteId,
     transcriptDelta,
     wakeLine,
@@ -1249,4 +1250,16 @@ test('x lane merge-auto is a merge decision, behind a timeout too', () => {
 
 test('a plan-only x lane merge-auto spends no merge check', () => {
     expect(decisionOf('x lane merge-auto 82')?.kind).not.toBe('merge');
+});
+
+describe('takesSocketLines', () => {
+    test('a --bg session with a job id takes them', () => {
+        expect(takesSocketLines({ jobId: 'abc' })).toBe(true);
+    });
+    test('a cli session in a herdr pane takes them', () => {
+        expect(takesSocketLines({ entrypoint: 'cli' })).toBe(true);
+    });
+    test('a desktop tab does not', () => {
+        expect(takesSocketLines({ entrypoint: 'claude-desktop' })).toBe(false);
+    });
 });

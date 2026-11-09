@@ -17,7 +17,7 @@ one short message, then straight into phase 1:
 - **the stop list holds the `--bg` members and the lane codies' desktop threads**; a 👤 session is dima's and stays.
 - **the codie roster, two questions per codie: retro filed in `~/.local/state/x/lanes/<feature>/`? stopped?** (`claude stop <id>`; a desktop thread: `archive_session` once its lane ends)
   `claude agents --json` is the check, never memory. **a codie the CST
-  calls «warm» is verified alive** (`kill -0` on its registry pid) and written as dead when dead. **🎀 helga is on the roster too**: `claude stop <its id>` beside crow's, the boot starts it fresh. **crow is on the roster too** — its stop is phase 5's last line, named in this
+  calls «warm» is verified alive** (`kill -0` on its registry pid) and written as dead when dead. **🎀 helga is on the roster too**: `claude stop <its id>` beside crow's (a pane helga: `hc kill <its terminal>`), the boot starts it fresh. **crow is on the roster too** — its stop is phase 5's last line, named in this
   plan so it is not lost
 - sort each into **can land now** (small, finishable here) · **must park** (needs a resume
   note) · **already done**
@@ -141,7 +141,7 @@ CST marked FROZEN is never superseded — save alongside and say which is which.
 the CST lists dima's chat lines since the last report, each with its answer or «open», read with `node ~/frame/_clio/script/chat-lines.ts --since-stamp` — orbit and the pocket hold only what reached a tool, so a chat-only ask falls through without this.
 🐦‍⬛ crow lives one clio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/crow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/crow.md`).
 - **her own background first**: every background shell and agent stopped, and each live `Monitor` stopped by its id with `TaskStop`, a live watch makes a clio wait instead of halt; a lane watch still needed goes into the CST as a first-act, what it waited for
-- **stop order: before the CST is written, `pnpm -C ~/frame crow:stop` (a tab: 🔥 off, the tab stays) and helga's stop; the CST roster copies their output, never a guess**
+- **stop order: before the CST is written, `pnpm -C ~/frame crow:stop` (a tab: 🔥 off, the tab stays) and helga's stop (`claude stop <id>`; a pane helga: `hc kill <its terminal>`); the CST roster copies their output, never a guess**
 - **then archive her desktop card** (`mcp__ccd_session_mgmt__list_sessions` → `archive_session`; the stop ends the process but leaves the card in the sidebar, dima 2026-10-07: «archive yourself each time»)
 - note-vet: before the stop, every note id with no verdict is printed and vetted (`pnpm --silent crow:note-vet ok|miss <id> "<why>" --changed file|reply|ask|ticket|none --ref <path|id>`) — an unvetted note is a lost data point for the trial
 - crow-receipts trial, until 2026-11-17: each `#dima-caught` line of today's flawlog is checked against `notes.jsonl` for a crow note on it that came first; the count goes as a round in `docs/test-drive/crow-receipts.md`

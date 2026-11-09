@@ -514,9 +514,26 @@ function helgaUp() {
         name?: string;
         status?: string;
     }[];
-    return agents.some(
-        (a) => a.name?.includes('helga') && a.status !== 'exited',
+    return (
+        agents.some(
+            (a) => a.name?.includes('helga') && a.status !== 'exited',
+        ) || helgaPaneUp()
     );
+}
+
+// a pane helga is no --bg agent: hc ls lists only live terminals, so a labelled one is up (no hc or no core: not up)
+function helgaPaneUp() {
+    try {
+        const { terminals } = JSON.parse(
+            execFileSync('hc', ['ls', '--json', '--label', 'seat=helga'], {
+                encoding: 'utf8',
+                stdio: ['ignore', 'pipe', 'ignore'],
+            }),
+        ) as { terminals: unknown[] };
+        return terminals.length > 0;
+    } catch {
+        return false;
+    }
 }
 
 // helga's cwd sits outside frame with CLAUDE.md loading off, so her passport rides the boot prompt
@@ -538,23 +555,46 @@ function startHelga() {
         env: { CLAUDE_CODE_DISABLE_CLAUDE_MDS: '1' },
         worktree: { bgIsolation: 'none' },
     });
-    execFileSync(
-        'claude',
-        [
-            '--bg',
-            '-n',
-            '🎀 helga',
-            '--model',
-            'haiku',
-            '--effort',
-            'medium',
-            '--settings',
-            settings,
-            skill,
-            '--remote-control',
-        ],
-        { cwd, stdio: 'inherit' },
-    );
+    const claudeArgs = [
+        '-n',
+        '🎀 helga',
+        '--model',
+        'haiku',
+        '--effort',
+        'medium',
+        '--settings',
+        settings,
+    ];
+    // a herdr seat sets CLIO_SIDECAR_PANE=1: the prompt rides inside hc run, no job id
+    if (process.env.CLIO_SIDECAR_PANE === '1') {
+        execFileSync(
+            'hc',
+            [
+                'run',
+                '--bg',
+                '--no-parent',
+                '--no-notify',
+                '--name',
+                'helga',
+                '--cwd',
+                cwd,
+                '--label',
+                'seat=helga',
+                '--',
+                'claude',
+                ...claudeArgs,
+                '--remote-control',
+                '🎀 helga',
+                skill,
+            ],
+            { stdio: 'inherit' },
+        );
+        return;
+    }
+    execFileSync('claude', ['--bg', ...claudeArgs, skill, '--remote-control'], {
+        cwd,
+        stdio: 'inherit',
+    });
 }
 
 // a wish id numbers on inside its home, never from a global counter (PK-312, dima o94, o96, o98)

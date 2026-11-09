@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import {
     clearHot,
     fail,
+    findPaneTerminal,
     findSession,
     isAlive,
     readState,
@@ -25,6 +26,24 @@ if (!running) {
 }
 const stash = stashModOf(userPluginDirs());
 const store = stash && storeOf(stash.name);
+// a pane crow has no job id but takes a cli entrypoint: its herdr terminal is killed
+if (!running.jobId && running.entrypoint === 'cli') {
+    const address = findPaneTerminal(running.cwd);
+    if (!address)
+        fail(
+            `crow pid ${running.pid} is a cli session, but no herdr terminal matches cwd ${running.cwd}`,
+        );
+    const killed = spawnSync('hc', ['kill', address], { encoding: 'utf8' });
+    if (killed.error) fail(`cannot run hc: ${killed.error.message}`);
+    if (killed.status !== 0) {
+        fail(
+            `hc kill ${address} failed: ${(killed.stderr || killed.stdout).trim()}`,
+        );
+    }
+    if (store) clearHot(store, running.sessionId);
+    console.log(`crow stopped (herdr terminal ${address})`);
+    process.exit(0);
+}
 // a desktop tab has no job id: claude stop cannot reach it, and the tab is dima's to close
 if (!running.jobId) {
     if (store) clearHot(store, running.sessionId);
