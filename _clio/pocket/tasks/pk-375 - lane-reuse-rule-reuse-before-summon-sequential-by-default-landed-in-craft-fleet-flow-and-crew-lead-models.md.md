@@ -40,4 +40,6 @@ PK-375:W19 (2026-11-10 00:07, dima): so let's prefer sequentional for taxonomy.
 PK-375:W20 (2026-11-10 00:07, dima): and leave option for paralel work when matters, or when needed, or when i ask.
 
 close: landed in crew-lead models.md § summon or reuse (the order) and craft-fleet-flow § lane init, commit 43f99d0f; wish-cover's one ✗ is a bare W706 on models.md:38, the sonnet line's older wish, not PK-375's
+
+close: PK-375:W1 done (answered: no rule existed); PK-375:W2, W3 done (the why, in craft-fleet-flow and models.md); PK-375:W4 done (batching and reuse); PK-375:W5, W6 done (second wind and any-area reassign, models.md order); PK-375:W7 done (stays parked); PK-375:W8, W9, W10 done (placement proposed, ticked o111: craft-fleet-flow resident, crew-lead models.md at summon); PK-375:W11 done (x:author-memory loaded); PK-375:W12, W13 done (the order, the ~20–25 % switch rule); PK-375:W14–W20 done (one by one by default, a parallel lane when it matters, when needed or on his ask)
 <!-- SECTION:NOTES:END -->
