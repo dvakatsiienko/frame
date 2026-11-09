@@ -100,6 +100,10 @@ test('the boot prompt is the x:crew-adviser skill body, frontmatter cut', () => 
     expect(charter).toContain('the silence bar');
 });
 
+test('the boot prompt carries the passport after the skill', () => {
+    expect(readCharter()).toContain("# crow — clio's parked adviser");
+});
+
 test('a wake line names a charter a cleared session can read', () => {
     const line = wakeLine({ id: '202610100900', mode: 'day', phase: 'live' });
     const [, hash, charter] = /· charter (\w{8}) (\S+)$/.exec(line) ?? [];

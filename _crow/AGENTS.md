@@ -1,6 +1,6 @@
 # crow — clio's parked adviser
 
-🐦‍⬛ **crow**: a long-lived session that reads clio's thread on a wake and returns one note or `none`. this file is the passport, for clio and dima; what crow herself reads at boot and on every wake is the `x:crew-adviser` skill, which `readCharter` sends as the boot prompt with its frontmatter cut. a contract change goes there, never here.
+🐦‍⬛ **crow**: a long-lived session that reads clio's thread on a wake and returns one note or `none`. this file is the passport, for clio and dima; what crow herself reads at boot and on every wake is the `x:crew-adviser` skill, which `readCharter` sends as the boot prompt with its frontmatter cut, this passport after it. a contract change goes there, never here.
 <!-- why --bg works (o150): mods' hooks load under --bg (mods/engine.md); only a --bg board goes undrawn, and crow's 👀 line draws on clio's card -->
 
 ## who

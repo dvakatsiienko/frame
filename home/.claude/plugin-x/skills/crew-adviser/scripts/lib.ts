@@ -112,17 +112,24 @@ export function clearHot(storePath: string, sessionId: string) {
 // crow runs without user plugins, so its contract arrives as the boot prompt, frontmatter cut
 // a /clear drops the boot prompt, so every wake line names the charter a fresh session reads first
 const CHARTER_PATH = join(import.meta.dirname, '../SKILL.md');
+// crow's cwd sits outside frame, so her passport never autoloads: the charter carries it
+const PASSPORT_PATH = join(
+    import.meta.dirname,
+    '../../../../../../_crow/AGENTS.md',
+);
 
 export function readCharter() {
-    return readFileSync(CHARTER_PATH, 'utf8').replace(
+    const skill = readFileSync(CHARTER_PATH, 'utf8').replace(
         /^---\n[\s\S]*?\n---\n+/,
         '',
     );
+    return `${skill}\n\n---\n\n${readFileSync(PASSPORT_PATH, 'utf8')}`;
 }
 
 export function charterHash() {
     return createHash('sha256')
         .update(readFileSync(CHARTER_PATH))
+        .update(readFileSync(PASSPORT_PATH))
         .digest('hex')
         .slice(0, 8);
 }
