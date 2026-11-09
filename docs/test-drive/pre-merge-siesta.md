@@ -20,6 +20,7 @@ Ticket: none
 - the retro fold per chunk — retros folded at the siesta, lines moved, minutes
 
 ## rounds
+- 2026-11-09 · wing 1's batch, gate lane 1 (1a8c1489 → e5f9915b, before its sixth sense's clean) and the cpu plan · wishkeeper 8 min, 169k tokens, 19 findings: 3 high real (a dropped time-budget red step, a close date ahead of its own done test, a re-signed body never rewritten), 5 medium, 11 low · all three highs settled or asked the same turn
 - 2026-11-07 · wing 2's first siesta on its own stamp, winged v2 step 5 · wishkeeper 7 min, 125k tokens, 9 findings: 2 high real (a session with no seat took main's, a wing's close against its own nudge), both fixed before their commit
 - 2026-11-07 · wing 1's batch, FRM-521's land (c2428e37 → ef9fae6c, after sixth sense's clean) · wishkeeper 7 min, 184k tokens, 15 findings: 3 high real (a go number sent to dima unreproduced, wisphunter caught it too; lines called met past the done test; PK-328's lines moved with no accounting), 5 medium · hit: all three sat in clio's own closing word, after the merge
 - 2026-11-03 · FRM-472 (mods quick lane, 50c3f7db → ff02e946, after sixth sense's clean on round 5) · wishkeeper 13 min, 12 findings: 2 high real (o83 only partly met, 6 unwarned variants with no fixing ticket → pk-309; fork-guard's pocket pass let a tab split a non-pocket path → fixed 052c6e0e, red-proven), 5 medium (the done test says «refused» while the code warns; a stale replay count; an exponential `$((` cost) · hit: both highs were invisible to sixth sense's exit-line grade, one was in clio's own rider
