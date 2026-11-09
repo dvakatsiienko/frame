@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T22:20:00Z'
+updated_date: '2026-11-09T23:22:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,9 +17,10 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 📅 speak v2 planning with dima, after herdr's move and the mods scope (dima 23:50); FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-11
-- [ ] #2 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #3 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #4 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 539 → 533 → 535, the dated reads ride it (FRM-534, FRM-517 on 11-10; FRM-525 on 11-14); resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
+- [ ] #2 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
+- [ ] #3 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #4 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #5 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 539 → 533 → 535, the dated reads ride it (FRM-534, FRM-517 on 11-10; FRM-525 on 11-14); resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -96,4 +97,6 @@ done 2026-11-10 00:15: ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next 
 2026-11-10 00:19 wing 1 (dima 00:18 «is it perf-related or just cli lane?»): cli lane 6's rest (FRM-384 with its riders and FRM-554, FRM-436, FRM-424, FRM-560) is cli, not perf; handed to main in the halt report
 
 2026-11-10 00:21 wing 1 (dima 00:19 «fix it»): the FRM-383 tree decamped (stale lock of dead pid 93143 removed); its 16 commits kept in tag archive/FRM-383-verify-red (fb0708f9); the branch codie/FRM-383-verify-red waits for his typed delete
+
+2026-11-10 01:24 wing 1: the codie/FRM-383-verify-red branch is deleted (his 00:20 word), only tag archive/FRM-383-verify-red stays; the 00:21 note's «waits for his typed delete» is done
 <!-- SECTION:NOTES:END -->
