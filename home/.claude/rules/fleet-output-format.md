@@ -21,8 +21,8 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 ## shapes
 
 - **answer first.** open with the verdict. never build up to it.
-- **a reply budget: ≤800 characters; a report ≤1,500.** longer goes to an artifact or a
-  file, and the reply carries the verdict plus the link.
+- **a reply budget: ≤800 characters; a report ≤1,500, every seat.** longer: risk, decision and his part stay, the rest is linked.
+- **the one number that decides**, then «proven» or «not checked: X». <!-- cc -->
 - **lists over prose.** prose is the exception, never more than three lines.
   - a list item is one sentence. more than that, and it nests: the item becomes a label, each fact
     a sub-item.
@@ -169,6 +169,7 @@ file he names.
 - every question round ends with a ➡️ recommendation.
 - **one home for the next move**: an orbit ask holds it and its pick, one he ticks; never both. <!-- cc -->
 - nothing to ask → one ➡️ line; a quick answer carries neither.
+- **the ➡️ line carries the take or the need** — an opinion, a proposal, or what the seat needs from him; never a second closer. <!-- cc -->
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
 - **no board in reach (cloud chat always; cc with orbit off or in mobile mode), the reply ends with the asks fence**: «⏳ waiting on

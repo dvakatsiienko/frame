@@ -19,7 +19,7 @@ for dir in -Users-dima-projects-dotfiles-cclio -Users-dima-frame-cclio -Users-di
   done
 done
 duckdb -c "
-create table d as select * replace (t::timestamptz::timestamp as t), regexp_replace(txt,'\s+',' ','g') flat from read_json_auto('$raw')
+create table d as select * replace (t::timestamptz::timestamp as t), trim(regexp_replace(regexp_replace(txt,'(?s)<system-reminder>.*?</system-reminder>','','g'),'\s+',' ','g')) flat from read_json_auto('$raw')
   where t::timestamptz >= '$since'::timestamptz;
 create table u as select min(t) t, any_value(p) p, any_value(s) s, flat, max(img) img, length(flat) len from d
   where flat not like '<%' and flat not like 'reply with only%' and flat not like 'PROBLEM:%' and flat not like 'you are crow%' and flat not like 'you are ccrow%' -- read-both: prompts from before the 10-29 rename

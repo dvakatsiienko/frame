@@ -4,7 +4,7 @@ until: 2026-11-04
 dies-when: the verdict line below is written
 ---
 
-# glados — a rare GLaDOS line over output-fun, in clio's thread
+# glados — a rare GLaDOS line over output-crew (was output-fun), in clio's thread
 
 Ticket: none
 

@@ -490,7 +490,7 @@ func TestOutputStyleBadge(t *testing.T) {
 	custom.Model.DisplayName = "Opus 5"
 	custom.OutputStyle = &struct {
 		Name string `json:"name"`
-	}{Name: "output-fun"}
+	}{Name: "output-crew"}
 
 	rendered := getModelDisplayName(custom)
 	if !strings.Contains(rendered, "🪶") {
@@ -501,8 +501,8 @@ func TestOutputStyleBadge(t *testing.T) {
 	tail := stripLinks(rendered[strings.Index(rendered, "🪶"):])
 	// The name is rendered per-character through a gradient, so the letters are
 	// separated by escape codes — assert on order, not on a contiguous substring.
-	f, u, n := strings.Index(tail, "f"), strings.Index(tail, "u"), strings.LastIndex(tail, "n")
-	if f < 0 || u < f || n < u {
+	c, r, w := strings.Index(tail, "c"), strings.Index(tail, "r"), strings.LastIndex(tail, "w")
+	if c < 0 || r < c || w < r {
 		t.Error("custom output style: want the style name rendered in order")
 	}
 	if strings.Contains(tail, "output-") {

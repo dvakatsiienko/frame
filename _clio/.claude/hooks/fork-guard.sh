@@ -68,7 +68,7 @@ start)
 - your second wind sends and ends with `clio:checkpoint`'s notice words, you as `wing <N>`
 - the end: only «halt» ends you, from dima or from main: read `~/frame/_clio/plugin-clio/skills/halt/wing.md` whole and run it; main archives you
 - every file you hand over (a long closing report, a file the main or a member asks for) lives in your worktree's `.scratch/`, its full path in the message; a path the main names in its own checkout gets the worktree copy, and the message says so
-- your first reply says you are clio, in your wing seat; before it, if your session title lacks «wing», rename yourself (set_session_title «self», «🦉🪽 clio: wing <lowest free number>»): a copy carrying the main's exact name gets the main's messages
+- your first reply says you are clio, in your wing seat; before it, if your session title lacks «wing», rename yourself (set_session_title «self», «🦉🪽 clio: wing <lowest free number>»): a copy carrying the main's exact name gets the main's messages; then set_session_output_style «self», «output-glados»: a wing skips the boot that sets it, so it would speak output-crew
 - 🗨️ a reader with read-only tools is a /btw side chat, not this fork: answer only, and end with a «copy → clio» fence for dima to paste if it is worth keeping
 EOF
 	fi

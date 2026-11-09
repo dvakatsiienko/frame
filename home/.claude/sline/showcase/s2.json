@@ -14,7 +14,7 @@
     "effort": { "level": "medium" },
     "fast_mode": false,
     "model": { "display_name": "Fable 5.1", "id": "claude-fable-5-1" },
-    "output_style": { "name": "output-fun" },
+    "output_style": { "name": "output-crew" },
     "rate_limits": {
         "five_hour": { "resets_at": 1790183078, "used_percentage": 71 },
         "seven_day": { "resets_at": 1790521478, "used_percentage": 36 }

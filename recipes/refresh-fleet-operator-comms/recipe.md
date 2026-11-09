@@ -8,7 +8,7 @@ artifacts:
   - home/.claude/rules/fleet-mods.md
   - home/.claude/rules/fleet-flow.md
   - home/.claude/rules/dima-signals.md
-  - home/.claude/output-styles/output-fun.md
+  - home/.claude/output-styles/output-crew.md
   - _clio/memory/habit-dima-comms.md
   - x:crew-dna
 script: none
@@ -38,7 +38,7 @@ dima, 2026-11-09:
 - thread and board are one comms surface: orbit, phases and glide are read with the replies, every run
 - every seat's transcript is read — main, each wing, members, `--bg` sessions; clio's prompt log holds main's prompts only
 - dima's trackers (🔭, the stat boards, the 📄 stamp) are info he reads, never cut as noise (dima, 2026-10-10)
-- cheap by default: `jq` + `duckdb` count, a model only labels or reads; labels persist in `~/.local/state/refresh-fleet-operator-comms/labels.parquet` and are never re-bought; the cheapest model that agrees 85 % with the gold set labels (run 1: sonnet; haiku failed)
+- cheap by default: `jq` + `duckdb` count, a model only labels or reads; labels persist in `~/.local/state/refresh-operator-agent-comms-optimization/labels.parquet` and are never re-bought; the cheapest model that agrees 85 % with the gold set labels (run 1: sonnet; haiku failed)
 - suggest a run when: a new seat kind joins the fleet (a wing, cap, tilde) or a month passes since the last line of `log.md`
 
 1. **groom**: `clio:shape-recipe` step 0. done: his word on the want, the vectors and the steps. (open)
@@ -84,7 +84,7 @@ dima, 2026-11-09:
 - `home/.claude/rules/fleet-mods.md` — how orbit, phases and glide carry asks and plans; same
 - `home/.claude/rules/fleet-flow.md` — who talks to whom, and how a member's word reaches him; same
 - `home/.claude/rules/dima-signals.md` — how his own messages are read (markers, dictation); same
-- `home/.claude/output-styles/output-fun.md` — the voice; same
+- `home/.claude/output-styles/output-crew.md` — the voice; same
 - `_clio/memory/habit-dima-comms.md` — clio's pacing and reply habits; proposals announced, edited on his word
 - `x:crew-dna` — how every member talks; the steer's member lines land here, so a fix reaches every lane
 
