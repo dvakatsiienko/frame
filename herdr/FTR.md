@@ -56,6 +56,15 @@ wish: PK-363
   - when dima clicks 🛎️ on a sign, merge or ⚠️ ask
   - then the guard reads that press as his tick for that ask's targets, within 2 h, once
   - decision: the 🛎️ is click-only; a keyed mod command is any shell's (FRM-544)
+- 🧭 a standing override button on the board, behind slice 2 of FRM-544
+  - given the operator override is off
+  - when dima clicks its button on fleet-board
+  - then the override turns on with `by: press`, and a second click turns it off
+  - decision: click-only, never a keyed command: any shell can reach a keyed command (FRM-524:W53)
+- 🧭 🛎️ on every gated ask, from the stash's `isGated`
+  - given an ask the guard gated (the merge brake, the override, a merge hold, a held file, a raw `gh pr merge`, a sign)
+  - when dima clicks its 🛎️ on fleet-board
+  - then that one action passes once, and fleet-board's own guarded-ask pattern is gone
 
 ## seats — tabs
 
