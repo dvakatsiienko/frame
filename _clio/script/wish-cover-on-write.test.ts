@@ -37,10 +37,10 @@ writeFileSync(
 );
 
 let count = 0;
-function runOn(spec: string) {
+function runOn(spec: string, name = 'spec.md') {
     const dir = join(root, `.scratch-${count++}`, '.scratch', 'x');
     mkdirSync(dir, { recursive: true });
-    const file = join(dir, 'spec.md');
+    const file = join(dir, name);
     writeFileSync(file, spec);
     const out = spawnSync('bash', [hook], {
         encoding: 'utf8',
@@ -88,6 +88,16 @@ describe('wish-cover on a .scratch spec write', () => {
         const out = runOn('# spec\n\nno wish here\n');
         expect(out?.decision).toBe('block');
         expect(out?.reason).toContain('no wish line');
+    });
+
+    test('a brief in a lane folder with no wish line blocks', () => {
+        const out = runOn('# brief\n\nno wish here\n', 'brief-codie.md');
+        expect(out?.decision).toBe('block');
+        expect(out?.reason).toContain('no wish line');
+    });
+
+    test('an unrelated notes.md is not watched', () => {
+        expect(runOn('no wish here\n', 'notes.md')).toBeUndefined();
     });
 
     test('wish: none is silent', () => {
