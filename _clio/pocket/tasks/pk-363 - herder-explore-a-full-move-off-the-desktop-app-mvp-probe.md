@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T12:28:00Z'
+updated_date: '2026-11-10T12:47:00Z'
 labels:
   - m
   - clio-main
@@ -1040,4 +1040,6 @@ raw drop (2026-11-10 inbox, dima): - the band. i want one redesigned from scratc
 PK-363:W305 (2026-11-10 inbox, dima) if herder supports theming, let's have support for it right away (restored: the prep kept only the question, crow 14:27)
 
 PK-363:W306 (2026-11-10 inbox, dima) goal 0 is done when i am happy with the herder ui and ux (very sharp, pretty, beautiful) and you are happy with its performance and accessibility; automation is welcome where it helps (restores W206's done-test sense, wishkeeper 14:28)
+
+PK-363:W260 refold (dima 14:47, o4: «i do not recall this. ignore line, delete it.»): the clause «herder is not a glider» is dropped; the rest of W260 stands
 <!-- SECTION:NOTES:END -->
