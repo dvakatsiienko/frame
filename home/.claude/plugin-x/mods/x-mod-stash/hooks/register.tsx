@@ -2376,6 +2376,7 @@ async function absorbMarks($: EngineInterface) {
     // asks his newer ↩️ took back from an accepted mark: their tick record goes too, so the guard honours no tick the
     // board no longer shows
     const retracted: OrbitAsk[] = [];
+    const accepted: OrbitAsk[] = [];
     await inMarking(async () => {
         const o = await currentOrbit($);
         isSaved = await saveOrbit($, {
@@ -2393,6 +2394,15 @@ async function absorbMarks($: EngineInterface) {
                 if (!m || a.isLocked || a.isResolved) return a;
                 if (a.mark === 'accepted' && m.mark !== 'accepted')
                     retracted.push(a);
+                // his 🛎 from herdr gets the tick record a seat-board 🛎 gets: fleet-board prunes the press once read
+                // and the turn that takes the ask clears its mark, so the record is what x-mod-guard honours for 2 h
+                // (clio's o49 at 19:30, wing 1's o13 at 19:08)
+                if (
+                    !marks[a.id] &&
+                    m.mark === 'accepted' &&
+                    a.mark !== 'accepted'
+                )
+                    accepted.push(a);
                 return {
                     ...a,
                     isChanged: false,
@@ -2409,6 +2419,7 @@ async function absorbMarks($: EngineInterface) {
         });
     });
     if (isSaved && retracted.length) await recordTicks($, retracted, false);
+    if (isSaved && accepted.length) await recordTicks($, accepted, true);
     // a press the orbit did not keep is read again at the next take
     if (isSaved && herdr.last > herdr.after)
         await $.store.set(HERDR_READ + sid, herdr.last).catch(() => undefined);
