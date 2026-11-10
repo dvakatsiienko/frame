@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-10T21:52:00Z'
+updated_date: '2026-11-10T22:05:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,7 +16,7 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 herdr-first summons (dima 23:49 via main, his tick 23:55): 6 edits, one commit, before the first summon: crew-lead argv to hc run lines with --bg as a reasoned fallback; crew-lead preflight bg-only steps marked fallback; x:herdr start recipe gains model, effort, brief file; shape-lane-dispatch glide link by the session id herdr reports; clio:wing herdr first; x brief summon help text. probe first: a side lane worktree under an hc run summon — on: 2026-11-11
+- [ ] #1 herdr-first summons, the rest: the first herdr-summoned side-lane codie names its pwd in its first reply (proves it makes its own tree); x brief summon help text is a line on FRM-572
 - [ ] #2 cli walk after the usage reset (Mon 11-16 06:00): FRM-560 with FRM-414 riding, then FRM-570, FRM-424, FRM-436; the parked codie and sixth sense reused; the spec dir copied back from .scratch/_archive/cli-lane-7-frm-384 — on: 2026-11-16
 - [ ] #3 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
 - [ ] #4 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11
@@ -132,4 +132,6 @@ done 2026-11-10 23:03: tails from 11-10, small: two steer grooms (o55, o69) read
 done 2026-11-10 23:04: the 11-10 tails line (the two steer grooms are green, FRM-522 and FRM-534 have closing words, FRM-414 is re-signed and back in Todo); removed by hand since flyway-done read FRM-414's Todo as not landed
 
 done 2026-11-10 23:22: FRM-384 in cli lane 7 (pr 157): the codie's slices, sixth sense, the merge; my merge-turn chores are in the lane spec (ticket-sign.ts takes the pull path from x, the clio:wing worktree line, the plugin bump) (FRM-384 Done)
+
+done 2026-11-11 00:05: herdr-first summons (dima 23:49 via main, his tick 23:55): 6 edits, one commit, before the first summon: crew-lead argv to hc run lines with --bg as a reasoned fallback; crew-lead preflight bg-only steps marked fallback; x:herdr start recipe gains model, effort, brief file; shape-lane-dispatch glide link by the session id herdr reports; clio:wing herdr first; x brief summon help text. probe first: a side lane worktree under an hc run summon — on: 2026-11-11
 <!-- SECTION:NOTES:END -->
