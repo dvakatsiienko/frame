@@ -22,9 +22,20 @@ type Proc = { pid: number; start: string };
 const HOLD = 'hold:';
 const HOLDER = 'holder:';
 const REFUSED = 'refused:';
+// `pass:<sid>:<path>`: dima's tick let this session write a file another holds, until its next commit or its turn's end;
+// x-mod-guard reads it from this store file for a Bash write
+const PASS = 'pass:';
+// `passed:<holder sid>:<asking sid>:<path>`: the line the holder reads at its next prompt, written by the asking session
+const PASSED = 'passed:';
+// `spent:<sid>`: the ticks this session already opened a pass on, `<ask id>@<tick time>:<path>`
+const SPENT = 'spent:';
 const IDLE_MS = 30 * 60 * 1000;
+const TICK_MS = 2 * 60 * 60 * 1000;
+// dima's ticks, x-mod-stash's record that only his press writes
+const STASH_TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 
 const holdKey = (sid: string, path: string) => `${HOLD}${sid}:${path}`;
+const passKey = (sid: string, path: string) => `${PASS}${sid}:${path}`;
 const short = (sid: string) => sid.slice(0, 8);
 // twin dirname — a copy lives in x-mod-guard; the twins lint keeps them equal
 const dirname = (file: string) => file.slice(0, file.lastIndexOf('/')) || '/';
@@ -177,9 +188,70 @@ async function heldBy(
             continue;
         }
         await $.store.set(REFUSED + c.sid, { at: now, by: sid, path });
-        return refusal(file, c.sid, c.hold, now);
+        return { deny: refusal(file, c.sid, c.hold, now), holder: c.sid };
     }
     return undefined;
+}
+
+// dima's tick on an ask quoting this file in one backtick span, live 2 h and not yet spent here, opens a pass: this
+// session writes the file past the hold until its next commit or its turn's end, and the holder hears of it once
+async function passOn(
+    $: EngineInterface,
+    sid: string,
+    path: string,
+    holder: string,
+    now: number,
+) {
+    if (await $.store.get(passKey(sid, path))) return true;
+    const { value: ticks = [] } = await $.state
+        .get(STASH_TICKS)
+        .catch(() => ({ value: [] }));
+    const spent = ((await $.store.get(SPENT + sid)) ?? []) as string[];
+    const home = await $.env.get('HOME').catch(() => undefined);
+    for (const t of [...ticks].reverse()) {
+        const use = `${t.id}@${t.at}:${path}`;
+        if (now - t.at > TICK_MS || t.at > now || spent.includes(use)) continue;
+        for (const quoted of t.targets) {
+            const target = quoted.trim().replace(/^~(?=\/)/, home ?? '~');
+            if (!target.startsWith('/')) continue;
+            if ((await realPath($, target)).key !== path) continue;
+            const live = spent.filter(
+                (s) => now - Number(s.split('@')[1]?.split(':')[0]) <= TICK_MS,
+            );
+            await $.store.set(SPENT + sid, [...live, use]);
+            await $.store.set(passKey(sid, path), { at: now, tick: t.id });
+            await $.store.set(`${PASSED}${holder}:${sid}:${path}`, {
+                at: now,
+                by: sid,
+                file: target,
+            });
+            return true;
+        }
+    }
+    return false;
+}
+
+async function dropPasses($: EngineInterface, sid: string) {
+    for (const key of await $.store.keys())
+        if (key.startsWith(`${PASS}${sid}:`)) await $.store.delete(key);
+}
+
+// the one line a holder reads when dima let another session write a file it holds
+async function passedNotes($: EngineInterface) {
+    const sid = await $.session.id();
+    const notes: string[] = [];
+    for (const key of await $.store.keys()) {
+        if (!key.startsWith(`${PASSED}${sid}:`)) continue;
+        const p = (await $.store.get(key)) as
+            | { by: string; file: string }
+            | undefined;
+        await $.store.delete(key);
+        if (p)
+            notes.push(
+                `x-mod-holds: dima's tick let session ${short(p.by)} write ${p.file} past your hold, until its next commit or its turn's end; your hold stays for every other session.`,
+            );
+    }
+    return notes;
 }
 
 // a deny when another session holds the file; the key when this call took a new hold
@@ -191,12 +263,16 @@ async function claim(
     const sid = await $.session.id();
     const { key: path, file: real } = await realPath($, file);
     const now = await $.clock.now();
-    const deny = await heldBy($, sid, file, path, now);
-    if (deny) return { deny };
+    const held = await heldBy($, sid, file, path, now);
+    // a pass takes no hold of its own: the file stays the holder's for every other session
+    if (held)
+        return (await passOn($, sid, path, held.holder, now))
+            ? {}
+            : { deny: held.deny };
     const mine = holdKey(sid, path);
-    const held = (await $.store.get(mine)) as Hold | undefined;
+    const own = (await $.store.get(mine)) as Hold | undefined;
     // a first edit that failed left the hold unlanded; the next one that goes through lands it
-    if (held) return held.landed ? {} : { key: mine };
+    if (own) return own.landed ? {} : { key: mine };
     // the holder first: a rival reading the hold without it would take it for released
     if (!(await $.store.get(HOLDER + sid)))
         await $.store.set(HOLDER + sid, { ...proc, idleSince: null });
@@ -243,6 +319,7 @@ const COMMIT =
 // a turn ended: start the idle clock and drop the holds whose files are clean again
 async function settle($: EngineInterface) {
     const sid = await $.session.id();
+    await dropPasses($, sid);
     await sweep($, sid);
     const holder = (await $.store.get(HOLDER + sid)) as Holder | undefined;
     if (!holder) return;
@@ -259,9 +336,15 @@ async function settle($: EngineInterface) {
 
 async function dropAll($: EngineInterface, sid: string) {
     for (const key of await $.store.keys())
-        if (parseHoldKey(key)?.sid === sid) await $.store.delete(key);
+        if (
+            parseHoldKey(key)?.sid === sid ||
+            key.startsWith(`${PASS}${sid}:`) ||
+            key.startsWith(`${PASSED}${sid}:`)
+        )
+            await $.store.delete(key);
     await $.store.delete(HOLDER + sid);
     await $.store.delete(REFUSED + sid);
+    await $.store.delete(SPENT + sid);
 }
 
 // fail-open: a store or git error lets the edit through, with a line in the transcript
@@ -292,7 +375,11 @@ export const register: Register = (on) => {
     // a new turn: this session is no longer idle, so its holds keep
     on('prompt.submit', async ($, e, next) => {
         await markBusy($).catch(() => undefined);
-        return next(e);
+        const notes = await passedNotes($).catch(() => [] as string[]);
+        const sent = await next(e);
+        return !notes.length || sent.drop !== undefined
+            ? sent
+            : { ...sent, context: [...(sent.context ?? []), ...notes] };
     });
 
     on('turn.complete', async ($, e, next) => {
@@ -346,10 +433,13 @@ export const register: Register = (on) => {
     on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
         const command = 'command' in e ? e.command : undefined;
         const r = await next(e);
-        if (typeof command === 'string' && COMMIT.test(command))
-            await releaseClean($, await $.session.id()).catch(() =>
+        if (typeof command === 'string' && COMMIT.test(command)) {
+            const sid = await $.session.id();
+            await dropPasses($, sid).catch(() => undefined);
+            await releaseClean($, sid).catch(() =>
                 $.ui.log('x-mod-holds: could not release after a commit'),
             );
+        }
         return r;
     });
 };

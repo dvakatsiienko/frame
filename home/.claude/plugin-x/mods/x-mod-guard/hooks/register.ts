@@ -828,7 +828,13 @@ async function liveHolds($: EngineInterface, ctx: Context) {
     }
     const sid = await $.session.id();
     const now = await $.clock.now();
-    const live: { holder: string; hold: Hold; key: string; now: number }[] = [];
+    const live: {
+        holder: string;
+        hold: Hold;
+        isPassed: boolean;
+        key: string;
+        now: number;
+    }[] = [];
     for (const [key, value] of Object.entries(held)) {
         if (!key.startsWith(HOLD)) continue;
         const cut = key.indexOf(':', HOLD.length);
@@ -844,7 +850,10 @@ async function liveHolds($: EngineInterface, ctx: Context) {
             )
         )
             continue;
-        live.push({ hold, holder, key: key.slice(cut + 1), now });
+        const path = key.slice(cut + 1);
+        // x-mod-holds' pass: dima's tick let this session write the file until its next commit or its turn's end
+        const isPassed = held[`pass:${sid}:${path}`] !== undefined;
+        live.push({ hold, holder, isPassed, key: path, now });
     }
     return live;
 }
@@ -854,6 +863,7 @@ async function heldBy(
     command: string,
     cwd: string,
     ctx: Context,
+    spends: string[],
 ): Promise<string | undefined> {
     const paths = writtenPaths(command, cwd, ctx);
     if (!paths.length) return undefined;
@@ -861,7 +871,20 @@ async function heldBy(
     for (const path of paths) {
         const real = await realPath($, path);
         const found = live.find((l) => l.key === real.key);
-        if (!found) continue;
+        if (!found || found.isPassed) continue;
+        // a Bash write with no pass yet spends his tick on an ask quoting the file, one write per tick; an Edit opens
+        // holds' pass, which covers the file until the next commit or the turn's end
+        const named = new Set([real.key, path.toLowerCase()]);
+        const quotesPath = (t: Tick) =>
+            t.targets.some((q) =>
+                named.has(
+                    q
+                        .trim()
+                        .replace(/^~(?=\/)/, ctx.home ?? '~')
+                        .toLowerCase(),
+                ),
+            );
+        if (await tickFor($, `held:${real.key}`, quotesPath, spends)) continue;
         const mins = Math.round((found.now - found.hold.at) / 60000);
         return `x-mod-holds: ${path} is held by session ${found.holder.slice(0, 8)}, which took it ${mins} min ago. wait, or ask it to commit the file.`;
     }
@@ -1902,8 +1925,11 @@ export const register: Register = (on) => {
             warns.push(wouldRefuse(r.rule, note));
             return undefined;
         };
-        // a file another live session holds (x-mod-holds) is refused before any other rule; holds has no escape
-        const held = await heldBy($, command, cwd, ctx).catch(() => undefined);
+        // a file another live session holds (x-mod-holds) is refused before any other rule, his tick on an ask quoting the
+        // file its door (FRM-544 slice 2d)
+        const held = await heldBy($, command, cwd, ctx, spends).catch(
+            () => undefined,
+        );
         if (held) return deny(held);
         const sweep = await stashOver($, command, cwd, ctx).catch(
             () => undefined,

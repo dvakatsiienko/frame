@@ -435,3 +435,124 @@ test("a dead holder's holds go once another session's turn ends", async ($, on) 
 function bash($: Engine, command: string) {
     return $.tool.call({ command, tool: 'Bash' });
 }
+
+// FRM-544 slice 2d: dima's tick on an ask quoting the held file lets the asking session write it until its next commit
+// or its turn's end; the holder is told once, and the hold stays for every other session
+type Tick = { id: string; text: string; targets: string[]; at: number };
+function ticked(on: On) {
+    const kept = { ticks: [] as Tick[] };
+    on('state.get', (_$, e, next) =>
+        e.plugin === 'x-mod-stash' && e.key === 'ticks'
+            ? { value: { value: kept.ticks, version: 1 } }
+            : next(e),
+    );
+    on('env.get', () => ({ value: '/home' }));
+    return kept;
+}
+const tickOn = (file: string, at: number): Tick => ({
+    at,
+    id: 'o7',
+    targets: [file],
+    text: `let B write \`${file}\` past A's hold`,
+});
+// A holds x.ts, then B acts with dima's tick on the given ask in its own stash record
+async function passWorld($: Engine, on: On, tick?: (now: number) => Tick) {
+    const store = liveStore(on);
+    const kept = ticked(on);
+    const w = world(on);
+    await w.as($, A);
+    await edit($, w, '/repo/x.ts');
+    await w.clock.advance(MIN);
+    await w.as($, B);
+    if (tick) kept.ticks = [tick(1_000_000 + MIN)];
+    return { kept, store, w };
+}
+const passTick = (now: number) => tickOn('/repo/x.ts', now);
+
+test('a tick quoting the held file lets the asking session write it', async ($, on) => {
+    const { w } = await passWorld($, on, passTick);
+    expect((await edit($, w, '/repo/x.ts')).deny).toBeUndefined();
+    expect((await edit($, w, '/repo/x.ts')).deny).toBeUndefined();
+});
+
+test('a pass takes no hold: the file stays the holder’s for every other session', async ($, on) => {
+    const { kept, store, w } = await passWorld($, on, passTick);
+    await edit($, w, '/repo/x.ts');
+    expect(heldBy(store, B)).toEqual([]);
+    kept.ticks = [];
+    await w.as($, C);
+    expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+        `held by session ${A.slice(0, 8)}`,
+    );
+});
+
+test('the holder hears of the pass once, at its next prompt', async ($, on) => {
+    const { w } = await passWorld($, on, passTick);
+    await edit($, w, '/repo/x.ts');
+    w.be(A);
+    const told = async () =>
+        (
+            await $.prompt.submit({
+                origin: { kind: 'composer' },
+                text: 'go',
+                wait: false,
+            })
+        ).context ?? [];
+    expect(await told()).toEqual([
+        `x-mod-holds: dima's tick let session ${B.slice(0, 8)} write /repo/x.ts past your hold, until its next commit or its turn's end; your hold stays for every other session.`,
+    ]);
+    expect(await told()).toEqual([]);
+});
+
+test('the pass ends with the asking session’s turn, and the spent tick opens no new one', async ($, on) => {
+    const { w } = await passWorld($, on, passTick);
+    await edit($, w, '/repo/x.ts');
+    await endTurn($);
+    expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+        `held by session ${A.slice(0, 8)}`,
+    );
+});
+
+test('the pass ends at the asking session’s commit through Bash', async ($, on) => {
+    const { w } = await passWorld($, on, passTick);
+    await edit($, w, '/repo/x.ts');
+    await bash($, 'x lane commit m.txt -- y.ts');
+    expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+        `held by session ${A.slice(0, 8)}`,
+    );
+});
+
+for (const [shape, tick] of [
+    ['no tick', undefined],
+    ['a tick quoting another file', (now: number) => tickOn('/repo/y.ts', now)],
+    [
+        'a tick quoting the file only in prose',
+        (now: number) => ({ ...tickOn('/repo/x.ts', now), targets: [] }),
+    ],
+    [
+        'a tick older than 2 h',
+        (now: number) => tickOn('/repo/x.ts', now - 121 * MIN),
+    ],
+    [
+        'a tick stamped in the future',
+        (now: number) => tickOn('/repo/x.ts', now + MIN),
+    ],
+] as const)
+    test(`the hold refuses the asking session on ${shape}`, async ($, on) => {
+        const { w } = await passWorld($, on, tick);
+        expect((await edit($, w, '/repo/x.ts')).deny).toContain(
+            `held by session ${A.slice(0, 8)}`,
+        );
+    });
+
+test('a tick quoting the file through a linked folder passes it', async ($, on) => {
+    const { w } = await passWorld($, on, (now) => tickOn('/link/x.ts', now));
+    w.links.set('/link/x.ts', '/repo/x.ts');
+    expect((await edit($, w, '/repo/x.ts')).deny).toBeUndefined();
+});
+
+test('a tick quoting the file from ~ passes it', async ($, on) => {
+    const { w } = await passWorld($, on, (now) => tickOn('~/link/x.ts', now));
+    w.links.set('/home/link/x.ts', '/repo/x.ts');
+    expect((await edit($, w, '/repo/x.ts')).deny).toBeUndefined();
+});

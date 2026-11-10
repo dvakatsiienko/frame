@@ -549,6 +549,11 @@
   - then a hold whose holder sat idle 30 min, whose pid died, or whose landed file is clean in git does not refuse
   - then a relative path is read from the dir every `cd` before it left, the way every guard rule reads it
   - proof: tests/held.test.ts::a Bash write to another session's held file is refused with the holder named; a Bash write to a file held by a dead session runs; a Bash write to a held file already clean in git runs; a Bash write to a file held by a session idle 30 min runs; a Bash write after `cd X;` is read from X; a Bash write to a held file not written yet is refused through a linked folder; reads the file a Bash write targets: …
+- ✅ dima's tick passes a held file for a Bash write (FRM-544 slice 2d)
+  - given A holds `x.ts`, when B's Bash write of it runs while x-mod-holds keeps B's pass on that file, then it runs
+  - given no pass, when dima ticked an ask quoting the file's path whole in one backtick span within 2 h, then one Bash write runs on that tick; an Edit opens the pass that covers the rest of the turn
+  - given a tick quoting another file, older than 2 h or stamped ahead, or another session's pass, then it stays refused
+  - proof: tests/held.test.ts::a Bash write to a held file runs on holds' pass for this session; a Bash write to a held file runs once on his tick quoting the file; a Bash write to a held file stays refused on …; another session's pass opens nothing for this one
 - ✅ a whole-tree `git stash` is refused while another session holds a file in that repo (FRM-428 rider; verified clean round 2)
   - given A holds `x.ts` in `/repo`, when B runs `git stash`, `git stash -u`, `git stash save …` or `git stash push` with no pathspec there, or with `.`, `*` or `:/` for one, then nothing runs: rule `stash-sweep` refuses it, door `git stash push -u -- <your paths>`, naming A's file
   - given a pathspec (`git stash push -- y.ts`), a read verb (`list`, `show`, `pop`, `apply`), another repo, or no live holder, then it runs

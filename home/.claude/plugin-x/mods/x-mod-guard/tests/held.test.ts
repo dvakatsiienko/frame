@@ -77,6 +77,13 @@ function world(
         clean = false,
         idleSince = null as number | null,
         newFile = false,
+        passFor = undefined as string | undefined,
+        ticks = [] as {
+            id: string;
+            text: string;
+            targets: string[];
+            at: number;
+        }[],
     } = {},
 ) {
     const held = newFile ? '/real/repo/new.ts' : '/repo/x.ts';
@@ -85,6 +92,11 @@ function world(
     const ran: string[] = [];
     on('session.id', () => ({ value: B }));
     on('session.cwd', () => ({ value: '/repo' }));
+    on('state.get', (_$, e, next) =>
+        e.plugin === 'x-mod-stash' && e.key === 'ticks'
+            ? { value: { value: ticks, version: 1 } }
+            : next(e),
+    );
     on('env.get', (_$, e) => ({
         value: e.name === 'HOME' ? '/home' : undefined,
     }));
@@ -114,6 +126,9 @@ function world(
                           top: '/repo',
                       },
                       [`holder:${A}`]: { idleSince, pid: 100, start: START },
+                      ...(passFor
+                          ? { [`pass:${passFor}:${held}`]: { at: NOW } }
+                          : {}),
                   })
                 : '{}',
     }));
@@ -193,5 +208,47 @@ test('a Bash write to a held file not written yet is refused through a linked fo
     world(on, { newFile: true });
     expect((await bash($, 'echo hi > new.ts')).deny).toMatch(
         /^x-mod-holds: \/repo\/new\.ts is held by session b1b1b1b1/,
+    );
+});
+
+// FRM-544 slice 2d: dima's tick on an ask quoting the held file is the door; holds' pass covers the turn
+const tickOn = (target: string, at = NOW - MIN) => ({
+    at,
+    id: 'o7',
+    targets: [target],
+    text: `let B write \`${target}\``,
+});
+
+test("a Bash write to a held file runs on holds' pass for this session", async ($, on) => {
+    const w = world(on, { passFor: B });
+    expect((await bash($, "sd 'a' 'b' x.ts")).deny).toBeUndefined();
+    expect(w.ran).toHaveLength(1);
+});
+
+test('a Bash write to a held file runs once on his tick quoting the file', async ($, on) => {
+    const w = world(on, { ticks: [tickOn('/repo/x.ts')] });
+    expect((await bash($, "sd 'a' 'b' x.ts")).deny).toBeUndefined();
+    expect((await bash($, "sd 'c' 'd' x.ts")).deny).toMatch(
+        /^x-mod-holds: \/repo\/x\.ts is held by session b1b1b1b1/,
+    );
+    expect(w.ran).toHaveLength(1);
+});
+
+for (const [shape, tick] of [
+    ['a tick quoting another file', tickOn('/repo/y.ts')],
+    ['a tick older than 2 h', tickOn('/repo/x.ts', NOW - 121 * MIN)],
+    ['a tick stamped in the future', tickOn('/repo/x.ts', NOW + MIN)],
+] as const)
+    test(`a Bash write to a held file stays refused on ${shape}`, async ($, on) => {
+        world(on, { ticks: [tick] });
+        expect((await bash($, "sd 'a' 'b' x.ts")).deny).toMatch(
+            /^x-mod-holds: \/repo\/x\.ts is held by session b1b1b1b1/,
+        );
+    });
+
+test("another session's pass opens nothing for this one", async ($, on) => {
+    world(on, { passFor: 'c3c3c3c3-cccc' });
+    expect((await bash($, "sd 'a' 'b' x.ts")).deny).toMatch(
+        /held by session b1b1b1b1/,
     );
 });
