@@ -30,6 +30,7 @@ import {
     phasesOf,
     runningPids,
     savePress,
+    unbold,
 } from './orbit.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
@@ -816,10 +817,12 @@ export default class FleetBoard extends View {
                     .child(
                         line(t.muted, SIZE.meta)
                             .id('seat-wait')
-                            .when(Boolean(s?.wait), (el) => el.tooltip(s.wait))
+                            .when(Boolean(s?.wait), (el) =>
+                                el.tooltip(unbold(s.wait)),
+                            )
                             .child(
                                 s?.wait
-                                    ? `🔭 ${s.wait}`
+                                    ? `🔭 ${unbold(s.wait)}`
                                     : s
                                       ? ''
                                       : 'no claude seat in this tab',

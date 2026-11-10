@@ -123,6 +123,12 @@ export const literalAngles = (text) =>
         .join('');
 
 /**
+ * a one-line plain label shows markdown's ** as typed, so they go
+ * @param {string} text
+ */
+export const unbold = (text) => text.replaceAll('**', '');
+
+/**
  * seats sort by the words of their name: a leading badge (🦉, ⚡ 🔧) would otherwise order them by emoji code point
  * @param {string} a
  * @param {string} b

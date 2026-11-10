@@ -78,7 +78,7 @@ wish: PK-363
   - given a seat's last reply ran at an effort
   - then the chat box's effort reads that value, past the default in settings
   - decision: it lives in the chat mod `~/.config/herdr-app/mods/claude-chat`, outside frame and outside git until FRM-556 moves it in
-- 🧭 the band and the asks in the chat view (FRM-561)
+- ⬜ the band and the asks in the chat view (FRM-561)
   - given a seat is selected in the Chat view
   - then its context percent, its waiting-on line, the weekly usage and its open asks with their 🛎️ show without a flip to the Terminal view
   - and the strip keeps one fixed height: a long ask list scrolls inside it, its head counts the asks, and the transcript below never moves
@@ -91,6 +91,15 @@ wish: PK-363
   - given the seat in the Chat view has no open ask
   - then the strip lists its phases where the asks would sit
   - decision: not in his day-one pick; built once and cut, waiting for his word
+- ✅ the chat box's draft survives a chat reload
+  - given dima has typed into a seat's Chat box
+  - when claude-chat reloads
+  - then the box shows his text again (proven in wing 1's tab, 16:57:57)
+  - decision: it lives in claude-chat, outside frame and outside git until FRM-556 moves it in; backup `~/.local/state/herdr-mod-backups/claude-chat-1659`
+- ⬜ after a reload the caret sits at the draft's end
+  - given a draft came back after a reload
+  - when dima types on
+  - then his text goes after the draft, never in front of it
 - ⬜ a steer being typed survives a board reload
   - given dima has typed into an ask's steer field
   - when fleet-board reloads

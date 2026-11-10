@@ -12,6 +12,7 @@ import {
     phasesOf,
     runningPids,
     savePress,
+    unbold,
     withPress,
 } from './orbit.js';
 
@@ -223,6 +224,14 @@ describe('ask text draws as typed', () => {
     test('angle brackets inside a code span stay as written', () => {
         expect(literalAngles('run `x lane commit <msg>` now')).toBe(
             'run `x lane commit <msg>` now',
+        );
+    });
+});
+
+describe('a plain one-line label', () => {
+    test('a bold name shows without its stars', () => {
+        expect(unbold('waiting on **🙋 dima**, **🔧 codie** (mods)')).toBe(
+            'waiting on 🙋 dima, 🔧 codie (mods)',
         );
     });
 });
