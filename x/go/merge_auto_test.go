@@ -144,17 +144,17 @@ func (h *hub) sent(prefix string) []string {
 const mergedSha = "cccccccccccccccccccccccccccccccccccccccc"
 
 // a pr world: a bare origin standing in for github.com/o/r, a clone clio runs merge-auto in, the pr
-// branch coder/x touching the given paths, a sixth sense store, and the hub answering for #7 as all green
+// branch codie/x touching the given paths, a sixth sense store, and the hub answering for #7 as all green
 type mergeWorld struct {
 	clone, origin, seed, head, store, state string
 	hub                                     *hub
 	env                                     []string
 }
 
-// moveHead pushes seed's coder/x and points the hub at its new head, every check green on it
+// moveHead pushes seed's codie/x and points the hub at its new head, every check green on it
 func (w *mergeWorld) moveHead(t *testing.T) {
 	t.Helper()
-	gitT(t, w.seed, "push", "-q", "-f", "origin", "coder/x")
+	gitT(t, w.seed, "push", "-q", "-f", "origin", "codie/x")
 	old, head := w.head, gitT(t, w.seed, "rev-parse", "HEAD")
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
@@ -165,7 +165,7 @@ func (w *mergeWorld) moveHead(t *testing.T) {
 	w.hub.head, w.head = head, head
 }
 
-// mainMoves lands one unrelated commit on origin's main and rebases coder/x onto it
+// mainMoves lands one unrelated commit on origin's main and rebases codie/x onto it
 func (w *mergeWorld) mainMoves(t *testing.T, name string) {
 	t.Helper()
 	gitT(t, w.seed, "switch", "-q", "main")
@@ -173,7 +173,7 @@ func (w *mergeWorld) mainMoves(t *testing.T, name string) {
 	gitT(t, w.seed, "add", name)
 	gitT(t, w.seed, "commit", "-q", "-m", "main: "+name)
 	gitT(t, w.seed, "push", "-q", "origin", "main")
-	gitT(t, w.seed, "switch", "-q", "coder/x")
+	gitT(t, w.seed, "switch", "-q", "codie/x")
 	gitT(t, w.seed, "rebase", "-q", "main")
 }
 
@@ -186,13 +186,13 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 		copyFixture(t, seedRepo(t), seed)
 		gitT(t, seed, "remote", "add", "origin", origin)
 		gitT(t, seed, "push", "-q", "origin", "main")
-		gitT(t, seed, "switch", "-q", "-c", "coder/x")
+		gitT(t, seed, "switch", "-q", "-c", "codie/x")
 		for _, p := range paths {
 			write(t, filepath.Join(seed, p), "change in "+p+"\n")
 		}
 		gitT(t, seed, "add", ".")
 		gitT(t, seed, "commit", "-q", "-m", "the pr's change")
-		gitT(t, seed, "push", "-q", "origin", "coder/x")
+		gitT(t, seed, "push", "-q", "origin", "codie/x")
 		write(t, filepath.Join(root, "head"), gitT(t, seed, "rev-parse", "HEAD"))
 
 		clone := filepath.Join(root, "clone")
@@ -211,7 +211,7 @@ func newMergeWorld(t *testing.T, paths ...string) *mergeWorld {
 	h := &hub{head: head, pages: map[string]string{
 		// mergeable leads, so a test that plants its own value after "number" wins: go's json keeps a key's last value
 		repoPath + "/pulls/7": `{"mergeable":true,"mergeable_state":"clean","number":7,"title":"a pr","state":"open","merged":false,"body":"the body",
-			"head":{"sha":"` + head + `","ref":"coder/x"},"base":{"ref":"main"}}`,
+			"head":{"sha":"` + head + `","ref":"codie/x"},"base":{"ref":"main"}}`,
 		repoPath + "/pulls/7/files":                                   "[" + strings.Join(files, ",") + "]",
 		repoPath + "/branches/main/protection/required_status_checks": `{"contexts":["test","build"]}`,
 		repoPath + "/commits/" + head + "/check-runs": `{"total_count":2,"check_runs":[
@@ -298,8 +298,8 @@ func TestMergeAutoCarriesACleanAcrossARebaseWithUnchangedPatchIds(t *testing.T) 
 func (w *mergeWorld) laneTree(t *testing.T) string {
 	t.Helper()
 	tree := filepath.Join(w.clone, ".claude/worktrees/lane")
-	gitT(t, w.clone, "fetch", "-q", "origin", "coder/x:coder/x")
-	gitT(t, w.clone, "worktree", "add", "-q", tree, "coder/x")
+	gitT(t, w.clone, "fetch", "-q", "origin", "codie/x:codie/x")
+	gitT(t, w.clone, "worktree", "add", "-q", tree, "codie/x")
 	return tree
 }
 
@@ -534,9 +534,9 @@ func TestMergeAutoLeavesAnUpperLayerTree(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.withPnpm(t, "exit 0")
-	gitT(t, w.clone, "fetch", "-q", "origin", "coder/x:coder/x")
+	gitT(t, w.clone, "fetch", "-q", "origin", "codie/x:codie/x")
 	upper := filepath.Join(w.clone, ".claude/worktrees/upper")
-	gitT(t, w.clone, "worktree", "add", "-q", "-b", "coder/x-2", upper, "coder/x")
+	gitT(t, w.clone, "worktree", "add", "-q", "-b", "codie/x-2", upper, "codie/x")
 	write(t, filepath.Join(upper, "z.txt"), "the layer above\n")
 	gitT(t, upper, "add", "z.txt")
 	gitT(t, upper, "commit", "-q", "-m", "layer 2")
@@ -553,9 +553,9 @@ func TestMergeAutoLeavesAFreshUpperLayerTree(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.withPnpm(t, "exit 0")
-	gitT(t, w.clone, "fetch", "-q", "origin", "coder/x:coder/x")
+	gitT(t, w.clone, "fetch", "-q", "origin", "codie/x:codie/x")
 	upper := filepath.Join(w.clone, ".claude/worktrees/upper")
-	gitT(t, w.clone, "worktree", "add", "-q", "-b", "coder/x-2", upper, "coder/x")
+	gitT(t, w.clone, "worktree", "add", "-q", "-b", "codie/x-2", upper, "codie/x")
 
 	got := w.run(t, "7", "--apply")
 
@@ -662,7 +662,7 @@ func TestMergeAutoCarriesACleanAcrossAPlainMergeOfMain(t *testing.T) {
 	t.Parallel()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.mainMoves(t, "one.txt")
-	gitT(t, w.seed, "reset", "-q", "--hard", "origin/coder/x")
+	gitT(t, w.seed, "reset", "-q", "--hard", "origin/codie/x")
 	gitT(t, w.seed, "merge", "-q", "--no-edit", "main")
 	w.moveHead(t)
 
@@ -681,7 +681,7 @@ func TestMergeAutoWaitsWhenTheBranchChangeIsNotTheVerifiedOne(t *testing.T) {
 	}{
 		{"a merge of main that also edits a file", func(t *testing.T, w *mergeWorld) {
 			w.mainMoves(t, "one.txt")
-			gitT(t, w.seed, "reset", "-q", "--hard", "origin/coder/x")
+			gitT(t, w.seed, "reset", "-q", "--hard", "origin/codie/x")
 			gitT(t, w.seed, "merge", "-q", "--no-commit", "main")
 			write(t, filepath.Join(w.seed, "script/foo.ts"), "slipped into the merge\n")
 			gitT(t, w.seed, "add", "script/foo.ts")
@@ -943,7 +943,7 @@ func commitAt(t *testing.T, w *mergeWorld, date string, args ...string) string {
 	}
 	gitT(t, w.seed, "push", "-q", "origin", "main")
 	sha := gitT(t, w.seed, "rev-parse", "HEAD")
-	gitT(t, w.seed, "switch", "-q", "coder/x")
+	gitT(t, w.seed, "switch", "-q", "codie/x")
 	return sha
 }
 
@@ -1077,7 +1077,7 @@ func roundWorld(t *testing.T) *mergeWorld {
 	w.hub.pages[repoPath+"/actions/workflows/review.yml"] = `{"name":"review"}`
 	w.env = append(w.env, "X_ROUND_REPO=o/r")
 	w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
-		{"id":1,"head_branch":"coder/x","head_sha":"` + w.head + `","status":"completed","conclusion":"success"}]}`
+		{"id":1,"head_branch":"codie/x","head_sha":"` + w.head + `","status":"completed","conclusion":"success"}]}`
 	w.hub.pages[repoPath+"/actions/runs/1/jobs"] = jobOf("success", "")
 	return w
 }
@@ -1093,7 +1093,7 @@ func (w *mergeWorld) reviewRun(conclusion, job, failedStep string) {
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
-		{"id":1,"head_branch":"coder/x","head_sha":"` + w.head + `","status":"completed","conclusion":"` + conclusion + `"}]}`
+		{"id":1,"head_branch":"codie/x","head_sha":"` + w.head + `","status":"completed","conclusion":"` + conclusion + `"}]}`
 	w.hub.pages[repoPath+"/actions/runs/1/jobs"] = jobOf(job, failedStep)
 }
 
@@ -1464,7 +1464,7 @@ func TestMergeAutoMergesNothingUnlessTheRestHolds(t *testing.T) {
 			defer w.hub.mu.Unlock()
 			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[
 				{"head_branch":"other","status":"completed","conclusion":"success"},
-				{"head_branch":"coder/x","status":"in_progress","conclusion":null}]}`
+				{"head_branch":"codie/x","status":"in_progress","conclusion":null}]}`
 		}},
 	}
 	for _, c := range cases {
@@ -1728,13 +1728,13 @@ func TestMergeAutoTakesTheTicketFromTheBranchName(t *testing.T) {
 	w.signs(t, "FRM-9", signedBody(signAbove, "merge: pre-approved\n", signAbove))
 	w.hub.mu.Lock()
 	page := strings.Replace(w.hub.pages[repoPath+"/pulls/7"], `"body":"- ticket: FRM-9"`, `"body":"no ticket line"`, 1)
-	w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(page, `"ref":"coder/x"`, `"ref":"coder/FRM-9-merge-door-2"`, 1)
+	w.hub.pages[repoPath+"/pulls/7"] = strings.Replace(page, `"ref":"codie/x"`, `"ref":"codie/FRM-9-merge-door-2"`, 1)
 	w.hub.mu.Unlock()
 
 	got := xIn(t, w.clone, w.env, "lane", "merge-auto", "7", "--apply")
 
 	if merges := w.hub.sent("PUT "); got.code != 0 || len(merges) != 1 {
-		t.Fatalf("exit %d, %d merge calls, want the ticket read off coder/FRM-9-…:\n%s", got.code, len(merges), got.stdout)
+		t.Fatalf("exit %d, %d merge calls, want the ticket read off codie/FRM-9-…:\n%s", got.code, len(merges), got.stdout)
 	}
 }
 

@@ -49,7 +49,7 @@ var (
 	npmScoped  = regexp.MustCompile(`^@[a-z0-9][\w.-]*/[a-z0-9][\w.-]*(?:@[\w.^~-]+)?$`)
 	// a cc slash command (`/clear`, `/clio:boot`) is one segment from the root: never a path to check
 	slashCommandToken = regexp.MustCompile(`^/[a-z][\w:-]*$`)
-	branchShape       = regexp.MustCompile(`^(?:scratch|codie|coder|worktree|claude)/[\w.+-]+$`)
+	branchShape       = regexp.MustCompile(`^(?:scratch|codie|worktree|claude)/[\w.+-]+$`)
 	jevWord           = regexp.MustCompile(`(?i)\bjev\b`)
 	reuseWord         = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
 	keepWord          = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)

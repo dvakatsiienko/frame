@@ -17,7 +17,7 @@ const headSha, oldSha = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "aaaaaaaaaaa
 func fakeGh(t *testing.T, runs []string) (env []string, dir string) {
 	t.Helper()
 	dir = t.TempDir()
-	write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"coder/x","headRefOid":"`+headSha+`","labels":[{"name":"🤖 review:requested"}]}`)
+	write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"codie/x","headRefOid":"`+headSha+`","labels":[{"name":"🤖 review:requested"}]}`)
 	if runs != nil {
 		write(t, filepath.Join(dir, "runs.jsonl"), strings.Join(runs, "\n")+"\n")
 	}
@@ -45,7 +45,7 @@ esac
 }
 
 func runOf(number int, sha, status, conclusion string) string {
-	return fmt.Sprintf(`{"id":%d,"run_number":%d,"head_branch":"coder/x","head_sha":%q,"status":%q,"conclusion":%q}`, number, number, sha, status, conclusion)
+	return fmt.Sprintf(`{"id":%d,"run_number":%d,"head_branch":"codie/x","head_sha":%q,"status":%q,"conclusion":%q}`, number, number, sha, status, conclusion)
 }
 
 func calls(t *testing.T, dir string) string {
@@ -155,7 +155,7 @@ func TestReviewAtTheCapFollowsMergeAutoAcrossARebase(t *testing.T) {
 				w.moveHead(t)
 			}
 			env, dir := fakeGh(t, []string{runOf(1, judged, "completed", "success")})
-			write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"coder/x","headRefOid":"`+w.head+`","baseRefName":"main","labels":[]}`)
+			write(t, filepath.Join(dir, "pr.json"), `{"title":"a pr","headRefName":"codie/x","headRefOid":"`+w.head+`","baseRefName":"main","labels":[]}`)
 
 			got := xIn(t, w.clone, append(env, "FAKE_GH_COMPARE=diverged"), "lane", "review", "7")
 
@@ -203,7 +203,7 @@ func TestPrBodyRefusesACallWithoutANumber(t *testing.T) {
 	cases := map[string][]string{
 		"the file alone":         {body},
 		"the file before the pr": {body, "7", "--apply"},
-		"a branch for the pr":    {"coder/x", body, "--apply"},
+		"a branch for the pr":    {"codie/x", body, "--apply"},
 	}
 	for name, argv := range cases {
 		t.Run(name, func(t *testing.T) {

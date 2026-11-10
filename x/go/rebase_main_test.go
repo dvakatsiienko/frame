@@ -59,7 +59,7 @@ func TestRebaseMainRefusesABranchOutsideCoder(t *testing.T) {
 	t.Parallel()
 	for _, branch := range []string{"main", "dima/try", "scratch/x"} {
 		t.Run(branch, func(t *testing.T) {
-			w := newRebaseWorld(t, "coder/x")
+			w := newRebaseWorld(t, "codie/x")
 			if branch != "main" {
 				gitT(t, w.clone, "switch", "-q", "-c", branch)
 			} else {
@@ -80,20 +80,20 @@ func TestRebaseMainRefusesABranchOutsideCoder(t *testing.T) {
 // a post-rewrite hook runs after the rebase and before the push: a teammate's push lands in that gap
 func TestRebaseMainKeepsAPushThatLandedAfterItsRead(t *testing.T) {
 	t.Parallel()
-	w := newRebaseWorld(t, "coder/x")
+	w := newRebaseWorld(t, "codie/x")
 	w.mainMoves(t, "one.txt", "one\n")
 	gitT(t, w.side, "fetch", "-q", "origin")
-	gitT(t, w.side, "switch", "-q", "-C", "rival", "origin/coder/x")
+	gitT(t, w.side, "switch", "-q", "-C", "rival", "origin/codie/x")
 	write(t, filepath.Join(w.side, "theirs.txt"), "a teammate's commit\n")
 	gitT(t, w.side, "add", "theirs.txt")
 	gitT(t, w.side, "commit", "-q", "-m", "a teammate's commit")
 	theirs := gitT(t, w.side, "rev-parse", "HEAD")
 	write(t, filepath.Join(w.clone, ".git/hooks/post-rewrite"),
-		"#!/bin/sh\ngit -C '"+w.side+"' push -q origin rival:refs/heads/coder/x\n")
+		"#!/bin/sh\ngit -C '"+w.side+"' push -q origin rival:refs/heads/codie/x\n")
 
 	got := w.run(t, "--apply")
 
-	if remote := remoteHead(t, w, "coder/x"); got.code == 0 || remote != theirs || !strings.Contains(envelopeOf(got).Error, "moved to "+short(theirs)) {
+	if remote := remoteHead(t, w, "codie/x"); got.code == 0 || remote != theirs || !strings.Contains(envelopeOf(got).Error, "moved to "+short(theirs)) {
 		t.Fatalf("exit %d, remote %s, want the teammate's %s kept and named:\n%s", got.code, short(remote), short(theirs), got.stdout)
 	}
 }
@@ -101,29 +101,29 @@ func TestRebaseMainKeepsAPushThatLandedAfterItsRead(t *testing.T) {
 // the teammate pushed before the run: the lease matches the remote, so only an ancestry check keeps the push
 func TestRebaseMainRefusesWhenTheRemoteHoldsACommitHeadLacks(t *testing.T) {
 	t.Parallel()
-	w := newRebaseWorld(t, "coder/x")
+	w := newRebaseWorld(t, "codie/x")
 	w.mainMoves(t, "one.txt", "one\n")
 	gitT(t, w.side, "fetch", "-q", "origin")
-	gitT(t, w.side, "switch", "-q", "-C", "rival", "origin/coder/x")
+	gitT(t, w.side, "switch", "-q", "-C", "rival", "origin/codie/x")
 	write(t, filepath.Join(w.side, "theirs.txt"), "a teammate's commit\n")
 	gitT(t, w.side, "add", "theirs.txt")
 	gitT(t, w.side, "commit", "-q", "-m", "a teammate's commit")
-	gitT(t, w.side, "push", "-q", "origin", "rival:refs/heads/coder/x")
+	gitT(t, w.side, "push", "-q", "origin", "rival:refs/heads/codie/x")
 	theirs := gitT(t, w.side, "rev-parse", "HEAD")
 	before := gitT(t, w.clone, "rev-parse", "HEAD")
 
 	got := w.run(t, "--apply")
 
 	after := gitT(t, w.clone, "rev-parse", "HEAD")
-	if got.code == 0 || remoteHead(t, w, "coder/x") != theirs || after != before || !strings.Contains(envelopeOf(got).Error, short(theirs)) {
+	if got.code == 0 || remoteHead(t, w, "codie/x") != theirs || after != before || !strings.Contains(envelopeOf(got).Error, short(theirs)) {
 		t.Fatalf("exit %d, remote %s, HEAD %s → %s, want the teammate's %s kept, HEAD untouched and named:\n%s",
-			got.code, short(remoteHead(t, w, "coder/x")), short(before), short(after), short(theirs), got.stdout)
+			got.code, short(remoteHead(t, w, "codie/x")), short(before), short(after), short(theirs), got.stdout)
 	}
 }
 
 func TestRebaseMainStopsInTheRebaseOnAConflict(t *testing.T) {
 	t.Parallel()
-	w := newRebaseWorld(t, "coder/x")
+	w := newRebaseWorld(t, "codie/x")
 	w.mainMoves(t, "mine.txt", "main's version\n")
 
 	got := w.run(t, "--apply")
@@ -138,12 +138,12 @@ func TestRebaseMainStopsInTheRebaseOnAConflict(t *testing.T) {
 // sixth sense's round 2 repro: a hand resolution and an unstaged edit sit in a paused rebase
 func TestRebaseMainLeavesAPausedRebaseUntouched(t *testing.T) {
 	t.Parallel()
-	w := newRebaseWorld(t, "coder/x")
+	w := newRebaseWorld(t, "codie/x")
 	w.mainMoves(t, "mine.txt", "main's version\n")
 	w.run(t, "--apply")
 	write(t, filepath.Join(w.clone, "mine.txt"), "resolved by hand\n")
 	write(t, filepath.Join(w.clone, "readme.txt"), "an unstaged edit\n")
-	before := remoteHead(t, w, "coder/x")
+	before := remoteHead(t, w, "codie/x")
 
 	got := w.run(t, "--apply")
 
@@ -151,10 +151,10 @@ func TestRebaseMainLeavesAPausedRebaseUntouched(t *testing.T) {
 	readme, _ := os.ReadFile(filepath.Join(w.clone, "readme.txt"))
 	inRebase := exists(filepath.Join(w.clone, ".git/rebase-merge"))
 	msg := envelopeOf(got).Error
-	if got.code == 0 || !inRebase || string(mine) != "resolved by hand\n" || string(readme) != "an unstaged edit\n" || remoteHead(t, w, "coder/x") != before {
+	if got.code == 0 || !inRebase || string(mine) != "resolved by hand\n" || string(readme) != "an unstaged edit\n" || remoteHead(t, w, "codie/x") != before {
 		t.Fatalf("exit %d, in rebase %v, mine.txt %q, readme.txt %q, want all of it kept:\n%s", got.code, inRebase, mine, readme, got.stdout)
 	}
-	if !strings.Contains(msg, "coder/x") || !strings.Contains(msg, "git rebase --continue") || !strings.Contains(msg, "git rebase --abort") {
+	if !strings.Contains(msg, "codie/x") || !strings.Contains(msg, "git rebase --continue") || !strings.Contains(msg, "git rebase --abort") {
 		t.Errorf("error %q, want the branch and both git lines", msg)
 	}
 }
@@ -162,7 +162,7 @@ func TestRebaseMainLeavesAPausedRebaseUntouched(t *testing.T) {
 // a rebase git refuses to start leaves nothing to abort, and the message says so
 func TestRebaseMainSaysARefusedRebaseDidNotStart(t *testing.T) {
 	t.Parallel()
-	w := newRebaseWorld(t, "coder/x")
+	w := newRebaseWorld(t, "codie/x")
 	w.mainMoves(t, "one.txt", "one\n")
 	write(t, filepath.Join(w.clone, "mine.txt"), "an unstaged edit\n")
 
@@ -178,10 +178,10 @@ func TestRebaseMainSaysARefusedRebaseDidNotStart(t *testing.T) {
 // a server hook moves the ref after the push lands: the read-back must catch it
 func TestRebaseMainNamesARemoteThatDiffersAfterThePush(t *testing.T) {
 	t.Parallel()
-	w := newRebaseWorld(t, "coder/x")
+	w := newRebaseWorld(t, "codie/x")
 	w.mainMoves(t, "one.txt", "one\n")
 	mainSha := remoteHead(t, w, "main")
-	write(t, filepath.Join(w.origin, "hooks/post-receive"), "#!/bin/sh\ngit update-ref refs/heads/coder/x "+mainSha+"\n")
+	write(t, filepath.Join(w.origin, "hooks/post-receive"), "#!/bin/sh\ngit update-ref refs/heads/codie/x "+mainSha+"\n")
 
 	got := w.run(t, "--apply")
 
@@ -193,7 +193,7 @@ func TestRebaseMainNamesARemoteThatDiffersAfterThePush(t *testing.T) {
 // the want line: main moves twice under codie lane, and the branch never holds a merge commit
 func TestRebaseMainLeavesNoMergeCommitAcrossTwoMainMoves(t *testing.T) {
 	t.Parallel()
-	w := newRebaseWorld(t, "coder/x")
+	w := newRebaseWorld(t, "codie/x")
 	for _, name := range []string{"one.txt", "two.txt"} {
 		w.mainMoves(t, name, name+"\n")
 		if got := w.run(t, "--apply"); got.code != 0 {
@@ -202,14 +202,27 @@ func TestRebaseMainLeavesNoMergeCommitAcrossTwoMainMoves(t *testing.T) {
 	}
 
 	gitT(t, w.clone, "fetch", "-q", "origin")
-	if merges := gitT(t, w.clone, "log", "--merges", "--oneline", "origin/main..origin/coder/x"); merges != "" {
+	if merges := gitT(t, w.clone, "log", "--merges", "--oneline", "origin/main..origin/codie/x"); merges != "" {
 		t.Fatalf("the branch holds merge commits:\n%s", merges)
+	}
+}
+
+func TestRebaseMainRefusesTheBranchPrefixBeforeTheRename(t *testing.T) {
+	t.Parallel()
+	w := newRebaseWorld(t, "coder/x")
+	w.mainMoves(t, "one.txt", "one\n")
+	before := remoteHead(t, w, "coder/x")
+
+	got := w.run(t, "--apply")
+
+	if got.code != 2 || remoteHead(t, w, "coder/x") != before || !strings.Contains(envelopeOf(got).Error, "not a codie/* branch") {
+		t.Fatalf("exit %d, want 2 and the remote kept at %s:\n%s", got.code, short(before), got.stdout)
 	}
 }
 
 func TestRebaseMainPutsTheBranchOnMainWithoutAMergeCommit(t *testing.T) {
 	t.Parallel()
-	for _, branch := range []string{"codie/x", "coder/x"} {
+	for _, branch := range []string{"codie/x"} {
 		t.Run(branch, func(t *testing.T) {
 			t.Parallel()
 			w := newRebaseWorld(t, branch)

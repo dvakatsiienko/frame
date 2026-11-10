@@ -53,7 +53,7 @@ func pausedRebase() (name string, paused bool) {
 	return "", false
 }
 
-// the fleet's one force-push door: codie/* (and the older coder/*) only, leased on the sha read before the rebase (dima, o87)
+// the fleet's one force-push door: codie/* only, leased on the sha read before the rebase (dima, o87)
 func rebasePlan(r *Run, _ []string, flags Flags) (any, error) {
 	if name, paused := pausedRebase(); paused {
 		return nil, &Fail{Refused: true, Msg: "a rebase of " + name + " is stopped here; nothing was touched — resolve, git add, then git rebase --continue, or git rebase --abort",

@@ -15,14 +15,14 @@ import (
 
 func TestPrOpenWithBaseOpensOntoTheLayerBelow(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2")
 	env, log := ghRecorder(t, prCreated)
 
-	got := xIn(t, clone, env, "lane", "pr-open", "--apply", "--base", "coder/FRM-1-a", "part 2", bodyFile(t))
+	got := xIn(t, clone, env, "lane", "pr-open", "--apply", "--base", "codie/FRM-1-a", "part 2", bodyFile(t))
 
 	calls := strings.TrimSpace(read(t, log))
-	if got.code != 0 || !strings.HasPrefix(calls, "ghs_coder pr create --base coder/FRM-1-a --head coder/FRM-1-a-2 ") || strings.Contains(calls, "\n") {
-		t.Fatalf("exit %d, gh calls %q, want one pr create onto coder/FRM-1-a\n%s", got.code, calls, got.stdout)
+	if got.code != 0 || !strings.HasPrefix(calls, "ghs_coder pr create --base codie/FRM-1-a --head codie/FRM-1-a-2 ") || strings.Contains(calls, "\n") {
+		t.Fatalf("exit %d, gh calls %q, want one pr create onto codie/FRM-1-a\n%s", got.code, calls, got.stdout)
 	}
 }
 
@@ -44,8 +44,8 @@ const ghStack = `'extension list'*) if [ -z "$FAKE_NO_STACK" ]; then printf 'gh 
 func stackGithub(t *testing.T, clone string, stacks string) []string {
 	t.Helper()
 	onGithub(t, clone)
-	pages := map[string]string{repoPath + "/pulls": `[{"number":11,"head":{"ref":"coder/FRM-1-a"}},{"number":12,"head":{"ref":"coder/FRM-1-a-2"}},
-		{"number":13,"head":{"ref":"coder/FRM-1-a-3"}},{"number":21,"head":{"ref":"coder/FRM-1-v-2"}},{"number":22,"head":{"ref":"coder/FRM-1-v-2-2"}}]`}
+	pages := map[string]string{repoPath + "/pulls": `[{"number":11,"head":{"ref":"codie/FRM-1-a"}},{"number":12,"head":{"ref":"codie/FRM-1-a-2"}},
+		{"number":13,"head":{"ref":"codie/FRM-1-a-3"}},{"number":21,"head":{"ref":"codie/FRM-1-v-2"}},{"number":22,"head":{"ref":"codie/FRM-1-v-2-2"}}]`}
 	if stacks != "" {
 		pages[repoPath+"/stacks"] = stacks
 	}
@@ -63,9 +63,9 @@ func onGithub(t *testing.T, clone string) {
 }
 
 const linkedStack = `[{"number":4,"base":{"ref":"main"},"pull_requests":[
-	{"number":11,"state":"closed","merged_at":"2026-10-23T10:00:00Z","head":{"ref":"coder/FRM-1-a"}},
-	{"number":12,"state":"open","head":{"ref":"coder/FRM-1-a-2"}},
-	{"number":13,"state":"open","head":{"ref":"coder/FRM-1-a-3"}}]}]`
+	{"number":11,"state":"closed","merged_at":"2026-10-23T10:00:00Z","head":{"ref":"codie/FRM-1-a"}},
+	{"number":12,"state":"open","head":{"ref":"codie/FRM-1-a-2"}},
+	{"number":13,"state":"open","head":{"ref":"codie/FRM-1-a-3"}}]}]`
 
 // linkEnv is a gh with the extension plus github answering the layers' prs
 func linkEnv(t *testing.T, clone string) (env []string, log string) {
@@ -77,7 +77,7 @@ func linkEnv(t *testing.T, clone string) (env []string, log string) {
 // by pr number: gh stack link pushes every branch it is named, and a frame worktree's push dies
 func TestStackLinkLinksTheLayersBottomUp(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3")
 	env, log := linkEnv(t, clone)
 
 	got := xIn(t, clone, env, "lane", "stack", "link", "--apply")
@@ -96,12 +96,12 @@ func TestStackLinkLinksTheLayersBottomUp(t *testing.T) {
 // gh-stack's own view reads a local file its link never writes, so view asks github's stacks api
 func TestStackViewPrintsTheStackGithubHolds(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3")
 	env := stackGithub(t, clone, linkedStack)
 
 	got := xIn(t, clone, env, "lane", "stack", "view")
 
-	a, b, c := strings.Index(got.stdout, `"coder/FRM-1-a"`), strings.Index(got.stdout, `"coder/FRM-1-a-2"`), strings.Index(got.stdout, `"coder/FRM-1-a-3"`)
+	a, b, c := strings.Index(got.stdout, `"codie/FRM-1-a"`), strings.Index(got.stdout, `"codie/FRM-1-a-2"`), strings.Index(got.stdout, `"codie/FRM-1-a-3"`)
 	if got.code != 0 || a < 0 || !(a < b && b < c) || !strings.Contains(got.stdout, `"pr":13`) {
 		t.Fatalf("exit %d, want the 3 layers bottom-up with their prs:\n%s", got.code, got.stdout)
 	}
@@ -109,7 +109,7 @@ func TestStackViewPrintsTheStackGithubHolds(t *testing.T) {
 
 func TestStackViewOfAPrInNoStackNamesLink(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3")
 	env := stackGithub(t, clone, `[]`)
 
 	got := xIn(t, clone, env, "lane", "stack", "view")
@@ -121,7 +121,7 @@ func TestStackViewOfAPrInNoStackNamesLink(t *testing.T) {
 
 func TestStackViewOnARepoWithoutStacksSaysSo(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3")
 	env := stackGithub(t, clone, "")
 
 	got := xIn(t, clone, env, "lane", "stack", "view")
@@ -133,19 +133,19 @@ func TestStackViewOnARepoWithoutStacksSaysSo(t *testing.T) {
 
 func TestStackViewShowsAMergedLayerAsMerged(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3")
 	env := stackGithub(t, clone, linkedStack)
 
 	got := xIn(t, clone, env, "lane", "stack", "view", "--board")
 
-	if got.code != 0 || !strings.Contains(sgr.ReplaceAllString(got.stdout, ""), "coder/FRM-1-a #11 merged") {
+	if got.code != 0 || !strings.Contains(sgr.ReplaceAllString(got.stdout, ""), "codie/FRM-1-a #11 merged") {
 		t.Fatalf("exit %d, want #11 shown merged:\n%s", got.code, got.stdout)
 	}
 }
 
 func TestStackLinkWithoutTheExtensionNamesTheInstall(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2")
 	env, log := linkEnv(t, clone)
 	env = append(env, "FAKE_NO_STACK=1")
 
@@ -159,7 +159,7 @@ func TestStackLinkWithoutTheExtensionNamesTheInstall(t *testing.T) {
 // gh stack link exits as exits lists, the last code repeating; it returns the run and the link count
 func linkWith(t *testing.T, exits string) (ran, int) {
 	t.Helper()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2")
 	env, log := linkEnv(t, clone)
 	env = append(env, "FAKE_DIR="+t.TempDir(), "FAKE_EXITS="+exits, "X_FAKE_SLEEP=1")
 	got := xIn(t, clone, env, "lane", "stack", "link", "--apply")
@@ -209,33 +209,33 @@ func TestStackLinkRefusesARepoWithoutStacksAtOnce(t *testing.T) {
 }
 
 const (
-	lowerOpen   = `{"number":7,"state":"open","head":{"ref":"coder/x"}}`
-	lowerMerged = `{"number":7,"state":"closed","merged_at":"2026-10-23T10:00:00Z","head":{"ref":"coder/x"}}`
+	lowerOpen   = `{"number":7,"state":"open","head":{"ref":"codie/x"}}`
+	lowerMerged = `{"number":7,"state":"closed","merged_at":"2026-10-23T10:00:00Z","head":{"ref":"codie/x"}}`
 )
 
-// a merge world where #7 (coder/x onto main) is the lower layer, as lower says, and #8 sits on base
+// a merge world where #7 (codie/x onto main) is the lower layer, as lower says, and #8 sits on base
 func stackedMergeWorld(t *testing.T, base, lower string) *mergeWorld {
 	t.Helper()
 	w := newMergeWorld(t, "script/foo.ts")
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/pulls/8"] = `{"mergeable":true,"mergeable_state":"clean","number":8,"title":"part 2","state":"open","merged":false,"body":"b",
-		"head":{"sha":"` + w.head + `","ref":"coder/x-2"},"base":{"ref":"` + base + `"}}`
-	w.hub.pages[repoPath+"/pulls"] = `[{"number":9,"state":"open","head":{"ref":"coder/y"}},` + lower + `]`
+		"head":{"sha":"` + w.head + `","ref":"codie/x-2"},"base":{"ref":"` + base + `"}}`
+	w.hub.pages[repoPath+"/pulls"] = `[{"number":9,"state":"open","head":{"ref":"codie/y"}},` + lower + `]`
 	w.hub.pages[repoPath+"/pulls/8/files"] = w.hub.pages[repoPath+"/pulls/7/files"]
 	return w
 }
 
-// a linked stack on github: #7 (coder/x onto main) under #8, both clean, green and threadless; the async
+// a linked stack on github: #7 (codie/x onto main) under #8, both clean, green and threadless; the async
 // merge of #8 starts pending and the poll answers merged
 func linkedMergeWorld(t *testing.T) *mergeWorld {
 	t.Helper()
-	w := stackedMergeWorld(t, "coder/x", lowerOpen)
+	w := stackedMergeWorld(t, "codie/x", lowerOpen)
 	write(t, w.store, `{"o/r#7":"`+w.head+`","o/r#7:security":"`+w.head+`","o/r#8":"`+w.head+`","o/r#8:security":"`+w.head+`"}`)
 	w.hub.mu.Lock()
 	defer w.hub.mu.Unlock()
 	w.hub.pages[repoPath+"/stacks"] = `[{"number":5,"base":{"ref":"main"},"pull_requests":[
-		{"number":7,"state":"open","head":{"ref":"coder/x"}},{"number":8,"state":"open","head":{"ref":"coder/x-2"}}]}]`
+		{"number":7,"state":"open","head":{"ref":"codie/x"}},{"number":8,"state":"open","head":{"ref":"codie/x-2"}}]}]`
 	w.hub.pages[repoPath+"/pulls/8/merge-async"] = `{"status":"pending","details":{"uuid":"u1"}}`
 	w.hub.pages[repoPath+"/pulls/8/merge-async/u1"] = `{"status":"merged","details":{"sha":"` + mergedSha + `","expected_head_sha":"` + w.head + `"}}`
 	return w
@@ -335,8 +335,8 @@ func TestMergeAutoHoldsAStackOnALowerLayersGate(t *testing.T) {
 
 func TestMergeAutoReadsEachLayersOwnRound(t *testing.T) {
 	t.Parallel()
-	upper := `{"id":2,"head_branch":"coder/x-2","head_sha":"%s","status":"completed","conclusion":"success"}`
-	lower := `{"id":1,"head_branch":"coder/x","head_sha":"%s","status":"completed","conclusion":"success"}`
+	upper := `{"id":2,"head_branch":"codie/x-2","head_sha":"%s","status":"completed","conclusion":"success"}`
+	lower := `{"id":1,"head_branch":"codie/x","head_sha":"%s","status":"completed","conclusion":"success"}`
 	cases := []struct {
 		name string
 		runs []string
@@ -350,14 +350,14 @@ func TestMergeAutoReadsEachLayersOwnRound(t *testing.T) {
 			t.Parallel()
 			w := linkedMergeWorld(t)
 			w.env = append(w.env, "X_ROUND_REPO=o/r")
-			gitT(t, w.seed, "push", "-q", "origin", "coder/x:coder/x-2")
+			gitT(t, w.seed, "push", "-q", "origin", "codie/x:codie/x-2")
 			var runs []string
 			for _, run := range c.runs {
 				runs = append(runs, strings.ReplaceAll(run, "%s", w.head))
 			}
 			w.hub.mu.Lock()
 			w.hub.pages[repoPath+"/pulls/7"] = `{"mergeable":true,"mergeable_state":"clean","number":7,"title":"part 1","state":"open","merged":false,"body":"b",
-				"head":{"sha":"` + w.head + `","ref":"coder/x"},"base":{"ref":"main"}}`
+				"head":{"sha":"` + w.head + `","ref":"codie/x"},"base":{"ref":"main"}}`
 			w.hub.pages[repoPath+"/actions/workflows/review.yml/runs"] = `{"workflow_runs":[` + strings.Join(runs, ",") + `]}`
 			w.hub.pages[repoPath+"/actions/runs/1/jobs"] = jobOf("success", "")
 			w.hub.pages[repoPath+"/actions/runs/2/jobs"] = jobOf("success", "")
@@ -655,8 +655,8 @@ func TestMergeAutoSkipsAMergedLayerBelow(t *testing.T) {
 	w := linkedMergeWorld(t)
 	w.hub.mu.Lock()
 	w.hub.pages[repoPath+"/stacks"] = `[{"number":5,"base":{"ref":"main"},"pull_requests":[
-		{"number":6,"state":"closed","merged_at":"2026-10-23T10:00:00Z","head":{"ref":"coder/w"}},
-		{"number":7,"state":"open","head":{"ref":"coder/x"}},{"number":8,"state":"open","head":{"ref":"coder/x-2"}}]}]`
+		{"number":6,"state":"closed","merged_at":"2026-10-23T10:00:00Z","head":{"ref":"codie/w"}},
+		{"number":7,"state":"open","head":{"ref":"codie/x"}},{"number":8,"state":"open","head":{"ref":"codie/x-2"}}]}]`
 	w.hub.mu.Unlock()
 
 	got := w.run(t, "8", "--apply")
@@ -703,29 +703,29 @@ func TestMergeAutoReportsAFailedStackMerge(t *testing.T) {
 
 func TestMergeAutoRefusesALayerWhoseLowerPrMerged(t *testing.T) {
 	t.Parallel()
-	w := stackedMergeWorld(t, "coder/x", lowerMerged)
+	w := stackedMergeWorld(t, "codie/x", lowerMerged)
 
 	got := w.run(t, "8", "--apply")
 
-	if got.code == 0 || !strings.Contains(got.stdout, "#7 (coder/x) already merged") || len(w.hub.sent("PUT")) != 0 {
+	if got.code == 0 || !strings.Contains(got.stdout, "#7 (codie/x) already merged") || len(w.hub.sent("PUT")) != 0 {
 		t.Fatalf("exit %d, merges %q, want a refusal naming the merged #7 and no merge\n%s", got.code, w.hub.sent("PUT"), got.stdout)
 	}
 }
 
 func TestMergeAutoWaitsOnAnUpperLayerNamingTheLowerPr(t *testing.T) {
 	t.Parallel()
-	w := stackedMergeWorld(t, "coder/x", lowerOpen)
+	w := stackedMergeWorld(t, "codie/x", lowerOpen)
 
 	got := w.run(t, "8", "--apply")
 
-	if got.code == 0 || !strings.Contains(got.stdout, "#7 (coder/x) merges first") || len(w.hub.sent("PUT")) != 0 {
+	if got.code == 0 || !strings.Contains(got.stdout, "#7 (codie/x) merges first") || len(w.hub.sent("PUT")) != 0 {
 		t.Fatalf("exit %d, merges %q, want a wait naming #7 and no merge\n%s", got.code, w.hub.sent("PUT"), got.stdout)
 	}
 }
 
 func TestMergeAutoMergesTheLowerLayer(t *testing.T) {
 	t.Parallel()
-	w := stackedMergeWorld(t, "coder/x", lowerOpen)
+	w := stackedMergeWorld(t, "codie/x", lowerOpen)
 
 	got := w.run(t, "7", "--apply")
 
@@ -753,8 +753,8 @@ func TestStackLinkReadsTheLayersOnOrigin(t *testing.T) {
 		branches   []string
 		want       string
 	}{
-		{"a slug ending in a number stays its own root", "coder/FRM-1-v-2", []string{"coder/FRM-1-v-2", "coder/FRM-1-v-2-2"}, "21 22"},
-		{"one layer is no stack", "coder/FRM-1-a", []string{"coder/FRM-1-a"}, ""},
+		{"a slug ending in a number stays its own root", "codie/FRM-1-v-2", []string{"codie/FRM-1-v-2", "codie/FRM-1-v-2-2"}, "21 22"},
+		{"one layer is no stack", "codie/FRM-1-a", []string{"codie/FRM-1-a"}, ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -781,13 +781,13 @@ func TestStackLinkReadsTheLayersOnOrigin(t *testing.T) {
 // a 2-layer stack on origin whose bottom layer gained a commit after the top was cut; the clone sits on the top
 func movedStack(t *testing.T, lowerFile, lowerBody string) string {
 	t.Helper()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
-	gitT(t, clone, "switch", "-q", "coder/FRM-1-a")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2")
+	gitT(t, clone, "switch", "-q", "codie/FRM-1-a")
 	write(t, filepath.Join(clone, lowerFile), lowerBody)
 	gitT(t, clone, "add", lowerFile)
 	gitT(t, clone, "commit", "-q", "-m", "a fix in the lower layer")
-	gitT(t, clone, "push", "-q", "origin", "coder/FRM-1-a")
-	gitT(t, clone, "switch", "-q", "coder/FRM-1-a-2")
+	gitT(t, clone, "push", "-q", "origin", "codie/FRM-1-a")
+	gitT(t, clone, "switch", "-q", "codie/FRM-1-a-2")
 	return clone
 }
 
@@ -807,14 +807,14 @@ func TestStackMergeStillEnqueuedLeavesTheTrees(t *testing.T) {
 	w.hub.mu.Unlock()
 	w.withPnpm(t, "exit 0")
 	tree := w.laneTree(t)
-	gitT(t, w.seed, "push", "-q", "origin", "coder/x:coder/x-2")
+	gitT(t, w.seed, "push", "-q", "origin", "codie/x:codie/x-2")
 
 	got := w.run(t, "8", "--apply")
 
 	if got.code != 0 || !exists(tree) || !strings.Contains(got.stdout, "still enqueued") {
 		t.Fatalf("exit %d, tree there: %v:\n%s", got.code, exists(tree), got.stdout)
 	}
-	if !w.onOrigin(t, "coder/x-2") {
+	if !w.onOrigin(t, "codie/x-2") {
 		t.Fatalf("an enqueued merge took its branch:\n%s", got.stdout)
 	}
 }
@@ -822,15 +822,15 @@ func TestStackMergeStillEnqueuedLeavesTheTrees(t *testing.T) {
 func TestRestackMergesEachLowerLayerUpAndPushes(t *testing.T) {
 	t.Parallel()
 	clone := movedStack(t, "lower.txt", "the fix\n")
-	lower := originHead(t, clone, "coder/FRM-1-a")
+	lower := originHead(t, clone, "codie/FRM-1-a")
 
 	got := xIn(t, clone, nil, "lane", "restack", "--apply")
 
-	upper := originHead(t, clone, "coder/FRM-1-a-2")
+	upper := originHead(t, clone, "codie/FRM-1-a-2")
 	if got.code != 0 || gitT(t, clone, "merge-base", "--is-ancestor", lower, upper) != "" {
 		t.Fatalf("exit %d, want origin's top layer to hold the lower layer's %s\n%s", got.code, short(lower), got.stdout)
 	}
-	if branch := gitT(t, clone, "branch", "--show-current"); branch != "coder/FRM-1-a-2" {
+	if branch := gitT(t, clone, "branch", "--show-current"); branch != "codie/FRM-1-a-2" {
 		t.Errorf("left on %s, want the branch restack started on", branch)
 	}
 }
@@ -838,12 +838,12 @@ func TestRestackMergesEachLowerLayerUpAndPushes(t *testing.T) {
 func TestRestackStopsAtALayerThatConflicts(t *testing.T) {
 	t.Parallel()
 	// the top layer's own file, changed under it in the lower layer
-	clone := movedStack(t, "coder-FRM-1-a-2.txt", "the lower layer's version\n")
-	before := originHead(t, clone, "coder/FRM-1-a-2")
+	clone := movedStack(t, "codie-FRM-1-a-2.txt", "the lower layer's version\n")
+	before := originHead(t, clone, "codie/FRM-1-a-2")
 
 	got := xIn(t, clone, nil, "lane", "restack", "--apply")
 
-	if got.code == 0 || !strings.Contains(got.stdout, "coder/FRM-1-a-2") || !strings.Contains(got.stdout, "coder-FRM-1-a-2.txt") || originHead(t, clone, "coder/FRM-1-a-2") != before {
+	if got.code == 0 || !strings.Contains(got.stdout, "codie/FRM-1-a-2") || !strings.Contains(got.stdout, "codie-FRM-1-a-2.txt") || originHead(t, clone, "codie/FRM-1-a-2") != before {
 		t.Fatalf("exit %d, want a stop naming the layer and the conflicted file, origin untouched\n%s", got.code, got.stdout)
 	}
 }
@@ -851,8 +851,8 @@ func TestRestackStopsAtALayerThatConflicts(t *testing.T) {
 // a stack's upper layer pushes onto its own branch, never onto the layer below or main
 func TestPushSendsAStackLayerToItsOwnBranch(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2")
-	lower, main := originHead(t, clone, "coder/FRM-1-a"), originHead(t, clone, "main")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2")
+	lower, main := originHead(t, clone, "codie/FRM-1-a"), originHead(t, clone, "main")
 	write(t, filepath.Join(clone, "upper.txt"), "more in the upper layer\n")
 	gitT(t, clone, "add", "upper.txt")
 	gitT(t, clone, "commit", "-q", "-m", "more in the upper layer")
@@ -860,19 +860,19 @@ func TestPushSendsAStackLayerToItsOwnBranch(t *testing.T) {
 
 	got := xIn(t, clone, nil, "lane", "push", "--apply")
 
-	if got.code != 0 || originHead(t, clone, "coder/FRM-1-a-2") != sha || originHead(t, clone, "coder/FRM-1-a") != lower || originHead(t, clone, "main") != main {
-		t.Fatalf("exit %d, want only coder/FRM-1-a-2 moved to %s\n%s", got.code, short(sha), got.stdout)
+	if got.code != 0 || originHead(t, clone, "codie/FRM-1-a-2") != sha || originHead(t, clone, "codie/FRM-1-a") != lower || originHead(t, clone, "main") != main {
+		t.Fatalf("exit %d, want only codie/FRM-1-a-2 moved to %s\n%s", got.code, short(sha), got.stdout)
 	}
 }
 
 func TestRestackRefusesATreeWithChanges(t *testing.T) {
 	t.Parallel()
 	clone := movedStack(t, "lower.txt", "the fix\n")
-	write(t, filepath.Join(clone, "coder-FRM-1-a-2.txt"), "an edit in flight\n")
+	write(t, filepath.Join(clone, "codie-FRM-1-a-2.txt"), "an edit in flight\n")
 
 	got := xIn(t, clone, nil, "lane", "restack", "--apply")
 
-	if got.code == 0 || !strings.Contains(got.stdout, "coder-FRM-1-a-2.txt") {
+	if got.code == 0 || !strings.Contains(got.stdout, "codie-FRM-1-a-2.txt") {
 		t.Fatalf("exit %d, want a refusal naming the changed file\n%s", got.code, got.stdout)
 	}
 }
@@ -880,22 +880,22 @@ func TestRestackRefusesATreeWithChanges(t *testing.T) {
 // a conflict high in the stack keeps the layers under it pushed, so the rerun after the fix goes through
 func TestRestackRerunsAfterAResolvedConflict(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
-	gitT(t, clone, "switch", "-q", "coder/FRM-1-a")
-	write(t, filepath.Join(clone, "coder-FRM-1-a-3.txt"), "the lower layer's version\n")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3")
+	gitT(t, clone, "switch", "-q", "codie/FRM-1-a")
+	write(t, filepath.Join(clone, "codie-FRM-1-a-3.txt"), "the lower layer's version\n")
 	gitT(t, clone, "add", ".")
 	gitT(t, clone, "commit", "-q", "-m", "a fix in the lower layer")
-	gitT(t, clone, "push", "-q", "origin", "coder/FRM-1-a")
+	gitT(t, clone, "push", "-q", "origin", "codie/FRM-1-a")
 	lower := gitT(t, clone, "rev-parse", "HEAD")
-	gitT(t, clone, "switch", "-q", "coder/FRM-1-a-3")
+	gitT(t, clone, "switch", "-q", "codie/FRM-1-a-3")
 
 	stopped := xIn(t, clone, nil, "lane", "restack", "--apply")
 
-	if stopped.code == 0 || !ok(gitIn(clone, "merge-base", "--is-ancestor", lower, originHead(t, clone, "coder/FRM-1-a-2"))) {
-		t.Fatalf("exit %d, want a stop at the top layer with coder/FRM-1-a-2 already pushed\n%s", stopped.code, stopped.stdout)
+	if stopped.code == 0 || !ok(gitIn(clone, "merge-base", "--is-ancestor", lower, originHead(t, clone, "codie/FRM-1-a-2"))) {
+		t.Fatalf("exit %d, want a stop at the top layer with codie/FRM-1-a-2 already pushed\n%s", stopped.code, stopped.stdout)
 	}
-	write(t, filepath.Join(clone, "coder-FRM-1-a-3.txt"), "both versions\n")
-	gitT(t, clone, "add", "coder-FRM-1-a-3.txt")
+	write(t, filepath.Join(clone, "codie-FRM-1-a-3.txt"), "both versions\n")
+	gitT(t, clone, "add", "codie-FRM-1-a-3.txt")
 	gitT(t, clone, "commit", "-q", "--no-edit")
 	if pushed := xIn(t, clone, nil, "lane", "push", "--apply"); pushed.code != 0 {
 		t.Fatalf("the resolved layer's push: exit %d\n%s", pushed.code, pushed.stdout)
@@ -933,8 +933,8 @@ func rivalInTheGap(t *testing.T, clone, layer string) string {
 func TestRestackSurvivesARivalPushWithNoHandReset(t *testing.T) {
 	t.Parallel()
 	clone := movedStack(t, "lower.txt", "the fix\n")
-	lower := originHead(t, clone, "coder/FRM-1-a")
-	rival := rivalInTheGap(t, clone, "coder/FRM-1-a-2")
+	lower := originHead(t, clone, "codie/FRM-1-a")
+	rival := rivalInTheGap(t, clone, "codie/FRM-1-a-2")
 
 	stopped := xIn(t, clone, nil, "lane", "restack", "--apply")
 	if stopped.code == 0 {
@@ -943,7 +943,7 @@ func TestRestackSurvivesARivalPushWithNoHandReset(t *testing.T) {
 
 	got := xIn(t, clone, nil, "lane", "restack", "--apply")
 
-	head := originHead(t, clone, "coder/FRM-1-a-2")
+	head := originHead(t, clone, "codie/FRM-1-a-2")
 	if got.code != 0 {
 		t.Fatalf("exit %d, want the rerun to land the push\n%s", got.code, got.stdout)
 	}
@@ -952,7 +952,7 @@ func TestRestackSurvivesARivalPushWithNoHandReset(t *testing.T) {
 			t.Errorf("%s %s is not reachable from the pushed head %s", name, short(sha), short(head))
 		}
 	}
-	if local := gitT(t, clone, "rev-parse", "refs/heads/coder/FRM-1-a-2"); local != head {
+	if local := gitT(t, clone, "rev-parse", "refs/heads/codie/FRM-1-a-2"); local != head {
 		t.Errorf("the local layer is %s, origin %s", short(local), short(head))
 	}
 }
@@ -960,12 +960,12 @@ func TestRestackSurvivesARivalPushWithNoHandReset(t *testing.T) {
 func TestRestackTakesOriginsLayerWhenTheLocalOneOnlyLagsIt(t *testing.T) {
 	t.Parallel()
 	clone := movedStack(t, "lower.txt", "the fix\n")
-	dir, rival := rivalClone(t, clone, "coder/FRM-1-a-2")
-	gitT(t, dir, "push", "-q", "origin", "coder/FRM-1-a-2")
+	dir, rival := rivalClone(t, clone, "codie/FRM-1-a-2")
+	gitT(t, dir, "push", "-q", "origin", "codie/FRM-1-a-2")
 
 	got := xIn(t, clone, nil, "lane", "restack", "--apply")
 
-	if got.code != 0 || !ok(gitIn(clone, "merge-base", "--is-ancestor", rival, originHead(t, clone, "coder/FRM-1-a-2"))) {
+	if got.code != 0 || !ok(gitIn(clone, "merge-base", "--is-ancestor", rival, originHead(t, clone, "codie/FRM-1-a-2"))) {
 		t.Fatalf("exit %d, want the rival's %s under the pushed head\n%s", got.code, short(rival), got.stdout)
 	}
 }
@@ -973,15 +973,15 @@ func TestRestackTakesOriginsLayerWhenTheLocalOneOnlyLagsIt(t *testing.T) {
 // a rival push on the bottom layer: nothing local to lose, and the merges read origin's sha
 func TestRestackTakesARivalPushOnTheBottomLayer(t *testing.T) {
 	t.Parallel()
-	const bottom = "coder/FRM-1-a"
-	clone := layers(t, bottom, "coder/FRM-1-a-2")
+	const bottom = "codie/FRM-1-a"
+	clone := layers(t, bottom, "codie/FRM-1-a-2")
 	gitT(t, clone, "fetch", "-q", "origin", bottom+":"+bottom)
 	dir, rival := rivalClone(t, clone, bottom)
 	gitT(t, dir, "push", "-q", "origin", bottom)
 
 	got := xIn(t, clone, nil, "lane", "restack", "--apply")
 
-	if got.code != 0 || !ok(gitIn(clone, "merge-base", "--is-ancestor", rival, originHead(t, clone, "coder/FRM-1-a-2"))) {
+	if got.code != 0 || !ok(gitIn(clone, "merge-base", "--is-ancestor", rival, originHead(t, clone, "codie/FRM-1-a-2"))) {
 		t.Fatalf("exit %d, want the rival's %s under the top layer\n%s", got.code, short(rival), got.stdout)
 	}
 }
@@ -989,8 +989,8 @@ func TestRestackTakesARivalPushOnTheBottomLayer(t *testing.T) {
 // a commit on the bottom layer that origin lacks still refuses, a restack never merges into that layer
 func TestRestackRefusesABottomLayerAheadOfOrigin(t *testing.T) {
 	t.Parallel()
-	const bottom = "coder/FRM-1-a"
-	clone := layers(t, bottom, "coder/FRM-1-a-2")
+	const bottom = "codie/FRM-1-a"
+	clone := layers(t, bottom, "codie/FRM-1-a-2")
 	gitT(t, clone, "fetch", "-q", "origin", bottom+":"+bottom)
 	gitT(t, clone, "switch", "-q", bottom)
 	write(t, filepath.Join(clone, "hand.txt"), "by hand\n")
@@ -1007,7 +1007,7 @@ func TestRestackRefusesABottomLayerAheadOfOrigin(t *testing.T) {
 // a top layer's merge reaches the middle layer's through its second parent: each is booked on its own layer
 func TestRestackBooksEachMergeOnItsOwnLayer(t *testing.T) {
 	t.Parallel()
-	const low, mid, top = "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3"
+	const low, mid, top = "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3"
 	clone := layers(t, low, mid, top)
 	gitT(t, clone, "fetch", "-q", "origin", low+":"+low, mid+":"+mid)
 	gitT(t, clone, "switch", "-q", low)
@@ -1049,7 +1049,7 @@ func editedMerge(t *testing.T, clone, low, mid, file string) string {
 // the upper layer alone still holds the lower one's edited merge, and the reset takes it
 func TestRestackNamesALostResolutionOnceTheLowerLayersRefMoved(t *testing.T) {
 	t.Parallel()
-	const low, mid, top = "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3"
+	const low, mid, top = "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3"
 	clone := layers(t, low, mid, top)
 	gitT(t, clone, "fetch", "-q", "origin", low+":"+low, mid+":"+mid)
 	before := gitT(t, clone, "rev-parse", mid)
@@ -1068,7 +1068,7 @@ func TestRestackNamesALostResolutionOnceTheLowerLayersRefMoved(t *testing.T) {
 // the upper layer reaches a newer edited merge than the lower ref does, and the newest is the one to take back
 func TestRestackNamesTheNewestResolutionAcrossLayers(t *testing.T) {
 	t.Parallel()
-	const low, mid, top = "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3"
+	const low, mid, top = "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3"
 	clone := layers(t, low, mid, top)
 	gitT(t, clone, "fetch", "-q", "origin", low+":"+low, mid+":"+mid)
 	older := editedMerge(t, clone, low, mid, "older.txt")
@@ -1087,7 +1087,7 @@ func TestRestackNamesTheNewestResolutionAcrossLayers(t *testing.T) {
 // the same rule the other way round: the lower ref reaches the newer merge, the upper one only the older
 func TestRestackNamesTheNewestResolutionWhenTheLowerRefHoldsIt(t *testing.T) {
 	t.Parallel()
-	const low, mid, top = "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3"
+	const low, mid, top = "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3"
 	clone := layers(t, low, mid, top)
 	gitT(t, clone, "fetch", "-q", "origin", low+":"+low, mid+":"+mid)
 	older := editedMerge(t, clone, low, mid, "older.txt")
@@ -1106,7 +1106,7 @@ func TestRestackNamesTheNewestResolutionWhenTheLowerRefHoldsIt(t *testing.T) {
 // merged up, a hand commit shows on both refs: the refusal sends the coder to the layer that holds it
 func TestRestackNamesTheLayerAHandCommitSitsOn(t *testing.T) {
 	t.Parallel()
-	const low, mid, top = "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3"
+	const low, mid, top = "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3"
 	clone := layers(t, low, mid, top)
 	gitT(t, clone, "fetch", "-q", "origin", low+":"+low, mid+":"+mid)
 	gitT(t, clone, "switch", "-q", mid)
@@ -1125,7 +1125,7 @@ func TestRestackNamesTheLayerAHandCommitSitsOn(t *testing.T) {
 
 func TestRestackRefusesACommitNoRestackMade(t *testing.T) {
 	t.Parallel()
-	const layer = "coder/FRM-1-a-2"
+	const layer = "codie/FRM-1-a-2"
 	handCommit := func(t *testing.T, clone string) {
 		write(t, filepath.Join(clone, "hand.txt"), "by hand\n")
 		gitT(t, clone, "add", "hand.txt")
@@ -1176,7 +1176,7 @@ func TestRestackRefusesACommitNoRestackMade(t *testing.T) {
 // a restack stopped on the top layer, its conflict resolved by hand and left unpushed; the clone and the resolution's sha
 func resolvedRestack(t *testing.T) (clone, resolved string) {
 	t.Helper()
-	const file = "coder-FRM-1-a-2.txt"
+	const file = "codie-FRM-1-a-2.txt"
 	clone = movedStack(t, file, "the lower layer's version\n")
 	if stopped := xIn(t, clone, nil, "lane", "restack", "--apply"); stopped.code == 0 {
 		t.Fatalf("want a conflict stop\n%s", stopped.stdout)
@@ -1190,7 +1190,7 @@ func resolvedRestack(t *testing.T) (clone, resolved string) {
 // the hand resolution goes with the reset, so the stop names the commit it can be taken back from
 func TestRestackNamesAResolutionTheResetLoses(t *testing.T) {
 	t.Parallel()
-	const layer = "coder/FRM-1-a-2"
+	const layer = "codie/FRM-1-a-2"
 	clone, resolved := resolvedRestack(t)
 	dir, _ := rivalClone(t, clone, layer)
 	gitT(t, dir, "push", "-q", "origin", layer)
@@ -1205,11 +1205,11 @@ func TestRestackNamesAResolutionTheResetLoses(t *testing.T) {
 // the resolution goes even when the new merge is clean, so the verb's data names it
 func TestRestackNamesALostResolutionOnACleanRerun(t *testing.T) {
 	t.Parallel()
-	const layer = "coder/FRM-1-a-2"
+	const layer = "codie/FRM-1-a-2"
 	clone, resolved := resolvedRestack(t)
 	// the rival settles the conflict its own way, so the rerun's merge meets none
 	dir, _ := rivalClone(t, clone, layer)
-	gitT(t, dir, "fetch", "-q", "origin", "coder/FRM-1-a")
+	gitT(t, dir, "fetch", "-q", "origin", "codie/FRM-1-a")
 	gitT(t, dir, "merge", "-q", "-X", "ours", "--no-edit", "FETCH_HEAD")
 	gitT(t, dir, "push", "-q", "origin", layer)
 
@@ -1236,17 +1236,17 @@ func TestGateHeldLintsTheAddOnsPurposes(t *testing.T) {
 // a layer checked out in another worktree cannot be switched to, so the plan refuses before any layer merges
 func TestRestackRefusesALayerAnotherWorktreeHolds(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a", "coder/FRM-1-a-2", "coder/FRM-1-a-3")
-	gitT(t, clone, "switch", "-q", "coder/FRM-1-a")
+	clone := layers(t, "codie/FRM-1-a", "codie/FRM-1-a-2", "codie/FRM-1-a-3")
+	gitT(t, clone, "switch", "-q", "codie/FRM-1-a")
 	write(t, filepath.Join(clone, "lower.txt"), "the fix\n")
 	gitT(t, clone, "add", "lower.txt")
 	gitT(t, clone, "commit", "-q", "-m", "a fix in the lower layer")
-	gitT(t, clone, "push", "-q", "origin", "coder/FRM-1-a")
-	gitT(t, clone, "worktree", "add", "-q", filepath.Join(t.TempDir(), "held"), "coder/FRM-1-a-3")
+	gitT(t, clone, "push", "-q", "origin", "codie/FRM-1-a")
+	gitT(t, clone, "worktree", "add", "-q", filepath.Join(t.TempDir(), "held"), "codie/FRM-1-a-3")
 
 	got := xIn(t, clone, nil, "lane", "restack", "--apply")
 
-	if got.code == 0 || !strings.Contains(got.stdout, "coder/FRM-1-a-3") || ok(gitIn(clone, "rev-parse", "-q", "--verify", "refs/heads/coder/FRM-1-a-2")) {
+	if got.code == 0 || !strings.Contains(got.stdout, "codie/FRM-1-a-3") || ok(gitIn(clone, "rev-parse", "-q", "--verify", "refs/heads/codie/FRM-1-a-2")) {
 		t.Fatalf("exit %d, want a refusal naming the held layer and no layer merged\n%s", got.code, got.stdout)
 	}
 }
@@ -1258,9 +1258,9 @@ func TestVerifyTreeWithStackSeedsTheTopAndListsEveryLayer(t *testing.T) {
 	lower := strings.Repeat("6", 40)
 	h := &hub{pages: map[string]string{
 		repoPath + "/stacks": `[{"number":5,"base":{"ref":"main"},"pull_requests":[
-			{"number":6,"state":"open","head":{"ref":"coder/x"}},{"number":7,"state":"open","head":{"ref":"coder/x-2"}}]}]`,
-		repoPath + "/pulls/6": `{"number":6,"state":"open","head":{"sha":"` + lower + `","ref":"coder/x"},"base":{"ref":"main"},"commits":2}`,
-		repoPath + "/pulls/7": `{"number":7,"state":"open","head":{"sha":"` + prHead + `","ref":"coder/x-2"},"base":{"ref":"coder/x"},"commits":1}`,
+			{"number":6,"state":"open","head":{"ref":"codie/x"}},{"number":7,"state":"open","head":{"ref":"codie/x-2"}}]}]`,
+		repoPath + "/pulls/6": `{"number":6,"state":"open","head":{"sha":"` + lower + `","ref":"codie/x"},"base":{"ref":"main"},"commits":2}`,
+		repoPath + "/pulls/7": `{"number":7,"state":"open","head":{"sha":"` + prHead + `","ref":"codie/x-2"},"base":{"ref":"codie/x"},"commits":1}`,
 	}}
 	server := h.serve(t)
 	env := append(tracing(t.TempDir()), "X_GITHUB_URL="+server.URL,
@@ -1268,7 +1268,7 @@ func TestVerifyTreeWithStackSeedsTheTopAndListsEveryLayer(t *testing.T) {
 
 	got := xIn(t, main, env, "lane", "verify-tree", "--stack", "https://github.com/o/r/pull/7")
 
-	want := []string{"#6 coder/x onto main at " + short(lower) + ", adds 2 commits", "#7 coder/x-2 onto coder/x at " + short(prHead) + ", adds 1 commit"}
+	want := []string{"#6 codie/x onto main at " + short(lower) + ", adds 2 commits", "#7 codie/x-2 onto codie/x at " + short(prHead) + ", adds 1 commit"}
 	for _, line := range want {
 		if got.code != 0 || !strings.Contains(got.stdout, line) {
 			t.Fatalf("exit %d, want %q in the stack listing\n%s", got.code, line, got.stdout)
@@ -1308,12 +1308,12 @@ func TestVerifyTreeWithStackRefusesAMainSha(t *testing.T) {
 
 func TestPrOpenRefusesABaseMissingFromOrigin(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a")
+	clone := layers(t, "codie/FRM-1-a")
 	env, log := ghRecorder(t, prCreated)
 
-	got := xIn(t, clone, env, "lane", "pr-open", "--apply", "--base", "coder/FRM-1-gone", "part 2", bodyFile(t))
+	got := xIn(t, clone, env, "lane", "pr-open", "--apply", "--base", "codie/FRM-1-gone", "part 2", bodyFile(t))
 
-	if got.code == 0 || !strings.Contains(got.stdout, "coder/FRM-1-gone") || exists(log) {
+	if got.code == 0 || !strings.Contains(got.stdout, "codie/FRM-1-gone") || exists(log) {
 		t.Fatalf("exit %d, want a refusal naming the missing base and no gh call\n%s", got.code, got.stdout)
 	}
 }

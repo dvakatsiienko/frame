@@ -50,7 +50,7 @@ var sgr = regexp.MustCompile("\x1b\\[[0-9;]*m")
 
 func prPages() map[string]string {
 	return map[string]string{
-		repoPath + "/pulls/7": `{"title":"a pr","state":"open","merged":false,"head":{"sha":"` + headSha + `","ref":"coder/x"}}`,
+		repoPath + "/pulls/7": `{"title":"a pr","state":"open","merged":false,"head":{"sha":"` + headSha + `","ref":"codie/x"}}`,
 		repoPath + "/commits/" + headSha + "/check-runs": `{"total_count":2,"check_runs":[
 			{"name":"test","status":"completed","conclusion":"failure","html_url":"https://ci/1"},
 			{"name":"review","status":"in_progress","conclusion":null,"html_url":"https://ci/2"}]}`,
@@ -246,7 +246,7 @@ func TestGhPrPrintsJSONToAnAgentAndTheBoardOnAsk(t *testing.T) {
 func TestGhPrRefusesBadInputWithAUsageExit(t *testing.T) {
 	t.Parallel()
 	cases := map[string][]string{
-		"a branch for the pr": {"coder/x", "--repo", "o/r"},
+		"a branch for the pr": {"codie/x", "--repo", "o/r"},
 		"a hash-led number":   {"#7", "--repo", "o/r"},
 		"a since in prose":    {"7", "--repo", "o/r", "--since", "an hour ago"},
 		"a repo with no name": {"7", "--repo", "o"},

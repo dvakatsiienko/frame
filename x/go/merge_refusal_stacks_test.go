@@ -12,6 +12,6 @@ func TestMergeAutoNamesALowerLayersConflictAndTheRestack(t *testing.T) {
 	w.hub.pages[repoPath+"/pulls/7"] = withMergeable(w.hub.pages[repoPath+"/pulls/7"], "false", "dirty")
 	w.hub.mu.Unlock()
 
-	assertMergeableWait(t, w, "8", "#7 (coder/x) — mergeable: #7 conflicts")
+	assertMergeableWait(t, w, "8", "#7 (codie/x) — mergeable: #7 conflicts")
 	assertMergeableWait(t, w, "8", "x lane restack --apply")
 }
