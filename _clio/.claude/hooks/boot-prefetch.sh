@@ -110,10 +110,11 @@ live=$(jq -r '"\(.cwd // "?") · \(.name // "unnamed") · \(.entrypoint // .kind
 [ -n "$live" ] && echo "$live" || echo "no live sessions registered"
 wt=$(git -C "$HOME/projects/bytes" worktree list 2>/dev/null | grep -v '^/Users/dima/projects/bytes ' )
 [ -n "$wt" ] && echo "$wt" || echo "no bytes worktrees"
-for repo in bytes frame; do
+# a compact skips the two gh reads (~1 s): the pr watch holds what they would say
+if [ -z "${COMPACT:-}" ]; then for repo in bytes frame; do
   prs=$(gh pr list -R "dvakatsiienko/$repo" --limit 200 --json number,title,headRefName --jq '.[] | select(.headRefName | test("^(codie|coder)/")) | "#\(.number) \(.headRefName) — \(.title)"' 2>/dev/null) || { fail "gh unreachable for $repo"; continue; } # read-both
   [ -n "$prs" ] && echo "$repo codie prs: $prs" || echo "$repo: no open codie prs"
-done
+done; fi
 
 if [ -z "${COMPACT:-}" ]; then
 echo "-- renovate + the apps lane (clio:evergreen) --"
@@ -170,7 +171,7 @@ vulns=$(printf '%s\n' "$vuln" | grep -c '^Vulnerability #')
 if [ "$vulns" = 0 ]; then echo "x/go: no reachable vulns"; else echo "x/go: $vulns reachable vulns — fixed in: $(printf '%s\n' "$vuln" | sed -n 's/.*Fixed in: //p' | sort -u | tr '\n' ' ')"; fi
 else
 # a compact waits on this hook: the network rows took 12 of its 18.6 s (FRM-483), and the running watches hold what they'd say
-echo "-- skipped on a compact: go vulns, repo fetch, ci reds, n8n tables; the whole digest: boot-prefetch.sh --"
+echo "-- skipped on a compact: codie prs, go vulns, repo fetch, ci reds, n8n tables, linear queues, init ctx; the whole digest: boot-prefetch.sh --"
 fi
 
 echo "-- usage (x-mod-stash writes rate_limits to shelf/cc-usage-window.json on every session.measure, terminal and desktop) --"
@@ -396,6 +397,8 @@ for f in "$HOME"/frame/_clio/pocket/tasks/*.md; do
   awk '/^id: /{id=$2} /SECTION:DESCRIPTION:BEGIN/{getline; print "⏸️ " id " · " $0; exit}' "$f"
 done
 
+# a compact skips these four linear reads (~1.4 s): the queues move on a sign or a dispatch, which the thread itself did
+if [ -z "${COMPACT:-}" ]; then
 echo "-- linear queues (signed = waiting for a lane; the list JSON carries no updatedAt, so no age; to sign needs a body read per ticket: n/a) --"
 dispatch=0 list_err=""
 for team in FRM BYT; do
@@ -418,6 +421,8 @@ else
   fail "linear queues: could not read — main lane: $(printf '%s' "$main_lane" | tail -1 | cut -c1-120)"
 fi
 
+fi
+
 echo "-- flawlog (the day's file; the 🥊 pair rides the CST) --"
 today="$HOME/.claude/shelf/flawlog/$(date +%Y-%m-%d)"
 ls "$today"-*.md >/dev/null 2>&1 && echo "today's file exists" || echo "no file for today yet — open one at step 8"
@@ -432,7 +437,7 @@ init_ctx_digest() {
   fi
 }
 echo "-- init ctx (each seat's starting context, net of its first message; pnpm ctx-init:trace) --"
-init_ctx_digest
+[ -z "${COMPACT:-}" ] && init_ctx_digest
 
 date +%s > "$STAMP"
 if [ "$fails" -gt 0 ]; then
