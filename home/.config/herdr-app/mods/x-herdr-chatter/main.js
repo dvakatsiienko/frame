@@ -59,6 +59,7 @@ import {
 } from './band.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
+import { listLines, withMarkers } from './lists.js';
 import * as ask from './question.js';
 import {
     STUCK_PX,
@@ -1244,7 +1245,25 @@ export default class ClaudeChat extends View {
         this.box.on('change', (_e, cx) => {
             const was = this.typed,
                 had = this.slash;
-            this.typed = this.box.value();
+            const now = this.box.value();
+            // a paste of several lines (more than Enter's one character): its list lines get their markers back
+            if (now.length > was.length + 1 && now.includes('\n')) {
+                const fixed = withMarkers(
+                    was,
+                    now,
+                    listLines(
+                        this.items
+                            .filter(
+                                (/** @type {any} */ i) =>
+                                    i.kind !== 'tool' &&
+                                    typeof i.text === 'string',
+                            )
+                            .map((/** @type {any} */ i) => i.text),
+                    ),
+                );
+                if (fixed !== now) return this.box.set_value(fixed);
+            }
+            this.typed = now;
             keepDraft(this.address, this.typed);
             // Enter's newline, typed at the word (it arrives before submit): keep the menu as it was
             // for submit to use; complete() drops the newline.
