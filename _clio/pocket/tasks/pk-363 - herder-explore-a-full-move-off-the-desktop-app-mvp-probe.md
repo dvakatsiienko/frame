@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T21:49:00Z'
+updated_date: '2026-11-10T22:08:00Z'
 labels:
   - m
   - clio-main
@@ -1765,4 +1765,8 @@ PK-363:W797 (2026-11-10 23:49, dima): also — The actual Herdr. I worry about s
 PK-363:W798 (2026-11-10 23:49, dima): You need to go and look at all your habits and refresh them. Herdr is declared as our main place where we build and your habits should tell you correctly how to summon everyone using correct Herdr APIs. Next boot you boot correctly and can summon everyone in the right way because today there were a lot of occurrences of incorrect summons.
 PK-363:W799 (2026-11-10 23:49, dima): you can delegate this to wing 2, while doing a retro (you).
 PK-363:W800 (2026-11-10 23:49, dima): propose how to have that retro — what to ask retro subagent. first propose then i type `/retro`
+
+PK-363:W801 (2026-11-10 23:58, dima): also — we need to probe the killing places. remember we postponed to after halt? so after halt we hunt how you died? ❓
+PK-363:W802 (2026-11-11 00:06, dima): I told wing 1 to fix now. Ensure it is fixed and landed
+PK-363:W803 (2026-11-11 00:06, dima): whats left? do we still hunt what killed you or found? ❓
 <!-- SECTION:NOTES:END -->
