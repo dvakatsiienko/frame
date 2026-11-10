@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T13:29:00Z'
+updated_date: '2026-11-10T13:44:00Z'
 labels:
   - m
   - clio-main
@@ -1106,4 +1106,22 @@ PK-363:W335 (2026-11-10 15:24, dima) sign FRM-519.
 PK-363:W336 (2026-11-10 15:24, dima) i cannot tick.
 
 PK-363:W337 (2026-11-10 15:28, dima) FRM-387 (the x stats board) and FRM-360 (a frame around x screens) are exceptions to herdr-only: he wanted pretty stats specifically in the cli.
+
+PK-363:W338 (2026-11-10 15:30, dima) one reader per rule: is it an almost freebie, can it be solved right away? ❓
+
+PK-363:W339 (2026-11-10 15:31, dima) herdr shows clio at high effort, but he set medium in the c desktop app: which effort level is true for clio? ❓
+
+PK-363:W340 (2026-11-10 15:31, dima) proceed with next step. (no wish: a go-ahead only)
+
+PK-363:W341 (2026-11-10 15:35, dima) where «high» likely comes from (inference, not checked in herdr's code): ~/.claude/settings.json holds effortLevel: high, the default for new sessions. Switch the effort level to medium in settings.
+
+PK-363:W342 (2026-11-10 15:35, dima) the effort wisp is a herdr lane wisp: the effort shown for a seat should be read from the seat's live transcript, not from the settings default. It can go to the herdr codie as a small fix after the tick work. He says: now.
+
+PK-363:W343 (2026-11-10 15:39, dima) ftr.md for herdr beside its product and agents.md: he asks what about it. He says: yes, read-only facts first, buttons with the redesign; let's do like this. ❓ what else must be there on day one?
+
+PK-363:W344 (2026-11-10 15:39, dima, o17 steer) he does not want a codie restarting herdr: his typed text can be lost, and the UI flickers and tabs shift while mods change.
+
+PK-363:W345 (2026-11-10 15:39, dima, o17 steer) he asks what «herdr restart» means here, and whether it is about letting a codie restart herdr by itself. He still observes and tries to figure out how it works. ❓
+
+refold of W344–W345 in his own words (wishkeeper 15:44; his o17 steer, 2026-11-10 15:39): «I do not understand what it is about. What do we mean by herdr restart? Is it about allowing codie to restart herdr by himself? If yes, it's probably not a great idea, because I often type in prompts, and if codie restarts, my text can be lost. I also observe a lot of issues while codie is changing the mods: the UI flickers and I often have tabs shifted by mods changes. I still observe and try to figure out how it works.»
 <!-- SECTION:NOTES:END -->
