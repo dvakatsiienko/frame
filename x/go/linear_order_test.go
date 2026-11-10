@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-// the working name of the verb that removes a link; dima picks the lasting one
-const unlinkVerb = "unlink"
+// the verb that removes a link, dima's pick from seven (2026-11-10)
+const unlinkVerb = "link-remove"
 
 type orderRow struct {
 	id    string
