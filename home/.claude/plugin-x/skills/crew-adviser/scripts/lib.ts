@@ -17,8 +17,9 @@ import { homedir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 
+import { keepSeatInTab } from '../../herdr/scripts/seat-tab.ts';
+
 export const SESSION_NAME = '🐦‍⬛ crow';
-const OLD_SESSION_NAME = '🐦‍⬛ ccrow'; // read-both
 // CROW_STATE_DIR moves every note, verdict and run off the real home, so a fixture never writes the live notes (FRM-339)
 export const STATE_DIR =
     process.env.CROW_STATE_DIR || join(homedir(), '.local/state/crow');
@@ -296,9 +297,8 @@ export function findSessions(): LiveSession[] {
                 readFileSync(join(SESSIONS_DIR, file), 'utf8'),
             );
             // by name: a desktop tab has no job id, and a stored one outlives its session
-            const isOurs = [SESSION_NAME, OLD_SESSION_NAME].some(
-                (name) => bareName(entry.name ?? '') === bareName(name),
-            );
+            const isOurs =
+                bareName(entry.name ?? '') === bareName(SESSION_NAME);
             if (
                 isOurs &&
                 entry.pid &&
@@ -403,6 +403,8 @@ export async function startCrow(arm: Arm, isPane = false) {
             `${isPane ? 'hc run' : 'claude --bg'} failed: ${(result.stderr || result.stdout).trim()}`,
         );
     }
+    // a --no-parent seat starts paneless: herdr's agents list shows it only once it has a tab
+    if (isPane) keepSeatInTab(JSON.parse(result.stdout).address, 'crow');
     writeState({
         ...readState(),
         arm,
@@ -1356,7 +1358,6 @@ export function appendNoteOnce(path: string, value: Note) {
     appendJsonl(path, value);
 }
 
-// crow's day in one line: notes sent today, the last send's time, today's ok verdicts
 // the budget hunt quotes this line; x-mod-stash writes the file on every session.measure
 export function meterLine(now: Date, usagePath = USAGE_PATH) {
     try {
