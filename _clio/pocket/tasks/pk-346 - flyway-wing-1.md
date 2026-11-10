@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-09T23:55:00Z'
+updated_date: '2026-11-10T00:21:00Z'
 labels:
   - s
   - clio-wing-1
@@ -18,9 +18,10 @@ ordinal: 1001
 <!-- AC:BEGIN -->
 - [ ] #1 📅 speak v2 planning with dima, after herdr's move and the mods scope (dima 23:50); FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-11
 - [ ] #2 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
-- [ ] #3 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #4 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #5 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 539 → 533 → 535, the dated reads ride it (FRM-534, FRM-517 on 11-10; FRM-525 on 11-14); resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
+- [ ] #3 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11
+- [ ] #4 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #5 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #6 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 539 → 533 → 535, the dated reads ride it (FRM-534, FRM-517 on 11-10; FRM-525 on 11-14); resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
 <!-- AC:END -->
 
 ## Implementation Notes
