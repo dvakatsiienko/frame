@@ -70,6 +70,26 @@ test('counts a hint once per command that fires it, and leaves quiet commands ou
     expect([...fired.values()].map((c) => c.length)).toEqual([1]);
 });
 
+// slice 2a: the 2-day replay counted 0 fires while the store fences refused real lines, since it never ran them
+test('counts the store and pane fences beside the hints', () => {
+    const fired = tally(
+        [
+            'echo x > ~/.claude/shelf/orbit-ticks/t1.jsonl',
+            'cp f ~/.claude/plugins/store/x.json',
+            "hc send clio 'sign FRM-1'",
+            'hc keys t2 s i g n',
+            'ls ~/.claude/shelf',
+        ].map((command) => ({ command, cwd: '/a', isForeground: true })),
+        '/home',
+    );
+    expect([...fired.keys()].sort()).toEqual([
+        'pane-keys (any terminal)',
+        'pane-proof',
+        'store-write',
+        'ticks-write',
+    ]);
+});
+
 test.each(['abc', '0', '1.5'])(
     'a days argument of %s is a usage error, never a NaN-day replay',
     (days) => {
