@@ -27,6 +27,7 @@ function main(home: string, since: string) {
         script(scripts, 'helper count', 'helper-count', ['--since', since]),
         auditCodie(home, since),
         gatesDrift(home),
+        vmDown(home, since),
         retros(home),
     ];
     for (const s of sections)
@@ -145,6 +146,22 @@ function gatesDrift(home: string) {
                   )
                   .join('\n')
             : `${hooks.length} hook(s), every one on the page`,
+    };
+}
+
+// a go run that fell back to the mac because vm-go-test was down: a forgotten boot start costs ~2× go cpu all day (FRM-551)
+function vmDown(home: string, since: string) {
+    const from = sinceDate(since).getTime();
+    const down = readText(path.join(home, '.local/state/x/test-cpu-budget.log'))
+        .split('\n')
+        .map((row) => row.split('\t'))
+        .filter((f) => f[9] === 'vm-down' && Date.parse(f[0] ?? '') > from);
+    return {
+        exit: down.length ? 1 : 0,
+        name: 'vm down',
+        output: down.length
+            ? `🔴 ${down.length} go run(s) on the mac since ${since}, the vm was down: limactl start --tty=false vm-go-test`
+            : 'no go run fell back to the mac',
     };
 }
 

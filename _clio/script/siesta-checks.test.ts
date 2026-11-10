@@ -122,6 +122,7 @@ describe('siesta-checks', () => {
             '## helper count',
             '## audit-codie',
             '## gates drift',
+            '## vm down',
             '## retros',
         ]);
         expect(heads.every((h) => h.endsWith('exit 0'))).toBe(true);
@@ -357,6 +358,22 @@ describe('siesta-checks', () => {
             'projects/bytes hook package-json-shape is missing',
         );
         expect(out).not.toContain('hook format');
+    });
+
+    test('vm down reds a go run that fell back to the mac since the stamp, and only that', () => {
+        const home = fixtureHome();
+        mkdirSync(join(home, '.local/state/x'), { recursive: true });
+        const row = (at: string, leg: string) =>
+            `${at}\t1\tx-go\t200\t283\t0\tgit\tk\tclean\t${leg}\n`;
+        writeFileSync(
+            join(home, '.local/state/x/test-cpu-budget.log'),
+            row('2026-01-01T09:00:00+0000', 'vm-down') +
+                row(new Date().toISOString(), 'vm') +
+                row(new Date().toISOString(), 'vm-down'),
+        );
+        const out = section(run(home).stdout, 'vm down');
+        expect(out).toMatch(/· exit 1\n/);
+        expect(out).toContain('1 go run(s) on the mac');
     });
 
     test('gates drift with no catalog page reads not checked, never red', () => {
