@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T20:31:00Z'
+updated_date: '2026-11-10T20:41:00Z'
 labels:
   - m
   - clio-main
@@ -1666,4 +1666,23 @@ PK-363:W718 (2026-11-10 22:29, dima): ready to probe scroll perf test? ❓
 W719 — buttons: i liked previous shape. bring it back and remove dimming (keep for settings only since it is not working yet) (2026-11-10 22:30, dima)
 
 PK-363:W719 (2026-11-10 22:30, dima): buttons: i liked previous shape. bring it back and remove dimming (keep for settings only since it is not working yet) [prefix fix: same W719 as the unprefixed line above]
+
+PK-363:W720 add as a rider to currently running cli chunk. (2026-11-10 21:47, dima)
+PK-363:W721 o55 can also be done as a rider? or it is not cli? ❓ (2026-11-10 21:47, dima)
+PK-363:W722 FRM-414: go, then FRM-560 (2026-11-10 21:47, dima)
+PK-363:W723 Do you mean that the current CLI chunk is already big or what? If so I think it's fine ❓ (2026-11-10 21:56, dima)
+PK-363:W724 It requires a lane? A quick lane? ❓ (2026-11-10 21:56, dima)
+PK-363:W725 o60: maybe x linear relation-remove? ❓ (2026-11-10 21:56, dima)
+PK-363:W726 i actually like this too. (2026-11-10 22:39, dima)
+PK-363:W727 so it is a freebie? or related to cli chunk? if freebie - do yourself now. if related to a chunk - attach to chunk as a rider. ❓ (2026-11-10 22:39, dima)
+PK-363:W728 let's fit into 15% today. (2026-11-10 22:39, dima)
+PK-363:W729 I think your lane should be finished with the current ticket. (2026-11-10 22:39, dima)
+PK-363:W730 I don't want to stop everyone at a bad spot. I want a meaningful part of the stuff to be done. (2026-11-10 22:39, dima)
+PK-363:W731 when to solve it? ❓ (2026-11-10, dima, o55 steer)
+PK-363:W732 Does it require ELA? ❓ (2026-11-10, dima, o55 steer)
+PK-363:W733 I would want to save up on NeoThread spam because I'm running out of weekly usage. (2026-11-10, dima, o55 steer)
+PK-363:W734 Propose how to batch so we can reuse the lanes somehow. (2026-11-10, dima, o55 steer)
+
+PK-363:W735 try to be concise in replies, because i am overloaded with info; and tell main clio as well. (2026-11-10 22:39, dima)
+PK-363:W736 resume your lane, i allow, we're gonna make it. (2026-11-10 22:40, dima, orbit steer on the park-every-lane ask)
 <!-- SECTION:NOTES:END -->
