@@ -1110,3 +1110,125 @@ test('the 15:24 replay: a pasted «sign FRM-544 ← …» and a typed «sign FRM
     for (const w of writes) results.push(signFlagged(await bash($, w)));
     expect([results, ran]).toEqual([[false, false, false, false], writes]);
 });
+
+// FRM-544 slice 1: fleet-board writes his presses to the ticks folder, and with every seat's write fenced out the guard
+// reads a press there as his tick
+const TICKS_FENCED = (r: { deny?: string }) =>
+    (r.deny ?? '').includes("a seat's write would forge one");
+for (const line of [
+    'echo x >> ~/.claude/shelf/orbit-ticks/t1t1t1t1-0000.jsonl',
+    'printf x | tee -a "$HOME/.claude/shelf/orbit-ticks/t1t1t1t1-0000.jsonl"',
+    'cp /tmp/p.jsonl ~/.claude/shelf/orbit-ticks/',
+    "mv /tmp/p.jsonl '/Users/dima/.claude/shelf/orbit-ticks/t1.jsonl'",
+    'touch ~/.claude/shelf/orbit-ticks/t1.jsonl',
+    `node -e "require('fs').appendFileSync(process.env.HOME + '/.claude/shelf/orbit-ticks/t1.jsonl', 'x')"`,
+    `python3 -c "open('/Users/dima/.claude/shelf/orbit-ticks/t1.jsonl', 'a').write('x')"`,
+    'git -C ~/.claude/shelf/orbit-ticks add .',
+    'cd ~/.claude/shelf/orbit-ticks && echo x > t1.jsonl',
+])
+    test(`a seat's write to the ticks folder is refused: ${line.slice(0, 48)}`, async ($, on) => {
+        const { ran } = world(on);
+        expect([TICKS_FENCED(await bash($, line)), ran]).toEqual([true, []]);
+    });
+
+for (const line of [
+    'cat ~/.claude/shelf/orbit-ticks/t1t1t1t1-0000.jsonl',
+    'jq -c . ~/.claude/shelf/orbit-ticks/t1t1t1t1-0000.jsonl',
+    'ls ~/.claude/shelf/orbit-ticks',
+])
+    test(`a read of the ticks folder runs: ${line.slice(0, 48)}`, async ($, on) => {
+        const { ran } = world(on);
+        expect([TICKS_FENCED(await bash($, line)), ran]).toEqual([
+            false,
+            [line],
+        ]);
+    });
+
+for (const [tool, path] of [
+    ['Write', '~/.claude/shelf/orbit-ticks/t1.jsonl'],
+    ['Edit', '/Users/dima/frame/cc/shelf/orbit-ticks/t1.jsonl'],
+    ['Write', '/Users/dima/frame/home/.claude/shelf/orbit-ticks/t1.jsonl'],
+] as const)
+    test(`a ${tool} into the ticks folder is refused: ${path}`, async ($, on) => {
+        world(on);
+        const r = await $.tool.call(
+            tool === 'Write'
+                ? { content: 'x', file_path: path, tool }
+                : { file_path: path, new_string: 'y', old_string: 'x', tool },
+        );
+        expect(TICKS_FENCED(r)).toBe(true);
+    });
+
+const PRESSES = '/home/.claude/shelf/orbit-ticks/t1t1t1t1-0000.jsonl';
+const press = (text: string, at = NOW - 1, verdict = 'tick', id = 'o7') =>
+    JSON.stringify({ at, id, text, verdict });
+const pressWorld = (on: On, lines: string[]) => {
+    const w = world(on);
+    on('fs.read', (_$, e) =>
+        e.path === PRESSES
+            ? { value: `${lines.join('\n')}\n` }
+            : { deny: 'outside the readable paths' },
+    );
+    return w;
+};
+
+for (const [why, ask, line, other] of [
+    [
+        'a sign ask',
+        '✍️ sign FRM-1: a small ticket',
+        'x linear set FRM-1 --add-label signed',
+        'x linear set FRM-2 --add-label signed',
+    ],
+    [
+        'a merge ask',
+        `merge ${PR}`,
+        'x lane merge-auto 104 --apply --dima-ok 104',
+        'x lane merge-auto 105 --apply --dima-ok 105',
+    ],
+    [
+        'a ⚠️ ask quoting a command whole',
+        `⚠️ mirror: \`${MIRROR}\``,
+        MIRROR,
+        'git push --mirror backup',
+    ],
+] as const) {
+    test(`a fleet-board press on ${why} runs its target once`, async ($, on) => {
+        const { ran } = pressWorld(on, [press(ask)]);
+        const first = await bash($, line);
+        const second = await bash($, line);
+        const elsewhere = await bash($, other);
+        expect([
+            first.deny,
+            second.deny !== undefined,
+            elsewhere.deny !== undefined,
+            ran.length,
+        ]).toEqual([undefined, true, true, 1]);
+    });
+
+    test(`a fleet-board press on ${why} older than 2 h proves nothing`, async ($, on) => {
+        const { clock, ran } = pressWorld(on, [press(ask)]);
+        await clock.advance(2 * 60 * 60 * 1000 + 1);
+        expect([(await bash($, line)).deny !== undefined, ran]).toEqual([
+            true,
+            [],
+        ]);
+    });
+}
+
+test('a ↩️ replay pressed after the 🛎 takes the tick back', async ($, on) => {
+    const ask = '✍️ sign FRM-1: a small ticket';
+    const { ran } = pressWorld(on, [
+        press(ask, NOW - 2),
+        press(ask, NOW - 1, 'replay'),
+    ]);
+    const r = await bash($, 'x linear set FRM-1 --add-label signed');
+    expect([signFlagged(r), ran]).toEqual([true, []]);
+});
+
+test('a press with no ask text proves nothing', async ($, on) => {
+    const { ran } = pressWorld(on, [
+        JSON.stringify({ at: NOW - 1, id: 'o7', verdict: 'tick' }),
+    ]);
+    const r = await bash($, MIRROR);
+    expect([r.deny !== undefined, ran]).toEqual([true, []]);
+});

@@ -2336,6 +2336,24 @@ test('the link rides the ask a glide card draws from the store', async ($, on) =
     ).toBe('https://github.com/x/y/pull/7');
 });
 
+// FRM-544 slice 1: fleet-board draws the gated mark the stash publishes, never its own copy of the pattern
+test('a gated ask carries isGated in the store, a plain ask none', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const asks = [
+        { pick: 'run it', text: '⚠️ mirror: `git push --mirror origin`' },
+        { pick: 'merge it', text: 'merge https://github.com/x/y/pull/7' },
+        { pick: 'cut it', text: 'cut the probe?' },
+    ];
+    await orbit($, { asks, op: 'add' });
+    const items = (
+        w.store.get('asks:o1o1o1o1-orbit') as {
+            items: { isGated?: boolean; text: string }[];
+        }
+    ).items;
+    expect(items.map((a) => a.isGated)).toEqual([true, true, undefined]);
+});
+
 test('orbit registers loaded up front, never behind ToolSearch', async ($, on) => {
     world(on);
     await start($);

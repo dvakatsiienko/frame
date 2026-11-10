@@ -472,6 +472,12 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt
 - 📌 the desktop Code tab's look (the pane's lower half, the steer `Input`) is dima's eye
 
+- ✅ a gated ask is published with its mark, for fleet-board to draw (FRM-544 slice 1)
+  - given an open ask whose tick x-mod-guard reads as dima's word — a `✍️ sign <id>` ask, a ⚠️ ask, a `merge`/`land` ask, one quoting a command in backticks
+  - then its item under `asks:<sid>` in the store carries `isGated: true`, a plain ask none, so fleet-board draws the mark instead of keeping its own copy of the pattern
+  - and fleet-board's presses in `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, which this mod reads as marks, x-mod-guard now reads as his tick too, its `ticks-write` rule keeping every seat's tool call out of that folder (reversing FRM-552's decision 4 on his word)
+  - proof: tests/orbit.test.ts::a gated ask carries isGated in the store, a plain ask none
+
 - ✅ orbit lists this session's open asks, oldest first
   - given clio ends a turn with something for dima to decide
   - when the turn ends

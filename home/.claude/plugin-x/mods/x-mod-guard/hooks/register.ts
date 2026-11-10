@@ -47,12 +47,14 @@ import {
     worthRewrites,
 } from './rules/worth.ts';
 import {
+    TICKS_WRITE,
     addedPaths,
     check,
     foregroundClaude,
     installDirs,
     isSignAsk,
     isStashKill,
+    isTicksPath,
     lineWrites,
     markedBy,
     markers,
@@ -64,6 +66,7 @@ import {
     namesWhole,
     paneFiles,
     paneProof,
+    pressTicks,
     quotesPr,
     rawLinear,
     rawPluginUpdate,
@@ -74,6 +77,7 @@ import {
     signsTyped,
     stashAsked,
     stashKills,
+    ticksWrite,
     tmpDirs,
     withDimaOk,
 } from './rules.ts';
@@ -846,15 +850,27 @@ const guardedOf = (command: string) =>
 const quotesCommand = (command: string) => (t: Tick) =>
     t.targets.some((q) => spaced(q) === guardedOf(command));
 type Tick = { id: string; text: string; targets: string[]; at: number };
+// his presses on fleet-board for this session (FRM-544 slice 1, reversing FRM-552's decision 4 on his word): the ticks-write
+// rule keeps every seat's tool call out of that folder, so only fleet-board writes it; a file that cannot be read is no tick
+async function herdrTicks($: EngineInterface): Promise<Tick[]> {
+    const sid = await $.session.id().catch(() => undefined);
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!sid || !home) return [];
+    const text = await $.fs
+        .read(`${home}/.claude/shelf/orbit-ticks/${sid}.jsonl`)
+        .catch(() => '');
+    return pressTicks(text);
+}
 async function tickFor(
     $: EngineInterface,
     scope: string,
     covers: (tick: Tick) => boolean,
     spends: string[],
 ) {
-    const { value: ticks = [] } = await $.state
+    const { value: seatTicks = [] } = await $.state
         .get(TICKS)
         .catch(() => ({ value: [] }));
+    const ticks = [...seatTicks, ...(await herdrTicks($))];
     const { value: spent = [] } = await $.state.get(SPENT);
     const now = await $.clock.now();
     const tick = [...ticks]
@@ -1800,6 +1816,17 @@ export const register: Register = (on) => {
                 if (stop) return stop;
             }
         }
+        // born refusing: the folder is a tick only while no seat writes it (FRM-544 slice 1)
+        const ticksFile = ticksWrite(typed, cwd);
+        if (ticksFile) {
+            const said = `x-mod-guard stopped this one command. instead: ${ticksFile.door}. why: ${ticksFile.why} (rule ${ticksFile.rule}).`;
+            const stop = await enforce(
+                ticksFile,
+                `nothing in this command ran — ${said}`,
+                said,
+            );
+            if (stop) return stop;
+        }
         const handEdit = holdRecordWrite(typed, cwd);
         if (handEdit) {
             const said = `x-mod-guard stopped this one command. instead: ${handEdit.door}. why: ${handEdit.why} (rule ${handEdit.rule}).`;
@@ -2062,6 +2089,38 @@ export const register: Register = (on) => {
             return result;
         }
     });
+
+    // an Edit or Write into the ticks folder would forge his press, through any path that reaches it (FRM-544 slice 1)
+    on(
+        'tool.call',
+        { tool: /^(Edit|MultiEdit|NotebookEdit|Write)$/ },
+        async ($, e, next) => {
+            const path =
+                'file_path' in e
+                    ? e.file_path
+                    : 'notebook_path' in e
+                      ? e.notebook_path
+                      : undefined;
+            if (typeof path !== 'string') return next(e);
+            const home = await $.env.get('HOME').catch(() => undefined);
+            const spelled = path.replace(/^~(?=\/|$)/, home ?? '~');
+            const resolved = (
+                await realPath($, spelled).catch(() => ({ file: spelled }))
+            ).file;
+            if (!isTicksPath(spelled) && !isTicksPath(resolved)) return next(e);
+            await record($, {
+                command: `${e.tool} ${path}`,
+                door: TICKS_WRITE.door,
+                kind: 'refused',
+                rule: TICKS_WRITE.rule,
+                target: path,
+                why: TICKS_WRITE.why,
+            });
+            return {
+                deny: `x-mod-guard stopped this ${e.tool}. instead: ${TICKS_WRITE.door}. why: ${TICKS_WRITE.why}: ${path}`,
+            };
+        },
+    ).catch(() => ({ deny: FAILED }));
 
     // an Edit or Write under a live mod's hooks/ waits for that mod's own tests to be green
     on(

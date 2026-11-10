@@ -16,6 +16,8 @@ export type PublishedAsk = {
     mark?: 'accepted' | 'rejected';
     steer?: string;
     isLocked?: boolean;
+    // its tick is one x-mod-guard reads as dima's word (a sign, a warning or merge ask, a quoted command)
+    isGated?: boolean;
 };
 
 // a mark or steer dima made on another board's glide card, waiting in the store for the member to take it in

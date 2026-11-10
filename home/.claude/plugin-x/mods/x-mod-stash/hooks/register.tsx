@@ -36,6 +36,7 @@ import {
     herdrTicks,
     isAllAsksMarkable,
     isFresh,
+    isGuardGated,
     joinText,
     linkLabel,
     lockJoined,
@@ -2282,6 +2283,7 @@ async function saveOrbit(
                     ...(a.mark ? { mark: a.mark } : {}),
                     ...(a.steer ? { steer: a.steer } : {}),
                     ...(a.isLocked ? { isLocked: true } : {}),
+                    ...(isGuardGated(a.text) ? { isGated: true } : {}),
                 })),
                 label,
                 name: await sessionName($),
@@ -2329,7 +2331,7 @@ async function currentOrbit($: EngineInterface) {
 const markKey = (sid: string, askId: string) => `${MARKS}${sid}:${askId}`;
 
 // herdr's presses for this session past what it read last; the file is herdr's board's alone, so this side only reads
-// and keeps its own watermark. a press is no x-mod-guard tick: any agent can write the file (FRM-552)
+// and keeps its own watermark. x-mod-guard reads the same file as his tick, its ticks-write rule keeping seats out (FRM-544)
 async function herdrMarksOf($: EngineInterface, sid: string) {
     const home = await $.env.get('HOME').catch(() => undefined);
     const text = await $.fs

@@ -209,6 +209,12 @@ export function joinText(asks: OrbitAsk[]) {
 export const SIGN_ASK =
     /(?:^|\s)✍️ sign ((?:FRM|BYT)-\d+(?:(?:,\s*|\s+and\s+|\s+)(?:FRM|BYT)-\d+)*):/u;
 // twin end
+// an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command; published as
+// `isGated` beside the ask, so fleet-board draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
+export const isGuardGated = (text: string) =>
+    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
+        text,
+    );
 // opens with sign, a yes or an ok before it (never sign-in and its kin), or holds signed or re-sign anywhere with no negation before it
 const SIGN_PICK =
     /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:.]?\s+(?:to\s+)?)?sign\b(?![\s-]+(?:in|up|off|out)\b)|(?<!\b(?:not|never|no|don['’]t|no need to)\s(?:re-)?)\b(?:re-sign(?:ed)?|signed)\b(?![\s-]+(?:in|up|out)\b)/iu;

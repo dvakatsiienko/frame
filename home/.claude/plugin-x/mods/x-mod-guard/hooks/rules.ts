@@ -1,4 +1,5 @@
 import { brief } from './rules/brief.ts';
+import { touchesStore } from './rules/clean-stamp.ts';
 import {
     type Command,
     type Context,
@@ -888,6 +889,68 @@ export function paneProof(
         };
     }
     return undefined;
+}
+// herdr's fleet-board writes his presses to `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, and the guard reads a press there as
+// his tick (FRM-544 slice 1), so no seat's tool call writes there; fleet-board's own write is a herdr mod's, no cc tool call
+const isTicksName = (text: string) => /(^|[/'"])orbit-ticks\b/.test(text);
+const isShelfDir = (text: string) => /(\.claude|cc)\/shelf\/?$/i.test(text);
+export const isTicksPath = (path: string) =>
+    /(^|\/)orbit-ticks(\/|$)/.test(path);
+export const TICKS_WRITE = {
+    door: "ask dima to tick the ask on fleet-board or on the seat's own 🚦 board; a read goes through cat or jq",
+    rule: 'ticks-write',
+    targets: ['orbit-ticks'],
+    why: "fleet-board writes dima's presses there and x-mod-guard reads a press as his tick, so a seat's write would forge one",
+} as const satisfies Refusal;
+export function ticksWrite(command: string, cwd: string): Refusal | undefined {
+    return touchesStore(command, cwd, isTicksName, isShelfDir)
+        ? TICKS_WRITE
+        : undefined;
+}
+// his presses in a ticks file as ticks: the newest press per ask decides, a ↩️ replay after a 🛎 taking it back; a press
+// carries the ask text he pressed on, so a tick covers what that text quotes and nothing else
+export function pressTicks(text: string) {
+    const newest = new Map<
+        string,
+        { at: number; text?: string; verdict: string }
+    >();
+    for (const line of text.split('\n')) {
+        let press: unknown;
+        try {
+            press = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        if (typeof press !== 'object' || !press) continue;
+        const {
+            at,
+            id,
+            text: asked,
+            verdict,
+        } = press as Record<string, unknown>;
+        if (typeof id !== 'string' || typeof at !== 'number') continue;
+        if (verdict !== 'tick' && verdict !== 'replay') continue;
+        if ((newest.get(id)?.at ?? -1) > at) continue;
+        newest.set(id, {
+            at,
+            text: typeof asked === 'string' ? asked : undefined,
+            verdict,
+        });
+    }
+    return [...newest].flatMap(([id, p]) =>
+        p.verdict === 'tick' && p.text !== undefined
+            ? [
+                  {
+                      at: p.at,
+                      id: `herdr:${id}`,
+                      targets: [...p.text.matchAll(/`([^`]+)`/g)].map(
+                          (m) => m[1] as string,
+                      ),
+                      text: p.text,
+                  },
+              ]
+            : [],
+    );
 }
 // a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`, or reads
 // `⚠️ merge <name>#<n>` (FRM-478); a bare `#<n>` or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1);
