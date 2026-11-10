@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T14:40:00Z'
+updated_date: '2026-11-10T16:11:00Z'
 labels:
   - m
   - clio-main
@@ -1218,4 +1218,126 @@ PK-363:W389 (2026-11-10 16:37, dima) my-status: the status bar at the bottom. Wh
 PK-363:W390 (2026-11-10 16:37, dima) quick-term: the quick terminal's header, placed twice. How do I see it? ❓
 
 answers (clio, 2026-11-10 16:40): PK-363:W273 answered and kept here on his word («save it somewhere»): the chores clio keeps handing dima, read off the 11-10 thread: restarting herdr; typing sign and override lines; typing text for a proof; looking things up in the desktop sidebar. the fleet-board tick (FRM-544) removes the sign typing; the restart and the override stay his by design. PK-363:W272 (what he asks that clio can't give) is not a quick answer (dima 16:39): a grilling question for later, it needs an analysis of which doors were not possible without herdr. second wind in herdr (PK-363:W364): dima 16:39 «alone, you second winded yourself»: the mod's compact + ingest ran by themselves at 16:21–16:22 in seat t1p, the first proof in herdr, one run.
+
+PK-363:W391 (2026-11-10 16:39, dima) What you ask and I can't give yet: it is more like a grilling question, for when we get there. It is not a quick answer. Clio needs to analyze which doors were not possible without herdr.
+
+PK-363:W392 (2026-11-10 16:39, dima) Chores clio keeps handing dima: restarting herdr, typing sign and override lines, typing text for a proof, and looking things up in the desktop sidebar. The fleet-board tick removes the sign typing. The restart and the override stay dima's by design. Save this somewhere.
+
+PK-363:W393 (2026-11-10 16:39, dima) second wind: did clio type the /compact and ingest lines itself, or did they run alone? Answer from dima: "alone", so clio second-winded itself. So the mod works in herdr? ❓
+
+PK-363:W394 (2026-11-10 16:39, dima) the agents list swap on dima's board (🔧 codie's ⚠️ ask): tick it with the chat box empty. Dima is going now and cannot click that fast.
+
+PK-363:W395 (2026-11-10 16:39, dima) drop the agent sounds too, so the creatures mod can go sooner: dima hands this to clio.
+
+PK-363:W396 (2026-11-10 16:40, dima) herdr codie is at 62% context. Tell him to second wind (SW).
+
+PK-363:W397 (2026-11-10 16:40, dima) the quick terminal: (clio's line) bind Ctrl+J so you can try it, or cut it. dima: bind it, try it once, then decide.
+
+PK-363:W398 (2026-11-10 16:42, dima) image #9 of the terminal: confirmed. dima thinks we can keep it and rebrand it to ours. Which terminal can herdr run? Can it run rex, or does it run its own terminal? ❓
+
+PK-363:W399 (2026-11-10 16:46, dima) fyi: pasting images via ctrl+v into the chatter text box seems to have stopped working.
+
+PK-363:W400 (2026-11-10 16:48, dima) the storm seems calmed. What can we solve? Propose solving things one by one. Also, wing-1 is parked: how can it help? ❓
+
+PK-363:W401 (2026-11-10 16:57, dima) the draft proof: (clio's line) type any text in a throwaway seat's Chat box and tell clio «typed»; codie reloads the chat; if the text survives, hot reload counts as smooth and the strip above Chat can land. dima: typed. dima printed «text» in the wing-1 chatter textbox in herdr and is sending this from the c desktop app. Tell codie to do the probe while dima watches the wing-1 window in herdr, in case the text is lost.
+
+PK-363:W402 (2026-11-10 16:57, dima) do you maintain your flyway? If not, groom it to reflect the order of stuff we are at. And what's next? ❓
+
+PK-363:W403 (2026-11-10 16:57, dima) the name of our setup: (clio's line) I bring seven candidates, you pick one; the chat's rename to something-chatter rides the same round. dima: let's do this as the next item.
+
+PK-363:W404 (2026-11-10 16:57, dima) wing-1 takes two read-only jobs that need no code and no clicks: (clio's line) item 4's homework (compare each zoo copy with herdr's own mod, with shots, for a short keep-or-go-back list) and the question dima set aside (which asks were not possible before herdr; needs analysis). dima: approve both, tell it.
+
+PK-363:W405 (2026-11-10 16:57, dima) (clio's line) in the «probe: paste» tab: take a screenshot to the clipboard (⌃⇧⌘4), click the chat box, press ⌘V, then Ctrl+V; tell which key showed an image chip. dima: works with cmd+v; he may have confused cmd+v and ctrl+v for images, so maybe a false alarm; let codie advance with the next stuff.
+
+PK-363:W406 (2026-11-10 16:57, dima) (clio's line) in the same tab: type any text and tell «typed», codie then reloads the chat for the draft proof. dima: done, after the pasted screenshot.
+
+PK-363:W407 (2026-11-10 16:57, dima) (clio's line) the five actions with no tick yet (merge brake, override, held pr, held file, raw merge): give the held pr and held file a tick first; brake and override stay typed. dima: what are brake and override? Is everything except these two done via a tick? ❓
+
+PK-363:W408 (2026-11-10 16:57, dima) wing-1 text probe: go now. dima keeps the wing-1 tab open in herdr and keeps printing text in that thread's textbox. Send a message to wing-1 once the probe is done, so dima can move on from that tab.
+
+refold (helga, 2026-11-10, wishkeeper): W392–W394 carried clio's sentences as his. his own words there: W392 «save it somewhere»; W393 «alone, you second winded yourself. so mod works in herder?» (clio had asked whether HE typed the lines); W394 «i go now, i cant click so fast» (no tick given).
+
+correction (helga, 2026-11-10): W397 (16:40) is wholly clio's line, not split. dima's act: accepted clio's pick to bind Ctrl+J and try the quick terminal once (the line «➡️ bind it, try it once, then decide» was pasted back unchanged). No words of his.
+
+PK-363:W409 (2026-11-10 17:08, dima) (clio's line) re-sign the tick ticket with slice 2 ➡️ tick it on the strip. Accepted pick, no words of dima's.
+
+PK-363:W410 (2026-11-10 17:08, dima) (clio's line) the setup's name ➡️ 3, fleet-cockpit. dima: who grills with me? He sees no grill list anywhere. ❓
+
+PK-363:W411 (2026-11-10 17:08, dima) (clio's line) the chat becomes fleet-chatter ➡️ yes. dima: yes.
+
+PK-363:W412 (2026-11-10 17:08, dima) (clio's line) zoo pairs: keep zoo's tab bar, pane header and status bar; the + menu goes back to herdr's ➡️ yes to all four. dima: decide with wing 1? ❓
+
+from wing 1's tab (2026-11-10 17:13)
+
+PK-363:W413 (2026-11-10 17:13, dima): tabs: ok, let's keep zoo's copy, but refine it later.
+
+PK-363:W414 (2026-11-10 17:13, dima): + menu: ok, go back to herdr's.
+
+PK-363:W415 (2026-11-10 17:13, dima): status bar: ok, let's keep zoo's.
+
+PK-363:W416 (2026-11-10 17:13, dima): but i want everything rebranded, so «zoo» appears nowhere.
+
+PK-363:W417 (2026-11-10 17:13, dima): tick from anywhere is very good. i want the orbit on the right side of the UI to show all asks from anyone, with everyone able to tick anything for anyone on the right side.
+
+PK-363:W418 (2026-11-10 17:13, dima): currently, ticks for asks of the thread i selected are rendered at the top of the UI. it is temporary; i'm not sure i still want the duplication. let's keep it like this for now, maybe it will be redundant.
+
+PK-363:W419 (2026-11-10 17:13, dima): the band: ok.
+
+PK-363:W420 (2026-11-10 17:17, dima) (clio's line) The name: I grill with you, right here. The list was in my 16:59 reply and it looks like it never reached you, so here it is again. dima: i like x-herdr more. it is plain but clean. Also, tell what this name is for. Is it the name for a whole herdr mods system or what? If so, let's probably have it as x-herdr and move on.
+
+PK-363:W421 (2026-11-10 17:17, dima) (clio's line) the delve reminder ➡️ drop it for good if delve's trial is over; otherwise I put it back and check the trial's file for a verdict first. dima: drop.
+
+PK-363:W422 (2026-11-10 17:17, dima) the setup's name ➡️ 3, x-herdr. Accepted pick, no words of dima's.
+
+PK-363:W423 (2026-11-10 17:17, dima) print where we at. what wing-1 do? let's solve one thing at a time. propose what to solve next with you and what wing-1 can do? i can spend attention only on one tab.
+
+PK-363:W424 (2026-11-10 17:21, dima) i want to kill naming mess that is started to born.
+
+PK-363:W425 (2026-11-10 17:21, dima) x-herdr ✓
+
+PK-363:W426 (2026-11-10 17:21, dima) fleet-chatter → x-herdr-chatter. rename.
+
+PK-363:W427 (2026-11-10 17:21, dima) what else to rename? i think this x-herdr-* pattern is ok to have this convention and avoid clashes/drifts. propose. fine? or you can sort out something better? ❓
+
+PK-363:W428 (2026-11-10 17:21, dima) watch your both verifiers to not go over 3 round cap. yesterday verifier spend 5 turns (wing miss)
+
+PK-363:W429 (2026-11-10 17:21, dima) let's do something with you, i asked a lot in inbox let's start solving. i want everything properly planned and groomed. whats pending? what can be delegated to wing 1? ❓
+
+from wing 1's tab (2026-11-10 17:25)
+
+PK-363:W430 (2026-11-10 17:25, dima): claude-chat — who decided the name? if it was borrowed from zoo, let's rename it to our system; my draft: x-herdr-chatter-terminal-switch (top 7). ❓
+
+PK-363:W431 (2026-11-10 17:25, dima): i want all herdr parts named clearly, because we have lots of overlaps, especially with mods, and herdr itself has lots of parts.
+
+state (clio, 2026-11-10 17:28): a helper's pending list of the 11-10 inbox W-lines is at _clio/.scratch/herdr/pending-2026-11-10.md (open 78 / running 21 / done 100 / unclear 25 W-ids); clio's corrections to it: W209–W217 settled by grill 4 and frame AGENTS.md § the boundary; W246–W249 are in home/.config/herdr-app/mods/AGENTS.md; W250–W255 in herdr/PRODUCT.md; W389 and W398 answered in the thread 16:37 and 16:42; W272 analysed by wing 1 in .scratch/herdr/herdr-unlocks.md.
+
+PK-363:W432 (2026-11-10 17:33, dima) (clio's line) x-herdr-fleet-board. dima: i want to rethink «board» part. propose top7. what would be a cool vibename for a board/deck? x-herdr-fleet-party? or keep short? ❓
+
+PK-363:W433 (2026-11-10 17:33, dima) (clio's line) the tab bar → x-herdr-tabs. dima: where it is? i asked in SS. ❓
+
+PK-363:W434 (2026-11-10 17:33, dima) (clio's line) the pane header → x-herdr-pane. dima: where it is? ❓
+
+PK-363:W435 (2026-11-10 17:33, dima) (clio's line) the status bar → x-herdr-status. dima: one at a bottom? ❓
+
+PK-363:W436 (2026-11-10 17:33, dima) (clio's line) the quick terminal → x-herdr-terminal. dima: OK.
+
+PK-363:W437 (2026-11-10 17:33, dima) (clio's line) the layout → x-herdr.json. dima: maybe x-herder-layout.json? what this file describes? ❓
+
+PK-363:W438 (2026-11-10 17:33, dima) i am confused with a lot of parts. let's settle, then take screenshots of herdr and draw a description over each herdr ui part so i see all parts and finalize names.
+
+PK-363:W439 (2026-11-10 17:33, dima) Your inbox: honest state first. 84 of its 123 lines carry no «handled» mark. They were parsed into the herdr pocket item this morning, but nobody has checked line by line what is answered, running or still open. A helper is building exactly that list now, sorted by topic and tagged with what wing 1 can take alone. I plan from it the moment it lands, then we solve it one item at a time. This is not good. My plan in the inbox is important. I was printing it for 2 hours yesterday. I want it to be taken care of cleanly and properly, and want all of my wishes to be considered and implemented. Nothing is missed. Only duplicates, typos, or outdated parts can be omitted. ensure the proper plan is build out of my plan draft from inbox. (important), also my draft have its own «important» parts and ❗ parts. ❗
+
+PK-363:W440 (2026-11-10 17:33, dima) (clio's line) sign the chat ticket's rename to x-herdr-chatter ➡️ tick it on the strip. dima: OK. this mod part describes whole «chatter» (human readable, pretty chat view).
+
+PK-363:W441 (2026-11-10 17:33, dima) (clio's line) the x-herdr-* list above for every mod of ours ➡️ yes, each when next touched. dima: let's take as first round but i want to see cleanly what each part maps to. do a screenshot, draw over the screenshot that shows where each part is. and tell new names over those parts so all included and clearly visible.
+
+PK-363:W442 (2026-11-10 17:33, dima) (clio's line) the chat swap on your board (🔧 codie's ⚠️ ask) ➡️ tick it with nothing half-typed that you'd hate to lose. dima: doing now.
+
+PK-363:W443 (2026-11-10 17:33, dima) (clio's line) sign the chat ticket's rename ➡️ tick it on the strip. dima: doing now.
+
+PK-363:W444 (2026-11-10 17:37, dima, o32 steer) ok. for all audits wing 1 must consult with both codies. to ensure that cli scope is relevant, ( what is better to move to mods or herder instead of doing via cli)? let it find out best place for each piece. (message may have mi
+
+PK-363:W445 (2026-11-10 17:37, dima, o33 steer) i told codie to swap chatter
+
+PK-363:W446 (2026-11-10 17:46, dima, o38 steer) it was too fast. i want details but i am overloaded. let me take care of an audit with wing-1 and you keep you updated. handover everything to wing 1 and ensure it have all necessary data in full so scope revalidation is true
 <!-- SECTION:NOTES:END -->
