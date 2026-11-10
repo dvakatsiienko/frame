@@ -45,6 +45,7 @@ import { SEATS_KEY, bandOf } from './band.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import * as ask from './question.js';
+import { STUCK_PX, afterReflow, afterWheel, keptFirst } from './scroll.js';
 import {
     SYSTEM_MODES,
     cleanTyped,
@@ -220,8 +221,6 @@ const fade = (color, alpha) =>
 // A text size from the 13 px design, scaled to the chosen size.
 const px = (n) => Math.round(((n * chatLook().size) / 13) * 2) / 2;
 const NARROW = 820;
-// within this many px of the newest message the log counts as at the bottom: no ↓ Newest, and a reflow keeps it there
-const STUCK_PX = 40;
 // How many messages to draw at first; "Show earlier" adds this many more.
 const PAGE = 120;
 // How much of a local transcript is decoded and read at a time (see readAfter).
@@ -721,6 +720,27 @@ function keepDraft(address, text) {
                 : localStorage.removeItem(draftKey(address));
     } catch {}
 }
+// where he was reading each seat, kept across a reload of this mod, written only by his own scroll or click
+/** @param {string} address */
+const scrollKey = (address) => `scroll:${address}`;
+/** @param {string} address @returns {import('./scroll.js').Scroll | null} */
+function keptScroll(address) {
+    try {
+        const kept = JSON.parse(
+            localStorage.getItem(scrollKey(address)) ?? 'null',
+        );
+        return typeof kept?.up === 'number' ? kept : null;
+    } catch {
+        return null;
+    }
+}
+/** @param {string | null} address @param {import('./scroll.js').Scroll} scroll */
+function keepScroll(address, scroll) {
+    try {
+        if (address)
+            localStorage.setItem(scrollKey(address), JSON.stringify(scroll));
+    } catch {}
+}
 // biome-ignore lint/suspicious/noControlCharactersInRegex: it strips the terminal's colour codes, which start with ESC
 const plain = (s) => s.replace(/\x1b\[[0-9;]*m/g, '');
 
@@ -1190,8 +1210,11 @@ export default class ClaudeChat extends View {
             this.cache.set(this.address, {
                 effort: this.effort,
                 file: this.file,
+                firstShown: this.firstShown,
+                follow: this.follow,
                 items: this.items,
                 lastReply: this.lastReply,
+                limit: this.limit,
                 looked: this.looked,
                 model: this.model,
                 pos: this.pos,
@@ -1199,6 +1222,7 @@ export default class ClaudeChat extends View {
                 skills: this.skills,
                 subs: this.subs,
                 tools: this.tools,
+                up: this.up,
                 where: this.where,
             });
         this.address = address;
@@ -1222,10 +1246,17 @@ export default class ClaudeChat extends View {
         this.effort = kept.effort ?? null;
         this.drop = null;
         this.pickNote = null;
-        this.limit = PAGE;
+        // where he was reading this seat: kept in the cache across a tab switch, in localStorage across a reload
+        const stored = kept.items ? null : keptScroll(address);
+        this.follow = kept.follow ?? stored?.follow ?? true;
+        this.up = this.follow ? 0 : (kept.up ?? stored?.up ?? 0);
+        this.limit = kept.limit ?? PAGE;
+        this.firstShown = kept.firstShown ?? null;
+        // a reload refills the log from the transcript: its growth is not new content below him
+        this.filling = !kept.items;
+        this.contentH = null;
         this.problem = null;
         this.screen = null;
-        this.up = 0;
         this.rowH = new Map();
         this.seek = null;
     }
@@ -1740,6 +1771,10 @@ export default class ClaudeChat extends View {
                         this.trail = [];
                         this.pos = 0;
                         this.limit = PAGE;
+                        // another conversation in this seat (a /clear, a resume): it starts at its newest
+                        this.follow = true;
+                        this.up = 0;
+                        this.firstShown = null;
                         this.session = session;
                         this.file = file;
                         this.problem = file
@@ -1867,6 +1902,7 @@ export default class ClaudeChat extends View {
             } while (this.again && file === this.file);
         } finally {
             if (this.loading === file) this.loading = null;
+            this.filling = false;
         }
     }
 
@@ -2825,6 +2861,7 @@ export default class ClaudeChat extends View {
                             .on_click((_e, cx) => {
                                 this.trail.push(item.id);
                                 this.up = 0;
+                                this.follow = true;
                                 this.limit = PAGE;
                                 cx.notify();
                             }),
@@ -3028,6 +3065,7 @@ export default class ClaudeChat extends View {
                     .on_click((_e, cx) => {
                         this.trail.pop();
                         this.up = 0;
+                        this.follow = true;
                         this.limit = PAGE;
                         cx.notify();
                     })
@@ -3106,6 +3144,7 @@ export default class ClaudeChat extends View {
                         .on_click((_e, cx) => {
                             this.trail = [id];
                             this.up = 0;
+                            this.follow = true;
                             this.limit = PAGE;
                             cx.notify();
                         })
@@ -3831,11 +3870,22 @@ export default class ClaudeChat extends View {
             .on_size_change((s, cx) => {
                 this.viewH = s.height;
                 this.viewW = s.width;
-                this.up = clamp(this.up ?? 0);
+                if (!this.filling) this.up = clamp(this.up ?? 0);
                 cx.notify();
             })
             .on_scroll_wheel((e, cx) => {
-                this.up = clamp((this.up ?? 0) + e.delta.y);
+                const max = Math.max(
+                    0,
+                    (this.contentH ?? 0) - (this.viewH ?? 0),
+                );
+                const next = afterWheel(
+                    { follow: this.follow, up: clamp(this.up ?? 0) },
+                    e.delta.y,
+                    max,
+                );
+                this.up = next.up;
+                this.follow = next.follow;
+                keepScroll(this.address, next);
                 this.ctx = null;
                 cx.notify();
             })
@@ -3846,7 +3896,7 @@ export default class ClaudeChat extends View {
                     .absolute()
                     .left(0)
                     .right(0)
-                    .bottom(-(this.up ?? 0))
+                    .bottom(-clamp(this.up ?? 0))
                     .px(
                         chatLook().width === 'narrow'
                             ? Math.max(16, ((this.viewW ?? 0) - NARROW) / 2)
@@ -3855,15 +3905,30 @@ export default class ClaudeChat extends View {
                     .py(12)
                     .gap(GAPS[chatLook().space] ?? 10)
                     .on_size_change((s, cx) => {
-                        // a reflow (the tray, a panel, a new message) keeps a log near its newest message on it; a log
-                        // scrolled further up keeps what is being read in place
-                        if (!this.holdTop && (this.up ?? 0) <= STUCK_PX)
-                            this.up = 0;
-                        else if (this.contentH)
-                            this.up += s.height - this.contentH;
+                        // one rule (scroll.js): while he follows, the newest shows; while he reads, new height goes
+                        // below his place and he stays on it. A turn he opens grows below the row he clicked.
+                        const from = this.contentH ?? null;
+                        /** @type {import('./scroll.js').Scroll} */
+                        const next = this.holdTop
+                            ? {
+                                  follow: false,
+                                  up:
+                                      (this.up ?? 0) +
+                                      s.height -
+                                      (from ?? s.height),
+                              }
+                            : afterReflow(
+                                  { follow: this.follow, up: this.up ?? 0 },
+                                  {
+                                      from,
+                                      isFilling: this.filling,
+                                      to: s.height,
+                                  },
+                              );
                         this.holdTop = false;
                         this.contentH = s.height;
-                        this.up = clamp(this.up ?? 0);
+                        this.follow = next.follow;
+                        this.up = this.filling ? next.up : clamp(next.up);
                         cx.notify();
                     })
                     .when(
@@ -3876,7 +3941,7 @@ export default class ClaudeChat extends View {
                     .children(rows),
             )
             .when(Boolean(this.ctx), (el) => el.child(this.ctxMenu(t)))
-            .when(this.up > STUCK_PX, (el) => {
+            .when(!this.follow && clamp(this.up ?? 0) > STUCK_PX, (el) => {
                 const prev = this.prevMine();
                 const to = prev === null ? null : clamp(prev);
                 return el
@@ -3895,6 +3960,7 @@ export default class ClaudeChat extends View {
                                         '↑ Previous message',
                                         (_e, cx) => {
                                             this.up = to;
+                                            this.follow = false;
                                             cx.notify();
                                         },
                                     ),
@@ -3915,6 +3981,11 @@ export default class ClaudeChat extends View {
                                     '↓ Newest',
                                     (_e, cx) => {
                                         this.up = 0;
+                                        this.follow = true;
+                                        keepScroll(this.address, {
+                                            follow: true,
+                                            up: 0,
+                                        });
                                         cx.notify();
                                     },
                                     true,
@@ -4289,6 +4360,7 @@ export default class ClaudeChat extends View {
         const up =
             h > view - 60 ? below + h - view + 30 : below + h / 2 - view / 2;
         this.up = Math.max(0, Math.min(up, (this.contentH ?? 0) - view));
+        this.follow = false;
     }
 
     findBar(t) {
@@ -4477,7 +4549,16 @@ export default class ClaudeChat extends View {
             if (at >= 0 && listed.length - at > this.limit)
                 this.limit = listed.length - at + 10;
         }
+        /** @param {any} x */
+        const rowId = (x) => (x.work ? x.key : String(x[1]));
+        this.limit = keptFirst(
+            listed.map(rowId),
+            this.limit,
+            this.firstShown,
+            this.follow,
+        );
         const shown = listed.slice(-this.limit);
+        this.firstShown = shown.length ? rowId(shown[0]) : null;
         const hidden = listed.length - shown.length;
         this.agentWorking = agent.status === 'working';
         // Each row measured, so ↑ Previous message knows where your messages are (see prevMine).

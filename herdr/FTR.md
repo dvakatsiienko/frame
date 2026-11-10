@@ -192,8 +192,15 @@ wish: PK-363
   - then each reply still shows in full; only the tools and notes between them fold into «▸ N tools»
   - proof: a probe seat's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
   - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
+- ⬜ once he scrolls up, nothing but his own hand moves his view (FRM-562:W18, W19)
+  - given he scrolled up in a seat's chat
+  - when a reply, a tool line, a peer or plugin line, a turn end, a store change, a resize or a reload of the mod arrives
+  - then the text he reads stays where it is; only his scroll to the end or a click on «↓ Newest» brings him back to following
+  - and each seat keeps its place across a tab switch, and across a reload of the mod
+  - decision: «following» is a state he enters and leaves by his own scroll or click, never set by a redraw (scroll.js, one rule)
+  - not checked: by his hand in his window
 - ✅ a resize keeps the chat on its newest message
-  - given the chat shows its newest message, or within 40 px of it
+  - given the chat is following, his own scroll at the end
   - when the tray or a panel opens or closes
   - then the newest message stays in view and no «↓ Newest» shows (shots 17:39, tray and Files open and closed)
 - ⬜ after a reload the caret sits at the draft's end
