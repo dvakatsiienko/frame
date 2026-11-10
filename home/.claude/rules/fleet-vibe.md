@@ -23,6 +23,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **blueprint** — a picture of one part of our system (a flow, a structure, a map) that clio draws
   and dima edits to show an idea; clio reads the edit back and builds from it.
   home: `_clio/blueprints/`.
+- **herdr mod** (`x-herdr-*`), **cc native mod** (`x-mod-*`), **herdr layout**, **herdr layout block** — never a bare «mod»; defined in `herdr/GLOSSARY.md`. <!-- cc -->
 - **🪐 orbit** — the board list of a session's asks, ticked instead of pasted; its next moves sit apart, in the board's 🌔 phases (`rules/fleet-mods.md`). <!-- cc -->
 - **💨 slipstream** — a send that waits and joins the next turn instead of waking one: an orbit tick, a held ping; «slipstreamed» = delivered that way; its opposite is **push**. <!-- cc -->
 - **🐦‍🔥 second wind** — a session's context reset onto its own handoff: dima presses a session's 🐦‍🔥 on the board (or says the word), the session finishes its step, writes a CST, and the mod compacts and ingests it at the turn's end (`clio:checkpoint` for clio, x-mod-stash). <!-- cc -->
