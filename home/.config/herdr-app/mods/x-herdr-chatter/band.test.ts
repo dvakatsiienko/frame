@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'vitest';
 
-import { STALE_MS, bandButtons, bandOf, overrideOf } from './band.js';
+import type { FleetState, ThreadState } from './band.js';
+import {
+    STALE_MS,
+    bandButtons,
+    bandOf,
+    overrideOf,
+    pressLine,
+    withPress,
+} from './band.js';
 
 const deck = {
     at: 1000,
@@ -46,15 +54,17 @@ describe('the band reads its own seat from the deck', () => {
 
 describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => {
     const now = Date.parse('2026-11-10T21:00:00Z');
-    const keys = (shown: boolean, override: ReturnType<typeof overrideOf>) =>
-        bandButtons({ isDeckShown: shown, override }).map((b) => [
-            b.key,
-            b.isOn,
-            b.isLive,
-        ]);
+    const off = { isDeckShown: true, override: { isOn: false } };
+    const keys = (state: Parameters<typeof bandButtons>[0]) =>
+        bandButtons(state).map((b) => [b.key, b.isOn, b.isLive]);
+    const thread: ThreadState = { hot: null, wind: null };
+    const fleet: FleetState = {
+        afk: { at: null, on: false },
+        waker: { at: null, on: false },
+    };
 
-    test('seven buttons in his order, board and override live, the rest greyed', () => {
-        expect(keys(true, { isOn: false })).toEqual([
+    test('with no state file yet the four thread buttons stay greyed', () => {
+        expect(keys(off)).toEqual([
             ['wind', false, false],
             ['hot', false, false],
             ['waker', false, false],
@@ -66,15 +76,57 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
     });
 
     test('a greyed button names what it waits on', () => {
-        const hot = bandButtons({
-            isDeckShown: true,
-            override: { isOn: false },
-        }).find((b) => b.key === 'hot');
+        const hot = bandButtons(off).find((b) => b.key === 'hot');
         expect(hot?.tip).toContain('waits on');
     });
 
+    test("with the thread's state file and fleet.json, wind, hot, waker and AFK are live", () => {
+        expect(keys({ ...off, fleet, thread }).slice(0, 4)).toEqual([
+            ['wind', false, true],
+            ['hot', false, true],
+            ['waker', false, true],
+            ['afk', false, true],
+        ]);
+    });
+
+    test('each reads on from the state the stash wrote, never from a press', () => {
+        const on = bandButtons({
+            ...off,
+            fleet: {
+                afk: { at: 5, on: true },
+                waker: { at: 5, on: true },
+            },
+            thread: { hot: { since: 5 }, wind: 'writing' },
+        });
+        expect(on.slice(0, 4).map((b) => b.isOn)).toEqual([
+            true,
+            true,
+            true,
+            true,
+        ]);
+    });
+
+    test('a wind the stash cancelled or refused reads off', () => {
+        for (const wind of ['cancelled', 'refused'])
+            expect(
+                bandButtons({ ...off, fleet, thread: { hot: null, wind } })[0]
+                    .isOn,
+            ).toBe(false);
+    });
+
+    test('a press waiting on the stash shows its new state until the stash answers', () => {
+        const pending = { hot: { at: 1, on: true } };
+        expect(
+            bandButtons({ ...off, fleet, pending, thread })[1],
+        ).toMatchObject({ isOn: true, isPending: true });
+    });
+
     test('the board reads off while the deck is hidden', () => {
-        expect(keys(false, { isOn: false })[6]).toEqual(['board', false, true]);
+        expect(keys({ ...off, isDeckShown: false })[6]).toEqual([
+            'board',
+            false,
+            true,
+        ]);
     });
 
     test('an override granted and not yet past its until reads on, since its time', () => {
@@ -94,5 +146,49 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
         ).toBe(false);
         expect(overrideOf({ prs: { at: 'x', by: '' } }, now).isOn).toBe(false);
         expect(overrideOf(null, now).isOn).toBe(false);
+    });
+});
+
+describe('a press is one line of the band press file', () => {
+    const now = Date.parse('2026-11-10T22:00:00Z');
+    const day = 24 * 60 * 60 * 1000;
+
+    test('wind and hot name their thread, waker and AFK do not', () => {
+        expect(pressLine('hot', true, 'abc', now)).toEqual({
+            at: now,
+            button: 'hot',
+            on: true,
+            sid: 'abc',
+        });
+        expect(pressLine('afk', false, 'abc', now)).toEqual({
+            at: now,
+            button: 'afk',
+            on: false,
+        });
+    });
+
+    test('a press is appended after the lines already there', () => {
+        const old = `${JSON.stringify({ at: now - 5, button: 'waker', on: true })}\n`;
+        const line = pressLine('afk', true, null, now);
+        expect(withPress(old, line, now)).toBe(
+            `${old}${JSON.stringify(line)}\n`,
+        );
+    });
+
+    test('lines older than a day are trimmed, a broken line too', () => {
+        const stale = JSON.stringify({
+            at: now - day - 1,
+            button: 'afk',
+            on: true,
+        });
+        const line = pressLine('waker', true, null, now);
+        expect(withPress(`${stale}\n{"half\n`, line, now)).toBe(
+            `${JSON.stringify(line)}\n`,
+        );
+    });
+
+    test('a missing file starts with the press', () => {
+        const line = pressLine('hot', false, 'abc', now);
+        expect(withPress(null, line, now)).toBe(`${JSON.stringify(line)}\n`);
     });
 });

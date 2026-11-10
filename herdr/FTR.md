@@ -194,7 +194,14 @@ wish: PK-363
   - given a seat's tab in the Chat view
   - then right of «wait» sit 🐦‍🔥 🔥 ⏰ 💨 🔓 🎛️ 🚦, emoji only, each word leading its tooltip (dima, 21:02); filled when on, 🔓 red when on
   - and 🚦 shows and hides the deck by herdr's `layout.toggle` on its block, no layout file write (proof 2102: 9 seats before, hidden and after; his click «board confirmed to work»)
-  - and 🔓 reads the override store `x` reads; its click waits on the mods codie's proof row; 🐦‍🔥 🔥 ⏰ 💨 wait on FRM-568's press file, 🎛️ on the settings view: greyed, the reason on hover
+  - and 🔓 reads the override store `x` reads; its click waits on the mods codie's proof row; 🎛️ waits on the settings view: greyed, the reason on hover
+- ⬜ wind, hot, waker and AFK pressed from the band (FRM-568)
+  - makes: one line `{at, button, on, sid?}` per press in `~/.claude/shelf/band-presses/band.jsonl`, lines older than a day trimmed
+  - given a thread's tab in the Chat view and its state file in `~/.claude/shelf/herdr-state/`
+  - when dima presses 🐦‍🔥 or 🔥, then that thread, and no other, takes it at its next poll; ⏰ and 💨 set every thread
+  - then the button fills at once, a shade lighter until the stash writes the state back, and reads on from that state alone, its on-since time on hover; a press the stash does not answer in 12 s gives the button its state back
+  - and a press sets the state the button asks for, never a flip
+  - decision: the button draws the state the stash wrote, never its last press, so a press from the cc band or a late line never leaves the two bands apart
   - and ctx sits above week (dima, 21:00)
   - decision: his crop (2054) approved at 20:59
 - ✅ a transcript past 64 MB draws: the chat reads it a slice at a time with `tail | head`, since herdr's readFile refuses a bigger file (a 93 MB seat drew empty, 21:02)

@@ -28,6 +28,7 @@ import {
     hc,
     home,
     layout,
+    notify,
     openOverlay,
     panes,
     props,
@@ -45,10 +46,16 @@ import {
 import {
     DECK_BLOCK,
     OVERRIDE_STORE,
+    PENDING_MS,
+    PRESS_DIR,
+    PRESS_FILE,
     SEATS_KEY,
+    STATE_DIR,
     bandButtons,
     bandOf,
     overrideOf,
+    pressLine,
+    withPress,
 } from './band.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
@@ -505,6 +512,69 @@ function utf8(bytes) {
     for (let i = 0; i < bytes.length; i += 0x8000)
         bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
     return decodeURIComponent(escape(bin));
+}
+
+/**
+ * the thread's state file, found by its pid (the newest `at` wins after a /clear), and fleet.json
+ * @param {number | null | undefined} pid
+ */
+async function bandStates(pid) {
+    const dir = `${home()}/${STATE_DIR}`;
+    /** @param {string} path */
+    const read = async (path) => {
+        try {
+            return JSON.parse((await readTextFile(path)) ?? 'null');
+        } catch {
+            return null;
+        }
+    };
+    const names = (
+        await readdir(dir).catch(() => /** @type {string[]} */ ([]))
+    ).filter(
+        (/** @type {string} */ f) => f.endsWith('.json') && f !== 'fleet.json',
+    );
+    let thread = null;
+    if (pid != null)
+        for (const state of await Promise.all(
+            names.map((f) => read(`${dir}/${f}`)),
+        ))
+            if (state?.pid === pid && (!thread || state.at > thread.at))
+                thread = state;
+    return {
+        fleet: await read(`${dir}/fleet.json`),
+        thread: thread
+            ? {
+                  hot: thread.hot ?? null,
+                  sid: thread.sid,
+                  wind: thread.wind ?? null,
+              }
+            : null,
+    };
+}
+
+/**
+ * one press appended to the band press file with herdr's compare-and-swap write: a file changed since the read is read
+ * again, so no other press is lost
+ * @param {import('./band.js').PressLine} line
+ */
+async function appendPress(line) {
+    const made = await exec('mkdir', ['-p', `${home()}/${PRESS_DIR}`]);
+    if (made.code !== 0) throw new Error(made.stderr.trim() || 'mkdir failed');
+    const path = `${home()}/${PRESS_FILE}`;
+    for (let tries = 2; ; tries--) {
+        const text = await readTextFile(path).catch(
+            () => /** @type {string | null} */ (null),
+        );
+        try {
+            return await writeTextFile(
+                path,
+                withPress(text, line, line.at),
+                text,
+            );
+        } catch (err) {
+            if (tries <= 1) throw err;
+        }
+    }
 }
 
 /** @param {string} file */
@@ -1767,6 +1837,23 @@ export default class ClaudeChat extends View {
                 if (JSON.stringify(next) !== JSON.stringify(this.override)) {
                     this.override = next;
                     cx.notify();
+                }
+            });
+        }
+        // the thread's own state and the fleet's, as x-mod-stash wrote them for the band's four buttons
+        if (!this.statesBusy) {
+            this.statesBusy = true;
+            const pid = this.where?.container ? null : this.where?.pid;
+            cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
+                try {
+                    const next = await bandStates(pid);
+                    if (JSON.stringify(next) !== JSON.stringify(this.states)) {
+                        this.states = next;
+                        cx.notify();
+                    }
+                    if (this.settlePresses()) cx.notify();
+                } finally {
+                    this.statesBusy = false;
                 }
             });
         }
@@ -4276,6 +4363,8 @@ export default class ClaudeChat extends View {
                 .when(!btn.isLive, (el) =>
                     el.opacity(btn.isOn ? 0.85 : 0.5).cursor_not_allowed(),
                 )
+                // sent, not yet taken: the state it asked for, a shade lighter until the stash writes it
+                .when(btn.isPending, (el) => el.opacity(0.7))
                 .when(btn.isLive, (el) =>
                     el
                         .cursor_pointer()
@@ -4284,11 +4373,72 @@ export default class ClaudeChat extends View {
                         .on_click((_e, cx) => {
                             if (btn.key === 'board')
                                 run('layout.toggle', { id: DECK_BLOCK });
+                            else this.press(cx, btn);
                             cx.notify();
                         }),
                 )
                 .child(btn.emoji)
         );
+    }
+
+    // a press of wind, hot, waker or AFK: the state it asks for shows at once, the stash's own write settles it
+    /** @param {import('gpui-kit').Context} cx @param {import('./band.js').BandButton} btn */
+    press(cx, btn) {
+        const key = /** @type {import('./band.js').PressKey} */ (btn.key);
+        if (!['wind', 'hot', 'waker', 'afk'].includes(key)) return;
+        const on = !btn.isOn;
+        const at = Date.now();
+        /** @type {import('./band.js').Pending} */
+        const pressed = {
+            .../** @type {import('./band.js').Pending} */ (this.pressed),
+            [key]: { at, on },
+        };
+        this.pressed = pressed;
+        const line = pressLine(key, on, this.states?.thread?.sid ?? null, at);
+        cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
+            try {
+                await appendPress(line);
+            } catch (err) {
+                /** @type {import('./band.js').Pending} */
+                const rest = {
+                    .../** @type {import('./band.js').Pending} */ (
+                        this.pressed
+                    ),
+                };
+                delete rest[key];
+                this.pressed = rest;
+                notify({
+                    body: String(err),
+                    level: 'error',
+                    title: `${btn.word}: the press was not written`,
+                });
+            }
+            cx.notify();
+        });
+    }
+
+    // a press is settled once the stash's state reads what it asked, or after PENDING_MS without an answer
+    settlePresses() {
+        /** @type {import('./band.js').Pending} */
+        const pressed = this.pressed ?? {};
+        const now = Date.now();
+        const base = bandButtons({
+            fleet: this.states?.fleet,
+            isDeckShown: true,
+            override: { isOn: false },
+            thread: this.states?.thread,
+        });
+        /** @type {import('./band.js').Pending} */
+        const left = {};
+        for (const [key, p] of Object.entries(pressed)) {
+            const b = base.find((x) => x.key === key);
+            if (b && b.isOn !== p.on && now - p.at < PENDING_MS)
+                left[/** @type {import('./band.js').PressKey} */ (key)] = p;
+        }
+        const isChanged =
+            Object.keys(left).length !== Object.keys(pressed).length;
+        this.pressed = left;
+        return isChanged;
     }
 
     band(t) {
@@ -4382,10 +4532,13 @@ export default class ClaudeChat extends View {
                                 .gap(4)
                                 .children(
                                     bandButtons({
+                                        fleet: this.states?.fleet,
                                         isDeckShown: this.deckShown(),
                                         override: this.override ?? {
                                             isOn: false,
                                         },
+                                        pending: this.pressed,
+                                        thread: this.states?.thread,
                                     }).map((btn) => this.bandButton(t, btn)),
                                 ),
                         ),
