@@ -1715,3 +1715,98 @@ test('a tar unpacked into the shelf is refused', async ($, on) => {
         [],
     ]);
 });
+
+// clio's FRM-567 at 19:28 and her 18:49 loop: a body file the line writes before it is set, or names by a variable, is
+// read as it can be: a plain body edit of an unsigned ticket runs, one that can bring a sign line still needs his word
+const T = '/tmp/tickets';
+const bodyWorld = (on: On, files: Record<string, string>) => {
+    const w = world(on, [], UNSIGNED);
+    on('fs.read', (_$, e) =>
+        e.path in files
+            ? { value: files[e.path] as string }
+            : { deny: 'outside the readable paths' },
+    );
+    on('fs.list', (_$, e) =>
+        e.path === T
+            ? {
+                  value: Object.keys(files)
+                      .filter((f) => f.startsWith(`${T}/`))
+                      .map((f) => ({
+                          isLink: false,
+                          kind: 'file' as const,
+                          mtimeMs: 0,
+                          name: f.slice(T.length + 1),
+                          size: 1,
+                      })),
+              }
+            : { deny: 'no such folder' },
+    );
+    return w;
+};
+const PLAIN = '## wish\n\n* W1 (2026-11-10, dima): tabs\n';
+const STAMPED = `F=${T}/tabs-body.md && sd '^\\* W1 \\(' '* FRM-567:W1 (' $F && printf '\\n⸻ 🪪 cc · agent run stamp\\n' >> $F && x linear body FRM-567 --set $F; echo "exit $?"`;
+const LOOP = `T="${T}"; set -- a.md FRM-562 b.md FRM-563; while [ $# -gt 0 ]; do f=$1; id=$2; shift 2; python3 -c "
+import sys
+p,i=sys.argv[1],sys.argv[2]; s=open(p).read().replace('{ID}',i); open(p,'w').write(s)" "$T/$f" "$id"; x linear body $id --set "$T/$f" > "$T/$f.set.log" 2>&1; done`;
+for (const [why, line, files] of [
+    [
+        'an sd and a stamp written before the set',
+        STAMPED,
+        { [`${T}/tabs-body.md`]: PLAIN },
+    ],
+    [
+        'a loop over files a variable names',
+        LOOP,
+        { [`${T}/a.md`]: PLAIN, [`${T}/b.md`]: PLAIN },
+    ],
+    [
+        'a read of the file before the set',
+        `F=${T}/tabs-body.md && grep -c W1 $F && cat $F && x linear body FRM-567 --set $F`,
+        { [`${T}/tabs-body.md`]: PLAIN },
+    ],
+] as const)
+    test(`a body edit of an unsigned ticket runs: ${why}`, async ($, on) => {
+        const { ran } = bodyWorld(on, { ...files });
+        const r = await bash($, line);
+        expect([signFlagged(r), ran]).toEqual([false, [line]]);
+    });
+for (const [why, line, files] of [
+    [
+        'the stamp writes a sign line',
+        `F=${T}/tabs-body.md && printf '\\n✍️ signed 2026-11-10\\n' >> $F && x linear body FRM-567 --set $F`,
+        { [`${T}/tabs-body.md`]: PLAIN },
+    ],
+    [
+        'a copy brings a file the guard never read',
+        `F=${T}/tabs-body.md && cp /tmp/other.md $F && x linear body FRM-567 --set $F`,
+        { [`${T}/tabs-body.md`]: PLAIN },
+    ],
+    [
+        'one file the loop sets holds a sign line',
+        LOOP,
+        {
+            [`${T}/a.md`]: PLAIN,
+            [`${T}/b.md`]: `${PLAIN}\n## signed\n\n✍️ signed 2026-11-10\n`,
+        },
+    ],
+    [
+        'a program on the line reads another file',
+        `F=${T}/tabs-body.md && python3 -c "open('$F','w').write(open('/tmp/signed.md').read())" && x linear body FRM-567 --set $F`,
+        { [`${T}/tabs-body.md`]: PLAIN },
+    ],
+    [
+        'a loop hands its program a path',
+        LOOP.replace('FRM-563;', 'FRM-563 /tmp/signed.md;'),
+        { [`${T}/a.md`]: PLAIN, [`${T}/b.md`]: PLAIN },
+    ],
+    [
+        'the file it sets does not read',
+        `F=${T}/gone.md && sd x y $F && x linear body FRM-567 --set $F`,
+        {},
+    ],
+] as const)
+    test(`a body write that can bring a sign line needs his word: ${why}`, async ($, on) => {
+        const { ran } = bodyWorld(on, { ...files });
+        const r = await bash($, line);
+        expect([signFlagged(r), ran]).toEqual([true, []]);
+    });

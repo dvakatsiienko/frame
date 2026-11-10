@@ -701,6 +701,60 @@ export function mergeAutoPr(words: string[]) {
         .find((w) => !w.startsWith('-'));
     return pr?.match(/(\d+)\/?$/)?.[1];
 }
+// the writers a line points at a body file before it is set, each one the guard can read: an in-place `sd` or `sed`, an
+// `echo` or `printf` of literal text, or an inline program whose own text names no other file (no `/`); a copy, a move,
+// a download or any other writer may bring a sign line from a file the guard never saw (clio's FRM-567, 19:28)
+const BODY_EDITORS = new Set(['echo', 'printf', 'sd', 'sed']);
+// every command on the line but x's own that may write the body file: a write the guard reads, or an inline program whose
+// text names the file or a variable that may (`python3 -c "open('$F','w')…"`, which no write reader expands)
+export function bodyWriters(
+    command: string,
+    cwd: string,
+    file: string,
+    ctx: Context = {},
+) {
+    return commandsDeep(command, cwd).filter(
+        (c) =>
+            c.name !== 'x' &&
+            (commandWrites(c, ctx).includes(file) ||
+                [...c.writes, ...c.appends].includes(file) ||
+                (OPAQUE_RUNNER.test(c.name) &&
+                    c.args.some(
+                        (w) => w.text.includes(file) || w.text.includes('$'),
+                    ))),
+    );
+}
+export function bodyWritersRead(
+    command: string,
+    cwd: string,
+    file: string,
+    ctx: Context = {},
+) {
+    // a loop's `$1`, `$2` hold the `set --` words; they name no file only when none of them holds a `/`
+    const setWords = commandsDeep(command, cwd)
+        .filter((c) => c.name === 'set' && c.args[0]?.text === '--')
+        .flatMap((c) => c.args.slice(1).map((w) => w.text));
+    const isPositionalPlain =
+        setWords.length > 0 && setWords.every((w) => !/[/$]/.test(w));
+    return bodyWriters(command, cwd, file, ctx).every((c) => {
+        if (OPAQUE_RUNNER.test(c.name))
+            return c.args.every(
+                (w) =>
+                    w.text === file ||
+                    (isPositionalPlain && /^\$\d$/.test(w.text)) ||
+                    !/[/$]/.test(w.text.replaceAll(file, '')),
+            );
+        // `cat >> <file> <<'EOF'`: the text is the heredoc on the line
+        if (c.name === 'cat' || c.name === 'tee')
+            return (
+                c.bodies.length > 0 &&
+                c.args.every((w) => w.text === file || w.text.startsWith('-'))
+            );
+        if (!BODY_EDITORS.has(c.name)) return false;
+        return c.feeders.every((f) => f.name === 'echo' || f.name === 'printf');
+    });
+}
+const OPAQUE_RUNNER = /^(python[\d.]*|node|bun|deno|ruby|perl)$/;
 // every sign on a line: `x linear set <id> --add-label signed`, or `x linear body <id> --set <file>` whose file the caller
 // reads for a sign line (FRM-427, o197)
 export function signWords(

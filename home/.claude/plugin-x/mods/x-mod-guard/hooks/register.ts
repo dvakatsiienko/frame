@@ -50,6 +50,8 @@ import {
     STORE_WRITE,
     TICKS_WRITE,
     addedPaths,
+    bodyWriters,
+    bodyWritersRead,
     bracesOf,
     check,
     fenceTexts,
@@ -1486,6 +1488,41 @@ async function lookUp(
 // not asked again for a minute, so each move does not wait the timeout out again
 // a body file as the command will read it: the engine's read, else `cat` (the hook may not reach every path the shell
 // does, clio's scratchpad for one); undefined when neither reads it
+// a body file the guard could not read as it will be set (this command writes it, or a variable names it) is still no
+// sign when no file it can be holds a sign line and nothing on the line writes one: a plain body edit of an unsigned
+// ticket runs (clio's FRM-567 at 19:28: an `sd` and a stamp `printf >>` before the write; her 18:49 loop over five
+// files named `$T/$f`). a variable in the folder, a folder past 32 files or a file that does not read stays a sign
+const SIGN_WORD = /✍️|##\s*signed|\bre-?signed\b/u;
+const SIGN_FREE_MAX = 32;
+async function isSignFree(
+    $: EngineInterface,
+    file: string,
+    command: string,
+    cwd: string,
+    ctx: Context,
+) {
+    if (SIGN_WORD.test(command) || !bodyWritersRead(command, cwd, file, ctx))
+        return false;
+    const at = file.lastIndexOf('/');
+    const dir = file.slice(0, at);
+    const name = file.slice(at + 1);
+    if (dir.includes('$')) return false;
+    const files = name.includes('$')
+        ? (await $.fs.list(dir).catch(() => undefined))
+              ?.filter(
+                  (f) =>
+                      f.kind === 'file' &&
+                      globMatches(name.replace(/\$\{?\w+\}?/g, '*'), f.name),
+              )
+              .map((f) => `${dir}/${f.name}`)
+        : [file];
+    if (!files?.length || files.length > SIGN_FREE_MAX) return false;
+    for (const f of files) {
+        const text = await signFile($, f);
+        if (text === undefined || SIGN_WORD.test(text)) return false;
+    }
+    return true;
+}
 async function signFile($: EngineInterface, file: string) {
     const read = await $.fs.read(file).catch(() => undefined);
     if (read !== undefined) return read;
@@ -1897,13 +1934,15 @@ export const register: Register = (on) => {
             const signText =
                 sign.file === undefined ||
                 sign.file.includes('$') ||
-                written.includes(sign.file)
+                written.includes(sign.file) ||
+                bodyWriters(typed, cwd, sign.file, ctx).length > 0
                     ? undefined
                     : await signFile($, sign.file);
             const isNewSign =
                 sign.file === undefined ||
-                signText === undefined ||
-                (await hasNewSignLine($, sign.id, signText));
+                (signText === undefined
+                    ? !(await isSignFree($, sign.file, typed, cwd, ctx))
+                    : await hasNewSignLine($, sign.id, signText));
             // ahead of every other door: a tick, a stash word or a marker on the line's other targets never carries a sign (R3)
             // one approval of a sign covers that ticket's sign writes, label and body, in either order and on a retry, for
             // its 2 h, so nothing is spent: a body write that ran and failed once spent his typed word (wing 1, 19:14,
