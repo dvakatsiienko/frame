@@ -53,14 +53,14 @@ const CLAUDE = `${home()}/.claude`;
 // behind the messages, or a "#rrggbb"; fg: the text color, "theme" or a "#rrggbb";
 // space: "tight", "normal" or "roomy" between them.
 const LOOK = 'chat.look';
-// history: earlier turns "fold" (one row each) or "show".
+// replies: Claude's messages in earlier turns stay "open" (only the work between them folds) or "folded".
 const LOOK_DEFAULT = {
     accent: 'theme',
     bg: 'background',
     fg: 'theme',
     font: 'ui',
-    history: 'fold',
     mine: 'box',
+    replies: 'open',
     size: 13,
     space: 'normal',
     tools: 'show',
@@ -68,20 +68,21 @@ const LOOK_DEFAULT = {
 };
 const HEX = /^#[0-9a-f]{6}$/i;
 // Ready-made picks beside the hex boxes: dark and light backgrounds, and text for either.
-const BGS = {
-    '#0d1117': 'Night',
-    '#1e1e1e': 'Charcoal',
-    '#22201c': 'Coffee',
-    '#f6f1e7': 'Paper',
-    '#ffffff': 'White',
-};
-const FGS = {
-    '#000000': 'Black',
-    '#24292f': 'Ink',
-    '#c9d1d9': 'Gray',
-    '#e6edf3': 'Soft white',
-    '#f0dfbf': 'Cream',
-};
+// Maps, never objects: the swatches draw in this order, and a formatter sorts an object's keys.
+const BGS = new Map([
+    ['#0d1117', 'Night'],
+    ['#1e1e1e', 'Charcoal'],
+    ['#22201c', 'Coffee'],
+    ['#f6f1e7', 'Paper'],
+    ['#ffffff', 'White'],
+]);
+const FGS = new Map([
+    ['#e6edf3', 'Soft white'],
+    ['#c9d1d9', 'Gray'],
+    ['#f0dfbf', 'Cream'],
+    ['#24292f', 'Ink'],
+    ['#000000', 'Black'],
+]);
 const chatLook = () => ({ ...LOOK_DEFAULT, ...(shared(LOOK) ?? {}) });
 const setLook = (change) => {
     setShared(LOOK, { ...chatLook(), ...change });
@@ -175,15 +176,15 @@ if (shared(DEV_CHOICE) == null && /^win/.test(os.platform())) {
 } else if (shared(DEV_CHOICE) === true) {
     setDevContainer(true).catch(() => {}); // moves an OLD_RUN entry to the new one
 }
-// null = the theme's own accent.
-const ACCENTS = {
-    blue: '#4f8cff',
-    claude: '#d97757',
-    green: '#3fb950',
-    pink: '#f778ba',
-    purple: '#a371f7',
-    theme: null,
-};
+// null = the theme's own accent; a Map, so the swatches keep this order (theme first).
+const ACCENTS = new Map([
+    ['theme', null],
+    ['claude', '#d97757'],
+    ['blue', '#4f8cff'],
+    ['green', '#3fb950'],
+    ['purple', '#a371f7'],
+    ['pink', '#f778ba'],
+]);
 const GAPS = { normal: 10, roomy: 16, tight: 6 };
 // The theme with the chat's accent and background swapped in.
 function chatTheme() {
@@ -191,7 +192,7 @@ function chatTheme() {
     const look = chatLook();
     const out = {
         ...t,
-        accent: ACCENTS[look.accent] ?? t.accent,
+        accent: ACCENTS.get(look.accent) ?? t.accent,
         background: HEX.test(look.bg) ? look.bg : (t[look.bg] ?? t.background),
     };
     // A chosen text color also makes the secondary text: the same color, fainter.
@@ -1038,7 +1039,7 @@ export default class ClaudeChat extends View {
         });
         this.box.set_auto_grow(1, 8);
         cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
-            const old = `${home()}/.config/herdr-app/data/claude-chat`;
+            const old = `${appHome()}/data/claude-chat`;
             if (
                 !(await importOldDrafts(old)) ||
                 !this.address ||
@@ -2817,10 +2818,12 @@ export default class ClaudeChat extends View {
     }
 
     // The chat cut at each of your messages. The last turn is all open; in each earlier one your
-    // message and Claude's last reply stay, and the work between them (tool calls, messages along
-    // the way) is one row until clicked open, so scrolling up reads like the conversation and a
-    // redraw builds less markdown.
+    // message and Claude's replies stay, and the work between them (tool calls, notes) is one row
+    // until clicked open, so scrolling up reads like the conversation. A seat pushes reports between
+    // your messages (a peer's ping starts no turn), so with replies "folded" only the turn's last
+    // one would stay, and a report he must read hid in the row.
     turns(all, visible) {
+        const keepReplies = chatLook().replies !== 'folded';
         const turns = [];
         for (const entry of all) {
             if (entry[0].kind === 'user' || !turns.length) turns.push([]);
@@ -2833,13 +2836,19 @@ export default class ClaudeChat extends View {
             // No reply (interrupted): all of it is work.
             if (to < from) to = turn.length;
             const work = turn.slice(from, to);
-            if (!work.length) return turn.filter(visible);
+            const folded = keepReplies
+                ? work.filter(([x]) => x.kind !== 'claude')
+                : work;
+            if (!folded.length) return turn.filter(visible);
             const key = `${this.address}:${turn[0][1]}`;
             const open = this.unfolded.has(key);
+            const shown = open
+                ? work
+                : work.filter(([x]) => keepReplies && x.kind === 'claude');
             return [
                 ...turn.slice(0, from),
-                { key, open, work },
-                ...(open ? work.filter(visible) : []),
+                { key, open, work: folded },
+                ...shown.filter(visible),
                 ...turn.slice(to).filter(visible),
             ];
         });
@@ -3466,7 +3475,7 @@ export default class ClaudeChat extends View {
                 .gap(6)
                 .items_center()
                 .children(
-                    Object.entries(choices).map(([value, name]) =>
+                    [...choices].map(([value, name]) =>
                         div()
                             .id(`look-${key}-${value}`)
                             .size(18)
@@ -3574,10 +3583,10 @@ export default class ClaudeChat extends View {
             )
             .child(
                 row(
-                    'Earlier turns',
+                    'Earlier replies',
                     pills(
-                        seg('history', 'fold', 'Fold'),
-                        seg('history', 'show', 'Show'),
+                        seg('replies', 'open', 'Open'),
+                        seg('replies', 'folded', 'Folded'),
                     ),
                 ),
             )
@@ -3588,7 +3597,7 @@ export default class ClaudeChat extends View {
                         .flex_none()
                         .gap(6)
                         .children(
-                            Object.entries(ACCENTS).map(([key, color]) =>
+                            [...ACCENTS].map(([key, color]) =>
                                 div()
                                     .id(`look-accent-${key}`)
                                     .size(18)
@@ -3636,7 +3645,7 @@ export default class ClaudeChat extends View {
             .child(
                 row(
                     'Text (all of Herdr)',
-                    colors('fg', { theme: "Theme's", ...FGS }),
+                    colors('fg', new Map([['theme', "Theme's"], ...FGS])),
                 ),
             )
             .child(
@@ -4251,10 +4260,7 @@ export default class ClaudeChat extends View {
         this.marks = found.size
             ? { current, found, re: findRe(this.findQ, 'gi') }
             : null;
-        let listed =
-            sub || look.history === 'show'
-                ? all.filter(visible)
-                : this.turns(all, visible);
+        let listed = sub ? all.filter(visible) : this.turns(all, visible);
         // The hit being sought: inside a folded turn, the turn opens; above the loaded rows, more load.
         if (this.seek !== null && !this.seekShown) {
             this.seekShown = true;

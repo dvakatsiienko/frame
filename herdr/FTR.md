@@ -122,6 +122,12 @@ wish: PK-363
   - given dima has typed into a seat's Chat box
   - when the chat mod reloads
   - then the box shows his text again (proven in wing 1's tab, 16:57:57)
+- ✅ every reply of an earlier turn stays open
+  - given a seat sent several replies between two of dima's messages (a peer's ping starts no turn)
+  - when that turn is no longer the last
+  - then each reply still shows in full; only the tools and notes between them fold into «▸ N tools»
+  - proof: a probe seat's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
+  - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
 - ✅ a resize keeps the chat on its newest message
   - given the chat shows its newest message, or within 40 px of it
   - when the tray or a panel opens or closes
