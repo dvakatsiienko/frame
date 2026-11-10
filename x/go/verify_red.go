@@ -731,7 +731,8 @@ func linkEntries(root, to, modules, dest string) error {
 		return err
 	}
 	for _, entry := range entries {
-		if strings.HasPrefix(entry.Name(), ".vite") || entry.Name() == ".vitest-cache" || entry.Name() == ".cache" {
+		// a runner's caches and pnpm's dir of run records are a run's own: the copy starts without them
+		if strings.HasPrefix(entry.Name(), ".vite") || entry.Name() == ".vitest-cache" || entry.Name() == ".cache" || entry.Name() == ".pnpm-task-run-state-v1" {
 			continue
 		}
 		link, own := filepath.Join(real, entry.Name()), filepath.Join(dest, entry.Name())

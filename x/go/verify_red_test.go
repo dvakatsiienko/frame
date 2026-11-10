@@ -938,8 +938,8 @@ func TestVerifyRedWritesNothingInTheRealTree(t *testing.T) {
 	}
 }
 
-// a repo whose node_modules is its own, as a pnpm install leaves it: a shim at the root and in one workspace package, the three state
-// files, one store entry, and a git hook, plus a shim that is a link, as npm leaves one, and a package whose .bin is a link to the
+// a repo whose node_modules is its own, as a pnpm install leaves it: a shim at the root and in one workspace package, pnpm's state
+// files and run records, one store entry, and a git hook, plus a shim that is a link, as npm leaves one, and a package whose .bin is a link to the
 // root's; relink.sh does to the tree it runs in what an install does, then reads the mutated file
 func shimsFixture(t *testing.T) (redFixture, []string) {
 	t.Helper()
@@ -949,7 +949,8 @@ func shimsFixture(t *testing.T) (redFixture, []string) {
 	for _, modules := range []string{"node_modules", "pkg/node_modules"} {
 		write(t, filepath.Join(dir, modules, ".bin/tool"), "#!/bin/sh\nexec node \"$(dirname \"$0\")/../tool/index.js\"\n")
 	}
-	for _, state := range []string{".modules.yaml", ".pnpm-workspace-state-v1.json", ".pnpm-task-run-state-v1"} {
+	// the two state files and the dir of run records pnpm keeps beside them
+	for _, state := range []string{".modules.yaml", ".pnpm-workspace-state-v1.json", ".pnpm-task-run-state-v1/latest.json"} {
 		write(t, filepath.Join(dir, "node_modules", state), "state\n")
 	}
 	write(t, filepath.Join(dir, "node_modules/.pnpm/tool@1.0.0/node_modules/tool/index.js"), "console.log('tool');\n")
@@ -972,7 +973,8 @@ for modules in node_modules pkg/node_modules hoisted/node_modules; do
 	done
 	echo added > "$modules/.bin/added"
 done
-for state in .modules.yaml .pnpm-workspace-state-v1.json .pnpm-task-run-state-v1; do
+mkdir -p node_modules/.pnpm-task-run-state-v1
+for state in .modules.yaml .pnpm-workspace-state-v1.json .pnpm-task-run-state-v1/latest.json .pnpm-task-run-state-v1/run.finished; do
 	echo "$PWD" > "node_modules/$state"
 done
 echo "$PWD" >> "$VERIFY_LOG"
