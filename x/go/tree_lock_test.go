@@ -16,7 +16,7 @@ func ccLock(pid int, started string) string {
 
 func deadPid(t *testing.T) int {
 	t.Helper()
-	gone := exec.Command("true")
+	gone := exec.Command("sh", "-c", "exit 0")
 	if err := gone.Run(); err != nil {
 		t.Fatal(err)
 	}
