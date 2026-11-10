@@ -64,3 +64,23 @@ test("in a bg session dima's bridge prompt proves a dima-ok marker", async ($, o
     const r = await bash($, RM);
     expect([r.deny, ran]).toEqual([undefined, [RM]]);
 });
+
+// FRM-544 slice 0: a typed sign takes the same origin gate, so in a bg session only his bridge line signs
+const SIGN = 'x linear set FRM-544 --add-label signed';
+for (const [kind, isSigned] of [
+    ['composer', false],
+    ['bridge', true],
+] as const)
+    test(`in a bg session a ${kind} «sign FRM-544» ${isSigned ? 'signs' : 'signs nothing'}`, async ($, on) => {
+        const { ran } = world(on);
+        await $.prompt.submit({
+            origin: { kind },
+            text: 'sign FRM-544',
+            wait: false,
+        });
+        const r = await bash($, SIGN);
+        expect([r.deny === undefined, ran]).toEqual([
+            isSigned,
+            isSigned ? [SIGN] : [],
+        ]);
+    });

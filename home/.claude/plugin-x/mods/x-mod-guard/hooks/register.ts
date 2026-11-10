@@ -62,6 +62,7 @@ import {
     mergeWord,
     message,
     namesWhole,
+    paneProof,
     quotesPr,
     rawLinear,
     rawPluginUpdate,
@@ -870,6 +871,9 @@ async function tickFor(
 // his typed «sign <id>» (FRM-544 slice 0): written only by this plugin's prompt.submit from his own prompt, the proof a
 // # dima-ok marker rests on; it opens what a sign tick opens for its id, each write once, inside a tick's 2 h
 const SIGNS = { key: 'signs', plugin: 'x-mod-guard' } as const;
+// a spend's time is its word's, `<ask id or typed>@<time>:<scope>`; an unreadable one counts as live
+const spentAt = (key: string) =>
+    Number(key.split('@')[1]?.split(':')[0]) || Number.POSITIVE_INFINITY;
 async function keepTypedSigns($: EngineInterface, text: string) {
     const ids = signsTyped(text);
     if (!ids.length) return;
@@ -1469,8 +1473,14 @@ export const register: Register = (on) => {
                 if (stop) return stop;
             }
             const { value: spent = [] } = await $.state.get(SPENT);
-            if (spends.length)
-                await $.state.set(SPENT, [...spent, ...spends].slice(-50));
+            // a spend lives as long as its tick or typed sign, never a count: the 51st spend once revived the 1st's word
+            if (spends.length) {
+                const now = await $.clock.now();
+                await $.state.set(SPENT, [
+                    ...spent.filter((k) => now - spentAt(k) <= TICK_MS),
+                    ...spends,
+                ]);
+            }
             const result = await next(
                 run !== typed ? { ...e, command: run } : e,
             );
@@ -1587,6 +1597,15 @@ export const register: Register = (on) => {
             const stop = await enforce(
                 fg,
                 `nothing in this command ran — x-mod-guard stopped this one command. instead: ${fg.door}. why: ${fg.why}.`,
+            );
+            if (stop) return stop;
+        }
+        // born refusing: the typed sign door it fences opened live (FRM-544 slice 0 round 2)
+        const pane = paneProof(typed, cwd);
+        if (pane) {
+            const stop = await enforce(
+                pane,
+                `nothing in this command ran — x-mod-guard stopped this one command. instead: ${pane.door}. why: ${pane.why}.`,
             );
             if (stop) return stop;
         }

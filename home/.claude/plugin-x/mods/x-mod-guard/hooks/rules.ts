@@ -38,6 +38,7 @@ import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
 import { milestone } from './rules/milestone.ts';
 import { notes } from './rules/notes.ts';
+import { overrideAsked } from './rules/operator-override.ts';
 import { commandWrites, landings, overwrite } from './rules/overwrite.ts';
 import { spawnSixthSense } from './rules/sixth-sense.ts';
 import { worth } from './rules/worth.ts';
@@ -793,6 +794,72 @@ export const signsTyped = (text: string) => [
         }),
     ),
 ];
+// keys a seat types into a pane reach that pane's seat as dima's own composer prompt (measured 2026-11-10: `hc keys` and
+// `hc send` both land as `composer`, a spawn prompt too), so a seat never types his proof words there: a sign line, a
+// dima-ok marker, an operator-override word (FRM-544 slice 0 round 2); any other message passes
+const PANE_TYPERS: Record<string, (verb: string | undefined) => boolean> = {
+    claude: () => true,
+    hc: (verb) => verb === 'keys' || verb === 'run' || verb === 'send',
+    'herdr-app': (verb) => verb === 'do',
+    tmux: (verb) => verb === 'send-keys' || verb === 'send',
+};
+const KEY_NAMES: Record<string, string> = {
+    'c-m': '\n',
+    enter: '\n',
+    space: ' ',
+    tab: '\t',
+};
+// what `hc keys` or `tmux send-keys` types from its key words: a letter as it is, a named key as its character
+const keysText = (words: string[]) =>
+    words
+        .map(
+            (w) =>
+                KEY_NAMES[w.toLowerCase()] ??
+                (/^shift\+.$/i.test(w)
+                    ? w.slice(-1).toUpperCase()
+                    : [...w].length === 1
+                      ? w
+                      : `\n${w}\n`),
+        )
+        .join('');
+// the strings a json argument holds (`herdr-app do pane.send '{"text":…}'`)
+const jsonStrings = (word: string): string[] => {
+    try {
+        const walk = (v: unknown): string[] =>
+            typeof v === 'string'
+                ? [v]
+                : v && typeof v === 'object'
+                  ? Object.values(v).flatMap(walk)
+                  : [];
+        return walk(JSON.parse(word));
+    } catch {
+        return [];
+    }
+};
+const isProofText = (text: string) =>
+    signsTyped(text).length > 0 ||
+    /dima-ok:/i.test(text) ||
+    overrideAsked(text) !== undefined;
+export function paneProof(command: string, cwd: string): Refusal | undefined {
+    for (const c of commandsDeep(command, cwd)) {
+        const words = c.args.map((w) => w.text);
+        const verb = words.find((w) => !w.startsWith('-'));
+        if (!PANE_TYPERS[c.name]?.(verb)) continue;
+        const texts = [
+            ...words.map((_, i) => words.slice(i).join(' ')),
+            ...words.flatMap(jsonStrings),
+            keysText(words),
+        ];
+        if (!texts.some(isProofText)) continue;
+        return {
+            door: 'send it with SendMessage, or leave that line out: «sign <id>», a dima-ok marker and an operator-override word are his to type',
+            rule: 'pane-proof',
+            targets: [c.name],
+            why: "keys typed into a pane arrive as dima's own composer prompt, so a seat typing his proof words there could sign or unlock for itself",
+        };
+    }
+    return undefined;
+}
 // a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`, or reads
 // `⚠️ merge <name>#<n>` (FRM-478); a bare `#<n>` or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1);
 // a url cited for anything else proves nothing either: the ask opens «merge» or «land», ⚠️ or not, an allow-list since a tick now lives past newer ones (FRM-510)
