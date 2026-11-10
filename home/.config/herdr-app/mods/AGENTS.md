@@ -27,7 +27,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 ## the loop after every change
 
 - `herdr-app check <mod dir>`, then `herdr-app status`, then `herdr-app shot <png>` and look at the shot yourself
-- build in a scratch copy of the mod and land it whole, in one write: a save into the live mods dir reloads his UI while he types, and he sees flicker and shifted tabs
+- build in a scratch copy of the mod and land it whole, in one write: herdr reloads a mod in a real folder on every save (its guide, «saving any file reloads every copy»; seen on the chat mod 2026-11-10), and he sees flicker and shifted tabs while he types. a mod linked in from frame did not reload on a save that day and waited for a restart (inference: the watcher skips a link)
 - a herdr restart loads it; the restart is safe for live seats and is his hand alone, since it can lose a prompt he is typing
 - commit through `x lane commit`, in the background
 
