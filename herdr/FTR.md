@@ -51,20 +51,13 @@ wish: PK-363
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
   - then the board draws it as written, never dropped as html
-- ⬜ 🚦 tick in its pane, for a guarded ask
-  - given an ask leading with ⚠️, a sign, a merge or a quoted command
-  - when dima clicks 🚦 tick in its pane
-  - then the seat's pane comes forward in its Terminal view with its own board open, where the ask's 🛎️ is his tick
-  - and when the seat is mid-turn, the board opens at its turn end and a muted ⏳ line says so
-  - and when its prompt box holds a draft, nothing is typed and a line says to send or clear it
-  - decision: opening a board unlocks nothing; only his 🛎️ there does
-  - decision: a stopgap he dislikes until the one-click 🛎️ lands — «I don't like this tick-in-the-pane feature» (dima, 15:19)
-- 🧭 one-click 🛎️ on a guarded ask, behind `GATED_TICK`
+- ⬜ one-click 🛎️ on a guarded ask
   - makes: one press line in the seat's ticks file, the same as a plain tick
-  - given the guard's fence on the ticks folder is on main and the flag is on
-  - when dima clicks 🛎️ on a sign, merge or ⚠️ ask
+  - given the stash marks the ask `isGated` (a sign, a merge, a ⚠️ or a quoted command)
+  - when dima clicks its 🛎️ on the deck or on the seat strip
   - then the guard reads that press as his tick for that ask's targets, within 2 h, once
   - decision: the 🛎️ is click-only; a keyed mod command is any shell's (FRM-544)
+  - decision: the «🚦 tick in its pane» door and fleet-board's own copy of the gated pattern are gone (live 18:51:40), after the guard's fences went clean at a14bca4b; his own click on a real gated ask is the last proof, set up by clio
 - 🧭 a standing override button on the board, behind slice 2 of FRM-544
   - given the operator override is off
   - when dima clicks its button on fleet-board

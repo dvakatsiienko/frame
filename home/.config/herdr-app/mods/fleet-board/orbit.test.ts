@@ -5,9 +5,6 @@ import {
     asksOf,
     byName,
     currentSid,
-    draftOf,
-    isBoardOpen,
-    isGuardGated,
     literalAngles,
     phasesOf,
     runningPids,
@@ -19,6 +16,7 @@ import {
 const SID = 's1';
 const ask: Ask = {
     id: 'o1',
+    isGated: false,
     isLocked: false,
     mark: null,
     pick: 'yes',
@@ -36,12 +34,25 @@ describe('the panel reads what the stash stores', () => {
         expect(asksOf(store, SID)).toEqual([ask]);
     });
 
+    test('an ask the stash marked gated carries its mark, a plain one none', () => {
+        const store = {
+            [`asks:${SID}`]: {
+                items: [
+                    { id: 'o1', isGated: true, text: '⚠️ merge #9' },
+                    { id: 'o2', text: 'push FRM-1' },
+                ],
+            },
+        };
+        expect(asksOf(store, SID).map((a) => a.isGated)).toEqual([true, false]);
+    });
+
     test('an entry from before items carried ids shows its text with no id to press', () => {
         expect(
             asksOf({ [`asks:${SID}`]: { asks: ['push FRM-1'] } }, SID),
         ).toEqual([
             {
                 id: null,
+                isGated: false,
                 isLocked: false,
                 mark: null,
                 pick: null,
@@ -60,27 +71,6 @@ describe('the panel reads what the stash stores', () => {
             },
         };
         expect(phasesOf(store, SID)).toEqual(['now: a', 'next: b']);
-    });
-});
-
-describe('an ask the guard reads takes its tick on the desktop', () => {
-    test.each([
-        '✍️ sign FRM-552: orbit works in herdr',
-        '⚠️ push the backup mirror',
-        'merge #150 now that ci is green',
-        'land https://github.com/x/y/pull/9',
-        'run `git push --mirror origin`',
-    ])('%s is gated', (text) => {
-        expect(isGuardGated(text)).toBe(true);
-    });
-
-    test.each([
-        'FRM-505: drop its 524/529 links',
-        'sign-in page: keep the old copy?',
-        'emerge the two lists into one',
-        'review https://github.com/o/n/pull/9?',
-    ])('%s takes a herdr tick', (text) => {
-        expect(isGuardGated(text)).toBe(false);
     });
 });
 
@@ -179,41 +169,6 @@ describe('a press lands as one line of the ticks file', () => {
     });
 });
 
-describe("a seat's /board is typed only into an empty prompt box", () => {
-    test('an empty prompt box holds no draft', () => {
-        const screen = [
-            '⏺ done.',
-            '',
-            '─'.repeat(20),
-            '❯ ',
-            '─'.repeat(20),
-            '  -- INSERT --',
-        ].join('\n');
-        expect(draftOf(screen)).toBe('');
-    });
-
-    test('a draft spanning two lines is read whole', () => {
-        const screen = [
-            '─'.repeat(20),
-            '❯ fix the',
-            '  band too',
-            '─'.repeat(20),
-        ].join('\n');
-        expect(draftOf(screen)).toBe('fix the band too');
-    });
-
-    test('a quoted ❯ in the transcript above is not the prompt box', () => {
-        const screen = [
-            '❯ my last prompt',
-            '⏺ reply',
-            '─'.repeat(20),
-            '❯ ',
-            '─'.repeat(20),
-        ].join('\n');
-        expect(draftOf(screen)).toBe('');
-    });
-});
-
 describe('ask text draws as typed', () => {
     test('angle brackets outside code survive markdown', () => {
         expect(literalAngles('prefills «ok <target>»')).toBe(
@@ -256,19 +211,5 @@ describe('seats sort by the words of their name', () => {
 
     test('a name with no badge sorts among them', () => {
         expect(['🦉 clio', 'bob'].sort(byName)).toEqual(['bob', '🦉 clio']);
-    });
-});
-
-describe("a seat's board reads open from its band", () => {
-    test('a bracketed 🚦 reads open', () => {
-        expect(
-            isBoardOpen(' 🔭 not waiting   🐦‍🔥 🔥 [ ⏰ ] [ 💨 ] 🎛️ [ 🚦 ] [-]'),
-        ).toBe(true);
-    });
-
-    test('a bare 🚦 reads closed', () => {
-        expect(
-            isBoardOpen(' 🔭 not waiting   🐦‍🔥 [ 🔥 ] [ ⏰ ] [ 💨 ] 🎛️ 🚦 [-]'),
-        ).toBe(false);
     });
 });

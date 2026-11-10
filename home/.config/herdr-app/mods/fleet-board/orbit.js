@@ -2,7 +2,7 @@
 // alone writes for it (`~/.claude/shelf/orbit-ticks/<sid>.jsonl`, one press per line), which x-mod-stash reads at the
 // session's next turn (FRM-552)
 
-/** @typedef {{ id: string | null, text: string, pick: string | null, mark: string | null, isLocked: boolean }} Ask */
+/** @typedef {{ id: string | null, text: string, pick: string | null, mark: string | null, isGated: boolean, isLocked: boolean }} Ask */
 /** @typedef {{ id: string, verdict: 'tick' | 'replay', steer?: string, text?: string, at: number }} Press */
 
 /**
@@ -24,6 +24,7 @@ export function asksOf(store, sid) {
                 (/** @type {any} */ a) =>
                     /** @type {Ask} */ ({
                         id: a.id,
+                        isGated: a.isGated === true,
                         isLocked: a.isLocked === true,
                         mark: a.mark ?? null,
                         pick: a.pick ?? null,
@@ -36,6 +37,7 @@ export function asksOf(store, sid) {
             (/** @type {string} */ text) =>
                 /** @type {Ask} */ ({
                     id: null,
+                    isGated: false,
                     isLocked: false,
                     mark: null,
                     pick: null,
@@ -71,46 +73,6 @@ export const runningPids = (stdout) =>
             .map((l) => Number(l.trim()))
             .filter((n) => n > 0),
     );
-
-/**
- * an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command — never takes a
- * herdr tick, since any agent can write the ticks file (FRM-552 Decision 4); dima ticks it in the seat's own /board
- * @param {string} text
- */
-export const isGuardGated = (text) =>
-    /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
-        text,
-    );
-
-/**
- * the text in Claude Code's prompt box, the last `❯` line that opens right under a rule, down to the next rule
- * @param {string} screen
- */
-export function draftOf(screen) {
-    const lines = screen.split('\n');
-    let open = lines.length - 1;
-    while (
-        open > 0 &&
-        !(lines[open].startsWith('❯') && lines[open - 1].startsWith('─'))
-    )
-        open--;
-    if (open <= 0) return '';
-    const draft = [lines[open].slice(1)];
-    for (const l of lines.slice(open + 1)) {
-        if (l.startsWith('─')) break;
-        draft.push(l);
-    }
-    return draft
-        .map((l) => l.trim())
-        .filter(Boolean)
-        .join(' ');
-}
-
-/**
- * x-mod-stash's band brackets its 🚦 while the seat's board is open
- * @param {string} screen
- */
-export const isBoardOpen = (screen) => screen.includes('[ 🚦 ]');
 
 /**
  * markdown reads `<word>` as html and drops it; a backslash keeps it, outside code spans, where a backslash would show

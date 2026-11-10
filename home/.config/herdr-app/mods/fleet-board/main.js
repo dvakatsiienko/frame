@@ -12,8 +12,6 @@ import {
     home,
     props,
     readTextFile,
-    run,
-    terminals,
     theme,
     watchFolder,
     writeTextFile,
@@ -23,9 +21,6 @@ import {
     asksOf,
     byName,
     currentSid,
-    draftOf,
-    isBoardOpen,
-    isGuardGated,
     literalAngles,
     phasesOf,
     runningPids,
@@ -47,9 +42,6 @@ const USAGE = `${CLAUDE}/shelf/cc-usage-window.json`;
 const SESSIONS = `${CLAUDE}/sessions`;
 const TICKS = `${CLAUDE}/shelf/orbit-ticks`;
 const SENT_MS = 2 * 60 * 1000;
-// a gated ask's 🛎️ here counts at x-mod-guard only once its fence on the ticks folder is on main (FRM-544 slice 1):
-// until then a gated ask keeps «🚦 tick in its pane». the 🛎️ stays a click: a keyed mod command is any shell's
-const GATED_TICK = false;
 
 /**
  * @param {string} path
@@ -420,72 +412,12 @@ export default class FleetBoard extends View {
         cx.notify();
     }
 
-    // a guard-gated ask takes only a 🛎️ press in the seat's own board, the one tick x-mod-guard reads as dima's word:
-    // the board focuses the seat's pane and opens `/board` there, so the ask's 🛎️ is on screen; opening a board unlocks
-    // nothing, only his 🛎️ does. it refuses rather than type over his draft or into a dialog
-    /** @param {Context} cx @param {Row} s @param {Ask} ask */
-    async openSeatBoard(cx, s, ask) {
-        this.pressError = null;
-        this.pressNote = null;
-        cx.notify();
-        /** @param {string} why */
-        const refuse = (why) => {
-            this.pressError = `${ask.id}: ${why}`;
-            cx.notify();
-        };
-        try {
-            let seat = null;
-            for (const { address } of terminals()) {
-                const got = await hc(['get', address, '--json']);
-                if (got.code === 0 && JSON.parse(got.stdout).pid === s.pid) {
-                    seat = JSON.parse(got.stdout);
-                    break;
-                }
-            }
-            if (!seat) return refuse('its seat runs outside herdr');
-            if (seat.status === 'blocked')
-                return refuse('its seat waits on a dialog');
-            const screen = await hc(['read', seat.address]);
-            if (screen.code !== 0)
-                return refuse(
-                    screen.stderr.trim() || 'its screen did not read',
-                );
-            // the chat view hides the terminal: zoo's `views` stack flips to it, as x-herdr-chatter's own Terminal switch
-            // does; a layout with no such stack refuses this one step and stays as it is
-            run('pane.focus', { terminal: seat.address });
-            try {
-                run('layout.select', { child: 'main', stack: 'views' });
-            } catch {}
-            if (isBoardOpen(screen.stdout)) return;
-            const draft = draftOf(screen.stdout);
-            if (draft && draft !== '/board')
-                return refuse(
-                    'its prompt box holds a draft: send or clear it, then 🚦 again',
-                );
-            // a busy seat queues /board until its turn ends: ctrl+enter would send it now, but it cuts the turn short
-            const keys = draft
-                ? ['enter']
-                : screen.stdout.includes('-- NORMAL --')
-                  ? ['i', '/', 'b', 'o', 'a', 'r', 'd', 'enter']
-                  : ['/', 'b', 'o', 'a', 'r', 'd', 'enter'];
-            const typed = await hc(['keys', seat.address, ...keys]);
-            if (typed.code !== 0)
-                return refuse(typed.stderr.trim() || '/board not opened');
-            if (seat.status === 'working') {
-                this.pressNote = `${ask.id}: its board opens when its turn ends, 🛎️ there`;
-                cx.notify();
-            }
-        } catch (err) {
-            refuse(err instanceof Error ? err.message : String(err));
-        }
-    }
-
-    // in the chat view's strip a guarded ask draws no 🚦: it flips his view to the terminal, which the one-click 🛎️
-    // replaces once GATED_TICK is on
-    /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j @param {boolean} [isStrip] */
-    ask(t, s, ask, i, j, isStrip = false) {
+    // a gated ask (the stash marks it: a sign, a ⚠️, a merge, a quoted command) takes the same 🛎️: his click writes the
+    // press only his click writes, and x-mod-guard reads it as his word for that ask, once (FRM-544). a click, never a key:
+    // a keyed mod command is any shell's
+    /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j */
+    ask(t, s, ask, i, j) {
         const key = `${s.sid}:${ask.id}`;
-        const isPaneDoor = !GATED_TICK && isGuardGated(ask.text);
         const sent = this.sent.get(key)?.verdict;
         const steer = this.steers.get(key);
         const done = ask.mark ?? sent;
@@ -536,36 +468,17 @@ export default class FleetBoard extends View {
                         .pl(20)
                         .gap(6)
                         .items_center()
-                        .when(!(isStrip && isPaneDoor), (row) =>
-                            row.child(
-                                isPaneDoor
-                                    ? button(
-                                          'seat-board',
-                                          '🚦 tick in its pane',
-                                          "opens the seat's own board in its terminal, where a 🛎️ tick is the word x-mod-guard reads",
-                                          (cx) =>
-                                              cx.spawn((cx) =>
-                                                  this.openSeatBoard(
-                                                      cx,
-                                                      s,
-                                                      ask,
-                                                  ),
-                                              ),
-                                      )
-                                    : button(
-                                          'tick',
-                                          '🛎️ tick',
-                                          'good to go: the session takes the pick',
-                                          (cx) =>
-                                              cx.spawn((cx) =>
-                                                  this.press(
-                                                      cx,
-                                                      s,
-                                                      ask,
-                                                      'tick',
-                                                  ),
-                                              ),
-                                      ),
+                        .child(
+                            button(
+                                'tick',
+                                '🛎️ tick',
+                                ask.isGated
+                                    ? 'your word for this guarded action: it runs once, within 2 h'
+                                    : 'good to go: the session takes the pick',
+                                (cx) =>
+                                    cx.spawn((cx) =>
+                                        this.press(cx, s, ask, 'tick'),
+                                    ),
                             ),
                         )
                         .child(
@@ -829,7 +742,7 @@ export default class FleetBoard extends View {
                             ),
                     ),
             )
-            .children(asks.map((ask, j) => this.ask(t, s, ask, 0, j, true)))
+            .children(asks.map((ask, j) => this.ask(t, s, ask, 0, j)))
             .when(Boolean(this.pressError), (el) =>
                 el.child(
                     div()
