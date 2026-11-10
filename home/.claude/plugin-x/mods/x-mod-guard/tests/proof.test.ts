@@ -41,11 +41,12 @@ test("a dima-ok marker runs when dima's last typed prompt names its target", asy
 
 test("a dima-ok marker runs when dima's prompt came over the bridge", async ($, on) => {
     const { ran } = world(on);
-    await $.prompt.submit({
-        origin: { kind: 'bridge' },
-        text: 'drop build',
-        wait: false,
-    });
+    for (const text of ['go on', 'drop build'])
+        await $.prompt.submit({
+            origin: { kind: 'bridge' },
+            text,
+            wait: false,
+        });
     expect((await bash($, RM)).deny).toBeUndefined();
     expect(ran).toEqual([RM]);
 });

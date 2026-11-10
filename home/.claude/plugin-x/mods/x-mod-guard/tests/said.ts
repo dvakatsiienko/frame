@@ -6,6 +6,13 @@ export function answerPrompts(on: On) {
     on('prompt.submit', (_$, e) => ({ origin: e.origin, text: e.text }));
 }
 
-// a prompt dima typed at the composer: the proof a # dima-ok marker needs
-export const dimaSays = ($: Engine, text: string) =>
-    $.prompt.submit({ origin: { kind: 'composer' }, text, wait: false });
+// a prompt dima typed at the composer: the proof a # dima-ok marker needs. a session's first typed prompt approves
+// nothing (it reads as a spawn prompt), so one plain prompt goes first
+export async function dimaSays($: Engine, text: string) {
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'go on',
+        wait: false,
+    });
+    return $.prompt.submit({ origin: { kind: 'composer' }, text, wait: false });
+}

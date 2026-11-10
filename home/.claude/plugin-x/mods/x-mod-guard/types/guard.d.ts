@@ -11,6 +11,7 @@ declare module 'claude-code' {
         // signs: the ids dima typed «sign <id>» for at the composer or the bridge, each with its prompt's time, kept 2 h
         'x-mod-guard': {
             signs: { id: string; at: number }[];
+            prompted: boolean;
             edits: number;
             seen: string[];
             prompt: string;

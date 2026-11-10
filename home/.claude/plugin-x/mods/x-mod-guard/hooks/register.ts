@@ -873,7 +873,18 @@ async function tickFor(
 // # dima-ok marker rests on; it opens what a sign tick opens for its id, each write once, inside a tick's 2 h
 const SIGNS = { key: 'signs', plugin: 'x-mod-guard' } as const;
 const FIRST_PROMPT_NOTE =
-    "x-mod-guard: a session's first prompt never signs, since a seat's spawn prompt reads the same; tell dima his «sign <id>» counts from his next prompt here";
+    "x-mod-guard: a session's first prompt never signs and approves nothing (no sign, no override, no # dima-ok target), since a seat's spawn prompt reads the same; tell dima his word counts from his next prompt here";
+const PROMPTED = { key: 'prompted', plugin: 'x-mod-guard' } as const;
+async function wasPrompted($: EngineInterface) {
+    const { value: isPrompted } = await $.state
+        .get(PROMPTED)
+        .catch(() => ({ value: undefined }));
+    if (isPrompted) return true;
+    const { value: kept } = await $.state
+        .get(PROMPT)
+        .catch(() => ({ value: undefined }));
+    return !!kept;
+}
 // a spend's time is its word's, `<ask id or typed>@<time>:<scope>`; an unreadable one counts as live
 const spentAt = (key: string) =>
     Number(key.split('@')[1]?.split(':')[0]) || Number.POSITIVE_INFINITY;
@@ -2212,32 +2223,29 @@ export const register: Register = (on) => {
                 ? await registryEntry($, sid).catch(() => undefined)
                 : undefined;
             const isBg = entry?.isBg ?? false;
-            if (
-                (isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind)
-            ) {
-                const { value: before } = await $.state
-                    .get(PROMPT)
-                    .catch(() => ({ value: undefined }));
+            const isHis = (isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(
+                e.origin.kind,
+            );
+            // a session's first typed prompt is read as its spawn prompt, since no field tells the two apart (measured
+            // 2026-11-10): a seat could start a seat whose brief approves. so it approves nothing: no sign, no # dima-ok
+            // target, no stash word, no override. a bg session's spawn prompt is no origin of his already; a session
+            // that kept his prompt before this rule counts as prompted
+            const isFirst = isHis && !isBg && !(await wasPrompted($));
+            if (isHis) await $.state.set(PROMPTED, true).catch(() => undefined);
+            if (isHis && !isFirst) {
                 await $.state.set(PROMPT, e.text).catch(() => undefined);
                 await $.state.set(TOLD, e.text).catch(() => undefined);
-                // a session's first typed prompt is read as its spawn prompt, since no field tells the two apart (measured
-                // 2026-11-10): a seat could start a seat whose brief signs. a bg session's spawn prompt is no origin of his
-                if (before || isBg)
-                    await keepTypedSigns($, e.text).catch(() => undefined);
-                else if (signsTyped(e.text).length)
-                    signNote = FIRST_PROMPT_NOTE;
+                await keepTypedSigns($, e.text).catch(() => undefined);
             }
             const ask = overrideAsked(e.text);
+            if (isFirst && (ask || signsTyped(e.text).length))
+                signNote = FIRST_PROMPT_NOTE;
             // no registry row reads as not his: a bg session's brief must never slip through a read that failed; said out
             // loud, since a word that moved nothing must not pass for one that did
             if (ask && !entry)
                 overrideNote =
                     "operator-override: this session's registry row did not read, so the switch did not move; tell dima to type it in a session that reads, or x lane merge-auto --override-check";
-            if (
-                ask &&
-                entry &&
-                (isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind)
-            )
+            if (ask && entry && isHis && !isFirst)
                 overrideNote = await overrideFlip($, ask).catch(
                     (err: unknown) =>
                         `operator-override: the switch did not move: ${String(err)}`,

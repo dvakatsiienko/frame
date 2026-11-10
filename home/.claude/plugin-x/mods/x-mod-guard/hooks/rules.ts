@@ -836,9 +836,11 @@ const jsonStrings = (word: string): string[] => {
         return [];
     }
 };
+// each word only where it would act: a sign line and a marker at a line's start, an override word as the whole prompt;
+// seats talk about all three mid-sentence all day (wishkeeper on 7bfa5ff7)
 const isProofText = (text: string) =>
     signsTyped(text).length > 0 ||
-    /dima-ok:/i.test(text) ||
+    /^\s*(?:#\s*)?dima-ok:/im.test(text) ||
     overrideAsked(text) !== undefined;
 const isPaneTyper = (c: { name: string; args: { text: string }[] }) =>
     PANE_TYPERS[c.name]?.(

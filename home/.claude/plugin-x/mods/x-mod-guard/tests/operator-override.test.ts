@@ -129,12 +129,12 @@ function world(on: On, opts: World = {}) {
     return { appended, brakeReads, files, ran };
 }
 
-const say = ($: Engine, text: string, kind = 'composer') =>
-    $.prompt.submit({
-        origin: { kind } as { kind: 'composer' },
-        text,
-        wait: false,
-    });
+// a session's first typed prompt approves nothing, so a plain one goes first
+async function say($: Engine, text: string, kind = 'composer') {
+    const origin = { kind } as { kind: 'composer' };
+    await $.prompt.submit({ origin, text: 'go on', wait: false });
+    return $.prompt.submit({ origin, text, wait: false });
+}
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, run_in_background: true, tool: 'Bash' });
 const grantOf = (files: Record<string, string>) =>
