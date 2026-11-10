@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T12:47:00Z'
+updated_date: '2026-11-10T12:56:00Z'
 labels:
   - m
   - clio-main
@@ -1042,4 +1042,34 @@ PK-363:W305 (2026-11-10 inbox, dima) if herder supports theming, let's have supp
 PK-363:W306 (2026-11-10 inbox, dima) goal 0 is done when i am happy with the herder ui and ux (very sharp, pretty, beautiful) and you are happy with its performance and accessibility; automation is welcome where it helps (restores W206's done-test sense, wishkeeper 14:28)
 
 refold of the W260 line (dima 14:47, o4: «i do not recall this. ignore line, delete it.»): the clause «herder is not a glider» is dropped; the rest of W260 stands
+
+PK-363:W307 (2026-11-10 14:47, dima) due today: the next cli lane runs delve's test round and the empty-wakes re-count. ❓ Did we decide to end testing delve? I thought we discarded it.
+
+PK-363:W308 (2026-11-10 14:47, dima) correction: three resets did not reset all models, so wing 1 is not doing the cpu lane for now.
+
+PK-363:W309 (2026-11-10 14:47, dima) plan: close FRM-542; fold the two biggest pains into FRM-544 and FRM-504, with a re-sign.
+
+PK-363:W310 (2026-11-10 14:47, dima) start the mods lane now on chunks already signed, as a probe lane. ❓ Are you sure mods is the right door right now? First decide what goes to mods and what to herder, to avoid redundant work; maybe herder has better doors for what we planned in native mods. If mods is right, start it.
+
+PK-363:W311 (2026-11-10 14:47, dima) I like the plan, let's move. ❓ Did you create a well-structured linear milestone?
+
+PK-363:W312 (2026-11-10 14:47, dima) three resets: wing 1 says they apply only to Fable, not to other models. I want to spend them and probe that. Currently booted as Opus 5.5. ❓ Propose the better moment to switch to Fable.
+
+PK-363:W313 (2026-11-10 14:47, dima) find a way to boot as Fable and propose when. If I had known before booting, I would have started as Fable 5.2; since I started as Opus, propose when the switch is better.
+
+PK-363:W314 (2026-11-10 14:47, dima) do a second wind now and park right after it. Switch to Fable 5.2 Medium and act as Fable 5.2 Medium. Before the second wind, print a very detailed handoff with the plan; Fable passes over that plan, compares it to my wishes, and continues.
+
+PK-363:W315 (2026-11-10 14:47, dima) herder lane active, start tweaking. Start a herder codie with everything needed except the first spec (not ready). I steer and fix stuff while we prep the main plan for the herder codie.
+
+PK-363:W316 (2026-11-10 14:47, dima) ⚠️ kill orphan vitest pid 25898, idle 15h at 0% cpu, from the decamped FRM-551 tree. I cannot tick it on desktop because I don't see the mods UI there, and Herdr asks me to tick it on desktop. I allow you to kill that orphan; go and kill it. First herder wisp to fix, blocking.
+
+PK-363:W317 (2026-11-10 14:49, dima) gather all unverified questions and send them to wing 1 to answer. I want them answered as verified.
+
+PK-363:W318 (2026-11-10 14:50, dima) wisp: names in the agents list are off. 3 is herder codie, 4 is wing 1. The proper names are here.
+
+PK-363:W319 (2026-11-10 14:54, dima) you second-wound right after boot, so some info is lost. Ensure integrity and proceed with the plan.
+
+PK-363:W320 (2026-11-10 14:55, dima) goal: ship a solid herder for me. Identify and set boundaries across cc mods, cli and herder; re-stabilize the cli and mods scopes so all three milestones (mods, cli, herder) move; know which area is best at what.
+
+refold of W210 (wishkeeper 14:57, his inbox line «where better to have, in herder or mods, cli? where?»): the question is where each thing goes across herder, mods and the cli, not the cli alone; W243's first sentence is his question («claude artifacts not working in herder?»), not a statement; W275 («the c desktop app has this») opens the undo-send lines W276–W279, not the ctx line W274; W185 and W188 read «comms and actions model», «fleet flows operational models»
 <!-- SECTION:NOTES:END -->
