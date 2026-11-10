@@ -1163,9 +1163,10 @@ export default class ClaudeChat extends View {
     }
 
     // Each agent's chat is kept, so going back to one shows it at once; the tick then catches up.
+    // The draft is written only where it changes (typing, a quote, a completion, a send), under the seat the box shows:
+    // a switch never writes, since the box it leaves may not hold that seat's draft, and an empty one would erase it.
     reset(address) {
         if (this.box) {
-            keepDraft(this.address, this.box.value());
             this.box.set_value(keptDraft(address));
             this.typed = this.box.value();
             // a restored draft puts the caret after it, so what he types next goes on its end
@@ -2151,6 +2152,7 @@ export default class ClaudeChat extends View {
         this.box.set_value(head + rest);
         this.box.set_selected_range({ end: head.length, start: head.length });
         this.typed = this.box.value();
+        keepDraft(this.address, this.typed);
         this.box.focus();
     }
 
@@ -3946,6 +3948,8 @@ export default class ClaudeChat extends View {
                 ? `${had.replace(/\s+$/, '')}\n\n${quoted}\n\n`
                 : `${quoted}\n\n`,
         );
+        this.typed = this.box.value();
+        keepDraft(this.address, this.typed);
         this.box.focus();
     }
 
