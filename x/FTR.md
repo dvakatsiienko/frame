@@ -169,6 +169,7 @@
   - given an app's code (the nearest dir holding `FTR.md`, or an ftr whose `claims:` names the path) staged without that `FTR.md`, then it exits 1 naming it; a bare line «ftr: none» passes it
   - given a merge in progress, then it passes untouched
   - then a pass line takes an em dash or an ascii `-`/`--` before its why
+  - then a refusal a message line passes ends with that line's exact pattern, «the line must match <regex>», and the glossary refusal says a leading `- ` does not pass
   - then a map row names its context as `**name**` with its glossary in backticks (frame) or as a link to the glossary (bytes)
   - decision: each half has a message line that passes it on purpose, so the gate refuses a forgotten step, never a decision; the root repo context carries no `contract:` line, since every commit touches it (FRM-367)
 - ✅ `x lane gate --held` lints a layer before any rebase
@@ -439,6 +440,9 @@
   - given a rate with no n, an exit line with no surface, an exit line into `_clio/`, a relayed approval with no time, jev with no budget, «clio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
   - when it runs
   - then each finding names its line and the rule
+- ⬜ `x brief check` flags a mod path with no `plugin-authoring`
+  - given a brief that names a file or dir of one cc mod (`plugin-x/mods/<name>…`) and never names `plugin-authoring`, then it fails naming the line; with the skill named anywhere it passes
+  - given a brief that names only the mods dir itself, as a fence does, or no mod path, then nothing is flagged
 - ✅ `x brief check` refuses a skill that waits on the user's approval
   - given a brief names a skill (`x:<name>`, `mattpocock-skills:<name>`, matt's `<name>`, `/<name>`, «the <name> skill», or any hyphenated word naming one) whose `SKILL.md` asks to «quiz the user» or iterate «until the user approves», and no line skips it («skip … quiz»; an unrelated «no push until dima approves» does not)
   - when it runs
