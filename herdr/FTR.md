@@ -37,6 +37,13 @@ wish: PK-363
 
 ## fleet-board — orbit
 
+- ⬜ a plain ask's tick is a toggle: 🛎️ → ✅ → 🔒
+  - given dima ticked a plain ask and its seat has not taken the press yet
+  - when he clicks its ✅ ticked
+  - then the press leaves the ticks file and 🛎️ tick shows again; once the seat takes it, the ask reads «🔒 ticked, the session took it» (shot 1936)
+  - and a press waiting on an idle seat stays ✅ however long it waits: the board reads it from the ticks file
+  - decision: a gated ask keeps its one-way press until the mods lane's tick fixes settle (clio, 19:34)
+  - not checked: the click itself, by his hand
 - ✅ each ask leads with its id, so dima can name it
   - given a seat has an open ask with an id
   - then the board reads «🪐 **o36**: <text>», under a head «🪐 orbit: N asks waiting on you», each asker's name bold at the name size (shot 1929)

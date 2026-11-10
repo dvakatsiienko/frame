@@ -8,6 +8,7 @@ import {
     currentSid,
     literalAngles,
     nextSeats,
+    pendingPresses,
     phasesOf,
     runningPids,
     savePress,
@@ -15,6 +16,7 @@ import {
     unbold,
     waitOf,
     withPress,
+    withoutPress,
 } from './orbit.js';
 
 const SID = 's1';
@@ -170,6 +172,32 @@ describe('a press lands as one line of the ticks file', () => {
         );
         await expect(press).rejects.toThrow('stale snapshot');
         expect(file.text).toBe('b\n');
+    });
+});
+
+describe('a second click unticks a plain ask the session has not taken', () => {
+    test('a press the stash has not taken reads as pressed, a taken one does not', () => {
+        const text =
+            '{"at":5,"id":"o2","verdict":"tick"}\n{"at":9,"id":"o1","verdict":"replay"}\nnot json\n';
+        expect([...pendingPresses(text, 5)]).toEqual([['o1', 'replay']]);
+    });
+
+    test("the ask's untaken press leaves, another ask's stays", () => {
+        const text =
+            '{"at":5,"id":"o1","verdict":"tick"}\n{"at":6,"id":"o2","verdict":"tick"}\n';
+        expect(withoutPress(text, 'o1', 0)).toBe(
+            '{"at":6,"id":"o2","verdict":"tick"}\n',
+        );
+    });
+
+    test('lines the stash already took are pruned with it', () => {
+        const text =
+            '{"at":5,"id":"o2","verdict":"tick"}\n{"at":9,"id":"o1","verdict":"tick"}\n';
+        expect(withoutPress(text, 'o1', 5)).toBe('');
+    });
+
+    test('no file yet is an empty file', () => {
+        expect(withoutPress(null, 'o1', 0)).toBe('');
     });
 });
 
