@@ -13,6 +13,7 @@ import {
     runningPids,
     savePress,
     seatFacts,
+    sentSteer,
     stateOfPid,
     tickState,
     unbold,
@@ -374,5 +375,21 @@ describe('his second click writes the door that still reaches the seat', () => {
 
     test('a press the stash has read gets an untick line', () => {
         expect(untickDoor(null)).toBe('untick');
+    });
+});
+
+describe('his steer stays in sight until the turn takes it', () => {
+    test('a tick or a replay sent with a steer keeps the steer shown', () => {
+        expect(sentSteer('ticked', 'only the docs')).toBe('only the docs');
+        expect(sentSteer('replayed', 'try b')).toBe('try b');
+    });
+
+    test('the turn took it: the steer leaves with the lock', () => {
+        expect(sentSteer('locked', 'only the docs')).toBeNull();
+    });
+
+    test('an open ask has its box instead, and no steer is no line', () => {
+        expect(sentSteer('open', 'typing')).toBeNull();
+        expect(sentSteer('ticked', '  ')).toBeNull();
     });
 });

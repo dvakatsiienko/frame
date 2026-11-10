@@ -282,6 +282,15 @@ export function tickState(ask, sent) {
 }
 
 /**
+ * the steer he sent with a press, shown under the ask until the turn takes it (dima, 22:54: «when i tick my steer text
+ * is hidden. do not hide it. instead, hide it when it slipstreamed»); an open ask has its box instead
+ * @param {ReturnType<typeof tickState>} state
+ * @param {string} text
+ */
+export const sentSteer = (state, text) =>
+    state !== 'open' && state !== 'locked' && text.trim() ? text.trim() : null;
+
+/**
  * how his second click takes a tick back: a press the stash has not read leaves the ticks file, so neither the stash
  * nor the guard ever sees it; a press it has read gets an untick line, which the stash answers by dropping the mark
  * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file

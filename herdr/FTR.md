@@ -247,6 +247,11 @@ wish: PK-363
   - given dima has typed into an ask's steer field
   - when fleet-board reloads
   - then the field shows his text again
+- ⬜ a sent steer stays in sight until the thread takes it
+  - given dima typed a steer on an ask
+  - when he presses 🛎️ tick or 🔁 replay
+  - then the steer stays under the ask as «↳ his text», selectable, and leaves once the thread's turn takes the press (the 🔒 draws)
+  - decision: his word, 22:54: «when i tick my steer text is hidden. do not hide it. instead, hide it when it slipstreamed»
 
 ## scripts
 

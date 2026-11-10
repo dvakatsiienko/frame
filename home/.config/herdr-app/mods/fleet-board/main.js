@@ -31,6 +31,7 @@ import {
     runningPids,
     savePress,
     seatFacts,
+    sentSteer,
     stateOfPid,
     tickState,
     untickDoor,
@@ -275,11 +276,12 @@ export default class FleetBoard extends View {
             }
             for (const key of this.steers.keys()) {
                 const ask = askOf(key);
-                if (!ask || ask.mark) {
-                    this.steers.delete(key);
-                    keepSteer(key, '');
-                }
+                if (!ask || ask.mark) this.steers.delete(key);
             }
+            // a sent steer stays stored, and shown, until the turn takes its press or the ask leaves
+            for (const s of this.rows)
+                for (const ask of s.asks)
+                    if (ask.isLocked) keepSteer(`${s.sid}:${ask.id}`, '');
             for (const s of this.rows)
                 for (const ask of s.asks) {
                     const key = `${s.sid}:${ask.id}`;
@@ -443,7 +445,6 @@ export default class FleetBoard extends View {
                 s.taken,
             );
             this.steers.delete(key);
-            keepSteer(key, '');
         } catch (err) {
             this.sent.delete(key);
             this.pressError = `${ask.id} not sent: ${err instanceof Error ? err.message : err}`;
@@ -492,6 +493,7 @@ export default class FleetBoard extends View {
         const state = tickState(ask, sent);
         const done = state !== 'open';
         const canUntick = state === 'ticked';
+        const sentText = sentSteer(state, keptSteer(key));
         // tick is the main act, so it is the one filled button; Button brings focus, and the ring shows where it is
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
         const button = (id, label, tip, onClick, isPrimary = false) =>
@@ -599,6 +601,23 @@ export default class FleetBoard extends View {
                                             .text_color(t.foreground),
                                     ),
                             ),
+                        ),
+                ),
+            )
+            .when(Boolean(sentText), (el) =>
+                el.child(
+                    div()
+                        .id(`sent-steer-${key}`)
+                        .text_size(SIZE.secondary)
+                        .text_color(t.muted)
+                        .tooltip(
+                            'your steer, sent; it leaves once the thread takes it',
+                        )
+                        .child(
+                            TextView.markdown(
+                                `sent-steer-md-${key}`,
+                                `↳ ${literalAngles(sentText ?? '')}`,
+                            ).selectable(true),
                         ),
                 ),
             )
