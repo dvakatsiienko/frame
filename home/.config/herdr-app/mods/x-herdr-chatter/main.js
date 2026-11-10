@@ -1221,13 +1221,6 @@ export default class ClaudeChat extends View {
                 'Message Claude…  (Enter sends, Shift+Enter: new line)',
         });
         this.box.set_auto_grow(1, 8);
-        // the draft's preview above the box, his choice kept across reloads (dima, 23:56: «preview worked»)
-        try {
-            /** @type {boolean} */
-            this.isPreview = localStorage.getItem('preview') === 'on';
-        } catch {
-            this.isPreview = false;
-        }
         cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
             const old = `${appHome()}/data/claude-chat`;
             if (
@@ -1277,14 +1270,6 @@ export default class ClaudeChat extends View {
             }
             this.typed = now;
             keepDraft(this.address, this.typed);
-            // the preview redraws the whole view, so at most one redraw per 150 ms of typing
-            if (this.isPreview && !this.isPreviewDue) {
-                this.isPreviewDue = true;
-                cx.timer.after(150, (cx) => {
-                    this.isPreviewDue = false;
-                    cx.notify();
-                });
-            }
             // Enter's newline, typed at the word (it arrives before submit): keep the menu as it was
             // for submit to use; complete() drops the newline.
             if (
@@ -4431,39 +4416,6 @@ export default class ClaudeChat extends View {
         );
     }
 
-    // 👁 shows how the draft will read, rendered above the box; the box itself stays plain (herdr draws no markdown
-    // in an editable box: the markdown editor probe drew no colour, 23:56)
-    /** @param {any} t */
-    previewToggle(t) {
-        const isOn = this.isPreview === true;
-        return h_flex()
-            .id('preview-toggle')
-            .flex_none()
-            .h(28)
-            .px(8)
-            .items_center()
-            .rounded(7)
-            .border(1)
-            .border_color(isOn ? t.accent : t.border)
-            .bg(t.background)
-            .cursor_pointer()
-            .text_size(px(12))
-            .text_color(isOn ? t.accent : t.muted)
-            .hover((s) => s.text_color(t.foreground).border_color(t.input))
-            .tooltip(isOn ? 'preview: on' : 'preview')
-            .on_click((_e, cx) => {
-                this.isPreview = !isOn;
-                try {
-                    localStorage.setItem(
-                        'preview',
-                        this.isPreview ? 'on' : 'off',
-                    );
-                } catch {}
-                cx.notify();
-            })
-            .child('👁');
-    }
-
     // a press of wind, hot, waker or AFK: the state it asks for shows at once, the stash's own write settles it
     /** @param {import('gpui-kit').Context} cx @param {import('./band.js').BandButton} btn */
     press(cx, btn) {
@@ -5449,31 +5401,6 @@ export default class ClaudeChat extends View {
                     )
                     .when(Boolean(menu), (el) => el.child(menu))
                     .child(this.band(t))
-                    .when(
-                        this.isPreview && this.typed.trim() !== '',
-                        (/** @type {any} */ el) =>
-                            el.child(
-                                div()
-                                    .id('draft-preview')
-                                    .max_h(240)
-                                    .overflow_y_scroll()
-                                    .px(10)
-                                    .py(8)
-                                    .rounded(8)
-                                    .bg(
-                                        /** @type {any} */ (t).raised ??
-                                            t.background,
-                                    )
-                                    .child(
-                                        TextView.markdown(
-                                            'draft-preview-md',
-                                            this.typed,
-                                        )
-                                            .selectable(true)
-                                            .w_full(),
-                                    ),
-                            ),
-                    )
                     // While the menu is open, ↑ ↓ Tab Esc are its keys (bound in init); ← → Home End close
                     // it (the caret would leave the word with no change event), and the next press moves.
                     // No Send button: Enter sends (the placeholder says so).
@@ -5532,7 +5459,6 @@ export default class ClaudeChat extends View {
                                         h_flex()
                                             .flex_none()
                                             .gap(6)
-                                            .child(this.previewToggle(t))
                                             .child(
                                                 this.dropdown(
                                                     t,
