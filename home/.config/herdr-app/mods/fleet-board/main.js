@@ -400,9 +400,16 @@ export default class FleetBoard extends View {
                 return refuse(
                     screen.stderr.trim() || 'its screen did not read',
                 );
-            if (draftOf(screen.stdout))
+            const draft = draftOf(screen.stdout);
+            if (draft && draft !== '/board')
                 return refuse('its prompt box holds a draft');
             run('pane.focus', { terminal: seat.address });
+            // the chat view hides the prompt box: zoo's `views` stack flips to its terminal, as claude-chat's own
+            // Terminal switch does; a layout with no such stack refuses this one step and stays as it is
+            try {
+                run('layout.select', { child: 'main', stack: 'views' });
+            } catch {}
+            if (draft) return;
             const keys = screen.stdout.includes('-- NORMAL --')
                 ? ['i', '/', 'b', 'o', 'a', 'r', 'd']
                 : ['/', 'b', 'o', 'a', 'r', 'd'];
