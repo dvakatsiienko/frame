@@ -1139,6 +1139,33 @@ async function scriptMerges(
     return found;
 }
 // the github slug merge-auto reads when no --repo names one: the dir's origin, as x/go/gh.go repoOf does
+// the head sha github holds for the pr now; undefined when it does not read, so the brake's tick stays shut
+async function prHead(
+    $: EngineInterface,
+    repo: string | undefined,
+    pr: string,
+) {
+    if (!repo) return undefined;
+    const r = await $.process
+        .run(
+            [
+                'gh',
+                'pr',
+                'view',
+                pr,
+                '--repo',
+                repo,
+                '--json',
+                'headRefOid',
+                '--jq',
+                '.headRefOid',
+            ],
+            { timeoutMs: 5000 },
+        )
+        .catch(() => undefined);
+    const sha = r?.exitCode === 0 ? r.stdout.trim() : '';
+    return /^[0-9a-f]{40}$/.test(sha) ? sha : undefined;
+}
 async function repoOf($: EngineInterface, dir: string) {
     const r = await $.process
         .run(['git', '-C', dir, 'remote', 'get-url', 'origin'])
@@ -2213,20 +2240,45 @@ export const register: Register = (on) => {
             const unproven = word.targets.filter(
                 (t) => !namesWhole(prompt, t) && !namesWhole(prompt, `#${t}`),
             );
+            // past the brake his tick binds the head he looked at: the ask quotes this whole command and names the pr's head
+            // sha, so a push after his tick or a flag added asks again (FRM-544 slice 2b)
+            const isBrake = mergeArgs?.includes('--release-brake') ?? false;
+            const head =
+                isBrake && pr && mergeCall
+                    ? await prHead(
+                          $,
+                          mergeAutoRepo(mergeCall.words) ??
+                              (await repoOf($, mergeCall.dir)),
+                          pr,
+                      )
+                    : undefined;
             // his tick on the pr's ask, or on an ask quoting this whole command in backticks (sixth sense round 1: the o40
             // shape, `x lane merge-auto 104 --apply --dima-ok 104`, stayed refused)
             const isTicked =
                 unproven.length > 0 &&
-                ((unproven.every((t) => t.replace(/^#/, '') === pr) &&
-                    (await prTick()) !== undefined) ||
-                    (await tickFor(
-                        $,
-                        guardedOf(typed),
-                        quotesCommand(typed),
-                        spends,
-                    )) !== undefined);
+                (isBrake
+                    ? head !== undefined &&
+                      (await tickFor(
+                          $,
+                          `${guardedOf(typed)}@${head}`,
+                          (t) =>
+                              quotesCommand(typed)(t) &&
+                              t.text.includes(head.slice(0, 7)),
+                          spends,
+                      )) !== undefined
+                    : (unproven.every((t) => t.replace(/^#/, '') === pr) &&
+                          (await prTick()) !== undefined) ||
+                      (await tickFor(
+                          $,
+                          guardedOf(typed),
+                          quotesCommand(typed),
+                          spends,
+                      )) !== undefined);
             if (unproven.length && !isTicked) {
-                const said = `x-mod-guard stopped this one command. instead: ${word.door}. why: ${word.why} (rule dima-ok-flag); it does not name: ${unproven.join(' ')}.`;
+                const door = isBrake
+                    ? `ask dima to tick an orbit ask quoting \`${typed.trim()}\` at head ${head?.slice(0, 7) ?? '<the pr head sha>'}, or to type a prompt naming the pr`
+                    : word.door;
+                const said = `x-mod-guard stopped this one command. instead: ${door}. why: ${word.why} (rule dima-ok-flag); it does not name: ${unproven.join(' ')}.`;
                 {
                     const stop = await enforce(
                         { ...word, targets: unproven },

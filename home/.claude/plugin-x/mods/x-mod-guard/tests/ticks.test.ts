@@ -7,6 +7,8 @@ import { liveStore } from './store.ts';
 // FRM-427: dima's tick on an orbit ask is his word, read from x-mod-stash's own $.state — the one record only his
 // press writes; a tick is spent by its first use
 const NOW = 1_000_000;
+// the pr head github reports; a test moves it to stand for a push after his tick
+const head = { sha: 'a1b2c3d4e5f60718293a4b5c6d7e8f9012345678' };
 type Tick = { at: number; id: string; targets: string[]; text: string };
 
 // `body` is the ticket's current description as linear holds it; none = linear cannot be read
@@ -61,15 +63,17 @@ function world(
                                   e.argv[2] === 'shell1' ? null : 'claude-code',
                           },
                       })
-                    : e.argv[0] === 'cat'
-                      ? (cat ?? '')
-                      : e.argv.includes('get-url')
-                        ? 'git@github.com:dvakatsiienko/bytes.git\n'
-                        : e.argv.includes('read')
-                          ? JSON.stringify({
-                                data: { tickets: [{ description: body }] },
-                            })
-                          : '',
+                    : e.argv[0] === 'gh' && e.argv.includes('headRefOid')
+                      ? `${head.sha}\n`
+                      : e.argv[0] === 'cat'
+                        ? (cat ?? '')
+                        : e.argv.includes('get-url')
+                          ? 'git@github.com:dvakatsiienko/bytes.git\n'
+                          : e.argv.includes('read')
+                            ? JSON.stringify({
+                                  data: { tickets: [{ description: body }] },
+                              })
+                            : '',
         },
     }));
     const refuse: string[] = [];
@@ -356,6 +360,40 @@ test('the brake never takes a tick: --release-brake still needs his typed word',
     );
     expect([r.deny !== undefined, ran]).toEqual([true, []]);
 });
+
+// FRM-544 slice 2b: past the brake, his tick on an ask quoting the whole command at the pr's head runs that one merge
+const BRAKE = 'x lane merge-auto 104 --apply --release-brake --dima-ok 104';
+const brakeTick = (sha = head.sha.slice(0, 7), line = BRAKE) =>
+    tick(`⚠️ merge past the brake: \`${line}\` at ${sha}`);
+
+test('a tick quoting the brake command at the pr head runs that one merge once', async ($, on) => {
+    const { ran } = world(on, [brakeTick()]);
+    const first = await bash($, BRAKE);
+    const second = await bash($, BRAKE);
+    expect([first.deny, second.deny !== undefined, ran]).toEqual([
+        undefined,
+        true,
+        [BRAKE],
+    ]);
+});
+
+for (const [why, ticks, line] of [
+    [
+        'the ask names no head',
+        [tick(`⚠️ merge past the brake: \`${BRAKE}\``)],
+        BRAKE,
+    ],
+    ['a push moved the head after his tick', [brakeTick('ffffff0')], BRAKE],
+    ['the command adds a flag', [brakeTick()], `${BRAKE} --admin`],
+] as const)
+    test(`the brake tick runs nothing when ${why}`, async ($, on) => {
+        const { ran } = world(on, [...ticks]);
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining(`at head ${head.sha.slice(0, 7)}`),
+            [],
+        ]);
+    });
 
 test('a tick quoting another pr proves nothing for this one', async ($, on) => {
     const { ran } = world(on, [tick(`merge ${PR}1`)]);
