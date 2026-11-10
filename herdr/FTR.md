@@ -68,3 +68,5 @@ wish: PK-363
 - 🧭 the band and the asks in the chat view (FRM-561)
   - given a seat is selected in the Chat view
   - then its context percent, its waiting-on line, the weekly usage and its open asks with their 🛎️ show without a flip to the Terminal view
+  - and the strip grows with its asks and shrinks back, the transcript below it kept
+  - decision: fleet-board draws it as a second copy in `view: seat`, since a herdr mod imports nothing outside its folder; it shows once `layouts/zoo.json` places that block (his ⚠️ tick)

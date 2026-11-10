@@ -5,9 +5,12 @@ import { readdir } from 'fs/promises';
 import { Input, InputState, TextView, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
+    agents,
     exec,
+    focused,
     hc,
     home,
+    props,
     readTextFile,
     run,
     terminals,
@@ -38,6 +41,7 @@ import {
 const CLAUDE = `${home()}/.claude`;
 const STORE = `${CLAUDE}/plugins/store/x-mod-stash_inline-99d499f0f4e0.json`;
 const LANES = `${CLAUDE}/shelf/lanes.json`;
+const USAGE = `${CLAUDE}/shelf/cc-usage-window.json`;
 const SESSIONS = `${CLAUDE}/sessions`;
 const TICKS = `${CLAUDE}/shelf/orbit-ticks`;
 const SENT_MS = 2 * 60 * 1000;
@@ -169,6 +173,13 @@ export default class FleetBoard extends View {
         /** @type {string | null} */
         this.pressNote = null;
         this.loadedAt = null;
+        // a second copy in `view: seat` draws the facts of the seat its tab shows, above the chat view
+        this.isSeat = props()?.view === 'seat';
+        /** @type {{ address: string | null, pid: number | null }} */
+        this.seat = { address: null, pid: null };
+        /** @type {number | null} */
+        this.week = null;
+        if (this.isSeat) cx.timer.every(1000, (cx) => this.follow(cx));
         this.reload(cx);
         for (const folder of [
             SESSIONS,
@@ -180,7 +191,9 @@ export default class FleetBoard extends View {
                     const changed = await watchFolder(folder);
                     if (
                         folder.endsWith('/shelf') &&
-                        !changed.some((p) => p === LANES || p === folder)
+                        !changed.some(
+                            (p) => p === LANES || p === USAGE || p === folder,
+                        )
                     )
                         continue;
                     this.reload(cx);
@@ -194,6 +207,9 @@ export default class FleetBoard extends View {
         cx.spawn(async (cx) => {
             const store = (await json(STORE)) ?? {};
             const lanes = (await json(LANES))?.lanes ?? [];
+            this.week =
+                (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
+                null;
             this.rows = (await sessions(store)).sort(
                 (a, b) =>
                     (RANK[STATE[a.status]] ?? 2) -
@@ -657,8 +673,133 @@ export default class FleetBoard extends View {
             );
     }
 
+    // the seat the shown tab runs: a tab switch costs one hc read for its pid, the same key the board's rows carry
+    /** @param {Context} cx */
+    follow(cx) {
+        const tab = focused()?.tab;
+        const address =
+            agents().find((a) => a.tab === tab && a.app === 'claude-code')
+                ?.address ?? null;
+        if (address === this.seat.address) return;
+        this.seat = { address, pid: null };
+        cx.notify();
+        if (!address) return;
+        cx.spawn(async (cx) => {
+            const got = await hc(['get', address, '--json']);
+            if (got.code !== 0 || this.seat.address !== address) return;
+            this.seat = { address, pid: JSON.parse(got.stdout).pid ?? null };
+            cx.notify();
+        });
+    }
+
+    /** @param {Theme} t */
+    seatView(t) {
+        const s = this.rows.find((r) => r.pid === this.seat.pid);
+        const state = s ? (STATE[s.status] ?? s.status) : null;
+        const fact = (/** @type {string} */ label, /** @type {number} */ pct) =>
+            h_flex()
+                .flex_none()
+                .gap(6)
+                .items_center()
+                .tooltip(label)
+                .child(
+                    div()
+                        .text_size(SIZE.meta)
+                        .text_color(t.dim)
+                        .child(label.split(' ')[0]),
+                )
+                .child(bar(t, pct, 36, pct >= 80 ? t.blocked : t.dim))
+                .child(
+                    div()
+                        .w(32)
+                        .text_size(SIZE.meta)
+                        .text_color(pct >= 80 ? t.blocked : t.muted)
+                        .child(`${Math.round(pct)}%`),
+                );
+        // a layout block has a fixed height, so the strip sizes its own block to what it holds: a new ask grows it
+        const content = v_flex()
+            .id('seat-facts')
+            .w_full()
+            .px(12)
+            .py(6)
+            .gap(4)
+            .on_size_change((size, cx) => this.fit(size.height, cx))
+            .child(
+                h_flex()
+                    .h(20)
+                    .gap(14)
+                    .items_center()
+                    .child(
+                        div()
+                            .w(7)
+                            .h(7)
+                            .rounded(4)
+                            .flex_none()
+                            .bg(
+                                state === 'working'
+                                    ? t.working
+                                    : state === 'blocked'
+                                      ? t.blocked
+                                      : t.idle,
+                            ),
+                    )
+                    .when(s?.context != null, (el) =>
+                        el.child(
+                            fact('ctx: how full its context is', s.context),
+                        ),
+                    )
+                    .when(this.week != null, (el) =>
+                        el.child(
+                            fact('week: the weekly usage spent', this.week),
+                        ),
+                    )
+                    .child(
+                        line(t.muted, SIZE.meta)
+                            .id('seat-wait')
+                            .when(Boolean(s?.wait), (el) => el.tooltip(s.wait))
+                            .child(
+                                s?.wait
+                                    ? `🔭 ${s.wait}`
+                                    : s
+                                      ? ''
+                                      : 'no claude seat in this tab',
+                            ),
+                    ),
+            )
+            .when(Boolean(s?.asks.length), (el) =>
+                el.children(s.asks.map((ask, j) => this.ask(t, s, ask, 0, j))),
+            )
+            .when(Boolean(this.pressError), (el) =>
+                el.child(
+                    div()
+                        .text_size(SIZE.meta)
+                        .text_color(t.blocked)
+                        .child(`⚠️ ${this.pressError}`),
+                ),
+            )
+            .when(Boolean(this.pressNote), (el) =>
+                el.child(
+                    div()
+                        .text_size(SIZE.meta)
+                        .text_color(t.muted)
+                        .child(`⏳ ${this.pressNote}`),
+                ),
+            );
+        return div().size_full().bg(t.background).child(content);
+    }
+
+    // the block's id from the layout's props, `seat-facts` by default; a change under 2 px is left alone
+    /** @param {number} height @param {Context} _cx */
+    fit(height, _cx) {
+        const px = Math.ceil(height);
+        if (Math.abs(px - (this.fitted ?? 0)) < 2) return;
+        this.fitted = px;
+        run('layout.resize', { id: props()?.block ?? 'seat-facts', px });
+    }
+
     render() {
         const t = /** @type {Theme} */ (theme());
+        if (this.isSeat) return this.seatView(t);
         const busy = this.rows.filter(
             (s) => STATE[s.status] === 'working',
         ).length;
