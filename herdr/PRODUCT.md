@@ -66,7 +66,7 @@ dima's words:
 > PK-363:W321 (2026-11-10 15:01, dima) herdr restarts are safe: restarts are one of the most visible and important perks of herdr to know. Only the theme switch is destructive right now (probably a herdr bug).
 
 - **a herdr restart is safe**: seats survive it. a restart to load a mod is fine, and it is his hand
-- **a theme switch kills live seats**: never switch herdr's theme while seats are live
+- **a layout change kills the thread in the focused tab** (a `layouts/*.json` save, `layout.switch`, a click on a layout in Settings › Look): probed 2026-11-11 on 0.1.15, signal 9 within a second, filed as herdr-app#861. before one: focus a throwaway tab, run it from rex, cancel any «Close…?» dialog. a theme change killed nothing in the probes (the 14:08 death was a layout switch), and the 0.1.14 bare `overlay.close` kill is gone in 0.1.15
 - the mods a cc session draws (the band, the 🚦 board) show in a seat's Terminal view; the Chat view hides them, and he lives in the Chat view
 - animations are native (transition, spring, loop); there is no DOM, so no react, no motion.dev, no dnd-kit; files dropped from outside reach a mod through `on_drop`
 - herdr's own guide is `~/.config/herdr-app/AGENTS.md`; the proofs behind these lines: `_clio/.scratch/herdr/verified-answers.md` (wing 1, 2026-11-10, herdr-app 0.1.14)

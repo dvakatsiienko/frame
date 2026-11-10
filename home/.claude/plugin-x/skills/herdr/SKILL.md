@@ -66,6 +66,7 @@ printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building'
 ## traps
 
 - 📌 a bare `overlay.close`, `tab.close` or `pane.close` kills dima's focused seat; a probe closes itself, `closeOverlay(props().overlay)`; a second `mod.open` of a dialog opens a copy
+- 📌 a layout save or switch kills the focused thread (#861): focus a throwaway tab first
 - 📌 `hc send` always presses Enter; `hc keys` is the only prefill, with the limits above
 - 📌 `hc send --force` types into a blocked program and may answer its permission dialog: never into a seat waiting on dima
 - `hc get` changes nothing and shows no screen; the screen is `hc read`
