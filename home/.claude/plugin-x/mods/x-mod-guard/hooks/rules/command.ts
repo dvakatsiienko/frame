@@ -44,6 +44,8 @@ export type Context = {
     worthFiles?: Map<string, string | undefined>;
     // a create's milestone id, resolved to its name through linear
     milestoneNames?: Map<string, string>;
+    // the herdr closes (herdr-close.ts's herdrCloseKey) whose terminals herdr named, none of them a live seat
+    herdrSafe?: Set<string>;
 };
 // a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check stamped its bytes
 export type Brief = { isCodie: boolean; isStamped: boolean };
