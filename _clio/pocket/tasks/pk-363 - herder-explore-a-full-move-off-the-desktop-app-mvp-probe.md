@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T20:02:00Z'
+updated_date: '2026-11-10T20:31:00Z'
 labels:
   - m
   - clio-main
@@ -1627,4 +1627,43 @@ PK-363:W686 (2026-11-10 22:01, dima): For example, your ability to insert embedd
 PK-363:W687 (2026-11-10 22:01, dima): Windows with pre-filled prompts so I can just click them.
 PK-363:W688 (2026-11-10 22:01, dima): The copy-pasted blocks.
 PK-363:W689 (2026-11-10 22:01, dima): Maybe even images at some point, not soon, later.
+
+PK-363:W690 (2026-11-10 22:03, dima): Okay then I just read your answer about the engines. There is nothing external possible to pull into Herdr to make a custom shutter, correct? ❓
+PK-363:W691 (2026-11-10 22:03, dima): Can we only use the built-ins? ❓
+PK-363:W692 (2026-11-10 22:03, dima): I want it verified because it is important.
+PK-363:W693 (2026-11-10 22:03, dima): Also out of the research you received, how do you think: are there easy wins that you can currently ask Herdr codie to implement to improve perf? ❓
+PK-363:W694 (2026-11-10 22:03, dima): It's a blocker for me.
+PK-363:W695 (2026-11-10 22:03, dima): The chatter lags a lot and makes communications slightly unusable.
+PK-363:W696 (2026-11-10 22:03, dima): The chatter freezes.
+
+PK-363:W697 (2026-11-10 22:10, dima): when get to the grill, analyse it and propose best parts to borrow.
+PK-363:W698 (2026-11-10 22:10, dima): maybe we can profile today? ❓
+PK-363:W699 (2026-11-10 22:10, dima): After the research is finished I get another idea to research the actual performance issue I have.
+PK-363:W700 (2026-11-10 22:10, dima): Maybe someone else already has it or has met it, or maybe it is a well-known issue with an existing well-known solution? ❓
+PK-363:W701 (2026-11-10 22:10, dima): What do you think? Is it worth researching this? Or has a researcher already covered this? Or do you think we will figure out the solution ourselves? ❓
+PK-363:W702 (2026-11-10 22:10, dima): probe, just for curiosity and tell what it buys if it works.
+
+PK-363:W703 (2026-11-10 22:12, dima): all are interactive but how to actually see if they worked? lets test: i pressed 🐦‍🔥, and disabled keep-hot, waker and afk. true? (they was enabled) ❓
+
+PK-363:W704 (2026-11-10 22:16, dima): i am overloaded and can't keep up with your answers. (raw says «can keep up»: read as «can't keep up», typo fold) i am lost with a grill. is your grill still relevant? maybe regrill after perf measures? ❓ (i meanwhile go answer wing 1 grill)
+
+PK-363:W705 (2026-11-10 22:26, dima): [Image #35] wisp: bold rendering broke in chatter. [withdrawn by dima at 22:27]
+PK-363:W706 (2026-11-10 22:26, dima): I do not understand. This is good or not? what it buys for us? ❓
+PK-363:W707 (2026-11-10 22:26, dima): i did not notice. i could miss if it even would be present.
+PK-363:W708 (2026-11-10 22:26, dima): right now (22:23) i do not see it.
+PK-363:W709 (2026-11-10 22:26, dima): It is faster now but I missed your requests about a second scrolling perf trace measure. If it is still relevant I am waiting for your reply and I am ready to scroll for 20 seconds. Scroll your thread
+PK-363:W710 (2026-11-10 22:26, dima): After the test is done stay parked for some time because Wing 1 is waiting for me to grill for half of an hour already.
+PK-363:W711 (2026-11-10 22:26, dima): I was reading your very long replies.
+PK-363:W712 (2026-11-10 22:26, dima): Yes you're at 57% of CTX and you need a second wind but you are currently holding a lot of context about performance for chatter.
+PK-363:W713 (2026-11-10 22:26, dima): I want this question to be solved before the second wind.
+PK-363:W714 (2026-11-10 22:26, dima): Let's measure the perf. I go then to Wing 1, then back to you
+
+PK-363:W715 (2026-11-10 22:29, dima): then save it in chatter ticket.
+PK-363:W716 (2026-11-10 22:29, dima): speed: scroll feels faster.
+PK-363:W717 (2026-11-10 22:29, dima): but there is an issue when chatter is scrolled to its full end (bottom) — when i scroll it slightly up it is stuck for ~1s (lag), so i have to do ~3 mousewheel scrolls to unstuck it from bottom.
+PK-363:W718 (2026-11-10 22:29, dima): ready to probe scroll perf test? ❓
+
+W719 — buttons: i liked previous shape. bring it back and remove dimming (keep for settings only since it is not working yet) (2026-11-10 22:30, dima)
+
+PK-363:W719 (2026-11-10 22:30, dima): buttons: i liked previous shape. bring it back and remove dimming (keep for settings only since it is not working yet) [prefix fix: same W719 as the unprefixed line above]
 <!-- SECTION:NOTES:END -->
