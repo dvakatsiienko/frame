@@ -55,13 +55,18 @@
         },
         {
             "example": "x mods edit push",
-            "gist": "a live mod edited in a scratch copy, landing only green and whole",
+            "gist": "a live mod edited safely in a scratch copy",
             "name": "mods"
         },
         {
             "example": "x verify red lib.go 'n > 0' 'n >= 0' lib_test.go",
             "gist": "a test proven real by a mutant, off the tree",
             "name": "verify"
+        },
+        {
+            "example": "x gate run -- pnpm typecheck",
+            "gist": "a heavy check in its queue turn, log kept",
+            "name": "gate"
         },
         {
             "example": "x schema lane --level short",
@@ -85,6 +90,23 @@
         }
     ],
     "verbs": [
+        {
+            "args": [
+                {
+                    "afterDash": true,
+                    "description": "the command and its arguments, as argv: never one quoted shell string",
+                    "isVariadic": true,
+                    "name": "command"
+                }
+            ],
+            "name": "gate run",
+            "needsApply": false,
+            "purpose": "run a typecheck, suite or other gate in the long queue turn; print its exit, its whole log's path, its last 30 lines",
+            "touches": [
+                "$X_STATE/gate-runs/: one log a run, the newest 50 kept",
+                "script/gate-queue.sh --long: the machine-wide long turn, its row in $X_STATE/gate-queue.log"
+            ]
+        },
         {
             "args": [
                 {

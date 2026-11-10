@@ -355,6 +355,19 @@
   - then the tree is gone and the shims point at the main checkout
   - decision: dima's `decamp` alias stays `git worktree remove` until he says otherwise (clio, 2026-10-08)
 
+## gate — a heavy check in its turn
+
+- ⬜ `x gate run -- <command…>` runs a gate in the long turn and keeps its whole log
+  - makes: `$X_STATE/gate-runs/<utc stamp>-<pid>.log`, mode 0600, stdout and stderr in the order written; the newest 50 kept
+  - given a command after `--`, as argv
+  - when it runs
+  - then it waits for the long turn through `script/gate-queue.sh --long`, and stdout holds `exit <code>`, `log <path>` and the log's last 30 lines; the verb exits with the command's code, with no envelope
+  - given a command that takes the long turn itself, then it runs at once inside the runner's turn
+  - given no command, or a first word that is no program (one quoted shell string), then exit 2, nothing run and no log
+  - decision: the long turn, not the gate turn: a commit's hook never waits behind a typecheck or a suite (FRM-384)
+  - decision: argv, never a shell string, so `x-mod-guard` reads the wrapped command's own words
+  - decision: the last 30 lines and no first-error print (dima's sign, FRM-384); the log path is the door for more
+
 ## handoff — the CST store
 
 - ✅ `x handoff` lists, peeks and ingests CSTs from the shared store

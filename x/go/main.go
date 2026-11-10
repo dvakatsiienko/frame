@@ -95,6 +95,7 @@ var impls = map[string]Impl{
 	"completion":        {Run: completion},
 	"stats":             {Run: stats},
 	"trace record":      {Run: traceRecord},
+	"gate run":          {Run: gateRun, Undone: "the command did not run"},
 }
 
 // set by -ldflags at build; a dev run falls back to the executable's own tree
