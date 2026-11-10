@@ -919,9 +919,10 @@ export function paneProof(
 // herdr's fleet-board writes his presses to `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, and the guard reads a press there as
 // his tick (FRM-544 slice 1), so no seat's tool call writes there; fleet-board's own write is a herdr mod's, no cc tool call
 // the folder by name, or a glob or brace the shell would expand under ~/.claude (wisphunter: `orbit-tick?`), read inside
-// one path word: a whole line holding a `*` in one word and `.claude` in another refused clio's ordinary runs (16:52)
+// one path word: a whole line holding a `*` in one word and `.claude` in another refused clio's ordinary runs (16:52). only
+// a glob that can reach the folder counts: in the segment after `.claude/` (it may match `shelf`) or after `shelf/`
 const isGlobbedUnderClaude = (text: string) =>
-    /(\.claude|(^|[\s/'"=])cc)\/[^\s'"]*[*?[{]/.test(text);
+    /(\.claude|(^|[\s/'"=])cc)\/(shelf\/)?[^\s'"/]*[*?[{]/.test(text);
 const isTicksName = (text: string) =>
     /(^|[/'"])orbit-ticks(\/|$|['"])/.test(text) || isGlobbedUnderClaude(text);
 const isShelfDir = (text: string) => /(\.claude|cc)\/shelf\/?$/i.test(text);
@@ -942,7 +943,7 @@ export function ticksWrite(command: string, cwd: string): Refusal | undefined {
 // x-mod-stash's `succ:` key and the ask from its `asks:` key, so a seat's write there could aim his press at itself
 const isStoreName = (text: string) =>
     /(^|[/'"])plugins\/store(\/|$|['"])/.test(text) ||
-    /plugins\/[^\s'"]*[*?[{]/.test(text);
+    /plugins\/[^\s'"/]*[*?[{]/.test(text);
 const isPluginsDir = (text: string) => /(\.claude|cc)\/plugins\/?$/i.test(text);
 export const isStorePath = (path: string) =>
     /\/\.claude\/plugins\/store(\/|$)/.test(path);

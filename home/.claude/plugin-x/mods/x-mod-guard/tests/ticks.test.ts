@@ -1351,6 +1351,10 @@ console.log(keepSeatInTab('t2b', 'sixth-mods'));
 EOF
 node "/private/tmp/claude-501/-Users-dima-frame--clio/a741b7d8-dbde-4ae9-95c8-28d502c57cd0/scratchpad/tab.ts"; sleep 20; hc get t2b --json | jq -c '{status: .status, pid}'; hc read t2b --lines 12 | tail -12 | cut -c1-160`,
     ],
+    [
+        'a plugins path beside a glob in another word',
+        'grep -l tick home/.claude/plugin-x/mods/*.md | xargs -n1 basename; ls ~/.claude/plugins/cache',
+    ],
 ] as const)
     test(`an ordinary run naming no fenced path passes the fences: ${why}`, async ($, on) => {
         world(on);
