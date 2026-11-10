@@ -5435,3 +5435,21 @@ test("a phone attaching while he is away leaves the desktop's offer for his retu
         (await back.find({ key: `kept:${key}`, type: 'Button' }))?.text,
     ).toEqual(expect.stringContaining('a heron'));
 });
+
+// the deck's tick is a toggle: his ↩️ there after a 🛎 a turn already took drops the record, as a seat-board ↩️ does,
+// so the guard honours no tick he took back
+test('a herdr ↩️ after a herdr tick a turn took drops its tick record', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    const writes = tickLog(on);
+    await start($);
+    await add($, ['⚠️ push `git push --mirror origin` to the backup', 'yes']);
+    const at = w.clock.now();
+    files[HERDR_FILE] = press({ at, id: 'o1', verdict: 'tick' });
+    await say($, 'go on');
+    await endTurn($);
+    files[HERDR_FILE] += press({ at: at + 1, id: 'o1', verdict: 'replay' });
+    await say($, 'next');
+    const last = (writes.at(-1) ?? []) as { id: string }[];
+    expect(last.map((t) => t.id)).toEqual([]);
+});

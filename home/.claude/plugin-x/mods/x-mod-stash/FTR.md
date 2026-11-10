@@ -479,7 +479,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - proof: tests/orbit.test.ts::a gated ask carries isGated in the store, a plain ask none
   - and a new fleet-board press replaces the ask's mark, the newest press winning (within one read too), so his ↩️ then 🛎 ticks; a ↩️ that replaces an accepted mark takes its tick record with it, so x-mod-guard honours no tick the board no longer shows (sixth sense round 1 on FRM-544: the first press once won, which locked him out)
   - decision: the newest press wins over a seat-board mark made before it, reversing «the first press wins, a desktop one included» (his 16:26 rule «my ticks should have a priority over everything»)
-  - proof: tests/orbit.test.ts::a herdr replay after a desktop tick takes it back, its tick record with it; of two herdr presses on one ask read together, the newest wins; a herdr 🛎 after his ↩️ on the seat board ticks the ask
+  - and a herdr ↩️ after a herdr 🛎 a turn already took drops that tick record too, though the turn's end cleared the mark: the deck's tick is a toggle, so a 🛎 he takes back opens nothing for the rest of its 2 h
+  - proof: tests/orbit.test.ts::a herdr replay after a desktop tick takes it back, its tick record with it; of two herdr presses on one ask read together, the newest wins; a herdr 🛎 after his ↩️ on the seat board ticks the ask; a herdr ↩️ after a herdr tick a turn took drops its tick record
 
 - ✅ orbit lists this session's open asks, oldest first
   - given clio ends a turn with something for dima to decide

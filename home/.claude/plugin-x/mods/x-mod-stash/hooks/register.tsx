@@ -2392,7 +2392,12 @@ async function absorbMarks($: EngineInterface) {
                         ? undefined
                         : h);
                 if (!m || a.isLocked || a.isResolved) return a;
-                if (a.mark === 'accepted' && m.mark !== 'accepted')
+                // a herdr ↩️ takes back a tick a turn already took, whose mark the turn end cleared: the deck's tick is a
+                // toggle, and the record would still stand for its 2 h
+                if (
+                    m.mark !== 'accepted' &&
+                    (a.mark === 'accepted' || !marks[a.id])
+                )
                     retracted.push(a);
                 // his 🛎 from herdr gets the tick record a seat-board 🛎 gets: fleet-board prunes the press once read
                 // and the turn that takes the ask clears its mark, so the record is what x-mod-guard honours for 2 h
