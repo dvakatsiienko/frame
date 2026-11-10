@@ -58,15 +58,17 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building' | base64)"
 ```
 
+**map his window** — `uv run -q --with pillow python -I scripts/window-map.py <out.png>`: a fresh shot, each part boxed and named (`scripts/window-map.json`)
+
 ## traps
 
 - 📌 `hc send` always presses Enter; `hc keys` is the only prefill, with the limits above
 - 📌 `hc send --force` types into a blocked program and may answer its permission dialog: never into a seat waiting on dima
 - `hc get` changes nothing and shows no screen; the screen is `hc read`
-- 📌 `SendUserFile` from a herdr seat says «delivered» and reaches dima nowhere (summon probe door 5, 2026-11-09): a look card's shot goes out as its absolute path in the reply, and `open <png>` shows it on his mac
+- 📌 `SendUserFile` from a herdr seat says «delivered», reaches dima nowhere: a shot goes as its absolute path
 - `herdr-app do '<json>'` alone is refused: the command name comes first, `herdr-app do pane.split '<json>'`
 - a `herdr-app do` that makes or splits a pane names its target `pane` from `ls` and runs only when dima asked for it; without one it acts on his focused pane
-- `mcp__ide` tools in a herdr seat are Cursor's (open on the same folder), never herdr's
+- `mcp__ide` tools in a seat are Cursor's, never herdr's
 
 ## shortcuts a seat names to dima
 
@@ -83,7 +85,7 @@ the rest: `~/.config/herdr-app/keys.json`.
 
 - dima's daily terminal, a prefill with any character, Lua automation → rex (`x:rex`)
 - seats side by side with their status read by a script, a custom panel or board → herdr
-- both speak OSC 7501 and both render through ghostty's terminal core
+- both speak OSC 7501 and render through ghostty's core
 
 ## what herdr costs a session
 

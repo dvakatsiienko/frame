@@ -1,0 +1,134 @@
+{
+    "// why": "the parts of dima's herdr window, boxed on the window map; boxes are px in a 1600-wide copy of a shot of the zoo layout at his window size, with the tray and the Files panel open. a moved block means new boxes.",
+    "kindLabels": {
+        "herdr": "herdr's own",
+        "ours": "ours",
+        "zoo": "zoo's copy, being taken over"
+    },
+    "kinds": {
+        "herdr": [37, 99, 235],
+        "ours": [22, 163, 74],
+        "zoo": [234, 88, 12]
+    },
+    "notShown": [
+        {
+            "kind": "zoo",
+            "name": "x-herdr-pane-header (open)",
+            "today": "my-pane",
+            "what": "a terminal pane's header (Terminal view)"
+        },
+        {
+            "kind": "zoo",
+            "name": "x-herdr-layout.json",
+            "today": "zoo.json",
+            "what": "layout file: what sits where, and the look"
+        }
+    ],
+    "parts": [
+        {
+            "boxes": [[2, 2, 223, 38], [2, 818, 223, 873]],
+            "kind": "herdr",
+            "n": 1,
+            "name": "stays herdr's",
+            "today": "workspace-chrome",
+            "what": "window chrome: logo, search, settings"
+        },
+        {
+            "boxes": [[4, 42, 221, 300]],
+            "kind": "herdr",
+            "n": 2,
+            "name": "stays herdr's",
+            "today": "spaces",
+            "what": "spaces: your project folders"
+        },
+        {
+            "boxes": [[4, 306, 221, 812]],
+            "kind": "ours",
+            "n": 3,
+            "name": "x-herdr-agents",
+            "today": "agents-list",
+            "what": "every agent, grouped by state"
+        },
+        {
+            "boxes": [[228, 2, 935, 34]],
+            "kind": "zoo",
+            "n": 4,
+            "name": "x-herdr-tabs",
+            "today": "my-tabs",
+            "what": "tabs: one per seat"
+        },
+        {
+            "boxes": [[937, 4, 958, 32]],
+            "kind": "zoo",
+            "n": 5,
+            "name": "herdr's new-menu (A/B first)",
+            "today": "my-new-menu",
+            "what": "+ menu: open a new tab"
+        },
+        {
+            "boxes": [[232, 42, 770, 146]],
+            "kind": "ours",
+            "n": 6,
+            "name": "part of x-herdr-deck",
+            "today": "fleet-board (view: seat)",
+            "what": "seat strip: ctx, week, its asks"
+        },
+        {
+            "boxes": [[234, 147, 770, 168]],
+            "kind": "ours",
+            "n": 7,
+            "name": "x-herdr-chatter",
+            "today": "x-herdr-chatter",
+            "what": "chat header, Chat | Terminal switch"
+        },
+        {
+            "boxes": [[234, 170, 770, 592]],
+            "kind": "ours",
+            "n": 8,
+            "name": "x-herdr-chatter",
+            "today": "x-herdr-chatter",
+            "what": "the Chat view: read and talk"
+        },
+        {
+            "boxes": [[962, 4, 1088, 32], [778, 42, 1088, 596]],
+            "kind": "herdr",
+            "n": 9,
+            "name": "stays herdr's",
+            "today": "files, changes",
+            "what": "Files and Changes panel"
+        },
+        {
+            "boxes": [[226, 603, 1090, 627]],
+            "kind": "zoo",
+            "n": 10,
+            "name": "x-herdr-terminal",
+            "today": "quick-term",
+            "what": "quick terminal tray head (ctrl-j)"
+        },
+        {
+            "boxes": [[226, 629, 1090, 848]],
+            "kind": "herdr",
+            "n": 11,
+            "name": "stays herdr's",
+            "today": "herdr terminal",
+            "what": "the tray's terminal itself"
+        },
+        {
+            "boxes": [[226, 851, 1092, 874]],
+            "kind": "zoo",
+            "n": 12,
+            "name": "x-herdr-status",
+            "today": "my-status",
+            "what": "status bar: branch, folder, commands"
+        },
+        {
+            "boxes": [[1096, 2, 1598, 873]],
+            "kind": "ours",
+            "n": 13,
+            "name": "x-herdr-deck (renamed last)",
+            "today": "fleet-board",
+            "what": "right column: seats, orbit, glide"
+        }
+    ],
+    "title": "herdr window map: each part, its name"
+}
