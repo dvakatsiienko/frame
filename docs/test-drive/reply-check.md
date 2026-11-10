@@ -5,7 +5,7 @@ until: 2026-10-20
 
 # reply-check — test drive, 2026-10-02 → 2026-10-16
 
-the log-only Stop hook `home/.claude/shelf/hooks/reply-check.py`: pure regex, no jev, never blocks.
+the log-only Stop hook `home/.claude/shelf/hooks/reply-check.py`: pure regex, no jev, never blocks, except the round rule, which refuses a turn end once (FRM-495, 2026-11-10).
 the drive answers one question per rule — does it fire, how often, and is a hit a real break?
 
 ## stress list
