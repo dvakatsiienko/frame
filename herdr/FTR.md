@@ -94,3 +94,8 @@ wish: PK-363
   - when the command runs
   - then herdr reloads that mod live, with no restart (proven on fleet-board, 16:20:39)
   - decision: a real folder, not a link: herdr reloads a real folder on save and never a link
+- ⬜ `pnpm herdr-mods:land --watch` lands every save in frame
+  - given the watcher runs (it prints its pid; stop it by that pid)
+  - when a mod file in frame is saved and `herdr-app check` passes on it
+  - then its changed files land in one write within ~0.4 s, and herdr reloads it live
+  - and when the check fails, nothing lands and the watcher prints why (live: a half-built fleet-board save held, 16:30:09)
