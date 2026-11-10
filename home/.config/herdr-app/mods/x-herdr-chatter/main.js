@@ -3877,7 +3877,7 @@ export default class ClaudeChat extends View {
     // (tried 2026-11-06), so the menu works on whole messages.
     openCtx(e, cx) {
         const hit = this.ctxItem;
-        // The position comes in window pixels; lengths are laid out at the zoom (as my-tabs does).
+        // The position comes in window pixels; lengths are laid out at the zoom (as x-herdr-tabs does).
         const z = settings().zoom || 1;
         const local = e.local_position ?? { x: 0, y: 0 };
         const text =

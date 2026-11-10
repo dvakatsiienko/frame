@@ -16,6 +16,7 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr-terminal-header** — the head row of the tray (the bottom quick terminal), part of x-herdr-terminal
 - **fleet-board** — our board mod: every seat's row, their asks and the lanes' cards; a second copy draws the strip
 - **agents-list** — our agents list in the sidebar, each agent by its session name
+- **x-herdr-tabs** — our tab bar above a space's panes, each agent tab by its session name; copied from zoo's `my-tabs` (FRM-567)
 - **strip** — fleet-board's copy above the Chat view: the shown seat's context, waiting-on line and asks
 - **draft** — what dima has typed in a box and not yet sent; kept per seat across a reload
 - **ask** — an orbit ask a seat put on his board; a **tick** (🛎️) accepts it, a **replay** (🔁) sends it back with his steer

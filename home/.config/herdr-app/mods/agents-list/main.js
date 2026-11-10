@@ -69,7 +69,7 @@ function lead(tab, all = panes()) {
 }
 
 // A tab named after its program (the pane's, or a + menu entry's, `LAUNCHERS`: a "Claude (dev
-// container)" tab's pane reports "Claude Code") shows the agent's title. Copied in my-tabs.
+// container)" tab's pane reports "Claude Code") shows the agent's title. Copied in x-herdr-tabs.
 const LAUNCHERS = new Set();
 function loadLaunchers(cx) {
     cx.spawn(async () => {
@@ -95,7 +95,7 @@ function title(tab, l) {
 // read it. So shared "zoo.turns" = { address: "run" | "seen" }: "run" once it works (a turn is on
 // or its result is unread), "seen" when it's done and the agent shown (focused().agent) with the
 // window active. Shown: done + seen, or idle after any turn = "done"; Herdr's done otherwise =
-// "unread"; idle with no turn yet = "idle". Copied in my-tabs: keep them in step.
+// "unread"; idle with no turn yet = "idle". Copied in x-herdr-tabs: keep them in step.
 const machineOf = (addr) => (addr.includes('/') ? addr.split('/')[0] : '');
 function trackTurns(list, all) {
     const was = shared('zoo.turns') ?? {};
@@ -189,6 +189,20 @@ async function readNames(list) {
     }
 }
 
+// the names go out through herdr's shared state, so the tab bar shows the same name and never reads them a second way;
+// setShared re-renders every mod, so an unchanged map is not written
+const NAMES_KEY = 'x-herdr-agents.names';
+function publishNames() {
+    /** @type {Record<string, string>} */
+    const next = {};
+    for (const [address, { name }] of [...NAMES].sort(([a], [b]) =>
+        a.localeCompare(b),
+    ))
+        if (name) next[address] = name;
+    if (JSON.stringify(shared(NAMES_KEY) ?? {}) !== JSON.stringify(next))
+        setShared(NAMES_KEY, next);
+}
+
 // props {stack, other}: a sidebar stack this list shares with the zoo (or the zoo with the list);
 // the header's "Agents  Zoo" flips it. Without them, just the label.
 function viewSwitch(t, here) {
@@ -238,6 +252,7 @@ export default class Agents extends View {
         const names = (cx) =>
             cx.spawn(async (cx) => {
                 await readNames(agents());
+                publishNames();
                 cx.notify();
             });
         names(cx);
