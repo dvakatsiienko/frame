@@ -31,7 +31,14 @@ declare module 'claude-code' {
             }[];
             // the session's own asks; a fleet-board press counts only on one he accepted here
             orbit: {
-                asks: { id: string; text: string; mark?: string }[];
+                asks: {
+                    id: string;
+                    text: string;
+                    mark?: string;
+                    // a mark read off his fleet-board press, and when it was made
+                    isHerdrMark?: boolean;
+                    markedAt?: number;
+                }[];
             };
         };
     }

@@ -975,7 +975,7 @@ async function herdrTicks($: EngineInterface): Promise<Tick[]> {
     const { value: orbit } = await $.state
         .get(STASH_ORBIT)
         .catch(() => ({ value: undefined }));
-    return pressTicks(text).filter((t) =>
+    const pressed = pressTicks(text).filter((t) =>
         orbit?.asks.some(
             (a) =>
                 `herdr:${a.id}` === t.id &&
@@ -983,7 +983,36 @@ async function herdrTicks($: EngineInterface): Promise<Tick[]> {
                 a.mark === 'accepted',
         ),
     );
+    // fleet-board prunes a press from the file once x-mod-stash has taken it, so his next press there drops it: the
+    // accepted mark x-mod-stash kept from it stands for the press, at the time it was marked (wing 1's o13, 19:08)
+    const marked = (orbit?.asks ?? []).flatMap((a) =>
+        a.mark === 'accepted' &&
+        a.isHerdrMark &&
+        typeof a.markedAt === 'number' &&
+        !pressed.some((t) => t.id === `herdr:${a.id}`) &&
+        // a ↩️ there newer than the mark takes it back before x-mod-stash reads it
+        !pressedSince(text, a.id, a.markedAt)
+            ? pressTicks(
+                  JSON.stringify({
+                      at: a.markedAt,
+                      id: a.id,
+                      text: a.text,
+                      verdict: 'tick',
+                  }),
+              )
+            : [],
+    );
+    return [...pressed, ...marked];
 }
+const pressedSince = (text: string, id: string, at: number) =>
+    text.split('\n').some((line) => {
+        try {
+            const p = JSON.parse(line) as { at?: unknown; id?: unknown };
+            return p.id === id && typeof p.at === 'number' && p.at > at;
+        } catch {
+            return false;
+        }
+    });
 const STASH_ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 async function tickFor(
     $: EngineInterface,

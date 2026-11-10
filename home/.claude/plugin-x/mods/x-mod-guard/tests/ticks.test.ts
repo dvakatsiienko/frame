@@ -17,7 +17,13 @@ function world(
     ticks: Tick[] = [],
     body?: string,
     cat?: string,
-    asks: { id: string; mark?: string; text: string }[] = [],
+    asks: {
+        id: string;
+        mark?: string;
+        text: string;
+        isHerdrMark?: boolean;
+        markedAt?: number;
+    }[] = [],
 ) {
     const clock = mock.clock(on, { now: NOW });
     const store = liveStore(on);
@@ -1182,7 +1188,13 @@ const acceptedOf = (lines: string[]) =>
 const pressWorld = (
     on: On,
     lines: string[],
-    asks: { id: string; mark?: string; text: string }[] = acceptedOf(lines),
+    asks: {
+        id: string;
+        mark?: string;
+        text: string;
+        isHerdrMark?: boolean;
+        markedAt?: number;
+    }[] = acceptedOf(lines),
 ) => {
     const w = world(on, [], undefined, undefined, asks);
     on('fs.read', (_$, e) =>
@@ -1253,6 +1265,46 @@ test('a press with no ask text proves nothing', async ($, on) => {
     const r = await bash($, MIRROR);
     expect([r.deny !== undefined, ran]).toEqual([true, []]);
 });
+
+// wing 1's o13, 19:08: fleet-board prunes a press x-mod-stash has taken, so his next press there drops it from the file;
+// the accepted mark x-mod-stash kept from it stands for it, at the time it was marked
+const SIGN_ASK_1 = '✍️ sign FRM-1: a small ticket';
+const herdrMarked = (markedAt: number, isHerdrMark = true) => [
+    { id: 'o13', isHerdrMark, mark: 'accepted', markedAt, text: SIGN_ASK_1 },
+];
+test('a herdr press pruned from the file still signs through its kept mark, once', async ($, on) => {
+    const { ran } = pressWorld(
+        on,
+        [press('⚠️ close FRM-2: done', NOW - 1, 'tick', 'o14')],
+        herdrMarked(NOW - 5),
+    );
+    const line = 'x linear set FRM-1 --add-label signed';
+    const first = await bash($, line);
+    const second = await bash($, line);
+    expect([first.deny, second.deny !== undefined, ran.length]).toEqual([
+        undefined,
+        true,
+        1,
+    ]);
+});
+for (const [why, lines, asks] of [
+    [
+        'its mark is older than 2 h',
+        [],
+        herdrMarked(NOW - 2 * 60 * 60 * 1000 - 1),
+    ],
+    ['the mark came from the seat board', [], herdrMarked(NOW - 5, false)],
+    [
+        'a ↩️ there is newer than the mark',
+        [press(SIGN_ASK_1, NOW - 1, 'replay', 'o13')],
+        herdrMarked(NOW - 5),
+    ],
+] as const)
+    test(`a kept herdr mark proves nothing when ${why}`, async ($, on) => {
+        const { ran } = pressWorld(on, [...lines], [...asks]);
+        const r = await bash($, 'x linear set FRM-1 --add-label signed');
+        expect([signFlagged(r), ran]).toEqual([true, []]);
+    });
 
 // wisphunter on 15a31816: a press counts only while the seat's own orbit holds that ask, its text, his accepted mark
 const MIRROR_ASK = `⚠️ mirror: \`${MIRROR}\``;
