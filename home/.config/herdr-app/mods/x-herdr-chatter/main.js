@@ -5369,26 +5369,45 @@ export default class ClaudeChat extends View {
                             .on_action('x_herdr_chatter_menu_leave', (_e, cx) =>
                                 this.menuKey('leave', cx),
                             )
-                            .gap(6)
                             .items_end()
+                            // the model and effort pickers sit inside the box, bottom right (dima, 23:16, his drawn
+                            // shot): the box takes the whole width, the text the rest of it
                             .child(
-                                div()
+                                h_flex()
                                     .flex_1()
                                     .min_w(0)
+                                    .items_end()
+                                    .gap(6)
                                     .p(6)
                                     .rounded(8)
                                     .bg(t.background)
                                     .border(1)
                                     .border_color(t.input)
-                                    .child(Textarea.new(this.box)),
-                            )
-                            .child(
-                                h_flex()
-                                    .flex_none()
-                                    .gap(6)
-                                    .pb(4)
-                                    .child(this.dropdown(t, agent, 'model'))
-                                    .child(this.dropdown(t, agent, 'effort')),
+                                    .child(
+                                        div()
+                                            .flex_1()
+                                            .min_w(0)
+                                            .child(Textarea.new(this.box)),
+                                    )
+                                    .child(
+                                        h_flex()
+                                            .flex_none()
+                                            .gap(6)
+                                            .child(
+                                                this.dropdown(
+                                                    t,
+                                                    agent,
+                                                    'model',
+                                                ),
+                                            )
+                                            .child(
+                                                this.dropdown(
+                                                    t,
+                                                    agent,
+                                                    'effort',
+                                                ),
+                                            ),
+                                    ),
                             ),
                     ),
             );
