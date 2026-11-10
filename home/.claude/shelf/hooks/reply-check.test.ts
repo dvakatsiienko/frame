@@ -617,3 +617,43 @@ describe('a verdict word printed plain (FRM-495)', () => {
         expect(nextPrompt()).not.toContain('verdict word');
     });
 });
+
+// a turn opened by `opener` (dima's prompt or a peer's wake) that added one orbit ask carrying `note`
+const turnOpenedBy = (opener: string, note = '') => {
+    const path = join(mkdtempSync(join(tmpdir(), 'rc-')), 't.jsonl');
+    const lines: unknown[] = [
+        { message: { content: opener, role: 'user' }, type: 'user' },
+        {
+            message: {
+                content: [{ input: { asks: [{ hiddenNote: note, pick: 'yes', text: 're-sign FRM-1: the flyway fix' }], op: 'add' }, name: 'mcp__x-mod-stash__orbit', type: 'tool_use' }],
+                id: 'm1',
+            },
+            type: 'assistant',
+        },
+        { message: { content: [{ type: 'tool_result' }] }, type: 'user' },
+    ];
+    writeFileSync(path, `${lines.map((l) => JSON.stringify(l)).join('\n')}\n`);
+    return path;
+};
+const peerWake = 'Another Claude session sent a message: <cross-session-message from="x">[done]</cross-session-message>';
+
+describe('a round or a proposal dima never sees (FRM-495)', () => {
+    it('reminds when a round closes a turn a peer started, and stays silent in a turn dima started', () => {
+        expect(stopEvent(round, turnOpenedBy(peerWake))).toBe('');
+        expect(nextPrompt()).toContain('reprint it whole');
+        stopEvent(round, turnOpenedBy('grill me on the flyways'));
+        expect(nextPrompt()).not.toContain('reprint it whole');
+    });
+
+    it('reminds when the reply points at the board and the proposal sits only in a hidden note', () => {
+        stopEvent('the re-sign is on the board.', turnOpenedBy('propose how to fix flyways', 'n'.repeat(320)));
+        expect(nextPrompt()).toContain('hidden note');
+    });
+
+    it('passes a short hidden note, and a reply that prints its proposal at length', () => {
+        stopEvent('the re-sign is on the board.', turnOpenedBy('propose how to fix flyways', 'a tick = his sign'));
+        expect(nextPrompt()).not.toContain('hidden note');
+        stopEvent(`the fix, whole: ${'a flyway line ticks the turn it finishes. '.repeat(20)} it is on the board.`, turnOpenedBy('propose how to fix flyways', 'n'.repeat(320)));
+        expect(nextPrompt()).not.toContain('hidden note');
+    });
+});

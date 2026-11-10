@@ -481,6 +481,52 @@ def lost_round(path: str, reply: str) -> list[str]:
     return lost
 
 
+NOT_DIMA = ("Another Claude session sent", "<task-notification", "<system-reminder", "[SYSTEM NOTIFICATION", "<cross-session-message")
+ON_THE_BOARD = re.compile(r"\bon (?:your|the) board\b", re.I)
+NOTE_MIN, SHORT_REPLY = 300, 600
+
+
+def turn_opener(path: str) -> tuple[str, list[dict]]:
+    # the text that started this turn, and the orbit asks the turn added
+    with open(path) as transcript:
+        lines = transcript.readlines()
+    asks: list[dict] = []
+    for raw in reversed(lines):
+        try:
+            entry = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        content = (entry.get("message") or {}).get("content")
+        if entry.get("type") == "user":
+            if isinstance(content, list) and any(isinstance(b, dict) and b.get("type") == "tool_result" for b in content):
+                continue
+            text = content if isinstance(content, str) else " ".join(str(b.get("text", "")) for b in content or [] if isinstance(b, dict))
+            return text.strip(), asks
+        if entry.get("type") == "assistant" and isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "mcp__x-mod-stash__orbit":
+                    args = block.get("input") or {}
+                    for op in [args, *(args.get("ops") or [])]:
+                        if isinstance(op, dict) and op.get("op") == "add":
+                            asks += [a for a in op.get("asks") or [] if isinstance(a, dict)]
+    return "", asks
+
+
+def buried_round(path: str, reply: str) -> bool:
+    # a round that closes a turn dima did not start is pushed out of his view by the next wake
+    # (wing 3, 2026-11-09 19:51, 19:54, 20:01: three rounds, each a closing message, none seen)
+    opener, _ = turn_opener(path)
+    final = FENCE.sub("", reply)
+    return opener.startswith(NOT_DIMA) and (bool(GRILL_PRINTED_NUMBER.search(final)) or len(TOP_LINE.findall(final)) >= 5)
+
+
+def note_only(path: str, reply: str) -> bool:
+    # a proposal that lives only in an ask's hidden note: the reply points at the board and says nothing (wing 2, 2026-11-09 19:59)
+    _, asks = turn_opener(path)
+    final = FENCE.sub("", reply)
+    return len(final) < SHORT_REPLY and bool(ON_THE_BOARD.search(final)) and any(len(str(a.get("hiddenNote", ""))) >= NOTE_MIN for a in asks)
+
+
 VERDICT_BADGED = re.compile(r"(?<!\*\*)(🌼 clean|🩹 fix|🪜 escalate)(?!\*\*)")
 BARE_CLEAN = re.compile(r"(?<![\w🌼*-])(?<!🌼 )clean\b(?!\*\*)")
 NOT_A_VERDICT = re.compile(r"\b(?:typecheck|lint|biome|tree|checkout|build|tests?|suite|status|merge state)\W+(?:is |was |ran |reads? )?$", re.I)
@@ -556,6 +602,10 @@ def main() -> None:
         hits += [("grill-unprinted", head) for head in grill_asks_unprinted(reply, turn_calls(path))]
         lost = lost_round(path, reply)
         hits += [("round-lost", what) for what in lost]
+        if buried_round(path, reply):
+            hits.append(("round-buried", "a round in a turn dima did not start"))
+        if note_only(path, reply):
+            hits.append(("note-only", "a proposal only in a hidden note"))
         # refused once: on the re-stop the hook lets the turn end whatever the reply holds
         if lost and not event.get("stop_hook_active"):
             reason = f"a round never reached your closing message ({'; '.join(lost)}): text between tool calls and the board may never reach dima. print the whole round in the closing message, then end the turn"
@@ -584,6 +634,10 @@ def main() -> None:
         reminds.append("a 🔭 line named crow — a wake never holds the session")
     if by_rule("wait-without-dima"):
         reminds.append("an open orbit ask and no 🔭 line naming **🙋‍♂️ dima** — end on `🔭 waiting on **🙋‍♂️ dima**`")
+    if by_rule("round-buried"):
+        reminds.append("a round closed a turn dima did not start, the next wake buries it — reprint it whole in your reply to his next prompt")
+    if by_rule("note-only"):
+        reminds.append("the reply pointed at the board while the proposal sat only in an ask's hidden note — print the proposal in the thread")
     if by_rule("plain-verdict"):
         reminds.append(f"a verdict word printed plain («{by_rule('plain-verdict')[0]}») — bold with its badge: **🌼 clean**, **🩹 fix**, **🪜 escalate**")
     if by_rule("dead-end"):
