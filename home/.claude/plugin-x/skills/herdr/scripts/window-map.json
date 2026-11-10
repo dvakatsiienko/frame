@@ -45,10 +45,10 @@
         },
         {
             "boxes": [[228, 2, 935, 34]],
-            "kind": "zoo",
+            "kind": "ours",
             "n": 4,
             "name": "x-herdr-tabs",
-            "today": "my-tabs",
+            "today": "x-herdr-tabs",
             "what": "tabs: one per seat"
         },
         {

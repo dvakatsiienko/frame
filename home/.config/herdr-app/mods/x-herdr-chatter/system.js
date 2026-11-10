@@ -79,3 +79,18 @@ export function systemLine(entry) {
     }
     return null;
 }
+
+/**
+ * an entry's blocks with Claude Code's «[Image #n]» markers gone from its text, when the entry holds an image: the
+ * image draws as its own chip, so the marker only repeats it; text with no image beside it is left as he typed it
+ * @param {any[]} content
+ * @returns {any[]}
+ */
+export function dropImageMarks(content) {
+    if (!content.some((b) => b?.type === 'image')) return content;
+    return content.map((b) =>
+        b?.type === 'text'
+            ? { ...b, text: b.text.replace(/\[Image #\d+\]\s*/g, '') }
+            : b,
+    );
+}

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { cleanTyped, systemLine } from './system.js';
+import { cleanTyped, dropImageMarks, systemLine } from './system.js';
 
 // real rows from clio's transcript (a741b7d8, 2026-11-10), cut short
 const paste = {
@@ -87,5 +87,25 @@ describe('a line he never typed is told apart by its entry', () => {
 
     test('a synthetic reply is a system line', () => {
         expect(systemLine(synthetic)?.label).toBe('No response requested.');
+    });
+});
+
+describe('an image he sent reads as its chip, never as its marker', () => {
+    // a real row (clio's transcript, 20:32): the text block opens with the marker Claude Code adds beside the image
+    const content = [
+        { text: '[Image #26]whats next for you?', type: 'text' },
+        { source: {}, type: 'image' },
+    ];
+
+    test('the marker goes when the entry holds the image', () => {
+        expect(dropImageMarks(content)).toEqual([
+            { text: 'whats next for you?', type: 'text' },
+            { source: {}, type: 'image' },
+        ]);
+    });
+
+    test('text that only names an image stays as he typed it', () => {
+        const typed = [{ text: 'see [Image #3] above', type: 'text' }];
+        expect(dropImageMarks(typed)).toEqual(typed);
     });
 });

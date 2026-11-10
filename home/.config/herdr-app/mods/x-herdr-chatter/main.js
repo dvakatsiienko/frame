@@ -45,7 +45,12 @@ import { SEATS_KEY, bandOf } from './band.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import * as ask from './question.js';
-import { SYSTEM_MODES, cleanTyped, systemLine } from './system.js';
+import {
+    SYSTEM_MODES,
+    cleanTyped,
+    dropImageMarks,
+    systemLine,
+} from './system.js';
 
 const CLAUDE = `${home()}/.claude`;
 // The chat's look, shared by every copy and kept across restarts; the ⚙ popup changes it.
@@ -2042,7 +2047,7 @@ export default class ClaudeChat extends View {
                 if (typeof content === 'string')
                     this.said(content, into, before);
                 else
-                    for (const b of content ?? []) {
+                    for (const b of dropImageMarks(content ?? [])) {
                         if (b.type === 'tool_result') {
                             const tool = into.tools.get(b.tool_use_id);
                             // Kept clipped to what's shown: whole file reads add up, and a big heap makes the
