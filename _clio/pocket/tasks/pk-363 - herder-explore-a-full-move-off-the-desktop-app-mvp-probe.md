@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T20:44:00Z'
+updated_date: '2026-11-10T20:57:00Z'
 labels:
   - m
   - clio-main
@@ -1693,4 +1693,23 @@ PK-363:W742 (2026-11-10 22:43, dima): FRM-568: let it finish.
 PK-363:W743 (2026-11-10 22:43, dima): then park and let's see where we at.
 PK-363:W744 (2026-11-10 22:43, dima): whats left for herder codie to be ready to start chatter ticket ? ❓
 PK-363:W745 (2026-11-10 22:43, dima): when we grill on chatter? now at your 61% ctx or after sw? (after sw you will lose ctx) ❓
+
+PK-363:W746 (2026-11-10 22:54, dima): This is lost information. I have three Fable usage resets for my usage, that's why I burn now with two Fables: you and your wing, and CLI Lane coder is also Fable.
+PK-363:W747 (2026-11-10 22:54, dima): I want to see what reset resets: the full weekly window or only the Fable part.
+PK-363:W748 (2026-11-10 22:54, dima): After I press that reset we will have more usage. It's not next week, tomorrow, or somehow, somewhere today that we will reach 100%. I press reset and then we'll see what space is left.
+PK-363:W749 (2026-11-10 22:54, dima): wish: orbit. when i «tick» my steer text is hidden. do not hide it. instead, hide it when it slipstreamed.
+PK-363:W750 (2026-11-10 22:54, dima): As for now it is much faster than before and no lags are observed right now (dictated as «legs»). But it was only fixed recently so I will observe how performance behaves in the nearest time.
+PK-363:W751 (2026-11-10 22:54, dima): What about borrows from that high-quality mod that you found, the big one? What about that borrowing, not from modules? ❓
+PK-363:W752 (2026-11-10 22:54, dima): Can we pull something from open-source libraries, something useful? ❓
+PK-363:W753 (2026-11-10 22:54, dima): I would prefer some solid basic, the simplest possible solution that works and that is fast.
+PK-363:W754 (2026-11-10 22:54, dima): If it is possible to back it up with some good working framework from Node modules, it would be good if it is worth it.
+PK-363:W755 (2026-11-10 22:54, dima): Propose to yourself how to solve it gracefully.
+PK-363:W756 (2026-11-10 22:54, dima): Are you sure there is nothing interesting, other than your planned borrows, present in Herdr? ❓
+PK-363:W757 (2026-11-10 22:54, dima): If sure then pull what you propose.
+
+PK-363:W737 (2026-11-10 22:45, dima) x linear unlink: unlink is better, keep unlink.
+PK-363:W738 (2026-11-10 22:47, dima) so you've completed the sweep and you're parked, right? what tails do you have? ❓
+PK-363:W739 (2026-11-10 22:47, dima) can you review your whole sweep for integrity as a whole, because you were moving step by step and stuff drifted along the way? review everything you completed today again, fix all drifts, and take care of old tails.
+PK-363:W740 (2026-11-10 22:47, dima) also refresh your flyway if needed so you're clean and ready to be held at a good point, but let your lane finish the meaningful part that was planned for today.
+PK-363:W741 (2026-11-10 22:55, dima) FRM-414's body and sign, FRM-560 and FRM-570's shaping, the two closing words: now, not after the reset. the two steer grooms: do. do all your tails, i have space.
 <!-- SECTION:NOTES:END -->
