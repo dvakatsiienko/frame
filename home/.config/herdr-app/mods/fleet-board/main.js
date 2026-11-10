@@ -18,11 +18,15 @@ import {
 
 import {
     ORDER_KEY,
+    PRESS_DIR,
+    PRESS_FILE,
     SEATS_BEAT_MS,
     SEATS_KEY,
     asksOf,
     byName,
     dropPress,
+    hotOf,
+    hotPressLine,
     inListOrder,
     literalAngles,
     nextSeats,
@@ -36,13 +40,14 @@ import {
     tickState,
     untickDoor,
     waitOf,
+    withBandPress,
 } from './orbit.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {Record<string, Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
-/** @typedef {{ asks: Ask[], context: number | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
+/** @typedef {{ asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 /** @typedef {{ id?: string, title: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
 
 const CLAUDE = `${home()}/.claude`;
@@ -104,6 +109,7 @@ async function sessions(shelf) {
                 return {
                     asks: asksOf(state),
                     context: state?.ctx ?? null,
+                    hot: state?.hot ?? null,
                     model: state?.model ?? null,
                     name: s.name,
                     pending: new Map(),
@@ -206,6 +212,9 @@ export default class FleetBoard extends View {
         // presses written and not yet taken by the session's stash, so a second press waits
         /** @type {Map<string, { verdict: import('./orbit.js').Press['verdict'], at: number }>} */
         this.sent = new Map();
+        // his 🔥 presses by sid, drawn until the thread's state file reads them
+        /** @type {Map<string, { at: number, on: boolean }>} */
+        this.hotPressed = new Map();
         /** @type {string | null} */
         this.pressError = null;
         /** @type {string | null} */
@@ -382,7 +391,8 @@ export default class FleetBoard extends View {
                                     )
                                     .child(`${s.context}%`),
                             ),
-                    ),
+                    )
+                    .child(this.hotButton(t, s)),
             )
             .when(isOpen, (el) =>
                 el.children(
@@ -414,6 +424,75 @@ export default class FleetBoard extends View {
                         ),
                 ),
             );
+    }
+
+    // keep hot for this row's thread, as the old desktop board had it (dima, 23:16): filled when on, a click is its
+    // own, never the row's phases toggle
+    /** @param {Theme} t @param {Row} s */
+    hotButton(t, s) {
+        const hot = hotOf(s.hot, this.hotPressed.get(s.sid), Date.now());
+        return Button.new(`hot-${s.sid}`)
+            .size(22)
+            .flex_none()
+            .flex()
+            .items_center()
+            .justify_center()
+            .rounded(11)
+            .border_1()
+            .border_color(hot.isOn ? t.solid : t.border)
+            .bg(hot.isOn ? t.solid : t.background)
+            .text_size(SIZE.small)
+            .tooltip(hot.tip)
+            .cursor_pointer()
+            .hover((st) => st.opacity(0.85))
+            .focus((st) => st.border_color(t.accent).border_2())
+            .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
+            .on_click((_e, cx) => {
+                cx.stop_propagation();
+                this.pressHot(cx, s.sid, !hot.isOn);
+            })
+            .child('🔥');
+    }
+
+    /** @param {Context} cx @param {string} sid @param {boolean} on */
+    pressHot(cx, sid, on) {
+        const at = Date.now();
+        this.hotPressed.set(sid, { at, on });
+        cx.notify();
+        const line = hotPressLine(sid, on, at);
+        cx.spawn(async (cx) => {
+            try {
+                const made = await exec('mkdir', [
+                    '-p',
+                    `${home()}/${PRESS_DIR}`,
+                ]);
+                if (made.code !== 0)
+                    throw new Error(made.stderr.trim() || 'mkdir failed');
+                const path = `${home()}/${PRESS_FILE}`;
+                for (let tries = 2; ; tries--) {
+                    const text = await readTextFile(path).catch(
+                        () => /** @type {string | null} */ (null),
+                    );
+                    try {
+                        await writeTextFile(
+                            path,
+                            withBandPress(text, line, at),
+                            text,
+                        );
+                        break;
+                    } catch (err) {
+                        if (tries <= 1) throw err;
+                    }
+                }
+                this.pressError = null;
+            } catch (err) {
+                this.hotPressed.delete(sid);
+                this.pressError = `keep hot not written: ${err instanceof Error ? err.message : err}`;
+            }
+            cx.notify();
+            // the button gives its state back if the thread never answers
+            cx.timer.after(13000, (cx) => cx.notify());
+        });
     }
 
     // a click's own cx is the only one valid past an await (herdr's AGENTS.md: never keep a cx), so a press runs as
