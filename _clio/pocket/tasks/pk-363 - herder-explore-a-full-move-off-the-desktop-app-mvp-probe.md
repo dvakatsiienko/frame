@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-09T21:08:00Z'
+updated_date: '2026-11-10T12:23:00Z'
 labels:
   - m
   - clio-main
@@ -590,4 +590,450 @@ PK-363:W172 (2026-11-09 23:07, dima): 3. somehow revisit the CLI lane because it
 PK-363:W173 (2026-11-09 23:07, dima): 4. in parallel, we have to adapt herdr to a new shape as well.
 PK-363:W174 (2026-11-09 23:07, dima): first - tell where everyone at and estimates when we can halt. then print proposal how to unwind everything tmrw.
 answered 23:10: W157–W160, W163, W168, W174 in the reply; W161–W173 → orbit o109, tomorrow's four phases
+
+PK-363:W175 (2026-11-10 inbox, dima) today's topic for everyone: the herder migration. everyone proactively helps stabilize us in herder and proposes improvements.
+
+PK-363:W176 (2026-11-10 inbox, dima) read my whole plan draft (written roughly before sleep) and create a proper plan. i think it is a milestone in linear, so plan with a linear shape in mind.
+
+PK-363:W177 (2026-11-10 inbox, dima) propose an efficient execution plan, seeing far ahead.
+
+PK-363:W178 (2026-11-10 inbox, dima) main priority: unblock the cli lane by stabilizing its scope. we should reach a point where everything is operational.
+
+PK-363:W179 (2026-11-10 inbox, dima) herder and mods lanes have to be always running while we move there.
+
+PK-363:W180 (2026-11-10 inbox, dima) my draft is unstructured. the order is mostly true, but the details should be considered as one whole wish.
+
+PK-363:W181 (2026-11-10 inbox, dima) your job: build an efficient, optimized implementation plan, so i have my whole wish once the plan is complete. the plan must cover all my wishes.
+
+PK-363:W182 (2026-11-10 inbox, dima) architecture, low-level stuff and decisions go first: ftr.md, product.md for herder, and other low-level work.
+
+PK-363:W183 (2026-11-10 inbox, dima) compile the plan carefully from this prompt. precision matters.
+
+PK-363:W184 (2026-11-10 inbox, dima) why a linear milestone: herder build is not a quick build, it is tricky, and i want lots of detail. i want it well planned, not long. i want it good.
+
+PK-363:W185 (2026-11-10 inbox, dima) at the very start: start logging clio comms and actions. we will generate a lot of evidence today, so use it to sharpen coordination.
+
+PK-363:W186 (2026-11-10 inbox, dima) analyze coordination weak spots, bottlenecks and gaps from the whole day (and yesterday), and propose fixes, reworks and reshapes.
+
+PK-363:W187 (2026-11-10 inbox, dima) while analyzing and hunting solutions, think with the tilde plan in mind.
+
+PK-363:W188 (2026-11-10 inbox, dima) tldr: today will have a lot of activity, especially if the 3 weekly resets apply to all models, not only fable 5.2. trace and analyze today's activity to find weak spots in our comms and fleet flows, so we can gracefully optimize them.
+
+PK-363:W189 (2026-11-10 inbox, dima) 1. how to properly fix comms issues with tile (?) ❓
+
+PK-363:W190 (2026-11-10 inbox, dima) 2. what do we want tilde to help us fix in our current problem-solving approach? ❓
+
+PK-363:W191 (2026-11-10 inbox, dima) 3. how to make clio moves smooth and streamlined? ❓
+
+PK-363:W192 (2026-11-10 inbox, dima) main clio maintains two quick lanes: herder and mods.
+
+PK-363:W193 (2026-11-10 inbox, dima) start wing 1 as soon as you are sure how to summon everyone properly, then park it. i want extra hands.
+
+PK-363:W194 (2026-11-10 inbox, dima) wing 1, first question: fable 5.2 was released yesterday and we now have it, fyi. no data yet. i plan to probe it a little later.
+
+PK-363:W195 (2026-11-10 inbox, dima) research about refreshing models in a week (set a reminder).
+
+PK-363:W196 (2026-11-10 inbox, dima) what i saw on youtube: slightly stronger than opus 5.5, but twice as expensive, and ~20% cheaper than fable 5.1. opus 5.5 medium is still the baseline, imo.
+
+PK-363:W197 (2026-11-10 inbox, dima) i received 3 fable resets, expiring march 2027.
+
+PK-363:W198 (2026-11-10 inbox, dima) if the resets cover all models, we go all in on all lanes. spend as much as possible, do as much as possible.
+
+PK-363:W199 (2026-11-10 inbox, dima) no rush, and no wasted work: act thoughtfully and tactically, with smart moves that gain the most out of an effort.
+
+PK-363:W200 (2026-11-10 inbox, dima) 4. do the resets reset the full weekly window of my 200$ plan, or only the fable part? ❓
+
+PK-363:W201 (2026-11-10 inbox, dima) now we are at 40% weekly. if that reset covers all models, we start power usage today.
+
+PK-363:W202 (2026-11-10 inbox, dima) wing 1 can resume its perf lane. i liked the numbers, let's sharpen more, where there are places left to sharpen.
+
+PK-363:W203 (2026-11-10 inbox, dima) if i can reset my weekly for everyone, wing 1 resumes its perf lane and sees what else it can take.
+
+PK-363:W204 (2026-11-10 inbox, dima) overall: burning is efficient, not wasteful.
+
+PK-363:W205 (2026-11-10 inbox, dima) someone has to maintain the cli lane, but first stabilize the cli lane scope.
+
+PK-363:W206 (2026-11-10 inbox, dima) goal 0: stabilize ourselves in herder. i am happy with ui and ux, and want a very sharp, pretty, beautiful ui. you are happy with performance and accessibility. automation is welcome where it helps.
+
+PK-363:W207 (2026-11-10 inbox, dima) goal 1: stabilize the mods scope and unblock the lane by revalidating it against herder capabilities. then dispatch.
+
+PK-363:W208 (2026-11-10 inbox, dima) the herder coder may want the mods lane active; you may start it earlier, before the mods scope is stabilized. a parked lane may help with stabilization itself, by probing and measuring.
+
+PK-363:W209 (2026-11-10 inbox, dima) why it matters: herder is a new area, a clean new space to build in. it is also a good place to quickly spread messy patterns. splits must be clear from day 1. not a mess, only weighed decisions. we may not port one to one, but rethink what we have and drop what we do not want at all. (important)
+
+PK-363:W210 (2026-11-10 inbox, dima) 5. where is it better to have cli, in herder or in mods? ❓
+
+PK-363:W211 (2026-11-10 inbox, dima) i want a properly set balance across the areas we build around.
+
+PK-363:W212 (2026-11-10 inbox, dima) our mods and cli scope are a salad, because there is no boundary between them. now herder too.
+
+PK-363:W213 (2026-11-10 inbox, dima) important: set a proper, visible boundary across mods, cli and herder at top level, so anyone knows what goes where at any stage, starting from planning (clio).
+
+PK-363:W214 (2026-11-10 inbox, dima) 6. which area is best at what? ❓
+
+PK-363:W215 (2026-11-10 inbox, dima) 7. what do we build in mods? ❓
+
+PK-363:W216 (2026-11-10 inbox, dima) 8. what do we build in cli? ❓
+
+PK-363:W217 (2026-11-10 inbox, dima) 9. what do we build in herder? ❓
+
+PK-363:W218 (2026-11-10 inbox, dima) goal 2: the same for cli, maybe in parallel, not sure. propose parallel vs sequential.
+
+PK-363:W219 (2026-11-10 inbox, dima) speak app v2 likes: postpone again. i won't have capacity for it.
+
+PK-363:W220 (2026-11-10 inbox, dima) wing 2 can be started if we get overwhelmed.
+
+PK-363:W221 (2026-11-10 inbox, dima) tell crow to observe operational bottlenecks and suggest main clio coordination tips to help everyone. standing for crow.
+
+PK-363:W222 (2026-11-10 inbox, dima) propose at which points we need a shape-idea, a grill, or/and research.
+
+PK-363:W223 (2026-11-10 inbox, dima) does herder have animations? will motion.dev work in herder? i like animations.
+
+PK-363:W224 (2026-11-10 inbox, dima) 10. does herder have animations? ❓
+
+PK-363:W225 (2026-11-10 inbox, dima) 11. will motion.dev work in herder? ❓
+
+PK-363:W226 (2026-11-10 inbox, dima) wing 1 question about herder: what are «spaces» and «agents» views in herder?
+
+PK-363:W227 (2026-11-10 inbox, dima) suggest how to set up the «spaces» part.
+
+PK-363:W228 (2026-11-10 inbox, dima) 12. what are «spaces» and «agents» views in herder? ❓
+
+PK-363:W229 (2026-11-10 inbox, dima) 13. how to utilize them properly? ❓
+
+PK-363:W230 (2026-11-10 inbox, dima) 14. is «spaces» kind of «projects»? ❓
+
+PK-363:W231 (2026-11-10 inbox, dima) can herder have dnd support for stuff like dnd-kit, for chatter dnd of images?
+
+PK-363:W232 (2026-11-10 inbox, dima) 15. can herder have dnd support like dnd-kit? ❓
+
+PK-363:W233 (2026-11-10 inbox, dima) can herder support a react renderer?
+
+PK-363:W234 (2026-11-10 inbox, dima) 16. can herder support a react renderer? ❓
+
+PK-363:W235 (2026-11-10 inbox, dima) does herder have a mobile app, or do we just use --remote-control and the c mobile app?
+
+PK-363:W236 (2026-11-10 inbox, dima) 17. does herder have a mobile app? ❓
+
+PK-363:W237 (2026-11-10 inbox, dima) 18. or just --remote-control and the c mobile app? ❓
+
+PK-363:W238 (2026-11-10 inbox, dima) i want ctx load numbers: plan cc, c desktop native thread ctx, and herder native thread ctx.
+
+PK-363:W239 (2026-11-10 inbox, dima) measure ctx on load (haiku 5.5) in the cc terminal, in the c desktop app native thread (clio), and in herder.
+
+PK-363:W240 (2026-11-10 inbox, dima) 19. how many tokens is the difference? ❓
+
+PK-363:W241 (2026-11-10 inbox, dima) what can we cut and rebuild more optimally in herder (or move), from the existing cli and mods?
+
+PK-363:W242 (2026-11-10 inbox, dima) 20. what can we cut and rebuild more optimally in herder (or move), from the existing cli and mods? ❓
+
+PK-363:W243 (2026-11-10 inbox, dima) claude artifacts are not working in herder. what else is not working in herder?
+
+PK-363:W244 (2026-11-10 inbox, dima) 21. are claude artifacts not working in herder? ❓
+
+PK-363:W245 (2026-11-10 inbox, dima) 22. what else is not working in herder? ❓
+
+PK-363:W246 (2026-11-10 inbox, dima) main herder wishes. codie and verifier must know the values i want in my wishes and consider them during implementation. it is a standing rule for herder agents.md.
+
+PK-363:W247 (2026-11-10 inbox, dima) pretty ui. the almost ugly claude desktop ui is one of the reasons i picked herder. in herder: no clunky ui.
+
+PK-363:W248 (2026-11-10 inbox, dima) tell verifier to grade the ui look by taste. if verifier does not like the ui, it is not passed.
+
+PK-363:W249 (2026-11-10 inbox, dima) very good ux. i like hotkeys. the ux-first lean should be described in herder agents.md as a standing rule for the herder project too.
+
+PK-363:W250 (2026-11-10 inbox, dima) let's define what herder product is for us: what it is best at, and why we want it.
+
+PK-363:W251 (2026-11-10 inbox, dima) i already printed lots of my wishes. find and groom them, and combine them with the newest ones.
+
+PK-363:W252 (2026-11-10 inbox, dima) 23. have ftr and product.md from the start? ❓
+
+PK-363:W253 (2026-11-10 inbox, dima) 24. did we shape the idea over herder at all? ❓
+
+PK-363:W254 (2026-11-10 inbox, dima) 25. what is herder best in? ❓
+
+PK-363:W255 (2026-11-10 inbox, dima) 26. why do we want it? ❓
+
+PK-363:W256 (2026-11-10 inbox, dima) solid settings: clean, pretty, pristine shape. worth laying out from the start. each feature goes to settings, giving me essential knobs for my ux, without overloading.
+
+PK-363:W257 (2026-11-10 inbox, dima) it should go to agents.md somewhere, for the ftr file.
+
+PK-363:W258 (2026-11-10 inbox, dima) 27. does herder have ftr and product md? ❓
+
+PK-363:W259 (2026-11-10 inbox, dima) 28. if no, is it a good idea to have them? ❓
+
+PK-363:W260 (2026-11-10 inbox, dima) theming: i'd like my herder setup flexible and efficiently built from day 1, so changing layout, theme, or experimenting is easy. herder is not a glider; its architecture is great from the start, so changes should not be complex, and should be fluent.
+
+PK-363:W261 (2026-11-10 inbox, dima) the first SOLID theme can come later, functionality first. but i want a refined look once herder is stabilized overall.
+
+PK-363:W262 (2026-11-10 inbox, dima) 29. does herder support theming at all? ❓
+
+PK-363:W263 (2026-11-10 inbox, dima) refined, polished chatter. it works and is good, but it is bare and clunky. i want it clear and pretty.
+
+PK-363:W264 (2026-11-10 inbox, dima) copy-paste block: pretty look, with a copy-paste button.
+
+PK-363:W265 (2026-11-10 inbox, dima) embedded terminal block, so you prefill the command and i click. you see the output and can read it. ideally rex renders there; if not, use the herder terminal there. you prefill, so no manual clicks from me.
+
+PK-363:W266 (2026-11-10 inbox, dima) sharp, cool, solid and easy-to-read font. you can look up which fonts old projects use, and similar fonts. ia writer font is beautiful too, imo.
+
+PK-363:W267 (2026-11-10 inbox, dima) differentiate my messages from yours with a smart design choice: maximum distinguishability, minimum visual load. clear, but not loading on me.
+
+PK-363:W268 (2026-11-10 inbox, dima) i want code blocks rendered pretty.
+
+PK-363:W269 (2026-11-10 inbox, dima) i want your replies to look good.
+
+PK-363:W270 (2026-11-10 inbox, dima) 30. link formatting magic? ❓
+
+PK-363:W271 (2026-11-10 inbox, dima) 31. what else door to me do you want? ❓
+
+PK-363:W272 (2026-11-10 inbox, dima) 32. what do i often ask and you can't give? ❓
+
+PK-363:W273 (2026-11-10 inbox, dima) 33. what manual chores do you often ask me to do manually? ❓
+
+PK-363:W274 (2026-11-10 inbox, dima) the ability to see the selected thread's ctx and weekly usage.
+
+PK-363:W275 (2026-11-10 inbox, dima) the c desktop app has this, and i want it in chatter too.
+
+PK-363:W276 (2026-11-10 inbox, dima) like the c desktop app: you are mid-turn, and i send a message via «send» as usual. it renders as a sent message from me to you, with one detail: depending on where you are, the message does not always reach you immediately. sometimes it joins after ~10s, depending on your actions.
+
+PK-363:W277 (2026-11-10 inbox, dima) during that window, while the message is queued but has not reached you yet, a little cross icon lets me undo the queue for that message and put it back into the prompt text box.
+
+PK-363:W278 (2026-11-10 inbox, dima) this allows undoing a send i made by mistake or too fast. sometimes really useful, especially when a lot of chaos is happening.
+
+PK-363:W279 (2026-11-10 inbox, dima) it is more complex, but would be really good to have. plan it.
+
+PK-363:W280 (2026-11-10 inbox, dima) chatter supports dnd of images and files, not only copy-paste.
+
+PK-363:W281 (2026-11-10 inbox, dima) richer image support: if i send you images, they show in the thread history as a kind of preview. i think it could come in handy at some point.
+
+PK-363:W282 (2026-11-10 inbox, dima) images can be placed nearer to the end. not urgent.
+
+PK-363:W283 (2026-11-10 inbox, dima) 34. richer image support? ❓
+
+PK-363:W284 (2026-11-10 inbox, dima) switch effort level via hotkey, or a slider. very approachable. i often switch effort.
+
+PK-363:W285 (2026-11-10 inbox, dima) herder seems cheap to modify. let's remember this quality and get maximum gains out of it, without turning it into "now it's expensive to modify".
+
+PK-363:W286 (2026-11-10 inbox, dima) 35. is herder cheap to modify? ❓
+
+PK-363:W287 (2026-11-10 inbox, dima) let's use herder's approachability in our favor: find every single thing we planned in the mods and cli scope and evaluate how herder fits better.
+
+PK-363:W288 (2026-11-10 inbox, dima) grade whether we still want anything from our mods/cli setup and what we planned to have.
+
+PK-363:W289 (2026-11-10 inbox, dima) 36. what is better to have in herder? ❓
+
+PK-363:W290 (2026-11-10 inbox, dima) slipstream-first approach to all places in herder.
+
+PK-363:W291 (2026-11-10 inbox, dima) i select text of your reply in chatter; a popup appears above: «tell clio».
+
+PK-363:W292 (2026-11-10 inbox, dima) i click, a textbox appears, i print text in, and tick. slipstream queued.
+
+PK-363:W293 (2026-11-10 inbox, dima) wing 1 messages you, and my comment and quote reach you.
+
+PK-363:W294 (2026-11-10 inbox, dima) it will simplify my comms with you a lot. the c desktop app also has something like this, but it is not slipstream: it starts a turn, meh.
+
+PK-363:W295 (2026-11-10 inbox, dima) the main chatter prompt box has 2 buttons: «send» (starts a turn) and «tick (or better name)» (slipstreams a message).
+
+PK-363:W296 (2026-11-10 inbox, dima) «send» acts as usual.
+
+PK-363:W297 (2026-11-10 inbox, dima) «tick»: i print text, i tick «tick». whenever you are mid-turn next time (like when wing 1 messages you), my message joins you and the text box is cleared.
+
+PK-363:W298 (2026-11-10 inbox, dima) it should have some visual feedback that the slipstream worked.
+
+PK-363:W299 (2026-11-10 inbox, dima) all slipstream activity should have a visual feedback effect, so i know slipstream works. it should be pretty, and ideally consistent across slipstream appearances.
+
+PK-363:W300 (2026-11-10 inbox, dima) the band: i want one redesigned from scratch.
+
+PK-363:W301 (2026-11-10 inbox, dima) my main knobs and ctx meter; breather maybe. redesign fully: make it beautiful and pretty, compact enough, not cramped.
+
+PK-363:W302 (2026-11-10 inbox, dima) 37. who can design a band? ❓
+
+PK-363:W303 (2026-11-10 inbox, dima) 38. can a designer draw? ❓
+
+PK-363:W304 (2026-11-10 inbox, dima) 39. what is needed for you to know how to design it properly? ❓
+
+raw drop (2026-11-10 inbox, dima): today topic for everyone: herder migration. everyone must be proactively help everyone to stabilize us in herder, propose improvements.
+
+raw drop (2026-11-10 inbox, dima): read my whole plan draft. i written it roughly before sleep. create a proper plan i think it is a mil in linear so plan linear shape in mind. propose efficient execution plan with seeing far in mind. main prio is unblock cli lane by stabilizing its scope — we should reach here to have everything operational. herder and mods lanes have to be always running while we move there.
+
+raw drop (2026-11-10 inbox, dima): my draft is unstructured. the order — `mostly` true. but for details, i want it to be considered as a whole wish. your job is to build an efficient, optimized implementation plan, so i have my whole wish after we completed the plan. the plan must cover all my wishes.
+
+raw drop (2026-11-10 inbox, dima): i think, architectural, low level stuff and decisions are to be done first - like ftr.md, product.md for herder, and other low level stuff.
+
+raw drop (2026-11-10 inbox, dima): carefully compile good plan from this prompt, it is important to be precise.
+
+raw drop (2026-11-10 inbox, dima): why i want it to be shaped via a well structured mil in linear? becase herder build is not a quickbuild. is tricky and i want lots of details. so i want this well planned not because i want it long. because i want it good.
+
+raw drop (2026-11-10 inbox, dima): plan
+
+raw drop (2026-11-10 inbox, dima): - at the very start:
+
+raw drop (2026-11-10 inbox, dima): 	- start logging clio comms and actions model. we will have a lot of evidence generated during today so let's use it is coordination sharpening ability. analyze coord weak spots and bootllenecks/gaps from entire day (and yesterday) and propose fixes, reworks/reshapes.
+
+raw drop (2026-11-10 inbox, dima): 	- while analyzing and solution hunting, think with tilde plan in mind. how to properly fix cooms issues with tile? what we want tilde to help us to fix in our current problem solving approach? how to make clio moves smooth, streamline them?
+
+raw drop (2026-11-10 inbox, dima): 	- tldr: today we will have a lot of activity (especially if it turns out that 3 weekly resets i have applies to all models, not just fable 5.2) — remember to trace and analyze today activity to find weak spots in our cooms, fleet flows operational models so we can gracfully optimize them.
+
+raw drop (2026-11-10 inbox, dima): - main clio maintains two quick lanes: herder and mods.
+
+raw drop (2026-11-10 inbox, dima): - start wing 1 as soon as you are sure how to summon everyone properly. and park wing 1. i want extra hands.
+
+raw drop (2026-11-10 inbox, dima): 	- wing 1 first q: yesterday fable 5.2 was released. we now have it fyi. no data yet though. i plan probing it a little later. and research about (refresh models) in a week (set reminder). what i saw on youtube: it is slightly stronger than opus 5.5, but twice as expensive. ~20% cheaper than fable 5.1. opus 5.5 medium is still baseline imo.
+
+raw drop (2026-11-10 inbox, dima): 	- ❗️ i received 3 fable resets, expires march 2027. question: they reset full weekly window if my 200$ plan or only fable part? if all models we go all in on all lanes. spend asp much as possible, do as much as possible. ❗️but no rush, and no wasted work. you act thoughtfully and tactical. smart moves to gain the most out of an effort
+
+raw drop (2026-11-10 inbox, dima): 	- now we are at 40% weekly. if that resetter for all model, we then start power usage today. wing 1 can resume perf lane. i liked the numbers let's harpen more. (if there are places to sharpen left)
+
+raw drop (2026-11-10 inbox, dima): 	- so if i can reset my weekly for everyone, wing 1:
+
+raw drop (2026-11-10 inbox, dima): 		- resumes its per lane
+
+raw drop (2026-11-10 inbox, dima): 		- sees what else it can take
+
+raw drop (2026-11-10 inbox, dima): 	- overall: burning is efficient, not wasteful.
+
+raw drop (2026-11-10 inbox, dima): - someone have to maintain cli lane, but first stiabilize cli lane scope
+
+raw drop (2026-11-10 inbox, dima): - goal 0: stabilize ourselves in herder. me: happy with ui and ux. i want very sharp and pretty ui. beautiful. you: happy with performance and accessibility. automation is welcome where it  helps.
+
+raw drop (2026-11-10 inbox, dima): - goal 1: stabilize mods scope, unblock lane: revalidate against herder capabilities. where better to have, in herder or mods, cli? where? and dispatch. herder coder may want mods lane active,  you may start it earlier, before stabilized mods scope – parked lane may actually help with stabilization itself. it may help probe and measure.
+
+raw drop (2026-11-10 inbox, dima): 	- why it is important? because herder is a new area. it is very good to have a clean new space to built in.convenient.  but it is also a good place to quickly spread messy patterns. splits be clear from day 1. not mess only weighed decisions. we may not eve port one to one. but rethink what we have and drop what we do not want at all. (important ❗️)
+
+raw drop (2026-11-10 inbox, dima): 	- ❗️ i want a properly set balance across areas we build around. which area best at what?
+
+raw drop (2026-11-10 inbox, dima): 		- what we build in mods?
+
+raw drop (2026-11-10 inbox, dima): 		- what we build in cli?
+
+raw drop (2026-11-10 inbox, dima): 		- and in herder?
+
+raw drop (2026-11-10 inbox, dima): 	- i think our mods and cli scope are salad because we do not have a boundary between them. and now herder.
+
+raw drop (2026-11-10 inbox, dima): 		- ❗️important: set proper, visible boundary across mods, cli and herder somewhere at top level, so anyone knows what goes where at any stage, starting from planning (clio).
+
+raw drop (2026-11-10 inbox, dima): - goal 2: same for cli (maybe in parallel, not sure. propose parallel vs sequential)
+
+raw drop (2026-11-10 inbox, dima): - speak app v2 likes goes postpone again. i won't have capacity for it.
+
+raw drop (2026-11-10 inbox, dima): - wing 2 is possible to be started if we overwhelmed
+
+raw drop (2026-11-10 inbox, dima): - tell crow to observe for operational bottlenecks and suggest main clio coordination tips to help everyone. standing for crow.
+
+raw drop (2026-11-10 inbox, dima): - propose at which points we need to have shape-idea, grill or/and research.
+
+raw drop (2026-11-10 inbox, dima): questions:
+
+raw drop (2026-11-10 inbox, dima): - does herder have animations? will motion.dev work in herder? animations are good i like them.
+
+raw drop (2026-11-10 inbox, dima): - wing 1 quetsion about herder: what are «spaces» and «agents» views in herder? how to utilize them properly? suggest how to setup «spaces» part. is it kind of «projects»?
+
+raw drop (2026-11-10 inbox, dima): - can herder have dnd support for stuff like dnd-kit (chatter to dnd images)?
+
+raw drop (2026-11-10 inbox, dima): - can herder support react renderer?
+
+raw drop (2026-11-10 inbox, dima): - does herder have a mobile app? or just --remote-control and use c mobile app?
+
+raw drop (2026-11-10 inbox, dima): - i want ctx load numbers: plan cc, c desktop native thread ctx, and herder native thread ctx. measure ctx on load (haiku 5.5) in cc terminal, c desktop app native thread (clio) and in herder. how many tokens the difference?
+
+raw drop (2026-11-10 inbox, dima): - what we can cut and rebuild more optimally in herder (or move), from existing cli and mods?
+
+raw drop (2026-11-10 inbox, dima): - claude artifacts not working in herder? what else not wroking in herder?
+
+raw drop (2026-11-10 inbox, dima): main herder wishes:
+
+raw drop (2026-11-10 inbox, dima): - codie and verifier must know values i want in my wishes and consider them during the implementation, it is a standing rule for herder agents.md.
+
+raw drop (2026-11-10 inbox, dima): - pretty ui. almost ugly claude desktop ui is one of the reasons i picked herder. in herder — no clunky ui.
+
+raw drop (2026-11-10 inbox, dima): - tell verifier to grade ui look by taste. if verifier not likes the UI is not passed.
+
+raw drop (2026-11-10 inbox, dima): - very good ux. i like hotkeys. ux-first-in-mind lean should be described in herder agents.md as a standing rule for herder proejct too.
+
+raw drop (2026-11-10 inbox, dima): - have ftr and product.md from start? did we shaped idea over herder at all? let's define what herder produ spis for us. what it best in? why we want it? i already printed lots of my wishes find and groom them and combine with newest ones.
+
+raw drop (2026-11-10 inbox, dima): - solid settings. clean, pretty, pristine shape. it is worth to lay out from start. each features goes to setting, providing me essential knobs. useful for my ux. do not overload. it should go to agents md somewhere for. ftr file. btw does herder have ftr and product md? if no is it good idea to have them?
+
+raw drop (2026-11-10 inbox, dima): - theming. i'd like my herder setup to be flexible and efficiently built from day 1. so when i want to change layout, theme, experiment - it is easy. herder is not gliden. its architecture is great right from start. so any changes are not complex and fluent.
+
+raw drop (2026-11-10 inbox, dima): 	- does herder supports theming at all? if yes - let's have support for it right away.
+
+raw drop (2026-11-10 inbox, dima): 	- the first SOLID theme - can be done later, functionality first. but i want a refined look as soon as herder is stabilized overall.
+
+raw drop (2026-11-10 inbox, dima): - i want refined, polished chatter. it currently works (good) but it is bare and clunky. i wand it clear and pretty. plus your doors to me:
+
+raw drop (2026-11-10 inbox, dima): 	- copy paste block — pretty look, copypaste button.
+
+raw drop (2026-11-10 inbox, dima): 	- embedded terminal block so you prefill there and i click. you see the output and can read. your prefill there so no manual clicks from me. ideally rex redners there. if not - use herder terminal there.
+
+raw drop (2026-11-10 inbox, dima): 	- link formatting magic?
+
+raw drop (2026-11-10 inbox, dima): 	- sharp cool solid and easy to read font. you can go see what fonts by old projs uses. similar fonts. ia writer font is also beautiful imo.
+
+raw drop (2026-11-10 inbox, dima): 	- differentiate your messages out of mine clearly with smart design choice. maximum difference distighuishsbility, minimum visual load. so it is clear but not loads on me.
+
+raw drop (2026-11-10 inbox, dima): 	- what else door to me  you want? what i often ask and you can't give? what manual chores you often ask me todo manually?
+
+raw drop (2026-11-10 inbox, dima): 	- i want code blocks to be rendered pretty.
+
+raw drop (2026-11-10 inbox, dima): 	- i want your replies to look good.
+
+raw drop (2026-11-10 inbox, dima): 	- ability to see selected thread ctx and weekly usage.
+
+raw drop (2026-11-10 inbox, dima): 	- a c desktop app have this and i want it in chatter too.
+
+raw drop (2026-11-10 inbox, dima): 		- you are mid turn
+
+raw drop (2026-11-10 inbox, dima): 		- i send a message via «send» as usual
+
+raw drop (2026-11-10 inbox, dima): 		- it renders as sent message from me to you with slight detail: depending on where you are, message not always joins (reaches) you immediately - sometimes it joins after ~10s, depending on your actions.
+
+raw drop (2026-11-10 inbox, dima): 		- during that window, while message is queued but not reached you yet, there is a little cross icon that allows to undo queue for this mesage and put it back into prompt text box.
+
+raw drop (2026-11-10 inbox, dima): 		- this allows to undo send if i sent by mistake or too fast.
+
+raw drop (2026-11-10 inbox, dima): 		- sometimes really useful, especially when a lot of chaos happening.
+
+raw drop (2026-11-10 inbox, dima): 		- it is more complex, but would be really good to have. plan it.
+
+raw drop (2026-11-10 inbox, dima): 	- chatter supports dnd images and files (not only copy paste)
+
+raw drop (2026-11-10 inbox, dima): 	- richer image support? maybe if i send you images they shown in thread history as preview kinda. i think it could come in handy at some point.
+
+raw drop (2026-11-10 inbox, dima): 		- images can be place nearer to end, not urgent
+
+raw drop (2026-11-10 inbox, dima): 	- switch effort lvl via hotkey. or|slider, very approachable. i oft n switch effort.
+
+raw drop (2026-11-10 inbox, dima): - herder seems to be cheap to modify. is it? let's remember this quality and get maximum gains out of it. but let's also do not ruin "cheap to modify" part by turning it into "...now it's expensive to modify"
+
+raw drop (2026-11-10 inbox, dima): - let's use its approacheness in ours favor: find every single thing we planned in mods and cli scope and evaluate how herder fits better. grade if we still want any if our setup in mods/cli and what we planned to have. what is better to have in herder?
+
+raw drop (2026-11-10 inbox, dima): - slipstream-first approach to all places in herder
+
+raw drop (2026-11-10 inbox, dima): 	- i want this: i select text of your reply in chatter. a poput appears above: tell clio
+
+raw drop (2026-11-10 inbox, dima): 	- i click, a textbox appears, i print text in, and tick. slipstream queued.
+
+raw drop (2026-11-10 inbox, dima): 	- wing 1 messages you, my comment and quote reaches you
+
+raw drop (2026-11-10 inbox, dima): 	- you won't believe how it will simplify my comms with you. (c desktop app also have like this. but it is not slipstream - it starts a turn, meh)
+
+raw drop (2026-11-10 inbox, dima): - i also want and ability to slipstream message from main chatter prompt text box. so i print, tick beside main "send" btn, that initiates a turn. message reaches you if someone messages you, like wing 1.
+
+raw drop (2026-11-10 inbox, dima): 	- main chatter prompt box have 2 btns: «send» (starts a turn), and «tick (or better name)» (slipstreams message)
+
+raw drop (2026-11-10 inbox, dima): 	- «send» acts as usual
+
+raw drop (2026-11-10 inbox, dima): 	- «tick»:
+
+raw drop (2026-11-10 inbox, dima): 		- i print text
+
+raw drop (2026-11-10 inbox, dima): 		- i tick «tick»
+
+raw drop (2026-11-10 inbox, dima): 		- whenever you will be mid turn next time (like wing 1 messaged you) — my messages joins you and text box is cleared.
+
+raw drop (2026-11-10 inbox, dima): 		- it should have some visual feedback that slipstream worked
+
+raw drop (2026-11-10 inbox, dima): - splipstream: all slipstream activity should have visual feedback effect, so i know slipstream works. it should be pretty, and ideally consisten across slipstream apperances.
+
+raw drop (2026-11-10 inbox, dima): - the band. i want one redesigned from scratch. who can design a band? can designer draw? what is needed for you to know how to design it properly? my main knobs and ctx meter. breather maybe. but redesign fully. make it beautiful and pretty. compact enough, not cramped.
 <!-- SECTION:NOTES:END -->
