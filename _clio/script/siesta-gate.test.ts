@@ -8,7 +8,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import { gitEnv } from '../../script/lib/git-fixture.ts';
 import { cardLines, compact, gate, prompt, sent, stop } from './siesta-gate.ts';
@@ -291,6 +291,39 @@ describe('the siesta comes due', () => {
         prompt(home, {
             prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${name}">\n[done] round 3 clean\n</cross-session-message>`,
         });
+        expect(said(stop(home, stopInput(home)))).toContain('siesta due');
+    });
+
+    const liveDone = (home: string, body = '[done] a wisp fixed') =>
+        prompt(home, {
+            prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="⚡ 🔧 codie: herdr lane | PK-363">\n${body}\n</cross-session-message>`,
+        });
+
+    test('a live-steered lane’s dones batch: two make none due, the third does', () => {
+        const home = fixtureHome();
+        liveDone(home);
+        liveDone(home);
+        expect(said(stop(home, stopInput(home)))).toBeUndefined();
+        liveDone(home);
+        expect(said(stop(home, stopInput(home)))).toContain(
+            '3 member done ping(s)',
+        );
+    });
+
+    test('a live-steered lane’s one done is due once it is an hour old', () => {
+        const home = fixtureHome();
+        liveDone(home);
+        vi.useFakeTimers({ now: Date.now() + 61 * 60_000 });
+        try {
+            expect(said(stop(home, stopInput(home)))).toContain('siesta due');
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    test('a live-steered lane’s «final» beside a sha is due at once', () => {
+        const home = fixtureHome();
+        liveDone(home, 'final main:231772ad f104a04d');
         expect(said(stop(home, stopInput(home)))).toContain('siesta due');
     });
 

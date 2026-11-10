@@ -38,6 +38,11 @@ const PEER_PREFIX = /^Another Claude session sent a message:\s*/;
 const MEMBER_DONE = /(^|\n)\s*\[done\]|^(?=.*\bfinal\b).*\b[0-9a-f]{7,40}\b/m;
 // only a lane member's done ends a chunk; a sidecar's chore report (helga, clio side, crow) never does
 const LANE_MEMBER = /from-name="[^"]*\b(codie|sixth sense|designer)\b/;
+// a lane dima steers live has no ticket of its own: its name ends in a pocket id, and its bare `[done]`s batch
+const LIVE_LANE = /from-name="[^"]*\|\s*PK-\d+"/;
+const FINAL_SHA = /^(?=.*\bfinal\b).*\b[0-9a-f]{7,40}\b/m;
+const LIVE_PINGS_DUE = 3;
+const LIVE_PINGS_WAIT_MS = 60 * 60_000;
 
 export function stop(home: string, input: StopInput) {
     const seat = seatOf(home, input.session_id);
@@ -121,12 +126,17 @@ export function prompt(
         .replace(PEER_PREFIX, '');
     const isDima = text !== '' && !NOT_DIMA.some((m) => text.startsWith(m));
     const state = readSiesta(home, seat);
+    const head = text.slice(0, text.indexOf('>') + 1);
+    const body = text.slice(text.indexOf('>') + 1);
     if (
         text.startsWith('<cross-session-message') &&
-        LANE_MEMBER.test(text.slice(0, text.indexOf('>'))) &&
-        MEMBER_DONE.test(text.slice(text.indexOf('>') + 1))
+        LANE_MEMBER.test(head) &&
+        MEMBER_DONE.test(body)
     )
-        state.pings.push(new Date().toISOString());
+        (LIVE_LANE.test(head) && !FINAL_SHA.test(body)
+            ? state.live_pings
+            : state.pings
+        ).push(new Date().toISOString());
     if (
         isDima &&
         state.open &&
@@ -269,7 +279,13 @@ function dueReasons(home: string, state: Siesta, seat: Seat) {
     const closedAt = new Date(state.closed_at ?? 0);
     const files = clioFiles(home, closedAt > since ? closedAt : since, seat);
     const isMemory = files.some((f) => /(^|\/)(memory|rules|skills)\//.test(f));
-    const pings = state.pings.filter(after);
+    const live = state.live_pings.filter(after);
+    const isLiveDue =
+        live.length >= LIVE_PINGS_DUE ||
+        live.some(
+            (at) => Date.now() - new Date(at).getTime() >= LIVE_PINGS_WAIT_MS,
+        );
+    const pings = [...state.pings.filter(after), ...(isLiveDue ? live : [])];
     return [
         files.length >= FILES_DUE ? `${files.length} files of clio's` : '',
         isMemory ? "a memory, rule or skill file of clio's" : '',
@@ -502,6 +518,7 @@ function readSiesta(home: string, seat: Seat): Siesta {
         nudged_ticks: kept.nudged_ticks ?? [],
         open: kept.open ?? false,
         ...(kept.opened_at ? { opened_at: kept.opened_at } : {}),
+        live_pings: kept.live_pings ?? [],
         pings: kept.pings ?? [],
     };
 }
@@ -612,6 +629,7 @@ type Siesta = {
     nudged_ticks: string[];
     open: boolean;
     opened_at?: string;
+    live_pings: string[];
     pings: string[];
 };
 

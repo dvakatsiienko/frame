@@ -13,6 +13,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 - a codie's, sixth sense's or designer's `[done]` or `final` lands
 - 15 files of clio's since the last siesta, or one memory, rule or skill file (the Stop hook's «🌤️ siesta due»); a memory sweep: `recipes/nurture-memory/recipe.md` § the run
 - dima says «siesta»
+- a lane he steers live (its name ends in a pocket id) batches its bare `[done]`s: three, or the oldest an hour old; its «final» beside a sha still counts at once (dima's tick, 2026-11-10)
 - never on a timer
 
 `siesta-gate.ts` blocks once a siesta is due, again each hour it stays ignored, and rides his prompts; it closes on dima's own next prompt after the card, afk once each high is settled; a card left an hour stops pausing the count.
