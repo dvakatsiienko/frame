@@ -34,6 +34,7 @@ describe('twin blocks across mods', () => {
             'dirname',
             'holder-gone',
             'operator-override-store',
+            'press-dir',
             'proc-of',
             'real-path',
             'sign-ask',

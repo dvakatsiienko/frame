@@ -495,3 +495,44 @@ export const planTaken = (p: StashPlan): StashPlan => ({
     at: p.at,
     lines: p.lines,
 });
+
+// twin press-dir — a copy lives in x-mod-guard, which fences the folder; the twins lint keeps them equal
+// herdr's band appends dima's presses (🐦‍🔥 🔥 ⏰ 💨) to `~/.claude/shelf/band-presses/band.jsonl` (dima's name, 21:36)
+export const PRESS_DIR = 'band-presses';
+// twin end
+const BAND_BUTTONS = ['afk', 'hot', 'waker', 'wind'] as const;
+type BandPress = {
+    at: number;
+    button: (typeof BAND_BUTTONS)[number];
+    on: boolean;
+    sid?: string;
+};
+// the lines past `after`, none dated ahead of now (a forged future line would outrank every later press), oldest first
+export function bandPressLines(text: string, after: number, now: number) {
+    const out: BandPress[] = [];
+    for (const line of text.split('\n')) {
+        let p: unknown;
+        try {
+            p = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        const { at, button, on, sid } = (p ?? {}) as Record<string, unknown>;
+        if (
+            typeof at !== 'number' ||
+            at <= after ||
+            at > now ||
+            typeof on !== 'boolean' ||
+            !BAND_BUTTONS.some((b) => b === button) ||
+            (sid !== undefined && typeof sid !== 'string')
+        )
+            continue;
+        out.push({
+            at,
+            button: button as BandPress['button'],
+            on,
+            ...(typeof sid === 'string' ? { sid } : {}),
+        });
+    }
+    return out.sort((a, b) => a.at - b.at);
+}

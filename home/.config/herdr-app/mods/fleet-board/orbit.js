@@ -1,4 +1,4 @@
-// orbit on herdr's board, as pure steps: what the stash store holds for a session, and the ticks file herdr's board
+// orbit on herdr's board, as pure steps: what a session's state file holds, and the ticks file herdr's board
 // alone writes for it (`~/.claude/shelf/orbit-ticks/<sid>.jsonl`, one press per line), which x-mod-stash reads at the
 // session's next turn (FRM-552)
 
@@ -6,60 +6,42 @@
 /** @typedef {{ id: string, verdict: 'tick' | 'replay' | 'untick', steer?: string, text?: string, at: number }} Press */
 
 /**
- * the open asks the stash keeps for a session; an entry stored before items carried ids has text alone and cannot be
- * pressed
- * @param {Record<string, any>} store
- * @param {string} sid
+ * the open asks in a session's state file (`~/.claude/shelf/herdr-state/<sid>.json`, which x-mod-stash writes); an
+ * item without an id cannot be pressed and does not draw
+ * @param {any} state
  * @returns {Ask[]}
  */
-export function asksOf(store, sid) {
-    const entry = store[`asks:${sid}`];
-    if (Array.isArray(entry?.items))
-        return entry.items
-            .filter(
-                (/** @type {any} */ a) =>
-                    typeof a?.id === 'string' && typeof a.text === 'string',
-            )
-            .map(
-                (/** @type {any} */ a) =>
-                    /** @type {Ask} */ ({
-                        id: a.id,
-                        isGated: a.isGated === true,
-                        isLocked: a.isLocked === true,
-                        mark: a.mark ?? null,
-                        pick: a.pick ?? null,
-                        text: a.text,
-                    }),
-            );
-    return (entry?.asks ?? [])
-        .filter((/** @type {unknown} */ t) => typeof t === 'string')
+export function asksOf(state) {
+    return (Array.isArray(state?.asks) ? state.asks : [])
+        .filter(
+            (/** @type {any} */ a) =>
+                typeof a?.id === 'string' && typeof a.text === 'string',
+        )
         .map(
-            (/** @type {string} */ text) =>
+            (/** @type {any} */ a) =>
                 /** @type {Ask} */ ({
-                    id: null,
-                    isGated: false,
-                    isLocked: false,
-                    mark: null,
-                    pick: null,
-                    text,
+                    id: a.id,
+                    isGated: a.isGated === true,
+                    isLocked: a.isLocked === true,
+                    mark: a.mark ?? null,
+                    pick: a.pick ?? null,
+                    text: a.text,
                 }),
         );
 }
 
 /**
- * the id a session's state lives under now: a `/clear` or `/resume` leaves `succ:<old id>` naming the id it went on as
- * @param {Record<string, any>} store
- * @param {string} sid
+ * a session's state file, found by the pid its registry file is named for: after a `/clear` the old id's file can
+ * linger a moment, so the newest wins
+ * @param {any[]} states
+ * @param {number} pid
  */
-export function currentSid(store, sid) {
-    const seen = new Set([sid]);
-    let now = sid;
-    for (;;) {
-        const next = store[`succ:${now}`]?.sid;
-        if (typeof next !== 'string' || seen.has(next)) return now;
-        seen.add(next);
-        now = next;
-    }
+export function stateOfPid(states, pid) {
+    let found = null;
+    for (const state of states)
+        if (state?.pid === pid && (!found || state.at > found.at))
+            found = state;
+    return found;
 }
 
 /**
@@ -102,13 +84,12 @@ export const byName = (a, b) => {
 };
 
 /**
- * the session's phases, as its stash kept them
- * @param {Record<string, any>} store
- * @param {string} sid
+ * the session's phases, as its state file holds them
+ * @param {any} state
  * @returns {string[]}
  */
-export function phasesOf(store, sid) {
-    const lines = store[`kept:${sid}`]?.orbit?.plan?.lines;
+export function phasesOf(state) {
+    const lines = state?.plan?.lines;
     return Array.isArray(lines)
         ? lines.filter((l) => typeof l === 'string')
         : [];

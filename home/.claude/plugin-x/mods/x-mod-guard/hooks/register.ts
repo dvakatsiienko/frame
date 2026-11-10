@@ -52,6 +52,8 @@ import {
     worthRewrites,
 } from './rules/worth.ts';
 import {
+    PRESS_DIR,
+    PRESS_WRITE,
     STORE_WRITE,
     TICKS_WRITE,
     addedPaths,
@@ -64,6 +66,7 @@ import {
     globMatches,
     installDirs,
     isGlob,
+    isPressPath,
     isSignAsk,
     isStashKill,
     isStorePath,
@@ -82,6 +85,7 @@ import {
     paneFiles,
     paneProof,
     pressTicks,
+    pressWrite,
     quotesPr,
     rawLinear,
     rawPluginUpdate,
@@ -698,11 +702,14 @@ const FENCE_FANOUT = 1024;
 async function fenceLanding($: EngineInterface, command: string, cwd: string) {
     const home = (await $.env.get('HOME')) ?? '';
     const ticks = (await realPath($, `${home}/.claude/shelf/orbit-ticks`)).key;
+    const presses = (await realPath($, `${home}/.claude/shelf/${PRESS_DIR}`))
+        .key;
     const shelf = (await realPath($, `${home}/.claude/shelf`)).key;
     const store = (await realPath($, `${home}/.claude/plugins/store`)).key;
     const plugins = (await realPath($, `${home}/.claude/plugins`)).key;
     const lands = {
         plugins: new Set<string>(),
+        presses: new Set<string>(),
         shelf: new Set<string>(),
         store: new Set<string>(),
         ticks: new Set<string>(),
@@ -725,6 +732,8 @@ async function fenceLanding($: EngineInterface, command: string, cwd: string) {
             const key = await landingOf($, path, dirs);
             if (key === ticks || key.startsWith(`${ticks}/`))
                 lands.ticks.add(text);
+            if (key === presses || key.startsWith(`${presses}/`))
+                lands.presses.add(text);
             if (key === store || key.startsWith(`${store}/`))
                 lands.store.add(text);
             if (key === shelf) lands.shelf.add(text);
@@ -2177,6 +2186,7 @@ export const register: Register = (on) => {
         const lands = await fenceLanding($, typed, cwd).catch(() => undefined);
         const ticksFile =
             ticksWrite(typed, cwd, lands?.ticks, lands?.shelf) ??
+            pressWrite(typed, cwd, lands?.presses, lands?.shelf) ??
             storeWrite(typed, cwd, lands?.store, lands?.plugins);
         // his tick on an ask quoting the whole command opens a store write once: the store aims his press, but his own word
         // on one write is no forgery (clio's o61 trash of a probe's store, 20:27); the press folder keeps no door
@@ -2532,9 +2542,11 @@ export const register: Register = (on) => {
             ).file;
             const fence = [spelled, resolved].some(isTicksPath)
                 ? TICKS_WRITE
-                : [spelled, resolved].some(isStorePath)
-                  ? STORE_WRITE
-                  : undefined;
+                : [spelled, resolved].some(isPressPath)
+                  ? PRESS_WRITE
+                  : [spelled, resolved].some(isStorePath)
+                    ? STORE_WRITE
+                    : undefined;
             if (!fence) return next(e);
             await record($, {
                 command: `${e.tool} ${path}`,

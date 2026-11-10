@@ -46,6 +46,10 @@ wish: PK-363
   - given a seat has phases
   - when dima clicks its row
   - then its phases show under it, and a second click folds them
+- ⬜ the deck draws from the state files on the shelf, never the stash's private store
+  - given x-mod-stash writes each thread's `~/.claude/shelf/herdr-state/<sid>.json`
+  - then every thread's asks, phases, waiting-on line, context and model draw from it, a thread after `/clear` included, and `rg x-mod-stash_inline` over fleet-board prints nothing
+  - decision: a thread's file is found by its pid, the newest `at` winning, since the registry keeps the old id after a `/clear` (FRM-568)
 
 ## fleet-board — orbit
 
@@ -130,6 +134,16 @@ wish: PK-363
   - and a message he pasted reads as his plain text, the `<pasted_content>` tags gone; a system-reminder with an id attribute goes too
   - decision: told apart by the entry (its `origin.kind`, a `<synthetic>` model), never by guessing at text
   - not checked: the after shot of his paste in clio's chat, which waits for his view on that tab
+- ⬜ a prompt he types while a turn runs draws in the chat
+  - given dima sends a seat a prompt while its turn is still running
+  - then it draws as his message at the place he sent it, a shot or a paste in it too, marked no differently
+  - and a peer's message or a task notice queued the same way does not draw as his
+  - decision: Claude Code writes such a prompt as a `queued_command` attachment with `origin.kind` human, never a user entry; the chat reads it as one
+- ⬜ a big thread opens at once on its newest part
+  - given a seat whose transcript is past 4 MB (clio's 56 MB, wing 1's 23 MB)
+  - when dima opens its tab
+  - then the newest messages draw within a moment (clio's: 3.9 s → 0.6 s to the first frame), and «Show earlier» at the top reads the next older part in above, his scroll place kept
+  - decision: read on his ask, never all on open: the read of every slice, not the parse or the draw, took the time (2.1 s of 2.3 s)
 - ✅ **bold** and *italic* in replies draw bold and italic
   - given the chat's font is Sans
   - then a reply's markdown bold reads bold (shot 1928)

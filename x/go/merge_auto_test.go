@@ -40,8 +40,8 @@ type hub struct {
 func (h *hub) lastQuery(path string) string {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	for i := len(h.queries) - 1; i >= 0; i-- {
-		if p, query, _ := strings.Cut(h.queries[i], "?"); p == path {
+	for _, v := range slices.Backward(h.queries) {
+		if p, query, _ := strings.Cut(v, "?"); p == path {
 			return query
 		}
 	}

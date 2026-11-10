@@ -31,7 +31,9 @@ import {
     ORBIT_TEXT_MAX,
     ORBIT_TOOL,
     PLAN_MAX,
+    PRESS_DIR,
     allAsksTicks,
+    bandPressLines,
     hasPlanMark,
     herdrTicks,
     isAllAsksMarkable,
@@ -2290,6 +2292,7 @@ async function saveOrbit(
             } satisfies Entry)
             .catch(() => undefined);
     else await $.store.delete(PREFIX + sid).catch(() => undefined);
+    await keepShelf($);
     return isKept;
 }
 
@@ -3553,6 +3556,8 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
 const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL, WIND] as const;
 
 async function forget($: EngineInterface, sid: string) {
+    await dropState($, sid).catch(() => undefined);
+    await $.store.delete(BAND_READ + sid);
     for (const prefix of SESSION_KEYS) await $.store.delete(prefix + sid);
     for (const key of await $.store.keys())
         if (key.startsWith(`${MARKS}${sid}:`)) await $.store.delete(key);
@@ -3818,6 +3823,165 @@ async function windOf($: EngineInterface, sid: string) {
     return (await $.store.get(WIND + sid).catch(() => undefined)) as
         | StashWind
         | undefined;
+}
+
+// FRM-568: what herdr draws for each session lives on the shelf, one file per session, since herdr reads no private store
+// (frame AGENTS.md § the boundary); dima named the folder (21:36)
+const STATE_DIR = 'herdr-state';
+const FLEET_FILE = 'fleet.json';
+const stateDir = (home: string) => `${home}/.claude/shelf/${STATE_DIR}`;
+// what this process last wrote, without its time, so an unchanged state costs no write
+let stateWritten: string | undefined;
+let fleetWritten: string | undefined;
+// whole or not at all: a reader never meets a half-written file
+async function writeWhole($: EngineInterface, path: string, text: string) {
+    const cut = path.lastIndexOf('/');
+    const temp = `${path.slice(0, cut)}/.${path.slice(cut + 1)}.tmp`;
+    await $.fs.write(temp, text);
+    const r = await $.process.run(['mv', '-f', temp, path]);
+    if (r.exitCode !== 0) throw new Error(r.stderr.trim() || 'mv failed');
+}
+async function writeState($: EngineInterface) {
+    const sid = await currentId($);
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!sid || !home) return;
+    const get = (key: string) => $.store.get(key).catch(() => undefined);
+    const entry = (await get(PREFIX + sid)) as Entry | undefined;
+    const reply = (await get(REPLY + sid)) as Reply | undefined;
+    const taken = await get(HERDR_READ + sid);
+    const ctx = await get(CONTEXT + sid);
+    const model = await get(MODEL + sid);
+    const o = await currentOrbit($);
+    const state = {
+        asks: entry?.items ?? [],
+        assumed: o.assumed ?? [],
+        ctx: typeof ctx === 'number' ? ctx : null,
+        hot: hotOf(await get(HOT + sid)) ?? null,
+        label,
+        model: typeof model === 'string' ? model : null,
+        name: entry?.name ?? (await sessionName($)) ?? null,
+        pid: proc?.pid ?? null,
+        plan: o.plan ? { lines: o.plan.lines } : null,
+        rounds: null,
+        sid,
+        // the id this session continued from at a /clear, the fallback when a reader cannot match the pid
+        succ: clearedFrom ?? null,
+        taken: typeof taken === 'number' ? taken : 0,
+        v: 1,
+        wait: reply?.wait ?? null,
+        wind: (await windOf($, sid))?.state ?? null,
+    };
+    const text = JSON.stringify(state);
+    if (text === stateWritten) return;
+    await writeWhole(
+        $,
+        `${stateDir(home)}/${sid}.json`,
+        `${JSON.stringify({ ...state, at: await $.clock.now() })}\n`,
+    );
+    stateWritten = text;
+}
+async function dropState($: EngineInterface, sid: string) {
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!home) return;
+    await $.process.run(['rm', '-f', `${stateDir(home)}/${sid}.json`]);
+    stateWritten = undefined;
+}
+// ⏰ and 💨, fleet-wide, beside the session files; each carries its `at`, so herdr draws «on since»
+async function writeFleet($: EngineInterface) {
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!home) return;
+    const stamped = (v: unknown) => {
+        const { at, on } = (v ?? {}) as { at?: unknown; on?: unknown };
+        return { at: typeof at === 'number' ? at : null, on: on === true };
+    };
+    const fleet = {
+        afk: stamped(await $.store.get(AFK_KEY).catch(() => undefined)),
+        v: 1,
+        waker: stamped(await $.store.get(WAKER_KEY).catch(() => undefined)),
+    };
+    const text = JSON.stringify(fleet);
+    if (text === fleetWritten) return;
+    await writeWhole($, `${stateDir(home)}/${FLEET_FILE}`, `${text}\n`);
+    fleetWritten = text;
+}
+// a killed session fires no end: its file goes once its pid is gone, read every STATE_PRUNE_POLLS shelf passes
+const STATE_PRUNE_POLLS = 5;
+let statePolls = 0;
+async function pruneStates($: EngineInterface) {
+    if (statePolls++ % STATE_PRUNE_POLLS) return;
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!home) return;
+    const dir = stateDir(home);
+    for (const f of await $.fs.list(dir).catch(() => [])) {
+        if (!f.name.endsWith('.json') || f.name === FLEET_FILE) continue;
+        const kept = await $.fs
+            .read(`${dir}/${f.name}`)
+            .then((t) => JSON.parse(t) as { pid?: unknown })
+            .catch(() => undefined);
+        if (typeof kept?.pid !== 'number') continue;
+        const ps = await $.process.run(['ps', '-p', String(kept.pid)]);
+        if (ps.exitCode !== 0)
+            await $.process.run(['rm', '-f', `${dir}/${f.name}`]);
+    }
+}
+// how far this thread read the band presses: the `at` of the newest line taken, from the thread's start on
+const BAND_READ = 'band-read:';
+// herdr's band presses reach this thread as its own band's would: wind and hot only for their sid, ⏰ and 💨 only when
+// newer than the state they set, so the latest press wins whichever band it came from (FRM-568 slice 5)
+async function takeBandPresses($: EngineInterface) {
+    const sid = await currentId($);
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!sid || !home) return;
+    const now = await $.clock.now();
+    const read = await $.store.get(BAND_READ + sid).catch(() => undefined);
+    const after =
+        typeof read === 'number'
+            ? read
+            : ((await registry($).catch(() => []))
+                  .filter((r) => r.base.sid === sid)
+                  .map((r) => r.startedAt)
+                  .find((at) => typeof at === 'number') ?? now);
+    const text = await $.fs
+        .read(`${home}/.claude/shelf/${PRESS_DIR}/band.jsonl`)
+        .catch(() => '');
+    const presses = bandPressLines(text, after, now);
+    for (const p of presses) {
+        if (p.button === 'wind' && p.sid === sid) await setWind($, sid, p.on);
+        if (p.button === 'hot' && p.sid === sid) {
+            await setHot($, p.on);
+            await armHot($);
+        }
+        if (p.button !== 'waker' && p.button !== 'afk') continue;
+        const key = p.button === 'waker' ? WAKER_KEY : AFK_KEY;
+        const stored = (await $.store.get(key)) as { at?: number } | undefined;
+        if (typeof stored?.at === 'number' && stored.at >= p.at) continue;
+        if (p.button === 'waker') await setWaker($, p.on);
+        else await setAfk($, p.on);
+    }
+    const last = Math.max(after, ...presses.map((p) => p.at));
+    if (last !== read) await $.store.set(BAND_READ + sid, last);
+    if (presses.length) await load($);
+}
+
+// told once per process: a shelf that cannot be written fails the same way every poll
+let isShelfTold = false;
+async function keepShelf($: EngineInterface) {
+    await writeState($).catch(async (err) => {
+        if (isShelfTold) return;
+        isShelfTold = true;
+        await $.ui.log(
+            `x-mod-stash: the herdr state file was not kept: ${errorText(err)}`,
+        );
+    });
+    await writeFleet($).catch(() => undefined);
+}
+// the poll's share: every SHELF_POLLS-th tick, since asks and afk write the shelf the moment they change
+const SHELF_POLLS = 3;
+let shelfPolls = 0;
+async function pollShelf($: EngineInterface) {
+    if (shelfPolls++ % SHELF_POLLS) return;
+    await keepShelf($);
+    await pruneStates($).catch(() => undefined);
 }
 
 // a board's press on a row: asks, or takes the ask back; a note already delivered is taken back at the next turn, a
@@ -4677,6 +4841,7 @@ async function setHot($: EngineInterface, on: boolean) {
 // ⏰'s one writer: every write stamps its time, so the latest press wins whichever band it came from (FRM-568)
 async function writeWaker($: EngineInterface, on: boolean) {
     await $.store.set(WAKER_KEY, { at: await $.clock.now(), on });
+    await writeFleet($).catch(() => undefined);
 }
 
 // ⏰ set, never flipped; a set during afk is what afk off puts back
@@ -4709,6 +4874,7 @@ async function setAfk($: EngineInterface, on: boolean) {
         isWaker = on || was?.wakerBefore === true;
         await writeWaker($, isWaker);
     }
+    await writeFleet($).catch(() => undefined);
     return was;
 }
 
@@ -5883,6 +6049,8 @@ export const register: Register = (on) => {
                     await freshMeter($).catch(() => undefined);
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
+                    await takeBandPresses($).catch(() => undefined);
+                    await pollShelf($);
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
                     await wakeForParkedLanes($).catch(() => undefined);

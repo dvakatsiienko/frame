@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest';
 
-import { cleanTyped, dropImageMarks, systemLine } from './system.js';
+import {
+    cleanTyped,
+    dropImageMarks,
+    midTurnPrompt,
+    systemLine,
+} from './system.js';
 
 // real rows from clio's transcript (a741b7d8, 2026-11-10), cut short
 const paste = {
@@ -107,5 +112,69 @@ describe('an image he sent reads as its chip, never as its marker', () => {
     test('text that only names an image stays as he typed it', () => {
         const typed = [{ text: 'see [Image #3] above', type: 'text' }];
         expect(dropImageMarks(typed)).toEqual(typed);
+    });
+});
+
+describe('a prompt he typed while a turn ran draws like any other', () => {
+    // cut from clio's transcript a741b7d8, 21:15: Claude Code wrote it as a queued command, never a user entry
+    const typed = {
+        attachment: {
+            commandMode: 'prompt',
+            delivery_id: '8f8d6aa4-4ae2-4885-8d63-2170b8901af3',
+            humanTurn: true,
+            origin: { kind: 'human' },
+            prompt: 'herder codie needs a SW tell him.',
+            source_uuid: '0486b5d4-1584-41dd-8fe4-dacee3afd515',
+            timestamp: '2026-11-10T19:15:35.577Z',
+            type: 'queued_command',
+        },
+        isSidechain: false,
+        parentUuid: '17b2b2a7-90b2-4abe-97b3-ccb77acfd6ad',
+        sessionId: 'a741b7d8-dbde-4ae9-95c8-28d502c57cd0',
+        timestamp: '2026-11-10T19:15:35.577Z',
+        type: 'attachment',
+        uuid: '8fa796eb-7214-4fcb-828b-13cefb4843a6',
+    };
+
+    test('his mid-turn prompt reads as his message', () => {
+        expect(midTurnPrompt(typed)).toMatchObject({
+            message: { content: 'herder codie needs a SW tell him.' },
+            sessionId: typed.sessionId,
+            type: 'user',
+            uuid: typed.uuid,
+        });
+    });
+
+    test('a mid-turn prompt with a shot keeps its blocks', () => {
+        const blocks = [
+            { text: 'chatter wisp', type: 'text' },
+            { source: { data: 'x', type: 'base64' }, type: 'image' },
+        ];
+        const shot = {
+            ...typed,
+            attachment: { ...typed.attachment, prompt: blocks },
+        };
+        expect(midTurnPrompt(shot)?.message.content).toEqual(blocks);
+    });
+
+    test('a peer message or a task notice queued mid-turn is not his', () => {
+        const peer = {
+            ...typed,
+            attachment: { ...typed.attachment, origin: { kind: 'peer' } },
+            isMeta: true,
+        };
+        const task = {
+            ...typed,
+            attachment: {
+                ...typed.attachment,
+                commandMode: 'task-notification',
+                origin: { kind: 'task-notification' },
+            },
+        };
+        expect(midTurnPrompt(peer)).toBeNull();
+        expect(midTurnPrompt(task)).toBeNull();
+        expect(
+            midTurnPrompt({ message: { content: 'hi' }, type: 'user' }),
+        ).toBeNull();
     });
 });

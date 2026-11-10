@@ -712,7 +712,7 @@ func worktreeBranchesLine(main, id string, plan *landedPlan) landedLine {
 		return line
 	}
 	var going, staying []string
-	for _, ref := range strings.Fields(listed) {
+	for ref := range strings.FieldsSeq(listed) {
 		why, tips := branchStay(main, ref, "main does not hold", func(sha string) bool { return onMain(main, sha) })
 		if why != "" {
 			staying = append(staying, ref+" stays: "+why)

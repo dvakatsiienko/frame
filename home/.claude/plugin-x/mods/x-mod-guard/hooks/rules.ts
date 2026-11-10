@@ -1190,6 +1190,38 @@ export function ticksWrite(
         ? TICKS_WRITE
         : undefined;
 }
+// twin press-dir — a copy lives in x-mod-stash, which reads the presses; the twins lint keeps them equal
+// herdr's band appends dima's presses (🐦‍🔥 🔥 ⏰ 💨) to `~/.claude/shelf/band-presses/band.jsonl` (dima's name, 21:36)
+export const PRESS_DIR = 'band-presses';
+// twin end
+const isPressName = (text: string) =>
+    new RegExp(`(^|[/'"])${PRESS_DIR}(\\/|$|['"])`).test(text) ||
+    globReaches(text, ['shelf', PRESS_DIR]);
+export const isPressPath = (path: string) =>
+    new RegExp(`(^|/)${PRESS_DIR}(/|$)`).test(path);
+export const PRESS_WRITE = {
+    door: "ask dima to press the button on herdr's band or on the seat's own band; a read goes through cat or jq",
+    rule: 'press-write',
+    targets: [PRESS_DIR],
+    why: "herdr's band writes dima's 🐦‍🔥 🔥 ⏰ 💨 presses there and every seat acts on them, so a seat's write would press for him (an AFK press sets every seat acting on its own picks)",
+} as const satisfies Refusal;
+// as the ticks fence: a seat's tool call never writes the press folder, herdr's band is no cc tool call (FRM-568)
+export function pressWrite(
+    command: string,
+    cwd: string,
+    lands: ReadonlySet<string> = new Set(),
+    landsDir: ReadonlySet<string> = new Set(),
+): Refusal | undefined {
+    return touchesStore(
+        command,
+        cwd,
+        (t) => isPressName(t) || lands.has(t),
+        (t) => isShelfDir(t) || landsDir.has(t),
+        true,
+    )
+        ? PRESS_WRITE
+        : undefined;
+}
 // every word the store checks judge, so the hook can resolve each on disk before they run
 export function fenceTexts(command: string, cwd: string) {
     const seen = new Set<string>();

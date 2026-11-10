@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T18:52:00Z'
+updated_date: '2026-11-10T20:02:00Z'
 labels:
   - m
   - clio-main
@@ -1573,4 +1573,58 @@ PK-363:W646 (2026-11-10 20:51, dima): I want asks to be ticked and to be able to
 PK-363:W647 (2026-11-10 20:51, dima): Until that event I should have the ability to untick my tick.
 PK-363:W648 (2026-11-10 20:51, dima): it scrolls but too fast.
 PK-363:W649 (2026-11-10 20:51, dima): what is it? ❓
+
+PK-363:W650 (2026-11-10 20:25, dima): Probably close it because, from what I understood, Rex doesn't support mods the same way as Herdr.
+PK-363:W651 (2026-11-10 20:25, dima): I want custom UI and Rex only allows plain CC terminal mods view, which I don't like.
+PK-363:W652 (2026-11-10 20:25, dima): If Rex doesn't have any customizable UI parts, then this ticket is uncertain and can be closed
+PK-363:W653 (2026-11-10 20:25, dima): correction: 522 is about herdr maybe? ❓
+PK-363:W654 (2026-11-10 20:25, dima): do next step in a sweep plan
+
+PK-363:W655 (2026-11-10 20:54, dima): you need a SW. whats next for herder lane? ❓
+PK-363:W656 (2026-11-10 21:00, dima): FRM-568: shape after Sw, and it should go first, becase it blocks herder. refresh glides.
+correction (helga): W631's «remt order» is clio's chore reading «execution order»; the appended line keeps the typed words
+
+PK-363:W657 (2026-11-10 20:59, dima): buttons approved.
+PK-363:W658 (2026-11-10 20:59, dima): It is a mod slaying ticket? Maybe it is your ticket, not Wing 1? ❓
+
+PK-363:W659 (2026-11-10 21:26, dima): chatter message history wisp: my messages that i sent you mid-turn seem to be lost from history. after «ok solve them» i sent you few but they are not present. (SS proof) [Image #29]
+
+PK-363:W660 (2026-11-10 21:27, dima): chatter wisp: a history is very laggy. when i open wing 1 thread it takes ~2s to unfreeze so i can scroll thread up to read it
+
+PK-363:W661 (2026-11-10 21:34, dima): i do not like term «seat» propose another. why you keep telling «seat» is it in your habits? or sneaked into vibe words? ❓
+PK-363:W662 (2026-11-10 21:34, dima): frm568 — So herdr needs some kind of store, right, for the states for the buttons? And a name that we grill on is for that store for herdr. maybe then x-herdr-state-store? ❓
+
+PK-363:W663 (2026-11-10 21:19, dima): [Image #11] Can you print this in a bullet list? I can't read the whole of the text ❓
+
+PK-363:W664 (2026-11-10 21:40, dima): chatter (text history) in your window not unresponsive - it is frozen. so i move to c desktop app to write you messages. can herder codie take a look when he have spare minute? ❓ note: unfrozen but laggy
+
+correction (helga): PK-363:W656 lives in FRM-568 as FRM-568:W4, folded «shape FRM-568 after the second wind, and it should go first, because it blocks herdr.»; this line is a pointer
+correction (helga): W657 and W658 were typed at 20:58; W658's «mod slaying» is dictation for «mods lane»
+
+PK-363:W665 (2026-11-10 21:52, dima): [Image #30] thread.
+PK-363:W666 (2026-11-10 21:52, dima): then — tell where you are and what is your plan, what can you do? ❓
+PK-363:W667 (2026-11-10 21:52, dima): herder update released (SS), but i wont upgrade while everyone alive i think it may cause issue to update mid fleet work. i update after everyone stopped. you — read a diff. whats interesting in an update.
+PK-363:W668 (2026-11-10 21:52, dima): i think chatter needs a grill/groom today. so tomorrow we can just start executing. so let's grill it today.
+PK-363:W669 (2026-11-10 21:52, dima): first thing i want to know is how custom chatter is currently drawn. what engine it uses? some md renderer? ❓
+PK-363:W670 (2026-11-10 21:52, dima): why it is so slow? ❓
+PK-363:W671 (2026-11-10 21:52, dima): is it worth optimizing or maybe search for something better? ❓
+PK-363:W672 (2026-11-10 21:52, dima): better engine and/or better complete solution to borrow? ❓ (zoo could be not a good pick for borrowing)
+PK-363:W673 (2026-11-10 21:52, dima): for example i found this https://herdr.dev/layouts/eliasstravik/shepherdr/ , https://github.com/eliasstravik/shepherdr/tree/main. it seems to also have custom chatter. i think there are lot of example like this and it is worth to research a solid high performance driver engine for my chatter. how do you think? ❓
+PK-363:W674 (2026-11-10 21:52, dima): read changelog, then propose how to solve chatter topic. what i do not want — that we build around wrong foundation. propose how to solve.
+PK-363:W675 (2026-11-10 21:52, dima): you also need a SW soon. so print herder changelog first, and move my chatter request somewhere maybe in pocket so you can resume it after SW.
+
+PK-363:W676 (2026-11-10 22:01, dima): Did you do wide research for more alternatives aside from the example I dropped to you? ❓
+PK-363:W677 (2026-11-10 22:01, dima): I just randomly found that the link that I provided you with is that Shepherd's mod. I don't know if it is good. It was just randomly found stuff.
+PK-363:W678 (2026-11-10 22:01, dima): Answer if you did wide research.
+PK-363:W679 (2026-11-10 22:01, dima): If not do wide research to find a truly good and verified renderer and tell us what we actually can pull into the Herdr.
+PK-363:W680 (2026-11-10 22:01, dima): I am interested in how Herdr is set up.
+PK-363:W681 (2026-11-10 22:01, dima): What is the best tool for us to render my chatter in the Herdr? ❓
+PK-363:W682 (2026-11-10 22:01, dima): The biggest issue from what I saw now is the performance. The FPS is low, about 30, and it is very laggy.
+PK-363:W683 (2026-11-10 22:01, dima): I want it to be very customizable.
+PK-363:W684 (2026-11-10 22:01, dima): I think the mandatory feature is rich text formatting support because Markdown is good. Why not? ❓
+PK-363:W685 (2026-11-10 22:01, dima): I also want other features that I asked for in the inbox, related to my wishes about chatter.
+PK-363:W686 (2026-11-10 22:01, dima): For example, your ability to insert embedded terminal.
+PK-363:W687 (2026-11-10 22:01, dima): Windows with pre-filled prompts so I can just click them.
+PK-363:W688 (2026-11-10 22:01, dima): The copy-pasted blocks.
+PK-363:W689 (2026-11-10 22:01, dima): Maybe even images at some point, not soon, later.
 <!-- SECTION:NOTES:END -->

@@ -22,7 +22,6 @@ import {
     SEATS_KEY,
     asksOf,
     byName,
-    currentSid,
     dropPress,
     inListOrder,
     literalAngles,
@@ -32,6 +31,7 @@ import {
     runningPids,
     savePress,
     seatFacts,
+    stateOfPid,
     tickState,
     untickDoor,
     waitOf,
@@ -45,7 +45,7 @@ import {
 /** @typedef {{ id?: string, title: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
 
 const CLAUDE = `${home()}/.claude`;
-const STORE = `${CLAUDE}/plugins/store/x-mod-stash_inline-99d499f0f4e0.json`;
+const STATES = `${CLAUDE}/shelf/herdr-state`;
 const LANES = `${CLAUDE}/shelf/lanes.json`;
 const USAGE = `${CLAUDE}/shelf/cc-usage-window.json`;
 const SESSIONS = `${CLAUDE}/sessions`;
@@ -64,11 +64,19 @@ async function json(path) {
     }
 }
 
+// each session's state file x-mod-stash writes (`fleet.json` beside them holds the fleet-wide states)
+async function states() {
+    const names = (
+        await readdir(STATES).catch(() => /** @type {string[]} */ ([]))
+    ).filter((f) => f.endsWith('.json') && f !== 'fleet.json');
+    return Promise.all(names.map((f) => json(`${STATES}/${f}`)));
+}
+
 /**
- * @param {Record<string, any>} store
+ * @param {any[]} shelf
  * @returns {Promise<Row[]>}
  */
-async function sessions(store) {
+async function sessions(shelf) {
     const names = (
         await readdir(SESSIONS).catch(() => /** @type {string[]} */ ([]))
     ).filter((f) => f.endsWith('.json'));
@@ -90,22 +98,20 @@ async function sessions(store) {
         .filter((s) => !live || live.has(s.pid))
         .map(
             /** @returns {Row} */ (s) => {
-                const sid = currentSid(store, s.sessionId);
+                const state = stateOfPid(shelf, s.pid);
+                const sid = state?.sid ?? s.sessionId;
                 return {
-                    asks: asksOf(store, sid),
-                    context: store[`context:${sid}`] ?? null,
-                    model: store[`model:${sid}`] ?? null,
+                    asks: asksOf(state),
+                    context: state?.ctx ?? null,
+                    model: state?.model ?? null,
                     name: s.name,
                     pending: new Map(),
-                    phases: phasesOf(store, sid),
+                    phases: phasesOf(state),
                     pid: s.pid,
                     sid,
                     status: s.status ?? 'unknown',
-                    taken: store[`herdr-read:${sid}`] ?? 0,
-                    wait: waitOf(
-                        s.status ?? 'unknown',
-                        store[`reply:${sid}`]?.wait,
-                    ),
+                    taken: state?.taken ?? 0,
+                    wait: waitOf(s.status ?? 'unknown', state?.wait),
                 };
             },
         );
@@ -208,11 +214,7 @@ export default class FleetBoard extends View {
         this.week = null;
         cx.timer.every(SEATS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
-        for (const folder of [
-            SESSIONS,
-            `${CLAUDE}/plugins/store`,
-            `${CLAUDE}/shelf`,
-        ]) {
+        for (const folder of [SESSIONS, STATES, `${CLAUDE}/shelf`]) {
             cx.spawn(async (cx) => {
                 for (;;) {
                     const changed = await watchFolder(folder);
@@ -232,12 +234,12 @@ export default class FleetBoard extends View {
     /** @param {Context} cx */
     reload(cx) {
         cx.spawn(async (cx) => {
-            const store = (await json(STORE)) ?? {};
+            const shelf = await states();
             const lanes = (await json(LANES))?.lanes ?? [];
             this.week =
                 (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
                 null;
-            this.rows = (await sessions(store)).sort(
+            this.rows = (await sessions(shelf)).sort(
                 (a, b) =>
                     (RANK[STATE[a.status]] ?? 2) -
                         (RANK[STATE[b.status]] ?? 2) || byName(a.name, b.name),

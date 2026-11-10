@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-10T18:33:00Z'
+updated_date: '2026-11-10T19:56:00Z'
 labels:
   - s
   - clio-main
@@ -23,19 +23,27 @@ ordinal: 1000
 - [ ] #5 grill 5 round 2: the setup's name (seven), then wing 1's zoo pairs for his keep-or-go-back, his own sounds, a tick for every refusal
 - [ ] #6 the halt's milestone refresh, from wing 1's sweep (dima 20:31: «all milestone ticket execution order is properly groomed and saved in Linear … next boot … you don't forget the order»): drop or flip the two blocks links that contradict his ticked mods order (FRM-504 blocks FRM-519, FRM-505 blocks FRM-504); point the initiative's two queues and the halt handoff at .scratch/herdr/scopes-audit.md § the whole execution order; give tonight's four ticketless herdr builds (deck beautify, strip removal, orbit in the agents list's order, tab short labels) and the watcher's «main.js lands last» a ticket line and an FTR line
 - [ ] #7 the 💡💡💡💡💡 line to dima (PK-363:W571) fires only when FRM-544 closes with his W4 met: a tick runs a delete and a merge, proven by his own press
-- [ ] #8 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #9 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #10 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
-- [ ] #11 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
-- [ ] #12 📅 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line — on: 2026-11-10
-- [ ] #13 📅 start crow and helga in herdr panes (PK-363:W119, W146–W148, W156): `crow:start opus --pane`, helga on CLIO_SIDECAR_PANE=1 (d6756fd9); prove crow's socket wake in harvest.log and one crow:stop, else fall back to --bg — on: 2026-11-10
-- [ ] #14 📅 the theme-switch probe, after tonight's halt, main clio alone, no other seat live (dima 18:11: «after we halt today we probe it. when no one else left. important!») — on: 2026-11-10
-- [ ] #15 📅 after the halt, before the theme probe: the layout-write probe from a Rex tab, ~/frame/.scratch/herdr-lane/probe-layout-write.sh, a throwaway tab focused by dima first (his o58 tick and «lets do with you after halt + theme probe», PK-363:W613) — on: 2026-11-10
-- [ ] #16 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #17 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
-- [ ] #18 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #19 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #20 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #8 mods lane order (dima 21:00): FRM-568 first (signed, dispatched, steps 10a–10h), then the untick half, FRM-544 rest, FRM-519; clio owes dima seven names for the seat files shelf folder
+- [ ] #9 FRM-571 (holds land in a shelf file, x stops reading the private store): Triage, born by wing 1 on his 21:30 tick; shape and his sign, then the mods lane right after FRM-568
+- [ ] #10 mods lane riders, re-signed 21:37: FRM-519 item 22 (the raw api sign door) and FRM-524 two lines (the guard asks x for the hold path and the brief stamp); in the lane plan not-greenlit, spec sections owed at their turn
+- [ ] #11 «seat» → «thread» (dima ticked 21:42: he never weighed «seat»): one scripted sweep with a dry run, about 220 doc hits in 40 files (herdr FTR 57, guard FTR 19, stash FTR 18, x:herdr 15, the glossary, the wing line in fleet-vibe and identity), each line read for sense; 202 code hits in 22 files move when that code is next touched; done = rg for the old word prints only code and dated history
+- [ ] #12 the chat grill TODAY (dima 21:52, groomed into PK-363): the foundation first, how x-herdr-chatter draws, why it is slow, fix or borrow (shepherdr and others); two reads land in .scratch/herdr/chat-engine-ours.md and chat-engine-prior-art.md; then a grill round over FRM-562 with the facts, so tomorrow only executes
+- [ ] #13 herdr 0.1.15 and herdr-core 0.1.20 wait for the halt: the update quits herdr once and can end terminals opened before core 0.1.20, so dima updates only after every thread stopped; then every thread is reopened once; the notes are in .scratch/herdr/herdr-app-changelog-0.1.15.md
+- [ ] #14 from wing 1 sweep (21:56): FRM-538 needs «✍️ sign FRM-538» at its dispatch (nine W-lines joined as tiny after its last sign, his tick); FRM-489 gets a «changed, text unchanged» line at dispatch; the sign hash reader wants a fix (linear escapes ~, [x] and _clio/ inside the body, and words after the hash on a sign line), mine, beside ticket-sign.ts
+- [ ] #15 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #16 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #17 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
+- [ ] #18 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
+- [ ] #19 📅 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line — on: 2026-11-10
+- [ ] #20 📅 start crow and helga in herdr panes (PK-363:W119, W146–W148, W156): `crow:start opus --pane`, helga on CLIO_SIDECAR_PANE=1 (d6756fd9); prove crow's socket wake in harvest.log and one crow:stop, else fall back to --bg — on: 2026-11-10
+- [ ] #21 📅 the theme-switch probe, after tonight's halt, main clio alone, no other seat live (dima 18:11: «after we halt today we probe it. when no one else left. important!») — on: 2026-11-10
+- [ ] #22 📅 after the halt, before the theme probe: the layout-write probe from a Rex tab, ~/frame/.scratch/herdr-lane/probe-layout-write.sh, a throwaway tab focused by dima first (his o58 tick and «lets do with you after halt + theme probe», PK-363:W613) — on: 2026-11-10
+- [ ] #23 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #24 📅 FRM-495: read the round rule first live day (each round-lost row in reply-check.tsv: real or a false stop), then its close with the ask-guard — on: 2026-11-11
+- [ ] #25 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #26 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #27 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #28 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -145,4 +153,10 @@ done 2026-11-10 16:58: 📅 mods lane beside the herdr lane (o105, PK-363:W142, 
 done 2026-11-10 16:58: ⏳ FRM-524 operator-override switch, needs human — waits for: dima's flip word (FRM-524 In Progress)
 
 done 2026-11-10 19:28: 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move (FRM-556 Done)
+
+done 2026-11-10 21:20: 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11 (FRM-483 Done)
+
+done 2026-11-10 21:33: FRM-495 (clio runs lean, his 21:12 go): the round rule that blocks at Stop, the ? map and the verdict word in reply-check.py, replayed over the logged prompts and replies (FRM-495 In Progress)
+
+correction 21:45: the FRM-495 line ticked at 21:33 covers the four rules that landed (the round refusal, the buried round, the note-only reply, the plain verdict); the ? map was cut on dima's tick o77
 <!-- SECTION:NOTES:END -->

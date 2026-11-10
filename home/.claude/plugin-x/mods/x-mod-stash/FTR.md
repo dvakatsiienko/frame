@@ -664,6 +664,25 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - and a pick opening with `merge`, a `yes` or a `squash and` before it, `merge:` apart, or naming a merge beside a pr, on a text that is no sign ask and has neither the pr's url nor `⚠️ merge <repo>#<n>`, the two shapes `--dima-ok` reads
   - proof: tests/orbit.test.ts::add refuses the pick …; ::add passes …; ::follow refuses a sign pick on a text without the shape; ::follow refuses a text losing the shape under a kept sign pick; ::follow passes the sign shape; ::follow refuses a merge pick on a text naming no pr; sign-ask.test.ts::both copies read …; ::orbit and the guard read …
 
+## the shelf — what herdr draws (FRM-568)
+
+herdr reads no private store (frame `AGENTS.md` § the boundary), so every thread writes what herdr's deck and band draw to the shelf, in `~/.claude/shelf/herdr-state/` (dima's name, 21:36); the cc band, board and deck read as before (FRM-568:W2).
+
+- ✅ every thread keeps its own state file on the shelf
+  - makes: `~/.claude/shelf/herdr-state/<sid>.json`: `v`, `sid`, `pid` (the `claude` process the registry file is named for), `at`, `name`, `label`, the open asks as `asks:<sid>` holds them (mark, lock, gated), the plan lines, the wait, taken (the herdr-read watermark), `succ` (the id a /clear continued from), ctx, model, hot, wind, assumed, `rounds` (null for now)
+  - given a running thread with an open ask and a plan, then its file holds them, written whole through a temp file and a rename, so a reader beside a tight write loop never meets half a file; it is rewritten when its asks change and every third poll, and an unchanged state costs no write
+  - given a thread ran `/clear` or ended, then its old id's file is gone and the new id's names the old one as `succ`; given a state file whose pid is dead, then the sweep (every 15th poll) removes it
+  - proof: tests/herdr-state.test.ts::a session's state file holds its asks, plan, wait, taken, ctx and model; a reader beside a tight write loop never meets half a file; a /clear drops the old id's file and the new id's names it as its succ; a state file whose pid is dead is pruned at the next poll's sweep
+- ✅ the fleet file holds ⏰ and 💨 with their times
+  - makes: `~/.claude/shelf/herdr-state/fleet.json`: `{v, afk: {at, on}, waker: {at, on}}`, rewritten at every set and at the poll
+  - proof: tests/herdr-state.test.ts::the fleet file holds afk and the waker, each with its time
+
+- ✅ herdr's band presses reach the thread as its own band's would (FRM-568 slice 5)
+  - given herdr's band appended a press to `~/.claude/shelf/band-presses/band.jsonl` (`{at, button, on, sid?}`; herdr alone writes and trims it, the guard's `press-write` fences every thread out)
+  - when a thread polls (every 4 s), then it takes each line past its `band-read:<sid>` watermark, which starts at the thread's registry `startedAt`, so a fresh thread replays nothing older; a line dated ahead of now is never taken
+  - then 🐦‍🔥 and 🔥 apply only in the thread their `sid` names, once; ⏰ and 💨 apply only when the line is newer than the state's stamped `at`, so the latest press wins whichever band it came from; each sets its state through the cc band's own set-to-state function, never a flip, and an AFK on turns ⏰ on as the cc button does
+  - proof: tests/herdr-state.test.ts::a fresh thread replays no press older than its start; a wind press naming this thread asks for its wind, once; a wind press naming another thread is not taken here; a press dated ahead of now is never taken; a herdr AFK press turns afk on and ⏰ on, as the cc button does; a cc AFK press after a herdr one wins over a thread that reads the herdr line late; a hot press naming this thread sets its hot; a press taken once is never taken again over a later change
+
 ## the prompt — the tickets it names
 
 - ✅ a prompt that names a ticket hands the session the ticket
