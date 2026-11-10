@@ -41,6 +41,9 @@ const LANES = `${CLAUDE}/shelf/lanes.json`;
 const SESSIONS = `${CLAUDE}/sessions`;
 const TICKS = `${CLAUDE}/shelf/orbit-ticks`;
 const SENT_MS = 2 * 60 * 1000;
+// a gated ask's 🛎️ here counts at x-mod-guard only once its fence on the ticks folder is on main (FRM-544 slice 1):
+// until then a gated ask keeps «🚦 tick in its pane». the 🛎️ stays a click: a keyed mod command is any shell's
+const GATED_TICK = false;
 
 /**
  * @param {string} path
@@ -488,11 +491,11 @@ export default class FleetBoard extends View {
                         .gap(6)
                         .items_center()
                         .child(
-                            isGuardGated(ask.text)
+                            !GATED_TICK && isGuardGated(ask.text)
                                 ? button(
                                       'seat-board',
                                       '🚦 tick in its pane',
-                                      'types /board into its pane: Enter opens its own board, where a 🛎️ tick is the word x-mod-guard reads',
+                                      "opens the seat's own board in its terminal, where a 🛎️ tick is the word x-mod-guard reads",
                                       (cx) =>
                                           cx.spawn((cx) =>
                                               this.openSeatBoard(cx, s, ask),
