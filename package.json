@@ -32,6 +32,7 @@
         "speak:admin": "node ./speak/server.ts",
         "speak:admin-dev": "pnpm --filter speak dev",
         "speak:admin-build": "pnpm --filter speak build",
+        "clio:start": "./_clio/script/clio-start.sh",
         "crow:keep-cache-hot": "node ./home/.claude/plugin-x/skills/crew-adviser/scripts/keep-cache-hot.ts",
         "crow:start": "node ./home/.claude/plugin-x/skills/crew-adviser/scripts/start.ts",
         "crow:stop": "node ./home/.claude/plugin-x/skills/crew-adviser/scripts/stop.ts",
