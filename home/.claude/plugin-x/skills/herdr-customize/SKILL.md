@@ -44,6 +44,7 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 - 📌 a mod linked into herdr never hot-reloads (a write through the link sends the watched dir no event), so no mod is linked: a landed real folder reloads live
 - a shipped mod or layout belongs to herdr and is replaced on every start; our copy comes from `mod.clone` or `layout.clone` and never takes upstream fixes, so it is diffed against the new shipped one at each herdr update
 - 📌 `layout.clone` switches dima's shown layout to the clone: ask before running it
+- 📌 a `layouts/` save has killed a thread: its ask says so
 - one mod per idea; touch only the mod or file the job names
 
 ## building blocks we paid for

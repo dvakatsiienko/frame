@@ -36,7 +36,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 ## never
 
-- switch herdr's theme or settings while seats are live: it kills them
+- change a layout or theme while threads live: it kills the focused one
 - read a cc mod's private store: draw from its file in `~/.claude/shelf/`
 - give an unlocking button (a sign, a merge, a delete) a keyed command: any shell reaches a key
 - restart or kill a live seat for a proof: a throwaway seat, killed after
