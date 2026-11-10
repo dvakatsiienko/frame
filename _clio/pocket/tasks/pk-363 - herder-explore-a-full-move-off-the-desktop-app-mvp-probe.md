@@ -1041,5 +1041,5 @@ PK-363:W305 (2026-11-10 inbox, dima) if herder supports theming, let's have supp
 
 PK-363:W306 (2026-11-10 inbox, dima) goal 0 is done when i am happy with the herder ui and ux (very sharp, pretty, beautiful) and you are happy with its performance and accessibility; automation is welcome where it helps (restores W206's done-test sense, wishkeeper 14:28)
 
-PK-363:W260 refold (dima 14:47, o4: «i do not recall this. ignore line, delete it.»): the clause «herder is not a glider» is dropped; the rest of W260 stands
+refold of the W260 line (dima 14:47, o4: «i do not recall this. ignore line, delete it.»): the clause «herder is not a glider» is dropped; the rest of W260 stands
 <!-- SECTION:NOTES:END -->
