@@ -192,3 +192,113 @@ test('the fleet file holds afk and the waker, each with its time', async ($, on)
         waker: { at: 6, on: true },
     });
 });
+
+// FRM-568 slice 5: herdr's band appends his presses; each thread takes what is its own, once, from its start on
+const PRESSES = '/home/.claude/shelf/band-presses/band.jsonl';
+async function pressed(
+    $: Engine,
+    on: On,
+    lines: (now: number) => Record<string, unknown>[],
+    startedAt = -60_000,
+) {
+    const s = await session($, on);
+    s.files.set(
+        '/home/.claude/sessions/100.json',
+        JSON.stringify({ pid: 100, sessionId: A, startedAt }),
+    );
+    const now = s.clock.now();
+    s.files.set(
+        PRESSES,
+        lines(now)
+            .map((l) => JSON.stringify(l))
+            .join('\n'),
+    );
+    await s.clock.advance(4_000);
+    return s;
+}
+
+test('a fresh thread replays no press older than its start', async ($, on) => {
+    const s = await pressed(
+        $,
+        on,
+        (now) => [
+            { at: now - 9_000, button: 'wind', on: true, sid: A },
+            { at: now - 8_000, button: 'hot', on: true, sid: A },
+            { at: now - 7_000, button: 'hot', on: false, sid: A },
+        ],
+        -500,
+    );
+    const hotBefore = s.store.get(`hot:${A}`);
+    await s.clock.advance(4_000);
+    expect([s.store.get(`wind:${A}`), s.store.get(`hot:${A}`)]).toEqual([
+        undefined,
+        hotBefore,
+    ]);
+});
+
+test('a wind press naming this thread asks for its wind, once', async ($, on) => {
+    const s = await pressed($, on, (now) => [
+        { at: now - 1_000, button: 'wind', on: true, sid: A },
+    ]);
+    const first = (s.store.get(`wind:${A}`) as { state?: string })?.state;
+    s.store.set(`wind:${A}`, { at: 1, state: 'writing' });
+    await s.clock.advance(4_000);
+    expect([
+        first,
+        (s.store.get(`wind:${A}`) as { state?: string })?.state,
+    ]).toEqual(['asked', 'writing']);
+});
+
+test('a wind press naming another thread is not taken here', async ($, on) => {
+    const s = await pressed($, on, (now) => [
+        { at: now - 1_000, button: 'wind', on: true, sid: B },
+    ]);
+    expect(s.store.get(`wind:${A}`)).toBeUndefined();
+});
+
+test('a press dated ahead of now is never taken', async ($, on) => {
+    const s = await pressed($, on, (now) => [
+        { at: now + 60_000, button: 'wind', on: true, sid: A },
+    ]);
+    expect(s.store.get(`wind:${A}`)).toBeUndefined();
+});
+
+test('a herdr AFK press turns afk on and ⏰ on, as the cc button does', async ($, on) => {
+    const s = await pressed($, on, (now) => [
+        { at: now - 1_000, button: 'afk', on: true },
+    ]);
+    expect([
+        (s.store.get('afk') as { on?: boolean })?.on,
+        (s.store.get('waker') as { on?: boolean })?.on,
+    ]).toEqual([true, true]);
+});
+
+test('a cc AFK press after a herdr one wins over a thread that reads the herdr line late', async ($, on) => {
+    const s = await pressed($, on, () => []);
+    const now = s.clock.now();
+    s.files.set(
+        PRESSES,
+        JSON.stringify({ at: now - 2_000, button: 'afk', on: true }),
+    );
+    s.store.set('afk', { at: now - 1_000, on: false });
+    await s.clock.advance(4_000);
+    expect((s.store.get('afk') as { on?: boolean })?.on).toBe(false);
+});
+
+test('a hot press naming this thread sets its hot', async ($, on) => {
+    const s = await pressed($, on, (now) => [
+        { at: now - 1_000, button: 'hot', on: true, sid: A },
+    ]);
+    expect(s.store.get(`hot:${A}`)).toMatchObject({
+        since: expect.any(Number),
+    });
+});
+
+test('a press taken once is never taken again over a later change', async ($, on) => {
+    const s = await pressed($, on, (now) => [
+        { at: now - 1_000, button: 'hot', on: false, sid: A },
+    ]);
+    s.store.set(`hot:${A}`, { since: 1 });
+    await s.clock.advance(4_000);
+    expect(s.store.get(`hot:${A}`)).toEqual({ since: 1 });
+});

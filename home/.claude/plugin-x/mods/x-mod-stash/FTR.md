@@ -677,6 +677,12 @@ herdr reads no private store (frame `AGENTS.md` § the boundary), so every threa
   - makes: `~/.claude/shelf/herdr-state/fleet.json`: `{v, afk: {at, on}, waker: {at, on}}`, rewritten at every set and at the poll
   - proof: tests/herdr-state.test.ts::the fleet file holds afk and the waker, each with its time
 
+- ✅ herdr's band presses reach the thread as its own band's would (FRM-568 slice 5)
+  - given herdr's band appended a press to `~/.claude/shelf/band-presses/band.jsonl` (`{at, button, on, sid?}`; herdr alone writes and trims it, the guard's `press-write` fences every thread out)
+  - when a thread polls (every 4 s), then it takes each line past its `band-read:<sid>` watermark, which starts at the thread's registry `startedAt`, so a fresh thread replays nothing older; a line dated ahead of now is never taken
+  - then 🐦‍🔥 and 🔥 apply only in the thread their `sid` names, once; ⏰ and 💨 apply only when the line is newer than the state's stamped `at`, so the latest press wins whichever band it came from; each sets its state through the cc band's own set-to-state function, never a flip, and an AFK on turns ⏰ on as the cc button does
+  - proof: tests/herdr-state.test.ts::a fresh thread replays no press older than its start; a wind press naming this thread asks for its wind, once; a wind press naming another thread is not taken here; a press dated ahead of now is never taken; a herdr AFK press turns afk on and ⏰ on, as the cc button does; a cc AFK press after a herdr one wins over a thread that reads the herdr line late; a hot press naming this thread sets its hot; a press taken once is never taken again over a later change
+
 ## the prompt — the tickets it names
 
 - ✅ a prompt that names a ticket hands the session the ticket

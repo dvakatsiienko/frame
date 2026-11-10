@@ -31,7 +31,9 @@ import {
     ORBIT_TEXT_MAX,
     ORBIT_TOOL,
     PLAN_MAX,
+    PRESS_DIR,
     allAsksTicks,
+    bandPressLines,
     hasPlanMark,
     herdrTicks,
     isAllAsksMarkable,
@@ -3555,6 +3557,7 @@ const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL, WIND] as const;
 
 async function forget($: EngineInterface, sid: string) {
     await dropState($, sid).catch(() => undefined);
+    await $.store.delete(BAND_READ + sid);
     for (const prefix of SESSION_KEYS) await $.store.delete(prefix + sid);
     for (const key of await $.store.keys())
         if (key.startsWith(`${MARKS}${sid}:`)) await $.store.delete(key);
@@ -3921,6 +3924,45 @@ async function pruneStates($: EngineInterface) {
             await $.process.run(['rm', '-f', `${dir}/${f.name}`]);
     }
 }
+// how far this thread read the band presses: the `at` of the newest line taken, from the thread's start on
+const BAND_READ = 'band-read:';
+// herdr's band presses reach this thread as its own band's would: wind and hot only for their sid, ⏰ and 💨 only when
+// newer than the state they set, so the latest press wins whichever band it came from (FRM-568 slice 5)
+async function takeBandPresses($: EngineInterface) {
+    const sid = await currentId($);
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!sid || !home) return;
+    const now = await $.clock.now();
+    const read = await $.store.get(BAND_READ + sid).catch(() => undefined);
+    const after =
+        typeof read === 'number'
+            ? read
+            : ((await registry($).catch(() => []))
+                  .filter((r) => r.base.sid === sid)
+                  .map((r) => r.startedAt)
+                  .find((at) => typeof at === 'number') ?? now);
+    const text = await $.fs
+        .read(`${home}/.claude/shelf/${PRESS_DIR}/band.jsonl`)
+        .catch(() => '');
+    const presses = bandPressLines(text, after, now);
+    for (const p of presses) {
+        if (p.button === 'wind' && p.sid === sid) await setWind($, sid, p.on);
+        if (p.button === 'hot' && p.sid === sid) {
+            await setHot($, p.on);
+            await armHot($);
+        }
+        if (p.button !== 'waker' && p.button !== 'afk') continue;
+        const key = p.button === 'waker' ? WAKER_KEY : AFK_KEY;
+        const stored = (await $.store.get(key)) as { at?: number } | undefined;
+        if (typeof stored?.at === 'number' && stored.at >= p.at) continue;
+        if (p.button === 'waker') await setWaker($, p.on);
+        else await setAfk($, p.on);
+    }
+    const last = Math.max(after, ...presses.map((p) => p.at));
+    if (last !== read) await $.store.set(BAND_READ + sid, last);
+    if (presses.length) await load($);
+}
+
 // told once per process: a shelf that cannot be written fails the same way every poll
 let isShelfTold = false;
 async function keepShelf($: EngineInterface) {
@@ -6007,6 +6049,7 @@ export const register: Register = (on) => {
                     await freshMeter($).catch(() => undefined);
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
+                    await takeBandPresses($).catch(() => undefined);
                     await pollShelf($);
                     await quietIdle($).catch(() => undefined);
                     await quietBooks($).catch(() => undefined);
