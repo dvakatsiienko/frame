@@ -5,6 +5,7 @@ import {
     asksOf,
     currentSid,
     draftOf,
+    isBoardOpen,
     isGuardGated,
     literalAngles,
     phasesOf,
@@ -222,5 +223,19 @@ describe('ask text draws as typed', () => {
         expect(literalAngles('run `x lane commit <msg>` now')).toBe(
             'run `x lane commit <msg>` now',
         );
+    });
+});
+
+describe("a seat's board reads open from its band", () => {
+    test('a bracketed 🚦 reads open', () => {
+        expect(
+            isBoardOpen(' 🔭 not waiting   🐦‍🔥 🔥 [ ⏰ ] [ 💨 ] 🎛️ [ 🚦 ] [-]'),
+        ).toBe(true);
+    });
+
+    test('a bare 🚦 reads closed', () => {
+        expect(
+            isBoardOpen(' 🔭 not waiting   🐦‍🔥 [ 🔥 ] [ ⏰ ] [ 💨 ] 🎛️ 🚦 [-]'),
+        ).toBe(false);
     });
 });

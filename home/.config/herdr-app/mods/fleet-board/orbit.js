@@ -107,6 +107,12 @@ export function draftOf(screen) {
 }
 
 /**
+ * x-mod-stash's band brackets its 🚦 while the seat's board is open
+ * @param {string} screen
+ */
+export const isBoardOpen = (screen) => screen.includes('[ 🚦 ]');
+
+/**
  * markdown reads `<word>` as html and drops it; a backslash keeps it, outside code spans, where a backslash would show
  * @param {string} text
  */

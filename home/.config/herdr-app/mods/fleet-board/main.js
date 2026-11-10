@@ -20,6 +20,7 @@ import {
     asksOf,
     currentSid,
     draftOf,
+    isBoardOpen,
     isGuardGated,
     literalAngles,
     phasesOf,
@@ -162,6 +163,8 @@ export default class FleetBoard extends View {
         this.sent = new Map();
         /** @type {string | null} */
         this.pressError = null;
+        /** @type {string | null} */
+        this.pressNote = null;
         this.loadedAt = null;
         this.reload(cx);
         for (const folder of [
@@ -377,6 +380,7 @@ export default class FleetBoard extends View {
     /** @param {Context} cx @param {Row} s @param {Ask} ask */
     async openSeatBoard(cx, s, ask) {
         this.pressError = null;
+        this.pressNote = null;
         cx.notify();
         /** @param {string} why */
         const refuse = (why) => {
@@ -400,15 +404,19 @@ export default class FleetBoard extends View {
                 return refuse(
                     screen.stderr.trim() || 'its screen did not read',
                 );
-            const draft = draftOf(screen.stdout);
-            if (draft && draft !== '/board')
-                return refuse('its prompt box holds a draft');
+            // the chat view hides the terminal: zoo's `views` stack flips to it, as claude-chat's own Terminal switch
+            // does; a layout with no such stack refuses this one step and stays as it is
             run('pane.focus', { terminal: seat.address });
-            // the chat view hides the prompt box: zoo's `views` stack flips to its terminal, as claude-chat's own
-            // Terminal switch does; a layout with no such stack refuses this one step and stays as it is
             try {
                 run('layout.select', { child: 'main', stack: 'views' });
             } catch {}
+            if (isBoardOpen(screen.stdout)) return;
+            const draft = draftOf(screen.stdout);
+            if (draft && draft !== '/board')
+                return refuse(
+                    'its prompt box holds a draft: send or clear it, then 🚦 again',
+                );
+            // a busy seat queues /board until its turn ends: ctrl+enter would send it now, but it cuts the turn short
             const keys = draft
                 ? ['enter']
                 : screen.stdout.includes('-- NORMAL --')
@@ -416,7 +424,11 @@ export default class FleetBoard extends View {
                   : ['/', 'b', 'o', 'a', 'r', 'd', 'enter'];
             const typed = await hc(['keys', seat.address, ...keys]);
             if (typed.code !== 0)
-                refuse(typed.stderr.trim() || '/board not opened');
+                return refuse(typed.stderr.trim() || '/board not opened');
+            if (seat.status === 'working') {
+                this.pressNote = `${ask.id}: its board opens when its turn ends, 🛎️ there`;
+                cx.notify();
+            }
         } catch (err) {
             refuse(err instanceof Error ? err.message : String(err));
         }
@@ -679,6 +691,15 @@ export default class FleetBoard extends View {
                                 .text_size(SIZE.meta)
                                 .text_color(t.blocked)
                                 .child(`⚠️ ${this.pressError}`),
+                        ),
+                    )
+                    .when(Boolean(this.pressNote), (el2) =>
+                        el2.child(
+                            div()
+                                .px(10)
+                                .text_size(SIZE.meta)
+                                .text_color(t.muted)
+                                .child(`⏳ ${this.pressNote}`),
                         ),
                     ),
             )
