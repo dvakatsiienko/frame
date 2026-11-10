@@ -506,6 +506,13 @@ function utf8(bytes) {
     return decodeURIComponent(escape(bin));
 }
 
+/** @param {string} file */
+async function sizeOf(file) {
+    const stat = await exec('stat', ['-f', '%z', file]);
+    if (stat.code !== 0) throw new Error(stat.stderr.trim() || `no ${file}`);
+    return Number(stat.stdout.trim());
+}
+
 // A local file's whole lines after byte `pos`, and the byte they end at; text null if the file
 // shrank. Read as bytes, decoding only the new part: decoding all of a 10 MB transcript on every
 // change took Herdr's UI thread 60–150 ms (the bytes alone take ~25 ms).
@@ -513,9 +520,7 @@ function utf8(bytes) {
 // read in one go ran past Herdr's time limit and the chat stayed empty (2026-10-31).
 /** @param {string} file @param {number} pos @param {number} [max] */
 async function readAfter(file, pos, max = Infinity) {
-    const stat = await exec('stat', ['-f', '%z', file]);
-    if (stat.code !== 0) throw new Error(stat.stderr.trim() || `no ${file}`);
-    const size = Number(stat.stdout.trim());
+    const size = await sizeOf(file);
     if (size < pos) return { end: 0, text: null };
     if (size === pos) return { end: pos, text: '' };
     // only the slice is read (slice.js): herdr's readFile takes the whole file and refuses one past 64 MB
@@ -538,6 +543,37 @@ async function readAfter(file, pos, max = Infinity) {
     if (!got.text && want < size - pos)
         got = wholeLines(await bytesFrom(size - pos), pos);
     return { ...got, more: got.end < size && want < size - pos };
+}
+
+// The byte the first whole line at or after byte `at` starts at: a big transcript opens on its tail and reads earlier
+// parts on his ask, each cut on a line start.
+/** @param {string} file @param {number} at */
+async function lineStartAt(file, at) {
+    if (at <= 0) return 0;
+    const out = await exec('sh', [
+        '-c',
+        'tail -c +"$1" "$2" | head -n 1 | wc -c',
+        'sh',
+        String(at),
+        file,
+    ]);
+    if (out.code !== 0) throw new Error(out.stderr.trim());
+    return at - 1 + Number(out.stdout.trim());
+}
+
+// The whole lines in bytes [from, to) of a local file.
+/** @param {string} file @param {number} from @param {number} to */
+async function readRange(file, from, to) {
+    const out = await exec('sh', [
+        '-c',
+        'tail -c +"$1" "$2" | head -c "$3"',
+        'sh',
+        String(from + 1),
+        file,
+        String(to - from),
+    ]);
+    if (out.code !== 0) throw new Error(out.stderr.trim());
+    return out.stdout;
 }
 
 async function transcriptOf(session) {
@@ -1235,10 +1271,12 @@ export default class ClaudeChat extends View {
         this.leftInBox = null;
         if (this.address)
             this.cache.set(this.address, {
+                base: this.base,
                 effort: this.effort,
                 file: this.file,
                 firstShown: this.firstShown,
                 follow: this.follow,
+                head: this.head,
                 items: this.items,
                 lastReply: this.lastReply,
                 limit: this.limit,
@@ -1258,6 +1296,10 @@ export default class ClaudeChat extends View {
         this.session = kept.session ?? null;
         this.file = kept.file ?? null;
         this.pos = kept.pos ?? 0;
+        // head: the byte the loaded part of the transcript starts at (null: not opened yet); base: how many items
+        // were read in above the first loaded ones, so a row keeps its id when earlier ones arrive
+        this.head = kept.head ?? null;
+        this.base = kept.base ?? 0;
         this.items = kept.items ?? [];
         this.tools = kept.tools ?? new Map();
         this.skills = kept.skills ?? new Map();
@@ -1816,6 +1858,8 @@ export default class ClaudeChat extends View {
                         this.subs = new Map();
                         this.trail = [];
                         this.pos = 0;
+                        this.head = null;
+                        this.base = 0;
                         this.limit = PAGE;
                         // another conversation in this seat (a /clear, a resume): it starts at its newest
                         this.follow = true;
@@ -1911,6 +1955,41 @@ export default class ClaudeChat extends View {
         });
     }
 
+    // The part of the transcript above what is loaded, one slice per ask, read in above the first rows. The chat's
+    // own state (the last reply, the model, the effort) stays as the newer lines set it.
+    async loadEarlier() {
+        const file = this.file;
+        const head = this.head;
+        if (!file || !head || this.earlierLoading) return;
+        this.earlierLoading = true;
+        try {
+            const from = await lineStartAt(
+                file,
+                Math.max(0, head - LOAD_SLICE),
+            );
+            const text = await readRange(file, from, head);
+            if (file !== this.file || head !== this.head) return;
+            /** @type {any[]} */
+            const later = this.items;
+            const kept = {
+                effort: this.effort,
+                lastReply: this.lastReply,
+                model: this.model,
+            };
+            this.items = /** @type {any[]} */ ([]);
+            this.ingest(text);
+            /** @type {any[]} */
+            const earlier = this.items;
+            Object.assign(this, kept);
+            this.items = earlier.concat(later);
+            this.base += earlier.length;
+            this.head = from;
+            this.limit += PAGE;
+        } finally {
+            this.earlierLoading = false;
+        }
+    }
+
     // Reads what was added since last time. The file only grows; a half-written last line waits.
     async load(_cx) {
         const file = this.file;
@@ -1926,6 +2005,16 @@ export default class ClaudeChat extends View {
                     await this.loadDocker(this.where);
                     continue;
                 }
+                if (this.head === null && this.pos === 0) {
+                    const size = await sizeOf(file);
+                    const at =
+                        size > LOAD_SLICE
+                            ? await lineStartAt(file, size - LOAD_SLICE)
+                            : 0;
+                    if (file !== this.file) return;
+                    this.head = at;
+                    this.pos = at;
+                }
                 const { text, end, more } = await readAfter(
                     file,
                     this.pos,
@@ -1939,6 +2028,8 @@ export default class ClaudeChat extends View {
                     this.subs = new Map();
                     this.trail = [];
                     this.pos = 0;
+                    this.head = null;
+                    this.base = 0;
                     this.again = true;
                 } else if (text) {
                     this.ingest(text);
@@ -4650,7 +4741,7 @@ export default class ClaudeChat extends View {
             item.name === 'AskUserQuestion';
         // Questions a hook sent back are left out: Claude asks again at once.
         const all = (sub ? sub.items : this.items)
-            .map((item, i) => [item, sub ? `${sub.name}-${i}` : i])
+            .map((item, i) => [item, sub ? `${sub.name}-${i}` : i - this.base])
             .filter(
                 ([item]) =>
                     !ask.rejected(item) &&
@@ -4734,7 +4825,7 @@ export default class ClaudeChat extends View {
         const images = this.imageCount(agent.address);
         const menu = this.menu(t);
         this.settlePick();
-        if (hidden > 0)
+        if (hidden > 0 || (!sub && this.head > 0))
             rows.unshift(
                 h_flex()
                     .w_full()
@@ -4743,10 +4834,19 @@ export default class ClaudeChat extends View {
                         this.button(
                             t,
                             'earlier',
-                            `Show earlier (${hidden})`,
+                            hidden > 0
+                                ? `Show earlier (${hidden})`
+                                : 'Show earlier',
                             (_e, cx) => {
-                                this.limit += PAGE;
-                                cx.notify();
+                                if (hidden > 0) {
+                                    this.limit += PAGE;
+                                    cx.notify();
+                                    return;
+                                }
+                                cx.spawn(async (/** @type {any} */ cx) => {
+                                    await this.loadEarlier();
+                                    cx.notify();
+                                });
                             },
                         ),
                     ),
