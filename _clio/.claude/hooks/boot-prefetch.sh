@@ -436,10 +436,8 @@ init_ctx_digest() {
     echo "🟡 init-ctx trace could not run (or took over 3 s): $(printf '%s\n' "$out" | grep -m1 -i error | cut -c1-120)"
   fi
 }
-if [ -z "${COMPACT:-}" ]; then
-  echo "-- init ctx (each seat's starting context, net of its first message; pnpm ctx-init:trace) --"
-  init_ctx_digest
-fi
+[ -z "${COMPACT:-}" ] && echo "-- init ctx (each seat's starting context, net of its first message; pnpm ctx-init:trace) --"
+[ -z "${COMPACT:-}" ] && init_ctx_digest
 
 date +%s > "$STAMP"
 if [ "$fails" -gt 0 ]; then
