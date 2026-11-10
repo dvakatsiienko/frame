@@ -1376,6 +1376,8 @@ for (const line of [
     'touch ~/.claude/shelf/flawlog/x-{a,b}.md',
     'cp notes.md ~/.claude/plugin-x/skills/*/',
     'mkdir -p ~/.claude/plugins/cache/{a,b}',
+    'echo x > ~/.claude/./shelf/flawlog/x?.md',
+    'touch ~/.claude/../shelf/orbit-tick?/x',
 ])
     test(`a glob that cannot reach a fenced folder passes: ${line}`, async ($, on) => {
         world(on);
@@ -1387,6 +1389,13 @@ for (const line of [
     'echo x > ~/.claude/shelf/orbit-{ticks,x}/t1.jsonl',
     'mkdir ~/.claude/plugins/st{ore,x}',
     'cp /tmp/s.json ~/.claude/p*s/st?re/',
+    // sixth sense round 2: the path the kernel walks, not the raw segments
+    'echo x > ~/.claude/./shelf/orbit-tick?/t1.jsonl',
+    'echo x > ~/.claude//shelf/orbit-tick?/t1.jsonl',
+    'echo x > ~/.claude/shelf/../shelf/orbit-tick?/t1.jsonl',
+    'cp f ~/.claude/./plugins/sto?e/x-mod-stash_orbit.json',
+    'touch ~/.claude/plugins/../shelf/o*/x',
+    'touch ~/.claude/../.claude/shelf/orbit-tick?/x',
 ])
     test(`a glob that reaches a fenced folder is refused: ${line}`, async ($, on) => {
         world(on);

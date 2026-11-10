@@ -111,8 +111,12 @@ for (const [rule, shape, command] of FLAGGED)
             JSON.stringify(r).includes(
                 rule === 'bare-push' ? 'x lane push' : 'without the override',
             ),
+            // a warn that says the call did not run, while it ran, is a lie (helga's pocket append, 17:27)
+            /nothing in this command ran|stopped this one command/.test(
+                JSON.stringify(r),
+            ),
             ran,
-        ]).toEqual([undefined, true, true, [command]]);
+        ]).toEqual([undefined, true, true, false, [command]]);
     });
 
 const PLAIN = [

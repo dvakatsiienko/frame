@@ -971,10 +971,20 @@ const globMatches = (seg: string, name: string) =>
     });
 // `<.claude or cc>/<names[0]>/<names[1]>…` reached by a word holding at least one glob segment on that walk
 function globReaches(text: string, names: readonly string[]) {
+    // a lookahead, so `.claude/../.claude/…` is walked from each of its roots
     for (const m of text.matchAll(
-        /(?:\.claude|(?:^|[\s/'"=])cc)\/([^\s'"]+)/g,
+        /(?:\.claude|(?:^|[\s/'"=])cc)\/(?=([^\s'"]+))/g,
     )) {
-        const segs = (m[1] ?? '').split('/').slice(0, names.length);
+        // the path the kernel walks: `.` and empty segments drop, `..` steps back (sixth sense round 2)
+        const walked: string[] = [];
+        let isAbove = false;
+        for (const seg of (m[1] ?? '').split('/')) {
+            if (seg === '' || seg === '.') continue;
+            if (seg !== '..') walked.push(seg);
+            else if (walked.pop() === undefined) isAbove = true;
+        }
+        if (isAbove) continue;
+        const segs = walked.slice(0, names.length);
         if (!segs.some(isGlob)) continue;
         if (
             segs.every((seg, i) =>

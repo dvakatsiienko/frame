@@ -599,8 +599,9 @@ async function isWarnOnly($: EngineInterface, rule: string) {
         'enforce'
     );
 }
+// a warn runs the call, so the refusal's «nothing ran» words never ride it
 const wouldRefuse = (rule: string, text: string) =>
-    `x-mod-guard would refuse this (rule ${rule}, warn-only for now): ${text}`;
+    `x-mod-guard would refuse this (rule ${rule}, warn-only for now), and the command ran: ${text.replace(/^nothing in this command ran — x-mod-guard stopped this one command\. /, '')}`;
 
 // the local day, `yyyy-mm-dd`
 function day(at: number) {
