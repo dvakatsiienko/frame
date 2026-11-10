@@ -1363,6 +1363,37 @@ EOF`,
         'bash -c behind x as',
         "x as codie -- bash -c 'rm -rf x'",
     ],
+    // `x gate run --` runs its command in the queue: the command behind it is read as the bare one (FRM-384)
+    [
+        'refused',
+        'x-gate-run',
+        'a force push behind x gate run',
+        'x gate run -- git push --force',
+    ],
+    [
+        'refused',
+        'x-gate-run',
+        'rm behind x gate run',
+        'x gate run -- rm -rf .scratch',
+    ],
+    [
+        'refused',
+        'x-gate-run',
+        'rm behind x gate run with no dashes',
+        'x gate run rm -rf .scratch',
+    ],
+    [
+        'refused',
+        'x-gate-run',
+        'a nested shell behind x gate run',
+        "x gate run -- bash -c 'git push --force'",
+    ],
+    [
+        'refused',
+        'x-gate-run',
+        'rm behind x gate run past x flags',
+        'x --json gate --json run --json -- rm -rf .scratch',
+    ],
     // R3 rows 12–14: an alias takes the call's own args; a persisted alias is read as it is set; a known value counts beside an unknown
     [
         'refused',

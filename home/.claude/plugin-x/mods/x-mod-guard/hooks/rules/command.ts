@@ -292,6 +292,16 @@ export function peel(raw: Word[], bodies: string[] = []): Peeled {
             words = words.slice(asAt + 1);
             continue;
         }
+        // `x gate run [--] <command…>` runs its command in the queue: a wrapper, the command behind it read as itself
+        const gateAt =
+            basename(head) === 'x'
+                ? xGateRunCommand(words.slice(1).map((w) => w.text))
+                : -1;
+        if (gateAt >= 0 && gateAt + 1 < words.length) {
+            wrappers.push('x gate run');
+            words = words.slice(gateAt + 1);
+            continue;
+        }
         const runner = RUNNERS.get(basename(head));
         let verbAt = 1;
         while (runner && isFlag(words[verbAt]?.text ?? ''))
@@ -1166,6 +1176,27 @@ const APPEND = /^\d*&?>>$/;
 const APPEND_JOINED = /^\d*&?>>([^&].*)$/;
 // where `x [flags] as <member> [flags] [--]` hands over its command, or -1: x takes flags before its family, and the
 // member's own flags sit before or after it
+// where the command of `x gate run [--] <command…>` starts among x's words, -1 for any other x call
+function xGateRunCommand(words: string[]) {
+    // a word behind a flag may be that flag's value, so the family is the first `gate` with only such words ahead of it
+    const family = words.findIndex(
+        (w, i) =>
+            w === 'gate' &&
+            words
+                .slice(0, i)
+                .every(
+                    (v, j) =>
+                        v.startsWith('-') || words[j - 1]?.startsWith('-'),
+                ),
+    );
+    const verb = words.findIndex((w, i) => i > family && !w.startsWith('-'));
+    if (family < 0 || words[verb] !== 'run') return -1;
+    for (let i = verb + 1; i < words.length; i++) {
+        if (words[i] === '--') return i + 1;
+        if (!words[i]?.startsWith('-')) return i;
+    }
+    return -1;
+}
 function xAsCommand(words: string[]) {
     const family = words.findIndex(
         (w, i) =>

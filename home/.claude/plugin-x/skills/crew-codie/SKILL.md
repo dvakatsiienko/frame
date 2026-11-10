@@ -67,7 +67,7 @@ brief says which, and when it does not, ask once, up front.
 - **the worktree** is the dna's, on branch `codie/<ticket>-<slug>` from `main`. the main checkout stays
   on `main`: it is one shared tree, and a `git switch` there moves every session.
 - **git goes through `x lane`**: `commit`, `push`, `pr-open`, `merge-main` (bare `x` lists them; the
-  publishing ones want `--apply`). a frame worktree pushes through the main checkout; a cross-repo half
+  publishing ones want `--apply`, a push of your own branch from its tree none). a frame worktree pushes through the main checkout; a cross-repo half
   commits with `--repo <path>`, on its main.
 - **a refused commit**: fix it, then `x lane commit --dry <msg-file> <paths…>` reads its gates again with nothing committed; never before every commit.
 - **«pushed»** means what `x lane push` read back from the remote, never `@{u}`.
