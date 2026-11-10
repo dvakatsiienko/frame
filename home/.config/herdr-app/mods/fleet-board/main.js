@@ -911,7 +911,13 @@ export default class FleetBoard extends View {
                     .text_color(t.dim)
                     .child(
                         this.loadedAt
-                            ? `read ${this.loadedAt.toLocaleTimeString()}`
+                            ? `read ${[
+                                  this.loadedAt.getHours(),
+                                  this.loadedAt.getMinutes(),
+                                  this.loadedAt.getSeconds(),
+                              ]
+                                  .map((n) => String(n).padStart(2, '0'))
+                                  .join(':')}`
                             : 'reading…',
                     ),
             );
