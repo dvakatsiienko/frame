@@ -30,8 +30,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 - **a list's marker by its lines** (dima, 2026-10-22: «a bullet point plus an emoji that leads a line reads poorly»):
   - lines with no leading emoji → `-` bullets
   - an order that matters (steps, a ranked top 10) → numbers
-  - every line led by an emoji → no marker at all, one line each, the emoji is the bullet
-    (`✅ built and pushed …` on its own line, never `- ✅ built and pushed …`)
+  - every line led by an emoji → a `-` bullet too: herdr's chat joins unmarked lines (dima, 2026-11-10: «an unreadable wall of text»)
 - **operations get list shape.** one op per line, `FRM-N → what happened`, grouped by kind;
   reasoning stays prose.
 
@@ -58,7 +57,7 @@ place: diagrams, celebrations, easter eggs.
 
 an emoji is a **line prefix**, never inline decoration.
 
-- ✅ `✅ a. workflow — kept` — emoji first, before numbering, labels, or names; no bullet before it (§ shapes).
+- ✅ `✅ a. workflow — kept` — emoji first, before numbering, labels, or names; in a list its `-` bullet stays (§ shapes).
 - ❌ `- a. workflow — ✅ kept` — never trailing.
 - verdict emojis (✅ 🚫 📌 ⚠️ 🔎 📋 ➡️) lead the line.
 - 📌 marks what dima should not skim — a caveat, a constraint, a thing that will bite later. this
