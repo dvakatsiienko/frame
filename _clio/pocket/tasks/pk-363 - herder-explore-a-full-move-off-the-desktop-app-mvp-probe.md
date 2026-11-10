@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T18:01:00Z'
+updated_date: '2026-11-10T18:28:00Z'
 labels:
   - m
   - clio-main
@@ -1508,4 +1508,36 @@ PK-363:W589 (2026-11-10 20:00, dima): do
 PK-363:W590 (2026-11-10 20:00, dima): do
 PK-363:W591 (2026-11-10 20:00, dima): when i copypaste a numbered or bulleted section from chatter, it should paste same - numbered or bulleted. home: FRM-562:W16
 PK-363:W592 (2026-11-10 20:00, dima): i meanwhile go to wing 1
+
+PK-363:W593 (2026-11-10 20:09, dima): Yes let's gradually move to Herdr but do not delete the old previous setup because I may need it as a fallback at some point (using the Claude desktop app or even a terminal).
+PK-363:W594 (2026-11-10 20:09, dima): I think the native CC mods may not be touched at all (e.g. not cut), at least stuff like my native CC mod band, the board/deck, and other stuff
+PK-363:W595 (2026-11-10 20:09, dima): Make it in a way that Herdr's native way is first but do not remove all other doors because you may need them
+PK-363:W596 (2026-11-10 20:09, dima): I was busy everywhere and you died and clio died twice. Tell me if anything blocks you now. Where are you at? ❓
+PK-363:W597 (2026-11-10 20:09, dima): I read your mod scope preshake. I overall like it but I have a concern. Herdr is unstable and today even proves it, with you both dying randomly. Overall everything is shaky right now.
+PK-363:W598 (2026-11-10 20:09, dima): I think that the previous mode setup is better. Do not rush to cut it from the terminal because I sometimes actually use terminal mods and I'd like to have them as a backup (or if Herdr desktop app breaks for example). Let's continue evolving Herdr and native CC mods that are truly valid and move like this.
+PK-363:W599 (2026-11-10 20:09, dima): What about the native CC mods order? ❓
+PK-363:W600 (2026-11-10 20:09, dima): Print an ordered list of CC mods, starting from most wanted and ending with least wanted.
+PK-363:W601 (2026-11-10 20:09, dima): You previously did that with the CLI scope too? ❓
+PK-363:W602 (2026-11-10 20:09, dima): Did you reflect that order in Linear so it is ordered that way as well? ❓
+PK-363:W603 (2026-11-10 20:09, dima): Do the same for mods: print an ordered mods chunks execution for CC, the native CC mod.
+PK-363:W604 (2026-11-10 20:15, dima): But how to save your newer events for then? ❓
+PK-363:W605 (2026-11-10 20:15, dima): Do you plan to do a full sweep and then mainly settle everything or what? Maybe you will do updates more frequently because what if you are killed again? and you work is lost? ❓
+PK-363:W606 (2026-11-10 20:15, dima): Are you sure that we still need this? I thought we fully solved the quiet comms or is there something left? ❓
+PK-363:W607 (2026-11-10 20:15, dima): maybe prio this if not too much left? ❓
+PK-363:W608 (2026-11-10 20:15, dima): tell clio that you will do writes to linear, but communicate with clio more often so you do not fight over tickets.
+PK-363:W609 (2026-11-10 20:15, dima): whats next step? ❓
+
+PK-363:W610 (2026-11-10 20:12, dima): then how/when to probe this? after halt when only you is left? but what if you kill yourself? is there a way to probe it remotely somehow? ❓
+PK-363:W611 (2026-11-10 20:20, dima): deck: currently Orbit can contain asks from multiple threads. For example currently you, main Clio, and your Wing ask me something but it seems that the order of sections there gets changed as asks arrive. For example if you first ask Orbit, your section with your asks goes first. If then, second, the Wing asks its own ask, its section with its asks goes on top and it continues shuffling. Can I have it static? ❓
+PK-363:W612 (2026-11-10 20:20, dima): I want it synced to the agents list. The order of threads that I set in the agents list with drag and drop should reorder the order of asks by thread in Orbit. The order in the agents list is the true source for the order in Orbit for threads
+PK-363:W613 (2026-11-10 20:20, dima): let's do with you after halt + theme probe
+PK-363:W614 (2026-11-10 20:20, dima, o59 steer): let's risk, i want strip to be gone
+
+PK-363:W615 (2026-11-10 20:12, dima, caption): can i have this dupe orbit killed? it eats UI
+PK-363:W616 (2026-11-10 19:58, dima, caption): kill duped orbit
+
+PK-363:W617 (2026-11-10 20:27, dima): whats next for you? ❓
+PK-363:W618 (2026-11-10 20:27, dima, caption): can system messages be removed from my view? home: FRM-562:W17
+
+PK-363:W619 (2026-11-10 20:27, dima, o60 steer): Are you sure it is not redundant? I agree only if it is useful ❓
 <!-- SECTION:NOTES:END -->
