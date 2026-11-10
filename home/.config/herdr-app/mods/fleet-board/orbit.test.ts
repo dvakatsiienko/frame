@@ -5,6 +5,8 @@ import {
     SEATS_BEAT_MS,
     asksOf,
     byName,
+    hotOf,
+    hotPressLine,
     inListOrder,
     literalAngles,
     nextSeats,
@@ -19,6 +21,7 @@ import {
     unbold,
     untickDoor,
     waitOf,
+    withBandPress,
     withPress,
     withoutPress,
 } from './orbit.js';
@@ -391,5 +394,59 @@ describe('his steer stays in sight until the turn takes it', () => {
     test('an open ask has its box instead, and no steer is no line', () => {
         expect(sentSteer('open', 'typing')).toBeNull();
         expect(sentSteer('ticked', '  ')).toBeNull();
+    });
+});
+
+describe('a keep-hot button on each deck row (dima, 23:16)', () => {
+    const now = new Date(2026, 10, 10, 23, 0).getTime();
+    const since = new Date(2026, 10, 10, 22, 20).getTime();
+
+    test('a press names its thread, the line the stash reads for that sid', () => {
+        expect(hotPressLine('abc', true, now)).toEqual({
+            at: now,
+            button: 'hot',
+            on: true,
+            sid: 'abc',
+        });
+    });
+
+    test('the press joins the band file after its lines, a day-old or broken line trimmed', () => {
+        const day = 24 * 60 * 60 * 1000;
+        const kept = JSON.stringify({ at: now - 5, button: 'afk', on: true });
+        const old = JSON.stringify({
+            at: now - day - 1,
+            button: 'afk',
+            on: true,
+        });
+        const line = hotPressLine('abc', false, now);
+        expect(withBandPress(`${old}\n{broken\n${kept}\n`, line, now)).toBe(
+            `${kept}\n${JSON.stringify(line)}\n`,
+        );
+    });
+
+    test('a row reads hot from its state file, its tooltip the time it went on', () => {
+        expect(hotOf({ since }, undefined, now)).toEqual({
+            isOn: true,
+            isPending: false,
+            tip: 'keep hot: on since 22:20',
+        });
+        expect(hotOf(null, undefined, now)).toEqual({
+            isOn: false,
+            isPending: false,
+            tip: 'keep hot',
+        });
+    });
+
+    test('a press not answered yet draws the state it asked for, until 12 s pass', () => {
+        expect(hotOf(null, { at: now - 1000, on: true }, now)).toMatchObject({
+            isOn: true,
+            isPending: true,
+        });
+        expect(hotOf(null, { at: now - 13000, on: true }, now).isOn).toBe(
+            false,
+        );
+        expect(
+            hotOf({ since }, { at: now - 1000, on: true }, now).isPending,
+        ).toBe(false);
     });
 });

@@ -297,3 +297,65 @@ export const sentSteer = (state, text) =>
  * @returns {'drop' | 'untick'}
  */
 export const untickDoor = (pending) => (pending === 'tick' ? 'drop' : 'untick');
+
+// twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
+// reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)
+export const PRESS_DIR = '.claude/shelf/band-presses';
+export const PRESS_FILE = `${PRESS_DIR}/band.jsonl`;
+const DAY_MS = 24 * 60 * 60 * 1000;
+// a press the stash has not answered by then gives the button its state back
+export const PENDING_MS = 12 * 1000;
+
+/** @typedef {{ at: number, button: 'hot', on: boolean, sid: string }} HotPress */
+
+/** @param {string} sid @param {boolean} on @param {number} now @returns {HotPress} */
+export const hotPressLine = (sid, on, now) => ({
+    at: now,
+    button: 'hot',
+    on,
+    sid,
+});
+
+/**
+ * the band file after one more press: lines older than a day go, a broken line too
+ * @param {string | null} text
+ * @param {HotPress} line
+ * @param {number} now
+ */
+export function withBandPress(text, line, now) {
+    const kept = (text ?? '').split('\n').filter((l) => {
+        try {
+            return JSON.parse(l).at > now - DAY_MS;
+        } catch {
+            return false;
+        }
+    });
+    return [...kept, JSON.stringify(line)].map((l) => `${l}\n`).join('');
+}
+// twin end
+
+/** @param {number} ms */
+const clock = (ms) => new Date(ms).toTimeString().slice(0, 5);
+
+/**
+ * a row's 🔥: on from its state file; a press the stash has not answered yet shows the state it asked for, for at most
+ * PENDING_MS; the tooltip is its name, with the time it went on (dima, 23:08)
+ * @param {{ since: number } | null | undefined} hot
+ * @param {{ at: number, on: boolean } | null | undefined} pressed
+ * @param {number} now
+ */
+export function hotOf(hot, pressed, now) {
+    const isRead = Boolean(hot);
+    const isPending =
+        Boolean(pressed) &&
+        pressed.on !== isRead &&
+        now - pressed.at < PENDING_MS;
+    return {
+        isOn: isPending ? pressed.on : isRead,
+        isPending,
+        tip:
+            hot && typeof hot.since === 'number'
+                ? `keep hot: on since ${clock(hot.since)}`
+                : 'keep hot',
+    };
+}
