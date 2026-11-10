@@ -1663,8 +1663,6 @@ PK-363:W716 (2026-11-10 22:29, dima): speed: scroll feels faster.
 PK-363:W717 (2026-11-10 22:29, dima): but there is an issue when chatter is scrolled to its full end (bottom) — when i scroll it slightly up it is stuck for ~1s (lag), so i have to do ~3 mousewheel scrolls to unstuck it from bottom.
 PK-363:W718 (2026-11-10 22:29, dima): ready to probe scroll perf test? ❓
 
-W719 — buttons: i liked previous shape. bring it back and remove dimming (keep for settings only since it is not working yet) (2026-11-10 22:30, dima)
-
 PK-363:W719 (2026-11-10 22:30, dima): buttons: i liked previous shape. bring it back and remove dimming (keep for settings only since it is not working yet) [prefix fix: same W719 as the unprefixed line above]
 
 PK-363:W720 add as a rider to currently running cli chunk. (2026-11-10 21:47, dima)

@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-10T19:48:00Z'
+updated_date: '2026-11-10T20:48:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,16 +17,18 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 FRM-384 in cli lane 7 (pr 157): the codie's slices, sixth sense, the merge; my merge-turn chores are in the lane spec (ticket-sign.ts takes the pull path from x, the clio:wing worktree line, the plugin bump)
-- [ ] #2 the scopes sweep: steps 1–7 walked with dima, the order in linear sortOrder and in .scratch/herdr/scopes-audit.md; left: the closing report to main, FRM-414's re-grill with him (his «go», then FRM-560), FRM-570's shape for his sign
-- [ ] #3 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
-- [ ] #4 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11
-- [ ] #5 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #6 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #7 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #8 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #9 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #10 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
-- [ ] #11 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 533 → 539, then FRM-537 on his word; the dated reads ride it; resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
+- [ ] #2 tails from 11-10, small: two steer grooms (o55, o69) read red in prompt-groom though their lines are in PK-363; wishkeeper's lows on FRM-522's closing quote and FRM-534's close (name its 11-16 kill-rule read); FRM-414 reads In Progress while it waits
+- [ ] #3 ⏳ the cli walk after FRM-384, one thread reused, no new summon: FRM-414 (body from grill-frm-414-1-proposal.md's answers, his sign; it rides FRM-560's pr), FRM-560 (shape with its two riders, his sign), FRM-570 (shape, his sign) — waits for: the usage reset
+- [ ] #4 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
+- [ ] #5 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11
+- [ ] #6 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #7 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #8 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
+- [ ] #9 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #10 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #11 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #12 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #13 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 533 → 539, then FRM-537 on his word; the dated reads ride it; resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -123,4 +125,6 @@ done 2026-11-10 21:48: FRM-384 joins cli lane 7 after FRM-554 lands: a new spec 
 done 2026-11-10 21:48: the scopes sweep with dima: steps 1–4 of 7 settled and in linear; left: step 5 cli cuts, step 6 built cli and the nine duplicated rules, step 7 the rebalance; the order lives in linear sortOrder and .scratch/herdr/scopes-audit.md § the whole execution order: read it first at any boot
 
 done 2026-11-10 21:48: today's two almost-freebies on dima's 20:53 tick, a helper card each: FRM-559 prompt-groom matcher, FRM-543's .scratch brief path in wish-cover-on-write.sh (FRM-559 Done, FRM-543 Done)
+
+done 2026-11-10 22:48: the scopes sweep: steps 1–7 walked with dima, the order in linear sortOrder and in .scratch/herdr/scopes-audit.md; left: the closing report to main, FRM-414's re-grill with him (his «go», then FRM-560), FRM-570's shape for his sign (FRM-414 In Progress, FRM-560 Todo, FRM-570 Todo)
 <!-- SECTION:NOTES:END -->
