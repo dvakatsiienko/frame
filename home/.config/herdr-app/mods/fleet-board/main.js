@@ -480,9 +480,12 @@ export default class FleetBoard extends View {
         }
     }
 
-    /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j */
-    ask(t, s, ask, i, j) {
+    // in the chat view's strip a guarded ask draws no 🚦: it flips his view to the terminal, which the one-click 🛎️
+    // replaces once GATED_TICK is on
+    /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j @param {boolean} [isStrip] */
+    ask(t, s, ask, i, j, isStrip = false) {
         const key = `${s.sid}:${ask.id}`;
+        const isPaneDoor = !GATED_TICK && isGuardGated(ask.text);
         const sent = this.sent.get(key)?.verdict;
         const steer = this.steers.get(key);
         const done = ask.mark ?? sent;
@@ -533,26 +536,37 @@ export default class FleetBoard extends View {
                         .pl(20)
                         .gap(6)
                         .items_center()
-                        .child(
-                            !GATED_TICK && isGuardGated(ask.text)
-                                ? button(
-                                      'seat-board',
-                                      '🚦 tick in its pane',
-                                      "opens the seat's own board in its terminal, where a 🛎️ tick is the word x-mod-guard reads",
-                                      (cx) =>
-                                          cx.spawn((cx) =>
-                                              this.openSeatBoard(cx, s, ask),
-                                          ),
-                                  )
-                                : button(
-                                      'tick',
-                                      '🛎️ tick',
-                                      'good to go: the session takes the pick',
-                                      (cx) =>
-                                          cx.spawn((cx) =>
-                                              this.press(cx, s, ask, 'tick'),
-                                          ),
-                                  ),
+                        .when(!(isStrip && isPaneDoor), (row) =>
+                            row.child(
+                                isPaneDoor
+                                    ? button(
+                                          'seat-board',
+                                          '🚦 tick in its pane',
+                                          "opens the seat's own board in its terminal, where a 🛎️ tick is the word x-mod-guard reads",
+                                          (cx) =>
+                                              cx.spawn((cx) =>
+                                                  this.openSeatBoard(
+                                                      cx,
+                                                      s,
+                                                      ask,
+                                                  ),
+                                              ),
+                                      )
+                                    : button(
+                                          'tick',
+                                          '🛎️ tick',
+                                          'good to go: the session takes the pick',
+                                          (cx) =>
+                                              cx.spawn((cx) =>
+                                                  this.press(
+                                                      cx,
+                                                      s,
+                                                      ask,
+                                                      'tick',
+                                                  ),
+                                              ),
+                                      ),
+                            ),
                         )
                         .child(
                             button(
@@ -813,19 +827,7 @@ export default class FleetBoard extends View {
                             ),
                     ),
             )
-            .children(asks.map((ask, j) => this.ask(t, s, ask, 0, j)))
-            .when(Boolean(s) && !asks.length, (el) =>
-                el.children(
-                    s.phases.map((phase, j) =>
-                        prose(
-                            `seat-phase-${j}`,
-                            `🌔 ${phase}`,
-                            t.dim,
-                            SIZE.meta,
-                        ),
-                    ),
-                ),
-            )
+            .children(asks.map((ask, j) => this.ask(t, s, ask, 0, j, true)))
             .when(Boolean(this.pressError), (el) =>
                 el.child(
                     div()

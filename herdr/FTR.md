@@ -72,7 +72,25 @@ wish: PK-363
   - given a seat is selected in the Chat view
   - then its context percent, its waiting-on line, the weekly usage and its open asks with their 🛎️ show without a flip to the Terminal view
   - and the strip keeps one fixed height: a long ask list scrolls inside it, its head counts the asks, and the transcript below never moves
-  - and with no open ask, it shows the seat's phases
+  - and a guarded ask shows there with no 🚦, which would flip his view: its tick waits for the one-click 🛎️
   - and it shows the seat that chat view shows, by the chat mod's own rule, so two views show their own seats
   - decision: the strip writes nothing but the ticks file and calls no `layout.*` command, since herdr saves those into his personal layout
+  - decision: the seat comes from the chat mod's own rule, so when zoo's chat block names no terminal, both follow the shown tab together
   - decision: fleet-board draws it as a second copy in `view: seat`, since a herdr mod imports nothing outside its folder; it shows once `layouts/zoo.json` places that block (his ⚠️ tick)
+- 🧭 the strip shows the seat's phases when no ask is open
+  - given the seat in the Chat view has no open ask
+  - then the strip lists its phases where the asks would sit
+  - decision: not in his day-one pick; built once and cut, waiting for his word
+- ⬜ a steer being typed survives a board reload
+  - given dima has typed into an ask's steer field
+  - when fleet-board reloads
+  - then the field shows his text again
+
+## scripts
+
+- ⬜ `pnpm herdr-mods:land <mod>` lands a mod from frame into herdr
+  - makes: the mod's changed files in `~/.config/herdr-app/mods/<mod>`, a real folder
+  - given a mod in `home/.config/herdr-app/mods/<mod>`
+  - when the command runs
+  - then herdr reloads that mod live, with no restart (proven on fleet-board, 16:20:39)
+  - decision: a real folder, not a link: herdr reloads a real folder on save and never a link
