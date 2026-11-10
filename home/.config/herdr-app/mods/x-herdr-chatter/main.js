@@ -4357,32 +4357,27 @@ export default class ClaudeChat extends View {
                 .items_center()
                 .rounded(11)
                 .border_1()
-                // on reads apart from off at a glance (dima, 22:12: «how to actually see if they worked?»): on is a
-                // filled accent disc with its ring, off a faded emoji on no fill; an override on is loud, it lifts
-                // the guards for every thread
-                .when(btn.isOn, (el) =>
-                    el
-                        .border_2()
-                        .border_color(
-                            btn.key === 'override' ? t.blocked : t.accent,
-                        )
-                        .bg(
-                            btn.key === 'override'
-                                ? t.blocked
-                                : fade(t.accent, '40'),
-                        ),
+                // his shape (22:30: «i liked previous shape … remove dimming»): on is filled, off is plain, and
+                // nothing fades but 🎛️, which does nothing yet; an override on is loud, it lifts every guard
+                .border_color(
+                    btn.isOn
+                        ? btn.key === 'override'
+                            ? t.blocked
+                            : t.solid
+                        : t.border,
                 )
-                .when(!btn.isOn, (el) =>
-                    el.border_color(t.border).bg(t.background).opacity(0.45),
+                .bg(
+                    btn.isOn
+                        ? btn.key === 'override'
+                            ? t.blocked
+                            : t.solid
+                        : t.background,
                 )
                 .text_size(px(12))
                 .text_color(btn.isOn ? t.solid_foreground : t.foreground)
                 .tooltip(btn.tip)
-                .when(!btn.isLive, (el) =>
-                    el.opacity(btn.isOn ? 0.6 : 0.25).cursor_not_allowed(),
-                )
-                // sent, not yet taken: the state it asked for, a shade lighter until the stash writes it
-                .when(btn.isPending, (el) => el.opacity(0.7))
+                .when(btn.key === 'settings', (el) => el.opacity(0.5))
+                .when(!btn.isLive, (el) => el.cursor_not_allowed())
                 .when(btn.isLive, (el) =>
                     el
                         .cursor_pointer()

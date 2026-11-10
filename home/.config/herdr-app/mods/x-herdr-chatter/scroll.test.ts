@@ -45,6 +45,20 @@ describe('he leaves and enters following by his own scroll', () => {
         });
     });
 
+    test('one small wheel tick up from the end leaves following and moves the view at once', () => {
+        // a trackpad tick is a few px: at 40 px of slack, three ticks snapped back to the end (dima, 22:29)
+        expect(afterWheel(following, 8, 5000)).toEqual({
+            follow: false,
+            up: 8,
+        });
+    });
+
+    test('a small scroll down near the end enters following', () => {
+        expect(afterWheel({ follow: false, up: 20 }, -4, 5000)).toEqual(
+            following,
+        );
+    });
+
     test('a scroll down to the end enters following', () => {
         expect(afterWheel({ follow: false, up: 30 }, -60, 5000)).toEqual(
             following,

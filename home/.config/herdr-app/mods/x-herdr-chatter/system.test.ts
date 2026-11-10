@@ -49,6 +49,15 @@ const synthetic = {
 };
 
 describe('his own text reads as he typed it', () => {
+    test('a paste whose closing tag carries its id too reads as his text', () => {
+        // dima's 22:26 prompt: Claude Code wrote the id on both tags
+        expect(
+            cleanTyped(
+                '<pasted_content id="c76c">\nwisp: bold rendering broke\n</pasted_content id="c76c">',
+            ),
+        ).toBe('wisp: bold rendering broke');
+    });
+
     test('a paste reads as his plain text, the tags gone', () => {
         expect(cleanTyped(paste.message.content)).toBe(
             "⏰ due today: the next cli lane runs delve's test round\n\nwhy?",

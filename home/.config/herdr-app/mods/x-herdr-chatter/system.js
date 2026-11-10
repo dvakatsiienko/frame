@@ -23,7 +23,10 @@ const SURFACE_NOTE =
 export const cleanTyped = (text) =>
     text
         .replace(/<system-reminder\b[^>]*>[\s\S]*?<\/system-reminder>/g, '')
-        .replace(/<pasted_content\b[^>]*>([\s\S]*?)<\/pasted_content>/g, '$1')
+        .replace(
+            /<pasted_content\b[^>]*>([\s\S]*?)<\/pasted_content\b[^>]*>/g,
+            '$1',
+        )
         .trim();
 
 /** @param {unknown} content */

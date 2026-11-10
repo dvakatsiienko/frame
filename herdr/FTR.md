@@ -204,7 +204,8 @@ wish: PK-363
   - makes: one line `{at, button, on, sid?}` per press in `~/.claude/shelf/band-presses/band.jsonl`, lines older than a day trimmed
   - given a thread's tab in the Chat view and its state file in `~/.claude/shelf/herdr-state/`
   - when dima presses 🐦‍🔥 or 🔥, then that thread, and no other, takes it at its next poll; ⏰ and 💨 set every thread
-  - then the button fills at once, a shade lighter until the stash writes the state back, and reads on from that state alone, its on-since time on hover; a press the stash does not answer in 12 s gives the button its state back
+  - then the button fills at once and reads on from the state the stash writes back alone; a press the stash does not answer in 12 s gives the button its state back
+  - and its tooltip says the state in words first («keep hot: off.»), its on-since time with it; on is filled, off is plain, and no button fades but 🎛️, which does nothing yet (dima, 22:30: «i liked previous shape … remove dimming»)
   - and a press sets the state the button asks for, never a flip
   - decision: the button draws the state the stash wrote, never its last press, so a press from the cc band or a late line never leaves the two bands apart
   - and ctx sits above week (dima, 21:00)

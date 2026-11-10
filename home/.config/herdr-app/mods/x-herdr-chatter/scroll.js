@@ -8,7 +8,8 @@
 export const STUCK_PX = 40;
 
 /**
- * his wheel: up from the end leaves following, down to the end enters it
+ * his wheel: any tick up leaves following at once, a scroll down to within STUCK_PX of the end enters it; the slack is
+ * only for coming down, or a trackpad's few-px ticks up snapped back to the end
  * @param {Scroll} scroll
  * @param {number} dy
  * @param {number} max the furthest up the log can show
@@ -16,6 +17,7 @@ export const STUCK_PX = 40;
  */
 export function afterWheel(scroll, dy, max) {
     const up = Math.max(0, Math.min(scroll.up + dy, max));
+    if (dy > 0 && up > 0) return { follow: false, up };
     return up <= STUCK_PX ? { follow: true, up: 0 } : { follow: false, up };
 }
 
