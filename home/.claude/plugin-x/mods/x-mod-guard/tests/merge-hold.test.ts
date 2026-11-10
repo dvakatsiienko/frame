@@ -5,10 +5,35 @@ import { liveStore } from './store.ts';
 
 const HOLD_DIR = '/home/.local/state/x/merge-hold';
 
-function world(on: On, record: string | null, dirStands = record !== null) {
+type Tick = { at: number; id: string; targets: string[]; text: string };
+// ticks: dima's live ticks as x-mod-stash keeps them; brake: what x's brake check answers (null: it does not read)
+function world(
+    on: On,
+    record: string | null,
+    dirStands = record !== null,
+    ticks: Tick[] = [],
+    brake: string | null = '',
+) {
     mock.clock(on, { now: 1_000_000 });
     liveStore(on);
     const ran: string[] = [];
+    on('state.get', (_$, e, next) =>
+        e.plugin === 'x-mod-stash' && e.key === 'ticks'
+            ? { value: { value: ticks, version: 1 } }
+            : next(e),
+    );
+    on('process.run', (_$, e) => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout:
+                e.argv.includes('--brake-check') && brake !== null
+                    ? JSON.stringify({ data: { brake } })
+                    : '',
+        },
+    }));
     on('session.id', () => ({ value: 'h1h1h1h1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
@@ -344,4 +369,63 @@ for (const line of [
         const r = await bash($, line);
         expect(r.deny).toBeUndefined();
         expect(ran.length).toBe(1);
+    });
+
+// FRM-544 slice 2c: his tick on an ask quoting the whole raw merge runs it once, past his hold and the raw-merge rule
+const tickOn = (line: string): Tick => ({
+    at: 1_000_000 - 1,
+    id: 'o9',
+    targets: [line],
+    text: `⚠️ merge: \`${line}\``,
+});
+test('his tick on an ask quoting a held pr merge runs it once', async ($, on) => {
+    const line = 'gh pr merge 7 --squash';
+    const { ran } = world(on, HELD_7, true, [tickOn(line)]);
+    const first = await bash($, line);
+    const second = await bash($, line);
+    expect([first.deny, second.deny !== undefined, ran]).toEqual([
+        undefined,
+        true,
+        [line],
+    ]);
+});
+
+test('his tick on a raw merge runs it once with no hold standing', async ($, on) => {
+    const line = 'gh pr merge 5 --squash';
+    const { ran } = world(on, null, false, [tickOn(line)]);
+    expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
+});
+
+test('his tick on a raw merge runs past a brake that does not read', async ($, on) => {
+    const line = 'gh pr merge 5 --squash';
+    const { ran } = world(on, null, false, [tickOn(line)], null);
+    expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
+});
+
+for (const [why, ticked, line, brake] of [
+    [
+        'the command adds a flag',
+        'gh pr merge 7 --squash',
+        'gh pr merge 7 --squash --admin',
+        '',
+    ],
+    [
+        'the tick quotes another pr',
+        'gh pr merge 8 --squash',
+        'gh pr merge 7 --squash',
+        '',
+    ],
+    [
+        'the brake is on',
+        'gh pr merge 7 --squash',
+        'gh pr merge 7 --squash',
+        'held by dima',
+    ],
+] as const)
+    test(`a held pr merge stays refused on a tick when ${why}`, async ($, on) => {
+        const { ran } = world(on, HELD_7, true, [tickOn(ticked)], brake);
+        expect([(await bash($, line)).deny !== undefined, ran]).toEqual([
+            true,
+            [],
+        ]);
     });

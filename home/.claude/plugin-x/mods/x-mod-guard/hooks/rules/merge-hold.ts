@@ -153,11 +153,8 @@ export function rawMergeRefused(
         isUnread?: boolean;
         pr: string | undefined;
     }[],
-    isStackTicked = false,
 ): Refusal | undefined {
-    const raw = merges.filter(
-        (m) => !m.isHoldOnly && !(m.isStack && isStackTicked),
-    );
+    const raw = merges.filter((m) => !m.isHoldOnly);
     if (!raw.length) return undefined;
     const isAllUnread = raw.every((m) => m.isUnread);
     return {

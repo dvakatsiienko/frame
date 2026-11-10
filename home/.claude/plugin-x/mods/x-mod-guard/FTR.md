@@ -397,6 +397,8 @@
   - given `gh pr merge`, `gh stack merge`, `gh api -X PUT …/pulls/<n>/merge` or merge-async, a wrapper or nested shell included, on a pr in `~/.local/state/x/merge-hold/`, then nothing runs and the refusal (rule `merge-hold`) names the hold and `x lane merge-auto`
   - given a hold file that does not parse or a hold dir that does not list, then every such merge is refused; given a target with no pr number, a graphql merge mutation among them, then it is refused while any hold stands and passes with none; a stack merge of any pr counts as such a target, since the layers under it are github's to list; a plain merge of an unheld pr passes this rule, and meets `raw-merge`
   - decision: a refusal from its first head, never warn-only: it fires only on a held layer, and past commands carry no mark, so its replay count is 0 by construction
+  - and his tick (orbit or fleet-board) on an ask quoting the whole merge command runs it once, past his hold and `raw-merge` alike, a stack merge included; a flag added or another pr asks again; a brake that reads on still stops it (its door is the head-bound tick on merge-auto `--release-brake`), one that does not read never outranks his tick (FRM-544 slice 2c)
+  - proof: tests/merge-hold.test.ts::his tick on an ask quoting a held pr merge runs it once; his tick on a raw merge runs it once with no hold standing; his tick on a raw merge runs past a brake that does not read; a held pr merge stays refused on a tick when ${why}
   - known gap: a `curl` to the merge url, and the evasion every guard rule shares
   - proof: tests/merge-hold.test.ts
 - ✅ operator-override: only dima's typed words flip it, and a raw merge opens under `prs` (FRM-524)
