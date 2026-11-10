@@ -3,6 +3,7 @@ import { expect, mock, test } from 'claude-code/testing';
 const props = {
     bodyColumns: 100,
     hasSurvey: false,
+    isCollapsed: false,
     isWorking: false,
     maxRows: 12,
     scroll: { bodyRows: 40, offset: 0 },

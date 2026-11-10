@@ -97,6 +97,7 @@ async function band($: Engine, maxRows = 12) {
         props: {
             bodyColumns: 100,
             hasSurvey: false,
+            isCollapsed: false,
             isWorking: false,
             maxRows,
             scroll: { bodyRows: 40, offset: 0 },
@@ -462,6 +463,7 @@ async function bandOn(
         props: {
             bodyColumns: 100,
             hasSurvey: false,
+            isCollapsed: false,
             isWorking,
             maxRows: 12,
             scroll: { bodyRows: 40, offset: 0 },

@@ -8,6 +8,7 @@ const ON = '{"prs":{"at":"2026-11-07T13:00:00.000Z","by":"word"}}';
 const props = {
     bodyColumns: 100,
     hasSurvey: false,
+    isCollapsed: false,
     isWorking: false,
     maxRows: 12,
     scroll: { bodyRows: 40, offset: 0 },

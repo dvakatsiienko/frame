@@ -28,6 +28,7 @@ async function band($: Engine, surface: 'terminal' | 'desktop' = 'terminal') {
         props: {
             bodyColumns: 140,
             hasSurvey: false,
+            isCollapsed: false,
             isWorking: false,
             maxRows: 12,
             scroll: { bodyRows: 40, offset: 0 },
