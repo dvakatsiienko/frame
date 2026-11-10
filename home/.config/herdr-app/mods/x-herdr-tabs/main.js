@@ -23,6 +23,8 @@ import {
     window,
 } from 'herdr';
 
+import { tabLabel } from './label.js';
+
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
 const NAMES_KEY = 'x-herdr-agents.names';
 
@@ -194,9 +196,9 @@ export default class Tabs extends View {
             const program = lead?.program;
             const mine = agents().filter((a) => a.tab === c.id),
                 agent = mine.find((a) => a.focused) ?? mine[0];
-            const name =
-                (agent && shared(NAMES_KEY)?.[agent.address]) ||
-                tabName(c, lead);
+            const session = agent && shared(NAMES_KEY)?.[agent.address];
+            const name = session || tabName(c, lead);
+            const label = session ? tabLabel(session) : name;
             // The tab's status: its most urgent agent's shown one (terminal-only tabs: Herdr's).
             const st = mine.length
                 ? mine
@@ -286,7 +288,7 @@ export default class Tabs extends View {
                             .flex_1()
                             .min_w(0)
                             .truncate()
-                            .child(c.zoomed ? `${name} Z` : name),
+                            .child(c.zoomed ? `${label} Z` : label),
                     )
                     .when(st === 'working', (el) =>
                         el.child(

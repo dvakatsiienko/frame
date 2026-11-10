@@ -100,6 +100,7 @@ wish: PK-363
 - ⬜ each tab shows its seat's emoji and session name, with no zoo creature (x-herdr-tabs, FRM-567)
   - given x-herdr-tabs is placed in the layout
   - then every agent tab reads as that seat's row in the agents list and on the deck, a long name cut with an ellipsis and whole on hover; the dot, the tick and the spinner match the agents list's
+  - and the tab drops the member word after the badges, «⚡ 🔧 codie: herdr lane | PK-363» → «⚡ 🔧 herdr lane | PK-363», so a cut tab keeps what tells it apart (shot 2025)
   - and a click, the ×, the + menu and a right-click do what they did under zoo's tabs
   - decision: the agents list reads each session name once and publishes it (`x-herdr-agents.names`); the tab bar reads that, never a second naming rule
   - not checked: in his tab bar, until the layout switch his tick allows (shots 1942 before and after, drawn as an overlay)
