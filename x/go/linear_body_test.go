@@ -226,6 +226,8 @@ func TestBodySetTellsWLinesOfTwoWishesApart(t *testing.T) {
 			"## wish\n\n- PK-363:W5 (dima): one\n- FRM-384:W5 (dima): two\n", "## wish\n\n- FRM-384:W5 (dima): two\n", "PK-363:W5"},
 		{"a bare W1 gone beside a homed W1",
 			"## wish\n\n* W1 (dima): the ticket's own\n* PK-9:W1 (dima): quoted\n", "## wish\n\n* PK-9:W1 (dima): quoted\n", "W1"},
+		{"a bare W1 given the ticket's own id is the same line",
+			"## wish\n\n* W1 (dima): the ticket's own\n", "## wish\n\n* FRM-1:W1 (dima): the ticket's own\n", ""},
 		{"a linked id and a plain one are the same line",
 			"## wish\n\n* [PK-9](https://x.test/PK-9):W1 (dima): a thing\n", "## wish\n\n* PK-9:W1 (dima): a thing\n", ""},
 	}
