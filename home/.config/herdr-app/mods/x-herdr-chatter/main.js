@@ -187,6 +187,8 @@ const ACCENTS = new Map([
     ['pink', '#f778ba'],
 ]);
 const GAPS = { normal: 10, roomy: 16, tight: 6 };
+// Sans is the system font: herdr's own UI font (Geist) ships one face, so **bold** and *italic* drew flat in it.
+const SANS = '.AppleSystemUIFont';
 // The theme with the chat's accent and background swapped in.
 function chatTheme() {
     const t = theme();
@@ -4346,7 +4348,7 @@ export default class ClaudeChat extends View {
             .text_size(px(13));
         // The chosen font goes to the messages and the box, not the header.
         const font = (el) =>
-            el.when(look.font === 'mono', (el) => el.font_family(this.mono()));
+            el.font_family(look.font === 'mono' ? this.mono() : SANS);
         if (!agent) {
             // A tab with no Claude goes to the Terminal now rather than on the next 2 s tick.
             if (props()?.stack) cx.timer.after(0, () => this.autoView(null));
