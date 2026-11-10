@@ -45,7 +45,6 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉🧠 when the jev router comes back on (credit ~10-18): the two «skills (jev router)» lines parked at the end of `~/frame/docs/knowledge/jev.md` go back into root `CLAUDE.md` § skills, after the skill router re-measure — set 2026-10-11 · due: 2026-11-12 (pushed 10-23, dima: until tuesday; 10-27: with the router re-measure) (pushed +5 days 2026-11-03, dima) (pushed +4 days 2026-11-09, dima: everything jev)
 
 
-⏰ 🦉🐞 the next cli lane: it runs the round of `docs/test-drive/delve.md` § what counts: the brief says nothing of delve, the question comes at his retro (dima, 2026-10-13: «a used tool is not a proven one; let him pick it up naturally»). dies when that round is written; cli lane 1 (10-22) did not run it, so the next cli lane does (dima, 2026-10-18: «push 1week+»; 2026-11-02: pushed again to 11-10) — set 2026-10-13 · due: 2026-11-10
 
 
 
@@ -81,3 +80,7 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉 re-login to claude before 2026-12-01, the login ends then (FRM-508's read, his o4) — set 2026-11-07 · due: 2026-11-24
 ⏰📌 🦉 reopen the cpu overload with dima, FRM-525: `docs/knowledge/cpu-overload/cases.md` § next; dies when it closes — set 2026-11-07 · due: 2026-11-07
 
+
+⏰ 🔬 fable 5.2 research, a week after its release — dima 2026-11-10 (PK-363:W195): «research about refreshing models in a week (set a reminder)»; W196: what he saw so far, «slightly stronger than opus 5.5, but twice as expensive, and ~20% cheaper than fable 5.1. opus 5.5 medium is still the baseline, imo.» run `recipes/refresh-crew-coordinator/recipe.md` for fable 5.2 once bench data is seeded, then the model cards — set 2026-11-10 · due: 2026-11-17
+
+⏰ 🔬 the fable reset test — dima 2026-11-10 16:18 (PK-363): he runs main clio as Fable 5.2 medium until the fable part of the weekly usage reaches 100, then clicks one of his 3 resets (expire 2027-03-08, wing 1) and we see what it resets. three outcomes he named: the whole week resets (wanted); only the share fable took out of the weekly bar is given back, the other models' share stays (wing 1's reading, «kind of fine»); only the fable meter resets and the weekly bar is untouched (the worst case, unwanted). before his click: copy `~/.claude/shelf/cc-usage-window.json` and note both meters; after: read them again and write the outcome to `docs/test-drive/` or the model cards. baseline at 16:18: weekly 47 % (41 % at the 14:52 boot), fable 9 % by his read — set 2026-11-10
