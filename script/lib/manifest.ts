@@ -44,6 +44,8 @@ export const mirrorRoot = `${repoRoot}/home`;
 // ? which rule it belongs to instead of joining an undifferentiated set.
 export const noLinkReasons = {
     absolutePath: 'reached by absolute path, so a link would be dead weight',
+    landedByCopy:
+        'copied by pnpm herdr-mods:land, since herdr reloads a real folder live and never a link',
     // ? Cowork refuses to trust any folder that a protected home path resolves
     // ? into, and its protected list covers the shell rc files. A real ~/.zshrc
     // ? that sources this one keeps the resolved path in ~ and leaves the repo
@@ -58,6 +60,7 @@ export const noLink = new Map<string, keyof typeof noLinkReasons>([
     ['.claude/plugin-x', 'absolutePath'],
     ['.claude/mcp-x-cloud-chat', 'absolutePath'],
     ['.config/herdr-app/mods/AGENTS.md', 'readInRepo'],
+    ['.config/herdr-app/mods/fleet-board', 'landedByCopy'],
     ['.zshrc', 'sourcedByStub'],
     ['.zshenv', 'sourcedByStub'],
     ['.zprofile', 'sourcedByStub'],

@@ -850,7 +850,11 @@ export default class FleetBoard extends View {
             .children(this.rows.map((s, i) => this.session(t, s, i)))
             .when(asks > 0, (el) =>
                 el
-                    .child(header(`orbit · ${asks} asks`))
+                    .child(
+                        header(
+                            `orbit · ${asks} ${asks === 1 ? 'ask' : 'asks'}`,
+                        ),
+                    )
                     .children(this.orbit(t))
                     .when(Boolean(this.pressError), (el2) =>
                         el2.child(

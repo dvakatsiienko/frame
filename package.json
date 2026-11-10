@@ -10,6 +10,7 @@
         "profile:redraw": "gh workflow run redraw.yml -R dvakatsiienko/dvakatsiienko && echo 'redraw dispatched → https://github.com/dvakatsiienko/dvakatsiienko/actions/workflows/redraw.yml'",
         "frame:link": "node ./script/frame-link.ts",
         "frame:seed": "sh ./script/seed.sh",
+        "herdr-mods:land": "node ./script/herdr-mods-land.ts",
         "toolchain:sync": "node script/toolchain-sync.ts",
         "evergreen:gate": "node ./script/evergreen-gate.ts",
         "ctx-init:trace": "node ./script/ctx-init-trace.ts",
