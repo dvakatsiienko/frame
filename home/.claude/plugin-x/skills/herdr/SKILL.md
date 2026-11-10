@@ -62,6 +62,7 @@ printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building'
 
 ## traps
 
+- 📌 a close (`overlay.close`, `tab.close`, `pane.close`) names the id you opened, from `herdr-app status`; a bare one kills dima's focused seat
 - 📌 `hc send` always presses Enter; `hc keys` is the only prefill, with the limits above
 - 📌 `hc send --force` types into a blocked program and may answer its permission dialog: never into a seat waiting on dima
 - `hc get` changes nothing and shows no screen; the screen is `hc read`

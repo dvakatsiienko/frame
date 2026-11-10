@@ -39,6 +39,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - read a cc mod's private store: the state you draw comes from a file under `~/.claude/shelf/` that the mod writes
 - give a button that unlocks something (a sign, a merge, a delete) a keyed command: click-only, since any shell can reach a keyed command
 - restart or kill a live seat for a proof: a throwaway seat, killed after
+- close anything in herdr without the id you opened (`herdr-app status`): a bare close kills dima's focused seat
 
 ## hazards
 
