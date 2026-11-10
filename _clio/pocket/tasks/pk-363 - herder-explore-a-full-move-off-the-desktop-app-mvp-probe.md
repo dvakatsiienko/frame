@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T17:27:00Z'
+updated_date: '2026-11-10T18:01:00Z'
 labels:
   - m
   - clio-main
@@ -1478,4 +1478,34 @@ PK-363:W568 (2026-11-10 19:24, dima): chatter: seem like rich text formatting is
 PK-363:W569 (2026-11-10 19:24, dima): bold text not present in chatter from your replies.
 PK-363:W570 (2026-11-10 19:24, dima): can i have it as a freebie? ❓
 PK-363:W571 (2026-11-10 19:24, dima): print «💡💡💡💡💡» when ticking will work fully.
+
+PK-363:W572 (2026-11-10 19:31, dima): fix habits right now.
+
+PK-363:W573 (2026-11-10 19:36, dima): [Image #8]name cli-codie properly in herdr and do same for verifier when you summon it
+
+PK-363:W574 (2026-11-10 19:27, dima, o45 steer): Okay but these tickets are safe.
+PK-363:W575 (2026-11-10 19:27, dima, o45 steer): Ask me something that potentially will block. For example with wing 1, I was just not able to sign a ticket for torrents
+
+PK-363:W576 (2026-11-10 19:46, dima): Herdr coder seems to have just killed you and your wing.
+PK-363:W577 (2026-11-10 19:46, dima): Tell me if you restarted properly and find a way to properly resume Wing 1 but don't start a new wing.
+PK-363:W578 (2026-11-10 19:46, dima): Instead resume Wing 1 in a way that its hot cache is reused
+
+PK-363:W579 (2026-11-10 19:47, dima): When Wing 1 is back investigate the issue of why both of you were killed and tell, in short, what's happened, how to solve it, and how to prevent this in future.
+PK-363:W580 (2026-11-10 19:47, dima): It is unacceptable and very bad.
+PK-363:W581 (2026-11-10 19:47, dima): I don't want any of clio to be killed
+
+PK-363:W582 (2026-11-10 19:49, dima): mods codie is at 62% ctx. tell him to SW.
+PK-363:W583 (2026-11-10 19:49, dima): Tell everyone to resume.
+PK-363:W584 (2026-11-10 19:49, dima): When Coder killed you and your wing, I told Coder to stop everyone so ensure everyone is resumed
+
+PK-363:W585 (2026-11-10 19:56, dima): codie killed you again? ❓
+
+PK-363:W586 (2026-11-10 19:58, dima): i am confused with your state. what is the following plan for you? ❓
+
+PK-363:W587 (2026-11-10 20:00, dima): do now
+PK-363:W588 (2026-11-10 20:00, dima): then this
+PK-363:W589 (2026-11-10 20:00, dima): do
+PK-363:W590 (2026-11-10 20:00, dima): do
+PK-363:W591 (2026-11-10 20:00, dima): when i copypaste a numbered or bulleted section from chatter, it should paste same - numbered or bulleted. home: FRM-562:W16
+PK-363:W592 (2026-11-10 20:00, dima): i meanwhile go to wing 1
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-10T16:21:00Z'
+updated_date: '2026-11-10T17:28:00Z'
 labels:
   - s
   - clio-main
@@ -33,7 +33,6 @@ ordinal: 1000
 - [ ] #15 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
 - [ ] #16 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
 - [ ] #17 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #18 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -141,4 +140,6 @@ done 2026-11-10 16:58: 📅 boot clio in herdr carefully from .scratch/herdr/pla
 done 2026-11-10 16:58: 📅 mods lane beside the herdr lane (o105, PK-363:W142, W149, W155): one fresh codie with its sixth sense on (FRM-505:W1941), the herdr lane's x-mod-stash asks first, as soon as possible, then FRM-538's public-post guard half, FRM-544 after its sign grill, FRM-505, FRM-491, FRM-495 (his o87); first ask: orbit's follow keeps its hiddenNote (wishkeeper 22:44) — on: 2026-11-10 (PK-363 open, FRM-505 Todo, FRM-538 Todo, FRM-544 In Progress, FRM-491 Todo, FRM-495 Todo)
 
 done 2026-11-10 16:58: ⏳ FRM-524 operator-override switch, needs human — waits for: dima's flip word (FRM-524 In Progress)
+
+done 2026-11-10 19:28: 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move (FRM-556 Done)
 <!-- SECTION:NOTES:END -->

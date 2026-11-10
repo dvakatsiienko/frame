@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-10T16:12:00Z'
+updated_date: '2026-11-10T17:53:00Z'
 labels:
   - s
   - clio-wing-1
@@ -19,10 +19,11 @@ ordinal: 1001
 - [ ] #1 cli scope audit round with dima (his 17:46 word via main): one verdict group at a time, details on his ask; one line to main per settled group, the final verdict list as a file; no linear writes
 - [ ] #2 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
 - [ ] #3 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11
-- [ ] #4 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #5 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #6 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 539 → 533 → 535, the dated reads ride it (FRM-534, FRM-517 on 11-10; FRM-525 on 11-14); resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
-- [ ] #7 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #4 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #5 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #6 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #7 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 539 → 533 → 535, the dated reads ride it (FRM-534, FRM-517 on 11-10; FRM-525 on 11-14); resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
+- [ ] #8 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
 <!-- AC:END -->
 
 ## Implementation Notes
