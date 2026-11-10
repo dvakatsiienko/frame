@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T20:41:00Z'
+updated_date: '2026-11-10T20:44:00Z'
 labels:
   - m
   - clio-main
@@ -1685,4 +1685,14 @@ PK-363:W734 Propose how to batch so we can reuse the lanes somehow. (2026-11-10,
 
 PK-363:W735 try to be concise in replies, because i am overloaded with info; and tell main clio as well. (2026-11-10 22:39, dima)
 PK-363:W736 resume your lane, i allow, we're gonna make it. (2026-11-10 22:40, dima, orbit steer on the park-every-lane ask)
+
+PK-363:W737 (2026-11-10 22:33, dima): print where mods lane at? ❓
+PK-363:W738 (2026-11-10 22:33, dima): whats most wanted chunks planned for it? ❓
+PK-363:W739 (2026-11-10 22:43, dima): resume mods lane.
+PK-363:W740 (2026-11-10 22:43, dima): I want a meaningful part of planned stuff to be done but it is true that 15% is left and we need to hit.
+PK-363:W741 (2026-11-10 22:43, dima): Let's resume your mods lane and also resume the Herdr lane to finish all meaningful stuff that I wanted for Herdr revival.
+PK-363:W742 (2026-11-10 22:43, dima): FRM-568: let it finish.
+PK-363:W743 (2026-11-10 22:43, dima): then park and let's see where we at.
+PK-363:W744 (2026-11-10 22:43, dima): whats left for herder codie to be ready to start chatter ticket ? ❓
+PK-363:W745 (2026-11-10 22:43, dima): when we grill on chatter? now at your 61% ctx or after sw? (after sw you will lose ctx) ❓
 <!-- SECTION:NOTES:END -->
