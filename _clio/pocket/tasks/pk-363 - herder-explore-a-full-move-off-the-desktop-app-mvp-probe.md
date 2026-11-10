@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T13:44:00Z'
+updated_date: '2026-11-10T14:02:00Z'
 labels:
   - m
   - clio-main
@@ -1124,4 +1124,38 @@ PK-363:W344 (2026-11-10 15:39, dima, o17 steer) he does not want a codie restart
 PK-363:W345 (2026-11-10 15:39, dima, o17 steer) he asks what «herdr restart» means here, and whether it is about letting a codie restart herdr by itself. He still observes and tries to figure out how it works. ❓
 
 refold of W344–W345 in his own words (wishkeeper 15:44; his o17 steer, 2026-11-10 15:39): «I do not understand what it is about. What do we mean by herdr restart? Is it about allowing codie to restart herdr by himself? If yes, it's probably not a great idea, because I often type in prompts, and if codie restarts, my text can be lost. I also observe a lot of issues while codie is changing the mods: the UI flickers and I often have tabs shifted by mods changes. I still observe and try to figure out how it works.»
+
+PK-363:W346 (2026-11-10 15:41, dima) can herdr updates apply without a restart? ❓
+
+PK-363:W347 (2026-11-10 15:50, dima) my guess at the gap, not tested: our mods live in frame and reach herdr through a symlink, so herdr may watch its own folder and miss saves made through the link. I ask the herdr codie to verify that. How do we solve the symlink? ❓
+
+PK-363:W348 (2026-11-10 15:50, dima) maybe hot reloading is not enabled? I think fixing it is one of the first actions. Tell the codie to solve everything in FTR.md gradually and make hot reloading work properly.
+
+PK-363:W349 (2026-11-10 15:50, dima) the hold: codie planned to edit the zoo layout file to show band facts in my chat view, and herdr redraws when that file is saved. We borrowed the zoo chatter shape because I want a pretty chat, not terminal UI. I do not like terminal UI, so we must move out of the zoo into our brand setup. If any tails of zoo are still installed, rebrand them, disconnect them from the zoo install, reshape everything as our branded herdr setup, and make everything customizable.
+
+PK-363:W350 (2026-11-10 15:50, dima) can herdr updates apply without a restart? Yes for a mod in a real folder: herdr's guide says saving a file reloads every copy, and codie saw its effort fix to the chat mod reload in place. I want it. No for fleet-board today: it reaches herdr through a symlink into frame and needed my restart each time; codie touched the link and nothing loaded. The inference is that herdr's watcher skips a link.
+
+PK-363:W351 (2026-11-10 15:50, dima) the in-place reload of the chat mod at 15:35 is the likely cause of the flicker I saw. Live edits stopped at my 15:39 rule.
+
+PK-363:W352 (2026-11-10 15:50, dima) the ⚠️ ask on codie's board is the decision, with a backup of the layout file taken. Pick a moment when losing a seat would hurt least. Did the herdr codie need a restart? I do not understand this. ❓
+
+PK-363:W353 (2026-11-10 15:50, dima) I write from the C desktop app because herdr is slightly unusable for me: no ticks, flicker, lost text, so I do not see mods there. Propose next actions to smooth the experience. I want to be unblocked, hot reloading working, the UI not flickering, and my view not breaking while I type a prompt; I often write for 15 minutes and lose the text when the UI reloads.
+
+PK-363:W354 (2026-11-10 15:50, dima, o13 steer) I signed in terminal view; it is not convenient.
+
+PK-363:W355 (2026-11-10 16:01, dima) my text must survive any reload; this is the root of the lost prompts. Codie should find where the chat box keeps its draft and which reloads drop it. Do not rush it: herdr is good at this, it saves most of my text but hides it. Example: I typed, the view reloaded and the text disappeared (once, in the wing 1 window); then I sent and the text duplicated, because the previous text was saved but hidden. Same for screenshots attached in chatter. I mean the «chatter» view we borrowed from zoo, not the terminal view. That view is custom and may have its own gaps, for codie to polish.
+
+PK-363:W356 (2026-11-10 16:01, dima) the herdr codie's ⚠️ layout-write ask: leave it unticked until the draft fix lands.
+
+PK-363:W357 (2026-11-10 16:01, dima) the order: text first, then hot reload, ticks, quiet, zoo, FTR. Go.
+
+PK-363:W358 (2026-11-10 16:01, dima) land the draft-saving fix now, while I write from the desktop app and my herdr chat box is empty. Yes, say «box empty, go».
+
+PK-363:W359 (2026-11-10 16:01, dima) herdr mods become real files in herdr's folder, copied from frame on each landing, no symlink. Yes.
+
+PK-363:W360 (2026-11-10 16:01, dima) box empty, go.
+
+PK-363:W361 (2026-11-10 16:01, dima) so hot reloading works already? ❓
+
+PK-363:W362 (2026-11-10 16:01, dima) can you tell me when ticking will work? ❓
 <!-- SECTION:NOTES:END -->
