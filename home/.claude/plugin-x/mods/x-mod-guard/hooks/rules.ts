@@ -1064,6 +1064,7 @@ export function ticksWrite(
         cwd,
         (t) => isTicksName(t) || lands.has(t),
         (t) => isShelfDir(t) || landsDir.has(t),
+        true,
     )
         ? TICKS_WRITE
         : undefined;
@@ -1075,7 +1076,7 @@ export function fenceTexts(command: string, cwd: string) {
         seen.add(t);
         return false;
     };
-    touchesStore(command, cwd, take, take);
+    touchesStore(command, cwd, take, take, true);
     return [...seen];
 }
 // the plugins' stores are written by their own plugins alone: fleet-board takes the file a press lands in from
@@ -1103,6 +1104,7 @@ export function storeWrite(
         cwd,
         (t) => isStoreName(t) || lands.has(t),
         (t) => isPluginsDir(t) || landsDir.has(t),
+        true,
     )
         ? STORE_WRITE
         : undefined;

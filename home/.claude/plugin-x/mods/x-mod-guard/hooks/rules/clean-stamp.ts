@@ -116,28 +116,57 @@ function carriesDir(c: Command, namedDir: (text: string) => boolean) {
     );
 }
 
+// a loop binds the names it lists and writes nothing itself; its body's commands are judged on their own
+const LOOPS = new Set(['for', 'select']);
+// a program's write call, in python, node, ruby or perl; a shell's writes are the parser's
+const WRITE_CALL =
+    /\bopen\s*\([^)]*,\s*['"][^'"]*[wax+]|\.(write|append)(File|FileSync|_text|_bytes)?\s*\(|\b(os|shutil|fs|File|FileUtils)\.\w*(rename|replace|remove|unlink|link|mkdir|makedirs|copy|move|write|append|touch|rm|cp|mv)\w*\s*\(|\.(unlink|rename|touch|mkdir|symlink_to)\s*\(|\bcreateWriteStream\b/;
+// the folder named as a path a program opens: under `.claude`, `cc`, or a home the program reads, never a word in its data
+const HOME_PATH = /\.claude|(^|[^\w-])cc\/|\bHOME\b|expanduser|homedir/;
+function writesNamed(command: string, named: (text: string) => boolean) {
+    return command
+        .split(/\n|;/)
+        .some(
+            (line) =>
+                named(line) && HOME_PATH.test(line) && WRITE_CALL.test(line),
+        );
+}
+
 // writers are too many to list, and each one missed is a hole: past the few commands that only read, naming a store is touching it
 export function touchesStore(
     command: string,
     cwd: string,
     named: (text: string) => boolean,
     namedDir: (text: string) => boolean,
+    // the fences that refuse writes only (ticks, plugin stores): a program's text counts where one of its lines both
+    // names the folder and writes, so a read through python passes (clio 18:34: «a read never forges»)
+    isWritesOnly = false,
 ) {
     const parsed = commandsDeep(command, cwd);
     const runsOpaque = (c: Command) =>
         OPAQUE.test(c.name) || c.wrappers.some((w) => OPAQUE.test(w));
-    if (parsed.some(runsOpaque) && named(command)) return true;
+    if (
+        parsed.some(runsOpaque) &&
+        (isWritesOnly ? writesNamed(command, named) : named(command))
+    )
+        return true;
     return parsed.some(
         (c) =>
             // a relative target after a `cd` is judged where it lands too (`cd <shelf> && … > orbit-t*/x`)
             [...c.writes, ...c.appends].some(
                 (w) => named(w) || named(`${c.dir}/${w}`),
             ) ||
+            // in a writes-only fence a command run inside the folder counts as a write, a carrier or a program,
+            // never as `ls`, `grep` or `jq` reading there (clio 18:34)
             (named(`${c.dir}/`) &&
                 (c.writes.length + c.appends.length > 0 ||
-                    !READERS.has(c.name))) ||
+                    (isWritesOnly
+                        ? CARRIERS.has(c.name) || runsOpaque(c)
+                        : !READERS.has(c.name)))) ||
             (c.args.some((w) => named(w.text) || named(`${c.dir}/${w.text}`)) &&
-                !onlyReads(c, named)) ||
+                !onlyReads(c, named) &&
+                // a program's words are judged by its write calls above, a loop's by its body
+                !(isWritesOnly && (LOOPS.has(c.name) || runsOpaque(c)))) ||
             (CARRIERS.has(c.name) && carriesDir(c, namedDir)) ||
             // `trash "$(realpath <store>)"`: the name reaches the word through a substitution
             (c.args.some((w) => w.isExpanding) &&

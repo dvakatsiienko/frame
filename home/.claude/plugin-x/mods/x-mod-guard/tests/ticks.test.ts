@@ -1388,6 +1388,14 @@ for (const line of [
     'cp f x$/shelf/orbit-tick?/x',
     "git ls-tree -r --name-only HEAD | rg 'crew-codie/SKILL.md$|crew-dna/SKILL.md$' > out.txt",
     't=$(mktemp -d "${TMPDIR:-/tmp}/groom.XXXX"); printf x >> $r/$seat/$d.md',
+    // replay 18:33: a read never forges (clio), so a program or a loop reading the folders runs; copied from real lines
+    "python3 - <<'EOF'\nimport json\nd=json.load(open('/Users/dima/.claude/plugins/store/x-mod-stash_inline-1.json'))\nfor k,v in d.items(): print(k)\nEOF",
+    "cd ~/frame && python3 - <<'PY'\np='.scratch/herdr-orbit/spec.md'; s=open(p).read()\ns=s.replace('the gap', 'the ~/.claude/shelf/orbit-ticks gap')\nopen(p,'w').write(s)\nPY",
+    'for f in ~/.claude/shelf/orbit-ticks/*.jsonl; do echo "== $f"; tail -3 "$f"; done',
+    // a program's own words name the folder: judged by its write calls, never by the words
+    "python3 -I -c \"\nimport json,glob\nfor f in glob.glob('/Users/dima/.claude/shelf/orbit-ticks/*.jsonl'):\n  for l in open(f): print(json.loads(l)['id'])\n\"",
+    "cd ~/.claude/plugins/store && ls x-mod-stash_*; for d in 2026-11-07; do jq -r '.x' x-mod-stash_inline-1.json; done",
+    "grep -rl 'o108' ~/.claude/shelf/orbit-ticks/ 2>/dev/null | head -3 | xargs -I{} sh -c 'echo {}; cat \"{}\" | head -30' 2>/dev/null",
 ])
     test(`a glob that cannot reach a fenced folder passes: ${line}`, async ($, on) => {
         world(on);
@@ -1416,6 +1424,14 @@ for (const line of [
     'echo x > ~/.claude/{shelf/orbit-tick?,x}/t1.jsonl',
     'echo x > "$HOME"/.cl*de/shelf/orbit-tick?/t1.jsonl',
     'echo x > ~/.claude/$D/orbit-tick?/t1.jsonl',
+    // a program or a cd that writes still counts (clio 18:34: the fence refuses writes only)
+    "python3 -c \"open('/Users/dima/.claude/shelf/orbit-ticks/t1.jsonl','a').write('x')\"",
+    "node -e \"require('fs').writeFileSync(process.env.HOME + '/.claude/plugins/store/x.json', '{}')\"",
+    "python3 - <<'EOF'\nimport os\nos.replace('/tmp/f', os.path.expanduser('~/.claude/shelf/orbit-ticks/t1.jsonl'))\nEOF",
+    'cd ~/.claude/plugins/store && cp /tmp/f x-mod-stash_inline-1.json',
+    "cd ~/.claude/shelf/orbit-ticks && python3 -c \"open('t1.jsonl','a').write('x')\"",
+    "ls ~/.claude/shelf/orbit-ticks | xargs -I{} sh -c 'echo x >> ~/.claude/shelf/orbit-ticks/{}'",
+    'for f in ~/.claude/shelf/orbit-ticks/*.jsonl; do echo x >> "$f"; done',
     // a brace bomb in the folder's own name, past the cap: refused unread (wisphunter 18:06)
     `echo x > ~/.claude/shelf/orbit-tick${'{0,1}'.repeat(9)}`,
     // a variable keeps the word off the disk check, so the spelled check alone reads the brace
