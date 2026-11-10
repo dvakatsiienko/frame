@@ -1,10 +1,11 @@
 // usage: node script/ticket-sign.ts <FRM-N|BYT-N> signed|re-signed|changed ['<what changed>']
-// pulls the body fresh (`x linear body <id> --json`), stamps it with its `## signed` line and hash, then prints the write. it never writes
+// stamps the body `x linear body <id>` fetched with its `## signed` line and hash, then prints the write. it never writes
 // linear itself: the write stays a visible `x linear body --set`, the call x-mod-guard's sign door reads for his tick
 
-import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 const HEADING = '## signed';
 
@@ -37,12 +38,13 @@ function main([id, kind, what = ''] = process.argv.slice(2)) {
         );
         return 2;
     }
-    const pull = JSON.parse(
-        execFileSync('x', ['linear', 'body', id, '--json'], {
-            encoding: 'utf8',
-        }),
-    ) as { data: { file: string } };
-    const file = pull.data.file;
+    // the same path `x linear body <id>` pulled to (its `.data.file`); a fresh pull here would drop the caller's edit
+    const file = join(
+        process.env.XDG_STATE_HOME ?? join(homedir(), '.local/state'),
+        'x/linear/bodies',
+        process.env.CLAUDE_CODE_SESSION_ID ?? '',
+        `${id}.md`,
+    );
     const today = new Date().toLocaleDateString('sv');
     writeFileSync(
         file,
