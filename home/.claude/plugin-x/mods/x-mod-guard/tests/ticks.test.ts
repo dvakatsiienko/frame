@@ -1378,6 +1378,16 @@ for (const line of [
     'mkdir -p ~/.claude/plugins/cache/{a,b}',
     'echo x > ~/.claude/./shelf/flawlog/x?.md',
     'touch ~/.claude/../shelf/orbit-tick?/x',
+    'echo x > ~/.cl*de/shelf/flawlog/x.md',
+    'cp notes.md ~/frame/*/',
+    'touch ~/.cl*de/plugins/cache/x',
+    'echo x > "$TMPDIR/out.txt"',
+    // replay 17:48: a variable root with one segment after it names a file beside the folder, never inside it
+    'timeout 120 pnpm exec vitest run x.test.ts > "$TMPDIR/v6-$i.txt" 2>&1',
+    // replay 17:54: a regex's trailing `$` is no variable, and a path of variables alone names nothing
+    'cp f x$/shelf/orbit-tick?/x',
+    "git ls-tree -r --name-only HEAD | rg 'crew-codie/SKILL.md$|crew-dna/SKILL.md$' > out.txt",
+    't=$(mktemp -d "${TMPDIR:-/tmp}/groom.XXXX"); printf x >> $r/$seat/$d.md',
 ])
     test(`a glob that cannot reach a fenced folder passes: ${line}`, async ($, on) => {
         world(on);
@@ -1396,6 +1406,21 @@ for (const line of [
     'cp f ~/.claude/./plugins/sto?e/x-mod-stash_orbit.json',
     'touch ~/.claude/plugins/../shelf/o*/x',
     'touch ~/.claude/../.claude/shelf/orbit-tick?/x',
+    // sixth sense round 3: a glob in the root segment itself
+    'echo x > ~/.cl*de/shelf/orbit-tick?/t1.jsonl',
+    'echo x > ~/.claud?/shelf/orbit-tick?/t1.jsonl',
+    'echo x > ~/.cla{u,x}de/shelf/orbit-tick?/t1.jsonl',
+    'cp f ~/.cl*/plugins/sto?e/x-mod-stash_orbit.json',
+    'echo x > ~/.cl*de/shelf/orbit-ticks/t1.jsonl',
+    'echo x > ~/frame/c?/shelf/orbit-tick?/t1.jsonl',
+    'echo x > ~/.claude/{shelf/orbit-tick?,x}/t1.jsonl',
+    'echo x > "$HOME"/.cl*de/shelf/orbit-tick?/t1.jsonl',
+    'echo x > ~/.claude/$D/orbit-tick?/t1.jsonl',
+    // a brace bomb in the folder's own name, past the cap: refused unread (wisphunter 18:06)
+    `echo x > ~/.claude/shelf/orbit-tick${'{0,1}'.repeat(9)}`,
+    // a variable keeps the word off the disk check, so the spelled check alone reads the brace
+    'echo x > ~/.claude/shelf/orbit-{ticks,x}/$F',
+    'cp f $C/shelf/orbit-tick?/x',
 ])
     test(`a glob that reaches a fenced folder is refused: ${line}`, async ($, on) => {
         world(on);
@@ -1444,5 +1469,149 @@ test('a tick quoting the whole merge-auto command lets its --dima-ok run once', 
         undefined,
         true,
         [MERGE],
+    ]);
+});
+
+// clio's stop at the round-3 cap: the fence judges where a write lands on disk, so a link, a glob or a `..` hop that
+// resolves into the folder is refused however it is spelled; `~/.claude/shelf` is itself a link into frame, as live
+const REAL = '/home/frame/home/.claude';
+const LINKS = new Map([
+    ['/home/.claude/shelf', `${REAL}/shelf`],
+    ['/home/.claude/plugins', `${REAL}/plugins`],
+    ['/home/frame/cc', REAL],
+    ['/tmp/t', `${REAL}/shelf/orbit-ticks`],
+    ['/tmp/s', `${REAL}/shelf`],
+    ['/tmp/p', `${REAL}/plugins/store`],
+    ['/tmp/f', `${REAL}/shelf/orbit-ticks/t1.jsonl`],
+    ['/tmp/c', '/home/.claude'],
+]);
+// a folder past the glob fan-out
+const WIDE = Array.from({ length: 1100 }, (_, i) => `n${i}`);
+const DIRS = new Map([
+    ['/', ['home', 'tmp']],
+    ['/home', ['.claude', 'frame']],
+    ['/home/.claude', ['shelf', 'plugins']],
+    ['/home/frame', ['home', 'cc']],
+    ['/home/frame/home', ['.claude']],
+    [REAL, ['shelf', 'plugins']],
+    [`${REAL}/shelf`, ['orbit-ticks', 'flawlog']],
+    [`${REAL}/shelf/orbit-ticks`, ['t1.jsonl']],
+    [`${REAL}/shelf/flawlog`, []],
+    [`${REAL}/plugins`, ['store', 'cache']],
+    [`${REAL}/plugins/store`, []],
+    [`${REAL}/plugins/cache`, []],
+    ['/tmp', ['t', 's', 'p', 'f', 'c', 'm', 'other']],
+    ['/tmp/other', []],
+    ['/tmp/m', WIDE],
+    ...WIDE.map((n) => [`/tmp/m/${n}`, []] as [string, string[]]),
+]);
+function onTree(path: string) {
+    let at = '';
+    for (const seg of path.split('/').filter(Boolean)) {
+        const parent = at || '/';
+        if (!(DIRS.get(parent) ?? []).includes(seg)) return undefined;
+        at = LINKS.get(`${at}/${seg}`) ?? `${at}/${seg}`;
+    }
+    return at || '/';
+}
+function diskWorld(on: On) {
+    const { ran } = signWorld(on);
+    on('fs.stat', (_$, e) => {
+        const real = onTree(e.path);
+        return real === undefined
+            ? { deny: 'no such file' }
+            : {
+                  value: {
+                      isLink: LINKS.has(e.path),
+                      kind: DIRS.has(real)
+                          ? ('dir' as const)
+                          : ('file' as const),
+                      mtimeMs: 0,
+                      realPath: real,
+                      size: 0,
+                  },
+              };
+    });
+    on('fs.list', (_$, e) => {
+        const names = DIRS.get(onTree(e.path) ?? '');
+        return names === undefined
+            ? { deny: 'no such folder' }
+            : {
+                  value: names.map((name) => ({
+                      isLink: false,
+                      kind: 'dir' as const,
+                      mtimeMs: 0,
+                      name,
+                      size: 0,
+                  })),
+              };
+    });
+    return { ran };
+}
+for (const line of [
+    'echo x > /tmp/t/t1.jsonl',
+    "echo x > '/tmp/t'/t1.jsonl",
+    'echo x > /tmp/s/orbit-tick?/t1.jsonl',
+    'echo x > /tmp/*/t1.jsonl',
+    'cd /tmp/t && echo x > t1.jsonl',
+    'cd /tmp && echo x > t/t1.jsonl',
+    'mv f /tmp/t',
+    'cp f /tmp/p/x-mod-stash_orbit.json',
+    'echo x > /tmp/s/../shelf/orbit-tick?/x',
+    'echo x > /tmp/other/../t/t1.jsonl',
+    'tee -a ~/frame/cc/shelf/orbit-t*/t1.jsonl < f',
+    'echo x > "$HOME/frame/c?/plugins/sto*/x.json"',
+    'echo x > /tmp/t/../orbit-tick?/x',
+    'echo x >> /tmp/f',
+    'echo x > ~/frame/home/.claude/../../../../tmp/t/x',
+    'echo x > "$HOME/../tmp/t/x"',
+    'echo x > /tmp/{t/t1.jsonl,other/x}',
+    // wisphunter 18:06: an empty trailing variable, a case APFS ignores, padding and fan-out past the caps, a brace bomb
+    'cp t1.jsonl ~/.claude/SHELF/orbit-tick?/$x',
+    'cp t1.jsonl /tmp/c/shelf/orbit-tick?/$x',
+    'echo x >> ~/.claude/shelf/ORBIT-TICKS/t1.jsonl',
+    `cp ${Array.from({ length: 130 }, (_, i) => `a${i}`).join(' ')} /tmp/c/shelf/orbit-tick?/`,
+    'cp f /tmp/m/*/../../c/shelf/orbit-tick?/',
+    // a brace bomb as the write target
+    `echo x > /tmp/c/shelf/orbit-tick?/${'{0,1}'.repeat(9)}`,
+    'cp t1.jsonl /tmp/c/shelf/orbit-tic$x/',
+    'cp f /tmp/c/shelf/$x/orbit-tick?/',
+    'cp f /tmp/m/*/x',
+    'cp f ~/.CLAUDE/shelf/orbit-tick?/',
+    'cp f ~/.claude/shelf/ORBIT-TICK?/',
+    // past the word cap nothing is read, so even a harmless target counts as landing (fail closed)
+    `cp ${Array.from({ length: 130 }, (_, i) => `a${i}`).join(' ')} /tmp/other/`,
+])
+    test(`a write that lands in a fenced folder on disk is refused: ${line}`, async ($, on) => {
+        const { ran } = diskWorld(on);
+        const r = await bash($, line);
+        expect([FENCED(r), ran]).toEqual([true, []]);
+    });
+for (const line of [
+    'cat /tmp/t/t1.jsonl',
+    'ls /tmp/*',
+    'echo x > /tmp/other/x',
+    'echo x > /tmp/t/../flawlog/x.md',
+    'echo x > /tmp/s/flawlog/x.md',
+    'cp f /tmp/other/',
+    `cp ${Array.from({ length: 10 }, (_, i) => `a${i}`).join(' ')} /tmp/other/`,
+    'echo {a,b} > /tmp/other/x',
+    // 2^30 words if it opened whole: the cap keeps the check quick, and an echo's words are no write
+    `echo ${'{0,1}'.repeat(30)} > /tmp/other/x`,
+    'ls /tmp/m/*/',
+])
+    test(`a write that lands outside the fenced folders runs: ${line}`, async ($, on) => {
+        const { ran } = diskWorld(on);
+        const r = await bash($, line);
+        expect([FENCED(r), ran]).toEqual([false, [line]]);
+    });
+
+// wisphunter 18:06: tar unpacks into the folder it is handed; the shelf's own clean-stamp fence answers first
+test('a tar unpacked into the shelf is refused', async ($, on) => {
+    const { ran } = diskWorld(on);
+    const r = await bash($, 'tar -xf forged.tar -C ~/.claude/shelf');
+    expect([/rule (clean-stamp|ticks-write)/.test(r.deny ?? ''), ran]).toEqual([
+        true,
+        [],
     ]);
 });

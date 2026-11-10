@@ -15,6 +15,8 @@ const CARRIERS = new Set([
     'rm',
     'rmdir',
     'rsync',
+    // `tar -xf forged.tar -C <shelf>` unpacks into the store (wisphunter 18:06)
+    'tar',
     'trash',
 ]);
 const READERS = new Set([

@@ -50,9 +50,13 @@ import {
     STORE_WRITE,
     TICKS_WRITE,
     addedPaths,
+    bracesOf,
     check,
+    fenceTexts,
     foregroundClaude,
+    globMatches,
     installDirs,
+    isGlob,
     isSignAsk,
     isStashKill,
     isStorePath,
@@ -678,6 +682,104 @@ async function realPath($: EngineInterface, file: string) {
     return { file: full, key: full.toLowerCase() };
 }
 // twin end
+
+// the fenced folders judged where a write lands on disk, not how it is spelled: a symlink, a glob, a `..` hop all
+// resolve before the compare (clio's stop at the round-3 cap: three rounds of spellings, one shape)
+const FENCE_TEXTS = 256;
+const FENCE_FANOUT = 1024;
+async function fenceLanding($: EngineInterface, command: string, cwd: string) {
+    const home = (await $.env.get('HOME')) ?? '';
+    const ticks = (await realPath($, `${home}/.claude/shelf/orbit-ticks`)).key;
+    const shelf = (await realPath($, `${home}/.claude/shelf`)).key;
+    const store = (await realPath($, `${home}/.claude/plugins/store`)).key;
+    const plugins = (await realPath($, `${home}/.claude/plugins`)).key;
+    const lands = {
+        plugins: new Set<string>(),
+        shelf: new Set<string>(),
+        store: new Set<string>(),
+        ticks: new Set<string>(),
+    };
+    const dirs = new Map<string, string>();
+    const texts = fenceTexts(command, cwd);
+    for (const text of texts) {
+        const paths =
+            texts.length > FENCE_TEXTS
+                ? undefined
+                : await onDisk($, text, home);
+        // past a cap nothing is read, so every word counts as landing: a write is refused, a read still runs
+        // (wisphunter 18:06: padding pushed the target past the cap)
+        if (!paths) {
+            for (const set of Object.values(lands))
+                for (const t of texts) set.add(t);
+            return lands;
+        }
+        for (const path of paths) {
+            const key = await landingOf($, path, dirs);
+            if (key === ticks || key.startsWith(`${ticks}/`))
+                lands.ticks.add(text);
+            if (key === store || key.startsWith(`${store}/`))
+                lands.store.add(text);
+            if (key === shelf) lands.shelf.add(text);
+            if (key === plugins) lands.plugins.add(text);
+        }
+    }
+    return lands;
+}
+// a variable or a substitution the line never fills: one segment of any name, or none
+const UNFILLED = /\$\{[^}]*\}|\$\([^)]*\)|`[^`]*`|\$[\w@*#?]+/g;
+const ANY = '\u0000';
+// a word as the shell would hand it over: `~` and `$HOME` filled, braces opened, globs matched against the folder they
+// sit in, an unfilled variable read as any entry or none (wisphunter 18:06: `orbit-tick?/$x` with `$x` empty);
+// undefined past a cap, which the caller reads as landing
+async function onDisk($: EngineInterface, text: string, home: string) {
+    const spelled = text
+        .replace(/^~(?=\/|$)/, home)
+        .replace(/\$\{?HOME\}?(?=\/|$)/g, home)
+        .replace(UNFILLED, ANY);
+    if (!spelled.startsWith('/') || /\s/.test(spelled)) return [];
+    // a brace bomb never gets here: the spelled check refuses its word first
+    const out: string[] = [];
+    for (const alt of bracesOf(spelled)) {
+        let at = ['/'];
+        for (const seg of alt.split('/')) {
+            if (seg === '' || seg === '.') continue;
+            const next: string[] = seg === ANY ? [...at] : [];
+            const pattern = seg.replaceAll(ANY, '*');
+            for (const dir of at) {
+                if (seg === '..')
+                    // the kernel steps back from where a link lands, never from its spelling
+                    next.push(dirname((await realPath($, dir)).file));
+                else if (!isGlob(pattern)) next.push(joinPath(dir, seg));
+                else
+                    for (const entry of await $.fs.list(dir).catch(() => []))
+                        if (globMatches(pattern, entry.name))
+                            next.push(joinPath(dir, entry.name));
+            }
+            if (next.length > FENCE_FANOUT) return undefined;
+            at = next;
+        }
+        out.push(...at);
+    }
+    return out;
+}
+const joinPath = (dir: string, name: string) =>
+    dir === '/' ? `/${name}` : `${dir}/${name}`;
+// a file that exists lands where its link points; a new one lands in its folder's real path
+async function landingOf(
+    $: EngineInterface,
+    path: string,
+    dirs: Map<string, string>,
+) {
+    const direct = await $.fs.stat(path, { resolve: true }).then(
+        (s) => s.realPath,
+        () => undefined,
+    );
+    if (direct) return direct.toLowerCase();
+    const dir = dirname(path);
+    const known = dirs.get(dir) ?? (await realPath($, dir)).key;
+    dirs.set(dir, known);
+    return `${known}/${path.slice(dir.length + 1).toLowerCase()}`;
+}
 
 // twin holder-gone — a copy lives in x-mod-holds; the twins lint keeps them equal
 // a holder that ended, went idle or died holds nothing
@@ -1862,7 +1964,11 @@ export const register: Register = (on) => {
             }
         }
         // born refusing: the folder is a tick only while no seat writes it, and the store aims a press (FRM-544 slice 1)
-        const ticksFile = ticksWrite(typed, cwd) ?? storeWrite(typed, cwd);
+        // a resolve that throws leaves the spelled checks standing
+        const lands = await fenceLanding($, typed, cwd).catch(() => undefined);
+        const ticksFile =
+            ticksWrite(typed, cwd, lands?.ticks, lands?.shelf) ??
+            storeWrite(typed, cwd, lands?.store, lands?.plugins);
         if (ticksFile) {
             const said = `x-mod-guard stopped this one command. instead: ${ticksFile.door}. why: ${ticksFile.why} (rule ${ticksFile.rule}).`;
             const stop = await enforce(

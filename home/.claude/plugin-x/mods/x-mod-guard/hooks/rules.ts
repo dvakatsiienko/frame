@@ -947,23 +947,42 @@ export const keysIntoAgent = (target: string, app: string): Refusal => ({
 // a glob or brace the shell would expand into a fenced folder (wisphunter: `orbit-tick?`), read per path word and per
 // segment: a brace is its listed names, a `*`, `?` or `[` a pattern; so `orbit-{ticks,x}` or `s*/orbit-tick?` reach the
 // folder, while `shelf/{a,b}` or `plugin-x/*/` never can (clio's runs refused at 16:52, sixth sense's round 1)
-const isGlob = (seg: string) => /[*?[{]/.test(seg);
-const bracesOf = (seg: string): string[] => {
-    const m = seg.match(/\{([^{}]*)\}/);
-    return m
-        ? (m[1] ?? '')
-              .split(',')
-              .flatMap((alt) => bracesOf(seg.replace(m[0], alt)))
-        : [seg];
+// a variable, never a regex's trailing `$` (`SKILL.md$`, replay 17:54)
+const isVar = (seg: string) => /\$[\w{(@*#?]/.test(seg);
+export const isGlob = (seg: string) => /[*?[{]/.test(seg) || isVar(seg);
+// past the cap a word is a brace bomb (`{0,1}` 22 times is 4M words, wisphunter 18:06): it stops opening, and a write
+// naming one is refused
+export const BRACE_CAP = 256;
+export const bracesOf = (seg: string) => {
+    let words = [seg];
+    for (let isOpened = true; isOpened; ) {
+        isOpened = false;
+        const next: string[] = [];
+        for (const word of words) {
+            const m = word.match(/\{([^{}]*)\}/);
+            if (!m) next.push(word);
+            else {
+                isOpened = true;
+                for (const alt of (m[1] ?? '').split(','))
+                    next.push(word.replace(m[0], alt));
+            }
+            if (next.length > BRACE_CAP) return next;
+        }
+        words = next;
+    }
+    return words;
 };
-const globMatches = (seg: string, name: string) =>
+// APFS opens `SHELF` as `shelf`, so every name compares without case (wisphunter 18:06)
+export const globMatches = (seg: string, name: string) =>
     bracesOf(seg).some((alt) => {
+        // a variable the line never fills may hold any name
+        if (isVar(alt)) return true;
         try {
             const pattern = alt
                 .replace(/[.+^$()|\\]/g, '\\$&')
                 .replace(/\*/g, '.*')
                 .replace(/\?/g, '.');
-            return new RegExp(`^${pattern}$`).test(name);
+            return new RegExp(`^${pattern}$`, 'i').test(name);
         } catch {
             // a pattern the guard cannot read may reach anything
             return true;
@@ -971,26 +990,49 @@ const globMatches = (seg: string, name: string) =>
     });
 // `<.claude or cc>/<names[0]>/<names[1]>…` reached by a word holding at least one glob segment on that walk
 function globReaches(text: string, names: readonly string[]) {
-    // a lookahead, so `.claude/../.claude/…` is walked from each of its roots
-    for (const m of text.matchAll(
-        /(?:\.claude|(?:^|[\s/'"=])cc)\/(?=([^\s'"]+))/g,
-    )) {
+    // a brace spanning a slash (`.claude/{shelf/orbit-ticks,x}`) opens before the walk
+    for (const word of text.split(/[\s'"=]+/)) {
+        const isBraced = word.includes('{');
+        const paths = bracesOf(word);
+        if (paths.length > BRACE_CAP) return true;
+        for (const path of paths)
+            if (walkReaches(path.split('/'), names, isBraced)) return true;
+    }
+    return false;
+}
+function walkReaches(
+    raw: string[],
+    names: readonly string[],
+    isBraced: boolean,
+) {
+    // every root is walked: `.claude/../.claude/…`, and a root that is itself a glob (`.cl*de`, `.cla{u,x}de`,
+    // sixth sense round 3)
+    for (const [at, root] of raw.entries()) {
+        const isGlobRoot =
+            isGlob(root) &&
+            (globMatches(root, '.claude') || globMatches(root, 'cc'));
+        const isRoot = /^(\.claude|cc)$/i.test(root);
+        if (!isRoot && !isGlobRoot) continue;
         // the path the kernel walks: `.` and empty segments drop, `..` steps back (sixth sense round 2)
         const walked: string[] = [];
         let isAbove = false;
-        for (const seg of (m[1] ?? '').split('/')) {
+        for (const seg of raw.slice(at + 1)) {
             if (seg === '' || seg === '.') continue;
             if (seg !== '..') walked.push(seg);
             else if (walked.pop() === undefined) isAbove = true;
         }
         if (isAbove) continue;
         const segs = walked.slice(0, names.length);
-        if (!segs.some(isGlob)) continue;
+        // a walk that stops short names the parent, never the folder (`"$TMPDIR/v6-$i.txt"`, replay 17:48)
+        if (segs.length < names.length) continue;
+        // a path built of variables alone names nothing the guard can read (`$r/$seat/$d.md`, replay 17:54): a named limit
+        if (isVar(root) && segs.every(isVar)) continue;
+        if (!isBraced && !isGlobRoot && !segs.some(isGlob)) continue;
         if (
             segs.every((seg, i) =>
                 isGlob(seg)
                     ? globMatches(seg, names[i] ?? '')
-                    : seg === names[i],
+                    : seg.toLowerCase() === names[i],
             )
         )
             return true;
@@ -1009,10 +1051,32 @@ export const TICKS_WRITE = {
     targets: ['orbit-ticks'],
     why: "fleet-board writes dima's presses there and x-mod-guard reads a press as his tick, so a seat's write would forge one",
 } as const satisfies Refusal;
-export function ticksWrite(command: string, cwd: string): Refusal | undefined {
-    return touchesStore(command, cwd, isTicksName, isShelfDir)
+// `lands`: the words the hook resolved on disk into the fenced folder (a symlink, a glob it expanded), `landsDir` into its
+// parent; both empty where nothing resolved, so the spelled checks alone stand (replay, a test)
+export function ticksWrite(
+    command: string,
+    cwd: string,
+    lands: ReadonlySet<string> = new Set(),
+    landsDir: ReadonlySet<string> = new Set(),
+): Refusal | undefined {
+    return touchesStore(
+        command,
+        cwd,
+        (t) => isTicksName(t) || lands.has(t),
+        (t) => isShelfDir(t) || landsDir.has(t),
+    )
         ? TICKS_WRITE
         : undefined;
+}
+// every word the store checks judge, so the hook can resolve each on disk before they run
+export function fenceTexts(command: string, cwd: string) {
+    const seen = new Set<string>();
+    const take = (t: string) => {
+        seen.add(t);
+        return false;
+    };
+    touchesStore(command, cwd, take, take);
+    return [...seen];
 }
 // the plugins' stores are written by their own plugins alone: fleet-board takes the file a press lands in from
 // x-mod-stash's `succ:` key and the ask from its `asks:` key, so a seat's write there could aim his press at itself
@@ -1028,8 +1092,18 @@ export const STORE_WRITE = {
     targets: ['plugins/store'],
     why: "fleet-board reads where dima's press lands from x-mod-stash's store, so a seat's write there could aim his press at itself",
 } as const satisfies Refusal;
-export function storeWrite(command: string, cwd: string): Refusal | undefined {
-    return touchesStore(command, cwd, isStoreName, isPluginsDir)
+export function storeWrite(
+    command: string,
+    cwd: string,
+    lands: ReadonlySet<string> = new Set(),
+    landsDir: ReadonlySet<string> = new Set(),
+): Refusal | undefined {
+    return touchesStore(
+        command,
+        cwd,
+        (t) => isStoreName(t) || lands.has(t),
+        (t) => isPluginsDir(t) || landsDir.has(t),
+    )
         ? STORE_WRITE
         : undefined;
 }
