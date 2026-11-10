@@ -1333,3 +1333,26 @@ test('a pane typer fed by echo with no proof words runs', async ($, on) => {
     const { ran } = signWorld(on);
     expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
 });
+
+// clio's two runs the fences refused at 16:52–16:54, copied from her transcript: an opaque runner on the line (xargs,
+// node) made the glob check read the whole line, a `*` in one word and `.claude` in another
+const FENCED = (r: { deny?: string }) =>
+    /rule (ticks-write|store-write)/.test(r.deny ?? '');
+for (const [why, line] of [
+    [
+        'a grep over test-drive docs through xargs beside a .claude path',
+        String.raw`cd ~/frame && grep -l '^fits:.*sixth-sense' docs/test-drive/*.md | xargs -n1 basename | sed 's/\.md$//' | tr '\n' ' '; echo; grep -l '^fits:.*sixth-sense' docs/test-drive/*.md | xargs grep -L -i '^verdict:\|adopted\b.*verdict' | xargs -n1 basename; tail -12 home/.claude/plugin-x/skills/herdr/scripts/seat-tab.ts | cut -c1-160; x brief summon "cd ~/frame && claude --bg -n '⚡ 🔎 sixth sense: mods lane | main' --model opus --effort medium '/x:crew-sixth-sense FRM-544 main:620cfecb ⚡ 🔧 codie: mods lane | PK-363 🦉 clio final: a7322c96 spec: /Users/dima/frame/.scratch/mods-lane-6/spec.md trials: review-rounds wisphunter skill-named-load' --remote-control" 2>&1 | tail -6 | cut -c1-400`,
+    ],
+    [
+        'a heredoc script run by node beside a jq brace',
+        `cd ~/frame && cat > "/private/tmp/claude-501/-Users-dima-frame--clio/a741b7d8-dbde-4ae9-95c8-28d502c57cd0/scratchpad/tab.ts" <<'EOF'
+import { keepSeatInTab } from '/Users/dima/frame/home/.claude/plugin-x/skills/herdr/scripts/seat-tab.ts';
+console.log(keepSeatInTab('t2b', 'sixth-mods'));
+EOF
+node "/private/tmp/claude-501/-Users-dima-frame--clio/a741b7d8-dbde-4ae9-95c8-28d502c57cd0/scratchpad/tab.ts"; sleep 20; hc get t2b --json | jq -c '{status: .status, pid}'; hc read t2b --lines 12 | tail -12 | cut -c1-160`,
+    ],
+] as const)
+    test(`an ordinary run naming no fenced path passes the fences: ${why}`, async ($, on) => {
+        world(on);
+        expect(FENCED(await bash($, line))).toBe(false);
+    });
