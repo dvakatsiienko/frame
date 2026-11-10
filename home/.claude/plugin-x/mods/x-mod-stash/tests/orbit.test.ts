@@ -5453,3 +5453,83 @@ test('a herdr ↩️ after a herdr tick a turn took drops its tick record', asyn
     const last = (writes.at(-1) ?? []) as { id: string }[];
     expect(last.map((t) => t.id)).toEqual([]);
 });
+
+// FRM-544 slice 2f: a first prompt «sign FRM-N» signs nothing at x-mod-guard, which keeps its ids for that prompt; the
+// ✍️ sign ask joins orbit the same turn, so his one tick signs
+function firstSign(on: On) {
+    const kept = { value: null as { ids: string[]; at: number } | null };
+    on('state.get', (_$, e, next) =>
+        e.plugin === 'x-mod-guard' && e.key === 'firstSign'
+            ? { value: { value: kept.value, version: 1 } }
+            : next(e),
+    );
+    return kept;
+}
+// the board draws each id as its linear link, so the row reads «✍️ sign <url>FRM-544: …»
+async function signRowShown(ui: Board, ...ids: string[]) {
+    return (await ui.findAll({ type: 'Text' })).some(
+        (t) =>
+            /^o\d+: ✍️ sign .*: typed as this session's first prompt$/u.test(
+                t.text ?? '',
+            ) && ids.every((id) => t.text?.includes(id)),
+    );
+}
+
+test("a first prompt's sign puts its ✍️ sign ask on his board", async ($, on) => {
+    world(on);
+    const first = firstSign(on);
+    await start($);
+    const ui = await board($);
+    first.value = { at: 1, ids: ['FRM-544'] };
+    await say($, 'sign FRM-544');
+    await ui.redraw();
+    expect([await asksShown(ui), await signRowShown(ui, 'FRM-544')]).toEqual([
+        ['o1'],
+        true,
+    ]);
+});
+
+test('a batch first-prompt sign is one ask naming every id', async ($, on) => {
+    world(on);
+    const first = firstSign(on);
+    await start($);
+    const ui = await board($);
+    first.value = { at: 1, ids: ['FRM-544', 'FRM-519'] };
+    await say($, 'sign FRM-544 FRM-519');
+    await ui.redraw();
+    expect(await signRowShown(ui, 'FRM-544, ', 'FRM-519')).toBe(true);
+});
+
+test('a prompt with no first-prompt sign adds no ask', async ($, on) => {
+    world(on);
+    firstSign(on);
+    await start($);
+    const ui = await board($);
+    await say($, 'sign FRM-544');
+    await ui.redraw();
+    expect(await asksShown(ui)).toEqual([]);
+});
+
+test('the same first-prompt sign read twice keeps one open ask', async ($, on) => {
+    world(on);
+    const first = firstSign(on);
+    await start($);
+    const ui = await board($);
+    first.value = { at: 1, ids: ['FRM-544'] };
+    await say($, 'sign FRM-544');
+    await say($, 'go on');
+    await ui.redraw();
+    expect(await asksShown(ui)).toEqual(['o1']);
+});
+
+test('orbit switched off adds no first-prompt sign ask', async ($, on) => {
+    const w = world(on);
+    const first = firstSign(on);
+    w.store.set('shown', { 'stash.orbit': false });
+    await start($);
+    first.value = { at: 1, ids: ['FRM-544'] };
+    await say($, 'sign FRM-544');
+    expect([...w.store.keys()].filter((k) => k.startsWith('asks:'))).toEqual(
+        [],
+    );
+});

@@ -2439,6 +2439,36 @@ async function absorbMarks($: EngineInterface) {
     }
 }
 
+// a session's first prompt «sign FRM-N» signs nothing at x-mod-guard, since a seat's spawn prompt reads the same; it keeps
+// that prompt's ids, and their ✍️ sign ask joins this orbit the same turn, so his one tick signs (FRM-544 slice 2f)
+const GUARD_FIRST_SIGN = { key: 'firstSign', plugin: 'x-mod-guard' } as const;
+async function askFirstSign($: EngineInterface) {
+    const { value: first } = await $.state.get(GUARD_FIRST_SIGN);
+    if (!first?.ids.length) return;
+    const ids = first.ids.join(', ');
+    const text = `✍️ sign ${ids}: typed as this session's first prompt`;
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        if (o.asks.some((a) => !a.isResolved && a.text === text)) return;
+        const made = orbitOp(
+            o,
+            {
+                asks: [
+                    {
+                        hiddenNote:
+                            "a session's first prompt reads the same as a seat's spawn brief, so it signed nothing; tick only if you typed it",
+                        pick: `sign ${ids}`,
+                        text,
+                    },
+                ],
+                op: 'add',
+            },
+            true,
+        );
+        if (!('deny' in made)) await saveOrbit($, made.orbit);
+    });
+}
+
 // an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
 // carrying all of them. the submitted prompt skips this plugin's own prompt.submit hook, so the marks ride its text
 async function wakeForMarks($: EngineInterface) {
@@ -5928,7 +5958,7 @@ export const register: Register = (on) => {
         const wind = isOn('stash.second-wind')
             ? await takeWind($, isOwner).catch(() => undefined)
             : undefined;
-        return next({
+        const sent = await next({
             ...e,
             context: [
                 ...(e.context ?? []),
@@ -5950,6 +5980,14 @@ export const register: Register = (on) => {
             ],
             text: hold?.text ?? e.text,
         });
+        // after next: x-mod-guard has read this prompt by now, on whichever side of this hook it runs
+        if (isOn('stash.orbit'))
+            await askFirstSign($).catch(() =>
+                $.ui.log(
+                    "x-mod-stash: the first prompt's sign ask was not added",
+                ),
+            );
+        return sent;
     });
 
     // a long turn outruns the prompt's clock: the stored reply's 📄 stamp is the time it was written

@@ -9,8 +9,10 @@ declare module 'claude-code' {
         // spent: the ticks a guarded command already ran on, `<ask id>@<tick time>:<what it authorized>`; a tick is spent per use
         // written: the files a Write or a Bash call wrote in the running turn, path to text, so a later run of one reads its commands
         // signs: the ids dima typed «sign <id>» for at the composer or the bridge, each with its prompt's time, kept 2 h
+        // firstSign: the ids this session's first prompt typed «sign» for, this prompt's only; x-mod-stash reads it
         'x-mod-guard': {
             signs: { id: string; at: number }[];
+            firstSign: { ids: string[]; at: number } | null;
             prompted: boolean;
             edits: number;
             seen: string[];

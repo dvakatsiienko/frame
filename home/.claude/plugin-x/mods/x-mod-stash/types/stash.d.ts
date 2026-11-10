@@ -278,6 +278,12 @@ export type StashLane = {
 
 declare module 'claude-code' {
     interface PluginState {
+        // read-only here: the ids a session's first prompt typed «sign» for, this prompt's only (x-mod-guard's contract)
+        'x-mod-guard': {
+            firstSign: { ids: string[]; at: number } | null;
+        };
+    }
+    interface PluginState {
         'x-mod-stash': {
             // speak is reading aloud and not paused: the board's play button reads pause (dima, 15:51)
             speaking: boolean;

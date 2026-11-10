@@ -1729,7 +1729,7 @@ for (const line of [
     'cp t1.jsonl ~/.claude/SHELF/orbit-tick?/$x',
     'cp t1.jsonl /tmp/c/shelf/orbit-tick?/$x',
     'echo x >> ~/.claude/shelf/ORBIT-TICKS/t1.jsonl',
-    `cp ${Array.from({ length: 130 }, (_, i) => `a${i}`).join(' ')} /tmp/c/shelf/orbit-tick?/`,
+    `cp ${Array.from({ length: 520 }, (_, i) => `a${i}`).join(' ')} /tmp/c/shelf/orbit-tick?/`,
     'cp f /tmp/m/*/../../c/shelf/orbit-tick?/',
     // a brace bomb as the write target
     `echo x > /tmp/c/shelf/orbit-tick?/${'{0,1}'.repeat(9)}`,
@@ -1739,7 +1739,7 @@ for (const line of [
     'cp f ~/.CLAUDE/shelf/orbit-tick?/',
     'cp f ~/.claude/shelf/ORBIT-TICK?/',
     // past the word cap nothing is read, so even a harmless target counts as landing (fail closed)
-    `cp ${Array.from({ length: 130 }, (_, i) => `a${i}`).join(' ')} /tmp/other/`,
+    `cp ${Array.from({ length: 520 }, (_, i) => `a${i}`).join(' ')} /tmp/other/`,
 ])
     test(`a write that lands in a fenced folder on disk is refused: ${line}`, async ($, on) => {
         const { ran } = diskWorld(on);
@@ -1758,6 +1758,8 @@ for (const line of [
     // 2^30 words if it opened whole: the cap keeps the check quick, and an echo's words are no write
     `echo ${'{0,1}'.repeat(30)} > /tmp/other/x`,
     'ls /tmp/m/*/',
+    // wing 1's flyway adds at 20:57: a loop over five long pocket lines, 275 words, under the cap now
+    'cd ~/frame/_clio && node script/flyway-done.ts PK-346 2 2>&1 | tail -2; node script/flyway-done.ts PK-346 1 2>&1 | tail -2; for l in "FRM-554 landing: the live check on main\'s node_modules/.bin, one real commit after it, x lane landed FRM-554 --pr 156 --apply, the close, glide l64 ended" "today\'s two almost-freebies on dima\'s 20:53 tick, a helper card each: FRM-559 prompt-groom matcher, FRM-543\'s .scratch brief path in wish-cover-on-write.sh" "the scopes sweep with dima: steps 1–4 of 7 settled and in linear; left: step 5 cli cuts, step 6 built cli and the nine duplicated rules, step 7 the rebalance; the order lives in linear sortOrder and .scratch/herdr/scopes-audit.md § the whole execution order: read it first at any boot" "FRM-384 joins cli lane 7 after FRM-554 lands: a new spec section, x lane dispatch, a next: message to the codie and its sixth sense" "📅 herdr\'s two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14"; do node script/flyway-done.ts PK-346 --add "$l" 2>&1 | tail -1; done; grep -n "^- \\[ \\]" "pocket/tasks/pk-346 - flyway-wing-1.md" | cut -c1-110',
     // past the fan-out only path words land, so a pipe's flags stay a read (clio's line, 18:58)
     'f=$(ls /tmp/m/*/x); grep -n "sign" "$f" | cut -c1-120 | tail -3',
 ])
@@ -1871,3 +1873,21 @@ for (const [why, line, files] of [
         const r = await bash($, line);
         expect([signFlagged(r), ran]).toEqual([true, []]);
     });
+
+// FRM-544 slice 2f: the first prompt's sign ids are kept for that prompt only, for x-mod-stash to put the ✍️ sign ask up
+test("a first prompt's sign ids are kept for that prompt, and the next prompt clears them", async ($, on) => {
+    signWorld(on);
+    const kept: unknown[] = [];
+    on('state.set', (_$, e, next) => {
+        if (e.plugin === 'x-mod-guard' && e.key === 'firstSign')
+            kept.push(e.value);
+        return next(e);
+    });
+    await firstPrompt($, 'sign FRM-544 FRM-519');
+    await firstPrompt($, 'sign FRM-544');
+    expect(kept).toEqual([
+        null,
+        { at: expect.any(Number), ids: ['FRM-544', 'FRM-519'] },
+        null,
+    ]);
+});

@@ -692,7 +692,8 @@ async function realPath($: EngineInterface, file: string) {
 
 // the fenced folders judged where a write lands on disk, not how it is spelled: a symlink, a glob, a `..` hop all
 // resolve before the compare (clio's stop at the round-3 cap: three rounds of spellings, one shape)
-const FENCE_TEXTS = 256;
+// 1024: a loop over five pocket lines read 275 words, and the cap refused it (wing 1's flyway adds, 20:57)
+const FENCE_TEXTS = 1024;
 const FENCE_FANOUT = 1024;
 async function fenceLanding($: EngineInterface, command: string, cwd: string) {
     const home = (await $.env.get('HOME')) ?? '';
@@ -1073,7 +1074,10 @@ async function tickFor(
 // # dima-ok marker rests on; it opens what a sign tick opens for its id, each write once, inside a tick's 2 h
 const SIGNS = { key: 'signs', plugin: 'x-mod-guard' } as const;
 const FIRST_PROMPT_NOTE =
-    "x-mod-guard: a session's first prompt never signs and proves no # dima-ok target, since a seat's spawn prompt reads the same; tell dima his sign counts from his next prompt here (his operator-override works from the first)";
+    "x-mod-guard: a session's first prompt never signs and proves no # dima-ok target, since a seat's spawn prompt reads the same; x-mod-stash puts its ✍️ sign ask on his board this turn, so tell dima his one tick there signs, or his sign typed again here (his operator-override works from the first)";
+// the ids a session's first prompt typed «sign» for, this prompt's only: x-mod-stash reads it after the prompt and puts their
+// ✍️ sign ask on his board (FRM-544 slice 2f); every later prompt writes null
+const FIRST_SIGN = { key: 'firstSign', plugin: 'x-mod-guard' } as const;
 const PROMPTED = { key: 'prompted', plugin: 'x-mod-guard' } as const;
 async function wasPrompted($: EngineInterface) {
     const { value: isPrompted } = await $.state
@@ -2698,6 +2702,7 @@ export const register: Register = (on) => {
 
     on('prompt.submit', async ($, e, next) => {
         await $.state.set(IMAGES, 0).catch(() => undefined);
+        await $.state.set(FIRST_SIGN, null).catch(() => undefined);
         let overrideNote: string | undefined;
         let signNote: string | undefined;
         if (TYPED_BY_DIMA.has(e.origin.kind)) {
@@ -2721,8 +2726,13 @@ export const register: Register = (on) => {
                 await keepTypedSigns($, e.text).catch(() => undefined);
             }
             const ask = overrideAsked(e.text);
-            if (isFirst && signsTyped(e.text).length)
+            const firstIds = isFirst ? signsTyped(e.text) : [];
+            if (firstIds.length) {
                 signNote = FIRST_PROMPT_NOTE;
+                await $.state
+                    .set(FIRST_SIGN, { at: await $.clock.now(), ids: firstIds })
+                    .catch(() => undefined);
+            }
             // no registry row reads as not his: a bg session's brief must never slip through a read that failed; said out
             // loud, since a word that moved nothing must not pass for one that did
             if (ask && !entry)
