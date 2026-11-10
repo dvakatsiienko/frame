@@ -2105,6 +2105,14 @@ export default class ClaudeChat extends View {
             );
         if (text.startsWith('[Request interrupted'))
             return into.items.push({ kind: 'note', text: 'Interrupted' });
+        // a message another terminal typed in with `hc send`: its words, under who sent it
+        const sent = /^<hc from="(?:\S+ )?([^"]*)">([\s\S]*)<\/hc>$/.exec(text);
+        if (sent)
+            return into.items.push({
+                before,
+                kind: 'user',
+                text: `↪ ${sent[1] || 'another terminal'}: ${sent[2].trim()}`,
+            });
         if (/^<[\w-]+>/.test(text)) return;
         into.items.push({ before, kind: 'user', text });
     }
