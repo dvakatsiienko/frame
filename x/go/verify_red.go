@@ -736,15 +736,17 @@ func linkEntries(root, to, modules, dest string) error {
 			continue
 		}
 		link, own := filepath.Join(real, entry.Name()), filepath.Join(dest, entry.Name())
-		// a .bin that is a link to a dir is still one dir of shims an install rewrites
-		bin, _ := os.Stat(link)
+		resolved, resolveErr := filepath.EvalSymlinks(link)
 		switch {
-		case entry.Name() == ".bin" && bin != nil && bin.IsDir():
+		case entry.Name() == ".bin" && entry.IsDir():
 			err = copyShims(root, to, link, own)
 		case entry.Type().IsRegular():
 			err = cloneFile(link, own)
+		case entry.Name() == ".bin" && resolveErr == nil:
+			// a .bin that links to another level's points at the copy's own there: its shims find their packages from that level
+			err = os.Symlink(intoCopy(root, to, resolved), own)
 		default:
-			if resolved, err := filepath.EvalSymlinks(link); err == nil && !strings.Contains(resolved, "/node_modules/") {
+			if resolveErr == nil && !strings.Contains(resolved, "/node_modules/") {
 				link = intoCopy(root, to, resolved)
 			}
 			err = os.Symlink(link, own)

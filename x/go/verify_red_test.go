@@ -947,7 +947,8 @@ func shimsFixture(t *testing.T) (redFixture, []string) {
 	write(t, filepath.Join(dir, ".gitignore"), "node_modules\n")
 	write(t, filepath.Join(dir, "lib.js"), "export const limit = 3;\n")
 	for _, modules := range []string{"node_modules", "pkg/node_modules"} {
-		write(t, filepath.Join(dir, modules, ".bin/tool"), "#!/bin/sh\nexec node \"$(dirname \"$0\")/../tool/index.js\"\n")
+		// as pnpm's shim does, it finds its package from the dir it really sits in
+		write(t, filepath.Join(dir, modules, ".bin/tool"), "#!/bin/sh\nexec node \"$(cd \"$(dirname \"$0\")\" && pwd -P)/../tool/index.js\"\n")
 	}
 	// the two state files and the dir of run records pnpm keeps beside them
 	for _, state := range []string{".modules.yaml", ".pnpm-workspace-state-v1.json", ".pnpm-task-run-state-v1/latest.json"} {
@@ -963,9 +964,11 @@ func shimsFixture(t *testing.T) (redFixture, []string) {
 			t.Fatal(err)
 		}
 	}
+	// a tripwire: the copy holds no .git, so only a command that reaches out of the copy could write a hook
 	hooks := filepath.Join(dir, ".git", "hooks")
 	write(t, filepath.Join(hooks, "pre-commit"), "#!/bin/sh\nexec node_modules/.bin/tool\n")
 	write(t, filepath.Join(dir, "relink.sh"), `[ -e node_modules/.bin/added ] || [ -L node_modules/.bin/linked ] || echo "the link shim reached the copy as a file" >> "$VERIFY_LOG"
+[ -e node_modules/.bin/added ] || hoisted/node_modules/.bin/tool > /dev/null 2>&1 || echo "the shim behind a linked .bin lost its package" >> "$VERIFY_LOG"
 for modules in node_modules pkg/node_modules hoisted/node_modules; do
 	for shim in "$modules"/.bin/*; do
 		[ ! -L "$shim" ] || rm "$shim"
@@ -1015,8 +1018,8 @@ func TestVerifyRedKeepsTheRealShimsFromACommandThatRelinksThem(t *testing.T) {
 				cutAt(t, f, []string{"VERIFY_LOG=" + log, "HANG=1", "X_STATE=" + t.TempDir(), "TMPDIR=" + t.TempDir()}, 1, c.cut, args...)
 			}
 
-			if ran := readOr(log, ""); ran == "" || strings.Contains(ran, f.dir+"\n") || strings.Contains(ran, "as a file") {
-				t.Fatalf("the command logged %q, want a run in the copy, its link shim a link, and none in the real tree", ran)
+			if ran := readOr(log, ""); ran == "" || strings.Contains(ran, f.dir+"\n") || strings.Contains(ran, "shim") {
+				t.Fatalf("the command logged %q, want a run in the copy, its link shim a link and its linked .bin's shim running, and none in the real tree", ran)
 			}
 			wantNoWrites(t, before, treeWrites(t, watched...))
 		})
