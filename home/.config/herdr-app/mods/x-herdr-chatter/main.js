@@ -59,6 +59,7 @@ import {
     SYSTEM_MODES,
     cleanTyped,
     dropImageMarks,
+    midTurnPrompt,
     systemLine,
 } from './system.js';
 
@@ -2111,6 +2112,7 @@ export default class ClaudeChat extends View {
                 into === this
             )
                 this.learnSkills(d.attachment.content);
+            d = midTurnPrompt(d) ?? d;
             if (d.isMeta || d.isCompactSummary) continue;
             // a plugin's message, a task notice, a synthetic reply: drawn as the settings' «System lines» say
             const system = systemLine(d);

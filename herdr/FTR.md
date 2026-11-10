@@ -130,6 +130,11 @@ wish: PK-363
   - and a message he pasted reads as his plain text, the `<pasted_content>` tags gone; a system-reminder with an id attribute goes too
   - decision: told apart by the entry (its `origin.kind`, a `<synthetic>` model), never by guessing at text
   - not checked: the after shot of his paste in clio's chat, which waits for his view on that tab
+- ⬜ a prompt he types while a turn runs draws in the chat
+  - given dima sends a seat a prompt while its turn is still running
+  - then it draws as his message at the place he sent it, a shot or a paste in it too, marked no differently
+  - and a peer's message or a task notice queued the same way does not draw as his
+  - decision: Claude Code writes such a prompt as a `queued_command` attachment with `origin.kind` human, never a user entry; the chat reads it as one
 - ✅ **bold** and *italic* in replies draw bold and italic
   - given the chat's font is Sans
   - then a reply's markdown bold reads bold (shot 1928)

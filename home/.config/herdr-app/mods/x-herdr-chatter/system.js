@@ -94,3 +94,21 @@ export function dropImageMarks(content) {
             : b,
     );
 }
+
+/**
+ * a prompt he typed while a turn ran, as the user entry it would have been: Claude Code writes it as a queued command
+ * attachment, never a user entry (clio's 21:15 prompt drew nowhere); a peer's message or a task notice queued the same
+ * way is not his, and stays out
+ * @param {any} entry
+ * @returns {any}
+ */
+export function midTurnPrompt(entry) {
+    const queued = entry?.type === 'attachment' ? entry.attachment : null;
+    if (queued?.type !== 'queued_command' || queued.origin?.kind !== 'human')
+        return null;
+    return {
+        ...entry,
+        message: { content: queued.prompt, role: 'user' },
+        type: 'user',
+    };
+}
