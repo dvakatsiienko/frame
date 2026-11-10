@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T14:36:00Z'
+updated_date: '2026-11-10T14:40:00Z'
 labels:
   - m
   - clio-main
@@ -1206,4 +1206,16 @@ PK-363:W384 (2026-11-10 16:32, dima) which parts of dima's window to cut or resh
 PK-363:W385 (2026-11-10 16:32, dima) flip the override switch on now: yes.
 
 refold (clio, 2026-11-10 16:36, wishkeeper): PK-363:W378 mixed clio's 16:20 sentence into his words. his own: «remember how we locked out my merge approvals with all these guards? it is not good to have guards that lock me out from the ability to merge on a tick» (TIK = tick, the earlier lockouts in general, not this one fence). W378–W379 live on as FRM-544:W9–W10 and FRM-524's new line; the rule sits in plugin-x/mods/AGENTS.md and home/.config/herdr-app/mods/AGENTS.md.
+
+PK-363:W386 (2026-11-10 16:37, dima) claude-chat: the Chat view, the one dima wanted. Planned rename to something like *-chatter.
+
+PK-363:W387 (2026-11-10 16:37, dima) zoo-agents: the agents list is fine, the creature icons are not. Sound support can be kept, but dima wants his own sounds; he does not like most of the ones zoo brought.
+
+PK-363:W388 (2026-11-10 16:37, dima) my-tabs: the tab bar, which opens my-new-menu (the + menu). If these are the tabs dima showed on the screenshot, keep them for now: they are useful.
+
+PK-363:W389 (2026-11-10 16:37, dima) my-status: the status bar at the bottom. Where is it? Where is the «VS Code» button? Also the «folder» and the branch name with +13 diff. ❓
+
+PK-363:W390 (2026-11-10 16:37, dima) quick-term: the quick terminal's header, placed twice. How do I see it? ❓
+
+answers (clio, 2026-11-10 16:40): PK-363:W273 answered and kept here on his word («save it somewhere»): the chores clio keeps handing dima, read off the 11-10 thread: restarting herdr; typing sign and override lines; typing text for a proof; looking things up in the desktop sidebar. the fleet-board tick (FRM-544) removes the sign typing; the restart and the override stay his by design. PK-363:W272 (what he asks that clio can't give) is not a quick answer (dima 16:39): a grilling question for later, it needs an analysis of which doors were not possible without herdr. second wind in herdr (PK-363:W364): dima 16:39 «alone, you second winded yourself»: the mod's compact + ingest ran by themselves at 16:21–16:22 in seat t1p, the first proof in herdr, one run.
 <!-- SECTION:NOTES:END -->
