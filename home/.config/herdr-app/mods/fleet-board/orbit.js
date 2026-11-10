@@ -167,8 +167,7 @@ export const SEATS_KEY = 'x-herdr-deck.seats';
 export const SEATS_BEAT_MS = 60 * 1000;
 
 /**
- * the three facts each live seat shows where dima types, keyed by pid; only an idle seat waits on anything: one
- * mid-turn, blocked on a prompt or in an unknown state shows no waiting-on line, its last one is old; the line is
+ * the three facts each live seat shows where dima types, keyed by pid; the waiting-on line, already `waitOf`'s, is
  * drawn plain, so markdown's ** go
  * @param {{ pid: number, status: string, context: number | null, wait: string | null }[]} rows
  * @param {number | null} week
@@ -180,11 +179,20 @@ export function seatFacts(rows, week) {
     for (const row of [...rows].sort((a, b) => a.pid - b.pid))
         facts[String(row.pid)] = {
             context: typeof row.context === 'number' ? row.context : null,
-            wait: row.status === 'idle' && row.wait ? unbold(row.wait) : null,
+            wait: row.wait ? unbold(row.wait) : null,
             week,
         };
     return facts;
 }
+
+/**
+ * the waiting-on line a seat shows, on the deck's row and in the chat's band alike: only an idle seat waits on
+ * anything; one mid-turn, blocked on a prompt or in an unknown state carries its last reply's line, which is old
+ * @param {string} status
+ * @param {string | null | undefined} wait
+ */
+export const waitOf = (status, wait) =>
+    status === 'idle' ? (wait ?? null) : null;
 
 /**
  * the value to publish, or null when the facts are the ones already out and the last beat is recent: setShared

@@ -31,6 +31,7 @@ import {
     runningPids,
     savePress,
     seatFacts,
+    waitOf,
 } from './orbit.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
@@ -97,7 +98,10 @@ async function sessions(store) {
                     sid,
                     status: s.status ?? 'unknown',
                     taken: store[`herdr-read:${sid}`] ?? 0,
-                    wait: store[`reply:${sid}`]?.wait ?? null,
+                    wait: waitOf(
+                        s.status ?? 'unknown',
+                        store[`reply:${sid}`]?.wait,
+                    ),
                 };
             },
         );

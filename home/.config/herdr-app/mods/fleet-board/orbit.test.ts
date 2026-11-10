@@ -13,6 +13,7 @@ import {
     savePress,
     seatFacts,
     unbold,
+    waitOf,
     withPress,
 } from './orbit.js';
 
@@ -225,6 +226,10 @@ describe('the deck publishes each seat its three facts', () => {
         wait,
     });
 
+    test('an idle seat keeps its waiting-on line', () => {
+        expect(waitOf('idle', 'waiting on 🦉 clio')).toBe('waiting on 🦉 clio');
+    });
+
     test('each live seat gets its context, its waiting-on line and the week, keyed by pid', () => {
         expect(seatFacts([row(7, 'idle', 'waiting on 🦉 clio')], 57)).toEqual({
             '7': { context: 40, wait: 'waiting on 🦉 clio', week: 57 },
@@ -239,18 +244,12 @@ describe('the deck publishes each seat its three facts', () => {
     });
 
     test('a seat blocked on a prompt or in an unknown state shows no waiting-on line', () => {
-        expect(
-            seatFacts([row(7, 'blocked', 'waiting on 🦉 clio')], 57)['7']?.wait,
-        ).toBeNull();
-        expect(
-            seatFacts([row(7, 'shell', 'waiting on 🦉 clio')], 57)['7']?.wait,
-        ).toBeNull();
+        expect(waitOf('blocked', 'waiting on 🦉 clio')).toBeNull();
+        expect(waitOf('shell', 'waiting on 🦉 clio')).toBeNull();
     });
 
     test('a seat mid-turn shows no waiting-on line, its last one is old', () => {
-        expect(
-            seatFacts([row(7, 'busy', 'waiting on 🦉 clio')], 57)['7']?.wait,
-        ).toBeNull();
+        expect(waitOf('busy', 'waiting on 🦉 clio')).toBeNull();
     });
 
     test('a seat with no context read yet carries none, never a guess', () => {
