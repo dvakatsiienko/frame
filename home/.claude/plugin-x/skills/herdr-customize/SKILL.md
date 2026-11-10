@@ -67,4 +67,5 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 
 - draw into a pane from an outside process: every native pane is an in-app mod
 - show a web page: the near door is an `agent-browser` screenshot shown in a pane
+- import a package by name from `node_modules`: a pure-compute library vendored as a file in the mod's folder imports by relative path (proven 2026-11-10, a 72 KB markdown parser under `herdr-app check`), and one joins only where it computes something we would otherwise hand-write
 - undo an edit to a mod outside the mirror: only the copy you set aside
