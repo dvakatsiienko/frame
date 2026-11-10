@@ -504,6 +504,7 @@ async function overrideLogPass(
     ]);
 }
 
+const BRAKE_UNREAD = 'the brake did not read, so it reads on';
 // one rule, one reader: x's brakeOn answers for each repo the line merges in, and a failed read refuses
 async function rawMergeBrake($: EngineInterface) {
     const store = await overrideStorePath($);
@@ -520,11 +521,10 @@ async function rawMergeBrake($: EngineInterface) {
         const { data } = JSON.parse(read?.stdout ?? '') as {
             data?: { brake?: unknown };
         };
-        if (typeof data?.brake !== 'string')
-            return 'the brake did not read, so it reads on';
+        if (typeof data?.brake !== 'string') return BRAKE_UNREAD;
         return data.brake ? `the brake is on: ${data.brake}` : undefined;
     } catch {
-        return 'the brake did not read, so it reads on';
+        return BRAKE_UNREAD;
     }
 }
 
@@ -2209,23 +2209,29 @@ export const register: Register = (on) => {
             ...(await scriptMerges($, typed, cwd, ctx).catch(() => [])),
         ];
         if (merges.length) {
-            const isStackTicked =
-                merges.some((m) => m.isStack) &&
+            // his tick on an ask quoting this whole merge command runs it once, past his hold and the raw-merge rule; the brake
+            // still stops it, since only a tick bound to the pr head opens that (FRM-544 slice 2c)
+            const isTicked =
                 (await tickFor(
                     $,
-                    `stack-merge:${guardedOf(typed)}`,
+                    `raw-merge:${guardedOf(typed)}`,
                     quotesCommand(typed),
                     spends,
                 )) !== undefined;
-            const held = mergeHold(merges, await readMergeHolds($));
+            const held = isTicked
+                ? undefined
+                : mergeHold(merges, await readMergeHolds($));
             const override = held
                 ? undefined
                 : await overrideGrant($, 'prs').catch(() => undefined);
             const landsAny = merges.some((m) => !m.isHoldOnly);
-            const brake =
-                !held && override && landsAny
+            const braked =
+                !held && (override || isTicked) && landsAny
                     ? await rawMergeBrake($)
                     : undefined;
+            // his tick stops only on a brake that reads on: an unread brake never outranks his word
+            const brake =
+                isTicked && braked === BRAKE_UNREAD ? undefined : braked;
             const hold =
                 held ??
                 (brake
@@ -2235,11 +2241,12 @@ export const register: Register = (on) => {
                           targets: ['merge-brake'],
                           why: `${brake}, and operator-override never opens it`,
                       }
-                    : rawMergeRefused(
-                          // `gh stack merge` stays outside the override (FRM-524 `## out`)
-                          override ? merges.filter((m) => m.isStack) : merges,
-                          isStackTicked,
-                      ));
+                    : isTicked
+                      ? undefined
+                      : rawMergeRefused(
+                            // `gh stack merge` stays outside the override (FRM-524 `## out`)
+                            override ? merges.filter((m) => m.isStack) : merges,
+                        ));
             if (override && !hold && landsAny)
                 await overrideLogPass(
                     $,
