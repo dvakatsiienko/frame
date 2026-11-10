@@ -13,6 +13,11 @@ import {
 } from './rules/command.ts';
 import { linearWritePiped, stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
+import {
+    type HerdrClose,
+    herdrCloseKey,
+    herdrCloseOf,
+} from './rules/herdr-close.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
 import { linearWrite } from './rules/linear.ts';
 import {
@@ -1387,6 +1392,79 @@ async function markSeen($: EngineInterface, path: string) {
     }
 }
 
+// the herdr closes on the line that end no live seat: herdr names every terminal each one ends, and none carries a
+// `seat=` label or runs a claude agent this seat did not start; a terminal that finished ends nothing. a close herdr
+// cannot answer for stays out, so it is refused (dima's o53)
+async function herdrSafeOf($: EngineInterface, command: string, cwd: string) {
+    const safe = new Set<string>();
+    const closes = commandsDeep(command, cwd).flatMap((c) => {
+        const close = herdrCloseOf(c);
+        return close?.target &&
+            !close.target.includes('$') &&
+            ['pane', 'space', 'tab', 'terminal'].includes(close.scope)
+            ? [close]
+            : [];
+    });
+    if (!closes.length) return safe;
+    const self = await $.env.get('HC_TERMINAL_ID').catch(() => undefined);
+    const window = closes.some((c) => c.scope !== 'terminal')
+        ? await herdrJson($, ['herdr-app', 'ls'])
+        : undefined;
+    for (const close of closes) {
+        const terminals = terminalsOf(close, window);
+        if (!terminals) continue;
+        let isSafe = true;
+        for (const t of terminals) {
+            const got = await herdrJson($, ['hc', 'get', t, '--json']);
+            const isSeat =
+                got?.state === 'live' &&
+                (typeof got.labels?.seat === 'string' ||
+                    (/claude/.test(
+                        `${got.status?.app ?? ''} ${got.argv?.[0] ?? ''}`,
+                    ) &&
+                        got.parent !== self));
+            if (!got || isSeat) isSafe = false;
+        }
+        if (isSafe) safe.add(herdrCloseKey(close));
+    }
+    return safe;
+}
+type HerdrWindow = {
+    spaces?: {
+        id?: string;
+        tabs?: {
+            id?: string;
+            terminals?: { pane?: string; terminal?: string }[];
+        }[];
+    }[];
+};
+// the terminals a close ends, as the window lists them; undefined when its target is not there
+function terminalsOf(close: HerdrClose, window: HerdrWindow | undefined) {
+    if (close.scope === 'terminal')
+        return close.target ? [close.target] : undefined;
+    const spaces = window?.spaces ?? [];
+    const tabs = spaces.flatMap((s) =>
+        close.scope === 'space' && s.id !== close.target ? [] : (s.tabs ?? []),
+    );
+    const terminals = tabs
+        .filter((t) => close.scope !== 'tab' || t.id === close.target)
+        .flatMap((t) => t.terminals ?? [])
+        .filter((t) => close.scope !== 'pane' || t.pane === close.target)
+        .flatMap((t) => (t.terminal ? [t.terminal] : []));
+    return terminals.length ? terminals : undefined;
+}
+async function herdrJson($: EngineInterface, argv: string[]) {
+    const run = await $.process
+        .run(argv, { timeoutMs: 3000 })
+        .catch(() => undefined);
+    if (run?.exitCode !== 0) return undefined;
+    try {
+        return JSON.parse(run.stdout);
+    } catch {
+        return undefined;
+    }
+}
+
 // the disk facts the pure rules need, looked up in one round: each rule names the paths it asks about, this answers
 // them; a rule that needs a new fact adds its question here and its field to Context
 async function lookUp(
@@ -1466,6 +1544,9 @@ async function lookUp(
         cleanTrees,
         helped: new Set(helped),
         helpless,
+        herdrSafe: await herdrSafeOf($, command, cwd).catch(
+            () => new Set<string>(),
+        ),
         kinds,
         manifestDirs,
         milestoneNames,
