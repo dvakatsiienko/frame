@@ -231,8 +231,9 @@ const fade = (color, alpha) =>
 // A text size from the 13 px design, scaled to the chosen size.
 const px = (n) => Math.round(((n * chatLook().size) / 13) * 2) / 2;
 const NARROW = 820;
-// How many messages to draw at first; "Show earlier" adds this many more.
-const PAGE = 120;
+// How many messages to draw at first; "Show earlier" adds this many more. Every frame lays out each drawn row:
+// 120 lagged his scroll in a busy chat (2026-11-10 21:40).
+const PAGE = 60;
 // How much of a local transcript is decoded and read at a time (see readAfter).
 const LOAD_SLICE = 4 * 1024 * 1024;
 const MAX_DETAIL = 4000;

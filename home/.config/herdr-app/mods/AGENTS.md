@@ -28,22 +28,23 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 ## the loop after every change
 
-- `herdr-app check <mod dir>`, then `herdr-app status`, then `herdr-app shot <png>` and look at it yourself
-- edit in frame; `pnpm herdr-mods:land --watch` lands each save that passes `herdr-app check` into herdr's real folder, which reloads live; a link never does
+- `herdr-app check <mod dir>`, `herdr-app status`, `herdr-app shot <png>`, then read the shot
+- edit in frame; `pnpm herdr-mods:land --watch` lands each save `herdr-app check` passes into herdr's folder, live; a link never does
+- a landing restarts the mod and stalls his chats: one per finished job, none for a probe while he types, «landing now» in the ping
 - a herdr restart is his hand alone: it can lose his typed prompt
-- commit through `x lane commit`, in the background; a new mod's `landedByCopy` line in `script/lib/manifest.ts` rides the commit that adds it
+- commit through `x lane commit` in the background; a new mod's `landedByCopy` line (`script/lib/manifest.ts`) rides its first commit
 
 ## never
 
 - switch herdr's theme or settings while seats are live: it kills them
-- read a cc mod's private store: draw from a file it writes under `~/.claude/shelf/`
+- read a cc mod's private store: draw from its file in `~/.claude/shelf/`
 - give an unlocking button (a sign, a merge, a delete) a keyed command: any shell reaches a key
 - restart or kill a live seat for a proof: a throwaway seat, killed after
-- close with a bare close: it kills dima's focused seat (`x:herdr` traps)
+- close with a bare close: it kills dima's focused seat
 - cut or trim a cc mod's band, board or orbit for a herdr twin: they are his fallback (dima, 20:09)
 
 ## hazards
 
-- a `hc run --no-parent` seat has no tab until `skills/herdr/scripts/seat-tab.ts` gives it one (it retries)
-- `hc ls --json` is an object: `.terminals[]`
-- a helper green under vitest's node can lack a global in herdr's runtime (`TextEncoder`, 21:02), and `check` renders one frame: after a landing, shoot a view that ran the helper
+- a `hc run --no-parent` seat has no tab until `skills/herdr/scripts/seat-tab.ts` gives it one
+- `hc ls --json` is an object, `.terminals[]`
+- a helper green in vitest can lack a global in herdr (`TextEncoder`), and `check` renders one frame: after a landing, shoot a view that ran it
