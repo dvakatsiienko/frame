@@ -9,6 +9,7 @@ import { Buffer } from 'buffer';
 import { exists, readFile, readdir, writeFile } from 'fs/promises';
 import os from 'os';
 import {
+    Button,
     Input,
     InputState,
     Popover,
@@ -41,11 +42,19 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import { SEATS_KEY, bandOf } from './band.js';
+import {
+    DECK_BLOCK,
+    OVERRIDE_STORE,
+    SEATS_KEY,
+    bandButtons,
+    bandOf,
+    overrideOf,
+} from './band.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import * as ask from './question.js';
 import { STUCK_PX, afterReflow, afterWheel, keptFirst } from './scroll.js';
+import { wholeLines } from './slice.js';
 import {
     SYSTEM_MODES,
     cleanTyped,
@@ -501,16 +510,33 @@ function utf8(bytes) {
 // change took Herdr's UI thread 60–150 ms (the bytes alone take ~25 ms).
 // At most `max` bytes at a time (more: there's more after `end`): a 25 MB transcript decoded and
 // read in one go ran past Herdr's time limit and the chat stayed empty (2026-10-31).
+/** @param {string} file @param {number} pos @param {number} [max] */
 async function readAfter(file, pos, max = Infinity) {
-    const bytes = await readFile(file);
-    if (bytes.length < pos) return { end: 0, text: null };
-    const last = bytes.lastIndexOf(10) + 1;
-    let end =
-        pos + max < last ? bytes.lastIndexOf(10, pos + max - 1) + 1 : last;
-    if (end <= pos) end = last; // one line longer than max
-    return end > pos
-        ? { end, more: end < last, text: utf8(bytes.subarray(pos, end)) }
-        : { end: pos, text: '' };
+    const stat = await exec('stat', ['-f', '%z', file]);
+    if (stat.code !== 0) throw new Error(stat.stderr.trim() || `no ${file}`);
+    const size = Number(stat.stdout.trim());
+    if (size < pos) return { end: 0, text: null };
+    if (size === pos) return { end: pos, text: '' };
+    // only the slice is read (slice.js): herdr's readFile takes the whole file and refuses one past 64 MB
+    /** @param {number} n @returns {Promise<string>} */
+    const bytesFrom = async (n) => {
+        const out = await exec('sh', [
+            '-c',
+            'tail -c +"$1" "$2" | head -c "$3"',
+            'sh',
+            String(pos + 1),
+            file,
+            String(n),
+        ]);
+        if (out.code !== 0) throw new Error(out.stderr.trim());
+        return out.stdout;
+    };
+    const want = Math.min(max, size - pos);
+    let got = wholeLines(await bytesFrom(want), pos);
+    // one line longer than the slice: read on to the end of the file
+    if (!got.text && want < size - pos)
+        got = wholeLines(await bytesFrom(size - pos), pos);
+    return { ...got, more: got.end < size && want < size - pos };
 }
 
 async function transcriptOf(session) {
@@ -1681,6 +1707,25 @@ export default class ClaudeChat extends View {
             });
         }
         // Claude's own settings, for the effort a session starts on (see effortNow), every 30 s.
+        // the operator override the band's 🔓 shows, read every 5 s from the store x-mod-guard and `x` read
+        if (Date.now() - (this.overrideAt ?? 0) > 5000) {
+            this.overrideAt = Date.now();
+            cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
+                const text = await readFile(
+                    `${home()}/${OVERRIDE_STORE}`,
+                    'utf8',
+                ).catch(() => null);
+                let store = null;
+                try {
+                    store = text ? JSON.parse(text) : null;
+                } catch {}
+                const next = overrideOf(store, Date.now());
+                if (JSON.stringify(next) !== JSON.stringify(this.override)) {
+                    this.override = next;
+                    cx.notify();
+                }
+            });
+        }
         if (Date.now() - (this.claudeSettingsAt ?? 0) > 30000) {
             this.claudeSettingsAt = Date.now();
             cx.spawn(async (cx) => {
@@ -4089,6 +4134,69 @@ export default class ClaudeChat extends View {
     // The seat's band where he types: what it waits on, its weekly usage and its context, from the facts the deck's
     // mod publishes (`band.js`). Three rows of one height always, so nothing under or above it moves when a fact
     // changes; a seat the deck has stopped reading draws dimmed, never as a live number.
+    // whether his layout shows the deck's block now; a layout without it reads as shown, so 🚦 offers a hide
+    deckShown() {
+        /** @param {any} node @returns {any} */
+        const walk = (node) => {
+            if (node?.id === DECK_BLOCK) return node;
+            for (const child of node?.children ?? []) {
+                const found = walk(child);
+                if (found) return found;
+            }
+            return null;
+        };
+        return !walk(layout())?.hidden;
+    }
+
+    // one chip of the row: filled when on, greyed with its reason when its press is not proven; a live one is a click,
+    // never a key (a keyed command is any shell's)
+    /** @param {any} t @param {import('./band.js').BandButton} btn */
+    bandButton(t, btn) {
+        return (
+            Button.new(`band-${btn.key}`)
+                .size(px(24))
+                .flex_none()
+                .justify_center()
+                .flex()
+                .items_center()
+                .rounded(11)
+                .border_1()
+                // an override on is loud: it lifts the guards for every seat
+                .border_color(
+                    btn.isOn
+                        ? btn.key === 'override'
+                            ? t.blocked
+                            : t.solid
+                        : t.border,
+                )
+                .bg(
+                    btn.isOn
+                        ? btn.key === 'override'
+                            ? t.blocked
+                            : t.solid
+                        : t.background,
+                )
+                .text_size(px(12))
+                .text_color(btn.isOn ? t.solid_foreground : t.foreground)
+                .tooltip(`${btn.word}: ${btn.tip}`)
+                .when(!btn.isLive, (el) =>
+                    el.opacity(btn.isOn ? 0.85 : 0.5).cursor_not_allowed(),
+                )
+                .when(btn.isLive, (el) =>
+                    el
+                        .cursor_pointer()
+                        .hover((s) => s.opacity(0.85))
+                        .focus((s) => s.border_color(t.accent).border_2())
+                        .on_click((_e, cx) => {
+                            if (btn.key === 'board')
+                                run('layout.toggle', { id: DECK_BLOCK });
+                            cx.notify();
+                        }),
+                )
+                .child(btn.emoji)
+        );
+    }
+
     band(t) {
         const pid = this.where?.container ? null : this.where?.pid;
         const b = bandOf(shared(SEATS_KEY), pid, Date.now());
@@ -4144,50 +4252,70 @@ export default class ClaudeChat extends View {
                         .child(pct == null ? '—' : `${Math.round(pct)}%`),
                 );
         };
-        return v_flex()
-            .id('seat-band')
-            .flex_none()
-            .px(10)
-            .py(4)
-            .rounded(8)
-            .bg(t.raised)
-            .when(b.isStale, (el) =>
-                el.tooltip(
-                    'the deck has not read this seat for over 2 minutes',
-                ),
-            )
-            .child(
-                row('band-wait')
-                    .when(Boolean(b.wait), (el) => el.tooltip(b.wait))
-                    .child(label('🔭 wait'))
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w(0)
-                            .truncate()
-                            .text_size(px(12))
-                            .text_color(ink)
-                            .child(b.wait ?? ''),
+        return (
+            v_flex()
+                .id('seat-band')
+                .flex_none()
+                .px(10)
+                .py(4)
+                .rounded(8)
+                .bg(t.raised)
+                .when(b.isStale, (el) =>
+                    el.tooltip(
+                        'the deck has not read this seat for over 2 minutes',
                     ),
-            )
-            .child(
-                meter(
-                    'band-week',
-                    '🗓 week',
-                    'the weekly usage spent',
-                    b.week,
-                    80,
-                ),
-            )
-            .child(
-                meter(
-                    'band-ctx',
-                    '🧠 ctx',
-                    'how full its context is',
-                    b.context,
-                    60,
-                ),
-            );
+                )
+                .child(
+                    row('band-wait')
+                        .h(px(26))
+                        .child(label('🔭 wait'))
+                        .child(
+                            div()
+                                .id('band-wait-text')
+                                .flex_1()
+                                .min_w(0)
+                                .truncate()
+                                .text_size(px(12))
+                                .text_color(ink)
+                                .when(Boolean(b.wait), (el) =>
+                                    el.tooltip(b.wait),
+                                )
+                                .child(b.wait ?? ''),
+                        )
+                        .child(
+                            h_flex()
+                                .flex_none()
+                                .gap(4)
+                                .children(
+                                    bandButtons({
+                                        isDeckShown: this.deckShown(),
+                                        override: this.override ?? {
+                                            isOn: false,
+                                        },
+                                    }).map((btn) => this.bandButton(t, btn)),
+                                ),
+                        ),
+                )
+                // ctx above week (dima, 21:00: «move ctx meter over the week»)
+                .child(
+                    meter(
+                        'band-ctx',
+                        '🧠 ctx',
+                        'how full its context is',
+                        b.context,
+                        60,
+                    ),
+                )
+                .child(
+                    meter(
+                        'band-week',
+                        '🗓 week',
+                        'the weekly usage spent',
+                        b.week,
+                        80,
+                    ),
+                )
+        );
     }
 
     // Puts text into the box as a markdown quote, after what's there, and gives the box the keyboard.

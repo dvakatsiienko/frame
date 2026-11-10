@@ -176,8 +176,14 @@ wish: PK-363
   - and facts the deck has not published for over 2 min 15 s draw dimmed
   - and the 5h line is off for now, back if he moves to the $100 plan (on $200 it is not shown)
   - decision: the deck's mod reads the facts once and publishes them to herdr's shared state `x-herdr-deck.seats`, at once on a change and every 60 s; the chat reads only that key for its own seat
-- 🧭 the band's buttons and its redesign, slice 2 (FRM-565)
-  - decision: shaped with dima before a line is built
+- ⬜ the band's buttons, slice 2 (FRM-565)
+  - given a seat's tab in the Chat view
+  - then right of «wait» sit 🐦‍🔥 🔥 ⏰ 💨 🔓 🎛️ 🚦, emoji only, each word leading its tooltip (dima, 21:02); filled when on, 🔓 red when on
+  - and 🚦 shows and hides the deck by herdr's `layout.toggle` on its block, no layout file write (proof 2102: 9 seats before, hidden and after; his click «board confirmed to work»)
+  - and 🔓 reads the override store `x` reads; its click waits on the mods codie's proof row; 🐦‍🔥 🔥 ⏰ 💨 wait on FRM-568's press file, 🎛️ on the settings view: greyed, the reason on hover
+  - and ctx sits above week (dima, 21:00)
+  - decision: his crop (2054) approved at 20:59
+- ✅ a transcript past 64 MB draws: the chat reads it a slice at a time with `tail | head`, since herdr's readFile refuses a bigger file (a 93 MB seat drew empty, 21:02)
 - ✅ the chat box's draft survives a chat reload
   - given dima has typed into a seat's Chat box
   - when the chat mod reloads
