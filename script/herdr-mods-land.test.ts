@@ -33,7 +33,11 @@ function fixture() {
 }
 
 const run = (env: NodeJS.ProcessEnv, ...args: string[]) =>
-    spawnSync('node', [SCRIPT, ...args], { encoding: 'utf8', env });
+    spawnSync('node', [SCRIPT, ...args], {
+        encoding: 'utf8',
+        env,
+        timeout: 10_000,
+    });
 
 describe('a land copies a mod into herdr', () => {
     test('a first land copies what herdr reads and leaves the tests in frame', () => {
