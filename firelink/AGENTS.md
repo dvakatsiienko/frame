@@ -22,7 +22,7 @@ M4 Pro, 14C CPU, 20C GPU, 48 GB, macOS 27.2; AW3225QF, 3840x2160 at 120 Hz. Warp
 
 dated claims, re-check before acting on one.
 
-- the verdict of three research lanes: run a pair, no single winner. steamac for gta iv, Highball for Satisfactory
+- run a pair, no single winner (three research lanes). measured: steamac gta iv, Highball Against the Storm (`runs/`); Highball for Satisfactory, reported
 - compare routes by 1 % low and the share of frames over 25 ms, at 60 and 120 Hz, never by average
 - no route: a native build (Steam reports `mac: false` for all nine games checked), Whisky (archived), Asahi on M4 Pro (no installer, no GPU), GeForce NOW for gta iv (not on its public list)
 - D3DMetal and DXMT stop at D3D10–12, so a D3D9 game like gta iv takes DXVK, WineD3D or mtld3d
