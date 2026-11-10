@@ -58,6 +58,15 @@ describe('a land copies a mod into herdr', () => {
         expect(existsSync(join(landed, 'main.test.ts'))).toBe(false);
     });
 
+    test('main.js lands after a new file it imports', () => {
+        const { env, source } = fixture();
+        writeFileSync(join(source, 'probe/order.js'), 'export const x = 1;\n');
+        const lines = run(env, 'probe')
+            .stdout.split('\n')
+            .filter((l) => l.includes('copy '));
+        expect(lines.at(-1)).toContain('copy main.js');
+    });
+
     test('a second land with nothing changed writes nothing', () => {
         const { env } = fixture();
         run(env, 'probe');
