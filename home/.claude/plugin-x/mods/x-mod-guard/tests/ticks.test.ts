@@ -11,7 +11,14 @@ type Tick = { at: number; id: string; targets: string[]; text: string };
 
 // `body` is the ticket's current description as linear holds it; none = linear cannot be read
 // cat: what a `cat` of the body file prints, when the hook's own read cannot reach it
-function world(on: On, ticks: Tick[] = [], body?: string, cat?: string) {
+// asks: the seat's own orbit asks, x-mod-stash's `$.state` orbit, which a fleet-board press must match
+function world(
+    on: On,
+    ticks: Tick[] = [],
+    body?: string,
+    cat?: string,
+    asks: { id: string; mark?: string; text: string }[] = [],
+) {
     const clock = mock.clock(on, { now: NOW });
     const store = liveStore(on);
     const ran: string[] = [];
@@ -19,7 +26,9 @@ function world(on: On, ticks: Tick[] = [], body?: string, cat?: string) {
     on('state.get', (_$, e, next) =>
         e.plugin === 'x-mod-stash' && e.key === 'ticks'
             ? { value: { value: ticks, version: 1 } }
-            : next(e),
+            : e.plugin === 'x-mod-stash' && e.key === 'orbit'
+              ? { value: { value: { asks }, version: 1 } }
+              : next(e),
     );
     on('session.id', () => ({ value: 't1t1t1t1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
@@ -822,14 +831,6 @@ test("a session's first prompt naming a # dima-ok target proves nothing, his nex
     ]);
 });
 
-test("a session's first prompt «operator-override prs» moves nothing, and says why", async ($, on) => {
-    signWorld(on);
-    const first = await firstPrompt($, 'operator-override prs');
-    expect(
-        (first.context ?? []).some((c) => c.includes('approves nothing')),
-    ).toBe(true);
-});
-
 test("a session's first prompt «sign FRM-544» signs nothing, and says why", async ($, on) => {
     signWorld(on);
     const first = await firstPrompt($, 'sign FRM-544');
@@ -1162,8 +1163,20 @@ for (const [tool, path] of [
 const PRESSES = '/home/.claude/shelf/orbit-ticks/t1t1t1t1-0000.jsonl';
 const press = (text: string, at = NOW - 1, verdict = 'tick', id = 'o7') =>
     JSON.stringify({ at, id, text, verdict });
-const pressWorld = (on: On, lines: string[]) => {
-    const w = world(on);
+// by default the seat's orbit holds every pressed ask, accepted, as x-mod-stash leaves it once it took the press in
+const acceptedOf = (lines: string[]) =>
+    lines.flatMap((l) => {
+        const p = JSON.parse(l) as { id: string; text?: string };
+        return p.text === undefined
+            ? []
+            : [{ id: p.id, mark: 'accepted', text: p.text }];
+    });
+const pressWorld = (
+    on: On,
+    lines: string[],
+    asks: { id: string; mark?: string; text: string }[] = acceptedOf(lines),
+) => {
+    const w = world(on, [], undefined, undefined, asks);
     on('fs.read', (_$, e) =>
         e.path === PRESSES
             ? { value: `${lines.join('\n')}\n` }
@@ -1231,4 +1244,92 @@ test('a press with no ask text proves nothing', async ($, on) => {
     ]);
     const r = await bash($, MIRROR);
     expect([r.deny !== undefined, ran]).toEqual([true, []]);
+});
+
+// wisphunter on 15a31816: a press counts only while the seat's own orbit holds that ask, its text, his accepted mark
+const MIRROR_ASK = `⚠️ mirror: \`${MIRROR}\``;
+for (const [why, asks] of [
+    [
+        'his take-back on the seat board cleared the mark',
+        [{ id: 'o7', text: MIRROR_ASK }],
+    ],
+    [
+        "the seat's ask by that id says something else",
+        [{ id: 'o7', mark: 'accepted', text: 'cut the probe?' }],
+    ],
+    ["the seat's orbit holds no such ask", []],
+] as const)
+    test(`a fleet-board press proves nothing when ${why}`, async ($, on) => {
+        const { ran } = pressWorld(on, [press(MIRROR_ASK)], [...asks]);
+        expect([(await bash($, MIRROR)).deny !== undefined, ran]).toEqual([
+            true,
+            [],
+        ]);
+    });
+
+test('a press dated ahead of now proves nothing', async ($, on) => {
+    const { ran } = pressWorld(on, [press(MIRROR_ASK, NOW + 60_000)]);
+    expect([(await bash($, MIRROR)).deny !== undefined, ran]).toEqual([
+        true,
+        [],
+    ]);
+});
+
+for (const line of [
+    'echo x >> ~/.claude/shelf/orbit-tick?/t1t1t1t1-0000.jsonl',
+    'echo x >> ~/.claude/shelf/orbit-{ticks,x}/t1t1t1t1-0000.jsonl',
+    'cd ~/.claude/shelf && echo x > orbit-t*/t1t1t1t1-0000.jsonl',
+    "echo '{}' > ~/.claude/plugins/store/x-mod-stash_inline-99d499f0f4e0.json",
+    'jq \'.["succ:a"]={sid:"b"}\' x.json > "$HOME/.claude/plugins/store/x-mod-stash_inline-1.json"',
+    `python3 -c "open('/Users/dima/.claude/plugins/store/x-mod-stash_inline-1.json', 'w')"`,
+    'cp /tmp/s.json ~/.claude/plugins/store/',
+])
+    test(`a seat's forge of a press or its aim is refused: ${line.slice(0, 50)}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await bash($, line);
+        expect([r.deny !== undefined, ran]).toEqual([true, []]);
+    });
+
+for (const line of [
+    'git check-ignore -v home/.claude/shelf/orbit-ticks/x.jsonl',
+    'git ls-files home/.claude/shelf/orbit-ticks',
+    'git log --oneline -- home/.claude/shelf/orbit-ticks',
+    'cat home/.config/herdr-app/mods/fleet-board/orbit-ticks.ts',
+    'jq . ~/.claude/plugins/store/x-mod-stash_inline-99d499f0f4e0.json',
+])
+    test(`a read near the fenced folders runs: ${line.slice(0, 50)}`, async ($, on) => {
+        const { ran } = world(on);
+        expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
+    });
+
+test('a Write into the plugins store is refused', async ($, on) => {
+    world(on);
+    const r = await $.tool.call({
+        content: '{}',
+        file_path: '~/.claude/plugins/store/x-mod-stash_inline-1.json',
+        tool: 'Write',
+    });
+    expect(r.deny).toEqual(expect.stringContaining('aim his press at itself'));
+});
+
+for (const line of [
+    "rex send -s s1 -b b1 $'sign FRM-544\\n'",
+    'tmux -L s send-keys sign Space FRM-544 Enter',
+    "printf 'sign FRM-544' | hc send t1p -",
+    'hc send t1p "$(head -5 /tmp/b)"',
+    'hc send t1p "$(jq -r .t /tmp/b)"',
+])
+    test(`a pane typer the guard reads or cannot read is refused: ${line.slice(0, 44)}`, async ($, on) => {
+        const { ran } = signWorld(on);
+        const r = await bash($, line);
+        expect([(r.deny ?? '').includes('composer prompt'), ran]).toEqual([
+            true,
+            [],
+        ]);
+    });
+
+test('a pane typer fed by echo with no proof words runs', async ($, on) => {
+    const line = 'echo round 2 is green | hc send t1p -';
+    const { ran } = signWorld(on);
+    expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
 });

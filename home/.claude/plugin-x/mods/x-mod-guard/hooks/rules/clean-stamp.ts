@@ -75,7 +75,34 @@ function onlyReads(c: Command, named: (text: string) => boolean) {
         return !words.some((w) =>
             /^-(delete|exec|execdir|ok|okdir|fprint)/.test(w),
         );
+    // `git diff --output=<file>` and `git log -o` write
+    if (c.name === 'git')
+        return (
+            GIT_READS.has(gitVerb(words) ?? '') &&
+            !words.some((w) => /^(--output|-o$)/.test(w))
+        );
     return READERS.has(c.name);
+}
+// git's verbs that only read the tree or the index (wisphunter: `git check-ignore -v <store>` was refused)
+const GIT_READS = new Set([
+    'blame',
+    'cat-file',
+    'check-ignore',
+    'diff',
+    'grep',
+    'log',
+    'ls-files',
+    'show',
+    'status',
+]);
+// the verb past git's own options, `-C <dir>` and `-c <key=value>` taking a value
+function gitVerb(words: string[]) {
+    for (let i = 0; i < words.length; i++) {
+        const w = words[i] ?? '';
+        if (w === '-C' || w === '-c') i++;
+        else if (!w.startsWith('-')) return w;
+    }
+    return undefined;
 }
 
 // a copy out of the dir leaves the store alone, so cp counts only with the dir as its target
@@ -100,7 +127,10 @@ export function touchesStore(
     if (parsed.some(runsOpaque) && named(command)) return true;
     return parsed.some(
         (c) =>
-            [...c.writes, ...c.appends].some(named) ||
+            // a relative target after a `cd` is judged where it lands too (`cd <shelf> && … > orbit-t*/x`)
+            [...c.writes, ...c.appends].some(
+                (w) => named(w) || named(`${c.dir}/${w}`),
+            ) ||
             (named(`${c.dir}/`) &&
                 (c.writes.length + c.appends.length > 0 ||
                     !READERS.has(c.name))) ||

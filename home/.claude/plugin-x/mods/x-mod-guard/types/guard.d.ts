@@ -29,6 +29,10 @@ declare module 'claude-code' {
                 targets: string[];
                 at: number;
             }[];
+            // the session's own asks; a fleet-board press counts only on one he accepted here
+            orbit: {
+                asks: { id: string; text: string; mark?: string }[];
+            };
         };
     }
 }

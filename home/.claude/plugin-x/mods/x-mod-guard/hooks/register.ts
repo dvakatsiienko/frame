@@ -47,6 +47,7 @@ import {
     worthRewrites,
 } from './rules/worth.ts';
 import {
+    STORE_WRITE,
     TICKS_WRITE,
     addedPaths,
     check,
@@ -54,6 +55,7 @@ import {
     installDirs,
     isSignAsk,
     isStashKill,
+    isStorePath,
     isTicksPath,
     lineWrites,
     markedBy,
@@ -77,6 +79,7 @@ import {
     signsTyped,
     stashAsked,
     stashKills,
+    storeWrite,
     ticksWrite,
     tmpDirs,
     withDimaOk,
@@ -859,8 +862,22 @@ async function herdrTicks($: EngineInterface): Promise<Tick[]> {
     const text = await $.fs
         .read(`${home}/.claude/shelf/orbit-ticks/${sid}.jsonl`)
         .catch(() => '');
-    return pressTicks(text);
+    // a press counts only while this session's own orbit, x-mod-stash's owner-written `$.state`, holds that ask with its
+    // text and his accepted mark: his take-back on the seat board ends it, and a press a forged store aimed here
+    // matches no ask of this seat's that he accepted (wisphunter on 15a31816)
+    const { value: orbit } = await $.state
+        .get(STASH_ORBIT)
+        .catch(() => ({ value: undefined }));
+    return pressTicks(text).filter((t) =>
+        orbit?.asks.some(
+            (a) =>
+                `herdr:${a.id}` === t.id &&
+                a.text === t.text &&
+                a.mark === 'accepted',
+        ),
+    );
 }
+const STASH_ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 async function tickFor(
     $: EngineInterface,
     scope: string,
@@ -878,6 +895,7 @@ async function tickFor(
         .find(
             (t) =>
                 now - t.at <= TICK_MS &&
+                t.at <= now &&
                 !spent.includes(`${t.id}@${t.at}:${scope}`) &&
                 !spends.includes(`${t.id}@${t.at}:${scope}`) &&
                 covers(t),
@@ -889,7 +907,7 @@ async function tickFor(
 // # dima-ok marker rests on; it opens what a sign tick opens for its id, each write once, inside a tick's 2 h
 const SIGNS = { key: 'signs', plugin: 'x-mod-guard' } as const;
 const FIRST_PROMPT_NOTE =
-    "x-mod-guard: a session's first prompt never signs and approves nothing (no sign, no override, no # dima-ok target), since a seat's spawn prompt reads the same; tell dima his word counts from his next prompt here";
+    "x-mod-guard: a session's first prompt never signs and proves no # dima-ok target, since a seat's spawn prompt reads the same; tell dima his sign counts from his next prompt here (his operator-override works from the first)";
 const PROMPTED = { key: 'prompted', plugin: 'x-mod-guard' } as const;
 async function wasPrompted($: EngineInterface) {
     const { value: isPrompted } = await $.state
@@ -1816,8 +1834,8 @@ export const register: Register = (on) => {
                 if (stop) return stop;
             }
         }
-        // born refusing: the folder is a tick only while no seat writes it (FRM-544 slice 1)
-        const ticksFile = ticksWrite(typed, cwd);
+        // born refusing: the folder is a tick only while no seat writes it, and the store aims a press (FRM-544 slice 1)
+        const ticksFile = ticksWrite(typed, cwd) ?? storeWrite(typed, cwd);
         if (ticksFile) {
             const said = `x-mod-guard stopped this one command. instead: ${ticksFile.door}. why: ${ticksFile.why} (rule ${ticksFile.rule}).`;
             const stop = await enforce(
@@ -2107,17 +2125,22 @@ export const register: Register = (on) => {
             const resolved = (
                 await realPath($, spelled).catch(() => ({ file: spelled }))
             ).file;
-            if (!isTicksPath(spelled) && !isTicksPath(resolved)) return next(e);
+            const fence = [spelled, resolved].some(isTicksPath)
+                ? TICKS_WRITE
+                : [spelled, resolved].some(isStorePath)
+                  ? STORE_WRITE
+                  : undefined;
+            if (!fence) return next(e);
             await record($, {
                 command: `${e.tool} ${path}`,
-                door: TICKS_WRITE.door,
+                door: fence.door,
                 kind: 'refused',
-                rule: TICKS_WRITE.rule,
+                rule: fence.rule,
                 target: path,
-                why: TICKS_WRITE.why,
+                why: fence.why,
             });
             return {
-                deny: `x-mod-guard stopped this ${e.tool}. instead: ${TICKS_WRITE.door}. why: ${TICKS_WRITE.why}: ${path}`,
+                deny: `x-mod-guard stopped this ${e.tool}. instead: ${fence.door}. why: ${fence.why}: ${path}`,
             };
         },
     ).catch(() => ({ deny: FAILED }));
@@ -2297,14 +2320,16 @@ export const register: Register = (on) => {
                 await keepTypedSigns($, e.text).catch(() => undefined);
             }
             const ask = overrideAsked(e.text);
-            if (isFirst && (ask || signsTyped(e.text).length))
+            if (isFirst && signsTyped(e.text).length)
                 signNote = FIRST_PROMPT_NOTE;
             // no registry row reads as not his: a bg session's brief must never slip through a read that failed; said out
             // loud, since a word that moved nothing must not pass for one that did
             if (ask && !entry)
                 overrideNote =
                     "operator-override: this session's registry row did not read, so the switch did not move; tell dima to type it in a session that reads, or x lane merge-auto --override-check";
-            if (ask && entry && isHis && !isFirst)
+            // his override works from a session's first prompt (dima, 16:26: «I want my system override switch working
+            // from the start»); pane-proof fences a seat typing it, the registry row a bg brief
+            if (ask && entry && isHis)
                 overrideNote = await overrideFlip($, ask).catch(
                     (err: unknown) =>
                         `operator-override: the switch did not move: ${String(err)}`,

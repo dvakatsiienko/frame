@@ -798,12 +798,18 @@ export const signsTyped = (text: string) => [
 // keys a seat types into a pane reach that pane's seat as dima's own composer prompt (measured 2026-11-10: `hc keys` and
 // `hc send` both land as `composer`, a spawn prompt too), so a seat never types his proof words there: a sign line, a
 // dima-ok marker, an operator-override word (FRM-544 slice 0 round 2); any other message passes
-const PANE_TYPERS: Record<string, (verb: string | undefined) => boolean> = {
+const verbOf = (words: string[]) => words.find((w) => !w.startsWith('-'));
+const PANE_TYPERS: Record<string, (words: string[]) => boolean> = {
     claude: () => true,
-    hc: (verb) => verb === 'keys' || verb === 'run' || verb === 'send',
-    'herdr-app': (verb) => verb === 'do',
-    tmux: (verb) => verb === 'send-keys' || verb === 'send',
+    hc: (words) => ['keys', 'run', 'send'].includes(verbOf(words) ?? ''),
+    'herdr-app': (words) => verbOf(words) === 'do',
+    rex: (words) =>
+        ['send', 'send-key', 'send-keys'].includes(verbOf(words) ?? ''),
+    // `tmux -L <socket> send-keys …`: a flag's value reads as the verb, so any word may be it
+    tmux: (words) => words.some((w) => w === 'send-keys' || w === 'send'),
 };
+// a feeder whose text is its own words: `printf … | hc send t -`, `"$(echo …)"`
+const LITERAL_FEEDERS = new Set(['echo', 'printf']);
 const KEY_NAMES: Record<string, string> = {
     'c-m': '\n',
     enter: '\n',
@@ -816,11 +822,7 @@ const keysText = (words: string[]) =>
         .map(
             (w) =>
                 KEY_NAMES[w.toLowerCase()] ??
-                (/^shift\+.$/i.test(w)
-                    ? w.slice(-1).toUpperCase()
-                    : [...w].length === 1
-                      ? w
-                      : `\n${w}\n`),
+                (/^shift\+.$/i.test(w) ? w.slice(-1).toUpperCase() : w),
         )
         .join('');
 // the strings a json argument holds (`herdr-app do pane.send '{"text":…}'`)
@@ -844,14 +846,13 @@ const isProofText = (text: string) =>
     /^\s*(?:#\s*)?dima-ok:/im.test(text) ||
     overrideAsked(text) !== undefined;
 const isPaneTyper = (c: { name: string; args: { text: string }[] }) =>
-    PANE_TYPERS[c.name]?.(
-        c.args.map((w) => w.text).find((w) => !w.startsWith('-')),
-    ) ?? false;
-// the files a pane typer's `$(cat <file>)` or `$(< <file>)` would type, for the caller to read (a brief sent by file)
+    PANE_TYPERS[c.name]?.(c.args.map((w) => w.text)) ?? false;
+const isFed = (c: Command) =>
+    c.args.some((w) => w.isExpanding) || c.feeders.length > 0;
+// the files a pane typer's `$(cat <file>)`, `cat <file> |` or `$(< <file>)` would type, for the caller to read
 export function paneFiles(command: string, cwd: string, ctx: Context = {}) {
     const list = commandsDeep(command, cwd);
-    if (!list.some((c) => isPaneTyper(c) && c.args.some((w) => w.isExpanding)))
-        return [];
+    if (!list.some((c) => isPaneTyper(c) && isFed(c))) return [];
     return [
         ...list
             .filter((c) => c.name === 'cat')
@@ -873,12 +874,37 @@ export function paneProof(
 ): Refusal | undefined {
     for (const c of commandsDeep(command, cwd)) {
         if (!isPaneTyper(c)) continue;
+        // an allow-list of text the guard can read: a feeder past echo, printf and cat types what it never sees. it counts
+        // only where it reaches the typed text, an expanding argument or a `-` read from stdin, never `HOME=$NAME claude`
+        const isTypedFrom = c.args.some((w) => w.isExpanding || w.text === '-');
+        const unread = isTypedFrom
+            ? c.feeders.find(
+                  (f) => !LITERAL_FEEDERS.has(f.name) && f.name !== 'cat',
+              )
+            : undefined;
+        if (unread)
+            return {
+                door: 'type the text inline, through echo, printf or cat of a file, or send it with SendMessage',
+                rule: 'pane-proof',
+                targets: [c.name],
+                why: `\`${unread.name}\` feeds text into a pane that x-mod-guard cannot read, and keys typed there arrive as dima's own composer prompt`,
+            };
         const words = c.args.map((w) => w.text);
+        const fed = c.feeders
+            .filter((f) => LITERAL_FEEDERS.has(f.name))
+            .map((f) =>
+                f.args
+                    .map((w) => w.text)
+                    .filter((w) => !w.startsWith('-'))
+                    .join(' '),
+            );
         const texts = [
             ...words.map((_, i) => words.slice(i).join(' ')),
             ...words.flatMap(jsonStrings),
-            keysText(words),
-            ...(c.args.some((w) => w.isExpanding) ? typed : []),
+            // from each word on: the verb and the pane name come first, the keys after them
+            ...words.map((_, i) => keysText(words.slice(i))),
+            ...fed,
+            ...(isFed(c) ? typed : []),
         ];
         if (!texts.some(isProofText)) continue;
         return {
@@ -892,7 +918,11 @@ export function paneProof(
 }
 // herdr's fleet-board writes his presses to `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, and the guard reads a press there as
 // his tick (FRM-544 slice 1), so no seat's tool call writes there; fleet-board's own write is a herdr mod's, no cc tool call
-const isTicksName = (text: string) => /(^|[/'"])orbit-ticks\b/.test(text);
+// the folder by name, or a glob or brace the shell would expand under ~/.claude (wisphunter: `orbit-tick?`)
+const isGlobbedUnderClaude = (text: string) =>
+    /[*?[{]/.test(text) && /(\.claude|(^|\/)cc)\//.test(text);
+const isTicksName = (text: string) =>
+    /(^|[/'"])orbit-ticks(\/|$|['"])/.test(text) || isGlobbedUnderClaude(text);
 const isShelfDir = (text: string) => /(\.claude|cc)\/shelf\/?$/i.test(text);
 export const isTicksPath = (path: string) =>
     /(^|\/)orbit-ticks(\/|$)/.test(path);
@@ -905,6 +935,25 @@ export const TICKS_WRITE = {
 export function ticksWrite(command: string, cwd: string): Refusal | undefined {
     return touchesStore(command, cwd, isTicksName, isShelfDir)
         ? TICKS_WRITE
+        : undefined;
+}
+// the plugins' stores are written by their own plugins alone: fleet-board takes the file a press lands in from
+// x-mod-stash's `succ:` key and the ask from its `asks:` key, so a seat's write there could aim his press at itself
+const isStoreName = (text: string) =>
+    /(^|[/'"])plugins\/store(\/|$|['"])/.test(text) ||
+    (/[*?[{]/.test(text) && /plugins\//.test(text));
+const isPluginsDir = (text: string) => /(\.claude|cc)\/plugins\/?$/i.test(text);
+export const isStorePath = (path: string) =>
+    /\/\.claude\/plugins\/store(\/|$)/.test(path);
+export const STORE_WRITE = {
+    door: 'a plugin writes its own store; ask clio for the change',
+    rule: 'store-write',
+    targets: ['plugins/store'],
+    why: "fleet-board reads where dima's press lands from x-mod-stash's store, so a seat's write there could aim his press at itself",
+} as const satisfies Refusal;
+export function storeWrite(command: string, cwd: string): Refusal | undefined {
+    return touchesStore(command, cwd, isStoreName, isPluginsDir)
+        ? STORE_WRITE
         : undefined;
 }
 // his presses in a ticks file as ticks: the newest press per ask decides, a ↩️ replay after a 🛎 taking it back; a press

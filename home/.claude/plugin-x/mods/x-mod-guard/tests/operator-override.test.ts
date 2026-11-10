@@ -197,6 +197,19 @@ test('his typed phrase writes the store x reads', async ($, on) => {
     );
 });
 
+// dima, 16:26: «I want my system override switch working from the start», so a session's first prompt flips it too
+test("his phrase as a session's very first prompt still flips the switch", async ($, on) => {
+    const { files } = world(on);
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'operator-override prs',
+        wait: false,
+    });
+    expect(files[REAL]).toBe(
+        '{"prs":{"at":"2026-11-07T14:00:00.000Z","by":"word"}}',
+    );
+});
+
 test('«operator-override off», any case, clears the store', async ($, on) => {
     const { files } = world(on, { files: { [REAL]: ON } });
     await say($, 'Operator override off.');
