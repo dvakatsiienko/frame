@@ -1082,16 +1082,18 @@ func TestVerifyRedRunsAPnpmCommandWithNoInstall(t *testing.T) {
 	for _, c := range []struct {
 		name string
 		env  []string
+		args []string
 	}{
-		{"the caller's env leaves the setting alone", nil},
-		{"the caller's env asks for the install, in the spelling pnpm puts first", []string{"PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=install"}},
+		{"the caller's env leaves the setting alone", nil, nil},
+		{"the caller's env asks for the install, in the spelling pnpm puts first", []string{"PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=install"}, nil},
+		{"a word after the subcommand that names a store write", nil, []string{"install"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			f, watched := pnpmWorkspaceFixture(t)
 			before := treeWrites(t, watched...)
 
-			got, log := verifyRedIn(t, f, c.env, f.file, f.anchor, f.replacement, "--", "pnpm", "exec", "limit-test")
+			got, log := verifyRedIn(t, f, c.env, append([]string{f.file, f.anchor, f.replacement, "--", "pnpm", "exec", "limit-test"}, c.args...)...)
 
 			if got.code != 0 || got.data["verdict"] != verdictRed || log != "1\n1\n" {
 				t.Fatalf("exit %d, data %v, the test logged %q, want red off a clean and a mutated run:\n%s", got.code, got.data, log, got.stdout)
@@ -1099,6 +1101,27 @@ func TestVerifyRedRunsAPnpmCommandWithNoInstall(t *testing.T) {
 			wantNoWrites(t, before, treeWrites(t, watched...))
 		})
 	}
+}
+
+// FRM-554: the copy shares the store, so a pnpm command that writes it would write the real tree's: it refuses before any run
+func TestVerifyRedRefusesAPnpmCommandThatWritesTheStore(t *testing.T) {
+	t.Parallel()
+	f, watched := shimsFixture(t)
+	before := treeWrites(t, watched...)
+	for _, command := range [][]string{
+		{"pnpm", "install"}, {"pnpm", "i"}, {"pnpm", "add", "left-pad"}, {"pnpm", "remove", "tool"}, {"pnpm", "rm", "tool"},
+		{"pnpm", "update"}, {"pnpm", "up"}, {"pnpm", "dedupe"},
+		// the subcommand behind pnpm's own flags, a flag's value before it, and pnpm by its path
+		{"pnpm", "--frozen-lockfile", "install"}, {"pnpm", "--filter", "pkg", "add", "left-pad"}, {"pnpm", "-C", ".", "install"},
+		{"/opt/homebrew/bin/pnpm", "install"},
+	} {
+		got, log := verifyRedIn(t, f, nil, append([]string{f.file, f.anchor, f.replacement, "--"}, command...)...)
+
+		if got.code != 2 || !strings.Contains(got.stdout, "node_modules/.pnpm") || log != "" {
+			t.Errorf("%v: exit %d, the command logged %q, want a usage refusal naming the store and no run:\n%s", command, got.code, log, got.stdout)
+		}
+	}
+	wantNoWrites(t, before, treeWrites(t, watched...))
 }
 
 // a mutant the test does not read stays green, and the exit says no proof

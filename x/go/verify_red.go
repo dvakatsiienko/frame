@@ -491,7 +491,37 @@ type copyHarness struct {
 	project, unchecked string
 }
 
+// pnpm's subcommands that write the store, each with its aliases
+var pnpmStoreWrites = map[string]bool{
+	"install": true, "i": true, "add": true, "remove": true, "rm": true, "uninstall": true, "un": true,
+	"update": true, "up": true, "upgrade": true, "dedupe": true, "install-test": true, "it": true,
+	"rebuild": true, "rb": true, "prune": true, "fetch": true, "import": true, "link": true, "ln": true, "unlink": true,
+}
+
+// the store write a pnpm command asks for, or "": pnpm's subcommand is its first word that is no flag. a word right after a
+// flag may be that flag's value, `--filter pkg`, so the read goes on past it; the first other word ends it, a runner's own
+// args staying unread
+func pnpmStoreWrite(command []string) string {
+	if filepath.Base(command[0]) != "pnpm" {
+		return ""
+	}
+	for i, arg := range command[1:] {
+		switch {
+		case strings.HasPrefix(arg, "-"):
+		case pnpmStoreWrites[arg]:
+			return arg
+		case i == 0 || !strings.HasPrefix(command[i], "-") || strings.Contains(command[i], "="):
+			return ""
+		}
+	}
+	return ""
+}
+
 func newCopyHarness(file string, command []string) (redHarness, error) {
+	if write := pnpmStoreWrite(command); write != "" {
+		return nil, usageFail("pnpm "+write+" writes the store, node_modules/.pnpm, which the copy shares with the real tree, so the real tree's shims would be relinked",
+			"run the test itself: x verify red <file> <anchor> <replacement> -- pnpm exec <runner> <test>")
+	}
 	root, err := mustGitIn(filepath.Dir(file), "rev-parse", "rev-parse", "--show-toplevel")
 	if err != nil {
 		return nil, err
