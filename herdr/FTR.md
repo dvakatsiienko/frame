@@ -54,7 +54,8 @@ wish: PK-363
   - when he clicks its ✅ ticked
   - then the press leaves the ticks file and 🛎️ tick shows again; once the seat takes it, the ask reads «🔒 ticked, the session took it» (shot 1936)
   - and a press waiting on an idle seat stays ✅ however long it waits; 🔒 shows only once the published ask is locked, which a turn does, never the stash's 4 s read of the press (his hand-test, 20:52)
-  - and once the stash has read the press, ✅ stays but takes no click: the tick is the stash's mark then, and herdr cannot pull it back
+  - and his second click takes a tick back until a turn takes it, gated asks too: a press the stash has not read leaves the ticks file, one it has read gets an untick line (`{id, verdict: "untick", at}`) the stash answers by dropping the mark; «↩︎ unticking» shows until it has (dima: «ticked and able to untick until you actually receive them»)
+  - not checked: the stash's side of the untick line, the mods codie's, not landed yet
   - decision: a gated ask keeps its one-way press until the mods lane's tick fixes settle (clio, 19:34)
   - not checked: the click itself, by his hand
 - ✅ each ask leads with its id, so dima can name it

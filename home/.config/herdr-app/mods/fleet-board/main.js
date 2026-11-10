@@ -33,6 +33,7 @@ import {
     savePress,
     seatFacts,
     tickState,
+    untickDoor,
     waitOf,
 } from './orbit.js';
 
@@ -40,7 +41,7 @@ import {
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {Record<string, Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
-/** @typedef {{ asks: Ask[], context: number | null, model: string | null, name: string, pending: Map<string, 'tick' | 'replay'>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
+/** @typedef {{ asks: Ask[], context: number | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 /** @typedef {{ id?: string, title: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
 
 const CLAUDE = `${home()}/.claude`;
@@ -196,7 +197,7 @@ export default class FleetBoard extends View {
         /** @type {Map<string, import('gpui-base').InputState>} */
         this.steers = new Map();
         // presses written and not yet taken by the session's stash, so a second press waits
-        /** @type {Map<string, { verdict: 'tick' | 'replay', at: number }>} */
+        /** @type {Map<string, { verdict: import('./orbit.js').Press['verdict'], at: number }>} */
         this.sent = new Map();
         /** @type {string | null} */
         this.pressError = null;
@@ -448,21 +449,31 @@ export default class FleetBoard extends View {
         cx.notify();
     }
 
-    // his second click on a ticked plain ask takes the press back while the stash has not read it; once it has, the ask
-    // carries the stash's mark and shows 🔒. a gated ask keeps its one-way press (FRM-544 owns that file's rule)
+    // his second click on a ticked ask takes it back until a turn took it: a press the stash has not read leaves the
+    // ticks file, one it has read gets an untick line the stash answers by dropping the mark (untickDoor)
     /** @param {Context} cx @param {Row} s @param {Ask} ask */
     async unpress(cx, s, ask) {
         const key = `${s.sid}:${ask.id}`;
+        const io = { read: readTextFile, write: writeTextFile };
+        const path = `${TICKS}/${s.sid}.jsonl`;
         this.pressError = null;
         try {
-            await dropPress(
-                { read: readTextFile, write: writeTextFile },
-                `${TICKS}/${s.sid}.jsonl`,
-                ask.id,
-                s.taken,
-            );
-            this.sent.delete(key);
+            if (untickDoor(s.pending.get(ask.id)) === 'drop') {
+                await dropPress(io, path, ask.id, s.taken);
+                this.sent.delete(key);
+            } else {
+                const at = Date.now();
+                this.sent.set(key, { at, verdict: 'untick' });
+                cx.notify();
+                await savePress(
+                    io,
+                    path,
+                    { at, id: ask.id, text: ask.text, verdict: 'untick' },
+                    s.taken,
+                );
+            }
         } catch (err) {
+            this.sent.delete(key);
             this.pressError = `${ask.id} not unticked: ${err instanceof Error ? err.message : err}`;
         }
         cx.notify();
@@ -595,7 +606,7 @@ export default class FleetBoard extends View {
                         button(
                             'untick',
                             '✅ ticked',
-                            'ticked: click again to untick, until the session takes it',
+                            'ticked: click again to take it back, until a turn takes it',
                             (cx) => cx.spawn((cx) => this.unpress(cx, s, ask)),
                         ),
                     ),
@@ -609,8 +620,8 @@ export default class FleetBoard extends View {
                         .child(
                             state === 'locked'
                                 ? '🔒 ticked, the session took it'
-                                : state === 'untickable'
-                                  ? '✅ ticked, the session takes it at its next turn'
+                                : state === 'unticking'
+                                  ? '↩︎ unticking, the session drops it at its next read'
                                   : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
                         ),
                 ),

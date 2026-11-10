@@ -3,7 +3,7 @@
 // session's next turn (FRM-552)
 
 /** @typedef {{ id: string | null, text: string, pick: string | null, mark: string | null, isGated: boolean, isLocked: boolean }} Ask */
-/** @typedef {{ id: string, verdict: 'tick' | 'replay', steer?: string, text?: string, at: number }} Press */
+/** @typedef {{ id: string, verdict: 'tick' | 'replay' | 'untick', steer?: string, text?: string, at: number }} Press */
 
 /**
  * the open asks the stash keeps for a session; an entry stored before items carried ids has text alone and cannot be
@@ -144,10 +144,10 @@ export function withPress(text, press, taken) {
  * itself, so a press waiting on an idle seat's next turn stays ✅ however long it waits
  * @param {string | null} text
  * @param {number} taken
- * @returns {Map<string, 'tick' | 'replay'>}
+ * @returns {Map<string, Press['verdict']>}
  */
 export function pendingPresses(text, taken) {
-    /** @type {Map<string, 'tick' | 'replay'>} */
+    /** @type {Map<string, Press['verdict']>} */
     const pending = new Map();
     for (const line of (text ?? '').split('\n')) {
         try {
@@ -285,19 +285,25 @@ export function inListOrder(rows, pids) {
 }
 
 /**
- * what an ask's tick shows (FRM-562 wisp, 20:55): 🔒 only once the published ask is locked, which happens when a turn
- * takes it, never from the stash's 4 s read of the press or the ticks file's prune; ✅ before that, and its click
- * takes the tick back only while the press still sits in the ticks file, since a press the stash has read is its mark
+ * what an ask's tick shows: 🔒 only once the published ask is locked, which a turn does, never the stash's 4 s read of
+ * the press; until then a tick is ✅ and his second click takes it back, gated asks too (dima: «ticked and able to
+ * untick until you actually receive them»); an untick on its way reads as unticking
  * @param {Ask} ask
- * @param {'tick' | 'replay' | null | undefined} sent his press still in the ticks file, or just sent
- * @returns {'open' | 'ticked' | 'untickable' | 'locked' | 'replayed'}
+ * @param {Press['verdict'] | null | undefined} sent his press still in the ticks file, or just sent
+ * @returns {'open' | 'ticked' | 'unticking' | 'locked' | 'replayed'}
  */
 export function tickState(ask, sent) {
     if (ask.isLocked) return 'locked';
-    if (ask.mark === 'accepted' || sent === 'tick')
-        return !ask.mark && sent === 'tick' && !ask.isGated
-            ? 'ticked'
-            : 'untickable';
+    if (sent === 'untick') return 'unticking';
+    if (ask.mark === 'accepted' || sent === 'tick') return 'ticked';
     if (ask.mark || sent === 'replay') return 'replayed';
     return 'open';
 }
+
+/**
+ * how his second click takes a tick back: a press the stash has not read leaves the ticks file, so neither the stash
+ * nor the guard ever sees it; a press it has read gets an untick line, which the stash answers by dropping the mark
+ * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file
+ * @returns {'drop' | 'untick'}
+ */
+export const untickDoor = (pending) => (pending === 'tick' ? 'drop' : 'untick');

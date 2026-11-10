@@ -16,6 +16,7 @@ import {
     seatFacts,
     tickState,
     unbold,
+    untickDoor,
     waitOf,
     withPress,
     withoutPress,
@@ -351,9 +352,13 @@ describe('a tick locks only when a turn takes it', () => {
         expect(tickState(ask, 'tick')).toBe('ticked');
     });
 
-    test('a press the stash has read stays ticked, not locked', () => {
-        expect(tickState({ ...ask, mark: 'accepted' }, null)).toBe(
-            'untickable',
+    test('a press the stash has read stays ticked, and can still be taken back', () => {
+        expect(tickState({ ...ask, mark: 'accepted' }, null)).toBe('ticked');
+    });
+
+    test('an untick on its way to the stash reads as unticking', () => {
+        expect(tickState({ ...ask, mark: 'accepted' }, 'untick')).toBe(
+            'unticking',
         );
     });
 
@@ -363,8 +368,14 @@ describe('a tick locks only when a turn takes it', () => {
         ).toBe('locked');
     });
 
-    test('a gated press cannot be taken back', () => {
-        expect(tickState({ ...ask, isGated: true }, 'tick')).toBe('untickable');
+    test('a gated press can be taken back too', () => {
+        expect(tickState({ ...ask, isGated: true }, 'tick')).toBe('ticked');
+    });
+
+    test('a locked ask ignores an untick still in the file', () => {
+        expect(
+            tickState({ ...ask, isLocked: true, mark: 'accepted' }, 'untick'),
+        ).toBe('locked');
     });
 
     test('no press is open', () => {
@@ -373,5 +384,15 @@ describe('a tick locks only when a turn takes it', () => {
 
     test('a replay reads as replayed', () => {
         expect(tickState(ask, 'replay')).toBe('replayed');
+    });
+});
+
+describe('his second click writes the door that still reaches the seat', () => {
+    test('a press the stash has not read leaves the file', () => {
+        expect(untickDoor('tick')).toBe('drop');
+    });
+
+    test('a press the stash has read gets an untick line', () => {
+        expect(untickDoor(null)).toBe('untick');
     });
 });
