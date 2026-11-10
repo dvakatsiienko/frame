@@ -122,6 +122,10 @@ wish: PK-363
   - given dima has typed into a seat's Chat box
   - when the chat mod reloads
   - then the box shows his text again (proven in wing 1's tab, 16:57:57)
+- ✅ a resize keeps the chat on its newest message
+  - given the chat shows its newest message, or within 40 px of it
+  - when the tray or a panel opens or closes
+  - then the newest message stays in view and no «↓ Newest» shows (shots 17:39, tray and Files open and closed)
 - ⬜ after a reload the caret sits at the draft's end
   - given a draft came back after a reload
   - when dima types on

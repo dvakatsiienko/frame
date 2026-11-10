@@ -209,6 +209,8 @@ const fade = (color, alpha) =>
 // A text size from the 13 px design, scaled to the chosen size.
 const px = (n) => Math.round(((n * chatLook().size) / 13) * 2) / 2;
 const NARROW = 820;
+// within this many px of the newest message the log counts as at the bottom: no ↓ Newest, and a reflow keeps it there
+const STUCK_PX = 40;
 // How many messages to draw at first; "Show earlier" adds this many more.
 const PAGE = 120;
 // How much of a local transcript is decoded and read at a time (see readAfter).
@@ -3754,7 +3756,11 @@ export default class ClaudeChat extends View {
                     .py(12)
                     .gap(GAPS[chatLook().space] ?? 10)
                     .on_size_change((s, cx) => {
-                        if ((this.up > 0 || this.holdTop) && this.contentH)
+                        // a reflow (the tray, a panel, a new message) keeps a log near its newest message on it; a log
+                        // scrolled further up keeps what is being read in place
+                        if (!this.holdTop && (this.up ?? 0) <= STUCK_PX)
+                            this.up = 0;
+                        else if (this.contentH)
                             this.up += s.height - this.contentH;
                         this.holdTop = false;
                         this.contentH = s.height;
@@ -3771,7 +3777,7 @@ export default class ClaudeChat extends View {
                     .children(rows),
             )
             .when(Boolean(this.ctx), (el) => el.child(this.ctxMenu(t)))
-            .when(this.up > 40, (el) => {
+            .when(this.up > STUCK_PX, (el) => {
                 const prev = this.prevMine();
                 const to = prev === null ? null : clamp(prev);
                 return el
