@@ -158,6 +158,7 @@ describe('wingNudge', () => {
                     PROMPT_RAW_DIR: join(home, 'prompts'),
                 },
                 input: JSON.stringify({ prompt: 'what should i buy now' }),
+                timeout: 10_000,
             },
         );
         expect(out.status).toBe(0);
@@ -226,6 +227,7 @@ describe('the hook in a wing', () => {
                     PROMPT_RAW_DIR: join(home, 'prompts'),
                 },
                 input: JSON.stringify({ prompt: 'lets do #9' }),
+                timeout: 10_000,
             },
         );
         expect(out.status).toBe(0);

@@ -35,6 +35,7 @@ function pocketWith(lines: string[]) {
         execFileSync('node', [script, 'PK-1', ...args], {
             encoding: 'utf8',
             env: { ...process.env, FLYWAY_POCKET: root },
+            timeout: 10_000,
         });
     const read = () =>
         flywayLines(readFileSync(file, 'utf8')).map((l) => l.text);

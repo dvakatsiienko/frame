@@ -78,12 +78,33 @@ export function bareGitSpawns(source: string) {
     return lines;
 }
 
+// the 1-based line of every spawnSync or execFileSync whose own arguments name no timeout: a child that never ends
+// blocks the event loop, so vitest's own test timeout never fires and the run hangs (a reply-check.py on stdin, 18 min)
+// any spelling counts: a method (`cp.spawnSync`) or an import alias (`spawnSync as run`); only an options key `timeout:` passes
+export function untimedSpawns(source: string) {
+    const names = ['spawnSync', 'execFileSync'];
+    for (const m of source.matchAll(
+        /\b(?:spawnSync|execFileSync)\s+as\s+([A-Za-z_$][\w$]*)/g,
+    ))
+        names.push(m[1] ?? '');
+    const call = new RegExp(`(?<![\\w$])(?:${names.join('|')})\\(`, 'g');
+    const lines: number[] = [];
+    for (const m of source.matchAll(call)) {
+        if (/\btimeout\s*:/.test(argsFrom(source, m.index + m[0].length)))
+            continue;
+        lines.push(source.slice(0, m.index).split('\n').length);
+    }
+    return lines;
+}
+
+// a failed ls-files throws: an empty list would pass every lint that scans it
 export function trackedFiles(root: string, ...patterns: string[]) {
-    return spawnSync('git', ['ls-files', ...patterns], {
+    const listed = spawnSync('git', ['ls-files', ...patterns], {
         cwd: root,
         encoding: 'utf8',
         env: gitEnv(),
-    })
-        .stdout.split('\n')
-        .filter(Boolean);
+    });
+    if (listed.status !== 0)
+        throw new Error(`git ls-files ${patterns.join(' ')}: ${listed.stderr}`);
+    return listed.stdout.split('\n').filter(Boolean);
 }

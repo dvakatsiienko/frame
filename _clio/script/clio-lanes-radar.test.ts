@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
 import { gitEnv } from '../../script/lib/git-fixture.ts';
 
 const SCRIPT = join(import.meta.dirname, 'clio-lanes-radar.ts');
-const DEAD_PID = spawnSync('node', ['-e', '']).pid;
+const DEAD_PID = spawnSync('node', ['-e', ''], { timeout: 10_000 }).pid;
 
 function world() {
     const base = mkdtempSync(join(tmpdir(), 'clio-lanes-radar-'));
@@ -51,12 +51,14 @@ function world() {
                 TZ: 'Asia/Tokyo',
             },
             input,
+            timeout: 10_000,
         }).stdout;
     };
     const git = (dir: string, ...args: string[]) => {
         return spawnSync('git', ['-C', dir, ...args], {
             encoding: 'utf8',
             env: gitEnv(),
+            timeout: 10_000,
         });
     };
     const addTree = (name: string) => {
@@ -246,7 +248,11 @@ describe('clio-lanes-radar', () => {
         const procStart = spawnSync(
             'ps',
             ['-o', 'lstart=', '-p', `${process.pid}`],
-            { encoding: 'utf8', env: { ...process.env, TZ: 'UTC' } },
+            {
+                encoding: 'utf8',
+                env: { ...process.env, TZ: 'UTC' },
+                timeout: 10_000,
+            },
         ).stdout.trim();
         w.session('🦉 clio', 'sid-m', { procStart });
         expect(w.run()).toContain('🦉 clio: alive');

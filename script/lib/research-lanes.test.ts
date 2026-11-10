@@ -45,15 +45,17 @@ function runLanes(
         );
         mkdirSync(path.join(root, 'script'));
         copyFileSync(builder, path.join(root, 'script/recipe-brief.ts'));
-        spawnSync('node', [
-            path.join(root, 'script/recipe-brief.ts'),
-            'refresh-probe',
-        ]);
+        spawnSync(
+            'node',
+            [path.join(root, 'script/recipe-brief.ts'), 'refresh-probe'],
+            { timeout: 10_000 },
+        );
     } else writeFileSync(path.join(dir, 'brief.md'), brief);
     // the copy has no spender, so these rows read the gates even under a verify run's X_VERIFY
     const run = spawnSync('sh', [copy, path.join(dir, 'brief.md')], {
         encoding: 'utf8',
         env: { ...process.env, X_VERIFY: '' },
+        timeout: 10_000,
     });
     return { entries: readdirSync(dir), run };
 }
@@ -133,6 +135,7 @@ test.each([
     const run = spawnSync('sh', [copy, path.join(root, 'brief.md')], {
         encoding: 'utf8',
         env: { ...process.env, X_VERIFY: verify },
+        timeout: 10_000,
     });
 
     const made = existsSync(log) ? readFileSync(log, 'utf8') : '';

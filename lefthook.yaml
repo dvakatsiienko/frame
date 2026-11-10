@@ -25,8 +25,9 @@ pre-commit:
     typecheck:
       run: script/index-run.sh pnpm typecheck
     test:
-      # every branch kind (main, codie/*, clio-wing-*, worktree-*, any other; a detached HEAD runs whole): only the tests related to the staged code;
-      # the whole suite stays at push and on ci, and the kill rule's lever is related_kinds in script/test-commit.sh
+      # every branch kind (main, codie/*, clio-wing-*, worktree-*, any other): only the tests related to the staged code, or none when the
+      # import graph cannot judge; the whole suite stays at push and on ci. the kill rule's lever, related_kinds in script/test-commit.sh,
+      # is the one whole run left at commit
       run: script/index-run.sh script/test-commit.sh pnpm test
     x-go-reads:
       # a staged script x/go's tests read (script/lib/x-go-reads.txt, or anything under script/lib/) runs those tests here,
@@ -79,7 +80,8 @@ pre-push:
       # vitest in a clean clone with an empty HOME and CI=1, the way the ubuntu runner reads the
       # repo: a test that leans on dima's mac (a ~/ path, a git-crypt plaintext) goes red here
       # instead of on main. ~8 s, node_modules symlinked (pk-43, 2026-10-09).
-      # stdin names the pushed commit: a worktree's push runs from the main checkout, so HEAD is the wrong one
+      # stdin names the pushed commit: a worktree's push runs from the main checkout, so HEAD is the wrong one.
+      # only a main push carrying code runs it; a branch push and a pocket, memory or .md main push skip (FRM-557)
       use_stdin: true
       run: pnpm test:twin
     mirror:

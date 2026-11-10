@@ -79,7 +79,12 @@ function fixture({
             ...extra,
         };
         if (!('CI' in extra)) delete env.CI;
-        return spawnSync(copy, args, { cwd, encoding: 'utf8', env });
+        return spawnSync(copy, args, {
+            cwd,
+            encoding: 'utf8',
+            env,
+            timeout: 10_000,
+        });
     };
     const rows = () =>
         existsSync(join(state, 'test-cpu-budget.log'))
@@ -208,10 +213,15 @@ describe('a whole run keys the code it ran on', () => {
     const realGit = dirname(
         spawnSync('sh', ['-c', 'command -v git'], {
             encoding: 'utf8',
+            timeout: 10_000,
         }).stdout.trim(),
     );
     const git = (cwd: string, ...args: string[]) =>
-        spawnSync(join(realGit, 'git'), args, { cwd, encoding: 'utf8' });
+        spawnSync(join(realGit, 'git'), args, {
+            cwd,
+            encoding: 'utf8',
+            timeout: 10_000,
+        });
 
     test('the same bytes keep one key, an edit reads dirty, a staged edit moves the key', () => {
         const { dir, rows, run } = fixture({

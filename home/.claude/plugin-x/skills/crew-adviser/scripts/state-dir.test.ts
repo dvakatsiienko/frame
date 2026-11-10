@@ -53,6 +53,7 @@ it('a plan critique run under CROW_STATE_DIR leaves the real notes file unchange
                 CROW_STATE_DIR: state,
                 PATH: `${bin}:${process.env.PATH}`,
             },
+            timeout: 10_000,
         },
     );
     const notes = readFileSync(join(state, 'notes.jsonl'), 'utf8')

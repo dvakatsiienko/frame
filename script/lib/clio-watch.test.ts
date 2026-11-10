@@ -50,6 +50,7 @@ const run = (script: string, args: string[], dir: string, cwd = dir) =>
         cwd,
         encoding: 'utf8',
         env: { ...process.env, HOME: dir, PATH: `${dir}:${process.env.PATH}` },
+        timeout: 10_000,
     });
 
 describe('watch-pr', () => {
@@ -229,6 +230,7 @@ describe('watch-deploy', () => {
                 cwd: dir,
                 encoding: 'utf8',
                 env: gitEnv(),
+                timeout: 10_000,
             }).trim();
         git('init', '-q');
         git(

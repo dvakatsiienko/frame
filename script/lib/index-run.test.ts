@@ -44,9 +44,13 @@ test("the hook's typecheck passes a commit while a peer's unstaged edit is broke
         }),
     );
     writeFileSync(join(repo, 'peer.ts'), 'export const ok = 1;\n');
-    execFileSync('git', ['init', '-q'], { cwd: repo, env });
-    execFileSync('git', ['add', '-A'], { cwd: repo, env });
-    execFileSync('git', ['commit', '-q', '-m', 'seed'], { cwd: repo, env });
+    execFileSync('git', ['init', '-q'], { cwd: repo, env, timeout: 10_000 });
+    execFileSync('git', ['add', '-A'], { cwd: repo, env, timeout: 10_000 });
+    execFileSync('git', ['commit', '-q', '-m', 'seed'], {
+        cwd: repo,
+        env,
+        timeout: 10_000,
+    });
     writeFileSync(
         join(repo, 'peer.ts'),
         'export const ok: number = "BROKEN";\n',
@@ -56,6 +60,7 @@ test("the hook's typecheck passes a commit while a peer's unstaged edit is broke
         cwd: repo,
         encoding: 'utf8',
         env,
+        timeout: 10_000,
     });
 
     expect(run.status, run.stdout + run.stderr).toBe(0);
@@ -68,6 +73,7 @@ test('the index copy leaves nothing behind', () => {
         cwd: root,
         encoding: 'utf8',
         env: { ...env, TMPDIR: scratch },
+        timeout: 10_000,
     });
 
     expect(run.status, run.stderr).toBe(0);
@@ -82,14 +88,19 @@ test('the index copy registers no worktree', () => {
         join(repo, 'script/index-run.sh'),
     );
     writeFileSync(join(repo, 'pnpm-workspace.yaml'), 'packages: []\n');
-    execFileSync('git', ['init', '-q'], { cwd: repo, env });
-    execFileSync('git', ['add', '-A'], { cwd: repo, env });
-    execFileSync('git', ['commit', '-q', '-m', 'seed'], { cwd: repo, env });
+    execFileSync('git', ['init', '-q'], { cwd: repo, env, timeout: 10_000 });
+    execFileSync('git', ['add', '-A'], { cwd: repo, env, timeout: 10_000 });
+    execFileSync('git', ['commit', '-q', '-m', 'seed'], {
+        cwd: repo,
+        env,
+        timeout: 10_000,
+    });
     const listed = () =>
         execFileSync('git', ['worktree', 'list', '--porcelain'], {
             cwd: repo,
             encoding: 'utf8',
             env,
+            timeout: 10_000,
         });
     const before = listed();
 
@@ -97,6 +108,7 @@ test('the index copy registers no worktree', () => {
         cwd: repo,
         encoding: 'utf8',
         env,
+        timeout: 10_000,
     });
 
     expect(run.status, run.stderr).toBe(0);
@@ -118,6 +130,7 @@ function peerStaged() {
             cwd: repo,
             encoding: 'utf8',
             env: { ...gitEnv(), ...extra },
+            timeout: 10_000,
         });
     git(['init', '-q']);
     git(['add', '-A']);
@@ -141,7 +154,12 @@ function peerStaged() {
                 '-c',
                 `env -u GIT_INDEX_FILE ${command}`,
             ],
-            { cwd: repo, encoding: 'utf8', env: { ...gitEnv(), ...extra } },
+            {
+                cwd: repo,
+                encoding: 'utf8',
+                env: { ...gitEnv(), ...extra },
+                timeout: 10_000,
+            },
         );
     return { commitIndex, gate, repo };
 }
@@ -206,6 +224,7 @@ test('a gate that sets core.bare in the shared repo goes red and puts it back', 
 const execPath = execFileSync('git', ['--exec-path'], {
     encoding: 'utf8',
     env,
+    timeout: 10_000,
 }).trim();
 
 test.each([
@@ -222,6 +241,7 @@ test.each([
         execFileSync('git', ['switch', '-q', '-c', 'codie/FRM-1-x'], {
             cwd: repo,
             env: gitEnv(),
+            timeout: 10_000,
         });
 
         const run = gate('sh -c "exit 7"', {
@@ -244,19 +264,46 @@ test.each([
     },
 );
 
+// the commit gate with every branch kind taken off related_kinds: the one way left to a whole test step at commit
+function wholeTestCommit() {
+    const dir = mkdtempSync(join(tmpdir(), 'index-run-whole-'));
+    mkdirSync(join(dir, 'lib'));
+    const body = readFileSync(join(root, 'script/test-commit.sh'), 'utf8');
+    const lever = body.replace(/^related_kinds=.*$/m, "related_kinds=' '");
+    expect(lever).not.toBe(body);
+    writeFileSync(join(dir, 'test-commit.sh'), lever);
+    copyFileSync(
+        join(root, 'script/lib/memory-only.sh'),
+        join(dir, 'lib/memory-only.sh'),
+    );
+    return join(dir, 'test-commit.sh');
+}
+
+// a pnpm whose vitest finds the peer's staged test related, as the real one would, so the related step runs green
+function pnpmStub() {
+    const bin = mkdtempSync(join(tmpdir(), 'index-run-bin-'));
+    writeFileSync(join(bin, 'pnpm'), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+    return `${bin}:${process.env.PATH}`;
+}
+
 test.each([
-    // staged code on main runs related; a detached HEAD runs the whole suite
-    ['a whole test step logs its cpu', ['--detach'], /^\d+\.\d$/],
-    ['a related test step logs a dash', ['-C', 'main'], /^-$/],
-])('%s', (_name, switchArgs, want) => {
+    ['a whole test step logs its cpu', wholeTestCommit, /^\d+\.\d$/],
+    [
+        'a related test step logs a dash',
+        () => join(root, 'script/test-commit.sh'),
+        /^-$/,
+    ],
+])('%s', (_name, testCommit, want) => {
     const { gate, repo } = peerStaged();
     const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
-    execFileSync('git', ['switch', '-q', ...switchArgs], {
+    execFileSync('git', ['switch', '-q', '-C', 'main'], {
         cwd: repo,
         env: gitEnv(),
+        timeout: 10_000,
     });
 
-    const run = gate(`bash ${join(root, 'script/test-commit.sh')} true`, {
+    const run = gate(`bash ${testCommit()} true`, {
+        PATH: pnpmStub(),
         VITEST: '',
         X_STATE: state,
     });
@@ -272,7 +319,7 @@ test('a whole step nested under vitest leaves its parent row a dash', () => {
     const { gate } = peerStaged();
     const state = mkdtempSync(join(tmpdir(), 'index-run-state-'));
 
-    const nested = `VITEST=1 bash ${join(root, 'script/test-commit.sh')} true`;
+    const nested = `VITEST=1 bash ${wholeTestCommit()} true`;
     const run = gate(`sh -c '${nested}'`, { VITEST: '', X_STATE: state });
 
     expect(run.status, run.stderr).toBe(0);
@@ -297,7 +344,7 @@ test('the test step logs the source its gate row logs', () => {
     const row = (file: string) =>
         readFileSync(join(state, file), 'utf8').trimEnd().split('\t');
     expect(row('gate-steps.log')[2]).toBe('commit');
-    expect(row('test-commit.log').at(-1)).toBe('commit');
+    expect(row('test-commit.log')[8]).toBe('commit');
 });
 
 test('a gate under vitest writes no step row', () => {
@@ -324,6 +371,7 @@ test('a gate reads the branch its detached copy cannot', () => {
     execFileSync('git', ['switch', '-q', '-c', 'codie/FRM-1-x'], {
         cwd: repo,
         env: gitEnv(),
+        timeout: 10_000,
     });
 
     const run = gate('printenv INDEX_RUN_BRANCH');

@@ -111,7 +111,10 @@ describe('behindFalse', () => {
     ] as const;
     it.each(tails)('never runs the tail after %s', (_, line) => {
         const dir = mkdtempSync(join(tmpdir(), 'behind-false-'));
-        spawnSync('bash', ['-c', behindFalse(line)], { cwd: dir });
+        spawnSync('bash', ['-c', behindFalse(line)], {
+            cwd: dir,
+            timeout: 10_000,
+        });
         expect(readdirSync(dir)).toEqual([]);
     });
 

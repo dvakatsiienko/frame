@@ -1,4 +1,5 @@
-# sourced by the commit gate and the push twin: what a commit of only memory has to prove. ci still runs the whole suite on the push
+# sourced by the commit gate (what a commit of only memory has to prove) and the push twin (is_memory_path: a main push of only
+# memory skips it). ci still runs the whole suite on the push
 # a test that reads memory, skills or rules as text; a new one joins here
 MEMORY_TESTS=(
     script/ctx-init-trace.test.ts

@@ -35,6 +35,7 @@ function run(
             FORK_GUARD_STATE: state,
         },
         input,
+        timeout: 10_000,
     });
 }
 
@@ -144,6 +145,7 @@ describe('fork-guard', () => {
                 FORK_GUARD_STATE: state,
             },
             input: '{"session_id":"s-new","source":"resume"}',
+            timeout: 10_000,
         });
         expect(out.stdout).toContain('in a wing seat');
         expect(seat(state)).toContain(`pid=${DEAD_PID}`);
@@ -165,6 +167,7 @@ describe('fork-guard', () => {
                 FORK_GUARD_STATE: state,
             },
             input: '{"session_id":"s-helga","source":"startup"}',
+            timeout: 10_000,
         });
         expect(out.stdout).toBe('');
         expect(seat(state)).toContain(`pid=${DEAD_PID}`);
@@ -190,7 +193,10 @@ describe('fork-guard', () => {
     test('with the main dead, a wing stays guarded and main-only stays off', () => {
         const state = deadMain();
         const repo = mkdtempSync(join(tmpdir(), 'fg-repo-'));
-        spawnSync('git', ['-C', repo, 'init', '-q'], { env: gitEnv() });
+        spawnSync('git', ['-C', repo, 'init', '-q'], {
+            env: gitEnv(),
+            timeout: 10_000,
+        });
         const pid = String(process.pid);
         expect(run(['main-only', '--', 'echo', 'ran'], pid, state).stdout).toBe(
             '',
@@ -260,6 +266,7 @@ describe('fork-guard fork-edit', () => {
         spawnSync('git', ['-C', repo, ...args], {
             encoding: 'utf8',
             env: gitEnv(),
+            timeout: 10_000,
         });
     git('init', '-q');
     git(
@@ -521,6 +528,7 @@ describe('fork-guard announce', () => {
                 FORK_GUARD_STATE: state,
                 TZ: 'UTC',
             },
+            timeout: 10_000,
         }).stdout;
 
     test('names a fork by its first prompt after the fork, then never again', () => {
@@ -543,6 +551,7 @@ describe('fork-guard announce', () => {
                     FORK_GUARD_CC_PID: String(process.ppid),
                     FORK_GUARD_STATE: mkdtempSync(join(tmpdir(), 'fg-')),
                 },
+                timeout: 10_000,
             }).stdout,
         ).toBe('');
     });

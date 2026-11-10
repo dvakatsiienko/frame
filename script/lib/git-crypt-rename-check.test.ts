@@ -15,7 +15,12 @@ const script = path.resolve(
 const env = gitEnv();
 
 function git(dir: string, ...args: string[]) {
-    const run = spawnSync('git', args, { cwd: dir, encoding: 'utf8', env });
+    const run = spawnSync('git', args, {
+        cwd: dir,
+        encoding: 'utf8',
+        env,
+        timeout: 10_000,
+    });
     expect(run.status, run.stderr).toBe(0);
 }
 
@@ -35,7 +40,12 @@ function renamed(to: string, attributesAfter: string) {
     git(dir, 'mv', 'secret.txt', to);
     writeFileSync(path.join(dir, '.gitattributes'), attributesAfter);
     git(dir, 'add', '.gitattributes');
-    return spawnSync('node', [script], { cwd: dir, encoding: 'utf8', env });
+    return spawnSync('node', [script], {
+        cwd: dir,
+        encoding: 'utf8',
+        env,
+        timeout: 10_000,
+    });
 }
 
 test('a git-crypt file renamed to a plain path is refused, naming both paths', () => {
@@ -80,6 +90,7 @@ test('a git-crypt file deleted beside a plaintext add is refused', () => {
         cwd: dir,
         encoding: 'utf8',
         env,
+        timeout: 10_000,
     });
 
     expect(run.status).toBe(1);
@@ -106,6 +117,7 @@ test('a git-crypt file deleted beside an add the filter covers goes through', ()
         cwd: dir,
         encoding: 'utf8',
         env,
+        timeout: 10_000,
     });
 
     expect(run.status, run.stderr).toBe(0);

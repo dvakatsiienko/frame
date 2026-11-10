@@ -31,6 +31,7 @@ function session(hookPath = hook) {
             encoding: 'utf8',
             env: { ...process.env, MEMORY_LOAD_LOG: log, TMPDIR: dir },
             input: JSON.stringify({ cwd: '/work', session_id: id, ...event }),
+            timeout: 10_000,
         });
     }
 
@@ -740,6 +741,7 @@ describe('memory-load-replay', () => {
             {
                 encoding: 'utf8',
                 env: { ...process.env, HOME: home },
+                timeout: 10_000,
             },
         ).stdout;
     }
@@ -806,7 +808,7 @@ describe('memory-load-guide-share', () => {
         return spawnSync(
             'python3',
             [join(scripts, 'memory-load-guide-share.py'), '--transcript', path],
-            { encoding: 'utf8' },
+            { encoding: 'utf8', timeout: 10_000 },
         ).stdout;
     }
     const edit = (id: string) => toolCall('Edit', { file_path: '/w/a.ts' }, id);
