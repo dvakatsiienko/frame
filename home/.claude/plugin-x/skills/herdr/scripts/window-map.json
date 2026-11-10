@@ -13,9 +13,9 @@
     "notShown": [
         {
             "kind": "zoo",
-            "name": "x-herdr-pane-header (open)",
+            "name": "x-herdr-terminal-header",
             "today": "my-pane",
-            "what": "a terminal pane's header (Terminal view)"
+            "what": "each terminal pane's header (Terminal view)"
         },
         {
             "kind": "zoo",
@@ -59,10 +59,10 @@
         },
         {
             "boxes": [[937, 4, 958, 32]],
-            "kind": "zoo",
+            "kind": "herdr",
             "n": 5,
-            "name": "herdr's new-menu (A/B first)",
-            "today": "my-new-menu",
+            "name": "herdr's own (since 11-10)",
+            "today": "new-menu",
             "what": "+ menu: open a new tab"
         },
         {
@@ -77,9 +77,9 @@
             "boxes": [[234, 147, 770, 168]],
             "kind": "ours",
             "n": 7,
-            "name": "x-herdr-chatter",
+            "name": "x-herdr-chatter-header",
             "today": "x-herdr-chatter",
-            "what": "chat header, Chat | Terminal switch"
+            "what": "chat header: seat, search, Chat | Terminal"
         },
         {
             "boxes": [[234, 170, 770, 592]],
