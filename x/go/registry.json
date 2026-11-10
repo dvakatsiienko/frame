@@ -154,7 +154,8 @@
                 "restore"
             ],
             "touches": [
-                "$X_STATE/gates-green.tsv: a green --dry's tree, read by a real commit of the same bytes"
+                "$X_STATE/gates-green.tsv: a green --dry's tree, read by a real commit of the same bytes",
+                "$X_STATE/commit-logs/: a refused commit's whole hook log, the newest 20 kept"
             ]
         },
         {

@@ -75,6 +75,11 @@
 ## lane — git
 
 - ✅ `x lane commit` commits only the named paths and prints the new sha
+- ⬜ a refused `x lane commit` keeps its whole hook log under the state dir
+  - makes: `$X_STATE/commit-logs/x-commit-<pid>.log`, mode 0600, the newest 20 kept
+  - given a commit its hooks refuse, then the failure names that file beside the hook's own red lines, and the file exists
+  - given a refused commit and a green one, then the temp dir holds no `x-commit-*.log`
+  - decision: kept with a cap, not removed once read: x cannot see a read, and an agent opens the log a turn later (FRM-384)
 - ⬜ `x lane commit` names a path list that arrived as one word
   - given one path argument holding a space that names no file
   - when `x lane commit <msg> -- "a.ts b.ts"` runs
@@ -331,6 +336,7 @@
   - given the lane pr verbs pr-open, merge-auto, push and restack, then a contract test, reading go tokens so a comment naming a verb never counts, reds any verb with no test case in plain mode (a file that builds without the add-on) or in stacked mode (a file behind the build tag); built out, only the plain half is held
   - decision: two pr modes, plain in core and stacked in the add-on; stacked support never breaks a plain pr, and the «easy to delete» clauses stay until the stacked-prs trial's verdict (dima, o127, o128; `PRODUCT.md` § two pr modes)
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
+  - given any staged work, then it refuses before the fetch and the merge, names the staged files, and `next` is the order: `x lane commit` of those files, then `x lane merge-main` again; an unstaged edit merges as before
 - ✅ a merge-main that git refuses without conflicts names git's reason
   - given an untracked file where origin/main adds one
   - when `x lane merge-main` runs
@@ -360,6 +366,11 @@
   - when `x lane decamp <path> --apply` runs
   - then the tree is gone and the shims point at the main checkout
   - decision: dima's `decamp` alias stays `git worktree remove` until he says otherwise (clio, 2026-10-08)
+- ⬜ `x lane decamp` and `x lane landed` read a tree's lock against its holder
+  - given a tree whose `git worktree lock` reason names a pid and a start time, as cc writes it
+  - when the pid is dead, or alive with another start time, then the tree stays, the line says the lock is stale and names `git worktree unlock <path>`
+  - when the pid is alive with that start time, or the lock names no pid, then it reads «a live session holds it» as before
+  - decision: x names the unlock and never runs it: a stale read is one `ps` away from a live session's tree (FRM-384)
 
 ## gate — a heavy check in its turn
 

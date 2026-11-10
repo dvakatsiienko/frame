@@ -654,6 +654,12 @@ func mergeMain(r *Run, _ []string, _ Flags) (any, error) {
 		return nil, err
 	}
 	r.Open(name)
+	// git stops a merge over staged work with a line that names no file; the order out of it is said here, before anything moves
+	if staged, _ := git("diff", "--cached", "--name-only"); staged.out != "" {
+		files := strings.Join(strings.Split(staged.out, "\n"), " ")
+		return nil, &Fail{Refused: true, Msg: "staged work blocks the merge: " + strings.ReplaceAll(staged.out, "\n", ", ") + "; nothing was fetched or merged",
+			Next: "x lane commit <msg-file> -- " + files + ", then x lane merge-main again"}
+	}
 	if err := r.Step("fetch", "git fetch origin main", func() (string, error) {
 		_, err := mustGit("fetch", "fetch", "-q", "origin", "main")
 		return "origin/main", err
@@ -1240,8 +1246,14 @@ func timeoutOnly(log string) bool {
 	return rows > 0 && !open
 }
 
+const commitLogsKept = 20
+
+// the whole log of a refused commit lives under the state dir, the newest few kept: nothing ever took one out of the temp dir
 func hookFail(log, next string) *Fail {
-	full := filepath.Join(os.TempDir(), fmt.Sprintf("x-commit-%d.log", os.Getpid()))
+	dir := filepath.Join(stateDir(), "commit-logs")
+	_ = os.MkdirAll(dir, 0o755)
+	keepNewest(dir, commitLogsKept)
+	full := filepath.Join(dir, fmt.Sprintf("x-commit-%d.log", os.Getpid()))
 	saved := os.WriteFile(full, []byte(log), 0o600) == nil
 	var why []string
 	for _, line := range nonBlank(log) {

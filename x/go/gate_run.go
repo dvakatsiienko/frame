@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
@@ -30,7 +31,7 @@ func gateRun(r *Run, args []string, _ Flags) (any, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
 	}
-	dropOldGateRuns(dir)
+	keepNewest(dir, gateRunsKept)
 	path := filepath.Join(dir, fmt.Sprintf("%s-%d.log", time.Now().UTC().Format("20060102T150405Z"), os.Getpid()))
 	log, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0o600)
 	if err != nil {
@@ -68,11 +69,20 @@ func queuedGateRun(command []string) []string {
 	return append([]string{script, "--long"}, command...)
 }
 
-// a log's name opens with its utc stamp, so the names sort oldest first
-func dropOldGateRuns(dir string) {
-	logs, _ := filepath.Glob(filepath.Join(dir, "*.log"))
-	slices.Sort(logs)
-	for _, old := range logs[:max(0, len(logs)-gateRunsKept+1)] {
-		_ = os.Remove(old)
+// keepNewest makes room for one more file in a dir of x's own logs: the oldest go, by write time, then by name
+func keepNewest(dir string, kept int) {
+	logs, _ := os.ReadDir(dir)
+	written := func(log os.DirEntry) time.Time {
+		info, err := log.Info()
+		if err != nil {
+			return time.Time{}
+		}
+		return info.ModTime()
+	}
+	slices.SortFunc(logs, func(a, b os.DirEntry) int {
+		return cmp.Or(written(a).Compare(written(b)), strings.Compare(a.Name(), b.Name()))
+	})
+	for _, old := range logs[:max(0, len(logs)-kept+1)] {
+		_ = os.Remove(filepath.Join(dir, old.Name()))
 	}
 }
