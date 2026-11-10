@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -37,14 +38,16 @@ func xGoReads(t *testing.T) []string {
 type outsideReadShape struct{ file, shape string }
 
 var outsideReadShapes = map[outsideReadShape]string{
-	{"gate_turn_test.go", `"../../" + gateQueueScript`}:       gateQueueScript,
-	{"gates_test.go", `readHookGates("../..",`}:               "lefthook.yaml",
-	{"x_go_reads_test.go", `readHookGates("../..",`}:          "lefthook.yaml",
-	{"as_test.go", `filepath.Abs("../..")`}:                   "",
-	{"replaces_test.go", `filepath.Abs("../..")`}:             "",
-	{"merge_cited_test.go", `filepath.Abs("../..")`}:          "",
-	{"gates_test.go", `filepath.Join("../..", xGoReadsFile)`}: xGoReadsFile,
-	{"gates_test.go", `filepath.Join("../..", path)`}:         "",
+	{"gate_turn_test.go", `"../../" + gateQueueScript`}:            gateQueueScript,
+	{"gate_run_test.go", `"../../" + gateQueueScript`}:             gateQueueScript,
+	{"gates_test.go", `readHookGates("../..",`}:                    "lefthook.yaml",
+	{"x_go_reads_test.go", `readHookGates("../..",`}:               "lefthook.yaml",
+	{"x_go_reads_test.go", `filepath.Join("../..", xGoReadsFile)`}: xGoReadsFile,
+	{"as_test.go", `filepath.Abs("../..")`}:                        "",
+	{"replaces_test.go", `filepath.Abs("../..")`}:                  "",
+	{"merge_cited_test.go", `filepath.Abs("../..")`}:               "",
+	{"gates_test.go", `filepath.Join("../..", xGoReadsFile)`}:      xGoReadsFile,
+	{"gates_test.go", `filepath.Join("../..", path)`}:              "",
 }
 
 var outsideLiteral = regexp.MustCompile(`"\.\./\.\./([^"]+)"`)
@@ -52,19 +55,38 @@ var outsideLiteral = regexp.MustCompile(`"\.\./\.\./([^"]+)"`)
 // what the built x reads from the frame tree it was built in: a test that runs x with no X_FRAME_ROOT reads the real file
 var builtXRead = regexp.MustCompile(`filepath\.Join\((frameRoot|sourceDir)\(\), (\S+?)[,)]`)
 
-// a list entry covers a read when it is the path, a file under the read's dir, or a dir holding the path
+// a list entry covers a read when it is the path, or a dir, ending in /, that is the read or holds it: one file under a
+// dir never covers a read of the whole dir
 func covered(listed []string, read string) bool {
 	for _, entry := range listed {
-		if entry == read || strings.HasPrefix(entry, read+"/") || strings.HasSuffix(entry, "/") && strings.HasPrefix(read, entry) {
+		if entry == read || strings.HasSuffix(entry, "/") && strings.HasPrefix(read+"/", entry) {
 			return true
 		}
 	}
 	return false
 }
 
-const skillsDir = "home/.claude/plugin-x/skills"
+func TestAReadIsCoveredByItsPathOrADirEntryAboveIt(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, entry, read string
+		want              bool
+	}{
+		{"the path itself", "script/a.sh", "script/a.sh", true},
+		{"a dir entry over a file in it", "script/", "script/a.sh", true},
+		{"a dir entry over the dir", "script/", "script", true},
+		{"one file under a dir, the whole dir read", "script/a.sh", "script", false},
+		{"a dir entry beside the read", "script/lib/", "script/a.sh", false},
+		{"a file whose name the read starts with", "script/a", "script/a.sh", false},
+	}
+	for _, c := range cases {
+		if got := covered([]string{c.entry}, c.read); got != c.want {
+			t.Errorf("%s: %s covers %s = %v, want %v", c.name, c.entry, c.read, got, c.want)
+		}
+	}
+}
 
-var testedSkill = regexp.MustCompile(`/x:([a-z][a-z-]*)`)
+const skillsDir = "home/.claude/plugin-x/skills"
 
 func TestXGoReadsNamesWhatTheBuiltXReadsFromTheFrameTree(t *testing.T) {
 	t.Parallel()
@@ -94,11 +116,14 @@ func TestXGoReadsNamesWhatTheBuiltXReadsFromTheFrameTree(t *testing.T) {
 					}
 					read = strings.TrimPrefix(literal, filepath.Join("..", "..")+"/")
 				}
-				if !covered(listed, read) {
-					t.Errorf("%s:%d: the built x reads %s from the frame tree, missing from %s", file, n+1, read, xGoReadsFile)
-				}
+				// the skills dir is read by a skill's name, so its cover is the per-skill rule below, never the whole dir:
+				// a dir entry would run these tests on every skill edit
 				if read == skillsDir {
 					skillReads = true
+					continue
+				}
+				if !covered(listed, read) {
+					t.Errorf("%s:%d: the built x reads %s from the frame tree, missing from %s", file, n+1, read, xGoReadsFile)
 				}
 			}
 		}
@@ -113,10 +138,17 @@ func TestXGoReadsNamesWhatTheBuiltXReadsFromTheFrameTree(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, m := range testedSkill.FindAllStringSubmatch(string(raw), -1) {
-			skill := skillsDir + "/" + m[1] + "/SKILL.md"
+		// brief.go's own reader of a skill's name, so every shape the lint follows to a SKILL.md is a shape this test follows
+		var seen []string
+		for _, m := range skillName.FindAllStringSubmatch(string(raw), -1) {
+			name := cmp.Or(m[1], m[2], m[3])
+			if slices.Contains(seen, name) {
+				continue
+			}
+			seen = append(seen, name)
+			skill := skillsDir + "/" + name + "/SKILL.md"
 			if _, err := os.Stat(filepath.Join("..", "..", skill)); err == nil && !slices.Contains(listed, skill) {
-				t.Errorf("%s names /x:%s, whose %s the built x reads; missing from %s", file, m[1], skill, xGoReadsFile)
+				t.Errorf("%s names the skill %s, whose %s the built x reads; missing from %s", file, name, skill, xGoReadsFile)
 			}
 		}
 	}

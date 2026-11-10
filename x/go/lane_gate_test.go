@@ -248,6 +248,32 @@ func TestGatePassesAGrownSkillTheMessageGroomed(t *testing.T) {
 	}
 }
 
+func TestGateRefusalPrintsThePatternItsPassLineMustMatch(t *testing.T) {
+	t.Parallel()
+	cases := map[string]struct {
+		files   map[string]string
+		msg     string
+		pattern string
+		says    string
+	}{
+		"a contract change, its pass line bulleted": {map[string]string{"app/api.ts": "changed\n"}, "change\n\n- glossary: unchanged — why\n", glossaryUnchanged.String(), "a leading `- `"},
+		"a grown skill":            {map[string]string{"skills/crew-codie/SKILL.md": "# coder\none\ntwo\nthree\na\nb\nc\n"}, "change\n", groomed.String(), ""},
+		"app code without its ftr": {map[string]string{"web/page.tsx": "export const Page = 2;\n"}, "change\n", ftrNone.String(), ""},
+	}
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			dir := gateRepo(t, c.files)
+
+			got := gate(t, dir, c.msg)
+
+			if got.code != 1 || !strings.Contains(got.stdout, c.pattern) || !strings.Contains(got.stdout, c.says) {
+				t.Errorf("exit %d, want 1 holding %q and %q:\n%s", got.code, c.pattern, c.says, got.stdout)
+			}
+		})
+	}
+}
+
 func TestGateRefusesAppCodeWithoutItsFtr(t *testing.T) {
 	t.Parallel()
 	cases := map[string]struct {

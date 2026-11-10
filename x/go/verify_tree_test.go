@@ -46,14 +46,14 @@ func buildVerifyWorld(t *testing.T, root string) {
 	gitT(t, main, "config", "url."+origin+".pushInsteadOf", "https://github.com/o/r.git")
 	gitT(t, main, "push", "-q", "origin", "main")
 
-	gitT(t, main, "switch", "-q", "-c", "coder/x")
+	gitT(t, main, "switch", "-q", "-c", "codie/x")
 	write(t, filepath.Join(main, "change.txt"), "the pr's change\n")
 	gitT(t, main, "add", "change.txt")
 	gitT(t, main, "commit", "-q", "-m", "the pr's change")
 	write(t, filepath.Join(root, "head"), gitT(t, main, "rev-parse", "HEAD"))
 	gitT(t, main, "push", "-q", "origin", "HEAD:refs/pull/7/head")
 	gitT(t, main, "switch", "-q", "main")
-	gitT(t, main, "branch", "-q", "-D", "coder/x")
+	gitT(t, main, "branch", "-q", "-D", "codie/x")
 }
 
 func TestVerifyTreeSeedsAWorktreeOfTheHead(t *testing.T) {

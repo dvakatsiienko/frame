@@ -49,11 +49,13 @@ var (
 	npmScoped  = regexp.MustCompile(`^@[a-z0-9][\w.-]*/[a-z0-9][\w.-]*(?:@[\w.^~-]+)?$`)
 	// a cc slash command (`/clear`, `/clio:boot`) is one segment from the root: never a path to check
 	slashCommandToken = regexp.MustCompile(`^/[a-z][\w:-]*$`)
-	branchShape       = regexp.MustCompile(`^(?:scratch|codie|coder|worktree|claude)/[\w.+-]+$`)
-	jevWord           = regexp.MustCompile(`(?i)\bjev\b`)
-	reuseWord         = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
-	keepWord          = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
-	otherPush         = regexp.MustCompile(`(?i)\b(?:clio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
+	// a file or dir of one mod, never the mods dir alone: a fence names that
+	modPath     = regexp.MustCompile(`plugin-x/mods/x-mod-[\w-]+`)
+	branchShape = regexp.MustCompile(`^(?:scratch|codie|worktree|claude)/[\w.+-]+$`)
+	jevWord     = regexp.MustCompile(`(?i)\bjev\b`)
+	reuseWord   = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
+	keepWord    = regexp.MustCompile(`(?i)\bkeep(?:s|ing)?\b`)
+	otherPush   = regexp.MustCompile(`(?i)\b(?:clio|the coordinator|dima)\s+(?:will\s+|then\s+)?push(?:es)?\b`)
 	// a skill however it is named: prefixed, a slash command, «the <name> skill», or any hyphenated word (`to-tickets`);
 	// a word naming no skill reads no file
 	skillName  = regexp.MustCompile("(?:\\b(?:x:|mattpocock-skills:|matt's `?)|(?:^|\\s)/(?:x:)?)([a-z][\\w-]*)|\\b([a-z][\\w-]*)`? skill\\b|\\b([a-z]+(?:-[a-z]+)+)\\b")
@@ -381,7 +383,7 @@ func missingTickets(ids map[string]int) ([]string, error) {
 // named skill's SKILL.md, "" when there is none
 func lint(lines []briefLine, skill func(name string) string) []finding {
 	var found []finding
-	jevAt, pushAt, hasBudget, skipsQuiz := 0, 0, false, false
+	jevAt, pushAt, modAt, hasBudget, skipsQuiz, namesAuthoring := 0, 0, 0, false, false, false
 	var skills []string
 	skillAt := map[string]int{}
 	for _, line := range lines {
@@ -418,6 +420,14 @@ func lint(lines []briefLine, skill func(name string) string) []finding {
 			jevAt = line.n
 		}
 		hasBudget = hasBudget || strings.Contains(strings.ToLower(text), "budget")
+		if modAt == 0 && modPath.MatchString(text) {
+			modAt = line.n
+		}
+		namesAuthoring = namesAuthoring || strings.Contains(text, "plugin-authoring")
+	}
+	// a mod's hooks contract lives in cc's own skill, which no brief router loads for a member
+	if modAt > 0 && !namesAuthoring {
+		found = append(found, finding{modAt, "lint", "mod path", "a brief that names a cc mod's files names the `plugin-authoring` skill to load first"})
 	}
 	if jevAt > 0 && !hasBudget {
 		found = append(found, finding{jevAt, "lint", "jev", "a brief that touches jev names its budget"})

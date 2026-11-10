@@ -738,9 +738,9 @@ func decampMerged(d *mergeDecision) []string {
 	return notes
 }
 
-// only a lane's own branch shapes go by themselves; coder/ is a branch cut before the rename
+// only a lane's own branch shape goes by itself
 func isLaneBranch(ref string) bool {
-	return strings.HasPrefix(ref, "codie/") || strings.HasPrefix(ref, "coder/")
+	return strings.HasPrefix(ref, "codie/")
 }
 
 // the sha origin holds for a branch, "" with none or with no origin at all

@@ -24,6 +24,8 @@ type setLookup struct {
 	Issue struct {
 		ID         string             `json:"id"`
 		Identifier string             `json:"identifier"`
+		Title      string             `json:"title"`
+		SortOrder  float64            `json:"sortOrder"`
 		Priority   int                `json:"priority"`
 		Estimate   *float64           `json:"estimate"`
 		State      named              `json:"state"`
@@ -44,6 +46,7 @@ type setLookup struct {
 		} `json:"team"`
 	}] `json:"labels"`
 	Parent   *struct{ ID, Identifier string } `json:"parent"`
+	Place    *placedIssue                     `json:"place"`
 	Projects connection[projectRef]           `json:"projects"`
 	Users    connection[idName]               `json:"users"`
 }
@@ -73,7 +76,7 @@ func pickByName(options []idName, name, kind string) (idName, error) {
 		Next: "x linear set <id> --" + kind + " <one of them>"}
 }
 
-var setFields = []string{"state", "priority", "estimate", "parent", "project", "milestone", "delegate", "add-label", "remove-label"}
+var setFields = []string{"state", "priority", "estimate", "parent", "project", "milestone", "delegate", "add-label", "remove-label", "title", "after", "before"}
 
 // set lands every named field as one issueUpdate; names resolve in one lookup, labels as current + adds − removes
 func linearSet(r *Run, args []string, flags Flags) (any, error) {
@@ -98,13 +101,28 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 			return nil, err
 		}
 	}
+	place, side := given["after"], "after"
+	if given["before"] != "" {
+		if place != "" {
+			return nil, usageFail("--after and --before name one place each: give one", "x linear set --help")
+		}
+		place, side = given["before"], "before"
+	}
+	if place != "" {
+		if err := checkIDs([]string{place}, "linear set"); err != nil {
+			return nil, err
+		}
+		if strings.EqualFold(place, id) {
+			return nil, usageFail(id+" cannot sit "+side+" itself", "x linear set --help")
+		}
+	}
 	actor, err := actorOf(flags)
 	if err != nil {
 		return nil, err
 	}
 
 	params := []string{"$id: String!"}
-	fields := []string{`issue(id: $id) { id identifier priority estimate state { name } parent { identifier title state { name } } delegate { name }
+	fields := []string{`issue(id: $id) { id identifier title sortOrder priority estimate state { name } parent { identifier title state { name } } delegate { name }
 		project { id name projectMilestones { nodes { id name } } } projectMilestone { name }
 		team { id states { nodes { id name } } } labels(first: 100) { nodes { id name } } }`}
 	vars := map[string]any{"id": id}
@@ -119,6 +137,10 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 	if given["parent"] != "" {
 		params, vars["parent"] = append(params, "$parent: String!"), given["parent"]
 		fields = append(fields, "parent: issue(id: $parent) { id identifier }")
+	}
+	if place != "" {
+		params, vars["place"] = append(params, "$place: String!"), place
+		fields = append(fields, "place: issue(id: $place) { id identifier sortOrder team { id } }")
 	}
 	if given["project"] != "" {
 		params, vars["project"] = append(params, "$project: String!"), given["project"]
@@ -147,6 +169,24 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 	input := map[string]any{}
 	var changes []string
 	change := func(field, old, new string) { changes = append(changes, field+": "+orDash(old)+" → "+new) }
+	if title := given["title"]; title != "" {
+		input["title"] = title
+		change("title", issue.Title, title)
+	}
+	if place != "" {
+		if found.Place == nil || found.Place.ID == "" {
+			return nil, &Fail{Refused: true, Msg: "no ticket " + place + " to place " + id + " " + side, Next: "x linear list --search " + place}
+		}
+		if found.Place.Team.ID != issue.Team.ID {
+			return nil, &Fail{Refused: true, Msg: place + " is another team's ticket: the order is one team's", Next: "x linear read " + id + " " + place}
+		}
+		order, err := orderBeside(r, actor, issue.Team.ID, issue.Identifier, *found.Place, side)
+		if err != nil {
+			return nil, err
+		}
+		input["sortOrder"] = order
+		changes = append(changes, fmt.Sprintf("order: %s → %s, %s %s", plainNumber(issue.SortOrder), plainNumber(order), side, found.Place.Identifier))
+	}
 	if name := given["state"]; name != "" {
 		state, err := pickByName(issue.Team.States.Nodes, name, "state")
 		if err != nil {

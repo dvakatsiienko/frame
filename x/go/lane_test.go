@@ -352,7 +352,7 @@ func TestCommitGatesOnTheCiJobsOnlyOnMain(t *testing.T) {
 		{"a green go test commits", "main", "mod/m.go", map[string]string{"mod/m_test.go": goTest(true)}, true},
 		{"a red typecheck refuses", "main", "src/a.ts", map[string]string{"package.json": `{"scripts":{"typecheck":"exit 1","test":"exit 0"}}`}, false},
 		{"a red vitest refuses", "main", "src/a.ts", map[string]string{"package.json": `{"scripts":{"typecheck":"exit 0","test":"exit 1"}}`}, false},
-		{"a pr branch skips the jobs", "coder/x", "mod/m.go", map[string]string{"mod/m_test.go": goTest(false)}, true},
+		{"a pr branch skips the jobs", "codie/x", "mod/m.go", map[string]string{"mod/m_test.go": goTest(false)}, true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -972,13 +972,13 @@ func bodyFile(t *testing.T) string {
 
 func TestPrOpenOpensOntoMain(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a")
+	clone := layers(t, "codie/FRM-1-a")
 	env, log := ghRecorder(t, prCreated)
 
 	got := xIn(t, clone, env, "lane", "pr-open", "--apply", "a title", bodyFile(t))
 
 	calls := strings.TrimSpace(read(t, log))
-	if got.code != 0 || !strings.HasPrefix(calls, "ghs_coder pr create --base main --head coder/FRM-1-a ") || strings.Contains(calls, "\n") {
+	if got.code != 0 || !strings.HasPrefix(calls, "ghs_coder pr create --base main --head codie/FRM-1-a ") || strings.Contains(calls, "\n") {
 		t.Fatalf("exit %d, gh calls %q, want one pr create onto main as the codie app\n%s", got.code, calls, got.stdout)
 	}
 }

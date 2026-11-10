@@ -70,7 +70,7 @@ func laneGate(r *Run, args []string, flags Flags) (any, error) {
 	}
 	if !ftrNone.Match(msg) {
 		for _, ftr := range ftrMissing(tree, nil) {
-			refusals = append(refusals, fmt.Sprintf("%s's code is staged without %s — stage its ftr line, or add a bare line «ftr: none» to the commit body when no feature changed — no bullet, no indent", path.Dir(ftr), ftr))
+			refusals = append(refusals, fmt.Sprintf("%s's code is staged without %s — stage its ftr line, or add a bare line «ftr: none» to the commit body when no feature changed — no bullet, no indent%s", path.Dir(ftr), ftr, matchedBy(ftrNone)))
 		}
 	}
 	for _, line := range append(nudges, refusals...) {
@@ -146,6 +146,11 @@ func underPath(file, listed string) bool {
 	return file == listed || strings.HasSuffix(listed, "/") && strings.HasPrefix(file, listed)
 }
 
+// the tail of a refusal a message line lifts: the exact pattern that line is read by, so nobody guesses its shape twice
+func matchedBy(pass *regexp.Regexp) string {
+	return "; the line must match " + pass.String()
+}
+
 func contractRefusals(tree string, staged []stagedFile) []string {
 	var refusals []string
 	for _, c := range glossaryContexts(tree) {
@@ -170,8 +175,8 @@ func contractRefusals(tree string, staged []stagedFile) []string {
 		if c.adr != "" {
 			missing += " or a new adr in " + c.adr
 		}
-		refusals = append(refusals, fmt.Sprintf("%s's contract changed (%s) without %s — stage the glossary line the change moved, or add «glossary: unchanged — <why>» to the message",
-			c.name, strings.Join(touched, ", "), missing))
+		refusals = append(refusals, fmt.Sprintf("%s's contract changed (%s) without %s — stage the glossary line the change moved, or add «glossary: unchanged — <why>» to the message, at column 0: a leading `- ` does not pass%s",
+			c.name, strings.Join(touched, ", "), missing, matchedBy(glossaryUnchanged)))
 	}
 	return refusals
 }
@@ -229,7 +234,7 @@ func skillRefusals(tree string, staged []stagedFile) []string {
 		}
 		// a rename counts as one only inside its own skill; a move in from anywhere else lands a new file
 		if f.status == "A" || f.old != "" && skillDir(f.old) != skillDir(f.name) {
-			refusals = append(refusals, fmt.Sprintf("%s is a new file in a crew-/guide- skill — read the skill whole and fold it in, or add a message line starting «groom: read whole — <what was cut>», at column 0 with no bullet", f.name))
+			refusals = append(refusals, fmt.Sprintf("%s is a new file in a crew-/guide- skill — read the skill whole and fold it in, or add a message line starting «groom: read whole — <what was cut>», at column 0 with no bullet%s", f.name, matchedBy(groomed)))
 			continue
 		}
 		paths := []string{f.name}
@@ -250,7 +255,7 @@ func skillRefusals(tree string, staged []stagedFile) []string {
 			}
 		}
 		if added-removed >= skillGrowth {
-			refusals = append(refusals, fmt.Sprintf("%s grows by %d non-blank lines net — read the skill whole and groom it, then add a message line starting «groom: read whole — <what was cut>», at column 0 with no bullet", f.name, added-removed))
+			refusals = append(refusals, fmt.Sprintf("%s grows by %d non-blank lines net — read the skill whole and groom it, then add a message line starting «groom: read whole — <what was cut>», at column 0 with no bullet%s", f.name, added-removed, matchedBy(groomed)))
 		}
 	}
 	return refusals

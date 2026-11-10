@@ -24,7 +24,7 @@
         },
         {
             "example": "x brief check brief.md --repo ~/frame",
-            "gist": "a spawn brief checked against the repo it names",
+            "gist": "a spawn brief read against its repo",
             "name": "brief"
         },
         {
@@ -55,13 +55,18 @@
         },
         {
             "example": "x mods edit push",
-            "gist": "a live mod edited in a scratch copy, landing only green and whole",
+            "gist": "a live mod edited safely in a scratch copy",
             "name": "mods"
         },
         {
             "example": "x verify red lib.go 'n > 0' 'n >= 0' lib_test.go",
             "gist": "a test proven real by a mutant, off the tree",
             "name": "verify"
+        },
+        {
+            "example": "x gate run -- pnpm typecheck",
+            "gist": "a heavy check in its queue turn, log kept",
+            "name": "gate"
         },
         {
             "example": "x schema lane --level short",
@@ -85,6 +90,23 @@
         }
     ],
     "verbs": [
+        {
+            "args": [
+                {
+                    "afterDash": true,
+                    "description": "the command and its arguments, as argv: never one quoted shell string",
+                    "isVariadic": true,
+                    "name": "command"
+                }
+            ],
+            "name": "gate run",
+            "needsApply": false,
+            "purpose": "run a typecheck, suite or other gate in the long queue turn; print its exit, its whole log's path, its last 30 lines",
+            "touches": [
+                "$X_STATE/gate-runs/: one log a run, the newest 50 kept",
+                "script/gate-queue.sh --long: the machine-wide long turn, its row in $X_STATE/gate-queue.log"
+            ]
+        },
         {
             "args": [
                 {
@@ -132,7 +154,8 @@
                 "restore"
             ],
             "touches": [
-                "$X_STATE/gates-green.tsv: a green --dry's tree, read by a real commit of the same bytes"
+                "$X_STATE/gates-green.tsv: a green --dry's tree, read by a real commit of the same bytes",
+                "$X_STATE/commit-logs/: a refused commit's whole hook log, the newest 20 kept"
             ]
         },
         {
@@ -169,7 +192,7 @@
             },
             "name": "lane rebase-main",
             "needsApply": true,
-            "purpose": "rebase a codie/* or coder/* branch onto origin/main, push it with a lease on the sha read back; no merge commit",
+            "purpose": "rebase a codie/* branch onto origin/main, push it with a lease on the sha read back; no merge commit",
             "steps": ["plan", "rebase", "push", "verify"]
         },
         {
@@ -250,7 +273,7 @@
             ],
             "flags": {
                 "list-stale": {
-                    "description": "print each worktree-*, codie/* and coder/* branch with merged or not and its age; removes nothing, needs no --apply",
+                    "description": "print each worktree-* and codie/* branch with merged or not and its age; removes nothing, needs no --apply",
                     "type": "boolean"
                 }
             },
@@ -769,12 +792,16 @@
                     "value": "member"
                 },
                 "set": {
-                    "description": "write this file back as the body; refused when the ticket changed since the pull",
+                    "description": "write this file back as the body; refused when the ticket changed since the pull, or the file would blank it, drop a W-line or break its sign block",
                     "type": "string",
                     "value": "file"
                 },
+                "shrink": {
+                    "description": "with --set: let a file under a fifth of the pulled size through; an empty file still refuses",
+                    "type": "boolean"
+                },
                 "to": {
-                    "description": "where the pull writes the body; default ~/.local/state/x/linear/bodies/<id>.md",
+                    "description": "where the pull writes the body; default ~/.local/state/x/linear/bodies/<session>/<id>.md, with no session id ~/.local/state/x/linear/bodies/<id>.md",
                     "type": "string",
                     "value": "file"
                 }
@@ -784,7 +811,7 @@
             "purpose": "pull a ticket's description to a file, or write it back only if the ticket is unchanged since",
             "touches": [
                 "linear's graphql api ($X_LINEAR_URL in tests), as the acting member",
-                "~/.local/state/x/linear/ — the pulled bodies and pulls.json, each pull's updatedAt ($X_STATE in tests)"
+                "~/.local/state/x/linear/ — the pulled bodies, a dir per session, and pulls.json, each session's pull with its updatedAt and size ($X_STATE in tests)"
             ]
         },
         {
@@ -801,10 +828,20 @@
                     "type": "string",
                     "value": "names"
                 },
+                "after": {
+                    "description": "place the ticket right after this one in its team's manual order; not with --before",
+                    "type": "string",
+                    "value": "id"
+                },
                 "as": {
                     "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
+                },
+                "before": {
+                    "description": "place the ticket right before this one in its team's manual order; not with --after",
+                    "type": "string",
+                    "value": "id"
                 },
                 "delegate": {
                     "description": "the member working it, by name: codie or clio; the assignee stays dima's",
@@ -846,11 +883,16 @@
                     "description": "a state of the ticket's team, by name",
                     "type": "string",
                     "value": "name"
+                },
+                "title": {
+                    "description": "the ticket's new title",
+                    "type": "string",
+                    "value": "text"
                 }
             },
             "name": "linear set",
             "needsApply": false,
-            "purpose": "update a ticket's state, labels, priority, estimate, parent, project, milestone or delegate by name",
+            "purpose": "update a ticket by name: state, labels, priority, estimate, parent, project, milestone, delegate, title, its place",
             "touches": [
                 "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
             ]
@@ -881,6 +923,36 @@
             "name": "linear link",
             "needsApply": false,
             "purpose": "relate a ticket to others — blocks, related or duplicate — in one request, by FRM-N ids",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the ticket the relation was made from, FRM-N or BYT-N",
+                    "name": "id"
+                },
+                {
+                    "description": "the relation: blocks, related or duplicate",
+                    "name": "kind"
+                },
+                {
+                    "description": "the tickets on the other end; one missing link removes nothing",
+                    "isVariadic": true,
+                    "name": "target"
+                }
+            ],
+            "flags": {
+                "as": {
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                }
+            },
+            "name": "linear unlink",
+            "needsApply": false,
+            "purpose": "remove a blocks, related or duplicate relation x linear link made, by FRM-N ids; a missing one removes nothing",
             "touches": [
                 "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
             ]

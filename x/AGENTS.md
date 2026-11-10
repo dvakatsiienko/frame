@@ -14,7 +14,7 @@ source file is newer.
   global flags, the exit codes and the usage line are derived (`go/registry.go`).
 - its run binds by name in `impls` (`go/main.go`); a verb in one and not the other fails a test.
 - `needsApply: true` for a verb that publishes or destroys: it splits into `Plan` and `Apply`; dispatch
-  exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal. three skip it, each guarded by its own check: the `handoff` verbs, the `linear` writes (`linear archive` keeps `--apply`), `lane review`; the reasons, and the shape a new exception needs: `docs/adr/X-0003`.
+  exits 4 with the exact confirm command until `--apply`, or asks a yes/no on a terminal. four skip it, each guarded by its own check: the `handoff` verbs, the `linear` writes (`linear archive` keeps `--apply`), `lane review`, and `lane push` of a `codie/*` branch from its own linked tree (`Unasked` in `go/main.go`; the pr's gates stand before main); the reasons, and the shape a new exception needs: `docs/adr/X-0003`.
 - a verb that took over a script names it in `replaces:`; `replaces_test.go` stays red while that
   file exists or any tracked file outside history names it. `touches:` names what the verb reads or
   writes outside the repo; `x schema` prints both.

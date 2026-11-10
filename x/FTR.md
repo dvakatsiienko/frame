@@ -75,6 +75,11 @@
 ## lane — git
 
 - ✅ `x lane commit` commits only the named paths and prints the new sha
+- ⬜ a refused `x lane commit` keeps its whole hook log under the state dir
+  - makes: `$X_STATE/commit-logs/x-commit-<pid>.log`, mode 0600, the newest 20 kept
+  - given a commit its hooks refuse, then the failure names that file beside the hook's own red lines, and the file exists
+  - given a refused commit and a green one, then the temp dir holds no `x-commit-*.log`
+  - decision: kept with a cap, not removed once read: x cannot see a read, and an agent opens the log a turn later (FRM-384)
 - ⬜ `x lane commit` names a path list that arrived as one word
   - given one path argument holding a space that names no file
   - when `x lane commit <msg> -- "a.ts b.ts"` runs
@@ -141,6 +146,12 @@
 - ✅ `x lane push` pushes HEAD's sha and reads the remote back
   - given a remote that answers a 5xx, then the push tries again, up to 3 tries 2 s and 4 s apart, and lands once the remote recovers
   - given a 4xx or a hook refusal, then it fails on the first try
+- ⬜ `x lane push` runs with no `--apply` from a `codie/*` branch's own tree
+  - given a cwd in a linked worktree whose checked-out branch is `codie/*`
+  - when `x lane push` runs with no `--apply`
+  - then it pushes and reads the remote back; any other branch, and a `codie/*` branch in the main checkout, prints its plan and exits 4 as before
+  - given a `worktree-fork-*` branch in a linked worktree, then it refuses, with `--apply` too, and `next` is the wing's landing door, `tree-sync.sh land`
+  - decision: the branch is read from the tree, no session lookup; the plan's `own` field says which way it went (FRM-384)
 - ⬜ `x lane pr-open` opens a pr as the codie app
 - ✅ `x lane review <pr>` keeps the ci review on the pr head
   - given a pr with no review round yet, under the 1-round cap (dima, 2026-10-22)
@@ -158,6 +169,7 @@
   - given an app's code (the nearest dir holding `FTR.md`, or an ftr whose `claims:` names the path) staged without that `FTR.md`, then it exits 1 naming it; a bare line «ftr: none» passes it
   - given a merge in progress, then it passes untouched
   - then a pass line takes an em dash or an ascii `-`/`--` before its why
+  - then a refusal a message line passes ends with that line's exact pattern, «the line must match <regex>», and the glossary refusal says a leading `- ` does not pass
   - then a map row names its context as `**name**` with its glossary in backticks (frame) or as a link to the glossary (bytes)
   - decision: each half has a message line that passes it on purpose, so the gate refuses a forgotten step, never a decision; the root repo context carries no `contract:` line, since every commit touches it (FRM-367)
 - ✅ `x lane gate --held` lints a layer before any rebase
@@ -325,6 +337,8 @@
   - given the lane pr verbs pr-open, merge-auto, push and restack, then a contract test, reading go tokens so a comment naming a verb never counts, reds any verb with no test case in plain mode (a file that builds without the add-on) or in stacked mode (a file behind the build tag); built out, only the plain half is held
   - decision: two pr modes, plain in core and stacked in the add-on; stacked support never breaks a plain pr, and the «easy to delete» clauses stay until the stacked-prs trial's verdict (dima, o127, o128; `PRODUCT.md` § two pr modes)
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
+  - given any staged work, then it refuses before the fetch and the merge, names the staged files, and `next` is the order: `x lane commit` of those files, then `x lane merge-main` again; an unstaged edit merges as before
+  - given a merge already stopped on a conflict, then a second run names the unmerged files and `next` is to resolve them, never to commit them as staged work
 - ✅ a merge-main that git refuses without conflicts names git's reason
   - given an untracked file where origin/main adds one
   - when `x lane merge-main` runs
@@ -340,11 +354,11 @@
   - given the main checkout itself
   - then it is refused as a usage error
 - ⬜ a lane's end leaves nothing behind (FRM-509)
-  - given `x lane merge-auto` merges a pr, then its clean tree and its local and remote `codie/*` or `coder/*` branch go in that run; a tree on it, a rebase or bisect stopped on it in another tree, an open pr based on it, or a commit past the merged head keeps the branch, named; `x lane landed <ticket> --pr <n> --apply` takes what the reason no longer holds, its tree gone since or never there, through a delete leased on the read sha, never a force, and its lines name «branch — <ref> gone» (FRM-553)
+  - given `x lane merge-auto` merges a pr, then its clean tree and its local and remote `codie/*` branch go in that run; a tree on it, a rebase or bisect stopped on it in another tree, an open pr based on it, or a commit past the merged head keeps the branch, named; `x lane landed <ticket> --pr <n> --apply` takes what the reason no longer holds, its tree gone since or never there, through a delete leased on the read sha, never a force, and its lines name «branch — <ref> gone» (FRM-553)
   - given a clean `verify-<sha>` tree whose sha is on origin/main, any lane's, or a `worktree-*` branch no tree holds whose commits main holds, when `x lane landed <ticket> --apply` runs, then the tree is decamped and the branch dropped through the same lease, each named; a dirty verify tree or a branch main lacks stays, named on a line that never holds the landing (FRM-553, FRM-509's last step)
   - given a `worktree-fork-*` tree, when `x lane decamp <path> --apply` runs, then its branch goes when main holds every commit, by ancestry or a squash, read commit by commit; else it stays, named. a tree holding a change, an ignored file or a `.scratch` file stays, on any branch; the seed's link does not count
-  - given a `codie/*` or `coder/*` tree, when `x lane decamp <path> --apply` takes it, then its branch goes local and on origin when github names a merged pr of that branch holding its origin tip, through the lease `x lane landed` uses; a local commit past it, an open pr based on it, or no merged pr keeps it, named (FRM-553)
-  - given `x lane decamp --list-stale`, then each `worktree-*`, `codie/*` and `coder/*` branch prints with merged or not and its age; nothing is removed
+  - given a `codie/*` tree, when `x lane decamp <path> --apply` takes it, then its branch goes local and on origin when github names a merged pr of that branch holding its origin tip, through the lease `x lane landed` uses; a local commit past it, an open pr based on it, or no merged pr keeps it, named (FRM-553)
+  - given `x lane decamp --list-stale`, then each `worktree-*` and `codie/*` branch prints with merged or not and its age; nothing is removed
   - given a quick lane mid-verify, then `x lane landed` names its verify tree as under review, and it stays
   - given a ticket with an open `blocks` relation that landed, then `x lane landed` prints it on a `freed` line, unless another open ticket still blocks it
   - given a quick lane's own commit added a rule to `WARN_ONLY`, then `x lane landed` reds it while main still lists it, as with `--pr`
@@ -354,6 +368,24 @@
   - when `x lane decamp <path> --apply` runs
   - then the tree is gone and the shims point at the main checkout
   - decision: dima's `decamp` alias stays `git worktree remove` until he says otherwise (clio, 2026-10-08)
+- ⬜ `x lane decamp` and `x lane landed` read a tree's lock against its holder
+  - given a tree whose `git worktree lock` reason names a pid and a start time, as cc writes it
+  - when the pid is dead, or alive with another start time, then the tree stays, the line says the lock is stale and names `git worktree unlock <path>`
+  - when the pid is alive with that start time, or the lock names no pid, then it reads «a live session holds it» as before
+  - decision: x names the unlock and never runs it: a stale read is one `ps` away from a live session's tree (FRM-384)
+
+## gate — a heavy check in its turn
+
+- ⬜ `x gate run -- <command…>` runs a gate in the long turn and keeps its whole log
+  - makes: `$X_STATE/gate-runs/<utc stamp>-<pid>.log`, mode 0600, stdout and stderr in the order written; the newest 50 kept, a file of any other name in that dir left alone
+  - given a command after `--`, as argv
+  - when it runs
+  - then it waits for the long turn through `script/gate-queue.sh --long`, and stdout holds `exit <code>`, `log <path>` and the log's last 30 lines; the verb exits with the command's code, with no envelope
+  - given a command that takes the long turn itself, then it runs at once inside the runner's turn
+  - given no command, a word ahead of the `--` or no `--` at all, or a first word that is no program (one quoted shell string), then exit 2, nothing run and no log
+  - decision: the long turn, not the gate turn: a commit's hook never waits behind a typecheck or a suite (FRM-384)
+  - decision: argv, never a shell string, so `x-mod-guard` reads the wrapped command's own words
+  - decision: the last 30 lines and no first-error print (dima's sign, FRM-384); the log path is the door for more
 
 ## handoff — the CST store
 
@@ -409,6 +441,9 @@
   - given a rate with no n, an exit line with no surface, an exit line into `_clio/`, a relayed approval with no time, jev with no budget, «clio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
   - when it runs
   - then each finding names its line and the rule
+- ⬜ `x brief check` flags a mod path with no `plugin-authoring`
+  - given a brief that names a file or dir of one cc mod (`plugin-x/mods/x-mod-<name>…`; a file at the mods root is no mod's) and never names `plugin-authoring`, then it fails naming the line; with the skill named anywhere it passes
+  - given a brief that names only the mods dir itself, as a fence does, or no mod path, then nothing is flagged
 - ✅ `x brief check` refuses a skill that waits on the user's approval
   - given a brief names a skill (`x:<name>`, `mattpocock-skills:<name>`, matt's `<name>`, `/<name>`, «the <name> skill», or any hyphenated word naming one) whose `SKILL.md` asks to «quiz the user» or iterate «until the user approves», and no line skips it («skip … quiz»; an unrelated «no push until dima approves» does not)
   - when it runs
@@ -502,12 +537,21 @@
   - given an empty list and a name linear does not know (a typo'd state, label, project, milestone or team), then exit 2 naming it
   - decision: no default team — a bare list covers both teams (dima, 2026-10-07)
 - ✅ `x linear body` pulls a description to a file and writes it back safely
-  - makes: the body in `~/.local/state/x/linear/bodies/<id>.md` (or `--to <file>`), and the pull's `updatedAt` in `~/.local/state/x/linear/pulls.json`
+  - makes: the body in `~/.local/state/x/linear/bodies/<session>/<id>.md` (or `--to <file>`), and the session's pull, its `updatedAt` and size, in `~/.local/state/x/linear/pulls.json`
   - given a ticket
   - when `x linear body <id>` runs, then its description lands in the file, byte for byte
   - when `x linear body <id> --set <file>` runs after a pull and the ticket is unchanged, then the file becomes the description, and the envelope names the actor
   - given the ticket changed since the pull (a peer's edit, dima's words), then nothing is written: exit 1, and `next` pulls theirs beside yours and diffs the two
   - given no pull of that ticket, then nothing is written and `next` is the pull
+- ⬜ `x linear body --set` refuses a file that would damage the body
+  - given a ticket pulled at N bytes
+  - when `--set` gets a file under N/5, then it refuses naming both sizes and writes nothing; `--shrink` lets it through; N stays the largest size since the pull, so a later set is held against it too
+  - given an empty file, or one of blank lines only, then it refuses, with `--shrink` too
+  - given a file missing a W-line the body held, then it refuses naming the lost ids; a W-line is its wish and its number (`PK-363:W5` and `FRM-384:W5` are two, a bare `W5` is the ticket's own); a reworded or added W-line passes
+  - given a body with a `## signed` block, when the file's block lost or changed an old line, or gained none, then it refuses and names `ticket-sign.ts changed`; with one new line it passes
+  - given two sessions that pulled the same ticket, when one sets and the other then sets its older file, then the second refuses: each session's pull has its own record and its own file
+  - decision: a signed ticket is read from the body's `## signed` block, not the `signed` label, which leaves at dispatch (FRM-384)
+  - decision: a pull made before this change has no record under its session, so its set refuses once and names the pull
 - ✅ `x linear set` updates a ticket by names, in one write
   - given `--estimate XS|S|M` (1 · 2 · 3) or a number, then that estimate goes out; any other word is refused naming XS · S · M (FRM-399)
   - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate codie|clio`, `--add-label`, `--remove-label` — names, never ids
@@ -521,6 +565,19 @@
   - given a ticket, a kind and one or more targets, all by `FRM-N`
   - when it runs, then one request creates a relation per target, and the envelope names the actor
   - given another kind, then exit 2 naming the three
+- ⬜ `x linear set --title` changes a ticket's title
+  - given `--title <text>`, alone or beside other fields, then the same one write carries it and the change prints as `title: old → new`
+- ⬜ `x linear set --after|--before <id>` places a ticket beside another in its team's order
+  - given a ticket and another of the same team
+  - when `x linear set <id> --after <other>` runs, then its sort order lands halfway between the other's and the next ticket's in the team's manual order, the moving ticket left out; `--before` takes the one above; at an end of the order it lands one step past
+  - then the change prints as `order: old → new, after <other>`
+  - given both flags, the ticket itself, or free text for the other, then exit 2 and nothing is sent; given a ticket linear does not know, another team's, one the team's order never shows, or two neighbours with no number left between their sort orders, then exit 1 and nothing is written
+  - decision: the neighbour is read by walking the manual order a page of 250 at a time: linear's ticket filter has no sort-order field (schema read 2026-11-10)
+- ⬜ `x linear unlink <id> blocks|related|duplicate <targets…>` removes relations `x linear link` made
+  - given a ticket that holds the relation to each target (`related` from either side, `blocks` and `duplicate` from this ticket only)
+  - when it runs, then one request deletes them and each prints as `<kind>: <target> → —`; a target named twice is deleted once
+  - given one target with no such link, a link that runs the other way, or a ticket linear does not know, then exit 1 naming it and nothing is removed
+  - decision: the name is `unlink`, dima's typed word over `link-remove` (FRM-384, 2026-11-10: «unlink is better, keep unlink»)
 - ✅ `x linear comment <id> --body-file <f>` posts a comment
   - given a markdown file with backticks, `$VAR` and quotes
   - when it runs, then the comment holds the file byte for byte, and the envelope prints the actor and the comment's url

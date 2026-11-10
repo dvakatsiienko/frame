@@ -30,6 +30,8 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 
 - **caller** — who ran a verb, one value per trace: `dima`, `cc`, `cloud-chat`, `hook`, `ssh` or `other`
 - **actor** — the fleet member a call acts as on an outside service (`clio`, `codie`, `dima`); `x as` picks it. the caller runs the verb, the actor signs the write. avoid: user, identity
+- **order** — a team's manual order of tickets in linear: one sort-order number a ticket, ascending from the top; `x linear set --after|--before` moves one ticket in it. avoid: rank, position
+- **pull** — one session's read of a ticket body to a file through `x linear body`: its record holds the file, the `updatedAt` and the size a later `--set` is checked against; a peer's pull of the same ticket is another pull. avoid: fetch, checkout
 
 ## the trace and what it counts
 
@@ -49,6 +51,8 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **lane** (the family) — the git door for one session's branch: commit, push, pr, merge main, unlock, seed, decamp, gate. 📌 not the fleet's lane, a working day with dima present (`fleet-vibe`)
 - **gate** — the commit-msg check `x lane gate`: a contract change carries its glossary or adr, a growing skill was groomed, app code carries its ftr line; `--held` is its other mode, the purpose lint over a local layer's own registry files
 - **gate turn** — the one machine-wide slot a commit or push hook runs in, first come, through `script/gate-queue.sh`; x takes it itself, a wrapper never holds it. avoid: queue lock
+- **long turn** — the second machine-wide slot, for a long round (a suite by hand, mutants, a typecheck), through `script/gate-queue.sh --long`; a commit never waits behind it
+- **gate runner** — `x gate run`: one command in the long turn, its whole log kept in a file, its exit code kept. 📌 not the **gate**, which is the commit-msg check
 - **test-cpu-budget** — a suite's line in user + sys cpu-seconds, one row in `script/test-cpu-budget.tsv`; only a whole run counts, and it reds at the go doors by hand, never in ci, at a commit, or on a git other than `git-slim`, which the line is set on
 - **contract** — the files a context's glossary defines, listed under the context in `GLOSSARY-MAP.md`; x's is its registry
 - **groom** — reading a crew- or guide- skill whole and cutting before a commit that grows it

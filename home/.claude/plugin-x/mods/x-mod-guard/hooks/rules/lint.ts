@@ -161,7 +161,7 @@ export function lint(
                 )));
     if (pipedTo && isGate)
         return {
-            door: 'run the gate unpiped and read its exit code',
+            door: 'x gate run -- <command…>, unpiped: it prints the exit code and the last 30 lines',
             rule: 'gate-pipe',
             targets: [pipedTo],
             why: `| ${pipedTo} turns a red gate quiet`,
