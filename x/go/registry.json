@@ -791,9 +791,13 @@
                     "value": "member"
                 },
                 "set": {
-                    "description": "write this file back as the body; refused when the ticket changed since the pull",
+                    "description": "write this file back as the body; refused when the ticket changed since the pull, or the file would blank it, drop a W-line or break its sign block",
                     "type": "string",
                     "value": "file"
+                },
+                "shrink": {
+                    "description": "with --set: let a file under a fifth of the pulled size through; an empty file still refuses",
+                    "type": "boolean"
                 },
                 "to": {
                     "description": "where the pull writes the body; default ~/.local/state/x/linear/bodies/<id>.md",
@@ -806,7 +810,7 @@
             "purpose": "pull a ticket's description to a file, or write it back only if the ticket is unchanged since",
             "touches": [
                 "linear's graphql api ($X_LINEAR_URL in tests), as the acting member",
-                "~/.local/state/x/linear/ — the pulled bodies and pulls.json, each pull's updatedAt ($X_STATE in tests)"
+                "~/.local/state/x/linear/ — the pulled bodies, a dir per session, and pulls.json, each session's pull with its updatedAt and size ($X_STATE in tests)"
             ]
         },
         {

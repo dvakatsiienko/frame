@@ -515,12 +515,21 @@
   - given an empty list and a name linear does not know (a typo'd state, label, project, milestone or team), then exit 2 naming it
   - decision: no default team — a bare list covers both teams (dima, 2026-10-07)
 - ✅ `x linear body` pulls a description to a file and writes it back safely
-  - makes: the body in `~/.local/state/x/linear/bodies/<id>.md` (or `--to <file>`), and the pull's `updatedAt` in `~/.local/state/x/linear/pulls.json`
+  - makes: the body in `~/.local/state/x/linear/bodies/<session>/<id>.md` (or `--to <file>`), and the session's pull, its `updatedAt` and size, in `~/.local/state/x/linear/pulls.json`
   - given a ticket
   - when `x linear body <id>` runs, then its description lands in the file, byte for byte
   - when `x linear body <id> --set <file>` runs after a pull and the ticket is unchanged, then the file becomes the description, and the envelope names the actor
   - given the ticket changed since the pull (a peer's edit, dima's words), then nothing is written: exit 1, and `next` pulls theirs beside yours and diffs the two
   - given no pull of that ticket, then nothing is written and `next` is the pull
+- ⬜ `x linear body --set` refuses a file that would damage the body
+  - given a ticket pulled at N bytes
+  - when `--set` gets a file under N/5, then it refuses naming both sizes and writes nothing; `--shrink` lets it through
+  - given an empty file, or one of blank lines only, then it refuses, with `--shrink` too
+  - given a file missing a W-line the body held, then it refuses naming the lost numbers; a reworded or added W-line passes
+  - given a body with a `## signed` block, when the file's block lost or changed an old line, or gained none, then it refuses and names `ticket-sign.ts changed`; with one new line it passes
+  - given two sessions that pulled the same ticket, when one sets and the other then sets its older file, then the second refuses: each session's pull has its own record and its own file
+  - decision: a signed ticket is read from the body's `## signed` block, not the `signed` label, which leaves at dispatch (FRM-384)
+  - decision: a pull made before this change has no record under its session, so its set refuses once and names the pull
 - ✅ `x linear set` updates a ticket by names, in one write
   - given `--estimate XS|S|M` (1 · 2 · 3) or a number, then that estimate goes out; any other word is refused naming XS · S · M (FRM-399)
   - given `--state`, `--priority`, `--estimate`, `--parent FRM-N`, `--project`, `--milestone`, `--delegate codie|clio`, `--add-label`, `--remove-label` — names, never ids

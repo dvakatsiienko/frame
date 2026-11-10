@@ -3,14 +3,33 @@ package main
 import (
 	"cmp"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
+	"strings"
 )
 
-// a pull is remembered per ticket: where its body went and the updatedAt it was read at
+// a pull is remembered per ticket and session: where its body went, the updatedAt it was read at and its size
 type pull struct {
 	File      string `json:"file"`
 	UpdatedAt string `json:"updatedAt"`
+	Size      int    `json:"size"`
+}
+
+var wishNumber = regexp.MustCompile(`W\d+$`)
+
+// a session's pull is its own: a peer's pull of the same ticket moves neither my record nor my file
+func pullKey(id string) string {
+	if session := os.Getenv("CLAUDE_CODE_SESSION_ID"); session != "" {
+		return id + "@" + session
+	}
+	return id
+}
+
+func pullFile(id string) string {
+	return filepath.Join(stateDir(), "linear", "bodies", os.Getenv("CLAUDE_CODE_SESSION_ID"), id+".md")
 }
 
 func pullsPath() string { return filepath.Join(stateDir(), "linear", "pulls.json") }
@@ -25,7 +44,7 @@ func readPulls() map[string]pull {
 
 func savePull(id string, p pull) error {
 	pulls := readPulls()
-	pulls[id] = p
+	pulls[pullKey(id)] = p
 	raw, _ := json.MarshalIndent(pulls, "", "  ")
 	if err := os.MkdirAll(filepath.Dir(pullsPath()), 0o755); err != nil {
 		return err
@@ -67,7 +86,7 @@ func linearBody(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	if source, _ := flags["set"].(string); source != "" {
-		return setBody(r, actor, id, source)
+		return setBody(r, actor, id, source, flags["shrink"] == true)
 	}
 	var issue bodyIssue
 	r.Wait("pulling "+id+" as "+actor, func() { issue, err = fetchBody(actor, id) })
@@ -75,7 +94,7 @@ func linearBody(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	to, _ := flags["to"].(string)
-	file := cmp.Or(to, filepath.Join(stateDir(), "linear", "bodies", id+".md"))
+	file := cmp.Or(to, pullFile(id))
 	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 		return nil, usageFail("cannot write "+file+": "+err.Error(), "x linear body "+id+" --to <file>")
 	}
@@ -86,19 +105,22 @@ func linearBody(r *Run, args []string, flags Flags) (any, error) {
 	if err := os.WriteFile(file, []byte(text), 0o644); err != nil {
 		return nil, usageFail("cannot write "+file+": "+err.Error(), "x linear body "+id+" --to <file>")
 	}
-	if err := savePull(id, pull{file, issue.UpdatedAt}); err != nil {
+	if err := savePull(id, pull{file, issue.UpdatedAt, len(text)}); err != nil {
 		return nil, err
 	}
 	r.Board(ui.dim.Render("pulled "+id+" → ") + cmd(file) + ui.dim.Render("  edit it, then ") + cmd("x linear body "+id+" --set "+file))
 	return ordered{{"actor", actor}, {"file", file}, {"id", id}, {"updatedAt", issue.UpdatedAt}}, nil
 }
 
-func setBody(r *Run, actor, id, source string) (any, error) {
+func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 	text, err := os.ReadFile(source)
 	if err != nil {
 		return nil, usageFail("cannot read "+source, "x linear body "+id+" --set <file>")
 	}
-	pulled, ok := readPulls()[id]
+	if strings.TrimSpace(string(text)) == "" {
+		return nil, &Fail{Refused: true, Msg: source + " is empty: a body is never blanked through --set; nothing was written", Next: "x linear body " + id}
+	}
+	pulled, ok := readPulls()[pullKey(id)]
 	if !ok {
 		return nil, &Fail{Msg: "no pull of " + id + " to compare against — pull it first", Next: "x linear body " + id, Refused: true}
 	}
@@ -112,6 +134,9 @@ func setBody(r *Run, actor, id, source string) (any, error) {
 		return nil, &Fail{Refused: true,
 			Msg:  id + " changed since the pull (" + pulled.UpdatedAt + " → " + current.UpdatedAt + "); nothing was written",
 			Next: "x linear body " + id + " --to " + theirs + " && diff " + source + " " + theirs}
+	}
+	if damage := bodyDamage(id, source, deref(current.Description), string(text), pulled.Size, shrink); damage != nil {
+		return nil, damage
 	}
 	var data map[string]json.RawMessage
 	r.Wait("writing "+id+" as "+actor, func() {
@@ -131,7 +156,69 @@ func setBody(r *Run, actor, id, source string) (any, error) {
 		return nil, &Fail{Msg: "linear did not take the write to " + id, Next: "x linear read " + id}
 	}
 	// the write is the new baseline: a second edit of the same file needs no second pull
-	_ = savePull(id, pull{source, result.Issue.UpdatedAt})
+	_ = savePull(id, pull{source, result.Issue.UpdatedAt, len(text)})
 	r.Board(ui.ok.Render("✓ ") + ui.fg.Render("wrote "+id+"'s body as "+actor))
 	return ordered{{"actor", actor}, {"id", id}, {"updatedAt", result.Issue.UpdatedAt}}, nil
+}
+
+func deref(text *string) string {
+	if text == nil {
+		return ""
+	}
+	return *text
+}
+
+// what a set would damage, read against the body the pull held: most of its size, a W-line, the sign block
+func bodyDamage(id, source, held, edit string, pulledSize int, shrink bool) *Fail {
+	set := "x linear body " + id + " --set " + source
+	if !shrink && len(edit)*5 < pulledSize {
+		return &Fail{Refused: true,
+			Msg:  fmt.Sprintf("%s holds %d bytes, under a fifth of the %d pulled; nothing was written", source, len(edit), pulledSize),
+			Next: set + " --shrink — only when the cut is meant"}
+	}
+	kept := wishNumbers(edit)
+	if lost := slices.DeleteFunc(wishNumbers(held), func(n string) bool { return slices.Contains(kept, n) }); len(lost) > 0 {
+		return &Fail{Refused: true,
+			Msg:  fmt.Sprintf("%s lost %s of %s's wish: a W-line is dima's words, reworded but never dropped; nothing was written", source, strings.Join(lost, ", "), id),
+			Next: "x linear body " + id + " --to " + source + ".theirs && diff " + source + " " + source + ".theirs"}
+	}
+	_, block, signed := signedBlock(held)
+	if !signed {
+		return nil
+	}
+	_, edited, _ := signedBlock(edit)
+	old, now := nonBlank(block), nonBlank(edited)
+	what := ""
+	if at := firstLost(old, now); at >= 0 {
+		what = "lost or changed «" + old[at] + "»"
+	} else if len(now) == len(old) {
+		what = "gained no line"
+	}
+	if what == "" {
+		return nil
+	}
+	return &Fail{Refused: true,
+		Msg:  id + " is signed and its ## signed block " + what + ": a change to a signed ticket goes through `ticket-sign.ts changed`, which adds its ✏️ line; nothing was written",
+		Next: "x linear read " + id}
+}
+
+func wishNumbers(body string) []string {
+	var numbers []string
+	for _, line := range wishItem.FindAllString(body, -1) {
+		numbers = append(numbers, wishNumber.FindString(line))
+	}
+	return numbers
+}
+
+// the first old line the new list does not hold in order, or -1
+func firstLost(old, now []string) int {
+	at := 0
+	for i, line := range old {
+		found := slices.Index(now[at:], line)
+		if found < 0 {
+			return i
+		}
+		at += found + 1
+	}
+	return -1
 }
