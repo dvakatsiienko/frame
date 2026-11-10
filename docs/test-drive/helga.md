@@ -391,6 +391,18 @@ retro (14:43 on):
 - 2026-11-06 · groom · yes · 0 · 2014 groom W1328-W1332, o65 steer W1333, 20:00 no-wish
 - 2026-11-09 · inbox-prep · yes · 0 · inbox-helga.md written, 16 items, 30 asks; inbox-prep-check 101/101 exit 0; inbox.md untouched, no commit
 - 2026-11-09 · prompt-groom · yes · 0 · 2026-11-09-1430.groomed.md: PK-326 W452-W461, stamped 14:30, W461 is the one ❓; prompt-groom --check: no red on this prompt (older reds only)
+- 2026-11-09 · prompt-groom · 1 · 0 · o91 steer, FRM-544, file written: W2 = sentence 1 (have it like this / orbit flexible / easy to make a tick); W3 = sentence 2 (ability to tick and approve anything via play tick). Stamp per brief. play tick kept as written, check for a wispr slip. No pocket append.
+- 2026-11-09 · prompt-groom · yes · 0 · o91 regroom FRM-544 W2-W3 stamped 20:37, replied done to clio 6e278a
+- 2026-11-09 · prompt-groom · yes · 0 · wing 1 21:17 PK-370 W5-W13 groomed, path replied to wing 1 9d0c9c
+- 2026-11-09 · prompt-groom · yes · 0 · wing 1 21:32 FRM-530 W13-W18 groomed, path replied to wing 1
+- 2026-11-09 · prompt-groom · yes · 0 · wing 1 21:42 FRM-530 W19-W23 groomed, one own typo fixed before send, path replied to wing 1
+- 2026-11-09 · prompt-groom · yes · 0 · clio 21:36 PK-363 W88-W96 groomed, done replied to clio 6e278a
+- 2026-11-09 · prompt-groom · yes · 0 · clio 21:51 PK-363 W97-W101 groomed, done replied to clio 6e278a
+- 2026-11-09 · prompt-groom · yes · 0 · wing 2 22:15 FRM-548 W5-W6 groomed, groomed reply to wing 2 92ed38
+- 2026-11-09 · prompt-groom · yes · 0 · clio 22:28 PK-363 W102-W143 groomed (42 lines), done replied to clio 6e278a
+- 2026-11-09 · prompt-groom · yes · 0 · PK-363 23:07 groom, W157 to W174
+- 2026-11-10 · prompt-groom · yes · 0 · PK-375 00:27 groom, W1 to W20
+- 2026-11-10 · prompt-groom · yes · 0 · 2026-11-10 02:20 groom, FRM-544:W5 to W6 and FRM-504:W46 to W48
 
 ## rounds
 
