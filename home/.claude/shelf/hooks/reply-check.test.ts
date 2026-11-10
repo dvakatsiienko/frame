@@ -538,3 +538,82 @@ describe('a promise lands with its call', () => {
         expect(nextPrompt()).not.toContain('now reds');
     });
 });
+
+// a turn that printed `midText` before a tool call and sent `asks` to orbit, then ended on the reply under test
+const turnWithRound = (midText: string, asks: string[] = []) => {
+    const path = join(mkdtempSync(join(tmpdir(), 'rc-')), 't.jsonl');
+    const lines: unknown[] = [
+        { message: { content: 'proceed', role: 'user' }, type: 'user' },
+        {
+            message: {
+                content: [
+                    { text: midText, type: 'text' },
+                    { input: { asks: asks.map((text) => ({ pick: 'yes', text })), op: 'add' }, name: 'mcp__x-mod-stash__orbit', type: 'tool_use' },
+                ],
+                id: 'm1',
+            },
+            type: 'assistant',
+        },
+        { message: { content: [{ type: 'tool_result' }] }, type: 'user' },
+    ];
+    writeFileSync(path, `${lines.map((l) => JSON.stringify(l)).join('\n')}\n`);
+    return path;
+};
+const stopEvent = (reply: string, transcript: string, again = false) =>
+    execFileSync('python3', [HOOK], {
+        encoding: 'utf8',
+        env: { ...process.env, REPLY_CHECK_LOG: join(mkdtempSync(join(tmpdir(), 'rc-')), 'log.tsv'), REPLY_CHECK_NOW: '15:10', REPLY_CHECK_REMIND: REMIND },
+        input: JSON.stringify({ last_assistant_message: reply, session_id: SESSION, stop_hook_active: again, transcript_path: transcript }),
+        timeout: 10_000,
+    });
+const round = '❓ **Q1** - **the name**: which one?\n\n➡️ the first\n\n---\n\n❓ **Q2** - **the order**: mods first?\n\n➡️ yes';
+const topSeven = [1, 2, 3, 4, 5, 6, 7].map((n) => `${n}. ⭐ 🐋 — **name-${n}**: reads well`).join('\n');
+
+describe('a round left out of the closing message (FRM-495)', () => {
+    it('refuses the turn end when a grill round sat only between tool calls', () => {
+        const out = stopEvent('the round is on your board.', turnWithRound(round));
+        expect(JSON.parse(out)).toMatchObject({ decision: 'block' });
+        expect(out).toContain('Q1');
+        expect(out).toContain('Q2');
+    });
+
+    it('refuses when the round reached only orbit, and names the question the reply dropped', () => {
+        const out = stopEvent('❓ **Q1** - **the name**: which one?\n\n➡️ the first', turnWithRound('working.', ['Q1 the name', 'Q2 the order']));
+        expect(JSON.parse(out).reason).toContain('Q2');
+        expect(JSON.parse(out).reason).not.toContain('Q1,');
+    });
+
+    it('refuses a top 7 shown mid-turn or asked in orbit and missing from the reply', () => {
+        expect(stopEvent('seven names are up.', turnWithRound(topSeven))).toContain('the top 7');
+        expect(stopEvent('seven names are up.', turnWithRound('working.', ['top 7 names for the seat folder']))).toContain('the top 7');
+    });
+
+    it('ends clean when the closing message carries the whole round', () => {
+        expect(stopEvent(round, turnWithRound(round, ['Q1 the name', 'Q2 the order']))).toBe('');
+        expect(stopEvent(topSeven, turnWithRound('working.', ['top 7 names for the seat folder']))).toBe('');
+    });
+
+    it('refuses once only: the re-stop passes, so a turn never loops', () => {
+        expect(stopEvent('the round is on your board.', turnWithRound(round), true)).toBe('');
+    });
+
+    it('stays silent on a turn with no round', () => {
+        expect(stopEvent('done.', turnWithRound('checking the gate.', ['close FRM-1: landed']))).toBe('');
+    });
+});
+
+describe('a verdict word printed plain (FRM-495)', () => {
+    it('reminds on an unbolded badge and on a bare clean beside sixth sense', () => {
+        stop('sixth sense said 🌼 clean on round 2.');
+        expect(nextPrompt()).toContain('verdict word printed plain');
+        stop('sixth sense is clean at 2 rounds.');
+        expect(nextPrompt()).toContain('verdict word printed plain');
+    });
+
+    it('passes the bold form, a typecheck clean and a clean tree', () => {
+        stop('sixth sense said **🌼 clean** on round 2.');
+        expect(nextPrompt()).not.toContain('verdict word');
+        stop('typecheck clean, and sixth sense starts its read; the tree is clean.');
+        expect(nextPrompt()).not.toContain('verdict word');
+    });
+});

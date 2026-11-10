@@ -2,6 +2,7 @@
 # Stop hook: reads the reply that just ended and logs every shape the output-format rules ban.
 # it never blocks: a re-prompt reprints a reply dima already read (dima, 2026-10-14, o94). every miss is logged and returns
 # as one reminder line on the next prompt (`--prompt`, a UserPromptSubmit hook). `pnpm reply-check:report` reads the log.
+# the one exception: a round left out of the closing message refuses the turn end once (dima, 2026-11-09, o95; FRM-495).
 import json
 import os
 import re
@@ -438,6 +439,65 @@ def unreached(path: str, reply: str) -> list[str]:
     return lost
 
 
+TOP_LINE = re.compile(r"^\s*\d\.\s*⭐", re.M)
+TOP_ASK = re.compile(r"\btop[ -]?(?:7|seven)\b", re.I)
+
+
+def lost_round(path: str, reply: str) -> list[str]:
+    # a round shown mid-turn or sent to orbit must sit whole in the closing message: text between tool calls and the
+    # board may never reach dima (FRM-495:W1622; seven rounds lost this way on 2026-11-09)
+    with open(path) as transcript:
+        lines = transcript.readlines()
+    turn: list[tuple[str, object]] = []
+    for raw in reversed(lines):
+        try:
+            entry = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        content = (entry.get("message") or {}).get("content")
+        if entry.get("type") == "user":
+            if not (isinstance(content, list) and any(isinstance(b, dict) and b.get("type") == "tool_result" for b in content)):
+                break
+            continue
+        if entry.get("type") == "assistant" and isinstance(content, list):
+            for block in reversed(content):
+                if isinstance(block, dict) and block.get("type") == "text":
+                    turn.append(("text", block.get("text", "")))
+                elif isinstance(block, dict) and block.get("type") == "tool_use":
+                    turn.append(("tool", (block.get("name", ""), block.get("input") or {})))
+    turn.reverse()
+    last_tool = max((i for i, (kind, _) in enumerate(turn) if kind == "tool"), default=-1)
+    mid = FENCE.sub("", "\n".join(str(text) for kind, text in turn[:last_tool] if kind == "text"))
+    calls = [call for kind, call in turn if kind == "tool"]
+    ops = [op for name, args in calls if name == "mcp__x-mod-stash__orbit" for op in [args, *(args.get("ops") or [])] if isinstance(op, dict)]
+    asks = [str(a.get("text", "")) for op in ops if op.get("op") == "add" for a in op.get("asks") or [] if isinstance(a, dict)]
+    final = FENCE.sub("", reply)
+    wanted = {int(n) for n in GRILL_PRINTED_NUMBER.findall(mid)} | {int(n) for t in asks for n in Q_NUMBER.findall(t)}
+    missing = sorted(wanted - {int(n) for n in GRILL_PRINTED_NUMBER.findall(final)})
+    lost = [", ".join(f"❓ Q{n}" for n in missing)] if missing else []
+    showed_top = len(TOP_LINE.findall(mid)) >= 5 or any(TOP_ASK.search(t) for t in asks)
+    if showed_top and len(TOP_LINE.findall(final)) < 5:
+        lost.append("the top 7")
+    return lost
+
+
+VERDICT_BADGED = re.compile(r"(?<!\*\*)(🌼 clean|🩹 fix|🪜 escalate)(?!\*\*)")
+BARE_CLEAN = re.compile(r"(?<![\w🌼*-])(?<!🌼 )clean\b(?!\*\*)")
+NOT_A_VERDICT = re.compile(r"\b(?:typecheck|lint|biome|tree|checkout|build|tests?|suite|status|merge state)\W+(?:is |was |ran |reads? )?$", re.I)
+
+
+def plain_verdicts(prose: str) -> list[str]:
+    # a verdict is a fleet word: bold with its badge (PK-317; 20 plain against 9 bold in 714 replies, every one «clean»)
+    found = [m.group(1) for m in VERDICT_BADGED.finditer(prose)]
+    for unit in sentences(prose):
+        if not re.search(r"\bsixth sense\b", unit, re.I):
+            continue
+        for m in BARE_CLEAN.finditer(unit):
+            if not NOT_A_VERDICT.search(unit[: m.start()]):
+                found.append("clean")
+    return found[:1]
+
+
 def findings(reply: str) -> list[tuple[str, str]]:
     prose = FENCE.sub("", reply)
     found: list[tuple[str, str]] = []
@@ -456,6 +516,7 @@ def findings(reply: str) -> list[tuple[str, str]]:
     found += [("wide-claim", claim) for claim in wide_claims(prose)]
     found += [("door-claim", claim) for claim in door_claims(prose)]
     found += [("dead-end", claim) for claim in dead_ends(prose)]
+    found += [("plain-verdict", word) for word in plain_verdicts(prose)]
     # a reply that is only the 📄 stamp and the 🔭 line hid its answer in a mid-turn block dima never sees (crow, 2026-10-12: three in one evening)
     body = [l for l in reply.splitlines() if l.strip()]
     if body and all(l.lstrip().startswith(("📄", "🔭")) for l in body) and any(l.lstrip().startswith("📄") for l in body):
@@ -493,6 +554,12 @@ def main() -> None:
         hits += [("empty-promise", said) for said in empty_promises(path, reply)]
         hits += [("unevidenced", said) for said in unevidenced(path, reply)]
         hits += [("grill-unprinted", head) for head in grill_asks_unprinted(reply, turn_calls(path))]
+        lost = lost_round(path, reply)
+        hits += [("round-lost", what) for what in lost]
+        # refused once: on the re-stop the hook lets the turn end whatever the reply holds
+        if lost and not event.get("stop_hook_active"):
+            reason = f"a round never reached your closing message ({'; '.join(lost)}): text between tool calls and the board may never reach dima. print the whole round in the closing message, then end the turn"
+            print(json.dumps({"decision": "block", "reason": reason}, ensure_ascii=False))
     if not hits:
         return
     os.makedirs(os.path.dirname(LOG), exist_ok=True)
@@ -517,6 +584,8 @@ def main() -> None:
         reminds.append("a 🔭 line named crow — a wake never holds the session")
     if by_rule("wait-without-dima"):
         reminds.append("an open orbit ask and no 🔭 line naming **🙋‍♂️ dima** — end on `🔭 waiting on **🙋‍♂️ dima**`")
+    if by_rule("plain-verdict"):
+        reminds.append(f"a verdict word printed plain («{by_rule('plain-verdict')[0]}») — bold with its badge: **🌼 clean**, **🩹 fix**, **🪜 escalate**")
     if by_rule("dead-end"):
         reminds.append(f"«{by_rule('dead-end')[0]}» with no check in its sentence — name the try or the command beside it, or mark it (inference)")
     if by_rule("table"):
