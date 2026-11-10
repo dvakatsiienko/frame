@@ -24,6 +24,7 @@ import {
 } from 'herdr';
 
 import { tabLabel } from './label.js';
+import { firstTab } from './strip.js';
 
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
 const NAMES_KEY = 'x-herdr-agents.names';
@@ -105,6 +106,11 @@ function find(node, id) {
 export default class Tabs extends View {
     init(_props, cx) {
         this.pressed = null;
+        // the first tab drawn, the bar's width, and the active tab seen last: one swipe moves `first` by one tab
+        this.first = 0;
+        this.barW = 0;
+        this.activeId = null;
+        this.swiped = false;
         loadLaunchers(cx);
         this.panels = JSON.parse(localStorage.getItem('panels') ?? '{}');
     }
@@ -173,6 +179,42 @@ export default class Tabs extends View {
         const t = theme();
         const space = spaces().find((p) => p.active);
         const shown = space?.tabs ?? [];
+        const active = shown.findIndex((c) => c.active);
+        const activeId = shown[active]?.id ?? null;
+        this.first = firstTab({
+            active,
+            count: shown.length,
+            first: this.first,
+            isActiveNew: activeId !== this.activeId,
+            width: this.barW,
+        });
+        this.activeId = activeId;
+        // one tab per swipe: a gesture steps once, at its first 24 px sideways, and its momentum events that follow
+        // within 250 ms of each other belong to it; a pause starts the next swipe, so a wheel notch steps once too
+        const swipe = (e, cx) => {
+            const now = Date.now();
+            const isSameSwipe =
+                e.touch_phase !== 'started' && now - (this.swipeAt ?? 0) < 250;
+            this.swipeAt = now;
+            if (!isSameSwipe) {
+                this.swipeX = 0;
+                this.swiped = false;
+            }
+            if (this.swiped) return;
+            this.swipeX = (this.swipeX ?? 0) + e.delta.x;
+            if (Math.abs(this.swipeX) < 24) return;
+            const step = this.swipeX < 0 ? 1 : -1;
+            this.swiped = true;
+            this.first = firstTab({
+                active,
+                count: shown.length,
+                first: this.first,
+                step,
+                width: this.barW,
+            });
+            cx.stop_propagation();
+            cx.notify();
+        };
         const stop = (_e, cx) => cx.stop_propagation();
         trackTurns(agents(), terminals());
         const button = (id, label, action) =>
@@ -405,8 +447,18 @@ export default class Tabs extends View {
                     .h_full()
                     .items_center()
                     .gap(3)
-                    .overflow_x_scroll()
-                    .children(shown.map(item)),
+                    .overflow_hidden()
+                    .on_size_change((s, cx) => {
+                        if (s.width === this.barW) return;
+                        this.barW = s.width;
+                        cx.notify();
+                    })
+                    .on_scroll_wheel(swipe)
+                    .children(
+                        shown
+                            .slice(this.first)
+                            .map((c, j) => item(c, j + this.first)),
+                    ),
             )
             .child(
                 button('tab-new', '+', () =>
