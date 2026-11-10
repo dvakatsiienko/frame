@@ -950,7 +950,7 @@
                     "value": "member"
                 }
             },
-            "name": "linear link-remove",
+            "name": "linear unlink",
             "needsApply": false,
             "purpose": "remove a blocks, related or duplicate relation x linear link made, by FRM-N ids; a missing one removes nothing",
             "touches": [

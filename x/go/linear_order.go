@@ -95,16 +95,16 @@ func halfway(above, below placedIssue) (float64, error) {
 	return middle, nil
 }
 
-// link-remove removes relations `x linear link` made: each is found on the ticket first, and one missing writes nothing
+// unlink removes relations `x linear link` made: each is found on the ticket first, and one missing writes nothing
 func linearUnlink(r *Run, args []string, flags Flags) (any, error) {
 	from, kind, targets := args[0], args[1], args[2:]
 	if !slices.Contains(relationKinds, kind) {
-		return nil, usageFail(fmt.Sprintf("no relation %q — x linear link-remove takes %s", kind, strings.Join(relationKinds, ", ")), "x linear link-remove --help")
+		return nil, usageFail(fmt.Sprintf("no relation %q — x linear unlink takes %s", kind, strings.Join(relationKinds, ", ")), "x linear unlink --help")
 	}
 	if len(targets) == 0 {
-		return nil, usageFail("no target ticket after "+kind, "x linear link-remove --help")
+		return nil, usageFail("no target ticket after "+kind, "x linear unlink --help")
 	}
-	if err := checkIDs(append([]string{from}, targets...), "linear link-remove"); err != nil {
+	if err := checkIDs(append([]string{from}, targets...), "linear unlink"); err != nil {
 		return nil, err
 	}
 	actor, err := actorOf(flags)

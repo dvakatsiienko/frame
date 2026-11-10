@@ -573,11 +573,11 @@
   - then the change prints as `order: old → new, after <other>`
   - given both flags, the ticket itself, or free text for the other, then exit 2 and nothing is sent; given a ticket linear does not know, another team's, one the team's order never shows, or two neighbours with no number left between their sort orders, then exit 1 and nothing is written
   - decision: the neighbour is read by walking the manual order a page of 250 at a time: linear's ticket filter has no sort-order field (schema read 2026-11-10)
-- ⬜ `x linear link-remove <id> blocks|related|duplicate <targets…>` removes relations `x linear link` made
+- ⬜ `x linear unlink <id> blocks|related|duplicate <targets…>` removes relations `x linear link` made
   - given a ticket that holds the relation to each target (`related` from either side, `blocks` and `duplicate` from this ticket only)
   - when it runs, then one request deletes them and each prints as `<kind>: <target> → —`; a target named twice is deleted once
   - given one target with no such link, a link that runs the other way, or a ticket linear does not know, then exit 1 naming it and nothing is removed
-  - decision: the name is `link-remove`, dima's pick from seven, family-first beside `link` (FRM-384, 2026-11-10)
+  - decision: the name is `unlink`, dima's typed word over `link-remove` (FRM-384, 2026-11-10: «unlink is better, keep unlink»)
 - ✅ `x linear comment <id> --body-file <f>` posts a comment
   - given a markdown file with backticks, `$VAR` and quotes
   - when it runs, then the comment holds the file byte for byte, and the envelope prints the actor and the comment's url
