@@ -32,8 +32,10 @@ they ship with each herdr update and are the truth for the installed version: sy
 **start a member in a pane** — a wing, the mods codie, a seat that outlives the window (summon probe, 2026-11-09, `~/frame/.scratch/herdr-summon-probe/findings.md`; `-n` with `--remote-control` together, unrun)
 
 ```sh
-hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<registry name>' "<its first task>" --remote-control
+hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<registry name>' --model <model> --effort medium "<its first task>" --remote-control
 ```
+
+- this is every member's summon door; a lane member's first task is `"$(cat <brief file>)"`, its argv per role and its preflight (`x brief summon '<the line>'`) in `x:crew-lead`
 
 - 📌 the cc `-n` is its name for `ListAgents` and `seatOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live seats
 - its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends

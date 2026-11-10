@@ -435,3 +435,8 @@ reference (model-only), a claude-code guide skill behind a feature flag, and the
 skills. model invocation off: `batch` `debug` `design-sync` `doctor` `run-skill-generator`.
 gated by env or flag: `commit`/`pr`, `schedule`, `claude-in-chrome`, `cowork-plugin`/`setup-claude`
 (cowork only). no baseline exists for 2.1.258, so «new» is not decidable this run.
+
+## the desktop thread — start and close
+
+- start: `mcp__ccd_session__start_session`, `initiation: user_asked`, `context: fresh`, the app dir as `cwd` (root when the job crosses apps), `use_worktree: false`, `model: claude-opus-5-5`, `effort: medium`, the registry name as title, a one-line pointer to the brief file as prompt — proven on FRM-427, 2026-10-28
+- close: `mcp__ccd_session_mgmt__archive_session` on dima's stop word, proven 2026-10-28 (FRM-427's thread); the app refuses it while the thread is pinned or open on dima's screen, then the archive is his click
