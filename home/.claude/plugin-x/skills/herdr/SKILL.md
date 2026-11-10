@@ -29,13 +29,14 @@ they ship with each herdr update and are the truth for the installed version: sy
 
 ## recipes
 
-**start a member in a pane** — a wing, the mods codie, a seat that outlives the window (summon probe, 2026-11-09, `~/frame/.scratch/herdr-summon-probe/findings.md`; `-n` with `--remote-control` together, unrun)
+**start a member in a pane** — a wing, the mods codie, a seat that outlives the window (summon probe, 2026-11-09, `~/frame/.scratch/herdr-summon-probe/findings.md`; `-n` with `--remote-control` together ran 2026-11-10, the cli sixth sense)
 
 ```sh
 hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<registry name>' --model <model> --effort medium "<its first task>" --remote-control
 ```
 
 - this is every member's summon door; a lane member's first task is `"$(cat <brief file>)"`, its argv per role and its preflight (`x brief summon '<the line>'`) in `x:crew-lead`
+- 📌 then its tab, the same turn (a `--no-parent` seat starts with no tab, and herdr's agents list skips it until it has one): `herdr-app do terminal.keep '{"terminal":"<t>","place":"tab"}'` returns the tab id, then `herdr-app do tab.rename '{"id":"<tab>","name":"<registry name>"}'`; dima's standing ask (2026-11-11), so this one `do` needs no new word. the summon is done when `herdr-app ls` shows the tab by its registry name
 
 - 📌 the cc `-n` is its name for `ListAgents` and `seatOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live seats
 - its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends

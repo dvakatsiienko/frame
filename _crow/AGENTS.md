@@ -25,7 +25,7 @@
   - the halt runs `pnpm crow:stop` for `--bg` (FRM-335); a tab is closed by dima
   - `pnpm crow:stop` — `claude stop <jobId>`, switches 🔥 off, waits until the process is gone.
     it harvests nothing; the halt reads `notes.jsonl` and `verdicts.jsonl` itself.
-- a start is `--bg --remote-control` from `~/.local/state/crow/`. that home is
+- a start is a herdr pane (`crow:start opus --pane`), `--bg --remote-control` its fallback, from `~/.local/state/crow/`. that home is
   outside frame, so the global `CLAUDE.md` loads and frame `AGENTS.md` does not; the global
   `rules/` are copied into the home's `.claude/rules/` at each start (see facts that bite).
 - 🔥 keep-hot is stash's own: once the registry lists crow, the start writes `hot:<sessionId>`
