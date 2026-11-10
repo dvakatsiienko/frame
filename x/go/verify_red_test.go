@@ -1110,7 +1110,7 @@ func TestVerifyRedRefusesAPnpmCommandThatWritesTheStore(t *testing.T) {
 	before := treeWrites(t, watched...)
 	for _, command := range [][]string{
 		{"pnpm", "install"}, {"pnpm", "i"}, {"pnpm", "add", "left-pad"}, {"pnpm", "remove", "tool"}, {"pnpm", "rm", "tool"},
-		{"pnpm", "update"}, {"pnpm", "up"}, {"pnpm", "dedupe"},
+		{"pnpm", "uni", "tool"}, {"pnpm", "update"}, {"pnpm", "up"}, {"pnpm", "dedupe"}, {"pnpm", "ci"},
 		// the subcommand behind pnpm's own flags, a flag's value before it, and pnpm by its path
 		{"pnpm", "--frozen-lockfile", "install"}, {"pnpm", "--filter", "pkg", "add", "left-pad"}, {"pnpm", "-C", ".", "install"},
 		{"/opt/homebrew/bin/pnpm", "install"},

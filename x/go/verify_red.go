@@ -491,11 +491,12 @@ type copyHarness struct {
 	project, unchecked string
 }
 
-// pnpm's subcommands that write the store, each with its aliases
+// pnpm's subcommands that write the store, each with its aliases as `pnpm help` lists them (12.16.1)
 var pnpmStoreWrites = map[string]bool{
-	"install": true, "i": true, "add": true, "remove": true, "rm": true, "uninstall": true, "un": true,
+	"install": true, "i": true, "add": true, "remove": true, "uninstall": true, "rm": true, "un": true, "uni": true,
 	"update": true, "up": true, "upgrade": true, "dedupe": true, "install-test": true, "it": true,
-	"rebuild": true, "rb": true, "prune": true, "fetch": true, "import": true, "link": true, "ln": true, "unlink": true,
+	"ci": true, "clean-install": true, "ic": true, "install-clean": true, "rebuild": true, "rb": true, "prune": true, "fetch": true,
+	"import": true, "link": true, "ln": true, "unlink": true, "dislink": true, "patch-commit": true, "patch-remove": true,
 }
 
 // the store write a pnpm command asks for, or "": pnpm's subcommand is its first word that is no flag. a word right after a
