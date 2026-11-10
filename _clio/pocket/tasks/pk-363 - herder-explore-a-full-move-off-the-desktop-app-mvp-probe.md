@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T14:02:00Z'
+updated_date: '2026-11-10T14:36:00Z'
 labels:
   - m
   - clio-main
@@ -1158,4 +1158,52 @@ PK-363:W360 (2026-11-10 16:01, dima) box empty, go.
 PK-363:W361 (2026-11-10 16:01, dima) so hot reloading works already? ❓
 
 PK-363:W362 (2026-11-10 16:01, dima) can you tell me when ticking will work? ❓
+
+PK-363:W363 (2026-11-10 16:05, dima) what can we solve with you meanwhile? Or should we not rush and fix the ongoing issues? ❓
+
+PK-363:W364 (2026-11-10 16:18, dima) do a second wind at a good point, and be careful: the second-wind flow in herdr is untested, so I am the first test. Help me solve everything without overloading me.
+
+PK-363:W365 (2026-11-10 16:18, dima) I agree: do not rush, and add nothing to the two lanes. Both codies are on exactly the things that block me, and a third stream would only add flicker and more for me to read.
+
+PK-363:W366 (2026-11-10 16:18, dima) Fable resets: clio runs as Fable right now, and so far I have burned 9% of weekly Fable usage. My plan: run clio as Fable 5.2 on medium effort until Fable usage reaches 100, then click one of my 3 resets and see what happens. Outcomes I want to see: a full weekly reset. Winguard says the reset covers only the Fable part of weekly usage, which is kind of fine but not what I want. Worst case: only the Fable meter resets and the weekly meter is not touched at all. I do not want that.
+
+PK-363:W367 (2026-11-10 16:18, dima) out-of-zoo shape: let's do it. Help me understand how herdr's internals work and how to shape and brand our setup. I just started exploring herdr and do not understand it yet. In Claude Code, a plugin can be branded as a separate repo, or a mod shipped as a standalone single mod; we have neither, because everything lives in one monolithic frame. Propose how to shape our branded mod so we go fully out of zoo. I want to cut some parts of zoo.
+
+PK-363:W368 (2026-11-10 16:18, dima) what you often ask that I cannot give, and which chores I keep handing you: would be nice. Let's see what we can cover with herdr.
+
+PK-363:W369 (2026-11-10 16:18, dima) typed-door fence: it refuses from day one, no warn-only stage. Yes. I do not know what it is about, but I want ticks to work. What is the typed-door fence? ❓
+
+PK-363:W370 (2026-11-10 16:18, dima) the landing step's name is herdr-mods:land. Yes. What does it do? ❓
+
+PK-363:W371 (2026-11-10 16:18, dima) meanwhile with me: a) Fable resets, b) out-of-zoo shape, c) the two answers I owe, d) rest. Do b, or c if I am tired.
+
+PK-363:W372 (2026-11-10 16:18, dima) fleet-board: two saves after the landing did not reload the board. The codie's read is that herdr still holds fleet-board as the link it found at startup (an inference). Do I need to fully restart herdr? ❓
+
+PK-363:W373 (2026-11-10 16:18, dima) restart herdr once, with my chat boxes empty, at a quiet moment; then I tell clio «restarted». I am doing it now, right after this message.
+
+PK-363:W374 (2026-11-10 16:19, dima, o20 steer) okay, but are you sure we need this copying step? Why not just code the mods right in herdr and use hot reloading? ❓
+
+PK-363:W375 (2026-11-10 16:26, dima) hot reload vs copy: I want properly working hot reloading. It must be smooth and applied immediately, without shifting herdr, because codie will make many updates. No flicker, no UI artifacts, no dropped text-box text. If it is clunky, ruins the UI, flickers, or drops typed text, I do not want it.
+
+PK-363:W376 (2026-11-10 16:26, dima) until hot reload is this smooth, do NOT delete the copy step; keep it as a possible backup. Move toward smooth hot reload.
+
+PK-363:W377 (2026-11-10 16:26, dima) herdr should be set up as part of Frame and committed in Frame, not as a separate repo. Frame already has the linters, tests and TypeScript, so work via Frame. ❓ How can hot reload and herdr committed in Frame both work together?
+
+PK-363:W378 (2026-11-10 16:26, dima) typed-door fence: seats can type into each other's panes, and the guard now refuses any seat typing approval words, so only dima's own typing signs. Ticks are unaffected. Problem: this guard locked dima out of merge approvals (for example on TIK). Guards must not lock dima out.
+
+PK-363:W379 (2026-11-10 16:26, dima) standing rule for every herdr guard, from the start: do not lock dima out of any action. dima's system override switch must work from day one. dima's ticks have priority over everything. Merge or approve-deletion must work smoothly when dima wants them.
+
+PK-363:W380 (2026-11-10 16:26, dima) "Do I need to fully restart herdr?" answered by dima: "restarted herdr" (his reply to W373).
+
+PK-363:W381 (2026-11-10 16:19, dima) f🪐 herdr-mods:land: the name of the step that copies a mod from frame into herdr's folder. Why do we create such clunky workarounds right from the start? Why can we not just use hot reloading? ❓
+
+PK-363:W382 (2026-11-10 16:32, dima) leaving zoo: rename the 6 parts in dima's window to ours, same look the next day, then change them freely. Yes: gradual, no fresh rebuild. Also help dima explore what herdr brought into zoo: tell everything it brought, so dima can decide what to keep or delete. ❓
+
+PK-363:W383 (2026-11-10 16:32, dima) ⚠️ trash the 3 unused zoo mods (zoo creatures, zoo-spaces, agent-board): yes, to the Trash. Undo: restore from the Trash.
+
+PK-363:W384 (2026-11-10 16:32, dima) which parts of dima's window to cut or reshape first: dima's to name. Currently only the agent icons in «agents» bother dima. Let's just have agent names in «agents», with our convention: session name = agent name in herdr. Then think out something prettier.
+
+PK-363:W385 (2026-11-10 16:32, dima) flip the override switch on now: yes.
+
+refold (clio, 2026-11-10 16:36, wishkeeper): PK-363:W378 mixed clio's 16:20 sentence into his words. his own: «remember how we locked out my merge approvals with all these guards? it is not good to have guards that lock me out from the ability to merge on a tick» (TIK = tick, the earlier lockouts in general, not this one fence). W378–W379 live on as FRM-544:W9–W10 and FRM-524's new line; the rule sits in plugin-x/mods/AGENTS.md and home/.config/herdr-app/mods/AGENTS.md.
 <!-- SECTION:NOTES:END -->
