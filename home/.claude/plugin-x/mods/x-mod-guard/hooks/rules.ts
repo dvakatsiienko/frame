@@ -1190,10 +1190,8 @@ export function ticksWrite(
         ? TICKS_WRITE
         : undefined;
 }
-// twin press-dir — a copy lives in x-mod-stash, which reads the presses; the twins lint keeps them equal
-// herdr's band appends dima's presses (🐦‍🔥 🔥 ⏰ 💨) to `~/.claude/shelf/<PRESS_DIR>/band.jsonl`; the name waits on his pick
+// herdr's band appends dima's presses (🐦‍🔥 🔥 ⏰ 💨) to `~/.claude/shelf/band-presses/band.jsonl` (dima's name, 21:36)
 export const PRESS_DIR = 'band-presses';
-// twin end
 const isPressName = (text: string) =>
     new RegExp(`(^|[/'"])${PRESS_DIR}(\\/|$|['"])`).test(text) ||
     globReaches(text, ['shelf', PRESS_DIR]);
