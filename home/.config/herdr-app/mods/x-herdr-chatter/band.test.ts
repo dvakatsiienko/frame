@@ -6,6 +6,7 @@ import {
     bandButtons,
     bandOf,
     overrideOf,
+    pendingOf,
     pressLine,
     withPress,
 } from './band.js';
@@ -242,5 +243,42 @@ describe('a press is one line of the band press file', () => {
     test('a missing file starts with the press', () => {
         const line = pressLine('hot', false, 'abc', now);
         expect(withPress(null, line, now)).toBe(`${JSON.stringify(line)}\n`);
+    });
+});
+
+describe('the band follows a press made on the deck (dima, 23:42)', () => {
+    const now = 1_000_000;
+    const file = [
+        { at: now - 30_000, button: 'hot', on: true, sid: 'me' },
+        { at: now - 3000, button: 'hot', on: false, sid: 'me' },
+        { at: now - 2000, button: 'hot', on: true, sid: 'other' },
+        { at: now - 1000, button: 'afk', on: true },
+    ]
+        .map((l) => `${JSON.stringify(l)}\n`)
+        .join('');
+
+    test("the press file's newest press per button is pending, its thread's only", () => {
+        expect(pendingOf(file, 'me', now)).toEqual({
+            afk: { at: now - 1000, on: true },
+            hot: { at: now - 3000, on: false },
+        });
+    });
+
+    test('a press past the wait is no longer pending', () => {
+        expect(pendingOf(file, 'me', now + 60_000)).toEqual({});
+    });
+
+    test('a deck press draws on the band before the state file reads it', () => {
+        const hot = bandButtons({
+            fleet: {
+                afk: { at: null, on: false },
+                waker: { at: null, on: false },
+            },
+            isDeckShown: true,
+            override: { isOn: false },
+            pending: pendingOf(file, 'me', now),
+            thread: { hot: { since: 5 }, wind: null },
+        })[1];
+        expect(hot).toMatchObject({ isOn: false, isPending: true });
     });
 });

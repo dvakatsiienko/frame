@@ -59,8 +59,9 @@ export const STATE_DIR = '.claude/shelf/herdr-state';
 export const PRESS_DIR = '.claude/shelf/band-presses';
 export const PRESS_FILE = `${PRESS_DIR}/band.jsonl`;
 const DAY_MS = 24 * 60 * 60 * 1000;
-// a press the stash has not answered by then gives the button its state back
-export const PENDING_MS = 12 * 1000;
+// a press the stash has not answered by then gives the button its state back: a hot press reaches the thread's state
+// file at the stash's third 4 s poll, about 16 s at worst
+export const PENDING_MS = 20 * 1000;
 
 /** @typedef {'wind' | 'hot' | 'waker' | 'afk'} PressKey */
 /** @typedef {{ at: number, button: PressKey, on: boolean, sid?: string }} PressLine */
@@ -209,4 +210,32 @@ export function bandButtons({
             word: 'deck',
         },
     ].map((b) => ({ isLive: false, isOn: false, isPending: false, ...b }));
+}
+
+/**
+ * the presses not yet answered, read from the press file itself, so a press on the deck or on any band draws here
+ * too: per button the newest line, wind and hot only for this thread
+ * @param {string | null} text
+ * @param {string | null | undefined} sid
+ * @param {number} now
+ * @returns {Pending}
+ */
+export function pendingOf(text, sid, now) {
+    /** @type {Pending} */
+    const pending = {};
+    for (const line of (text ?? '').split('\n')) {
+        let p;
+        try {
+            p = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        const key = /** @type {PressKey} */ (p?.button);
+        if (!['wind', 'hot', 'waker', 'afk'].includes(key)) continue;
+        if ((key === 'wind' || key === 'hot') && p.sid !== sid) continue;
+        if (typeof p.at !== 'number' || now - p.at >= PENDING_MS) continue;
+        if (!pending[key] || p.at > pending[key].at)
+            pending[key] = { at: p.at, on: p.on === true };
+    }
+    return pending;
 }

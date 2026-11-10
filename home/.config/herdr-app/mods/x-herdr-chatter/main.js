@@ -54,6 +54,7 @@ import {
     bandButtons,
     bandOf,
     overrideOf,
+    pendingOf,
     pressLine,
     withPress,
 } from './band.js';
@@ -547,8 +548,12 @@ async function bandStates(pid) {
         ))
             if (state?.pid === pid && (!thread || state.at > thread.at))
                 thread = state;
+    const presses = await readTextFile(`${home()}/${PRESS_FILE}`).catch(
+        () => /** @type {string | null} */ (null),
+    );
     return {
         fleet: await read(`${dir}/fleet.json`),
+        presses: pendingOf(presses, thread?.sid, Date.now()),
         thread: thread
             ? {
                   hot: thread.hot ?? null,
@@ -1874,20 +1879,18 @@ export default class ClaudeChat extends View {
                 }
             });
         }
-        // the thread's own state and the fleet's, as x-mod-stash wrote them for the band's four buttons
-        if (!this.statesBusy) {
-            this.statesBusy = true;
-            const pid = this.where?.container ? null : this.where?.pid;
+        this.readStates(cx);
+        // a press on the deck or another band shows here at once, not at the next tick
+        if (!this.isPressWatched) {
+            this.isPressWatched = true;
             cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
                 try {
-                    const next = await bandStates(pid);
-                    if (JSON.stringify(next) !== JSON.stringify(this.states)) {
-                        this.states = next;
-                        cx.notify();
+                    for (;;) {
+                        await watchFolder(`${home()}/${PRESS_DIR}`);
+                        this.readStates(cx);
                     }
-                    if (this.settlePresses()) cx.notify();
-                } finally {
-                    this.statesBusy = false;
+                } catch {
+                    this.isPressWatched = false;
                 }
             });
         }
@@ -4449,6 +4452,50 @@ export default class ClaudeChat extends View {
         });
     }
 
+    // the thread's own state and the fleet's, as x-mod-stash wrote them for the band's four buttons, and the presses
+    // in the press file it has not answered yet
+    /** @param {import('gpui-kit').Context} cx */
+    readStates(cx) {
+        if (this.statesBusy) return;
+        this.statesBusy = true;
+        const pid = this.where?.container ? null : this.where?.pid;
+        cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
+            try {
+                const next = await bandStates(pid);
+                if (JSON.stringify(next) !== JSON.stringify(this.states)) {
+                    this.states = next;
+                    cx.notify();
+                }
+                if (this.settlePresses()) cx.notify();
+            } finally {
+                this.statesBusy = false;
+            }
+        });
+    }
+
+    // what waits on the stash: this band's own presses and the press file's, the newest per button, minus each the
+    // state already reads, so the deck's press and the band's draw the same
+    pendingNow() {
+        /** @type {import('./band.js').Pending} */
+        const merged = { ...(this.states?.presses ?? {}) };
+        for (const [key, p] of Object.entries(this.pressed ?? {})) {
+            const k = /** @type {import('./band.js').PressKey} */ (key);
+            if (!merged[k] || p.at > merged[k].at) merged[k] = p;
+        }
+        const base = bandButtons({
+            fleet: this.states?.fleet,
+            isDeckShown: true,
+            override: { isOn: false },
+            thread: this.states?.thread,
+        });
+        /** @type {import('./band.js').Pending} */
+        const left = {};
+        for (const [key, p] of Object.entries(merged))
+            if (base.find((b) => b.key === key)?.isOn !== p.on)
+                left[/** @type {import('./band.js').PressKey} */ (key)] = p;
+        return left;
+    }
+
     // a press is settled once the stash's state reads what it asked, or after PENDING_MS without an answer
     settlePresses() {
         /** @type {import('./band.js').Pending} */
@@ -4569,7 +4616,7 @@ export default class ClaudeChat extends View {
                                         override: this.override ?? {
                                             isOn: false,
                                         },
-                                        pending: this.pressed,
+                                        pending: this.pendingNow(),
                                         thread: this.states?.thread,
                                     }).map((btn) => this.bandButton(t, btn)),
                                 ),

@@ -7,6 +7,7 @@ import {
     byName,
     hotOf,
     hotPressLine,
+    hotPresses,
     inListOrder,
     literalAngles,
     nextSeats,
@@ -437,16 +438,43 @@ describe('a keep-hot button on each deck row (dima, 23:16)', () => {
         });
     });
 
-    test('a press not answered yet draws the state it asked for, until 12 s pass', () => {
+    test('a press not answered yet draws the state it asked for, until 20 s pass', () => {
         expect(hotOf(null, { at: now - 1000, on: true }, now)).toMatchObject({
             isOn: true,
             isPending: true,
         });
-        expect(hotOf(null, { at: now - 13000, on: true }, now).isOn).toBe(
+        expect(hotOf(null, { at: now - 21000, on: true }, now).isOn).toBe(
             false,
         );
         expect(
             hotOf({ since }, { at: now - 1000, on: true }, now).isPending,
+        ).toBe(false);
+    });
+});
+
+describe('the deck follows a press made on the band (dima, 23:42)', () => {
+    const now = 1_000_000;
+    const file = [
+        { at: now - 5000, button: 'hot', on: true, sid: 'a' },
+        { at: now - 3000, button: 'hot', on: false, sid: 'a' },
+        { at: now - 2000, button: 'wind', on: true, sid: 'a' },
+        { at: now - 1000, button: 'hot', on: true, sid: 'b' },
+    ]
+        .map((l) => `${JSON.stringify(l)}\n`)
+        .join('');
+
+    test("each thread's newest hot press, from whichever band wrote it", () => {
+        expect(hotPresses(file)).toEqual(
+            new Map([
+                ['a', { at: now - 3000, on: false }],
+                ['b', { at: now - 1000, on: true }],
+            ]),
+        );
+    });
+
+    test('a press waits for the stash past its slow shelf write (about 16 s)', () => {
+        expect(
+            hotOf({ since: 1 }, { at: now - 17_000, on: false }, now).isOn,
         ).toBe(false);
     });
 });

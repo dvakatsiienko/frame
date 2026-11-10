@@ -303,8 +303,9 @@ export const untickDoor = (pending) => (pending === 'tick' ? 'drop' : 'untick');
 export const PRESS_DIR = '.claude/shelf/band-presses';
 export const PRESS_FILE = `${PRESS_DIR}/band.jsonl`;
 const DAY_MS = 24 * 60 * 60 * 1000;
-// a press the stash has not answered by then gives the button its state back
-export const PENDING_MS = 12 * 1000;
+// a press the stash has not answered by then gives the button its state back: a hot press reaches the thread's state
+// file at the stash's third 4 s poll, about 16 s at worst
+export const PENDING_MS = 20 * 1000;
 
 /** @typedef {{ at: number, button: 'hot', on: boolean, sid: string }} HotPress */
 
@@ -358,4 +359,33 @@ export function hotOf(hot, pressed, now) {
                 ? `keep hot: on since ${clock(hot.since)}`
                 : 'keep hot',
     };
+}
+
+/**
+ * each thread's newest hot press in the band file, from whichever band or row wrote it, so the row draws a press made
+ * on the band above the chat too
+ * @param {string | null} text
+ * @returns {Map<string, { at: number, on: boolean }>}
+ */
+export function hotPresses(text) {
+    /** @type {Map<string, { at: number, on: boolean }>} */
+    const presses = new Map();
+    for (const line of (text ?? '').split('\n')) {
+        let p;
+        try {
+            p = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        if (
+            p?.button !== 'hot' ||
+            typeof p.sid !== 'string' ||
+            typeof p.at !== 'number'
+        )
+            continue;
+        const was = presses.get(p.sid);
+        if (!was || p.at > was.at)
+            presses.set(p.sid, { at: p.at, on: p.on === true });
+    }
+    return presses;
 }

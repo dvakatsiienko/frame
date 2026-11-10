@@ -18,6 +18,7 @@ import {
 
 import {
     ORDER_KEY,
+    PENDING_MS,
     PRESS_DIR,
     PRESS_FILE,
     SEATS_BEAT_MS,
@@ -27,6 +28,7 @@ import {
     dropPress,
     hotOf,
     hotPressLine,
+    hotPresses,
     inListOrder,
     literalAngles,
     nextSeats,
@@ -215,6 +217,8 @@ export default class FleetBoard extends View {
         // his 🔥 presses by sid, drawn until the thread's state file reads them
         /** @type {Map<string, { at: number, on: boolean }>} */
         this.hotPressed = new Map();
+        /** @type {Map<string, { at: number, on: boolean }>} */
+        this.filePresses = new Map();
         /** @type {string | null} */
         this.pressError = null;
         /** @type {string | null} */
@@ -224,7 +228,13 @@ export default class FleetBoard extends View {
         this.week = null;
         cx.timer.every(SEATS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
-        for (const folder of [SESSIONS, STATES, `${CLAUDE}/shelf`]) {
+        // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once
+        for (const folder of [
+            SESSIONS,
+            STATES,
+            `${CLAUDE}/shelf`,
+            `${home()}/${PRESS_DIR}`,
+        ]) {
             cx.spawn(async (cx) => {
                 for (;;) {
                     const changed = await watchFolder(folder);
@@ -246,6 +256,11 @@ export default class FleetBoard extends View {
         cx.spawn(async (cx) => {
             const shelf = await states();
             const lanes = (await json(LANES))?.lanes ?? [];
+            this.filePresses = hotPresses(
+                await readTextFile(`${home()}/${PRESS_FILE}`).catch(
+                    () => /** @type {string | null} */ (null),
+                ),
+            );
             this.week =
                 (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
                 null;
@@ -436,7 +451,14 @@ export default class FleetBoard extends View {
     // own, never the row's phases toggle
     /** @param {Theme} t @param {Row} s */
     hotButton(t, s) {
-        const hot = hotOf(s.hot, this.hotPressed.get(s.sid), Date.now());
+        // the newest press for this thread, its own click or one from any band
+        const own = this.hotPressed.get(s.sid);
+        const filed = this.filePresses?.get(s.sid);
+        const hot = hotOf(
+            s.hot,
+            own && (!filed || own.at >= filed.at) ? own : filed,
+            Date.now(),
+        );
         return Button.new(`hot-${s.sid}`)
             .size(22)
             .flex_none()
@@ -497,7 +519,7 @@ export default class FleetBoard extends View {
             }
             cx.notify();
             // the button gives its state back if the thread never answers
-            cx.timer.after(13000, (cx) => cx.notify());
+            cx.timer.after(PENDING_MS + 1000, (cx) => cx.notify());
         });
     }
 
