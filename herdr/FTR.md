@@ -126,7 +126,7 @@ wish: PK-363
   - decision: the strip writes nothing but the ticks file and calls no `layout.*` command, since herdr saves those into his personal layout
   - decision: the seat comes from the chat mod's own rule, so when zoo's chat block names no terminal, both follow the shown tab together
   - decision: fleet-board draws it as a second copy in `view: seat`, since a herdr mod imports nothing outside its folder; it shows once `layouts/zoo.json` places that block (his ⚠️ tick)
-- 🧭 the band moves inside the chat's text box, as the desktop app's band had it
+- 🧭 the band moves inside the chat's text box, as the desktop app's band had it ([FRM-565](https://linear.app/x-com/issue/FRM-565))
   - given a seat's tab is open in the Chat view
   - then its box carries the seat's «waiting on» line, its buttons and its ctx meter, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
   - and the 5h line is off for now, back if he moves to the $100 plan (on $200 it is not shown)

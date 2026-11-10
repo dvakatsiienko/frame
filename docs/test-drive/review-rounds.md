@@ -118,5 +118,6 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-09 · FRM-552, herdr lane (orbit in herdr), quick lane on main: clean at 3 rounds · sixth sense found exit 3 untested and 3 P2s in round 1, fixed in 84b72107/4cb70028; dima's live press caught a dead click (a stale render cx), fixed in ff9a878e · local reviews 3 (wisphunter 5, built-in 9, matt's spec axis) · measure: rounds against the cap, the want line on live state
 - 2026-11-09 · FRM-558, herdr lane (board polish), quick lane on main: clean every batch, 3 batches · batch 2 escalated not-checkable until a herdr restart (a linked mod never hot-reloads), then clean live; batch 3 clean live on c47ab458
 - 2026-11-07 · BYT-132, bytes#143: clean at 2 rounds, local reviews 3 · exit 1 waits on the first renovate pr, exit 4 about 11-14 · measure: rounds, the post-merge lines outside the clean
+- 2026-11-10 · FRM-556, the chat into frame as x-herdr-chatter (herdr lane, dima-mode on main, no sixth sense) · one 🐆 wisphunter card on the normalized diff over zoo's copy · 3 real, all fixed in 9944366b: the swatch order lost to biome's key sort, the old store path off appHome(), a flag set on a failed read; 2 questions answered · useful
 
 ## verdict
