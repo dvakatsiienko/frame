@@ -12,7 +12,7 @@ wish: PK-363
 - 🧭 the setup is `x-herdr`, and «zoo» appears nowhere he looks
   - given the takeover of zoo's parts is done
   - then the layout is `layouts/x-herdr.json`, and a grep for «zoo» in his layout, the mod names, the shared keys and every label he sees prints nothing
-  - decision: the name is his pick, «it is plain but clean» (17:17); each mod keeps its own name (fleet-board, fleet-chatter, agents-list)
+  - decision: the name is his pick, «it is plain but clean» (17:17); each mod keeps its own name (fleet-board, x-herdr-chatter, agents-list)
   - decision: the layout rename lands last, as its own ⚠️ ask, after a throwaway herdr home shows what a rename restarts (W416)
 
 ## fleet-board — sessions
@@ -89,17 +89,17 @@ wish: PK-363
   - decision: the tray stays and is rebranded as ours, after my-tabs (dima, 16:41); bound in `keys.json` `global` by clio on his word, backup `~/.local/state/herdr-mod-backups/keys-1641.json`
   - decision: a `global` ctrl+letter is taken from the terminal (herdr's guide, § Keys), so in a seat's Terminal view cc's ctrl+j new line no longer reaches cc (read from the guide, not probed by a keypress)
 
-## chat view — fleet-chatter
+## chat view — x-herdr-chatter
 
-- ⬜ the chat is ours by name: `fleet-chatter`
-  - makes: `home/.config/herdr-app/mods/fleet-chatter`, landed into `~/.config/herdr-app/mods/fleet-chatter` by `herdr-mods:land`
-  - given `layouts/zoo.json` places `fleet-chatter`
-  - then herdr opens no file of zoo's `claude-chat`, and every name dima sees reads fleet-chatter
+- ⬜ the chat is ours by name: `x-herdr-chatter`
+  - makes: `home/.config/herdr-app/mods/x-herdr-chatter`, landed into `~/.config/herdr-app/mods/x-herdr-chatter` by `herdr-mods:land`
+  - given `layouts/zoo.json` places `x-herdr-chatter`
+  - then herdr opens no file of zoo's `claude-chat`, and every name dima sees reads x-herdr-chatter
   - decision: copied from zoo's `claude-chat` (FRM-556, 11-10), whose folder stays on disk unplaced; the shared keys `chat.look/subs/containers` keep their names until zoo's other mods are ours
 - ⬜ drafts typed under the old name come along
   - given dima typed a draft in a seat's box while the chat was `claude-chat`
-  - when `fleet-chatter` first starts
-  - then that seat's box shows the draft, and a draft typed in `fleet-chatter` is never overwritten
+  - when `x-herdr-chatter` first starts
+  - then that seat's box shows the draft, and a draft typed in `x-herdr-chatter` is never overwritten
   - decision: herdr keeps a mod's storage per mod name, so `drafts.js` reads `data/claude-chat/store-*.json` once (proven on a throwaway mod, 17:17)
 
 - ⬜ the effort shows the seat's live value

@@ -1,4 +1,4 @@
-// fleet-chatter: ours since FRM-556, copied from zoo's claude-chat (11-10) and evolved in frame, landed by herdr-mods:land.
+// x-herdr-chatter: ours since FRM-556, copied from zoo's claude-chat (11-10) and evolved in frame, landed by herdr-mods:land.
 // Claude Code as a chat. Shows one Claude agent's conversation, read from Claude's own transcript
 // (~/.claude/projects/<folder>/<session>.jsonl), and types what you write into its terminal.
 // The terminal stays the real Claude: when it asks something (a permission), the bottom of its
@@ -1106,14 +1106,14 @@ export default class ClaudeChat extends View {
             cx.bind_keys(
                 ['Input', 'Textarea', 'TextArea'].flatMap((box) =>
                     [
-                        ['down', 'fleet_chatter_menu_down'],
-                        ['up', 'fleet_chatter_menu_up'],
-                        ['tab', 'fleet_chatter_menu_fill'],
-                        ['escape', 'fleet_chatter_menu_close'],
-                        ['left', 'fleet_chatter_menu_leave'],
-                        ['right', 'fleet_chatter_menu_leave'],
-                        ['home', 'fleet_chatter_menu_leave'],
-                        ['end', 'fleet_chatter_menu_leave'],
+                        ['down', 'x_herdr_chatter_menu_down'],
+                        ['up', 'x_herdr_chatter_menu_up'],
+                        ['tab', 'x_herdr_chatter_menu_fill'],
+                        ['escape', 'x_herdr_chatter_menu_close'],
+                        ['left', 'x_herdr_chatter_menu_leave'],
+                        ['right', 'x_herdr_chatter_menu_leave'],
+                        ['home', 'x_herdr_chatter_menu_leave'],
+                        ['end', 'x_herdr_chatter_menu_leave'],
                     ].map(([keystroke, action]) => ({
                         action,
                         context: `ChatSlash > ${box}`,
@@ -1124,7 +1124,7 @@ export default class ClaudeChat extends View {
             // Esc while Claude works = Stop (the composer is "ChatStop" then, with the menu closed).
             cx.bind_keys(
                 ['Input', 'Textarea', 'TextArea'].map((box) => ({
-                    action: 'fleet_chatter_stop',
+                    action: 'x_herdr_chatter_stop',
                     context: `ChatStop > ${box}`,
                     keystroke: 'escape',
                 })),
@@ -4459,7 +4459,7 @@ export default class ClaudeChat extends View {
                                 openOverlay({
                                     height: 520,
                                     kind: 'popup',
-                                    mod: 'fleet-chatter',
+                                    mod: 'x-herdr-chatter',
                                     props: { settings: true },
                                     width: 360,
                                 }),
@@ -4632,22 +4632,22 @@ export default class ClaudeChat extends View {
                                     !this.stuck,
                                 (el) => el.key_context('ChatStop'),
                             )
-                            .on_action('fleet_chatter_stop', (_e, cx) =>
+                            .on_action('x_herdr_chatter_stop', (_e, cx) =>
                                 this.stop(cx),
                             )
-                            .on_action('fleet_chatter_menu_down', (_e, cx) =>
+                            .on_action('x_herdr_chatter_menu_down', (_e, cx) =>
                                 this.menuKey('down', cx),
                             )
-                            .on_action('fleet_chatter_menu_up', (_e, cx) =>
+                            .on_action('x_herdr_chatter_menu_up', (_e, cx) =>
                                 this.menuKey('up', cx),
                             )
-                            .on_action('fleet_chatter_menu_fill', (_e, cx) =>
+                            .on_action('x_herdr_chatter_menu_fill', (_e, cx) =>
                                 this.menuKey('fill', cx),
                             )
-                            .on_action('fleet_chatter_menu_close', (_e, cx) =>
+                            .on_action('x_herdr_chatter_menu_close', (_e, cx) =>
                                 this.menuKey('close', cx),
                             )
-                            .on_action('fleet_chatter_menu_leave', (_e, cx) =>
+                            .on_action('x_herdr_chatter_menu_leave', (_e, cx) =>
                                 this.menuKey('leave', cx),
                             )
                             .gap(6)
