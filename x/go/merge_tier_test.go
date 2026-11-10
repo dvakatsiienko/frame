@@ -91,7 +91,7 @@ func TestMergeAutoRefusesASecurityPassOnOtherCode(t *testing.T) {
 		{"a pass on an ancestor", true, func(_ *testing.T, w *mergeWorld) string { return w.head }},
 		{"a pass on other code", false, func(*testing.T, *mergeWorld) string { return runSha(5) }},
 		{"a pass on the base, in every pr's history", false, func(t *testing.T, w *mergeWorld) string { return gitT(t, w.seed, "rev-parse", "main") }},
-		{"a pass that is a ref name, not a sha", false, func(*testing.T, *mergeWorld) string { return "origin/coder/x" }},
+		{"a pass that is a ref name, not a sha", false, func(*testing.T, *mergeWorld) string { return "origin/codie/x" }},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()

@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ticketOfBranch = regexp.MustCompile(`(?i)^(?:codie|coder)/((?:FRM|BYT|PK)-\d+)(?:-|$)`) // read-both: coder/ before the 10-29 rename
+	ticketOfBranch = regexp.MustCompile(`(?i)^codie/((?:FRM|BYT|PK)-\d+)(?:-|$)`)
 	ticketOfBody   = regexp.MustCompile(`(?m)^[ \t*-]*ticket:[ \t]*([A-Z]+-\d+)\b`)
 	fenceLine      = regexp.MustCompile("^[ \t]*(`{3,}|~{3,})(.*)$") // any indent: a fence nested in a list is a fence
 	signedHeading  = regexp.MustCompile(`(?m)^## signed\s*$`)

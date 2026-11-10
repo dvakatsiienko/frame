@@ -263,6 +263,11 @@ func TestBriefLintRules(t *testing.T) {
 		{"a slash skill with a user quiz", "FRM-1: run /to-tickets on the spec\n", true},
 		{"a skill named in a plain verb phrase", "FRM-1: use to-tickets on the spec\n", true},
 		{"a skill whose body asks no approval", "load matt's `tdd` first\n", false},
+		{"a mod path with no plugin-authoring", "edit `home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/lint.ts`\n", true},
+		{"a mod path with plugin-authoring named", "load plugin-authoring first\nedit `home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/lint.ts`\n", false},
+		{"a file at the mods root, no mod's own", "read `home/.claude/plugin-x/mods/AGENTS.md` and `plugin-x/mods/test.ts`\n", false},
+		{"a mod path with plugin-authoring named after it", "edit `plugin-x/mods/x-mod-stash/FTR.md`\nthe plugin-authoring skill holds the hooks contract\n", false},
+		{"the mods dir alone, as a fence", "not yours: everything under `home/.claude/plugin-x/mods/`\n", false},
 		{"a skill with a user quiz beside an unrelated approval", "cut it with matt's `to-tickets` for FRM-1\nno push until dima approves at 13:00\n", true},
 	}
 	skill := func(name string) string {

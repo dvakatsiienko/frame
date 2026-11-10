@@ -219,6 +219,24 @@ test('a piped gate in a Monitor is refused', async ($, on) => {
     expect(r.deny).toContain('red gate quiet');
 });
 
+test('a piped gate is sent to x gate run', async ($, on) => {
+    world(on);
+    const r = await $.tool.call({
+        command: 'pnpm typecheck | tail -5',
+        tool: 'Bash',
+    });
+    expect(r.deny).toContain('x gate run -- <command…>');
+});
+
+test('a gate behind x gate run runs', async ($, on) => {
+    world(on);
+    const r = await $.tool.call({
+        command: 'x gate run -- pnpm typecheck',
+        tool: 'Bash',
+    });
+    expect(r.deny).toBeUndefined();
+});
+
 test('a refusal says nothing in the command ran', async ($, on) => {
     world(on);
     expect(

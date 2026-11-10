@@ -38,11 +38,13 @@ type Impl struct {
 	Ask    func(plan any) string
 	// a needsApply verb's read-only mode: its plan is the answer, with nothing to apply
 	ReadOnly func(flags Flags) bool
+	// a needsApply verb's own guard already holds for this plan, so it applies with no --apply (docs/adr/X-0003)
+	Unasked func(plan any) bool
 }
 
 var impls = map[string]Impl{
 	"lane commit":      {Run: commit, Undone: "nothing was committed"},
-	"lane push":        {Plan: pushPlan, Apply: push, Undone: "nothing was pushed", Ask: askPush},
+	"lane push":        {Plan: pushPlan, Apply: push, Undone: "nothing was pushed", Ask: askPush, Unasked: ownBranchPush},
 	"lane pr-open":     {Plan: prPlan, Apply: prOpen, Undone: "no pr was opened", Ask: askPR},
 	"lane merge-main":  {Run: mergeMain, Undone: "nothing was merged"},
 	"lane rebase-main": {Plan: rebasePlan, Apply: rebaseMain, Undone: "the branch is as it was", Ask: askRebase},
@@ -81,6 +83,7 @@ var impls = map[string]Impl{
 	"linear body":       {Run: linearBody, Undone: "nothing was written"},
 	"linear set":        {Run: linearSet, Undone: "nothing was changed"},
 	"linear link":       {Run: linearLink, Undone: "no relation was made"},
+	"linear unlink":     {Run: linearUnlink, Undone: "no relation was removed"},
 	"linear comment":    {Run: linearComment, Undone: "nothing was posted"},
 	"linear update":     {Run: linearUpdate, Undone: "nothing was posted"},
 	"linear api":        {Run: linearAPI},
@@ -95,6 +98,7 @@ var impls = map[string]Impl{
 	"completion":        {Run: completion},
 	"stats":             {Run: stats},
 	"trace record":      {Run: traceRecord},
+	"gate run":          {Run: gateRun, Undone: "the command did not run"},
 }
 
 // set by -ldflags at build; a dev run falls back to the executable's own tree
@@ -314,7 +318,7 @@ func dispatch(m mode, verb Verb, args []string, flags Flags) int {
 	if impl.ReadOnly != nil && impl.ReadOnly(flags) {
 		return finishOK(m, verb.Name, r, plan)
 	}
-	if flags["apply"] != true {
+	if flags["apply"] != true && (impl.Unasked == nil || !impl.Unasked(plan)) {
 		approved := false
 		if m.interactive {
 			if approved, err = confirm(r, impl.Ask(plan)); err != nil {

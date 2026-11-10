@@ -7,22 +7,26 @@ import (
 	"testing"
 )
 
-// frame's own pre-commit go job behind a stub go that logs its args; the door is `x lane commit` or a plain git commit through lefthook
-func xGoReadsWorld(t *testing.T, goExit string) (dir string, env []string, goCalls func() string) {
+// frame's own x-go-reads job, as its lefthook.yaml holds it
+func xGoReadsJob(t *testing.T) string {
 	t.Helper()
 	gates, err := readHookGates("../..", "pre-commit")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var job string
 	for _, g := range gates {
 		if g.name == "x-go-reads" {
-			job = g.run
+			return g.run
 		}
 	}
-	if job == "" {
-		t.Fatal("frame's lefthook.yaml holds no x-go-reads job")
-	}
+	t.Fatal("frame's lefthook.yaml holds no x-go-reads job")
+	return ""
+}
+
+// frame's own pre-commit go job behind a stub go that logs its args; the door is `x lane commit` or a plain git commit through lefthook
+func xGoReadsWorld(t *testing.T, goExit string) (dir string, env []string, goCalls func() string) {
+	t.Helper()
+	job := xGoReadsJob(t)
 	dir, env = gateFixture(t, "pre-commit:\n  commands:\n    x-go-reads:\n      run: '"+strings.ReplaceAll(job, "'", "''")+"'\n")
 	write(t, filepath.Join(dir, "x/go/go.mod"), "module x\n\ngo 1.21\n")
 	write(t, filepath.Join(dir, "script/test-cpu-budget.tsv"), "x-go\t99999\t2026-11-09\tfixture\n")
@@ -116,6 +120,32 @@ func TestCommitRunsNoXGoTestsForAPathOffTheList(t *testing.T) {
 	}
 	if got := goCalls(); got != "" {
 		t.Errorf("go ran %q, want none", got)
+	}
+}
+
+// a staged read that fails gives the job no list to judge by: it runs the tests, as a list it cannot read does.
+// git puts its own exec dir first on a hook's PATH, so no stub git reaches the job there; outside any repo the read fails by itself
+func TestXGoReadsJobRunsTheTestsWhenTheStagedReadFails(t *testing.T) {
+	t.Parallel()
+	dir, bin, calls := t.TempDir(), t.TempDir(), filepath.Join(t.TempDir(), "go-calls")
+	write(t, filepath.Join(dir, "script/index-run.sh"), "#!/bin/sh\nexec \"$@\"\n")
+	write(t, filepath.Join(dir, "script/test-cpu-budget.sh"), "#!/bin/sh\nshift 2\nexec \"$@\"\n")
+	write(t, filepath.Join(dir, xGoReadsFile), readFile(t, filepath.Join("../..", xGoReadsFile)))
+	write(t, filepath.Join(dir, "x/go/go.mod"), "module x\n\ngo 1.21\n")
+	write(t, filepath.Join(bin, "go"), "#!/bin/sh\necho \"$*\" >> "+calls+"\n")
+	env := append(cleanEnv(), "PATH="+bin+":"+envValue(cleanEnv(), "PATH"), "GIT_CEILING_DIRECTORIES="+filepath.Dir(dir))
+	read := exec.Command("git", "diff", "--cached", "--name-only", "--no-renames")
+	read.Dir, read.Env = dir, env
+	if read.Run() == nil {
+		t.Fatal("control: the staged read passed outside a repo, so the row proves nothing")
+	}
+
+	job := exec.Command("sh", "-c", xGoReadsJob(t))
+	job.Dir, job.Env = dir, env
+	out, err := job.CombinedOutput()
+
+	if got := strings.TrimSpace(readOr(calls, "")); err != nil || !uncachedWholeRun(got) {
+		t.Errorf("%v, go ran %q, want one whole run when the staged read failed:\n%s", err, got, out)
 	}
 }
 

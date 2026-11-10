@@ -774,14 +774,20 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 type worktreeEntry struct {
 	path, branch, sha string
 	detached, locked  bool
+	// what `git worktree lock --reason` holds: cc writes its session's pid and start time there
+	lockReason string
 }
+
+var lockHolder = regexp.MustCompile(`\(pid (\d+) start ([^)]+)\)`)
 
 func worktreesOf(listed string) []worktreeEntry {
 	var entries []worktreeEntry
 	for block := range strings.SplitSeq(listed, "\n\n") {
 		var e worktreeEntry
 		for line := range strings.SplitSeq(block, "\n") {
-			e.locked = e.locked || line == "locked" || strings.HasPrefix(line, "locked ")
+			if reason, found := strings.CutPrefix(line, "locked "); found || line == "locked" {
+				e.locked, e.lockReason = true, reason
+			}
 			if v, ok := strings.CutPrefix(line, "worktree "); ok {
 				e.path = v
 			}
@@ -802,13 +808,31 @@ func worktreesOf(listed string) []worktreeEntry {
 func treeStay(e worktreeEntry, main string, selves []string, mergedHead string) string {
 	reason := treeDirt(e.path, main, selves, mergedHead)
 	if e.locked {
-		// git worktree lock: a session working in it, decamp refuses it anyway
-		reason = strings.TrimPrefix(reason+", a live session holds it", ", ")
+		// git worktree lock: a session working in it, git refuses to remove it either way
+		reason = strings.TrimPrefix(reason+", "+lockSays(e), ", ")
 	}
 	if session := liveSessionIn(e.path); session != "" {
 		reason = strings.TrimPrefix(reason+", a live session sits in it: "+session, ", ")
 	}
 	return reason
+}
+
+// a lock outlives a session that was stopped; its pid and start time, read together, say whether the holder is still that
+// process. a lock that names no pid cannot be read, so it holds
+func lockSays(e worktreeEntry) string {
+	holder := lockHolder.FindStringSubmatch(e.lockReason)
+	if holder == nil {
+		return "a live session holds it"
+	}
+	pid, _ := strconv.Atoi(holder[1])
+	gone := "pid " + holder[1] + " is gone"
+	switch started := processStarted(pid); {
+	case started == strings.Join(strings.Fields(holder[2]), " "):
+		return "a live session holds it"
+	case started != "":
+		gone = "pid " + holder[1] + " is another process now"
+	}
+	return "its lock is stale, " + gone + ": git worktree unlock " + e.path
 }
 
 // the session registry names each session's pid; a file left by a dead pid says nothing, and the registry's cwd may be

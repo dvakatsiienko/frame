@@ -183,7 +183,7 @@ func listStale(r *Run) (any, error) {
 	branches := []staleBranch{}
 	if err := r.Step("read", "the lane branches against origin/main", func() (string, error) {
 		_, _ = gitIn(main, "fetch", "-q", "origin", "main")
-		refs, err := mustGitIn(main, "for-each-ref", "for-each-ref", "--format=%(refname:short) %(committerdate:unix)", "refs/heads/worktree-*", "refs/heads/codie/", "refs/heads/coder/")
+		refs, err := mustGitIn(main, "for-each-ref", "for-each-ref", "--format=%(refname:short) %(committerdate:unix)", "refs/heads/worktree-*", "refs/heads/codie/")
 		if err != nil {
 			return "", err
 		}

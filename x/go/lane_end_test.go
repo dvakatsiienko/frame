@@ -12,10 +12,10 @@ import (
 // the pr's branch renamed to the lane's shape, on the seed, the origin and the hub's answer
 func (w *mergeWorld) laneBranch(t *testing.T, name string) {
 	t.Helper()
-	gitT(t, w.seed, "branch", "-m", "coder/x", name)
+	gitT(t, w.seed, "branch", "-m", "codie/x", name)
 	gitT(t, w.seed, "push", "-q", "origin", name)
-	gitT(t, w.seed, "push", "-q", "origin", ":coder/x")
-	w.hub.pages[repoPath+"/pulls/7"] = strings.ReplaceAll(w.hub.pages[repoPath+"/pulls/7"], "coder/x", name)
+	gitT(t, w.seed, "push", "-q", "origin", ":codie/x")
+	w.hub.pages[repoPath+"/pulls/7"] = strings.ReplaceAll(w.hub.pages[repoPath+"/pulls/7"], "codie/x", name)
 }
 
 func (w *mergeWorld) treeOn(t *testing.T, branch string) string {
@@ -44,8 +44,8 @@ func TestMergeAutoTakesTheMergedBranchLocalAndRemote(t *testing.T) {
 
 	got := w.run(t, "7", "--apply")
 
-	if got.code != 0 || exists(tree) || w.onClone(t, "coder/x") || w.onOrigin(t, "coder/x") {
-		t.Fatalf("exit %d, tree %v, local %v, remote %v: want all gone\n%s", got.code, exists(tree), w.onClone(t, "coder/x"), w.onOrigin(t, "coder/x"), got.stdout)
+	if got.code != 0 || exists(tree) || w.onClone(t, "codie/x") || w.onOrigin(t, "codie/x") {
+		t.Fatalf("exit %d, tree %v, local %v, remote %v: want all gone\n%s", got.code, exists(tree), w.onClone(t, "codie/x"), w.onOrigin(t, "codie/x"), got.stdout)
 	}
 }
 
@@ -57,7 +57,7 @@ func stopRebase(t *testing.T, tree, backend string) {
 	gitT(t, tree, "add", "script/foo.ts")
 	gitT(t, tree, "commit", "-q", "-m", "a rival")
 	rival := strings.TrimSpace(gitT(t, tree, "rev-parse", "HEAD"))
-	gitT(t, tree, "checkout", "-q", "coder/x")
+	gitT(t, tree, "checkout", "-q", "codie/x")
 	rebaseStops(t, tree, backend, rival)
 }
 
@@ -68,8 +68,8 @@ func rebaseStops(t *testing.T, tree string, args ...string) {
 	rebase.Dir = tree
 	rebase.Env = cleanEnv()
 	out, _ := rebase.CombinedOutput()
-	if stoppedOn(tree) != "coder/x" {
-		t.Fatalf("want the rebase stopped on coder/x, it read %q: %s", stoppedOn(tree), out)
+	if stoppedOn(tree) != "codie/x" {
+		t.Fatalf("want the rebase stopped on codie/x, it read %q: %s", stoppedOn(tree), out)
 	}
 }
 
@@ -121,7 +121,7 @@ func TestMergeAutoKeepsABranchAndNamesWhy(t *testing.T) {
 			write(t, filepath.Join(w.seed, "z.txt"), "a later push\n")
 			gitT(t, w.seed, "add", "z.txt")
 			gitT(t, w.seed, "commit", "-q", "-m", "later")
-			gitT(t, w.seed, "push", "-q", "origin", "coder/x")
+			gitT(t, w.seed, "push", "-q", "origin", "codie/x")
 		}, "the merge did not carry", false},
 		{"an open pr based on it", func(t *testing.T, w *mergeWorld) {
 			w.hub.pages[repoPath+"/pulls"] = `[{"number":9}]`
@@ -135,13 +135,13 @@ func TestMergeAutoKeepsABranchAndNamesWhy(t *testing.T) {
 			t.Parallel()
 			w := newMergeWorld(t, "script/foo.ts")
 			w.withPnpm(t, "exit 0")
-			gitT(t, w.clone, "fetch", "-q", "origin", "coder/x:coder/x")
+			gitT(t, w.clone, "fetch", "-q", "origin", "codie/x:codie/x")
 			c.plant(t, w)
 
 			got := w.run(t, "7", "--apply")
 
-			if got.code != 0 || !strings.Contains(got.stdout, c.why) || !w.onOrigin(t, "coder/x") || (c.keepsBoth && !w.onClone(t, "coder/x")) {
-				t.Fatalf("exit %d, local %v, remote %v, want %q in:\n%s", got.code, w.onClone(t, "coder/x"), w.onOrigin(t, "coder/x"), c.why, got.stdout)
+			if got.code != 0 || !strings.Contains(got.stdout, c.why) || !w.onOrigin(t, "codie/x") || (c.keepsBoth && !w.onClone(t, "codie/x")) {
+				t.Fatalf("exit %d, local %v, remote %v, want %q in:\n%s", got.code, w.onClone(t, "codie/x"), w.onOrigin(t, "codie/x"), c.why, got.stdout)
 			}
 		})
 	}
@@ -740,7 +740,7 @@ func TestDecampListStaleCountsWhatForEachRefCounts(t *testing.T) {
 	if err := json.Unmarshal([]byte(got.stdout), &envelope); err != nil || got.code != 0 {
 		t.Fatalf("exit %d, %v:\n%s", got.code, err, got.stdout)
 	}
-	want := strings.Fields(gitT(t, main, "for-each-ref", "--format=%(refname:short)", "refs/heads/worktree-*", "refs/heads/codie/", "refs/heads/coder/"))
+	want := strings.Fields(gitT(t, main, "for-each-ref", "--format=%(refname:short)", "refs/heads/worktree-*", "refs/heads/codie/"))
 	if envelope.Data.Count != len(want) || len(envelope.Data.Branches) != len(want) {
 		t.Fatalf("count %d, want %d %v:\n%s", envelope.Data.Count, len(want), want, got.stdout)
 	}

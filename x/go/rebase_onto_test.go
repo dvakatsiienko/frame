@@ -7,16 +7,16 @@ import (
 	"testing"
 )
 
-// #1 coder/x squash-merged onto main; coder/x-2 is the layer above it, pushed, checked out in the clone; base is coder/x's old head
+// #1 codie/x squash-merged onto main; codie/x-2 is the layer above it, pushed, checked out in the clone; base is codie/x's old head
 func layerOffSquash(t *testing.T) (w *rebaseWorld, base string) {
 	t.Helper()
-	w = newRebaseWorld(t, "coder/x")
+	w = newRebaseWorld(t, "codie/x")
 	base = gitT(t, w.clone, "rev-parse", "HEAD")
-	gitT(t, w.clone, "switch", "-q", "-c", "coder/x-2")
+	gitT(t, w.clone, "switch", "-q", "-c", "codie/x-2")
 	write(t, filepath.Join(w.clone, "layer.txt"), "the layer's change\n")
 	gitT(t, w.clone, "add", "layer.txt")
 	gitT(t, w.clone, "commit", "-q", "-m", "the layer's change")
-	gitT(t, w.clone, "push", "-q", "origin", "coder/x-2")
+	gitT(t, w.clone, "push", "-q", "origin", "codie/x-2")
 	w.mainMoves(t, "mine.txt", "codie's change\n")
 	return w, base
 }
@@ -44,8 +44,8 @@ func TestRebaseMainOntoMovesALayerOffASquash(t *testing.T) {
 	got := w.run(t, "--onto", base, "--apply")
 
 	head := gitT(t, w.clone, "rev-parse", "HEAD")
-	if above := subjectsAboveMain(t, w); got.code != 0 || above != "the layer's change" || remoteHead(t, w, "coder/x-2") != head {
-		t.Fatalf("exit %d, above main %q, remote %s, head %s: want the layer's own commit alone, pushed:\n%s", got.code, above, short(remoteHead(t, w, "coder/x-2")), short(head), got.stdout)
+	if above := subjectsAboveMain(t, w); got.code != 0 || above != "the layer's change" || remoteHead(t, w, "codie/x-2") != head {
+		t.Fatalf("exit %d, above main %q, remote %s, head %s: want the layer's own commit alone, pushed:\n%s", got.code, above, short(remoteHead(t, w, "codie/x-2")), short(head), got.stdout)
 	}
 }
 
@@ -64,12 +64,12 @@ func TestRebaseMainOntoWritesNothingBeforeApply(t *testing.T) {
 func TestRebaseMainOntoRefusesARivalsCommitOnTheRemote(t *testing.T) {
 	t.Parallel()
 	w, base := layerOffSquash(t)
-	theirs := rivalPush(t, w, "coder/x-2")
+	theirs := rivalPush(t, w, "codie/x-2")
 
 	got := w.run(t, "--onto", base, "--apply")
 
-	if msg := envelopeOf(got).Error; got.code == 0 || remoteHead(t, w, "coder/x-2") != theirs || !strings.Contains(msg, short(theirs)) {
-		t.Fatalf("exit %d, remote %s, error %q: want the rival's %s kept and named", got.code, short(remoteHead(t, w, "coder/x-2")), msg, short(theirs))
+	if msg := envelopeOf(got).Error; got.code == 0 || remoteHead(t, w, "codie/x-2") != theirs || !strings.Contains(msg, short(theirs)) {
+		t.Fatalf("exit %d, remote %s, error %q: want the rival's %s kept and named", got.code, short(remoteHead(t, w, "codie/x-2")), msg, short(theirs))
 	}
 }
 
@@ -95,8 +95,8 @@ func TestRebaseMainOntoRefusesHeadItself(t *testing.T) {
 
 	got := w.run(t, "--onto", tip, "--apply")
 
-	if got.code != 1 || remoteHead(t, w, "coder/x-2") != tip {
-		t.Fatalf("exit %d, remote %s: want a refusal and the remote kept:\n%s", got.code, short(remoteHead(t, w, "coder/x-2")), got.stdout)
+	if got.code != 1 || remoteHead(t, w, "codie/x-2") != tip {
+		t.Fatalf("exit %d, remote %s: want a refusal and the remote kept:\n%s", got.code, short(remoteHead(t, w, "codie/x-2")), got.stdout)
 	}
 }
 
@@ -130,13 +130,13 @@ func TestRebaseMainOntoRefusesAShaGitCannotRead(t *testing.T) {
 // a layer whose own commit conflicts with main: the verb stops, codie continues by hand, the rerun finishes the push
 func conflictingLayer(t *testing.T) (w *rebaseWorld, base string) {
 	t.Helper()
-	w = newRebaseWorld(t, "coder/x")
+	w = newRebaseWorld(t, "codie/x")
 	base = gitT(t, w.clone, "rev-parse", "HEAD")
-	gitT(t, w.clone, "switch", "-q", "-c", "coder/x-2")
+	gitT(t, w.clone, "switch", "-q", "-c", "codie/x-2")
 	write(t, filepath.Join(w.clone, "clash.txt"), "the layer's line\n")
 	gitT(t, w.clone, "add", "clash.txt")
 	gitT(t, w.clone, "commit", "-q", "-m", "the layer's change")
-	gitT(t, w.clone, "push", "-q", "origin", "coder/x-2")
+	gitT(t, w.clone, "push", "-q", "origin", "codie/x-2")
 	w.mainMoves(t, "mine.txt", "codie's change\n")
 	w.mainMoves(t, "clash.txt", "main's line\n")
 	return w, base
@@ -152,10 +152,10 @@ func continueByHand(t *testing.T, w *rebaseWorld) {
 func TestRebaseMainOntoFinishesThePushOnARerunAfterAConflict(t *testing.T) {
 	t.Parallel()
 	w, base := conflictingLayer(t)
-	oldRemote := remoteHead(t, w, "coder/x-2")
+	oldRemote := remoteHead(t, w, "codie/x-2")
 
 	stopped := w.run(t, "--onto", base, "--apply")
-	if msg := envelopeOf(stopped).Error; stopped.code != 1 || !strings.Contains(msg, "clash.txt") || remoteHead(t, w, "coder/x-2") != oldRemote {
+	if msg := envelopeOf(stopped).Error; stopped.code != 1 || !strings.Contains(msg, "clash.txt") || remoteHead(t, w, "codie/x-2") != oldRemote {
 		t.Fatalf("exit %d, error %q: want the conflict named and no push", stopped.code, msg)
 	}
 	mid := w.run(t, "--onto", base, "--apply")
@@ -167,8 +167,8 @@ func TestRebaseMainOntoFinishesThePushOnARerunAfterAConflict(t *testing.T) {
 	got := w.run(t, "--onto", base, "--apply")
 
 	head := gitT(t, w.clone, "rev-parse", "HEAD")
-	if above := subjectsAboveMain(t, w); got.code != 0 || remoteHead(t, w, "coder/x-2") != head || above != "the layer's change" {
-		t.Fatalf("exit %d, above main %q, remote %s, head %s: want the rerun to push the resolved layer:\n%s", got.code, above, short(remoteHead(t, w, "coder/x-2")), short(head), got.stdout)
+	if above := subjectsAboveMain(t, w); got.code != 0 || remoteHead(t, w, "codie/x-2") != head || above != "the layer's change" {
+		t.Fatalf("exit %d, above main %q, remote %s, head %s: want the rerun to push the resolved layer:\n%s", got.code, above, short(remoteHead(t, w, "codie/x-2")), short(head), got.stdout)
 	}
 	if exists(filepath.Join(w.clone, ".git", ontoRecordName)) {
 		t.Errorf("the record stayed after the push landed")
@@ -179,13 +179,13 @@ func TestRebaseMainOntoRerunRefusesARivalPushedDuringTheConflict(t *testing.T) {
 	t.Parallel()
 	w, base := conflictingLayer(t)
 	w.run(t, "--onto", base, "--apply")
-	theirs := rivalPush(t, w, "coder/x-2")
+	theirs := rivalPush(t, w, "codie/x-2")
 	continueByHand(t, w)
 
 	got := w.run(t, "--onto", base, "--apply")
 
-	if msg := envelopeOf(got).Error; got.code == 0 || remoteHead(t, w, "coder/x-2") != theirs || !strings.Contains(msg, short(theirs)) {
-		t.Fatalf("exit %d, remote %s, error %q: want the rival's %s kept and named", got.code, short(remoteHead(t, w, "coder/x-2")), msg, short(theirs))
+	if msg := envelopeOf(got).Error; got.code == 0 || remoteHead(t, w, "codie/x-2") != theirs || !strings.Contains(msg, short(theirs)) {
+		t.Fatalf("exit %d, remote %s, error %q: want the rival's %s kept and named", got.code, short(remoteHead(t, w, "codie/x-2")), msg, short(theirs))
 	}
 }
 
@@ -206,7 +206,7 @@ func TestRebaseMainOntoRunsAgainAfterAnAbort(t *testing.T) {
 func TestRebaseMainOntoRebasesACommitMadeAfterAnAbort(t *testing.T) {
 	t.Parallel()
 	w, base := layerOffSquash(t)
-	write(t, filepath.Join(w.clone, ".git", ontoRecordName), `{"branch":"coder/x-2","head":"`+gitT(t, w.clone, "rev-parse", "HEAD")+`"}`)
+	write(t, filepath.Join(w.clone, ".git", ontoRecordName), `{"branch":"codie/x-2","head":"`+gitT(t, w.clone, "rev-parse", "HEAD")+`"}`)
 	write(t, filepath.Join(w.clone, "more.txt"), "one more\n")
 	gitT(t, w.clone, "add", "more.txt")
 	gitT(t, w.clone, "commit", "-q", "-m", "one more")
@@ -222,7 +222,7 @@ func TestRebaseMainOntoRebasesACommitMadeAfterAnAbort(t *testing.T) {
 func TestRebaseMainOntoRebasesAnAmendMadeAfterAnAbort(t *testing.T) {
 	t.Parallel()
 	w, base := layerOffSquash(t)
-	write(t, filepath.Join(w.clone, ".git", ontoRecordName), `{"branch":"coder/x-2","head":"`+gitT(t, w.clone, "rev-parse", "HEAD")+`"}`)
+	write(t, filepath.Join(w.clone, ".git", ontoRecordName), `{"branch":"codie/x-2","head":"`+gitT(t, w.clone, "rev-parse", "HEAD")+`"}`)
 	gitT(t, w.clone, "commit", "-q", "--amend", "-m", "the layer's change, amended")
 
 	got := w.run(t, "--onto", base, "--apply")
@@ -239,7 +239,7 @@ func TestRebaseMainOntoRerunTakesItsOwnLandedPush(t *testing.T) {
 	was := gitT(t, w.clone, "rev-parse", "HEAD")
 	w.run(t, "--onto", base, "--apply")
 	continueByHand(t, w)
-	gitT(t, w.clone, "push", "-q", "-f", "origin", "coder/x-2")
+	gitT(t, w.clone, "push", "-q", "-f", "origin", "codie/x-2")
 	if was == gitT(t, w.clone, "rev-parse", "HEAD") {
 		t.Fatal("the rewrite left HEAD where it was")
 	}
@@ -253,7 +253,7 @@ func TestRebaseMainOntoRerunTakesItsOwnLandedPush(t *testing.T) {
 
 func TestRebaseMainPlainLeavesNoRecord(t *testing.T) {
 	t.Parallel()
-	w := newRebaseWorld(t, "coder/x")
+	w := newRebaseWorld(t, "codie/x")
 	w.mainMoves(t, "one.txt", "one\n")
 
 	got := w.run(t, "--apply")

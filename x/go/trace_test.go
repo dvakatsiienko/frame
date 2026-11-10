@@ -194,7 +194,7 @@ func TestTheTraceNamesTheRepoOfAWorktreeByItsMainCheckout(t *testing.T) {
 	t.Parallel()
 	state, dir := t.TempDir(), repo(t)
 	tree := filepath.Join(dir, ".claude/worktrees/FRM-1-x")
-	gitT(t, dir, "worktree", "add", "-q", "-b", "coder/x", tree)
+	gitT(t, dir, "worktree", "add", "-q", "-b", "codie/x", tree)
 	xIn(t, tree, tracing(state), "schema", "lane")
 	if lines := traces(t, state); len(lines) != 1 || lines[0]["vcs.repository.name"] != filepath.Base(dir) {
 		t.Errorf("traces %v, want repo %s", lines, filepath.Base(dir))

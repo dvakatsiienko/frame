@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -42,7 +43,7 @@ func TestCommitRefusesAnEmptyStdinMessage(t *testing.T) {
 	}
 }
 
-func TestRedCommitLeavesItsLogInTheTestRunsOwnTempDir(t *testing.T) {
+func TestRedCommitLeavesItsLogInTheTestRunsOwnDir(t *testing.T) {
 	t.Parallel()
 	dir := repo(t)
 	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\necho the hook said no\nexit 1\n")
@@ -59,6 +60,49 @@ func TestRedCommitLeavesItsLogInTheTestRunsOwnTempDir(t *testing.T) {
 	}
 	if body := readFile(t, path); !strings.Contains(body, "the hook said no") {
 		t.Errorf("the named log holds %q", body)
+	}
+}
+
+func TestCommitLeavesNoLogInTheTempDir(t *testing.T) {
+	t.Parallel()
+	dir, temp, state := repo(t), t.TempDir(), t.TempDir()
+	env := []string{"TMPDIR=" + temp, "X_STATE=" + state}
+	hook := filepath.Join(dir, ".git/hooks/pre-commit")
+	write(t, hook, "#!/bin/sh\necho the hook said no\nexit 1\n")
+	write(t, filepath.Join(dir, "readme.txt"), "edit\n")
+
+	red := xIn(t, dir, env, "lane", "commit", message(t), "--", "readme.txt")
+	write(t, hook, "#!/bin/sh\nexit 0\n")
+	green := xIn(t, dir, env, "lane", "commit", message(t), "--", "readme.txt")
+
+	if red.code == 0 || green.code != 0 {
+		t.Fatalf("exits %d then %d, want a red commit, then a green one:\n%s", red.code, green.code, green.stdout)
+	}
+	if left, _ := filepath.Glob(filepath.Join(temp, "x-commit-*.log")); len(left) != 0 {
+		t.Errorf("the temp dir holds %v", left)
+	}
+	path := regexp.MustCompile(`\S*x-commit-\d+\.log`).FindString(red.stdout)
+	if !strings.HasPrefix(path, filepath.Join(state, "commit-logs")+string(filepath.Separator)) || !strings.Contains(readOr(path, ""), "the hook said no") {
+		t.Errorf("the failure names %q, want a log that exists under the state dir's commit-logs", path)
+	}
+}
+
+func TestARedCommitKeepsTheNewestLogs(t *testing.T) {
+	t.Parallel()
+	dir, state := repo(t), t.TempDir()
+	logs := filepath.Join(state, "commit-logs")
+	for i := range commitLogsKept + 5 {
+		write(t, filepath.Join(logs, fmt.Sprintf("x-commit-9%05d.log", i)), "old\n")
+	}
+	write(t, filepath.Join(dir, ".git/hooks/pre-commit"), "#!/bin/sh\necho the hook said no\nexit 1\n")
+	write(t, filepath.Join(dir, "readme.txt"), "edit\n")
+
+	got := xIn(t, dir, []string{"X_STATE=" + state}, "lane", "commit", message(t), "--", "readme.txt")
+
+	kept, _ := os.ReadDir(logs)
+	path := regexp.MustCompile(`\S*x-commit-\d+\.log`).FindString(got.stdout)
+	if len(kept) != commitLogsKept || !exists(path) || exists(filepath.Join(logs, "x-commit-900005.log")) || !exists(filepath.Join(logs, "x-commit-900006.log")) {
+		t.Errorf("%d logs, the new one there %v: want %d, the six oldest gone, the new one kept", len(kept), exists(path), commitLogsKept)
 	}
 }
 

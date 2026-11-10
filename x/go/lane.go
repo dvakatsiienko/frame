@@ -467,6 +467,8 @@ func withWait(waited time.Duration, line string) string {
 
 type pushTarget struct {
 	branch, sha, from, reason string
+	// a codie/* branch pushed from the linked tree that has it checked out
+	own bool
 }
 
 func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
@@ -478,8 +480,15 @@ func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	_, linked, err := worktreeOf(tree)
+	if err != nil {
+		return nil, err
+	}
+	if linked && strings.HasPrefix(name, "worktree-fork-") {
+		return nil, &Fail{Refused: true, Msg: name + " is a fork's branch: it lands through the wing's door, never as a branch on origin", Next: "tree-sync.sh land"}
+	}
 	r.Open(name)
-	var target pushTarget
+	target := pushTarget{own: linked && strings.HasPrefix(name, "codie/")}
 	if err := r.Step("tree", "checking the tree", func() (string, error) { return home(tree), nil }); err != nil {
 		return nil, err
 	}
@@ -489,7 +498,7 @@ func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
 			return "", err
 		}
 		from, reason, err := pushHome()
-		target = pushTarget{name, sha, from, reason}
+		target.branch, target.sha, target.from, target.reason = name, sha, from, reason
 		// counted from the remote's own sha: a local origin/<branch> ref can be stale
 		detail := fmt.Sprintf("%s to origin/%s", short(sha), name)
 		if remote, _ := remoteBranch(".", name); remote != "" {
@@ -509,7 +518,14 @@ func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
 }
 
 func planOf(t pushTarget) ordered {
-	return ordered{{"branch", t.branch}, {"sha", t.sha}, {"from", t.from}, {"reason", t.reason}}
+	return ordered{{"branch", t.branch}, {"sha", t.sha}, {"from", t.from}, {"reason", t.reason}, {"own", t.own}}
+}
+
+// the lane's own branch from its own tree: the push sends that tree's HEAD to that branch only, never forced, and the
+// pr's gates sit between it and main, so the plan stop guards nothing there
+func ownBranchPush(plan any) bool {
+	own, _ := plan.(ordered)[4].value.(bool)
+	return own
 }
 
 func askPush(plan any) string {
@@ -638,6 +654,21 @@ func mergeMain(r *Run, _ []string, _ Flags) (any, error) {
 		return nil, err
 	}
 	r.Open(name)
+	// git stops a merge over staged work with a line that names no file; the order out of it is said here, before anything moves
+	if unmerged, _ := git("diff", "--name-only", "--diff-filter=U"); isMerging() && unmerged.out != "" {
+		files := strings.Split(unmerged.out, "\n")
+		return nil, &Fail{Refused: true, Msg: "a merge of main is under way, with conflicts: " + strings.Join(files, ", ") + "; nothing was fetched or merged",
+			Next: "resolve them, then x lane commit <msg-file> -- <resolved paths>", Log: files}
+	}
+	if staged, _ := git("diff", "--cached", "--name-only"); staged.out != "" {
+		var quoted []string
+		for path := range strings.SplitSeq(staged.out, "\n") {
+			quoted = append(quoted, quote(path))
+		}
+		files := strings.Join(quoted, " ")
+		return nil, &Fail{Refused: true, Msg: "staged work blocks the merge: " + strings.ReplaceAll(staged.out, "\n", ", ") + "; nothing was fetched or merged",
+			Next: "x lane commit <msg-file> -- " + files + ", then x lane merge-main again"}
+	}
 	if err := r.Step("fetch", "git fetch origin main", func() (string, error) {
 		_, err := mustGit("fetch", "fetch", "-q", "origin", "main")
 		return "origin/main", err
@@ -1224,8 +1255,16 @@ func timeoutOnly(log string) bool {
 	return rows > 0 && !open
 }
 
+const commitLogsKept = 20
+
+var commitLogName = regexp.MustCompile(`^x-commit-\d+\.log$`)
+
+// the whole log of a refused commit lives under the state dir, the newest few kept: nothing ever took one out of the temp dir
 func hookFail(log, next string) *Fail {
-	full := filepath.Join(os.TempDir(), fmt.Sprintf("x-commit-%d.log", os.Getpid()))
+	dir := filepath.Join(stateDir(), "commit-logs")
+	_ = os.MkdirAll(dir, 0o755)
+	keepNewest(dir, commitLogsKept, commitLogName)
+	full := filepath.Join(dir, fmt.Sprintf("x-commit-%d.log", os.Getpid()))
 	saved := os.WriteFile(full, []byte(log), 0o600) == nil
 	var why []string
 	for _, line := range nonBlank(log) {

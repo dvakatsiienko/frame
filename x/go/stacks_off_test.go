@@ -10,7 +10,7 @@ import (
 // with the add-on built out, pr-open knows no --base, verify-tree no --stack, and no stack verb dispatches
 func TestWithoutTheStacksAddOnNoStackDoorExists(t *testing.T) {
 	t.Parallel()
-	clone := layers(t, "coder/FRM-1-a")
+	clone := layers(t, "codie/FRM-1-a")
 	for _, argv := range [][]string{
 		{"lane", "pr-open", "--base", "main", "a title", bodyFile(t)},
 		{"lane", "stack", "view"},

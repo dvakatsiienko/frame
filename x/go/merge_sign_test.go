@@ -12,8 +12,9 @@ func TestTicketsOfPrReadOneShape(t *testing.T) {
 		name, branch, body string
 		want               []string
 	}{
-		{"both prefixes, codie", "codie/FRM-1-a", "", []string{"FRM-1"}},
-		{"both prefixes, coder", "coder/BYT-22-slug", "", []string{"BYT-22"}},
+		{"a codie branch", "codie/FRM-1-a", "", []string{"FRM-1"}},
+		{"the other team's id", "codie/BYT-22-slug", "", []string{"BYT-22"}},
+		{"the prefix before the rename", "coder/BYT-22-slug", "", nil},
 		{"a branch that is only the id", "codie/FRM-3", "", []string{"FRM-3"}},
 		{"another owner's branch", "dima/FRM-1-a", "", nil},
 		{"frame#132's branch alone", "codie/frm-521-gate-turn", "", []string{"FRM-521"}},
