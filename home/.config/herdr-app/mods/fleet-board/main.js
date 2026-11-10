@@ -32,6 +32,7 @@ import {
     runningPids,
     savePress,
     seatFacts,
+    tickState,
     waitOf,
 } from './orbit.js';
 
@@ -475,8 +476,9 @@ export default class FleetBoard extends View {
         const key = `${s.sid}:${ask.id}`;
         const sent = this.sent.get(key)?.verdict ?? s.pending.get(ask.id);
         const steer = this.steers.get(key);
-        const done = ask.mark ?? sent;
-        const canUntick = !ask.mark && sent === 'tick' && !ask.isGated;
+        const state = tickState(ask, sent);
+        const done = state !== 'open';
+        const canUntick = state === 'ticked';
         // tick is the main act, so it is the one filled button; Button brings focus, and the ring shows where it is
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
         const button = (id, label, tip, onClick, isPrimary = false) =>
@@ -599,16 +601,16 @@ export default class FleetBoard extends View {
                     ),
                 ),
             )
-            .when(Boolean(done) && !canUntick, (el) =>
+            .when(done && !canUntick, (el) =>
                 el.child(
                     div()
                         .text_size(SIZE.secondary)
                         .text_color(t.muted)
                         .child(
-                            ask.mark === 'accepted'
+                            state === 'locked'
                                 ? '🔒 ticked, the session took it'
-                                : !ask.mark && sent === 'tick'
-                                  ? '🛎️ ticked, waiting for the session'
+                                : state === 'untickable'
+                                  ? '✅ ticked, the session takes it at its next turn'
                                   : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
                         ),
                 ),

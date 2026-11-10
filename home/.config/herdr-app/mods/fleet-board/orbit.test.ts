@@ -14,6 +14,7 @@ import {
     runningPids,
     savePress,
     seatFacts,
+    tickState,
     unbold,
     waitOf,
     withPress,
@@ -342,5 +343,35 @@ describe('the deck follows the agents list order', () => {
     test('no published order keeps the rows as they came', () => {
         const rows = [row(2, 'b'), row(1, 'a')];
         expect(inListOrder(rows, null).map((r) => r.pid)).toEqual([2, 1]);
+    });
+});
+
+describe('a tick locks only when a turn takes it', () => {
+    test('an untaken press is ticked and can be taken back', () => {
+        expect(tickState(ask, 'tick')).toBe('ticked');
+    });
+
+    test('a press the stash has read stays ticked, not locked', () => {
+        expect(tickState({ ...ask, mark: 'accepted' }, null)).toBe(
+            'untickable',
+        );
+    });
+
+    test('a locked ask is locked', () => {
+        expect(
+            tickState({ ...ask, isLocked: true, mark: 'accepted' }, null),
+        ).toBe('locked');
+    });
+
+    test('a gated press cannot be taken back', () => {
+        expect(tickState({ ...ask, isGated: true }, 'tick')).toBe('untickable');
+    });
+
+    test('no press is open', () => {
+        expect(tickState(ask, null)).toBe('open');
+    });
+
+    test('a replay reads as replayed', () => {
+        expect(tickState(ask, 'replay')).toBe('replayed');
     });
 });

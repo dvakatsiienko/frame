@@ -283,3 +283,21 @@ export function inListOrder(rows, pids) {
             (at.get(a.pid) ?? pids.length) - (at.get(b.pid) ?? pids.length),
     );
 }
+
+/**
+ * what an ask's tick shows (FRM-562 wisp, 20:55): 🔒 only once the published ask is locked, which happens when a turn
+ * takes it, never from the stash's 4 s read of the press or the ticks file's prune; ✅ before that, and its click
+ * takes the tick back only while the press still sits in the ticks file, since a press the stash has read is its mark
+ * @param {Ask} ask
+ * @param {'tick' | 'replay' | null | undefined} sent his press still in the ticks file, or just sent
+ * @returns {'open' | 'ticked' | 'untickable' | 'locked' | 'replayed'}
+ */
+export function tickState(ask, sent) {
+    if (ask.isLocked) return 'locked';
+    if (ask.mark === 'accepted' || sent === 'tick')
+        return !ask.mark && sent === 'tick' && !ask.isGated
+            ? 'ticked'
+            : 'untickable';
+    if (ask.mark || sent === 'replay') return 'replayed';
+    return 'open';
+}
