@@ -491,36 +491,19 @@ type copyHarness struct {
 	project, unchecked string
 }
 
-// pnpm's subcommands that write the store, each with its aliases as `pnpm help` lists them (12.16.1)
-var pnpmStoreWrites = map[string]bool{
-	"install": true, "i": true, "add": true, "remove": true, "uninstall": true, "rm": true, "un": true, "uni": true,
-	"update": true, "up": true, "upgrade": true, "dedupe": true, "install-test": true, "it": true,
-	"ci": true, "clean-install": true, "ic": true, "install-clean": true, "rebuild": true, "rb": true, "prune": true, "fetch": true,
-	"import": true, "link": true, "ln": true, "unlink": true, "dislink": true, "patch-commit": true, "patch-remove": true,
-}
+// pnpm's subcommands that only run a command or a script
+var pnpmRuns = map[string]bool{"exec": true, "run": true, "run-script": true, "test": true, "t": true, "tst": true}
 
-// the store write a pnpm command asks for, or "": pnpm's subcommand is its first word that is no flag. a word right after a
-// flag may be that flag's value, `--filter pkg`, so the read goes on past it; the first other word ends it, a runner's own
-// args staying unread
-func pnpmStoreWrite(command []string) string {
-	if filepath.Base(command[0]) != "pnpm" {
-		return ""
-	}
-	for i, arg := range command[1:] {
-		switch {
-		case strings.HasPrefix(arg, "-"):
-		case pnpmStoreWrites[arg]:
-			return arg
-		case i == 0 || !strings.HasPrefix(command[i], "-") || strings.Contains(command[i], "="):
-			return ""
-		}
-	}
-	return ""
+// whether a pnpm command may write the store: any but a plain run as pnpm's first word. the list is of what may pass, since
+// a list of the writes leaked one per read: `pnpm m install`, `pnpm with <version> install`, `pnpm pipeline`, a flag's value
+// that reads as a subcommand
+func pnpmMayWriteStore(command []string) bool {
+	return strings.EqualFold(filepath.Base(command[0]), "pnpm") && (len(command) < 2 || !pnpmRuns[command[1]])
 }
 
 func newCopyHarness(file string, command []string) (redHarness, error) {
-	if write := pnpmStoreWrite(command); write != "" {
-		return nil, usageFail("pnpm "+write+" writes the store, node_modules/.pnpm, which the copy shares with the real tree, so the real tree's shims would be relinked",
+	if pnpmMayWriteStore(command) {
+		return nil, usageFail("«"+strings.Join(command, " ")+"» may write the store, node_modules/.pnpm, which the copy shares with the real tree: after pnpm only exec, run or test comes first, its flags behind it",
 			"run the test itself: x verify red <file> <anchor> <replacement> -- pnpm exec <runner> <test>")
 	}
 	root, err := mustGitIn(filepath.Dir(file), "rev-parse", "rev-parse", "--show-toplevel")

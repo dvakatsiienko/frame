@@ -1047,7 +1047,7 @@ func pnpmWorkspaceFixture(t *testing.T) (redFixture, []string) {
 	t.Helper()
 	f := goRedFixture(t)
 	write(t, filepath.Join(f.dir, ".gitignore"), "node_modules\n")
-	write(t, filepath.Join(f.dir, "package.json"), `{"name": "p", "private": true, "devDependencies": {"runner": "workspace:*"}}`+"\n")
+	write(t, filepath.Join(f.dir, "package.json"), `{"name": "p", "private": true, "scripts": {"limit": "limit-test"}, "devDependencies": {"runner": "workspace:*"}}`+"\n")
 	write(t, filepath.Join(f.dir, "pnpm-workspace.yaml"), "packages:\n  - runner\nautoDedupe: true\n")
 	write(t, filepath.Join(f.dir, "pnpm-lock.yaml"), `lockfileVersion: '9.0'
 
@@ -1080,20 +1080,21 @@ importers:
 func TestVerifyRedRunsAPnpmCommandWithNoInstall(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {
-		name string
-		env  []string
-		args []string
+		name    string
+		env     []string
+		command []string
 	}{
-		{"the caller's env leaves the setting alone", nil, nil},
-		{"the caller's env asks for the install, in the spelling pnpm puts first", []string{"PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=install"}, nil},
-		{"a word after the subcommand that names a store write", nil, []string{"install"}},
+		{"the caller's env leaves the setting alone", nil, []string{"pnpm", "exec", "limit-test"}},
+		{"the caller's env asks for the install, in the spelling pnpm puts first", []string{"PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=install"}, []string{"pnpm", "exec", "limit-test"}},
+		{"a word after the subcommand that names a store write", nil, []string{"pnpm", "exec", "limit-test", "install"}},
+		{"a script through run", nil, []string{"pnpm", "run", "limit"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			f, watched := pnpmWorkspaceFixture(t)
 			before := treeWrites(t, watched...)
 
-			got, log := verifyRedIn(t, f, c.env, append([]string{f.file, f.anchor, f.replacement, "--", "pnpm", "exec", "limit-test"}, c.args...)...)
+			got, log := verifyRedIn(t, f, c.env, append([]string{f.file, f.anchor, f.replacement, "--"}, c.command...)...)
 
 			if got.code != 0 || got.data["verdict"] != verdictRed || log != "1\n1\n" {
 				t.Fatalf("exit %d, data %v, the test logged %q, want red off a clean and a mutated run:\n%s", got.code, got.data, log, got.stdout)
@@ -1103,7 +1104,8 @@ func TestVerifyRedRunsAPnpmCommandWithNoInstall(t *testing.T) {
 	}
 }
 
-// FRM-554: the copy shares the store, so a pnpm command that writes it would write the real tree's: it refuses before any run
+// FRM-554: the copy shares the store, so a pnpm command that may write it would write the real tree's: any but a plain run as
+// pnpm's first word refuses before any run
 func TestVerifyRedRefusesAPnpmCommandThatWritesTheStore(t *testing.T) {
 	t.Parallel()
 	f, watched := shimsFixture(t)
@@ -1111,9 +1113,14 @@ func TestVerifyRedRefusesAPnpmCommandThatWritesTheStore(t *testing.T) {
 	for _, command := range [][]string{
 		{"pnpm", "install"}, {"pnpm", "i"}, {"pnpm", "add", "left-pad"}, {"pnpm", "remove", "tool"}, {"pnpm", "rm", "tool"},
 		{"pnpm", "uni", "tool"}, {"pnpm", "update"}, {"pnpm", "up"}, {"pnpm", "dedupe"}, {"pnpm", "ci"},
-		// the subcommand behind pnpm's own flags, a flag's value before it, and pnpm by its path
+		// the subcommand behind pnpm's own flags, a flag's value before it, and pnpm by its path or in another case
 		{"pnpm", "--frozen-lockfile", "install"}, {"pnpm", "--filter", "pkg", "add", "left-pad"}, {"pnpm", "-C", ".", "install"},
-		{"/opt/homebrew/bin/pnpm", "install"},
+		{"/opt/homebrew/bin/pnpm", "install"}, {"PNPM", "install"},
+		// a write behind a prefix subcommand, a bare pnpm, which installs, and a flag's value that reads as a run
+		{"pnpm", "m", "install"}, {"pnpm", "recursive", "install"}, {"pnpm", "with", "12.16.1", "install"}, {"pnpm"},
+		{"pnpm", "--filter", "exec", "install"},
+		// what installs or builds under another name, and a bin by pnpm's shorthand, which no read can tell from one
+		{"pnpm", "pipeline"}, {"pnpm", "deploy", "out"}, {"pnpm", "approve-builds"}, {"pnpm", "vitest", "run"},
 	} {
 		got, log := verifyRedIn(t, f, nil, append([]string{f.file, f.anchor, f.replacement, "--"}, command...)...)
 
