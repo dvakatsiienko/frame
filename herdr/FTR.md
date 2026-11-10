@@ -87,6 +87,7 @@ wish: PK-363
   - given any view shows
   - when dima presses ctrl-j
   - then the tray with its quick terminal opens, and a second press closes it
+  - decision: herdr ships no tray: zoo's `quick-term` is the tray's head row and its whole logic (a kept terminal per space, found again after a restart, local or dev container, the keyboard on open); the terminal in it is herdr's own. it stays and becomes `x-herdr-terminal` (dima, 18:11)
   - decision: the tray stays and is rebranded as ours, after my-tabs (dima, 16:41); bound in `keys.json` `global` by clio on his word, backup `~/.local/state/herdr-mod-backups/keys-1641.json`
   - decision: a `global` ctrl+letter is taken from the terminal (herdr's guide, § Keys), so in a seat's Terminal view cc's ctrl+j new line no longer reaches cc (read from the guide, not probed by a keypress)
 
@@ -115,6 +116,10 @@ wish: PK-363
   - decision: the strip writes nothing but the ticks file and calls no `layout.*` command, since herdr saves those into his personal layout
   - decision: the seat comes from the chat mod's own rule, so when zoo's chat block names no terminal, both follow the shown tab together
   - decision: fleet-board draws it as a second copy in `view: seat`, since a herdr mod imports nothing outside its folder; it shows once `layouts/zoo.json` places that block (his ⚠️ tick)
+- 🧭 the band moves inside the chat's text box, as the desktop app's band had it
+  - given a seat's tab is open in the Chat view
+  - then its box carries the seat's «waiting on» line, its buttons and its ctx meter; the 5h line goes
+  - decision: the band's redesign, shaped with dima before a line is built; the strip's duplicate asks stay until the deck is proven (dima, 18:11)
 - 🧭 the strip shows the seat's phases when no ask is open
   - given the seat in the Chat view has no open ask
   - then the strip lists its phases where the asks would sit
