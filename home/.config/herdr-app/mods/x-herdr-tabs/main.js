@@ -209,8 +209,9 @@ export default class Tabs extends View {
                 : c.status === 'done'
                   ? 'unread'
                   : c.status;
-            // Chrome-style: a tab is as wide as its content (up to 200, active 240) and the others
-            // shrink together as tabs are added, down to its status; the active one keeps its name.
+            // Chrome-style: a tab is as wide as its content (up to 200, active 240) and the others shrink together as
+            // tabs are added, down to 110 px, where its badge and a readable name both stay (dima, 20:28); past that the
+            // bar scrolls sideways. The active one keeps its name.
             return (
                 h_flex()
                     .id(`tab-${c.id}`)
@@ -222,7 +223,7 @@ export default class Tabs extends View {
                     .overflow_hidden()
                     .max_w(c.active ? 240 : 200)
                     .flex_shrink(c.active ? 0 : 1)
-                    .min_w(c.active ? 0 : 60)
+                    .min_w(c.active ? 0 : 110)
                     .text_size(12.8)
                     .tooltip(name)
                     .border(1)
@@ -404,7 +405,7 @@ export default class Tabs extends View {
                     .h_full()
                     .items_center()
                     .gap(3)
-                    .overflow_hidden()
+                    .overflow_x_scroll()
                     .children(shown.map(item)),
             )
             .child(
