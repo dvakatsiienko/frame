@@ -1643,7 +1643,7 @@ PK-363:W700 (2026-11-10 22:10, dima): Maybe someone else already has it or has m
 PK-363:W701 (2026-11-10 22:10, dima): What do you think? Is it worth researching this? Or has a researcher already covered this? Or do you think we will figure out the solution ourselves? ❓
 PK-363:W702 (2026-11-10 22:10, dima): probe, just for curiosity and tell what it buys if it works.
 
-PK-363:W703 (2026-11-10 22:12, dima): all are interactive but how to actually see if they worked? lets test: i pressed 🐦‍🔥, and disabled keep-hot, waker and afk. true? (they was enabled) ❓
+PK-363:W703 (2026-11-10 22:12, dima): all are interactive but how to actually see if they worked? lets test: i pressed second wind (he typed the button's emoji; the pocket cannot hold a joined emoji, the raw groom file keeps it), and disabled keep-hot, waker and afk. true? (they was enabled) ❓
 
 PK-363:W704 (2026-11-10 22:16, dima): i am overloaded and can't keep up with your answers. (raw says «can keep up»: read as «can't keep up», typo fold) i am lost with a grill. is your grill still relevant? maybe regrill after perf measures? ❓ (i meanwhile go answer wing 1 grill)
 
@@ -1663,7 +1663,5 @@ PK-363:W716 (2026-11-10 22:29, dima): speed: scroll feels faster.
 PK-363:W717 (2026-11-10 22:29, dima): but there is an issue when chatter is scrolled to its full end (bottom) — when i scroll it slightly up it is stuck for ~1s (lag), so i have to do ~3 mousewheel scrolls to unstuck it from bottom.
 PK-363:W718 (2026-11-10 22:29, dima): ready to probe scroll perf test? ❓
 
-W719 — buttons: i liked previous shape. bring it back and remove dimming (keep for settings only since it is not working yet) (2026-11-10 22:30, dima)
-
-PK-363:W719 (2026-11-10 22:30, dima): buttons: i liked previous shape. bring it back and remove dimming (keep for settings only since it is not working yet) [prefix fix: same W719 as the unprefixed line above]
+PK-363:W719 (2026-11-10 22:30, dima): buttons: i liked previous shape. bring it back and remove dimming (keep for settings only since it is not working yet)
 <!-- SECTION:NOTES:END -->
