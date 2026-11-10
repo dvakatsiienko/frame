@@ -294,10 +294,27 @@ describe('the siesta comes due', () => {
         expect(said(stop(home, stopInput(home)))).toContain('siesta due');
     });
 
-    const liveDone = (home: string, body = '[done] a wisp fixed') =>
-        prompt(home, {
+    const liveDone = (home: string, body = '[done] a wisp fixed') => {
+        mkdirSync(join(home, '.local/state/clio'), { recursive: true });
+        writeFileSync(
+            join(home, '.local/state/clio/live-lanes'),
+            'herdr lane\n',
+        );
+        return prompt(home, {
             prompt: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="⚡ 🔧 codie: herdr lane | PK-363">\n${body}\n</cross-session-message>`,
         });
+    };
+
+    test('a lane not listed as live-steered is due at its first done, a pocket id in its name or not', () => {
+        const home = fixtureHome();
+        liveDone(home);
+        prompt(home, {
+            prompt: '<cross-session-message from="uds:/tmp/cc-socks/2.sock" from-name="⚡ 🔧 codie: mods lane | PK-363">\n[done] FRM-544 slice 0\n</cross-session-message>',
+        });
+        expect(said(stop(home, stopInput(home)))).toContain(
+            '1 member done ping(s)',
+        );
+    });
 
     test('a live-steered lane’s dones batch: two make none due, the third does', () => {
         const home = fixtureHome();

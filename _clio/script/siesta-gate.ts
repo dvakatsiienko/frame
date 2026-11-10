@@ -38,8 +38,7 @@ const PEER_PREFIX = /^Another Claude session sent a message:\s*/;
 const MEMBER_DONE = /(^|\n)\s*\[done\]|^(?=.*\bfinal\b).*\b[0-9a-f]{7,40}\b/m;
 // only a lane member's done ends a chunk; a sidecar's chore report (helga, clio side, crow) never does
 const LANE_MEMBER = /from-name="[^"]*\b(codie|sixth sense|designer)\b/;
-// a lane dima steers live has no ticket of its own: its name ends in a pocket id, and its bare `[done]`s batch
-const LIVE_LANE = /from-name="[^"]*\|\s*PK-\d+"/;
+// a lane dima steers live batches its bare `[done]`s; clio lists such a lane by a piece of its name, one per line, in `live-lanes`
 const FINAL_SHA = /^(?=.*\bfinal\b).*\b[0-9a-f]{7,40}\b/m;
 const LIVE_PINGS_DUE = 3;
 const LIVE_PINGS_WAIT_MS = 60 * 60_000;
@@ -133,7 +132,7 @@ export function prompt(
         LANE_MEMBER.test(head) &&
         MEMBER_DONE.test(body)
     )
-        (LIVE_LANE.test(head) && !FINAL_SHA.test(body)
+        (isLiveLane(home, head) && !FINAL_SHA.test(body)
             ? state.live_pings
             : state.pings
         ).push(new Date().toISOString());
@@ -268,6 +267,13 @@ export function compact(
     appendFileSync(
         path.join(stateDir(home), 'compactions.log'),
         `${new Date().toISOString()} ${input.trigger ?? '-'} ${input.session_id ?? '-'}\n`,
+    );
+}
+
+function isLiveLane(home: string, head: string) {
+    const name = /from-name="([^"]*)"/.exec(head)?.[1] ?? '';
+    return readLines(path.join(stateDir(home), 'live-lanes')).some(
+        (piece) => piece.trim() !== '' && name.includes(piece.trim()),
     );
 }
 

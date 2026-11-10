@@ -48,6 +48,8 @@ export const noLinkReasons = {
     // ? into, and its protected list covers the shell rc files. A real ~/.zshrc
     // ? that sources this one keeps the resolved path in ~ and leaves the repo
     // ? grantable.
+    readInRepo:
+        'read by our agents in the repo, and a new file in the live dir may reload his window',
     sourcedByStub:
         'sourced by a stub instead of linked, so cowork can trust the repo',
 } as const;
@@ -55,8 +57,7 @@ export const noLinkReasons = {
 export const noLink = new Map<string, keyof typeof noLinkReasons>([
     ['.claude/plugin-x', 'absolutePath'],
     ['.claude/mcp-x-cloud-chat', 'absolutePath'],
-    // our agents read it in the repo; herdr's live mods dir never needs it, and a new file there may reload his window
-    ['.config/herdr-app/mods/AGENTS.md', 'absolutePath'],
+    ['.config/herdr-app/mods/AGENTS.md', 'readInRepo'],
     ['.zshrc', 'sourcedByStub'],
     ['.zshenv', 'sourcedByStub'],
     ['.zprofile', 'sourcedByStub'],
