@@ -69,6 +69,7 @@ import {
     remoteSlug,
     removedTrees,
     signWords,
+    signsTyped,
     stashAsked,
     stashKills,
     tmpDirs,
@@ -866,6 +867,41 @@ async function tickFor(
     if (tick) spends.push(`${tick.id}@${tick.at}:${scope}`);
     return tick;
 }
+// his typed «sign <id>» (FRM-544 slice 0): written only by this plugin's prompt.submit from his own prompt, the proof a
+// # dima-ok marker rests on; it opens what a sign tick opens for its id, each write once, inside a tick's 2 h
+const SIGNS = { key: 'signs', plugin: 'x-mod-guard' } as const;
+async function keepTypedSigns($: EngineInterface, text: string) {
+    const ids = signsTyped(text);
+    if (!ids.length) return;
+    const now = await $.clock.now();
+    const { value: kept = [] } = await $.state.get(SIGNS);
+    await $.state.set(SIGNS, [
+        ...kept.filter((s) => now - s.at <= TICK_MS),
+        ...ids.map((id) => ({ at: now, id })),
+    ]);
+}
+async function typedSignFor(
+    $: EngineInterface,
+    scope: string,
+    id: string,
+    spends: string[],
+) {
+    const { value: signs = [] } = await $.state
+        .get(SIGNS)
+        .catch(() => ({ value: [] }));
+    const { value: spent = [] } = await $.state.get(SPENT);
+    const now = await $.clock.now();
+    const key = (at: number) => `typed@${at}:${scope}`;
+    const sign = signs.find(
+        (s) =>
+            s.id === id &&
+            now - s.at <= TICK_MS &&
+            !spent.includes(key(s.at)) &&
+            !spends.includes(key(s.at)),
+    );
+    if (sign) spends.push(key(sign.at));
+    return sign;
+}
 // the raw merges a script run by path holds, as far as the guard reads one (BYT-94): a file this turn or this line wrote, or
 // the one on disk; a file past the cap, or a language other than shell, stays the rule's known gap
 const SCRIPT_READ_MAX = 256 * 1024;
@@ -1619,7 +1655,7 @@ export const register: Register = (on) => {
                   )
                 : undefined;
         };
-        // a sign lands only on dima's tick on its sign ask (FRM-427, o197); a body's sign line is a new sign
+        // a sign lands only on dima's tick on its sign ask (FRM-427, o197) or his typed «sign <id>» (FRM-544); a body's sign line is a new sign
         // unless the ticket's current body already holds it word for word (FRM-478: a tiny write keeps the line). the file is read
         // before the command runs, so one this command writes, one behind a variable and one that cannot be read count as new
         // every sign on the line is judged on its own (R2: a second sign behind an old one)
@@ -1636,20 +1672,22 @@ export const register: Register = (on) => {
                 signText === undefined ||
                 (await hasNewSignLine($, sign.id, signText));
             // ahead of every other door: a tick, a stash word or a marker on the line's other targets never carries a sign (R3)
+            const scope = `sign-${sign.file ? 'body' : 'label'}:${sign.id}`;
             if (
                 isNewSign &&
                 !(await tickFor(
                     $,
-                    `sign-${sign.file ? 'body' : 'label'}:${sign.id}`,
+                    scope,
                     (t) => isSignAsk(t.text, sign.id),
                     spends,
-                ))
+                )) &&
+                !(await typedSignFor($, scope, sign.id, spends))
             ) {
                 const r = {
-                    door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», then sign`,
+                    door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», or to type «sign ${sign.id}» himself, then sign`,
                     rule: 'sign-untick',
                     targets: [sign.id],
-                    why: "a sign is dima's word, and only his tick on the ticket's sign ask carries it",
+                    why: "a sign is dima's word: only his tick on the ticket's sign ask, or his own typed «sign <id>», carries it",
                 };
                 const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
                 {
@@ -2143,10 +2181,13 @@ export const register: Register = (on) => {
                 ? await registryEntry($, sid).catch(() => undefined)
                 : undefined;
             const isBg = entry?.isBg ?? false;
-            if ((isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind))
+            if (
+                (isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind)
+            ) {
                 await $.state.set(PROMPT, e.text).catch(() => undefined);
-            if ((isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind))
                 await $.state.set(TOLD, e.text).catch(() => undefined);
+                await keepTypedSigns($, e.text).catch(() => undefined);
+            }
             const ask = overrideAsked(e.text);
             // no registry row reads as not his: a bg session's brief must never slip through a read that failed; said out
             // loud, since a word that moved nothing must not pass for one that did

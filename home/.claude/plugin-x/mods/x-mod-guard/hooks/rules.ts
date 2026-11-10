@@ -771,6 +771,28 @@ export const isSignAsk = (text: string, id: string) =>
     SIGN_ASK.exec(text)?.[1]
         ?.split(/[,\s]+(?:and\s+)?/)
         .includes(id) ?? false;
+// his typed sign (FRM-544 slice 0): a line of his prompt that is only «sign» or «re-sign» and ticket ids, an `←` aside cut
+// off; an allow-list, so a question, a negation or a sign inside prose never reads as one. the line starts with the word
+// itself, no indent, bullet, quote or ✍️: he pastes seats' replies back, and a reply's own «sign FRM-N» is not his
+const SIGN_TYPED = new RegExp(
+    `^(?:re-)?sign((?:[\\s,]+(?:${TICKET_KEY})-\\d+)+)\\.?$`,
+    'iu',
+);
+export const signsTyped = (text: string) => [
+    ...new Set(
+        text.split('\n').flatMap((line) => {
+            const ids = SIGN_TYPED.exec(
+                line.split('←')[0]?.trimEnd() ?? '',
+            )?.[1];
+            return ids
+                ? ids
+                      .split(/[\s,]+/)
+                      .filter(Boolean)
+                      .map((id) => id.toUpperCase())
+                : [];
+        }),
+    ),
+];
 // a tick quotes the pr when its text holds the pr's url in this repo, `github.com/<owner>/<name>/pull/<n>`, or reads
 // `⚠️ merge <name>#<n>` (FRM-478); a bare `#<n>` or another repo's pr of the same number proves nothing (FRM-427, sixth sense round 1);
 // a url cited for anything else proves nothing either: the ask opens «merge» or «land», ⚠️ or not, an allow-list since a tick now lives past newer ones (FRM-510)

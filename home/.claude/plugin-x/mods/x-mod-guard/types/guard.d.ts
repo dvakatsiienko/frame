@@ -8,7 +8,9 @@ declare module 'claude-code' {
         // helped: the clis whose bare --help ran, or whose verb --help hint already showed, this session
         // spent: the ticks a guarded command already ran on, `<ask id>@<tick time>:<what it authorized>`; a tick is spent per use
         // written: the files a Write or a Bash call wrote in the running turn, path to text, so a later run of one reads its commands
+        // signs: the ids dima typed «sign <id>» for at the composer or the bridge, each with its prompt's time, kept 2 h
         'x-mod-guard': {
+            signs: { id: string; at: number }[];
             edits: number;
             seen: string[];
             prompt: string;
