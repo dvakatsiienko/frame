@@ -479,7 +479,8 @@ func (g *goHarness) run(content []byte) (redRun, error) {
 }
 
 // any other runner reads a copy of the repo: apfs clones of its files, each node_modules a real dir of links to the real
-// entries, so a cache a runner writes lands in the copy. the git-crypt set stays out: plain text never leaves the tree
+// entries, its shims and plain files the copy's own, so a cache a runner writes and a shim an install relinks land in the copy.
+// the git-crypt set stays out: plain text never leaves the tree
 type copyHarness struct {
 	root, copy, file, cwd string
 	command               []string
@@ -577,6 +578,9 @@ func (h *copyHarness) runCommand() redRun {
 	}
 	c := exec.Command(command[0], command[1:]...)
 	c.Dir = dir
+	// pnpm reads the copy as a tree not installed yet, and its install before a run or an exec would relink the store's own
+	// shims, which the copy shares; never CI=1, which reaches vitest and refuses a new snapshot
+	c.Env = append(os.Environ(), "pnpm_config_verify_deps_before_run=false")
 	got := runTestCmd(c)
 	return redRun{ok: got.ok, log: got.log, note: h.unchecked}
 }
@@ -707,7 +711,8 @@ func intoCopy(root, to, target string) string {
 }
 
 // a node_modules link straight to the real one lets a runner write its caches there; a real dir of links per entry keeps them
-// here, and an entry that resolves to a workspace package of the repo points at the copy's package
+// here, and an entry that resolves to a workspace package of the repo points at the copy's package. what an install rewrites
+// in place is the copy's own: .bin a real dir of its shims, and each plain file, pnpm's state files among them, a clone
 func linkEntries(root, to, modules, dest string) error {
 	real, err := filepath.EvalSymlinks(modules)
 	if err != nil {
@@ -724,11 +729,45 @@ func linkEntries(root, to, modules, dest string) error {
 		if strings.HasPrefix(entry.Name(), ".vite") || entry.Name() == ".vitest-cache" || entry.Name() == ".cache" {
 			continue
 		}
-		link := filepath.Join(real, entry.Name())
-		if resolved, err := filepath.EvalSymlinks(link); err == nil && !strings.Contains(resolved, "/node_modules/") {
-			link = intoCopy(root, to, resolved)
+		link, own := filepath.Join(real, entry.Name()), filepath.Join(dest, entry.Name())
+		switch {
+		case entry.Name() == ".bin" && entry.IsDir():
+			err = copyShims(root, to, link, own)
+		case entry.Type().IsRegular():
+			err = cloneFile(link, own)
+		default:
+			if resolved, err := filepath.EvalSymlinks(link); err == nil && !strings.Contains(resolved, "/node_modules/") {
+				link = intoCopy(root, to, resolved)
+			}
+			err = os.Symlink(link, own)
 		}
-		if err := os.Symlink(link, filepath.Join(dest, entry.Name())); err != nil {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// pnpm's shim is a script, npm's a link beside the package it runs: a script is cloned, a link made again, so either runs the
+// copy's entry of that package
+func copyShims(root, to, bin, dest string) error {
+	shims, err := os.ReadDir(bin)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dest, 0o755); err != nil {
+		return err
+	}
+	for _, shim := range shims {
+		from, own := filepath.Join(bin, shim.Name()), filepath.Join(dest, shim.Name())
+		if shim.Type()&fs.ModeSymlink == 0 {
+			err = cloneFile(from, own)
+		} else if target, linkErr := os.Readlink(from); linkErr != nil {
+			err = linkErr
+		} else {
+			err = os.Symlink(intoCopy(root, to, target), own)
+		}
+		if err != nil {
 			return err
 		}
 	}

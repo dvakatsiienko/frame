@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"io/fs"
 	"os"
@@ -797,7 +798,7 @@ func TestLimit(t *testing.T) {
 }
 
 // x killed with its children once the log holds `lines` runs: the cut a timeout makes
-func cutAt(t *testing.T, f redFixture, env []string, lines int, args ...string) {
+func cutAt(t *testing.T, f redFixture, env []string, lines int, cut syscall.Signal, args ...string) {
 	t.Helper()
 	c := exec.Command(xbin, append([]string{"verify", "red"}, args...)...)
 	c.Dir, c.Env = f.dir, append(append(append(cleanEnv(), "X_TEST=1"), f.env...), env...)
@@ -810,7 +811,7 @@ func cutAt(t *testing.T, f redFixture, env []string, lines int, args ...string) 
 	for strings.Count(readOr(log, ""), "\n") < lines && time.Now().Before(deadline) {
 		time.Sleep(50 * time.Millisecond)
 	}
-	_ = syscall.Kill(-c.Process.Pid, syscall.SIGKILL)
+	_ = syscall.Kill(-c.Process.Pid, cut)
 	_ = c.Wait()
 	if got := strings.Count(readOr(log, ""), "\n"); got != lines {
 		t.Fatalf("the cut run logged %d runs, want %d", got, lines)
@@ -841,7 +842,7 @@ func TestVerifyRedResumesACutRun(t *testing.T) {
 			env := []string{"VERIFY_LOG=" + log, "HANG_MARKER=" + marker, "X_STATE=" + t.TempDir()}
 			args := []string{f.file, "--pairs", pairs, f.test}
 			before, _ := os.Stat(filepath.Join(f.dir, f.file))
-			cutAt(t, f, env, 3, args...)
+			cutAt(t, f, env, 3, syscall.SIGKILL, args...)
 			// red-proof's kill left its mutant in the file; this run never wrote it
 			if after, _ := os.Stat(filepath.Join(f.dir, f.file)); !after.ModTime().Equal(before.ModTime()) || readOr(filepath.Join(f.dir, f.file), "") != "package p\n\nconst Limit = 3\n" {
 				t.Fatalf("the kill left %s changed", f.file)
@@ -863,7 +864,7 @@ func TestVerifyRedResumesACutRun(t *testing.T) {
 	}
 }
 
-// every file's size, mode and mtime under the roots, links not followed; git's own dir is git's, so it stays out
+// every entry's size, mode, mtime, link target and content hash under the roots, links not followed; git's own dir is git's, so it stays out
 func treeWrites(t *testing.T, roots ...string) map[string]string {
 	t.Helper()
 	seen := map[string]string{}
@@ -876,7 +877,13 @@ func treeWrites(t *testing.T, roots ...string) map[string]string {
 				return filepath.SkipDir
 			}
 			if info, err := os.Lstat(path); err == nil {
-				seen[path] = fmt.Sprintf("%d %v %d", info.Size(), info.Mode(), info.ModTime().UnixNano())
+				target, _ := os.Readlink(path)
+				var hash [sha256.Size]byte
+				if info.Mode().IsRegular() {
+					body, _ := os.ReadFile(path)
+					hash = sha256.Sum256(body)
+				}
+				seen[path] = fmt.Sprintf("%d %v %d →%s %x", info.Size(), info.Mode(), info.ModTime().UnixNano(), target, hash[:6])
 			}
 			return nil
 		})
@@ -929,6 +936,149 @@ func TestVerifyRedWritesNothingInTheRealTree(t *testing.T) {
 			}
 		})
 	}
+}
+
+// a repo whose node_modules is its own, as a pnpm install leaves it: a shim at the root and in one workspace package, the three state
+// files, one store entry, and a git hook, plus a shim that is a link, as npm leaves one; relink.sh does to the tree it runs in what
+// an install does, then reads the mutated file
+func shimsFixture(t *testing.T) (redFixture, []string) {
+	t.Helper()
+	dir := repo(t)
+	write(t, filepath.Join(dir, ".gitignore"), "node_modules\n")
+	write(t, filepath.Join(dir, "lib.js"), "export const limit = 3;\n")
+	for _, modules := range []string{"node_modules", "pkg/node_modules"} {
+		write(t, filepath.Join(dir, modules, ".bin/tool"), "#!/bin/sh\nexec node \"$(dirname \"$0\")/../tool/index.js\"\n")
+	}
+	for _, state := range []string{".modules.yaml", ".pnpm-workspace-state-v1.json", ".pnpm-task-run-state-v1"} {
+		write(t, filepath.Join(dir, "node_modules", state), "state\n")
+	}
+	write(t, filepath.Join(dir, "node_modules/.pnpm/tool@1.0.0/node_modules/tool/index.js"), "console.log('tool');\n")
+	if err := os.Symlink(".pnpm/tool@1.0.0/node_modules/tool", filepath.Join(dir, "node_modules/tool")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink("../tool/index.js", filepath.Join(dir, "node_modules/.bin/linked")); err != nil {
+		t.Fatal(err)
+	}
+	hooks := filepath.Join(dir, ".git", "hooks")
+	write(t, filepath.Join(hooks, "pre-commit"), "#!/bin/sh\nexec node_modules/.bin/tool\n")
+	write(t, filepath.Join(dir, "relink.sh"), `[ -e node_modules/.bin/added ] || [ -L node_modules/.bin/linked ] || echo "the link shim reached the copy as a file" >> "$VERIFY_LOG"
+for modules in node_modules pkg/node_modules; do
+	for shim in "$modules"/.bin/*; do
+		[ ! -L "$shim" ] || rm "$shim"
+		printf '#!/bin/sh\nexec node "%s"\n' "$PWD/$modules/tool/index.js" > "$shim"
+	done
+	echo added > "$modules/.bin/added"
+done
+for state in .modules.yaml .pnpm-workspace-state-v1.json .pnpm-task-run-state-v1; do
+	echo "$PWD" > "node_modules/$state"
+done
+echo "$PWD" >> "$VERIFY_LOG"
+[ -z "$HANG" ] || sleep 60
+grep -q 'limit = 3' lib.js
+`)
+	commitAll(t, dir)
+	f := redFixture{dir: dir, file: "lib.js", anchor: "limit = 3", replacement: "limit = 4"}
+	return f, []string{filepath.Join(dir, "node_modules"), filepath.Join(dir, "pkg/node_modules"), hooks}
+}
+
+// FRM-554: a command that rewrites the shims and pnpm's state, as the install behind a `pnpm exec` does, writes the copy's own; the
+// real ones keep their bytes whether the run finishes or is cut mid-command, since nothing repairs the real tree after a run
+func TestVerifyRedKeepsTheRealShimsFromACommandThatRelinksThem(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name string
+		cut  syscall.Signal
+	}{
+		{"a finished run", 0},
+		{"a run cut by an interrupt", syscall.SIGINT},
+		{"a run cut by a kill", syscall.SIGKILL},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			f, watched := shimsFixture(t)
+			log := filepath.Join(t.TempDir(), "verify.log")
+			args := []string{f.file, f.anchor, f.replacement, "--", "sh", "relink.sh"}
+			before := treeWrites(t, watched...)
+
+			if c.cut == 0 {
+				got := xIn(t, f.dir, []string{"VERIFY_LOG=" + log}, append([]string{"verify", "red"}, args...)...)
+				if got.data["verdict"] != verdictFailed {
+					t.Fatalf("data %v, want the mutant's run read failed:\n%s", got.data, got.stdout)
+				}
+			} else {
+				cutAt(t, f, []string{"VERIFY_LOG=" + log, "HANG=1", "X_STATE=" + t.TempDir()}, 1, c.cut, args...)
+			}
+
+			if ran := readOr(log, ""); ran == "" || strings.Contains(ran, f.dir+"\n") || strings.Contains(ran, "as a file") {
+				t.Fatalf("the command logged %q, want a run in the copy, its link shim a link, and none in the real tree", ran)
+			}
+			wantNoWrites(t, before, treeWrites(t, watched...))
+		})
+	}
+}
+
+func wantNoWrites(t *testing.T, before, after map[string]string) {
+	t.Helper()
+	for path, was := range before {
+		if after[path] != was {
+			t.Errorf("%s changed: %s → %s", path, was, after[path])
+		}
+	}
+	for path := range after {
+		if _, ok := before[path]; !ok {
+			t.Errorf("%s appeared", path)
+		}
+	}
+}
+
+// the go fixture as a pnpm workspace with no dependency but its own package, installed by the real pnpm, offline, from a planted
+// lockfile: the shim pnpm wrote runs the go test. autoDedupe is frame's setting, which no lockfile records, so pnpm installs
+// again before every run and exec
+func pnpmWorkspaceFixture(t *testing.T) (redFixture, []string) {
+	t.Helper()
+	f := goRedFixture(t)
+	write(t, filepath.Join(f.dir, ".gitignore"), "node_modules\n")
+	write(t, filepath.Join(f.dir, "package.json"), `{"name": "p", "private": true, "devDependencies": {"runner": "workspace:*"}}`+"\n")
+	write(t, filepath.Join(f.dir, "pnpm-workspace.yaml"), "packages:\n  - runner\nautoDedupe: true\n")
+	write(t, filepath.Join(f.dir, "pnpm-lock.yaml"), `lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    devDependencies:
+      runner:
+        specifier: workspace:*
+        version: link:runner
+
+  runner: {}
+`)
+	write(t, filepath.Join(f.dir, "runner/package.json"), `{"name": "runner", "version": "1.0.0", "bin": {"limit-test": "limit-test.sh"}}`+"\n")
+	write(t, filepath.Join(f.dir, "runner/limit-test.sh"), "#!/bin/sh\nexec go test -v .\n")
+	install := exec.Command("pnpm", "install", "--offline", "--frozen-lockfile")
+	install.Dir, install.Env = f.dir, cleanEnv()
+	if out, err := install.CombinedOutput(); err != nil {
+		t.Fatalf("pnpm install in the fixture: %v\n%s", err, out)
+	}
+	commitAll(t, f.dir)
+	return f, []string{filepath.Join(f.dir, "node_modules"), filepath.Join(f.dir, ".git", "hooks")}
+}
+
+// FRM-554: pnpm in the copy runs the command and installs nothing, so the store the copy shares with the real tree is never relinked
+func TestVerifyRedRunsAPnpmCommandWithNoInstall(t *testing.T) {
+	t.Parallel()
+	f, watched := pnpmWorkspaceFixture(t)
+	before := treeWrites(t, watched...)
+
+	got, log := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, "--", "pnpm", "exec", "limit-test")
+
+	if got.code != 0 || got.data["verdict"] != verdictRed || log != "1\n1\n" {
+		t.Fatalf("exit %d, data %v, the test logged %q, want red off a clean and a mutated run:\n%s", got.code, got.data, log, got.stdout)
+	}
+	wantNoWrites(t, before, treeWrites(t, watched...))
 }
 
 // a mutant the test does not read stays green, and the exit says no proof
