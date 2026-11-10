@@ -5,7 +5,6 @@ import {
     SEATS_BEAT_MS,
     asksOf,
     byName,
-    currentSid,
     inListOrder,
     literalAngles,
     nextSeats,
@@ -14,6 +13,7 @@ import {
     runningPids,
     savePress,
     seatFacts,
+    stateOfPid,
     tickState,
     unbold,
     untickDoor,
@@ -32,67 +32,47 @@ const ask: Ask = {
     text: 'push FRM-1',
 };
 
-describe('the panel reads what the stash stores', () => {
+describe('the panel reads the state file the stash writes', () => {
     test('an open ask shows with its id, text and pick', () => {
-        const store = {
-            [`asks:${SID}`]: {
-                asks: ['push FRM-1'],
-                items: [{ id: 'o1', pick: 'yes', text: 'push FRM-1' }],
-            },
-        };
-        expect(asksOf(store, SID)).toEqual([ask]);
+        const state = { asks: [{ id: 'o1', pick: 'yes', text: 'push FRM-1' }] };
+        expect(asksOf(state)).toEqual([ask]);
     });
 
     test('an ask the stash marked gated carries its mark, a plain one none', () => {
-        const store = {
-            [`asks:${SID}`]: {
-                items: [
-                    { id: 'o1', isGated: true, text: '⚠️ merge #9' },
-                    { id: 'o2', text: 'push FRM-1' },
-                ],
-            },
+        const state = {
+            asks: [
+                { id: 'o1', isGated: true, text: '⚠️ merge #9' },
+                { id: 'o2', text: 'push FRM-1' },
+            ],
         };
-        expect(asksOf(store, SID).map((a) => a.isGated)).toEqual([true, false]);
+        expect(asksOf(state).map((a) => a.isGated)).toEqual([true, false]);
     });
 
-    test('an entry from before items carried ids shows its text with no id to press', () => {
-        expect(
-            asksOf({ [`asks:${SID}`]: { asks: ['push FRM-1'] } }, SID),
-        ).toEqual([
-            {
-                id: null,
-                isGated: false,
-                isLocked: false,
-                mark: null,
-                pick: null,
-                text: 'push FRM-1',
-            },
+    test('a session with no state file yet has no asks and no phases', () => {
+        expect(asksOf(null)).toEqual([]);
+        expect(phasesOf(null)).toEqual([]);
+    });
+
+    test('the phases come from the plan the stash wrote', () => {
+        expect(phasesOf({ plan: { lines: ['now: a', 'next: b'] } })).toEqual([
+            'now: a',
+            'next: b',
         ]);
-    });
-
-    test('the phases come from the orbit the stash kept', () => {
-        const store = {
-            [`kept:${SID}`]: {
-                orbit: {
-                    asks: [] as string[],
-                    plan: { lines: ['now: a', 'next: b'] },
-                },
-            },
-        };
-        expect(phasesOf(store, SID)).toEqual(['now: a', 'next: b']);
+        expect(phasesOf({ plan: null })).toEqual([]);
     });
 });
 
-describe('a card sits on a live session id', () => {
-    test('a cleared session follows its succ chain to the id it went on as', () => {
-        const store = { 'succ:a': { sid: 'b' }, 'succ:b': { sid: 'c' } };
-        expect(currentSid(store, 'a')).toBe('c');
+describe('a card finds its state file by pid', () => {
+    test('after a /clear the newest file of that pid wins', () => {
+        const old = { at: 1, pid: 7, sid: 'a' };
+        const now = { at: 2, pid: 7, sid: 'b' };
+        const other = { at: 3, pid: 8, sid: 'c' };
+        expect(stateOfPid([now, other, old], 7)).toBe(now);
+        expect(stateOfPid([old, now], 7)).toBe(now);
     });
 
-    test('a succ loop stops at the last new id', () => {
-        expect(
-            currentSid({ 'succ:a': { sid: 'b' }, 'succ:b': { sid: 'a' } }, 'a'),
-        ).toBe('b');
+    test('a pid with no state file has none', () => {
+        expect(stateOfPid([{ at: 1, pid: 8, sid: 'c' }], 7)).toBeNull();
     });
 
     test('only the pids ps printed count as running', () => {

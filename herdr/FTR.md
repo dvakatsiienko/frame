@@ -46,6 +46,10 @@ wish: PK-363
   - given a seat has phases
   - when dima clicks its row
   - then its phases show under it, and a second click folds them
+- ⬜ the deck draws from the state files on the shelf, never the stash's private store
+  - given x-mod-stash writes each thread's `~/.claude/shelf/herdr-state/<sid>.json`
+  - then every thread's asks, phases, waiting-on line, context and model draw from it, a thread after `/clear` included, and `rg x-mod-stash_inline` over fleet-board prints nothing
+  - decision: a thread's file is found by its pid, the newest `at` winning, since the registry keeps the old id after a `/clear` (FRM-568)
 
 ## fleet-board — orbit
 
