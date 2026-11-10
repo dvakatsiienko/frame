@@ -17,6 +17,7 @@ dima's words:
 > PK-363:W285 (2026-11-10 inbox, dima) herder seems cheap to modify. let's remember this quality and get maximum gains out of it, without turning it into "now it's expensive to modify".
 
 - **what it is:** herdr is a native terminal app. for us it is the fleet's cockpit: the one window where dima sees every seat, reads and answers them, and reaches every knob (his tick on grill 4's Q4, 2026-11-10)
+- **the name:** `x-herdr` is our setup inside herdr: its layout and our mods, each mod under its own name (his pick, 2026-11-10 17:17: «it is plain but clean»)
 - **who:** dima first. the seats run inside it, but what we build in it is built for his eyes and hands
 - **why we want it:** the desktop app's UI is not ours to shape; herdr's is, and cheaply: a mod is a folder and a `main.js`, a save reloads it
 - **best at:** one live view over all seats at once (who works, who is blocked, whose pane is whose), native UI, and being cheap to change

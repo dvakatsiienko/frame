@@ -7,6 +7,14 @@ wish: PK-363
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
 - decision: lines record a choice and its reason
 
+## the setup — x-herdr
+
+- 🧭 the setup is `x-herdr`, and «zoo» appears nowhere he looks
+  - given the takeover of zoo's parts is done
+  - then the layout is `layouts/x-herdr.json`, and a grep for «zoo» in his layout, the mod names, the shared keys and every label he sees prints nothing
+  - decision: the name is his pick, «it is plain but clean» (17:17); each mod keeps its own name (fleet-board, fleet-chatter, agents-list)
+  - decision: the layout rename lands last, as its own ⚠️ ask, after a throwaway herdr home shows what a rename restarts (W416)
+
 ## fleet-board — sessions
 
 - ✅ every live seat on one list
@@ -81,12 +89,22 @@ wish: PK-363
   - decision: the tray stays and is rebranded as ours, after my-tabs (dima, 16:41); bound in `keys.json` `global` by clio on his word, backup `~/.local/state/herdr-mod-backups/keys-1641.json`
   - decision: a `global` ctrl+letter is taken from the terminal (herdr's guide, § Keys), so in a seat's Terminal view cc's ctrl+j new line no longer reaches cc (read from the guide, not probed by a keypress)
 
-## chat view
+## chat view — fleet-chatter
+
+- ⬜ the chat is ours by name: `fleet-chatter`
+  - makes: `home/.config/herdr-app/mods/fleet-chatter`, landed into `~/.config/herdr-app/mods/fleet-chatter` by `herdr-mods:land`
+  - given `layouts/zoo.json` places `fleet-chatter`
+  - then herdr opens no file of zoo's `claude-chat`, and every name dima sees reads fleet-chatter
+  - decision: copied from zoo's `claude-chat` (FRM-556, 11-10), whose folder stays on disk unplaced; the shared keys `chat.look/subs/containers` keep their names until zoo's other mods are ours
+- ⬜ drafts typed under the old name come along
+  - given dima typed a draft in a seat's box while the chat was `claude-chat`
+  - when `fleet-chatter` first starts
+  - then that seat's box shows the draft, and a draft typed in `fleet-chatter` is never overwritten
+  - decision: herdr keeps a mod's storage per mod name, so `drafts.js` reads `data/claude-chat/store-*.json` once (proven on a throwaway mod, 17:17)
 
 - ⬜ the effort shows the seat's live value
   - given a seat's last reply ran at an effort
   - then the chat box's effort reads that value, past the default in settings
-  - decision: it lives in the chat mod `~/.config/herdr-app/mods/claude-chat`, outside frame and outside git until FRM-556 moves it in
 - ⬜ the band and the asks in the chat view (FRM-561)
   - given a seat is selected in the Chat view
   - then its context percent, its waiting-on line, the weekly usage and its open asks with their 🛎️ show without a flip to the Terminal view
@@ -102,9 +120,8 @@ wish: PK-363
   - decision: not in his day-one pick; built once and cut, waiting for his word
 - ✅ the chat box's draft survives a chat reload
   - given dima has typed into a seat's Chat box
-  - when claude-chat reloads
+  - when the chat mod reloads
   - then the box shows his text again (proven in wing 1's tab, 16:57:57)
-  - decision: it lives in claude-chat, outside frame and outside git until FRM-556 moves it in; backup `~/.local/state/herdr-mod-backups/claude-chat-1659`
 - ⬜ after a reload the caret sits at the draft's end
   - given a draft came back after a reload
   - when dima types on

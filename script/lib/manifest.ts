@@ -62,6 +62,7 @@ export const noLink = new Map<string, keyof typeof noLinkReasons>([
     ['.config/herdr-app/mods/AGENTS.md', 'readInRepo'],
     ['.config/herdr-app/mods/agents-list', 'landedByCopy'],
     ['.config/herdr-app/mods/fleet-board', 'landedByCopy'],
+    ['.config/herdr-app/mods/fleet-chatter', 'landedByCopy'],
     ['.zshrc', 'sourcedByStub'],
     ['.zshenv', 'sourcedByStub'],
     ['.zprofile', 'sourcedByStub'],

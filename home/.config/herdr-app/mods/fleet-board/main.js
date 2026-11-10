@@ -450,7 +450,7 @@ export default class FleetBoard extends View {
                 return refuse(
                     screen.stderr.trim() || 'its screen did not read',
                 );
-            // the chat view hides the terminal: zoo's `views` stack flips to it, as claude-chat's own Terminal switch
+            // the chat view hides the terminal: zoo's `views` stack flips to it, as fleet-chatter's own Terminal switch
             // does; a layout with no such stack refuses this one step and stays as it is
             run('pane.focus', { terminal: seat.address });
             try {
@@ -714,7 +714,7 @@ export default class FleetBoard extends View {
             );
     }
 
-    // the seat this copy's chat view shows, by claude-chat's own rule: its props' terminal, else the shown tab's focused
+    // the seat this copy's chat view shows, by fleet-chatter's own rule: its props' terminal, else the shown tab's focused
     // agent, else the one it showed, else the tab's first; a change costs one hc read for its pid, the board rows' key
     /** @param {Context} cx */
     follow(cx) {
