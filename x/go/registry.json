@@ -24,7 +24,7 @@
         },
         {
             "example": "x brief check brief.md --repo ~/frame",
-            "gist": "a spawn brief checked against the repo it names",
+            "gist": "a spawn brief read against its repo",
             "name": "brief"
         },
         {
@@ -828,10 +828,20 @@
                     "type": "string",
                     "value": "names"
                 },
+                "after": {
+                    "description": "place the ticket right after this one in its team's manual order; not with --before",
+                    "type": "string",
+                    "value": "id"
+                },
                 "as": {
                     "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
                     "type": "string",
                     "value": "member"
+                },
+                "before": {
+                    "description": "place the ticket right before this one in its team's manual order; not with --after",
+                    "type": "string",
+                    "value": "id"
                 },
                 "delegate": {
                     "description": "the member working it, by name: codie or clio; the assignee stays dima's",
@@ -873,11 +883,16 @@
                     "description": "a state of the ticket's team, by name",
                     "type": "string",
                     "value": "name"
+                },
+                "title": {
+                    "description": "the ticket's new title",
+                    "type": "string",
+                    "value": "text"
                 }
             },
             "name": "linear set",
             "needsApply": false,
-            "purpose": "update a ticket's state, labels, priority, estimate, parent, project, milestone or delegate by name",
+            "purpose": "update a ticket by name: state, labels, priority, estimate, parent, project, milestone, delegate, title, its place",
             "touches": [
                 "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
             ]
@@ -908,6 +923,36 @@
             "name": "linear link",
             "needsApply": false,
             "purpose": "relate a ticket to others — blocks, related or duplicate — in one request, by FRM-N ids",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the ticket the relation was made from, FRM-N or BYT-N",
+                    "name": "id"
+                },
+                {
+                    "description": "the relation: blocks, related or duplicate",
+                    "name": "kind"
+                },
+                {
+                    "description": "the tickets on the other end; one missing link removes nothing",
+                    "isVariadic": true,
+                    "name": "target"
+                }
+            ],
+            "flags": {
+                "as": {
+                    "description": "the member to act as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                }
+            },
+            "name": "linear unlink",
+            "needsApply": false,
+            "purpose": "remove a blocks, related or duplicate relation x linear link made, by FRM-N ids; a missing one removes nothing",
             "touches": [
                 "linear's graphql api ($X_LINEAR_URL in tests), as the acting member"
             ]

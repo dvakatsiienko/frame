@@ -564,6 +564,19 @@
   - given a ticket, a kind and one or more targets, all by `FRM-N`
   - when it runs, then one request creates a relation per target, and the envelope names the actor
   - given another kind, then exit 2 naming the three
+- ⬜ `x linear set --title` changes a ticket's title
+  - given `--title <text>`, alone or beside other fields, then the same one write carries it and the change prints as `title: old → new`
+- ⬜ `x linear set --after|--before <id>` places a ticket beside another in its team's order
+  - given a ticket and another of the same team
+  - when `x linear set <id> --after <other>` runs, then its sort order lands halfway between the other's and the next ticket's in the team's manual order, the moving ticket left out; `--before` takes the one above; at an end of the order it lands one step past
+  - then the change prints as `order: old → new, after <other>`
+  - given both flags, the ticket itself, or free text for the other, then exit 2 and nothing is sent; given a ticket linear does not know, another team's, or one the team's order never shows, then exit 1 and nothing is written
+  - decision: the neighbour is read by walking the manual order a page of 250 at a time: linear's ticket filter has no sort-order field (schema read 2026-11-10)
+- ⬜ `x linear unlink <id> blocks|related|duplicate <targets…>` removes relations `x linear link` made
+  - given a ticket that holds the relation to each target (`related` from either side, `blocks` and `duplicate` from this ticket only)
+  - when it runs, then one request deletes them and each prints as `<kind>: <target> → —`
+  - given one target with no such link, a link that runs the other way, or a ticket linear does not know, then exit 1 naming it and nothing is removed
+  - decision: `unlink` is a working name, dima's pick from seven is pending (FRM-384)
 - ✅ `x linear comment <id> --body-file <f>` posts a comment
   - given a markdown file with backticks, `$VAR` and quotes
   - when it runs, then the comment holds the file byte for byte, and the envelope prints the actor and the comment's url

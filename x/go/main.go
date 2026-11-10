@@ -83,6 +83,7 @@ var impls = map[string]Impl{
 	"linear body":       {Run: linearBody, Undone: "nothing was written"},
 	"linear set":        {Run: linearSet, Undone: "nothing was changed"},
 	"linear link":       {Run: linearLink, Undone: "no relation was made"},
+	"linear unlink":     {Run: linearUnlink, Undone: "no relation was removed"},
 	"linear comment":    {Run: linearComment, Undone: "nothing was posted"},
 	"linear update":     {Run: linearUpdate, Undone: "nothing was posted"},
 	"linear api":        {Run: linearAPI},
