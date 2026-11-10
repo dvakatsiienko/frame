@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-10T00:21:00Z'
+updated_date: '2026-11-10T16:12:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,12 +16,13 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 📅 speak v2 planning with dima, after herdr's move and the mods scope (dima 23:50); FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-11
+- [ ] #1 cli scope audit round with dima (his 17:46 word via main): one verdict group at a time, details on his ask; one line to main per settled group, the final verdict list as a file; no linear writes
 - [ ] #2 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
 - [ ] #3 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11
 - [ ] #4 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #5 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 - [ ] #6 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 539 → 533 → 535, the dated reads ride it (FRM-534, FRM-517 on 11-10; FRM-525 on 11-14); resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
+- [ ] #7 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -102,4 +103,6 @@ done 2026-11-10 00:15: ⏳ FRM-548, FRM-549, FRM-553, FRM-509 close at the next 
 2026-11-10 01:24 wing 1: the codie/FRM-383-verify-red branch is deleted (his 00:20 word), only tag archive/FRM-383-verify-red stays; the 00:21 note's «waits for his typed delete» is done
 
 2026-11-10 01:56 wing 1: FRM-557 merged (frame#155, dima's «merge 155»); replay 118 → 51 min a day projected, the measured day read 11-11 (FRM-557 ⏰); sixth sense stopped, vm codie parked alive for dima; tonight's side work: 5 self-improve pulls landed, agent-browser-own-chrome trial born (until 11-24), agent-desktop trial on 11-11 (o106), neuroarxiv reinstalled
+
+done 2026-11-10 18:12: 📅 speak v2 planning with dima, after herdr's move and the mods scope (dima 23:50); FRM-497 speak meter 120 → 60 fps rides it — on: 2026-11-11 (FRM-497 Todo)
 <!-- SECTION:NOTES:END -->

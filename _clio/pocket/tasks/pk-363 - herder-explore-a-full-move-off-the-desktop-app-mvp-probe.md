@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T16:11:00Z'
+updated_date: '2026-11-10T17:27:00Z'
 labels:
   - m
   - clio-main
@@ -1340,4 +1340,142 @@ PK-363:W444 (2026-11-10 17:37, dima, o32 steer) ok. for all audits wing 1 must c
 PK-363:W445 (2026-11-10 17:37, dima, o33 steer) i told codie to swap chatter
 
 PK-363:W446 (2026-11-10 17:46, dima, o38 steer) it was too fast. i want details but i am overloaded. let me take care of an audit with wing-1 and you keep you updated. handover everything to wing 1 and ensure it have all necessary data in full so scope revalidation is true
+
+PK-363:W447 (2026-11-10 18:11, dima): you usually do not print full path, only file name. so filename should be clear. x-herdr.json ← x-herder-layout.json.
+PK-363:W448 (2026-11-10 18:11, dima): previously i asked about add support for message details in chatter (time, received state, copypaste) - did you fold them? ❓
+PK-363:W449 (2026-11-10 18:11, dima): x-herdr-deck: short, a ship's deck. my pick: you said «board/deck» yourself, it is the shortest, and it fits a fleet ← i approve.
+PK-363:W450 (2026-11-10 18:11, dima): then mods codie have to rename board in mods too. and «board» «deck» — rename at all other surfaces.
+PK-363:W451 (2026-11-10 18:11, dima): wing 1 takes the four research jobs ➡️ yes.
+PK-363:W452 (2026-11-10 18:11, dima): the order with you: font and message look, then the band ➡️ yes.
+PK-363:W453 (2026-11-10 18:11, dima): x-herdr-agents ← approved.
+PK-363:W454 (2026-11-10 18:11, dima): x-herdr-tabs ← approved.
+PK-363:W455 (2026-11-10 18:11, dima): herdr's new-menu ← how to see it? ❓
+PK-363:W456 (2026-11-10 18:11, dima): i want ab test of herdr's new-menu.
+PK-363:W457 (2026-11-10 18:11, dima): i want ability to start new terminal via cmd+t.
+PK-363:W458 (2026-11-10 18:11, dima): i think we can drop this zoo part.
+PK-363:W459 (2026-11-10 18:11, dima): seat strip: ctx, week, its asks part of the right column ← i want session ctx meter specific to opened tab.
+PK-363:W460 (2026-11-10 18:11, dima): also what each thread is waiting for (specific to opened thread). duplicated asks may probably go if right part works fully. keep for now until right side (deck) is proven.
+PK-363:W461 (2026-11-10 18:11, dima): i want this strip to be part of chatter text box (where i print text). i attached SS how it was in c desktop app. i want «waiting for», buttons and session ctx meter.
+PK-363:W462 (2026-11-10 18:11, dima): 5h window can be omitted for now. at 200$ it is not present but i do not know if i will keep 200$ for next month, or switch to 100$.
+PK-363:W463 (2026-11-10 18:11, dima): x-herdr-pane ← x-herdr-chatter-header ? i want clear name, there is a lot of parts. ❓
+PK-363:W464 (2026-11-10 18:11, dima): x-herdr-chatter ← approved.
+PK-363:W465 (2026-11-10 18:11, dima): x-herdr-terminal ← approve. but what is «herdr terminal»? how to see how native herdr terminal looks and feels? ❓
+PK-363:W466 (2026-11-10 18:11, dima): if it is better or same as zoo's terminal, zoo's dupe goes.
+PK-363:W467 (2026-11-10 18:11, dima): 10. x-herdr-status
+PK-363:W468 (2026-11-10 18:11, dima): save this. your mapped screenshot was very useful. save this trick somehow.
+PK-363:W469 (2026-11-10 18:11, dima): the right column is 13, with its name open for your pick. the strip above the chat (6) is drawn by the same mod. ← x-herder-deck. settled.
+PK-363:W470 (2026-11-10 18:11, dima): we do not go all in for now until i test «reset» btn.
+PK-363:W471 (2026-11-10 18:11, dima): all scopes need to be inventoried: the mod scope, CLI scope, and herdr scope. we should properly rebalance everything we planned across all scopes, considering the best boundaries.
+PK-363:W472 (2026-11-10 18:11, dima): did we already establish the boundaries for what it is better to have at each surface, the COI mods and herdr? ❓
+PK-363:W473 (2026-11-10 18:11, dima): when we can have this wide-scale audit, maybe wing 1 can take care of the entire audit in full at once? ❓
+PK-363:W474 (2026-11-10 18:11, dima): if it can, then let it do so, but tell it to solve it with me gradually, because it will produce a lot of info and i will have to make decisions.
+PK-363:W475 (2026-11-10 18:11, dima): tell it to introduce me to this sweep step by step, but not too many steps, because it will last too long.
+PK-363:W476 (2026-11-10 18:11, dima): the names: look at the map, then rule on each proposed name ➡️ as the legend shows. i provided list above + steers/questions.
+PK-363:W477 (2026-11-10 18:11, dima): the right column's name ➡️ 3, x-herdr-deck.
+PK-363:W478 (2026-11-10 18:11, dima): the look phases (chat, slipstream, band, theme): one milestone or a second ➡️ a second, so the first closes when the cli lane is unblocked.
+PK-363:W479 (2026-11-10 18:11, dima): speak v2 planning is still dated tomorrow, and you wrote you have no capacity ➡️ move it to «after x-herdr». later a little.
+PK-363:W480 (2026-11-10 18:11, dima): speak app v2 likely gets postponed again. i won't have capacity for it.
+PK-363:W481 (2026-11-10 18:11, dima): the cli scope audit ← good that you solved it, but let's not rush. i want to audit too. can i solve it with wing one, gradually? 15 fallen-off chunks is a lot. i want a proof for each move via low-tide-cuts skill with wing 1. ❓
+PK-363:W482 (2026-11-10 18:11, dima): yes, those parts are mine in cli.
+PK-363:W483 (2026-11-10 18:11, dima): the cli audit: a short round with me on the verdicts that change what you get ➡️ yes, after the names.
+PK-363:W484 (2026-11-10 18:11, dima): maybe even with you. i want all scopes to be solved gradually. maybe wing 1? your thread slightly busy, coders updates a lot. ❓
+PK-363:W485 (2026-11-10 18:11, dima): the two stats tickets ➡️ stay in the cli, as you said.
+PK-363:W486 (2026-11-10 18:11, dima): the names on the map; the right column's name ➡️ as the legend shows; x-herdr-deck.
+PK-363:W487 (2026-11-10 18:11, dima): yes, do not switch theme. after we halt today we probe it. when no one else is left. important!
+PK-363:W488 (2026-11-10 18:11, dima): go probe.
+PK-363:W489 (2026-11-10 18:11, dima): i was busy reading your screenshot with herder layout, and writing this message. so it is unstructured (i started writing ~25min ago), so all at once.
+PK-363:W490 (2026-11-10 18:11, dima, o34 steer): rethink the «board» part, a cool vibe name, x-herdr-fleet-party or short? the seven are in the 17:36 reply.
+PK-363:W491 (2026-11-10 18:11, dima, o38 steer): it was too fast. i want details but i am overloaded. let me take care of an audit with wing-1 and you keep you updated. handover everything to wing 1 and ensure it has all necessary data in full so scope revalidation is true.
+
+correction (helga): W490's words are from his 18:11 prompt, quoted there beside his o34 tick; o34 itself was a bare tick
+
+PK-363:W492 (2026-11-10 18:31, dima): Can you clarify how this pane, in your words, can be present in terminals? ❓
+PK-363:W493 (2026-11-10 18:31, dima): From what I saw, this part of the UI that you call a pane is a part of the chatter part mod. from screenshot, it is visible that this part of the UI is a part of the chatter mod. How it can be present in the terminal, I don't understand.
+PK-363:W494 (2026-11-10 18:31, dima): I wanted to name it `nsa-x-header-chatter-header` because it's clear for me that it is a header part of the chatter mod.
+PK-363:W495 (2026-11-10 18:31, dima): A pane is a very broad name. That's why it confuses me.
+PK-363:W496 (2026-11-10 18:31, dima): If I miss something, tell me upfront because I wanted to name it as a header, and I can miss some details. Describe it cleanly so we pick a good name.
+PK-363:W497 (2026-11-10 18:31, dima): also, the language. how to call «custom» part of herdr properly? a mod? how not to confuse with native cc mods? ❓
+PK-363:W498 (2026-11-10 18:31, dima): let's use screenshots to communicate. when you want to show me something draw a screenshot and point to what you want to show. you can either draw yourself or delegate to helga or helper-lite.
+PK-363:W499 (2026-11-10 18:31, dima): + menu ← let's have herdr's.
+PK-363:W500 (2026-11-10 18:31, dima): What «herdr terminal» is ← So, without those terminals, a quick terminal pop-up at the bottom via the Ctrl+J hotkey will not work? ❓
+PK-363:W501 (2026-11-10 18:31, dima): If yes, then okay, let's keep this pop-up terminal. It is useful.
+PK-363:W502 (2026-11-10 18:31, dima): 7 chat header, Chat I Terminal switch x-herdr-chatter x-herdr-chatter ← so why we can not name this section as x-herdr-chatter-header? it would be clear for me that way. or it is redundant? ❓
+PK-363:W503 (2026-11-10 18:31, dima): how then for me to tell you to change something at that part without this area have a clear name? ❓
+PK-363:W504 (2026-11-10 18:31, dima): see, already a dupe. i would never guess that this area is x-herdr-pane-header (open).
+PK-363:W505 (2026-11-10 18:31, dima): so rename this to x-herdr-terminal-header (open).
+PK-363:W506 (2026-11-10 18:31, dima): the terminal panes' header name ← x-herder-terminal-header
+PK-363:W507 (2026-11-10 18:31, dima): x-herder-chatter-header x-herder-terminal-header ← do you now see the confusion and why i want names like this? ❓
+PK-363:W508 (2026-11-10 18:31, dima): i sent this message from c desktop app. now moving into herdr.
+PK-363:W509 (2026-11-10 18:31, dima, caption): 7. you told this is a pane? ❓
+PK-363:W510 (2026-11-10 18:31, dima, caption): herdr native terminal or zoo? where zoo's part is? ❓
+
+PK-363:W511 (2026-11-10 18:40, dima): Okay, but I expected a slightly more expanded answer about how herdr is working.
+PK-363:W512 (2026-11-10 18:40, dima): What is the official name for customizable parts of the UI in herdr? ❓
+PK-363:W513 (2026-11-10 18:40, dima): How does herdr itself call its part mods, or how? ❓
+PK-363:W514 (2026-11-10 18:40, dima): No, it is still wrong because the entire area that contains a chat or terminal tab switch is a custom one, the one that we pulled out of the zoo. This entire row should be named like this.
+PK-363:W515 (2026-11-10 18:40, dima): x-herder-chatter-header contains both tabs: chat | terminal. It describes both terminal and chat.
+PK-363:W516 (2026-11-10 18:40, dima): the tabs are x-herder-chatter-header-tabs
+PK-363:W517 (2026-11-10 18:40, dima): x-herder-terminal-header is for bottom terminal. if matters.
+PK-363:W518 (2026-11-10 18:40, dima): tell if it makes sense? or clarify. ❓
+
+PK-363:W519 (2026-11-10 18:45, dima): let's have these names with one correction. herdr mods are always «herdr mods».
+PK-363:W520 (2026-11-10 18:45, dima): herdr mod = herdr mod
+PK-363:W521 (2026-11-10 18:45, dima): cc native mod = cc native mod (let's be explicit)
+PK-363:W522 (2026-11-10 18:45, dima): layout = herdr layout (explicit just in case)
+PK-363:W523 (2026-11-10 18:45, dima): block = herdr layout block
+PK-363:W524 (2026-11-10 18:45, dima): the headers and the tray: /Users/dima/.local/state/looks/PK-363/1842-headers-and-tray.png ← yes.
+PK-363:W525 (2026-11-10 18:45, dima): where you at, what's next for you? ❓
+
+PK-363:W526 (2026-11-10 18:50, dima): let's do whenever you can
+PK-363:W527 (2026-11-10 18:50, dima): Okay, but what do you mean by "close chat ticket"? What was it about? I printed quite a long list of wishes about chatter herdr mod. Is it done, or was this ticket about chat some kind of a prep ticket? ❓
+PK-363:W528 (2026-11-10 18:50, dima): ok, attach to a rider to nearest cli ticket and tell wing 1 because it is currently doing scopes revamp
+PK-363:W529 (2026-11-10 18:50, dima): do now
+
+PK-363:W530 (2026-11-10 18:53, dima): when ticks will work? ❓
+PK-363:W531 (2026-11-10 18:53, dima): also, chatter: i want a band to move to chatter box as i previously shown in screenshot how my band looked in prev cc.
+
+PK-363:W532 (2026-11-10 18:53, dima, caption): i want this part to be a part of chatter, my text box
+
+PK-363:W533 (2026-11-10 19:03, dima): OK. let's have a cli lane.
+PK-363:W534 (2026-11-10 19:03, dima): q6: can wait.
+PK-363:W535 (2026-11-10 19:03, dima): can go sooner, if it is small and gives speed.
+PK-363:W536 (2026-11-10 19:03, dima): let's start cli lane now with fable 5.2 medium as a coder. you can maintain cli lane how do you think? ❓
+PK-363:W537 (2026-11-10 19:03, dima): or we first plan? ❓
+PK-363:W538 (2026-11-10 19:03, dima): what's next? ❓
+PK-363:W539 (2026-11-10 19:03, dima): mods scope reshake? to see what's stays in cc native mods and what moves to herdr side? ❓
+
+PK-363:W540 (2026-11-10 19:04, dima): question: is mods lane glide up2date? ❓
+PK-363:W541 (2026-11-10 19:04, dima): create glide for herdr lane.
+PK-363:W542 (2026-11-10 19:04, dima): is it properly dispatched? ❓
+PK-363:W543 (2026-11-10 19:04, dima): herdr lane codie is 60% ctx - SW him
+
+PK-363:W544 (2026-11-10 19:10, dima): We have a wishkeeper.
+PK-363:W545 (2026-11-10 19:10, dima): When I print text into a text box in the chatter and then switch to another tab, the printed text is gone when I return
+PK-363:W546 (2026-11-10 19:10, dima): wisp*
+
+PK-363:W547 (2026-11-10 19:24, dima): a few rider-steers (very wanted) ask to do as soon as free window is present
+PK-363:W548 (2026-11-10 19:24, dima): [Image #18]est screenshot: tell codie to remove old zoo icons from tabs and replace with our emojis.
+PK-363:W549 (2026-11-10 19:24, dima): thread name = tab name.
+PK-363:W550 (2026-11-10 19:24, dima, caption): ✓, blue icon, spinner stays
+PK-363:W551 (2026-11-10 19:24, dima, caption): groups: unread working done goes
+PK-363:W552 (2026-11-10 19:24, dima, caption): clearer section name (orbit)
+PK-363:W553 (2026-11-10 19:24, dima, caption): clearer asker name — bold, bigger font
+PK-363:W554 (2026-11-10 19:24, dima): agents list: it is currently dynamic, and the order of the threads keeps changing depending on what threads do.
+PK-363:W555 (2026-11-10 19:24, dima): It is not convenient.
+PK-363:W556 (2026-11-10 19:24, dima): For the agents list, I want unread and working sections to be removed, and all threads to be listed plainly via a statically set order.
+PK-363:W557 (2026-11-10 19:24, dima): I want the ability to drag and drop them and set an order myself.
+PK-363:W558 (2026-11-10 19:24, dima): The order of the threads is not changed unless I change them via drag and drop.
+PK-363:W559 (2026-11-10 19:24, dima): All the other states are present: the blue dot indicator that some pending reply is present, the checkmark when all good, and the spinner when the thread is active.
+PK-363:W560 (2026-11-10 19:24, dima): the deck.
+PK-363:W561 (2026-11-10 19:24, dima): 1 i can tick, but once ticked — no way to «undo» tick.
+PK-363:W562 (2026-11-10 19:24, dima): 1.1 When I tick, the button should move into a ticked state, and when I press a second time on a tick, it unticks. 🛎️ (unticked) → ✅ (ticked) → 🔒 (slipstreamed)
+PK-363:W563 (2026-11-10 19:24, dima): 2 orbit: old orbit from c desktop app had asks ids like o13, o36, etc. in herdr i do not see them, but i want them, because i can use them as an id to describe what i ref to.
+PK-363:W564 (2026-11-10 19:24, dima): 2.1 🪐 lost-draft fix: once it is live, type in a chat box, switch tabs, return, tell me → **o36**: lost-draft fix: once it is live, type in a chat box, switch tabs, return, tell me
+PK-363:W565 (2026-11-10 19:24, dima): 3 look at how deck looks to me. review from Ui/UX perspective and see how to make it prettier for me, as a first UI sharpening step.
+PK-363:W566 (2026-11-10 19:24, dima): draft a spec for codie to make entire deck prettier, and tell to do. (i added my own wants - bigger fonts etc).
+PK-363:W567 (2026-11-10 19:24, dima): it should be cheap and not too long, but by first UI improvement i want stuff prettier.
+PK-363:W568 (2026-11-10 19:24, dima): chatter: seem like rich text formatting is not present.
+PK-363:W569 (2026-11-10 19:24, dima): bold text not present in chatter from your replies.
+PK-363:W570 (2026-11-10 19:24, dima): can i have it as a freebie? ❓
+PK-363:W571 (2026-11-10 19:24, dima): print «💡💡💡💡💡» when ticking will work fully.
 <!-- SECTION:NOTES:END -->

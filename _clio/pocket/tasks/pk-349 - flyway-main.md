@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-10T14:58:00Z'
+updated_date: '2026-11-10T16:21:00Z'
 labels:
   - s
   - clio-main
@@ -27,12 +27,13 @@ ordinal: 1000
 - [ ] #9 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
 - [ ] #10 📅 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line — on: 2026-11-10
 - [ ] #11 📅 start crow and helga in herdr panes (PK-363:W119, W146–W148, W156): `crow:start opus --pane`, helga on CLIO_SIDECAR_PANE=1 (d6756fd9); prove crow's socket wake in harvest.log and one crow:stop, else fall back to --bg — on: 2026-11-10
-- [ ] #12 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #13 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
-- [ ] #14 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #15 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #16 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #17 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
+- [ ] #12 📅 the theme-switch probe, after tonight's halt, main clio alone, no other seat live (dima 18:11: «after we halt today we probe it. when no one else left. important!») — on: 2026-11-10
+- [ ] #13 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #14 📅 FRM-483 boot-prefetch stall: the 3-day read, then close or one step named — on: 2026-11-11
+- [ ] #15 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #16 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #17 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #18 💤 FRM-556 fleet-chatter, signed and parked (his o101 tick): spec and dispatch after the herdr move — later: dima, after the move
 <!-- AC:END -->
 
 ## Implementation Notes
