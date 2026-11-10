@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T22:08:00Z'
+updated_date: '2026-11-10T22:18:00Z'
 labels:
   - m
   - clio-main
@@ -1643,7 +1643,7 @@ PK-363:W700 (2026-11-10 22:10, dima): Maybe someone else already has it or has m
 PK-363:W701 (2026-11-10 22:10, dima): What do you think? Is it worth researching this? Or has a researcher already covered this? Or do you think we will figure out the solution ourselves? ❓
 PK-363:W702 (2026-11-10 22:10, dima): probe, just for curiosity and tell what it buys if it works.
 
-PK-363:W703 (2026-11-10 22:12, dima): all are interactive but how to actually see if they worked? lets test: i pressed 🐦‍🔥, and disabled keep-hot, waker and afk. true? (they was enabled) ❓
+PK-363:W703 (2026-11-10 22:12, dima): all are interactive but how to actually see if they worked? lets test: i pressed 🐦🔥, and disabled keep-hot, waker and afk. true? (they was enabled) ❓
 
 PK-363:W704 (2026-11-10 22:16, dima): i am overloaded and can't keep up with your answers. (raw says «can keep up»: read as «can't keep up», typo fold) i am lost with a grill. is your grill still relevant? maybe regrill after perf measures? ❓ (i meanwhile go answer wing 1 grill)
 
@@ -1707,11 +1707,11 @@ PK-363:W755 (2026-11-10 22:54, dima): Propose to yourself how to solve it gracef
 PK-363:W756 (2026-11-10 22:54, dima): Are you sure there is nothing interesting, other than your planned borrows, present in Herdr? ❓
 PK-363:W757 (2026-11-10 22:54, dima): If sure then pull what you propose.
 
-PK-363:W737 (2026-11-10 22:45, dima) x linear unlink: unlink is better, keep unlink.
-PK-363:W738 (2026-11-10 22:47, dima) so you've completed the sweep and you're parked, right? what tails do you have? ❓
-PK-363:W739 (2026-11-10 22:47, dima) can you review your whole sweep for integrity as a whole, because you were moving step by step and stuff drifted along the way? review everything you completed today again, fix all drifts, and take care of old tails.
-PK-363:W740 (2026-11-10 22:47, dima) also refresh your flyway if needed so you're clean and ready to be held at a good point, but let your lane finish the meaningful part that was planned for today.
-PK-363:W741 (2026-11-10 22:55, dima) FRM-414's body and sign, FRM-560 and FRM-570's shaping, the two closing words: now, not after the reset. the two steer grooms: do. do all your tails, i have space.
+PK-363:W808 (2026-11-10 22:45, dima) x linear unlink: unlink is better, keep unlink.
+PK-363:W809 (2026-11-10 22:47, dima) so you've completed the sweep and you're parked, right? what tails do you have? ❓
+PK-363:W810 (2026-11-10 22:47, dima) can you review your whole sweep for integrity as a whole, because you were moving step by step and stuff drifted along the way? review everything you completed today again, fix all drifts, and take care of old tails.
+PK-363:W811 (2026-11-10 22:47, dima) also refresh your flyway if needed so you're clean and ready to be held at a good point, but let your lane finish the meaningful part that was planned for today.
+PK-363:W812 (2026-11-10 22:55, dima) FRM-414's body and sign, FRM-560 and FRM-570's shaping, the two closing words: now, not after the reset. the two steer grooms: do. do all your tails, i have space.
 
 PK-363:W758 (2026-11-10 23:03, dima): How to not forget this knowledge for the future when we evolve the Herdr? The agent cmd in Herdr or is there a better place? ❓
 PK-363:W759 (2026-11-10 23:08, dima): tell herder codie. buttons.
@@ -1769,4 +1769,20 @@ PK-363:W800 (2026-11-10 23:49, dima): propose how to have that retro — what to
 PK-363:W801 (2026-11-10 23:58, dima): also — we need to probe the killing places. remember we postponed to after halt? so after halt we hunt how you died? ❓
 PK-363:W802 (2026-11-11 00:06, dima): I told wing 1 to fix now. Ensure it is fixed and landed
 PK-363:W803 (2026-11-11 00:06, dima): whats left? do we still hunt what killed you or found? ❓
+
+PK-363:W804 (2026-11-11 00:09, dima): lets sign everything now, solve all your tails.
+PK-363:W805 (2026-11-11 00:09, dima): what ideas? i thought you folded? fold ideas now. ❓
+PK-363:W806 (2026-11-11 00:13, dima): A question. I looked into this mod or framework or preset shepherdr, to borrow from and I actually liked it. I actually would be glad if we would start it with this not with Zoo that we started with but we already built around zoo some of our custom stuff and claimed it.
+PK-363:W807 (2026-11-11 00:13, dima): If I would ever want to test it in full, this shepherdr, is it possible with Herdr? Or with my current setup, with what we already built, installing it over our setup is not possible. Does Herdr support installs like this in a switch mode? For example would it be possible to switch from my setup to shepherdr to test it out? ❓
+
+PK-363:W813 (2026-11-11 00:16, dima): yes i want only probe, explore and see what to borrow.
+PK-363:W814 (2026-11-11 00:16, dima): also, having it installed makes it easier to pull into our setup. fold this idea.
+PK-363:W815 (2026-11-11 00:16, dima): then do a halt. tell everyone to finish their stuff, close tails.
+PK-363:W816 (2026-11-11 00:16, dima): /halt then you park and tell if your death cause still needs to be sought
+
+PK-363:W817 (2026-11-10 01:57, dima): wait i want ask around wing 1
+PK-363:W818 (2026-11-10 01:57, dima): dont kill wing1
+PK-363:W819 (2026-11-10 02:25, dima): delete codie/FRM-551-vm-go-test
+PK-363:W820 (2026-11-10 02:28, dima): your flyway #5 — cleared? ❓
+PK-363:W821 (2026-11-10 20:58, dima): It is a mod slaying ticket? Maybe it is your ticket, not Wing 1? ❓
 <!-- SECTION:NOTES:END -->
