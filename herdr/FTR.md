@@ -107,5 +107,6 @@ wish: PK-363
 - ✅ `pnpm herdr-mods:land --watch` lands every save in frame
   - given the watcher runs (it prints its pid; stop it by that pid)
   - when a mod file in frame is saved and `herdr-app check` passes on it
-  - then its changed files land in one write within ~0.4 s, and herdr reloads it live
+  - then its changed files land in one write once the check passes (~7 s: `herdr-app check` runs through the window), and herdr reloads it live
+  - and a save the file watch misses still lands: a sweep by mtime each second catches it
   - and when the check fails, nothing lands and the watcher prints why (live: a half-built fleet-board save held, 16:30:09)

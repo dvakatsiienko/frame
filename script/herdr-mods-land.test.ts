@@ -4,6 +4,7 @@ import {
     mkdirSync,
     mkdtempSync,
     readFileSync,
+    renameSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -14,13 +15,21 @@ const SCRIPT = join(import.meta.dirname, 'herdr-mods-land.ts');
 const GOOD =
     'import { View, div } from "gpui-kit";\nexport default class P extends View { render() { return div().child("ok"); } }\n';
 
-// a fixture frame source and a fixture herdr home, never dima's live folder
+// a fixture frame source and a fixture herdr home, never dima's live folder; `herdr-app check` is stubbed, since the
+// real one takes ~7 s through the window and no ci runner has it
 function fixture() {
     const root = mkdtempSync(join(tmpdir(), 'herdr-mods-land-'));
     const source = join(root, 'source');
     const home = join(root, 'home');
+    const bin = join(root, 'bin');
     mkdirSync(join(source, 'probe'), { recursive: true });
     mkdirSync(join(home, 'mods'), { recursive: true });
+    mkdirSync(bin);
+    writeFileSync(
+        join(bin, 'herdr-app'),
+        '#!/bin/sh\nif grep -q "not js" "$2/main.js"; then echo "syntax error"; exit 1; fi\n',
+        { mode: 0o755 },
+    );
     writeFileSync(join(source, 'probe/mod.json'), '{ "place": "none" }\n');
     writeFileSync(join(source, 'probe/main.js'), GOOD);
     writeFileSync(join(source, 'probe/main.test.ts'), 'test\n');
@@ -28,6 +37,7 @@ function fixture() {
         ...process.env,
         HERDR_APP_HOME: home,
         HERDR_MODS_SOURCE: source,
+        PATH: `${bin}:${process.env.PATH}`,
     };
     return { env, landed: join(home, 'mods/probe'), source };
 }
@@ -88,6 +98,23 @@ describe('the watcher lands a save only when herdr-app check passes', () => {
         await until('watching', 5000);
         const next = GOOD.replace('"ok"', '"saved"');
         writeFileSync(join(source, 'probe/main.js'), next);
+        expect(await until('landed', 8000)).toContain(
+            'probe landed, 1 file(s)',
+        );
+        expect(readFileSync(join(landed, 'main.js'), 'utf8')).toBe(next);
+    });
+
+    test('a save renamed over the file lands', async () => {
+        const { env, landed, source } = fixture();
+        run(env, 'probe');
+        const until = watching(env);
+        await until('watching', 5000);
+        const next = GOOD.replace('"ok"', '"renamed"');
+        writeFileSync(join(source, 'probe/.main.js.tmp'), next);
+        renameSync(
+            join(source, 'probe/.main.js.tmp'),
+            join(source, 'probe/main.js'),
+        );
         expect(await until('landed', 8000)).toContain(
             'probe landed, 1 file(s)',
         );

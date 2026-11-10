@@ -10,6 +10,7 @@ import {
     readFileSync,
     readdirSync,
     renameSync,
+    statSync,
     watch,
 } from 'node:fs';
 import { homedir } from 'node:os';
@@ -25,6 +26,7 @@ const targetRoot = join(
 );
 // a save settles this long before it lands, so an editor's burst of writes reaches his window as one
 const SETTLE_MS = 400;
+const SWEEP_MS = 1000;
 
 const args = process.argv.slice(2);
 const named = args.filter((a) => !a.startsWith('--'));
@@ -51,15 +53,13 @@ function ourMods() {
 }
 
 function watchMods(mods: string[]) {
-    console.log(
-        `herdr-mods:land: watching ${mods.join(', ')}, pid ${process.pid}`,
-    );
     for (const mod of mods) {
         let timer: NodeJS.Timeout | undefined;
-        watch(join(sourceRoot, mod), { recursive: true }, (_event, file) => {
-            if (!file || !isLanded(String(file).split('/').pop() ?? '')) return;
+        let seen = newest(mod);
+        const settle = () => {
             clearTimeout(timer);
             timer = setTimeout(() => {
+                seen = newest(mod);
                 const checked = spawnSync(
                     'herdr-app',
                     ['check', join(sourceRoot, mod)],
@@ -76,8 +76,30 @@ function watchMods(mods: string[]) {
                 }
                 land(mod, false);
             }, SETTLE_MS);
+        };
+        watch(join(sourceRoot, mod), { recursive: true }, (_event, file) => {
+            if (file && isLanded(String(file).split('/').pop() ?? '')) settle();
         });
+        // FSEvents drops some saves (a write right after the watch starts, a rename over the file): a sweep by mtime
+        // lands what the events missed
+        setInterval(() => {
+            if (newest(mod) > seen) settle();
+        }, SWEEP_MS);
     }
+    // printed once every mod's baseline is read, so a save after this line is always newer than it
+    console.log(
+        `herdr-mods:land: watching ${mods.join(', ')}, pid ${process.pid}`,
+    );
+}
+
+function newest(mod: string) {
+    const source = join(sourceRoot, mod);
+    return Math.max(
+        0,
+        ...readdirSync(source, { withFileTypes: true })
+            .filter((e) => e.isFile() && isLanded(e.name))
+            .map((e) => statSync(join(source, e.name)).mtimeMs),
+    );
 }
 
 // what herdr reads; tests, types and editor config stay in frame
