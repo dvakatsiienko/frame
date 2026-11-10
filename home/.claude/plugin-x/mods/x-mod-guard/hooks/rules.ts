@@ -1209,7 +1209,7 @@ const isPluginsDir = (text: string) => /(\.claude|cc)\/plugins\/?$/i.test(text);
 export const isStorePath = (path: string) =>
     /\/\.claude\/plugins\/store(\/|$)/.test(path);
 export const STORE_WRITE = {
-    door: 'a plugin writes its own store; ask clio for the change',
+    door: 'a plugin writes its own store; for this one write, ask dima to tick an orbit ask quoting the whole command',
     rule: 'store-write',
     targets: ['plugins/store'],
     why: "fleet-board reads where dima's press lands from x-mod-stash's store, so a seat's write there could aim his press at itself",

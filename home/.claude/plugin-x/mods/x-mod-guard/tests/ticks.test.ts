@@ -1424,6 +1424,29 @@ for (const line of [
         expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
     });
 
+// clio's o61 (20:27): dima ticked her trash of a probe's store file and the fence had no door of his
+const PROBE_TRASH =
+    'trash ~/.claude/plugins/store/probe-store_inline-080b325f88ca.json';
+test('his tick on an ask quoting a store write runs it once', async ($, on) => {
+    const { ran } = world(on, [
+        tick(`⚠️ trash the probe store: \`${PROBE_TRASH}\``),
+    ]);
+    const first = await bash($, PROBE_TRASH);
+    const second = await bash($, PROBE_TRASH);
+    expect([first.deny, second.deny !== undefined, ran]).toEqual([
+        undefined,
+        true,
+        [PROBE_TRASH],
+    ]);
+});
+
+test('a tick quoting a write to the press folder opens nothing', async ($, on) => {
+    const line = 'trash ~/.claude/shelf/orbit-ticks/t1.jsonl';
+    const { ran } = world(on, [tick(`⚠️ trash: \`${line}\``)]);
+    const r = await bash($, line);
+    expect([r.deny, ran]).toEqual([expect.stringContaining('ticks-write'), []]);
+});
+
 test('a Write into the plugins store is refused', async ($, on) => {
     world(on);
     const r = await $.tool.call({

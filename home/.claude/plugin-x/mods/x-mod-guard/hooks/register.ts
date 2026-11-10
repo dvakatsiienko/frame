@@ -2148,7 +2148,30 @@ export const register: Register = (on) => {
         const ticksFile =
             ticksWrite(typed, cwd, lands?.ticks, lands?.shelf) ??
             storeWrite(typed, cwd, lands?.store, lands?.plugins);
-        if (ticksFile) {
+        // his tick on an ask quoting the whole command opens a store write once: the store aims his press, but his own word
+        // on one write is no forgery (clio's o61 trash of a probe's store, 20:27); the press folder keeps no door
+        const storeTick =
+            ticksFile?.rule === 'store-write'
+                ? await tickFor(
+                      $,
+                      guardedOf(typed),
+                      quotesCommand(typed),
+                      spends,
+                  )
+                : undefined;
+        if (ticksFile && storeTick) {
+            await record($, {
+                command,
+                door: `dima's tick on ${storeTick.id}`,
+                kind: 'escaped',
+                rule: ticksFile.rule,
+                target: ticksFile.targets[0] ?? '',
+                why: storeTick.text,
+            });
+            $.ui.log(
+                `x-mod-guard: ran on dima's tick ${storeTick.id}: a store write`,
+            );
+        } else if (ticksFile) {
             const said = `x-mod-guard stopped this one command. instead: ${ticksFile.door}. why: ${ticksFile.why} (rule ${ticksFile.rule}).`;
             const stop = await enforce(
                 ticksFile,
