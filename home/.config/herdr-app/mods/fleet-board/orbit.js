@@ -73,14 +73,48 @@ export const runningPids = (stdout) =>
     );
 
 /**
- * an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command — takes that
- * tick on the desktop board only, since a herdr tick never opens the guard (FRM-552 Decision 4)
+ * an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command — never takes a
+ * herdr tick, since any agent can write the ticks file (FRM-552 Decision 4); dima ticks it in the seat's own /board
  * @param {string} text
  */
 export const isGuardGated = (text) =>
     /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
         text,
     );
+
+/**
+ * the text in Claude Code's prompt box, the last `❯` line that opens right under a rule, down to the next rule
+ * @param {string} screen
+ */
+export function draftOf(screen) {
+    const lines = screen.split('\n');
+    let open = lines.length - 1;
+    while (
+        open > 0 &&
+        !(lines[open].startsWith('❯') && lines[open - 1].startsWith('─'))
+    )
+        open--;
+    if (open <= 0) return '';
+    const draft = [lines[open].slice(1)];
+    for (const l of lines.slice(open + 1)) {
+        if (l.startsWith('─')) break;
+        draft.push(l);
+    }
+    return draft
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .join(' ');
+}
+
+/**
+ * markdown reads `<word>` as html and drops it; a backslash keeps it, outside code spans, where a backslash would show
+ * @param {string} text
+ */
+export const literalAngles = (text) =>
+    text
+        .split(/(`[^`]*`)/)
+        .map((part, i) => (i % 2 ? part : part.replaceAll('<', '\\<')))
+        .join('');
 
 /**
  * the session's phases, as its stash kept them

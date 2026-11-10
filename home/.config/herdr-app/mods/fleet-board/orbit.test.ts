@@ -4,7 +4,9 @@ import {
     type Ask,
     asksOf,
     currentSid,
+    draftOf,
     isGuardGated,
+    literalAngles,
     phasesOf,
     runningPids,
     savePress,
@@ -171,5 +173,54 @@ describe('a press lands as one line of the ticks file', () => {
         );
         await expect(press).rejects.toThrow('stale snapshot');
         expect(file.text).toBe('b\n');
+    });
+});
+
+describe("a seat's /board is typed only into an empty prompt box", () => {
+    test('an empty prompt box holds no draft', () => {
+        const screen = [
+            '⏺ done.',
+            '',
+            '─'.repeat(20),
+            '❯ ',
+            '─'.repeat(20),
+            '  -- INSERT --',
+        ].join('\n');
+        expect(draftOf(screen)).toBe('');
+    });
+
+    test('a draft spanning two lines is read whole', () => {
+        const screen = [
+            '─'.repeat(20),
+            '❯ fix the',
+            '  band too',
+            '─'.repeat(20),
+        ].join('\n');
+        expect(draftOf(screen)).toBe('fix the band too');
+    });
+
+    test('a quoted ❯ in the transcript above is not the prompt box', () => {
+        const screen = [
+            '❯ my last prompt',
+            '⏺ reply',
+            '─'.repeat(20),
+            '❯ ',
+            '─'.repeat(20),
+        ].join('\n');
+        expect(draftOf(screen)).toBe('');
+    });
+});
+
+describe('ask text draws as typed', () => {
+    test('angle brackets outside code survive markdown', () => {
+        expect(literalAngles('prefills «ok <target>»')).toBe(
+            'prefills «ok \\<target>»',
+        );
+    });
+
+    test('angle brackets inside a code span stay as written', () => {
+        expect(literalAngles('run `x lane commit <msg>` now')).toBe(
+            'run `x lane commit <msg>` now',
+        );
     });
 });

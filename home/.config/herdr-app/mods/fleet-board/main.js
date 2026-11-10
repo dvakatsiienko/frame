@@ -6,8 +6,11 @@ import { Input, InputState, TextView, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
     exec,
+    hc,
     home,
     readTextFile,
+    run,
+    terminals,
     theme,
     watchFolder,
     writeTextFile,
@@ -16,7 +19,9 @@ import {
 import {
     asksOf,
     currentSid,
+    draftOf,
     isGuardGated,
+    literalAngles,
     phasesOf,
     runningPids,
     savePress,
@@ -26,7 +31,7 @@ import {
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {Record<string, Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
-/** @typedef {{ asks: Ask[], context: number | null, model: string | null, name: string, phases: string[], sid: string, status: string, taken: number, wait: string | null }} Row */
+/** @typedef {{ asks: Ask[], context: number | null, model: string | null, name: string, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 /** @typedef {{ id?: string, title: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
 
 const CLAUDE = `${home()}/.claude`;
@@ -81,6 +86,7 @@ async function sessions(store) {
                     model: store[`model:${sid}`] ?? null,
                     name: s.name,
                     phases: phasesOf(store, sid),
+                    pid: s.pid,
                     sid,
                     status: s.status ?? 'unknown',
                     taken: store[`herdr-read:${sid}`] ?? 0,
@@ -133,7 +139,7 @@ const line = (color, size) =>
 // TextView is the one element whose text can be selected, so anything worth reading aloud goes through it.
 /** @param {string} id @param {string} markdown @param {Color} color @param {number} size */
 const prose = (id, markdown, color, size) =>
-    TextView.markdown(id, markdown)
+    TextView.markdown(id, literalAngles(markdown))
         .selectable()
         .w_full()
         .text_size(size)
@@ -365,6 +371,49 @@ export default class FleetBoard extends View {
         cx.notify();
     }
 
+    // a guard-gated ask takes only a 🛎️ press in the seat's own board, the one tick x-mod-guard reads as dima's word:
+    // the board focuses the seat's pane and types `/board` there, his Enter opens it. it refuses rather than type over
+    // his draft or into a dialog
+    /** @param {Context} cx @param {Row} s @param {Ask} ask */
+    async openSeatBoard(cx, s, ask) {
+        this.pressError = null;
+        cx.notify();
+        /** @param {string} why */
+        const refuse = (why) => {
+            this.pressError = `${ask.id}: ${why}`;
+            cx.notify();
+        };
+        try {
+            let seat = null;
+            for (const { address } of terminals()) {
+                const got = await hc(['get', address, '--json']);
+                if (got.code === 0 && JSON.parse(got.stdout).pid === s.pid) {
+                    seat = JSON.parse(got.stdout);
+                    break;
+                }
+            }
+            if (!seat) return refuse('its seat runs outside herdr');
+            if (seat.status === 'blocked')
+                return refuse('its seat waits on a dialog');
+            const screen = await hc(['read', seat.address]);
+            if (screen.code !== 0)
+                return refuse(
+                    screen.stderr.trim() || 'its screen did not read',
+                );
+            if (draftOf(screen.stdout))
+                return refuse('its prompt box holds a draft');
+            run('pane.focus', { terminal: seat.address });
+            const keys = screen.stdout.includes('-- NORMAL --')
+                ? ['i', '/', 'b', 'o', 'a', 'r', 'd']
+                : ['/', 'b', 'o', 'a', 'r', 'd'];
+            const typed = await hc(['keys', seat.address, ...keys]);
+            if (typed.code !== 0)
+                refuse(typed.stderr.trim() || '/board not typed');
+        } catch (err) {
+            refuse(err instanceof Error ? err.message : String(err));
+        }
+    }
+
     /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j */
     ask(t, s, ask, i, j) {
         const key = `${s.sid}:${ask.id}`;
@@ -420,14 +469,15 @@ export default class FleetBoard extends View {
                         .items_center()
                         .child(
                             isGuardGated(ask.text)
-                                ? div()
-                                      .id(`desk-${key}`)
-                                      .text_size(SIZE.meta)
-                                      .text_color(t.dim)
-                                      .tooltip(
-                                          'x-mod-guard reads this tick as your word, so it goes on the desktop board',
-                                      )
-                                      .child('🖥️ tick on desktop')
+                                ? button(
+                                      'seat-board',
+                                      '🚦 tick in its pane',
+                                      'types /board into its pane: Enter opens its own board, where a 🛎️ tick is the word x-mod-guard reads',
+                                      (cx) =>
+                                          cx.spawn((cx) =>
+                                              this.openSeatBoard(cx, s, ask),
+                                          ),
+                                  )
                                 : button(
                                       'tick',
                                       '🛎️ tick',
