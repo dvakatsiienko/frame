@@ -546,7 +546,7 @@ export function helgaBootPrompt(frame: string) {
     return `${skill}\n\n---\n\n${passport}`;
 }
 
-function startHelga() {
+async function startHelga() {
     const skill = helgaBootPrompt(path.join(home, 'frame'));
     const cwd = path.join(home, '.local/state/helga');
     mkdirSync(cwd, { recursive: true });
@@ -590,15 +590,11 @@ function startHelga() {
             { encoding: 'utf8' },
         );
         process.stdout.write(started);
-        // a --no-parent terminal starts paneless, and herdr's agents list skips it until it has a tab
-        execFileSync('herdr-app', [
-            'do',
-            'terminal.keep',
-            JSON.stringify({
-                place: 'tab',
-                terminal: JSON.parse(started).address,
-            }),
-        ]);
+        // loaded only here: the tests run this script from a copy of `_clio/script` alone
+        const { keepSeatInTab } = await import(
+            '../../home/.claude/plugin-x/skills/herdr/scripts/seat-tab.ts'
+        );
+        keepSeatInTab(JSON.parse(started).address, 'helga');
         return;
     }
     execFileSync('claude', ['--bg', ...claudeArgs, skill, '--remote-control'], {
@@ -866,7 +862,7 @@ if (import.meta.main) {
         mkdirSync(groomDir, { recursive: true });
         const rawFile = groomFile(day, hhmm, 'raw');
         writeFileSync(rawFile, `${raw}\n`);
-        if (!helgaUp()) startHelga();
+        if (!helgaUp()) await startHelga();
         console.log(
             isSteer
                 ? `prompt-groom: dima's ${day} ${hhmm} steer, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} <HH:MM>, dima, ${hhmm} steer)», first number from «prompt-groom.ts --next <home>», written to ${groomFile(day, hhmm, 'groomed')}`
