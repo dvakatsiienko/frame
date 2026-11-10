@@ -93,16 +93,33 @@ wish: PK-363
 
 ## chat view — x-herdr-chatter
 
-- ⬜ the chat is ours by name: `x-herdr-chatter`
+- ✅ the chat is ours by name: `x-herdr-chatter`
   - makes: `home/.config/herdr-app/mods/x-herdr-chatter`, landed into `~/.config/herdr-app/mods/x-herdr-chatter` by `herdr-mods:land`
   - given `layouts/zoo.json` places `x-herdr-chatter`
   - then herdr opens no file of zoo's `claude-chat`, and every name dima sees reads x-herdr-chatter
+  - proof: the layout's mods read with jq name `x-herdr-chatter` and no `claude-chat` (17:35:34, status errors [])
   - decision: copied from zoo's `claude-chat` (FRM-556, 11-10), whose folder stays on disk unplaced; the shared keys `chat.look/subs/containers` keep their names until zoo's other mods are ours
-- ⬜ drafts typed under the old name come along
+- ✅ drafts typed under the old name come along
   - given dima typed a draft in a seat's box while the chat was `claude-chat`
   - when `x-herdr-chatter` first starts
   - then that seat's box shows the draft, and a draft typed in `x-herdr-chatter` is never overwritten
-  - decision: herdr keeps a mod's storage per mod name, so `drafts.js` reads `data/claude-chat/store-*.json` once (proven on a throwaway mod, 17:17)
+  - proof: a throwaway mod with the same `drafts.js` took a draft from a fixture store, left other keys, set its flag (17:17); the live switch ran it and found the old store empty (17:35:34)
+  - decision: herdr keeps a mod's storage per mod name, so `drafts.js` reads `data/claude-chat/store-*.json` once
+- ⬜ a pasted image survives a chat reload
+  - given dima pasted a screenshot into a seat's box and has not sent it
+  - when the chat reloads
+  - then the image is still waiting with the next message, shown by its chip
+  - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355)
+- ⬜ the shared keys carry the x-herdr name
+  - given the chat, the status bar and the agents list share `chat.look`, `chat.subs`, `chat.containers`
+  - then each key is `x-herdr-chatter.*`, read by every mod under its new name, and «zoo» appears nowhere
+  - decision: left for after zoo's other mods are ours (my-status reads them), FRM-556
+- ⬜ the chat mod passes its own type check
+  - given `pnpm exec tsc -p home/.config/herdr-app/mods/x-herdr-chatter/jsconfig.json`
+  - then it exits 0; today 468 errors carried from zoo's copy, and `pnpm typecheck` does not cover the mod
+- ⬜ the chat mod has tests
+  - given its pure helpers (`drafts.js`, the turn fold, the `hc send` reading)
+  - then each has a vitest file beside it, run by the commit gate
 
 - ⬜ the effort shows the seat's live value
   - given a seat's last reply ran at an effort
