@@ -3,7 +3,7 @@
 Where it is all going. **The vector lives here** — resident every turn, it outweighs anything read on
 demand (dima, 2026-10-05: «i prefer the home that weighs more for you»). The linear initiative
 «roadmap» holds the order — start dates, milestones, dependency edges — plus a three-line summary of
-the vector in its description, which the boot prints and dima peeks at. [[dima-stories]] holds the history.
+the vector in its description, which the boot prints and dima peeks at.
 
 ## 🧭 the vector — the guide in every lane (dima, 2026-10-05)
 

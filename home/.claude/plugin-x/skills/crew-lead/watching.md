@@ -28,7 +28,7 @@
 
 ## lifetime and stopping
 
-A member whose chunk is done **parks**: alive, idle, context kept; `claude stop` or `archive_session` only on dima's word (`rules/fleet-vibe.md`), or at his `clio:halt`, whose stop list stands. A new chunk in another area still goes to the parked member, second-winded first when its context is past ~20–25 % ([models.md](models.md) § summon or reuse). **Always stop probes.**
+A member whose chunk is done **parks**: alive, idle, context kept; `claude stop` or `archive_session` only on dima's word (`rules/fleet-vibe.md`), or at his `clio:halt`, whose stop list stands; a stop gets a one-line confirm unless his message names the member (a stopped member loses its context for good). A new chunk in another area still goes to the parked member, second-winded first when its context is past ~20–25 % ([models.md](models.md) § summon or reuse). **Always stop probes.**
 
 - **a lane whose last member stopped has its 🛼 glide ended at the next siesta or the halt** (`clio:siesta` 2.5, `clio:halt` phase 1.8); a parked lane gets a new card when it resumes
 - 🚨 **stop with `claude stop <jobId>`, never `kill <pid>`** — four rc sessions killed by pid came

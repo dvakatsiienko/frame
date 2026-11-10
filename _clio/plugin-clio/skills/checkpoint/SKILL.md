@@ -38,7 +38,7 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
 - inbox: every item has a pocket item — then it gets a `✅ ` prefix IN PLACE, text and headers
   intact, nothing deleted (the inbox survives a checkpoint so he can diff it; the halt resets it from `inbox-template.md`). the mark tells him what is handled; the resume diff below
   tells me what is missing
-- flawlog flush: one batched proposal, his one approve, execute (halt phase 3a); stories appended
+- flawlog flush: one batched proposal, his one approve, execute (halt phase 3a)
 - milestones refreshed (halt phase 3.5)
 - gazette: `/clio:gazette` writes the ⸻ upd block; **no wire** unless he says so
 - **the codie roster**: retro received? still needed? a codie that is done is parked and carried on the roster with its id; stopped only on his word

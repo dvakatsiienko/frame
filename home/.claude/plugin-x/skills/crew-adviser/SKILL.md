@@ -30,7 +30,7 @@ a wake line arrives as a peer message:
    after a compaction since the last wake, re-read that charter, your passport `~/frame/_crow/AGENTS.md` and the dna.
 1. read the one `packet.md` the wake line names with a single `Read` call, never Bash (Bash persists output past ~30 KB and splits the read). it opens with the seat's thread since its last wake
    (dima's lines, member traffic, clio's replies, each block headed with its time), then `## receipts`, one line per tool call of hers since dima's last line (exit, first error), then
-   clio's leaves that changed since your last read, each under a `## leaf ·` header (strategy, stories, habits, the pm craft, the day's flawlog, the last handoff); the ones listed as unchanged you already hold.
+   clio's leaves that changed since your last read, each under a `## leaf ·` header (strategy, habits, the pm craft, the day's flawlog, the last handoff); the ones listed as unchanged you already hold.
    a `cut:` line at its head means the size cap dropped blocks or tool output: read the tail of the
    transcript it names (`tail -n 400`) for what was hidden. no `cut:` line, the packet is whole and the transcript stays unread.
    a field you needed and the packet lacks (a timestamp, an image, the cwd, the diff since the

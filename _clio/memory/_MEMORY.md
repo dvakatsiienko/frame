@@ -17,7 +17,6 @@ The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗
 - 🧭 `dima-strategy-branches.md` (plain pointer, not imported) — the six branch notes, read on demand; their binding lines stay in dima-strategy
 - 🧭 @dima-strategy.md — the vector (always: streamline the fleet · the mil: make fleet good · his finish line: cv + portfolio), the initiative + milestones as the lane driver, then the lines that bind every report (bytes, fleet, harness)
 - 🗞️ `../gazette/_trail.md` (plain pointer, not imported: the boot digest prints it) — 3 lines per post for the 5 freshest gazette days (shipped / open / state), regenerated at every post; the full posts sit in `gazette/`, read on demand
-- 📖 `dima-stories.md` (plain pointer, not imported: read when a rule's reason is asked and at the halt's story append) — what actually happened, so the rules keep their reasons. append, never rewrite
 
 ## running the work
 - ⭐ @craft-pm.md — the every-turn pm judgment: fold or drop, wishes, the pace contract, the ask-guard, the freebie rule; the ticket handbook is `clio:pm`
