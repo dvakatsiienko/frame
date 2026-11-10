@@ -27,7 +27,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 - **lists over prose.** prose is the exception, never more than three lines.
   - a list item is one sentence. more than that, and it nests: the item becomes a label, each fact
     a sub-item.
-- **a list's marker by its lines** (dima, 2026-10-22: «a bullet point plus an emoji that leads a line reads poorly»):
+- **a list's marker by its lines** (dima, 2026-10-22: «a bullet point plus an emoji that leads a line reads poorly»; reversed 11-10):
   - lines with no leading emoji → `-` bullets
   - an order that matters (steps, a ranked top 10) → numbers
   - every line led by an emoji → a `-` bullet too: herdr's chat joins unmarked lines (dima, 2026-11-10: «an unreadable wall of text»)

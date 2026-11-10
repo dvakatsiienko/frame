@@ -112,7 +112,7 @@ the boot prints every open milestone with the roadmap block, so a stale one misi
 
 
 ## phase 4 — the board
-one message, folding in whatever the sweep and the park list surfaced, every line led by its emoji, no bullet:
+one message, folding in whatever the sweep and the park list surfaced, every line a `-` bullet led by its emoji:
 
 📊 **run** `<run id>` — **elapsed** `<time>`
 
