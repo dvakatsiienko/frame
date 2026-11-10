@@ -467,6 +467,8 @@ func withWait(waited time.Duration, line string) string {
 
 type pushTarget struct {
 	branch, sha, from, reason string
+	// a codie/* branch pushed from the linked tree that has it checked out
+	own bool
 }
 
 func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
@@ -478,8 +480,15 @@ func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	_, linked, err := worktreeOf(tree)
+	if err != nil {
+		return nil, err
+	}
+	if linked && strings.HasPrefix(name, "worktree-fork-") {
+		return nil, &Fail{Refused: true, Msg: name + " is a fork's branch: it lands through the wing's door, never as a branch on origin", Next: "tree-sync.sh land"}
+	}
 	r.Open(name)
-	var target pushTarget
+	target := pushTarget{own: linked && strings.HasPrefix(name, "codie/")}
 	if err := r.Step("tree", "checking the tree", func() (string, error) { return home(tree), nil }); err != nil {
 		return nil, err
 	}
@@ -489,7 +498,7 @@ func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
 			return "", err
 		}
 		from, reason, err := pushHome()
-		target = pushTarget{name, sha, from, reason}
+		target.branch, target.sha, target.from, target.reason = name, sha, from, reason
 		// counted from the remote's own sha: a local origin/<branch> ref can be stale
 		detail := fmt.Sprintf("%s to origin/%s", short(sha), name)
 		if remote, _ := remoteBranch(".", name); remote != "" {
@@ -509,7 +518,14 @@ func pushPlan(r *Run, _ []string, _ Flags) (any, error) {
 }
 
 func planOf(t pushTarget) ordered {
-	return ordered{{"branch", t.branch}, {"sha", t.sha}, {"from", t.from}, {"reason", t.reason}}
+	return ordered{{"branch", t.branch}, {"sha", t.sha}, {"from", t.from}, {"reason", t.reason}, {"own", t.own}}
+}
+
+// the lane's own branch from its own tree: the push sends that tree's HEAD to that branch only, never forced, and the
+// pr's gates sit between it and main, so the plan stop guards nothing there
+func ownBranchPush(plan any) bool {
+	own, _ := plan.(ordered)[4].value.(bool)
+	return own
 }
 
 func askPush(plan any) string {

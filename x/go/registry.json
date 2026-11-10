@@ -800,7 +800,7 @@
                     "type": "boolean"
                 },
                 "to": {
-                    "description": "where the pull writes the body; default ~/.local/state/x/linear/bodies/<id>.md",
+                    "description": "where the pull writes the body; default ~/.local/state/x/linear/bodies/<session>/<id>.md, with no session id ~/.local/state/x/linear/bodies/<id>.md",
                     "type": "string",
                     "value": "file"
                 }

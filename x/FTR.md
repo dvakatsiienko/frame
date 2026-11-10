@@ -141,6 +141,12 @@
 - ✅ `x lane push` pushes HEAD's sha and reads the remote back
   - given a remote that answers a 5xx, then the push tries again, up to 3 tries 2 s and 4 s apart, and lands once the remote recovers
   - given a 4xx or a hook refusal, then it fails on the first try
+- ⬜ `x lane push` runs with no `--apply` from a `codie/*` branch's own tree
+  - given a cwd in a linked worktree whose checked-out branch is `codie/*`
+  - when `x lane push` runs with no `--apply`
+  - then it pushes and reads the remote back; any other branch, and a `codie/*` branch in the main checkout, prints its plan and exits 4 as before
+  - given a `worktree-fork-*` branch in a linked worktree, then it refuses, with `--apply` too, and `next` is the wing's landing door, `tree-sync.sh land`
+  - decision: the branch is read from the tree, no session lookup; the plan's `own` field says which way it went (FRM-384)
 - ⬜ `x lane pr-open` opens a pr as the codie app
 - ✅ `x lane review <pr>` keeps the ci review on the pr head
   - given a pr with no review round yet, under the 1-round cap (dima, 2026-10-22)

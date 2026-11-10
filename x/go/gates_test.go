@@ -38,6 +38,7 @@ type outsideReadShape struct{ file, shape string }
 
 var outsideReadShapes = map[outsideReadShape]string{
 	{"gate_turn_test.go", `"../../" + gateQueueScript`}:       gateQueueScript,
+	{"gate_run_test.go", `"../../" + gateQueueScript`}:        gateQueueScript,
 	{"gates_test.go", `readHookGates("../..",`}:               "lefthook.yaml",
 	{"x_go_reads_test.go", `readHookGates("../..",`}:          "lefthook.yaml",
 	{"as_test.go", `filepath.Abs("../..")`}:                   "",

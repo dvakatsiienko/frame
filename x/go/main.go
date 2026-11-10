@@ -38,11 +38,13 @@ type Impl struct {
 	Ask    func(plan any) string
 	// a needsApply verb's read-only mode: its plan is the answer, with nothing to apply
 	ReadOnly func(flags Flags) bool
+	// a needsApply verb's own guard already holds for this plan, so it applies with no --apply (docs/adr/X-0003)
+	Unasked func(plan any) bool
 }
 
 var impls = map[string]Impl{
 	"lane commit":      {Run: commit, Undone: "nothing was committed"},
-	"lane push":        {Plan: pushPlan, Apply: push, Undone: "nothing was pushed", Ask: askPush},
+	"lane push":        {Plan: pushPlan, Apply: push, Undone: "nothing was pushed", Ask: askPush, Unasked: ownBranchPush},
 	"lane pr-open":     {Plan: prPlan, Apply: prOpen, Undone: "no pr was opened", Ask: askPR},
 	"lane merge-main":  {Run: mergeMain, Undone: "nothing was merged"},
 	"lane rebase-main": {Plan: rebasePlan, Apply: rebaseMain, Undone: "the branch is as it was", Ask: askRebase},
@@ -315,7 +317,7 @@ func dispatch(m mode, verb Verb, args []string, flags Flags) int {
 	if impl.ReadOnly != nil && impl.ReadOnly(flags) {
 		return finishOK(m, verb.Name, r, plan)
 	}
-	if flags["apply"] != true {
+	if flags["apply"] != true && (impl.Unasked == nil || !impl.Unasked(plan)) {
 		approved := false
 		if m.interactive {
 			if approved, err = confirm(r, impl.Ask(plan)); err != nil {
