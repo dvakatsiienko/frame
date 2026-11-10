@@ -18,6 +18,12 @@ wish: PK-363
 
 ## fleet-board — sessions
 
+- ⬜ the deck reads at one type scale, each section under one head
+  - given the deck draws
+  - then names and ask text are 15 px, secondary lines 13 px, nothing under 12 px, and no secondary text is the theme's `dim` (2.95:1 on white; `muted` is 5.48:1, 5.07:1 on a card)
+  - and the three heads read «🧵 sessions: N, M working», «🪐 orbit: N asks waiting on you», «🛼 glide: N lanes», semibold 13 px under a hairline
+  - and each ask is a card led by its bold id, its tick a filled button and replay a quiet one, each 28 px tall; past 60 % a seat's ctx turns red and semibold (shot 1953, before and after)
+  - not checked: the glide cards (below the fold in the shot), the focus ring by keyboard, the dark theme
 - ✅ every live seat on one list
   - given seats run on this mac
   - when the board draws

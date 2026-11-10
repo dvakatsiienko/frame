@@ -2,7 +2,7 @@
 // orbit asks x-mod-stash keeps on disk, ticked here into each session's ticks file, and each lane's glide card.
 
 import { readdir } from 'fs/promises';
-import { Input, InputState, TextView, h_flex, v_flex } from 'gpui-base';
+import { Button, Input, InputState, TextView, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
     agents,
@@ -138,7 +138,9 @@ const STATE = {
 const RANK = { blocked: 0, working: 1 };
 // the system font: herdr's own UI font (Geist) ships one face, so markdown's **bold** drew flat in it
 const SANS = '.AppleSystemUIFont';
-const SIZE = { body: 13, header: 12, meta: 12, name: 14 };
+// one type scale: names and ask text, secondary lines, the smallest anywhere; secondary text is `muted`, never `dim`,
+// which reads 2.95:1 on paper's white (muted 5.48:1, 5.07:1 on a card's `raised`)
+const SIZE = { main: 15, secondary: 13, small: 12 };
 
 /**
  * @param {Theme} t
@@ -252,7 +254,7 @@ export default class FleetBoard extends View {
                 if (row.asks.length)
                     row.pending = pendingPresses(
                         await readTextFile(`${TICKS}/${row.sid}.jsonl`).catch(
-                            () => null,
+                            () => /** @type {string | null} */ (null),
                         ),
                         row.taken,
                     );
@@ -313,9 +315,9 @@ export default class FleetBoard extends View {
                   : t.idle;
         const model = s.model?.split(' · ')[0] ?? null;
         return v_flex()
-            .px(10)
+            .px(12)
             .py(4)
-            .gap(1)
+            .gap(2)
             .child(
                 h_flex()
                     .id(`row-${s.sid}`)
@@ -338,15 +340,17 @@ export default class FleetBoard extends View {
                     .child(
                         line(
                             state === 'idle' ? t.muted : t.foreground,
-                            SIZE.name,
-                        ).child(s.name),
+                            SIZE.main,
+                        )
+                            .tooltip(s.name)
+                            .child(s.name),
                     )
                     .when(Boolean(model), (el) =>
                         el.child(
                             div()
                                 .flex_none()
-                                .text_size(SIZE.meta)
-                                .text_color(t.dim)
+                                .text_size(SIZE.secondary)
+                                .text_color(t.muted)
                                 .child(model),
                         ),
                     )
@@ -356,16 +360,24 @@ export default class FleetBoard extends View {
                                 bar(
                                     t,
                                     s.context,
-                                    28,
-                                    s.context >= 60 ? t.blocked : t.dim,
+                                    40,
+                                    s.context >= 60 ? t.blocked : t.muted,
                                 ),
                             )
+                            // a fixed width and right-aligned digits stand in for tabular-nums, which gpui does not offer
                             .child(
                                 div()
-                                    .w(30)
+                                    .w(36)
                                     .flex_none()
-                                    .text_size(SIZE.meta)
-                                    .text_color(t.dim)
+                                    .flex()
+                                    .justify_end()
+                                    .text_size(SIZE.secondary)
+                                    .when(s.context >= 60, (el2) =>
+                                        el2.font_semibold(),
+                                    )
+                                    .text_color(
+                                        s.context >= 60 ? t.blocked : t.muted,
+                                    )
                                     .child(`${s.context}%`),
                             ),
                     ),
@@ -380,7 +392,7 @@ export default class FleetBoard extends View {
                                     `phase-${i}-${j}`,
                                     `🌔 ${phase}`,
                                     t.muted,
-                                    SIZE.body,
+                                    SIZE.secondary,
                                 ),
                             ),
                     ),
@@ -395,7 +407,7 @@ export default class FleetBoard extends View {
                                 `wait-${i}`,
                                 `🔭 ${s.wait}`,
                                 t.muted,
-                                SIZE.body,
+                                SIZE.secondary,
                             ),
                         ),
                 ),
@@ -469,52 +481,56 @@ export default class FleetBoard extends View {
         const steer = this.steers.get(key);
         const done = ask.mark ?? sent;
         const canUntick = !ask.mark && sent === 'tick' && !ask.isGated;
-        /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick */
-        const button = (id, label, tip, onClick) =>
-            div()
-                .id(`${id}-${key}`)
-                .px(8)
-                .py(2)
-                .rounded(4)
+        // tick is the main act, so it is the one filled button; Button brings focus, and the ring shows where it is
+        /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
+        const button = (id, label, tip, onClick, isPrimary = false) =>
+            Button.new(`${id}-${key}`)
+                .h(28)
+                .px(12)
+                .flex_none()
+                .flex()
+                .items_center()
+                .rounded(6)
                 .border_1()
-                .border_color(t.border)
-                .text_size(SIZE.meta)
-                .text_color(t.foreground)
+                .border_color(isPrimary ? t.solid : t.border)
+                .bg(isPrimary ? t.solid : t.background)
+                .text_size(SIZE.secondary)
+                .text_color(isPrimary ? t.solid_foreground : t.foreground)
+                .when(isPrimary, (el) => el.font_semibold())
                 .cursor_pointer()
-                .hover((st) => st.bg(t.hover))
+                .hover((st) => (isPrimary ? st.opacity(0.85) : st.bg(t.hover)))
+                .focus((st) => st.border_color(t.accent).border_2())
                 .tooltip(tip)
                 .on_click((_e, cx) => onClick(cx))
                 .child(label);
+        // an ask is a card: the section head carries the 🪐, the bold id leads
         return v_flex()
-            .pl(8)
-            .gap(2)
+            .p(12)
+            .gap(8)
+            .rounded(8)
+            .bg(t.raised)
             .child(
                 prose(
                     `ask-${i}-${j}`,
-                    ask.id ? `🪐 **${ask.id}**: ${ask.text}` : `🪐 ${ask.text}`,
+                    ask.id ? `**${ask.id}**: ${ask.text}` : ask.text,
                     t.foreground,
-                    SIZE.body,
+                    SIZE.main,
                 ),
             )
             .when(Boolean(ask.pick), (el) =>
                 el.child(
-                    div()
-                        .pl(20)
-                        .child(
-                            prose(
-                                `pick-${i}-${j}`,
-                                `pick: ${ask.pick}`,
-                                t.muted,
-                                SIZE.meta,
-                            ),
-                        ),
+                    prose(
+                        `pick-${i}-${j}`,
+                        `pick: ${ask.pick}`,
+                        t.muted,
+                        SIZE.secondary,
+                    ),
                 ),
             )
             .when(Boolean(ask.id) && !done, (el) =>
                 el.child(
                     h_flex()
-                        .pl(20)
-                        .gap(6)
+                        .gap(8)
                         .items_center()
                         .child(
                             button(
@@ -527,6 +543,7 @@ export default class FleetBoard extends View {
                                     cx.spawn((cx) =>
                                         this.press(cx, s, ask, 'tick'),
                                     ),
+                                true,
                             ),
                         )
                         .child(
@@ -551,6 +568,9 @@ export default class FleetBoard extends View {
                                     .flex()
                                     .items_center()
                                     .rounded(6)
+                                    .focus((st) =>
+                                        st.border_color(t.accent).border_2(),
+                                    )
                                     .border_1()
                                     .border_color(t.border)
                                     .bg(t.background)
@@ -564,7 +584,7 @@ export default class FleetBoard extends View {
                                     .child(
                                         Input.new(steer)
                                             .w_full()
-                                            .text_size(SIZE.body)
+                                            .text_size(SIZE.secondary)
                                             .text_color(t.foreground),
                                     ),
                             ),
@@ -573,25 +593,21 @@ export default class FleetBoard extends View {
             )
             .when(canUntick, (el) =>
                 el.child(
-                    h_flex()
-                        .pl(20)
-                        .child(
-                            button(
-                                'untick',
-                                '✅ ticked',
-                                'ticked: click again to untick, until the session takes it',
-                                (cx) =>
-                                    cx.spawn((cx) => this.unpress(cx, s, ask)),
-                            ),
+                    h_flex().child(
+                        button(
+                            'untick',
+                            '✅ ticked',
+                            'ticked: click again to untick, until the session takes it',
+                            (cx) => cx.spawn((cx) => this.unpress(cx, s, ask)),
                         ),
+                    ),
                 ),
             )
             .when(Boolean(done) && !canUntick, (el) =>
                 el.child(
                     div()
-                        .pl(20)
-                        .text_size(SIZE.meta)
-                        .text_color(t.dim)
+                        .text_size(SIZE.secondary)
+                        .text_color(t.muted)
                         .child(
                             ask.mark === 'accepted'
                                 ? '🔒 ticked, the session took it'
@@ -608,11 +624,14 @@ export default class FleetBoard extends View {
         const owners = this.rows.filter((s) => s.asks.length > 0);
         return owners.map((s, i) =>
             v_flex()
-                .px(10)
+                .px(12)
                 .py(4)
-                .gap(4)
+                .gap(8)
                 .child(
-                    line(t.foreground, SIZE.name).font_semibold().child(s.name),
+                    line(t.foreground, SIZE.main)
+                        .font_semibold()
+                        .tooltip(s.name)
+                        .child(s.name),
                 )
                 .children(s.asks.map((ask, j) => this.ask(t, s, ask, i, j))),
         );
@@ -633,24 +652,23 @@ export default class FleetBoard extends View {
                     div()
                         .w(12)
                         .flex_none()
-                        .text_size(SIZE.body)
-                        .text_color(i < current ? t.working : t.dim)
+                        .text_size(SIZE.secondary)
+                        .text_color(i < current ? t.working : t.muted)
                         .child(i < current ? '✓' : i === current ? '▸' : '·'),
                 )
                 .child(
-                    line(
-                        i === current ? t.foreground : t.muted,
-                        SIZE.body,
-                    ).child(text),
+                    line(i === current ? t.foreground : t.muted, SIZE.secondary)
+                        .when(i === current, (el) => el.font_semibold())
+                        .tooltip(text)
+                        .child(text),
                 );
         return v_flex()
             .id(`lane-${key}`)
-            .mx(10)
-            .my(3)
-            .px(8)
-            .py(6)
-            .gap(4)
-            .rounded(6)
+            .mx(12)
+            .my(4)
+            .p(12)
+            .gap(8)
+            .rounded(8)
             .border_1()
             .border_color(t.border)
             .cursor_pointer()
@@ -664,12 +682,16 @@ export default class FleetBoard extends View {
                 h_flex()
                     .gap(8)
                     .items_center()
-                    .child(line(t.foreground, SIZE.name).child(`🛼 ${l.title}`))
+                    .child(
+                        line(t.foreground, SIZE.main)
+                            .tooltip(l.title)
+                            .child(`🛼 ${l.title}`),
+                    )
                     .child(
                         div()
                             .flex_none()
-                            .text_size(SIZE.meta)
-                            .text_color(t.dim)
+                            .text_size(SIZE.small)
+                            .text_color(t.muted)
                             .child(`${current}/${items.length}`),
                     ),
             )
@@ -733,8 +755,8 @@ export default class FleetBoard extends View {
             .font_family(SANS)
             .size_full()
             .px(12)
-            .py(6)
-            .gap(4)
+            .py(8)
+            .gap(8)
             .overflow_y_scroll()
             .bg(t.background)
             .child(
@@ -759,7 +781,7 @@ export default class FleetBoard extends View {
                     .child(
                         line(
                             asks.length ? t.foreground : t.muted,
-                            SIZE.meta,
+                            SIZE.secondary,
                         ).child(
                             !s
                                 ? 'no claude seat in this tab'
@@ -775,7 +797,7 @@ export default class FleetBoard extends View {
             .when(Boolean(this.pressError), (el) =>
                 el.child(
                     div()
-                        .text_size(SIZE.meta)
+                        .text_size(SIZE.secondary)
                         .text_color(t.blocked)
                         .child(`⚠️ ${this.pressError}`),
                 ),
@@ -783,7 +805,7 @@ export default class FleetBoard extends View {
             .when(Boolean(this.pressNote), (el) =>
                 el.child(
                     div()
-                        .text_size(SIZE.meta)
+                        .text_size(SIZE.secondary)
                         .text_color(t.muted)
                         .child(`⏳ ${this.pressNote}`),
                 ),
@@ -797,15 +819,22 @@ export default class FleetBoard extends View {
             (s) => STATE[s.status] === 'working',
         ).length;
         const asks = this.rows.reduce((n, s) => n + s.asks.length, 0);
+        // one head for every section: a hairline above, its emoji, its name and its count in words
         /** @param {string} text */
         const header = (text) =>
             div()
-                .px(10)
-                .pt(12)
-                .pb(3)
-                .text_size(SIZE.header)
-                .text_color(t.dim)
+                .mx(12)
+                .mt(12)
+                .mb(4)
+                .pt(8)
+                .border_t_1()
+                .border_color(t.border)
+                .text_size(SIZE.secondary)
+                .font_semibold()
+                .text_color(t.foreground)
                 .child(text);
+        /** @param {number} n @param {string} one @param {string} many */
+        const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
         return v_flex()
             .id('fleet-board')
             .font_family(SANS)
@@ -814,7 +843,7 @@ export default class FleetBoard extends View {
             .bg(t.background)
             .child(
                 header(
-                    `sessions · ${this.rows.length}${busy ? ` · ${busy} working` : ''}`,
+                    `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}`,
                 ),
             )
             .children(this.rows.map((s, i) => this.session(t, s, i)))
@@ -822,15 +851,15 @@ export default class FleetBoard extends View {
                 el
                     .child(
                         header(
-                            `🪐 orbit: ${asks} ${asks === 1 ? 'ask' : 'asks'} waiting on you`,
+                            `🪐 orbit: ${count(asks, 'ask', 'asks')} waiting on you`,
                         ),
                     )
                     .children(this.orbit(t))
                     .when(Boolean(this.pressError), (el2) =>
                         el2.child(
                             div()
-                                .px(10)
-                                .text_size(SIZE.meta)
+                                .px(12)
+                                .text_size(SIZE.secondary)
                                 .text_color(t.blocked)
                                 .child(`⚠️ ${this.pressError}`),
                         ),
@@ -838,8 +867,8 @@ export default class FleetBoard extends View {
                     .when(Boolean(this.pressNote), (el2) =>
                         el2.child(
                             div()
-                                .px(10)
-                                .text_size(SIZE.meta)
+                                .px(12)
+                                .text_size(SIZE.secondary)
                                 .text_color(t.muted)
                                 .child(`⏳ ${this.pressNote}`),
                         ),
@@ -847,18 +876,22 @@ export default class FleetBoard extends View {
             )
             .when(this.lanes.length > 0, (el) =>
                 el
-                    .child(header(`glide · ${this.lanes.length}`))
+                    .child(
+                        header(
+                            `🛼 glide: ${count(this.lanes.length, 'lane', 'lanes')}`,
+                        ),
+                    )
                     .children(this.lanes.map((l) => this.lane(t, l))),
             )
             .child(
                 div()
-                    .px(10)
+                    .px(12)
                     .py(8)
-                    .text_size(SIZE.meta)
-                    .text_color(t.dim)
+                    .text_size(SIZE.small)
+                    .text_color(t.muted)
                     .child(
                         this.loadedAt
-                            ? `read ${[
+                            ? `updated ${[
                                   this.loadedAt.getHours(),
                                   this.loadedAt.getMinutes(),
                                   this.loadedAt.getSeconds(),
