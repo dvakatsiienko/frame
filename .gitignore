@@ -30,6 +30,9 @@ home/.claude/shelf/pr-verified.json
 home/.claude/shelf/stash/
 # herdr's board writes dima's orbit presses here, his steers included
 home/.claude/shelf/orbit-ticks/
+# x-mod-stash writes each thread's drawn state here for herdr; herdr's band appends his presses to the second (FRM-568)
+home/.claude/shelf/herdr-state/
+home/.claude/shelf/band-presses/
 # a stray `go build` output; the x shim builds and runs x/go/bin/x
 x/go/x
 
