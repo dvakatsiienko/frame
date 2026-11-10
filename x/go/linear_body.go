@@ -49,7 +49,12 @@ func savePull(id string, p pull) error {
 	if err := os.MkdirAll(filepath.Dir(pullsPath()), 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(pullsPath(), raw, 0o644)
+	// several sessions write this file: a rename lands it whole, so a peer's read never meets half of it
+	whole := fmt.Sprintf("%s.%d", pullsPath(), os.Getpid())
+	if err := os.WriteFile(whole, raw, 0o644); err != nil {
+		return err
+	}
+	return os.Rename(whole, pullsPath())
 }
 
 type bodyIssue struct {
@@ -135,7 +140,11 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 			Msg:  id + " changed since the pull (" + pulled.UpdatedAt + " → " + current.UpdatedAt + "); nothing was written",
 			Next: "x linear body " + id + " --to " + theirs + " && diff " + source + " " + theirs}
 	}
-	if damage := bodyDamage(id, source, deref(current.Description), string(text), pulled.Size, shrink); damage != nil {
+	// the size to hold a set against is the largest since the pull: a record older than its size field reads 0, and a
+	// run of sets each just over a fifth of the last would otherwise walk a body down unasked
+	held := deref(current.Description)
+	largest := max(pulled.Size, len(held))
+	if damage := bodyDamage(id, source, held, string(text), largest, shrink); damage != nil {
 		return nil, damage
 	}
 	var data map[string]json.RawMessage
@@ -155,8 +164,8 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 	if json.Unmarshal(data["issueUpdate"], &result) != nil || !result.Success {
 		return nil, &Fail{Msg: "linear did not take the write to " + id, Next: "x linear read " + id}
 	}
-	// the write is the new baseline: a second edit of the same file needs no second pull
-	_ = savePull(id, pull{source, result.Issue.UpdatedAt, len(text)})
+	// the write is the new baseline: a second edit of the same file needs no second pull; its size stays the largest
+	_ = savePull(id, pull{source, result.Issue.UpdatedAt, max(largest, len(text))})
 	r.Board(ui.ok.Render("✓ ") + ui.fg.Render("wrote "+id+"'s body as "+actor))
 	return ordered{{"actor", actor}, {"id", id}, {"updatedAt", result.Issue.UpdatedAt}}, nil
 }

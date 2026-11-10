@@ -75,7 +75,7 @@ You are a fleet member, a session clio summoned or briefed. Your role skill says
 - sixth sense's posts are `crew-sixth-sense/posting.md`; a side lane records its clean by `watch-pr.sh --verified` too; codie's done comment says «verified clean, round N»
 
 **proof**
-- a worktree: `EnterWorktree` (it seeds itself), or `git worktree add -b <branch> .claude/worktrees/<ticket>-<slug> main`, in frame behind `git -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false`; then `pnpm worktree:seed <path>` in bytes, `x lane seed <path>` in frame <!-- mac -->
+- a worktree: `EnterWorktree` (it seeds itself), or `git -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false worktree add -b <branch> .claude/worktrees/<ticket>-<slug> main` (frame needs the `-c`s); then `pnpm worktree:seed <path>` in bytes, `x lane seed <path>` in frame <!-- mac -->
 - skill loads: `x:guide-code` before code, `x:browser-headless` before a ui check, `x:github-contrib` before a `gh` write
 - run the thing first: `agent-browser` at 390 and 1280 plus the failing path, and the essentials on every touched view
 - a tool the tests need is proven on the ci runner, not the mac

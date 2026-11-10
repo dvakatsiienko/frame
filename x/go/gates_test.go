@@ -66,6 +66,26 @@ func covered(listed []string, read string) bool {
 	return false
 }
 
+func TestAReadIsCoveredByItsPathOrADirEntryAboveIt(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, entry, read string
+		want              bool
+	}{
+		{"the path itself", "script/a.sh", "script/a.sh", true},
+		{"a dir entry over a file in it", "script/", "script/a.sh", true},
+		{"a dir entry over the dir", "script/", "script", true},
+		{"one file under a dir, the whole dir read", "script/a.sh", "script", false},
+		{"a dir entry beside the read", "script/lib/", "script/a.sh", false},
+		{"a file whose name the read starts with", "script/a", "script/a.sh", false},
+	}
+	for _, c := range cases {
+		if got := covered([]string{c.entry}, c.read); got != c.want {
+			t.Errorf("%s: %s covers %s = %v, want %v", c.name, c.entry, c.read, got, c.want)
+		}
+	}
+}
+
 const skillsDir = "home/.claude/plugin-x/skills"
 
 func TestXGoReadsNamesWhatTheBuiltXReadsFromTheFrameTree(t *testing.T) {

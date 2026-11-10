@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -17,12 +18,16 @@ const (
 	gateRunTail  = 30
 )
 
+var gateRunLogName = regexp.MustCompile(`^\d{8}T\d{6}Z-\d+\.log$`)
+
 // gate run takes the long turn for one command, keeps everything it prints in a file and prints the exit, the file and
 // the last lines: what a pipe to tail was after, with the exit code kept and the whole log one read away
-func gateRun(r *Run, args []string, _ Flags) (any, error) {
+func gateRun(r *Run, args []string, flags Flags) (any, error) {
 	const example = "x gate run -- pnpm typecheck"
-	if len(args) == 0 {
-		return nil, usageFail("no command after -- : x gate run -- <command…>", example)
+	// the command is every word after a leading --: a dash further in would be dropped by the flag parser, and the
+	// command run would no longer be the one x-mod-guard read
+	if dash, _ := flags[argsBeforeDash].(int); dash != 0 || len(args) == 0 {
+		return nil, usageFail("the command starts right after -- : x gate run -- <command…>", example)
 	}
 	if _, err := exec.LookPath(args[0]); err != nil {
 		return nil, usageFail("no "+args[0]+" to run: the command is argv, its first word a program, never one quoted shell string", example)
@@ -31,7 +36,7 @@ func gateRun(r *Run, args []string, _ Flags) (any, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
 	}
-	keepNewest(dir, gateRunsKept)
+	keepNewest(dir, gateRunsKept, gateRunLogName)
 	path := filepath.Join(dir, fmt.Sprintf("%s-%d.log", time.Now().UTC().Format("20060102T150405Z"), os.Getpid()))
 	log, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0o600)
 	if err != nil {
@@ -70,8 +75,15 @@ func queuedGateRun(command []string) []string {
 }
 
 // keepNewest makes room for one more file in a dir of x's own logs: the oldest go, by write time, then by name
-func keepNewest(dir string, kept int) {
-	logs, _ := os.ReadDir(dir)
+func keepNewest(dir string, kept int, ours *regexp.Regexp) {
+	// only a plain file named as x names its logs is x's to remove, and only in a real dir
+	if at, err := os.Lstat(dir); err != nil || !at.IsDir() {
+		return
+	}
+	entries, _ := os.ReadDir(dir)
+	logs := slices.DeleteFunc(entries, func(entry os.DirEntry) bool {
+		return !entry.Type().IsRegular() || !ours.MatchString(entry.Name())
+	})
 	written := func(log os.DirEntry) time.Time {
 		info, err := log.Info()
 		if err != nil {

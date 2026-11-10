@@ -61,11 +61,11 @@ func orderBeside(r *Run, actor, team, moving string, beside placedIssue, side st
 			switch {
 			case row.Identifier == moving:
 			case found:
-				return (beside.SortOrder + row.SortOrder) / 2, nil
+				return halfway(beside, row)
 			case row.Identifier != beside.Identifier:
 				prev = &page.Issues.Nodes[i]
 			case side == "before" && prev != nil:
-				return (prev.SortOrder + row.SortOrder) / 2, nil
+				return halfway(*prev, row)
 			case side == "before":
 				return row.SortOrder - 1, nil
 			default:
@@ -81,6 +81,18 @@ func orderBeside(r *Run, actor, team, moving string, beside placedIssue, side st
 		return beside.SortOrder + 1, nil
 	}
 	return 0, &Fail{Msg: beside.Identifier + " is not in its team's manual order, so no place beside it was read; nothing was written", Next: "x linear read " + beside.Identifier}
+}
+
+// two neighbours tied on their sort order, or a gap a float can no longer split, leave no place between them: a write
+// there would land on one of them and print a move that did not happen
+func halfway(above, below placedIssue) (float64, error) {
+	middle := (above.SortOrder + below.SortOrder) / 2
+	if middle == above.SortOrder || middle == below.SortOrder {
+		return 0, &Fail{Refused: true,
+			Msg:  fmt.Sprintf("%s and %s hold sort orders with no number left between them (%s, %s); nothing was written", above.Identifier, below.Identifier, plainNumber(above.SortOrder), plainNumber(below.SortOrder)),
+			Next: "x linear read " + above.Identifier + " " + below.Identifier}
+	}
+	return middle, nil
 }
 
 // unlink removes relations `x linear link` made: each is found on the ticket first, and one missing writes nothing
@@ -133,7 +145,11 @@ func linearUnlink(r *Run, args []string, flags Flags) (any, error) {
 	}
 	var params, fields, changes, missing []string
 	vars := map[string]any{}
-	for _, target := range targets {
+	// a target named twice is one relation: two deletes of it would fail the second and leave the first done
+	for at, target := range targets {
+		if slices.Contains(targets[:at], target) {
+			continue
+		}
 		relation := ""
 		for _, held := range found.Issue.Relations.Nodes {
 			if held.Type == kind && strings.EqualFold(held.Related.Identifier, target) {

@@ -118,6 +118,7 @@ func TestSetRefusesAPlaceItCannotRead(t *testing.T) {
 	t.Parallel()
 	// the team's order holds FRM-2 only where a case says so; linear finds FRM-2 by id, never FRM-9
 	listed, unlisted := []orderRow{{"FRM-7", -300}, {"FRM-2", -200}}, []orderRow{{"FRM-7", -300}}
+	tied := []orderRow{{"FRM-7", -200}, {"FRM-2", -200}, {"FRM-8", -200}}
 	cases := []struct {
 		name string
 		team []orderRow
@@ -131,6 +132,8 @@ func TestSetRefusesAPlaceItCannotRead(t *testing.T) {
 		{"a ticket linear does not know", listed, []string{"--before", "FRM-9"}, 1, "no ticket FRM-9"},
 		{"another team's ticket", listed, []string{"--after", "BYT-5"}, 1, "another team"},
 		{"a ticket the team's order never shows", unlisted, []string{"--after", "FRM-2"}, 1, "manual order"},
+		{"after a ticket tied with its next one", tied, []string{"--after", "FRM-2"}, 1, "no number left between"},
+		{"before a ticket tied with the one above", tied, []string{"--before", "FRM-2"}, 1, "no number left between"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -183,6 +186,18 @@ func TestUnlinkRemovesTheRelationLinkMade(t *testing.T) {
 				t.Errorf("changes %s, want %s", said, want)
 			}
 		})
+	}
+}
+
+func TestUnlinkRemovesATargetNamedTwiceOnce(t *testing.T) {
+	t.Parallel()
+	server := unlinkServer(t, unlinkLookup)
+
+	_, got := runLinear(t, server, nil, "linear", unlinkVerb, "FRM-1", "blocks", "FRM-2", "FRM-2")
+
+	sent := mutations(server)
+	if got.code != 0 || len(sent) != 1 || len(sent[0].Variables) != 1 || sent[0].Variables["r0"] != "rel-blocks" {
+		t.Errorf("exit %d, sent %+v, want one delete of rel-blocks:\n%s%s", got.code, sent, got.stdout, got.stderr)
 	}
 }
 

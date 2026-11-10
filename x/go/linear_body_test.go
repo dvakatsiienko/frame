@@ -171,6 +171,27 @@ func TestBodySetRefusesAFileUnderAFifthOfThePull(t *testing.T) {
 	}
 }
 
+func TestBodySetMeasuresALaterSetAgainstThePull(t *testing.T) {
+	t.Parallel()
+	server := liveBodyServer(t, strings.Repeat("a", 1000))
+	state, file := t.TempDir(), filepath.Join(t.TempDir(), "body.md")
+	if _, got := runBody(t, server, state, "FRM-1", "--to", file); got.code != 0 {
+		t.Fatalf("the pull: exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+	write(t, file, strings.Repeat("b", 250))
+	if _, got := runBody(t, server, state, "FRM-1", "--set", file); got.code != 0 {
+		t.Fatalf("a set at a quarter of the pull: exit %d\n%s", got.code, got.stdout)
+	}
+	// a fifth of the 250 just written, far under a fifth of the 1000 pulled
+	write(t, file, strings.Repeat("c", 60))
+
+	envelope, got := runBody(t, server, state, "FRM-1", "--set", file)
+
+	if said := fmt.Sprint(envelope["error"]); got.code != 1 || len(mutations(server)) != 1 || !strings.Contains(said, "1000") {
+		t.Errorf("exit %d, %d mutations, want the second cut refused against the 1000 pulled: %s", got.code, len(mutations(server)), got.stdout)
+	}
+}
+
 func TestBodySetRefusesAnEmptyFile(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {

@@ -150,6 +150,9 @@ func TestGateRunRefusesWithNothingToRun(t *testing.T) {
 		{"no command", []string{"gate", "run"}},
 		{"an empty dash", []string{"gate", "run", "--"}},
 		{"a command that is not there", []string{"gate", "run", "--", "no-such-command-anywhere"}},
+		// a dash further in is the command's own: cobra would drop it and run another command than the guard read
+		{"a command with no dash", []string{"gate", "run", "echo", "ran"}},
+		{"words ahead of the dash", []string{"gate", "run", "echo", "--", "ran"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -172,14 +175,24 @@ func TestGateRunKeepsItsNewestLogs(t *testing.T) {
 	for i := range gateRunsKept + 5 {
 		write(t, filepath.Join(dir, fmt.Sprintf("20261101T0000%02dZ-1.log", i)), "old\n")
 	}
+	// older than every log, and not one: a file x did not write is never x's to remove
+	foreign := filepath.Join(dir, "00-notes.txt")
+	write(t, foreign, "someone's\n")
+	long := time.Now().Add(-48 * time.Hour)
+	if err := os.Chtimes(foreign, long, long); err != nil {
+		t.Fatal(err)
+	}
 
 	got := xIn(t, t.TempDir(), []string{"X_STATE=" + state}, "gate", "run", "--", "echo", "new")
 
-	logs, _ := os.ReadDir(dir)
+	if !exists(foreign) {
+		t.Fatalf("the run removed %s, a file it never wrote", foreign)
+	}
+	logs, _ := filepath.Glob(filepath.Join(dir, "*.log"))
 	if got.code != 0 || len(logs) != gateRunsKept {
 		t.Fatalf("exit %d, %d logs, want %d", got.code, len(logs), gateRunsKept)
 	}
-	if logs[0].Name() != "20261101T000006Z-1.log" || !strings.Contains(gateRunLogOf(t, got.stdout), "new") {
-		t.Errorf("the oldest kept is %s, want the six oldest gone and the new log kept", logs[0].Name())
+	if filepath.Base(logs[0]) != "20261101T000006Z-1.log" || !strings.Contains(gateRunLogOf(t, got.stdout), "new") {
+		t.Errorf("the oldest kept is %s, want the six oldest gone and the new log kept", logs[0])
 	}
 }

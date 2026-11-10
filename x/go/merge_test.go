@@ -43,6 +43,31 @@ func TestMergeMainRefusesOverStagedWorkBeforeItMerges(t *testing.T) {
 	}
 }
 
+// a merge stopped on a conflict lists its unmerged file as staged: the order out is to resolve it, never to commit it as it is
+func TestMergeMainRunAgainMidConflictSaysResolve(t *testing.T) {
+	t.Parallel()
+	origin := repo(t)
+	clone := filepath.Join(t.TempDir(), "clone")
+	gitT(t, origin, "clone", "-q", origin, clone)
+	gitT(t, clone, "switch", "-q", "-c", "side")
+	write(t, filepath.Join(clone, "readme.txt"), "the side's line\n")
+	gitT(t, clone, "commit", "-q", "-am", "side edits readme")
+	write(t, filepath.Join(origin, "readme.txt"), "main's line\n")
+	gitT(t, origin, "commit", "-q", "-am", "main edits readme")
+	if first := xIn(t, clone, nil, "lane", "merge-main"); first.code != 1 || !strings.Contains(envelopeOf(first).Error, "conflicts") {
+		t.Fatalf("the first run: exit %d, want 1 on a conflict:\n%s", first.code, first.stdout)
+	}
+
+	got := xIn(t, clone, nil, "lane", "merge-main")
+
+	if said := envelopeOf(got).Error; got.code != 1 || !strings.Contains(said, "readme.txt") || strings.Contains(said, "staged work") {
+		t.Errorf("exit %d, error %q, want 1 naming the conflict in readme.txt", got.code, said)
+	}
+	if !strings.Contains(got.next, "resolve") || strings.Contains(got.next, "merge-main again") {
+		t.Errorf("next %q, want the order to resolve the conflict", got.next)
+	}
+}
+
 func TestMergeMainMergesOverAnUnstagedEdit(t *testing.T) {
 	t.Parallel()
 	clone := mainAhead(t)

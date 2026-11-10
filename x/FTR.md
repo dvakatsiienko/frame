@@ -338,6 +338,7 @@
   - decision: two pr modes, plain in core and stacked in the add-on; stacked support never breaks a plain pr, and the «easy to delete» clauses stay until the stacked-prs trial's verdict (dima, o127, o128; `PRODUCT.md` § two pr modes)
 - ⬜ `x lane merge-main` merges origin/main, stops on a conflict with the file list
   - given any staged work, then it refuses before the fetch and the merge, names the staged files, and `next` is the order: `x lane commit` of those files, then `x lane merge-main` again; an unstaged edit merges as before
+  - given a merge already stopped on a conflict, then a second run names the unmerged files and `next` is to resolve them, never to commit them as staged work
 - ✅ a merge-main that git refuses without conflicts names git's reason
   - given an untracked file where origin/main adds one
   - when `x lane merge-main` runs
@@ -376,12 +377,12 @@
 ## gate — a heavy check in its turn
 
 - ⬜ `x gate run -- <command…>` runs a gate in the long turn and keeps its whole log
-  - makes: `$X_STATE/gate-runs/<utc stamp>-<pid>.log`, mode 0600, stdout and stderr in the order written; the newest 50 kept
+  - makes: `$X_STATE/gate-runs/<utc stamp>-<pid>.log`, mode 0600, stdout and stderr in the order written; the newest 50 kept, a file of any other name in that dir left alone
   - given a command after `--`, as argv
   - when it runs
   - then it waits for the long turn through `script/gate-queue.sh --long`, and stdout holds `exit <code>`, `log <path>` and the log's last 30 lines; the verb exits with the command's code, with no envelope
   - given a command that takes the long turn itself, then it runs at once inside the runner's turn
-  - given no command, or a first word that is no program (one quoted shell string), then exit 2, nothing run and no log
+  - given no command, a word ahead of the `--` or no `--` at all, or a first word that is no program (one quoted shell string), then exit 2, nothing run and no log
   - decision: the long turn, not the gate turn: a commit's hook never waits behind a typecheck or a suite (FRM-384)
   - decision: argv, never a shell string, so `x-mod-guard` reads the wrapped command's own words
   - decision: the last 30 lines and no first-error print (dima's sign, FRM-384); the log path is the door for more
@@ -441,7 +442,7 @@
   - when it runs
   - then each finding names its line and the rule
 - ⬜ `x brief check` flags a mod path with no `plugin-authoring`
-  - given a brief that names a file or dir of one cc mod (`plugin-x/mods/<name>…`) and never names `plugin-authoring`, then it fails naming the line; with the skill named anywhere it passes
+  - given a brief that names a file or dir of one cc mod (`plugin-x/mods/x-mod-<name>…`; a file at the mods root is no mod's) and never names `plugin-authoring`, then it fails naming the line; with the skill named anywhere it passes
   - given a brief that names only the mods dir itself, as a fence does, or no mod path, then nothing is flagged
 - ✅ `x brief check` refuses a skill that waits on the user's approval
   - given a brief names a skill (`x:<name>`, `mattpocock-skills:<name>`, matt's `<name>`, `/<name>`, «the <name> skill», or any hyphenated word naming one) whose `SKILL.md` asks to «quiz the user» or iterate «until the user approves», and no line skips it («skip … quiz»; an unrelated «no push until dima approves» does not)
@@ -544,7 +545,7 @@
   - given no pull of that ticket, then nothing is written and `next` is the pull
 - ⬜ `x linear body --set` refuses a file that would damage the body
   - given a ticket pulled at N bytes
-  - when `--set` gets a file under N/5, then it refuses naming both sizes and writes nothing; `--shrink` lets it through
+  - when `--set` gets a file under N/5, then it refuses naming both sizes and writes nothing; `--shrink` lets it through; N stays the largest size since the pull, so a later set is held against it too
   - given an empty file, or one of blank lines only, then it refuses, with `--shrink` too
   - given a file missing a W-line the body held, then it refuses naming the lost numbers; a reworded or added W-line passes
   - given a body with a `## signed` block, when the file's block lost or changed an old line, or gained none, then it refuses and names `ticket-sign.ts changed`; with one new line it passes
@@ -570,11 +571,11 @@
   - given a ticket and another of the same team
   - when `x linear set <id> --after <other>` runs, then its sort order lands halfway between the other's and the next ticket's in the team's manual order, the moving ticket left out; `--before` takes the one above; at an end of the order it lands one step past
   - then the change prints as `order: old → new, after <other>`
-  - given both flags, the ticket itself, or free text for the other, then exit 2 and nothing is sent; given a ticket linear does not know, another team's, or one the team's order never shows, then exit 1 and nothing is written
+  - given both flags, the ticket itself, or free text for the other, then exit 2 and nothing is sent; given a ticket linear does not know, another team's, one the team's order never shows, or two neighbours with no number left between their sort orders, then exit 1 and nothing is written
   - decision: the neighbour is read by walking the manual order a page of 250 at a time: linear's ticket filter has no sort-order field (schema read 2026-11-10)
 - ⬜ `x linear unlink <id> blocks|related|duplicate <targets…>` removes relations `x linear link` made
   - given a ticket that holds the relation to each target (`related` from either side, `blocks` and `duplicate` from this ticket only)
-  - when it runs, then one request deletes them and each prints as `<kind>: <target> → —`
+  - when it runs, then one request deletes them and each prints as `<kind>: <target> → —`; a target named twice is deleted once
   - given one target with no such link, a link that runs the other way, or a ticket linear does not know, then exit 1 naming it and nothing is removed
   - decision: `unlink` is a working name, dima's pick from seven is pending (FRM-384)
 - ✅ `x linear comment <id> --body-file <f>` posts a comment

@@ -50,7 +50,7 @@ var (
 	// a cc slash command (`/clear`, `/clio:boot`) is one segment from the root: never a path to check
 	slashCommandToken = regexp.MustCompile(`^/[a-z][\w:-]*$`)
 	// a file or dir of one mod, never the mods dir alone: a fence names that
-	modPath     = regexp.MustCompile(`plugin-x/mods/[\w-]+`)
+	modPath     = regexp.MustCompile(`plugin-x/mods/x-mod-[\w-]+`)
 	branchShape = regexp.MustCompile(`^(?:scratch|codie|worktree|claude)/[\w.+-]+$`)
 	jevWord     = regexp.MustCompile(`(?i)\bjev\b`)
 	reuseWord   = regexp.MustCompile(`(?i)\breus(?:e|es|ed|ing)\b`)
