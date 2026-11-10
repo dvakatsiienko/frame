@@ -706,12 +706,12 @@ async function fenceLanding($: EngineInterface, command: string, cwd: string) {
             texts.length > FENCE_TEXTS
                 ? undefined
                 : await onDisk($, text, home);
-        // past a cap nothing is read, so every word counts as landing: a write is refused, a read still runs
-        // (wisphunter 18:06: padding pushed the target past the cap)
+        // past a cap the word is unread, so it counts as landing: a write is refused, a read still runs. past the word
+        // cap every word is (wisphunter 18:06: padding pushed the target past it); past the fan-out only that word, so
+        // `cut -c1-120` after an `ls` over 503 project folders stays a read (clio's line, 18:58)
         if (!paths) {
-            for (const set of Object.values(lands))
-                for (const t of texts) set.add(t);
-            return lands;
+            for (const set of Object.values(lands)) set.add(text);
+            continue;
         }
         for (const path of paths) {
             const key = await landingOf($, path, dirs);

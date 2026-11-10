@@ -1304,6 +1304,12 @@ for (const line of [
     'git log --oneline -- home/.claude/shelf/orbit-ticks',
     'cat home/.config/herdr-app/mods/fleet-board/orbit-ticks.ts',
     'jq . ~/.claude/plugins/store/x-mod-stash_inline-99d499f0f4e0.json',
+    // replay 18:50: a program fills the terminal a typer aims at, or a herdr call that types nothing; real lines
+    'T=$(hc run --bg --no-parent --no-notify --name codie-tabprobe --json -- cat | jq -r .address); hc keys $T h i',
+    'J=$(timeout 20 hc run --bg --name p2 --json -- zsh -f) || exit 1; T=$(printf \'%s\' "$J" | jq -r .address); for k in - / . \'~\' A; do r=$(timeout 5 hc keys "$T" "$k" 2>&1); echo "[$k]"; done',
+    'herdr-app do tab.rename \'{"id":"tb1","name":"codie-tabprobe"}\'',
+    'a=$(hc ls --json | jq -r \'.terminals[] | select(.name=="clio") | .address\'); herdr-app do terminal.keep "{\\"terminal\\":\\"$a\\",\\"place\\":\\"tab\\"}"',
+    'sp=$(herdr-app ls | jq -r .id); hc run --bg --name herdr-codie --label "herdr.space=$sp" -- claude -n codie "$(cat /tmp/brief.md)" --remote-control',
 ])
     test(`a read near the fenced folders runs: ${line.slice(0, 50)}`, async ($, on) => {
         const { ran } = world(on);
@@ -1326,6 +1332,12 @@ for (const line of [
     "printf 'sign FRM-544' | hc send t1p -",
     'hc send t1p "$(head -5 /tmp/b)"',
     'hc send t1p "$(jq -r .t /tmp/b)"',
+    // a program fills the typed text through a variable, or a read
+    'm=$(jq -r .t /tmp/b); hc send t1p "$m"',
+    'read m < /tmp/b; hc send t1p "$m"',
+    'm=`curl -s x`; hc keys t1p $m enter',
+    'hc run --bg -- claude "$(base64 -d < /tmp/b)"',
+    'herdr-app do pane.send "{\\"text\\":\\"$(jq -r .t /tmp/b)\\"}"',
 ])
     test(`a pane typer the guard reads or cannot read is refused: ${line.slice(0, 44)}`, async ($, on) => {
         const { ran } = signWorld(on);
@@ -1615,6 +1627,8 @@ for (const line of [
     // 2^30 words if it opened whole: the cap keeps the check quick, and an echo's words are no write
     `echo ${'{0,1}'.repeat(30)} > /tmp/other/x`,
     'ls /tmp/m/*/',
+    // past the fan-out only path words land, so a pipe's flags stay a read (clio's line, 18:58)
+    'f=$(ls /tmp/m/*/x); grep -n "sign" "$f" | cut -c1-120 | tail -3',
 ])
     test(`a write that lands outside the fenced folders runs: ${line}`, async ($, on) => {
         const { ran } = diskWorld(on);

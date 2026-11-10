@@ -810,6 +810,59 @@ const PANE_TYPERS: Record<string, (words: string[]) => boolean> = {
 };
 // a feeder whose text is its own words: `printf … | hc send t -`, `"$(echo …)"`
 const LITERAL_FEEDERS = new Set(['echo', 'printf']);
+// the words a pane typer types, past its verb and the terminal it aims at; a herdr call types only through a verb that
+// sends text, never `tab.rename` or `terminal.keep`
+const HERDR_TYPES = /send|type|paste|key|input|text|prompt|write/i;
+function textWordsOf(c: Command) {
+    const words = c.args;
+    const bare = words.filter((w) => !w.text.startsWith('-'));
+    if (c.name === 'claude') return bare;
+    if (c.name === 'herdr-app')
+        return HERDR_TYPES.test(bare[1]?.text ?? '') ? bare.slice(2) : [];
+    if (c.name === 'hc' && verbOf(words.map((w) => w.text)) === 'run') {
+        const end = words.findIndex((w) => w.text === '--');
+        return end < 0 ? [] : words.slice(end + 1);
+    }
+    if (c.name === 'tmux') {
+        const at = words.findIndex(
+            (w) => w.text === 'send-keys' || w.text === 'send',
+        );
+        return words
+            .slice(at + 1)
+            .filter(
+                (w, i, all) =>
+                    !w.text.startsWith('-') &&
+                    !/^-[tN]$/.test(all[i - 1]?.text ?? ''),
+            );
+    }
+    return bare.slice(2);
+}
+// the program that fills a typed variable, when the line holds one the guard cannot read: `NAME=$(…)`, `read NAME`; a
+// word from a loop's literals, a literal assignment or an echo, printf or cat is read
+function unreadFill(text: string, command: string) {
+    for (const [, name] of text.matchAll(/\$\{?([A-Za-z_]\w*)/g)) {
+        if (new RegExp(`\\bread\\b[^;&|\\n]*\\b${name}\\b`).test(command))
+            return 'read';
+        for (const m of command.matchAll(
+            new RegExp(
+                `\\b${name}=(?:"?\\$\\(\\s*([\\w./-]+)|\`\\s*([\\w./-]+))`,
+                'g',
+            ),
+        )) {
+            const by = m[1] ?? m[2] ?? '';
+            if (!isReadFeeder(by)) return by;
+        }
+    }
+    return undefined;
+}
+// an inline substitution's program, never one an assignment holds (`sp=$(herdr-app ls | jq …)` names a space)
+function inlineFill(command: string) {
+    for (const m of command.matchAll(/(?<![\w]=)"?(?:\$\(|`)\s*([\w./-]+)/g))
+        if (!isReadFeeder(m[1] ?? '')) return m[1];
+    return undefined;
+}
+const isReadFeeder = (name: string) =>
+    LITERAL_FEEDERS.has(name) || name === 'cat';
 const KEY_NAMES: Record<string, string> = {
     'c-m': '\n',
     enter: '\n',
@@ -883,19 +936,31 @@ export function paneProof(
     for (const c of commandsDeep(command, cwd)) {
         if (!isPaneTyper(c)) continue;
         // an allow-list of text the guard can read: a feeder past echo, printf and cat types what it never sees. it counts
-        // only where it reaches the typed text, an expanding argument or a `-` read from stdin, never `HOME=$NAME claude`
-        const isTypedFrom = c.args.some((w) => w.isExpanding || w.text === '-');
-        const unread = isTypedFrom
+        // only where it reaches the typed text (a `-` read from stdin, or a text word filled by a program), never the
+        // terminal it aims at or a herdr call that types nothing (`hc keys $T …` with `T=$(… | jq …)`, replay 18:50)
+        // `-` reads stdin for a send; `hc keys … -` types the minus key
+        const isStdin =
+            c.args.some((w) => w.text === '-') &&
+            !(c.name === 'hc' && verbOf(c.args.map((w) => w.text)) === 'keys');
+        const unread = isStdin
             ? c.feeders.find(
                   (f) => !LITERAL_FEEDERS.has(f.name) && f.name !== 'cat',
               )
-            : undefined;
+            : textWordsOf(c)
+                  .filter((w) => w.isExpanding)
+                  .map((w) =>
+                      // the parser leaves `$(…)` where an inline substitution stood; its program is a feeder
+                      /\$\(…\)|`…`/.test(w.text)
+                          ? inlineFill(command)
+                          : unreadFill(w.text, command),
+                  )
+                  .find((name) => name !== undefined);
         if (unread)
             return {
                 door: 'type the text inline, through echo, printf or cat of a file, or send it with SendMessage',
                 rule: 'pane-proof',
                 targets: [c.name],
-                why: `\`${unread.name}\` feeds text into a pane that x-mod-guard cannot read, and keys typed there arrive as dima's own composer prompt`,
+                why: `\`${typeof unread === 'string' ? unread : unread.name}\` feeds text into a pane that x-mod-guard cannot read, and keys typed there arrive as dima's own composer prompt`,
             };
         const words = c.args.map((w) => w.text);
         const fed = c.feeders

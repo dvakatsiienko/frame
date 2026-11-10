@@ -186,7 +186,8 @@ const looped = (context: readonly string[] | undefined) =>
 test('claude -p inside while read names </dev/null', async ($, on) => {
     world(on);
     const r = await $.tool.call({
-        command: 'ls | while read f; do claude -p "say $f"; done',
+        // a prompt filled by `read` is pane-proof's to refuse, so the loop's prompt here is literal
+        command: 'ls | while read f; do claude -p "say hi"; done',
         run_in_background: true,
         tool: 'Bash',
     });
