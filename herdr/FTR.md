@@ -70,7 +70,7 @@ wish: PK-363
 - ⬜ one-click 🛎️ on a guarded ask
   - makes: one press line in the seat's ticks file, the same as a plain tick
   - given the stash marks the ask `isGated` (a sign, a merge, a ⚠️ or a quoted command)
-  - when dima clicks its 🛎️ on the deck or on the seat strip
+  - when dima clicks its 🛎️ on the deck
   - then the guard reads that press as his tick for that ask's targets, within 2 h, once
   - decision: the 🛎️ is click-only; a keyed mod command is any shell's (FRM-544)
   - decision: the «🚦 tick in its pane» door and fleet-board's own copy of the gated pattern are gone (live 18:51:40), after the guard's fences went clean at a14bca4b; his own click on a real gated ask is the last proof, set up by clio
@@ -148,15 +148,10 @@ wish: PK-363
 - ⬜ the effort shows the seat's live value
   - given a seat's last reply ran at an effort
   - then the chat box's effort reads that value, past the default in settings
-- ⬜ the band and the asks in the chat view (FRM-561)
-  - given a seat is selected in the Chat view
-  - then its open asks with their 🛎️ show without a flip to the Terminal view; its context, waiting-on line and weekly usage draw in the chat's text box (FRM-565)
-  - and the strip keeps one fixed height: a long ask list scrolls inside it, its head counts the asks, and the transcript below never moves
-  - and a guarded ask shows there with no 🚦, which would flip his view: its tick waits for the one-click 🛎️
-  - and it shows the seat that chat view shows, by the chat mod's own rule, so two views show their own seats
-  - decision: the strip writes nothing but the ticks file and calls no `layout.*` command, since herdr saves those into his personal layout
-  - decision: the seat comes from the chat mod's own rule, so when zoo's chat block names no terminal, both follow the shown tab together
-  - decision: fleet-board draws it as a second copy in `view: seat`, since a herdr mod imports nothing outside its folder; it shows once `layouts/zoo.json` places that block (his ⚠️ tick)
+- ⬜ no seat strip above the chat: a seat's facts live in the band, its asks on the deck
+  - given a seat's tab is open in the Chat view
+  - then the chat starts right under the tab bar, with no strip of asks above it (shot 2021-strip-hidden)
+  - decision: the strip is gone (dima, 20:12: «can i have this dupe orbit killed? it eats UI»), lifting his 18:11 «keep for now»; its block is hidden by one `layout.hide` click, zoo.json untouched, and fleet-board's `view: seat` copy draws and reads nothing
 - ⬜ the band sits right above the chat's text box, slice 1 ([FRM-565](https://linear.app/x-com/issue/FRM-565))
   - given a seat's tab is open in the Chat view
   - then three rows above his box read its «waiting on» line, the weekly usage and its context, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
@@ -164,13 +159,8 @@ wish: PK-363
   - and facts the deck has not published for over 2 min 15 s draw dimmed
   - and the 5h line is off for now, back if he moves to the $100 plan (on $200 it is not shown)
   - decision: the deck's mod reads the facts once and publishes them to herdr's shared state `x-herdr-deck.seats`, at once on a change and every 60 s; the chat reads only that key for its own seat
-  - decision: the strip's duplicate asks stay until the deck is proven (dima, 18:11)
 - 🧭 the band's buttons and its redesign, slice 2 (FRM-565)
   - decision: shaped with dima before a line is built
-- 🧭 the strip shows the seat's phases when no ask is open
-  - given the seat in the Chat view has no open ask
-  - then the strip lists its phases where the asks would sit
-  - decision: not in his day-one pick; built once and cut, waiting for his word
 - ✅ the chat box's draft survives a chat reload
   - given dima has typed into a seat's Chat box
   - when the chat mod reloads

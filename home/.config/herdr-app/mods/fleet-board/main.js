@@ -5,10 +5,7 @@ import { readdir } from 'fs/promises';
 import { Button, Input, InputState, TextView, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
 import {
-    agents,
     exec,
-    focused,
-    hc,
     home,
     props,
     readTextFile,
@@ -182,6 +179,10 @@ const prose = (id, markdown, color, size) =>
 export default class FleetBoard extends View {
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
+        // the seat strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
+        // alive draws nothing and reads nothing, so it never runs a second deck
+        this.isSeat = props()?.view === 'seat';
+        if (this.isSeat) return;
         /** @type {Row[]} */
         this.rows = [];
         /** @type {Lane[]} */
@@ -199,14 +200,9 @@ export default class FleetBoard extends View {
         /** @type {string | null} */
         this.pressNote = null;
         this.loadedAt = null;
-        // a second copy in `view: seat` draws the facts of the seat its tab shows, above the chat view
-        this.isSeat = props()?.view === 'seat';
-        /** @type {{ address: string | null, pid: number | null }} */
-        this.seat = { address: null, pid: null };
         /** @type {number | null} */
         this.week = null;
-        if (this.isSeat) cx.timer.every(1000, (cx) => this.follow(cx));
-        else cx.timer.every(SEATS_BEAT_MS, (cx) => this.reload(cx));
+        cx.timer.every(SEATS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
         for (const folder of [
             SESSIONS,
@@ -242,14 +238,12 @@ export default class FleetBoard extends View {
                     (RANK[STATE[a.status]] ?? 2) -
                         (RANK[STATE[b.status]] ?? 2) || byName(a.name, b.name),
             );
-            if (!this.isSeat) {
-                const next = nextSeats(
-                    /** @type {any} */ (shared(SEATS_KEY)),
-                    seatFacts(this.rows, this.week),
-                    Date.now(),
-                );
-                if (next) setShared(SEATS_KEY, next);
-            }
+            const next = nextSeats(
+                /** @type {any} */ (shared(SEATS_KEY)),
+                seatFacts(this.rows, this.week),
+                Date.now(),
+            );
+            if (next) setShared(SEATS_KEY, next);
             for (const row of this.rows)
                 if (row.asks.length)
                     row.pending = pendingPresses(
@@ -715,106 +709,9 @@ export default class FleetBoard extends View {
             );
     }
 
-    // the seat this copy's chat view shows, by x-herdr-chatter's own rule: its props' terminal, else the shown tab's focused
-    // agent, else the one it showed, else the tab's first; a change costs one hc read for its pid, the board rows' key
-    /** @param {Context} cx */
-    follow(cx) {
-        const claude = agents().filter((a) => a.app === 'claude-code');
-        const f = focused();
-        const mine = props()?.terminal
-            ? claude.filter((a) => a.address === props().terminal)
-            : claude.filter((a) => a.tab === f?.tab);
-        const address =
-            (
-                mine.find((a) => a.address === (f?.agent ?? f?.terminal)) ??
-                mine.find((a) => a.address === this.seat.address) ??
-                mine[0]
-            )?.address ?? null;
-        if (address === this.seat.address) return;
-        this.seat = { address, pid: null };
-        cx.notify();
-        if (!address) return;
-        cx.spawn(async (cx) => {
-            const got = await hc(['get', address, '--json']);
-            if (got.code !== 0 || this.seat.address !== address) return;
-            this.seat = { address, pid: JSON.parse(got.stdout).pid ?? null };
-            cx.notify();
-        });
-    }
-
-    /** @param {Theme} t */
-    seatView(t) {
-        const s = this.rows.find((r) => r.pid === this.seat.pid);
-        const state = s ? (STATE[s.status] ?? s.status) : null;
-        const asks = s?.asks ?? [];
-        // the strip's height is its layout block's, fixed, so the transcript under it never moves: a long ask list
-        // scrolls inside it, and the head counts the asks; the seat's ctx, week and waiting-on line draw in the chat's
-        // text box, from the facts the deck copy publishes
-        return v_flex()
-            .id('seat-facts')
-            .font_family(SANS)
-            .size_full()
-            .px(12)
-            .py(8)
-            .gap(8)
-            .overflow_y_scroll()
-            .bg(t.background)
-            .child(
-                h_flex()
-                    .h(20)
-                    .gap(14)
-                    .items_center()
-                    .child(
-                        div()
-                            .w(7)
-                            .h(7)
-                            .rounded(4)
-                            .flex_none()
-                            .bg(
-                                state === 'working'
-                                    ? t.working
-                                    : state === 'blocked'
-                                      ? t.blocked
-                                      : t.idle,
-                            ),
-                    )
-                    .child(
-                        line(
-                            asks.length ? t.foreground : t.muted,
-                            SIZE.secondary,
-                        ).child(
-                            !s
-                                ? 'no claude seat in this tab'
-                                : asks.length > 1
-                                  ? `🪐 ${asks.length} asks`
-                                  : asks.length
-                                    ? '🪐 1 ask'
-                                    : '🪐 no open asks',
-                        ),
-                    ),
-            )
-            .children(asks.map((ask, j) => this.ask(t, s, ask, 0, j)))
-            .when(Boolean(this.pressError), (el) =>
-                el.child(
-                    div()
-                        .text_size(SIZE.secondary)
-                        .text_color(t.blocked)
-                        .child(`⚠️ ${this.pressError}`),
-                ),
-            )
-            .when(Boolean(this.pressNote), (el) =>
-                el.child(
-                    div()
-                        .text_size(SIZE.secondary)
-                        .text_color(t.muted)
-                        .child(`⏳ ${this.pressNote}`),
-                ),
-            );
-    }
-
     render() {
         const t = /** @type {Theme} */ (theme());
-        if (this.isSeat) return this.seatView(t);
+        if (this.isSeat) return div();
         const busy = this.rows.filter(
             (s) => STATE[s.status] === 'working',
         ).length;
