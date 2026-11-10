@@ -2453,9 +2453,11 @@ test('a herdr tick joins the running turn once, labelled from herdr, with his st
     ]).toEqual([1, false, at]);
 });
 
-test('a herdr replay on an ask the desktop board already ticked changes nothing', async ($, on) => {
+// the newest press wins, as at x-mod-guard (sixth sense round 1 on FRM-544: the first-wins rule locked out his ↩️ then 🛎)
+test('a herdr replay after a desktop tick takes it back, its tick record with it', async ($, on) => {
     const files: Record<string, string> = {};
     const w = world(on, files);
+    const writes = tickLog(on);
     await start($);
     const ui = await board($);
     await add($, ['push FRM-1', 'yes']);
@@ -2466,18 +2468,33 @@ test('a herdr replay on an ask the desktop board already ticked changes nothing'
         verdict: 'replay',
     });
     await say($, 'go on');
-    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted: /);
+    expect([
+        /o1 🛎️ accepted/.test(joined(w.contexts).join('\n')),
+        (writes.at(-1) as unknown[] | undefined)?.length,
+    ]).toEqual([false, 0]);
 });
 
-test('of two herdr presses on one ask read together, the first wins', async ($, on) => {
+test('of two herdr presses on one ask read together, the newest wins', async ($, on) => {
     const files: Record<string, string> = {};
     const w = world(on, files);
     await start($);
     await add($, ['push FRM-1', 'yes']);
     const at = w.clock.now();
     files[HERDR_FILE] =
-        press({ at, id: 'o1', verdict: 'tick' }) +
-        press({ at: at + 1, id: 'o1', verdict: 'replay' });
+        press({ at, id: 'o1', verdict: 'replay' }) +
+        press({ at: at + 1, id: 'o1', verdict: 'tick' });
+    await say($, 'go on');
+    expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
+});
+
+test('a herdr 🛎 after his ↩️ on the seat board ticks the ask', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    await ui.press({ key: 'orbit:rejected:o1' });
+    files[HERDR_FILE] = press({ at: w.clock.now(), id: 'o1', verdict: 'tick' });
     await say($, 'go on');
     expect(joined(w.contexts).join('\n')).toMatch(/o1 🛎️ accepted/);
 });

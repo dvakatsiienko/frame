@@ -2373,20 +2373,26 @@ async function absorbMarks($: EngineInterface) {
     const herdr = await herdrMarksOf($, sid);
     if (!Object.keys(marks).length && herdr.last <= herdr.after) return;
     let isSaved = false;
+    // asks his newer ↩️ took back from an accepted mark: their tick record goes too, so the guard honours no tick the
+    // board no longer shows
+    const retracted: OrbitAsk[] = [];
     await inMarking(async () => {
         const o = await currentOrbit($);
         isSaved = await saveOrbit($, {
             ...o,
             asks: o.asks.map((a) => {
-                // a herdr press never overwrites a mark: the first press wins, a desktop one included; and it marks
-                // only the question he read, never the round a follow put under the same id
+                // a new herdr press replaces the ask's mark, the newest press winning as at x-mod-guard: his ↩️ then 🛎
+                // is a tick (it once kept the first, which locked him out, sixth sense round 1 on FRM-544); it marks only
+                // the question he read, never the round a follow put under the same id
                 const h = herdr.marks[a.id];
                 const m =
                     marks[a.id] ??
-                    (a.mark || (h?.text !== undefined && h.text !== a.text)
+                    (h?.text !== undefined && h.text !== a.text
                         ? undefined
                         : h);
                 if (!m || a.isLocked || a.isResolved) return a;
+                if (a.mark === 'accepted' && m.mark !== 'accepted')
+                    retracted.push(a);
                 return {
                     ...a,
                     isChanged: false,
@@ -2402,6 +2408,7 @@ async function absorbMarks($: EngineInterface) {
             }),
         });
     });
+    if (isSaved && retracted.length) await recordTicks($, retracted, false);
     // a press the orbit did not keep is read again at the next take
     if (isSaved && herdr.last > herdr.after)
         await $.store.set(HERDR_READ + sid, herdr.last).catch(() => undefined);

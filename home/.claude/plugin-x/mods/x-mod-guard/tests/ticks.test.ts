@@ -46,16 +46,24 @@ function world(
             isStderrTruncated: false,
             isStdoutTruncated: false,
             stderr: '',
+            // herdr's word on a terminal: `shell1` runs a plain shell, every other one Claude Code
             stdout:
-                e.argv[0] === 'cat'
-                    ? (cat ?? '')
-                    : e.argv.includes('get-url')
-                      ? 'git@github.com:dvakatsiienko/bytes.git\n'
-                      : e.argv.includes('read')
-                        ? JSON.stringify({
-                              data: { tickets: [{ description: body }] },
-                          })
-                        : '',
+                e.argv[0] === 'hc' && e.argv[1] === 'get'
+                    ? JSON.stringify({
+                          status: {
+                              app:
+                                  e.argv[2] === 'shell1' ? null : 'claude-code',
+                          },
+                      })
+                    : e.argv[0] === 'cat'
+                      ? (cat ?? '')
+                      : e.argv.includes('get-url')
+                        ? 'git@github.com:dvakatsiienko/bytes.git\n'
+                        : e.argv.includes('read')
+                          ? JSON.stringify({
+                                data: { tickets: [{ description: body }] },
+                            })
+                          : '',
         },
     }));
     const refuse: string[] = [];
@@ -1360,3 +1368,72 @@ node "/private/tmp/claude-501/-Users-dima-frame--clio/a741b7d8-dbde-4ae9-95c8-28
         world(on);
         expect(FENCED(await bash($, line))).toBe(false);
     });
+
+// sixth sense round 1 on a7322c96: a brace is its listed names, a glob a pattern, judged per segment
+for (const line of [
+    'mkdir -p ~/.claude/shelf/{a,b}',
+    'bun test home/.claude/plugin-x/mods/x-mod-*/tests',
+    'touch ~/.claude/shelf/flawlog/x-{a,b}.md',
+    'cp notes.md ~/.claude/plugin-x/skills/*/',
+    'mkdir -p ~/.claude/plugins/cache/{a,b}',
+])
+    test(`a glob that cannot reach a fenced folder passes: ${line}`, async ($, on) => {
+        world(on);
+        expect(FENCED(await bash($, line))).toBe(false);
+    });
+
+for (const line of [
+    'echo x > ~/.claude/s*/orbit-tick?/t1.jsonl',
+    'echo x > ~/.claude/shelf/orbit-{ticks,x}/t1.jsonl',
+    'mkdir ~/.claude/plugins/st{ore,x}',
+    'cp /tmp/s.json ~/.claude/p*s/st?re/',
+])
+    test(`a glob that reaches a fenced folder is refused: ${line}`, async ($, on) => {
+        world(on);
+        expect(FENCED(await bash($, line))).toBe(true);
+    });
+
+test('a sign line typed with a leading blank is still his proof word', async ($, on) => {
+    const { ran } = signWorld(on);
+    const r = await bash($, "hc send clio ' sign FRM-544'");
+    expect([PANE_PROOF(r), ran]).toEqual([true, []]);
+});
+
+// sixth sense round 1: a sign line split across `hc keys` calls holds no proof word in any one call, so keys into an
+// agent's prompt box are fenced at the call; warn-only until sixth sense's clean and a clean replay (clio, 17:04)
+const KEYS_WARNED = (r: unknown) =>
+    JSON.stringify(r).includes('rule pane-keys') ||
+    JSON.stringify(r).includes('pane-keys');
+for (const line of [
+    'hc keys clio s i g',
+    'hc keys clio n space shift+f shift+r shift+m - 5 4 4 enter',
+])
+    test(`keys into an agent's pane are flagged, warn-only: ${line}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await bash($, line);
+        expect([KEYS_WARNED(r), r.deny, ran]).toEqual([
+            true,
+            undefined,
+            [line],
+        ]);
+    });
+
+test("keys into a plain shell's prompt pass unflagged: the prefill for his hand", async ($, on) => {
+    const line = 'hc keys shell1 g i t space s t a t u s';
+    const { ran } = world(on);
+    const r = await bash($, line);
+    expect([KEYS_WARNED(r), ran]).toEqual([false, [line]]);
+});
+
+// sixth sense round 1, the o40 shape: a tick quoting the whole merge-auto command in backticks is his word for it
+test('a tick quoting the whole merge-auto command lets its --dima-ok run once', async ($, on) => {
+    const MERGE = 'x lane merge-auto 104 --apply --dima-ok 104';
+    const { ran } = world(on, [tick(`merge it: \`${MERGE}\``)]);
+    const first = await bash($, MERGE);
+    const second = await bash($, MERGE);
+    expect([first.deny, second.deny !== undefined, ran]).toEqual([
+        undefined,
+        true,
+        [MERGE],
+    ]);
+});

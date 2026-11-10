@@ -841,10 +841,18 @@ const jsonStrings = (word: string): string[] => {
 };
 // each word only where it would act: a sign line and a marker at a line's start, an override word as the whole prompt;
 // seats talk about all three mid-sentence all day (wishkeeper on 7bfa5ff7)
-const isProofText = (text: string) =>
-    signsTyped(text).length > 0 ||
-    /^\s*(?:#\s*)?dima-ok:/im.test(text) ||
-    overrideAsked(text) !== undefined;
+// a typed line's leading blanks count as gone, since the box may trim them before the prompt lands (sixth sense round 1)
+const isProofText = (text: string) => {
+    const trimmed = text
+        .split('\n')
+        .map((l) => l.trimStart())
+        .join('\n');
+    return (
+        signsTyped(trimmed).length > 0 ||
+        /^\s*(?:#\s*)?dima-ok:/im.test(text) ||
+        overrideAsked(text) !== undefined
+    );
+};
 const isPaneTyper = (c: { name: string; args: { text: string }[] }) =>
     PANE_TYPERS[c.name]?.(c.args.map((w) => w.text)) ?? false;
 const isFed = (c: Command) =>
@@ -916,15 +924,72 @@ export function paneProof(
     }
     return undefined;
 }
+// the terminals `hc keys` types into: keys split across calls build a sign line no one call holds (sixth sense round 1),
+// so the caller asks herdr what runs there and keeps keystrokes out of an agent's prompt box
+export function keysTargets(command: string, cwd: string) {
+    return commandsDeep(command, cwd).flatMap((c) => {
+        const bare = c.args
+            .map((w) => w.text)
+            .filter((w) => !w.startsWith('-'));
+        return c.name === 'hc' && bare[0] === 'keys' && bare[1]
+            ? [bare[1]]
+            : [];
+    });
+}
+export const keysIntoAgent = (target: string, app: string): Refusal => ({
+    door: "send a whole message with `hc send` (its text is judged whole), or prefill only a plain shell's prompt",
+    rule: 'pane-keys',
+    targets: [target],
+    why: `${target} runs ${app}, and keys typed into its prompt box across calls can build his proof words no single call holds`,
+});
 // herdr's fleet-board writes his presses to `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, and the guard reads a press there as
 // his tick (FRM-544 slice 1), so no seat's tool call writes there; fleet-board's own write is a herdr mod's, no cc tool call
-// the folder by name, or a glob or brace the shell would expand under ~/.claude (wisphunter: `orbit-tick?`), read inside
-// one path word: a whole line holding a `*` in one word and `.claude` in another refused clio's ordinary runs (16:52). only
-// a glob that can reach the folder counts: in the segment after `.claude/` (it may match `shelf`) or after `shelf/`
-const isGlobbedUnderClaude = (text: string) =>
-    /(\.claude|(^|[\s/'"=])cc)\/(shelf\/)?[^\s'"/]*[*?[{]/.test(text);
+// a glob or brace the shell would expand into a fenced folder (wisphunter: `orbit-tick?`), read per path word and per
+// segment: a brace is its listed names, a `*`, `?` or `[` a pattern; so `orbit-{ticks,x}` or `s*/orbit-tick?` reach the
+// folder, while `shelf/{a,b}` or `plugin-x/*/` never can (clio's runs refused at 16:52, sixth sense's round 1)
+const isGlob = (seg: string) => /[*?[{]/.test(seg);
+const bracesOf = (seg: string): string[] => {
+    const m = seg.match(/\{([^{}]*)\}/);
+    return m
+        ? (m[1] ?? '')
+              .split(',')
+              .flatMap((alt) => bracesOf(seg.replace(m[0], alt)))
+        : [seg];
+};
+const globMatches = (seg: string, name: string) =>
+    bracesOf(seg).some((alt) => {
+        try {
+            const pattern = alt
+                .replace(/[.+^$()|\\]/g, '\\$&')
+                .replace(/\*/g, '.*')
+                .replace(/\?/g, '.');
+            return new RegExp(`^${pattern}$`).test(name);
+        } catch {
+            // a pattern the guard cannot read may reach anything
+            return true;
+        }
+    });
+// `<.claude or cc>/<names[0]>/<names[1]>…` reached by a word holding at least one glob segment on that walk
+function globReaches(text: string, names: readonly string[]) {
+    for (const m of text.matchAll(
+        /(?:\.claude|(?:^|[\s/'"=])cc)\/([^\s'"]+)/g,
+    )) {
+        const segs = (m[1] ?? '').split('/').slice(0, names.length);
+        if (!segs.some(isGlob)) continue;
+        if (
+            segs.every((seg, i) =>
+                isGlob(seg)
+                    ? globMatches(seg, names[i] ?? '')
+                    : seg === names[i],
+            )
+        )
+            return true;
+    }
+    return false;
+}
 const isTicksName = (text: string) =>
-    /(^|[/'"])orbit-ticks(\/|$|['"])/.test(text) || isGlobbedUnderClaude(text);
+    /(^|[/'"])orbit-ticks(\/|$|['"])/.test(text) ||
+    globReaches(text, ['shelf', 'orbit-ticks']);
 const isShelfDir = (text: string) => /(\.claude|cc)\/shelf\/?$/i.test(text);
 export const isTicksPath = (path: string) =>
     /(^|\/)orbit-ticks(\/|$)/.test(path);
@@ -943,7 +1008,7 @@ export function ticksWrite(command: string, cwd: string): Refusal | undefined {
 // x-mod-stash's `succ:` key and the ask from its `asks:` key, so a seat's write there could aim his press at itself
 const isStoreName = (text: string) =>
     /(^|[/'"])plugins\/store(\/|$|['"])/.test(text) ||
-    /plugins\/[^\s'"/]*[*?[{]/.test(text);
+    globReaches(text, ['plugins', 'store']);
 const isPluginsDir = (text: string) => /(\.claude|cc)\/plugins\/?$/i.test(text);
 export const isStorePath = (path: string) =>
     /\/\.claude\/plugins\/store(\/|$)/.test(path);

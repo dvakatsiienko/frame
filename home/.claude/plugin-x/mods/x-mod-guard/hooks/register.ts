@@ -57,6 +57,8 @@ import {
     isStashKill,
     isStorePath,
     isTicksPath,
+    keysIntoAgent,
+    keysTargets,
     lineWrites,
     markedBy,
     markers,
@@ -585,6 +587,8 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'opaque-head',
     'raw-plugin-update',
     'write-then-run',
+    // warn-only until sixth sense's clean and a 2-day replay with 0 fires on real calls (clio, 17:04)
+    'pane-keys',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
@@ -1665,6 +1669,28 @@ export const register: Register = (on) => {
             );
             if (stop) return stop;
         }
+        // herdr names what runs in the terminal; one it cannot read runs, since this fence is narrow by design
+        for (const target of keysTargets(typed, cwd)) {
+            const got = await $.process
+                .run(['hc', 'get', target, '--json'], { timeoutMs: 3000 })
+                .catch(() => undefined);
+            let app: unknown;
+            try {
+                app =
+                    got?.exitCode === 0
+                        ? JSON.parse(got.stdout)?.status?.app
+                        : undefined;
+            } catch {
+                app = undefined;
+            }
+            if (typeof app !== 'string' || !app) continue;
+            const r = keysIntoAgent(target, app);
+            const stop = await enforce(
+                r,
+                `nothing in this command ran — x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`,
+            );
+            if (stop) return stop;
+        }
         // a member's raw linear read or comment, as typed (before the api rewrite), names its x linear door; clio's runs (FRM-398)
         const raw = rawLinear(typed, cwd);
         if (raw) {
@@ -1928,10 +1954,18 @@ export const register: Register = (on) => {
             const unproven = word.targets.filter(
                 (t) => !namesWhole(prompt, t) && !namesWhole(prompt, `#${t}`),
             );
+            // his tick on the pr's ask, or on an ask quoting this whole command in backticks (sixth sense round 1: the o40
+            // shape, `x lane merge-auto 104 --apply --dima-ok 104`, stayed refused)
             const isTicked =
                 unproven.length > 0 &&
-                unproven.every((t) => t.replace(/^#/, '') === pr) &&
-                (await prTick()) !== undefined;
+                ((unproven.every((t) => t.replace(/^#/, '') === pr) &&
+                    (await prTick()) !== undefined) ||
+                    (await tickFor(
+                        $,
+                        guardedOf(typed),
+                        quotesCommand(typed),
+                        spends,
+                    )) !== undefined);
             if (unproven.length && !isTicked) {
                 const said = `x-mod-guard stopped this one command. instead: ${word.door}. why: ${word.why} (rule dima-ok-flag); it does not name: ${unproven.join(' ')}.`;
                 {
