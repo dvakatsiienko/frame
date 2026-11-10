@@ -840,15 +840,42 @@ const isProofText = (text: string) =>
     signsTyped(text).length > 0 ||
     /dima-ok:/i.test(text) ||
     overrideAsked(text) !== undefined;
-export function paneProof(command: string, cwd: string): Refusal | undefined {
+const isPaneTyper = (c: { name: string; args: { text: string }[] }) =>
+    PANE_TYPERS[c.name]?.(
+        c.args.map((w) => w.text).find((w) => !w.startsWith('-')),
+    ) ?? false;
+// the files a pane typer's `$(cat <file>)` or `$(< <file>)` would type, for the caller to read (a brief sent by file)
+export function paneFiles(command: string, cwd: string, ctx: Context = {}) {
+    const list = commandsDeep(command, cwd);
+    if (!list.some((c) => isPaneTyper(c) && c.args.some((w) => w.isExpanding)))
+        return [];
+    return [
+        ...list
+            .filter((c) => c.name === 'cat')
+            .flatMap((c) =>
+                c.args
+                    .filter((w) => !w.isExpanding && !w.text.startsWith('-'))
+                    .map((w) => resolve(w.text, c.dir, ctx)),
+            ),
+        ...[...command.matchAll(/\$\(\s*<\s*([^\s)]+)\s*\)/g)].map((m) =>
+            resolve(m[1] ?? '', cwd, ctx),
+        ),
+    ];
+}
+// `typed`: the text of the files paneFiles named, as the caller read them
+export function paneProof(
+    command: string,
+    cwd: string,
+    typed: string[] = [],
+): Refusal | undefined {
     for (const c of commandsDeep(command, cwd)) {
+        if (!isPaneTyper(c)) continue;
         const words = c.args.map((w) => w.text);
-        const verb = words.find((w) => !w.startsWith('-'));
-        if (!PANE_TYPERS[c.name]?.(verb)) continue;
         const texts = [
             ...words.map((_, i) => words.slice(i).join(' ')),
             ...words.flatMap(jsonStrings),
             keysText(words),
+            ...(c.args.some((w) => w.isExpanding) ? typed : []),
         ];
         if (!texts.some(isProofText)) continue;
         return {

@@ -62,6 +62,7 @@ import {
     mergeWord,
     message,
     namesWhole,
+    paneFiles,
     paneProof,
     quotesPr,
     rawLinear,
@@ -871,6 +872,8 @@ async function tickFor(
 // his typed «sign <id>» (FRM-544 slice 0): written only by this plugin's prompt.submit from his own prompt, the proof a
 // # dima-ok marker rests on; it opens what a sign tick opens for its id, each write once, inside a tick's 2 h
 const SIGNS = { key: 'signs', plugin: 'x-mod-guard' } as const;
+const FIRST_PROMPT_NOTE =
+    "x-mod-guard: a session's first prompt never signs, since a seat's spawn prompt reads the same; tell dima his «sign <id>» counts from his next prompt here";
 // a spend's time is its word's, `<ask id or typed>@<time>:<scope>`; an unreadable one counts as live
 const spentAt = (key: string) =>
     Number(key.split('@')[1]?.split(':')[0]) || Number.POSITIVE_INFINITY;
@@ -1601,7 +1604,15 @@ export const register: Register = (on) => {
             if (stop) return stop;
         }
         // born refusing: the typed sign door it fences opened live (FRM-544 slice 0 round 2)
-        const pane = paneProof(typed, cwd);
+        // a brief typed from a file is read as it stands, a file this turn wrote as written
+        const paneTexts: string[] = [];
+        for (const file of paneFiles(typed, cwd, ctx)) {
+            const text =
+                new Map(ctx.written ?? []).get(file) ??
+                (await signFile($, file));
+            if (text !== undefined) paneTexts.push(text);
+        }
+        const pane = paneProof(typed, cwd, paneTexts);
         if (pane) {
             const stop = await enforce(
                 pane,
@@ -2194,6 +2205,7 @@ export const register: Register = (on) => {
     on('prompt.submit', async ($, e, next) => {
         await $.state.set(IMAGES, 0).catch(() => undefined);
         let overrideNote: string | undefined;
+        let signNote: string | undefined;
         if (TYPED_BY_DIMA.has(e.origin.kind)) {
             const sid = await $.session.id().catch(() => undefined);
             const entry = sid
@@ -2203,9 +2215,17 @@ export const register: Register = (on) => {
             if (
                 (isBg ? TYPED_BY_DIMA_IN_BG : TYPED_BY_DIMA).has(e.origin.kind)
             ) {
+                const { value: before } = await $.state
+                    .get(PROMPT)
+                    .catch(() => ({ value: undefined }));
                 await $.state.set(PROMPT, e.text).catch(() => undefined);
                 await $.state.set(TOLD, e.text).catch(() => undefined);
-                await keepTypedSigns($, e.text).catch(() => undefined);
+                // a session's first typed prompt is read as its spawn prompt, since no field tells the two apart (measured
+                // 2026-11-10): a seat could start a seat whose brief signs. a bg session's spawn prompt is no origin of his
+                if (before || isBg)
+                    await keepTypedSigns($, e.text).catch(() => undefined);
+                else if (signsTyped(e.text).length)
+                    signNote = FIRST_PROMPT_NOTE;
             }
             const ask = overrideAsked(e.text);
             // no registry row reads as not his: a bg session's brief must never slip through a read that failed; said out
@@ -2225,9 +2245,12 @@ export const register: Register = (on) => {
         }
         await logOrigin($, e).catch(() => undefined);
         const sent = await next(e);
-        return overrideNote === undefined || sent.drop !== undefined
+        const notes = [overrideNote, signNote].filter(
+            (n): n is string => n !== undefined,
+        );
+        return !notes.length || sent.drop !== undefined
             ? sent
-            : { ...sent, context: [...(sent.context ?? []), overrideNote] };
+            : { ...sent, context: [...(sent.context ?? []), ...notes] };
     });
 
     // his word on the stash holds for the turn it was typed in (FRM-426 exit 1: «in this turn»)
