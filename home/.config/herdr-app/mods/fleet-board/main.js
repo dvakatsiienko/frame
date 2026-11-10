@@ -21,6 +21,7 @@ import {
 
 import {
     asksOf,
+    byName,
     currentSid,
     draftOf,
     isBoardOpen,
@@ -101,8 +102,7 @@ async function sessions(store) {
                     wait: store[`reply:${sid}`]?.wait ?? null,
                 };
             },
-        )
-        .sort((a, b) => a.name.localeCompare(b.name));
+        );
 }
 
 // a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
@@ -234,8 +234,7 @@ export default class FleetBoard extends View {
             this.rows = (await sessions(store)).sort(
                 (a, b) =>
                     (RANK[STATE[a.status]] ?? 2) -
-                        (RANK[STATE[b.status]] ?? 2) ||
-                    a.name.localeCompare(b.name),
+                        (RANK[STATE[b.status]] ?? 2) || byName(a.name, b.name),
             );
             this.lanes = lanes.filter((/** @type {Lane} */ l) => !l.endedAt);
             // a press is done once the stash marked its ask or the ask left; one the session never took gives the

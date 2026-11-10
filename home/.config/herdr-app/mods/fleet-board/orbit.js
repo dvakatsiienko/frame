@@ -123,6 +123,17 @@ export const literalAngles = (text) =>
         .join('');
 
 /**
+ * seats sort by the words of their name: a leading badge (🦉, ⚡ 🔧) would otherwise order them by emoji code point
+ * @param {string} a
+ * @param {string} b
+ */
+export const byName = (a, b) => {
+    /** @param {string} name */
+    const words = (name) => name.replace(/^[^\p{L}\p{N}]+/u, '');
+    return words(a).localeCompare(words(b));
+};
+
+/**
  * the session's phases, as its stash kept them
  * @param {Record<string, any>} store
  * @param {string} sid

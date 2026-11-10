@@ -9,15 +9,16 @@ wish: PK-363
 
 ## fleet-board — sessions
 
-- ⬜ every live seat on one list
+- ✅ every live seat on one list
   - given seats run on this mac
   - when the board draws
   - then each live seat shows as one row by its session name, blocked first, then working, then the rest by name
   - decision: a seat whose process is gone draws no row, so no press goes to a dead seat
-- ⬜ a seat's row reads its model and context
+  - decision: the name sorts by its words, past a leading badge, so 🦉 and 🎀 never decide the order
+- ✅ a seat's row reads its model and context
   - given a seat has run a turn
   - then its row shows its model and a context bar with its percent, red from 60 %
-- ⬜ a seat's waiting-on line
+- ✅ a seat's waiting-on line
   - given a seat's last reply ended with a 🔭 line
   - then its row shows that line under the name, selectable
 - ⬜ a seat's phases fold open
@@ -61,6 +62,15 @@ wish: PK-363
 - ⬜ a sidecar seat starts in its own named tab
   - given helga or crow starts in herdr
   - then it shows in the agents list in a tab named after it, never a number
+
+## tray — quick terminal
+
+- ⬜ ctrl-j opens and closes the quick-terminal tray
+  - given any view shows
+  - when dima presses ctrl-j
+  - then the tray with its quick terminal opens, and a second press closes it
+  - decision: the tray stays and is rebranded as ours, after my-tabs (dima, 16:41); bound in `keys.json` `global` by clio on his word, backup `~/.local/state/herdr-mod-backups/keys-1641.json`
+  - decision: a `global` ctrl+letter is taken from the terminal (herdr's guide, § Keys), so in a seat's Terminal view cc's ctrl+j new line no longer reaches cc (read from the guide, not probed by a keypress)
 
 ## chat view
 

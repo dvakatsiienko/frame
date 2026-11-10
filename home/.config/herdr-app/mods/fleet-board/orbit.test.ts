@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
     type Ask,
     asksOf,
+    byName,
     currentSid,
     draftOf,
     isBoardOpen,
@@ -223,6 +224,29 @@ describe('ask text draws as typed', () => {
         expect(literalAngles('run `x lane commit <msg>` now')).toBe(
             'run `x lane commit <msg>` now',
         );
+    });
+});
+
+describe('seats sort by the words of their name', () => {
+    test('a leading badge never decides the order', () => {
+        const names = [
+            '🎀 helga',
+            '🐦 ⬛ crow',
+            '🦉 clio',
+            '🦉🪽 clio: wing 1',
+            '⚡ 🔧 codie: mods lane | PK-363',
+        ];
+        expect(names.sort(byName)).toEqual([
+            '🦉 clio',
+            '🦉🪽 clio: wing 1',
+            '⚡ 🔧 codie: mods lane | PK-363',
+            '🐦 ⬛ crow',
+            '🎀 helga',
+        ]);
+    });
+
+    test('a name with no badge sorts among them', () => {
+        expect(['🦉 clio', 'bob'].sort(byName)).toEqual(['bob', '🦉 clio']);
     });
 });
 
