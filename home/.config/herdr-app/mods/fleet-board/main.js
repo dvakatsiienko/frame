@@ -133,6 +133,8 @@ const STATE = {
 };
 /** @type {Record<string, number>} */
 const RANK = { blocked: 0, working: 1 };
+// the system font: herdr's own UI font (Geist) ships one face, so markdown's **bold** drew flat in it
+const SANS = '.AppleSystemUIFont';
 const SIZE = { body: 13, header: 12, meta: 12, name: 14 };
 
 /**
@@ -457,7 +459,7 @@ export default class FleetBoard extends View {
             .child(
                 prose(
                     `ask-${i}-${j}`,
-                    `🪐 ${ask.text}`,
+                    ask.id ? `🪐 **${ask.id}**: ${ask.text}` : `🪐 ${ask.text}`,
                     t.foreground,
                     SIZE.body,
                 ),
@@ -561,7 +563,9 @@ export default class FleetBoard extends View {
                 .px(10)
                 .py(4)
                 .gap(4)
-                .child(line(t.dim, SIZE.meta).child(s.name))
+                .child(
+                    line(t.foreground, SIZE.name).font_semibold().child(s.name),
+                )
                 .children(s.asks.map((ask, j) => this.ask(t, s, ask, i, j))),
         );
     }
@@ -678,6 +682,7 @@ export default class FleetBoard extends View {
         // text box, from the facts the deck copy publishes
         return v_flex()
             .id('seat-facts')
+            .font_family(SANS)
             .size_full()
             .px(12)
             .py(6)
@@ -755,6 +760,7 @@ export default class FleetBoard extends View {
                 .child(text);
         return v_flex()
             .id('fleet-board')
+            .font_family(SANS)
             .size_full()
             .overflow_y_scroll()
             .bg(t.background)
@@ -768,7 +774,7 @@ export default class FleetBoard extends View {
                 el
                     .child(
                         header(
-                            `orbit · ${asks} ${asks === 1 ? 'ask' : 'asks'}`,
+                            `🪐 orbit: ${asks} ${asks === 1 ? 'ask' : 'asks'} waiting on you`,
                         ),
                     )
                     .children(this.orbit(t))
