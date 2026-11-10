@@ -55,6 +55,8 @@ export const noLinkReasons = {
 export const noLink = new Map<string, keyof typeof noLinkReasons>([
     ['.claude/plugin-x', 'absolutePath'],
     ['.claude/mcp-x-cloud-chat', 'absolutePath'],
+    // our agents read it in the repo; herdr's live mods dir never needs it, and a new file there may reload his window
+    ['.config/herdr-app/mods/AGENTS.md', 'absolutePath'],
     ['.zshrc', 'sourcedByStub'],
     ['.zshenv', 'sourcedByStub'],
     ['.zprofile', 'sourcedByStub'],
