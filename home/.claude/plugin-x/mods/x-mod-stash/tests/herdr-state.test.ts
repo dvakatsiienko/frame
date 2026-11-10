@@ -302,3 +302,21 @@ test('a press taken once is never taken again over a later change', async ($, on
     await s.clock.advance(4_000);
     expect(s.store.get(`hot:${A}`)).toEqual({ since: 1 });
 });
+
+// sixth sense round 1 on 9efae626: the latest of two fleet presses in one poll wins; a line dated ahead stays refused
+for (const button of ['afk', 'waker'] as const)
+    test(`two ${button} presses in one poll end as the newer one says`, async ($, on) => {
+        const s = await pressed($, on, (now) => [
+            { at: now - 2_000, button, on: true },
+            { at: now - 1_000, button, on: false },
+        ]);
+        expect((s.store.get(button) as { on?: boolean })?.on).toBe(false);
+    });
+
+test('a line dated ahead of now is never taken once its time passes', async ($, on) => {
+    const s = await pressed($, on, (now) => [
+        { at: now + 30_000, button: 'wind', on: true, sid: A },
+    ]);
+    for (let i = 0; i < 15; i++) await s.clock.advance(4_000);
+    expect(s.store.get(`wind:${A}`)).toBeUndefined();
+});

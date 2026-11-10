@@ -3558,6 +3558,7 @@ const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL, WIND] as const;
 async function forget($: EngineInterface, sid: string) {
     await dropState($, sid).catch(() => undefined);
     await $.store.delete(BAND_READ + sid);
+    await $.store.delete(BAND_REFUSED + sid);
     for (const prefix of SESSION_KEYS) await $.store.delete(prefix + sid);
     for (const key of await $.store.keys())
         if (key.startsWith(`${MARKS}${sid}:`)) await $.store.delete(key);
@@ -3926,6 +3927,9 @@ async function pruneStates($: EngineInterface) {
 }
 // how far this thread read the band presses: the `at` of the newest line taken, from the thread's start on
 const BAND_READ = 'band-read:';
+// `band-refused:<sid>`: the times of lines this thread saw dated ahead of now
+const BAND_REFUSED = 'band-refused:';
+const BAND_REFUSED_MS = 24 * 60 * 60 * 1000;
 // herdr's band presses reach this thread as its own band's would: wind and hot only for their sid, ⏰ and 💨 only when
 // newer than the state they set, so the latest press wins whichever band it came from (FRM-568 slice 5)
 async function takeBandPresses($: EngineInterface) {
@@ -3944,7 +3948,20 @@ async function takeBandPresses($: EngineInterface) {
     const text = await $.fs
         .read(`${home}/.claude/shelf/${PRESS_DIR}/band.jsonl`)
         .catch(() => '');
-    const presses = bandPressLines(text, after, now);
+    // a line dated ahead of now is refused for good, never taken once its time passes: its time is kept a day
+    const refusedKey = BAND_REFUSED + sid;
+    const kept = ((await $.store.get(refusedKey).catch(() => undefined)) ??
+        []) as number[];
+    const ahead = bandPressLines(text, after, Number.POSITIVE_INFINITY)
+        .map((p) => p.at)
+        .filter((at) => at > now);
+    const refused = [...new Set([...kept, ...ahead])].filter(
+        (at) => at > now - BAND_REFUSED_MS,
+    );
+    if (refused.join() !== kept.join()) await $.store.set(refusedKey, refused);
+    const presses = bandPressLines(text, after, now).filter(
+        (p) => !refused.includes(p.at),
+    );
     for (const p of presses) {
         if (p.button === 'wind' && p.sid === sid) await setWind($, sid, p.on);
         if (p.button === 'hot' && p.sid === sid) {
@@ -3955,8 +3972,8 @@ async function takeBandPresses($: EngineInterface) {
         const key = p.button === 'waker' ? WAKER_KEY : AFK_KEY;
         const stored = (await $.store.get(key)) as { at?: number } | undefined;
         if (typeof stored?.at === 'number' && stored.at >= p.at) continue;
-        if (p.button === 'waker') await setWaker($, p.on);
-        else await setAfk($, p.on);
+        if (p.button === 'waker') await setWaker($, p.on, p.at);
+        else await setAfk($, p.on, p.at);
     }
     const last = Math.max(after, ...presses.map((p) => p.at));
     if (last !== read) await $.store.set(BAND_READ + sid, last);
@@ -4839,15 +4856,16 @@ async function setHot($: EngineInterface, on: boolean) {
 }
 
 // ⏰'s one writer: every write stamps its time, so the latest press wins whichever band it came from (FRM-568)
-async function writeWaker($: EngineInterface, on: boolean) {
-    await $.store.set(WAKER_KEY, { at: await $.clock.now(), on });
+// `at`: the press's own time, so a later press read in the same poll still outranks it; a cc press stamps now
+async function writeWaker($: EngineInterface, on: boolean, at?: number) {
+    await $.store.set(WAKER_KEY, { at: at ?? (await $.clock.now()), on });
     await writeFleet($).catch(() => undefined);
 }
 
 // ⏰ set, never flipped; a set during afk is what afk off puts back
-async function setWaker($: EngineInterface, on: boolean) {
+async function setWaker($: EngineInterface, on: boolean, at?: number) {
     isWaker = on;
-    await writeWaker($, on);
+    await writeWaker($, on, at);
     const away = (await $.store.get(AFK_KEY)) as
         | { at?: number; on?: boolean; wakerBefore?: boolean }
         | undefined;
@@ -4855,7 +4873,7 @@ async function setWaker($: EngineInterface, on: boolean) {
 }
 
 // 💨 set, never flipped: afk on turns ⏰ on, afk off puts back what ⏰ was before it; a press on ⏰ meanwhile still counts
-async function setAfk($: EngineInterface, on: boolean) {
+async function setAfk($: EngineInterface, on: boolean, at?: number) {
     const was = (await $.store.get(AFK_KEY)) as
         | { at?: number; on?: boolean; wakerBefore?: boolean }
         | undefined;
@@ -4863,8 +4881,9 @@ async function setAfk($: EngineInterface, on: boolean) {
         | { on?: boolean }
         | undefined;
     afk = on;
+    const stamp = at ?? (await $.clock.now());
     await $.store.set(AFK_KEY, {
-        at: await $.clock.now(),
+        at: stamp,
         on,
         ...(on
             ? { wakerBefore: was?.on ? was.wakerBefore : wakerWas?.on === true }
@@ -4872,7 +4891,7 @@ async function setAfk($: EngineInterface, on: boolean) {
     });
     if (on || was?.wakerBefore !== undefined) {
         isWaker = on || was?.wakerBefore === true;
-        await writeWaker($, isWaker);
+        await writeWaker($, isWaker, stamp);
     }
     await writeFleet($).catch(() => undefined);
     return was;
