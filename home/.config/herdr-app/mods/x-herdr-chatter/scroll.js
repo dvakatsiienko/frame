@@ -45,3 +45,27 @@ export function keptFirst(ids, limit, first, follow) {
     const at = ids.indexOf(first);
     return at < 0 ? limit : Math.max(limit, ids.length - at);
 }
+
+// the log body's padding below the newest row (its py)
+const BODY_PAD = 12;
+
+/**
+ * the rows far out of view: more than one view above it or below it. Such a row draws as an empty box of its measured
+ * height, so herdr lays out its markdown only near what he reads, and the scroll math sees the same heights. A row not
+ * measured yet, and every row above it, draws whole, since its place is not known
+ * @param {(number | undefined)[]} heights each shown row's measured height, oldest first
+ * @param {{ gap: number, up: number, viewH: number }} view
+ * @returns {Set<number>}
+ */
+export function farRows(heights, { gap, up, viewH }) {
+    const far = new Set();
+    let below = BODY_PAD;
+    for (let k = heights.length - 1; k >= 0; k--) {
+        const h = heights[k];
+        if (h === undefined) break;
+        const top = below + h;
+        if (top < up - viewH || below > up + 2 * viewH) far.add(k);
+        below = top + gap;
+    }
+    return far;
+}

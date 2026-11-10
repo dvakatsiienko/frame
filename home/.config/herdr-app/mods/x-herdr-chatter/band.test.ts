@@ -114,6 +114,23 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
             ).toBe(false);
     });
 
+    test('a tooltip says the state in words first', () => {
+        const [, hot, waker] = bandButtons({
+            ...off,
+            fleet: { ...fleet, waker: { at: null, on: true } },
+            thread,
+        });
+        expect(hot.tip).toMatch(/^keep hot: off\./);
+        expect(waker.tip).toMatch(/^the waker: on\./);
+    });
+
+    test('the board tooltip says whether the deck shows', () => {
+        expect(bandButtons(off)[6].tip).toMatch(/^board: shown\./);
+        expect(bandButtons({ ...off, isDeckShown: false })[6].tip).toMatch(
+            /^board: hidden\./,
+        );
+    });
+
     test('a press waiting on the stash shows its new state until the stash answers', () => {
         const pending = { hot: { at: 1, on: true } };
         expect(

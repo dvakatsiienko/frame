@@ -60,7 +60,13 @@ import {
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import * as ask from './question.js';
-import { STUCK_PX, afterReflow, afterWheel, keptFirst } from './scroll.js';
+import {
+    STUCK_PX,
+    afterReflow,
+    afterWheel,
+    farRows,
+    keptFirst,
+} from './scroll.js';
 import { wholeLines } from './slice.js';
 import {
     SYSTEM_MODES,
@@ -645,6 +651,13 @@ async function readRange(file, from, to) {
     ]);
     if (out.code !== 0) throw new Error(out.stderr.trim());
     return out.stdout;
+}
+
+// his message escaped for markdown, once per message: the text never changes after it is read
+/** @param {{ text: string, typed?: string }} item */
+function typedOf(item) {
+    if (item.typed === undefined) item.typed = plainMarkdown(item.text);
+    return item.typed;
 }
 
 async function transcriptOf(session) {
@@ -1398,6 +1411,8 @@ export default class ClaudeChat extends View {
         this.problem = null;
         this.screen = null;
         this.rowH = new Map();
+        /** @type {string} */
+        this.rowFit = '';
         this.seek = null;
     }
 
@@ -2896,7 +2911,7 @@ export default class ClaudeChat extends View {
                                                       this.marks.re,
                                                       this.markIn(i),
                                                   )
-                                                : plainMarkdown(item.text),
+                                                : typedOf(item),
                                         ).selectable(true),
                                     ),
                             )
@@ -4342,26 +4357,29 @@ export default class ClaudeChat extends View {
                 .items_center()
                 .rounded(11)
                 .border_1()
-                // an override on is loud: it lifts the guards for every seat
-                .border_color(
-                    btn.isOn
-                        ? btn.key === 'override'
-                            ? t.blocked
-                            : t.solid
-                        : t.border,
+                // on reads apart from off at a glance (dima, 22:12: «how to actually see if they worked?»): on is a
+                // filled accent disc with its ring, off a faded emoji on no fill; an override on is loud, it lifts
+                // the guards for every thread
+                .when(btn.isOn, (el) =>
+                    el
+                        .border_2()
+                        .border_color(
+                            btn.key === 'override' ? t.blocked : t.accent,
+                        )
+                        .bg(
+                            btn.key === 'override'
+                                ? t.blocked
+                                : fade(t.accent, '40'),
+                        ),
                 )
-                .bg(
-                    btn.isOn
-                        ? btn.key === 'override'
-                            ? t.blocked
-                            : t.solid
-                        : t.background,
+                .when(!btn.isOn, (el) =>
+                    el.border_color(t.border).bg(t.background).opacity(0.45),
                 )
                 .text_size(px(12))
                 .text_color(btn.isOn ? t.solid_foreground : t.foreground)
-                .tooltip(`${btn.word}: ${btn.tip}`)
+                .tooltip(btn.tip)
                 .when(!btn.isLive, (el) =>
-                    el.opacity(btn.isOn ? 0.85 : 0.5).cursor_not_allowed(),
+                    el.opacity(btn.isOn ? 0.6 : 0.25).cursor_not_allowed(),
                 )
                 // sent, not yet taken: the state it asked for, a shade lighter until the stash writes it
                 .when(btn.isPending, (el) => el.opacity(0.7))
@@ -4941,8 +4959,37 @@ export default class ClaudeChat extends View {
             id: x.work ? x.key : x[1],
             mine: !x.work && x[0].kind === 'user',
         }));
+        // A row's height holds only at the width and look it was measured at.
+        /** @type {string} */
+        const fit = `${Math.round(this.viewW ?? 0)}|${look.size}|${look.space}|${look.width}|${look.tools}|${look.replies}`;
+        if (fit !== this.rowFit) {
+            this.rowFit = fit;
+            this.rowH = new Map();
+        }
+        // Rows far out of view draw as empty boxes of their height: herdr lays out every markdown row on each frame,
+        // which held a scroll near 50 fps in a 60-row chat (profile, 22:13). Search draws every row: it marks hits.
+        const far = this.findQ
+            ? new Set()
+            : farRows(
+                  this.rowList.map((/** @type {{ id: any }} */ r) =>
+                      this.rowH.get(r.id),
+                  ),
+                  {
+                      gap:
+                          GAPS[/** @type {keyof typeof GAPS} */ (look.space)] ??
+                          10,
+                      up: Math.max(0, this.up ?? 0),
+                      viewH: this.viewH ?? 0,
+                  },
+              );
         const rows = shown.map((x, k) => {
             const id = this.rowList[k].id;
+            if (far.has(k))
+                return div()
+                    .id(`row-${id}`)
+                    .w_full()
+                    .flex_none()
+                    .h(this.rowH.get(id));
             const hit = !x.work && found.has(id);
             return (
                 div()

@@ -144,6 +144,11 @@ wish: PK-363
   - when dima opens its tab
   - then the newest messages draw within a moment (clio's: 3.9 s → 0.6 s to the first frame), and «Show earlier» at the top reads the next older part in above, his scroll place kept
   - decision: read on his ask, never all on open: the read of every slice, not the parse or the draw, took the time (2.1 s of 2.3 s)
+- ⬜ the chat scrolls smoothly in a long thread
+  - given a thread with 60 messages drawn
+  - when dima scrolls with the trackpad
+  - then only the messages within one view of what he reads lay out their text; the rest keep their measured height, so his place and «following» hold as before
+  - decision: the profile (22:13–22:18) put the cost in herdr laying out every markdown row on every wheel frame: the same tab ran 40–61 frames a second as markdown and 84–98 as plain text, while the mod's own work held at ~3 ms. Search draws every row, since it marks hits
 - ✅ **bold** and *italic* in replies draw bold and italic
   - given the chat's font is Sans
   - then a reply's markdown bold reads bold (shot 1928)

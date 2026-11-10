@@ -107,8 +107,8 @@ const clock = (ms) =>
 /** @param {string} what @param {boolean} isOn @param {number | null | undefined} since */
 const stateTip = (what, isOn, since) =>
     isOn
-        ? `${what} on${clock(since) ? ` since ${clock(since)}` : ''}; press to turn it off`
-        : `${what} off; press to turn it on`;
+        ? `${what}: on${clock(since) ? ` since ${clock(since)}` : ''}. Press to turn it off.`
+        : `${what}: off. Press to turn it on.`;
 
 const STASH_DOOR =
     "waits on this thread's state file from x-mod-stash (FRM-568)";
@@ -134,7 +134,7 @@ export function bandButtons({
             isLive: Boolean(fleet),
             isOn: fleet?.afk?.on === true,
             since: fleet?.afk?.at,
-            what: 'AFK, every thread,',
+            what: 'AFK, every thread',
         },
         hot: {
             isLive: Boolean(thread),
@@ -196,7 +196,9 @@ export function bandButtons({
             isLive: true,
             isOn: isDeckShown,
             key: 'board',
-            tip: isDeckShown ? 'hide the deck' : 'show the deck',
+            tip: isDeckShown
+                ? 'board: shown. Press to hide the deck.'
+                : 'board: hidden. Press to show the deck.',
             word: 'board',
         },
     ].map((b) => ({ isLive: false, isOn: false, isPending: false, ...b }));
