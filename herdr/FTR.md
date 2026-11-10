@@ -144,12 +144,13 @@ wish: PK-363
   - given dima has typed into a seat's Chat box
   - when the chat mod reloads
   - then the box shows his text again (proven in wing 1's tab, 16:57:57)
-- ⬜ the chat box's draft survives a seat switch
+- ✅ the chat box's draft survives a seat switch
   - given dima has typed into a seat's Chat box
   - when he goes to another seat's tab and comes back
   - then the box shows his text, the caret at its end
   - decision: a seat switch never writes a draft; only typing, a quote, a completion and a send write it, under the seat the box shows (live 19:17:58)
-  - cause, an inference: the switch wrote the box's text under the seat it left, so a box not holding that seat's draft erased it; it came with zoo's copy. a script switch kept the draft in a throwaway copy, so the proof waits on his keystrokes
+  - cause, proven: the switch ran inside render, and herdr refuses the caret set there, so the render failed midway: the box took the new seat's draft while it kept the old seat's address, and the next switch wrote that under the old seat (the caret line came with FRM-556, the write with zoo's copy). the switch now runs in a task (live 19:21:41)
+  - proof: `herdr-app do tab.next` before the fix drew «This view could not be re-rendered… set_selected_range cannot run during render»; after it, no error, herdr-codie's band and transcript showed, and back on wing 1 its draft «t» was in the box (shots 1921, 1922)
 - ✅ every reply of an earlier turn stays open
   - given a seat sent several replies between two of dima's messages (a peer's ping starts no turn)
   - when that turn is no longer the last

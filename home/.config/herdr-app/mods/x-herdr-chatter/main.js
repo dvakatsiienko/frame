@@ -4318,11 +4318,10 @@ export default class ClaudeChat extends View {
         if (props()?.settings) return this.settingsMenu(theme());
         const t = chatTheme();
         const agent = this.target();
-        // Another agent: show what's kept of it now and catch up at once, not on the next 2 s tick.
-        if ((agent?.address ?? null) !== this.address) {
-            this.reset(agent?.address ?? null);
+        // Another agent: the switch runs at once in a task, never here: reset() sets the box's caret, which herdr refuses
+        // during render, and a refused render left the box on the new seat's draft under the old seat's address.
+        if ((agent?.address ?? null) !== this.address)
             cx.timer.after(0, (cx) => this.tick(cx));
-        }
         // Clicking a character or a tab gives the keyboard to that (hidden) terminal: take it back
         // whenever the chat comes on screen or changes agent, so typing lands in the box.
         const seen = this.showing() ? (agent?.address ?? '') : null;
