@@ -1199,6 +1199,59 @@ for (const [tool, path] of [
         expect(TICKS_FENCED(r)).toBe(true);
     });
 
+// FRM-568: herdr's band appends dima's 🐦‍🔥 🔥 ⏰ 💨 presses to its own shelf folder, and every seat acts on them
+const PRESS_FENCED = (r: { deny?: string }) =>
+    (r.deny ?? '').includes("a seat's write would press for him");
+for (const line of [
+    'echo \'{"at":1,"button":"afk","on":true}\' >> ~/.claude/shelf/band-presses/band.jsonl',
+    'printf x | tee -a "$HOME/.claude/shelf/band-presses/band.jsonl"',
+    'cp /tmp/p.jsonl ~/.claude/shelf/band-presses/',
+    'touch ~/.claude/shelf/band-presses/band.jsonl',
+    `node -e "require('fs').appendFileSync(process.env.HOME + '/.claude/shelf/band-presses/band.jsonl', 'x')"`,
+    'cd ~/.claude/shelf/band-presses && echo x > band.jsonl',
+    'echo x >> ~/.claude/shelf/band-presse?/band.jsonl',
+    'echo x >> ~/.claude/shelf/{band-presses,x}/band.jsonl',
+])
+    test(`a seat's write to the band press folder is refused: ${line.slice(0, 48)}`, async ($, on) => {
+        const { ran } = world(on);
+        expect([PRESS_FENCED(await bash($, line)), ran]).toEqual([true, []]);
+    });
+
+test('a write through a link into the band press folder is refused', async ($, on) => {
+    const { ran } = diskWorld(on);
+    expect([
+        PRESS_FENCED(await bash($, 'echo x >> /tmp/b/band.jsonl')),
+        ran,
+    ]).toEqual([true, []]);
+});
+
+for (const line of [
+    'cat ~/.claude/shelf/band-presses/band.jsonl',
+    'jq -c . ~/.claude/shelf/band-presses/band.jsonl',
+    'ls ~/.claude/shelf/band-presses',
+])
+    test(`a read of the band press folder runs: ${line.slice(0, 48)}`, async ($, on) => {
+        const { ran } = world(on);
+        expect([PRESS_FENCED(await bash($, line)), ran]).toEqual([
+            false,
+            [line],
+        ]);
+    });
+
+for (const [tool, path] of [
+    ['Write', '~/.claude/shelf/band-presses/band.jsonl'],
+    ['Edit', '/Users/dima/frame/cc/shelf/band-presses/band.jsonl'],
+] as const)
+    test(`a ${tool} into the band press folder is refused: ${path}`, async ($, on) => {
+        world(on);
+        const r = await $.tool.call(
+            tool === 'Write'
+                ? { content: 'x', file_path: path, tool }
+                : { file_path: path, new_string: 'y', old_string: 'x', tool },
+        );
+        expect(PRESS_FENCED(r)).toBe(true);
+    });
+
 const PRESSES = '/home/.claude/shelf/orbit-ticks/t1t1t1t1-0000.jsonl';
 const press = (text: string, at = NOW - 1, verdict = 'tick', id = 'o7') =>
     JSON.stringify({ at, id, text, verdict });
@@ -1643,6 +1696,7 @@ const LINKS = new Map([
     ['/tmp/p', `${REAL}/plugins/store`],
     ['/tmp/f', `${REAL}/shelf/orbit-ticks/t1.jsonl`],
     ['/tmp/c', '/home/.claude'],
+    ['/tmp/b', `${REAL}/shelf/band-presses`],
 ]);
 // a folder past the glob fan-out
 const WIDE = Array.from({ length: 1100 }, (_, i) => `n${i}`);
@@ -1653,13 +1707,14 @@ const DIRS = new Map([
     ['/home/frame', ['home', 'cc']],
     ['/home/frame/home', ['.claude']],
     [REAL, ['shelf', 'plugins']],
-    [`${REAL}/shelf`, ['orbit-ticks', 'flawlog']],
+    [`${REAL}/shelf`, ['orbit-ticks', 'flawlog', 'band-presses']],
+    [`${REAL}/shelf/band-presses`, ['band.jsonl']],
     [`${REAL}/shelf/orbit-ticks`, ['t1.jsonl']],
     [`${REAL}/shelf/flawlog`, []],
     [`${REAL}/plugins`, ['store', 'cache']],
     [`${REAL}/plugins/store`, []],
     [`${REAL}/plugins/cache`, []],
-    ['/tmp', ['t', 's', 'p', 'f', 'c', 'm', 'other']],
+    ['/tmp', ['t', 's', 'p', 'f', 'c', 'm', 'other', 'b']],
     ['/tmp/other', []],
     ['/tmp/m', WIDE],
     ...WIDE.map((n) => [`/tmp/m/${n}`, []] as [string, string[]]),
