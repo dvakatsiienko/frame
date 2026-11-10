@@ -401,7 +401,6 @@ const history = [
     'home/.claude/shelf',
     'docs/test-drive',
     'docs/research',
-    '_clio/memory/dima-stories.md',
     'recipes/*/log.md',
     'recipes/*/recipe.md',
 ];
