@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T18:28:00Z'
+updated_date: '2026-11-10T18:48:00Z'
 labels:
   - m
   - clio-main
@@ -1540,4 +1540,23 @@ PK-363:W617 (2026-11-10 20:27, dima): whats next for you? ❓
 PK-363:W618 (2026-11-10 20:27, dima, caption): can system messages be removed from my view? home: FRM-562:W17
 
 PK-363:W619 (2026-11-10 20:27, dima, o60 steer): Are you sure it is not redundant? I agree only if it is useful ❓
+
+PK-363:W620 (2026-11-10 20:38, dima): let's have it.
+PK-363:W621 (2026-11-10 20:38, dima): when we grill this? there are a lot of wishes i want it properly groomed. home: FRM-562 ❓
+PK-363:W622 (2026-11-10 20:38, dima): Also from what you know so far and what Herdr Codie knows so far about Herdr, how do you think we should better prototype the UI revamp for Herdr? ❓
+PK-363:W623 (2026-11-10 20:38, dima): Is it possible to be drawn by our designer using the Claude design skill or is it not compatible with Herdr? ❓
+PK-363:W624 (2026-11-10 20:38, dima): Also how does Herdr stylize the Herdr mods: via CSS or via its own approach, similar to how CC native mods get styled and translated into the Claude desktop app? ❓
+PK-363:W625 (2026-11-10 20:38, dima): There is another glitch with the chatter window. When you ask-answer stuff, I read it but I read longer than you reply. Once I start reading and you reply more, the thread grows. The problem is that I read slower than you. Your thread grows to the bottom and each time some read roll happens, the thread goes to the end and moves my view out of the place where I was reading from. It seems this happens on some events. I can't trace them right now. Each time the thread gets scrolled down to the bottom. How to fix it? In a way, if I read a certain section of your thread, nothing pushes it to the bottom except the newest button that scrolls me to the bottom? home: FRM-562:W18 ❓
+PK-363:W626 (2026-11-10 20:38, dima): Also I want the scroll position to be preserved across switching tabs. If I read your conversation somewhere in the middle, go to wing 1, and then go back, I want to have your thread in the same state: somewhere in the middle, in the state it was in when I went out of your thread. home: FRM-562:W19
+PK-363:W627 (2026-11-10 20:38, dima): A lot of stuff arrived in your thread so I didn't read everything. Tell me if I missed something
+
+PK-363:W628 (2026-11-10 20:31, dima): proceed.
+PK-363:W629 (2026-11-10 20:31, dima): And ensure that all you revamped today for mods CLI and Herdr scopes is properly shaped in Linear and, most importantly, the execution order.
+PK-363:W630 (2026-11-10 20:31, dima): Ensure that all milestone ticket execution order is properly groomed and saved in Linear.
+PK-363:W631 (2026-11-10 20:31, dima): Next thread on next boot: when I boot you, you don't forget the remt order
+PK-363:W632 (2026-11-10 20:31, dima): whats next step for you? ❓
+PK-363:W633 (2026-11-10 20:47, dima): okay. what out of this «unnamed» list can be solved today? any of them are freebies or almost freebies? propose few. ❓
+PK-363:W634 (2026-11-10 20:47, dima): Also there are quite a lot of them: the 9 tickets. Do you think it is worth having a milestone for them because they are kind of grouped, in that all of them are steers and they are not compatible with any other area or surface? ❓
+PK-363:W635 (2026-11-10 20:47, dima): Maybe let's group them with a milestone? Because if we don't they will keep steering ❓
+PK-363:W636 (2026-11-10 20:47, dima): you need a second wind
 <!-- SECTION:NOTES:END -->
