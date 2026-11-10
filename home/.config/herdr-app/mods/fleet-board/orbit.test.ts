@@ -238,6 +238,15 @@ describe('the deck publishes each seat its three facts', () => {
         ).toBe('waiting on 🦉 clio');
     });
 
+    test('a seat blocked on a prompt or in an unknown state shows no waiting-on line', () => {
+        expect(
+            seatFacts([row(7, 'blocked', 'waiting on 🦉 clio')], 57)['7']?.wait,
+        ).toBeNull();
+        expect(
+            seatFacts([row(7, 'shell', 'waiting on 🦉 clio')], 57)['7']?.wait,
+        ).toBeNull();
+    });
+
     test('a seat mid-turn shows no waiting-on line, its last one is old', () => {
         expect(
             seatFacts([row(7, 'busy', 'waiting on 🦉 clio')], 57)['7']?.wait,

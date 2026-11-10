@@ -1618,6 +1618,16 @@ export default class ClaudeChat extends View {
     // Every 2 s: which session the agent is on now (/clear and /resume change it), and while
     // it's asking something, the bottom of its screen.
     tick(cx) {
+        // the band's facts age without a redraw: a deck that stopped publishing changes nothing, so the flip is drawn here
+        const isStale = bandOf(
+            shared(SEATS_KEY),
+            this.where?.container ? null : this.where?.pid,
+            Date.now(),
+        ).isStale;
+        if (isStale !== this.bandStale) {
+            this.bandStale = isStale;
+            cx.notify();
+        }
         if (!this.warming) {
             this.warming = true;
             cx.spawn(async () => {
@@ -4035,7 +4045,7 @@ export default class ClaudeChat extends View {
                     '🧠 ctx',
                     'how full its context is',
                     b.context,
-                    80,
+                    60,
                 ),
             );
     }

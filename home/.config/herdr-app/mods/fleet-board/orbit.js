@@ -167,8 +167,9 @@ export const SEATS_KEY = 'x-herdr-deck.seats';
 export const SEATS_BEAT_MS = 60 * 1000;
 
 /**
- * the three facts each live seat shows where dima types, keyed by pid; a seat mid-turn waits on nothing yet, so its
- * last reply's waiting-on line is not shown; the line is drawn plain, so markdown's ** go
+ * the three facts each live seat shows where dima types, keyed by pid; only an idle seat waits on anything: one
+ * mid-turn, blocked on a prompt or in an unknown state shows no waiting-on line, its last one is old; the line is
+ * drawn plain, so markdown's ** go
  * @param {{ pid: number, status: string, context: number | null, wait: string | null }[]} rows
  * @param {number | null} week
  * @returns {Record<string, SeatFacts>}
@@ -179,12 +180,7 @@ export function seatFacts(rows, week) {
     for (const row of [...rows].sort((a, b) => a.pid - b.pid))
         facts[String(row.pid)] = {
             context: typeof row.context === 'number' ? row.context : null,
-            wait:
-                row.status === 'busy' || row.status === 'working'
-                    ? null
-                    : row.wait
-                      ? unbold(row.wait)
-                      : null,
+            wait: row.status === 'idle' && row.wait ? unbold(row.wait) : null,
             week,
         };
     return facts;
