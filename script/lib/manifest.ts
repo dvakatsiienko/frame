@@ -60,6 +60,7 @@ export const noLink = new Map<string, keyof typeof noLinkReasons>([
     ['.claude/plugin-x', 'absolutePath'],
     ['.claude/mcp-x-cloud-chat', 'absolutePath'],
     ['.config/herdr-app/mods/AGENTS.md', 'readInRepo'],
+    ['.config/herdr-app/mods/agents-list', 'landedByCopy'],
     ['.config/herdr-app/mods/fleet-board', 'landedByCopy'],
     ['.zshrc', 'sourcedByStub'],
     ['.zshenv', 'sourcedByStub'],
