@@ -69,7 +69,7 @@ home/.claude/agents/retro.md	2350	2026-11-10: +550 the weekly retro's rubric (sc
 home/.claude/agents/scout.md	2300	2026-10-19: the scout shaping (dima's ticks o25–o29) — a proactive trigger and a map answer contract; its size + 15 %
 home/.claude/agents/wisphunter.md	4400	seed 2026-10-29, its size + 15 %
 home/.claude/CLAUDE.md	16100	seed 2026-10-16, today's size + 15 %
-home/.claude/plugin-x/mods/AGENTS.md	12000	seed 2026-10-16, today's size + 15 %; 2026-11-05 +900 B: the proof doors (a live proof's own store, mods:probe rows, push by name, FRM-470); 2026-11-06 +500 B: the overlay's gates, the split job, the parked line (FRM-473)
+home/.claude/plugin-x/mods/AGENTS.md	12100	seed 2026-10-16, today's size + 15 %; 2026-11-05 +900 B: the proof doors (a live proof's own store, mods:probe rows, push by name, FRM-470); 2026-11-06 +500 B: the overlay's gates, the split job, the parked line (FRM-473); 2026-11-10 +100 B: dima's no-lockout rule for every guard (FRM-544:W10)
 home/.claude/plugin-x/skills/app-author-ftr/SKILL.md	8500	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/app-setup-essentials/SKILL.md	4200	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/art-kit/SKILL.md	1800	seed 2026-10-16, today's size + 15 %
