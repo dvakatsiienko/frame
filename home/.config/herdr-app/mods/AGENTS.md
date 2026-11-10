@@ -30,8 +30,8 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 - `herdr-app check <mod dir>`, then `herdr-app status`, then `herdr-app shot <png>` and look at it yourself
 - edit in frame; `pnpm herdr-mods:land --watch` lands each save that passes `herdr-app check` into herdr's real folder, which reloads live; a link never does
-- a herdr restart is safe for live seats and his hand alone: it can lose a prompt he is typing
-- commit through `x lane commit`, in the background
+- a herdr restart is his hand alone: it can lose a prompt he is typing
+- commit through `x lane commit`, in the background; a new mod's `landedByCopy` line in `script/lib/manifest.ts` rides the commit that adds it
 
 ## never
 
@@ -39,10 +39,10 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - read a cc mod's private store: the state you draw comes from a file under `~/.claude/shelf/` that the mod writes
 - give a button that unlocks something (a sign, a merge, a delete) a keyed command: click-only, since any shell can reach a keyed command
 - restart or kill a live seat for a proof: a throwaway seat, killed after
-- close anything in herdr without the id you opened (`herdr-app status`): a bare close kills dima's focused seat
+- close with a bare close: it kills dima's focused seat (`x:herdr` traps)
+- cut or trim a cc mod's band, board or orbit for a herdr twin: they are his fallback (dima, 20:09)
 
 ## hazards
 
 - a seat started with `hc run --no-parent` has no tab until `skills/herdr/scripts/seat-tab.ts` gives it one; herdr learns of it a moment after `hc run` returns, so the keep and the rename retry
 - `hc ls --json` is an object: `.terminals[]`
-- `SendUserFile` from a herdr seat reaches him nowhere: a shot goes out as its absolute path

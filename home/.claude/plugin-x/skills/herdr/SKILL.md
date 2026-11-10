@@ -62,14 +62,14 @@ printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building'
 
 ## traps
 
-- 📌 a close (`overlay.close`, `tab.close`, `pane.close`) names the id you opened, from `herdr-app status`; a bare one kills dima's focused seat
+- 📌 a bare `overlay.close`, `tab.close` or `pane.close` kills dima's focused seat; a probe closes itself, `closeOverlay(props().overlay)`; a second `mod.open` of a dialog opens a copy
 - 📌 `hc send` always presses Enter; `hc keys` is the only prefill, with the limits above
 - 📌 `hc send --force` types into a blocked program and may answer its permission dialog: never into a seat waiting on dima
 - `hc get` changes nothing and shows no screen; the screen is `hc read`
 - 📌 `SendUserFile` from a herdr seat says «delivered», reaches dima nowhere: a shot goes as its absolute path
 - `herdr-app do '<json>'` alone is refused: the command name comes first, `herdr-app do pane.split '<json>'`
-- a `herdr-app do` that makes or splits a pane names its target `pane` from `ls` and runs only when dima asked for it; without one it acts on his focused pane
-- `mcp__ide` tools in a seat are Cursor's, never herdr's
+- a `herdr-app do` that makes or splits a pane names its `pane` from `ls`, on dima's ask; without one it acts on his focused pane
+- `mcp__ide` tools in a seat are Cursor's
 
 ## shortcuts a seat names to dima
 
