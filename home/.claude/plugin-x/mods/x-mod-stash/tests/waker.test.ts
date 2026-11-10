@@ -165,7 +165,8 @@ test('⏰ switched on after the reset never wakes the session that reset left ca
 test('the ⏰ button in the band switches the waker on for every session', async ($, on) => {
     const s = await session($, on);
     await s.ui.press({ key: 'waker' });
-    expect(s.store.waker).toEqual({ on: true });
+    // stamped, so the latest press wins whichever band it came from (FRM-568)
+    expect(s.store.waker).toEqual({ at: expect.any(Number), on: true });
 });
 
 test('a session started with the waker on shows ⏰ lit', async ($, on) => {

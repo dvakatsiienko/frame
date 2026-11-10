@@ -3828,10 +3828,22 @@ const windAfterPress = (state?: StashWind['state']) => {
     if (state === 'writing') return 'cancelled';
     return state === 'cancelled' ? 'writing' : state;
 };
+// the wind a press asks for, set, never flipped: on asks when none and takes a cancel back; off drops an ask and cancels a write
+const windAfterSet = (on: boolean, state?: StashWind['state']) => {
+    if (on) return !state ? 'asked' : state === 'cancelled' ? 'writing' : state;
+    if (state === 'asked') return undefined;
+    return state === 'writing' ? 'cancelled' : state;
+};
+// what a press on the cc band asks for, from the state it reads
+const isWindWanted = (state?: StashWind['state']) =>
+    !state || state === 'cancelled';
 // the store's value decides, never the drawn one: another board may have pressed since
 async function flipWind($: EngineInterface, sid: string) {
+    return setWind($, sid, isWindWanted((await windOf($, sid))?.state));
+}
+async function setWind($: EngineInterface, sid: string, on: boolean) {
     const was = await windOf($, sid);
-    const state = windAfterPress(was?.state);
+    const state = windAfterSet(on, was?.state);
     const key = WIND + sid;
     if (!state) await $.store.delete(key);
     else if (state !== was?.state)
@@ -4247,13 +4259,13 @@ async function paceWaker($: EngineInterface) {
                 wasOn,
                 ...(until ? { until } : {}),
             });
-            if (!wasOn) await $.store.set(WAKER_KEY, { on: true });
+            if (!wasOn) await writeWaker($, true);
             return;
         }
         // a second start means ⏰ on, he may have forgotten it (W1958); the end still restores what the first one found
         if (key?.since !== note.since) {
             await $.store.set(PACE_WAKER + sid, { ...note, since: key?.since });
-            if (waker?.on !== true) await $.store.set(WAKER_KEY, { on: true });
+            if (waker?.on !== true) await writeWaker($, true);
             // a held afk puts its copy back at its end
             const away = (await $.store.get(AFK_KEY)) as
                 | { on?: boolean }
@@ -4279,7 +4291,7 @@ async function paceWaker($: EngineInterface) {
             | undefined;
         if (away?.on)
             await $.store.set(AFK_KEY, { ...away, wakerBefore: false });
-        else await $.store.set(WAKER_KEY, { on: false });
+        else await writeWaker($, false);
     }
     await $.store.delete(PACE_WAKER + sid);
 }
@@ -4653,6 +4665,51 @@ async function saveHot($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
     await $.store.set(HOT + sid, hot ?? { off: true });
+}
+
+// 🔥 set, never flipped: on keeps a running hot's start, else counts from now mid-turn or from the last turn's end
+async function setHot($: EngineInterface, on: boolean) {
+    const now = await $.clock.now();
+    hot = on ? (hot ?? { since: isBusy ? now : (endedAt ?? now) }) : undefined;
+    await saveHot($);
+}
+
+// ⏰'s one writer: every write stamps its time, so the latest press wins whichever band it came from (FRM-568)
+async function writeWaker($: EngineInterface, on: boolean) {
+    await $.store.set(WAKER_KEY, { at: await $.clock.now(), on });
+}
+
+// ⏰ set, never flipped; a set during afk is what afk off puts back
+async function setWaker($: EngineInterface, on: boolean) {
+    isWaker = on;
+    await writeWaker($, on);
+    const away = (await $.store.get(AFK_KEY)) as
+        | { at?: number; on?: boolean; wakerBefore?: boolean }
+        | undefined;
+    if (away?.on) await $.store.set(AFK_KEY, { ...away, wakerBefore: on });
+}
+
+// 💨 set, never flipped: afk on turns ⏰ on, afk off puts back what ⏰ was before it; a press on ⏰ meanwhile still counts
+async function setAfk($: EngineInterface, on: boolean) {
+    const was = (await $.store.get(AFK_KEY)) as
+        | { at?: number; on?: boolean; wakerBefore?: boolean }
+        | undefined;
+    const wakerWas = (await $.store.get(WAKER_KEY)) as
+        | { on?: boolean }
+        | undefined;
+    afk = on;
+    await $.store.set(AFK_KEY, {
+        at: await $.clock.now(),
+        on,
+        ...(on
+            ? { wakerBefore: was?.on ? was.wakerBefore : wakerWas?.on === true }
+            : {}),
+    });
+    if (on || was?.wakerBefore !== undefined) {
+        isWaker = on || was?.wakerBefore === true;
+        await writeWaker($, isWaker);
+    }
+    return was;
 }
 
 // 💨 afk on keeps every remote-controlled session warm too, as if its 🔥 were on (o161): each session's own stash
@@ -8591,29 +8648,12 @@ export const register: Register = (on) => {
                             '💨',
                             { afk },
                             async () => {
-                                was = (await $.store.get(
-                                    AFK_KEY,
-                                )) as typeof was;
-                                isRead = true;
-                                const wakerWas = (await $.store.get(
-                                    WAKER_KEY,
-                                )) as { on?: boolean } | undefined;
                                 // the store's value, never the module copy: another session may have flipped it since the last poll
-                                afk = !was?.on;
-                                await $.store.set(AFK_KEY, {
-                                    at: await $.clock.now(),
-                                    on: afk,
-                                    ...(afk
-                                        ? { wakerBefore: wakerWas?.on === true }
-                                        : {}),
-                                });
-                                // afk on turns ⏰ on, afk off puts back what ⏰ was before it; a press on ⏰ meanwhile still counts
-                                if (afk || was?.wakerBefore !== undefined) {
-                                    isWaker = afk || was?.wakerBefore === true;
-                                    await $.store.set(WAKER_KEY, {
-                                        on: isWaker,
-                                    });
-                                }
+                                const read = (await $.store.get(AFK_KEY)) as
+                                    | typeof was
+                                    | undefined;
+                                isRead = true;
+                                was = await setAfk($, !read?.on);
                             },
                             async () => {
                                 afk = view.afk === true;
@@ -8634,29 +8674,13 @@ export const register: Register = (on) => {
                             $,
                             '⏰',
                             { isWaker },
-                            async () => {
-                                // a poll already past load's guard may have read the old value
-                                isWaker = wanted;
-                                await $.store.set(WAKER_KEY, { on: wanted });
-                                // a press during afk is what afk off puts back
-                                const away = (await $.store.get(AFK_KEY)) as
-                                    | {
-                                          at?: number;
-                                          on?: boolean;
-                                          wakerBefore?: boolean;
-                                      }
-                                    | undefined;
-                                if (away?.on)
-                                    await $.store.set(AFK_KEY, {
-                                        ...away,
-                                        wakerBefore: wanted,
-                                    });
-                            },
+                            // a poll already past load's guard may have read the old value
+                            () => setWaker($, wanted),
                             async () => {
                                 isWaker = view.isWaker === true;
-                                await $.store
-                                    .set(WAKER_KEY, { on: isWaker })
-                                    .catch(() => undefined);
+                                await writeWaker($, isWaker).catch(
+                                    () => undefined,
+                                );
                             },
                         );
                     };
@@ -8678,20 +8702,13 @@ export const register: Register = (on) => {
                     };
                     const handleHotFlip = async () => {
                         const hotWas = hot;
-                        const now = await $.clock.now();
-                        const wanted = hot
-                            ? undefined
-                            : { since: isBusy ? now : (endedAt ?? now) };
-                        hot = wanted;
+                        const isWanted = !hot;
                         await pressSwitch(
                             $,
                             '🔥',
-                            { isHot: Boolean(wanted) },
-                            () => {
-                                // a poll already past followHot's guard may have read the old value
-                                hot = wanted;
-                                return saveHot($);
-                            },
+                            { isHot: isWanted },
+                            // a poll already past followHot's guard may have read the old value
+                            () => setHot($, isWanted),
                             async () => {
                                 hot = hotWas;
                             },
