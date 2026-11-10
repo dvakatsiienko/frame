@@ -1,6 +1,6 @@
-// Agents in grouped or priority views; parents take their most urgent sub-agent's place. Taken over from zoo's
+// Agents in dima's own order (one flat list, a row moves only by his drag) or grouped by space. Taken over from zoo's
 // zoo-agents (2026-11-10): each agent reads by its Claude Code session name, with no creature beside it.
-// Unread = Herdr's done; done = finished and seen (zoo.turns). A viewed unread agent stays in Unread until left.
+// Unread = Herdr's done; done = finished and seen (zoo.turns).
 
 import { h_flex, v_flex } from 'gpui-base';
 import { View, div, image, svg } from 'gpui-kit';
@@ -27,6 +27,7 @@ import {
 } from 'herdr';
 
 import { SOUNDS_ON, isSoundOn, startJobs } from './jobs.js';
+import { inOrder, moved, nextOrder } from './order.js';
 
 function find(node, id) {
     if (node?.id === id) return node;
@@ -140,19 +141,11 @@ const kidStatus = (k, listed) => {
     return s === 'error' ? 'blocked' : s === 'done' ? 'idle' : s;
 };
 const SORTS = [
-    { icon: 'clock', id: 'priority', label: 'Priority' },
+    { icon: 'square-pen', id: 'yours', label: 'Your order' },
     { icon: 'layers', id: 'grouped', label: 'Grouped by space' },
 ];
 const sortOf = () =>
     SORTS.find((s) => s.id === shared('agents.sort')) ?? SORTS[0];
-const SECTION = {
-    1: 'Idle',
-    2: 'Done',
-    3: 'Working',
-    4: 'Unread',
-    5: 'Needs you',
-};
-const SECTION_STATUS = { 2: 'done', 3: 'working', 4: 'unread', 5: 'blocked' };
 
 function duration(ms) {
     const m = Math.floor(ms / 60000);
@@ -238,6 +231,7 @@ export default class Agents extends View {
         // Each agent's last state and when it changed (ms), kept across restarts.
         this.changed = JSON.parse(localStorage.getItem('changed') ?? '{}');
         this.pins = JSON.parse(localStorage.getItem('pins') ?? '[]');
+        this.order = JSON.parse(localStorage.getItem('order') ?? '[]');
         cx.timer.every(30000, (cx) => cx.notify());
         // New agents' characters and the ♪ sounds (the Zoo view used to do this; jobs.js).
         startJobs(cx);
@@ -269,6 +263,15 @@ export default class Agents extends View {
         localStorage.setItem('changed', JSON.stringify(this.changed));
     }
 
+    since(a) {
+        return this.changed[a.address]?.at ?? 0;
+    }
+
+    setOrder(order) {
+        this.order = order;
+        localStorage.setItem('order', JSON.stringify(order));
+    }
+
     setPins(pins) {
         this.pins = pins;
         localStorage.setItem('pins', JSON.stringify(pins));
@@ -287,33 +290,6 @@ export default class Agents extends View {
             (p) => !heard.has(machine(p)) || live.has(p),
         );
         if (kept.length !== this.pins.length) this.setPins(kept);
-    }
-
-    since(a) {
-        return this.changed[a.address]?.at ?? 0;
-    }
-
-    // Looking at an unread agent makes it done; it stays with Unread until you leave
-    // it rather than drop away under you. Any other change moves it at once.
-    // Runs before trackTurns, so arriving still sees it unread.
-    hold(list) {
-        const cur = list.find((a) => a.focused);
-        const same = cur && cur.address === this.held?.address;
-        const s = cur && shownStatus(cur);
-        // Arriving, or any change but unread turning done, sets what it was.
-        if (!same || !(this.held.rank === RANK.unread && s === 'done'))
-            this.held = cur
-                ? { address: cur.address, rank: RANK[s] ?? 0 }
-                : null;
-    }
-
-    rank(a) {
-        const s = shownStatus(a);
-        const sawUnread =
-            a.address === this.held?.address &&
-            this.held.rank === RANK.unread &&
-            s === 'done';
-        return sawUnread ? RANK.unread : (RANK[s] ?? 0);
     }
 
     sortMenu(t) {
@@ -572,28 +548,19 @@ export default class Agents extends View {
         const shown = focused()?.agent;
         const now = Date.now();
         this.track(list, now);
-        this.hold(list);
         trackTurns(list, all);
-        const byPriority = sort.id === 'priority';
-        const urgency = new Map(
-            list.map((a) => [
-                a.address,
-                Math.max(
-                    this.rank(a),
-                    ...this.tree(all, a.address).map(
-                        (s) => RANK[kidStatus(s.t, this.listed)] ?? 0,
-                    ),
+        const isYours = sort.id === 'yours';
+        if (isYours) {
+            const order = nextOrder(
+                this.order,
+                list.map((a) => a.address),
+                new Set(
+                    all.filter((k) => k.state === 'live').map((k) => k.address),
                 ),
-            ]),
-        );
-        const rankOf = (a) => urgency.get(a.address);
-        if (byPriority)
-            list = [...list].sort(
-                (x, y) =>
-                    rankOf(y) - rankOf(x) ||
-                    this.since(y) - this.since(x) ||
-                    y.seq - x.seq,
             );
+            if (order.join() !== this.order.join()) this.setOrder(order);
+            list = inOrder(list, this.order);
+        }
         this.prunePins(all);
         const pinned = this.pins
             .map((p) => list.find((a) => a.address === p))
@@ -617,10 +584,7 @@ export default class Agents extends View {
             const subs = collapsed ? [] : this.tree(all, a.address);
             const r = row(a, i, subs);
             if (this.folded.has(a.address)) return [r];
-            return [
-                r,
-                ...subs.map((s) => this.subRow(t, s, shown, byPriority)),
-            ];
+            return [r, ...subs.map((s) => this.subRow(t, s, shown, isYours))];
         };
 
         // The fold chevron; folded, the count too, colored by the most urgent one.
@@ -760,10 +724,10 @@ export default class Agents extends View {
                     ).size(13),
                 );
             // Under a space header the space goes without saying; an automatic tab number says nothing.
-            // Without a space header above (priority, pinned) the row names its space.
+            // Without a space header above (his order, pinned) the row names its space.
             // It reads "agent · space": the agent's name first (it shortens when the row is
             // short), the space after it, dim and always whole.
-            const full = byPriority || isPinned;
+            const full = isYours || isPinned;
             const both = full && Boolean(more) && Boolean(a.space_name);
             const name =
                 sessionName(a.address) ??
@@ -775,17 +739,20 @@ export default class Agents extends View {
                         (/^\d+$/.test(label(a))
                             ? a.program?.name || label(a)
                             : label(a))));
-            // Dragging: pinned rows reorder the pins; under a space header a row moves its tab
-            // within the space (the tab bar follows); rows in priority sections stay put.
+            // Dragging: pinned rows reorder the pins; in his order a row takes the place it is dropped on;
+            // under a space header a row moves its tab within the space (the tab bar follows).
             const pinAt = pinned.indexOf(a);
             const spaceTabs =
                 spaces().find((s) => s.id === a.space)?.tabs ?? [];
             const tabAt = spaceTabs.findIndex((x) => x.id === a.tab);
+            const mineAt = this.order.indexOf(a.address);
             const me = isPinned
                 ? { kind: 'pin', pos: pinAt }
-                : !byPriority && tabAt >= 0
-                  ? { kind: 'tab', pos: tabAt, space: a.space, tab: a.tab }
-                  : null;
+                : isYours
+                  ? { kind: 'mine', pos: mineAt }
+                  : tabAt >= 0
+                    ? { kind: 'tab', pos: tabAt, space: a.space, tab: a.tab }
+                    : null;
             const onSpace = this.spaceAim(a.space);
             const aim = (d) => {
                 if (d.kind === 'pin' && isPinned)
@@ -794,10 +761,17 @@ export default class Agents extends View {
                         key: a.address,
                         pos: pinAt,
                     };
+                if (d.kind === 'mine' && isYours && !isPinned)
+                    return {
+                        drop: (d) =>
+                            this.setOrder(moved(this.order, d.key, a.address)),
+                        key: a.address,
+                        pos: mineAt,
+                    };
                 if (
                     d.kind === 'tab' &&
                     !isPinned &&
-                    !byPriority &&
+                    !isYours &&
                     d.space === a.space &&
                     d.tab !== a.tab &&
                     tabAt >= 0
@@ -809,7 +783,7 @@ export default class Agents extends View {
                         pos: tabAt,
                     };
                 }
-                return !isPinned && !byPriority ? onSpace(d) : null;
+                return !isPinned && !isYours ? onSpace(d) : null;
             };
             return this.dnd(h_flex(), t, a.address, me, aim)
                 .id(`ag-${a.address}`)
@@ -899,27 +873,26 @@ export default class Agents extends View {
                     this.status(
                         t,
                         { status: shownStatus(a) },
-                        byPriority && !isPinned,
+                        isYours && !isPinned,
                     ),
                 );
         };
 
-        // Groups in list order: spaces (grouped) or priority sections. Agents of a
+        // Groups in list order: spaces (grouped), or one headless group in his order. Agents of a
         // space are next to each other in agents(), so neighbours make a group.
         const groups = pinned.length
             ? [{ id: 'pinned', label: 'Pinned', members: pinned, status: null }]
             : [];
         for (const a of rest) {
-            const r = rankOf(a) || RANK.idle;
-            const id = byPriority ? `sec-${r}` : `sp-${a.space}`;
+            const id = isYours ? 'yours' : `sp-${a.space}`;
             if (groups.at(-1)?.id === id) groups.at(-1).members.push(a);
             else
                 groups.push({
                     id,
-                    label: byPriority ? SECTION[r] : a.space_name || '',
+                    label: isYours ? '' : a.space_name || '',
                     members: [a],
-                    space: byPriority ? null : a.space,
-                    status: byPriority ? SECTION_STATUS[r] : null,
+                    space: isYours ? null : a.space,
+                    status: null,
                 });
         }
 
@@ -974,7 +947,7 @@ export default class Agents extends View {
                         .text_color(tone(t, g.status) ?? t.dim)
                         .child(g.label),
                 )
-                .when(byPriority || !open, (el) =>
+                .when(!open, (el) =>
                     el.child(
                         div().text_color(t.dim).child(String(g.members.length)),
                     ),
@@ -982,7 +955,7 @@ export default class Agents extends View {
                 .child(div().flex_1())
                 .when(!open, (el) =>
                     el
-                        .when(!byPriority && top && top !== 'idle', (el) =>
+                        .when(top && top !== 'idle', (el) =>
                             el.child(this.status(t, { status: top }, true)),
                         )
                         .child(
@@ -996,7 +969,7 @@ export default class Agents extends View {
         const rows = collapsed
             ? list.flatMap(withKids)
             : groups.flatMap((g) => [
-                  header(g),
+                  ...(g.id === 'yours' ? [] : [header(g)]),
                   ...(this.folded.has(g.id) ? [] : g.members.flatMap(withKids)),
               ]);
 

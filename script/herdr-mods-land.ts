@@ -138,7 +138,10 @@ function land(mod: string, isDry: boolean) {
                 !existsSync(now) ||
                 !readFileSync(now).equals(readFileSync(join(source, name)))
             );
-        });
+        })
+        // main.js lands last: herdr reloads a mod when its main.js changes, and a main.js landed before a new file it
+        // imports kept the old build on screen
+        .sort((a, b) => Number(a === 'main.js') - Number(b === 'main.js'));
     const plan = [
         ...(isLink ? [`trash the link ${target}`] : []),
         ...changed.map((name) => `copy ${name}`),

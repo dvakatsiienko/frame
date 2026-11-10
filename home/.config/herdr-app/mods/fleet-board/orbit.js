@@ -140,23 +140,79 @@ export function withPress(text, press, taken) {
 }
 
 /**
- * writes one press with herdr's compare-and-swap write: a file changed since the read is refused, read again and
- * written over its fresh text, so no press is lost; a second refusal is thrown
- * @param {{ read: (path: string) => Promise<string | null>, write: (path: string, text: string, expected: string | null) => Promise<unknown> }} io
- * @param {string} path
- * @param {Press} press
+ * the presses in the ticks file the stash has not taken yet, by ask id: the board draws them as pressed from the file
+ * itself, so a press waiting on an idle seat's next turn stays ✅ however long it waits
+ * @param {string | null} text
+ * @param {number} taken
+ * @returns {Map<string, 'tick' | 'replay'>}
+ */
+export function pendingPresses(text, taken) {
+    /** @type {Map<string, 'tick' | 'replay'>} */
+    const pending = new Map();
+    for (const line of (text ?? '').split('\n')) {
+        try {
+            const { at, id, verdict } = JSON.parse(line);
+            if (typeof at === 'number' && at > taken && id)
+                pending.set(id, verdict);
+        } catch {}
+    }
+    return pending;
+}
+
+/**
+ * the ticks file with an untaken press of the ask taken back: his second click on a ticked plain ask, before the stash
+ * read it; lines the stash took are pruned as `withPress` prunes them
+ * @param {string | null} text
+ * @param {string} id
  * @param {number} taken
  */
-export async function savePress(io, path, press, taken) {
+export function withoutPress(text, id, taken) {
+    return (text ?? '')
+        .split('\n')
+        .filter((line) => {
+            try {
+                const press = JSON.parse(line);
+                return (
+                    typeof press.at === 'number' &&
+                    press.at > taken &&
+                    Boolean(press.id) &&
+                    press.id !== id
+                );
+            } catch {
+                return false;
+            }
+        })
+        .map((line) => `${line}\n`)
+        .join('');
+}
+
+/** @typedef {{ read: (path: string) => Promise<string | null>, write: (path: string, text: string, expected: string | null) => Promise<unknown> }} TicksIo */
+
+/**
+ * rewrites the ticks file with herdr's compare-and-swap write: a file changed since the read is refused, read again and
+ * rewritten from its fresh text, so no other press is lost; a second refusal is thrown
+ * @param {TicksIo} io
+ * @param {string} path
+ * @param {(text: string | null) => string} edit
+ */
+async function rewrite(io, path, edit) {
     for (let tries = 2; ; tries--) {
         const text = await io.read(path);
         try {
-            return await io.write(path, withPress(text, press, taken), text);
+            return await io.write(path, edit(text), text);
         } catch (err) {
             if (tries <= 1) throw err;
         }
     }
 }
+
+/** @param {TicksIo} io @param {string} path @param {Press} press @param {number} taken */
+export const savePress = (io, path, press, taken) =>
+    rewrite(io, path, (text) => withPress(text, press, taken));
+
+/** @param {TicksIo} io @param {string} path @param {string} id @param {number} taken */
+export const dropPress = (io, path, id, taken) =>
+    rewrite(io, path, (text) => withoutPress(text, id, taken));
 
 /** @typedef {{ context: number | null, wait: string | null, week: number | null }} SeatFacts */
 /** @typedef {{ at: number, seats: Record<string, SeatFacts> }} DeckSeats */
@@ -167,8 +223,7 @@ export const SEATS_KEY = 'x-herdr-deck.seats';
 export const SEATS_BEAT_MS = 60 * 1000;
 
 /**
- * the three facts each live seat shows where dima types, keyed by pid; only an idle seat waits on anything: one
- * mid-turn, blocked on a prompt or in an unknown state shows no waiting-on line, its last one is old; the line is
+ * the three facts each live seat shows where dima types, keyed by pid; the waiting-on line, already `waitOf`'s, is
  * drawn plain, so markdown's ** go
  * @param {{ pid: number, status: string, context: number | null, wait: string | null }[]} rows
  * @param {number | null} week
@@ -180,11 +235,20 @@ export function seatFacts(rows, week) {
     for (const row of [...rows].sort((a, b) => a.pid - b.pid))
         facts[String(row.pid)] = {
             context: typeof row.context === 'number' ? row.context : null,
-            wait: row.status === 'idle' && row.wait ? unbold(row.wait) : null,
+            wait: row.wait ? unbold(row.wait) : null,
             week,
         };
     return facts;
 }
+
+/**
+ * the waiting-on line a seat shows, on the deck's row and in the chat's band alike: only an idle seat waits on
+ * anything; one mid-turn, blocked on a prompt or in an unknown state carries its last reply's line, which is old
+ * @param {string} status
+ * @param {string | null | undefined} wait
+ */
+export const waitOf = (status, wait) =>
+    status === 'idle' ? (wait ?? null) : null;
 
 /**
  * the value to publish, or null when the facts are the ones already out and the last beat is recent: setShared

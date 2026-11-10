@@ -25,19 +25,22 @@ import {
     asksOf,
     byName,
     currentSid,
+    dropPress,
     literalAngles,
     nextSeats,
+    pendingPresses,
     phasesOf,
     runningPids,
     savePress,
     seatFacts,
+    waitOf,
 } from './orbit.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {Record<string, Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
-/** @typedef {{ asks: Ask[], context: number | null, model: string | null, name: string, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
+/** @typedef {{ asks: Ask[], context: number | null, model: string | null, name: string, pending: Map<string, 'tick' | 'replay'>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 /** @typedef {{ id?: string, title: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
 
 const CLAUDE = `${home()}/.claude`;
@@ -92,12 +95,16 @@ async function sessions(store) {
                     context: store[`context:${sid}`] ?? null,
                     model: store[`model:${sid}`] ?? null,
                     name: s.name,
+                    pending: new Map(),
                     phases: phasesOf(store, sid),
                     pid: s.pid,
                     sid,
                     status: s.status ?? 'unknown',
                     taken: store[`herdr-read:${sid}`] ?? 0,
-                    wait: store[`reply:${sid}`]?.wait ?? null,
+                    wait: waitOf(
+                        s.status ?? 'unknown',
+                        store[`reply:${sid}`]?.wait,
+                    ),
                 };
             },
         );
@@ -129,6 +136,8 @@ const STATE = {
 };
 /** @type {Record<string, number>} */
 const RANK = { blocked: 0, working: 1 };
+// the system font: herdr's own UI font (Geist) ships one face, so markdown's **bold** drew flat in it
+const SANS = '.AppleSystemUIFont';
 const SIZE = { body: 13, header: 12, meta: 12, name: 14 };
 
 /**
@@ -239,6 +248,14 @@ export default class FleetBoard extends View {
                 );
                 if (next) setShared(SEATS_KEY, next);
             }
+            for (const row of this.rows)
+                if (row.asks.length)
+                    row.pending = pendingPresses(
+                        await readTextFile(`${TICKS}/${row.sid}.jsonl`).catch(
+                            () => null,
+                        ),
+                        row.taken,
+                    );
             this.lanes = lanes.filter((/** @type {Lane} */ l) => !l.endedAt);
             // a press is done once the stash marked its ask or the ask left; one the session never took gives the
             // buttons back after SENT_MS, and a steer box goes with its ask's mark
@@ -422,15 +439,36 @@ export default class FleetBoard extends View {
         cx.notify();
     }
 
+    // his second click on a ticked plain ask takes the press back while the stash has not read it; once it has, the ask
+    // carries the stash's mark and shows 🔒. a gated ask keeps its one-way press (FRM-544 owns that file's rule)
+    /** @param {Context} cx @param {Row} s @param {Ask} ask */
+    async unpress(cx, s, ask) {
+        const key = `${s.sid}:${ask.id}`;
+        this.pressError = null;
+        try {
+            await dropPress(
+                { read: readTextFile, write: writeTextFile },
+                `${TICKS}/${s.sid}.jsonl`,
+                ask.id,
+                s.taken,
+            );
+            this.sent.delete(key);
+        } catch (err) {
+            this.pressError = `${ask.id} not unticked: ${err instanceof Error ? err.message : err}`;
+        }
+        cx.notify();
+    }
+
     // a gated ask (the stash marks it: a sign, a ⚠️, a merge, a quoted command) takes the same 🛎️: his click writes the
     // press only his click writes, and x-mod-guard reads it as his word for that ask, once (FRM-544). a click, never a key:
     // a keyed mod command is any shell's
     /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j */
     ask(t, s, ask, i, j) {
         const key = `${s.sid}:${ask.id}`;
-        const sent = this.sent.get(key)?.verdict;
+        const sent = this.sent.get(key)?.verdict ?? s.pending.get(ask.id);
         const steer = this.steers.get(key);
         const done = ask.mark ?? sent;
+        const canUntick = !ask.mark && sent === 'tick' && !ask.isGated;
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick */
         const button = (id, label, tip, onClick) =>
             div()
@@ -453,7 +491,7 @@ export default class FleetBoard extends View {
             .child(
                 prose(
                     `ask-${i}-${j}`,
-                    `🪐 ${ask.text}`,
+                    ask.id ? `🪐 **${ask.id}**: ${ask.text}` : `🪐 ${ask.text}`,
                     t.foreground,
                     SIZE.body,
                 ),
@@ -533,17 +571,33 @@ export default class FleetBoard extends View {
                         ),
                 ),
             )
-            .when(Boolean(done), (el) =>
+            .when(canUntick, (el) =>
+                el.child(
+                    h_flex()
+                        .pl(20)
+                        .child(
+                            button(
+                                'untick',
+                                '✅ ticked',
+                                'ticked: click again to untick, until the session takes it',
+                                (cx) =>
+                                    cx.spawn((cx) => this.unpress(cx, s, ask)),
+                            ),
+                        ),
+                ),
+            )
+            .when(Boolean(done) && !canUntick, (el) =>
                 el.child(
                     div()
                         .pl(20)
                         .text_size(SIZE.meta)
                         .text_color(t.dim)
                         .child(
-                            ask.mark === 'accepted' ||
-                                (!ask.mark && sent === 'tick')
-                                ? `🛎️ ticked${ask.mark ? '' : ', waiting for the session'}`
-                                : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
+                            ask.mark === 'accepted'
+                                ? '🔒 ticked, the session took it'
+                                : !ask.mark && sent === 'tick'
+                                  ? '🛎️ ticked, waiting for the session'
+                                  : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
                         ),
                 ),
             );
@@ -557,7 +611,9 @@ export default class FleetBoard extends View {
                 .px(10)
                 .py(4)
                 .gap(4)
-                .child(line(t.dim, SIZE.meta).child(s.name))
+                .child(
+                    line(t.foreground, SIZE.name).font_semibold().child(s.name),
+                )
                 .children(s.asks.map((ask, j) => this.ask(t, s, ask, i, j))),
         );
     }
@@ -674,6 +730,7 @@ export default class FleetBoard extends View {
         // text box, from the facts the deck copy publishes
         return v_flex()
             .id('seat-facts')
+            .font_family(SANS)
             .size_full()
             .px(12)
             .py(6)
@@ -751,6 +808,7 @@ export default class FleetBoard extends View {
                 .child(text);
         return v_flex()
             .id('fleet-board')
+            .font_family(SANS)
             .size_full()
             .overflow_y_scroll()
             .bg(t.background)
@@ -764,7 +822,7 @@ export default class FleetBoard extends View {
                 el
                     .child(
                         header(
-                            `orbit · ${asks} ${asks === 1 ? 'ask' : 'asks'}`,
+                            `🪐 orbit: ${asks} ${asks === 1 ? 'ask' : 'asks'} waiting on you`,
                         ),
                     )
                     .children(this.orbit(t))

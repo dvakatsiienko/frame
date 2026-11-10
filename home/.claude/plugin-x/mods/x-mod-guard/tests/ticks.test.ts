@@ -292,17 +292,12 @@ test('one record for a batch of seven refuses six signs, as on 2026-11-06', asyn
     expect(ran).toEqual(SIGNS.slice(-1));
 });
 
-test('a batch of asks marked in one go signs each ticket once', async ($, on) => {
+test('a batch of asks marked in one go signs each ticket', async ($, on) => {
     const { ran } = world(on, BATCH);
     const lines = SIGNS;
     const denied = [];
     for (const line of lines) denied.push((await bash($, line)).deny);
-    const again = await bash($, lines[0] as string);
-    expect([denied, ran, again.deny !== undefined]).toEqual([
-        lines.map(() => undefined),
-        lines,
-        true,
-    ]);
+    expect([denied, ran]).toEqual([lines.map(() => undefined), lines]);
 });
 
 test('a merge ask in a batch marked in one go runs', async ($, on) => {
@@ -451,25 +446,25 @@ for (const [why, id, text] of [
         expect(signFlagged(r)).toBe(true);
     });
 
-test('a batch tick is spent per id: a second sign of the same id is refused', async ($, on) => {
+// one approval of a sign covers that ticket's writes for its 2 h, a retry included (wing 1, 19:14), and no other ticket
+test('a sign tick covers its ticket again on a retry, never a ticket it does not name', async ($, on) => {
     world(on, [tick('✍️ sign FRM-1, FRM-2: two small tickets')]);
     await bash($, 'x linear set FRM-1 --add-label signed');
     const again = await bash($, 'x linear set FRM-1 --add-label signed');
-    expect(signFlagged(again)).toBe(true);
+    const other = await bash($, 'x linear set FRM-3 --add-label signed');
+    expect([signFlagged(again), signFlagged(other)]).toEqual([false, true]);
 });
 
-test('a sign tick survives a refusal later on the line, and the retry spends it', async ($, on) => {
+test('a sign tick survives a refusal later on the line, and the retry runs', async ($, on) => {
     const { ran } = world(on, [tick('✍️ sign FRM-1: a small ticket')]);
     const SIGN = 'x linear set FRM-1 --add-label signed';
     const refused = await bash($, `${SIGN}; rm -rf /tmp/never`);
     const retry = await bash($, SIGN);
-    const third = await bash($, SIGN);
-    expect([
-        refused.deny !== undefined,
-        retry.deny,
-        signFlagged(third),
-        ran,
-    ]).toEqual([true, undefined, true, [SIGN]]);
+    expect([refused.deny !== undefined, retry.deny, ran]).toEqual([
+        true,
+        undefined,
+        [SIGN],
+    ]);
 });
 
 test('another label runs with no tick', async ($, on) => {
@@ -979,7 +974,7 @@ test('the same paste with his own «sign FRM-544 ← ok» line signs', async ($,
     expect(signFlagged(await bash($, labelOf('FRM-544')))).toBe(false);
 });
 
-test('one typed «sign FRM-544 FRM-519» signs each once, and a second sign of either is spent', async ($, on) => {
+test('one typed «sign FRM-544 FRM-519» signs each, a retry too, and no third ticket', async ($, on) => {
     signWorld(on);
     await hisNext($, 'sign FRM-544 FRM-519');
     const first = [
@@ -988,11 +983,11 @@ test('one typed «sign FRM-544 FRM-519» signs each once, and a second sign of e
     ];
     const again = [
         await bash($, labelOf('FRM-544')),
-        await bash($, labelOf('FRM-519')),
+        await bash($, labelOf('FRM-1')),
     ];
     expect([first.map(signFlagged), again.map(signFlagged)]).toEqual([
         [false, false],
-        [true, true],
+        [false, true],
     ]);
 });
 
@@ -1052,14 +1047,6 @@ test('a sign write refused later on its line leaves the typed sign for the retry
         undefined,
         [labelOf('FRM-544')],
     ]);
-});
-
-test('51 spends inside 2 h never bring the first typed sign back', async ($, on) => {
-    signWorld(on);
-    const ids = Array.from({ length: 51 }, (_, i) => `FRM-${100 + i}`);
-    await hisNext($, `sign ${ids.join(' ')}`);
-    for (const id of ids) await bash($, labelOf(id));
-    expect(signFlagged(await bash($, labelOf(ids[0] as string)))).toBe(true);
 });
 
 // a seat's keys typed into a pane land as his composer prompt (measured 2026-11-10), so the guard fences the typing
@@ -1225,7 +1212,9 @@ for (const [why, ask, line, other] of [
         'git push --mirror backup',
     ],
 ] as const) {
-    test(`a fleet-board press on ${why} runs its target once`, async ($, on) => {
+    // a sign covers its ticket's writes for 2 h (wing 1, 19:14); a merge or a command runs once
+    const isSign = why === 'a sign ask';
+    test(`a fleet-board press on ${why} runs its target${isSign ? ', a retry too' : ' once'}`, async ($, on) => {
         const { ran } = pressWorld(on, [press(ask)]);
         const first = await bash($, line);
         const second = await bash($, line);
@@ -1235,7 +1224,7 @@ for (const [why, ask, line, other] of [
             second.deny !== undefined,
             elsewhere.deny !== undefined,
             ran.length,
-        ]).toEqual([undefined, true, true, 1]);
+        ]).toEqual([undefined, !isSign, true, isSign ? 2 : 1]);
     });
 
     test(`a fleet-board press on ${why} older than 2 h proves nothing`, async ($, on) => {
@@ -1272,7 +1261,7 @@ const SIGN_ASK_1 = '✍️ sign FRM-1: a small ticket';
 const herdrMarked = (markedAt: number, isHerdrMark = true) => [
     { id: 'o13', isHerdrMark, mark: 'accepted', markedAt, text: SIGN_ASK_1 },
 ];
-test('a herdr press pruned from the file still signs through its kept mark, once', async ($, on) => {
+test('a herdr press pruned from the file still signs its ticket through its kept mark, and no other', async ($, on) => {
     const { ran } = pressWorld(
         on,
         [press('⚠️ close FRM-2: done', NOW - 1, 'tick', 'o14')],
@@ -1280,13 +1269,42 @@ test('a herdr press pruned from the file still signs through its kept mark, once
     );
     const line = 'x linear set FRM-1 --add-label signed';
     const first = await bash($, line);
-    const second = await bash($, line);
-    expect([first.deny, second.deny !== undefined, ran.length]).toEqual([
+    const other = await bash($, 'x linear set FRM-2 --add-label signed');
+    expect([first.deny, signFlagged(other), ran]).toEqual([
         undefined,
         true,
-        1,
+        [line],
     ]);
 });
+// a sign is two writes, the label and the body, in either order (clio:shape-lane § 4): one approval covers both, and
+// a body write that ran and failed is retried (wing 1's FRM-554, 19:14)
+const BODY_1 = '/tmp/FRM-1.md';
+for (const [why, writes] of [
+    [
+        'the label first',
+        [labelOf('FRM-1'), `x linear body FRM-1 --set ${BODY_1}`],
+    ],
+    [
+        'the body first',
+        [`x linear body FRM-1 --set ${BODY_1}`, labelOf('FRM-1')],
+    ],
+    [
+        'a failed body write retried',
+        [
+            labelOf('FRM-1'),
+            `x linear body FRM-1 --set ${BODY_1}`,
+            `x linear body FRM-1 --set ${BODY_1}`,
+        ],
+    ],
+] as const)
+    test(`his typed «sign FRM-1» covers both sign writes, ${why}`, async ($, on) => {
+        const { ran } = signWorld(on);
+        await hisNext($, 'sign FRM-1');
+        const flagged = [];
+        for (const line of writes)
+            flagged.push(signFlagged(await bash($, line)));
+        expect([flagged, ran]).toEqual([writes.map(() => false), [...writes]]);
+    });
 for (const [why, lines, asks] of [
     [
         'its mark is older than 2 h',

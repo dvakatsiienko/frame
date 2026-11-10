@@ -1905,16 +1905,19 @@ export const register: Register = (on) => {
                 signText === undefined ||
                 (await hasNewSignLine($, sign.id, signText));
             // ahead of every other door: a tick, a stash word or a marker on the line's other targets never carries a sign (R3)
-            const scope = `sign-${sign.file ? 'body' : 'label'}:${sign.id}`;
+            // one approval of a sign covers that ticket's sign writes, label and body, in either order and on a retry, for
+            // its 2 h, so nothing is spent: a body write that ran and failed once spent his typed word (wing 1, 19:14,
+            // dima: «i am angry because my ticks don't work»)
+            const scope = `sign:${sign.id}`;
             if (
                 isNewSign &&
                 !(await tickFor(
                     $,
                     scope,
                     (t) => isSignAsk(t.text, sign.id),
-                    spends,
+                    [],
                 )) &&
-                !(await typedSignFor($, scope, sign.id, spends))
+                !(await typedSignFor($, scope, sign.id, []))
             ) {
                 const r = {
                     door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», or to type «sign ${sign.id}» himself, then sign`,

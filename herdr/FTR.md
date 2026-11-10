@@ -37,6 +37,16 @@ wish: PK-363
 
 ## fleet-board — orbit
 
+- ⬜ a plain ask's tick is a toggle: 🛎️ → ✅ → 🔒
+  - given dima ticked a plain ask and its seat has not taken the press yet
+  - when he clicks its ✅ ticked
+  - then the press leaves the ticks file and 🛎️ tick shows again; once the seat takes it, the ask reads «🔒 ticked, the session took it» (shot 1936)
+  - and a press waiting on an idle seat stays ✅ however long it waits: the board reads it from the ticks file
+  - decision: a gated ask keeps its one-way press until the mods lane's tick fixes settle (clio, 19:34)
+  - not checked: the click itself, by his hand
+- ✅ each ask leads with its id, so dima can name it
+  - given a seat has an open ask with an id
+  - then the board reads «🪐 **o36**: <text>», under a head «🪐 orbit: N asks waiting on you», each asker's name bold at the name size (shot 1929)
 - ⬜ a plain ask ticks from the board
   - makes: one press line in `~/.claude/shelf/orbit-ticks/<session id>.jsonl`
   - given a seat has an open ask
@@ -70,6 +80,11 @@ wish: PK-363
 
 ## seats — tabs
 
+- ⬜ the agents list is one flat list in dima's own order
+  - given seats come, go and change state
+  - then no Unread or Working section shows, a new seat joins at the end, and a row never moves when its state changes; the dot, the tick and the spinner stay (shot 1932)
+  - and dima drags a row to set its place, the order kept across restarts
+  - not checked: the drag itself, by his hand
 - ✅ a sidecar seat starts in its own named tab
   - given helga or crow starts in herdr
   - then it shows in the agents list in a tab named after it, never a number
@@ -86,6 +101,10 @@ wish: PK-363
 
 ## chat view — x-herdr-chatter
 
+- ✅ **bold** and *italic* in replies draw bold and italic
+  - given the chat's font is Sans
+  - then a reply's markdown bold reads bold (shot 1928)
+  - decision: Sans is the system font: herdr's own UI font, Geist, ships one face and drew bold flat
 - ✅ the chat is ours by name: `x-herdr-chatter`
   - makes: `home/.config/herdr-app/mods/x-herdr-chatter`, landed into `~/.config/herdr-app/mods/x-herdr-chatter` by `herdr-mods:land`
   - given `layouts/zoo.json` places `x-herdr-chatter`

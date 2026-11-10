@@ -8,12 +8,15 @@ import {
     currentSid,
     literalAngles,
     nextSeats,
+    pendingPresses,
     phasesOf,
     runningPids,
     savePress,
     seatFacts,
     unbold,
+    waitOf,
     withPress,
+    withoutPress,
 } from './orbit.js';
 
 const SID = 's1';
@@ -172,6 +175,32 @@ describe('a press lands as one line of the ticks file', () => {
     });
 });
 
+describe('a second click unticks a plain ask the session has not taken', () => {
+    test('a press the stash has not taken reads as pressed, a taken one does not', () => {
+        const text =
+            '{"at":5,"id":"o2","verdict":"tick"}\n{"at":9,"id":"o1","verdict":"replay"}\nnot json\n';
+        expect([...pendingPresses(text, 5)]).toEqual([['o1', 'replay']]);
+    });
+
+    test("the ask's untaken press leaves, another ask's stays", () => {
+        const text =
+            '{"at":5,"id":"o1","verdict":"tick"}\n{"at":6,"id":"o2","verdict":"tick"}\n';
+        expect(withoutPress(text, 'o1', 0)).toBe(
+            '{"at":6,"id":"o2","verdict":"tick"}\n',
+        );
+    });
+
+    test('lines the stash already took are pruned with it', () => {
+        const text =
+            '{"at":5,"id":"o2","verdict":"tick"}\n{"at":9,"id":"o1","verdict":"tick"}\n';
+        expect(withoutPress(text, 'o1', 5)).toBe('');
+    });
+
+    test('no file yet is an empty file', () => {
+        expect(withoutPress(null, 'o1', 0)).toBe('');
+    });
+});
+
 describe('ask text draws as typed', () => {
     test('angle brackets outside code survive markdown', () => {
         expect(literalAngles('prefills «ok <target>»')).toBe(
@@ -225,6 +254,10 @@ describe('the deck publishes each seat its three facts', () => {
         wait,
     });
 
+    test('an idle seat keeps its waiting-on line', () => {
+        expect(waitOf('idle', 'waiting on 🦉 clio')).toBe('waiting on 🦉 clio');
+    });
+
     test('each live seat gets its context, its waiting-on line and the week, keyed by pid', () => {
         expect(seatFacts([row(7, 'idle', 'waiting on 🦉 clio')], 57)).toEqual({
             '7': { context: 40, wait: 'waiting on 🦉 clio', week: 57 },
@@ -239,18 +272,12 @@ describe('the deck publishes each seat its three facts', () => {
     });
 
     test('a seat blocked on a prompt or in an unknown state shows no waiting-on line', () => {
-        expect(
-            seatFacts([row(7, 'blocked', 'waiting on 🦉 clio')], 57)['7']?.wait,
-        ).toBeNull();
-        expect(
-            seatFacts([row(7, 'shell', 'waiting on 🦉 clio')], 57)['7']?.wait,
-        ).toBeNull();
+        expect(waitOf('blocked', 'waiting on 🦉 clio')).toBeNull();
+        expect(waitOf('shell', 'waiting on 🦉 clio')).toBeNull();
     });
 
     test('a seat mid-turn shows no waiting-on line, its last one is old', () => {
-        expect(
-            seatFacts([row(7, 'busy', 'waiting on 🦉 clio')], 57)['7']?.wait,
-        ).toBeNull();
+        expect(waitOf('busy', 'waiting on 🦉 clio')).toBeNull();
     });
 
     test('a seat with no context read yet carries none, never a guess', () => {
