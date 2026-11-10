@@ -39,9 +39,9 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 
 ## where our mods live
 
-- 📌 a mod's source belongs in `~/frame/home/.config/herdr-app/mods/<name>/`, linked out by the dotfiles mirror, so it gets git and our gates
+- 📌 a mod's source belongs in `~/frame/home/.config/herdr-app/mods/<name>/`, so it gets git and our gates; it reaches herdr as a real folder, copied by `pnpm herdr-mods:land <mod>` (`--watch` lands each save that passes `herdr-app check`)
 - 📌 a mod outside the mirror (every one but fleet-board today) has no undo: copy the folder aside before a rewrite
-- 📌 a linked mod never hot-reloads: a changed file reaches dima's window only after he quits herdr (⌘Q) and reopens it, his terminals living on in hc; cmd-p is the Go to box and a pane hide/show keeps the old build (inference: the watcher does not follow the link)
+- 📌 a mod linked into herdr never hot-reloads (a write through the link sends the watched dir no event), so no mod is linked: a landed real folder reloads live
 - a shipped mod or layout belongs to herdr and is replaced on every start; our copy comes from `mod.clone` or `layout.clone` and never takes upstream fixes, so it is diffed against the new shipped one at each herdr update
 - 📌 `layout.clone` switches dima's shown layout to the clone: ask before running it
 - one mod per idea; touch only the mod or file the job names
