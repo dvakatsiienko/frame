@@ -75,11 +75,6 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
         ]);
     });
 
-    test('a greyed button names what it waits on', () => {
-        const hot = bandButtons(off).find((b) => b.key === 'hot');
-        expect(hot?.tip).toContain('waits on');
-    });
-
     test("with the thread's state file and fleet.json, wind, hot, waker and AFK are live", () => {
         expect(keys({ ...off, fleet, thread }).slice(0, 4)).toEqual([
             ['wind', false, true],
@@ -114,21 +109,61 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
             ).toBe(false);
     });
 
-    test('a tooltip says the state in words first', () => {
-        const [, hot, waker] = bandButtons({
-            ...off,
-            fleet: { ...fleet, waker: { at: null, on: true } },
-            thread,
-        });
-        expect(hot.tip).toMatch(/^keep hot: off\./);
-        expect(waker.tip).toMatch(/^the waker: on\./);
+    test('a tooltip names the button, with no press explanation (dima, 23:08)', () => {
+        const since = new Date(2026, 10, 10, 22, 20).getTime();
+        const tips = (state: Parameters<typeof bandButtons>[0]) =>
+            bandButtons(state).map((b) => b.tip);
+        expect(tips(off)).toEqual([
+            'second wind',
+            'keep hot',
+            'waker',
+            'afk',
+            'operator override',
+            'settings',
+            'deck',
+        ]);
+        expect(
+            tips({
+                ...off,
+                fleet: { afk: { at: 5, on: true }, waker: { at: 5, on: true } },
+                override: { isOn: true, since: 'x' },
+                pending: { waker: { at: 1, on: false } },
+                thread: { hot: { since }, wind: null },
+            }).slice(1, 5),
+        ).toEqual([
+            'keep hot: on since 22:20',
+            'waker',
+            'afk',
+            'operator override',
+        ]);
     });
 
-    test('the board tooltip says whether the deck shows', () => {
-        expect(bandButtons(off)[6].tip).toMatch(/^board: shown\./);
-        expect(bandButtons({ ...off, isDeckShown: false })[6].tip).toMatch(
-            /^board: hidden\./,
-        );
+    test("the wind button draws the cc band's lifecycle emoji for the thread's wind", () => {
+        const emoji = (wind: string | null) =>
+            bandButtons({ ...off, fleet, thread: { hot: null, wind } })[0]
+                .emoji;
+        expect(
+            [
+                null,
+                'asked',
+                'writing',
+                'refreshing',
+                'cancelled',
+                'refused',
+            ].map(emoji),
+        ).toEqual(['🐦‍🔥', '🥚', '✍️', '🌀', '↩️', '🛑']);
+    });
+
+    test('a wind press waiting on the stash draws the state it asked for', () => {
+        const wind = (on: boolean, was: string | null) =>
+            bandButtons({
+                ...off,
+                fleet,
+                pending: { wind: { at: 1, on } },
+                thread: { hot: null, wind: was },
+            })[0].emoji;
+        expect(wind(true, null)).toBe('🥚');
+        expect(wind(false, 'asked')).toBe('🐦‍🔥');
     });
 
     test('a press waiting on the stash shows its new state until the stash answers', () => {

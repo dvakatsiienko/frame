@@ -104,19 +104,29 @@ export function withPress(text, line, now) {
 const clock = (ms) =>
     typeof ms === 'number' ? new Date(ms).toTimeString().slice(0, 5) : null;
 
-/** @param {string} what @param {boolean} isOn @param {number | null | undefined} since */
-const stateTip = (what, isOn, since) =>
-    isOn
-        ? `${what}: on${clock(since) ? ` since ${clock(since)}` : ''}. Press to turn it off.`
-        : `${what}: off. Press to turn it on.`;
-
-const STASH_DOOR =
-    "waits on this thread's state file from x-mod-stash (FRM-568)";
+// the cc band's emoji per wind state (x-mod-stash `WIND_EMOJI`, register.tsx), so both bands draw one lifecycle; no
+// wind draws the bird
+/** @type {Record<string, string>} */
+const WIND_EMOJI = {
+    asked: '🥚',
+    cancelled: '↩️',
+    refreshing: '🌀',
+    refused: '🛑',
+    writing: '✍️',
+};
+/** @type {Record<string, string>} */
+const WIND_SAY = {
+    asked: 'asked',
+    cancelled: 'cancelled',
+    refreshing: 'compacting',
+    refused: 'refused',
+    writing: 'writing its handoff',
+};
 
 /**
  * the row right of «wait», in his order (his crop, 20:59; board last, 21:02): only a button whose press herdr can prove
- * is live; each draws as its emoji alone, its word leading the tooltip. wind, hot, waker and AFK read on from what the
- * stash wrote; a press it has not answered yet shows the state it asked for
+ * is live; each draws as its emoji alone, its tooltip its name and no press explanation (dima, 23:08). wind, hot, waker
+ * and AFK read on from what the stash wrote; a press it has not answered yet shows the state it asked for
  * @param {{ isDeckShown: boolean, override: Override, thread?: ThreadState | null, fleet?: FleetState | null, pending?: Pending }} state
  * @returns {BandButton[]}
  */
@@ -127,54 +137,53 @@ export function bandButtons({
     fleet = null,
     pending = {},
 }) {
-    const wind = thread?.wind ?? null;
-    /** @type {Record<PressKey, { isLive: boolean, isOn: boolean, since?: number | null, what: string }>} */
+    const asked = pending.wind;
+    const wind = asked ? (asked.on ? 'asked' : null) : (thread?.wind ?? null);
+    const hotSince = clock(thread?.hot?.since);
+    /** @type {Record<PressKey, { isLive: boolean, isOn: boolean, tip: string }>} */
     const four = {
         afk: {
             isLive: Boolean(fleet),
             isOn: fleet?.afk?.on === true,
-            since: fleet?.afk?.at,
-            what: 'AFK, every thread',
+            tip: 'afk',
         },
         hot: {
             isLive: Boolean(thread),
             isOn: Boolean(thread?.hot),
-            since: thread?.hot?.since,
-            what: 'keep hot',
+            tip:
+                thread?.hot && hotSince
+                    ? `keep hot: on since ${hotSince}`
+                    : 'keep hot',
         },
         waker: {
             isLive: Boolean(fleet),
             isOn: fleet?.waker?.on === true,
-            since: fleet?.waker?.at,
-            what: 'the waker',
+            tip: 'waker',
         },
         wind: {
             isLive: Boolean(thread),
             isOn: wind === 'asked' || wind === 'writing',
-            what: `second wind${wind === 'writing' ? ' (writing its handoff)' : ''}`,
+            tip: WIND_SAY[wind]
+                ? `second wind: ${WIND_SAY[wind]}`
+                : 'second wind',
         },
     };
     /** @param {PressKey} key @param {string} emoji @param {string} word */
     const pressable = (key, emoji, word) => {
         const b = four[key];
-        const asked = pending[key];
-        const isOn = asked ? asked.on : b.isOn;
+        const press = pending[key];
         return {
             emoji,
             isLive: b.isLive,
-            isOn,
-            isPending: Boolean(asked),
+            isOn: press ? press.on : b.isOn,
+            isPending: Boolean(press),
             key,
-            tip: !b.isLive
-                ? `${b.what}: ${STASH_DOOR}`
-                : asked
-                  ? `${b.what}: sent, the thread takes it at its next poll`
-                  : stateTip(b.what, isOn, b.since),
+            tip: press && key === 'hot' ? 'keep hot' : b.tip,
             word,
         };
     };
     return [
-        pressable('wind', '🐦‍🔥', 'wind'),
+        pressable('wind', WIND_EMOJI[wind] ?? '🐦‍🔥', 'wind'),
         pressable('hot', '🔥', 'hot'),
         pressable('waker', '⏰', 'waker'),
         pressable('afk', '💨', 'AFK'),
@@ -182,13 +191,13 @@ export function bandButtons({
             emoji: '🔓',
             isOn: override.isOn,
             key: 'override',
-            tip: `${override.isOn ? `operator override on since ${override.since}` : 'operator override off'}; its press waits on the guard reading a herdr press (the mods codie's proof row)`,
+            tip: 'operator override',
             word: 'override',
         },
         {
             emoji: '🎛️',
             key: 'settings',
-            tip: 'settings: waits on the settings view',
+            tip: 'settings',
             word: 'settings',
         },
         {
@@ -196,10 +205,8 @@ export function bandButtons({
             isLive: true,
             isOn: isDeckShown,
             key: 'board',
-            tip: isDeckShown
-                ? 'board: shown. Press to hide the deck.'
-                : 'board: hidden. Press to show the deck.',
-            word: 'board',
+            tip: 'deck',
+            word: 'deck',
         },
     ].map((b) => ({ isLive: false, isOn: false, isPending: false, ...b }));
 }
