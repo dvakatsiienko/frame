@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T12:56:00Z'
+updated_date: '2026-11-10T13:29:00Z'
 labels:
   - m
   - clio-main
@@ -1072,4 +1072,38 @@ PK-363:W319 (2026-11-10 14:54, dima) you second-wound right after boot, so some 
 PK-363:W320 (2026-11-10 14:55, dima) goal: ship a solid herder for me. Identify and set boundaries across cc mods, cli and herder; re-stabilize the cli and mods scopes so all three milestones (mods, cli, herder) move; know which area is best at what.
 
 refold of W210 (wishkeeper 14:57, his inbox line «where better to have, in herder or mods, cli? where?»): the question is where each thing goes across herder, mods and the cli, not the cli alone; W243's first sentence is his question («claude artifacts not working in herder?»), not a statement; W275 («the c desktop app has this») opens the undo-send lines W276–W279, not the ctx line W274; W185 and W188 read «comms and actions model», «fleet flows operational models»
+
+PK-363:W321 (2026-11-10 15:01, dima) herdr restarts are safe: restarts are one of the most visible and important perks of herdr to know. Only the theme switch is destructive right now (probably a herdr bug).
+
+PK-363:W322 (2026-11-10 15:05, dima) consult the mods codie and the herdr codie on any question that helps set the boundary between native cc mods and herdr.
+
+PK-363:W323 (2026-11-10 15:05, dima) once the mods scope is clearly worth building and clearly belongs to the cc mods area: reshape the mods scope and send a spec to the mods lane so it runs.
+
+PK-363:W324 (2026-11-10 14:59, dima) one grill, not two: the boundary and «what herdr is for us» get settled together with him.
+
+PK-363:W325 (2026-11-10 14:59, dima) use the herdr codie for consultations (explore, describe herdr capabilities); start a mods lane codie for exploration and consultation at least.
+
+PK-363:W326 (2026-11-10 14:59, dima) look into cli yourself or ask someone.
+
+PK-363:W327 (2026-11-10 14:59, dima) properly defined, precise boundaries across cli, mods and herdr, so the right stuff gets built in the right places.
+
+PK-363:W328 (2026-11-10 15:19, dima) q2: he sees the security intent and thinks security is good to keep in mind, but good UX comes first. Ticks give good UX for communication. He dislikes the tick-in-the-pane feature and wants the ability to tick for everyone from everywhere in the pane.
+
+PK-363:W329 (2026-11-10 15:19, dima) q5: no cli lane now. Main priority is the herder lane; mods lane is secondary for now because it complements herder; cli lane is not urgent since most urgent wants there are implemented, and he has no plans to start a cli lane.
+
+PK-363:W330 (2026-11-10 15:19, dima) stabilize the herder/mods boundary and the cli lane scope first.
+
+PK-363:W331 (2026-11-10 15:19, dima) ❓ he shapes «one reader per rule» as a cli chunk and brings it for sign. He asks: what is one reader per rule?
+
+PK-363:W332 (2026-11-10 15:24, dima) one reader per rule: good move. How to have it? Does he want a cli lane, or just memory edits? ❓
+
+PK-363:W333 (2026-11-10 15:24, dima) if a cli lane is needed: how do we know the planned cli scope is stabilized against herder, and does cli have anything easier or better to have in herder? ❓
+
+PK-363:W334 (2026-11-10 15:24, dima) proceed with next step.
+
+PK-363:W335 (2026-11-10 15:24, dima) sign FRM-519.
+
+PK-363:W336 (2026-11-10 15:24, dima) i cannot tick.
+
+PK-363:W337 (2026-11-10 15:28, dima) FRM-387 (the x stats board) and FRM-360 (a frame around x screens) are exceptions to herdr-only: he wanted pretty stats specifically in the cli.
 <!-- SECTION:NOTES:END -->
