@@ -105,6 +105,23 @@ async function sessions(store) {
         .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+// a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
+/** @param {string} key */
+function keptSteer(key) {
+    try {
+        return localStorage.getItem(`steer:${key}`) ?? '';
+    } catch {
+        return '';
+    }
+}
+/** @param {string} key @param {string} text */
+function keepSteer(key, text) {
+    try {
+        if (text) localStorage.setItem(`steer:${key}`, text);
+        else localStorage.removeItem(`steer:${key}`);
+    } catch {}
+}
+
 /** @type {Record<string, string>} */
 const STATE = {
     blocked: 'blocked',
@@ -237,7 +254,10 @@ export default class FleetBoard extends View {
             }
             for (const key of this.steers.keys()) {
                 const ask = askOf(key);
-                if (!ask || ask.mark) this.steers.delete(key);
+                if (!ask || ask.mark) {
+                    this.steers.delete(key);
+                    keepSteer(key, '');
+                }
             }
             for (const s of this.rows)
                 for (const ask of s.asks) {
@@ -246,10 +266,12 @@ export default class FleetBoard extends View {
                         // herdr documents InputState.new for init or a handler; a refusal here costs the box, never
                         // the reload that redraws the whole board
                         try {
-                            this.steers.set(
-                                key,
-                                InputState.new({ placeholder: 'steer…' }),
-                            );
+                            const box = InputState.new({
+                                placeholder: 'steer…',
+                                value: keptSteer(key),
+                            });
+                            box.on('change', () => keepSteer(key, box.value()));
+                            this.steers.set(key, box);
                         } catch (err) {
                             this.pressError = `steer box not made: ${err instanceof Error ? err.message : err}`;
                         }
@@ -390,6 +412,7 @@ export default class FleetBoard extends View {
                 s.taken,
             );
             this.steers.delete(key);
+            keepSteer(key, '');
         } catch (err) {
             this.sent.delete(key);
             this.pressError = `${ask.id} not sent: ${err instanceof Error ? err.message : err}`;
