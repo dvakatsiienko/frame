@@ -356,14 +356,21 @@ export default class FleetBoard extends View {
                             .tooltip(s.name)
                             .child(s.name),
                     )
-                    .when(Boolean(model), (el) =>
-                        el.child(
-                            div()
-                                .flex_none()
-                                .text_size(SIZE.secondary)
-                                .text_color(t.muted)
-                                .child(model),
-                        ),
+                    // 🔥 before the model, one aligned column down the rows, as the old desktop list had it (dima,
+                    // 23:22): the model and the meter keep their width on a row that has neither
+                    .child(this.hotButton(t, s))
+                    .child(
+                        div()
+                            .w(64)
+                            .flex_none()
+                            .flex()
+                            .justify_end()
+                            .text_size(SIZE.secondary)
+                            .text_color(t.muted)
+                            .child(model ?? ''),
+                    )
+                    .when(s.context == null, (el) =>
+                        el.child(div().w(84).flex_none()),
                     )
                     .when(s.context != null, (el) =>
                         el
@@ -391,8 +398,7 @@ export default class FleetBoard extends View {
                                     )
                                     .child(`${s.context}%`),
                             ),
-                    )
-                    .child(this.hotButton(t, s)),
+                    ),
             )
             .when(isOpen, (el) =>
                 el.children(
