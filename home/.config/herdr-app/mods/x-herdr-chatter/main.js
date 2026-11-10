@@ -45,6 +45,7 @@ import { SEATS_KEY, bandOf } from './band.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import * as ask from './question.js';
+import { SYSTEM_MODES, cleanTyped, systemLine } from './system.js';
 
 const CLAUDE = `${home()}/.claude`;
 // The chat's look, shared by every copy and kept across restarts; the ⚙ popup changes it.
@@ -64,6 +65,7 @@ const LOOK_DEFAULT = {
     replies: 'open',
     size: 13,
     space: 'normal',
+    system: 'fold',
     tools: 'show',
     width: 'full',
 };
@@ -2024,6 +2026,12 @@ export default class ClaudeChat extends View {
             )
                 this.learnSkills(d.attachment.content);
             if (d.isMeta || d.isCompactSummary) continue;
+            // a plugin's message, a task notice, a synthetic reply: drawn as the settings' «System lines» say
+            const system = systemLine(d);
+            if (system) {
+                into.items.push({ id: d.uuid, kind: 'system', ...system });
+                continue;
+            }
             const content = d.message?.content;
             if (d.type === 'user') {
                 // The reply before this message: a fork "before this message" resumes up to it.
@@ -2091,9 +2099,7 @@ export default class ClaudeChat extends View {
 
     // What the person typed, or what Claude Code put in their turn (slash commands, ! commands).
     said(raw, into = this, before = undefined) {
-        const text = raw
-            .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, '')
-            .trim();
+        const text = cleanTyped(raw);
         if (!text || text.startsWith('<local-command-caveat>')) return;
         const command = tag(text, 'command-name');
         if (command)
@@ -2690,6 +2696,7 @@ export default class ClaudeChat extends View {
                         ),
                 );
         }
+        if (item.kind === 'system') return this.systemRow(t, item, i);
         if (item.kind === 'note') {
             return div()
                 .w_full()
@@ -2711,6 +2718,51 @@ export default class ClaudeChat extends View {
         if (AGENT_TOOLS.has(item.name)) return this.subCard(t, item, i);
         if (item.name === 'AskUserQuestion') return ask.asked(t, px, item);
         return this.tool(t, item, i);
+    }
+
+    // A line he never typed: folded to one dim line that opens to its whole text on a click, or shown whole
+    /** @param {any} t @param {{ id: string, label: string, text: string }} item @param {number | string} i */
+    systemRow(t, item, i) {
+        const open = chatLook().system === 'show' || this.open.has(item.id);
+        return v_flex()
+            .w_full()
+            .px(10)
+            .py(2)
+            .child(
+                div()
+                    .id(`system-${i}`)
+                    .w_full()
+                    .px(6)
+                    .py(2)
+                    .rounded(6)
+                    .text_size(px(12))
+                    .text_color(t.muted)
+                    .truncate()
+                    .cursor_pointer()
+                    .hover((s) => s.bg(t.hover))
+                    .tooltip(open ? 'fold it' : 'show the whole line')
+                    .on_click((_e, cx) => {
+                        this.open.has(item.id)
+                            ? this.open.delete(item.id)
+                            : this.open.add(item.id);
+                        cx.notify();
+                    })
+                    .child(`${open ? '▾' : '▸'} ${item.label}`),
+            )
+            .when(open && item.text !== item.label, (el) =>
+                el.child(
+                    div()
+                        .mx(6)
+                        .px(8)
+                        .py(6)
+                        .rounded(6)
+                        .bg(t.surface)
+                        .text_size(px(12))
+                        .text_color(t.muted)
+                        .font_family(/** @type {string} */ (this.mono()))
+                        .child(clip(item.text, 4000)),
+                ),
+            );
     }
 
     // A sub-agent: its type, task and model, and how far it got. Click opens its conversation.
@@ -3606,6 +3658,16 @@ export default class ClaudeChat extends View {
             )
             .child(
                 row(
+                    'System lines',
+                    pills(
+                        ...SYSTEM_MODES.map(([value, label]) =>
+                            seg('system', value, label),
+                        ),
+                    ),
+                ),
+            )
+            .child(
+                row(
                     'Earlier replies',
                     pills(
                         seg('replies', 'open', 'Open'),
@@ -4382,7 +4444,11 @@ export default class ClaudeChat extends View {
         // Questions a hook sent back are left out: Claude asks again at once.
         const all = (sub ? sub.items : this.items)
             .map((item, i) => [item, sub ? `${sub.name}-${i}` : i])
-            .filter(([item]) => !ask.rejected(item));
+            .filter(
+                ([item]) =>
+                    !ask.rejected(item) &&
+                    !(item.kind === 'system' && chatLook().system === 'hide'),
+            );
         const found = this.findings(all.filter(visible), sub);
         const current = this.findList[this.findAt]?.id;
         this.marks = found.size
@@ -4597,7 +4663,7 @@ export default class ClaudeChat extends View {
                             .tooltip('Chat settings')
                             .on_click(() =>
                                 openOverlay({
-                                    height: 520,
+                                    height: 556,
                                     kind: 'popup',
                                     mod: 'x-herdr-chatter',
                                     props: { settings: true },

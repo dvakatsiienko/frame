@@ -121,6 +121,12 @@ wish: PK-363
 
 ## chat view — x-herdr-chatter
 
+- ⬜ lines he never typed fold out of his way (FRM-562:W17)
+  - given a seat's transcript holds a plugin's message (an orbit tick), a task notice or a synthetic «No response requested.»
+  - then each draws as one dim line that opens to its whole text on a click, and «System lines: Folded / Hidden / Shown» in ⚙ picks the look, Folded by default
+  - and a message he pasted reads as his plain text, the `<pasted_content>` tags gone; a system-reminder with an id attribute goes too
+  - decision: told apart by the entry (its `origin.kind`, a `<synthetic>` model), never by guessing at text
+  - not checked: the after shot of his paste in clio's chat, which waits for his view on that tab
 - ✅ **bold** and *italic* in replies draw bold and italic
   - given the chat's font is Sans
   - then a reply's markdown bold reads bold (shot 1928)
