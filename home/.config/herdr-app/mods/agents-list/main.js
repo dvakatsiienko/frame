@@ -852,9 +852,11 @@ export default class Agents extends View {
                         .items_center()
                         .child(
                             div()
+                                .id(`ag-name-${a.address}`)
                                 .when(both, (el) => el.min_w(0))
-                                .when(!both, (el) => el.flex_none().max_w(200))
+                                .when(!both, (el) => el.min_w(0).max_w(200))
                                 .truncate()
+                                .tooltip(String(name))
                                 .text_color(idle ? t.muted : t.foreground)
                                 .child(name),
                         )
