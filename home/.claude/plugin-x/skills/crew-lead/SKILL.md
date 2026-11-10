@@ -29,12 +29,12 @@ read only when the job names it:
 the split is **disposable vs watchable**, never research vs code.
 
 - **subagent, fork, worktree agent** — disposable, inside the coordinator: `x:crew-subagent`.
-- **background session** (`claude --bg`) — real, survives a coordinator reset, takes `--model` and `--effort`, summoned with `--remote-control` so dima can join it. the default door for coding.
+- **background session** (`claude --bg`) — real, survives a coordinator reset, takes `--model` and `--effort`, summoned with `--remote-control` so dima can join it. a fallback door.
 - **the desktop thread** — a Code-tab session clio starts and closes herself; the member pings back by `SendMessage`. a steer clio relays is never dima's grant to the member, who confirms with him.
   - start: `mcp__ccd_session__start_session`, `initiation: user_asked`, `context: fresh`, the app dir as `cwd` (root when the job crosses apps), `use_worktree: false`, `model: claude-opus-5-5`, `effort: medium`, the registry name as title, a one-line pointer to the brief file as prompt — proven on FRM-427, 2026-10-28
   - close: `mcp__ccd_session_mgmt__archive_session` on dima's stop word, proven 2026-10-28 (FRM-427's thread); the app refuses it while the thread is pinned or open on dima's screen, then the archive is his click
 - **a herdr pane** — every lane member's first door (dima, 2026-11-10: «Herdr's native way is first»): `x:herdr` § start a member in a pane; the rest stay as fallbacks
-- **desktop threads are only the mods codie and clio's wings (fresh and fork); every other member is `--bg`** (dima, 2026-10-28): a `--bg` session draws no mods in the desktop app, and he watches mods live in codie's own tab
+- **desktop threads are only the mods codie and clio's wings (fresh and fork); any other fallback is `--bg`** (dima, 2026-10-28): a `--bg` session draws no mods in the desktop app, and he watches mods live in codie's own tab
   - a mods lane is a quick lane, on main in dima's checkout, never a worktree or a pr, so he sees each mod change live, unless he asks for a stack (it needs prs); its sixth sense is optional, his call per lane (dima, 2026-10-27)
 - **cloud** (`claude --cloud`) — codie on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the procedure is `x:crew-cloud`.
 - **`/fork [prompt]`** (dima's door, his side research too) copies this conversation into a new background session; reach for it when the job needs this thread's context and the brief would be longer than the context it replaces. the desktop's **side chat** (`/btw`) opened from clio's tab is a live fork, fork-guard's banner and all; opened from a fork's tab it is a read-only copy that fires no hooks and sends nothing, its keepers reaching the main by dima's paste (both proven 2026-10-27).
