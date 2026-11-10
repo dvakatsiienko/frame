@@ -51,6 +51,7 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
         return spawnSync('node', [script, ...args], {
             encoding: 'utf8',
             env: { ...process.env, ...env, PATH: `${bin}:${process.env.PATH}` },
+            timeout: 10_000,
         });
     };
     const file = 'hint.test.ts';
@@ -105,6 +106,7 @@ describe('a whole run of the script, a fake claude listing what it was handed', 
                 PATH: `${bin}:${process.env.PATH}`,
                 X_TEST: '1',
             },
+            timeout: 10_000,
         });
         expect([r.status, readFileSync(seen, 'utf8').trim()]).toEqual([0, '1']);
         expect(r.stdout).toContain('1 mods green, 1 pass, 0 fail');

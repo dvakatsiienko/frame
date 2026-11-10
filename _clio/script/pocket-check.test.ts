@@ -655,7 +655,7 @@ describe('the triage stamp (--triaged)', () => {
                 const result = spawnSync(
                     process.execPath,
                     [join(root, 'script', 'pocket-check.ts'), '--triaged'],
-                    { encoding: 'utf8', env: gitEnv() },
+                    { encoding: 'utf8', env: gitEnv(), timeout: 10_000 },
                 );
                 return {
                     result,
@@ -1113,7 +1113,12 @@ describe('auditAgainstHead', () => {
                         'commit.gpgsign=false',
                         ...args,
                     ],
-                    { cwd: repo, env: gitEnv(), stdio: 'ignore' },
+                    {
+                        cwd: repo,
+                        env: gitEnv(),
+                        stdio: 'ignore',
+                        timeout: 10_000,
+                    },
                 );
             git('init', '-q');
             git('add', '.');
@@ -1208,6 +1213,7 @@ describe('the closed-ticket net, with linear unreachable', () => {
                         ...gitEnv(),
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                     },
+                    timeout: 10_000,
                 },
             );
             expect(result.stderr).toContain('linear not read');

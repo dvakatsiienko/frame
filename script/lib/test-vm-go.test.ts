@@ -22,6 +22,7 @@ const indexRun = join(import.meta.dirname, '../index-run.sh');
 const downLine = 'vm-go-test down: ran on the mac';
 const realGo = spawnSync('sh', ['-c', 'command -v go'], {
     encoding: 'utf8',
+    timeout: 10_000,
 }).stdout.trim();
 
 // the world: a repo with a go module m/, whose test reads m/v.txt; fake limactl, ssh and go on PATH.
@@ -100,7 +101,12 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
     const code = join(dir, 'code');
     mkdirSync(join(code, 'm'), { recursive: true });
     const git = (...args: string[]) =>
-        spawnSync('git', args, { cwd: code, encoding: 'utf8', env: gitEnv() });
+        spawnSync('git', args, {
+            cwd: code,
+            encoding: 'utf8',
+            env: gitEnv(),
+            timeout: 10_000,
+        });
     git('init', '-q');
     writeFileSync(join(code, 'm/go.mod'), 'module m\n\ngo 1.21\n');
     writeFileSync(
@@ -129,7 +135,13 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
     };
     const cwd = join(code, 'm');
     const run = (args: string[], extra: NodeJS.ProcessEnv = {}) =>
-        spawnSync(copy, args, { cwd, encoding: 'utf8', env: env(extra) });
+        spawnSync(copy, args, {
+            cwd,
+            encoding: 'utf8',
+            env: env(extra),
+            // a real go test builds from a cold cache in the guest home: 10 s died on ci
+            timeout: 50_000,
+        });
     const runAsync = (args: string[], extra: NodeJS.ProcessEnv = {}) =>
         new Promise<string>((done) => {
             const child = spawn(copy, args, {
@@ -172,6 +184,7 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
             cwd: join(guest, 'runs.git'),
             encoding: 'utf8',
             env: gitEnv(),
+            timeout: 10_000,
         }).stdout.trim();
     // what a run left in the slot trees: a file outside the commit, ignored or not; the node_modules link is the slot's own
     const guestRuns = () =>
@@ -191,6 +204,7 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
                               cwd: join(guest, 'runs', slot),
                               encoding: 'utf8',
                               env: gitEnv(),
+                              timeout: 10_000,
                           },
                       )
                           .stdout.split('\n')
@@ -205,6 +219,7 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
             cwd: join(guest, 'runs.git'),
             encoding: 'utf8',
             env: { ...gitEnv(), GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z' },
+            timeout: 10_000,
         }).stdout.trim();
     // the runner as its doors reach it, so the budget row is the one a commit writes
     // door lane: x lane commit's go step, the budget argv cpuBudgetLog builds, in the module dir over the real index.
@@ -228,11 +243,17 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
                       cwd,
                       encoding: 'utf8',
                       env: env(extra),
+                      timeout: 10_000,
                   })
                 : spawnSync(
                       indexRun,
                       ['sh', '-c', 'cd m && exec "$@"', 'sh', ...argv],
-                      { cwd: code, encoding: 'utf8', env: env(extra) },
+                      {
+                          cwd: code,
+                          encoding: 'utf8',
+                          env: env(extra),
+                          timeout: 10_000,
+                      },
                   );
         const log = join(dir, 'state/test-cpu-budget.log');
         const rows = existsSync(log)
@@ -354,6 +375,7 @@ describe('the vm leg', () => {
             spawnSync('git', ['add', 'm/v.txt'], {
                 cwd: code,
                 env: { ...gitEnv(), GIT_INDEX_FILE: index },
+                timeout: 10_000,
             });
             return index;
         };
@@ -506,6 +528,7 @@ test('a failing test in the vm exits non-zero and prints its name as go test doe
         cwd: join(code, 'm'),
         encoding: 'utf8',
         env: { ...process.env, GOFLAGS: '-buildvcs=false' },
+        timeout: 50_000,
     });
 
     const got = run(suite);

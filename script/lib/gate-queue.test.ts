@@ -47,6 +47,7 @@ function queue(
     return spawnSync(script, args, {
         encoding: 'utf8',
         env: { ...queueEnv(state, wait), ...extra },
+        timeout: 10_000,
     });
 }
 
@@ -59,6 +60,7 @@ function hold(state: string, wait?: string, code = '0') {
         encoding: 'utf8',
         env: queueEnv(state, wait),
         input: `${code}\n`,
+        timeout: 10_000,
     });
 }
 
@@ -82,6 +84,7 @@ function plantHolder(turn: string, pid: string, since: string) {
 const liveSince = () =>
     spawnSync('sh', ['-c', `ps -o lstart= -p ${process.pid}`], {
         encoding: 'utf8',
+        timeout: 10_000,
     }).stdout.trimEnd();
 
 describe('gate-queue, no flag: no turn', () => {
@@ -105,6 +108,7 @@ describe('gate-queue, no flag: no turn', () => {
                 ...queueEnv(state, '1'),
                 PATH: `${stub}:${process.env.PATH}`,
             },
+            timeout: 10_000,
         });
         expect(got.status).toBe(9);
         expect(got.stderr).toContain('no turn');
@@ -176,6 +180,7 @@ describe('gate-queue --hold: the turn x takes', () => {
             encoding: 'utf8',
             env: queueEnv(state),
             input: '',
+            timeout: 10_000,
         });
         expect(got.stdout.trim()).toBe('turn');
         expect(got.status).toBe(1);

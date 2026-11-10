@@ -20,7 +20,7 @@ const env = gitEnv();
 function fixture(branch = 'worktree-w1') {
     const repo = mkdtempSync(join(tmpdir(), 'seed-'));
     const git = (...args: string[]) =>
-        execFileSync('git', ['-C', repo, ...args], { env, stdio: 'ignore' });
+        execFileSync('git', ['-C', repo, ...args], { timeout: 10_000,  env, stdio: 'ignore' });
     git('init', '-q');
     writeFileSync(join(repo, '.gitignore'), '.claude-plugin/types/\n');
     git('add', '.gitignore');
@@ -47,7 +47,7 @@ function fixture(branch = 'worktree-w1') {
 
 it("copies each mod's generated types into a fresh worktree", () => {
     const { tree } = fixture();
-    execFileSync('sh', [HOOK], {
+    execFileSync('sh', [HOOK], { timeout: 10_000, 
         env,
         input: JSON.stringify({ tool_response: { worktreePath: tree } }),
     });
@@ -56,12 +56,12 @@ it("copies each mod's generated types into a fresh worktree", () => {
 });
 
 const seed = (tree: string) =>
-    execFileSync('sh', [HOOK], {
+    execFileSync('sh', [HOOK], { timeout: 10_000, 
         env,
         input: JSON.stringify({ tool_response: { worktreePath: tree } }),
     });
 const branchOf = (tree: string) =>
-    execFileSync('git', ['-C', tree, 'symbolic-ref', '--short', 'HEAD'], {
+    execFileSync('git', ['-C', tree, 'symbolic-ref', '--short', 'HEAD'], { timeout: 10_000, 
         encoding: 'utf8',
         env,
     }).trim();

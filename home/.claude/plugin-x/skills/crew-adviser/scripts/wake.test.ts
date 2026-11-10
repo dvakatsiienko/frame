@@ -122,6 +122,7 @@ console.log(JSON.stringify([s.offsets, s.lastWakeAt]));`;
         {
             encoding: 'utf8',
             env: { ...process.env, CROW_STATE_DIR: state },
+            timeout: 10_000,
         },
     );
     expect(JSON.parse(child.stdout)).toEqual([

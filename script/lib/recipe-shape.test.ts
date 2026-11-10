@@ -427,7 +427,7 @@ test('no live file names a recipe by its old name', () => {
             '.',
             ...history.map((dir) => `:!${dir}`),
         ],
-        { cwd: root, encoding: 'utf8', env: gitEnv() },
+        { cwd: root, encoding: 'utf8', env: gitEnv(), timeout: 10_000 },
     ).stdout.trim();
     expect(hits, 'old recipe names in live files').toBe('');
 });

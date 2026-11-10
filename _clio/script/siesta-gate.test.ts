@@ -38,7 +38,11 @@ function fixtureHome() {
     );
     const repo = join(home, 'frame');
     mkdirSync(repo);
-    spawnSync('git', ['init', '-q'], { cwd: repo, env: gitEnv() });
+    spawnSync('git', ['init', '-q'], {
+        cwd: repo,
+        env: gitEnv(),
+        timeout: 10_000,
+    });
     return home;
 }
 
@@ -52,7 +56,11 @@ function commit(
     const repo = join(home, 'frame');
     for (let i = 0; i < files; i++)
         writeFileSync(join(repo, `${agent}-${subject.length}-${i}.txt`), 'x');
-    spawnSync('git', ['add', '-A'], { cwd: repo, env: gitEnv() });
+    spawnSync('git', ['add', '-A'], {
+        cwd: repo,
+        env: gitEnv(),
+        timeout: 10_000,
+    });
     spawnSync(
         'git',
         [
@@ -68,6 +76,7 @@ function commit(
                 GIT_AUTHOR_DATE: at.toISOString(),
                 GIT_COMMITTER_DATE: at.toISOString(),
             },
+            timeout: 10_000,
         },
     );
 }
@@ -608,7 +617,12 @@ function run(home: string, args: string[], input = '') {
     return spawnSync(
         'node',
         [join(import.meta.dirname, 'siesta-gate.ts'), ...args],
-        { encoding: 'utf8', env: { ...gitEnv(), HOME: home }, input },
+        {
+            encoding: 'utf8',
+            env: { ...gitEnv(), HOME: home },
+            input,
+            timeout: 10_000,
+        },
     );
 }
 
@@ -1055,7 +1069,11 @@ describe('every clio on its own stamp', () => {
         commit(home, 1, 'dima');
         const repo = join(home, 'frame');
         const git = (...args: string[]) =>
-            spawnSync('git', args, { cwd: repo, env: gitEnv() });
+            spawnSync('git', args, {
+                cwd: repo,
+                env: gitEnv(),
+                timeout: 10_000,
+            });
         git('checkout', '-q', '-b', 'clio-wing-2');
         commit(home, 15, 'clio-wing-2');
         git('checkout', '-q', '-');
@@ -1081,6 +1099,7 @@ describe('every clio on its own stamp', () => {
                     CLAUDE_CODE_SESSION_ID: WING,
                     HOME: home,
                 },
+                timeout: 10_000,
             },
         );
         expect(out.stdout).toContain('last siesta: none');
@@ -1113,6 +1132,7 @@ describe('every clio on its own stamp', () => {
                     CLAUDE_CODE_SESSION_ID: 's-stranger',
                     HOME: home,
                 },
+                timeout: 10_000,
             },
         );
         expect(out.status).not.toBe(0);

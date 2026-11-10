@@ -69,7 +69,11 @@ test('the cli writes both logs, the trial file beside the script and clio’s un
             '0',
             'PK-1',
         ],
-        { encoding: 'utf8', env: { ...process.env, HOME: root } },
+        {
+            encoding: 'utf8',
+            env: { ...process.env, HOME: root },
+            timeout: 10_000,
+        },
     );
     expect(out.status).toBe(0);
     expect(
@@ -106,7 +110,11 @@ test('a multi-line note stays one row in both logs', () => {
             '0',
             'retro:\n1. first\tslip\n2. second',
         ],
-        { encoding: 'utf8', env: { ...process.env, HOME: root } },
+        {
+            encoding: 'utf8',
+            env: { ...process.env, HOME: root },
+            timeout: 10_000,
+        },
     );
     expect(
         readFileSync(

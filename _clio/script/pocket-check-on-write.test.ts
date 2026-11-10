@@ -25,7 +25,11 @@ copyFileSync(
     hook,
 );
 // a commit gate runs this test inside a git hook, whose GIT_DIR would point every git call at the real repo
-spawnSync('git', ['init', '-q'], { cwd: frame, env: gitEnv() });
+spawnSync('git', ['init', '-q'], {
+    cwd: frame,
+    env: gitEnv(),
+    timeout: 10_000,
+});
 const argvLog = join(fixtures, 'argv.txt');
 const commitStub = join(fixtures, 'commit-stub.sh');
 writeFileSync(
@@ -68,6 +72,7 @@ function run(
             POCKET_COMMIT_CMD: commit,
         },
         input: JSON.stringify(event),
+        timeout: 10_000,
     }).stdout.trim();
     return out
         ? (JSON.parse(out) as { decision: string; reason: string })

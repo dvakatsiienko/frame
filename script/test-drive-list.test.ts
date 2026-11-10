@@ -26,6 +26,7 @@ const gate = (command: string) =>
     execFileSync('node', [copy, '--spawn-hook'], {
         encoding: 'utf8',
         input: JSON.stringify({ tool_input: { command } }),
+        timeout: 10_000,
     });
 
 const brief = '"/x:crew-codie FRM-1 do the job"';

@@ -27,6 +27,7 @@ function session() {
             encoding: 'utf8',
             env: { ...process.env, CLAUDE_PROJECT_DIR: project, HOME: home },
             input: JSON.stringify({ cwd: project, session_id: id, ...event }),
+            timeout: 10_000,
         }).stdout;
     const attached = (
         tool_name: string,
@@ -86,6 +87,7 @@ function memberSession(project: string) {
                     tool_input,
                     tool_name,
                 }),
+                timeout: 10_000,
             },
         ).stdout;
         return out ? JSON.parse(out).hookSpecificOutput.additionalContext : '';

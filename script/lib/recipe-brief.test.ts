@@ -39,7 +39,7 @@ function build() {
     const run = spawnSync(
         'node',
         [path.join(root, 'script/recipe-brief.ts'), 'refresh-probe'],
-        { encoding: 'utf8' },
+        { encoding: 'utf8', timeout: 10_000 },
     );
     expect(run.stderr).toBe('');
     return readFileSync(
