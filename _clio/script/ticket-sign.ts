@@ -1,11 +1,10 @@
 // usage: node script/ticket-sign.ts <FRM-N|BYT-N> signed|re-signed|changed ['<what changed>']
-// stamps the body `x linear body <id>` fetched with its `## signed` line and hash, then prints the write. it never writes
+// pulls the body fresh (`x linear body <id> --json`), stamps it with its `## signed` line and hash, then prints the write. it never writes
 // linear itself: the write stays a visible `x linear body --set`, the call x-mod-guard's sign door reads for his tick
 
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
 
 const HEADING = '## signed';
 
@@ -38,7 +37,12 @@ function main([id, kind, what = ''] = process.argv.slice(2)) {
         );
         return 2;
     }
-    const file = join(homedir(), `.local/state/x/linear/bodies/${id}.md`);
+    const pull = JSON.parse(
+        execFileSync('x', ['linear', 'body', id, '--json'], {
+            encoding: 'utf8',
+        }),
+    ) as { data: { file: string } };
+    const file = pull.data.file;
     const today = new Date().toLocaleDateString('sv');
     writeFileSync(
         file,

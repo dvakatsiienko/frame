@@ -34,6 +34,8 @@ from a herdr seat, which has no `start_session` or `list_sessions`: `ListAgents`
 
 a wing's plan, seat, tree and branch carry its number and outlive the session, for the next wing of that number: `habit-shared-files` § the flyway.
 
+a new tree: `git -C ~/frame -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false worktree add -b clio-wing-<N> ~/frame/.claude/worktrees/clio-wing-<N> main`, then `x lane seed <tree>`.
+
 ## after it
 
 **`clio-wing-<N>` is the one wing label, on a pocket item and a linear ticket alike** (dima, 2026-11-06): on, the work is that wing's and the others leave it alone; a wing takes it off when it hands the work back, a ticket's at its close too; a closed item keeps it, as the groom check's record. a pocket item is born with `pocket-add --wing <N>`; a ticket takes `x linear set FRM-M --add-label clio-wing-<N>` at the first write. a wing lists its open ones at its start (`backlog task list --labels clio-wing-<N> -s open --plain`) and closes them on its fork branch; the boot lists a closed wing's for main, and a new wing taking that number takes what main has not. a wing lands its own `clio-wing-<N>` branch, the banner holds the steps (dima, 2026-11-06: «do it now and merge yourself»); clio merges what it leaves unlanded by the halt, never dropped (dima, 2026-10-29).
