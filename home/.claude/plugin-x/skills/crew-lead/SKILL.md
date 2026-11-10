@@ -33,7 +33,7 @@ the split is **disposable vs watchable**, never research vs code.
 - **the desktop thread** — a Code-tab session clio starts and closes herself; the member pings back by `SendMessage`. a steer clio relays is never dima's grant to the member, who confirms with him.
   - start: `mcp__ccd_session__start_session`, `initiation: user_asked`, `context: fresh`, the app dir as `cwd` (root when the job crosses apps), `use_worktree: false`, `model: claude-opus-5-5`, `effort: medium`, the registry name as title, a one-line pointer to the brief file as prompt — proven on FRM-427, 2026-10-28
   - close: `mcp__ccd_session_mgmt__archive_session` on dima's stop word, proven 2026-10-28 (FRM-427's thread); the app refuses it while the thread is pinned or open on dima's screen, then the archive is his click
-- **a herdr pane** — a herdr seat has no `start_session`: `x:herdr` § start a member in a pane
+- **a herdr pane** — every lane member's door in herdr (dima, 2026-11-10: «I want them in Herdr»): `x:herdr` § start a member in a pane; `--bg` gets no tab
 - **desktop threads are only the mods codie and clio's wings (fresh and fork); every other member is `--bg`** (dima, 2026-10-28): a `--bg` session draws no mods in the desktop app, and he watches mods live in codie's own tab
   - a mods lane is a quick lane, on main in dima's checkout, never a worktree or a pr, so he sees each mod change live, unless he asks for a stack (it needs prs); its sixth sense is optional, his call per lane (dima, 2026-10-27)
 - **cloud** (`claude --cloud`) — codie on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the procedure is `x:crew-cloud`.
