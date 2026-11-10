@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T20:57:00Z'
+updated_date: '2026-11-10T21:49:00Z'
 labels:
   - m
   - clio-main
@@ -1712,4 +1712,57 @@ PK-363:W738 (2026-11-10 22:47, dima) so you've completed the sweep and you're pa
 PK-363:W739 (2026-11-10 22:47, dima) can you review your whole sweep for integrity as a whole, because you were moving step by step and stuff drifted along the way? review everything you completed today again, fix all drifts, and take care of old tails.
 PK-363:W740 (2026-11-10 22:47, dima) also refresh your flyway if needed so you're clean and ready to be held at a good point, but let your lane finish the meaningful part that was planned for today.
 PK-363:W741 (2026-11-10 22:55, dima) FRM-414's body and sign, FRM-560 and FRM-570's shaping, the two closing words: now, not after the reset. the two steer grooms: do. do all your tails, i have space.
+
+PK-363:W758 (2026-11-10 23:03, dima): How to not forget this knowledge for the future when we evolve the Herdr? The agent cmd in Herdr or is there a better place? ❓
+PK-363:W759 (2026-11-10 23:08, dima): tell herder codie. buttons.
+PK-363:W760 (2026-11-10 23:08, dima): second wind: in cc native mods version it has lifecycle (emoji based, 🥚 containing egg, 🐣 etc) make it same way in herder.
+PK-363:W761 (2026-11-10 23:08, dima): all tooltips — remove explanations like «press to turn off|on» etc.
+PK-363:W762 (2026-11-10 23:08, dima): keep hot — «keep hot: on since 22:20» this shape. when off simply «keep hot».
+PK-363:W763 (2026-11-10 23:08, dima): waker tooltip: «waker» at both states on and off.
+PK-363:W764 (2026-11-10 23:08, dima): afk: «afk» in all states.
+PK-363:W765 (2026-11-10 23:08, dima): operator override — cut to «operator override».
+PK-363:W766 (2026-11-10 23:08, dima): settings: «settings».
+PK-363:W767 (2026-11-10 23:08, dima): board: «board».
+PK-363:W768 (2026-11-10 23:08, dima): also i thought we decided to rename «board» to «deck»? why board? is far right side with sessions and orbit is x-herdr-deck? if yes - rename button. ❓
+
+PK-363:W769 (2026-11-10 23:16, dima): tell codie rename folder too so not confused. name drift spreads.
+PK-363:W770 (2026-11-10 23:16, dima): can i have «keep hot» button in sessions (like in old c desktop app)? (only keep hot no need for sw) ❓
+PK-363:W771 (2026-11-10 23:16, dima): tooltips: good. approve.
+PK-363:W772 (2026-11-10 23:16, dima): tell where everyone at and whats left to merge and stop all lanes. pretty clear list pls im tired.
+PK-363:W773 (2026-11-10 23:16, dima): what useful stuff herder codie can do meanwhile? ❓
+PK-363:W774 (2026-11-10 23:16, dima): can these buttons move to the left and be a part of text box? ❓
+
+PK-363:W775 (2026-11-10 23:21, dima): print bullet list and fix your habit: never print me like this. it is an unreadable wall of text for me. i asked for clear to read.
+PK-363:W776 (2026-11-10 23:21, dima): how should i read this? ❓
+PK-363:W777 (2026-11-10 23:21, dima): how to test? ❓
+PK-363:W778 (2026-11-10 23:21, dima): chatter: ask codie if my ask about Copy-pasting from Chatter can be done now.
+PK-363:W779 (2026-11-10 23:21, dima): copy-paste from Chatter keeps the list format. if I select a bulleted or numbered list from Chatter and copy-paste it into a text box, the copy-pasted part should have the same listed format (bulleted or numbered, based on what I copied). Currently the list gets dropped when I copy-paste my text lines as plain text.
+PK-363:W780 (2026-11-10 23:21, dima): i cannot read this
+
+PK-363:W781 (2026-11-10 23:22, dima): keep hot in sessions: tell to move to the left like in SS
+
+PK-363:W782 (2026-11-10 23:26, dima): stop mods lane if they are fully done. and not needed anymore (you told it is still needed for a probe)? ❓
+PK-363:W783 (2026-11-10 23:26, dima): tell wing one to fully merge its cli lane once done, hunt all of its chores and tails.
+PK-363:W784 (2026-11-10 23:26, dima): once done — ask to hunt some not big tickets that it can solve, without a lane. 2 tickets. and propose them with a fix.
+
+PK-363:W785 (2026-11-10 23:26, dima): tell what to test in rex i am here
+
+PK-363:W786 (2026-11-10 23:39, dima): so mods lane can be stopped or more probes? ❓
+PK-363:W787 (2026-11-10 23:39, dima): am i needed for any tests? ❓
+
+PK-363:W788 (2026-11-10 23:42, dima): copypaste now preserved, confirmed.
+PK-363:W789 (2026-11-10 23:42, dima): 🔥 works. but when i disable it from threads list for you, the band state for 🔥 is not updated.
+PK-363:W790 (2026-11-10 23:42, dima): if mods lane is done stop it, keep herder codie for now
+
+PK-363:W791 (2026-11-10 23:44, dima): so how to stop mods lane? another lockin? ❓
+PK-363:W792 (2026-11-10 23:44, dima): place guard chunk as first to have in mods sequence.
+
+PK-363:W793 (2026-11-10 23:49, dima): Okay let's then prepare everything to halt but before halt we need to close some tails.
+PK-363:W794 (2026-11-10 23:49, dima): I want you to do a retro over today and analyze the biggest issues.
+PK-363:W795 (2026-11-10 23:49, dima): I think the biggest issue is when You and your wing died. The other biggest issue is the guard that doesn't allow doing stuff on ticks and summoning in the incorrect place. For example Wing 1 summoned its CLI lane, not in Herdr native way.
+PK-363:W796 (2026-11-10 23:49, dima): These are the biggest ones but in the inbox I've asked to trace the comms model and propose improvements and good ideas to fold into «tilde» Ticket to have a tilde build in a good way based on the weak spots that we can synthesize out of today's communication weak spots.
+PK-363:W797 (2026-11-10 23:49, dima): also — The actual Herdr. I worry about summonings because what I want the least is for you to summon everyone in the wrong way. I want you to summon everyone in Herdr's native way.
+PK-363:W798 (2026-11-10 23:49, dima): You need to go and look at all your habits and refresh them. Herdr is declared as our main place where we build and your habits should tell you correctly how to summon everyone using correct Herdr APIs. Next boot you boot correctly and can summon everyone in the right way because today there were a lot of occurrences of incorrect summons.
+PK-363:W799 (2026-11-10 23:49, dima): you can delegate this to wing 2, while doing a retro (you).
+PK-363:W800 (2026-11-10 23:49, dima): propose how to have that retro — what to ask retro subagent. first propose then i type `/retro`
 <!-- SECTION:NOTES:END -->

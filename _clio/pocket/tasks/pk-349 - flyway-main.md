@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-10T20:34:00Z'
+updated_date: '2026-11-10T21:51:00Z'
 labels:
   - s
   - clio-main
@@ -35,20 +35,22 @@ ordinal: 1000
 - [ ] #17 the chat re-grill, UNCONDITIONAL (wishkeeper 22:21): after the perf numbers, one short round, whatever the fps reads; it tries his must-haves on the draw path (a click inside a message, selection, an image, a terminal: PK-363:W683–W689), names shepherdr best parts (W697), answers W692 «verified» and W699–W701 with chat-perf-known-issues.md; every chat W-line PK-363:W668–W702 is cited or joins FRM-562 wish block first; `wish-cover.ts PK-363 --all <round>` exits 0 before it prints; also read herdr-core 0.1.20 notes before his update (W667)
 - [ ] #18 the «seat» → «thread» sweep also covers open linear bodies (FRM-567 done test, FRM-568 stories); and the seven-names clause on the mods order line is done: the folder is herdr-state
 - [ ] #19 the pocket is red on PK-363 and an append cannot clear it (22:35): W703 holds a joined emoji he typed (Backlog.md #949 breaks the board view), and W719 has a bare-id twin above its proper line (two prompts shared 22:30, my --no-wish covered both). clearing either means changing or removing a committed note line, one with his exact words: asked at the halt, never by me alone. everything is committed (80b61919); i edited both in place at 22:33, the lost-line check caught it, and the file is back to HEAD byte for byte (git diff HEAD: 0 lines out, 0 in)
-- [ ] #20 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #21 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #22 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
-- [ ] #23 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
-- [ ] #24 📅 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line — on: 2026-11-10
-- [ ] #25 📅 start crow and helga in herdr panes (PK-363:W119, W146–W148, W156): `crow:start opus --pane`, helga on CLIO_SIDECAR_PANE=1 (d6756fd9); prove crow's socket wake in harvest.log and one crow:stop, else fall back to --bg — on: 2026-11-10
-- [ ] #26 📅 the theme-switch probe, after tonight's halt, main clio alone, no other seat live (dima 18:11: «after we halt today we probe it. when no one else left. important!») — on: 2026-11-10
-- [ ] #27 📅 after the halt, before the theme probe: the layout-write probe from a Rex tab, ~/frame/.scratch/herdr-lane/probe-layout-write.sh, a throwaway tab focused by dima first (his o58 tick and «lets do with you after halt + theme probe», PK-363:W613) — on: 2026-11-10
-- [ ] #28 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #29 📅 FRM-495: read the round rule first live day (each round-lost row in reply-check.tsv: real or a false stop), then its close with the ask-guard — on: 2026-11-11
-- [ ] #30 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #31 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #32 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #33 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #20 after the halt, main alone: the fleet-board → x-herdr-deck switch, six steps in ~/frame/.scratch/herdr-lane/spec.md job 3 (branch codie/x-herdr-deck-rename) — waits for: the halt
+- [ ] #21 his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+- [ ] #22 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #23 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #24 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
+- [ ] #25 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
+- [ ] #26 📅 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line — on: 2026-11-10
+- [ ] #27 📅 start crow and helga in herdr panes (PK-363:W119, W146–W148, W156): `crow:start opus --pane`, helga on CLIO_SIDECAR_PANE=1 (d6756fd9); prove crow's socket wake in harvest.log and one crow:stop, else fall back to --bg — on: 2026-11-10
+- [ ] #28 📅 the theme-switch probe, after tonight's halt, main clio alone, no other seat live (dima 18:11: «after we halt today we probe it. when no one else left. important!») — on: 2026-11-10
+- [ ] #29 📅 after the halt, before the theme probe: the layout-write probe from a Rex tab, ~/frame/.scratch/herdr-lane/probe-layout-write.sh, a throwaway tab focused by dima first (his o58 tick and «lets do with you after halt + theme probe», PK-363:W613) — on: 2026-11-10
+- [ ] #30 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #31 📅 FRM-495: read the round rule first live day (each round-lost row in reply-check.tsv: real or a false stop), then its close with the ask-guard — on: 2026-11-11
+- [ ] #32 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #33 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #34 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #35 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -166,4 +168,6 @@ done 2026-11-10 21:33: FRM-495 (clio runs lean, his 21:12 go): the round rule th
 correction 21:45: the FRM-495 line ticked at 21:33 covers the four rules that landed (the round refusal, the buried round, the note-only reply, the plain verdict); the ? map was cut on dima's tick o77
 
 done 2026-11-10 22:22: the chat grill TODAY (dima 21:52, groomed into PK-363): the foundation first, how x-herdr-chatter draws, why it is slow, fix or borrow (shepherdr and others); two reads land in .scratch/herdr/chat-engine-ours.md and chat-engine-prior-art.md; then a grill round over FRM-562 with the facts, so tomorrow only executes (PK-363 open, FRM-562 Todo)
+
+done 2026-11-10 23:51: his click proves the deck 🔥 keep-hot button (PK-363:W770), and his look at the pickers inside the text box (W774) — waits for: dima (PK-363 open)
 <!-- SECTION:NOTES:END -->
