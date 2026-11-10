@@ -12,20 +12,25 @@ import {
     home,
     props,
     readTextFile,
+    setShared,
+    shared,
     theme,
     watchFolder,
     writeTextFile,
 } from 'herdr';
 
 import {
+    SEATS_BEAT_MS,
+    SEATS_KEY,
     asksOf,
     byName,
     currentSid,
     literalAngles,
+    nextSeats,
     phasesOf,
     runningPids,
     savePress,
-    unbold,
+    seatFacts,
 } from './orbit.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
@@ -190,6 +195,7 @@ export default class FleetBoard extends View {
         /** @type {number | null} */
         this.week = null;
         if (this.isSeat) cx.timer.every(1000, (cx) => this.follow(cx));
+        else cx.timer.every(SEATS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
         for (const folder of [
             SESSIONS,
@@ -202,10 +208,7 @@ export default class FleetBoard extends View {
                     if (
                         folder.endsWith('/shelf') &&
                         !changed.some(
-                            (p) =>
-                                p === LANES ||
-                                (this.isSeat && p === USAGE) ||
-                                p === folder,
+                            (p) => p === LANES || p === USAGE || p === folder,
                         )
                     )
                         continue;
@@ -220,15 +223,22 @@ export default class FleetBoard extends View {
         cx.spawn(async (cx) => {
             const store = (await json(STORE)) ?? {};
             const lanes = (await json(LANES))?.lanes ?? [];
-            if (this.isSeat)
-                this.week =
-                    (await json(USAGE))?.rate_limits?.seven_day
-                        ?.used_percentage ?? null;
+            this.week =
+                (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
+                null;
             this.rows = (await sessions(store)).sort(
                 (a, b) =>
                     (RANK[STATE[a.status]] ?? 2) -
                         (RANK[STATE[b.status]] ?? 2) || byName(a.name, b.name),
             );
+            if (!this.isSeat) {
+                const next = nextSeats(
+                    /** @type {any} */ (shared(SEATS_KEY)),
+                    seatFacts(this.rows, this.week),
+                    Date.now(),
+                );
+                if (next) setShared(SEATS_KEY, next);
+            }
             this.lanes = lanes.filter((/** @type {Lane} */ l) => !l.endedAt);
             // a press is done once the stash marked its ask or the ask left; one the session never took gives the
             // buttons back after SENT_MS, and a steer box goes with its ask's mark
@@ -658,29 +668,10 @@ export default class FleetBoard extends View {
     seatView(t) {
         const s = this.rows.find((r) => r.pid === this.seat.pid);
         const state = s ? (STATE[s.status] ?? s.status) : null;
-        const fact = (/** @type {string} */ label, /** @type {number} */ pct) =>
-            h_flex()
-                .flex_none()
-                .gap(6)
-                .items_center()
-                .tooltip(label)
-                .child(
-                    div()
-                        .text_size(SIZE.meta)
-                        .text_color(t.dim)
-                        .child(label.split(' ')[0]),
-                )
-                .child(bar(t, pct, 36, pct >= 80 ? t.blocked : t.dim))
-                .child(
-                    div()
-                        .w(32)
-                        .text_size(SIZE.meta)
-                        .text_color(pct >= 80 ? t.blocked : t.muted)
-                        .child(`${Math.round(pct)}%`),
-                );
         const asks = s?.asks ?? [];
         // the strip's height is its layout block's, fixed, so the transcript under it never moves: a long ask list
-        // scrolls inside it, and the head counts the asks
+        // scrolls inside it, and the head counts the asks; the seat's ctx, week and waiting-on line draw in the chat's
+        // text box, from the facts the deck copy publishes
         return v_flex()
             .id('seat-facts')
             .size_full()
@@ -708,38 +699,19 @@ export default class FleetBoard extends View {
                                       : t.idle,
                             ),
                     )
-                    .when(s?.context != null, (el) =>
-                        el.child(
-                            fact('ctx: how full its context is', s.context),
-                        ),
-                    )
-                    .when(this.week != null, (el) =>
-                        el.child(
-                            fact('week: the weekly usage spent', this.week),
-                        ),
-                    )
-                    .when(asks.length > 1, (el) =>
-                        el.child(
-                            div()
-                                .flex_none()
-                                .text_size(SIZE.meta)
-                                .text_color(t.foreground)
-                                .child(`🪐 ${asks.length} asks`),
-                        ),
-                    )
                     .child(
-                        line(t.muted, SIZE.meta)
-                            .id('seat-wait')
-                            .when(Boolean(s?.wait), (el) =>
-                                el.tooltip(unbold(s.wait)),
-                            )
-                            .child(
-                                s?.wait
-                                    ? `🔭 ${unbold(s.wait)}`
-                                    : s
-                                      ? ''
-                                      : 'no claude seat in this tab',
-                            ),
+                        line(
+                            asks.length ? t.foreground : t.muted,
+                            SIZE.meta,
+                        ).child(
+                            !s
+                                ? 'no claude seat in this tab'
+                                : asks.length > 1
+                                  ? `🪐 ${asks.length} asks`
+                                  : asks.length
+                                    ? '🪐 1 ask'
+                                    : '🪐 no open asks',
+                        ),
                     ),
             )
             .children(asks.map((ask, j) => this.ask(t, s, ask, 0, j)))

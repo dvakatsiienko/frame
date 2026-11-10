@@ -2,13 +2,16 @@ import { describe, expect, test } from 'vitest';
 
 import {
     type Ask,
+    SEATS_BEAT_MS,
     asksOf,
     byName,
     currentSid,
     literalAngles,
+    nextSeats,
     phasesOf,
     runningPids,
     savePress,
+    seatFacts,
     unbold,
     withPress,
 } from './orbit.js';
@@ -211,5 +214,73 @@ describe('seats sort by the words of their name', () => {
 
     test('a name with no badge sorts among them', () => {
         expect(['🦉 clio', 'bob'].sort(byName)).toEqual(['bob', '🦉 clio']);
+    });
+});
+
+describe('the deck publishes each seat its three facts', () => {
+    const row = (pid: number, status: string, wait: string | null) => ({
+        context: 40,
+        pid,
+        status,
+        wait,
+    });
+
+    test('each live seat gets its context, its waiting-on line and the week, keyed by pid', () => {
+        expect(seatFacts([row(7, 'idle', 'waiting on 🦉 clio')], 57)).toEqual({
+            '7': { context: 40, wait: 'waiting on 🦉 clio', week: 57 },
+        });
+    });
+
+    test('a bold name in the waiting-on line arrives plain', () => {
+        expect(
+            seatFacts([row(7, 'idle', 'waiting on **🦉 clio**')], 57)['7']
+                ?.wait,
+        ).toBe('waiting on 🦉 clio');
+    });
+
+    test('a seat mid-turn shows no waiting-on line, its last one is old', () => {
+        expect(
+            seatFacts([row(7, 'busy', 'waiting on 🦉 clio')], 57)['7']?.wait,
+        ).toBeNull();
+    });
+
+    test('a seat with no context read yet carries none, never a guess', () => {
+        expect(
+            seatFacts([{ ...row(7, 'idle', null), context: null }], null)['7'],
+        ).toEqual({
+            context: null,
+            wait: null,
+            week: null,
+        });
+    });
+
+    test('unchanged facts are not written again before the beat', () => {
+        const seats = seatFacts([row(7, 'idle', null)], 57);
+        expect(
+            nextSeats({ at: 1000, seats }, seats, 1000 + SEATS_BEAT_MS - 1),
+        ).toBeNull();
+    });
+
+    test('unchanged facts are written again at the beat, with a new time', () => {
+        const seats = seatFacts([row(7, 'idle', null)], 57);
+        expect(
+            nextSeats({ at: 1000, seats }, seats, 1000 + SEATS_BEAT_MS),
+        ).toEqual({
+            at: 1000 + SEATS_BEAT_MS,
+            seats,
+        });
+    });
+
+    test('a changed fact is written at once', () => {
+        const before = seatFacts([row(7, 'idle', null)], 57);
+        const after = seatFacts([row(7, 'idle', 'waiting on 🙋‍♂️ dima')], 57);
+        expect(nextSeats({ at: 1000, seats: before }, after, 1001)).toEqual({
+            at: 1001,
+            seats: after,
+        });
+    });
+
+    test('the first read is always written', () => {
+        expect(nextSeats(null, {}, 5)).toEqual({ at: 5, seats: {} });
     });
 });

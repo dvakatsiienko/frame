@@ -157,3 +157,50 @@ export async function savePress(io, path, press, taken) {
         }
     }
 }
+
+/** @typedef {{ context: number | null, wait: string | null, week: number | null }} SeatFacts */
+/** @typedef {{ at: number, seats: Record<string, SeatFacts> }} DeckSeats */
+
+// herdr's shared state, the one door the chat reads a seat's facts through (a mod imports nothing outside its folder)
+export const SEATS_KEY = 'x-herdr-deck.seats';
+// unchanged facts are published again this often, so a reader can tell a live deck from a stopped one
+export const SEATS_BEAT_MS = 60 * 1000;
+
+/**
+ * the three facts each live seat shows where dima types, keyed by pid; a seat mid-turn waits on nothing yet, so its
+ * last reply's waiting-on line is not shown; the line is drawn plain, so markdown's ** go
+ * @param {{ pid: number, status: string, context: number | null, wait: string | null }[]} rows
+ * @param {number | null} week
+ * @returns {Record<string, SeatFacts>}
+ */
+export function seatFacts(rows, week) {
+    /** @type {Record<string, SeatFacts>} */
+    const facts = {};
+    for (const row of [...rows].sort((a, b) => a.pid - b.pid))
+        facts[String(row.pid)] = {
+            context: typeof row.context === 'number' ? row.context : null,
+            wait:
+                row.status === 'busy' || row.status === 'working'
+                    ? null
+                    : row.wait
+                      ? unbold(row.wait)
+                      : null,
+            week,
+        };
+    return facts;
+}
+
+/**
+ * the value to publish, or null when the facts are the ones already out and the last beat is recent: setShared
+ * re-renders every mod, so an unchanged write is skipped
+ * @param {DeckSeats | null | undefined} prev
+ * @param {Record<string, SeatFacts>} seats
+ * @param {number} now
+ * @returns {DeckSeats | null}
+ */
+export function nextSeats(prev, seats, now) {
+    const same =
+        prev != null && JSON.stringify(prev.seats) === JSON.stringify(seats);
+    if (same && now - prev.at < SEATS_BEAT_MS) return null;
+    return { at: now, seats };
+}

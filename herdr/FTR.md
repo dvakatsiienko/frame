@@ -119,18 +119,23 @@ wish: PK-363
   - then the chat box's effort reads that value, past the default in settings
 - ⬜ the band and the asks in the chat view (FRM-561)
   - given a seat is selected in the Chat view
-  - then its context percent, its waiting-on line, the weekly usage and its open asks with their 🛎️ show without a flip to the Terminal view
+  - then its open asks with their 🛎️ show without a flip to the Terminal view; its context, waiting-on line and weekly usage draw in the chat's text box (FRM-565)
   - and the strip keeps one fixed height: a long ask list scrolls inside it, its head counts the asks, and the transcript below never moves
   - and a guarded ask shows there with no 🚦, which would flip his view: its tick waits for the one-click 🛎️
   - and it shows the seat that chat view shows, by the chat mod's own rule, so two views show their own seats
   - decision: the strip writes nothing but the ticks file and calls no `layout.*` command, since herdr saves those into his personal layout
   - decision: the seat comes from the chat mod's own rule, so when zoo's chat block names no terminal, both follow the shown tab together
   - decision: fleet-board draws it as a second copy in `view: seat`, since a herdr mod imports nothing outside its folder; it shows once `layouts/zoo.json` places that block (his ⚠️ tick)
-- 🧭 the band moves inside the chat's text box, as the desktop app's band had it ([FRM-565](https://linear.app/x-com/issue/FRM-565))
+- ⬜ the band sits right above the chat's text box, slice 1 ([FRM-565](https://linear.app/x-com/issue/FRM-565))
   - given a seat's tab is open in the Chat view
-  - then its box carries the seat's «waiting on» line, its buttons and its ctx meter, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
+  - then three rows above his box read its «waiting on» line, the weekly usage and its context, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
+  - and a seat mid-turn or waiting on nothing shows an empty waiting-on row, a long one is cut with … and whole in its tooltip, and the rows keep one height so nothing moves
+  - and facts the deck has not published for over 2 min 15 s draw dimmed
   - and the 5h line is off for now, back if he moves to the $100 plan (on $200 it is not shown)
-  - decision: the band's redesign, shaped with dima before a line is built; the strip's duplicate asks stay until the deck is proven (dima, 18:11)
+  - decision: the deck's mod reads the facts once and publishes them to herdr's shared state `x-herdr-deck.seats`, at once on a change and every 60 s; the chat reads only that key for its own seat
+  - decision: the strip's duplicate asks stay until the deck is proven (dima, 18:11)
+- 🧭 the band's buttons and its redesign, slice 2 (FRM-565)
+  - decision: shaped with dima before a line is built
 - 🧭 the strip shows the seat's phases when no ask is open
   - given the seat in the Chat view has no open ask
   - then the strip lists its phases where the asks would sit

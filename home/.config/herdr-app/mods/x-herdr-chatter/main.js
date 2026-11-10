@@ -41,6 +41,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import { SEATS_KEY, bandOf } from './band.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import * as ask from './question.js';
@@ -3935,6 +3936,110 @@ export default class ClaudeChat extends View {
             );
     }
 
+    // The seat's band where he types: what it waits on, its weekly usage and its context, from the facts the deck's
+    // mod publishes (`band.js`). Three rows of one height always, so nothing under or above it moves when a fact
+    // changes; a seat the deck has stopped reading draws dimmed, never as a live number.
+    band(t) {
+        const pid = this.where?.container ? null : this.where?.pid;
+        const b = bandOf(shared(SEATS_KEY), pid, Date.now());
+        const ink = b.isStale ? t.dim : t.muted;
+        const row = (id) =>
+            h_flex().id(id).h(px(18)).gap(8).items_center().min_w(0);
+        const label = (text) =>
+            div()
+                .w(px(52))
+                .flex_none()
+                .text_size(px(12))
+                .text_color(t.dim)
+                .child(text);
+        const meter = (id, name, tip, pct, warnAt) => {
+            const warn = pct != null && pct >= warnAt && !b.isStale;
+            return row(id)
+                .tooltip(
+                    pct == null
+                        ? `${tip}: not read yet`
+                        : `${tip}: ${Math.round(pct)}%`,
+                )
+                .child(label(name))
+                .child(
+                    div()
+                        .flex_1()
+                        .h(4)
+                        .rounded(2)
+                        .bg(t.border)
+                        .child(
+                            div()
+                                .w(
+                                    `${Math.max(0, Math.min(100, Math.round(pct ?? 0)))}%`,
+                                )
+                                .h(4)
+                                .rounded(2)
+                                .bg(
+                                    b.isStale
+                                        ? t.dim
+                                        : warn
+                                          ? t.blocked
+                                          : t.accent,
+                                ),
+                        ),
+                )
+                .child(
+                    div()
+                        .w(px(36))
+                        .flex_none()
+                        .flex()
+                        .justify_end()
+                        .text_size(px(12))
+                        .text_color(warn ? t.blocked : ink)
+                        .child(pct == null ? '—' : `${Math.round(pct)}%`),
+                );
+        };
+        return v_flex()
+            .id('seat-band')
+            .flex_none()
+            .px(10)
+            .py(4)
+            .rounded(8)
+            .bg(t.raised)
+            .when(b.isStale, (el) =>
+                el.tooltip(
+                    'the deck has not read this seat for over 2 minutes',
+                ),
+            )
+            .child(
+                row('band-wait')
+                    .when(Boolean(b.wait), (el) => el.tooltip(b.wait))
+                    .child(label('🔭 wait'))
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w(0)
+                            .truncate()
+                            .text_size(px(12))
+                            .text_color(ink)
+                            .child(b.wait ?? ''),
+                    ),
+            )
+            .child(
+                meter(
+                    'band-week',
+                    '🗓 week',
+                    'the weekly usage spent',
+                    b.week,
+                    80,
+                ),
+            )
+            .child(
+                meter(
+                    'band-ctx',
+                    '🧠 ctx',
+                    'how full its context is',
+                    b.context,
+                    80,
+                ),
+            );
+    }
+
     // Puts text into the box as a markdown quote, after what's there, and gives the box the keyboard.
     quote(text) {
         const quoted = text
@@ -4640,6 +4745,7 @@ export default class ClaudeChat extends View {
                         ),
                     )
                     .when(Boolean(menu), (el) => el.child(menu))
+                    .child(this.band(t))
                     // While the menu is open, ↑ ↓ Tab Esc are its keys (bound in init); ← → Home End close
                     // it (the caret would leave the word with no change event), and the next press moves.
                     // No Send button: Enter sends (the placeholder says so).
