@@ -18,7 +18,10 @@ type pull struct {
 	Size      int    `json:"size"`
 }
 
-var wishNumber = regexp.MustCompile(`W\d+$`)
+var (
+	wishNumber = regexp.MustCompile(`W\d+$`)
+	wishHome   = regexp.MustCompile(`(?:PK|FRM|BYT)-\d+`)
+)
 
 // a session's pull is its own: a peer's pull of the same ticket moves neither my record nor my file
 func pullKey(id string) string {
@@ -185,8 +188,8 @@ func bodyDamage(id, source, held, edit string, pulledSize int, shrink bool) *Fai
 			Msg:  fmt.Sprintf("%s holds %d bytes, under a fifth of the %d pulled; nothing was written", source, len(edit), pulledSize),
 			Next: set + " --shrink — only when the cut is meant"}
 	}
-	kept := wishNumbers(edit)
-	if lost := slices.DeleteFunc(wishNumbers(held), func(n string) bool { return slices.Contains(kept, n) }); len(lost) > 0 {
+	kept := wishIDs(id, edit)
+	if lost := slices.DeleteFunc(wishIDs(id, held), func(n string) bool { return slices.Contains(kept, n) }); len(lost) > 0 {
 		return &Fail{Refused: true,
 			Msg:  fmt.Sprintf("%s lost %s of %s's wish: a W-line is dima's words, reworded but never dropped; nothing was written", source, strings.Join(lost, ", "), id),
 			Next: "x linear body " + id + " --to " + source + ".theirs && diff " + source + " " + source + ".theirs"}
@@ -211,12 +214,15 @@ func bodyDamage(id, source, held, edit string, pulledSize int, shrink bool) *Fai
 		Next: "x linear read " + id}
 }
 
-func wishNumbers(body string) []string {
-	var numbers []string
+// a W-line's whole id, the wish it came from and its number: a body quotes other wishes beside its own, and two of
+// them share a number; a bare W-line is the ticket's own
+func wishIDs(id, body string) []string {
+	var ids []string
 	for _, line := range wishItem.FindAllString(body, -1) {
-		numbers = append(numbers, wishNumber.FindString(line))
+		home := cmp.Or(wishHome.FindString(line), id)
+		ids = append(ids, home+":"+wishNumber.FindString(line))
 	}
-	return numbers
+	return ids
 }
 
 // the first old line the new list does not hold in order, or -1

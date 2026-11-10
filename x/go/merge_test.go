@@ -26,7 +26,8 @@ func TestMergeMainRefusesOverStagedWorkBeforeItMerges(t *testing.T) {
 	head := gitT(t, clone, "rev-parse", "HEAD")
 	write(t, filepath.Join(clone, "mine.txt"), "staged, in no one's way\n")
 	write(t, filepath.Join(clone, "sub/other.txt"), "staged too\n")
-	gitT(t, clone, "add", "mine.txt", "sub/other.txt")
+	write(t, filepath.Join(clone, "two words.txt"), "a name a shell would split\n")
+	gitT(t, clone, "add", "mine.txt", "sub/other.txt", "two words.txt")
 
 	got := xIn(t, clone, nil, "lane", "merge-main")
 
@@ -35,7 +36,7 @@ func TestMergeMainRefusesOverStagedWorkBeforeItMerges(t *testing.T) {
 		t.Fatalf("exit %d, error %q, want 1 naming both staged files", got.code, said)
 	}
 	commit, again := strings.Index(got.next, "x lane commit"), strings.Index(got.next, "x lane merge-main")
-	if commit < 0 || again < commit || !strings.Contains(got.next, "mine.txt sub/other.txt") {
+	if commit < 0 || again < commit || !strings.Contains(got.next, "mine.txt sub/other.txt 'two words.txt',") {
 		t.Errorf("next %q, want the commit of the staged files, then merge-main again", got.next)
 	}
 	if now := gitT(t, clone, "rev-parse", "HEAD"); now != head || exists(filepath.Join(clone, "new.txt")) {

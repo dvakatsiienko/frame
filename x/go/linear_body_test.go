@@ -213,6 +213,35 @@ func TestBodySetRefusesAnEmptyFile(t *testing.T) {
 	}
 }
 
+// a body quotes other wishes beside its own: a W-line is its whole id, the home it came from and its number
+func TestBodySetTellsWLinesOfTwoWishesApart(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, pulled, edit string
+		lost               string
+	}{
+		{"the ticket's own W5 gone, another wish's W5 kept",
+			"## wish\n\n- PK-363:W5 (dima): one\n- FRM-384:W5 (dima): two\n", "## wish\n\n- PK-363:W5 (dima): one\n", "FRM-384:W5"},
+		{"another wish's W5 gone, the ticket's own kept",
+			"## wish\n\n- PK-363:W5 (dima): one\n- FRM-384:W5 (dima): two\n", "## wish\n\n- FRM-384:W5 (dima): two\n", "PK-363:W5"},
+		{"a bare W1 gone beside a homed W1",
+			"## wish\n\n* W1 (dima): the ticket's own\n* PK-9:W1 (dima): quoted\n", "## wish\n\n* PK-9:W1 (dima): quoted\n", "W1"},
+		{"a linked id and a plain one are the same line",
+			"## wish\n\n* [PK-9](https://x.test/PK-9):W1 (dima): a thing\n", "## wish\n\n* PK-9:W1 (dima): a thing\n", ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := liveBodyServer(t, c.pulled)
+			envelope, got := setAfterPull(t, server, c.edit, "--shrink")
+			said := fmt.Sprint(envelope["error"])
+			if refused := got.code == 1 && len(mutations(server)) == 0; refused != (c.lost != "") || !strings.Contains(said, c.lost) {
+				t.Errorf("exit %d, %d mutations, want refused %v naming %q: %s", got.code, len(mutations(server)), c.lost != "", c.lost, got.stdout)
+			}
+		})
+	}
+}
+
 func TestBodySetRefusesALostWLine(t *testing.T) {
 	t.Parallel()
 	const pulled = "## wish\n\n* FRM-1:W1 (2026-10-30, dima): a thing\n* FRM-1:W2 (2026-10-30, dima): another\n\n## decided\n\n* a call\n"

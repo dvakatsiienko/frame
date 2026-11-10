@@ -1174,8 +1174,6 @@ export function isThrowaway(c: Command, ctx: Context) {
 // x-mod-holds' files are checked against it; a path held in a variable is not read
 const APPEND = /^\d*&?>>$/;
 const APPEND_JOINED = /^\d*&?>>([^&].*)$/;
-// where `x [flags] as <member> [flags] [--]` hands over its command, or -1: x takes flags before its family, and the
-// member's own flags sit before or after it
 // where the command of `x gate run [--] <command…>` starts among x's words, -1 for any other x call
 function xGateRunCommand(words: string[]) {
     // a word behind a flag may be that flag's value, so the family is the first `gate` with only such words ahead of it
@@ -1197,6 +1195,8 @@ function xGateRunCommand(words: string[]) {
     }
     return -1;
 }
+// where `x [flags] as <member> [flags] [--]` hands over its command, or -1: x takes flags before its family, and the
+// member's own flags sit before or after it
 function xAsCommand(words: string[]) {
     const family = words.findIndex(
         (w, i) =>

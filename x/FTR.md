@@ -547,7 +547,7 @@
   - given a ticket pulled at N bytes
   - when `--set` gets a file under N/5, then it refuses naming both sizes and writes nothing; `--shrink` lets it through; N stays the largest size since the pull, so a later set is held against it too
   - given an empty file, or one of blank lines only, then it refuses, with `--shrink` too
-  - given a file missing a W-line the body held, then it refuses naming the lost numbers; a reworded or added W-line passes
+  - given a file missing a W-line the body held, then it refuses naming the lost ids; a W-line is its wish and its number (`PK-363:W5` and `FRM-384:W5` are two, a bare `W5` is the ticket's own); a reworded or added W-line passes
   - given a body with a `## signed` block, when the file's block lost or changed an old line, or gained none, then it refuses and names `ticket-sign.ts changed`; with one new line it passes
   - given two sessions that pulled the same ticket, when one sets and the other then sets its older file, then the second refuses: each session's pull has its own record and its own file
   - decision: a signed ticket is read from the body's `## signed` block, not the `signed` label, which leaves at dispatch (FRM-384)

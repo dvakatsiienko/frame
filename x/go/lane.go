@@ -661,7 +661,11 @@ func mergeMain(r *Run, _ []string, _ Flags) (any, error) {
 			Next: "resolve them, then x lane commit <msg-file> -- <resolved paths>", Log: files}
 	}
 	if staged, _ := git("diff", "--cached", "--name-only"); staged.out != "" {
-		files := strings.Join(strings.Split(staged.out, "\n"), " ")
+		var quoted []string
+		for path := range strings.SplitSeq(staged.out, "\n") {
+			quoted = append(quoted, quote(path))
+		}
+		files := strings.Join(quoted, " ")
 		return nil, &Fail{Refused: true, Msg: "staged work blocks the merge: " + strings.ReplaceAll(staged.out, "\n", ", ") + "; nothing was fetched or merged",
 			Next: "x lane commit <msg-file> -- " + files + ", then x lane merge-main again"}
 	}
