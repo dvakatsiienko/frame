@@ -16,7 +16,7 @@ the home of game side chores: what vm tuning, traces and route tests found. ever
 
 ## the rig, 2026-11-05
 
-M4 Pro, 14C CPU, 20C GPU, 48 GB, macOS 27.2; AW3225QF, 3840x2160 at 120 Hz. Warp, Claude Desktop and Chrome stay open while he plays, so every test runs with them open.
+M4 Pro, 14C CPU, 20C GPU, 48 GB, macOS 27.2; AW3225QF, 4K panel at «looks like 1920x1080», 120 Hz. Warp, Claude Desktop and Chrome stay open in play and every test.
 
 ## routes for windows games on this mac, read 2026-11-05
 
