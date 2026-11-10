@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T12:23:00Z'
+updated_date: '2026-11-10T12:25:00Z'
 labels:
   - m
   - clio-main
@@ -1036,4 +1036,6 @@ raw drop (2026-11-10 inbox, dima): 		- it should have some visual feedback that 
 raw drop (2026-11-10 inbox, dima): - splipstream: all slipstream activity should have visual feedback effect, so i know slipstream works. it should be pretty, and ideally consisten across slipstream apperances.
 
 raw drop (2026-11-10 inbox, dima): - the band. i want one redesigned from scratch. who can design a band? can designer draw? what is needed for you to know how to design it properly? my main knobs and ctx meter. breather maybe. but redesign fully. make it beautiful and pretty. compact enough, not cramped.
+
+PK-363:W305 (2026-11-10 inbox, dima) if herder supports theming, let's have support for it right away (restored: the prep kept only the question, crow 14:27)
 <!-- SECTION:NOTES:END -->
