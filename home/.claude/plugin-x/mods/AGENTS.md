@@ -27,7 +27,7 @@ the x marketplace lists x-mod-stash, the one worth sharing; the others stay loca
 
 - a new refusing or injecting hook ships warn-only until sixth sense says clean: mods load from main, so a commit reaches every session at its next turn end. in x-mod-guard a new rule joins `WARN_ONLY` in `hooks/register.ts` (the call runs, the model gets «would refuse», the event is kept as `warned`) and leaves it on the clean; `rule-mode:<rule>` = «enforce» in its store turns a listed rule on early, and nothing in the store can make a rule warn, since every session writes that store. the warn path is proven by `x verify red` listing a rule
 - exception: notes, spec, milestone, merge-hold, clean-stamp, operator-override rules refuse by signed spec; a loosening ships live
-- no guard locks dima out: a refusal ships with his door through it (tick, typed line or override), test-proven from its first commit
+- no guard locks dima out: a refusal ships with his tick through it, a typed word only the fallback, test-proven from its first commit
 - a parser's test row copies a real transcript line: a habit, nothing reds it
 - a probe's consuming hook (one that holds, swallows or rewrites a delivery) unloads the turn its proof lands: its folder leaves `--plugin-dir` and `~/.claude/dev-mods/`
 - a mod initialises on `session.start`, never `classic.SessionStart`: a hot reload fires only the first
