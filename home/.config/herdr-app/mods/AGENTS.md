@@ -13,8 +13,8 @@ read first, in order:
 dima's values are standing rules here (PRODUCT.md § the values quotes them). a chunk that breaks one is not done:
 
 - pretty and sharp, never clunky: a shot of every visible change goes to him, its absolute path in the reply
-- ux first: every state, input and edge he meets; a hotkey where an action repeats
-- a feature that has a choice gets its settings row; a preference never hides in code
+- ux first: every state, input and edge he meets; hotkeys welcome
+- a feature that has a choice gets its settings row, the essential knobs only, never an overload; a preference never hides in code
 - slipstream first wherever he talks to a seat, with visible feedback that it worked
 - cheap to change stays cheap: one mod per feature, plain JS, colours from `theme()`, no layer a newcomer must learn first
 - he lives in the Chat view: a thing he must see or click is drawn there, never only in a seat's Terminal view
