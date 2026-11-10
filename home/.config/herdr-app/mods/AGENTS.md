@@ -27,7 +27,8 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 ## the loop after every change
 
 - `herdr-app check <mod dir>`, then `herdr-app status`, then `herdr-app shot <png>` and look at the shot yourself
-- a change loads on a save, or on a herdr restart when it does not; a restart is safe for live seats and is his hand
+- build in a scratch copy of the mod and land it whole, in one write: a save into the live mods dir reloads his UI while he types, and he sees flicker and shifted tabs
+- a herdr restart loads it; the restart is safe for live seats and is his hand alone, since it can lose a prompt he is typing
 - commit through `x lane commit`, in the background
 
 ## never
