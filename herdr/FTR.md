@@ -32,6 +32,7 @@ wish: PK-363
   - given a seat has an open ask
   - when dima clicks 🛎️ tick
   - then the seat's next turn reads it as ticked from herdr, and the ask leaves the board
+  - decision: ⬜, not 🔎: nobody has his own word yet that a plain tick held
 - ⬜ replay with a steer
   - makes: one press line with the steer in the seat's ticks file
   - given a seat has an open ask
@@ -70,5 +71,8 @@ wish: PK-363
 - 🧭 the band and the asks in the chat view (FRM-561)
   - given a seat is selected in the Chat view
   - then its context percent, its waiting-on line, the weekly usage and its open asks with their 🛎️ show without a flip to the Terminal view
-  - and the strip grows with its asks and shrinks back, the transcript below it kept
+  - and the strip keeps one fixed height: a long ask list scrolls inside it, its head counts the asks, and the transcript below never moves
+  - and with no open ask, it shows the seat's phases
+  - and it shows the seat that chat view shows, by the chat mod's own rule, so two views show their own seats
+  - decision: the strip writes nothing but the ticks file and calls no `layout.*` command, since herdr saves those into his personal layout
   - decision: fleet-board draws it as a second copy in `view: seat`, since a herdr mod imports nothing outside its folder; it shows once `layouts/zoo.json` places that block (his ⚠️ tick)

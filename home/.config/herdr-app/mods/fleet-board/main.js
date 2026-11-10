@@ -192,7 +192,10 @@ export default class FleetBoard extends View {
                     if (
                         folder.endsWith('/shelf') &&
                         !changed.some(
-                            (p) => p === LANES || p === USAGE || p === folder,
+                            (p) =>
+                                p === LANES ||
+                                (this.isSeat && p === USAGE) ||
+                                p === folder,
                         )
                     )
                         continue;
@@ -207,9 +210,10 @@ export default class FleetBoard extends View {
         cx.spawn(async (cx) => {
             const store = (await json(STORE)) ?? {};
             const lanes = (await json(LANES))?.lanes ?? [];
-            this.week =
-                (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
-                null;
+            if (this.isSeat)
+                this.week =
+                    (await json(USAGE))?.rate_limits?.seven_day
+                        ?.used_percentage ?? null;
             this.rows = (await sessions(store)).sort(
                 (a, b) =>
                     (RANK[STATE[a.status]] ?? 2) -
@@ -673,13 +677,21 @@ export default class FleetBoard extends View {
             );
     }
 
-    // the seat the shown tab runs: a tab switch costs one hc read for its pid, the same key the board's rows carry
+    // the seat this copy's chat view shows, by claude-chat's own rule: its props' terminal, else the shown tab's focused
+    // agent, else the one it showed, else the tab's first; a change costs one hc read for its pid, the board rows' key
     /** @param {Context} cx */
     follow(cx) {
-        const tab = focused()?.tab;
+        const claude = agents().filter((a) => a.app === 'claude-code');
+        const f = focused();
+        const mine = props()?.terminal
+            ? claude.filter((a) => a.address === props().terminal)
+            : claude.filter((a) => a.tab === f?.tab);
         const address =
-            agents().find((a) => a.tab === tab && a.app === 'claude-code')
-                ?.address ?? null;
+            (
+                mine.find((a) => a.address === (f?.agent ?? f?.terminal)) ??
+                mine.find((a) => a.address === this.seat.address) ??
+                mine[0]
+            )?.address ?? null;
         if (address === this.seat.address) return;
         this.seat = { address, pid: null };
         cx.notify();
@@ -716,14 +728,17 @@ export default class FleetBoard extends View {
                         .text_color(pct >= 80 ? t.blocked : t.muted)
                         .child(`${Math.round(pct)}%`),
                 );
-        // a layout block has a fixed height, so the strip sizes its own block to what it holds: a new ask grows it
-        const content = v_flex()
+        const asks = s?.asks ?? [];
+        // the strip's height is its layout block's, fixed, so the transcript under it never moves: a long ask list
+        // scrolls inside it, and the head counts the asks
+        return v_flex()
             .id('seat-facts')
-            .w_full()
+            .size_full()
             .px(12)
             .py(6)
             .gap(4)
-            .on_size_change((size, cx) => this.fit(size.height, cx))
+            .overflow_y_scroll()
+            .bg(t.background)
             .child(
                 h_flex()
                     .h(20)
@@ -753,6 +768,15 @@ export default class FleetBoard extends View {
                             fact('week: the weekly usage spent', this.week),
                         ),
                     )
+                    .when(asks.length > 1, (el) =>
+                        el.child(
+                            div()
+                                .flex_none()
+                                .text_size(SIZE.meta)
+                                .text_color(t.foreground)
+                                .child(`🪐 ${asks.length} asks`),
+                        ),
+                    )
                     .child(
                         line(t.muted, SIZE.meta)
                             .id('seat-wait')
@@ -766,8 +790,18 @@ export default class FleetBoard extends View {
                             ),
                     ),
             )
-            .when(Boolean(s?.asks.length), (el) =>
-                el.children(s.asks.map((ask, j) => this.ask(t, s, ask, 0, j))),
+            .children(asks.map((ask, j) => this.ask(t, s, ask, 0, j)))
+            .when(Boolean(s) && !asks.length, (el) =>
+                el.children(
+                    s.phases.map((phase, j) =>
+                        prose(
+                            `seat-phase-${j}`,
+                            `🌔 ${phase}`,
+                            t.dim,
+                            SIZE.meta,
+                        ),
+                    ),
+                ),
             )
             .when(Boolean(this.pressError), (el) =>
                 el.child(
@@ -785,16 +819,6 @@ export default class FleetBoard extends View {
                         .child(`⏳ ${this.pressNote}`),
                 ),
             );
-        return div().size_full().bg(t.background).child(content);
-    }
-
-    // the block's id from the layout's props, `seat-facts` by default; a change under 2 px is left alone
-    /** @param {number} height @param {Context} _cx */
-    fit(height, _cx) {
-        const px = Math.ceil(height);
-        if (Math.abs(px - (this.fitted ?? 0)) < 2) return;
-        this.fitted = px;
-        run('layout.resize', { id: props()?.block ?? 'seat-facts', px });
     }
 
     render() {
