@@ -7,8 +7,9 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once.
 - **Chat view** — a seat drawn as a conversation by x-herdr-chatter; the view dima lives in
 - **Terminal view** — the same seat as its raw terminal, where cc's own band and board draw
 - **x-herdr-chatter** — our chat mod, the Chat view itself; copied from zoo's `claude-chat` (FRM-556)
-- **x-herdr-chatter-header** — the top row of the Chat view: the seat's name, search, settings and the Chat | Terminal switch; a region of x-herdr-chatter, not a mod
-- **x-herdr-terminal-header** — the top row of each terminal pane in the Terminal view; zoo's `my-pane` until it is taken over
+- **x-herdr-chatter-header** — the whole top row of a seat's pane, in the Chat view and the Terminal view alike: the seat's name and the switch; one row to the eye, drawn today by x-herdr-chatter in the Chat view and zoo's `my-pane` in the Terminal view
+- **x-herdr-chatter-header-tabs** — the Chat | Terminal switch inside that row
+- **x-herdr-terminal-header** — the head row of the tray (the bottom quick terminal), part of x-herdr-terminal
 - **fleet-board** — our board mod: every seat's row, their asks and the lanes' cards; a second copy draws the strip
 - **agents-list** — our agents list in the sidebar, each agent by its session name
 - **strip** — fleet-board's copy above the Chat view: the shown seat's context, waiting-on line and asks

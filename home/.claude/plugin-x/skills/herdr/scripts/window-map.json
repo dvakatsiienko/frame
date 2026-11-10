@@ -13,12 +13,6 @@
     "notShown": [
         {
             "kind": "zoo",
-            "name": "x-herdr-terminal-header",
-            "today": "my-pane",
-            "what": "each terminal pane's header (Terminal view)"
-        },
-        {
-            "kind": "zoo",
             "name": "x-herdr-layout.json",
             "today": "zoo.json",
             "what": "layout file: what sits where, and the look"
@@ -77,9 +71,9 @@
             "boxes": [[234, 147, 770, 168]],
             "kind": "ours",
             "n": 7,
-            "name": "x-herdr-chatter-header",
-            "today": "x-herdr-chatter",
-            "what": "chat header: seat, search, Chat | Terminal"
+            "name": "x-herdr-chatter-header (tabs: -header-tabs)",
+            "today": "x-herdr-chatter + my-pane",
+            "what": "seat's top row (both views), with its Chat | Terminal tabs"
         },
         {
             "boxes": [[234, 170, 770, 592]],
@@ -101,9 +95,9 @@
             "boxes": [[226, 603, 1090, 627]],
             "kind": "zoo",
             "n": 10,
-            "name": "x-herdr-terminal",
+            "name": "x-herdr-terminal-header (in x-herdr-terminal)",
             "today": "quick-term",
-            "what": "quick terminal tray head (ctrl-j)"
+            "what": "the tray head row (ctrl-j)"
         },
         {
             "boxes": [[226, 629, 1090, 848]],
