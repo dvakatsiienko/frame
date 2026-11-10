@@ -39,7 +39,7 @@ wish: PK-363
   - given a seat has an open ask
   - when dima types in its steer field and clicks 🔁 replay
   - then the seat's next turn reads another round with his steer
-- ⬜ ask text keeps a literal `<word>`
+- ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
   - then the board draws it as written, never dropped as html
 - ⬜ 🚦 tick in its pane, for a guarded ask
@@ -59,7 +59,7 @@ wish: PK-363
 
 ## seats — tabs
 
-- ⬜ a sidecar seat starts in its own named tab
+- ✅ a sidecar seat starts in its own named tab
   - given helga or crow starts in herdr
   - then it shows in the agents list in a tab named after it, never a number
 
@@ -98,13 +98,13 @@ wish: PK-363
 
 ## scripts
 
-- ⬜ `pnpm herdr-mods:land <mod>` lands a mod from frame into herdr
+- ✅ `pnpm herdr-mods:land <mod>` lands a mod from frame into herdr
   - makes: the mod's changed files in `~/.config/herdr-app/mods/<mod>`, a real folder
   - given a mod in `home/.config/herdr-app/mods/<mod>`
   - when the command runs
   - then herdr reloads that mod live, with no restart (proven on fleet-board, 16:20:39)
   - decision: a real folder, not a link: herdr reloads a real folder on save and never a link
-- ⬜ `pnpm herdr-mods:land --watch` lands every save in frame
+- ✅ `pnpm herdr-mods:land --watch` lands every save in frame
   - given the watcher runs (it prints its pid; stop it by that pid)
   - when a mod file in frame is saved and `herdr-app check` passes on it
   - then its changed files land in one write within ~0.4 s, and herdr reloads it live
