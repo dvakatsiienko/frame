@@ -29,7 +29,6 @@ _clio/plugin-clio/skills/author-blueprint/SKILL.md	2900	2026-10-21 raised: reada
 _clio/plugin-clio/skills/boot/references/board.md	2200	seed 2026-10-16, its size + 15 %
 _clio/plugin-clio/skills/boot/SKILL.md	15900	+150 2026-11-10: the go-test vm starts at boot (FRM-551, its 🔌 fleet wired caller).+400 2026-11-09: a herdr seat starts crow and helga in panes (dima PK-363:W146–W148, W156). +100 2026-11-07: no wing opens by default, PK-351:W80. 2026-11-07: +300 the weekly retro replaces every per-lane one, dima o24; 2026-11-03: +100 a wing-owned item stays its channel's (PK-311, dima o88–o90); 2026-10-29: +250 a side channel at the boot starts first and non-blocking (dima's flush edit); 2026-10-28: +400 the weekly pass gets its duckdb door (pnpm memory:pass, dima o33); seed 2026-10-16, today's size + 15 %; +200 2026-10-27: round 4's inbox groom copy and the main lane's linear slot; +200 2026-10-28: FRM-464 side-item takeover; +250 2026-10-30 halt flush: one raw drop note per quote line (dima's yes); 2026-11-01: pm review round 5 fixes (a question is a W-line, next: timing, the boot grooms its own prompt)
 _clio/plugin-clio/skills/checkpoint/SKILL.md	8400	seed 2026-10-16, today's size + 15 %
-_clio/plugin-clio/skills/low-tide-cuts/SKILL.md	4900	+1500 2026-11-09: renamed (PK-367), the filter test and when it runs joined (PK-367:W2, W3, dima's o36–o38); seed 2026-11-06, its size + 15 %
 _clio/plugin-clio/skills/dima-intervenes/SKILL.md	5200	2026-10-21: the fix mode joined (PK-173, dima's wish), 4.5 KB + 15 %
 _clio/plugin-clio/skills/evergreen/references/merge-round.md	3200	seed 2026-10-16, its size + 15 %
 _clio/plugin-clio/skills/evergreen/references/read.md	11000	seed 2026-10-19, its size + 15 %; raised 2026-10-28 twice for six new lanes (os, pnpm -g, outdated + dashboard age; go, uv, toolchain), regroomed the same day into one lane list
@@ -38,6 +37,7 @@ _clio/plugin-clio/skills/evergreen/SKILL.md	13450	+150 2026-11-04: the signing c
 _clio/plugin-clio/skills/flawlog/SKILL.md	4400	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/gazette/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/halt/SKILL.md	1555	2026-11-07: the halt split by seat, PK-351:W55
+_clio/plugin-clio/skills/low-tide-cuts/SKILL.md	4900	+1500 2026-11-09: renamed (PK-367), the filter test and when it runs joined (PK-367:W2, W3, dima's o36–o38); seed 2026-11-06, its size + 15 %
 _clio/plugin-clio/skills/low-tide-triage/SKILL.md	3400	seed 2026-11-07: any clio splits the pile across lanes (dima, PK-352), its size + 8 %
 _clio/plugin-clio/skills/low-tide/SKILL.md	2800	2026-11-07: +900 many clio lanes, batches, the proposal card, a handover (dima, PK-352); seed 2026-10-20, its size + 15 %
 _clio/plugin-clio/skills/pm/references/body.md	6300	+200 2026-11-02: the 🔌 fleet wired line (dima o63); +250 2026-11-02: the worth section's format (dima o45, wishkeeper E);2026-10-28: +100 the weekly pass split the ticket ↔ spec rule; 2026-10-23: the 🎯 done test + the ## signed block (PK-263); +100 2026-10-27: the ↩️ line in the block (FRM-462); +150 2026-10-27: the re-sign pending line (dima o66)
@@ -146,6 +146,7 @@ home/.claude/rules/fleet-tooling.md	7200	2026-11-10: +200 desktop checks read th
 home/.claude/rules/fleet-vibe.md	8200	+200 2026-11-09: ⛩️ gate (dima o81, FRM-530); +50 2026-11-07: his 3 wing lines, PK-351. +200 2026-11-07: park vs ⏹️ stop (dima, 18:23); +200 2026-11-06: 🪽 wing, dima's name; +200 2026-11-03: verdicts 🌼 clean, 🩹 fix, 🪜 escalate (dima o11); +100 2026-11-02: ⚖️ worth it + 🔌 fleet wired, wishkeeper folds; +450 2026-11-02: ⚖️ worth it, 🔌 fleet wired (dima o61); 2026-10-29: 🔮 summon, 🫧 spawn, ⏹️ stop, ⚗️ facility (the rename sweep spec); 2026-10-25: ☘️ almost-freebie (dima o77); 2026-10-23: 🐦‍🔥 second wind (o84) + the six lane-init words (o93)
 home/.claude/rules/fleet-voice.md	2700	seed 2026-10-16, today's size + 15 %
 home/.claude/sline/AGENTS.md	900	seed 2026-10-16, today's size + 15 %
+home/.config/herdr-app/mods/AGENTS.md	3100	seed 2026-11-10, its size + 15 %
 home/.config/nvim/AGENTS.md	4200	seed 2026-10-16, today's size + 15 %
 hotkeys/AGENTS.md	2200	seed 2026-10-16, today's size + 15 %
 hotkeys/chords/AGENTS.md	3500	seed 2026-10-16, today's size + 15 %
