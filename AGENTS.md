@@ -23,6 +23,7 @@ before planning or building a piece, ask in order (dima, 2026-11-10, PK-363:W213
 - **a store is the contract**: a mod writes each state herdr draws to its own file in `~/.claude/shelf/`, herdr answers through a file that mod reads; no area reads another's private store
 - **logic is written once, in `x`**: never a copy
 - **a press that unlocks is proven**: the in-seat press, or a file only his press can write
+- **none of the three**: clio's own hooks and scripts stay under `_clio/`, a classic hook moves into a cc mod only when it needs mod state; an agent card lives under `home/.claude/agents/`
 
 ## the dotfiles
 
