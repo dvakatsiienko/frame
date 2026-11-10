@@ -26,7 +26,7 @@ import {
     window,
 } from 'herdr';
 
-import { startJobs } from './jobs.js';
+import { SOUNDS_ON, isSoundOn, startJobs } from './jobs.js';
 
 function find(node, id) {
     if (node?.id === id) return node;
@@ -811,116 +811,95 @@ export default class Agents extends View {
                 }
                 return !isPinned && !byPriority ? onSpace(d) : null;
             };
-            return (
-                this.dnd(h_flex(), t, a.address, me, aim)
-                    .id(`ag-${a.address}`)
-                    .px(8)
-                    .h(30)
-                    .flex_none()
-                    .rounded(8)
-                    .items_center()
-                    .gap(9)
-                    .when(a.focused, (el) => el.bg(t.selected))
-                    .cursor_pointer()
-                    .hover((s) => s.bg(t.hover))
-                    .on_hover((on, cx) => {
-                        if (on) this.hovered = a.address;
-                        else if (this.hovered === a.address)
-                            this.hovered = null;
-                        cx.notify();
-                    })
-                    .on_click(() => run('pane.focus', { pane: a.pane }))
-                    // The zoo's own menu (an overlay of the zoo mod): change its character, close the agent.
-                    .on_mouse_down('right', () =>
-                        openOverlay({
-                            height: 205,
-                            kind: 'popup',
-                            mod: 'zoo',
-                            props: {
-                                menu: a.address,
-                                title: `${a.space_name} · ${label(a)}`,
-                            },
-                            width: 220,
-                        }),
-                    )
-                    .when(Boolean(pic), (el) =>
-                        el.child(
-                            div()
-                                .id(`agent-fold-${a.address}`)
-                                .when(subs.length > 0, (el) =>
-                                    el.on_click((_e, cx) => {
-                                        cx.stop_propagation();
-                                        this.folded.has(a.address)
-                                            ? this.folded.delete(a.address)
-                                            : this.folded.add(a.address);
-                                        cx.notify();
-                                    }),
-                                )
-                                .child(pic),
-                        ),
-                    )
-                    .child(
-                        h_flex()
-                            .flex_1()
-                            .min_w(0)
-                            .gap(5)
-                            .items_center()
-                            .child(
-                                div()
-                                    .when(both, (el) => el.min_w(0))
-                                    .when(!both, (el) =>
-                                        el.flex_none().max_w(200),
-                                    )
-                                    .truncate()
-                                    .text_color(idle ? t.muted : t.foreground)
-                                    .child(name),
+            return this.dnd(h_flex(), t, a.address, me, aim)
+                .id(`ag-${a.address}`)
+                .px(8)
+                .h(30)
+                .flex_none()
+                .rounded(8)
+                .items_center()
+                .gap(9)
+                .when(a.focused, (el) => el.bg(t.selected))
+                .cursor_pointer()
+                .hover((s) => s.bg(t.hover))
+                .on_hover((on, cx) => {
+                    if (on) this.hovered = a.address;
+                    else if (this.hovered === a.address) this.hovered = null;
+                    cx.notify();
+                })
+                .on_click(() => run('pane.focus', { pane: a.pane }))
+                .when(Boolean(pic), (el) =>
+                    el.child(
+                        div()
+                            .id(`agent-fold-${a.address}`)
+                            .when(subs.length > 0, (el) =>
+                                el.on_click((_e, cx) => {
+                                    cx.stop_propagation();
+                                    this.folded.has(a.address)
+                                        ? this.folded.delete(a.address)
+                                        : this.folded.add(a.address);
+                                    cx.notify();
+                                }),
                             )
-                            // Right-click the space name: rename the space (Herdr asks for the name).
-                            .when(both, (el) =>
-                                el.child(
-                                    div()
-                                        .id(`ag-space-${a.address}`)
-                                        .flex_none()
-                                        .max_w(110)
-                                        .truncate()
-                                        .text_color(t.dim)
-                                        .on_mouse_down('right', (_e, cx) => {
-                                            cx.stop_propagation();
-                                            run('space.rename', {
-                                                id: a.space,
-                                            });
-                                        })
-                                        .child(`\u00b7 ${a.space_name}`),
-                                ),
+                            .child(pic),
+                    ),
+                )
+                .child(
+                    h_flex()
+                        .flex_1()
+                        .min_w(0)
+                        .gap(5)
+                        .items_center()
+                        .child(
+                            div()
+                                .when(both, (el) => el.min_w(0))
+                                .when(!both, (el) => el.flex_none().max_w(200))
+                                .truncate()
+                                .text_color(idle ? t.muted : t.foreground)
+                                .child(name),
+                        )
+                        // Right-click the space name: rename the space (Herdr asks for the name).
+                        .when(both, (el) =>
+                            el.child(
+                                div()
+                                    .id(`ag-space-${a.address}`)
+                                    .flex_none()
+                                    .max_w(110)
+                                    .truncate()
+                                    .text_color(t.dim)
+                                    .on_mouse_down('right', (_e, cx) => {
+                                        cx.stop_propagation();
+                                        run('space.rename', {
+                                            id: a.space,
+                                        });
+                                    })
+                                    .child(`\u00b7 ${a.space_name}`),
                             ),
-                    )
-                    .when(Boolean(machine), (el) =>
-                        el.child(
-                            div()
-                                .text_size(10)
-                                .text_color(t.dim)
-                                .child(machine),
                         ),
-                    )
-                    .when(subs.length > 0, (el) => el.child(fold(a, subs)))
-                    .when(this.hovered === a.address, (el) => el.child(pin))
-                    .when(this.hovered !== a.address && Boolean(when), (el) =>
-                        el.child(
-                            div()
-                                .flex_none()
-                                .text_size(11)
-                                .text_color(t.dim)
-                                .child(duration(now - when)),
-                        ),
-                    )
-                    .child(
-                        this.status(
-                            t,
-                            { status: shownStatus(a) },
-                            byPriority && !isPinned,
-                        ),
-                    )
-            );
+                )
+                .when(Boolean(machine), (el) =>
+                    el.child(
+                        div().text_size(10).text_color(t.dim).child(machine),
+                    ),
+                )
+                .when(subs.length > 0, (el) => el.child(fold(a, subs)))
+                .when(this.hovered === a.address, (el) => el.child(pin))
+                .when(this.hovered !== a.address && Boolean(when), (el) =>
+                    el.child(
+                        div()
+                            .flex_none()
+                            .text_size(11)
+                            .text_color(t.dim)
+                            .child(duration(now - when)),
+                    ),
+                )
+                .child(
+                    this.status(
+                        t,
+                        { status: shownStatus(a) },
+                        byPriority && !isPinned,
+                    ),
+                );
         };
 
         // Groups in list order: spaces (grouped) or priority sections. Agents of a
@@ -1054,7 +1033,7 @@ export default class Agents extends View {
                                             openOverlay({
                                                 height: 140,
                                                 kind: 'popup',
-                                                mod: 'zoo-agents',
+                                                mod: 'agents-list',
                                                 props: { sortMenu: true },
                                                 width: 200,
                                             }),
@@ -1066,7 +1045,7 @@ export default class Agents extends View {
                                             ).size(14),
                                         ),
                                 )
-                                // The zoo's sounds dialog, the same ♪ as in the zoo's header.
+                                // the sounds switch: off by default, his own sounds come later
                                 .child(
                                     div()
                                         .id('ag-sounds')
@@ -1074,23 +1053,32 @@ export default class Agents extends View {
                                         .py(4)
                                         .rounded(6)
                                         .text_size(14)
-                                        .text_color(t.dim)
+                                        .text_color(
+                                            isSoundOn() ? t.foreground : t.dim,
+                                        )
+                                        .when(!isSoundOn(), (el) =>
+                                            el.line_through(),
+                                        )
                                         .cursor_pointer()
                                         .hover((s) =>
                                             s
                                                 .bg(t.hover)
                                                 .text_color(t.foreground),
                                         )
-                                        .tooltip('Sounds')
-                                        .on_click(() =>
-                                            openOverlay({
-                                                height: 640,
-                                                kind: 'dialog',
-                                                mod: 'zoo',
-                                                props: { sounds: true },
-                                                width: 560,
-                                            }),
+                                        .tooltip(
+                                            isSoundOn()
+                                                ? 'Sounds when an agent needs you or finishes: on'
+                                                : 'Sounds when an agent needs you or finishes: off',
                                         )
+                                        .on_click((_e, cx) => {
+                                            try {
+                                                localStorage.setItem(
+                                                    SOUNDS_ON,
+                                                    isSoundOn() ? 'off' : 'on',
+                                                );
+                                            } catch {}
+                                            cx.notify();
+                                        })
                                         .child('♪'),
                                 ),
                         ),
