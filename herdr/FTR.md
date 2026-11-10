@@ -27,7 +27,7 @@ wish: PK-363
 
 ## fleet-board — orbit
 
-- 🔎 a plain ask ticks from the board
+- ⬜ a plain ask ticks from the board
   - makes: one press line in `~/.claude/shelf/orbit-ticks/<session id>.jsonl`
   - given a seat has an open ask
   - when dima clicks 🛎️ tick
@@ -47,6 +47,7 @@ wish: PK-363
   - and when the seat is mid-turn, the board opens at its turn end and a muted ⏳ line says so
   - and when its prompt box holds a draft, nothing is typed and a line says to send or clear it
   - decision: opening a board unlocks nothing; only his 🛎️ there does
+  - decision: a stopgap he dislikes until the one-click 🛎️ lands — «I don't like this tick-in-the-pane feature» (dima, 15:19)
 - 🧭 one-click 🛎️ on a guarded ask, behind `GATED_TICK`
   - makes: one press line in the seat's ticks file, the same as a plain tick
   - given the guard's fence on the ticks folder is on main and the flag is on
@@ -65,6 +66,7 @@ wish: PK-363
 - ⬜ the effort shows the seat's live value
   - given a seat's last reply ran at an effort
   - then the chat box's effort reads that value, past the default in settings
+  - decision: it lives in the chat mod `~/.config/herdr-app/mods/claude-chat`, outside frame and outside git until FRM-556 moves it in
 - 🧭 the band and the asks in the chat view (FRM-561)
   - given a seat is selected in the Chat view
   - then its context percent, its waiting-on line, the weekly usage and its open asks with their 🛎️ show without a flip to the Terminal view
