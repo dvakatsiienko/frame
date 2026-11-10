@@ -1,7 +1,11 @@
 # herdr — glossary
 
-the words `herdr/FTR.md` and our herdr mods use, each defined once.
+the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled the words for a mod, a layout and a block at 18:45).
 
+- **herdr mod** — one folder with a `main.js` that draws one panel in herdr; ours are named `x-herdr-*`; always said with «herdr», never a bare «mod»
+- **cc native mod** — a Claude Code mod of plugin `x`; ours are named `x-mod-*`; always said in full
+- **herdr layout** — the file that places herdr mods in the window and sets the look (`layouts/*.json`)
+- **herdr layout block** — one spot in a herdr layout where a herdr mod sits
 - **x-herdr** — our setup inside herdr: its layout and our mods, each mod under its own name
 - **seat** — one Claude Code session running in a herdr terminal
 - **Chat view** — a seat drawn as a conversation by x-herdr-chatter; the view dima lives in
