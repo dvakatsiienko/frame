@@ -567,7 +567,7 @@ function startHelga() {
     ];
     // a herdr seat sets CLIO_SIDECAR_PANE=1: the prompt rides inside hc run, no job id
     if (process.env.CLIO_SIDECAR_PANE === '1') {
-        execFileSync(
+        const started = execFileSync(
             'hc',
             [
                 'run',
@@ -587,8 +587,18 @@ function startHelga() {
                 '🎀 helga',
                 skill,
             ],
-            { stdio: 'inherit' },
+            { encoding: 'utf8' },
         );
+        process.stdout.write(started);
+        // a --no-parent terminal starts paneless, and herdr's agents list skips it until it has a tab
+        execFileSync('herdr-app', [
+            'do',
+            'terminal.keep',
+            JSON.stringify({
+                place: 'tab',
+                terminal: JSON.parse(started).address,
+            }),
+        ]);
         return;
     }
     execFileSync('claude', ['--bg', ...claudeArgs, skill, '--remote-control'], {
