@@ -20,11 +20,20 @@ two sessions, A and B, in one checkout.
   - given A edited `x.ts`
   - when B edits `x.ts`
   - then B is refused, and the message names A and when A took the hold
-  - decision: no override in v0 — the deny names who to ask
+  - decision: no override in v0 — the deny names who to ask; dima's tick is the one door since FRM-544 slice 2d (the pass, below)
   - decision: the holder is named by the first 8 characters of its session id; every session in one checkout shares the repo name
   - decision: the hold keeps the real path in its own case and git runs on it, so a symlinked leaf (`~/.claude/CLAUDE.md`) is held like its target
   - decision: the key is lowercased on every platform — APFS is case-insensitive and a mod cannot ask which os it runs on
   - proof: tests/holds.test.ts::a first edit takes the hold
+- ✅ dima's tick passes a held file for the asking session (FRM-544 slice 2d)
+  - makes: a `pass:<B>:<path>` key in this store, and a `passed:<A>:<B>:<path>` line for the holder
+  - given A holds `x.ts` and B's refused edit raised an ask quoting `/repo/x.ts` in one backtick span (`~/…` and a linked folder resolve)
+  - when dima ticks it, in orbit or on fleet-board, within 2 h
+  - then B's edits of `x.ts` go through until B's next commit through Bash or its turn's end, and B takes no hold of its own
+  - then A's next prompt carries one line naming B and the file; the hold stays A's for every other session
+  - then the tick is spent: after the pass ends, B is refused again until a new tick; a tick quoting another file, or only prose, older than 2 h or stamped ahead of now opens nothing
+  - decision: a pass, never a hand-over — the file stays A's, so A's commit still releases it and C still meets A's name
+  - proof: tests/holds.test.ts::a tick quoting the held file lets the asking session write it; a pass takes no hold: the file stays the holder’s for every other session; the holder hears of the pass once, at its next prompt; the pass ends with the asking session’s turn, and the spent tick opens no new one; the pass ends at the asking session’s commit through Bash; the hold refuses the asking session on …; a tick quoting the file through a linked folder passes it; a tick quoting the file from ~ passes it
 - ✅ an edit refused beneath the holds, or one the tool errored on, leaves no hold (FRM-428, PK-264; FRM-472 07c)
   - given A's first edit of `x.ts` is refused by a hook beneath (x-mod-guard) or errors (cc's own refusal, an `old_string` not found)
   - when B edits `x.ts`
