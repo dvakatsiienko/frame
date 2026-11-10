@@ -2,6 +2,7 @@
 // zoo-agents (2026-11-10): each agent reads by its Claude Code session name, with no creature beside it.
 // Unread = Herdr's done; done = finished and seen (zoo.turns).
 
+import { readdir } from 'fs/promises';
 import { h_flex, v_flex } from 'gpui-base';
 import { View, div, image, svg } from 'gpui-kit';
 import {
@@ -169,23 +170,46 @@ const NAMES = new Map();
 function sessionName(address) {
     return NAMES.get(address)?.name ?? null;
 }
+// a `claude --bg` seat shows in herdr as `claude attach <job id>`: the terminal's pid is the attach client's, so its
+// session is the registry file carrying that job id
+async function sessionOf(term) {
+    const dir = `${home()}/.claude/sessions`;
+    /** @param {string} path */
+    const read = async (path) => {
+        try {
+            return JSON.parse((await readTextFile(path)) ?? 'null');
+        } catch {
+            return null;
+        }
+    };
+    const own = term.pid ? await read(`${dir}/${term.pid}.json`) : null;
+    if (own) return own;
+    const job = term.argv?.[1] === 'attach' ? term.argv[2] : null;
+    if (!job) return null;
+    for (const f of await readdir(dir).catch(() => [])) {
+        const s = f.endsWith('.json') ? await read(`${dir}/${f}`) : null;
+        if (s?.jobId === job) return s;
+    }
+    return null;
+}
+
 async function readNames(list) {
     for (const a of list) {
         const kept = NAMES.get(a.address);
         if (kept && Date.now() - kept.at < 30000) continue;
-        NAMES.set(a.address, { at: Date.now(), name: kept?.name ?? null });
+        NAMES.set(a.address, {
+            at: Date.now(),
+            name: kept?.name ?? null,
+            pid: kept?.pid ?? null,
+        });
         const got = await hc(['get', a.address, '--json']).catch(() => null);
-        const pid = got?.code === 0 ? JSON.parse(got.stdout).pid : null;
-        const file = pid
-            ? await readTextFile(
-                  `${home()}/.claude/sessions/${pid}.json`,
-              ).catch(() => null)
-            : null;
-        let name = null;
-        try {
-            name = file ? (JSON.parse(file).name ?? null) : null;
-        } catch {}
-        NAMES.set(a.address, { at: Date.now(), name });
+        const term = got?.code === 0 ? JSON.parse(got.stdout) : null;
+        const session = term ? await sessionOf(term) : null;
+        NAMES.set(a.address, {
+            at: Date.now(),
+            name: session?.name ?? null,
+            pid: session?.pid ?? null,
+        });
     }
 }
 
@@ -201,6 +225,17 @@ function publishNames() {
         if (name) next[address] = name;
     if (JSON.stringify(shared(NAMES_KEY) ?? {}) !== JSON.stringify(next))
         setShared(NAMES_KEY, next);
+}
+
+// the pids in the order the list shows them: the deck orders its sessions and orbit by it (dima, 20:20: «The order in
+// the agents list is the true source for the order in Orbit for threads»); written only on a change
+const ORDER_KEY = 'x-herdr-agents.order';
+function publishOrder(addresses) {
+    const pids = addresses
+        .map((a) => NAMES.get(a)?.pid)
+        .filter((pid) => typeof pid === 'number');
+    if (JSON.stringify(shared(ORDER_KEY) ?? []) !== JSON.stringify(pids))
+        setShared(ORDER_KEY, pids);
 }
 
 // props {stack, other}: a sidebar stack this list shares with the zoo (or the zoo with the list);
@@ -583,6 +618,7 @@ export default class Agents extends View {
         const rest = list.filter((a) => !this.pins.includes(a.address));
         list = [...pinned, ...rest];
         setAgentOrder(list.map((a) => a.address));
+        publishOrder(list.map((a) => a.address));
 
         // Puts pin `from` where `to` is (after it when moving down); pins not shown keep their place at the end.
         const movePin = (from, to) => {

@@ -6,6 +6,7 @@ import {
     asksOf,
     byName,
     currentSid,
+    inListOrder,
     literalAngles,
     nextSeats,
     pendingPresses,
@@ -318,5 +319,28 @@ describe('the deck publishes each seat its three facts', () => {
 
     test('the first read is always written', () => {
         expect(nextSeats(null, {}, 5)).toEqual({ at: 5, seats: {} });
+    });
+});
+
+describe('the deck follows the agents list order', () => {
+    const row = (pid: number, name: string) => ({ name, pid });
+
+    test('rows take the order the agents list shows', () => {
+        const rows = [row(1, 'a'), row(2, 'b'), row(3, 'c')];
+        expect(inListOrder(rows, [3, 1, 2]).map((r) => r.pid)).toEqual([
+            3, 1, 2,
+        ]);
+    });
+
+    test('a row the list does not hold goes last, in the order it came', () => {
+        const rows = [row(1, 'a'), row(9, 'z'), row(2, 'b'), row(8, 'y')];
+        expect(inListOrder(rows, [2, 1]).map((r) => r.pid)).toEqual([
+            2, 1, 9, 8,
+        ]);
+    });
+
+    test('no published order keeps the rows as they came', () => {
+        const rows = [row(2, 'b'), row(1, 'a')];
+        expect(inListOrder(rows, null).map((r) => r.pid)).toEqual([2, 1]);
     });
 });

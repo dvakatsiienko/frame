@@ -17,12 +17,14 @@ import {
 } from 'herdr';
 
 import {
+    ORDER_KEY,
     SEATS_BEAT_MS,
     SEATS_KEY,
     asksOf,
     byName,
     currentSid,
     dropPress,
+    inListOrder,
     literalAngles,
     nextSeats,
     pendingPresses,
@@ -613,9 +615,9 @@ export default class FleetBoard extends View {
             );
     }
 
-    /** @param {Theme} t */
-    orbit(t) {
-        const owners = this.rows.filter((s) => s.asks.length > 0);
+    /** @param {Theme} t @param {Row[]} rows */
+    orbit(t, rows) {
+        const owners = rows.filter((s) => s.asks.length > 0);
         return owners.map((s, i) =>
             v_flex()
                 .px(12)
@@ -712,6 +714,12 @@ export default class FleetBoard extends View {
     render() {
         const t = /** @type {Theme} */ (theme());
         if (this.isSeat) return div();
+        // his order from the agents list, read at every draw, so a drag there moves the deck at once; the read's own
+        // order (blocked, working, then by name) stays for a seat the list does not show
+        const rows = inListOrder(
+            this.rows,
+            /** @type {number[] | null} */ (shared(ORDER_KEY)),
+        );
         const busy = this.rows.filter(
             (s) => STATE[s.status] === 'working',
         ).length;
@@ -743,7 +751,7 @@ export default class FleetBoard extends View {
                     `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}`,
                 ),
             )
-            .children(this.rows.map((s, i) => this.session(t, s, i)))
+            .children(rows.map((s, i) => this.session(t, s, i)))
             .when(asks > 0, (el) =>
                 el
                     .child(
@@ -751,7 +759,7 @@ export default class FleetBoard extends View {
                             `🪐 orbit: ${count(asks, 'ask', 'asks')} waiting on you`,
                         ),
                     )
-                    .children(this.orbit(t))
+                    .children(this.orbit(t, rows))
                     .when(Boolean(this.pressError), (el2) =>
                         el2.child(
                             div()

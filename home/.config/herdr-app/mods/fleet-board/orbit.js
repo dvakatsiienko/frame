@@ -264,3 +264,22 @@ export function nextSeats(prev, seats, now) {
     if (same && now - prev.at < SEATS_BEAT_MS) return null;
     return { at: now, seats };
 }
+
+// the agents list publishes the pids it shows, in its order: his drag there orders the deck too, a seat it does not
+// show going last; one rule, read from shared state, since a mod imports nothing outside its folder
+export const ORDER_KEY = 'x-herdr-agents.order';
+
+/**
+ * @template {{ pid: number }} T
+ * @param {T[]} rows
+ * @param {number[] | null | undefined} pids
+ * @returns {T[]}
+ */
+export function inListOrder(rows, pids) {
+    if (!Array.isArray(pids)) return rows;
+    const at = new Map(pids.map((pid, i) => [pid, i]));
+    return [...rows].sort(
+        (a, b) =>
+            (at.get(a.pid) ?? pids.length) - (at.get(b.pid) ?? pids.length),
+    );
+}

@@ -24,10 +24,16 @@ wish: PK-363
   - and the three heads read «🧵 sessions: N, M working», «🪐 orbit: N asks waiting on you», «🛼 glide: N lanes», semibold 13 px under a hairline
   - and each ask is a card led by its bold id, its tick a filled button and replay a quiet one, each 28 px tall; past 60 % a seat's ctx turns red and semibold (shot 1953, before and after)
   - not checked: the glide cards (below the fold in the shot), the focus ring by keyboard, the dark theme
+- ⬜ the deck's sessions and orbit sections follow the agents list's order
+  - given dima drags a thread in the agents list
+  - then the deck's sessions rows and its orbit sections move to the same order at once, and an ask arriving never reorders them (shot 2024)
+  - decision: the agents list publishes the pids it shows as shared `x-herdr-agents.order`, the deck reads that one key (dima, 20:20: «The order in the agents list is the true source for the order in Orbit for threads»); this replaces blocked-first for the listed seats, their state still shows by the dot
+  - decision: a `claude --bg` seat shows in herdr as `claude attach <job id>`, so the list finds its session by the registry file's `jobId`
+  - not checked: a drag by his hand
 - ✅ every live seat on one list
   - given seats run on this mac
   - when the board draws
-  - then each live seat shows as one row by its session name, blocked first, then working, then the rest by name
+  - then each live seat shows as one row by its session name, in the agents list's order; a seat the list does not show goes last, blocked first, then working, then by name
   - decision: a seat whose process is gone draws no row, so no press goes to a dead seat
   - decision: the name sorts by its words, past a leading badge, so 🦉 and 🎀 never decide the order
 - ✅ a seat's row reads its model and context
