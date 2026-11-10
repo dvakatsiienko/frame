@@ -578,9 +578,14 @@ func (h *copyHarness) runCommand() redRun {
 	}
 	c := exec.Command(command[0], command[1:]...)
 	c.Dir = dir
-	// pnpm reads the copy as a tree not installed yet, and its install before a run or an exec would relink the store's own
-	// shims, which the copy shares; never CI=1, which reaches vitest and refuses a new snapshot
-	c.Env = append(os.Environ(), "pnpm_config_verify_deps_before_run=false")
+	// pnpm installs before a run or an exec on a tree it reads as out of date, as it always reads frame's, and that install
+	// would relink the store's own shims, which the copy shares. pnpm takes the setting in either case and the upper one
+	// wins, so the caller's own spelling goes first; never CI=1, which reaches vitest and refuses a new snapshot
+	const noInstall = "pnpm_config_verify_deps_before_run"
+	c.Env = append(slices.DeleteFunc(os.Environ(), func(pair string) bool {
+		key, _, _ := strings.Cut(pair, "=")
+		return strings.EqualFold(key, noInstall)
+	}), noInstall+"=false")
 	got := runTestCmd(c)
 	return redRun{ok: got.ok, log: got.log, note: h.unchecked}
 }
@@ -730,8 +735,10 @@ func linkEntries(root, to, modules, dest string) error {
 			continue
 		}
 		link, own := filepath.Join(real, entry.Name()), filepath.Join(dest, entry.Name())
+		// a .bin that is a link to a dir is still one dir of shims an install rewrites
+		bin, _ := os.Stat(link)
 		switch {
-		case entry.Name() == ".bin" && entry.IsDir():
+		case entry.Name() == ".bin" && bin != nil && bin.IsDir():
 			err = copyShims(root, to, link, own)
 		case entry.Type().IsRegular():
 			err = cloneFile(link, own)
