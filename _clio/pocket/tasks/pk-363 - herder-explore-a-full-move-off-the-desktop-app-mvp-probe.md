@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T18:48:00Z'
+updated_date: '2026-11-10T18:52:00Z'
 labels:
   - m
   - clio-main
@@ -1559,4 +1559,18 @@ PK-363:W633 (2026-11-10 20:47, dima): okay. what out of this «unnamed» list ca
 PK-363:W634 (2026-11-10 20:47, dima): Also there are quite a lot of them: the 9 tickets. Do you think it is worth having a milestone for them because they are kind of grouped, in that all of them are steers and they are not compatible with any other area or surface? ❓
 PK-363:W635 (2026-11-10 20:47, dima): Maybe let's group them with a milestone? Because if we don't they will keep steering ❓
 PK-363:W636 (2026-11-10 20:47, dima): you need a second wind
+
+PK-363:W637 (2026-11-10 20:51, dima): I want both because I assume that settings will have its own view, although the actual button can be added later when settings arrives. home: FRM-565
+PK-363:W638 (2026-11-10 20:51, dima): As for board I want it because now I have no option to disable the deck home: FRM-565
+PK-363:W639 (2026-11-10 20:51, dima): I get your answer. I think that designer is a little bit for later. Let's try to make Herdr pretty without designer because it will be too much of an overextension. home: FRM-565
+PK-363:W640 (2026-11-10 20:51, dima): I already spent too much time moving to Herdr and we will have to spend more.
+PK-363:W641 (2026-11-10 20:51, dima): I want to resume speak v2.
+PK-363:W642 (2026-11-10 20:51, dima): We will use designer with speak v2 instead.
+PK-363:W643 (2026-11-10 20:51, dima): works
+PK-363:W644 (2026-11-10 20:51, dima): works but with a wisp.
+PK-363:W645 (2026-11-10 20:51, dima): When I tick there is a brief period of a few seconds when I can untick but even if you are not mid-turn it gets locked after a few seconds. It is not like what I wanted.
+PK-363:W646 (2026-11-10 20:51, dima): I want asks to be ticked and to be able to untick until you actually receive them. For example they get locked and marked as ticked with a lock icon only when they are actually slipstreamed and there is no true way to undo them because you already received them.
+PK-363:W647 (2026-11-10 20:51, dima): Until that event I should have the ability to untick my tick.
+PK-363:W648 (2026-11-10 20:51, dima): it scrolls but too fast.
+PK-363:W649 (2026-11-10 20:51, dima): what is it? ❓
 <!-- SECTION:NOTES:END -->
