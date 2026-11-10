@@ -372,8 +372,8 @@ export default class FleetBoard extends View {
     }
 
     // a guard-gated ask takes only a 🛎️ press in the seat's own board, the one tick x-mod-guard reads as dima's word:
-    // the board focuses the seat's pane and types `/board` there, his Enter opens it. it refuses rather than type over
-    // his draft or into a dialog
+    // the board focuses the seat's pane and opens `/board` there, so the ask's 🛎️ is on screen; opening a board unlocks
+    // nothing, only his 🛎️ does. it refuses rather than type over his draft or into a dialog
     /** @param {Context} cx @param {Row} s @param {Ask} ask */
     async openSeatBoard(cx, s, ask) {
         this.pressError = null;
@@ -409,13 +409,14 @@ export default class FleetBoard extends View {
             try {
                 run('layout.select', { child: 'main', stack: 'views' });
             } catch {}
-            if (draft) return;
-            const keys = screen.stdout.includes('-- NORMAL --')
-                ? ['i', '/', 'b', 'o', 'a', 'r', 'd']
-                : ['/', 'b', 'o', 'a', 'r', 'd'];
+            const keys = draft
+                ? ['enter']
+                : screen.stdout.includes('-- NORMAL --')
+                  ? ['i', '/', 'b', 'o', 'a', 'r', 'd', 'enter']
+                  : ['/', 'b', 'o', 'a', 'r', 'd', 'enter'];
             const typed = await hc(['keys', seat.address, ...keys]);
             if (typed.code !== 0)
-                refuse(typed.stderr.trim() || '/board not typed');
+                refuse(typed.stderr.trim() || '/board not opened');
         } catch (err) {
             refuse(err instanceof Error ? err.message : String(err));
         }
