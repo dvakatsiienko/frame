@@ -1,6 +1,6 @@
 ---
 name: low-tide-triage
-description: load when dima says «low tide triage», «triage», «re-triage», «hoist», «seed the flyways», or `clio:low-tide` finds no seeded plan — split the piled-up chores across the open clio lanes, one scope per lane. main or any wing runs it.
+description: load when dima says «low tide triage», «triage», «re-triage», «hoist», «hunt strays», «strays», «seed the flyways», or `clio:low-tide` finds no seeded plan — split the piled-up chores across the open clio lanes, one scope per lane. main or any wing runs it.
 ---
 
 # 🌘 low tide triage — one scope per clio lane
@@ -11,6 +11,8 @@ dima, 2026-11-07, folded: «hoisting selects the scope each clio lane will execu
 
 1. **the marker**: read every flyway (`backlog task list --plain --search "flyway:"`, then each one's notes). another clio's `hoist MM-DD: proposing` → one line to dima, stop, unless he asked for this re-triage. else append `hoist MM-DD: proposing, <your lane>` to your own flyway.
 2. **the pile**: the inbox's leftovers land in the pocket first (`clio:boot`'s parse). then the open pocket items, and linear `--team FRM` and `--team BYT` in Triage, Todo and Backlog (`clio:pm`), through a `helper-lite` card when the list is long. an area word in his ask narrows it. off the pile: a running lane's chunk, and anything blocked, which gets its `**waiting for:**` line or lane note and leaves the hunt.
+   - also off: `someday` tickets, and scoped ones — a lane's (cli project, mods and herdr milestones) or an app's (its project), read from linear; each starts with its scope's lane (dima, 11-11)
+   - the report opens with its filter line: kept, dropped, stores searched; «signed» is the body's `## signed` lines, never the label
 3. **draft the split**: `ListAgents` names the active clios, `🦉 clio` and each `🦉🪽 clio: wing <N>`. run the freebie test (`craft-pm`) on each item, then:
    - group by area and similarity; a parent and its child, and items on the same files, stay in one lane
    - an item sits in one flyway only
