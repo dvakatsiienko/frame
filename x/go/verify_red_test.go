@@ -586,6 +586,22 @@ func TestVerifyRedMutatesAFileAGoTestReadsAtRuntime(t *testing.T) {
 	}
 }
 
+// a root file a go module in a subdir reads, as x/go reads lefthook.yaml from the repo root: the test runs from its own module
+func TestVerifyRedMutatesARootFileAGoModuleBelowReads(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	write(t, filepath.Join(dir, "hook.yaml"), "count: 1\n")
+	write(t, filepath.Join(dir, "sub/go.mod"), "module p\n\ngo 1.24\n")
+	write(t, filepath.Join(dir, "sub/hook_test.go"), "package p\n\nimport (\n\t\"os\"\n\t\"testing\"\n)\n\nfunc TestHook(t *testing.T) {\n\tif body, _ := os.ReadFile(\"../hook.yaml\"); string(body) != \"count: 1\\n\" {\n\t\tt.Fatalf(\"read %q\", body)\n\t}\n}\n")
+	commitAll(t, dir)
+
+	got, _ := verifyRedIn(t, redFixture{dir: dir}, nil, "hook.yaml", "count: 1", "count: 2", "sub/hook_test.go")
+
+	if rows := pairRows(t, got); got.code != 0 || got.data["verdict"] != verdictRed || len(rows) != 1 || !strings.Contains(fmt.Sprint(rows[0]["tests"]), "TestHook") {
+		t.Fatalf("exit %d, data %v, want red naming TestHook from a clean run green in the tree:\n%s", got.code, got.data, got.stdout)
+	}
+}
+
 // review round: a timeout proves nothing, a load can cause it; a vitest name that matches nothing refuses
 func TestVerifyRedReadsATimeoutBrokenAndANoMatchRefused(t *testing.T) {
 	t.Parallel()

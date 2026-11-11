@@ -409,7 +409,7 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 	case isGo && filepath.Ext(abs) == ".go":
 		return newGoHarness(abs, "", command)
 	case command != nil:
-		return newCopyHarness(abs, command)
+		return newCopyHarness(abs, command, "")
 	case strings.HasSuffix(test, "_test.go"):
 		goTest := []string{"go", "test", "-count=1", "-failfast", "-v"}
 		if name != "" {
@@ -421,7 +421,8 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 		}
 		// an overlay reaches only what go builds; a file a test opens at runtime is read from the copy
 		if filepath.Ext(abs) != ".go" {
-			return newCopyHarness(abs, append(goTest, dir))
+			// go reads the module from the dir it runs in, so the run starts in the test's own dir, never at a root with no go.mod
+			return newCopyHarness(abs, append(goTest, "."), dir)
 		}
 		return newGoHarness(abs, dir, append(goTest, "."))
 	case isModTest(test) && name != "":
@@ -433,7 +434,7 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 		if name != "" {
 			vitest = append(vitest, "-t", name)
 		}
-		return newCopyHarness(abs, append(vitest, test))
+		return newCopyHarness(abs, append(vitest, test), "")
 	}
 	return nil, usageFail("x picks no runner for "+test+": a _test.go, a mod's test or a .test.ts", "x verify red <file> <anchor> <replacement> -- <command>")
 }
@@ -521,7 +522,8 @@ func mayWriteStore(command []string) bool {
 	return false
 }
 
-func newCopyHarness(file string, command []string) (redHarness, error) {
+// runDir is where the command starts in the copy; empty, the cwd's twin
+func newCopyHarness(file string, command []string, runDir string) (redHarness, error) {
 	if mayWriteStore(command) {
 		return nil, usageFail("«"+strings.Join(command, " ")+"» may write the store, node_modules/.pnpm, which the copy shares with the real tree: only a leading pnpm exec, run or test may name a package manager",
 			"run the test itself: x verify red <file> <anchor> <replacement> -- pnpm exec <runner> <test>")
@@ -532,7 +534,10 @@ func newCopyHarness(file string, command []string) (redHarness, error) {
 	}
 	root, _ = filepath.EvalSymlinks(root)
 	file, _ = filepath.EvalSymlinks(file)
-	cwd, _ := os.Getwd()
+	cwd := runDir
+	if cwd == "" {
+		cwd, _ = os.Getwd()
+	}
 	cwd, _ = filepath.EvalSymlinks(cwd)
 	switch {
 	case !inside(root, cwd):
