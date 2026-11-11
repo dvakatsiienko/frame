@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T19:57:00Z'
+updated_date: '2026-11-11T20:22:00Z'
 labels:
   - m
   - clio-main
@@ -2071,4 +2071,15 @@ PK-363:W1075 (2026-11-11 21:39, dima): how do you think about it? should an arch
 PK-363:W1076 (2026-11-11 21:43, dima): yes, drift. the 🔧 codie's question was already in my orbit, and my 🔔 line repeated it. from now on, only the orbit ask. (context, not dima's words: "yes, drift" answers clio's question on the 🔔 lines; the 🔧 line is codie's question; the steer time is the 2143 chore time, since the raw has no time for it.)
 PK-363:W1077 (2026-11-11 21:43, dima): why did it drift? how to solve? did the silent message system stop working? i thought we finished it. ❓ (context, not dima's words: a question that follows W1076.)
 PK-363:W1078 (2026-11-11 21:43, dima): design and architecture. maybe parked tails lane codie can help? ❓ (context, not dima's words: "design and architecture" is a topic on its own line in the raw; "tails" as written, meaning the parked lanes.)
+
+PK-363:W1085 (2026-11-11 22:19, dima): (context, not dima's words: a fleet line pasted into the raw: "merge: gh pr merge 162 --squash (held, awaiting codie go)".) pick: run it once. who starts it? mods lane or herdr codie? when does the clicking probing finish? ❓
+PK-363:W1086 (2026-11-11 22:19, dima): I keep ticking non stop and it feels like an infinite ticking loop.
+PK-363:W1087 (2026-11-11 22:19, dima): (context, not dima's words: a fleet line pasted into the raw: the red lock on the band means the PR override is on, since yesterday at 16:37, with no end time; until it's off, a plain merge in frame or bytes gets past every guard except the brake.) when will I have the ability to pick myself when I allow PRs? ❓
+PK-363:W1088 (2026-11-11 22:19, dima): I actually like PR override to be on. do you need it off? ❓
+PK-363:W1079 (2026-11-11 22:11, dima): I was busy across everything and only now got back to you. what interesting things happened so far since my last message? print a compact brief, not too much information please. ❓
+PK-363:W1080 (2026-11-11 22:11, dima): I have a lot of clicks. I clicked everything. is clicking stopped and does it already work? ❓
+PK-363:W1081 (2026-11-11 22:11, dima): what about measures? I did `Rex terminal scroll sample` twice and on the second attempt herdr codie seemed to tell me that it worked. did it work? ❓ (context, not dima's words: "herdr codie" is the herdr lane member, as written in the raw.)
+PK-363:W1082 (2026-11-11 22:11, dima): what about architecture review? is it settled? I briefly read it and I think we can start with it. it's fine. ❓
+PK-363:W1083 (2026-11-11 22:11, dima): any other interesting info for me? ❓
+PK-363:W1084 (2026-11-11 22:11, dima): also tell what's next. you told you want to grill, to interview me on assistant, or what? what's the next step? ❓ (context, not dima's words: "assistant" as written in the raw.)
 <!-- SECTION:NOTES:END -->
