@@ -513,7 +513,13 @@
   - then its `read` field, github's own clock before the feeds were read, is the next poll's `--since`: a poll loop misses no comment and repeats at most one second's
   - given an agent env, then json; `--board` draws the human view
   - given a pr number that is not digits, a `--since` that is not RFC 3339 or a repo that is not owner/name, then exit 2 before any request
-  - decision: reads go over the rest api as the x-codie-cc app, never through the `gh` binary — the tests run against a local fixture server; writes keep `x as codie -- gh` (FRM-364)
+  - decision: reads go over the rest api as the x-codie-cc app, never through the `gh` binary — the tests run against a local fixture server; writes keep `x as codie -- gh` (FRM-364), bar the thread reply below
+- ⬜ `x gh pr-review-comments-list [n]` and `x gh pr-review-comments-reply <id>` answer a reviewer's inline thread by its id (FRM-414)
+  - given a pr with open and resolved review threads, when the list runs, then only the open ones print, each with its id, file, line and first words, in github's order; a thread whose line left the diff is marked `outdated` at its old line
+  - given no pr number, then it reads the open pr of the cwd's branch
+  - given a thread id and `--body-file <file>`, when the reply runs, then the body posts byte for byte under that thread, outright, never as a pending review, and the envelope holds its url
+  - given a pr that is not digits, an id that is not a `PRRT_` thread, or a body file missing or blank, then exit 2 before any request
+  - decision: both go over github's graphql review threads as the x-codie-cc app, since the rest comments feed carries no resolved state, so the list and the reply share one id kind
 
 ## linear — tickets
 
