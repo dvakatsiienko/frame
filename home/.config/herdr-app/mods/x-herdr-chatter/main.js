@@ -58,6 +58,7 @@ import {
     pressLine,
     withPress,
 } from './band.js';
+import { codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import { openTarget } from './links.js';
@@ -1277,6 +1278,20 @@ export default class ClaudeChat extends View {
                     ),
                 );
                 if (fixed !== now) return this.box.set_value(fixed);
+            }
+            // a closed `code` span becomes one chip (chips.js); the replace fires this handler again with the same text
+            const spans = codeSpans(
+                now,
+                this.box.tokens().map((s) => s.range),
+            );
+            if (spans.length) {
+                for (const r of [...spans].reverse())
+                    this.box.replace_range_with_token(r, {
+                        id: `code-${r.start}-${Date.now()}`,
+                        label: now.slice(r.start + 1, r.end - 1),
+                        text: now.slice(r.start, r.end),
+                    });
+                return;
             }
             const hadText = Boolean(this.typed?.trim());
             this.typed = now;
@@ -5523,7 +5538,27 @@ export default class ClaudeChat extends View {
                                             // full width and keeps clear of it by one button-high bottom padding
                                             // (Textarea has no per-line inset to wrap around it)
                                             .pb(40)
-                                            .child(Textarea.new(this.box))
+                                            .child(
+                                                Textarea.new(this.box).token(
+                                                    (tok) =>
+                                                        div()
+                                                            .px(4)
+                                                            .rounded(4)
+                                                            .bg(t.raised)
+                                                            .font_family(
+                                                                this.mono(),
+                                                            )
+                                                            .text_color(
+                                                                t.foreground,
+                                                            )
+                                                            .child(
+                                                                tok.token
+                                                                    .label ??
+                                                                    tok.token
+                                                                        .text,
+                                                            ),
+                                                ),
+                                            )
                                             .child(
                                                 div()
                                                     .id('send')

@@ -7,7 +7,8 @@ import { loadableSkills, skillHead } from './skills.js';
 
 const fs = {
     list: (dir: string) => readdir(dir).catch((): string[] => []),
-    read: (path: string) => readFile(path, 'utf8').catch(() => null),
+    read: (path: string) =>
+        readFile(path, 'utf8').catch((): string | null => null),
 };
 
 async function put(path: string, text: string) {
