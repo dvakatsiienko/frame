@@ -39,6 +39,7 @@ import {
     seatFacts,
     sentSteer,
     stateOfPid,
+    tickDoor,
     tickState,
     untickDoor,
     waitOf,
@@ -534,6 +535,23 @@ export default class FleetBoard extends View {
     /** @param {Context} cx @param {Row} s @param {Ask} ask @param {'tick' | 'replay'} verdict */
     async press(cx, s, ask, verdict) {
         const key = `${s.sid}:${ask.id}`;
+        const pending = this.sent.get(key)?.verdict ?? s.pending.get(ask.id);
+        if (verdict === 'tick' && tickDoor(pending) === 'drop') {
+            this.sent.delete(key);
+            this.pressError = null;
+            cx.notify();
+            try {
+                await dropPress(
+                    { read: readTextFile, write: writeTextFile },
+                    `${TICKS}/${s.sid}.jsonl`,
+                    ask.id,
+                    s.taken,
+                );
+            } catch (err) {
+                this.pressError = `${ask.id} not ticked: ${err instanceof Error ? err.message : err}`;
+            }
+            return cx.notify();
+        }
         const steer = this.steers.get(key)?.value().trim();
         const at = Date.now();
         this.sent.set(key, { at, verdict });
@@ -754,9 +772,7 @@ export default class FleetBoard extends View {
                         .child(
                             state === 'locked'
                                 ? '🔒 ticked, the session took it'
-                                : state === 'unticking'
-                                  ? '↩︎ unticking, the session drops it at its next read'
-                                  : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
+                                : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
                         ),
                 ),
             );

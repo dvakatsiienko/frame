@@ -18,6 +18,7 @@ import {
     seatFacts,
     sentSteer,
     stateOfPid,
+    tickDoor,
     tickState,
     unbold,
     untickDoor,
@@ -341,10 +342,8 @@ describe('a tick locks only when a turn takes it', () => {
         expect(tickState({ ...ask, mark: 'accepted' }, null)).toBe('ticked');
     });
 
-    test('an untick on its way to the stash reads as unticking', () => {
-        expect(tickState({ ...ask, mark: 'accepted' }, 'untick')).toBe(
-            'unticking',
-        );
+    test('an untick on its way to the stash draws open, with its tick button', () => {
+        expect(tickState({ ...ask, mark: 'accepted' }, 'untick')).toBe('open');
     });
 
     test('a locked ask is locked', () => {
@@ -379,6 +378,16 @@ describe('his second click writes the door that still reaches the seat', () => {
 
     test('a press the stash has read gets an untick line', () => {
         expect(untickDoor(null)).toBe('untick');
+    });
+});
+
+describe('a tick after an untick (dima, 14:32: «it just returns to the unticked state and i can tick again»)', () => {
+    test('an untick line still unread leaves the file, so the stash mark reads ticked again', () => {
+        expect(tickDoor('untick')).toBe('drop');
+    });
+
+    test('after the stash dropped the mark, a tick is an ordinary press', () => {
+        expect(tickDoor(null)).toBe('press');
     });
 });
 

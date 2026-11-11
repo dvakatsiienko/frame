@@ -268,14 +268,14 @@ export function inListOrder(rows, pids) {
 /**
  * what an ask's tick shows: 🔒 only once the published ask is locked, which a turn does, never the stash's 4 s read of
  * the press; until then a tick is ✅ and his second click takes it back, gated asks too (dima: «ticked and able to
- * untick until you actually receive them»); an untick on its way reads as unticking
+ * untick until you actually receive them»); an untick on its way draws open, so he can tick again at once
  * @param {Ask} ask
  * @param {Press['verdict'] | null | undefined} sent his press still in the ticks file, or just sent
- * @returns {'open' | 'ticked' | 'unticking' | 'locked' | 'replayed'}
+ * @returns {'open' | 'ticked' | 'locked' | 'replayed'}
  */
 export function tickState(ask, sent) {
     if (ask.isLocked) return 'locked';
-    if (sent === 'untick') return 'unticking';
+    if (sent === 'untick') return 'open';
     if (ask.mark === 'accepted' || sent === 'tick') return 'ticked';
     if (ask.mark || sent === 'replay') return 'replayed';
     return 'open';
@@ -297,6 +297,14 @@ export const sentSteer = (state, text) =>
  * @returns {'drop' | 'untick'}
  */
 export const untickDoor = (pending) => (pending === 'tick' ? 'drop' : 'untick');
+
+/**
+ * a tick after an untick: an untick line the stash has not read leaves the file, so the stash's mark reads ticked
+ * again; once the stash dropped the mark, the tick is an ordinary press
+ * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file
+ * @returns {'drop' | 'press'}
+ */
+export const tickDoor = (pending) => (pending === 'untick' ? 'drop' : 'press');
 
 // twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
 // reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)
