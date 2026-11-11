@@ -112,8 +112,17 @@ const WINDOW = {
             tabs: [
                 { id: 'tb1', terminals: [{ pane: 'p1', terminal: 't27' }] },
                 { id: 'tb2', terminals: [{ pane: 'p2', terminal: 't2p' }] },
+                // r1: a tab whose only pane is a mod, as `herdr-app ls` lists one (a real row, 2026-11-11 16:40)
+                {
+                    active: true,
+                    id: 'tb3',
+                    name: 'r1-probe',
+                    settled: false,
+                    terminals: [],
+                },
             ],
         },
+        { id: 'sp2', tabs: [{ id: 'tb4', terminals: [] }] },
     ],
 };
 type Tick = { at: number; id: string; targets: string[]; text: string };
@@ -229,6 +238,7 @@ for (const line of [
     'herdr-app do pane.close --pane=p2',
     'herdr-app do pane.close --pane p9',
     'herdr-app do tab.close --id tb2',
+    'herdr-app do tab.close --id tb9',
     'herdr-app do space.close --id sp1 --confirmed true',
     'echo ok && herdr-app do overlay.close',
     'hc ls; hc kill t20',
@@ -247,6 +257,9 @@ for (const line of [
     'herdr-app do overlay.close --id palette',
     'herdr-app do pane.close --pane p1',
     'herdr-app do tab.close --id tb1',
+    // r1: a mod-only tab ends no terminal (the herdr codie's pin-probe close, refused 16:05)
+    `herdr-app do tab.close '{"id":"tb3"}' >/dev/null`,
+    'herdr-app do space.close --id sp2',
     'herdr-app do pane.split',
     'hc kill --help 2>&1 | head -15',
     `herdr-app do overlay.close '{"id":"x-probe-setvalue"}' | tr -d '\\n'`,

@@ -1612,15 +1612,23 @@ function terminalsOf(close: HerdrClose, window: HerdrWindow | undefined) {
     if (close.scope === 'terminal')
         return close.target ? [close.target] : undefined;
     const spaces = window?.spaces ?? [];
-    const tabs = spaces.flatMap((s) =>
-        close.scope === 'space' && s.id !== close.target ? [] : (s.tabs ?? []),
-    );
+    const tabs = spaces
+        .flatMap((s) =>
+            close.scope === 'space' && s.id !== close.target
+                ? []
+                : (s.tabs ?? []),
+        )
+        .filter((t) => close.scope !== 'tab' || t.id === close.target);
     const terminals = tabs
-        .filter((t) => close.scope !== 'tab' || t.id === close.target)
         .flatMap((t) => t.terminals ?? [])
         .filter((t) => close.scope !== 'pane' || t.pane === close.target)
         .flatMap((t) => (t.terminal ? [t.terminal] : []));
-    return terminals.length ? terminals : undefined;
+    // a tab or space herdr lists with no terminal holds only mods, so its close ends none (r1: a pin-probe tab); a pane
+    // herdr never lists a mod's, so an empty pane stays unnamed
+    const isNamed =
+        (close.scope === 'tab' && tabs.length > 0) ||
+        (close.scope === 'space' && spaces.some((s) => s.id === close.target));
+    return terminals.length || isNamed ? terminals : undefined;
 }
 async function herdrJson($: EngineInterface, argv: string[]) {
     const run = await $.process
