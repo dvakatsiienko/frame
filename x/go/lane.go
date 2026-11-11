@@ -77,7 +77,8 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	if _, err := os.Stat(msgFile); err != nil {
 		return nil, usageFail("no message file at "+msgFile, "x lane commit <msg-file> -- <paths…>")
 	}
-	if len(paths) == 0 {
+	bumpName, _ := flags["bump"].(string)
+	if len(paths) == 0 && bumpName == "" {
 		return nil, usageFail("no paths — name what goes into the commit", "x lane commit "+msgFile+" -- <paths…>")
 	}
 	message, _ := filepath.Abs(msgFile)
@@ -146,6 +147,43 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 		dryIndex, dryTree = env, treeOf
 	} else {
 		r.skip("gates")
+	}
+	// the bump is written before the holds and the gates read the paths, and put back on any stop before the commit lands
+	var bumped *bumpTarget
+	landed := false
+	if bumpName == "" {
+		r.skip("bump", "refresh")
+	} else {
+		var was []byte
+		if err := r.Step("bump", "the plugin's patch version", func() (string, error) {
+			b, said, err := planBump(tree, bumpName)
+			if err != nil {
+				return "", err
+			}
+			if was, err = os.ReadFile(b.manifest); err != nil {
+				return "", err
+			}
+			if err := writeVersion(b.manifest, b.from, b.to); err != nil {
+				return "", err
+			}
+			bumped = &b
+			return said, nil
+		}); err != nil {
+			return nil, err
+		}
+		rel, _ := filepath.Rel(tree, bumped.manifest)
+		if !slices.Contains(paths, rel) {
+			paths = append(paths, rel)
+		}
+		defer func() {
+			if landed || (err == nil && !dry) {
+				return
+			}
+			_ = os.WriteFile(bumped.manifest, was, 0o644)
+			if !dry {
+				_, _ = git("reset", "-q", "--", rel)
+			}
+		}()
 	}
 	if err := r.Step("holds", "the paths another session holds", func() (string, error) {
 		if held := heldByOthers(tree, paths); len(held) > 0 {
@@ -329,13 +367,32 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	if stopped != nil {
 		return nil, stopped
 	}
+	landed = true
 	branch, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Done(fmt.Sprintf("%s on %s, %s", short(sha), branch.out, plural(len(present), "path")), "x lane push --apply")
 	data := ordered{{"branch", branch.out}, {"sha", sha}, {"tree", tree}}
 	if said := withWait(waited, ""); said != "" {
 		data = append(data, kv{"waited", said})
 	}
-	return data, nil
+	if bumped == nil {
+		return data, nil
+	}
+	data = append(data, kv{"bump", ordered{{"name", bumped.name}, {"from", bumped.from}, {"to", bumped.to}}})
+	if bumped.market == "" {
+		r.skip("refresh")
+		return data, nil
+	}
+	// the commit stands whatever the refresh says: its fail names the claude call to run again
+	var cache string
+	if err := r.Step("refresh", "the plugin's marketplace and install", func() (string, error) {
+		found, err := refreshPlugin(bumped.name+"@"+bumped.market, bumped.market, bumped.to)
+		cache = found
+		return home(cache), err
+	}); err != nil {
+		return nil, err
+	}
+	r.Done(fmt.Sprintf("%s on %s, %s %s in the cache; binds after a reload", short(sha), branch.out, bumped.name, bumped.to), "/reload-plugins")
+	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}), nil
 }
 
 // takeGateTurn waits for the machine-wide gate turn through frame's script, so one script keeps the queue's rules; the
