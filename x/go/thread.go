@@ -21,6 +21,7 @@ type thread struct {
 	Pid       int    `json:"pid,omitempty"`
 	Name      string `json:"name,omitempty"`
 	Cwd       string `json:"cwd,omitempty"`
+	ProcStart string `json:"procStart,omitempty"`
 	Role      string `json:"role,omitempty"`
 	Lane      string `json:"lane,omitempty"`
 	LaneKind  string `json:"laneKind,omitempty"`
@@ -110,28 +111,70 @@ func procStarts(threads []thread, starts []string) map[int]string {
 	return running
 }
 
-func readThreadStore(path string) threadStore {
+// a store that is there and does not parse refuses: a rewrite from it would drop every role
+func readThreadStore(path string) (threadStore, error) {
 	var store threadStore
-	if raw, err := os.ReadFile(path); err == nil {
-		_ = json.Unmarshal(raw, &store)
+	raw, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return store, nil
 	}
-	return store
+	if err != nil {
+		return store, err
+	}
+	if err := json.Unmarshal(raw, &store); err != nil {
+		return store, fmt.Errorf("%s does not parse (%w), so x leaves it as it is", path, err)
+	}
+	return store, nil
 }
 
-// the live registry, each entry joined to its record by session id; a dead pid or a gone file drops out, and a record
-// with no session yet stays only through its launch wait
+// a summon's record and a refresh each read, change and rewrite the whole store, so one runs at a time
+func lockThreadStore(path string) (unlock func(), err error) {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return nil, err
+	}
+	lock, err := os.OpenFile(path+".lock", os.O_CREATE|os.O_RDWR, 0o644)
+	if err != nil {
+		return nil, err
+	}
+	if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX); err != nil {
+		lock.Close()
+		return nil, err
+	}
+	return func() { lock.Close() }, nil
+}
+
 func refreshThreads(now time.Time) ([]thread, error) {
 	path := threadStorePath()
-	records := map[string]thread{}
-	if path != "" {
-		for _, t := range readThreadStore(path).Threads {
-			if t.Role != "" {
-				records[t.SessionID] = t
+	if path == "" {
+		return joinThreads(now, nil), nil
+	}
+	unlock, err := lockThreadStore(path)
+	if err != nil {
+		return nil, err
+	}
+	defer unlock()
+	store, err := readThreadStore(path)
+	if err != nil {
+		return nil, err
+	}
+	threads := joinThreads(now, store.Threads)
+	return threads, writeThreadStore(path, now, threads)
+}
+
+// the live registry, each entry joined to its record by session id, or by its pid and start when /clear or /resume
+// minted a new id for the same process; a joined record's time moves to now, a dead pid or a gone file drops out, and
+// a record not seen stays only through its launch wait
+func joinThreads(now time.Time, stored []thread) []thread {
+	records, byProcess := map[string]thread{}, map[string]string{}
+	for _, t := range stored {
+		if t.Role != "" {
+			records[t.SessionID] = t
+			if t.Pid > 0 && t.ProcStart != "" {
+				byProcess[strconv.Itoa(t.Pid)+" "+t.ProcStart] = t.SessionID
 			}
 		}
 	}
-	threads, starts := []thread{}, []string{}
-	seen := map[string]bool{}
+	threads, starts, from := []thread{}, []string{}, []string{}
 	if dir := sessionsDir(); dir != "" {
 		files, _ := filepath.Glob(filepath.Join(dir, "*.json"))
 		for _, file := range files {
@@ -149,19 +192,28 @@ func refreshThreads(now time.Time) ([]thread, error) {
 			if json.Unmarshal(raw, &entry) != nil || entry.SessionID == "" || !pidAlive(entry.Pid) {
 				continue
 			}
-			t := records[entry.SessionID]
-			t.SessionID, t.Pid, t.Name, t.Cwd = entry.SessionID, entry.Pid, entry.Name, entry.Cwd
-			threads = append(threads, t)
-			starts = append(starts, strings.Join(strings.Fields(entry.ProcStart), " "))
+			start := strings.Join(strings.Fields(entry.ProcStart), " ")
+			key := entry.SessionID
+			if _, ok := records[key]; !ok && start != "" {
+				if old, ok := byProcess[strconv.Itoa(entry.Pid)+" "+start]; ok {
+					key = old
+				}
+			}
+			t := records[key]
+			t.SessionID, t.Pid, t.Name, t.Cwd, t.ProcStart = entry.SessionID, entry.Pid, entry.Name, entry.Cwd, start
+			if t.Role != "" {
+				t.At = now.UnixMilli()
+			}
+			threads, starts, from = append(threads, t), append(starts, start), append(from, key)
 		}
 	}
 	// a row outlives a crash and its pid comes back as another process, so a row's start time must be its pid's
 	running := procStarts(threads, starts)
-	kept := threads[:0]
+	kept, seen := threads[:0], map[string]bool{}
 	for i, t := range threads {
 		if starts[i] == "" || running == nil || running[t.Pid] == starts[i] {
 			kept = append(kept, t)
-			seen[t.SessionID] = true
+			seen[t.SessionID], seen[from[i]] = true, true
 		}
 	}
 	threads = kept
@@ -175,18 +227,12 @@ func refreshThreads(now time.Time) ([]thread, error) {
 		threads[i].Display = threadDisplay(threads[i])
 	}
 	slices.SortFunc(threads, func(a, b thread) int { return strings.Compare(a.SessionID, b.SessionID) })
-	if path == "" {
-		return threads, nil
-	}
-	return threads, writeThreadStore(path, now, threads)
+	return threads
 }
 
 func writeThreadStore(path string, now time.Time, threads []thread) error {
 	body, err := json.Marshal(threadStore{V: 1, At: now.UnixMilli(), Threads: threads})
 	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
 	return atomicWrite(path, append(body, '\n'))
@@ -207,10 +253,26 @@ func writeThreadRecord(record thread, now time.Time) error {
 	if path == "" {
 		return nil
 	}
-	store := readThreadStore(path)
+	unlock, err := lockThreadStore(path)
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	store, err := readThreadStore(path)
+	if err != nil {
+		return err
+	}
+	// a record for a live thread keeps what the registry gave it, and a dispatch naming no lane keeps the summon's
+	if i := slices.IndexFunc(store.Threads, func(t thread) bool { return t.SessionID == record.SessionID }); i >= 0 {
+		live := store.Threads[i]
+		record.Pid, record.ProcStart, record.Name, record.Cwd = live.Pid, live.ProcStart, live.Name, live.Cwd
+		if record.Lane == "" {
+			record.Lane, record.LaneKind = live.Lane, live.LaneKind
+		}
+		store.Threads = slices.Delete(store.Threads, i, i+1)
+	}
 	record.At = now.UnixMilli()
 	record.Display = threadDisplay(record)
-	store.Threads = slices.DeleteFunc(store.Threads, func(t thread) bool { return t.SessionID == record.SessionID })
 	store.Threads = append(store.Threads, record)
 	return writeThreadStore(path, now, store.Threads)
 }

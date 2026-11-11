@@ -233,7 +233,7 @@
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
 - ✅ under `operator-override prs`, `x lane merge-auto <pr> --apply` lands every pr on the first call (FRM-524)
   - given the store holding `prs`, on a self-edit with no sign line, red ci, no clean, open threads, no reviewer round, no required checks or a dev build, from main or a wing, on any layer of a stack, then it reads none of those and lands; a failed read of any stops nothing; the envelope's `override`, the squash message (a stack's async merge takes none) and one line in `operator-override.log` name its `by` and `at`
-  - given his hold or the brake, or a failed read of either, then it stops as today, naming which; a line's `HOME` or `X_STATE` moves neither record; `--brake-check` answers the same read for frame and bytes to x-mod-guard's raw door, writing nothing but a ref fetch, a missing clone exiting non-zero; beside the brake it lists every repo's held prs in one list, a hold record that does not read named in `holdsUnread`, so the guard keeps no read of its own
+  - given his hold or the brake, or a failed read of either, then it stops as today, naming which; a line's `HOME` or `X_STATE` moves neither record; `--brake-check` answers the same read for frame and bytes to x-mod-guard's raw door, writing nothing but a ref fetch, a missing clone or an unread brake exiting non-zero with `brakeUnread` named and the holds still listed; beside the brake it lists every repo's held prs in one list, a hold record that does not read named in `holdsUnread`, so the guard keeps no read of its own
   - given github refuses the merge (a conflict, a draft, a ruleset), then it exits non-zero with github's words, prints no landing and logs no pass
   - given no store, a store that does not read, another scope, a grant past its `until`, or the override turned off after the read, then it waits as today
   - given a session's `HOME` or `X_STATE` pointing at a planted store, then it reads off: the path comes from the system's user record
@@ -443,6 +443,8 @@
   - given a brief whose backticks name a path, a `pnpm` script or an `x` verb the repo lacks, or a ticket id linear cannot find
   - when `x brief check <brief> --repo <path>` runs
   - then it fails and names each one with its line; a thing the brief asks to build passes when `(new)` follows it
+- ⬜ `x brief check <brief> --stamped` answers whether these bytes passed, from the hash and the stamp alone (FRM-570)
+  - given a brief whose stamp exists, then exit 0 with no repo and no network call; given a changed byte, then exit 1 naming the full `x brief check`; x-mod-guard's brief rule asks this on every codie summon
 - ✅ `x brief check` lints the exit lines
   - given a rate with no n, an exit line with no surface, an exit line into `_clio/`, a relayed approval with no time, jev with no budget, «clio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
   - when it runs
@@ -531,6 +533,9 @@
 
 - ⬜ `x thread list` and `x thread show <id>` answer a session's role, lane and ticket from one store (FRM-570)
   - given the session registry and the records x wrote at a summon or a dispatch, then each live session prints joined to its record by session id, its display name drawn from the record; a session with no record reads `unknown`
+  - given a session that `/clear` or `/resume` gave a new id, then its record moves to that id through its pid and start time, the role, lane and ticket kept; a joined record's time moves to the call, so one torn registry read never ages it out
+  - given two writers at once (a refresh beside a summon's record), then a lock beside the store lets one write at a time and neither record is lost; a store that does not parse refuses the call (exit 1) and stays as it is
+  - given a dispatch onto a live thread's record, then the record keeps its pid, name, cwd and start, and the summon's lane when the dispatch names none
   - given a pid that died (`kill -9`), a registry file gone (an archived session), or a row whose `procStart` is not its pid's start time as `ps` reads it (a crashed session's pid another process took), then it drops out of the store at the next call; a record whose session never started stays 10 minutes, then drops
   - given any call, then `~/.claude/shelf/threads.json` is rewritten, so a display reads it with no spawn; x-mod-stash's hooks call `x thread list` at session start, turn end and exit
   - given `show` with a session id or a pid no live session holds, then exit 1

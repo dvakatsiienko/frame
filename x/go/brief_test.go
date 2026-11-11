@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -92,5 +94,28 @@ func TestIsPathLike(t *testing.T) {
 		if got := isPathLike(c.token); got != c.want {
 			t.Errorf("isPathLike(%q) = %v, want %v", c.token, got, c.want)
 		}
+	}
+}
+
+// --stamped answers from the brief's hash and its stamp alone: a dead linear and no repo still answer, a changed byte refuses
+func TestBriefCheckStampedReadsOnlyTheStamp(t *testing.T) {
+	t.Parallel()
+	dir, state := t.TempDir(), t.TempDir()
+	brief := filepath.Join(dir, "brief.md")
+	body := "wish: none\n\n- ticket FRM-12, `docs/nope.md`\n"
+	write(t, brief, body)
+	sum := fmt.Sprintf("%x", sha256.Sum256([]byte(body)))
+	write(t, filepath.Join(state, "briefs", sum+".json"), "{}\n")
+	env := []string{"X_STATE=" + state, "X_LINEAR_URL=http://127.0.0.1:1"}
+
+	stamped := xIn(t, dir, env, "brief", "check", brief, "--stamped")
+	write(t, brief, body+"one more line\n")
+	stale := xIn(t, dir, env, "brief", "check", brief, "--stamped")
+
+	if stamped.code != 0 || stamped.data["sha256"] != sum {
+		t.Errorf("stamped: exit %d, want 0 with no network and no repo:\n%s", stamped.code, stamped.stdout)
+	}
+	if stale.code != 1 || !strings.Contains(stale.next, "x brief check "+brief) {
+		t.Errorf("changed: exit %d next %q, want 1 naming the full check:\n%s", stale.code, stale.next, stale.stdout)
 	}
 }

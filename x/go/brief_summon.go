@@ -21,8 +21,8 @@ var (
 	ticketArg   = regexp.MustCompile(`^(?:FRM|BYT)-\d+$`)
 	reviewedArg = regexp.MustCompile(`^(?:https://github\.com/\S+/pull/\d+|main:[0-9a-f]{7,40})$`)
 	appOfBrief  = regexp.MustCompile(`\bapps/([\w-]+)/`)
-	// a lane is named by its spec's dir, the name x lane dispatch and the lane plan share
-	laneSpecDir  = regexp.MustCompile(`\.scratch/([\w.-]+)/spec\.md\b`)
+	// a lane is named by its own spec's dir (the path after spec:), the name x lane dispatch and the lane plan share
+	laneSpecDir  = regexp.MustCompile(`\bspec:\s*['"]?[^\s'"]*?\.scratch/([\w.-]+)/spec\.md\b`)
 	laneKindLine = regexp.MustCompile(`(?m)^[-\s]*lane:\s*(side|quick|shift)\b`)
 )
 
@@ -188,7 +188,7 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 	if m := laneKindLine.FindStringSubmatch(text); m != nil {
 		record.LaneKind = m[1]
 	}
-	at := claudeCall.FindStringIndex(command)
+	at := claudeCallAt(command)
 	if at == nil {
 		return nil, usageFail("the claude call is quoted, so x cannot add its --session-id", "x brief summon "+quote(herdrClaude(command)))
 	}
@@ -287,14 +287,38 @@ func restamp(brief string) string {
 
 // the claude call as typed, quotes kept, as a herdr terminal runs it: in a pane of its own, so no --bg
 func herdrClaude(command string) string {
-	at := claudeCall.FindStringIndex(command)
+	at := claudeCallAt(command)
 	if at == nil {
 		return "claude -n '<name>' … \"$(cat <brief>)\" --remote-control"
 	}
 	return strings.TrimSpace(bgFlag.ReplaceAllString(command[at[0]:], " "))
 }
 
-var (
-	claudeCall = regexp.MustCompile(`(?:^|[\s;&|(])claude\s`)
-	bgFlag     = regexp.MustCompile(`\s--bg(?:\s|$)`)
-)
+// the claude the command runs: the first claude word outside quotes and $( ), so a quoted name holding the word
+// never takes the --session-id; its start and the index past its space
+func claudeCallAt(command string) []int {
+	var quoted byte
+	depth := 0
+	for i := 0; i < len(command); i++ {
+		c := command[i]
+		switch {
+		case quoted != 0:
+			if c == quoted {
+				quoted = 0
+			}
+		case c == '\'' || c == '"' || c == '`':
+			quoted = c
+		case c == '$' && strings.HasPrefix(command[i:], "$("):
+			depth++
+			i++
+		case c == ')' && depth > 0:
+			depth--
+		case depth == 0 && strings.HasPrefix(command[i:], "claude") && len(command) > i+6 && strings.IndexByte(" \t\n", command[i+6]) >= 0 &&
+			(i == 0 || strings.IndexByte(" \t\n;&|(", command[i-1]) >= 0):
+			return []int{i, i + 7}
+		}
+	}
+	return nil
+}
+
+var bgFlag = regexp.MustCompile(`\s--bg(?:\s|$)`)

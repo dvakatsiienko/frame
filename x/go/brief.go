@@ -79,6 +79,16 @@ func briefCheck(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, usageFail("no brief at "+path, "x brief check <brief.md> --repo <path>")
 	}
+	// the guard's question on every summon: the hash and its stamp only, so a slow linear never stands in for a refusal
+	if flags["stamped"] == true {
+		abs, _ := filepath.Abs(path)
+		sum, stamp := briefStamp(raw)
+		if !exists(stamp) {
+			return nil, &Fail{Refused: true, Msg: "no x brief check stamp for these bytes of " + home(abs), Next: "x brief check " + quote(path)}
+		}
+		r.Done("stamped", home(stamp))
+		return ordered{{"brief", abs}, {"sha256", sum}, {"stamp", stamp}}, nil
+	}
 	repo, err := repoRoot(flags, "x brief check <brief.md> --repo <path>")
 	if err != nil {
 		return nil, err

@@ -219,8 +219,9 @@ func overrideClones() [][2]string {
 	}
 }
 
-// x-mod-guard's read before a raw merge: the brake through brakeOn, a failed read exits non-zero; dima's holds through
-// readAllHolds, a hold record that does not read named in holdsUnread, so the guard reads every merge as held
+// x-mod-guard's read before a raw merge: the brake through brakeOn, a failed read exits non-zero and names itself in
+// brakeUnread, the holds still beside it; dima's holds through readAllHolds, a hold record that does not read named in
+// holdsUnread, so the guard reads every merge as held
 func brakeCheckPlan(r *Run) (any, error) {
 	r.Open("frame and bytes")
 	answer := map[string]any{"brake": "", "holds": []string{}, "holdsUnread": ""}
@@ -229,17 +230,28 @@ func brakeCheckPlan(r *Run) (any, error) {
 	} else {
 		answer["holds"] = held
 	}
+	unread := func(err error) error {
+		// no brake field at all: a reader that misses brakeUnread still finds no off answer
+		delete(answer, "brake")
+		answer["brakeUnread"] = err.Error()
+		fail, isFail := errors.AsType[*Fail](brakeReadFail(err))
+		if !isFail {
+			fail = &Fail{Msg: brakeReadFail(err).Error()}
+		}
+		fail.Data = answer
+		return fail
+	}
 	clones := overrideClones()
 	if len(clones) == 0 {
-		return nil, brakeReadFail(errors.New("no clone to read it from"))
+		return nil, unread(errors.New("no clone to read it from"))
 	}
 	for _, clone := range clones {
 		if err := os.Chdir(clone[1]); err != nil {
-			return nil, brakeReadFail(fmt.Errorf("no clone of %s: %w", clone[0], err))
+			return nil, unread(fmt.Errorf("no clone of %s: %w", clone[0], err))
 		}
 		brake, err := brakeOn(clone[0], "main")
 		if err != nil {
-			return nil, brakeReadFail(err)
+			return nil, unread(err)
 		}
 		if brake != "" {
 			r.Done("on: "+clone[0]+" "+brake, "")

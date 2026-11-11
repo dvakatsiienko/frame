@@ -204,6 +204,37 @@ func withSessionID(command string, got ran) string {
 	return strings.Replace(command, "claude ", "claude --session-id "+sid+" ", 1)
 }
 
+// a quoted name holding the word claude comes before the call: the id goes after the claude x runs, never into the name
+func TestBriefSummonAddsTheSessionIDAfterTheClaudeItRuns(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	brief := w.brief(t, goodBrief, true)
+	command := "hc run --bg --no-parent --no-notify --name 'the claude codie' --cwd " + w.repo + " -- claude -n '🌗 🔧 codie: FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
+
+	got := w.summon(t, command, "HC_TERMINAL_ID=t9")
+
+	sid, _ := got.data["sessionId"].(string)
+	want := strings.Replace(command, "-- claude ", "-- claude --session-id "+sid+" ", 1)
+	if got.code != 0 || got.data["argv"] != want {
+		t.Fatalf("exit %d argv %v, want %q:\n%s", got.code, got.data["argv"], want, got.stdout)
+	}
+}
+
+// the lane is the summon's own spec, never another lane's spec the brief mentions first
+func TestBriefSummonNamesTheLaneByItsOwnSpec(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	brief := w.brief(t, goodBrief+"\nbuilt on what .scratch/mods-lane-6/spec.md shipped\nthe spec: /f/.scratch/cli-lane-8/spec.md\n", true)
+
+	got := w.summon(t, codieArgv(w.repo, brief), "X_THREADS="+store, "X_SESSIONS="+t.TempDir())
+
+	written, _ := readThreadStore(store)
+	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Lane != "cli-lane-8" {
+		t.Fatalf("exit %d, records %+v, want lane cli-lane-8:\n%s", got.code, written.Threads, got.stdout)
+	}
+}
+
 // exit 14: a summoned codie and sixth sense each leave their role, lane and ticket under the id their argv carries
 func TestBriefSummonWritesTheThreadRecordUnderItsSessionID(t *testing.T) {
 	t.Parallel()

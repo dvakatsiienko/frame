@@ -436,8 +436,10 @@ func TestBrakeCheckWithNoCloneToReadExitsNonZero(t *testing.T) {
 	t.Parallel()
 	for _, clones := range []string{"", "o/b=/no/such/clone"} {
 		got := xIn(t, t.TempDir(), []string{"X_OVERRIDE_CLONES=" + clones}, "lane", "merge-auto", "--brake-check")
-		if got.code == 0 || !strings.Contains(got.stdout, "the brake did not read") {
-			t.Errorf("clones %q: exit %d\n%s", clones, got.code, got.stdout)
+		// the holds still read, so the guard keeps dima's holds apart from an unread brake
+		holds, isList := got.data["holds"].([]any)
+		if got.code == 0 || !strings.Contains(got.stdout, "the brake did not read") || !isList || len(holds) != 0 || got.data["holdsUnread"] != "" || got.data["brakeUnread"] == "" || got.data["brake"] != nil {
+			t.Errorf("clones %q: exit %d, data %v\n%s", clones, got.code, got.data, got.stdout)
 		}
 	}
 }
