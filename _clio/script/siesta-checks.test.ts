@@ -10,6 +10,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { gitEnv } from '../../script/lib/git-fixture.ts';
+
 const SID = 's-clio';
 const CHECKS = [
     'pocket-check',
@@ -504,7 +506,7 @@ describe('siesta-checks', () => {
                         'commit.gpgsign=false',
                         ...args,
                     ],
-                    { encoding: 'utf8' },
+                    { encoding: 'utf8', env: gitEnv(), timeout: 10_000 },
                 );
             git('init', '-q', '-b', 'main');
             git('commit', '-q', '--allow-empty', '-m', 'landed');

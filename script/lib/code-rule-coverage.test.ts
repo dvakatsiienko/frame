@@ -17,7 +17,7 @@ const globs = new Set(
 
 // file types in this repo that are data, docs or media, never code the rule should load on
 const notCode = new Set(
-    'md svg png json jsonc jsonl jpg jpeg avif webp gif ico yml yaml toml plist txt lock gitignore gitattributes csv woff woff2 ttf otf mp4 mov wav mp3 log tape sum mod keep example env pdf'.split(
+    'md svg png json jsonc jsonl jpg jpeg avif webp gif ico yml yaml toml plist txt lock gitignore gitattributes csv woff woff2 ttf otf mp4 mov wav mp3 log tsv tape sum mod keep example env pdf'.split(
         ' ',
     ),
 );
