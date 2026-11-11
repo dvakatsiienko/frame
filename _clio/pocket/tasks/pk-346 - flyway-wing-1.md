@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T21:23:00Z'
+updated_date: '2026-11-11T21:26:00Z'
 labels:
   - s
   - clio-wing-1
@@ -18,8 +18,8 @@ ordinal: 1001
 <!-- AC:BEGIN -->
 - [ ] #1 cli lane 8 running (#161): FRM-570 one reader per rule, rule 9 a thread's identity by session id (re-signed 19:36), names x lane plan-steps, x thread, x linear sign-check; then FRM-424 → FRM-436 → FRM-572; spec ~/frame/.scratch/cli-lane-8/
 - [ ] #2 «seat» saved names, renamed only with every reader in the same change: the ~/.local/state/clio/seats/ dir (siesta-gate, live files to migrate), the seat key in ctx-init trace rows (a read-both fallback), the seat=clio / seat=crow herdr labels (x-mod-guard, prompt-groom read them), CLIO_SEAT, seatOf (prompt-groom imports it)
-- [ ] #3 crow second wind has no door: hc send wraps a /compact as text (it never runs), hc keys + enter ran it at 22:07 but x-mod-guard's pane-keys rule warns on it; find crow's own door (her second-wind press, or an x verb that compacts an idle crow) and tell main, crow is hers (dima 22:03)
-- [ ] #4 - [ ] the wishkeeper regression set first replay: 7 cases against the landed card (29db59e4+), graded caught/missed into docs/test-drive/wishkeeper-cache/regression-set.md § replays (owed since the 22:57 siesta)
+- [ ] #3 - [ ] the wishkeeper regression set first replay: 7 cases against the landed card (29db59e4+), graded caught/missed into docs/test-drive/wishkeeper-cache/regression-set.md § replays (owed since the 22:57 siesta)
+- [ ] #4 - [ ] 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18
 - [ ] #5 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
 - [ ] #6 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
 - [ ] #7 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
@@ -308,4 +308,8 @@ PK-346:W19 (2026-11-11 22:52, dima): I previously asked to low-tide over the pil
 PK-346:W20 (2026-11-11 22:52, dima): I go to clio now.
 PK-346:W21 (2026-11-11 23:01, dima): print the cli plan, and when I can have new pretty thread names.
 PK-346:W22 (2026-11-11 23:05, dima): is that tomorrow because midnight is in an hour or less, or what? ❓
+
+done 2026-11-11 23:26: crow second wind has no door: hc send wraps a /compact as text (it never runs), hc keys + enter ran it at 22:07 but x-mod-guard's pane-keys rule warns on it; find crow's own door (her second-wind press, or an x verb that compacts an idle crow) and tell main, crow is hers (dima 22:03)
+
+23:28: crow second wind line handed to main (crow is hers): the door is crow's own orbit second-wind op, told by SendMessage; not fired live
 <!-- SECTION:NOTES:END -->
