@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-10T22:14:00Z'
+updated_date: '2026-11-11T12:06:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,18 +17,22 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 herdr-first summons, the rest: the first herdr-summoned side-lane codie names its pwd in its first reply (proves it makes its own tree); x brief summon help text is a line on FRM-572
-- [ ] #2 summon skills, three wording fixes from wishkeeper (00:15): x:herdr tab step says who asked (his 00:06 fix now, via main) and «these two do calls», names scripts/seat-tab.ts as the proof that terminal.keep returns the tab; _crow stop line gains the pane case; crew-lead quotes «Everyone gets summoned in Herdr» whole after a trim — on: 2026-11-11
-- [ ] #3 cli walk after the usage reset (Mon 11-16 06:00): FRM-560 with FRM-414 riding, then FRM-570, FRM-424, FRM-436; the parked codie and sixth sense reused; the spec dir copied back from .scratch/_archive/cli-lane-7-frm-384 — on: 2026-11-16
-- [ ] #4 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
-- [ ] #5 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11
-- [ ] #6 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #7 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #8 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
-- [ ] #9 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #10 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #11 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #12 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
-- [ ] #13 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 533 → 539, then FRM-537 on his word; the dated reads ride it; resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
+- [ ] #2 codeberg mirror job red since 11-09 (frame, run 43008455845): find the cause, fix it (dima 14:04)
+- [ ] #3 🐦‍⬛ crow weekly grade, due today: 5 notes from crow/notes.jsonl, dima grades with me, round logged in docs/test-drive/crow-receipts.md (FRM-502)
+- [ ] #4 evergreen turn, delegated from main — waits for: dima's word after the flyway is ordered (o2)
+- [ ] #5 summon skills, three wording fixes from wishkeeper (00:15): x:herdr tab step says who asked (his 00:06 fix now, via main) and «these two do calls», names scripts/seat-tab.ts as the proof that terminal.keep returns the tab; _crow stop line gains the pane case; crew-lead quotes «Everyone gets summoned in Herdr» whole after a trim — on: 2026-11-11
+- [ ] #6 cli walk after the usage reset (Mon 11-16 06:00): FRM-560 with FRM-414 riding, then FRM-570, FRM-424, FRM-436; the parked codie and sixth sense reused; the spec dir copied back from .scratch/_archive/cli-lane-7-frm-384 — on: 2026-11-16
+- [ ] #7 usage: weekly reset at 100 % today; from monday all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #8 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
+- [ ] #9 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11
+- [ ] #10 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #11 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #12 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
+- [ ] #13 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #14 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #15 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #16 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #17 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 533 → 539, then FRM-537 on his word; the dated reads ride it; resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
 <!-- AC:END -->
 
 ## Implementation Notes
