@@ -141,10 +141,17 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: a thread switch never writes a draft; only typing, a quote, a completion and a send write it, under the thread the box shows (live 19:17:58)
   - cause, proven: the switch ran inside render, and herdr refuses the caret set there, so the render failed midway: the box took the new thread's draft while it kept the old thread's address, and the next switch wrote that under the old thread (the caret line came with FRM-556, the write with zoo's copy). the switch now runs in a task (live 19:21:41)
   - proof: `herdr-app do tab.next` before the fix drew «This view could not be re-rendered… set_selected_range cannot run during render»; after it, no error, herdr-codie's band and transcript showed, and back on wing 1 its draft «t» was in the box (shots 1921, 1922)
-- ✅ every reply of an earlier turn stays open
+- ⬜ every reply of an earlier turn stays open
   - given a thread sent several replies between two of dima's messages (a peer's ping starts no turn)
   - when that turn is no longer the last
-  - then each reply still shows in full; only the tools and notes between them fold into «▸ N tools»
+  - then each reply still shows, a long one its first lines with «Show more» (below); only the tools and notes between them fold into «▸ N tools»
+- ⬜ a long reply of an earlier turn shows its first lines, «Show more» opens it
+  - given a reply past about 40 lines, in a turn before dima's last message
+  - then its first ~24 lines show, and «▾ Show more · N more lines» under them; only those lines are laid out
+  - when dima presses Show more
+  - then the reply opens whole where it is, «▴ Show less» under it; Show less folds it and brings its start back into view
+  - and the replies after his last message never fold, a search hit shows whole, a cut code block still copies its whole text, a prompt card is never cut
+  - decision: the fold waits for his next message, so a reply never collapses while he reads it (review, 00:54)
   - proof: a probe thread's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
   - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
 - ⬜ once he scrolls up, nothing but his own hand moves his view (FRM-562:W18, W19)

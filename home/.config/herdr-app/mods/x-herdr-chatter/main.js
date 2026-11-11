@@ -63,6 +63,7 @@ import { splitBlocks, withPrompt } from './blocks.js';
 import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
+import { foldBlocks } from './fold.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
 import * as ask from './question.js';
@@ -121,9 +122,9 @@ const LOOK_DEFAULT = {
 const HEX = /^#[0-9a-f]{6}$/i;
 /**
  * a row of the chat's list (rowsOf): its key is the list's and its press's
- * @typedef {{ key: string, kind: 'earlier' | 'turn' | 'item' | 'detail' | 'part' | 'file', id?: string | number,
+ * @typedef {{ key: string, kind: 'earlier' | 'turn' | 'item' | 'detail' | 'part' | 'file' | 'fold', id?: string | number,
  *   item?: any, x?: any, mine?: boolean, part?: 'text' | 'codehead' | 'code' | 'prompt', b?: any, isFirst?: boolean,
- *   label?: string, path?: string }} Row
+ *   label?: string, path?: string, hidden?: number, isOpen?: boolean, openKey?: string }} Row
  */
 // Ready-made picks beside the hex boxes: dark and light backgrounds, and text for either.
 // Maps, never objects: the swatches draw in this order, and a formatter sorts an object's keys.
@@ -1287,6 +1288,8 @@ export default class ClaudeChat extends View {
         this.open = new Set();
         // Earlier turns whose work was clicked open, as "<address>:<index of its first item>".
         this.unfolded = new Set();
+        // long replies he opened with Show more, by row key
+        this.longOpen = new Set();
         // Images pasted for a dev container's Claude: their paths in the container, by agent address,
         // sent with the next message (see pasteIntoContainer).
         this.pasted = new Map();
@@ -4810,6 +4813,33 @@ export default class ClaudeChat extends View {
             .child(div().truncate().child(row.label));
     }
 
+    // Under a long reply's first lines: «Show more · N more lines», and «Show less» once open; a press toggles it
+    // (clickRow)
+    /** @param {any} t @param {Row} row */
+    foldRow(t, row) {
+        return h_flex()
+            .id(`fold-${row.key}`)
+            .gap(6)
+            .items_center()
+            .px(8)
+            .py(3)
+            .rounded(RADIUS.control)
+            .cursor_pointer()
+            .text_size(px(TEXT.sm))
+            .text_color(t.accent)
+            .hover((s) => s.bg(t.hover))
+            .child(row.isOpen ? '▴ Show less' : '▾ Show more')
+            .when(!row.isOpen, (el) =>
+                el.child(
+                    div()
+                        .text_color(t.dim)
+                        .child(
+                            `${row.hidden} more line${row.hidden === 1 ? '' : 's'}`,
+                        ),
+                ),
+            );
+    }
+
     // where he reads, as the store keeps it: the row's key for a tab switch, its item's uuid for a reload
     /** @returns {Place} */
     place() {
@@ -4928,7 +4958,16 @@ export default class ClaudeChat extends View {
         const rows = [];
         if (!sub && this.head > 0)
             rows.push({ key: 'earlier', kind: 'earlier' });
-        for (const x of listed) {
+        // replies after his last message never fold: that turn is the one he reads now, and a reply folding while a
+        // newer one lands would collapse under his eyes. A turn folds once he sends the next message.
+        let lastMine = -1;
+        for (let i = listed.length - 1; i >= 0 && lastMine < 0; i--)
+            if (!listed[i].work && listed[i][0]?.kind === 'user') lastMine = i;
+        // characters a line of a reply's bubble holds, for the fold's estimate
+        const perLine = Math.floor(
+            ((this.bubbleW ?? 600) - 28) / (px(13) * 0.55),
+        );
+        for (const [at, x] of listed.entries()) {
             if (x.work) {
                 rows.push({ key: x.key, kind: 'turn', x });
                 continue;
@@ -4957,8 +4996,14 @@ export default class ClaudeChat extends View {
                 );
             };
             if (item.kind === 'claude' && !this.markIn(id)) {
-                const blocks = this.blocksOf(item);
-                if (blocks.length > 1 || blocks[0]?.kind !== 'text') {
+                const all = this.blocksOf(item);
+                // a long reply shows its first lines, then Show more; a search hit or the newest shows whole
+                const fold = at < lastMine ? foldBlocks(all, perLine) : null;
+                // by thread and transcript line: a position-based key repeats in another thread or after a /clear
+                const openKey = `${this.address}|${item.uuid ?? key}`;
+                const isOpen = Boolean(fold) && this.longOpen.has(openKey);
+                const blocks = fold && !isOpen ? fold.shown : all;
+                if (fold || blocks.length > 1 || blocks[0]?.kind !== 'text') {
                     blocks.forEach((b, k) => {
                         const at = {
                             b,
@@ -4986,6 +5031,16 @@ export default class ClaudeChat extends View {
                                 part: b.kind === 'text' ? 'text' : 'prompt',
                             });
                     });
+                    if (fold)
+                        rows.push({
+                            hidden: fold.hidden,
+                            id,
+                            isOpen,
+                            item,
+                            key: `${key}:fold`,
+                            kind: 'fold',
+                            openKey,
+                        });
                     files();
                     continue;
                 }
@@ -5027,17 +5082,19 @@ export default class ClaudeChat extends View {
                       .w_full()
                       .justify_center()
                       .child(button(t, px, 'earlier', 'Show earlier'))
-                : row.kind === 'file'
-                  ? this.claudeLook(t, this.fileRow(t, row), false)
-                  : row.kind === 'turn'
-                    ? this.turnRow(t, row.x, found)
-                    : row.kind === 'part'
-                      ? this.replyPart(t, row)
-                      : row.kind === 'detail'
-                        ? isRelay(row.item)
-                            ? this.relayBody(t, row.item)
-                            : this.toolBody(t, row.item)
-                        : this.bubble(t, row.item, row.id);
+                : row.kind === 'fold'
+                  ? this.claudeLook(t, this.foldRow(t, row), false)
+                  : row.kind === 'file'
+                    ? this.claudeLook(t, this.fileRow(t, row), false)
+                    : row.kind === 'turn'
+                      ? this.turnRow(t, row.x, found)
+                      : row.kind === 'part'
+                        ? this.replyPart(t, row)
+                        : row.kind === 'detail'
+                          ? isRelay(row.item)
+                              ? this.relayBody(t, row.item)
+                              : this.toolBody(t, row.item)
+                          : this.bubble(t, row.item, row.id);
         return div()
             .w_full()
             .px(pad)
@@ -5216,6 +5273,24 @@ export default class ClaudeChat extends View {
             exec('open', [row.path]).catch(() => {});
             return;
         }
+        if (row.kind === 'fold') {
+            // Show more grows the reply downward from where it is; Show less brings its start back into view
+            const reply = row.openKey;
+            this.follow = false;
+            if (this.longOpen.delete(reply)) {
+                const first = this.flat.find((r) => r.id === row.id)?.key;
+                if (first) {
+                    this.anchor = {
+                        how: 'top',
+                        key: first,
+                        until: Date.now() + 1500,
+                    };
+                    this.reanchor = true;
+                }
+            } else this.longOpen.add(reply);
+            cx.notify();
+            return;
+        }
         if (row.kind === 'turn') {
             // the row stays where it is and the work opens below it
             this.unfolded.has(key)
@@ -5224,7 +5299,8 @@ export default class ClaudeChat extends View {
             this.follow = false;
         } else if (row.part === 'codehead') {
             if (!row.b.isClosed) return;
-            cx.write_to_clipboard(row.b.text);
+            // a folded code block copies its whole text, not the lines it shows
+            cx.write_to_clipboard(row.b.full ?? row.b.text);
             this.copied = { at: Date.now(), key };
             cx.timer.after(1600, (cx) => cx.notify());
         } else if (row.part === 'prompt') {

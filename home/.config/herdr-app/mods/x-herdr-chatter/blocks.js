@@ -2,7 +2,7 @@
 // under a 📋 ribbon that names a session or an agent becomes a prompt card that fills his box; a «copy → terminal»
 // ribbon keeps its fence a code block. the ribbons and the ✂️ end line are the fleet's own copy-block frame
 
-/** @typedef {{ kind: 'text', text: string } | { kind: 'code', lang: string, text: string, isClosed: boolean } | { kind: 'prompt', to: string, text: string }} Block */
+/** @typedef {{ kind: 'text', text: string } | { kind: 'code', lang: string, text: string, isClosed: boolean, full?: string } | { kind: 'prompt', to: string, text: string }} Block */
 
 const RIBBON = /^📋\s*\*\*copy\s*→\s*(.+?)\*\*\s*📋\s*$/;
 const END = /^✂️\s*\*\*end\*\*\s*✂️\s*$/;
