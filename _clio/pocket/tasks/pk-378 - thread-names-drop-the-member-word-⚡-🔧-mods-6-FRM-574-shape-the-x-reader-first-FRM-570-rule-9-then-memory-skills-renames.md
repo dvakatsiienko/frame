@@ -6,6 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-11T17:28:00Z'
+updated_date: '2026-11-11T17:28:00Z'
 labels:
   - s
   - clio-wing-1
@@ -15,4 +16,15 @@ type: task
 ordinal: 51000
 ---
 
+## Implementation Notes
 
+<!-- SECTION:NOTES:BEGIN -->
+PK-378:W1 (2026-11-11 19:15, dima): currently the thread names don't fit in the view for me. they are quite too long. what do you think?
+PK-378:W2 (2026-11-11 19:15, dima): maybe we drop words like «codie» and «sixth sense»? the emoji already describes them: the wrench and the magnifying glass. palette for designer. and who else do we have, a designer? list every other type of thread that has such a shape. ❓ (context, not dima's words: "herder" read as "herdr" in W5, per the earlier grooms.)
+PK-378:W3 (2026-11-11 19:15, dima): clio, its wings, crow and helga are fine. leave them.
+PK-378:W4 (2026-11-11 19:15, dima): idea: what if we add one more emoji? ⚡ and 🌓 stay, they show quick or side lane (side has a pr). 🔧 🔎 and the rest stay, they tell who it is.
+PK-378:W5 (2026-11-11 19:15, dima): new: an emoji that tells where the lane works: cli, mods, herdr, speak app, chords app, sys app. or not a good idea? it will require maintaining an emoji for each case? or a balanced approach: an emoji for herdr, mods and cli, since we run them always daily, but a simpler approach for an emoji for apps, because we have a lot of them? ❓ (context, not dima's words: "herder" read as "herdr".)
+PK-378:W6 (2026-11-11 19:25, dima): implement new thread names everywhere in all your memories and skills. use the auto memory skill to update and refresh all current running thread names, so they reflect where they are currently.
+
+kept here, not FRM-567: that one is herdr's tab label, this is the cc session name every seat carries. the thread names wait on o41: the x reader first, or a mods rider now.
+<!-- SECTION:NOTES:END -->
