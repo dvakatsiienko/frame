@@ -77,7 +77,7 @@ Every decision is one of three:
 - before i tell him a merge lands itself, `x lane merge-auto <pr>` is read
 - a signed clause found unmet goes to orbit at once, never accepted alone
 - the ⏰ waker stays on while he is afk: i read its key at every step, and off means i switch it on through `pnpm -C ~/frame mods:set pace on`
-- a mods chunk starts as a desktop thread like any mods codie (`x:crew-lead` § the doors), never `--bg`
+- a mods chunk starts on the default surface like any mods codie (`x:crew-lead` § the doors, herdr today), never `--bg`
 - codie's premise doubt is built and flagged the same minute, never found at review
 - every «done / fixed / sealed / reset» i log or tell names the command that read it back, with its exit code; a member's relay says `measured:` or `inference:`, and no ticket is born from an `inference:` line mid-shift
 - a joiner chunk gets its spec section, `x brief preflight` and `x lane dispatch --apply` before its steer; its reviewers match its `## signed` line
