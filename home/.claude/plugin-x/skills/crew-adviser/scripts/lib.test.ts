@@ -96,7 +96,7 @@ describe('proposalOf reads a proposal written by Bash', () => {
             ),
         ).toEqual({
             kind: 'proposal',
-            path: `${homedir()}/frame/_clio/.scratch/h/g-proposal.md`,
+            path: join(homedir(), 'frame/_clio/.scratch/h/g-proposal.md'),
         });
         expect(proposalOf('Bash', undefined, command, '/z')).toEqual({
             kind: 'proposal',
