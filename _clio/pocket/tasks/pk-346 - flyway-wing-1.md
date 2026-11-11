@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T18:59:00Z'
+updated_date: '2026-11-11T19:00:00Z'
 labels:
   - s
   - clio-wing-1
@@ -249,4 +249,6 @@ done 2026-11-11 20:00: FRM-550 a seat names the pattern dima decided before it a
 done 2026-11-11 20:24: FRM-575 clio-revive: its sign through clio:shape-lane (the open probe: a throwaway seat killed and revived, cache read), then a quick lane builds it (FRM-575 Todo)
 
 done 2026-11-11 20:40: shepherdr borrow hunt (main, dima o66 20:25, «wing 1 does SW and start»): read-only, source ~/frame/.scratch/herdr-lane/shepherdr-src (be647c8) + the service on :7788 once installed; its coordinator, task-a*, worker/reviewer templates vs our crew-lead, lanes, glide, orbit; write ~/frame/.scratch/herdr-lane/shepherdr-borrow-wing-1.md, each find with file:line and what it replaces; no layout switch, no install, nothing landed; [done] to main with the path
+
+PK-346:W3 (2026-11-11 20:32, dima): yes. (context, not dima's words: answers o53, the «seat» ban covers code too, renamed now, a retired-term glossary line and a check that refuses «seat»; 174 code hits; clio-start.sh:3 still has --label seat=clio)
 <!-- SECTION:NOTES:END -->
