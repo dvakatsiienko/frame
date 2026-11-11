@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T18:42:00Z'
+updated_date: '2026-11-11T18:50:00Z'
 labels:
   - m
   - clio-main
@@ -2039,4 +2039,6 @@ PK-363:W1049 (2026-11-11 20:42, dima): i provided screenshots with examples of h
 PK-363:W1050 (2026-11-11 20:42, dima): other than this i don't see anything else useful, because the left side and the task side to the right are empty. try to reply in short, because i'm overloaded and want everything done fast.
 PK-363:W1051 (2026-11-11 20:42, dima): is everyone busy meanwhile? i don't want everyone paused. ❓
 PK-363:W1052 (2026-11-11 20:42, dima): what else to explore in herdr: propose. can you use "tasks" to the right, how to see how it works? propose what else to explore. ❓ (context, not dima's words: "herder" read as "herdr", as in earlier grooms.)
+
+PK-363:W1053 (2026-11-11 20:49, dima): assistant: how to start it? ❓ (context, not dima's words: the raw has this line alone, after a separator; "assistant" is the word dima used, not a name.)
 <!-- SECTION:NOTES:END -->
