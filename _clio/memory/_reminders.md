@@ -78,7 +78,6 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉 flip the raw `gh pr merge` refusal from warn-only to enforcing, a mods lane slice before FRM-505 and before BYT-94's required-check flip (his o48, moving his o10); its count reads through `pnpm mods:replay`, since the hint records no warned event — set 2026-11-06
 ⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514): read the guide-before-first-edit share, `pnpm memory-load:guide-share`, against 47 % and the 90 % bar; under the bar the chunk reopens; and `pnpm memory-load:replay` for the rows' false fires (his «ok and measure», o43) — set 2026-11-06 · due: 2026-11-20
 ⏰ 🦉 re-login to claude before 2026-12-01, the login ends then (FRM-508's read, his o4) — set 2026-11-07 · due: 2026-11-24
-⏰📌 🦉 reopen the cpu overload with dima, FRM-525: `docs/knowledge/cpu-overload/cases.md` § next; dies when it closes — set 2026-11-07 · due: 2026-11-07
 
 
 ⏰ 🔬 fable 5.2 research, a week after its release — dima 2026-11-10 (PK-363:W195): «research about refreshing models in a week (set a reminder)»; W196: what he saw so far, «slightly stronger than opus 5.5, but twice as expensive, and ~20% cheaper than fable 5.1. opus 5.5 medium is still the baseline, imo.» run `recipes/refresh-crew-coordinator/recipe.md` for fable 5.2 once bench data is seeded, then the model cards — set 2026-11-10 · due: 2026-11-17
