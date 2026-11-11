@@ -2039,10 +2039,26 @@ type OpenAsk = {
     isResolved?: boolean;
 };
 const OPEN_MIRROR: OpenAsk[] = [{ id: 'o7', text: MIRROR_ASK }];
+// dima's prompt, then the seat's turn adds the asks, then his next prompt: what a real round looks like (o19)
+async function askedThenSays(
+    $: Engine,
+    orbit: OpenAsk[],
+    added: OpenAsk[],
+    word: string,
+) {
+    await dimaSays($, 'go on');
+    orbit.push(...added);
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: word,
+        wait: false,
+    });
+}
 for (const word of ['yes', 'go', 'Approve.', 'i approve', 'merge', 'do it'])
     test(`exit 9: his typed «${word}» under one open ⚠️ ask runs its command once`, async ($, on) => {
-        const { ran } = world(on, [], undefined, undefined, OPEN_MIRROR);
-        await dimaSays($, word);
+        const orbit: OpenAsk[] = [];
+        const { ran } = world(on, [], undefined, undefined, orbit);
+        await askedThenSays($, orbit, OPEN_MIRROR, word);
         const first = await bash($, MIRROR);
         const second = await bash($, MIRROR);
         expect([first.deny, second.deny !== undefined, ran]).toEqual([
@@ -2070,13 +2086,44 @@ for (const [why, asks, word] of <[string, OpenAsk[], string][]>[
     ],
 ])
     test(`exit 9: a bare yes runs nothing when ${why}`, async ($, on) => {
-        const { ran } = world(on, [], undefined, undefined, asks);
-        await dimaSays($, word);
+        const orbit: OpenAsk[] = [];
+        const { ran } = world(on, [], undefined, undefined, orbit);
+        await askedThenSays($, orbit, asks, word);
         expect([(await bash($, MIRROR)).deny, ran]).toEqual([
             expect.stringContaining('mirror'),
             [],
         ]);
     });
+
+// o19, dima's pick: a bare yes answers only an ask added since his last typed prompt; an older one needs its tick
+test('a bare yes runs nothing for an ask already open at his last prompt', async ($, on) => {
+    const { ran } = world(on, [], undefined, undefined, OPEN_MIRROR);
+    await dimaSays($, 'yes');
+    expect([(await bash($, MIRROR)).deny, ran]).toEqual([
+        expect.stringContaining('mirror'),
+        [],
+    ]);
+});
+
+test('a bare yes answers the one ask added since his last prompt, an older one beside it', async ($, on) => {
+    const orbit: OpenAsk[] = [{ id: 'o6', text: '⚠️ drop: `git stash drop`' }];
+    const { ran } = world(on, [], undefined, undefined, orbit);
+    await askedThenSays($, orbit, OPEN_MIRROR, 'yes');
+    expect([(await bash($, MIRROR)).deny, ran]).toEqual([undefined, [MIRROR]]);
+});
+
+test('a bare yes answers an ask followed since his last prompt', async ($, on) => {
+    const orbit: OpenAsk[] = [{ id: 'o7', text: '⚠️ mirror: an older round' }];
+    const { ran } = world(on, [], undefined, undefined, orbit);
+    await dimaSays($, 'go on');
+    orbit[0] = { id: 'o7', text: MIRROR_ASK };
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'yes',
+        wait: false,
+    });
+    expect([(await bash($, MIRROR)).deny, ran]).toEqual([undefined, [MIRROR]]);
+});
 
 for (const [why, kind] of [
     ['a peer message (SendMessage)', 'peer'],

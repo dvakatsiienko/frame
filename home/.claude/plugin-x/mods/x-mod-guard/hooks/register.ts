@@ -1089,12 +1089,13 @@ async function tickFor(
     if (tick) spends.push(`${tick.id}@${tick.at}:${scope(tick)}`);
     return tick;
 }
-// his bare yes under the one guarded ask his seat's orbit holds open is his tick on it (FRM-574 decided 3): only a prompt
-// he typed, so a SendMessage never counts and pane-proof fences his words in an `hc send` or `hc keys`; none open or two
-// open, nothing
+// his bare yes under the one guarded ask his seat's orbit added since his last typed prompt is his tick on it (FRM-574
+// decided 3; dima's pick o19: an older ask needs its tick): only a prompt he typed, so a SendMessage never counts and
+// pane-proof fences his words in an `hc send` or `hc keys`; none new or two new, nothing. a follow changes the text, so
+// it counts as new
 const YES = { key: 'yes', plugin: 'x-mod-guard' } as const;
-async function keepYes($: EngineInterface, text: string) {
-    if (!isBareYes(typedPart(text))) return;
+const YES_SEEN = { key: 'yesSeen', plugin: 'x-mod-guard' } as const;
+async function keepYes($: EngineInterface, text: string, isFirst: boolean) {
     const { value: orbit } = await $.state
         .get(STASH_ORBIT)
         .catch(() => ({ value: undefined }));
@@ -1105,8 +1106,15 @@ async function keepYes($: EngineInterface, text: string) {
             !a.isClosed &&
             /^\s*(⚠️|✍️)/u.test(a.text),
     );
-    const [ask] = open;
-    if (open.length !== 1 || !ask) return;
+    const { value: seen = [] } = await $.state.get(YES_SEEN);
+    await $.state.set(
+        YES_SEEN,
+        open.map((a) => `${a.id}\n${a.text}`),
+    );
+    if (isFirst || !isBareYes(typedPart(text))) return;
+    const fresh = open.filter((a) => !seen.includes(`${a.id}\n${a.text}`));
+    const [ask] = fresh;
+    if (fresh.length !== 1 || !ask) return;
     const now = await $.clock.now();
     const { value: kept = [] } = await $.state.get(YES);
     await $.state.set(YES, [
@@ -2972,11 +2980,11 @@ export const register: Register = (on) => {
             // that kept his prompt before this rule counts as prompted
             const isFirst = isHis && !isBg && !(await wasPrompted($));
             if (isHis) await $.state.set(PROMPTED, true).catch(() => undefined);
+            if (isHis) await keepYes($, e.text, isFirst).catch(() => undefined);
             if (isHis && !isFirst) {
                 await $.state.set(PROMPT, e.text).catch(() => undefined);
                 await $.state.set(TOLD, e.text).catch(() => undefined);
                 await keepTypedSigns($, e.text).catch(() => undefined);
-                await keepYes($, e.text).catch(() => undefined);
             }
             const ask = overrideAsked(e.text);
             const firstIds = isFirst ? signsTyped(e.text) : [];
