@@ -216,6 +216,37 @@ func TestStatsDaysIsTheSpanOfTheTraces(t *testing.T) {
 	}
 }
 
+func TestStatsListsAVerbOnlyADevBuildCalledApartFromUnused(t *testing.T) {
+	t.Parallel()
+	devLine := func(name string) string {
+		return fmt.Sprintf(`{"name":%q,"duration_ms":3,"x.caller":"cc","x.dev":true}`+"\n", name)
+	}
+	for _, argv := range [][]string{{"stats"}, {"stats", "--dev"}} {
+		t.Run(strings.Join(argv, " "), func(t *testing.T) {
+			t.Parallel()
+			state := t.TempDir()
+			plant(t, state, 0, planted{"schema", "cc", "", 3})
+			write(t, filepath.Join(state, "traces", time.Now().AddDate(0, 0, -2).Format(time.DateOnly)+".jsonl"),
+				devLine("probe bare")+devLine("mods edit pull")+devLine("mods edit pull")+devLine("schema"))
+
+			got := xIn(t, repo(t), tracing(state), argv...)
+
+			if want := `[{"calls":2,"name":"mods edit pull"},{"calls":1,"name":"probe bare"}]`; marshal(got.data["devOnly"]) != want {
+				t.Errorf("devOnly = %s, want %s", marshal(got.data["devOnly"]), want)
+			}
+			unused := marshal(got.data["unused"])
+			for _, name := range []string{"probe bare", "mods edit pull", "schema"} {
+				if strings.Contains(unused, `"`+name+`"`) {
+					t.Errorf("unused %s names %s, which a build called", unused, name)
+				}
+			}
+			if !strings.Contains(unused, `"lane push"`) {
+				t.Errorf("unused %s lacks lane push, which nothing called", unused)
+			}
+		})
+	}
+}
+
 func TestStatsLeavesDevBuildsOutUnlessAsked(t *testing.T) {
 	t.Parallel()
 	dev := `{"name":"schema","duration_ms":3,"x.caller":"cc","service.version":"v1-go+abc1234","x.dev":true}` + "\n"

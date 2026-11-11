@@ -119,12 +119,18 @@
                     "name": "msg-file"
                 },
                 {
-                    "description": "paths that go into the commit, read from the tree root, after --",
+                    "description": "paths that go into the commit, read from the tree root, after --; none only beside --bump",
+                    "isOptional": true,
                     "isVariadic": true,
                     "name": "paths"
                 }
             ],
             "flags": {
+                "bump": {
+                    "description": "step the plugin's patch version into the same commit, then refresh its install on main; alone, a bump-only commit; a red gate leaves plugin.json as it was",
+                    "type": "string",
+                    "value": "plugin"
+                },
                 "dry": {
                     "description": "format, then run the commit's pre-commit and commit-msg gates on a temp index of HEAD plus the paths; HEAD and the index stay; a real commit on those bytes runs its index-copy gates no second time",
                     "type": "boolean"
@@ -146,6 +152,7 @@
             "steps": [
                 "tree",
                 "turn",
+                "bump",
                 "holds",
                 "format",
                 "mods",
@@ -156,9 +163,11 @@
                 "hold",
                 "ci",
                 "commit",
-                "restore"
+                "restore",
+                "refresh"
             ],
             "touches": [
+                "the installed plugins and the plugin cache under --bump on main, through claude plugin marketplace update and update",
                 "$X_STATE/gates-green.tsv: a green --dry's tree, read by a real commit of the same bytes",
                 "$X_STATE/commit-logs/: a refused commit's whole hook log, the newest 20 kept"
             ]
@@ -1422,9 +1431,16 @@
             ],
             "name": "plugin bump",
             "needsApply": true,
-            "purpose": "bump a plugin's patch version, refresh its marketplace and install, and read the new version back from the cache",
+            "purpose": "bump a plugin's patch version, refresh its install and read it back; a worktree commits the bump on its branch",
             "replaces": ["script/plugin-release.ts"],
-            "steps": ["plan", "write", "marketplace", "update", "cache"],
+            "steps": [
+                "plan",
+                "write",
+                "commit",
+                "marketplace",
+                "update",
+                "cache"
+            ],
             "touches": [
                 "the installed plugins and the plugin cache, through claude plugin list, marketplace update and update"
             ]

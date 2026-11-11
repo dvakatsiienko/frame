@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,6 +19,59 @@ type pluginManifest struct {
 	Version string `json:"version"`
 }
 
+// a bump's plan: the manifest it edits, its version step, and the marketplace to refresh after ("" when none will)
+type bumpTarget struct {
+	name, manifest, from, to, market string
+	// the tree is a worktree: its bump rides the branch, and main's merge is the release
+	linked bool
+	common string
+}
+
+func planBump(tree, name string) (bumpTarget, string, error) {
+	b := bumpTarget{name: name}
+	common, linked, err := worktreeOf(tree)
+	if err != nil {
+		return b, "", err
+	}
+	b.linked, b.common = linked, common
+	var dir string
+	if b.manifest, dir, b.from, err = findPlugin(tree, name); err != nil {
+		return b, "", err
+	}
+	if b.to, err = nextPatch(b.from); err != nil {
+		return b, "", err
+	}
+	step := b.from + " → " + b.to
+	// a marketplace reads the checkout it was added from, so a worktree's bump never reaches the cache
+	if linked {
+		return b, step + ", a worktree: the release is main's at the merge", nil
+	}
+	var root string
+	if b.market, root, err = marketOf(tree, dir); err != nil || b.market == "" {
+		return b, step + ", no marketplace lists it: a bump only", err
+	}
+	// a listing is not an install: the mods load @inline and x-cloud-chat's marketplace is never added
+	installed, err := installedPlugins()
+	if err != nil {
+		return b, "", err
+	}
+	if id := name + "@" + b.market; len(installed[id]) == 0 {
+		b.market = ""
+		return b, fmt.Sprintf("%s, %s is not installed: a bump only", step, id), nil
+	}
+	// a directory marketplace reads the checkout it was added from; a bump in any other tree never
+	// reaches the cache, and the refresh would touch the live install for nothing
+	reads, err := marketPath(b.market)
+	if err != nil {
+		return b, "", err
+	}
+	if reads != root {
+		return b, "", &Fail{Refused: true, Msg: fmt.Sprintf("marketplace %s reads %s, not this tree — nothing written", b.market, home(reads)),
+			Next: "x plugin bump " + name + " from the checkout holding " + home(reads)}
+	}
+	return b, fmt.Sprintf("%s, marketplace %s", step, b.market), nil
+}
+
 func pluginBumpPlan(r *Run, args []string, _ Flags) (any, error) {
 	name := args[0]
 	tree, err := top()
@@ -25,53 +79,15 @@ func pluginBumpPlan(r *Run, args []string, _ Flags) (any, error) {
 		return nil, err
 	}
 	r.Open(name)
-	var manifest, from, to, market string
+	var b bumpTarget
 	if err := r.Step("plan", "finding the plugin and its marketplace", func() (string, error) {
-		// a marketplace reads the checkout it was added from, and a worktree's bump would land in a pr
-		// instead of the cache: the release is main's
-		common, linked, err := worktreeOf(tree)
-		if err != nil {
-			return "", err
-		}
-		if linked {
-			return "", &Fail{Refused: true, Msg: home(tree) + " is a worktree — a plugin bump runs from the main checkout; nothing written",
-				Next: "cd " + quote(filepath.Dir(common)) + " && x plugin bump " + name + " --apply"}
-		}
-		var dir string
-		if manifest, dir, from, err = findPlugin(tree, name); err != nil {
-			return "", err
-		}
-		if to, err = nextPatch(from); err != nil {
-			return "", err
-		}
-		var root string
-		if market, root, err = marketOf(tree, dir); err != nil || market == "" {
-			return fmt.Sprintf("%s → %s, no marketplace lists it: a bump only", from, to), err
-		}
-		// a listing is not an install: the mods load @inline and x-cloud-chat's marketplace is never added
-		installed, err := installedPlugins()
-		if err != nil {
-			return "", err
-		}
-		if id := name + "@" + market; len(installed[id]) == 0 {
-			market = ""
-			return fmt.Sprintf("%s → %s, %s is not installed: a bump only", from, to, id), nil
-		}
-		// a directory marketplace reads the checkout it was added from; a bump in any other tree never
-		// reaches the cache, and the refresh would touch the live install for nothing
-		reads, err := marketPath(market)
-		if err != nil {
-			return "", err
-		}
-		if reads != root {
-			return "", &Fail{Refused: true, Msg: fmt.Sprintf("marketplace %s reads %s, not this tree — nothing written", market, home(reads)),
-				Next: "x plugin bump " + name + " from the checkout holding " + home(reads)}
-		}
-		return fmt.Sprintf("%s → %s, marketplace %s", from, to, market), nil
+		planned, said, err := planBump(tree, name)
+		b = planned
+		return said, err
 	}); err != nil {
 		return nil, err
 	}
-	return ordered{{"name", name}, {"manifest", manifest}, {"from", from}, {"to", to}, {"marketplace", market}}, nil
+	return ordered{{"name", name}, {"manifest", b.manifest}, {"from", b.from}, {"to", b.to}, {"marketplace", b.market}, {"worktree", b.linked}}, nil
 }
 
 func askPluginBump(plan any) string {
@@ -88,6 +104,27 @@ func pluginBump(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return nil, err
 	}
 	data := ordered{{"name", name}, {"from", from}, {"to", to}, {"marketplace", market}}
+	// a worktree's bump commits on its own branch: an uncommitted plugin.json in main is what the fork guard refused
+	if fields[5].value == true {
+		r.skip("marketplace", "update", "cache")
+		var sha string
+		if err := r.Step("commit", "the bump, on this tree's branch", func() (string, error) {
+			committed, _, err := lockedGit("commit", "-q", "-m", fmt.Sprintf("🔧 %s: bump to %s", name, to), "--", manifest)
+			if err != nil {
+				return "", errors.Join(writeVersion(manifest, to, from), err)
+			}
+			if !committed.ok {
+				return "", errors.Join(writeVersion(manifest, to, from), hookFail(committed.log, "x plugin bump "+name+" --apply"))
+			}
+			sha, err = head()
+			return short(sha), err
+		}); err != nil {
+			return nil, err
+		}
+		r.Done(fmt.Sprintf("%s %s committed on this branch; the release is main's at the merge", name, to), "x lane push --apply")
+		return append(data, kv{"sha", sha}), nil
+	}
+	r.skip("commit")
 	if market == "" {
 		r.skip("marketplace", "update", "cache")
 		r.Done(fmt.Sprintf("%s %s, bump only — not installed from a marketplace", name, to), "")
@@ -106,27 +143,83 @@ func pluginBump(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}
 	var cache string
 	if err := r.Step("cache", "reading the install back", func() (string, error) {
-		installed, err := installedPlugins()
-		if err != nil {
-			return "", err
-		}
-		// a stale dir for the same version proves nothing: claude must report the install at that version
-		var versions []string
-		for _, got := range installed[id] {
-			if got.Version == to && exists(got.InstallPath) {
-				cache = got.InstallPath
-				return home(cache), nil
-			}
-			versions = append(versions, got.Version)
-		}
-		// a marketplace added from the main checkout reads it there, so a worktree's bump never arrives
-		return "", &Fail{Msg: fmt.Sprintf("claude reports %s at %s, not %s", id, or(strings.Join(versions, ", "), "nothing"), to),
-			Next: "claude plugin marketplace list --json — bump where the marketplace's source lives"}
+		found, err := installedAt(id, to)
+		cache = found
+		return home(cache), err
 	}); err != nil {
 		return nil, err
 	}
-	r.Done(fmt.Sprintf("%s %s in the cache; binds after a reload", name, to), "/reload-plugins")
-	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}), nil
+	older := olderCopies(filepath.Dir(cache), to)
+	message := reloadLine(name, to, older)
+	r.Done(message, "/reload-plugins")
+	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}, kv{"older", older}, kv{"message", message}), nil
+}
+
+// the reload message: the new version, and every live session still on an older copy
+func reloadLine(name, to string, older []ordered) string {
+	line := fmt.Sprintf("%s %s in the cache; binds after a reload", name, to)
+	if len(older) == 0 {
+		return line + "; no live session holds an older copy"
+	}
+	var held []string
+	for _, o := range older {
+		held = append(held, fmt.Sprintf("%s (%s)", o[0].value, o[1].value))
+	}
+	return line + "; still on an older copy: " + strings.Join(held, ", ")
+}
+
+// refreshPlugin moves the marketplace and the install to the version a commit just landed, and reads it back
+func refreshPlugin(id, market, to string) (string, error) {
+	if err := claudePlugin("marketplace", "update", market); err != nil {
+		return "", err
+	}
+	if err := claudePlugin("update", id, "-y"); err != nil {
+		return "", err
+	}
+	return installedAt(id, to)
+}
+
+// installedAt is the cache dir claude reports for the plugin at that version
+func installedAt(id, to string) (string, error) {
+	installed, err := installedPlugins()
+	if err != nil {
+		return "", err
+	}
+	// a stale dir for the same version proves nothing: claude must report the install at that version
+	var versions []string
+	for _, got := range installed[id] {
+		if got.Version == to && exists(got.InstallPath) {
+			return got.InstallPath, nil
+		}
+		versions = append(versions, got.Version)
+	}
+	// a marketplace added from the main checkout reads it there, so a worktree's bump never arrives
+	return "", &Fail{Msg: fmt.Sprintf("claude reports %s at %s, not %s", id, or(strings.Join(versions, ", "), "nothing"), to),
+		Next: "claude plugin marketplace list --json — bump where the marketplace's source lives"}
+}
+
+// unbumpedPlugins are the plugins whose files a commit changed without their plugin.json, each one a marketplace
+// lists. the nearest plugin dir above a path owns it, so a mod with its own manifest answers for its own files
+func unbumpedPlugins(tree string, paths []string) []string {
+	var names []string
+	for _, path := range paths {
+		for dir := filepath.Dir(path); dir != "." && dir != "/"; dir = filepath.Dir(dir) {
+			rel := filepath.Join(dir, ".claude-plugin", "plugin.json")
+			var found pluginManifest
+			raw, err := os.ReadFile(filepath.Join(tree, rel))
+			if err != nil {
+				continue
+			}
+			if slices.Contains(paths, rel) || json.Unmarshal(raw, &found) != nil {
+				break
+			}
+			if market, _, _ := marketOf(tree, filepath.Join(tree, dir)); market != "" && !slices.Contains(names, found.Name) {
+				names = append(names, found.Name)
+			}
+			break
+		}
+	}
+	return names
 }
 
 // findPlugin reads every tracked plugin.json; a name nobody carries lists the ones that exist

@@ -195,6 +195,11 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 	if at == nil {
 		return nil, usageFail("the claude call is quoted, so x cannot add its --session-id", "x brief summon "+quote(herdrClaude(command)))
 	}
+	// the registry name is the display x draws from the record, one string, never the one the command typed
+	display := threadDisplay(record)
+	if from, to := nameValueAt(command, at[1]); from >= 0 {
+		command = command[:from] + "'" + display + "'" + command[to:]
+	}
 	command = command[:at[1]] + "--session-id " + record.SessionID + " " + command[at[1]:]
 	if err := writeThreadRecord(record, time.Now(), true); err != nil {
 		return nil, &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
@@ -203,7 +208,29 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 		fmt.Println(command)
 	}
 	r.Done("ok: every mechanical step holds, the argv is the summon", "")
-	return ordered{{"argv", command}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}}, nil
+	return ordered{{"argv", command}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}, {"display", display}}, nil
+}
+
+// nameValueAt is the byte span of the word after the claude call's first -n, quotes included; -1 when it has none
+func nameValueAt(command string, from int) (int, int) {
+	// from sits right after `claude `, so a space before it makes the first flag findable like any other
+	i := strings.Index(" "+command[from:], " -n ")
+	if i < 0 || from+i+3 >= len(command) {
+		return -1, -1
+	}
+	start := from + i + 3
+	if q := command[start]; q == '\'' || q == '"' {
+		end := strings.IndexByte(command[start+1:], q)
+		if end < 0 {
+			return -1, -1
+		}
+		return start, start + end + 2
+	}
+	end := strings.IndexAny(command[start:], " \t\n")
+	if end < 0 {
+		return start, len(command)
+	}
+	return start, start + end
 }
 
 func summonRefused(failed []summonCheck, command string) error {
