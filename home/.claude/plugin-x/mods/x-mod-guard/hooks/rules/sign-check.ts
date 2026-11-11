@@ -1,5 +1,5 @@
 import { type Segment, type Word, parse } from '../shell.ts';
-import { commandsDeep, peel } from './command.ts';
+import { commandsDeep, isAwkRunner, peel } from './command.ts';
 
 // a body set whose file this line writes is judged as it runs: its `x` becomes this function, which reads the file once,
 // judges those bytes against the ticket's current body (a sign line or a `## signed` merge grant it lacks word for word,
@@ -102,6 +102,7 @@ export function withSignCheck(command: string, ids: ReadonlySet<string>) {
         const name = c.name.split('/').at(-1) ?? c.name;
         if (
             !BESIDE.has(name) ||
+            isAwkRunner(c) ||
             c.args[0]?.text === '{' ||
             c.name.endsWith('()') ||
             c.wrappers.some((w) => !SAFE_WRAPPERS.has(w)) ||
