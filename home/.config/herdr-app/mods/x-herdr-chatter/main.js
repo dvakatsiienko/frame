@@ -4766,14 +4766,7 @@ export default class ClaudeChat extends View {
                 : this.range
                   ? this.range.start
                   : rows.length - 1;
-        const order = measureOrder(
-            keys,
-            this.rowH,
-            this.measuredAt,
-            this.range,
-            near,
-            now,
-        );
+        const order = measureOrder(keys, this.rowH, this.measuredAt, near, now);
         const gen = this.measureGen;
         return div()
             .absolute()

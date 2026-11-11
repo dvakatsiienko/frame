@@ -8,7 +8,7 @@ export const MAX_ROW_PX = 40000;
 export const MEASURE_NEW = 30;
 export const MEASURE_MAX = 60;
 // markdown can lay out a moment after its first frame (a long reply first measures as one line): a height measured
-// this recently, or on screen, is measured again
+// this recently is measured again
 export const REMEASURE_MS = 4000;
 
 /**
@@ -26,19 +26,17 @@ export function rowSizes(keys, heights, guess) {
 }
 
 /**
- * which rows the measurer draws this pass: never-measured ones nearest `near` first, then the rows on screen (two
- * past each edge) and the ones measured in the last REMEASURE_MS
+ * which rows the measurer draws this pass: never-measured ones nearest `near` first, then the ones measured in the last
+ * REMEASURE_MS; a settled chat draws none, since every frame lays out whatever the measurer holds (60 rows a frame cost
+ * his fling 4× the drawing, 21:57)
  * @param {string[]} keys
  * @param {Map<string, number>} heights
  * @param {Map<string, number>} measuredAt
- * @param {{ start: number, end: number } | null} range
  * @param {number} near
  * @param {number} now
  * @returns {number[]}
  */
-export function measureOrder(keys, heights, measuredAt, range, near, now) {
-    const lo = Math.max(0, (range?.start ?? keys.length) - 2);
-    const hi = Math.min(keys.length, (range?.end ?? 0) + 2);
+export function measureOrder(keys, heights, measuredAt, near, now) {
     const all = keys.map((_, i) => i);
     const fresh = all
         .filter((i) => !heights.has(keys[i]))
@@ -47,8 +45,7 @@ export function measureOrder(keys, heights, measuredAt, range, near, now) {
     const again = all.filter(
         (i) =>
             heights.has(keys[i]) &&
-            ((i >= lo && i < hi) ||
-                now - (measuredAt.get(keys[i]) ?? 0) < REMEASURE_MS),
+            now - (measuredAt.get(keys[i]) ?? 0) < REMEASURE_MS,
     );
     return [...new Set([...fresh, ...again])].slice(0, MEASURE_MAX);
 }
