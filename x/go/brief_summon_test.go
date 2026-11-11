@@ -47,7 +47,7 @@ func (w summonWorld) brief(t *testing.T, text string, stamped bool) string {
 
 func (w summonWorld) summon(t *testing.T, command string, env ...string) ran {
 	t.Helper()
-	return xIn(t, w.repo, append([]string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}, env...), "brief", "summon", command)
+	return xIn(t, w.repo, asCaller(t, append([]string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}, env...), "🦉 clio"), "brief", "summon", command)
 }
 
 // a bytes checkout is known by its essentials script; this one fails every app
@@ -260,7 +260,7 @@ func TestBriefSummonWritesTheThreadRecordUnderItsSessionID(t *testing.T) {
 	if ids[0] == ids[1] {
 		t.Errorf("a second summon of the same line reused %s", ids[0])
 	}
-	want := map[string]string{ids[0]: "🌗 🔧 cli-lane-8 | FRM-1", ids[1]: "🌗 🔧 cli-lane-8 | FRM-1", ids[2]: "🔎 cli-lane-8 | FRM-1"}
+	want := map[string]string{ids[0]: "🌗 🔧 cli | FRM-1", ids[1]: "🌗 🔧 cli | FRM-1", ids[2]: "🔎 cli | FRM-1"}
 	shown := map[string]string{}
 	threads, _ := list.data["threads"].([]any)
 	for _, th := range threads {

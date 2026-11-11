@@ -534,7 +534,9 @@
   - given a session that `/clear` or `/resume` gave a new id, then its record moves to that id through its pid and start time, the role, lane and ticket kept; a joined record's time moves to the call, so one torn registry read never ages it out
   - given two writers at once (a refresh beside a summon's record), then a lock beside the store lets one write at a time and neither record is lost; a store that does not parse refuses the call (exit 1) and stays as it is
   - given a dispatch onto a live thread's record, then the record keeps its pid, name, cwd and start, and the summon's lane when the dispatch names none
-  - given `x lane dispatch --apply` naming a session that already runs with no role from x, or a thread whose record holds another role, then it refuses (exit 1) before any linear write: a role is given before a thread runs, so no session names itself a sixth sense
+  - given `x brief summon` or `x lane dispatch --apply` from a session that is no coordinator (read from the registry file on x's ancestor pid), then it refuses (exit 1) before any record or linear write; dima's own terminal and clio pass
+  - given a dispatch naming an id no thread holds, or a thread whose record holds another role, then it refuses before any linear write; a running thread with no role yet takes its record from the coordinator
+  - the display name reads `<mode> <role> <area> | <ticket>`, the area the lane's first word (`🌗 🔧 cli | FRM-570`)
   - given a pid that died (`kill -9`), a registry file gone (an archived session), or a row whose `procStart` is not its pid's start time as `ps` reads it (a crashed session's pid another process took), then it drops out of the store at the next call; a record whose session never started stays 10 minutes, then drops; a thread once seen live stays past its pid or file only while its registry file reads torn
   - given any call, then `~/.claude/shelf/threads.json` is rewritten, so a display reads it with no spawn; x-mod-stash's hooks call `x thread list` at session start, turn end and exit
   - given `show` with a session id or a pid no live session holds, then exit 1

@@ -394,6 +394,7 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 	server := dispatchServer(t, undispatched)
 	store := filepath.Join(t.TempDir(), "threads.json")
 
+	write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie"},{"sessionId":"s2","role":"sixth-sense"}]}`)
 	_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store},
 		"lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
 
@@ -406,32 +407,39 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 	for _, th := range written.Threads {
 		shown[th.SessionID] = th.Display
 	}
-	if shown["s1"] != "🌗 🔧 cli-3 | FRM-1" || shown["s2"] != "🌗 🔎 cli-3 | FRM-1" || len(shown) != 2 {
+	if shown["s1"] != "🌗 🔧 cli | FRM-1" || shown["s2"] != "🌗 🔎 cli | FRM-1" || len(shown) != 2 {
 		t.Errorf("records %v, want s1 as codie and s2 as sixth sense on cli-3 | FRM-1", shown)
 	}
 }
 
-// sixth sense round 1, P1: a running session never names itself a sixth sense, and a record's role never changes, so a
-// codie cannot stamp its own clean; the refusal comes before any linear write
-func TestDispatchRefusesARoleForARunningThreadOrAnotherRole(t *testing.T) {
+// sixth sense round 1 P1 and round 3 (exits 17, 18): a role goes only from the coordinator, to a thread a summon recorded
+// in that role or to a running thread with no role yet; never another role, never an id no thread holds, never from a
+// codie; a refusal comes before any linear write
+func TestDispatchGivesARoleOnlyFromTheCoordinatorToAKnownThread(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {
-		name, records, want string
+		name, caller, records, want string
+		isLive, isOk                bool
 	}{
-		{name: "a running session with no record", want: "already runs with no role from x"},
-		{name: "a codie's record", records: `{"v":1,"threads":[{"sessionId":"s2","role":"codie"}]}`, want: "is already a codie"},
+		{name: "an id no thread holds", caller: "🦉 clio", want: "names no thread"},
+		{name: "a codie's record", caller: "🦉 clio", records: `{"v":1,"threads":[{"sessionId":"s2","role":"codie"}]}`, isLive: true, want: "is already a codie"},
+		{name: "a codie dispatching itself", caller: "🌗 🔧 codie: cli lane 8 | FRM-570", isLive: true, want: "only the coordinator or dima"},
+		{name: "the coordinator on a running thread with no role", caller: "🦉 clio", isLive: true, isOk: true},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			server := dispatchServer(t, undispatched)
-			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
-			write(t, filepath.Join(sessions, "s2.json"), fmt.Sprintf(`{"sessionId":"s2","pid":%d}`, os.Getpid()))
+			sessions, store := filepath.Join(t.TempDir(), "caller-set"), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
+			if c.isLive {
+				write(t, filepath.Join(sessions, "s2.json"), fmt.Sprintf(`{"sessionId":"s2","pid":%d}`, os.Getpid()))
+			}
 			if c.records != "" {
 				write(t, store, c.records)
 			}
+			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions}, c.caller)
 
-			_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions},
-				"lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
+			_, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
 
 			written, _ := readThreadStore(store)
 			mutations := 0
@@ -440,7 +448,11 @@ func TestDispatchRefusesARoleForARunningThreadOrAnotherRole(t *testing.T) {
 					mutations++
 				}
 			}
-			if got.code != 1 || !strings.Contains(got.stdout, c.want) || mutations != 0 || slices.ContainsFunc(written.Threads, func(th thread) bool { return th.SessionID == "s2" && th.Role == "sixth-sense" }) {
+			isSixth := slices.ContainsFunc(written.Threads, func(th thread) bool { return th.SessionID == "s2" && th.Role == "sixth-sense" })
+			if c.isOk && (got.code != 0 || !isSixth) {
+				t.Fatalf("exit %d, records %+v, want s2 recorded as sixth sense:\n%s", got.code, written.Threads, got.stdout)
+			}
+			if !c.isOk && (got.code != 1 || !strings.Contains(got.stdout, c.want) || mutations != 0 || isSixth) {
 				t.Fatalf("exit %d, %d linear writes, records %+v, want exit 1 naming %q before any write:\n%s", got.code, mutations, written.Threads, c.want, got.stdout)
 			}
 		})

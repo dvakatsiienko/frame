@@ -281,6 +281,11 @@ func askDispatch(plan any) string {
 
 func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 	plan := planned.(dispatchPlan)
+	if flagString(flags, "session") != "" || flagString(flags, "sixth-sense") != "" {
+		if err := coordinatorOnly("x lane dispatch --apply"); err != nil {
+			return nil, err
+		}
+	}
 	if path := threadStorePath(); path != "" {
 		store, err := readThreadStore(path)
 		if err != nil {
@@ -330,7 +335,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 			continue
 		}
 		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: kind, Ticket: plan.Tickets[0].ID}
-		if err := writeThreadRecord(record, time.Now()); err != nil {
+		if err := writeThreadRecord(record, time.Now(), false); err != nil {
 			if fail, isFail := errors.AsType[*Fail](err); isFail {
 				return nil, fail
 			}

@@ -24,7 +24,12 @@ const NEW_ROW: Thread = {
     sessionId: NEW,
 };
 
-// threads: what x thread list answers (null: x does not answer)
+// threads: what x thread list answers (null: x does not answer); the session is clio's, who summons a sixth sense
+// (FRM-570 round 3: a summon from any other session is refused before this rule)
+const CLIO_ENTRY = JSON.stringify({
+    name: '🦉 clio',
+    sessionId: 'a1a1a1a1-0000',
+});
 function world(on: On, threads: Thread[] | null) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
@@ -42,10 +47,24 @@ function world(on: On, threads: Thread[] | null) {
         return { value: false };
     });
     on('fs.list', (_$, e) => {
+        if (e.path === '/home/.claude/sessions')
+            return {
+                value: [
+                    {
+                        isLink: false,
+                        kind: 'file' as const,
+                        mtimeMs: 0,
+                        name: '1.json',
+                        size: 1,
+                    },
+                ],
+            };
         touched.push(e.path);
         return { value: [] };
     });
     on('fs.read', (_$, e) => {
+        if (e.path === '/home/.claude/sessions/1.json')
+            return { value: CLIO_ENTRY };
         touched.push(e.path);
         throw new Error(`ENOENT ${e.path}`);
     });

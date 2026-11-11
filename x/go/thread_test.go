@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -52,9 +53,9 @@ func TestThreadListJoinsTheRegistryToItsRecords(t *testing.T) {
 	got := xIn(t, t.TempDir(), env, "thread", "list")
 
 	want := map[string]string{
-		"sid-codie":     "🌗 🔧 cli lane 8 | FRM-570",
+		"sid-codie":     "🌗 🔧 cli | FRM-570",
 		"sid-plain":     "unknown",
-		"sid-launching": "⚡ 🔎 mods 6 | FRM-574",
+		"sid-launching": "⚡ 🔎 mods | FRM-574",
 	}
 	var written threadStore
 	raw, _ := os.ReadFile(store)
@@ -97,7 +98,7 @@ func TestThreadShowFindsASessionByIdOrPid(t *testing.T) {
 		key, want string
 		code      int
 	}{
-		{key: "sid-codie", want: "🌗 🔧 cli lane 8 | FRM-570"},
+		{key: "sid-codie", want: "🌗 🔧 cli | FRM-570"},
 		{key: "sid-plain", want: "unknown"},
 		{key: strconv.Itoa(dead), code: 1},
 		{key: "sid-nobody", code: 1},
@@ -181,7 +182,7 @@ func TestThreadRecordKeepsTheLiveFields(t *testing.T) {
 	}})
 	write(t, store, string(records))
 
-	if err := writeThreadRecord(thread{SessionID: "sid-1", Role: "codie", LaneKind: "quick", Ticket: "FRM-570"}, time.Now()); err != nil {
+	if err := writeThreadRecord(thread{SessionID: "sid-1", Role: "codie", LaneKind: "quick", Ticket: "FRM-570"}, time.Now(), false); err != nil {
 		t.Fatal(err)
 	}
 	written, _ := readThreadStore(store)
@@ -198,7 +199,7 @@ func TestThreadRecordsWrittenAtOnceAllLand(t *testing.T) {
 	var wg sync.WaitGroup
 	for i := range 24 {
 		wg.Go(func() {
-			if err := writeThreadRecord(thread{SessionID: fmt.Sprintf("sid-%02d", i), Role: "codie"}, time.Now()); err != nil {
+			if err := writeThreadRecord(thread{SessionID: fmt.Sprintf("sid-%02d", i), Role: "codie"}, time.Now(), true); err != nil {
 				t.Error(err)
 			}
 		})
@@ -236,5 +237,39 @@ func TestThreadListDropsASeenThreadOnceItsPidOrFileGoes(t *testing.T) {
 	}
 	if fmt.Sprint(kept) != "[sid-torn]" {
 		t.Fatalf("store keeps %v, want only sid-torn: a dead pid and a gone file drop a thread seen live", kept)
+	}
+}
+
+// the registry file of the test process, x's parent, under the name x's role gate reads (callerIsCoordinator); no
+// session id, so no thread list counts it. it lands in the env's X_SESSIONS dir, or a new one
+func asCaller(t *testing.T, env []string, name string) []string {
+	t.Helper()
+	dir := ""
+	for _, kv := range env {
+		if v, ok := strings.CutPrefix(kv, "X_SESSIONS="); ok {
+			dir = v
+		}
+	}
+	env = slices.Clone(env)
+	if dir == "" {
+		dir = t.TempDir()
+		env = append(env, "X_SESSIONS="+dir)
+	}
+	write(t, filepath.Join(dir, strconv.Itoa(os.Getpid())+".json"), fmt.Sprintf(`{"name":%q}`, name))
+	return env
+}
+
+// FRM-570 round 3, exit 17: a codie's own summon is refused before any record, so it never mints itself a sixth sense
+func TestBriefSummonFromACodieIsRefused(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	env := asCaller(t, []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store}, "🌗 🔧 codie: cli lane 8 | FRM-570")
+
+	got := xIn(t, w.repo, env, "brief", "summon", sixthArgv(w, " spec: .scratch/cli-lane-8/spec.md"))
+
+	written, _ := readThreadStore(store)
+	if got.code != 1 || !strings.Contains(got.stdout, "only the coordinator or dima") || len(written.Threads) != 0 {
+		t.Fatalf("exit %d, records %+v, want a refusal naming the coordinator and no record:\n%s", got.code, written.Threads, got.stdout)
 	}
 }

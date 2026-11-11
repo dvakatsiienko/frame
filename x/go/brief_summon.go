@@ -177,6 +177,9 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 	if len(failed) > 0 {
 		return nil, summonRefused(failed, command)
 	}
+	if err := coordinatorOnly("x brief summon"); err != nil {
+		return nil, err
+	}
 	// the thread's identity is its session id, minted here so the record exists before the thread runs
 	record := thread{SessionID: newSessionID(), Role: role}
 	if words := strings.Fields(first); len(words) > 1 && ticketArg.MatchString(words[1]) {
@@ -193,7 +196,7 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 		return nil, usageFail("the claude call is quoted, so x cannot add its --session-id", "x brief summon "+quote(herdrClaude(command)))
 	}
 	command = command[:at[1]] + "--session-id " + record.SessionID + " " + command[at[1]:]
-	if err := writeThreadRecord(record, time.Now()); err != nil {
+	if err := writeThreadRecord(record, time.Now(), true); err != nil {
 		return nil, &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
 	}
 	if r.human {

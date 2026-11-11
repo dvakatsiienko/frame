@@ -1,7 +1,13 @@
 import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
-import { cleanStampWrite, threadStoreWrite } from './rules/clean-stamp.ts';
+import {
+    cleanStampWrite,
+    registryWrite,
+    roleSpawn,
+    roleStoreRefusal,
+    threadStoreWrite,
+} from './rules/clean-stamp.ts';
 import type {
     Brief,
     Context,
@@ -2571,6 +2577,27 @@ export const register: Register = (on) => {
                 if (stop) return stop;
             }
         }
+        // FRM-570 round 3: cc's registry takes no session's write, and only a coordinator starts a claude under a minted id
+        // or a coordinator's name
+        const registry = registryWrite(typed, cwd);
+        const spawn = roleSpawn(typed, cwd);
+        const spawnSid = spawn
+            ? await $.session.id().catch(() => undefined)
+            : undefined;
+        const spawnerName = spawnSid
+            ? await sessionName($, spawnSid)
+            : undefined;
+        const spawner =
+            spawn && !isCoordinator(spawnerName ?? '') ? spawn : undefined;
+        for (const r of [registry, spawner].filter((r) => r !== undefined)) {
+            const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why} (rule ${r.rule}).`;
+            const stop = await enforce(
+                r,
+                `nothing in this command ran — ${said}`,
+                said,
+            );
+            if (stop) return stop;
+        }
         const threadsWrite = threadStoreWrite(typed, cwd);
         if (threadsWrite) {
             const said = `x-mod-guard stopped this one command. instead: ${threadsWrite.door}. why: ${threadsWrite.why} (rule ${threadsWrite.rule}).`;
@@ -3072,6 +3099,23 @@ export const register: Register = (on) => {
                 (s) => s.realPath ?? path,
                 () => path,
             );
+            const roleStore =
+                e.tool === 'Read'
+                    ? undefined
+                    : (roleStoreRefusal(real) ?? roleStoreRefusal(path));
+            if (roleStore) {
+                await record($, {
+                    command: `${e.tool} ${path}`,
+                    door: roleStore.door,
+                    kind: 'refused',
+                    rule: roleStore.rule,
+                    target: path,
+                    why: roleStore.why,
+                });
+                return {
+                    deny: `x-mod-guard stopped this ${e.tool}. instead: ${roleStore.door}. why: ${roleStore.why}: ${path} (rule ${roleStore.rule}).`,
+                };
+            }
             if (
                 e.tool !== 'Read' &&
                 (isOverrideStore(real) || isOverrideStore(path))

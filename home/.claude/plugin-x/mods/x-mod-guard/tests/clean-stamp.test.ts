@@ -262,3 +262,79 @@ test('a sixth sense stamping while x is missing is refused', async ($, on) => {
     const r = await bash($, WRITES[0] ?? '');
     expect([r.deny, ran]).toEqual([expect.stringContaining('clean-stamp'), []]);
 });
+
+// FRM-570 round 3, exit 17: a codie tries each path to a role or a clean stamp, and each is refused
+const CODIE = '🌗 🔧 codie: cli lane 5 | FRM-511';
+const SUMMONED =
+    "claude -p --session-id 1f0c2e1d-0000-4000-8000-000000000001 '/x:crew-sixth-sense FRM-1 main:abc codie clio spec: s'";
+for (const line of [
+    SUMMONED,
+    'claude --session-id=1f0c2e1d-0000-4000-8000-000000000001 -p hi',
+    "claude -p -n '🦉 clio' hi",
+    'claude -p --name=🦉clio hi',
+    "hc run --bg --no-parent --name x --cwd /repo -- claude --session-id 1f0c -n n 'hi'",
+    `echo '{"name":"🦉 clio"}' > /home/.claude/sessions/4242.json`,
+    'cp /tmp/forged.json ~/.claude/sessions/',
+    'cp /tmp/forged.json /home/.claude/shelf/thread?.json',
+    'cp /tmp/forged.json "/home/.claude/shelf/$f"',
+    'cp /tmp/forged.json ~/.claude/shelf/{threads,other}.json',
+])
+    test(`a codie cannot reach a role: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('clean-stamp'),
+            [],
+        ]);
+    });
+
+for (const [line, name, role] of [
+    [SUMMONED, '🦉 clio', undefined],
+    ['cat /home/.claude/sessions/4242.json', CODIE, 'codie'],
+    ["claude -p -n 'a probe' hi", CODIE, 'codie'],
+] as const)
+    test(`the coordinator's summon, or a plain read, passes: ${line}`, async ($, on) => {
+        const { ran } = world(on, name, role);
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('clean-stamp');
+        expect(ran.length).toBe(1);
+    });
+
+for (const path of [
+    '/home/.claude/shelf/threads.json',
+    '/home/.claude/shelf/pr-verified.json',
+    '/home/.claude/sessions/4242.json',
+])
+    test(`a codie's Write to ${path} is refused`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await $.tool.call({
+            content: '{}',
+            file_path: path,
+            tool: 'Write',
+        });
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('clean-stamp'),
+            [],
+        ]);
+    });
+
+for (const line of [
+    `x brief summon "cd /repo && claude --bg -n 'n' '/x:crew-sixth-sense FRM-1 main:abc codie clio spec: s'"`,
+    'X_SESSIONS=/tmp/forged X_TEST=1 x lane dispatch FRM-1 --sixth-sense 1f0c --apply',
+    'env HOME=/tmp/forged x lane dispatch FRM-1 --session 1f0c --apply',
+])
+    test(`a codie cannot run a role-giving verb: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('clean-stamp'),
+            [],
+        ]);
+    });
+
+test('a plain dispatch plan from a codie passes: x lane dispatch FRM-1 --session 1f0c', async ($, on) => {
+    const { ran } = world(on, CODIE, 'codie');
+    const r = await bash($, 'x lane dispatch FRM-1 --session 1f0c');
+    expect(r.deny ?? '').not.toContain('clean-stamp');
+    expect(ran.length).toBe(1);
+});

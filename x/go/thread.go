@@ -8,11 +8,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/charmbracelet/x/term"
 )
 
 // a thread: claude code's registry entry, plus the role, lane and ticket x wrote when it summoned or dispatched it
@@ -57,13 +60,18 @@ func threadStorePath() string {
 	return filepath.Join(home, ".claude/shelf/threads.json")
 }
 
-// the display name is drawn from the record, never parsed back out of a name; no record reads as unknown
+// the display name is drawn from the record, never parsed back out of a name: <mode> <role> <area> | <ticket>, the area
+// the lane's first word (dima, PK-378: no lane folder, no number); no record reads as unknown
 func threadDisplay(t thread) string {
 	if t.Role == "" {
 		return "unknown"
 	}
 	words := []string{}
-	for _, w := range []string{laneKindMark[t.LaneKind], roleMark[t.Role], t.Lane} {
+	area := ""
+	if words := strings.FieldsFunc(t.Lane, func(r rune) bool { return r == '-' || r == ' ' }); len(words) > 0 {
+		area = words[0]
+	}
+	for _, w := range []string{laneKindMark[t.LaneKind], roleMark[t.Role], area} {
 		if w != "" {
 			words = append(words, w)
 		}
@@ -253,8 +261,55 @@ func newSessionID() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 }
 
-// a role is given to a thread before it runs, at its summon or dispatch: a live session with no role from x, or a thread
-// of another role, keeps what it has, so no session can name itself a sixth sense and stamp its own clean
+// who may give a role: dima at his own terminal, or a coordinator, read from the registry file of the claude x runs
+// under (an ancestor pid), never from a name or an id the line could pass
+func callerIsCoordinator() bool {
+	if os.Getenv("CLAUDECODE") == "" && os.Getenv("AI_AGENT") == "" && term.IsTerminal(os.Stdin.Fd()) {
+		return true
+	}
+	dir := sessionsDir()
+	if dir == "" {
+		return false
+	}
+	pid := os.Getppid()
+	for range 16 {
+		if pid <= 1 {
+			return false
+		}
+		if raw, err := os.ReadFile(filepath.Join(dir, strconv.Itoa(pid)+".json")); err == nil {
+			var entry struct {
+				Name string `json:"name"`
+			}
+			return json.Unmarshal(raw, &entry) == nil && isCoordinatorName(entry.Name)
+		}
+		out, err := exec.Command("ps", "-o", "ppid=", "-p", strconv.Itoa(pid)).Output()
+		if err != nil {
+			return false
+		}
+		if pid, err = strconv.Atoi(strings.TrimSpace(string(out))); err != nil {
+			return false
+		}
+	}
+	return false
+}
+
+// clio's registry name, a wing's or her old title's, spaces and joiners dropped as x-mod-guard's isCoordinator reads it
+func isCoordinatorName(name string) bool {
+	bare := strings.NewReplacer(" ", "", "\u200d", "").Replace(name)
+	return bare == "🦉clio" || bare == "🦉cclio" || regexp.MustCompile(`^🦉🪽c?clio:wing\d+$`).MatchString(bare)
+}
+
+var roleRefusalNext = "ask the coordinator: x lane dispatch --apply gives a role, x brief summon starts a thread with one"
+
+func coordinatorOnly(verb string) error {
+	if callerIsCoordinator() {
+		return nil
+	}
+	return &Fail{Refused: true, Msg: verb + " gives a thread its role, so only the coordinator or dima runs it", Next: roleRefusalNext}
+}
+
+// the thread a dispatch names: one whose record holds that role, or a live session with no role yet (a reused thread,
+// one started before x wrote records); never another role, and never an id no thread holds, so a dispatch cannot mint one
 func threadRoleRefusal(stored []thread, sid, role string) error {
 	for _, t := range stored {
 		if t.SessionID == sid && t.Role != "" {
@@ -264,8 +319,8 @@ func threadRoleRefusal(stored []thread, sid, role string) error {
 			return &Fail{Refused: true, Msg: sid + " is already a " + t.Role + ": x keeps a thread's role once it is given", Next: "x thread show " + sid}
 		}
 	}
-	if sessionLive(sid) {
-		return &Fail{Refused: true, Msg: sid + " already runs with no role from x: a role is given at the summon that starts a thread, so no running session names itself one", Next: "x brief summon <the summon command>"}
+	if !sessionLive(sid) {
+		return &Fail{Refused: true, Msg: sid + " names no thread: a role goes to a thread x brief summon started or one already running", Next: "x thread list"}
 	}
 	return nil
 }
@@ -288,8 +343,9 @@ func sessionLive(sid string) bool {
 	return false
 }
 
-// brief summon and lane dispatch write a thread's role, lane and ticket under its session id, before it runs
-func writeThreadRecord(record thread, now time.Time) error {
+// brief summon and lane dispatch write a thread's role, lane and ticket under its session id, before it runs; a summon's id
+// is minted fresh, a dispatch's names a thread and meets threadRoleRefusal under the lock
+func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 	path := threadStorePath()
 	if path == "" {
 		return nil
@@ -303,8 +359,10 @@ func writeThreadRecord(record thread, now time.Time) error {
 	if err != nil {
 		return err
 	}
-	if err := threadRoleRefusal(store.Threads, record.SessionID, record.Role); err != nil {
-		return err
+	if !isMinted {
+		if err := threadRoleRefusal(store.Threads, record.SessionID, record.Role); err != nil {
+			return err
+		}
 	}
 	// a record for a live thread keeps what the registry gave it, and a dispatch naming no lane keeps the summon's
 	if i := slices.IndexFunc(store.Threads, func(t thread) bool { return t.SessionID == record.SessionID }); i >= 0 {
