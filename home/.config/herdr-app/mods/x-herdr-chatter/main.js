@@ -2650,13 +2650,20 @@ export default class ClaudeChat extends View {
                 ...(this.queued.get(address) ?? []),
                 { at: Date.now(), text },
             ]);
+        // the send button spins until hc hands the message over
+        this.sendingTo = address;
         cx.spawn(async (cx) => {
-            if (idle) await this.leaveMenu(address, cx);
-            await hc(
-                message
-                    ? ['send', address, message]
-                    : ['keys', address, 'enter'],
-            );
+            try {
+                if (idle) await this.leaveMenu(address, cx);
+                await hc(
+                    message
+                        ? ['send', address, message]
+                        : ['keys', address, 'enter'],
+                );
+            } finally {
+                if (this.sendingTo === address) this.sendingTo = null;
+                cx.notify();
+            }
         });
         // These open a menu or a screen in Claude's terminal: show it there.
         if (OPENS.has(text.slice(1))) this.toTerminal(address);
@@ -6285,14 +6292,41 @@ export default class ClaudeChat extends View {
                                                     )
                                                     .text_size(px(TEXT.lg))
                                                     .font_weight(700)
-                                                    .hover((s) =>
-                                                        s.opacity(0.85),
+                                                    // a surface shift, never opacity: an opacity hover keeps the view's spinners rebuilding it
+                                                    .when(
+                                                        Boolean(
+                                                            this.typed?.trim(),
+                                                        ),
+                                                        (el) =>
+                                                            el
+                                                                .cursor_pointer()
+                                                                .hover((s) =>
+                                                                    s
+                                                                        .bg(
+                                                                            t.solid,
+                                                                        )
+                                                                        .text_color(
+                                                                            t.solid_foreground,
+                                                                        ),
+                                                                ),
                                                     )
                                                     .tooltip('Send (Enter)')
                                                     .on_click((_e, cx) =>
                                                         this.send(cx),
                                                     )
-                                                    .child('↑'),
+                                                    .child(
+                                                        this.sendingTo ===
+                                                            this.address
+                                                            ? svg(
+                                                                  'mods/workspace-chrome/spinner.svg',
+                                                              )
+                                                                  .size(px(14))
+                                                                  .text_color(
+                                                                      t.dim,
+                                                                  )
+                                                                  .spin(900)
+                                                            : '↑',
+                                                    ),
                                             ),
                                     ),
                             ),
