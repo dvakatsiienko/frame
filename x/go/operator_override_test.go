@@ -366,6 +366,42 @@ func TestBrakeCheckAnswersOneReader(t *testing.T) {
 	}
 }
 
+// x-mod-guard's raw-merge rule reads dima's holds from this answer, never the records itself
+func TestBrakeCheckAnswersEveryRepoHolds(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, unread string
+		records      map[string]string
+		holds        []any
+	}{
+		{name: "no record is no hold", holds: []any{}},
+		{name: "two repos, one list", records: map[string]string{"o_r.json": `{"prs":["9","7"]}`, "o_b.json": `{"prs":["7","12"]}`}, holds: []any{"12", "7", "9"}},
+		{name: "a record that does not read is named", records: map[string]string{"o_r.json": `{"prs":["7"]}`, "o_b.json": `not json`}, unread: "o_b.json", holds: []any{}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newMergeWorld(t, "script/foo.ts")
+			w.hub.pages[repoPath+"/issues"] = `[]`
+			for name, body := range c.records {
+				write(t, filepath.Join(w.state, "merge-hold", name), body)
+			}
+
+			got := xIn(t, t.TempDir(), append(w.env, "X_OVERRIDE_CLONES=o/r="+w.clone), "lane", "merge-auto", "--brake-check", "--json")
+
+			if got.code != 0 {
+				t.Fatalf("exit %d\n%s", got.code, got.stdout)
+			}
+			if unread, _ := got.data["holdsUnread"].(string); !strings.Contains(unread, c.unread) || (c.unread == "") != (unread == "") {
+				t.Errorf("holdsUnread = %q, want it to name %q", unread, c.unread)
+			}
+			if !reflect.DeepEqual(got.data["holds"], c.holds) {
+				t.Errorf("holds = %v, want %v", got.data["holds"], c.holds)
+			}
+		})
+	}
+}
+
 // the last gates under the override: a line's own HOME or X_STATE moves neither record on a real run
 func TestHoldAndBrakeRecordsIgnoreHomeAndXState(t *testing.T) {
 	t.Parallel()
@@ -400,8 +436,10 @@ func TestBrakeCheckWithNoCloneToReadExitsNonZero(t *testing.T) {
 	t.Parallel()
 	for _, clones := range []string{"", "o/b=/no/such/clone"} {
 		got := xIn(t, t.TempDir(), []string{"X_OVERRIDE_CLONES=" + clones}, "lane", "merge-auto", "--brake-check")
-		if got.code == 0 || !strings.Contains(got.stdout, "the brake did not read") {
-			t.Errorf("clones %q: exit %d\n%s", clones, got.code, got.stdout)
+		// the holds still read, so the guard keeps dima's holds apart from an unread brake
+		holds, isList := got.data["holds"].([]any)
+		if got.code == 0 || !strings.Contains(got.stdout, "the brake did not read") || !isList || len(holds) != 0 || got.data["holdsUnread"] != "" || got.data["brakeUnread"] == "" || got.data["brake"] != nil {
+			t.Errorf("clones %q: exit %d, data %v\n%s", clones, got.code, got.data, got.stdout)
 		}
 	}
 }

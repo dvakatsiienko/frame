@@ -165,7 +165,7 @@ function icon(p, size, color) {
 }
 
 // Our naming rule: an agent in herdr is called by its Claude Code session name (`claude -n`, or /rename), read from
-// ~/.claude/sessions/<pid>.json by the pid herdr's core reports; a name changes on /rename, so it is read again every 30 s.
+// x's thread store (~/.claude/shelf/threads.json) by the pid herdr's core reports; a name changes on /rename, so it is read again every 30 s.
 const NAMES = new Map();
 function sessionName(address) {
     return NAMES.get(address)?.name ?? null;
@@ -182,7 +182,14 @@ async function sessionOf(term) {
             return null;
         }
     };
-    const own = term.pid ? await read(`${dir}/${term.pid}.json`) : null;
+    // one rule, one reader (FRM-570 rule 8): a thread's name by its pid is x's thread store's; cc's registry stays the
+    // door only for a bg seat's job id, which the store does not carry
+    const store = term.pid
+        ? await read(`${home()}/.claude/shelf/threads.json`)
+        : null;
+    const own = Array.isArray(store?.threads)
+        ? store.threads.find((t) => t?.pid === term.pid)
+        : null;
     if (own) return own;
     const job = term.argv?.[1] === 'attach' ? term.argv[2] : null;
     if (!job) return null;

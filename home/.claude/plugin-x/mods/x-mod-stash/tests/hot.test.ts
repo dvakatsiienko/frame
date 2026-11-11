@@ -117,6 +117,7 @@ async function started(
         }));
     const pings: string[] = [];
     on('session.id', () => ({ value: SID }));
+    on('env.get', () => ({ value: '/home' }));
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
@@ -363,7 +364,6 @@ async function rcSession(
     on: On,
     { isBridged = true, store = {} as Record<string, unknown> } = {},
 ) {
-    on('env.get', () => ({ value: '/home' }));
     on('fs.list', (_$, e) => ({
         value:
             e.path === '/home/.claude/sessions'

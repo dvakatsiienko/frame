@@ -269,7 +269,20 @@ const SCENARIOS: Record<string, Scenario> = {
         trace: /phases|plan/,
     },
     'stash.rounds': {
-        arm: async ($) => {
+        arm: async ($, w) => {
+            // x's thread record names the lane a round counts under
+            w.files['/home/.claude/shelf/threads.json'] = JSON.stringify({
+                at: 0,
+                threads: [
+                    {
+                        lane: 'mods-lane-4',
+                        role: 'codie',
+                        sessionId: SID,
+                        ticket: 'FRM-500',
+                    },
+                ],
+                v: 1,
+            });
             for (const sha of ['aaaaaaa', 'bbbbbbb'])
                 await $.tool.call({
                     message: `round 1 on ${sha}`,

@@ -32,6 +32,7 @@ async function session($: Engine, on: On) {
     });
     let sid = 'a1a1a1a1-0000';
     on('session.id', () => ({ value: sid }));
+    on('env.get', () => ({ value: '/home' }));
     on('session.repo', () => ({ value: null }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     on('tool.register', (_$, e) => ({

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"crypto/sha256"
 	"fmt"
 	"os"
@@ -223,6 +224,99 @@ func bodySign(body string) (state, stored, now string) {
 	return signDrifted, stored, now
 }
 
+// a pre-approval belongs to the sign above it, so a re-sign without one voids an older one: the block from its last sign
+// line on, and that line ("" when the block holds none, and the whole block counts)
+func signSince(block string) (since, line string) {
+	signs := lastSign.FindAllStringIndex(block, -1)
+	if signs == nil {
+		return block, ""
+	}
+	since = block[signs[len(signs)-1][0]:]
+	line, _, _ = strings.Cut(since, "\n")
+	return since, strings.TrimRight(line, "\r")
+}
+
+// the sign line a body's merge grant hangs on, as readSign grants it: none after a cancel or a pending re-sign, or with
+// no merge: pre-approved line after the last sign
+func signGrant(body string) (line string, ok bool) {
+	_, block, found := signedBlock(body)
+	if !found {
+		return "", false
+	}
+	since, line := signSince(block)
+	if cancelled.MatchString(since) || resignPending.MatchString(since) || !preApproved.MatchString(since) {
+		return "", false
+	}
+	return line, true
+}
+
+var signLine = regexp.MustCompile(`^✍️ (?:re-)?signed `)
+
+// what a body set would add of dima's word against the ticket's current body: a sign line it lacks word for word, whatever
+// its date, or a merge grant it holds where the current body grants none or from another sign; "" when it adds none
+func newSignIn(current, body string) string {
+	held := map[string]bool{}
+	for line := range strings.Lines(current) {
+		held[strings.TrimRight(line, "\r\n")] = true
+	}
+	for line := range strings.Lines(body) {
+		if line = strings.TrimRight(line, "\r\n"); signLine.MatchString(line) && !held[line] {
+			return "a sign line the ticket's body lacks: " + line
+		}
+	}
+	if grant, ok := signGrant(body); ok {
+		if was, wasOK := signGrant(current); !wasOK || was != grant {
+			return "a merge grant the ticket's body does not hold, from «" + cmp.Or(grant, "the ## signed block") + "»"
+		}
+	}
+	return ""
+}
+
+// x-mod-guard's judge of a body set: a sign or a merge grant is dima's word, so a file adding one is refused; a body
+// that adds neither needs no read of linear, and a linear that does not read counts the file as new
+func linearSignCheck(r *Run, args []string, flags Flags) (any, error) {
+	id := args[0]
+	if err := checkIDs(args, "linear sign-check"); err != nil {
+		return nil, err
+	}
+	source, _ := flags["body-file"].(string)
+	body, err := os.ReadFile(source)
+	if err != nil {
+		return nil, usageFail("cannot read "+source, "x linear sign-check "+id+" --body-file <file>")
+	}
+	r.Open(id)
+	_, hasGrant := signGrant(string(body))
+	hasLine := false
+	for line := range strings.Lines(string(body)) {
+		hasLine = hasLine || signLine.MatchString(line)
+	}
+	if !hasLine && !hasGrant {
+		r.Done("no sign line, no merge grant", "")
+		return map[string]any{"id": id, "newSign": false}, nil
+	}
+	actor, err := actorOf(flags)
+	if err != nil {
+		return nil, err
+	}
+	var current bodyIssue
+	r.Wait("reading "+id+" as "+actor, func() { current, err = fetchBody(actor, id) })
+	if err != nil {
+		return nil, &Fail{Msg: id + "'s current body did not read, so the file counts as a new sign: " + err.Error(), Next: "x linear read " + id}
+	}
+	if why := newSignIn(ptrText(current.Description), string(body)); why != "" {
+		return nil, &Fail{Refused: true, Msg: "the file holds " + why + "; a sign is dima's word", Next: "ask dima to tick «✍️ sign " + id + ": <title>», or to type «sign " + id + "» himself"}
+	}
+	r.Done("adds no sign", "")
+	return map[string]any{"id": id, "newSign": false}, nil
+}
+
+func ptrText(text *string) string {
+	if text == nil {
+		return ""
+	}
+	return *text
+}
+
 // the hash covers the body through the newline before ## signed, first 8 hex of its sha256, as clio signs it;
 // the last «· body <hash>» line in the block is the one that holds
 func readSign(ticket, body string) chunkSign {
@@ -230,11 +324,7 @@ func readSign(ticket, body string) chunkSign {
 	if !ok {
 		return chunkSign{detail: ticket + " carries no ## signed block"}
 	}
-	// a pre-approval belongs to the sign above it: a re-sign without one voids an older one
-	since := block
-	if signs := lastSign.FindAllStringIndex(block, -1); signs != nil {
-		since = block[signs[len(signs)-1][0]:]
-	}
+	since, _ := signSince(block)
 	// a cancel after the last sign voids it; a later re-sign starts `since` past the cancel
 	if cancelled.MatchString(since) {
 		return chunkSign{detail: ticket + "'s last sign was cancelled (a 🚫 cancelled line follows it): re-sign it"}

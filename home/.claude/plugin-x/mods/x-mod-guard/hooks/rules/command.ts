@@ -38,8 +38,8 @@ export type Context = {
     helpless?: Set<string>;
     // the clis whose bare `--help` already ran this session
     helped?: Set<string>;
-    // the registry names of the live sixth senses, read only when the command summons one (FRM-479)
-    sixthSenses?: string[];
+    // x's thread records (`x thread list`), read only when the command summons under a session id (FRM-479, FRM-570)
+    threads?: Thread[];
     // the body files a ticket create hands linear, as read before the call; undefined when the hook cannot read one (FRM-486)
     worthFiles?: Map<string, string | undefined>;
     // a create's milestone id, resolved to its name through linear
@@ -51,8 +51,17 @@ export type Context = {
     // a Herdr app runs on this mac (herdr-start.ts), read only when the command starts one
     isHerdrOpen?: boolean;
 };
-// a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check stamped its bytes
+// a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check passed its bytes
 export type Brief = { isCodie: boolean; isStamped: boolean };
+// one thread as x thread list answers it: a pid only while its session runs
+export type Thread = {
+    display?: string;
+    lane?: string;
+    name?: string;
+    pid?: number;
+    role?: string;
+    sessionId: string;
+};
 // a file a command writes: its resolved path, the text, and whether the text is appended
 export type Written = [path: string, text: string, isAppend?: boolean];
 export type Verdict =

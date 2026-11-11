@@ -47,7 +47,7 @@ func (w summonWorld) brief(t *testing.T, text string, stamped bool) string {
 
 func (w summonWorld) summon(t *testing.T, command string, env ...string) ran {
 	t.Helper()
-	return xIn(t, w.repo, append([]string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}, env...), "brief", "summon", command)
+	return xIn(t, w.repo, asCaller(t, append([]string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}, env...), "🦉 clio"), "brief", "summon", command)
 }
 
 // a bytes checkout is known by its essentials script; this one fails every app
@@ -85,8 +85,8 @@ func TestBriefSummonPassesACommandThatMeetsEveryStep(t *testing.T) {
 
 			got := w.summon(t, command)
 
-			if got.code != 0 || got.data["argv"] != command {
-				t.Errorf("exit %d, want 0 printing the argv:\n%s", got.code, got.stdout)
+			if got.code != 0 || got.data["argv"] != withSessionID(command, got) {
+				t.Errorf("exit %d, want 0 printing the argv with its session id:\n%s", got.code, got.stdout)
 			}
 		})
 	}
@@ -189,11 +189,86 @@ func TestBriefSummonFromAHerdrThreadWantsTheHcRunLine(t *testing.T) {
 			got := w.summon(t, command, c.env...)
 
 			switch {
-			case c.isOk && (got.code != 0 || got.data["argv"] != command):
-				t.Errorf("exit %d, want 0 printing the argv untouched:\n%s", got.code, got.stdout)
+			case c.isOk && (got.code != 0 || got.data["argv"] != withSessionID(command, got)):
+				t.Errorf("exit %d, want 0 printing the argv with only its session id added:\n%s", got.code, got.stdout)
 			case !c.isOk && (got.code == 0 || !strings.Contains(got.stdout, "step herdr:") || !strings.Contains(got.next, "hc run --bg --no-parent --no-notify --name <short> --cwd "+w.repo+" -- claude -n ") || strings.Contains(got.next, "claude --bg")):
 				t.Errorf("exit %d next %q, want a refusal naming step herdr and the hc run line:\n%s", got.code, got.next, got.stdout)
 			}
 		})
+	}
+}
+
+// the argv a passing summon prints: the command with its minted --session-id right after claude
+func withSessionID(command string, got ran) string {
+	sid, _ := got.data["sessionId"].(string)
+	return strings.Replace(command, "claude ", "claude --session-id "+sid+" ", 1)
+}
+
+// a quoted name holding the word claude comes before the call: the id goes after the claude x runs, never into the name
+func TestBriefSummonAddsTheSessionIDAfterTheClaudeItRuns(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	brief := w.brief(t, goodBrief, true)
+	command := "hc run --bg --no-parent --no-notify --name 'the claude codie' --cwd " + w.repo + " -- claude -n '🌗 🔧 codie: FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
+
+	got := w.summon(t, command, "HC_TERMINAL_ID=t9")
+
+	sid, _ := got.data["sessionId"].(string)
+	want := strings.Replace(command, "-- claude ", "-- claude --session-id "+sid+" ", 1)
+	if got.code != 0 || got.data["argv"] != want {
+		t.Fatalf("exit %d argv %v, want %q:\n%s", got.code, got.data["argv"], want, got.stdout)
+	}
+}
+
+// the lane is the summon's own spec, never another lane's spec the brief mentions first
+func TestBriefSummonNamesTheLaneByItsOwnSpec(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	brief := w.brief(t, goodBrief+"\nbuilt on what .scratch/mods-lane-6/spec.md shipped\nthe spec: /f/.scratch/cli-lane-8/spec.md\n", true)
+
+	got := w.summon(t, codieArgv(w.repo, brief), "X_THREADS="+store, "X_SESSIONS="+t.TempDir())
+
+	written, _ := readThreadStore(store)
+	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Lane != "cli-lane-8" {
+		t.Fatalf("exit %d, records %+v, want lane cli-lane-8:\n%s", got.code, written.Threads, got.stdout)
+	}
+}
+
+// exit 14: a summoned codie and sixth sense each leave their role, lane and ticket under the id their argv carries
+func TestBriefSummonWritesTheThreadRecordUnderItsSessionID(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	env := []string{"X_THREADS=" + store, "X_SESSIONS=" + t.TempDir()}
+	brief := w.brief(t, goodBrief+"\nthe spec: /f/.scratch/cli-lane-8/spec.md\n", true)
+
+	codie := w.summon(t, codieArgv(w.repo, brief), env...)
+	again := w.summon(t, codieArgv(w.repo, brief), env...)
+	sixth := w.summon(t, sixthArgv(w, " spec: .scratch/cli-lane-8/spec.md"), env...)
+	list := xIn(t, t.TempDir(), env, "thread", "list")
+
+	ids := []string{}
+	for _, got := range []ran{codie, again, sixth} {
+		sid, _ := got.data["sessionId"].(string)
+		argv, _ := got.data["argv"].(string)
+		if got.code != 0 || len(sid) != 36 || !strings.Contains(argv, "claude --session-id "+sid+" ") {
+			t.Fatalf("exit %d, want the argv to carry the minted id %q:\n%s", got.code, sid, got.stdout)
+		}
+		ids = append(ids, sid)
+	}
+	if ids[0] == ids[1] {
+		t.Errorf("a second summon of the same line reused %s", ids[0])
+	}
+	want := map[string]string{ids[0]: "🌗 🔧 cli | FRM-1", ids[1]: "🌗 🔧 cli | FRM-1", ids[2]: "🔎 cli | FRM-1"}
+	shown := map[string]string{}
+	threads, _ := list.data["threads"].([]any)
+	for _, th := range threads {
+		m, _ := th.(map[string]any)
+		sid, _ := m["sessionId"].(string)
+		shown[sid], _ = m["display"].(string)
+	}
+	if list.code != 0 || len(shown) != 3 || shown[ids[0]] != want[ids[0]] || shown[ids[1]] != want[ids[1]] || shown[ids[2]] != want[ids[2]] {
+		t.Errorf("thread list shows %v, want %v:\n%s", shown, want, list.stdout)
 	}
 }

@@ -19,8 +19,13 @@
         },
         {
             "example": "x fleet flow --days 14",
-            "gist": "the fleet measuring itself: flow, codie audits, agent ops",
+            "gist": "the fleet measuring itself",
             "name": "fleet"
+        },
+        {
+            "example": "x thread show 61711",
+            "gist": "a session's role, lane and ticket",
+            "name": "thread"
         },
         {
             "example": "x brief check brief.md --repo ~/frame",
@@ -317,7 +322,8 @@
             "steps": ["read", "write"],
             "touches": [
                 "linear — each ticket's signed label, state, delegate and sign block, written",
-                "~/.claude/shelf/cc-usage-window.json — the 5h window, read"
+                "~/.claude/shelf/cc-usage-window.json — the 5h window, read",
+                "~/.claude/shelf/threads.json — the record of each thread it names, written"
             ]
         },
         {
@@ -353,6 +359,17 @@
                 "<frame main checkout>/docs/test-drive/review-rounds.md — read",
                 "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped"
             ]
+        },
+        {
+            "args": [
+                {
+                    "description": "a lane-plan.md",
+                    "name": "plan"
+                }
+            ],
+            "name": "lane plan-steps",
+            "needsApply": false,
+            "purpose": "list a lane plan's numbered steps, each done or open, its text and its ticket, as the glide card draws them; no network"
         },
         {
             "args": [
@@ -418,7 +435,7 @@
             ],
             "flags": {
                 "brake-check": {
-                    "description": "read the brake of frame and bytes, its label, record and reverts, as x-mod-guard does before a raw merge under operator-override; a failed read exits non-zero; takes no pr",
+                    "description": "read the brake of frame and bytes, its label, record and reverts, as x-mod-guard does before a raw merge, and every repo's held prs beside it; a failed brake read exits non-zero; takes no pr",
                     "type": "boolean"
                 },
                 "dima-ok": {
@@ -689,7 +706,8 @@
                 "~/.claude.json — the summon home's trust key, read",
                 "script/test-drive-list.ts --spawn-hook — the live trials that fit, run",
                 "ps — the age of each claude bg-spare, read",
-                "a bytes home's script/apps-essentials.ts --app <app> — the app's essentials, run"
+                "a bytes home's script/apps-essentials.ts --app <app> — the app's essentials, run",
+                "~/.claude/shelf/threads.json — the thread record under the minted session id, written"
             ]
         },
         {
@@ -812,6 +830,32 @@
             "touches": [
                 "linear's graphql api ($X_LINEAR_URL in tests), as the acting member",
                 "~/.local/state/x/linear/ — the pulled bodies, a dir per session, and pulls.json, each session's pull with its updatedAt and size ($X_STATE in tests)"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the ticket id, FRM-N or BYT-N",
+                    "name": "id"
+                }
+            ],
+            "flags": {
+                "as": {
+                    "description": "the member to read as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "body-file": {
+                    "description": "the body a set would send, read once; /dev/stdin for bytes held in a shell; required",
+                    "type": "string",
+                    "value": "file"
+                }
+            },
+            "name": "linear sign-check",
+            "needsApply": false,
+            "purpose": "refuse a body file that adds a sign line or moves a merge grant against the ticket's current body",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member, only when the file holds a sign line or a grant"
             ]
         },
         {
@@ -1125,6 +1169,31 @@
             ]
         },
         {
+            "args": [],
+            "name": "thread list",
+            "needsApply": false,
+            "purpose": "list every live session with its role, lane and ticket, and rewrite the store a display reads with no spawn",
+            "touches": [
+                "~/.claude/sessions/ — the registry, read",
+                "~/.claude/shelf/threads.json — the store, rewritten ($X_THREADS in tests)"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "a session id or a pid",
+                    "name": "id"
+                }
+            ],
+            "name": "thread show",
+            "needsApply": false,
+            "purpose": "print one live session's role, lane, ticket and display name, by session id or pid; no record reads as unknown",
+            "touches": [
+                "~/.claude/sessions/ — the registry, read",
+                "~/.claude/shelf/threads.json — the store, rewritten ($X_THREADS in tests)"
+            ]
+        },
+        {
             "args": [
                 {
                     "description": "who acts: clio, codie or dima",
@@ -1213,6 +1282,18 @@
             "touches": [
                 "github's graphql api ($X_GITHUB_URL in tests), as the x-codie-cc app"
             ]
+        },
+        {
+            "args": [
+                {
+                    "description": "a git dir; the cwd when absent",
+                    "isOptional": true,
+                    "name": "dir"
+                }
+            ],
+            "name": "gh repo-slug",
+            "needsApply": false,
+            "purpose": "print a dir's github owner/name off its origin remote, an insteadOf rewrite honoured; no network"
         },
         {
             "args": [

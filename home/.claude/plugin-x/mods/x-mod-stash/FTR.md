@@ -796,7 +796,7 @@ herdr reads no private store (frame `AGENTS.md` § the boundary), so every threa
   - given `pnpm mods:set <pace-stop|pace-burn|pace-park|pace-over|pace-under|hot-minutes|hot-late> <number>`, then the next poll uses it with no reload, and the 🎛️ `stash · knobs` row shows it; a number out of its range or an unknown key is refused with the list
   - proof: tests/pace.test.ts::a retuned number moves the rung at the next poll, no reload; ::🎛️ shows a pace number; set.test.ts::a number takes only a known key inside its range
 - ✅ 🔥 on by default for a seated member
-  - given clio, a wing, crow, helga or a lane member with no `hot:` key, then 🔥 starts on; a plain session or a fork stays off; off is a written `{ off: true }`, so a click off stays off
+  - given clio, a wing, crow, helga or a lane member (its role in x's thread store) with no `hot:` key, then 🔥 starts on; a plain session or a fork stays off; off is a written `{ off: true }`, so a click off stays off
   - and a 🔥 session idle at 45 min left whose last turn + 60 min falls before the reset gets one ping; a cache that outlives the reset gets none; at 100 % used no ping is sent
   - proof: tests/pace.test.ts::🦉 clio starts 🔥 (+ a row per thread); ::a 🔥 click off is written and stays off across a restart; ::a cache dying before the reset gets one ping at 45 min left; ::a cache that outlives the reset gets no late ping; ::at 100 % no ping is sent
 - ✅ a quiet meter is normal while everyone is parked
@@ -1032,13 +1032,15 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - and a 6th step, an empty list, a step over 60 chars, a malformed ticket id, an unknown lane id or a step out of range is refused with a one-line reason; the tool asks for plain words — no paths, op names or pr numbers
   - proof: tests/lane.test.ts::a session the registry does not name 🦉 clio is refused; ::a new clio after a handoff steps and ends a lane it did not create; ::a second open lane of one topic is refused, naming the open one and its fix; …
 - ✅ a glide card linked to its lane plan moves on its own (FRM-429, FRM-410)
-  - given 🦉 clio calls `glide` act `create` with `plan: <path>` to a lane-plan file, then the card's steps are the file's numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text` (text cut to 60 chars, a ticket id in it drawn as its link); a nested, unnumbered or other checklist line is ignored
+  - given 🦉 clio calls `glide` act `create` with `plan: <path>` to a lane-plan file, then the card's steps are what `x lane plan-steps <path>` reads from it: the file's numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text` (text cut to 60 chars, a ticket id in it drawn as its link); a nested, unnumbered or other checklist line is ignored
   - decision: this refusal ships refusing, the one exception to warn-only besides the sign shape: its exit says refused, and a warning would still draw a card with no id (W41, clio's read 2026-11-06)
   - and a plan with a step line holding no `FRM-N` or `BYT-N` is refused at `create` or `edit`, naming the line; a line added later draws with no id, since a poll refuses nothing (FRM-504); proof: tests/lane.test.ts::a plan with a step line holding no ticket id is refused, naming that line; ::a plan whose every line carries its ticket draws the ids
   - given a chunk's build slices ticked and its closing slice `- [ ] NN · FRM-N reviewed and closed` open, then the card reads that chunk, never the next one, while its reviews run; `x lane landed --apply` ticks it (FRM-504); proof: tests/lane.test.ts::a chunk with its build ticked stays on the card until its closing slice ticks
   - when codie ticks a step in that file, then on the next board poll the card's step moves to the first unticked line with no `glide` call; all ticked shows the lane done
   - and a hand `step` on a linked card, or an `edit` of its steps, is refused naming the file; a card with no plan keeps its hand steps
   - and a file that cannot be read keeps the card's last state, its title marked «plan file gone», until `end`
+  - and x runs only when the file's mtime moved since its last parse; an `x lane plan-steps` that fails keeps the last steps, the title marked «steps stale, x lane plan-steps failed», and a `create` it fails is refused naming x (FRM-570); proof: tests/lane.test.ts::an untouched plan file spawns no x lane plan-steps on the next poll; ::a failed x lane plan-steps keeps the last steps marked stale; ::a create whose plan x cannot read is refused, naming x
+  - decision: the line parse is x's alone (one rule, one reader, FRM-570 rule 7), its separator rows in x/go lane_plan_steps_test.go
   - proof: tests/lane.test.ts::a create naming a lane plan takes its steps from the file; ::a tick in the plan file moves the card to the first unticked line on the next poll; ::an all-ticked plan file shows the lane done; ::a nested or u… — not asserted: 60-char cut not checked
 - ✅ a wing writes the card of a lane it runs (FRM-504)
   - given a session titled «🦉 clio (side)» or «🦉🪽 clio: wing <N>», with a chair on the board, then `glide` `create` writes a card stamped with its name, and every other act writes that card; a card it did not create is refused, naming it, and it stands: 🦉 clio's own card reaches a wing only by her `end` and its `create`; 🦉 clio still writes any card, and its stale nag skips a wing's card, whose turn count is another thread's
@@ -1082,8 +1084,9 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
 ## the round count — a lane's 3-round stop, kept by the mod (FRM-504)
 
 - ✅ codie's rounds count in the store, so a compact loses nothing
-  - given a `codie:` thread's send to anyone but the coordinator, opening `round N`, with the first sha on that line whatever sits between («round 4, final, on <sha>»), (a ticket id, `#n`, `slice NN`, `coder:`, `sixth sense,`, `final` or a tag may lead it), then its sha joins `lane-rounds:<what its name holds past «codie:»>`, `{ count, shas }`: a key per lane and ticket, so a next chunk starts over and a quick lane's chunks stay apart (his one key per lane, bent at the read of 2026-11-06, clio tells him), never the lanes file; the count is the larger of the number sent and the last + 1, and `final on <sha>` is round 1
+  - given a thread whose record in x's thread store (`~/.claude/shelf/threads.json`, by its session id) names it a codie, its send to anyone but the coordinator, opening `round N`, with the first sha on that line whatever sits between («round 4, final, on <sha>»), (a ticket id, `#n`, `slice NN`, `coder:`, `sixth sense,`, `final` or a tag may lead it), then its sha joins `lane-rounds:<what its name holds past «codie:»>`, `{ count, shas }`: a key per lane and ticket, so a next chunk starts over and a quick lane's chunks stay apart (his one key per lane, bent at the read of 2026-11-06, clio tells him), never the lanes file; the count is the larger of the number sent and the last + 1, and `final on <sha>` is round 1
   - and a resend of a sha, a round word further in, a failed send, sixth sense's own round or any other sender counts nothing
+  - and the key is the record's lane and ticket, whatever the name holds: a codie named «⚡ 🔧 mods 6 | FRM-574» or with no emoji counts as before, a codie-named thread with no record counts nothing (FRM-570 rule 9); proof: tests/quiet.test.ts::a codie named «mods six» counts its rounds by its record; ::a codie name with no thread record counts no round
   - given round 3, then the sender reads that a next round with a P0 or P1 is past the cap; past 3, that the stop goes to the coordinator; no message is ever refused, and the cap's terms stay sixth sense's judgment
   - and a `stash.rounds` switch off counts nothing and draws no line; a key never ends, so a thread name used again starts from its old count (inference)
   - proof: tests/quiet.test.ts § the round count, tests/switches.test.ts — not asserted: `_clio`'s compact carry reads the key at the land, clio's
@@ -1092,7 +1095,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
 
 - decision: no spawn-time hints — the chore-helper word match and the short general-purpose brief warning are gone, with their `agent.spawn` toast: 0 for 1 on its first real fire, and a toast never reaches the session it corrects (dima, 2026-10-05)
 - ✅ the board marks a background session named off the fleet pattern
-  - given a background session's name is not `<mode> <role emoji> <member name>: <scope> | <ticket>` («⚡ 🔧 codie: mods lane 3 | FRM-467»), nor the 10-29 `<mode> <role emoji> <scope> <member name>: <ticket or what>`, nor the older `<mode> <role emoji> <ticket> <role word>: <what>`
+  - given a background session with no role in x's thread store (FRM-570 rule 9: the record by session id, never a name pattern), nor clio, a wing or a standing member
   - when the board lists it
   - then its row carries ⚠ beside the name; the pattern lives here, since the pane draws no hover card
   - given a background session named as a standing member alone, badge or not («🐦‍⬛ crow»)
