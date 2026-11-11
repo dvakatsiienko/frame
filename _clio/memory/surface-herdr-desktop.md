@@ -4,9 +4,9 @@ this leaf loaded means this thread runs in herdr (`HC_TERMINAL_ID` set); the Cla
 
 ## threads
 
-- every seat is a herdr pane; mine is the tab «🦉 clio»; a summon is `hc run`, its tab given by `x:herdr`'s `seat-tab.ts`
+- every thread is a herdr pane; mine is the tab «🦉 clio»; a summon is `hc run`, its tab given by `x:herdr`'s `seat-tab.ts`
 - a wing: the live ones read off their names in `ListAgents`; started by `crew-lead`'s herdr surface file (`hc run … --name <short>`, `--cwd ~/frame/_clio`), its `🦉🪽 clio: wing <N>` tab named by `seat-tab.ts`, the prompt and the background together as its first task; his typed lines read from its transcript (`clio:wing`)
-- a seat at the halt: no card to archive; its tab stays until he closes it (`clio:halt`)
+- a thread at the halt: no card to archive; its tab stays until he closes it; a wing, listed by `ListAgents`, its report folded, stops by `hc kill <t>`, its `<t>` from `hc ls --json` (`x:herdr`, `clio:halt`)
 - context and the 5h window: the shelf file and the band; there is no other door (`habit-ctx-load-balancing`, `clio:shift`)
 - a herdr thread opened in the desktop app through remote control stays a herdr thread: where it runs decides, never where he reads (inference from the env detection, not probed)
 

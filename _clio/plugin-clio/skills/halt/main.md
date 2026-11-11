@@ -5,7 +5,7 @@
 one short message, then straight into phase 1:
 - name every **live** thread: a ticket In Progress, an unlanded edit, a summoned session, an
   unanswered question put to dima, an unpushed commit
-- **wings and forks first** (PK-351:W77): each live wing, and a `(fork` session the same but its tree decamped below (`list_sessions`; a herdr seat: `ListAgents`), gets one `SendMessage`, «halt — main is halting: run `clio:halt`'s wing file», with `notify_when_idle`; each finishes, hands back its `clio-wing-<N>` items and sends its closing report before the CST; a report read and folded, `archive_session` stops that wing (a herdr wing: `hc kill <t>`, its `<t>` from `hc ls --json`, `x:herdr`), his halt being the word; one silent after 30 min is named to him, never archived; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*' 'clio-wing-*'`, each merged now (`clio:wing`), kept or dropped only on his word; then `x lane decamp <tree> --apply` for a `worktree-fork-*` tree; a `clio-wing-*` tree stays
+- **wings and forks first** (PK-351:W77): each live wing, and a `(fork` session the same but its tree decamped below (listed by the surface leaf's door), gets one `SendMessage`, «halt — main is halting: run `clio:halt`'s wing file», with `notify_when_idle`; each finishes, hands back its `clio-wing-<N>` items and sends its closing report before the CST; a report read and folded, the surface leaf's stop door stops that wing, his halt being the word; one silent after 30 min is named to him, never archived; then `git -C ~/frame branch --no-merged main --list 'worktree-fork-*' 'clio-wing-*'`, each merged now (`clio:wing`), kept or dropped only on his word; then `x lane decamp <tree> --apply` for a `worktree-fork-*` tree; a `clio-wing-*` tree stays
 - **a lane merged since the last siesta**: `x lane landed <ticket> --pr <n> --apply` (a quick lane drops `--pr`), the one decamp door
 - **the lingering-ticket sweep** — query, never recall (no linear automation: a merge is not a done):
   `x linear list --state "In Progress"` and `--state "In Review"` (github moves a pr's ticket there), ids, titles, labels
@@ -15,7 +15,7 @@ one short message, then straight into phase 1:
   `↩️ back to Todo <YYYY-MM-DD> — <why> · left: <the open asks>`; the boot digest lists it until it moves again; its way back is a re-sign (`shape-lane-dispatch` § 6)
 - **the close sweep**: today's closes, W-lines against the closing word; one unanswered reopens or is homed
 - **the stop list holds the `--bg` members and the lane codies' desktop threads**; a 👤 session is dima's and stays, and so does a member he said to keep (its lane's vm too), named kept in the CST with his quote.
-- **the codie roster, two questions per codie: retro filed in `~/.local/state/x/lanes/<feature>/`? stopped?** (`claude stop <id>`; a desktop thread: `archive_session` once its lane ends)
+- **the codie roster, two questions per codie: retro filed in `~/.local/state/x/lanes/<feature>/`? stopped?** (`claude stop <id>`, or the surface leaf's door for a codie's thread once its lane ends)
   `claude agents --json` is the check, never memory. **a codie the CST
   calls «warm» is verified alive** (`kill -0` on its registry pid) and written as dead when dead. **🎀 helga is on the roster too**: `claude stop <its id>` beside crow's (a pane helga: `hc kill <its terminal>`), the boot starts it fresh. **crow is on the roster too** — its stop is phase 5's last line, named in this
   plan so it is not lost
