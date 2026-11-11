@@ -47,7 +47,7 @@ func (w summonWorld) brief(t *testing.T, text string, stamped bool) string {
 
 func (w summonWorld) summon(t *testing.T, command string, env ...string) ran {
 	t.Helper()
-	return xIn(t, w.repo, append([]string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame}, env...), "brief", "summon", command)
+	return xIn(t, w.repo, append([]string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}, env...), "brief", "summon", command)
 }
 
 // a bytes checkout is known by its essentials script; this one fails every app
@@ -148,6 +148,48 @@ func TestBriefSummonRefusesABriefThatSkipsAStep(t *testing.T) {
 
 			if got.code == 0 || !strings.Contains(got.stdout, "step "+c.step+":") {
 				t.Errorf("exit %d, want a refusal naming step %q:\n%s", got.code, c.step, got.stdout)
+			}
+		})
+	}
+}
+
+// herdrArgv is the herdr-native summon line x:crew-lead § preflight names
+func herdrArgv(repo, brief string) string {
+	return "hc run --bg --no-parent --no-notify --name codie --cwd " + repo + " -- claude -n '🌗 🔧 codie: FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
+}
+
+func TestBriefSummonFromAHerdrThreadWantsTheHcRunLine(t *testing.T) {
+	t.Parallel()
+	herdr := []string{"HC_TERMINAL_ID=t9"}
+	cases := []struct {
+		name    string
+		command func(t *testing.T, w summonWorld) string
+		env     []string
+		isOk    bool
+	}{
+		{"a claude --bg line from a herdr thread", func(t *testing.T, w summonWorld) string {
+			return codieArgv(w.repo, w.brief(t, goodBrief, true))
+		}, herdr, false},
+		{"an hc run line from a herdr thread", func(t *testing.T, w summonWorld) string {
+			return herdrArgv(w.repo, w.brief(t, goodBrief, true))
+		}, herdr, true},
+		{"a claude --bg line outside herdr", func(t *testing.T, w summonWorld) string {
+			return codieArgv(w.repo, w.brief(t, goodBrief, true))
+		}, nil, true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			command := c.command(t, w)
+
+			got := w.summon(t, command, c.env...)
+
+			switch {
+			case c.isOk && (got.code != 0 || got.data["argv"] != command):
+				t.Errorf("exit %d, want 0 printing the argv untouched:\n%s", got.code, got.stdout)
+			case !c.isOk && (got.code == 0 || !strings.Contains(got.stdout, "step herdr:") || !strings.Contains(got.next, "hc run --bg --no-parent --no-notify --name <short> --cwd "+w.repo+" -- claude -n ") || strings.Contains(got.next, "claude --bg")):
+				t.Errorf("exit %d next %q, want a refusal naming step herdr and the hc run line:\n%s", got.code, got.next, got.stdout)
 			}
 		})
 	}

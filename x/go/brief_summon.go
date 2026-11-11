@@ -36,7 +36,8 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 	// a summon without a cd starts in the cwd, so the cwd is the home whose trust key counts
 	home, claude := "", -1
 	for i, word := range words {
-		if word == "cd" && i+1 < len(words) && home == "" {
+		// an `hc run --cwd <dir>` starts its terminal there, as a cd does
+		if (word == "cd" || word == "--cwd") && i+1 < len(words) && home == "" && claude < 0 {
 			home = filepath.Clean(expandHome(words[i+1]))
 		}
 		if word == "claude" && claude < 0 {
@@ -44,7 +45,7 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 		}
 	}
 	if claude < 0 {
-		return nil, usageFail("no claude call in the summon command", `x brief summon "cd <home> && claude --bg -n '<name>' … \"$(cat <brief>)\" --remote-control"`)
+		return nil, usageFail("no claude call in the summon command", `x brief summon "hc run --bg --no-parent --no-notify --name <short> --cwd <home> -- claude -n '<name>' … \"$(cat <brief>)\" --remote-control"`)
 	}
 	if home == "" {
 		home, _ = os.Getwd()
@@ -68,6 +69,15 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 		})
 	}
 
+	// a herdr thread summons into a herdr terminal, dima's native way (FRM-574 decided 5); `hc run` before the claude call
+	if os.Getenv("HC_TERMINAL_ID") != "" {
+		step("herdr", "from a herdr thread the summon runs through hc run", func() {
+			if !slices.Contains(words[:claude], "hc") || !slices.Contains(words[:claude], "run") {
+				fail("herdr", "this thread runs in herdr, so its summon starts in a herdr terminal: hc run … -- claude …",
+					"x brief summon "+quote("hc run --bg --no-parent --no-notify --name <short> --cwd "+home+" -- "+herdrClaude(command)))
+			}
+		})
+	}
 	step("argv", "-n before the prompt, the prompt before --remote-control", func() {
 		name, rc := slices.Index(argv, "-n"), slices.Index(argv, "--remote-control")
 		switch {
@@ -253,3 +263,14 @@ func restamp(brief string) string {
 	}
 	return "x brief check " + quote(brief)
 }
+
+// the claude call as typed, quotes kept, as a herdr terminal runs it: in a pane of its own, so no --bg
+func herdrClaude(command string) string {
+	call := command[max(0, claudeCall.FindStringIndex(command)[0]):]
+	return strings.TrimSpace(bgFlag.ReplaceAllString(call, " "))
+}
+
+var (
+	claudeCall = regexp.MustCompile(`(?:^|[\s;&|(])claude\s`)
+	bgFlag     = regexp.MustCompile(`\s--bg(?:\s|$)`)
+)
