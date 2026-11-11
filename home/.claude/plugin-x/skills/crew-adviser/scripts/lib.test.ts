@@ -85,6 +85,25 @@ describe('proposalOf reads a proposal written by Bash', () => {
         });
     });
 
+    test('a relative target resolves against a leading cd, else the hook cwd', () => {
+        const command = "printf 'x' >> .scratch/h/g-proposal.md && echo ok";
+        expect(
+            proposalOf(
+                'Bash',
+                undefined,
+                `cd ~/frame/_clio && ${command}`,
+                '/z',
+            ),
+        ).toEqual({
+            kind: 'proposal',
+            path: `${homedir()}/frame/_clio/.scratch/h/g-proposal.md`,
+        });
+        expect(proposalOf('Bash', undefined, command, '/z')).toEqual({
+            kind: 'proposal',
+            path: '/z/.scratch/h/g-proposal.md',
+        });
+    });
+
     test('a command that only reads a proposal file stays quiet', () => {
         expect(
             proposalOf('Bash', undefined, 'cat .scratch/x/grill-1-proposal.md'),
@@ -1247,6 +1266,21 @@ test('x lane merge-auto is a merge decision, behind a timeout too', () => {
         'merge',
     );
     expect(decisionOf('x lane merge-main')?.kind).not.toBe('merge');
+});
+
+test('a merge-auto with no pr, a redirect or a pipe is no merge decision', () => {
+    expect(
+        decisionOf('x lane merge-auto --override-off --apply 2>&1 | tail -2')
+            ?.kind,
+    ).not.toBe('merge');
+    const merge = decisionOf('x lane merge-auto 82 --apply > out.txt 2>&1');
+    expect(merge?.kind === 'merge' && prViewArgs(merge.args)).toEqual([
+        'pr',
+        'view',
+        '82',
+        '--json',
+        'number,headRefOid,url',
+    ]);
 });
 
 test('a plan-only x lane merge-auto spends no merge check', () => {

@@ -69,7 +69,7 @@ function decisionNow() {
         before ??
         (event === 'PreToolUse'
             ? undefined
-            : proposalOf(name, tool?.file_path, tool?.command))
+            : proposalOf(name, tool?.file_path, tool?.command, input.cwd))
     );
 }
 

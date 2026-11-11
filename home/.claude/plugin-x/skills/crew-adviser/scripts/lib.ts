@@ -1070,7 +1070,9 @@ export function decisionOf(
             words[at] === 'x' &&
             words[at + 1] === 'lane' &&
             words[at + 2] === 'merge-auto' &&
-            words.includes('--apply')
+            words.includes('--apply') &&
+            // an --override-off/--override-on call names no pr, so it merges nothing
+            mergeSelectors(words.slice(at + 3)).selector
         )
             return { args: words.slice(at + 3), kind: 'merge' };
         if (head === 'claude' && words.includes('--bg'))
@@ -1135,6 +1137,7 @@ export function proposalOf(
     tool: string | undefined,
     path: string | undefined,
     command?: string,
+    cwd?: string,
 ): Decision | undefined {
     if ((tool === 'Write' || tool === 'Edit') && path && PROPOSAL.test(path))
         return { kind: 'proposal', path };
@@ -1147,10 +1150,16 @@ export function proposalOf(
         ]
             .map((match) => match[1] ?? '')
             .find((candidate) => PROPOSAL.test(candidate));
+        // a relative target lands where the command's leading `cd` (else the hook's cwd) stands
+        const cd = /^\s*cd\s+["']?([^\s"';&|]+)["']?\s*(?:&&|;)/.exec(
+            command,
+        )?.[1];
+        const home = (p: string) => p.replace(/^~(?=\/|$)/, homedir());
+        const base = cd ? resolve(cwd ?? '.', home(cd)) : cwd;
         if (target)
             return {
                 kind: 'proposal',
-                path: target.replace(/^~(?=\/)/, homedir()),
+                path: base ? resolve(base, home(target)) : home(target),
             };
     }
 }
@@ -1187,16 +1196,7 @@ const MERGE_VALUE_FLAGS = new Set([
 
 // `gh pr view` takes the same selector and repo the merge was given
 export function prViewArgs(mergeArgs: string[]) {
-    let selector: string | undefined;
-    let repo: string | undefined;
-    for (let i = 0; i < mergeArgs.length; i++) {
-        const arg = mergeArgs[i] ?? '';
-        const [flag = '', inline] = arg.split(/=(.*)/s);
-        const value = inline ?? mergeArgs[i + 1];
-        if (flag === '-R' || flag === '--repo') repo = value;
-        if (MERGE_VALUE_FLAGS.has(flag) && inline === undefined) i++;
-        else if (!arg.startsWith('-')) selector ??= arg;
-    }
+    const { repo, selector } = mergeSelectors(mergeArgs);
     return [
         'pr',
         'view',
@@ -1205,6 +1205,27 @@ export function prViewArgs(mergeArgs: string[]) {
         '--json',
         'number,headRefOid,url',
     ];
+}
+
+// a redirect (`2>`, `>>`, `&>`, `2>/dev/null`) is no pr; a bare one takes the next word as its file
+const REDIRECT = /^(\d*|&)>>?/;
+
+function mergeSelectors(mergeArgs: string[]) {
+    let selector: string | undefined;
+    let repo: string | undefined;
+    for (let i = 0; i < mergeArgs.length; i++) {
+        const arg = mergeArgs[i] ?? '';
+        if (REDIRECT.test(arg)) {
+            if (/^(\d*|&)>>?$/.test(arg)) i++;
+            continue;
+        }
+        const [flag = '', inline] = arg.split(/=(.*)/s);
+        const value = inline ?? mergeArgs[i + 1];
+        if (flag === '-R' || flag === '--repo') repo = value;
+        if (MERGE_VALUE_FLAGS.has(flag) && inline === undefined) i++;
+        else if (!arg.startsWith('-')) selector ??= arg;
+    }
+    return { repo, selector };
 }
 
 const VERIFIED_PATH = join(homedir(), '.claude/shelf/pr-verified.json');
