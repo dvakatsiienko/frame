@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T12:34:00Z'
+updated_date: '2026-11-11T12:55:00Z'
 labels:
   - m
   - clio-main
@@ -1911,4 +1911,12 @@ PK-363:W935 (2026-11-11 14:32, dima): i allow you to do your o5.
 PK-363:W936 (2026-11-11 14:33, dima): can my chatter box be pretty and stacked like in this screenshot? ❓
 PK-363:W937 (2026-11-11 14:33, dima): i want a pretty chatter box.
 PK-363 note (clio, 14:34): his 14:33 shot shows the box as a raised rounded card (pickers and send in its bottom row) with a thinner card tucked under it (folder, branch); his arrow: «i like nested card like this»
+
+PK-363:W938 (2026-11-11 14:51, dima): [Image #6] orbit wisp: i tick.
+PK-363:W939 (2026-11-11 14:51, dima): i untick. ← text box missing.
+PK-363:W940 (2026-11-11 14:51, dima): i tick. ← nothing happens 🐞 (wasted click).
+PK-363:W941 (2026-11-11 14:51, dima): i tick again. ← ticks.
+PK-363:W942 (2026-11-11 14:51, dima): ok, do. (answers the offer to draft a short thank-you comment confirming the rename fixed it)
+PK-363:W943 (2026-11-11 14:51, dima): ask codie to try to make it pretty. (answers the stacked card: the one cost is that the folder and branch strip moves into the prompt box area; it goes into the looks lane)
+PK-363:W944 (2026-11-11 14:51, dima): model and effort selection and the send button waste space in the text box. they can move into that nested card (but probe first if it does not look ugly).
 <!-- SECTION:NOTES:END -->
