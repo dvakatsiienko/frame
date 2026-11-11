@@ -7,7 +7,7 @@
         },
         {
             "example": "x handoff peek cli-arms",
-            "gist": "the shared CST store, one door for cc and cloud-chat",
+            "gist": "the shared CST store",
             "name": "handoff"
         },
         {
@@ -44,8 +44,8 @@
         },
         {
             "example": "x gh pr 12 --since 2026-10-09T15:00:00Z",
-            "gist": "github reads in one call: a pr's checks and comments",
-            "identity": "every read acts as the x-codie-cc app, its token from the keychain (keys.go); writes stay with x as codie -- gh",
+            "gist": "github: a pr's checks, comments and review threads",
+            "identity": "every call acts as the x-codie-cc app, its token from the keychain (keys.go); the one write is a review thread reply, the rest stay with x as codie -- gh",
             "name": "gh"
         },
         {
@@ -1169,6 +1169,49 @@
             "purpose": "read a pr's checks and its three comment feeds in one call, newest first; deploy-bot comments never print",
             "touches": [
                 "github's rest api ($X_GITHUB_URL in tests), as the x-codie-cc app"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the pr number; the open pr of the cwd's branch when absent",
+                    "isOptional": true,
+                    "name": "pr"
+                }
+            ],
+            "flags": {
+                "repo": {
+                    "description": "owner/name; the cwd's origin remote when absent",
+                    "type": "string",
+                    "value": "owner/name"
+                }
+            },
+            "name": "gh pr-review-comments-list",
+            "needsApply": false,
+            "purpose": "list a pr's unresolved review threads, each with its id, file, line and first words, for a reply by id",
+            "touches": [
+                "github's graphql and rest api ($X_GITHUB_URL in tests), as the x-codie-cc app"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the review thread's id, PRRT_…, as the list prints it",
+                    "name": "id"
+                }
+            ],
+            "flags": {
+                "body-file": {
+                    "description": "the reply, markdown, sent byte for byte",
+                    "type": "string",
+                    "value": "file"
+                }
+            },
+            "name": "gh pr-review-comments-reply",
+            "needsApply": false,
+            "purpose": "post a reply under one review thread by its id, outright and never as a pending review",
+            "touches": [
+                "github's graphql api ($X_GITHUB_URL in tests), as the x-codie-cc app"
             ]
         },
         {

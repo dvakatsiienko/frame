@@ -130,10 +130,10 @@ on diff lines.
   «resumed» stay in your chat. a find dima would want rides the done ping, alone only when it changes the
   plan now; a push request rides the next ping. after a web ui change, the ping says `essentials: <n> pass, <m> fail` from the `x:browser-headless` run.
 - **to the coordinator**: ≤3 lines plus a pointer (the linear comment, the pr, a file).
-- **github is a ledger**: every line written there is read back into your context on every later turn.
-  API writes wear `github-token-wrap`, which picks `x-codie-cc` for you; pushes, force-pushes and ref deletes stay on dima's
-  git auth, since the app has no `contents: write`. a reviewer thread gets ≤3 lines: fixed in `<sha>`,
-  declined: why, or answered: fact.
+- **github is a ledger**: every line there is read back each later turn.
+  API writes wear `github-token-wrap` (`x-codie-cc`); pushes and ref deletes stay on dima's
+  git auth (no `contents: write`). a reviewer thread gets ≤3 lines: fixed in `<sha>`,
+  declined: why, or answered: fact, by `x gh pr-review-comments-reply <id>` (ids: `x gh pr-review-comments-list`).
 
 ## 6. the report
 

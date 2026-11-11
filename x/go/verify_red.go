@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -16,6 +17,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"unicode"
 )
 
 const verifyRedHelp = "x verify red --help"
@@ -39,6 +41,13 @@ type redRun struct {
 }
 
 // the clean run and every mutant go through one harness, the file's content their only difference; none writes the real tree
+// a mutant's run started beside the clean run
+type aheadRun struct {
+	got  redRun
+	err  error
+	took time.Duration
+}
+
 type redHarness interface {
 	run(content []byte) (redRun, error)
 	close()
@@ -86,6 +95,25 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}()
 	saved := resumeFrom(file, pairs, test, command, flags)
+	mutantOf := func(pair redPair) []byte {
+		return []byte(strings.Replace(string(original), pair.anchor, pair.replacement, 1))
+	}
+	// a mod's runs share no file, so its clean run and its first mutant run side by side: a pair costs one run's wall time
+	var ahead chan aheadRun
+	if _, isMod := harness.(*modHarness); isMod && !saved.Clean && len(saved.Pairs) == 0 && len(pairs) > 0 {
+		ahead = make(chan aheadRun, 1)
+		go func() {
+			started := time.Now()
+			got, err := harness.run(mutantOf(pairs[0]))
+			ahead <- aheadRun{got, err, time.Since(started)}
+		}()
+		// a clean run that refuses leaves the mutant running: its claude child ends before the harness is cleaned
+		defer func() {
+			if ahead != nil {
+				<-ahead
+			}
+		}()
+	}
 
 	if err := r.Step("clean", "the test on the file as it is", func() (string, error) {
 		if saved.Clean {
@@ -107,13 +135,20 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 		for _, pair := range pairs[len(rows):] {
 			saved.Pairs = rows
 			saved.save()
-			started := time.Now()
-			got, err := harness.run([]byte(strings.Replace(string(original), pair.anchor, pair.replacement, 1)))
+			var first aheadRun
+			if ahead != nil {
+				first, ahead = <-ahead, nil
+			} else {
+				started := time.Now()
+				first.got, first.err = harness.run(mutantOf(pair))
+				first.took = time.Since(started)
+			}
+			got, err, took := first.got, first.err, first.took
 			if err != nil {
 				return "", err
 			}
 			row := judgeMutant(got)
-			row.Pair, row.Seconds = pairLabel(pair.anchor), time.Since(started).Round(100*time.Millisecond).Seconds()
+			row.Pair, row.Seconds = pairLabel(pair.anchor), took.Round(100*time.Millisecond).Seconds()
 			rows = append(rows, row)
 		}
 		saved.drop()
@@ -408,7 +443,7 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 	case isGo && filepath.Ext(abs) == ".go":
 		return newGoHarness(abs, "", command)
 	case command != nil:
-		return newCopyHarness(abs, command)
+		return newCopyHarness(abs, command, "", true)
 	case strings.HasSuffix(test, "_test.go"):
 		goTest := []string{"go", "test", "-count=1", "-failfast", "-v"}
 		if name != "" {
@@ -420,7 +455,8 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 		}
 		// an overlay reaches only what go builds; a file a test opens at runtime is read from the copy
 		if filepath.Ext(abs) != ".go" {
-			return newCopyHarness(abs, append(goTest, dir))
+			// go reads the module from the dir it runs in, so the run starts in the test's own dir, never at a root with no go.mod
+			return newCopyHarness(abs, append(goTest, "."), dir, false)
 		}
 		return newGoHarness(abs, dir, append(goTest, "."))
 	case isModTest(test) && name != "":
@@ -432,7 +468,7 @@ func pickHarness(file, test string, command []string, flags Flags) (redHarness, 
 		if name != "" {
 			vitest = append(vitest, "-t", name)
 		}
-		return newCopyHarness(abs, append(vitest, test))
+		return newCopyHarness(abs, append(vitest, test), "", false)
 	}
 	return nil, usageFail("x picks no runner for "+test+": a _test.go, a mod's test or a .test.ts", "x verify red <file> <anchor> <replacement> -- <command>")
 }
@@ -483,7 +519,9 @@ func (g *goHarness) run(content []byte) (redRun, error) {
 // the git-crypt set stays out: plain text never leaves the tree
 type copyHarness struct {
 	root, copy, file, cwd string
-	command               []string
+	// the dir of package manager shims put first on the command's PATH; empty for a runner x picked
+	guard   string
+	command []string
 	// the clean run's type errors: a mutant is broken only by one it adds, so a repo already red on tsc still proves
 	typeErrors []string
 	typed      bool
@@ -494,16 +532,41 @@ type copyHarness struct {
 // pnpm's subcommands that only run a command or a script
 var pnpmRuns = map[string]bool{"exec": true, "run": true, "run-script": true, "test": true, "t": true, "tst": true}
 
-// whether a pnpm command may write the store: any but a plain run as pnpm's first word. the list is of what may pass, since
-// a list of the writes leaked one per read: `pnpm m install`, `pnpm with <version> install`, `pnpm pipeline`, a flag's value
-// that reads as a subcommand
-func pnpmMayWriteStore(command []string) bool {
-	return strings.EqualFold(filepath.Base(command[0]), "pnpm") && (len(command) < 2 || !pnpmRuns[command[1]])
+// the tools that install a package, each of which may write a store
+var packageManagers = map[string]bool{"pnpm": true, "pnpx": true, "npm": true, "npx": true, "yarn": true, "corepack": true, "bun": true, "bunx": true}
+
+// whether a command may write the store. what passes is a leading pnpm with a plain run as its first word, since a list of
+// pnpm's writes leaked one per read (`pnpm m install`, `pnpm with <version> install`, a flag's value that reads as a
+// subcommand); past it no word, and no word of a shell line, may name a package manager (`env X=1 pnpm i`, `npx pnpm i`)
+func mayWriteStore(command []string) bool {
+	words := command
+	if strings.EqualFold(filepath.Base(command[0]), "pnpm") {
+		if len(command) < 2 || !pnpmRuns[command[1]] {
+			return true
+		}
+		words = command[2:]
+	}
+	for _, arg := range words {
+		// a shell glues a word to an operator or a quote (`true;pnpm i`, `"pnpm"`), so a word ends at any of them
+		for word := range strings.FieldsFuncSeq(arg, isShellBreak) {
+			if packageManagers[strings.ToLower(filepath.Base(word))] {
+				return true
+			}
+		}
+	}
+	return false
 }
 
-func newCopyHarness(file string, command []string) (redHarness, error) {
-	if pnpmMayWriteStore(command) {
-		return nil, usageFail("«"+strings.Join(command, " ")+"» may write the store, node_modules/.pnpm, which the copy shares with the real tree: after pnpm only exec, run or test comes first, its flags behind it",
+// a word a path or a package name may hold; anything else ends one
+func isShellBreak(r rune) bool {
+	return !unicode.IsLetter(r) && !unicode.IsDigit(r) && !strings.ContainsRune("/._-@+", r)
+}
+
+// runDir is where the command starts in the copy; empty, the cwd's twin. guarded puts the package manager shims first on
+// its PATH: a command the caller wrote is guarded, a runner x picks for a test file is not
+func newCopyHarness(file string, command []string, runDir string, guarded bool) (redHarness, error) {
+	if mayWriteStore(command) {
+		return nil, usageFail("«"+strings.Join(command, " ")+"» may write the store, node_modules/.pnpm, which the copy shares with the real tree: only a leading pnpm exec, run or test may name a package manager",
 			"run the test itself: x verify red <file> <anchor> <replacement> -- pnpm exec <runner> <test>")
 	}
 	root, err := mustGitIn(filepath.Dir(file), "rev-parse", "rev-parse", "--show-toplevel")
@@ -512,7 +575,10 @@ func newCopyHarness(file string, command []string) (redHarness, error) {
 	}
 	root, _ = filepath.EvalSymlinks(root)
 	file, _ = filepath.EvalSymlinks(file)
-	cwd, _ := os.Getwd()
+	cwd := runDir
+	if cwd == "" {
+		cwd, _ = os.Getwd()
+	}
 	cwd, _ = filepath.EvalSymlinks(cwd)
 	switch {
 	case !inside(root, cwd):
@@ -525,11 +591,40 @@ func newCopyHarness(file string, command []string) (redHarness, error) {
 		return nil, err
 	}
 	h := &copyHarness{root: root, copy: filepath.Join(scratch, filepath.Base(root)), file: file, cwd: cwd, command: command}
-	if err := copyRepo(root, h.copy); err != nil {
+	err = copyRepo(root, h.copy)
+	if guarded && err == nil {
+		h.guard = filepath.Join(scratch, "guard")
+		err = writeGuard(h.guard)
+	}
+	if err != nil {
 		h.close()
 		return nil, err
 	}
 	return h, nil
+}
+
+// the line a guard shim prints when it refuses
+const guardRefused = "x verify red refused: "
+
+// a shim per package manager, first on the command's PATH, so one a script calls is refused as it runs; pnpm's own plain run
+// passes on to the real pnpm. a package manager called by its absolute path, by "$npm_execpath", or after a PATH= reset
+// in a shell line is never seen
+func writeGuard(dir string) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	refuse := `echo "` + guardRefused + `«$(basename "$0") $*» may write the store, node_modules/.pnpm, which the copy shares with the real tree" >&2; exit 97` + "\n"
+	for name := range packageManagers {
+		body := "#!/bin/sh\n" + refuse
+		if real, err := exec.LookPath(name); err == nil && name == "pnpm" {
+			runs := strings.Join(slices.Sorted(maps.Keys(pnpmRuns)), "|")
+			body = "#!/bin/sh\ncase \"${1-}\" in " + runs + ") exec " + quote(real) + " \"$@\" ;; esac\n" + refuse
+		}
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o755); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (h *copyHarness) close() { _ = os.RemoveAll(filepath.Dir(h.copy)) }
@@ -600,7 +695,17 @@ func (h *copyHarness) runCommand() redRun {
 		key, _, _ := strings.Cut(pair, "=")
 		return strings.EqualFold(key, noInstall)
 	}), noInstall+"=false")
+	// a script or a shell line can still reach a package manager past the argv check; a runner x picked keeps the real
+	// PATH, so a test that calls one on purpose still runs it
+	if h.guard != "" {
+		c.Env = append(slices.DeleteFunc(c.Env, func(pair string) bool { return strings.HasPrefix(pair, "PATH=") }),
+			"PATH="+h.guard+string(os.PathListSeparator)+os.Getenv("PATH"))
+	}
 	got := runTestCmd(c)
+	if _, refused, found := strings.Cut(got.log, guardRefused); found {
+		line, _, _ := strings.Cut(refused, "\n")
+		return redRun{broken: "the command called a package manager: " + line, log: got.log}
+	}
 	return redRun{ok: got.ok, log: got.log, note: h.unchecked}
 }
 
@@ -860,7 +965,12 @@ func newModHarness(file, test string) (redHarness, error) {
 func (m *modHarness) close() { _ = os.RemoveAll(m.scratch) }
 
 func (m *modHarness) run(content []byte) (redRun, error) {
-	mutant := filepath.Join(m.scratch, filepath.Base(m.file))
+	// a dir per run, so two runs side by side never read each other's file
+	dir, err := os.MkdirTemp(m.scratch, "run-")
+	if err != nil {
+		return redRun{}, err
+	}
+	mutant := filepath.Join(dir, filepath.Base(m.file))
 	if err := os.WriteFile(mutant, content, 0o644); err != nil {
 		return redRun{}, err
 	}

@@ -378,7 +378,7 @@ func TestVerifyRedTakesAnAnchorOpeningOnATab(t *testing.T) {
 	}
 }
 
-// ported from red-proof's suite: a mod's red base names the failed test and runs it once
+// ported from red-proof's suite: a mod's red base names the failed test; its first mutant ran beside it, so two runs and no more
 func TestVerifyRedRefusesAModsRedBase(t *testing.T) {
 	t.Parallel()
 	f := modRedFixture(t)
@@ -387,8 +387,8 @@ func TestVerifyRedRefusesAModsRedBase(t *testing.T) {
 
 	got, log := verifyRedIn(t, f, nil, f.file, "/* MUTANT */", "", f.test)
 
-	if got.code != 1 || !strings.Contains(got.stdout, "a.test.ts reads the hook") || strings.Count(log, "\n") != 1 {
-		t.Fatalf("exit %d, %d runs, want a refusal naming the failed test after one run:\n%s", got.code, strings.Count(log, "\n"), got.stdout)
+	if got.code != 1 || !strings.Contains(got.stdout, "a.test.ts reads the hook") || strings.Count(log, "\n") != 2 {
+		t.Fatalf("exit %d, %d runs, want a refusal naming the failed test after the clean run and the mutant beside it:\n%s", got.code, strings.Count(log, "\n"), got.stdout)
 	}
 }
 
@@ -583,6 +583,62 @@ func TestVerifyRedMutatesAFileAGoTestReadsAtRuntime(t *testing.T) {
 
 	if got.code != 0 || got.data["verdict"] != verdictRed {
 		t.Fatalf("exit %d, data %v, want red on a file read at runtime:\n%s", got.code, got.data, got.stdout)
+	}
+}
+
+// a mod's clean run and its first mutant share nothing, so they run side by side: each run waits up to 5 s for the other to start
+func TestVerifyRedRunsAModsCleanRunBesideItsFirstMutant(t *testing.T) {
+	t.Parallel()
+	f := modRedFixture(t)
+	bin := strings.TrimPrefix(strings.SplitN(f.env[0], ":", 2)[0], "PATH=")
+	write(t, filepath.Join(bin, "claude"), `#!/bin/sh
+d="$3"
+[ "$2" = validate ] && { echo "✔ Validation passed"; exit 0; }
+echo start >> "$VERIFY_LOG"
+i=0
+while [ "$(grep -c start "$VERIFY_LOG")" -lt 2 ] && [ $i -lt 50 ]; do sleep 0.1; i=$((i + 1)); done
+echo end >> "$VERIFY_LOG"
+echo "tests/a.test.ts:"
+if grep -q MUTANT "$d"/hooks/*; then echo "(fail) a.test.ts reads the hook [1.0ms]"; echo "  AssertionError: expected 1 to be 2"; exit 1; fi
+echo "(pass) a.test.ts [1.0ms]"; echo "Ran 1 tests across 1 files."
+`)
+
+	got, log := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, f.test)
+
+	if got.code != 0 || got.data["verdict"] != verdictRed || log != "start\nstart\nend\nend\n" {
+		t.Fatalf("exit %d, data %v, the runs logged %q, want red off two runs that overlapped:\n%s", got.code, got.data, log, got.stdout)
+	}
+}
+
+// a root file a go module in a subdir reads, as x/go reads lefthook.yaml from the repo root: the test runs from its own module
+func TestVerifyRedMutatesARootFileAGoModuleBelowReads(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	write(t, filepath.Join(dir, "hook.yaml"), "count: 1\n")
+	write(t, filepath.Join(dir, "sub/go.mod"), "module p\n\ngo 1.24\n")
+	write(t, filepath.Join(dir, "sub/hook_test.go"), "package p\n\nimport (\n\t\"os\"\n\t\"testing\"\n)\n\nfunc TestHook(t *testing.T) {\n\tif body, _ := os.ReadFile(\"../hook.yaml\"); string(body) != \"count: 1\\n\" {\n\t\tt.Fatalf(\"read %q\", body)\n\t}\n}\n")
+	commitAll(t, dir)
+
+	got, _ := verifyRedIn(t, redFixture{dir: dir}, nil, "hook.yaml", "count: 1", "count: 2", "sub/hook_test.go")
+
+	if rows := pairRows(t, got); got.code != 0 || got.data["verdict"] != verdictRed || len(rows) != 1 || !strings.Contains(fmt.Sprint(rows[0]["tests"]), "TestHook") {
+		t.Fatalf("exit %d, data %v, want red naming TestHook from a clean run green in the tree:\n%s", got.code, got.data, got.stdout)
+	}
+}
+
+// the package manager guard covers a pnpm command alone: a go test whose own fixture runs pnpm reads its clean run green
+func TestVerifyRedLeavesAGoTestsOwnPnpmCallAlone(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	write(t, filepath.Join(dir, "hook.yaml"), "count: 1\n")
+	write(t, filepath.Join(dir, "sub/go.mod"), "module p\n\ngo 1.24\n")
+	write(t, filepath.Join(dir, "sub/hook_test.go"), "package p\n\nimport (\n\t\"os\"\n\t\"os/exec\"\n\t\"testing\"\n)\n\nfunc TestHook(t *testing.T) {\n\tif out, err := exec.Command(\"pnpm\", \"--version\").CombinedOutput(); err != nil {\n\t\tt.Fatalf(\"pnpm: %v %s\", err, out)\n\t}\n\tif body, _ := os.ReadFile(\"../hook.yaml\"); string(body) != \"count: 1\\n\" {\n\t\tt.Fatalf(\"read %q\", body)\n\t}\n}\n")
+	commitAll(t, dir)
+
+	got, _ := verifyRedIn(t, redFixture{dir: dir}, nil, "hook.yaml", "count: 1", "count: 2", "sub/hook_test.go")
+
+	if got.code != 0 || got.data["verdict"] != verdictRed {
+		t.Fatalf("exit %d, data %v, want red from a clean run whose test ran pnpm itself:\n%s", got.code, got.data, got.stdout)
 	}
 }
 
@@ -1121,12 +1177,47 @@ func TestVerifyRedRefusesAPnpmCommandThatWritesTheStore(t *testing.T) {
 		{"pnpm", "--filter", "exec", "install"},
 		// what installs or builds under another name, and a bin by pnpm's shorthand, which no read can tell from one
 		{"pnpm", "pipeline"}, {"pnpm", "deploy", "out"}, {"pnpm", "approve-builds"}, {"pnpm", "vitest", "run"},
+		// a package manager behind a run, behind a launcher, or as one word of a shell line
+		{"pnpm", "exec", "pnpm", "install"}, {"pnpm", "exec", "npm", "i"}, {"env", "X=1", "pnpm", "install"},
+		{"corepack", "pnpm", "install"}, {"npx", "pnpm", "install"}, {"sh", "-c", "pnpm install"}, {"pnpm", "exec", "sh", "-c", "pnpm install"},
+		// a shell word glued to its neighbour by an operator or a quote
+		{"sh", "-c", "true;pnpm install"}, {"bash", "-c", "cd .&&pnpm i"}, {"sh", "-c", "echo $(npm i)"}, {"sh", "-c", `"pnpm" i`},
 	} {
 		got, log := verifyRedIn(t, f, nil, append([]string{f.file, f.anchor, f.replacement, "--"}, command...)...)
 
 		if got.code != 2 || !strings.Contains(got.stdout, "node_modules/.pnpm") || log != "" {
 			t.Errorf("%v: exit %d, the command logged %q, want a usage refusal naming the store and no run:\n%s", command, got.code, log, got.stdout)
 		}
+	}
+	wantNoWrites(t, before, treeWrites(t, watched...))
+}
+
+// a script behind a plain `pnpm run` is read by no argv check, so a package manager it calls is refused as it runs
+func TestVerifyRedRefusesAPackageManagerAScriptCalls(t *testing.T) {
+	t.Parallel()
+	f, watched := pnpmWorkspaceFixture(t)
+	write(t, filepath.Join(f.dir, "package.json"), `{"name": "p", "private": true, "scripts": {"limit": "pnpm i && limit-test"}, "devDependencies": {"runner": "workspace:*"}}`+"\n")
+	commitAll(t, f.dir)
+	before := treeWrites(t, watched...)
+
+	got, log := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, "--", "pnpm", "run", "limit")
+
+	if got.code != 1 || got.data["verdict"] != nil || log != "" || !strings.Contains(got.stdout, "may write the store") {
+		t.Fatalf("exit %d, data %v, the test logged %q, want the script's pnpm i refused before the test ran:\n%s", got.code, got.data, log, got.stdout)
+	}
+	wantNoWrites(t, before, treeWrites(t, watched...))
+}
+
+// a shell line no word read can take apart still meets the shim: any command after -- runs with the guard first on PATH
+func TestVerifyRedRefusesAPackageManagerAShellLineHides(t *testing.T) {
+	t.Parallel()
+	f, watched := pnpmWorkspaceFixture(t)
+	before := treeWrites(t, watched...)
+
+	got, log := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, "--", "sh", "-c", `pn""pm i && limit-test`)
+
+	if got.code != 1 || log != "" || !strings.Contains(got.stdout, "may write the store") {
+		t.Fatalf("exit %d, the test logged %q, want the hidden pnpm i refused before the test ran:\n%s", got.code, log, got.stdout)
 	}
 	wantNoWrites(t, before, treeWrites(t, watched...))
 }

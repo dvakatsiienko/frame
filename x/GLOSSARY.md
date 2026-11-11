@@ -57,6 +57,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **contract** — the files a context's glossary defines, listed under the context in `GLOSSARY-MAP.md`; x's is its registry
 - **groom** — reading a crew- or guide- skill whole and cutting before a commit that grows it
 - **held files** — the unstaged and untracked work outside a commit's paths, set aside while the hooks run and put back byte for byte. avoid: stash
+- **review thread** — one inline review comment and its replies on a pr, open until a reader resolves it; github's graphql names it `PRRT_…`, the id `gh pr-review-comments-list` prints and `gh pr-review-comments-reply` answers. avoid: review comment, for the thread
 - **review round** — one successful ci review run on a pr in bytes, started by the review label; two per pr, a third only past dima's approval
 - **🚀 line** — the dispatch's line on a ticket: its lane, its codie's session, on a quick lane `main:<base>`, and `sixth sense <sid>` when one was named; `x lane landed` reads the range and whether to wait for a verdict from the last one; a re-dispatch naming a new lane, session or sixth sense writes its own; a line a ↩️ leads below it takes it back, a ↩️ inside a sentence does not
 - **wired line** — `x lane landed`'s line for a ticket whose `## ⚖️ worth it` carries a `new verb: <name>` line: «wired: unmeasured yet» until its milestone's last open ticket closes, then 🔴 at 0 calls in 30 days
