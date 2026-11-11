@@ -62,7 +62,7 @@ describe('fork-guard', () => {
             state,
             '{"session_id":"s-fork","source":"resume"}',
         );
-        expect(out.stdout).toContain('in a wing seat');
+        expect(out.stdout).toContain('in a wing thread');
         expect(readFileSync(join(state, 'main-session'), 'utf8')).toContain(
             'session=s-main',
         );
@@ -100,7 +100,7 @@ describe('fork-guard', () => {
             state,
             '{"session_id":"s-wing","source":"compact"}',
         );
-        expect(out.stdout).toContain('in a wing seat');
+        expect(out.stdout).toContain('in a wing thread');
         expect(seat(state)).toContain(`pid=${DEAD_PID}`);
     });
 
@@ -112,7 +112,7 @@ describe('fork-guard', () => {
             state,
             '{"session_id":"s-new","source":"clear"}',
         );
-        expect(out.stdout).toContain('in a wing seat');
+        expect(out.stdout).toContain('in a wing thread');
         expect(seat(state)).toContain(`pid=${DEAD_PID}`);
     });
 
@@ -125,7 +125,7 @@ describe('fork-guard', () => {
             state,
             '{"session_id":"s-wing","source":"resume"}',
         );
-        expect(out.stdout).toContain('in a wing seat');
+        expect(out.stdout).toContain('in a wing thread');
         expect(seat(state)).toContain(`pid=${DEAD_PID}`);
     });
 
@@ -147,7 +147,7 @@ describe('fork-guard', () => {
             input: '{"session_id":"s-new","source":"resume"}',
             timeout: 10_000,
         });
-        expect(out.stdout).toContain('in a wing seat');
+        expect(out.stdout).toContain('in a wing thread');
         expect(seat(state)).toContain(`pid=${DEAD_PID}`);
     });
 

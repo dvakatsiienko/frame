@@ -457,6 +457,8 @@ test('a foreground command started after pending: none does not block the wind',
 
 // r5 (dima's o23): a coordinator's message to a codie past 55 % context waits for the codie's second wind
 const CLIO = '🦉 clio';
+// the held list's key: the codie's registry name, bare
+const HELD = 'steer-held:☕️🔧codie:mods';
 const receiveWorld = (on: On, name?: string) => {
     const w = world(on, name);
     const queued: string[] = [];
@@ -540,10 +542,10 @@ test('a codie under 55 % reads the message as sent', async ($, on) => {
     w.store.set(`context:${SID}`, 54);
     await start($);
     const r = await fromPeer($, 'next: r6');
-    expect([
-        r.text?.includes('next: r6'),
-        w.store.has(`steer-held:${SID}`),
-    ]).toEqual([true, false]);
+    expect([r.text?.includes('next: r6'), w.store.has(HELD)]).toEqual([
+        true,
+        false,
+    ]);
 });
 
 test("a full sixth sense reads clio's message as sent", async ($, on) => {
@@ -593,8 +595,166 @@ test('🐦‍🔥 second wind switched off holds nothing', async ($, on) => {
     w.store.set('shown', { 'stash.second-wind': false });
     await start($);
     const r = await fromPeer($, 'next: r6');
+    expect([r.text?.includes('next: r6'), w.store.has(HELD)]).toEqual([
+        true,
+        false,
+    ]);
+});
+
+test('a /clear while a message is held keeps it for the next conversation', async ($, on) => {
+    const w = receiveWorld(on);
+    on('session.end', (_$, e) => ({ sessionId: e.sessionId }));
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    await $.session.end({ reason: 'clear', sessionId: SID } as never);
+    expect(w.store.has(HELD)).toBe(true);
+});
+
+test('a wind dima took back stays taken back: a message at 62 % passes as sent', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'cancelled' });
+    await start($);
+    const r = await fromPeer($, 'next: r6');
     expect([
         r.text?.includes('next: r6'),
-        w.store.has(`steer-held:${SID}`),
-    ]).toEqual([true, false]);
+        (w.store.get(`wind:${SID}`) as { state?: string }).state,
+        w.store.has(HELD),
+    ]).toEqual([true, 'cancelled', false]);
+});
+
+test('once dima takes the wind back, the next message is no longer swallowed', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'one');
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'cancelled' });
+    const r = await fromPeer($, 'two');
+    expect(r.text?.includes('two')).toBe(true);
+});
+
+test('second wind switched off mid-hold hands the held message over at the next turn', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    w.store.set('shown', { 'stash.second-wind': false });
+    await say($, 'his prompt');
+    expect(delivered(w.lines)).toEqual([
+        '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: next: r6',
+    ]);
+});
+
+test('a refused wind keeps the message held until the compact', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    w.store.set(`wind:${SID}`, {
+        at: NOW,
+        blocked: 'an agent',
+        state: 'refused',
+    });
+    await say($, 'the refusal turn');
+    const before = delivered(w.lines);
+    await compact($, 'plugin');
+    await say($, 'the ingest', 'skill');
+    expect([before, delivered(w.lines)]).toEqual([
+        [],
+        ['🐦‍🔥 held for your second wind, delivered now — 🦉 clio: next: r6'],
+    ]);
+});
+
+// r10 (dima's o62): a message held 10 min for a codie that has not wound tells its sender once; the hold stays
+const sentWorld = (on: On) => {
+    const w = receiveWorld(on);
+    const sent: { to: unknown; text: string }[] = [];
+    on('session.send', (_$, e) => {
+        sent.push({ text: e.text, to: e.to });
+        return { isDelivered: true };
+    });
+    return { ...w, sent };
+};
+const HELD_LINE =
+    'your message to ☕️ 🔧 codie: mods is held: it is at 62 % and has not wound';
+
+test('a message held 10 min for a codie that has not wound tells its sender once, and the hold stays', async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    await w.clock.advance(9 * 60_000);
+    const early = w.sent.length;
+    await w.clock.advance(60_000);
+    await w.clock.advance(20 * 60_000);
+    expect([
+        early,
+        w.sent,
+        (w.store.get(HELD) as { steers?: unknown[] }).steers?.length,
+    ]).toEqual([0, [{ text: HELD_LINE, to: 'uds:/tmp/cc-socks/1.sock' }], 1]);
+});
+
+test('a codie that wound inside the 10 min tells no sender', async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    await compact($, 'plugin');
+    await w.clock.advance(11 * 60_000);
+    expect(w.sent).toEqual([]);
+});
+
+test('a hold kept across a reload still tells its sender at 10 min', async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    w.store.set(HELD, {
+        steers: [
+            {
+                at: NOW - 9 * 60_000,
+                from: CLIO,
+                reply: 'uds:/tmp/cc-socks/1.sock',
+                text: 'next: r6',
+            },
+        ],
+    });
+    w.store.set(`wind:${SID}`, { at: NOW - 9 * 60_000, state: 'writing' });
+    await start($);
+    await w.clock.advance(60_000);
+    expect(w.sent).toEqual([
+        { text: HELD_LINE, to: 'uds:/tmp/cc-socks/1.sock' },
+    ]);
+});
+
+test('each held message tells its own sender at its own 10 min', async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'one');
+    await w.clock.advance(5 * 60_000);
+    await $.session.receive({
+        origin: { kind: 'peer' },
+        text: '<cross-session-message from="uds:/tmp/cc-socks/2.sock" from-name="🦉🪽 clio: wing 1" from-mode="bypass">\ntwo\n</cross-session-message>',
+    });
+    await w.clock.advance(5 * 60_000);
+    const first = w.sent.map((s) => s.to);
+    await w.clock.advance(5 * 60_000);
+    expect([first, w.sent.map((s) => s.to)]).toEqual([
+        ['uds:/tmp/cc-socks/1.sock'],
+        ['uds:/tmp/cc-socks/1.sock', 'uds:/tmp/cc-socks/2.sock'],
+    ]);
+});
+
+// wisphunter on 990334f5: the tell wrote back its first read after the sends, so a delivery meanwhile came back
+test('a hold delivered while its sender is told stays delivered', async ($, on) => {
+    const w = receiveWorld(on);
+    on('session.send', () => {
+        w.store.delete(HELD);
+        return { isDelivered: true };
+    });
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    await w.clock.advance(10 * 60_000);
+    expect(w.store.has(HELD)).toBe(false);
 });

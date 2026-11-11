@@ -3,7 +3,7 @@ name: wing
 description: load when dima asks for a wing — «wing», «second wing», «side channel», «fresh side channel», «forked side channel», «open a side channel» — at any time, in a boot prompt too.
 ---
 
-# wing — a 🪽 wing, clio in a second seat beside the main thread
+# wing — a 🪽 wing, clio in a second thread beside the main thread
 
 a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questions, research, fixes, chores, plans and grills, so the main stays on its lanes. the fork-guard banner gives its role and closing rules; this skill opens the door and draws the split.
 
@@ -22,17 +22,17 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
 
 ## open one
 
-herdr first (dima, 11-10): `ListAgents` numbers the live wings by their `-n` names, then `crew-lead`'s herdr surface file with `-n '🦉🪽 clio: wing <N>'`, `--cwd ~/frame/_clio`, the fresh prompt below as its first task. the desktop app (`crew-lead`'s `surface-claude-desktop.md`) is the fallback, a forked wing's only door:
+herdr first (dima, 11-10), the desktop app the fallback and a forked wing's only door; each surface's start door is its leaf's (`surface-herdr-desktop`, `surface-claude-desktop` § threads):
 
-1. several may run (dima, 2026-11-06): `mcp__ccd_session_mgmt__list_sessions`; the new one takes his number, else the lowest no live wing holds
-2. `mcp__ccd_session__start_session`, initiation `user_asked`, title `🦉🪽 clio: wing <N>`:
-   - fresh: context `fresh`, cwd `~/frame/_clio`, use_worktree false, prompt «greet dima in one line; read your flyway, clean its finished lines, then work it with him», background naming today's roadmap step, the day's chores and what he asked the wing for
-   - forked: context `fork`, prompt «you are a wing; greet dima in one line; read your flyway, clean its finished lines, then work it with him»
-3. done: the result names a started session, linked in one line as `[its title](#local_<id>)`
+1. several may run (dima, 2026-11-06): the live wings listed by the leaf's door; the new one takes his number, else the lowest no live wing holds
+2. started by the leaf's door, titled `🦉🪽 clio: wing <N>`:
+   - fresh: cwd `~/frame/_clio`, prompt «greet dima in one line; read your flyway, clean its finished lines, then work it with him», and a background naming today's roadmap step, the day's chores and what he asked the wing for; the leaf says where the background rides
+   - forked: prompt «you are a wing; greet dima in one line; read your flyway, clean its finished lines, then work it with him»
+3. done: the result names a started session, linked in one line in the leaf's link form
 
 ## the flyway
 
-a wing's plan, seat, tree and branch carry its number and outlive the session, for the next wing of that number: `habit-shared-files` § the flyway.
+a wing's plan, thread, tree and branch carry its number and outlive the session, for the next wing of that number: `habit-shared-files` § the flyway.
 
 a new tree: `git -C ~/frame -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false worktree add -b clio-wing-<N> ~/frame/.claude/worktrees/clio-wing-<N> main`, then `x lane seed <tree>`.
 
@@ -40,4 +40,4 @@ a new tree: `git -C ~/frame -c filter.git-crypt.smudge=cat -c filter.git-crypt.r
 
 **`clio-wing-<N>` is the one wing label, on a pocket item and a linear ticket alike** (dima, 2026-11-06): on, the work is that wing's and the others leave it alone; a wing takes it off when it hands the work back, a ticket's at its close too; a closed item keeps it, as the groom check's record. a pocket item is born with `pocket-add --wing <N>`; a ticket takes `x linear set FRM-M --add-label clio-wing-<N>` at the first write. a wing lists its open ones at its start (`backlog task list --labels clio-wing-<N> -s open --plain`) and closes them on its fork branch; the boot lists a closed wing's for main, and a new wing taking that number takes what main has not. a wing lands its own `clio-wing-<N>` branch, the banner holds the steps (dima, 2026-11-06: «do it now and merge yourself»); clio merges what it leaves unlanded by the halt, never dropped (dima, 2026-10-29).
 
-**a wing's halt report lands → main archives it that turn**, once its branch is level and clean (dima, 11-09: «it is still parked») and no line dima typed in its tab is newer than the report (`mcp__ccd_session_mgmt__list_events`), else it waits for the next one; an archive refused as «still working» waits for the idle notice and that read again (dima, 11-10: «you stopped wing 1 too early»).
+**a wing's halt report lands → main archives it that turn**, once its branch is level and clean (dima, 11-09: «it is still parked») and no line dima typed in its tab is newer than the report (read by the leaf's door), else it waits for the next one; an archive refused as «still working» waits for the idle notice and that read again (dima, 11-10: «you stopped wing 1 too early»).

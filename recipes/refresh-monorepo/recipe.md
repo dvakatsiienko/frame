@@ -32,7 +32,7 @@ his standing calls: turbo's want is a + b (the task graph and cache for gates; f
 ## the run
 
 - a run's gains never stay parked: each small win lands in the run itself; a bigger one becomes a dated pocket item, never only a ticket line; the print names what landed
-- each bytes codie lane proposes this recipe's vector changes at its end (the codie seat)
+- each bytes codie lane proposes this recipe's vector changes at its end (the codie thread)
 - suggest a run when: a turbo minor ships
 
 1. **shape**: `clio:shape-recipe` step 0, the grill. done: his word on the round. (open)

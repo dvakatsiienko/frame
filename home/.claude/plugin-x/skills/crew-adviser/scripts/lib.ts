@@ -17,7 +17,7 @@ import { homedir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 
-import { keepSeatInTab } from '../../herdr/scripts/seat-tab.ts';
+import { keepThreadInTab } from '../../herdr/scripts/thread-tab.ts';
 
 export const SESSION_NAME = '🐦‍⬛ crow';
 // CROW_STATE_DIR moves every note, verdict and run off the real home, so a fixture never writes the live notes (FRM-339)
@@ -404,7 +404,7 @@ export async function startCrow(arm: Arm, isPane = false) {
         );
     }
     // a --no-parent seat starts paneless: herdr's agents list shows it only once it has a tab
-    if (isPane) keepSeatInTab(JSON.parse(result.stdout).address, 'crow');
+    if (isPane) keepThreadInTab(JSON.parse(result.stdout).address, 'crow');
     writeState({
         ...readState(),
         arm,

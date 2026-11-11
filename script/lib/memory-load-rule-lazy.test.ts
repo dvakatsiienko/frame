@@ -712,6 +712,26 @@ describe('surface leaves', () => {
         expect(start(herdr, { cwd })).toContain(herdrLeaf);
     });
 
+    it.each(['compact', 'resume'])(
+        'keeps the herdr leaf on a %s after the cwd moved',
+        (source) => {
+            const s = session();
+            const project = { ...herdr, CLAUDE_PROJECT_DIR: clio };
+            start(project, { s });
+            const text = start(project, {
+                cwd: '/Users/dima/frame',
+                s,
+                source,
+            });
+            expect(text).toContain(herdrLeaf);
+        },
+    );
+
+    it('loads the herdr leaf at a wing worktree root', () => {
+        const cwd = '/Users/dima/frame/.claude/worktrees/clio-wing-2';
+        expect(start(herdr, { cwd })).toContain(herdrLeaf);
+    });
+
     it('loads neither leaf outside the clio dir', () => {
         const text = start(herdr, { cwd: '/Users/dima/frame' });
         expect(text).not.toContain(herdrLeaf);
@@ -995,6 +1015,7 @@ function surfaceFree() {
             ([key]) =>
                 !key.startsWith('HC_') &&
                 key !== 'CLAUDE_CODE_ENTRYPOINT' &&
+                key !== 'CLAUDE_PROJECT_DIR' &&
                 key !== 'CLAUDE_CODE_BG',
         ),
     );

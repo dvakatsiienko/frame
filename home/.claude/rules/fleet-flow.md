@@ -15,7 +15,7 @@ dima may steer there, and the member answers there.
   - talks to dima and every member
   - hears from all
   - lands as: the board in dima's tab
-- **🪽 wing** — clio in a second seat: talks to dima, the main and any member its chore needs; lands as: its tab, a closing report to the main at its halt, then main archives it
+- **🪽 wing** — clio in a second thread: talks to dima, the main and any member its chore needs; lands as: its tab, a closing report to the main at its halt, then main archives it
 - **codie**
   - talks to clio on the events the quiet mod pushes; all else slipstreams (`plugin-x/mods/x-mod-stash/FTR.md`)
   - talks to its sixth sense freely

@@ -29,7 +29,7 @@ read only when the job names it:
 the split is **disposable vs watchable**, never research vs code.
 
 - **subagent, fork, worktree agent** — disposable, inside the coordinator: `x:crew-subagent`.
-- **a seat** — a real cc session, on whichever surface runs it. the base is cc native and holds on every surface: the `claude` line in § preflight, the argv; a surface only puts its head before that line and its tab, find and stop steps after it
+- **a thread** — a real cc session, on whichever surface runs it. the base is cc native and holds on every surface: the `claude` line in § preflight, the argv; a surface only puts its head before that line and its tab, find and stop steps after it
 - **`claude --bg`**, cc native, no surface: survives a coordinator reset, herdr shows it only by an attach pane; head `cd <repo> && claude --bg`, a quick lane adds `--settings '{"worktree":{"bgIsolation":"none"}}'` before the prompt; facts: [spawn-mechanics.md](references/spawn-mechanics.md) § 5
 - **the surfaces**, one file each, read before a summon on it:
   - **herdr desktop, the default**: [references/surface-herdr-desktop.md](references/surface-herdr-desktop.md) (dima, 2026-11-10: «Herdr's native way is first»; «I want you to summon everyone in Herdr's native way»)

@@ -13,6 +13,7 @@ declare module 'claude-code' {
         // yes: dima's bare yes typed under the one warning or sign ask of this seat's orbit added since his last prompt, kept as his tick on it for 2 h
         // yesSeen: the open warning and sign asks at his last typed prompt, id and text, which a bare yes no longer answers
         // reply: the seat's last main-loop reply, its tail; a bare yes answers only an ask it named
+        // herdrStart: the second Herdr app start this seat's last refused or warned call made; x-mod-stash reads it
         'x-mod-guard': {
             yes: { id: string; text: string; targets: string[]; at: number }[];
             yesSeen: string[];
@@ -21,6 +22,7 @@ declare module 'claude-code' {
             tabsMade: string[];
             signs: { id: string; at: number }[];
             firstSign: { ids: string[]; at: number } | null;
+            herdrStart: { at: number; command: string } | null;
             prompted: boolean;
             edits: number;
             seen: string[];

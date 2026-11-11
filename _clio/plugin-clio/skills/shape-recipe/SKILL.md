@@ -31,7 +31,7 @@ coordinator, should act in a special way here.» so:
 
 - **every recipe names its owner** in frontmatter — `owner: coordinator | codie | designer | fleet` —
   the role whose work the artifacts feed. dima writes the want; **the owner writes and grooms the
-  vectors from its own seat**: «what would make me better at this job next week?» — never a list of
+  vectors from its own thread**: «what would make me better at this job next week?» — never a list of
   topics about the subject
 - **done = the run happened** (the want, `recipes/AGENTS.md`): every lane landed or failed out loud, the print reached
   dima, the log line is written. a run that finds nothing to change is a full run; a change is
@@ -39,9 +39,9 @@ coordinator, should act in a special way here.» so:
   its want and its vectors, sharpened at every groom. a vector with no sources prints as `open`
 - **a brief is built by `pnpm recipe:brief <name>`**, never by hand: a hand brief re-describes the want and the lanes answer the reframing
 - **outside research is pointed at where the owner failed** (the flawlog, the retros, the test-drive logs since the last run), never at the whole subject
-- **the owner is a seat, never a spawn**: whoever holds that seat next proposes its vector cuts and adds
+- **the owner is a thread, never a spawn**: whoever holds that thread next proposes its vector cuts and adds
   as a last act of its session, in its retro (the next design lane for `refresh-art-kit`); clio runs the
-  groom and the grill from them, with the seat's skill loaded, and says so. nobody is spawned for a groom
+  groom and the grill from them, with the thread's skill loaded, and says so. nobody is spawned for a groom
 
 ## creating one
 

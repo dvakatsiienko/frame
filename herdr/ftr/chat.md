@@ -3,24 +3,24 @@
 wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
 - ⬜ lines he never typed fold out of his way (FRM-562:W17)
-  - given a seat's transcript holds a plugin's message (an orbit tick), a task notice or a synthetic «No response requested.»
+  - given a thread's transcript holds a plugin's message (an orbit tick), a task notice or a synthetic «No response requested.»
   - then each draws as one dim line that opens to its whole text on a click, and «System lines: Folded / Hidden / Shown» in ⚙ picks the look, Folded by default
   - and a message he pasted reads as his plain text, the `<pasted_content>` tags gone; a system-reminder with an id attribute goes too
   - decision: told apart by the entry (its `origin.kind`, a `<synthetic>` model), never by guessing at text
   - not checked: the after shot of his paste in clio's chat, which waits for his view on that tab
 - ⬜ a prompt he types while a turn runs draws in the chat
-  - given dima sends a seat a prompt while its turn is still running
+  - given dima sends a thread a prompt while its turn is still running
   - then it draws as his message at the place he sent it, a shot or a paste in it too, marked no differently
   - and a peer's message or a task notice queued the same way does not draw as his
   - decision: Claude Code writes such a prompt as a `queued_command` attachment with `origin.kind` human, never a user entry; the chat reads it as one
 - ⬜ a prompt sent while a turn runs shows as queued until the turn takes it
-  - given dima sends a seat a message while its turn is still running
+  - given dima sends a thread a message while its turn is still running
   - then «Queued, joins this turn:» and the message's start sit over the log's bottom edge, «+n more» past the first, the log never moving
   - and the chip leaves the moment the message's row reaches the transcript, where it draws as his message
-  - and a seat that sat idle 5 s with the message never in its transcript drops the chip
+  - and a thread that sat idle 5 s with the message never in its transcript drops the chip
   - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the box empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
 - ⬜ a big thread opens at once on its newest part
-  - given a seat whose transcript is past 4 MB (clio's 56 MB, wing 1's 23 MB)
+  - given a thread whose transcript is past 4 MB (clio's 56 MB, wing 1's 23 MB)
   - when dima opens its tab
   - then the newest messages draw within a moment (clio's: 3.9 s → 0.6 s to the first frame), and «Show earlier» at the top reads the next older part in above, his scroll place kept
   - decision: read on his ask, never all on open: the read of every slice, not the parse or the draw, took the time (2.1 s of 2.3 s)
@@ -45,13 +45,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - proof: the layout's mods read with jq name `x-herdr-chatter` and no `claude-chat` (17:35:34, status errors [])
   - decision: copied from zoo's `claude-chat` (FRM-556, 11-10), whose folder stays on disk unplaced; the shared keys `chat.look/subs/containers` keep their names until zoo's other mods are ours
 - ✅ drafts typed under the old name come along
-  - given dima typed a draft in a seat's box while the chat was `claude-chat`
+  - given dima typed a draft in a thread's box while the chat was `claude-chat`
   - when `x-herdr-chatter` first starts
-  - then that seat's box shows the draft, and a draft typed in `x-herdr-chatter` is never overwritten
+  - then that thread's box shows the draft, and a draft typed in `x-herdr-chatter` is never overwritten
   - proof: a throwaway mod with the same `drafts.js` took a draft from a fixture store, left other keys, set its flag (17:17); the live switch ran it and found the old store empty (17:35:34)
   - decision: herdr keeps a mod's storage per mod name, so `drafts.js` reads `data/claude-chat/store-*.json` once
 - ⬜ a pasted image survives a chat reload
-  - given dima pasted a screenshot into a seat's box and has not sent it
+  - given dima pasted a screenshot into a thread's box and has not sent it
   - when the chat reloads
   - then the image is still waiting with the next message, shown by its chip
   - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355)
@@ -66,24 +66,24 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given its pure helpers (`drafts.js`, the turn fold, the `hc send` reading)
   - then each has a vitest file beside it, run by the commit gate
 
-- ⬜ the effort shows the seat's live value
-  - given a seat's last reply ran at an effort
+- ⬜ the effort shows the thread's live value
+  - given a thread's last reply ran at an effort
   - then the chat box's effort reads that value, past the default in settings
-- ⬜ no seat strip above the chat: a seat's facts live in the band, its asks on the deck
-  - given a seat's tab is open in the Chat view
+- ⬜ no thread strip above the chat: a thread's facts live in the band, its asks on the deck
+  - given a thread's tab is open in the Chat view
   - then the chat starts right under the tab bar, with no strip of asks above it (shot 2021-strip-hidden)
   - decision: the strip is gone (dima, 20:12: «can i have this dupe orbit killed? it eats UI»), lifting his 18:11 «keep for now»; its block is hidden by one `layout.hide` click, zoo.json untouched, and x-herdr-deck's `view: seat` copy draws and reads nothing
 - ⬜ the band sits right above the chat's text box, slice 1 ([FRM-565](https://linear.app/x-com/issue/FRM-565))
-  - given a seat's tab is open in the Chat view
+  - given a thread's tab is open in the Chat view
   - then three rows above his box read its «waiting on» line, the weekly usage and its context, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
-  - and a seat mid-turn or waiting on nothing shows an empty waiting-on row, a long one is cut with … and whole in its tooltip, and the rows keep one height so nothing moves
+  - and a thread mid-turn or waiting on nothing shows an empty waiting-on row, a long one is cut with … and whole in its tooltip, and the rows keep one height so nothing moves
   - and facts the deck has not published for over 2 min 15 s draw dimmed
   - and the 5h line is off for now, back if he moves to the $100 plan (on $200 it is not shown)
-  - decision: the deck's mod reads the facts once and publishes them to herdr's shared state `x-herdr-deck.seats`, at once on a change and every 60 s; the chat reads only that key for its own seat
+  - decision: the deck's mod reads the facts once and publishes them to herdr's shared state `x-herdr-deck.seats`, at once on a change and every 60 s; the chat reads only that key for its own thread
 - ⬜ the band's buttons, slice 2 (FRM-565)
-  - given a seat's tab in the Chat view
+  - given a thread's tab in the Chat view
   - then right of «wait» sit 🐦‍🔥 🔥 ⏰ 💨 🔓 🎛️ 🚦, emoji only, each word leading its tooltip (dima, 21:02); filled when on, 🔓 red when on
-  - and 🚦 shows and hides the deck by herdr's `layout.toggle` on its block, no layout file write (proof 2102: 9 seats before, hidden and after; his click «board confirmed to work»)
+  - and 🚦 shows and hides the deck by herdr's `layout.toggle` on its block, no layout file write (proof 2102: 9 threads before, hidden and after; his click «board confirmed to work»)
   - and 🔓 reads the override store `x` reads; its click waits on the mods codie's proof row; 🎛️ waits on the settings view: greyed, the reason on hover
 - ⬜ wind, hot, waker and AFK pressed from the band (FRM-568)
   - makes: one line `{at, button, on, sid?}` per press in `~/.claude/shelf/band-presses/band.jsonl`, lines older than a day trimmed
@@ -95,29 +95,29 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: the button draws the state the stash wrote, never its last press, so a press from the cc band or a late line never leaves the two bands apart
   - and ctx sits above week (dima, 21:00)
   - decision: his crop (2054) approved at 20:59
-- ✅ a transcript past 64 MB draws: the chat reads it a slice at a time with `tail | head`, since herdr's readFile refuses a bigger file (a 93 MB seat drew empty, 21:02)
+- ✅ a transcript past 64 MB draws: the chat reads it a slice at a time with `tail | head`, since herdr's readFile refuses a bigger file (a 93 MB thread drew empty, 21:02)
 - ✅ the chat box's draft survives a chat reload
-  - given dima has typed into a seat's Chat box
+  - given dima has typed into a thread's Chat box
   - when the chat mod reloads
   - then the box shows his text again (proven in wing 1's tab, 16:57:57)
-- ✅ the chat box's draft survives a seat switch
-  - given dima has typed into a seat's Chat box
-  - when he goes to another seat's tab and comes back
+- ✅ the chat box's draft survives a thread switch
+  - given dima has typed into a thread's Chat box
+  - when he goes to another thread's tab and comes back
   - then the box shows his text, the caret at its end
-  - decision: a seat switch never writes a draft; only typing, a quote, a completion and a send write it, under the seat the box shows (live 19:17:58)
-  - cause, proven: the switch ran inside render, and herdr refuses the caret set there, so the render failed midway: the box took the new seat's draft while it kept the old seat's address, and the next switch wrote that under the old seat (the caret line came with FRM-556, the write with zoo's copy). the switch now runs in a task (live 19:21:41)
+  - decision: a thread switch never writes a draft; only typing, a quote, a completion and a send write it, under the thread the box shows (live 19:17:58)
+  - cause, proven: the switch ran inside render, and herdr refuses the caret set there, so the render failed midway: the box took the new thread's draft while it kept the old thread's address, and the next switch wrote that under the old thread (the caret line came with FRM-556, the write with zoo's copy). the switch now runs in a task (live 19:21:41)
   - proof: `herdr-app do tab.next` before the fix drew «This view could not be re-rendered… set_selected_range cannot run during render»; after it, no error, herdr-codie's band and transcript showed, and back on wing 1 its draft «t» was in the box (shots 1921, 1922)
 - ✅ every reply of an earlier turn stays open
-  - given a seat sent several replies between two of dima's messages (a peer's ping starts no turn)
+  - given a thread sent several replies between two of dima's messages (a peer's ping starts no turn)
   - when that turn is no longer the last
   - then each reply still shows in full; only the tools and notes between them fold into «▸ N tools»
-  - proof: a probe seat's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
+  - proof: a probe thread's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
   - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
 - ⬜ once he scrolls up, nothing but his own hand moves his view (FRM-562:W18, W19)
-  - given he scrolled up in a seat's chat
+  - given he scrolled up in a thread's chat
   - when a reply, a tool line, a peer or plugin line, a turn end, a store change, a resize or a reload of the mod arrives
   - then the text he reads stays where it is; only his scroll to the end or a click on «↓ Newest» brings him back to following
-  - and each seat keeps its place across a tab switch, and across a reload of the mod
+  - and each thread keeps its place across a tab switch, and across a reload of the mod
   - decision: «following» is a state he enters and leaves by his own scroll or click, never set by a redraw (scroll.js, one rule)
   - not checked: by his hand in his window
 - ✅ a resize keeps the chat on its newest message
@@ -149,8 +149,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima clicks the card
   - then the prompt lands in his box after what he typed, one blank line between, unsent, and the box takes the keyboard
   - decision: in-message cards on our own column, his pick a (15:50): herdr's lazy list drops any row with its own handler (herdr-app#894)
-- ⬜ the / menu lists every skill the seat can load
-  - given the seat's folder enables a plugin through the user, project or local settings
+- ⬜ the / menu lists every skill the thread can load
+  - given the thread's folder enables a plugin through the user, project or local settings
   - when dima types «/» and part of a name
   - then that plugin's skills show (clio's 22 `clio:` skills in main), a match on the part after the colon too («/boot» → `clio:boot`), and a disabled plugin's skills never show
 - ⬜ inline code in the box turns into a chip

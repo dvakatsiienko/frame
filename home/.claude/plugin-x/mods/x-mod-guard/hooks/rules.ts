@@ -35,6 +35,7 @@ import {
 import { floor, gitDoor, opaque } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
 import { herdrClose, herdrLabel } from './rules/herdr-close.ts';
+import { herdrStart } from './rules/herdr-start.ts';
 import { isForegroundOk } from './rules/hint.ts';
 import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
@@ -487,6 +488,9 @@ export function refusals(
         }
         if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
             out.push(found);
+        // judged beside the chain, never in it: a Herdr start hid `sudo` and an overwrite behind it (wisphunter on 63d5fa57)
+        const start = herdrStart(c, ctx);
+        if (start) out.push(start);
         // a door flag speaks where no rule stopped the command or dima's marker lets that rule through, and never hides one
         const door =
             found && !markedBy(command)(found) ? undefined : gitDoor(c, ctx);

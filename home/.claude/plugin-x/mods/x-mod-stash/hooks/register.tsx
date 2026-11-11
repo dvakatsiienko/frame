@@ -1233,8 +1233,19 @@ const STEER_HOLD_AT = 55;
 const STEER_HELD = 'steer-held:';
 type HeldSteers = {
     isCompacted?: true;
-    steers: { at: number; from: string; text: string }[];
+    // reply: the sender's address, as its message carried it; isTold: its sender heard the hold outlived STEER_TELL_MS
+    steers: {
+        at: number;
+        from: string;
+        text: string;
+        reply?: string;
+        isTold?: true;
+    }[];
 };
+// a message held this long for a codie that has not wound tells its sender once; the hold stays (dima's o62)
+const STEER_TELL_MS = 10 * 60_000;
+const steerTellLine = (name: string, context: unknown) =>
+    `your message to ${name} is held: it is at ${typeof context === 'number' ? `${Math.round(context)} %` : `past ${STEER_HOLD_AT} %`} and has not wound`;
 const steerHoldNote = (from: string, context: number) =>
     `🐦‍🔥 ${from}'s message is held for your second wind: your context reads ${Math.round(context)} %, past ${STEER_HOLD_AT} %. ${WIND_WORDS} finish the step you are on, then ${WIND_HOW} the held message joins your first turn after the pickup.`;
 const steerLine = (s: HeldSteers['steers'][number]) =>
@@ -2489,6 +2500,43 @@ async function askFirstSign($: EngineInterface) {
     });
 }
 
+// x-mod-guard keeps the second Herdr app start a call of this seat met; at that call his ⚠️ ask joins this orbit, so he saves
+// his typed draft before his tick lets one start run (dima's o47 and 19:09 «warn me»)
+// twin herdr-start-ask — a copy lives in x-mod-guard, which lets one start run on his tick on this ask; twins.test.ts holds them equal
+export const HERDR_START_ASK =
+    '⚠️ a seat wants a second Herdr window: save your typed text first';
+// twin end
+const GUARD_HERDR_START = { key: 'herdrStart', plugin: 'x-mod-guard' } as const;
+async function askHerdrStart($: EngineInterface, since: number) {
+    const { value: start } = await $.state.get(GUARD_HERDR_START);
+    if (!start || start.at < since) return;
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        // an ask he already ticked is spent at the guard, so a later start asks afresh (wisphunter on 63d5fa57)
+        if (
+            o.asks.some(
+                (a) => !a.isResolved && !a.mark && a.text === HERDR_START_ASK,
+            )
+        )
+            return;
+        const made = orbitOp(
+            o,
+            {
+                asks: [
+                    {
+                        hiddenNote: `x-mod-guard refused \`${start.command.slice(0, 200)}\`: a second Herdr app reloads your window and drops the text you were typing. save it, then tick: one start runs`,
+                        pick: 'let one second Herdr start run',
+                        text: HERDR_START_ASK,
+                    },
+                ],
+                op: 'add',
+            },
+            true,
+        );
+        if (!('deny' in made)) await saveOrbit($, made.orbit);
+    });
+}
+
 // an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
 // carrying all of them. the submitted prompt skips this plugin's own prompt.submit hook, so the marks ride its text
 async function wakeForMarks($: EngineInterface) {
@@ -3570,15 +3618,7 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
 
 // everything this mod keeps for one conversation: one store key per prefix, the session id after it, plus its pending
 // lane marks; a new per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
-const SESSION_KEYS = [
-    PREFIX,
-    HOT,
-    REPLY,
-    CONTEXT,
-    MODEL,
-    WIND,
-    STEER_HELD,
-] as const;
+const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL, WIND] as const;
 
 async function forget($: EngineInterface, sid: string) {
     await dropState($, sid).catch(() => undefined);
@@ -4137,8 +4177,16 @@ async function windOnCompact($: EngineInterface) {
     await $.store.delete(WIND + sid);
 }
 
-async function steersOf($: EngineInterface, sid: string) {
-    const v = (await $.store.get(STEER_HELD + sid).catch(() => undefined)) as
+// held under the codie's registry name, so a /clear or a resume, which mint a new session id, still hands them over
+async function steerKey($: EngineInterface) {
+    const name = await sessionName($);
+    return name && codieLane(name) !== undefined
+        ? STEER_HELD + bare(name)
+        : undefined;
+}
+
+async function steersOf($: EngineInterface, key: string) {
+    const v = (await $.store.get(key).catch(() => undefined)) as
         | HeldSteers
         | undefined;
     return {
@@ -4147,8 +4195,16 @@ async function steersOf($: EngineInterface, sid: string) {
     };
 }
 
+// a wind still ahead of the session: an asked one, one it is writing or compacting, one refused that it will call again
+const isWindAhead = (state: StashWind['state'] | undefined) =>
+    state === 'asked' ||
+    state === 'writing' ||
+    state === 'refreshing' ||
+    state === 'refused';
+
 // a coordinator's message to a codie past STEER_HOLD_AT: the first is rewritten into the wind note, so it still starts the
-// turn that winds; the next ones wait unseen behind it; all of them join the first turn after the compact
+// turn that winds; the next ones wait unseen while the wind is being written or compacted; all of them join the first turn
+// after the compact. a wind dima took back, or one refused, passes the message as sent
 async function holdSteer(
     $: EngineInterface,
     text: string,
@@ -4157,53 +4213,117 @@ async function holdSteer(
     const { body, from } = peerPing(text);
     if (!(isCoordinator(from) || isWing(from)) || isQuietPause(body))
         return undefined;
-    const name = await sessionName($);
+    const key = await steerKey($);
     const sid = await currentId($);
-    if (!sid || !name || codieLane(name) === undefined) return undefined;
-    const kept = await steersOf($, sid);
+    if (!sid || !key) return undefined;
+    const kept = await steersOf($, key);
     if (kept.isCompacted) return undefined;
-    const context = await $.store.get(CONTEXT + sid).catch(() => undefined);
-    const isFull = typeof context === 'number' && context >= STEER_HOLD_AT;
-    if (!kept.steers.length && !isFull) return undefined;
+    const was = (await windOf($, sid))?.state;
+    const isWinding = was === 'writing' || was === 'refreshing';
     const at = await $.clock.now();
-    await $.store.set(STEER_HELD + sid, {
-        steers: [...kept.steers, { at, from, text: body }],
-    } satisfies HeldSteers);
-    const was = await windOf($, sid);
-    if (
-        kept.steers.length ||
-        was?.state === 'writing' ||
-        was?.state === 'refreshing'
-    )
+    const reply = text.match(
+        /<cross-session-message[^>]*\sfrom="([^"]+)"/,
+    )?.[1];
+    const held = {
+        steers: [
+            ...kept.steers,
+            { at, from, text: body, ...(reply ? { reply } : {}) },
+        ],
+    } satisfies HeldSteers;
+    // one timer chain: only a message no older untold one waits ahead of arms its own (wisphunter on 990334f5)
+    const isFirstUntold = !kept.steers.some((s) => !s.isTold && s.reply);
+    if (kept.steers.length && isWinding) {
+        await $.store.set(key, held);
+        if (isFirstUntold) armSteerTell($, at, at);
         return {
             consumed: `x-mod-stash held ${from}'s message for this codie's second wind`,
         };
+    }
+    const context = await $.store.get(CONTEXT + sid).catch(() => undefined);
+    if (typeof context !== 'number' || context < STEER_HOLD_AT)
+        return undefined;
+    if (was !== undefined && was !== 'asked') return undefined;
+    // the wind first: a message held with no wind behind it would wait for nothing
     await $.store.set(WIND + sid, { at, state: 'writing' } satisfies StashWind);
+    await $.store.set(key, held);
+    if (isFirstUntold) armSteerTell($, at, at);
     await load($).catch(() => undefined);
     const open = text.match(/<cross-session-message[^>]*>/)?.[0];
-    const note = steerHoldNote(from, context as number);
+    const note = steerHoldNote(from, context);
     return { text: open ? `${open}\n${note}\n</cross-session-message>` : note };
 }
 
-// the held messages join a turn once the wind is behind the session: its compact ran, or dima took the wind back
-async function takeSteers($: EngineInterface) {
+// the held messages join a turn once no wind is ahead of the session: its compact ran, dima took it back, or the switch
+// went off; read before the turn takes its own wind line, which drops a refused row
+async function takeSteers($: EngineInterface, isOn: IsPartOn) {
+    const key = await steerKey($);
     const sid = await currentId($);
-    if (!sid) return [];
-    const kept = await steersOf($, sid);
+    if (!key || !sid) return [];
+    const kept = await steersOf($, key);
     if (!kept.steers.length) return [];
-    const was = await windOf($, sid);
-    const isWinding = was?.state === 'writing' || was?.state === 'refreshing';
-    if (isWinding && !kept.isCompacted) return [];
-    await $.store.delete(STEER_HELD + sid);
+    const was = (await windOf($, sid))?.state;
+    if (isOn('stash.second-wind') && isWindAhead(was) && !kept.isCompacted)
+        return [];
+    await $.store.delete(key);
     return kept.steers.map(steerLine);
 }
 
-async function steersOnCompact($: EngineInterface) {
+function armSteerTell($: EngineInterface, heldAt: number, now: number) {
+    $.clock.after(Math.max(0, heldAt + STEER_TELL_MS - now), () =>
+        tellHeldSenders($).catch(() =>
+            $.ui.log("x-mod-stash: a held message's sender was not told"),
+        ),
+    );
+}
+
+// a reload drops the timers: the start arms one for the oldest held message whose sender has not heard
+async function armHeldTells($: EngineInterface) {
+    const key = await steerKey($);
+    if (!key) return;
+    const kept = await steersOf($, key);
+    const first = kept.steers.find((s) => !s.isTold && s.reply);
+    if (first && !kept.isCompacted)
+        armSteerTell($, first.at, await $.clock.now());
+}
+
+async function tellHeldSenders($: EngineInterface) {
+    const key = await steerKey($);
     const sid = await currentId($);
-    if (!sid) return;
-    const kept = await steersOf($, sid);
+    if (!key || !sid) return;
+    const kept = await steersOf($, key);
+    if (kept.isCompacted) return;
+    const now = await $.clock.now();
+    const due = kept.steers.filter(
+        (s) => !s.isTold && s.reply && now - s.at >= STEER_TELL_MS,
+    );
+    if (!due.length) return;
+    const line = steerTellLine(
+        (await sessionName($)) ?? 'this codie',
+        await $.store.get(CONTEXT + sid).catch(() => undefined),
+    );
+    const isDue = (s: HeldSteers['steers'][number]) =>
+        due.some((d) => d.at === s.at && d.from === s.from);
+    // marked told from a fresh read, before the sends: a hold written meanwhile is kept, a delivered one stays gone
+    const fresh = await steersOf($, key);
+    if (!fresh.steers.length || fresh.isCompacted) return;
+    await $.store.set(key, {
+        ...fresh,
+        steers: fresh.steers.map((s) =>
+            isDue(s) ? { ...s, isTold: true as const } : s,
+        ),
+    } satisfies HeldSteers);
+    for (const reply of new Set(due.map((s) => s.reply as string)))
+        await $.session.send({ text: line, to: reply }).catch(() => undefined);
+    const next = fresh.steers.find((s) => !s.isTold && s.reply && !isDue(s));
+    if (next) armSteerTell($, next.at, now);
+}
+
+async function steersOnCompact($: EngineInterface) {
+    const key = await steerKey($);
+    if (!key) return;
+    const kept = await steersOf($, key);
     if (kept.steers.length)
-        await $.store.set(STEER_HELD + sid, {
+        await $.store.set(key, {
             ...kept,
             isCompacted: true,
         } satisfies HeldSteers);
@@ -6069,6 +6189,7 @@ export const register: Register = (on) => {
             return undefined;
         });
         await seatDefaults($).catch(() => undefined);
+        await armHeldTells($).catch(() => undefined);
         const panes = await $.ui.panes().catch(() => undefined);
         if (panes?.some((p) => p.id === OLD_BOARD)) {
             await $.ui.close({ id: OLD_BOARD }).catch(() => undefined);
@@ -6301,10 +6422,10 @@ export const register: Register = (on) => {
             isUser && isOwner && isOn('stash.cost') && COST_WORDS.test(e.text)
                 ? COST_HINT
                 : undefined;
+        const steers = await takeSteers($, isOn).catch(() => []);
         const wind = isOn('stash.second-wind')
             ? await takeWind($, isOwner).catch(() => undefined)
             : undefined;
-        const steers = await takeSteers($).catch(() => []);
         const sent = await next({
             ...e,
             context: [
@@ -8815,7 +8936,21 @@ export const register: Register = (on) => {
                       () => undefined,
                   )
                 : undefined;
+        const before = await $.clock.now();
         const r = await next(e);
+        if (
+            e.tool === 'Bash' &&
+            !e.agentId &&
+            (await partsShown($))('stash.orbit')
+        )
+            // a fresh dispatch reads the guard's write: every get of this one reads one moment, maybe the one before it
+            $.clock.after(0, () =>
+                askHerdrStart($, before).catch(() =>
+                    $.ui.log(
+                        "x-mod-stash: the Herdr start's ⚠️ ask was not added",
+                    ),
+                ),
+            );
         if (r.deny !== undefined || e.agentId) return r;
         if (
             (e.tool as string) === WRAP_UP_TOOL &&

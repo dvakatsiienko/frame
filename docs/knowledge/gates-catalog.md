@@ -23,6 +23,8 @@ Ticket: FRM-530. A ⛩️ gate is a check that refuses: it stops a commit, a pus
 - **x-go-reads**: a script the go tests read still passes them
 - **mods**: a changed mod's types fit our cc version, 13 s
 - **mods-test**: a changed mod's tests pass, on the commit only, 102 s before its skip
+- **mods-vitest**: the vitest files beside the mods pass on any mod change (`twins.test.ts` holds every twin copy equal), 3 s
+- **surface-mirror**: the herdr and desktop surface leaves keep one heading list in one order
 - **fleet-hazards**: a new hazard note names what guards it
 - **memory-lint**: memory files stay within their size, 2 s
 - **git-crypt-rename**: a moved secret file stays encrypted, 2 s

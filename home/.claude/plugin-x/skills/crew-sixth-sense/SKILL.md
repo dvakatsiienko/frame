@@ -123,7 +123,7 @@ one message per round, ≤12 lines: the verdict object, then one line per surviv
 - **the failing criterion and the repro, never a patch**.
 - your findings and the reviewer's, merged, deduplicated, ranked by cost, with no restatement of
   the diff.
-- a `decision` goes to dima as a look call, with no fix demanded.
+- a `decision` goes to your coordinator, a look call, no fix asked.
 
 ## rounds
 

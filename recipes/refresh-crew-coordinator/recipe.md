@@ -84,7 +84,7 @@ half skipped, with the reason — the shared rule of `clio:shape-recipe`.
 - suggest a run when: a cc minor ships, a new claude model ships, a spawn behaves against a [verified] row, the crew changes
 
 1. **groom**: `clio:shape-recipe` step 0, the grill. done: his word on the list. (open)
-2. **the roster**: `ls home/.claude/agents/ _clio/.claude/agents/` plus the built-in types and the parked sidecars (`jq -r .name ~/.claude/sessions/*.json`) — every card and seat found is in this run, the old ones too; one new since the last run is named in the print. done: the roster list in `last/`, each card with its file. (script)
+2. **the roster**: `ls home/.claude/agents/ _clio/.claude/agents/` plus the built-in types and the parked sidecars (`jq -r .name ~/.claude/sessions/*.json`) — every card and thread found is in this run, the old ones too; one new since the last run is named in the print. done: the roster list in `last/`, each card with its file. (script)
 3. **probe the mechanics** (tools): execute `crew-lead/references/spawn-mechanics.md`'s «the test suite» section against the current build, plus every `probe:` line in the vectors. a probe run while a human or a peer edits the system is not controlled — say so and re-run if the environment moved. stop every probe session spawned. done: every row re-run or named «not re-run», and every probe's registry file is gone. (script)
 4. **research, both halves at once**: distill what `last/` still holds first and name what it answered; a lane re-runs only for what is unanswered or dated. one brief per half, the run's focus section leading it ahead of `pnpm recipe:brief`'s output (run #6: a lane answered the shared part and skipped a focus placed last), through the `researcher` agent + `pnpm research:lanes` + a `neuroarxiv` lane every run (dima, 2026-10-21: «the coordinator recipe must have it, it's useful»), its paper reads one `helper-lite` per paper; prices from the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) (`curl -sL <url>.md`). raw output → `last/`. the brief rule of `clio:shape-recipe` holds. done: every lane landed or failed out loud, and every vector lists ≥1 source or prints `open`. (template)
 5. **distill** into the artifacts:
@@ -108,7 +108,7 @@ on top of the shared vectors of `clio:shape-recipe` (the delta covers the cc cha
 - how a coordinator agent should work in general and coordinate efficiently: planning, routing work to members, gates, comms, attention economy with the operator
 - the adviser: read `refresh-crew-coordinator-adviser`'s latest verdicts (the arm, the setup keep/revamp/retire) — its research is that recipe's, never this one's
 - the full crew: which roles a mature agent team has, against ours (codie, sixth sense, designer, classifier, crow, the ci reviewers coderabbit + cc); which we lack. the crew checklist re-runs every run, even when the last said «nothing missing» — the field moves
-- per seat: each crew role (codie, sixth sense, designer, the ci reviewers) and each card (`helper`, `researcher`, `retro`, `helper-lite`, `scout`, `wishkeeper`) judged by its own job — still needed, merged or missing, plus the prior art for that job (reviewer agents, design agents). the designer reads `refresh-crew-designer`'s latest verdicts, the way the adviser reads its own recipe
+- per thread: each crew role (codie, sixth sense, designer, the ci reviewers) and each card (`helper`, `researcher`, `retro`, `helper-lite`, `scout`, `wishkeeper`) judged by its own job — still needed, merged or missing, plus the prior art for that job (reviewer agents, design agents). the designer reads `refresh-crew-designer`'s latest verdicts, the way the adviser reads its own recipe
 - the subagent roster against outside practice: which in-session subagent roles mature setups run (anthropic's own cards and plugins, public `<repo>/.claude/agents/` collections, multi-agent frameworks), which jobs our cards miss, which overlap enough to merge; seed: `docs/research/subagent-roster.md` (dima, 2026-10-10)
 - the review shape: what a review subagent reads (the wish and spec, not only the diff), its output cap, its model tier, checking a finding at its cited line before acting, and whether cleanup is a separate pass (`/simplify`) — measured where a source measured it
 - role drift: roles that appear as capabilities grow, roles that go obsolete as models improve
@@ -123,10 +123,10 @@ on top of the shared vectors of `clio:shape-recipe` (the delta covers the cc cha
 - two levels against flat: the measured cost in tokens, latency and noise, and when a middle layer loses
 - escalation filters: what makes a supervisor swallow a real ask or forward too much
 - state and recovery: how it survives a compact or a crash with nothing lost
-- the seat: which model tier fits a mechanical coordinator, and which of its rounds a script or a classifier could take
+- the thread: which model tier fits a mechanical coordinator, and which of its rounds a script or a classifier could take
 - watching: how to detect a stalled worker cheaply, without polling
 
-**craft — the classifier seat:** read `refresh-crew-classifier`'s latest verdicts (the engine judged, the jobs found, the budget gate) — its research is that recipe's, never this one's; a seat is a type of operation, never one engine
+**craft — the classifier thread:** read `refresh-crew-classifier`'s latest verdicts (the engine judged, the jobs found, the budget gate) — its research is that recipe's, never this one's; a thread is a type of operation, never one engine
 
 **tools — spawn mechanics:**
 - re-verify every [verified] row against the current cc build — a row stays as sharp as its last run left it
@@ -194,7 +194,7 @@ on top of the shared three:
 
 **the craft half's done-test: ≤3 verdicts** — a role to add, merge or retire · a practice to adopt and what it replaces · a thing to drop — each with its evidence against our own flow numbers, or `noop`. `noop` is valid only when every craft vector names its sources; a vector with none prints as `open`, never as `noop`. the tools half's done-test is the rows flipped and the grid re-sized.
 
-the print carries the parts of `clio:shape-recipe`; its checklists here: every card on step 2's roster, one line each (role · keep, sharpen, merge or retire · frontmatter changes), the crew, seat by seat (still needed · merged · missing), and the classifier seat (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named).
+the print carries the parts of `clio:shape-recipe`; its checklists here: every card on step 2's roster, one line each (role · keep, sharpen, merge or retire · frontmatter changes), the crew, thread by thread (still needed · merged · missing), and the classifier thread (the engine judged, the jobs found, the budget gate — never a retire verdict without the engine named).
 
 beyond that shape, the print answers:
 - a role to add, merge or retire, with the evidence

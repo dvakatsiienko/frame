@@ -48,6 +48,8 @@ export type Context = {
     herdrSafe?: Set<string>;
     // this seat's own terminal is labelled a clio seat (herdr-close.ts's isClioSeat), read only when the command spawns one
     isClioSeat?: boolean;
+    // a Herdr app runs on this mac (herdr-start.ts), read only when the command starts one
+    isHerdrOpen?: boolean;
 };
 // a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check passed its bytes
 export type Brief = { isCodie: boolean; isStamped: boolean };

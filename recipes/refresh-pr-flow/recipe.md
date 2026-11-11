@@ -38,7 +38,7 @@ his standing calls:
 ## the run
 
 - stacked prs are tried by hand on a real codie job, never inside an automated sweep (his 09-26 call)
-- each codie lane that opened a pr proposes this recipe's vector changes in its retro (the codie seat)
+- each codie lane that opened a pr proposes this recipe's vector changes in its retro (the codie thread)
 - suggest a run when: `gh stack` ships a release, or a codie lane's pr took more than 3 review rounds
 
 1. **shape**: `clio:shape-recipe` step 0, the grill. done: his word on the round. (open)

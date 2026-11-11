@@ -11,7 +11,7 @@ Ticket: none
 
 dima, 2026-11-05 17:05: «i spotted from the recent few lanes that, for a mods lane, coder plus verifier takes a lot of time for each chunk; last session's side lane was able to implement only four chunks or so, if i recall correctly. today i test coder alone without verifier to see a speed boost, because mods are not so sophisticated, and i assume the verifier can be redundant. i want to know the comparison of coder plus verifier and coder alone in terms of speed gains and quality losses.»
 
-**test card:** we believe a mods chunk lands much faster with no sixth sense, and a coordinator read catches what matters · we test it by mods lane 5 (FRM-507, FRM-501, FRM-505, FRM-504, FRM-491), five layers, against mods lane 4's chunks · we measure, per chunk: minutes from start to `[done]` and to green, rounds, tokens per seat, findings by severity and who found them, the same chunk's reds after merge · we're right if chunks per hour rise by at least half, and the blind read below finds no high that wishkeeper and wisphunter missed
+**test card:** we believe a mods chunk lands much faster with no sixth sense, and a coordinator read catches what matters · we test it by mods lane 5 (FRM-507, FRM-501, FRM-505, FRM-504, FRM-491), five layers, against mods lane 4's chunks · we measure, per chunk: minutes from start to `[done]` and to green, rounds, tokens per thread, findings by severity and who found them, the same chunk's reds after merge · we're right if chunks per hour rise by at least half, and the blind read below finds no high that wishkeeper and wisphunter missed
 📌 a same-day control arm: cli lane 4 runs codie plus sixth sense under the same PR model.
 **kill rule:** a high reaches main that this lane's reads missed, or a coordinator read takes as long as the sixth sense rounds it replaced.
 
@@ -24,7 +24,7 @@ dima, 2026-11-05 17:05: «i spotted from the recent few lanes that, for a mods l
 - quality, found — every wishkeeper and wisphunter finding — severity, real or noise, fixed or not
 - quality, missed — one blind read over the whole stack before the merge, its brief knowing no finding (his tick o8) — highs the reads missed
 - quality, after — reds and wisps on these chunks for 14 days after the land — count
-- cost — tokens per seat for the lane, clio's reads included — against lane 4's codie plus sixth sense
+- cost — tokens per thread for the lane, clio's reads included — against lane 4's codie plus sixth sense
 
 ## baseline — mods lane 4, codie plus sixth sense (a helper card's read of the transcripts, 2026-11-05, not re-run by clio)
 

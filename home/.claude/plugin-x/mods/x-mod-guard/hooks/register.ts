@@ -28,6 +28,7 @@ import {
     isClioSeat,
     isHerdrTabNew,
 } from './rules/herdr-close.ts';
+import { HERDR_START_ASK, herdrStartOf } from './rules/herdr-start.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
 import { linearWrite } from './rules/linear.ts';
 import {
@@ -579,6 +580,7 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'write-then-run',
     // warn-only until sixth sense's clean and a 2-day replay with 0 fires on real calls (clio, 17:04)
     'pane-keys',
+    'herdr-start',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
@@ -1701,6 +1703,17 @@ async function herdrJson($: EngineInterface, argv: string[]) {
     }
 }
 
+// a Herdr app process runs on this mac; a lookup that fails counts as running, so the start is asked about
+async function isHerdrOpen($: EngineInterface) {
+    const run = await $.process
+        .run(['pgrep', '-x', 'Herdr'], { timeoutMs: 3000 })
+        .catch(() => undefined);
+    return run?.exitCode !== 1;
+}
+
+// the start this call met, for x-mod-stash to put its ⚠️ ask on dima's board (dima's 19:09 «warn me»)
+const HERDR_START = { key: 'herdrStart', plugin: 'x-mod-guard' } as const;
+
 // the disk facts the pure rules need, looked up in one round: each rule names the paths it asks about, this answers
 // them; a rule that needs a new fact adds its question here and its field to Context
 async function lookUp(
@@ -1792,6 +1805,9 @@ async function lookUp(
                   $,
                   await $.env.get('HC_TERMINAL_ID').catch(() => undefined),
               ).catch(() => false)
+            : undefined,
+        isHerdrOpen: commandsDeep(command, cwd).some(herdrStartOf)
+            ? await isHerdrOpen($)
             : undefined,
         kinds,
         manifestDirs,
@@ -2183,6 +2199,10 @@ export const register: Register = (on) => {
             note = denial,
         ) => {
             const isWarn = await isWarnOnly($, r.rule);
+            if (r.rule === 'herdr-start')
+                await $.state
+                    .set(HERDR_START, { at: await $.clock.now(), command })
+                    .catch(() => undefined);
             await record($, {
                 command,
                 door: r.door,
@@ -2752,6 +2772,29 @@ export const register: Register = (on) => {
                 });
                 $.ui.log(
                     `x-mod-guard: ran on dima's word on the stash: ${asked.dirs.join(', ')}`,
+                );
+                return go();
+            }
+            // his tick on the ⚠️ ask x-mod-stash put up says he saved his draft: one second Herdr start runs
+            const herdrTick = found.every((r) => r.rule === 'herdr-start')
+                ? await tickFor(
+                      $,
+                      'herdr-start',
+                      (t) => t.text === HERDR_START_ASK,
+                      spends,
+                  )
+                : undefined;
+            if (herdrTick) {
+                await record($, {
+                    command,
+                    door: `dima's tick on ${herdrTick.id}`,
+                    kind: 'escaped',
+                    rule: 'herdr-start',
+                    target: targets.join(', '),
+                    why: herdrTick.text,
+                });
+                $.ui.log(
+                    `x-mod-guard: ran on dima's tick ${herdrTick.id}: ${targets.join(', ')}`,
                 );
                 return go();
             }

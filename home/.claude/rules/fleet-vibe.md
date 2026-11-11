@@ -36,7 +36,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
   lane** is a side lane with no pr, on main, sixth sense off by default; a **shift** is a lane run from a
   written plan while his AFK tick is on, `clio:shift` its contract. a thread name reads `<mode> <role emoji> <member name>: <scope> |
   <ticket or what>`, the scope optional, mode `🌗` side, `⚡` quick, `🌘` shift: `⚡ 🔧 codie: mods lane 3 | FRM-467`.
-- **🪽 wing** (dima, 2026-11-06, was «side channel») — clio in a second seat beside the main thread, numbered: `🦉🪽 clio: wing 1`; «your wing 2» never means a lane (`clio:wing`). a clio's flow is named by its seat, «wing 2 lane»; `clio-main`, `clio-wing-2` sit on labels, a wing's on its tree and branch. <!-- cc -->
+- **🪽 wing** (dima, 2026-11-06, was «side channel») — clio in a second thread beside the main thread, numbered: `🦉🪽 clio: wing 1`; «your wing 2» never means a lane (`clio:wing`). a clio's flow is named by its thread, «wing 2 lane»; `clio-main`, `clio-wing-2` sit on labels, a wing's on its tree and branch. <!-- cc -->
 - **flyway** (was «day plan») — a clio lane's live plan, never closed: `habit-shared-files`. <!-- cc -->
 - lane init (the contract: `craft-fleet-flow`):
   - **🍫 chunk** — one ticket a lane takes; a lane runs one or more in order, its lane plan's slices the steps of its glide card

@@ -37,7 +37,7 @@ floods; no other member prints one.
 - its round is its ❓ shape, the frontier only: a question that hangs on another's answer waits for the next round
 - a question reaches dima only when its answer changes what he gets or sees; a mechanic goes to orbit `assume` with the pick
 - the round prints whole in the thread, each question also an orbit ask copying its number (dima, 2026-10-12: «grill questions are important to be expanded, and deserve to be printed in your thread; keep the orbit part too»)
-- a round is written first to `.scratch/<area>/grill-<n>-proposal.md`, opening with the W-lines it settles copied verbatim; the write wakes crow in any seat, the round printing after her note or after 3 min with none, named (`_crow/AGENTS.md`, the proposal wake), her note is folded, and only the refined round prints, once — never a printed round amended after (dima, 2026-10-22: a reprint after her catch made him read the round twice)
+- a round is written first to `.scratch/<area>/grill-<n>-proposal.md`, opening with the W-lines it settles copied verbatim; the write wakes crow in any thread, the round printing after her note or after 3 min with none, named (`_crow/AGENTS.md`, the proposal wake), her note is folded, and only the refined round prints, once — never a printed round amended after (dima, 2026-10-22: a reprint after her catch made him read the round twice)
 
 <!-- 2026-10-20: clio's own 🔥 template (2026-10-13) beat the skill three times: 4 questions at once, mechanics asked, grill-me named and skipped. dima asked to drop it. -->
 
@@ -45,7 +45,7 @@ floods; no other member prints one.
 
 **A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf.
 
-**An ask that needs his hand names the exact place** — the built-in pane or his Chrome, the app, the screen — so his first try lands.
+**An ask that needs his hand names the exact place** — the browser door his surface leaf names, the app, the screen — so his first try lands.
 
 <!-- 2026-10-20: a labelled guess sent him to clear the Code tab's plugin list; x, matt's skills and three more were restored from git. -->
 

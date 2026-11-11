@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T14:57:00Z'
+updated_date: '2026-11-11T18:21:00Z'
 labels:
   - m
   - clio-main
@@ -1975,4 +1975,51 @@ PK-363:W991 (2026-11-11 16:52, dima): and let's have a small skill for this. i o
 
 PK-363:W992 (2026-11-11 16:55, dima): tell herdr codie to SW. he is at 68%. (context, not dima's words: SW means second wind; the screenshot named in the prompt is not in the raw file.)
 PK-363:W993 (2026-11-11 16:55, dima): so: change your habit. when i ask you to SW in plain words, you should second wind yourself without asking me to click anything. (native cc mod habit area, global)
+
+PK-363:W1012 (2026-11-11 19:00, dima, o48 steer): well, currently the scrolling doesn't lag and doesn't freeze, but the fps is noticeably low. in my perception the fps in chatter when i scroll is about 30. for example, in the claude desktop app i opened your thread. it is mirrored because you're remote-controlled, and in the claude desktop app the scrolling is much smoother, about 60 fps or maybe even 120 fps. scrolling in chatter in herdr currently definitely has much lower fps than in the claude desktop app, although i cannot say a precise number. (context, not dima's words: the steer reached clio at 19:00.)
+PK-363:W999 (2026-11-11 19:00, dima, o45 steer): after perf meters. (context, not dima's words: the steer reached clio at 19:00.)
+PK-363:W1000 (2026-11-11 19:09, dima): (context, not dima's words: he quotes clio's line «the fix: in orbit, for your tick» and answers it in W1001.)
+PK-363:W1001 (2026-11-11 19:09, dima): one line in herdr's mods AGENTS.md: «never start a second Herdr window while dima works». tell me, warn me.
+PK-363:W1002 (2026-11-11 19:09, dima): (context, not dima's words: he quotes clio's answer and asks W1003 about it) W690–W692: verified. only herdr's own elements can draw on screen. a mod can bundle plain javascript that computes, but never a renderer of its own (herdr's .d.ts, read in chat-engine-ours.md).
+PK-363:W1003 (2026-11-11 19:09, dima): help me understand how this relates to herdr? this means we cannot pull any library or framework that renders, like react or a markdown renderer, but we can use computation libraries, for example zod, the validation library. we can use zod as a validator in herdr flows, but we cannot use anything similar to react or shadcn or framer motion or similar stuff, right? ❓
+PK-363:W1004 (2026-11-11 19:09, dima): q1: not the end of the world, but i treat it as not good. i want 60 or 120fps scrolling.
+PK-363:W1005 (2026-11-11 19:09, dima): q2: maybe it is a good time to install shepherdr and test drive it before we build ourselves. a locally installed herdr will let us borrow stuff much more easily. actually i think we should take a dedicated round on inspecting herdr more thoroughly, and then you propose the best things we could yank from there. shepherdr is pretty well established, with much higher quality than the zoo we started with, so i think we can pull it in. what i wanted is maybe even to switch to it, but i'm not sure it's safe. (context, not dima's words: "sheparder" read as "shepherdr".)
+PK-363:W1006 (2026-11-11 19:09, dima): how do you think what will die if i switch to herdr while everyone is running? ❓ (context, not dima's words: "Flip" read as "what", per clio's wispr note; the sentence is kept as dictated.)
+PK-363:W1007 (2026-11-11 19:09, dima): also i think shepherdr can have a lot of polished solutions specifically optimized for herdr. we can maybe even borrow good practices from there, or tips and tricks, or other good approaches that herdr code can use. i want you yourself and, further, codie to inspect it, and you can even run a researcher over the installed shepherdr.
+PK-363:W1008 (2026-11-11 19:09, dima): q3: i think easy wins can even be extended after we analyze shepherdr more closely.
+PK-363:W1009 (2026-11-11 19:09, dima): q4: ok. in the claude desktop app you were able to draw a mini embedded terminal right inside your thread reply. is it doable in herdr chatter? ❓
+PK-363:W1010 (2026-11-11 19:09, dima): q5: tell when. i can do it now.
+PK-363:W1011 (2026-11-11 19:09, dima): good. codie: test-cheaper is 61% ctx. when can he SW? ❓
+PK-363:W994 (2026-11-11 18:46, dima): still to grill, in order. 1: the herdr interview: looks, and designer or not.
+PK-363:W995 (2026-11-11 18:46, dima): 2: the chat re-grill, once the perf numbers land. let's wait for this and do it first, because if we start the interview, perf will land mid-grill and interrupt. after we solve the chat re-grill, we do the interview.
+PK-363:W996 (2026-11-11 18:46, dima): 3: tilde FRM-368 (https://linear.app/x-com/issue/FRM-368). not today.
+PK-363:W997 (2026-11-11 18:46, dima): helga had issues with editing. why? guard again?? ❓
+PK-363:W998 (2026-11-11 18:46, dima): so herdr codie is free for chatter, and tails lane solves the memory chunk? good. ❓ (context, not dima's words: "herder" read as "herdr", "tails la ne" read as "tails lane", per the split in the raw.)
+
+PK-363:W1023 (2026-11-11 19:45, dima, o54 steer): will i be able to switch to shepherdr layout and test it out? i want to see how it works ❓ (context, not dima's words: "Shepherder" read as "shepherdr", as in earlier grooms; the time is the chore time, the raw has none.)
+PK-363:W1020 (2026-11-11 19:38, dima): (context, not dima's words: he quotes a codie message from tests-cheaper, FRM-533, asking about a plan-steps verb for FRM-570 rule 7: x lane plan-steps <plan> lists a lane plan's steps.)
+PK-363:W1021 (2026-11-11 19:38, dima): why does he ask me? who owns him? i think he should ask its coordinator, and if needed the coordinator asks with me. ❓
+PK-363:W1022 (2026-11-11 19:38, dima): proceed. where are you and what is next for you? when can you SW? you're at 64%. ❓
+PK-363:W1019 (2026-11-11 19:25, dima): go now o60. (home unclear: the raw has no herdr or memory words; filed under PK-363 for clio to check.)
+PK-363:W1013 (2026-11-11 19:21, dima): q2, shepherdr: researcher only after we install it. maybe we can do this:
+PK-363:W1014 (2026-11-11 19:21, dima): 1. install.
+PK-363:W1015 (2026-11-11 19:21, dima): 2. temporarily pause everyone.
+PK-363:W1016 (2026-11-11 19:21, dima): 3. switch: i probe, see, explore and mark what i like; you run the researcher and do your inspections yourself. herdr codie does his inspections too. wing 1 can help too. (context, not dima's words: "herder" read as "herdr".)
+PK-363:W1017 (2026-11-11 19:21, dima): 4. then, once everything is inspected by everyone, we switch back to our layout, resume everyone and proceed? ❓
+PK-363:W1018 (2026-11-11 19:21, dima): (context, not dima's words: he quotes clio's line «so a herdr restart now and then is a real fix, worth doing at a quiet moment whenever the window feels heavy».) it is only because of hot-reloading? or does herdr have a memory leak? ❓
+PK-363:W1024 (2026-11-11 19:45, dima, o55 steer): looks good. after we install and take a closer look, maybe we can find even more stuff to borrow. this is for you and for everyone to propose: after the research over shepherdr and herdr. (context, not dima's words: "Shepherd Herdr" read as "shepherdr and herdr"; the time is the chore time, the raw has none.)
+PK-363:W1025 (2026-11-11 19:38, dima, o59 steer): why keep dead weight? delete it. (context, not dima's words: clio names this as the my-tabs delete word; the raw itself names no tab.)
+
+PK-363:W1026 (2026-11-11 20:03, dima): add to my herdr wishlist (ticket or add to another ticket): hotkeys. i want proper hotkeys support but not messy. architect a solid hotkey support considering the herdr environment (herdr has its own hotkeys). solid hotkeys architecture from the start, something like a hotkey store or anything, you're the expert. (context, not dima's words: "herder" read as "herdr", as in earlier grooms.)
+PK-363:W1027 (2026-11-11 20:03, dima): first item: when herdr is focused but the chatter text box is not focused, the key "/" sets focus into the chatter box.
+PK-363:W1028 (2026-11-11 20:03, dima): when herdr is focused, "d" toggles the deck.
+PK-363:W1029 (2026-11-11 20:03, dima): it is for later. no grills now, just fold.
+
+PK-363:W1030 (2026-11-11 20:19, dima): so everything is ready to probe shepherdr (I switch, we explore)? if yes, let's prep. ❓ (context, not dima's words: "shepareder" read as "shepherdr", as in earlier grooms; the time is the chore time, the raw has none.)
+PK-363:W1031 (2026-11-11 20:19, dima): me: explore myself, click around, mark what i liked.
+PK-363:W1032 (2026-11-11 20:19, dima): you, herdr codie, wing 1 + researcher card (you start): all explore shepherdr and hunt what good stuff to borrow, compared to what we have now. (context, not dima's words: "herder codie" read as "herdr codie".)
+PK-363:W1033 (2026-11-11 20:19, dima): then I switch back to our herdr setup and you propose a unified proposal from all sides: what to borrow, replicate, copy, pull in, etc.
+PK-363:W1034 (2026-11-11 20:19, dima): will it work? ❓
+PK-363:W1035 (2026-11-11 20:19, dima): do you think everyone must be paused while we are doing it? ❓
+PK-363:W1036 (2026-11-11 20:19, dima): also, what if everyone dies? restoration plan. I restart you with clio-revive main zsh alias? (wing 1 just cooked it) ❓
 <!-- SECTION:NOTES:END -->

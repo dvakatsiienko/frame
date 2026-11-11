@@ -76,9 +76,9 @@ def surface():
     return "claude-desktop" if entrypoint == "claude-desktop" else None
 
 
-def env_trigger(rule, where, cwd):
+def env_trigger(rule, where, project):
     row = TRIGGERS[rule]
-    return row["file"] if where in row.get("env", []) and first_match(row["project"], cwd) else None
+    return row["file"] if where in row.get("env", []) and first_match(row["project"], project) else None
 
 
 def prompt_trigger(rule, prompt):
@@ -287,7 +287,9 @@ def on_start_env(event, session, cwd):
     if where:
         seen = "set" if os.environ.get("HC_TERMINAL_ID") else "unset"
         log(event, f"env {where}", f"HC_TERMINAL_ID {seen}, entrypoint {os.environ.get('CLAUDE_CODE_ENTRYPOINT', '')}")
-    hits = {rule: env_trigger(rule, where, cwd) for rule in TRIGGERS}
+    # the start project, never this start's cwd: a compact or a resume runs wherever the cwd has moved since
+    project = os.environ.get("CLAUDE_PROJECT_DIR") or cwd
+    hits = {rule: env_trigger(rule, where, project) for rule in TRIGGERS}
     # a leaf not written yet must not take the other loads of this start down with it
     hits = {rule: hit for rule, hit in hits.items() if hit and os.path.isfile(os.path.expanduser(hit))}
     return [load(event, session, r, "env", h, f"because the thread runs in {where}") for r, h in hits.items()]
