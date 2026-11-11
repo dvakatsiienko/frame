@@ -1220,6 +1220,9 @@ for (const line of [
     'for f in $(ls ~/.claude/shelf/band-presses); do echo x >> "$HOME/.claude/shelf/band-presses/$f"; done',
     'for f in $(ls ~/.claude/shelf/band-presses); do echo x > "$f"; done',
     'for f in $(ls ~/.claude/shelf/band-presses); do cp /tmp/p "$f"; done',
+    // both reviewers on 4f7da87c: a writer outside the redirect and carrier lists, so the loop reads only on an allow-list
+    `for f in $(ls -d ~/.claude/shelf/band-presses/*); do sed -i '' s/a/b/ "$f"; done`,
+    'for f in $(ls ~/.claude/shelf/band-presses); do truncate -s 0 "$f"; done',
     `node -e "require('fs').writeFileSync(process.env.HOME + '/.claude/shelf/band-presses/x','{}')"`,
     'cp /tmp/p ~/.claude/shelf/band-presses/',
     "python3 -c \"open('/Users/dima/.claude/shelf/band-presses/x','w').write('{}')\"",
@@ -2127,3 +2130,13 @@ for (const line of ["hc send t5 'go on with slice 2'", "claude --bg -n x 'go'"])
         });
         expect([PANE_PROOF(r), ran]).toEqual([false, [line]]);
     });
+
+test('exit 10: a warn-only line ahead of a floor one in a sign script still refuses the script', async ($, on) => {
+    const { ran } = scriptWorld(
+        on,
+        `git push\nrm -rf /tmp/fixture\n${SCRIPT_SIGN}`,
+    );
+    await hisNext($, 'sign FRM-1');
+    const r = await bash($, 'bash /repo/sign.sh');
+    expect([r.deny, ran]).toEqual([expect.stringContaining('rm'), []]);
+});

@@ -118,6 +118,18 @@ function carriesDir(c: Command, namedDir: (text: string) => boolean) {
 
 // a loop binds the names it lists and writes nothing itself; its body's commands are judged on their own
 const LOOPS = new Set(['for', 'select']);
+const LOOP_READS = new Set([
+    'for',
+    'select',
+    'done',
+    'cat',
+    'echo',
+    'head',
+    'jq',
+    'ls',
+    'stat',
+    'tail',
+]);
 // a program's write call, in python, node, ruby or perl; a shell's writes are the parser's
 const WRITE_CALL =
     /\bopen\s*\([^)]*,\s*['"][^'"]*[wax+]|\.(write|append)(File|FileSync|_text|_bytes)?\s*\(|\b(os|shutil|fs|File|FileUtils)\.\w*(rename|replace|remove|unlink|link|mkdir|makedirs|copy|move|write|append|touch|rm|cp|mv)\w*\s*\(|\.(unlink|rename|touch|mkdir|symlink_to)\s*\(|\bcreateWriteStream\b/;
@@ -150,13 +162,10 @@ export function touchesStore(
         (isWritesOnly ? writesNamed(command, named) : named(command))
     )
         return true;
-    // a loop over the folder's names hands each name to its body, so it reads only when nothing on the line writes
-    const writesNothing = parsed.every(
-        (c) =>
-            !c.writes.length &&
-            !c.appends.length &&
-            !CARRIERS.has(c.name) &&
-            !runsOpaque(c),
+    // a loop over the folder's names hands each name to its body, so it reads only when every command on the line is a
+    // reader with no redirect (FRM-574 decided 8: an allow-list)
+    const isReadLoop = parsed.every(
+        (c) => LOOP_READS.has(c.name) && !c.writes.length && !c.appends.length,
     );
     return parsed.some(
         (c) =>
@@ -181,7 +190,7 @@ export function touchesStore(
             (c.args.some((w) => w.isExpanding) &&
                 c.feeders.some((f) => f.args.some((w) => named(w.text))) &&
                 !onlyReads(c, named) &&
-                !(isWritesOnly && writesNothing && LOOPS.has(c.name))),
+                !(isWritesOnly && isReadLoop && LOOPS.has(c.name))),
     );
 }
 

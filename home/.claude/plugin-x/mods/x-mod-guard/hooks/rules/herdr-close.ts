@@ -109,9 +109,9 @@ export function herdrClose(c: Command, ctx: Context): Refusal | undefined {
 // a clio seat is the one herdr labels `seat=clio` (main) or `seat=clio-wing-<n>`: the label its spawner set, never the
 // cc name a session gives itself (FRM-574)
 export const isClioSeat = (seat: unknown) =>
-    typeof seat === 'string' && /^clio(-wing-[\w-]+)?$/.test(seat);
+    typeof seat === 'string' && /^clio(-wing-\d+)?$/.test(seat);
 
-// the label keys a close trusts: `seat` says who a terminal is, `lead` who may end it
+// the label keys a close trusts: `seat` says who a terminal is, `lead` which terminal may end it (its herdr id)
 const PROOF_KEYS = new Set(['seat', 'lead']);
 const RUN_VALUED = new Set([
     '--cwd',

@@ -1229,19 +1229,29 @@ const PIPE_READERS = new Set([
     'cat',
     'column',
     'cut',
-    'grep',
     'head',
     'jq',
-    'rg',
     'sort',
     'tail',
     'tr',
     'uniq',
     'wc',
 ]);
+// a flat line: no loop, branch, group or function a ticked command could run in more than once (wisphunter on 4f7da87c)
+const FLAT_BREAKERS = new Set([
+    ...KEYWORDS,
+    'for',
+    'select',
+    'case',
+    'done',
+    'fi',
+    'esac',
+]);
+const FLAT_SEPS = new Set(['', ';', '&&', '|']);
 // the line with one ticked command spelled whole in it swapped for `true`, so the rest is judged by every rule
-// (FRM-574 decided 2); `isPiped` when its output feeds a pipe, whose exit would hide its own. undefined when the quote
-// is not one whole command of the line, its own fd redirects aside
+// (FRM-574 decided 2): a flat line, the ticked command fed by no pipe or heredoc, and last on it or piped on into readers
+// only, so the line's exit is its own (`isPiped`: run with pipefail). undefined when the quote is not one whole command
+// of the line, its own fd redirects aside
 export function tickedRest(command: string, quoted: string) {
     const q = parse(quoted).segments;
     const want = q[0]?.words.map((w) => w.text);
@@ -1266,8 +1276,27 @@ export function tickedRest(command: string, quoted: string) {
                     ),
         );
         if (i < 0) continue;
+        const isFlat = swapped.every(
+            (s) =>
+                FLAT_SEPS.has(s.sep) &&
+                !FLAT_BREAKERS.has(s.words[0]?.text ?? '') &&
+                !s.words.some((w) => w.text.endsWith('()')),
+        );
+        const after = swapped.slice(i + 1);
         const isPiped = swapped[i]?.sep === '|';
-        if (isPiped && !PIPE_READERS.has(swapped[i + 1]?.words[0]?.text ?? ''))
+        const isLast = isPiped
+            ? after.every(
+                  (s, k) =>
+                      PIPE_READERS.has(s.words[0]?.text ?? '') &&
+                      (k === after.length - 1 || s.sep === '|'),
+              )
+            : !after.length;
+        if (
+            !isFlat ||
+            !isLast ||
+            swapped[i - 1]?.sep === '|' ||
+            swapped[i]?.bodies.length
+        )
             continue;
         return { isPiped, rest };
     }

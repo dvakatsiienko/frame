@@ -609,8 +609,6 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'write-then-run',
     // warn-only until sixth sense's clean and a 2-day replay with 0 fires on real calls (clio, 17:04)
     'pane-keys',
-    // FRM-574: the fence beside a clio's own close, a new refusal
-    'herdr-label',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
@@ -1513,7 +1511,8 @@ async function markSeen($: EngineInterface, path: string) {
 // the herdr closes on the line that end no live seat: herdr names every terminal each one ends, and none carries a
 // `seat=` label or runs a claude agent this seat did not start; a terminal that finished ends nothing. a close herdr
 // cannot answer for stays out, so it is refused (dima's o53). a clio seat ends any seat but a clio's, and a lead the seat
-// it labelled `lead=<its registry name>` (FRM-574 decided 1); a clio seat is ended by none
+// it labelled `lead=<its own HC_TERMINAL_ID>` (FRM-574 decided 1; the id herdr set, never a registry name a seat can
+// write); a clio seat is ended by none
 async function herdrSafeOf($: EngineInterface, command: string, cwd: string) {
     const safe = new Set<string>();
     const closes = commandsDeep(command, cwd).flatMap((c) => {
@@ -1551,10 +1550,6 @@ async function herdrSafeOf($: EngineInterface, command: string, cwd: string) {
             safe.add(herdrCloseKey(close));
     const self = await $.env.get('HC_TERMINAL_ID').catch(() => undefined);
     const isClio = await isClioCaller($, self);
-    const sid = await $.session.id().catch(() => undefined);
-    const name = sid
-        ? await sessionName($, sid).catch(() => undefined)
-        : undefined;
     const window = closes.some((c) => c.scope !== 'terminal')
         ? await herdrJson($, ['herdr-app', 'ls'])
         : undefined;
@@ -1574,7 +1569,7 @@ async function herdrSafeOf($: EngineInterface, command: string, cwd: string) {
                 isSafe = false;
                 continue;
             }
-            if (isClio || (name !== undefined && got.labels?.lead === name))
+            if (isClio || (self !== undefined && got.labels?.lead === self))
                 continue;
             if (
                 typeof seat === 'string' ||
@@ -2199,20 +2194,19 @@ export const register: Register = (on) => {
         const signScripts = (
             await scriptTexts($, typed, cwd, ctx).catch(() => [])
         ).filter((s) => signWords(s.text, s.dir, ctx).length > 0);
-        for (const script of signScripts) {
-            const r = refusals(script.text, script.dir, {
+        for (const script of signScripts)
+            for (const r of refusals(script.text, script.dir, {
                 ...ctx,
                 ...facts,
-            })[0];
-            if (!r) continue;
-            const said = `x-mod-guard stopped this one command. instead: run the sign write as a call of its own. why: ${script.path} holds a sign write beside a refused command (rule ${r.rule}): ${r.why}.`;
-            const stop = await enforce(
-                { ...r, door: 'run the sign write as a call of its own' },
-                `nothing in this command ran — ${said}`,
-                said,
-            );
-            if (stop) return stop;
-        }
+            })) {
+                const said = `x-mod-guard stopped this one command. instead: run the sign write as a call of its own. why: ${script.path} holds a sign write beside a refused command (rule ${r.rule}): ${r.why}.`;
+                const stop = await enforce(
+                    { ...r, door: 'run the sign write as a call of its own' },
+                    `nothing in this command ran — ${said}`,
+                    said,
+                );
+                if (stop) return stop;
+            }
         for (const sign of [
             ...signWords(typed, cwd, ctx),
             ...signScripts.flatMap((s) => signWords(s.text, s.dir, ctx)),

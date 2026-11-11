@@ -173,6 +173,9 @@ func TestBriefSummonFromAHerdrThreadWantsTheHcRunLine(t *testing.T) {
 		{"an hc run line from a herdr thread", func(t *testing.T, w summonWorld) string {
 			return herdrArgv(w.repo, w.brief(t, goodBrief, true))
 		}, herdr, true},
+		{"a quoted 'claude' from a herdr thread", func(t *testing.T, w summonWorld) string {
+			return strings.Replace(codieArgv(w.repo, w.brief(t, goodBrief, true)), "&& claude", "&& 'claude'", 1)
+		}, herdr, false},
 		{"a claude --bg line outside herdr", func(t *testing.T, w summonWorld) string {
 			return codieArgv(w.repo, w.brief(t, goodBrief, true))
 		}, nil, true},

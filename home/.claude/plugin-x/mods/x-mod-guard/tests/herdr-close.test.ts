@@ -96,10 +96,10 @@ const TERMINALS: Record<string, object> = {
         state: 'live',
         status: { app: 'claude-code' },
     },
-    // a codie the mods codie summoned, labelled with its lead's registry name
+    // a codie the mods codie (t9) summoned, labelled with its lead's terminal
     t47: {
         argv: ['claude'],
-        labels: { lead: '⚡ 🔧 codie: mods lane 6', seat: 'mods-helper' },
+        labels: { lead: 't9', seat: 'mods-helper' },
         parent: null,
         state: 'live',
         status: { app: 'claude-code' },
@@ -158,7 +158,7 @@ function world(
         e.path === '/home/.claude/sessions/9.json'
             ? {
                   value: JSON.stringify({
-                      name: '⚡ 🔧 codie: mods lane 6',
+                      name: '🦉 clio',
                       sessionId: 'h1h1h1h1-0000',
                   }),
               }
@@ -283,15 +283,23 @@ test('his tick on an ask quoting the close runs it once', async ($, on) => {
 });
 
 // FRM-574 decided 1: a clio seat, proven by its own terminal's hc label, ends any seat that is not a clio with no ask
-for (const target of ['t41', 't42', 't43', 't20', 't47'])
-    test(`a clio seat ends a seat that is not a clio: hc kill ${target}`, async ($, on) => {
+for (const [self, target] of [
+    ['t40', 't41'],
+    ['t40', 't42'],
+    ['t40', 't43'],
+    ['t40', 't20'],
+    ['t40', 't47'],
+    ['t44', 't43'],
+])
+    test(`a clio seat ends a seat that is not a clio: ${self} → hc kill ${target}`, async ($, on) => {
         const line = `hc kill ${target}`;
-        const { ran } = world(on, [], 't40');
+        const { ran } = world(on, [], self);
         const r = await bash($, line);
         expect([r.deny, ran]).toEqual([undefined, [line]]);
     });
 
 for (const [self, target] of [
+    ['t44', 't40'],
     ['t40', 't44'],
     ['t9', 't40'],
     ['t9', 't44'],
@@ -321,8 +329,7 @@ for (const line of [
     "hc label t43 'seat=clio-wing-3'",
 ])
     test(`a seat's proof label is set by no tool call but a clio's spawn: ${line}`, async ($, on) => {
-        const { ran, store } = world(on);
-        store.set('rule-mode:herdr-label', 'enforce');
+        const { ran } = world(on);
         const r = await bash($, line);
         expect([r.deny, ran]).toEqual([expect.stringContaining('label'), []]);
     });
@@ -334,29 +341,16 @@ for (const line of [
     'hc ls --json --label seat=helga',
 ])
     test(`a label that proves no clio passes: ${line}`, async ($, on) => {
-        const { ran, store } = world(on);
-        store.set('rule-mode:herdr-label', 'enforce');
+        const { ran } = world(on);
         const r = await bash($, line);
         expect([r.deny, ran]).toEqual([undefined, [line]]);
     });
 
 test('a clio seat spawns a wing with its clio label', async ($, on) => {
     const line = 'hc run --bg --label seat=clio-wing-3 -- claude';
-    const { ran, store } = world(on, [], 't40');
-    store.set('rule-mode:herdr-label', 'enforce');
+    const { ran } = world(on, [], 't40');
     const r = await bash($, line);
     expect([r.deny, ran]).toEqual([undefined, [line]]);
-});
-
-test('the label fence warns until its clean: the relabel runs with the would-refuse note', async ($, on) => {
-    const line = 'hc label t43 seat=clio';
-    const { ran } = world(on);
-    const r = await bash($, line);
-    expect([r.deny, ran, r.context?.join(' ')]).toEqual([
-        undefined,
-        [line],
-        expect.stringContaining('rule herdr-label, warn-only'),
-    ]);
 });
 
 // FRM-574 decided 2 and 7: a tick quoting one guarded command passes it inside a longer line, every other part judged,
@@ -372,7 +366,7 @@ for (const line of [
     'hc kill t20 2>&1',
     'hc kill t20 >/dev/null 2>&1',
     'hc ls && hc kill t20',
-    'hc kill t20; hc ls',
+    'hc ls; hc kill t20',
 ])
     test(`a tick quoting the command passes it inside a longer line: ${line}`, async ($, on) => {
         const { ran } = world(on, [killTick('hc kill t20')]);
@@ -386,6 +380,14 @@ for (const line of [
     'hc kill t20 t2p',
     'hc kill t20x',
     'hc kill t20 | sh',
+    // wisphunter on 4f7da87c: run more than once, fed input he never saw, or followed by a command whose exit hides its own
+    'for i in 1 2; do\nhc kill t20\ndone',
+    'printf x | hc kill t20',
+    "hc kill t20 <<'EOF'\nx\nEOF",
+    'hc kill t20; hc ls',
+    'hc kill t20 && hc ls',
+    'hc kill t20 2>&1 | grep x',
+    'f() { hc kill t20; }; f; f',
 ])
     test(`a tick quoting one command passes nothing else on the line: ${line}`, async ($, on) => {
         const { ran } = world(on, [killTick('hc kill t20')]);

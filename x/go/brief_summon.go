@@ -266,8 +266,11 @@ func restamp(brief string) string {
 
 // the claude call as typed, quotes kept, as a herdr terminal runs it: in a pane of its own, so no --bg
 func herdrClaude(command string) string {
-	call := command[max(0, claudeCall.FindStringIndex(command)[0]):]
-	return strings.TrimSpace(bgFlag.ReplaceAllString(call, " "))
+	at := claudeCall.FindStringIndex(command)
+	if at == nil {
+		return "claude -n '<name>' … \"$(cat <brief>)\" --remote-control"
+	}
+	return strings.TrimSpace(bgFlag.ReplaceAllString(command[at[0]:], " "))
 }
 
 var (

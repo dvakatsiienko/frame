@@ -85,7 +85,7 @@ A herdr terminal labelled `seat=clio` (main) or `seat=clio-wing-<n>` (a wing), r
 _Avoid_: coordinator terminal, clio pane
 
 **Lead label**:
-A terminal's `lead=<registry name>` label, set at its spawn: that registry name's seat may end it.
+A terminal's `lead=<terminal id>` label, set at its spawn: the seat in that herdr terminal (its `HC_TERMINAL_ID`) may end it.
 
 **Operator-override**: x's word, defined in `x/GLOSSARY.md`; only dima's whole typed prompt flips it here, and the `raw-merge` rule asks it.
 
