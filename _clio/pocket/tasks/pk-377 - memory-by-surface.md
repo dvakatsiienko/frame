@@ -61,4 +61,10 @@ ticket: FRM-576
 close: 2026-11-11 18:20 — W2–W17, W28, W29, W31–W33 → FRM-576's wish block (renumbered W1–W21); W23–W24 → mods lane 6 rider r7 (built, b0f7c758); W25 and W30 → main flyway PK-349; W26, W27 answered in the thread; W1, W11, W12 settled by the shape; W18–W22 repeat W13–W17
 
 correction 18:38 (wishkeeper): W13–W17 are the lines to cite, the «superseded» note is wrong; the repeats are W18–W22; the held line is void: FRM-576 is signed and the leftovers W25, W30 live on the main flyway PK-349
+
+PK-377:W34 (2026-11-11 18:10, dima): so after you implement, when i start you in herdr, you will load only herdr memories, and the same for the claude desktop app, right? ❓
+PK-377:W35 (2026-11-11 18:10, dima): threads started in a plain terminal (cc without herdr or the claude desktop app) will not load any memories related to herdr or the claude desktop app at all, right? ❓
+PK-377:W36 (2026-11-11 18:24, dima): who solves this: you or quicklane? ❓
+PK-377:W37 (2026-11-11 18:24, dima): use author-memory.
+PK-377:W38 (2026-11-11 18:24, dima): herdr codie has nothing to do. let's have him busy as soon as we solve memories. (read "herder codie" as "herdr codie"; flagged to clio.)
 <!-- SECTION:NOTES:END -->
