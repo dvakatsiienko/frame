@@ -1878,7 +1878,7 @@ PK-363:W904 (2026-11-11 14:04, dima): if yes, i allow starting the mods lane wit
 PK-363:W905 (2026-11-11 14:04, dima): 2 signed tickets drifted from their sign (FRM-538 and FRM-489). fix the drift.
 PK-363:W906 (2026-11-11 14:04, dima): the codeberg mirror job is red again. ask wing 1 to solve it.
 PK-363:W907 (2026-11-11 14:04, dima): why is codeberg red? ❓
-PK-363:W908 (2026-11-11 14:04, dima): 🐦‍⬛ crow's weekly grade is due today. let's solve it with wing 1.
+PK-363:W908 (2026-11-11 14:04, dima): crow's weekly grade is due today. let's solve it with wing 1.
 PK-363:W909 (2026-11-11 14:04, dima): where did you save your plan for today? did you already save it in your flyway? ❓
 PK-363:W910 (2026-11-11 14:04, dima): for you (main clio): you should keep your proposed daily plan in a flyway each boot. is it like this in the habit/boot skill? ❓
 PK-363:W911 (2026-11-11 14:04, dima): if not, refresh habits and flyway.
