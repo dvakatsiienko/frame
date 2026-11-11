@@ -2338,11 +2338,14 @@ test('the link rides the ask a glide card draws from the store', async ($, on) =
 
 // FRM-544 slice 1: x-herdr-deck draws the gated mark the stash publishes, never its own copy of the pattern
 test('a gated ask carries isGated in the store, a plain ask none', async ($, on) => {
-    const w = world(on);
+    const w = world(on, cleansOf({ 'x/y#7': HEAD }));
     await start($);
     const asks = [
         { pick: 'run it', text: '⚠️ mirror: `git push --mirror origin`' },
-        { pick: 'merge it', text: 'merge https://github.com/x/y/pull/7' },
+        {
+            pick: 'merge it',
+            text: 'merge https://github.com/x/y/pull/7 at abc1234',
+        },
         { pick: 'cut it', text: 'cut the probe?' },
     ];
     await orbit($, { asks, op: 'add' });
@@ -4120,6 +4123,9 @@ for (const [what, text, pick] of [
     // FRM-519 item 12: two of the 11 recorded false refusals, on non-sign asks
     ['a pick needing no re-sign', 'push FRM-1', "doesn't need a re-sign"],
     ['a pick not signed yet', 'push FRM-1', 'not yet signed'],
+    // sixth sense round 9 on 59feb7c8: a negation a few words off, or trailing
+    ['a pick with no need for one', 'push FRM-1', 'no need for a re-sign'],
+    ['a pick that needs none', 'push FRM-1', 're-sign not needed'],
 ] as const)
     test(`add passes ${what}`, async ($, on) => {
         world(on);
@@ -4203,9 +4209,56 @@ for (const pick of [
         );
     });
 
+// FRM-519 exit 2 (clio's pick a, 00:54): a merge ask names its head, and lands only on the clean the store holds for it;
+// x lane merge-auto still reads the pr's real head again
+const CLEANS = '/home/.claude/shelf/pr-verified.json';
+const HEAD = 'abc1234def5678abc1234def5678abc1234def56';
+const OLD = '9999999def5678abc1234def5678abc1234def56';
+const cleansOf = (cleans: Record<string, string>) => ({
+    [CLEANS]: JSON.stringify(cleans),
+});
+const cleanOn = (head: string) =>
+    cleansOf({ 'o/frame#7': head, 'o/n#7': head });
+for (const [what, text, files] of [
+    ['a url at its clean head', `⚠️ merge ${URL} at abc1234`, cleanOn(HEAD)],
+    [
+        'the ⚠️ shape at its clean head',
+        '⚠️ merge frame#7 at abc1234: the title',
+        cleanOn(HEAD),
+    ],
+] as const)
+    test(`add passes a merge ask: ${what}`, async ($, on) => {
+        world(on, files);
+        await start($);
+        expect(denied(await add($, [text, 'merge']))).toBe('');
+    });
+for (const [what, text, files, deny] of [
+    [
+        'naming no head',
+        '⚠️ merge frame#7: the title',
+        cleanOn(HEAD),
+        'names the head it merges',
+    ],
+    [
+        'with no clean for its pr',
+        '⚠️ merge frame#7 at abc1234: the title',
+        {},
+        'no clean for frame#7',
+    ],
+    [
+        'whose clean is on an older head',
+        '⚠️ merge frame#7 at abc1234: the title',
+        cleanOn(OLD),
+        'the clean on frame#7 is on 9999999',
+    ],
+] as const)
+    test(`add refuses a merge ask ${what}`, async ($, on) => {
+        world(on, files);
+        await start($);
+        expect(denied(await add($, [text, 'merge']))).toContain(deny);
+    });
+
 for (const [what, text, pick] of [
-    ['a url', `⚠️ merge ${URL}`, 'merge'],
-    ['the ⚠️ shape', '⚠️ merge frame#7: the title', 'merge'],
     ['a word holding it', 'push FRM-1', 'submerge it'],
     ['a pick that does not merge', 'push FRM-1', 'do not merge yet'],
     ['a pick that holds the merge', 'push FRM-1', "don't merge yet"],
@@ -4463,13 +4516,13 @@ test('✅ leaves a ⚠️ ask unmarked, with no record', async ($, on) => {
 });
 
 test('✅ leaves a bare merge ask for its own 🛎️', async ($, on) => {
-    world(on);
+    world(on, cleansOf({ 'o/r#7': HEAD }));
     const writes = tickLog(on);
     await start($);
     const ui = await board($);
     await add(
         $,
-        ['merge https://github.com/o/r/pull/7', 'yes'],
+        ['merge https://github.com/o/r/pull/7 at abc1234', 'yes'],
         ['push `backup`', 'yes'],
     );
     await ui.press({ key: 'orbit:all' });
@@ -4479,7 +4532,7 @@ test('✅ leaves a bare merge ask for its own 🛎️', async ($, on) => {
 });
 
 test('✅ names every ask it left unticked', async ($, on) => {
-    world(on);
+    world(on, cleansOf({ 'o/bytes#104': HEAD }));
     const toasts: string[] = [];
     on('ui.toast', (_$, e) => {
         toasts.push(e.text);
@@ -4489,7 +4542,7 @@ test('✅ names every ask it left unticked', async ($, on) => {
     const ui = await board($);
     await add(
         $,
-        ['⚠️ merge bytes#104: the guard fix', 'merge it'],
+        ['⚠️ merge bytes#104 at abc1234: the guard fix', 'merge it'],
         ['push `backup`', 'yes'],
     );
     await ui.press({ key: 'orbit:all' });
@@ -4497,7 +4550,7 @@ test('✅ names every ask it left unticked', async ($, on) => {
         toasts,
         (await ui.find({ key: 'orbit:accepted:o1' }))?.text,
     ]).toEqual([
-        ['✅ left unticked: o1 ⚠️ merge bytes#104: the guard fix'],
+        ['✅ left unticked: o1 ⚠️ merge bytes#104 at abc1234: the guard fix'],
         '🛎️ tick',
     ]);
 });

@@ -28,6 +28,7 @@ import type {
 import {
     ASSUMED_MAX,
     CHANGED_MARK,
+    type Cleans,
     ORBIT_TEXT_MAX,
     ORBIT_TOOL,
     PLAN_MAX,
@@ -1243,6 +1244,7 @@ type HeldSteers = {
 };
 // `compacting:<sid>`: the engine is compacting this session, from the compact's start to its end
 const COMPACTING = 'compacting:';
+const COMPACT_MAX_MS = 10 * 60_000;
 // a message held this long for a codie that has not wound tells its sender once; the hold stays (dima's o62)
 const STEER_TELL_MS = 10 * 60_000;
 const steerTellLine = (name: string, context: unknown) =>
@@ -4327,10 +4329,12 @@ async function holdForCompact(
     const sid = await currentId($);
     if (!sid || !key) return undefined;
     const was = (await windOf($, sid))?.state;
+    const since = await $.store.get(COMPACTING + sid).catch(() => undefined);
+    // a process that died mid-compact never cleared its key, so the key counts only inside a compact's longest run
     const isCompacting =
         was === 'refreshing' ||
-        (await $.store.get(COMPACTING + sid).catch(() => undefined)) !==
-            undefined;
+        (typeof since === 'number' &&
+            (await $.clock.now()) - since < COMPACT_MAX_MS);
     if (!isCompacting) return undefined;
     const kept = await steersOf($, key);
     if (kept.isCompacted) return undefined;
@@ -6223,6 +6227,25 @@ async function settleTask($: EngineInterface, text: string) {
     await load($);
 }
 
+// the clean store x lane merge-auto reads; one that does not read holds no clean, so a merge ask waits for one
+async function readCleans($: EngineInterface): Promise<Cleans> {
+    const home = await $.env.get('HOME').catch(() => undefined);
+    if (!home) return {};
+    try {
+        const v: unknown = JSON.parse(
+            await $.fs.read(`${home}/.claude/shelf/pr-verified.json`),
+        );
+        if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
+        return Object.fromEntries(
+            Object.entries(v).filter(
+                (e): e is [string, string] => typeof e[1] === 'string',
+            ),
+        );
+    } catch {
+        return {};
+    }
+}
+
 // one orbit op, as the tool takes it alone or as one item of `ops`
 async function orbitCall(
     $: EngineInterface,
@@ -6346,6 +6369,10 @@ async function orbitCall(
             deny: 'orbit plan: step is your lane step now, a whole number from 0, as your brief numbers it',
         };
     const lines = await readNumber($, 'lines');
+    const cleans =
+        input.op === 'add' || input.op === 'follow'
+            ? await readCleans($)
+            : undefined;
     const op = await inMarking(async () => {
         const made = orbitOp(
             await currentOrbit($),
@@ -6353,6 +6380,7 @@ async function orbitCall(
             isTurn,
             lines,
             isAmended,
+            cleans,
         );
         if ('deny' in made) return made;
         await saveOrbit($, made.orbit);

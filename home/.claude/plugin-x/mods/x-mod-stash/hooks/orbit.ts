@@ -225,23 +225,62 @@ export const isGuardGated = (text: string) =>
     );
 // a sign or merge verb anywhere in a pick wants its ask's shape, whatever opens the pick: only a negation leading it
 // lets it pass, never a list of openers (FRM-519 exit 3, sixth sense round 8 on 2093f838)
-const NOT = String.raw`not|not yet|never|no|don['’]t|doesn['’]t|no need to|doesn['’]t need a|does not need a|without`;
+const NOT = String.raw`not|not yet|never|no|don['’]t|doesn['’]t|no need to|no need for a|doesn['’]t need a|does not need a|without`;
+// a negation trailing the verb: «re-sign not needed», «merge isn't needed»
+const NOT_AFTER = String.raw`(?!\s+(?:is\s+)?(?:not|isn['’]t)\s+(?:needed|wanted)\b)`;
 // sign-in and its kin are no sign; a sign-off signs
 const SIGN_PICK = new RegExp(
-    String.raw`(?<!\b(?:${NOT})\s(?:re-)?)\b(?:re-)?sign(?:s|ed|ing)?\b(?![\s-]+(?:in|up|out)\b)`,
+    String.raw`(?<!\b(?:${NOT})\s(?:re-)?)\b(?:re-)?sign(?:s|ed|ing)?\b(?![\s-]+(?:in|up|out)\b)${NOT_AFTER}`,
     'iu',
 );
 // its label form `merge: …`, `merge-auto` and a merge of text «into» something are no merge of a pr
 const MERGE_PICK = new RegExp(
-    String.raw`(?<!\b(?:${NOT})\s)\bmerg(?:e|es|ed|ing)\b(?![:-])(?![^.;]*\binto\b)`,
+    String.raw`(?<!\b(?:${NOT})\s)\bmerg(?:e|es|ed|ing)\b(?![:-])(?![^.;]*\binto\b)${NOT_AFTER}`,
     'iu',
 );
 // the two shapes x-mod-guard's quotesPr accepts as naming a pr
 export const MERGE_ASK =
     /github\.com\/[\w.-]+\/[\w.-]+\/pull\/\d+|(?:^|\s)⚠️ merge [\w.-]+#\d+/u;
 
+// a merge ask names the head it merges, and lands only on the clean the store holds for that head, so he never ticks a
+// merge that cannot run; x lane merge-auto still reads the pr's real head (FRM-519 exit 2, clio's pick a: no network)
+function uncleanMerge(op: string, text: string, cleans: Cleans) {
+    const url = text.match(/github\.com\/([\w.-]+)\/([\w.-]+)\/pull\/(\d+)/);
+    const short = text.match(/(?:^|\s)⚠️ merge ([\w.-]+)#(\d+)/u);
+    const repo = url?.[2] ?? short?.[1];
+    const n = url?.[3] ?? short?.[2];
+    if (!repo || !n) return undefined;
+    const pr = `${repo}#${n}`;
+    const head = text.match(/\bat ([0-9a-f]{7,40})\b/)?.[1];
+    if (!head)
+        return {
+            deny: `orbit ${op}: a merge ask names the head it merges, «⚠️ merge ${pr} at <sha>: <title>», so his tick lands on the head sixth sense cleaned`,
+        };
+    const clean = Object.entries(cleans).find(([k]) =>
+        url ? k === `${url[1]}/${pr}` : k.endsWith(`/${pr}`),
+    )?.[1];
+    if (!clean)
+        return {
+            deny: `orbit ${op}: no clean for ${pr} in ~/.claude/shelf/pr-verified.json; ask once sixth sense's clean lands on ${head}`,
+        };
+    if (!clean.startsWith(head))
+        return {
+            deny: `orbit ${op}: the clean on ${pr} is on ${clean.slice(0, 7)}, not ${head.slice(0, 7)}; ask at the head it cleaned, or after its clean on ${head.slice(0, 7)}`,
+        };
+    return undefined;
+}
+
 // a press whose text the guard cannot read fails here, before his tick spends itself on it
-function misShapedAsk(op: string, text: string, pick: string) {
+function misShapedAsk(
+    op: string,
+    text: string,
+    pick: string,
+    cleans: Cleans | undefined,
+) {
+    if (cleans) {
+        const unclean = uncleanMerge(op, text, cleans);
+        if (unclean) return unclean;
+    }
     if (SIGN_PICK.test(pick) && !SIGN_ASK.test(text))
         return {
             deny: `orbit ${op}: a pick that signs needs the text to read «✍️ sign <id>: <title>», the shape x-mod-guard reads when it signs`,
@@ -288,6 +327,7 @@ export function orbitOp(
     isTurn: boolean,
     planMax: number = PLAN_MAX,
     isAmended = false,
+    cleans?: Cleans,
 ): { orbit: StashOrbit; result: string } | { deny: string } {
     switch (input.op) {
         case 'add': {
@@ -298,7 +338,12 @@ export function orbitOp(
                 const v = (item ?? {}) as Record<string, unknown>;
                 const text = oneLine(v.text);
                 if (!text) continue;
-                const refused = misShapedAsk('add', text, oneLine(v.pick));
+                const refused = misShapedAsk(
+                    'add',
+                    text,
+                    oneLine(v.pick),
+                    cleans,
+                );
                 if (refused) return refused;
                 const hiddenNote = oneLine(v.hiddenNote);
                 const link = oneLine(v.link);
@@ -408,6 +453,7 @@ export function orbitOp(
                 text,
                 oneLine(input.pick) ||
                     (o.asks.find((a) => a.id === id)?.pick ?? ''),
+                cleans,
             );
             if (refused) return refused;
             return {
@@ -545,3 +591,6 @@ export function bandPressLines(text: string, after: number, now: number) {
     }
     return out.sort((a, b) => a.at - b.at);
 }
+
+// the clean store x lane merge-auto reads: `<owner>/<repo>#<n>` → the head sha sixth sense cleaned
+export type Cleans = Record<string, string>;

@@ -798,6 +798,18 @@ test("clio's own thread at 🌀 holds a member's [done]", async ($, on) => {
     ]);
 });
 
+// sixth sense round 9 on 59feb7c8: a compact whose process died never cleared its key; past COMPACT_MAX_MS it holds nothing
+test('a compact key left by a dead process holds nothing past its bound', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`compacting:${SID}`, NOW - 20 * 60_000);
+    await start($);
+    const r = await fromPeer($, 'round 9 on abc1234', SIXTH);
+    expect([r.consumed, r.text?.includes('round 9 on abc1234')]).toEqual([
+        undefined,
+        true,
+    ]);
+});
+
 test('a refused wind holds nothing: nothing compacts', async ($, on) => {
     const w = receiveWorld(on);
     w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refused' });
