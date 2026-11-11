@@ -29,11 +29,11 @@ PK-377:W10 (2026-11-11 17:10, dima): the whole idea is scalability. as you spott
 PK-377:W11 (2026-11-11 17:10, dima): propose how to solve it in a good way. perform the analysis. gather all the information you are still missing, and propose a solid solution.
 PK-377:W12 (2026-11-11 17:10, dima): use the author-memory skill for all memory and skill edits.
 
-PK-377:W13 (2026-11-11 17:48, dima): do you think it is a global split, or is it only for clio memories? ❓
-PK-377:W14 (2026-11-11 17:48, dima): so you are able to tell which environment you run in? if yes, that is good. but can memories be lazy loaded depending on the environment, or must they always be loaded even when not relevant? ❓
-PK-377:W15 (2026-11-11 17:48, dima): example: you run in herdr now. can you load only the herdr-specific memories, and not the claude desktop app-specific ones, while you run in herdr? ❓
-PK-377:W16 (2026-11-11 17:49, dima): surface-herdr-desktop.md (context, not dima's words: the raw holds only this file name, with no sentence around it.)
-PK-377:W17 (2026-11-11 17:49, dima): let's try gradual, but do not forget to measure and lift after 1 week! (read "1w" as "1 week")
+PK-377:W13 (2026-11-11 17:48, dima, o31 steer): do you think it is a global split, or is it only for clio memories? ❓
+PK-377:W14 (2026-11-11 17:48, dima, o32 steer): so you are able to tell which environment you run in? if yes, that is good. but can memories be lazy loaded depending on the environment, or must they always be loaded even when not relevant? ❓
+PK-377:W15 (2026-11-11 17:48, dima, o32 steer): example: you run in herdr now. can you load only the herdr-specific memories, and not the claude desktop app-specific ones, while you run in herdr? ❓
+PK-377:W16 (2026-11-11 17:49, dima, o35 steer): surface-herdr-desktop.md (context, not dima's words: the raw holds only this file name, with no sentence around it.)
+PK-377:W17 (2026-11-11 17:49, dima, o36 steer): let's try gradual, but do not forget to measure and lift after 1 week! (read "1w" as "1 week")
 
 PK-377:W18 (2026-11-11 17:48, dima): do you think it is a global split, or is it only for clio memories? ❓
 PK-377:W19 (2026-11-11 17:48, dima): so you are able to tell which environment you run in? if yes, that is good. but can memories be lazy loaded depending on the environment, or must they always be loaded even when not relevant? ❓
