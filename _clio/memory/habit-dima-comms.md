@@ -43,7 +43,7 @@ floods; no other member prints one.
 
 **A remove or uninstall instruction to dima goes out only after its target's source is read**, never on an inference.
 
-**A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; herdr's window: `x:herdr` § recipes, the window map.
+**A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf.
 
 **An ask that needs his hand names the exact place** — the built-in pane or his Chrome, the app, the screen — so his first try lands.
 
