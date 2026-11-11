@@ -435,6 +435,14 @@
   - when an agent, a background command or a background session starts after `pending: none` and before the compact, then the wind refuses, nothing compacts, and the next prompt carries one «second wind refused» line naming it
   - then the note the session reads carries dima's words whole (W4, FRM-431), for codie and for clio alike
   - proof: tests/wind.test.ts::the op refuses with no pending field / refuses a pending that names work / an agent or a background command started after pending: none makes the wind refuse / both notes carry dima's words
+- ✅ a coordinator's message to a codie past 55 % context waits for its second wind (r5, dima's o23: «~50–60% is fine»)
+  - makes: a `steer-held:<session id>` key in the store, the held messages in order
+  - given a codie whose ctx meter reads 55 % or more, when 🦉 clio or a wing sends it a message, then the codie reads a second wind note naming the sender and its fill instead of the message, and its 🐦‍🔥 reads ✍️
+  - and a next message while one is held starts no turn; every held message joins the first turn after the compact, once, in the order sent
+  - given dima takes the wind back, then the held messages join the codie's next turn
+  - given a codie under 55 %, a sender that is no coordinator (a sixth sense), clio's pause and resume words, or `🐦‍🔥 second wind` switched off, then the message arrives as sent
+  - decision: the receiver holds it, so the coordinator's send never changes and one switch turns it off; nothing cancels a hold but the compact or dima's take-back
+  - proof: tests/wind.test.ts::clio's message to a codie past 55 % becomes the wind note (+ the held message marks the wind as writing, a second message waits unseen, under 55 % reads as sent, a full sixth sense reads as sent, a sixth sense or a pause passes, a wind dima takes back hands it over, switched off holds nothing)
 - ✅ `🐦‍🔥 second wind` switched off in 🎛️ settings is off for the model too
   - given it is off, then no row draws the button or the line, no turn carries a second wind note, `op second-wind` is refused in one line naming the switch, and a named handoff never compacts
   - proof: tests/board.test.ts::🐦‍🔥 second wind switched off draws no button and no line; tests/wind.test.ts::🐦‍🔥 second wind switched off never compacts, even with a handoff named; tests/switches.test.ts op refused

@@ -1227,6 +1227,18 @@ const windRefused = (what: string) =>
     `🐦‍🔥 second wind refused: ${what} started after you said pending: none, so nothing compacted. resolve it, then call ${ORBIT_TOOL} op second-wind again.`;
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
+// a coordinator's message to a codie whose context reads past this waits for the codie's second wind (dima's o23: «~50–60%
+// is fine»); it joins the first turn after the compact, so a steer never lands in a full context
+const STEER_HOLD_AT = 55;
+const STEER_HELD = 'steer-held:';
+type HeldSteers = {
+    isCompacted?: true;
+    steers: { at: number; from: string; text: string }[];
+};
+const steerHoldNote = (from: string, context: number) =>
+    `🐦‍🔥 ${from}'s message is held for your second wind: your context reads ${Math.round(context)} %, past ${STEER_HOLD_AT} %. ${WIND_WORDS} finish the step you are on, then ${WIND_HOW} the held message joins your first turn after the pickup.`;
+const steerLine = (s: HeldSteers['steers'][number]) =>
+    `🐦‍🔥 held for your second wind, delivered now — ${s.from}: ${s.text}`;
 // the turn's end lets the engine settle before the compact runs
 const WIND_DELAY_MS = 1_000;
 const QUIET_LOG = 'quiet-log:';
@@ -3558,7 +3570,15 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
 
 // everything this mod keeps for one conversation: one store key per prefix, the session id after it, plus its pending
 // lane marks; a new per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
-const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL, WIND] as const;
+const SESSION_KEYS = [
+    PREFIX,
+    HOT,
+    REPLY,
+    CONTEXT,
+    MODEL,
+    WIND,
+    STEER_HELD,
+] as const;
 
 async function forget($: EngineInterface, sid: string) {
     await dropState($, sid).catch(() => undefined);
@@ -4115,6 +4135,78 @@ async function windOnCompact($: EngineInterface) {
     if (!sid || (was?.state !== 'asked' && was?.state !== 'writing' && !isOurs))
         return;
     await $.store.delete(WIND + sid);
+}
+
+async function steersOf($: EngineInterface, sid: string) {
+    const v = (await $.store.get(STEER_HELD + sid).catch(() => undefined)) as
+        | HeldSteers
+        | undefined;
+    return {
+        steers: v?.steers ?? [],
+        ...(v?.isCompacted ? { isCompacted: true as const } : {}),
+    };
+}
+
+// a coordinator's message to a codie past STEER_HOLD_AT: the first is rewritten into the wind note, so it still starts the
+// turn that winds; the next ones wait unseen behind it; all of them join the first turn after the compact
+async function holdSteer(
+    $: EngineInterface,
+    text: string,
+): Promise<{ consumed: string } | { text: string } | undefined> {
+    if (!(await partsShown($))('stash.second-wind')) return undefined;
+    const { body, from } = peerPing(text);
+    if (!(isCoordinator(from) || isWing(from)) || isQuietPause(body))
+        return undefined;
+    const name = await sessionName($);
+    const sid = await currentId($);
+    if (!sid || !name || codieLane(name) === undefined) return undefined;
+    const kept = await steersOf($, sid);
+    if (kept.isCompacted) return undefined;
+    const context = await $.store.get(CONTEXT + sid).catch(() => undefined);
+    const isFull = typeof context === 'number' && context >= STEER_HOLD_AT;
+    if (!kept.steers.length && !isFull) return undefined;
+    const at = await $.clock.now();
+    await $.store.set(STEER_HELD + sid, {
+        steers: [...kept.steers, { at, from, text: body }],
+    } satisfies HeldSteers);
+    const was = await windOf($, sid);
+    if (
+        kept.steers.length ||
+        was?.state === 'writing' ||
+        was?.state === 'refreshing'
+    )
+        return {
+            consumed: `x-mod-stash held ${from}'s message for this codie's second wind`,
+        };
+    await $.store.set(WIND + sid, { at, state: 'writing' } satisfies StashWind);
+    await load($).catch(() => undefined);
+    const open = text.match(/<cross-session-message[^>]*>/)?.[0];
+    const note = steerHoldNote(from, context as number);
+    return { text: open ? `${open}\n${note}\n</cross-session-message>` : note };
+}
+
+// the held messages join a turn once the wind is behind the session: its compact ran, or dima took the wind back
+async function takeSteers($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid) return [];
+    const kept = await steersOf($, sid);
+    if (!kept.steers.length) return [];
+    const was = await windOf($, sid);
+    const isWinding = was?.state === 'writing' || was?.state === 'refreshing';
+    if (isWinding && !kept.isCompacted) return [];
+    await $.store.delete(STEER_HELD + sid);
+    return kept.steers.map(steerLine);
+}
+
+async function steersOnCompact($: EngineInterface) {
+    const sid = await currentId($);
+    if (!sid) return;
+    const kept = await steersOf($, sid);
+    if (kept.steers.length)
+        await $.store.set(STEER_HELD + sid, {
+            ...kept,
+            isCompacted: true,
+        } satisfies HeldSteers);
 }
 
 // work a session starts after it said pending: none and before the compact fires: an agent, a background command or session
@@ -6212,6 +6304,7 @@ export const register: Register = (on) => {
         const wind = isOn('stash.second-wind')
             ? await takeWind($, isOwner).catch(() => undefined)
             : undefined;
+        const steers = await takeSteers($).catch(() => []);
         const sent = await next({
             ...e,
             context: [
@@ -6230,6 +6323,7 @@ export const register: Register = (on) => {
                 ...gapNotes,
                 ...(tickets ? [tickets] : []),
                 ...(wind ? [wind] : []),
+                ...steers,
                 ...(costHint ? [costHint] : []),
             ],
             text: hold?.text ?? e.text,
@@ -6410,6 +6504,7 @@ export const register: Register = (on) => {
         // skipped changed nothing
         if (!e.agentId && e.trigger !== 'precompute' && !('skip' in r)) {
             await windOnCompact($).catch(() => undefined);
+            await steersOnCompact($).catch(() => undefined);
             // the next measure comes only at this turn's end, and a wind's ingest is one long turn: until then the
             // fill from before the compact would stand on every board
             const sid = await currentId($);
@@ -6484,6 +6579,12 @@ export const register: Register = (on) => {
         }
         if ((kind !== 'peer' && kind !== 'peer-send-message') || e.agentId)
             return next(e);
+        const steer = await holdSteer($, e.text).catch((err) => {
+            $.ui.log(`x-mod-stash: a steer passed unheld: ${errorText(err)}`);
+            return undefined;
+        });
+        if (steer && 'consumed' in steer) return steer;
+        if (steer) return next({ ...e, text: steer.text });
         if (!(await isQuietHome($).catch(() => false))) return next(e);
         const { body, deliveryTest, from, tag } = peerPing(e.text);
         const marks = deliveryTest ? { deliveryTest } : {};
