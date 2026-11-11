@@ -657,6 +657,10 @@
   - given an install that stays at the old version, then it exits 1 naming the version claude reports — also when a dir for the new version is already in the cache
   - given a plugin not installed from a marketplace (the mods load `@inline`, `x-cloud-chat`'s marketplace is never added), then it bumps only and runs nothing
   - given a name no plugin carries, then exit 2 lists the names that exist
+- ⬜ `x plugin bump` and `x lane commit --bump` name the live sessions on an older copy (FRM-436)
+  - given live sessions in the registry, when the install is read back, then the envelope's `older` lists each one whose copy is not the new version, and the reload line names them
+  - a session's copy is the newest version in the cache dir installed by its start or its last `/reload-plugins`; one with no such copy reads «unknown», never dropped; a dead pid is skipped
+  - decision: cc records no plugin version per session, so the cache dir's install times beside the registry's `startedAt` and the transcript's reload rows are the reading (an inference, said here)
 - ✅ `x schema plugin` lists the verb
 
 ## mods — a live mod edited safely

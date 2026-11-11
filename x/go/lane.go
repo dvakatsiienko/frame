@@ -391,8 +391,9 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	}); err != nil {
 		return nil, err
 	}
-	r.Done(fmt.Sprintf("%s on %s, %s %s in the cache; binds after a reload", short(sha), branch.out, bumped.name, bumped.to), "/reload-plugins")
-	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}), nil
+	older := olderCopies(filepath.Dir(cache), bumped.to)
+	r.Done(short(sha)+" on "+branch.out+", "+reloadLine(bumped.name, bumped.to, older), "/reload-plugins")
+	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}, kv{"older", older}), nil
 }
 
 // takeGateTurn waits for the machine-wide gate turn through frame's script, so one script keeps the queue's rules; the

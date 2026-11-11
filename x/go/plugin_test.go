@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 // pluginFixture plants a marketplace listing a plugin at its root, a mod under it and a sibling only
@@ -67,6 +70,46 @@ func TestPluginBumpReleasesIntoTheCache(t *testing.T) {
 				t.Errorf("claude ran %q, want %q", calls, want)
 			}
 		})
+	}
+}
+
+func TestPluginBumpNamesTheLiveSessionsOnAnOlderCopy(t *testing.T) {
+	t.Parallel()
+	dir, cache, _, env := pluginFixture(t)
+	now := time.Now()
+	for v, age := range map[string]time.Duration{"1.2.3": 2 * time.Hour, "1.2.4": time.Hour} {
+		write(t, filepath.Join(cache, v, ".keep"), "")
+		if err := os.Chtimes(filepath.Join(cache, v), now.Add(-age), now.Add(-age)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	sessions, home := t.TempDir(), t.TempDir()
+	live, dead := os.Getpid(), 999999
+	for _, s := range []struct {
+		name string
+		pid  int
+		age  time.Duration
+	}{
+		{"older", live, 90 * time.Minute},
+		{"current", live, 30 * time.Minute},
+		{"before any copy", live, 3 * time.Hour},
+		{"reloaded since", live, 3 * time.Hour},
+		{"gone", dead, 90 * time.Minute},
+	} {
+		id := strings.ReplaceAll(s.name, " ", "-")
+		write(t, filepath.Join(sessions, id+".json"), fmt.Sprintf(`{"name":%q,"sessionId":%q,"pid":%d,"startedAt":%d}`, s.name, id, s.pid, now.Add(-s.age).UnixMilli()))
+	}
+	write(t, filepath.Join(home, ".claude/projects/p/reloaded-since.jsonl"),
+		fmt.Sprintf(`{"timestamp":%q,"message":{"content":"<command-name>/reload-plugins</command-name>"}}`+"\n", now.Add(-20*time.Minute).UTC().Format(time.RFC3339)))
+
+	got := xIn(t, dir, append(env("1.2.4"), "X_SESSIONS="+sessions, "HOME="+home), "plugin", "bump", "demo", "--apply")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+	want := `[{"session":"before any copy","version":"unknown"},{"session":"older","version":"1.2.3"}]`
+	if older, _ := json.Marshal(got.data["older"]); string(older) != want {
+		t.Errorf("older %s, want %s", older, want)
 	}
 }
 

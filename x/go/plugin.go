@@ -131,8 +131,22 @@ func pluginBump(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
-	r.Done(fmt.Sprintf("%s %s in the cache; binds after a reload", name, to), "/reload-plugins")
-	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}), nil
+	older := olderCopies(filepath.Dir(cache), to)
+	r.Done(reloadLine(name, to, older), "/reload-plugins")
+	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}, kv{"older", older}), nil
+}
+
+// the reload message: the new version, and every live session still on an older copy
+func reloadLine(name, to string, older []ordered) string {
+	line := fmt.Sprintf("%s %s in the cache; binds after a reload", name, to)
+	if len(older) == 0 {
+		return line + "; no live session holds an older copy"
+	}
+	var held []string
+	for _, o := range older {
+		held = append(held, fmt.Sprintf("%s (%s)", o[0].value, o[1].value))
+	}
+	return line + "; still on an older copy: " + strings.Join(held, ", ")
 }
 
 // refreshPlugin moves the marketplace and the install to the version a commit just landed, and reads it back

@@ -865,21 +865,26 @@ func liveSessionIn(tree string) string {
 
 // a Bash cd moves no process (probed on a bare cc, 2026-11-05); cc stamps the cwd it carried on every transcript row, so the last row says where the session went
 func transcriptCwd(id string) string {
+	newest := newestTranscript(id)
+	if newest == "" {
+		return ""
+	}
+	return lastCwdIn(newest)
+}
+
+// a session moved between trees can leave a transcript under two project dirs: the newest is where it sits
+func newestTranscript(id string) string {
 	if id == "" {
 		return ""
 	}
 	files, _ := filepath.Glob(filepath.Join(projectsDir(), "*", id+".jsonl"))
-	// a session moved between trees can leave a transcript under two project dirs
 	newest, at := "", time.Time{}
 	for _, file := range files {
 		if info, err := os.Stat(file); err == nil && info.ModTime().After(at) {
 			newest, at = file, info.ModTime()
 		}
 	}
-	if newest == "" {
-		return ""
-	}
-	return lastCwdIn(newest)
+	return newest
 }
 
 const transcriptTail = 256 * 1024
