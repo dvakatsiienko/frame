@@ -23,6 +23,18 @@ Standing: read this before chasing a red cpu, and add to it when a round ends, s
 - Sessions at rest are cheap: about 15 sessions, the app and the os fit in about 4 of 14 cores (two 10 s windows)
 - `ps` and activity monitor miss the load: a go run makes 661 short-lived processes a second, so the app list sums to 15 % at a real 100 %. A `spindump` sees them
 
+## sealed, 2026-11-11 — each problem, its fix, the guard that keeps it fixed
+
+perf work stops here until a real slowdown (dima, 2026-11-11 15:13: «it is not an infinite scope»); FRM-525 and FRM-537 sit in Backlog. a new slowdown reopens with its own numbers, never from this list.
+
+- a whole vitest suite on every commit → related tests only (FRM-534, FRM-557); guard: `script/test-commit.sh` runs none when it can't judge, the suite stays at push and ci
+- the push twin on every push → only a main push carrying code (FRM-557); guard: `script/runner-twin.sh`
+- a hung test child holding a commit 18 min → every test spawn carries a timeout; guard: `script/lib/git-fixture.test.ts` reds a spawn with none, and one spawning git without `gitEnv()`
+- the go suite at 386 cpu-s on the mac → fewer git ops per fixture, a slim git, `LANG` set, `-parallel 5`, the run in the linux vm (FRM-528, FRM-532, FRM-551; about 140 cpu-s a run on 11-11); guard: `script/test-cpu-budget.sh`'s line, and the siesta's «vm down» check when a run falls back to the mac
+- a slowdown found only when dima felt it → every siesta names a gate step past its budget (FRM-539, `_clio/script/gate-budgets.tsv`)
+- reusing a passed go run → not built: real repeats are 13 % of go cpu on the full key (FRM-533, its kill gate)
+- measured on 11-10, the day after: hook tests 80 min against 118–155 before
+
 ## lane count rows, 2026-11-07
 
 One row per lane count, from `scripts/lane-count-read.mjs`. A lane here is a codie and its sixth sense; main's and the wings' commits run beside it. The number to beat is 1.8× at 4-5 lanes, in [cases.md](cpu-overload/cases.md).
