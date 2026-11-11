@@ -46,6 +46,7 @@ import {
 } from './rules/operator-override.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
+import { SIGN_CHECK, withSignCheck } from './rules/sign-check.ts';
 import { isSixthSense, sixthSenseSummons } from './rules/sixth-sense.ts';
 import { SPEC_DOOR, SPEC_WHY, TO_MEMBER, isSpecMissing } from './rules/spec.ts';
 import {
@@ -1798,6 +1799,20 @@ async function lookUp(
 // files named `$T/$f`). a variable in the folder, a folder past 32 files or a file that does not read stays a sign
 const SIGN_WORD = /✍️|##\s*signed|\bre-?signed\b/u;
 const SIGN_FREE_MAX = 32;
+// commands that cannot change a body file after the guard read it, so a body set beside them needs no run-time check (r2)
+const LINE_READERS = new Set([
+    'cat',
+    'cut',
+    'echo',
+    'grep',
+    'head',
+    'jq',
+    'printf',
+    'sort',
+    'tail',
+    'tr',
+    'wc',
+]);
 async function isSignFree(
     $: EngineInterface,
     file: string,
@@ -2049,7 +2064,11 @@ export const register: Register = (on) => {
         });
         // the model typed the old command: it is told what changed, or it reads a surprise
         const spends: string[] = [];
-        const go = async (run = command) => {
+        // the ids whose body set this line writes the file of, judged as it runs (r2): their `x` runs the sign check
+        const signChecked = new Set<string>();
+        const go = async (ran = command) => {
+            const run =
+                (signChecked.size && withSignCheck(ran, signChecked)) || ran;
             // every run leaves through here, so a call any rule stopped never reads «already ran» or counts as warned
             const piped = linearWritePiped(typed, cwd);
             const isPipedWarn = !!piped && (await isWarnOnly($, piped.rule));
@@ -2326,8 +2345,9 @@ export const register: Register = (on) => {
                 );
                 if (stop) return stop;
             }
+        const typedSigns = signWords(typed, cwd, ctx);
         for (const sign of [
-            ...signWords(typed, cwd, ctx),
+            ...typedSigns,
             ...signScripts.flatMap((s) => signWords(s.text, s.dir, ctx)),
         ]) {
             const signText =
@@ -2351,6 +2371,33 @@ export const register: Register = (on) => {
             const scope = `sign:${sign.id}${sign.file === undefined && !sign.isOpaque ? '' : ':body'}`;
             const isLabel = sign.file === undefined && !sign.isOpaque;
             const signSpends = isLabel ? [] : spends;
+            // a line that may write the file after the read above (a python heredoc, a node script) brings a sign the read
+            // never saw: with no word of his, the set is judged again as it runs; his word stays unspent here (r2)
+            const isCheckable =
+                typedSigns.includes(sign) &&
+                sign.file !== undefined &&
+                withSignCheck(typed, new Set([sign.id])) !== undefined;
+            if (
+                !isNewSign &&
+                isCheckable &&
+                commandsDeep(typed, cwd).some(
+                    (c) =>
+                        c.name !== 'x' &&
+                        !(
+                            LINE_READERS.has(c.name) &&
+                            !c.writes.length &&
+                            !c.appends.length
+                        ),
+                ) &&
+                !(await tickFor(
+                    $,
+                    scope,
+                    (t) => isSignAsk(t.text, sign.id),
+                    [],
+                )) &&
+                !(await typedSignFor($, scope, sign.id, []))
+            )
+                signChecked.add(sign.id);
             if (
                 isNewSign &&
                 !(await tickFor(
@@ -2361,6 +2408,14 @@ export const register: Register = (on) => {
                 )) &&
                 !(await typedSignFor($, scope, sign.id, signSpends))
             ) {
+                // a body file the line writes is judged when it runs, once it is final (r2)
+                if (isCheckable && signText === undefined) {
+                    signChecked.add(sign.id);
+                    notes.push(
+                        `\`x linear body ${sign.id} --set\` → \`${SIGN_CHECK}\` (the line writes ${sign.file}, so its sign is judged as it runs)`,
+                    );
+                    continue;
+                }
                 const r = {
                     door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», or to type «sign ${sign.id}» himself, then sign`,
                     rule: 'sign-untick',

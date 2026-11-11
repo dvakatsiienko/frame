@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { withSignCheck } from '../hooks/rules/sign-check.ts';
 import { answerPrompts, dimaSays } from './said.ts';
 import { liveStore } from './store.ts';
 
@@ -420,6 +421,9 @@ test('a tick quoting another pr proves nothing for this one', async ($, on) => {
 
 // FRM-427 slice 06 (o197): a sign lands only on dima's tick on a sign ask, `✍️ sign <id>: <title>`, the id whole;
 // refused since the sixth sense's clean (round 2), the refusal naming the sign ask to tick
+// r2: the line as it runs once a body set is judged at run time, the check in front of each id's set
+const checked = (line: string, ...ids: string[]) =>
+    withSignCheck(line, new Set(ids.length ? ids : ['FRM-1']));
 const signFlagged = (r: { deny?: string }) =>
     (r.deny ?? '').includes('then sign');
 const SIGN = 'x linear set FRM-1 --add-label signed';
@@ -698,11 +702,15 @@ for (const [why, command] of [
         "bash -c 'cat /repo/s.md > /repo/b.md' && x linear body FRM-1 --set /repo/b.md",
     ],
 ] as const)
-    test(`a sign the line hides is refused: ${why}`, async ($, on) => {
-        world(on, [], SIGNED_TODAY());
+    test(`a sign the line hides is ${why.startsWith('a label') ? 'refused' : 'judged as it runs'}: ${why}`, async ($, on) => {
+        const { ran } = world(on, [], SIGNED_TODAY());
         on('fs.read', () => ({ value: SIGNED_TODAY() }));
         const r = await bash($, command);
-        expect(signFlagged(r)).toBe(true);
+        expect(
+            why.startsWith('a label') ? signFlagged(r) : [r.deny, ran],
+        ).toEqual(
+            why.startsWith('a label') ? true : [undefined, [checked(command)]],
+        );
     });
 
 // lane 4 R1: the sign file is read before the command runs, so one the command writes, one it cannot read and one behind a
@@ -724,10 +732,11 @@ for (const [why, command, read] of [
         { deny: 'no such file' },
     ],
 ] as const)
-    test(`${why} is refused with no tick`, async ($, on) => {
-        world(on, [], SIGNED_TODAY());
+    test(`${why} is judged as it runs with no tick`, async ($, on) => {
+        const { ran } = world(on, [], SIGNED_TODAY());
         on('fs.read', () => read);
-        expect(signFlagged(await bash($, command))).toBe(true);
+        const r = await bash($, command);
+        expect([r.deny, ran]).toEqual([undefined, [checked(command)]]);
     });
 
 // the want line, FRM-427 exit 10: the 10-22 o4/o9 case — one ask quoting a guarded target and the pr, ticked once — and
@@ -1905,7 +1914,10 @@ for (const [why, line, files] of [
     test(`a body edit of an unsigned ticket runs: ${why}`, async ($, on) => {
         const { ran } = bodyWorld(on, { ...files });
         const r = await bash($, line);
-        expect([signFlagged(r), ran]).toEqual([false, [line]]);
+        expect([signFlagged(r), ran]).toEqual([
+            false,
+            [checked(line, 'FRM-567', '$id')],
+        ]);
     });
 for (const [why, line, files] of [
     [
@@ -1942,10 +1954,13 @@ for (const [why, line, files] of [
         {},
     ],
 ] as const)
-    test(`a body write that can bring a sign line needs his word: ${why}`, async ($, on) => {
+    test(`a body write that can bring a sign line is judged as it runs: ${why}`, async ($, on) => {
         const { ran } = bodyWorld(on, { ...files });
         const r = await bash($, line);
-        expect([signFlagged(r), ran]).toEqual([true, []]);
+        expect([r.deny, ran]).toEqual([
+            undefined,
+            [checked(line, 'FRM-567', '$id')],
+        ]);
     });
 
 // FRM-544 slice 2f: the first prompt's sign ids are kept for that prompt only, for x-mod-stash to put the ✍️ sign ask up
@@ -1998,10 +2013,11 @@ for (const [why, line] of [
         ]);
     });
 
-test('exit 3: a heredoc sign write with no sign word of his is refused', async ($, on) => {
+test('exit 3: a heredoc sign write with no sign word of his is judged as it runs', async ($, on) => {
     const { ran } = signWorld(on);
     await hisNext($, 'go on');
-    expect([signFlagged(await bash($, PY_SIGN)), ran]).toEqual([true, []]);
+    const r = await bash($, PY_SIGN);
+    expect([r.deny, ran]).toEqual([undefined, [checked(PY_SIGN)]]);
 });
 
 const scriptWorld = (on: On, script: string) => {
@@ -2237,33 +2253,33 @@ test('exit 13: a pull-copy-set of an unsigned ticket body runs with no word of h
     await hisNext($, 'go on');
     expect([(await bash($, PULL_COPY_SET)).deny, ran]).toEqual([
         undefined,
-        [PULL_COPY_SET],
+        [checked(PULL_COPY_SET, 'FRM-575')],
     ]);
 });
 for (const [why, body, cat] of [
     ['the ticket is signed', SIGNED_BODY, undefined],
     ['the copied file holds a sign line', UNSIGNED, SIGNED_BODY],
 ] as const)
-    test(`exit 13: the same pull-copy-set needs his word when ${why}`, async ($, on) => {
+    test(`exit 13: the same pull-copy-set is judged as it runs when ${why}`, async ($, on) => {
         const { ran } = world(on, [], body, cat);
         await hisNext($, 'go on');
-        expect([signFlagged(await bash($, PULL_COPY_SET)), ran]).toEqual([
-            true,
-            [],
+        expect([(await bash($, PULL_COPY_SET)).deny, ran]).toEqual([
+            undefined,
+            [checked(PULL_COPY_SET, 'FRM-575')],
         ]);
     });
 
 // sixth sense round 1 on 23037434: exit 3's «spent only after the exit 0» — each sign write, label and body, spends his
 // word once on success, and a failed one hands it back
-test('exit 3: a heredoc sign write that succeeds spends his typed sign, a second run is refused', async ($, on) => {
+test('exit 3: a heredoc sign write that succeeds spends his typed sign, a second run is judged as it runs', async ($, on) => {
     const { ran } = signWorld(on);
     await hisNext($, 'sign FRM-1');
     const first = await bash($, PY_SIGN);
     const second = await bash($, PY_SIGN);
-    expect([first.deny, signFlagged(second), ran]).toEqual([
+    expect([first.deny, second.deny, ran]).toEqual([
         undefined,
-        true,
-        [PY_SIGN],
+        undefined,
+        [PY_SIGN, checked(PY_SIGN)],
     ]);
 });
 
@@ -2293,7 +2309,10 @@ test('exit 13: a pull-set with no copy of an unsigned ticket body still needs hi
     const line = `P=$(x linear body FRM-575 | jq -r '.data.file // .data.path'); x linear body FRM-575 --set "$P"`;
     const { ran } = world(on, [], UNSIGNED, UNSIGNED);
     await hisNext($, 'go on');
-    expect([signFlagged(await bash($, line)), ran]).toEqual([true, []]);
+    expect([(await bash($, line)).deny, ran]).toEqual([
+        undefined,
+        [checked(line, 'FRM-575')],
+    ]);
 });
 
 // sixth sense round 2: an inline program running the body write is a sign, spent once on success
@@ -2307,4 +2326,74 @@ test('exit 3: a python heredoc that runs the sign write itself needs his word an
     expect([signFlagged(before), first.deny, signFlagged(second), ran]).toEqual(
         [true, undefined, true, [PY_INNER]],
     );
+});
+
+// r2 (mods-lane-6, clio's pick a): a body set whose file the line itself writes is judged when it runs, by a shell check
+// the guard puts in front of it, so a plain edit of a signed ticket runs with no tick (17 false refusals, 11-10 and 11-11)
+const SIGN_CHECKED = '__x_mod_guard_sign_set linear body';
+for (const [why, line] of [
+    [
+        'a cat >> appends to the body file',
+        "B=/repo/b.md; cat >> $B <<'EOF'\n\n## closing word\n\ndone\nEOF\nx linear body FRM-1 --set $B",
+    ],
+    [
+        'a python heredoc edits the body file',
+        "python3 - <<'EOF'\np='/repo/b.md'; s=open(p).read(); open(p,'w').write(s.replace('x','y'))\nEOF\nx linear body FRM-1 --set /repo/b.md",
+    ],
+    [
+        'an sd edits the body file in place',
+        "sd 'a' 'b' /repo/b.md && x linear body FRM-1 --set /repo/b.md",
+    ],
+    [
+        'a printf >> adds a re-sign pending line',
+        "printf '\\n✍️ re-sign pending today\\n' >> /repo/b.md; x linear body FRM-1 --set /repo/b.md",
+    ],
+    [
+        'a loop over two ids stamps each file',
+        "for t in FRM-1 FRM-2; do printf '\\nlook sent\\n' >> /repo/$t.md; x linear body $t --set /repo/$t.md; done",
+    ],
+    [
+        'a node script edits the body file',
+        "node script/ticket-sign.ts FRM-1 changed 'tiny' >/dev/null; x linear body FRM-1 --set /repo/b.md",
+    ],
+    [
+        'a set -- pair loop names the id in a variable',
+        'set -- a.md FRM-1 b.md FRM-2; while [ $# -gt 0 ]; do f=$1; id=$2; shift 2; x linear body $id --set /repo/$f; done',
+    ],
+] as const)
+    test(`r2: ${why} on a signed ticket runs with no tick, its set judged when it runs`, async ($, on) => {
+        const { ran } = world(on, [], SIGNED_TODAY());
+        on('fs.read', () => ({ value: SIGNED_TODAY() }));
+        const r = await bash($, line);
+        expect([
+            r.deny?.slice(0, 160),
+            ran.length,
+            ran[0]?.includes(SIGN_CHECKED),
+        ]).toEqual([undefined, 1, true]);
+    });
+
+for (const [why, line] of [
+    [
+        'a label sign beside a body write',
+        "printf 'x' >> /repo/b.md; x linear set FRM-1 --add-label signed",
+    ],
+    [
+        'a wrapper the check cannot sit inside',
+        "sd 'a' 'b' /repo/b.md && timeout 60 x linear body FRM-1 --set /repo/b.md",
+    ],
+] as const)
+    test(`r2: ${why} stays refused with no tick`, async ($, on) => {
+        const { ran } = world(on, [], SIGNED_TODAY());
+        on('fs.read', () => ({ value: SIGNED_TODAY() }));
+        expect([signFlagged(await bash($, line)), ran]).toEqual([true, []]);
+    });
+
+test('r2: his typed sign runs the body set as written, no check in front', async ($, on) => {
+    const { ran } = world(on, [], SIGNED_TODAY());
+    on('fs.read', () => ({ value: SIGNED_TODAY() }));
+    const line =
+        "sd 'a' 'b' /repo/b.md && x linear body FRM-1 --set /repo/b.md";
+    await hisNext($, 'sign FRM-1');
+    const r = await bash($, line);
+    expect([r.deny, ran]).toEqual([undefined, [line]]);
 });
