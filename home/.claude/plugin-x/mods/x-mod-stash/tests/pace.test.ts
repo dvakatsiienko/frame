@@ -995,6 +995,17 @@ for (const [name, isOn, role] of [
         expect(w.store.get(`hot:${SID}`) !== undefined).toBe(isOn);
     });
 
+// FRM-570: a store that does not parse reads as the last list that did, so a member keeps its chair through one bad read
+test('a member keeps its 🔥 chair through a thread store that does not parse', async ($, on) => {
+    const w = world(on);
+    seat(w, MEMBER, 'codie');
+    await start($);
+    w.store.delete(`hot:${SID}`);
+    w.files['/home/.claude/shelf/threads.json'] = '{"threads":[{"sessionId"';
+    await start($);
+    expect(w.store.get(`hot:${SID}`)).toBeDefined();
+});
+
 test('a 🔥 click off is written and stays off across a restart', async ($, on) => {
     const w = world(on);
     await start($);

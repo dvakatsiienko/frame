@@ -1278,19 +1278,21 @@ test('a member that sent clio more pings than her log holds is a gap in the ledg
 });
 
 const RENAMED = 'FRM-426 code: band and board read true';
-// the peer's record, and the record that carried its old name
-const RENAMED_THREADS = [
-    { name: PEER_NAME, role: 'codie', sessionId: PEER },
-    { name: `☕️ 🔧 ${RENAMED}`, role: 'codie', sessionId: 'old-sid' },
-];
+// a rename keeps the session id: x's one record names the peer as it is now, and its lines logged under the old name
+// carry that id (FRM-570: no record ever carries an old name)
+const RENAMED_THREADS = [{ name: PEER_NAME, role: 'codie', sessionId: PEER }];
+const loggedAsOld = (at: number) => ({
+    ...logged(`☕️ 🔧 ${RENAMED}`, at),
+    sid: PEER,
+});
 
 test('a member renamed mid-day keeps its logged pings, so the old name leaves no gap', async ($, on) => {
     const { clock, store } = fleet(
         on,
         {
             [`quiet-log:${DAY}`]: [
-                logged(`☕️ 🔧 ${RENAMED}`, NOW - 30 * MIN),
-                logged(`☕️ 🔧 ${RENAMED}`, NOW - 20 * MIN),
+                loggedAsOld(NOW - 30 * MIN),
+                loggedAsOld(NOW - 20 * MIN),
             ],
         },
         {
@@ -1305,7 +1307,7 @@ test('a member renamed mid-day keeps its logged pings, so the old name leaves no
 test('a renamed member that sent more than its old-name lines hold still shows its gap', async ($, on) => {
     const { clock, store } = fleet(
         on,
-        { [`quiet-log:${DAY}`]: [logged(`☕️ 🔧 ${RENAMED}`, NOW - 30 * MIN)] },
+        { [`quiet-log:${DAY}`]: [loggedAsOld(NOW - 30 * MIN)] },
         {
             isOwner: true,
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
@@ -1411,6 +1413,17 @@ test('a held ping past the wait + 2 min turns the 🤫 n red', async ($, on) => 
 
 test('a numbered wing has a chair on the board', () => {
     expect(isSeated('🦉🪽 clio: wing 1')).toBe(true);
+});
+
+// FRM-570 exit 16: a role word as a name carries no chair, only x's record of the role does
+test('a session named only by a role word has no chair without its record', () => {
+    expect([
+        isSeated('codie'),
+        isSeated('🔎 sixth sense'),
+        isSeated('codie', 'codie'),
+        isSeated('🐦 ⬛ crow'),
+        isSeated('🎀 helga'),
+    ]).toEqual([false, false, true, true, true]);
 });
 
 test('a wing title with no number has no chair', () => {

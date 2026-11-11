@@ -36,6 +36,7 @@ import {
     nextSeats,
     pendingPresses,
     phasesOf,
+    runningThreads,
     savePress,
     seatFacts,
     sentSteer,
@@ -98,13 +99,25 @@ async function sessions(shelf) {
     // file. an unreadable store answers null, and the deck keeps its last rows marked stale
     const store = await json(THREADS);
     if (!Array.isArray(store?.threads)) return null;
+    const listed = store.threads.filter(
+        (/** @type {any} */ t) => t?.pid && t.sessionId && t.name,
+    );
+    // ps exits 1 when a pid is gone, its stdout still naming the live ones; any other end is no answer
+    const ps = listed.length
+        ? await exec(
+              'ps',
+              ['-o', 'pid=', '-p', listed.map((t) => t.pid).join(',')],
+              { timeout: 2000 },
+          ).catch(() => null)
+        : null;
     const rows = await Promise.all(
-        store.threads
-            .filter((/** @type {any} */ t) => t?.pid && t.sessionId && t.name)
-            .map(async (/** @type {any} */ t) => ({
-                ...t,
-                status: (await json(`${SESSIONS}/${t.pid}.json`))?.status,
-            })),
+        runningThreads(
+            listed,
+            ps && (ps.code === 0 || ps.code === 1) ? ps.stdout : null,
+        ).map(async (/** @type {any} */ t) => ({
+            ...t,
+            status: (await json(`${SESSIONS}/${t.pid}.json`))?.status,
+        })),
     );
     return rows.map(
         /** @returns {Row} */ (s) => {

@@ -238,3 +238,15 @@ for (const line of [
         expect(r.deny ?? '').not.toContain('threads.json');
         expect(ran.length).toBe(1);
     });
+
+// wing 1, 21:25: x writes the store from go, so the two verbs that write a role run past the fence (their line names no store)
+for (const line of [
+    `x brief summon "cd /repo && claude --bg -n 'n' \\"\\$(cat /repo/brief.md)\\" --remote-control"`,
+    'x lane dispatch FRM-511 --lane cli-lane-5 --session 1f0c --sixth-sense 2e1d --apply',
+])
+    test(`a verb that writes the thread store from x passes the fence: ${line}`, async ($, on) => {
+        const { ran } = world(on, '🦉 clio', undefined);
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('threads.json');
+        expect(ran.length).toBe(1);
+    });

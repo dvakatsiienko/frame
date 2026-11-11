@@ -3,7 +3,8 @@ import { commandsDeep, peel } from './command.ts';
 
 // a body set whose file this line writes is judged as it runs: its `x` becomes this function, which reads the file once,
 // has x linear sign-check judge those bytes (the judge `hasNewSignLine` asks ahead) and sends the same bytes on stdin, held in the shell, never reopened by path, so
-// neither the line nor a watcher writing the file can change what was judged (dima's o43); `builtin`, since zsh's
+// neither the line nor a watcher writing the file can change what was judged (dima's o43); the judge runs from home, so
+// the shim runs main's x and an old worktree's x, which may lack the verb, never answers; `builtin`, since zsh's
 // `command printf` runs /usr/bin/printf, where a body near ARG_MAX would fail. a body
 // that does not read refuses too. the seat writes the rest of the line, so the check runs only where nothing on it can
 // reach the function: every other command on an allow-list, no function, alias or path override, and every body set of
@@ -19,7 +20,7 @@ const FN = [
     'for a in "$@"; do [ "$p" = --set ] && { f=$a; k=$((k+1)); }; case $a in --set=*) f=${a#--set=}; k=$((k+1));; esac; p=$a; done;',
     `[ "$k" = 1 ] || { ${NO} "it names --set $k times"; return 1; };`,
     `b=$(command cat -- "$f" && printf x) || { ${NO} "$f did not read"; return 1; }; b=\${b%x};`,
-    `builtin printf %s "$b" | command x linear sign-check "$id" --body-file /dev/stdin >&2 || { ${NO} "x linear sign-check counts $f as a new sign or a moved merge grant (or did not read $id)"; return 1; };`,
+    `builtin printf %s "$b" | (builtin cd ~ && command x linear sign-check "$id" --body-file /dev/stdin) >&2 || { ${NO} "x linear sign-check counts $f as a new sign or a moved merge grant (or did not read $id)"; return 1; };`,
     'p=; for a in "$@"; do if [ "$p" = --set ]; then n+=(/dev/stdin); else case $a in --set=*) n+=(--set=/dev/stdin);; *) n+=("$a");; esac; fi; p=$a; done;',
     'builtin printf %s "$b" | command x "${n[@]}"; };',
 ].join(' ');

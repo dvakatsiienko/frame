@@ -1470,21 +1470,7 @@ async function quietLedger($: EngineInterface, now: number) {
     const members = (await registry($)).filter(
         (r) => r.isAlive && r.base.sid !== me,
     );
-    // a log line is the member's by its session id, or by its name; a line from an older name (the member was renamed
-    // mid-day) is its own when no live member answers to that name and the role is the member's alone; a role is x's
-    // thread record's, the old name's by the record that carried it
-    const liveKeys = new Set(members.map((r) => memberKey(r.base.name)));
-    const records = await threadRecords($);
-    const roleOf = (sid: string) =>
-        records.find((t) => t.sessionId === sid)?.role;
-    const roleOfName = (name: string) =>
-        records.find((t) => t.name && memberKey(t.name) === memberKey(name))
-            ?.role;
-    const roles = new Map<string, number>();
-    for (const r of members) {
-        const role = roleOf(r.base.sid);
-        if (role) roles.set(role, (roles.get(role) ?? 0) + 1);
-    }
+    // a log line is the member's by its session id, which a rename mid-day keeps, or, logged with none, by its name
     for (const r of members) {
         const since = Math.max(opened, r.startedAt ?? 0);
         // the transcript by its session id, never the cwd: the registry's cwd follows a Bash `cd`
@@ -1498,15 +1484,10 @@ async function quietLedger($: EngineInterface, now: number) {
             .filter((t) => t >= since && t <= now - LEDGER_GRACE_MS).length;
         // the envelope names crow as the registry stores her («🐦 ⬛», the joiner a space), the board as rejoined: bare both
         // a member keeps its identity when its mode emoji changes (☕️ → 🌗 on a rename), so the lines match without it
-        const role = roleOf(r.base.sid);
         const isOurs = (l: QuietLogLine) =>
             l.sid
                 ? l.sid === r.base.sid
-                : memberKey(l.from) === memberKey(r.base.name) ||
-                  (role !== undefined &&
-                      roles.get(role) === 1 &&
-                      roleOfName(l.from) === role &&
-                      !liveKeys.has(memberKey(l.from)));
+                : memberKey(l.from) === memberKey(r.base.name);
         const logged = judged.filter((l) => isOurs(l) && l.at >= since).length;
         if (sent > logged) gaps.push({ from: r.base.name, logged, sent });
     }
@@ -3648,7 +3629,8 @@ async function sessionName($: EngineInterface) {
 }
 
 // one rule, one reader (FRM-570 rules 8 and 9): x's thread records, `~/.claude/shelf/threads.json`, carry each thread's
-// role, lane and ticket by session id, so no reader here parses a name; no file or no record reads as unknown
+// role, lane and ticket by session id, so no reader here parses a name; no file or no record reads as unknown, and a file
+// that does not parse (a torn or hand-broken write) reads as the last list that did, so no role drops for one bad read
 type ThreadRecord = {
     sessionId: string;
     name?: string;
@@ -3656,15 +3638,25 @@ type ThreadRecord = {
     lane?: string;
     ticket?: string;
 };
+const THREADS_KEPT = 'threads-kept';
 async function threadRecords($: EngineInterface): Promise<ThreadRecord[]> {
     const raw = await $.fs
         .read(`${await $.env.get('HOME')}/.claude/shelf/threads.json`)
         .catch(() => undefined);
+    if (raw === undefined) return [];
     try {
-        const { threads } = JSON.parse(raw ?? '') as { threads?: unknown };
-        return Array.isArray(threads) ? (threads as ThreadRecord[]) : [];
+        const { threads } = JSON.parse(raw) as { threads?: unknown };
+        if (!Array.isArray(threads)) throw new Error('no threads list');
+        // a board render reads this often: the store is written only when the list moved
+        if (
+            JSON.stringify(await $.store.get(THREADS_KEPT)) !==
+            JSON.stringify(threads)
+        )
+            await $.store.set(THREADS_KEPT, threads);
+        return threads as ThreadRecord[];
     } catch {
-        return [];
+        const kept = await $.store.get(THREADS_KEPT);
+        return Array.isArray(kept) ? (kept as ThreadRecord[]) : [];
     }
 }
 
@@ -5900,10 +5892,11 @@ export const isWing = (name: string) =>
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
 // a member with a chair in the fleet: x's thread record names its role, a standing member keeps its own name (crow,
 // helga), and clio and her wings by theirs; a fork or a plain session has none
+const STANDING_MEMBERS = new Set(['crow', 'helga']);
 export const isSeated = (name: string, role?: string) =>
     !/\(fork\)/u.test(name) &&
     (Boolean(role) ||
-        memberBadge(name.replace(/[^\w\s-]/gu, '').trim()) !== undefined ||
+        STANDING_MEMBERS.has(name.replace(/[^\w\s-]/gu, '').trim()) ||
         /^🦉\s*c?clio\b/u.test(name) ||
         isWing(name));
 export const pinOf = (name: string) =>

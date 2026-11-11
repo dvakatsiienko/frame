@@ -7,7 +7,8 @@ const HOLD_DIR = '/home/.local/state/x/merge-hold';
 
 type Tick = { at: number; id: string; targets: string[]; text: string };
 // holds: dima's holds as x's brake check answers them, or why it could not read them; ticks: dima's live ticks as
-// x-mod-stash keeps them; brake: what the check answers for the brake (null: x does not answer at all)
+// x-mod-stash keeps them; brake: what the check answers for the brake (null: x does not answer at all; 'unread': x
+// exits 1 naming brakeUnread, the holds still beside it)
 function world(
     on: On,
     holds: readonly string[] | { unread: string } = [],
@@ -30,13 +31,18 @@ function world(
         if (e.argv.includes('--brake-check')) checks.push([...e.argv]);
         return {
             value: {
-                exitCode: 0,
+                exitCode: brake === 'unread' ? 1 : 0,
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
                 stderr: '',
                 stdout:
                     e.argv.includes('--brake-check') && brake !== null
-                        ? JSON.stringify({ data: { brake, ...answer } })
+                        ? JSON.stringify({
+                              data:
+                                  brake === 'unread'
+                                      ? { brakeUnread: 'no clone', ...answer }
+                                      : { brake, ...answer },
+                          })
                         : '',
             },
         };
@@ -304,6 +310,16 @@ test('x not answering reads as every merge held, naming x', async ($, on) => {
     expect(r.deny).toContain('merge-hold');
     expect(r.deny).toContain('x lane merge-auto --brake-check');
     expect(ran).toEqual([]);
+});
+
+// FRM-570: an unread brake still lists his holds, so a held pr is refused as held, not as an unreadable hold record
+test('a brake x could not read still names a hold as a hold', async ($, on) => {
+    const { ran } = world(on, HELD_7, [], 'unread');
+    const r = await bash($, 'gh pr merge 7');
+    expect([r.deny, ran]).toEqual([
+        expect.stringContaining('#7 is held by dima'),
+        [],
+    ]);
 });
 
 test('no x call on a line with no raw merge', async ($, on) => {

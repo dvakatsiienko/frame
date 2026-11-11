@@ -311,6 +311,25 @@ export const hasSteerBox = (ask, pending) =>
 
 // twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
 // reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)
+/**
+ * the store's threads still running, by one `ps -o pid= -p <pids>` answer: a crashed session stays in the store until some
+ * session refreshes it; no answer (null) keeps every thread
+ * @template {{ pid: number }} T
+ * @param {T[]} threads
+ * @param {string | null} psOut
+ * @returns {T[]}
+ */
+export function runningThreads(threads, psOut) {
+    if (psOut === null) return threads;
+    const alive = new Set(
+        psOut
+            .split('\n')
+            .map((l) => Number(l.trim()))
+            .filter((pid) => pid > 0),
+    );
+    return threads.filter((t) => alive.has(t.pid));
+}
+
 export const PRESS_DIR = '.claude/shelf/band-presses';
 export const PRESS_FILE = `${PRESS_DIR}/band.jsonl`;
 const DAY_MS = 24 * 60 * 60 * 1000;

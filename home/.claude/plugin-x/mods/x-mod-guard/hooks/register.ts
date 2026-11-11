@@ -517,13 +517,25 @@ async function rawMergeCheck($: EngineInterface) {
     };
     try {
         const { data } = JSON.parse(read?.stdout ?? '') as {
-            data?: { brake?: unknown; holds?: unknown; holdsUnread?: unknown };
+            data?: {
+                brake?: unknown;
+                brakeUnread?: unknown;
+                holds?: unknown;
+                holdsUnread?: unknown;
+            };
         };
-        if (typeof data?.brake !== 'string') return unread;
+        // an unread brake still lists his holds beside it (brakeUnread), so a hold is named as a hold
+        const isBrakeRead = typeof data?.brake === 'string';
+        if (!data || (!isBrakeRead && typeof data.brakeUnread !== 'string'))
+            return unread;
         const held = Array.isArray(data.holds) ? data.holds : undefined;
         const isHeldRead = held !== undefined && data.holdsUnread === '';
         return {
-            brake: data.brake ? `the brake is on: ${data.brake}` : undefined,
+            brake: !isBrakeRead
+                ? BRAKE_UNREAD
+                : data.brake
+                  ? `the brake is on: ${data.brake}`
+                  : undefined,
             holds: {
                 isUnreadable: !isHeldRead,
                 prs: new Set(isHeldRead ? held.map(String) : []),
@@ -1967,9 +1979,14 @@ async function signFile($: EngineInterface, file: string) {
     return run?.exitCode === 0 ? run.stdout : undefined;
 }
 // one rule, one reader: x linear sign-check judges the body against the ticket's current one (a sign line it lacks word
-// for word, or a merge grant x would read anew); a refusal, an unread linear or no answer from x counts as a new sign.
-// run from home so the shim runs main's x
-async function hasNewSignLine($: EngineInterface, id: string, body: string) {
+// for word, or a merge grant x would read anew); x's refusal is a new sign, and an unread linear or no answer from x is
+// SIGN_UNJUDGED, refused as a new sign is but naming x. run from home so the shim runs main's x
+const SIGN_UNJUDGED = 'unjudged';
+async function hasNewSignLine(
+    $: EngineInterface,
+    id: string,
+    body: string,
+): Promise<boolean | typeof SIGN_UNJUDGED> {
     // a trigger, not the judge: a body naming no sign and no ## signed block cannot bring one, so x is not spawned
     if (!/✍️|^## signed/mu.test(body)) return false;
     const run = await $.process
@@ -1990,10 +2007,12 @@ async function hasNewSignLine($: EngineInterface, id: string, body: string) {
         const out = JSON.parse(run?.stdout ?? '') as {
             data?: { newSign?: unknown };
             ok?: unknown;
+            status?: unknown;
         };
-        return !(out.ok === true && out.data?.newSign === false);
+        if (out.ok === true && out.data?.newSign === false) return false;
+        return out.status === 'refused' ? true : SIGN_UNJUDGED;
     } catch {
-        return true;
+        return SIGN_UNJUDGED;
     }
 }
 const MILESTONES = 'linear-milestones';
@@ -2350,12 +2369,15 @@ export const register: Register = (on) => {
         const mergeCall = mergeAutoCall(typed, cwd);
         const mergeArgs = mergeCall?.words;
         const pr = mergeArgs && mergeAutoPr(mergeArgs);
+        // a slug x could not read leaves his pr tick unmatched; the refusal names the read that failed
+        let slugUnread: string | undefined;
         const prTick = async () => {
             if (!mergeCall || !pr || mergeArgs?.includes('--release-brake'))
                 return undefined;
             const repo =
                 mergeAutoRepo(mergeCall.words) ??
                 (await repoOf($, mergeCall.dir));
+            if (!repo) slugUnread = mergeCall.dir;
             return repo
                 ? tickFor(
                       $,
@@ -2460,12 +2482,21 @@ export const register: Register = (on) => {
                     );
                     continue;
                 }
-                const r = {
-                    door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», or to type «sign ${sign.id}» himself, then sign`,
-                    rule: 'sign-untick',
-                    targets: [sign.id],
-                    why: "a sign is dima's word: only his tick on the ticket's sign ask, or his own typed «sign <id>», carries it",
-                };
+                const askDima = `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», or to type «sign ${sign.id}» himself, then sign`;
+                const r =
+                    isNewSign === SIGN_UNJUDGED
+                        ? {
+                              door: `run \`x linear sign-check ${sign.id} --body-file ${sign.file ?? '<file>'}\` to see why x gave no verdict, or ${askDima}`,
+                              rule: 'sign-untick',
+                              targets: [sign.id],
+                              why: 'x linear sign-check judges whether the body brings a sign, and it gave no verdict, so the body counts as a new sign',
+                          }
+                        : {
+                              door: askDima,
+                              rule: 'sign-untick',
+                              targets: [sign.id],
+                              why: "a sign is dima's word: only his tick on the ticket's sign ask, or his own typed «sign <id>», carries it",
+                          };
                 const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
                 {
                     const stop = await enforce(
@@ -2715,7 +2746,9 @@ export const register: Register = (on) => {
             if (unproven.length && !isTicked) {
                 const door = isBrake
                     ? `ask dima to tick an orbit ask quoting \`${typed.trim()}\` at head ${head?.slice(0, 7) ?? '<the pr head sha>'}, or to type a prompt naming the pr`
-                    : word.door;
+                    : slugUnread === undefined
+                      ? word.door
+                      : `${word.door}; \`x gh repo-slug ${slugUnread}\` gave no slug, so a tick on the pr could not be matched: run it to see why, or name the repo with --repo <owner/name>`;
                 const said = `x-mod-guard stopped this one command. instead: ${door}. why: ${word.why} (rule dima-ok-flag); it does not name: ${unproven.join(' ')}.`;
                 {
                     const stop = await enforce(

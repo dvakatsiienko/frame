@@ -21,6 +21,8 @@ const dir = mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), 'sign-check-'));
 afterAll(() => rmSync(dir, { force: true, recursive: true }));
 const bin = join(dir, 'bin');
 mkdirSync(bin);
+const home = join(dir, 'home');
+mkdirSync(home);
 // `x linear sign-check FRM-1 --body-file /dev/stdin` keeps what it judged in judged.md and counts a «body 2» sign line
 // as new (exit 1); x-down: it cannot read the ticket (exit 1); watcher: a sign line lands in b.md right after the judging.
 // a body set says `set <id>` and keeps what it was sent in sent.md
@@ -29,6 +31,7 @@ writeFileSync(
     `#!/bin/sh
 if [ "$2" = sign-check ]; then
   cat > "${dir}/judged.md"
+  pwd > "${dir}/judged-cwd"
   [ -f "${dir}/watcher" ] && printf '✍️ signed 2026-11-12 · body 2\\n' >> "${dir}/b.md"
   [ "$3 $4 $5" = "FRM-1 --body-file /dev/stdin" ] || exit 2
   [ -f "${dir}/x-down" ] && exit 1
@@ -59,7 +62,7 @@ function run(
     shell: string,
     { name = 'b.md', plant = [] as string[] } = {},
 ) {
-    for (const f of ['judged.md', 'sent.md', 'x-down', 'watcher'])
+    for (const f of ['judged.md', 'judged-cwd', 'sent.md', 'x-down', 'watcher'])
         rmSync(join(dir, f), { force: true });
     for (const f of plant) writeFileSync(join(dir, f), '');
     writeFileSync(join(dir, name), file);
@@ -74,7 +77,7 @@ function run(
             encoding: 'utf8',
             env: {
                 BASH_ENV: '',
-                HOME: dir,
+                HOME: home,
                 PATH: `${bin}:/usr/bin:/bin:/opt/homebrew/bin`,
                 TMPDIR: dir,
                 ZDOTDIR: dir,
@@ -90,6 +93,7 @@ function run(
         code: r.status,
         err: r.stderr,
         judged: read('judged.md'),
+        judgedIn: read('judged-cwd')?.trim(),
         out: r.stdout.trim(),
         sent: read('sent.md'),
     };
@@ -106,6 +110,12 @@ describe.each(SHELLS)('the run-time sign check under %s', (shell) => {
             out: 'set FRM-1',
             sent: file,
         });
+    });
+
+    // FRM-570: from the line's cwd an old worktree's x may lack sign-check, so the judge runs from home, as the guard's own read does
+    it("asks x linear sign-check from home, the set from the line's cwd", () => {
+        const r = run(SET, SIGNED, shell);
+        expect([r.code, r.judgedIn, r.sent]).toEqual([0, home, SIGNED]);
     });
 
     it.each([

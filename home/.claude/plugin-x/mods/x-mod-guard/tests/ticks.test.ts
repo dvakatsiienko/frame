@@ -28,7 +28,12 @@ function world(
         markedAt?: number;
         isResolved?: boolean;
     }[] = [],
-    opts: { isOrbitDown?: () => boolean; isPrompted?: boolean } = {},
+    opts: {
+        isOrbitDown?: () => boolean;
+        isPrompted?: boolean;
+        isSlugDown?: boolean;
+        isXDown?: boolean;
+    } = {},
 ) {
     const clock = mock.clock(on, { now: NOW });
     const store = liveStore(on);
@@ -66,7 +71,9 @@ function world(
                 (e.argv.includes('read') && body === undefined) ||
                 (e.argv[0] === 'cat' && cat === undefined) ||
                 (e.argv.includes('sign-check') &&
-                    !signVerdict(e.init?.stdin ?? ''))
+                    !signVerdict(e.init?.stdin ?? '')) ||
+                (opts.isXDown && e.argv[0] === 'x') ||
+                (opts.isSlugDown && e.argv.includes('repo-slug'))
                     ? 1
                     : 0,
             isStderrTruncated: false,
@@ -74,37 +81,54 @@ function world(
             stderr: '',
             // herdr's word on a terminal: `shell1` runs a plain shell, every other one Claude Code
             stdout:
-                e.argv[0] === 'hc' && e.argv[1] === 'get'
+                opts.isXDown && e.argv[0] === 'x'
                     ? JSON.stringify({
-                          status: {
-                              app:
-                                  e.argv[2] === 'shell1' ? null : 'claude-code',
-                          },
+                          error: 'the ticket did not read',
+                          ok: false,
+                          status: 'external',
                       })
-                    : e.argv[0] === 'gh' && e.argv.includes('headRefOid')
-                      ? `${head.sha}\n`
-                      : e.argv[0] === 'cat'
-                        ? (cat ?? '')
-                        : e.argv.includes('--brake-check')
-                          ? JSON.stringify({
-                                data: { brake: '', holds: [], holdsUnread: '' },
-                            })
-                          : e.argv.includes('sign-check')
-                            ? JSON.stringify({
-                                  data: { newSign: false },
-                                  ok: signVerdict(e.init?.stdin ?? ''),
-                              })
-                            : e.argv.includes('repo-slug')
+                    : opts.isSlugDown && e.argv.includes('repo-slug')
+                      ? ''
+                      : e.argv[0] === 'hc' && e.argv[1] === 'get'
+                        ? JSON.stringify({
+                              status: {
+                                  app:
+                                      e.argv[2] === 'shell1'
+                                          ? null
+                                          : 'claude-code',
+                              },
+                          })
+                        : e.argv[0] === 'gh' && e.argv.includes('headRefOid')
+                          ? `${head.sha}\n`
+                          : e.argv[0] === 'cat'
+                            ? (cat ?? '')
+                            : e.argv.includes('--brake-check')
                               ? JSON.stringify({
-                                    data: { repo: 'dvakatsiienko/bytes' },
+                                    data: {
+                                        brake: '',
+                                        holds: [],
+                                        holdsUnread: '',
+                                    },
                                 })
-                              : e.argv.includes('read')
+                              : e.argv.includes('sign-check')
                                 ? JSON.stringify({
-                                      data: {
-                                          tickets: [{ description: body }],
-                                      },
+                                      data: { newSign: false },
+                                      ok: signVerdict(e.init?.stdin ?? ''),
+                                      status: signVerdict(e.init?.stdin ?? '')
+                                          ? 'ok'
+                                          : 'refused',
                                   })
-                                : '',
+                                : e.argv.includes('repo-slug')
+                                  ? JSON.stringify({
+                                        data: { repo: 'dvakatsiienko/bytes' },
+                                    })
+                                  : e.argv.includes('read')
+                                    ? JSON.stringify({
+                                          data: {
+                                              tickets: [{ description: body }],
+                                          },
+                                      })
+                                    : '',
         },
     }));
     const refuse: string[] = [];
@@ -198,6 +222,19 @@ test('a bare merge-auto --apply on a tick quoting the pr carries --dima-ok', asy
     expect([r.deny, ran]).toEqual([
         undefined,
         ['x lane merge-auto 104 --apply --dima-ok 104'],
+    ]);
+});
+
+// FRM-570 exit 10: a slug x cannot read leaves the tick unmatched, and the refusal names x gh repo-slug
+test('a typed --dima-ok whose repo x cannot read is refused naming x gh repo-slug', async ($, on) => {
+    const MERGE = 'x lane merge-auto 104 --apply --dima-ok 104';
+    const { ran } = world(on, [tick(`merge ${PR}`)], undefined, undefined, [], {
+        isSlugDown: true,
+    });
+    const r = await bash($, MERGE);
+    expect([r.deny, ran]).toEqual([
+        expect.stringContaining('`x gh repo-slug /repo` gave no slug'),
+        [],
     ]);
 });
 
@@ -605,6 +642,22 @@ for (const [why, current, next, isFlagged] of [
         const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
         expect(signFlagged(r)).toBe(isFlagged);
     });
+
+// FRM-570 exit 10: an x that gives no verdict still refuses the sign, and the refusal names x linear sign-check
+test('a body set x cannot judge is refused naming x linear sign-check', async ($, on) => {
+    const { ran } = world(on, [], SIGNED_TODAY(), undefined, [], {
+        isXDown: true,
+    });
+    on('fs.read', () => ({ value: SIGNED_TODAY() }));
+    const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
+    expect([signFlagged(r), r.deny, ran]).toEqual([
+        true,
+        expect.stringContaining(
+            'x linear sign-check FRM-1 --body-file /repo/b.md',
+        ),
+        [],
+    ]);
+});
 
 // clio's 13:34 report: a read of the sign file in the same line is no write, so her unchanged sign line still runs
 test('a body file the hook cannot read is read through cat, so an unchanged sign line runs', async ($, on) => {
