@@ -15,7 +15,6 @@ import {
     nextSeats,
     pendingPresses,
     phasesOf,
-    runningPids,
     savePress,
     seatFacts,
     sentSteer,
@@ -80,10 +79,6 @@ describe('a card finds its state file by pid', () => {
 
     test('a pid with no state file has none', () => {
         expect(stateOfPid([{ at: 1, pid: 8, sid: 'c' }], 7)).toBeNull();
-    });
-
-    test('only the pids ps printed count as running', () => {
-        expect([...runningPids(' 3308\n  412\n\n')]).toEqual([3308, 412]);
     });
 });
 

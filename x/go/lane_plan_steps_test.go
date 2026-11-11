@@ -43,3 +43,38 @@ func TestLanePlanStepsNamesAPlanThatIsNotThere(t *testing.T) {
 		t.Fatalf("exit %d, want 1 naming the plan:\n%s", got.code, got.stdout)
 	}
 }
+
+// the card draws a leading id as its link, so the text drops it and one separator; any other shape stays as written
+func TestLanePlanStepsDropsALeadingTicketOnce(t *testing.T) {
+	t.Parallel()
+	rows := []struct{ line, text, ticket string }{
+		{"FRM-501 quiet reads", "quiet reads", "FRM-501"},
+		{"FRM-501: quiet reads", "quiet reads", "FRM-501"},
+		{"FRM-501 · quiet reads", "quiet reads", "FRM-501"},
+		{"FRM-501 — quiet reads", "quiet reads", "FRM-501"},
+		{"FRM-501 – quiet reads", "quiet reads", "FRM-501"},
+		{"FRM-501 - quiet reads", "quiet reads", "FRM-501"},
+		{"FRM-501-b quiet reads", "FRM-501-b quiet reads", "FRM-501"},
+		{"quiet reads FRM-501 whole", "quiet reads FRM-501 whole", "FRM-501"},
+		{"quiet reads the prompt", "quiet reads the prompt", ""},
+		{"FRM-501", "FRM-501", "FRM-501"},
+	}
+	lines := make([]string, len(rows))
+	want := make([]any, len(rows))
+	for i, r := range rows {
+		lines[i] = "- [ ] 01 · " + r.line
+		step := map[string]any{"done": false, "text": r.text}
+		if r.ticket != "" {
+			step["ticket"] = r.ticket
+		}
+		want[i] = step
+	}
+	file := filepath.Join(t.TempDir(), "lane-plan.md")
+	write(t, file, strings.Join(lines, "\n"))
+
+	got := xIn(t, t.TempDir(), nil, "lane", "plan-steps", file)
+
+	if got.code != 0 || !reflect.DeepEqual(got.data["steps"], want) {
+		t.Fatalf("exit %d, steps %v\nwant %v\n%s", got.code, got.data["steps"], want, got.stdout)
+	}
+}

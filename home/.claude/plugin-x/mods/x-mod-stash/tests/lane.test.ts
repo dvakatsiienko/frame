@@ -23,6 +23,9 @@ function world(
 ) {
     const contexts: string[][] = [];
     const texts: string[] = [];
+    // `x lane plan-steps <path>`'s answer per plan path; a path with none fails the run, as x would
+    const steps: Record<string, unknown[] | undefined> = {};
+    const planRuns: string[] = [];
     files[`/home/.claude/sessions/${PID}.json`] = JSON.stringify({
         name,
         pid: PID,
@@ -53,18 +56,41 @@ function world(
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
-    on('process.run', (_$, e) => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout:
-                e.argv[0] === 'ps'
-                    ? [PID, ...peers.map((p) => p.pid)].join('\n')
-                    : `${PID}\nSat Oct 11 18:00:00 2026\n`,
-        },
-    }));
+    on('process.run', (_$, e) => {
+        if (e.argv[1] === 'lane' && e.argv[2] === 'plan-steps') {
+            const path = e.argv[3] ?? '';
+            planRuns.push(path);
+            const answer = steps[path];
+            return {
+                value: {
+                    exitCode: answer ? 0 : 1,
+                    isStderrTruncated: false,
+                    isStdoutTruncated: false,
+                    stderr: '',
+                    stdout: JSON.stringify(
+                        answer
+                            ? { data: { plan: path, steps: answer }, ok: true }
+                            : { error: 'x failed', ok: false },
+                    ),
+                },
+            };
+        }
+        return {
+            value: {
+                exitCode: 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout:
+                    e.argv[0] === 'ps'
+                        ? [PID, ...peers.map((p) => p.pid)].join('\n')
+                        : `${PID}\nSat Oct 11 18:00:00 2026\n`,
+            },
+        };
+    });
+    // a file's mtime moves with its text, so a rewrite reads as a change and an untouched file as none
+    const mtimeOf = (text: string) =>
+        [...text].reduce((h, c) => (h * 31 + (c.codePointAt(0) ?? 0)) % 1e9, 7);
     on('fs.list', (_$, e) => ({
         value:
             e.path === '/home/.claude/sessions'
@@ -75,7 +101,15 @@ function world(
                       name: `${pid}.json`,
                       size: 1,
                   }))
-                : [],
+                : Object.keys(files)
+                      .filter((f) => f.slice(0, f.lastIndexOf('/')) === e.path)
+                      .map((f) => ({
+                          isLink: false,
+                          kind: 'file' as const,
+                          mtimeMs: mtimeOf(files[f] ?? ''),
+                          name: f.slice(f.lastIndexOf('/') + 1),
+                          size: 1,
+                      })),
     }));
     on('fs.read', (_$, e) =>
         e.path in files
@@ -97,7 +131,7 @@ function world(
     on('turn.complete', () => ({ text: '' }));
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
-    return { clock, contexts, files, store, texts };
+    return { clock, contexts, files, planRuns, steps, store, texts };
 }
 
 const start = ($: Engine) =>
@@ -1070,6 +1104,7 @@ interface KeptLane {
     isSteerTaken?: boolean;
     plan?: string;
     isPlanGone?: boolean;
+    isPlanStale?: boolean;
     history: {
         act: string;
         at: number;
@@ -1543,17 +1578,30 @@ test("clio's step back holds until the codie names a step again", async ($, on) 
 /* FRM-429 exit 1 — a glide card linked to its lane plan file moves on its own */
 
 const PLAN = '/home/.local/state/x/lanes/mods/lane-plan.md';
-const planText = (marks: string) =>
-    marks
-        .split('')
-        .map((m, i) => `- [${m}] 0${i + 1} · FRM-1 step ${i + 1}`)
+// a step as the test gives it: its mark, its ticket, its text
+type Step = readonly [mark: string, ticket: string | undefined, text: string];
+const marked = (marks: string): Step[] =>
+    marks.split('').map((m, i) => [m, 'FRM-1', `step ${i + 1}`]);
+// the plan file and `x lane plan-steps`' answer for it, both drawn from one list: the parse is x's, tested in x/go
+const plant = (w: ReturnType<typeof world>, steps: Step[], path = PLAN) => {
+    w.files[path] = steps
+        .map(
+            ([m, t, text], i) =>
+                `- [${m}] ${String(i + 1).padStart(2, '0')} · ${t ? `${t} ` : ''}${text}`,
+        )
         .join('\n');
+    w.steps[path] = steps.map(([m, t, text]) => ({
+        done: m !== ' ',
+        text,
+        ...(t ? { ticket: t } : {}),
+    }));
+};
 const linkedPlan = async (
     $: Engine,
     w: ReturnType<typeof world>,
     marks = '   ',
 ) => {
-    w.files[PLAN] = planText(marks);
+    plant(w, marked(marks));
     const r = await create($, {
         items: undefined,
         plan: '~/.local/state/x/lanes/mods/lane-plan.md',
@@ -1577,7 +1625,7 @@ test('a tick in the plan file moves the card to the first unticked line on the n
     const w = world(on);
     await start($);
     await linkedPlan($, w, 'x  ');
-    w.files[PLAN] = planText('xx ');
+    plant(w, marked('xx '));
     await poll(w);
     expect(kept(w)[0]?.current).toBe(2);
 });
@@ -1585,7 +1633,10 @@ test('a tick in the plan file moves the card to the first unticked line on the n
 test('a plan with a step line holding no ticket id is refused, naming that line', async ($, on) => {
     const w = world(on);
     await start($);
-    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n- [ ] 02 · the loose one\n';
+    plant(w, [
+        [' ', 'FRM-7', 'the build'],
+        [' ', undefined, 'the loose one'],
+    ]);
     const r = await create($, {
         items: undefined,
         plan: '~/.local/state/x/lanes/mods/lane-plan.md',
@@ -1598,7 +1649,7 @@ test('an edit naming a plan with a step line holding no ticket id is refused', a
     const w = world(on);
     await start($);
     await create($);
-    w.files[PLAN] = '- [ ] 01 · the loose one\n';
+    plant(w, [[' ', undefined, 'the loose one']]);
     expect(
         await denied($, {
             act: 'edit',
@@ -1611,7 +1662,7 @@ test('an edit naming a plan with a step line holding no ticket id is refused', a
 test('an edit naming the plan its card follows passes, however its path is spelled', async ($, on) => {
     const w = world(on);
     await start($);
-    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n';
+    plant(w, [[' ', 'FRM-7', 'the build']]);
     await create($, { items: undefined, plan: PLAN });
     expect(
         await denied($, {
@@ -1626,7 +1677,7 @@ test('an edit naming the plan its card follows passes, however its path is spell
 test('a second card naming one plan by another spelling is refused', async ($, on) => {
     const w = world(on);
     await start($);
-    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n';
+    plant(w, [[' ', 'FRM-7', 'the build']]);
     await create($, { items: undefined, plan: PLAN });
     expect(
         await denied($, {
@@ -1641,10 +1692,17 @@ test('a second card naming one plan by another spelling is refused', async ($, o
 test('a card a wing creates while a plan poll reads survives the poll', async ($, on) => {
     const w = world(on);
     await start($);
-    w.files[PLAN] = '- [ ] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    plant(w, [
+        [' ', 'FRM-7', 'a'],
+        [' ', 'FRM-7', 'b'],
+    ]);
     await create($, { items: undefined, plan: PLAN });
-    const text = '- [x] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
-    Object.defineProperty(w.files, PLAN, {
+    plant(w, [
+        ['x', 'FRM-7', 'a'],
+        [' ', 'FRM-7', 'b'],
+    ]);
+    const text = w.steps[PLAN];
+    Object.defineProperty(w.steps, PLAN, {
         configurable: true,
         enumerable: true,
         get() {
@@ -1669,10 +1727,17 @@ test('a card a wing creates while a plan poll reads survives the poll', async ($
 test('a card ended while a plan poll reads stays ended', async ($, on) => {
     const w = world(on);
     await start($);
-    w.files[PLAN] = '- [ ] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
+    plant(w, [
+        [' ', 'FRM-7', 'a'],
+        [' ', 'FRM-7', 'b'],
+    ]);
     await create($, { items: undefined, plan: PLAN });
-    const text = '- [x] 01 · FRM-7 a\n- [ ] 02 · FRM-7 b\n';
-    Object.defineProperty(w.files, PLAN, {
+    plant(w, [
+        ['x', 'FRM-7', 'a'],
+        [' ', 'FRM-7', 'b'],
+    ]);
+    const text = w.steps[PLAN];
+    Object.defineProperty(w.steps, PLAN, {
         configurable: true,
         enumerable: true,
         get() {
@@ -1691,7 +1756,7 @@ test('an edit naming a plan its card does not follow is refused', async ($, on) 
     const w = world(on);
     await start($);
     await create($);
-    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n';
+    plant(w, [[' ', 'FRM-7', 'the build']]);
     expect(
         await denied($, {
             act: 'edit',
@@ -1704,7 +1769,10 @@ test('an edit naming a plan its card does not follow is refused', async ($, on) 
 test('a plan whose every line carries its ticket draws the ids', async ($, on) => {
     const w = world(on);
     await start($);
-    w.files[PLAN] = '- [ ] 01 · FRM-7 the build\n- [ ] 02 · FRM-8 next\n';
+    plant(w, [
+        [' ', 'FRM-7', 'the build'],
+        [' ', 'FRM-8', 'next'],
+    ]);
     const r = await create($, {
         items: undefined,
         plan: '~/.local/state/x/lanes/mods/lane-plan.md',
@@ -1716,9 +1784,12 @@ test('a plan whose every line carries its ticket draws the ids', async ($, on) =
 test('a chunk with its build ticked stays on the card until its closing slice ticks', async ($, on) => {
     const w = world(on);
     await start($);
-    const plan = (closing: ' ' | 'x') =>
-        `- [x] 01 · FRM-7 the build\n- [${closing}] 02 · FRM-7 reviewed and closed\n- [ ] 03 · FRM-8 the next chunk\n`;
-    w.files[PLAN] = plan(' ');
+    const plan = (closing: ' ' | 'x'): Step[] => [
+        ['x', 'FRM-7', 'the build'],
+        [closing, 'FRM-7', 'reviewed and closed'],
+        [' ', 'FRM-8', 'the next chunk'],
+    ];
+    plant(w, plan(' '));
     await create($, {
         items: undefined,
         plan: '~/.local/state/x/lanes/mods/lane-plan.md',
@@ -1728,7 +1799,7 @@ test('a chunk with its build ticked stays on the card until its closing slice ti
         return lane?.items[lane.current]?.ticket;
     };
     expect(onCard()).toBe('FRM-7');
-    w.files[PLAN] = plan('x');
+    plant(w, plan('x'));
     await poll(w);
     expect(onCard()).toBe('FRM-8');
 });
@@ -1737,13 +1808,17 @@ test('an all-ticked plan file shows the lane done', async ($, on) => {
     const w = world(on);
     await start($);
     await linkedPlan($, w, 'x  ');
-    w.files[PLAN] = planText('xxx');
+    plant(w, marked('xxx'));
     await poll(w);
     expect(kept(w)[0]?.current).toBe(3);
 });
 
-const lineStep = async (w: ReturnType<typeof world>, line: string) => {
-    w.files[PLAN] = `- [ ] 01 · ${line}\n`;
+const lineStep = async (
+    w: ReturnType<typeof world>,
+    ticket: string | undefined,
+    text: string,
+) => {
+    plant(w, [[' ', ticket, text]]);
     await poll(w);
     return kept(w)[0]?.items[0];
 };
@@ -1752,7 +1827,9 @@ test('a plan line leading with its ticket keeps it once, as the link', async ($,
     const w = world(on);
     await start($);
     await linkedPlan($, w);
-    expect(await lineStep(w, 'FRM-501 quiet reads the prompt')).toMatchObject({
+    expect(
+        await lineStep(w, 'FRM-501', 'quiet reads the prompt'),
+    ).toMatchObject({
         text: 'quiet reads the prompt',
         ticket: 'FRM-501',
     });
@@ -1763,54 +1840,25 @@ test('the card draws a leading ticket once', async ($, on) => {
     await start($);
     const ui = await board($);
     await linkedPlan($, w);
-    await lineStep(w, 'FRM-501 quiet reads the prompt');
+    await lineStep(w, 'FRM-501', 'quiet reads the prompt');
     expect([
         (await ui.find({ text: 'FRM-501', type: 'Link' }))?.props.href,
         await ui.find({ text: 'FRM-501 quiet reads the prompt', type: 'Text' }),
     ]).toEqual(['https://linear.app/x-com/issue/FRM-501', undefined]);
 });
 
-test('the 60-char cap counts what is left after the ticket', async ($, on) => {
+test('a step past 60 chars is cut to 60 on the card', async ($, on) => {
     const w = world(on);
     await start($);
     await linkedPlan($, w);
-    const step = await lineStep(w, `FRM-501 ${'a'.repeat(60)}`);
+    const step = await lineStep(w, 'FRM-501', 'a'.repeat(61));
     expect(step?.text).toBe('a'.repeat(60));
 });
-
-for (const [what, line] of [
-    ['a colon', 'FRM-501: quiet reads'],
-    ['a dot', 'FRM-501 · quiet reads'],
-    ['a dash', 'FRM-501 — quiet reads'],
-    ['an en dash', 'FRM-501 – quiet reads'],
-    ['a hyphen', 'FRM-501 - quiet reads'],
-] as const)
-    test(`a leading ticket behind ${what} reads once`, async ($, on) => {
-        const w = world(on);
-        await start($);
-        await linkedPlan($, w);
-        const step = await lineStep(w, line);
-        expect([step?.text, step?.ticket]).toEqual(['quiet reads', 'FRM-501']);
-    });
-
-for (const [what, line, ticket] of [
-    ['a ticket glued to a word', 'FRM-501-b quiet reads', 'FRM-501'],
-    ['an id elsewhere in the text', 'quiet reads FRM-501 whole', 'FRM-501'],
-    ['a step with no ticket', 'quiet reads the prompt', undefined],
-    ['a lone ticket', 'FRM-501', 'FRM-501'],
-] as const)
-    test(`${what} stays as written`, async ($, on) => {
-        const w = world(on);
-        await start($);
-        await linkedPlan($, w);
-        const step = await lineStep(w, line);
-        expect([step?.text, step?.ticket]).toEqual([line, ticket]);
-    });
 
 test('a card created from a plan carries the ticket from its first draw', async ($, on) => {
     const w = world(on);
     await start($);
-    w.files[PLAN] = '- [ ] 01 · FRM-501 quiet reads the prompt\n';
+    plant(w, [[' ', 'FRM-501', 'quiet reads the prompt']]);
     await create($, {
         act: 'create',
         items: undefined,
@@ -1823,33 +1871,11 @@ test('a card created from a plan carries the ticket from its first draw', async 
     });
 });
 
-test('a nested or unnumbered checklist line moves nothing', async ($, on) => {
-    const w = world(on);
-    await start($);
-    await linkedPlan($, w);
-    w.files[PLAN] =
-        `  - [ ] 00 · nested\n- [ ] no number\n- [ ] 7 - dash\n${planText('x  ')}`;
-    await poll(w);
-    expect([kept(w)[0]?.current, kept(w)[0]?.items.length]).toEqual([1, 3]);
-});
-
-test('a capital X ticks a step like x', async ($, on) => {
-    const w = world(on);
-    await start($);
-    await linkedPlan($, w);
-    w.files[PLAN] = planText('x  ').replace('[x]', '[X]');
-    await poll(w);
-    expect([kept(w)[0]?.items[0]?.isDone, kept(w)[0]?.items.length]).toEqual([
-        true,
-        3,
-    ]);
-});
-
 test('a plan file grown past seven steps keeps every step and its pointer', async ($, on) => {
     const w = world(on);
     await start($);
     await linkedPlan($, w);
-    w.files[PLAN] = planText('xxxxxxx  ');
+    plant(w, marked('xxxxxxx  '));
     await poll(w);
     expect([kept(w)[0]?.items.length, kept(w)[0]?.current]).toEqual([9, 7]);
 });
@@ -1933,6 +1959,47 @@ test('a missing plan file keeps the last state marked «plan file gone»', async
     expect(await laneText(await board($))).toContain('· plan file gone');
 });
 
+// FRM-570 rule 7: x parses the plan, spawned only when the file moved
+test('an untouched plan file spawns no x lane plan-steps on the next poll', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w, 'x  ');
+    const runs = w.planRuns.length;
+    await poll(w);
+    await poll(w);
+    plant(w, marked('xx '));
+    await poll(w);
+    expect(w.planRuns.length - runs).toBe(1);
+});
+
+test('a failed x lane plan-steps keeps the last steps marked stale', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await linkedPlan($, w, 'x  ');
+    w.files[PLAN] = `${w.files[PLAN]}\n`;
+    w.steps[PLAN] = undefined;
+    await poll(w);
+    const l = kept(w)[0];
+    expect([l?.current, l?.isPlanStale]).toEqual([1, true]);
+    expect(await laneText(await board($))).toContain(
+        '· steps stale, x lane plan-steps failed',
+    );
+});
+
+test('a create whose plan x cannot read is refused, naming x', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.files[PLAN] = '- [ ] 01 · FRM-1 step 1';
+    const r = await create($, {
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+    });
+    expect([r.deny, kept(w)]).toEqual([
+        expect.stringContaining('x lane plan-steps could not read'),
+        [],
+    ]);
+});
+
 test('a hand step on a linked card is refused, naming the file', async ($, on) => {
     const w = world(on);
     await start($);
@@ -1956,7 +2023,7 @@ test("a plan tick that moves the pointer drops dima's steer on the old step", as
     await start($);
     await linkedPlan($, w);
     w.store.set('lane-steer:l1', { steer: 'hold on step 1' });
-    w.files[PLAN] = planText('x  ');
+    plant(w, marked('x  '));
     await poll(w);
     expect(steerOf(w)).toBeUndefined();
 });
@@ -1964,7 +2031,7 @@ test("a plan tick that moves the pointer drops dima's steer on the old step", as
 test('a create naming a relative plan path is refused for its shape, not read', async ($, on) => {
     const w = world(on);
     await start($);
-    w.files['plan.md'] = planText('   ');
+    w.files['plan.md'] = '- [ ] 01 · FRM-1 step 1';
     expect(
         await denied($, { act: 'create', plan: 'plan.md', title: 'x' }),
     ).toContain('absolute or ~/');

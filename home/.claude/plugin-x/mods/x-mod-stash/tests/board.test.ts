@@ -41,6 +41,8 @@ function fleet(
         isBoardOpen = true,
         files = undefined as string[] | undefined,
         reads = {} as Record<string, string>,
+        // x's thread records, as the store file carries them
+        threads = [] as Record<string, string>[],
         dirs = {} as Record<string, FsEntry[]>,
         isOwner = false,
         sends = {} as Record<string, string[]>,
@@ -87,6 +89,8 @@ function fleet(
             })),
     }));
     on('fs.read', (_$, e) => {
+        if (e.path === '/home/.claude/shelf/threads.json')
+            return { value: JSON.stringify({ at: 0, threads, v: 1 }) };
         const extra = reads[e.path];
         if (extra !== undefined) return { value: extra };
         const entry = REGISTRY[e.path];
@@ -797,7 +801,15 @@ test("crow's black bird keeps its joiner on the board", async ($, on) => {
 });
 
 test('the board marks a background session named off the fleet pattern', async ($, on) => {
-    fleet(on, {}, { alive: [1, 2, 3], bg: [2, 3] });
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            bg: [2, 3],
+            threads: [{ role: 'codie', sessionId: PEER }],
+        },
+    );
     const rows = await rowsBySid($);
     expect([rows[GONE]?.includes('⚠'), rows[PEER]?.includes('⚠')]).toEqual([
         true,
@@ -1266,6 +1278,11 @@ test('a member that sent clio more pings than her log holds is a gap in the ledg
 });
 
 const RENAMED = 'FRM-426 code: band and board read true';
+// the peer's record, and the record that carried its old name
+const RENAMED_THREADS = [
+    { name: PEER_NAME, role: 'codie', sessionId: PEER },
+    { name: `☕️ 🔧 ${RENAMED}`, role: 'codie', sessionId: 'old-sid' },
+];
 
 test('a member renamed mid-day keeps its logged pings, so the old name leaves no gap', async ($, on) => {
     const { clock, store } = fleet(
@@ -1279,6 +1296,7 @@ test('a member renamed mid-day keeps its logged pings, so the old name leaves no
         {
             isOwner: true,
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+            threads: RENAMED_THREADS,
         },
     );
     expect(await gapRow($, clock, store)).toBeUndefined();
@@ -1291,6 +1309,7 @@ test('a renamed member that sent more than its old-name lines hold still shows i
         {
             isOwner: true,
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+            threads: RENAMED_THREADS,
         },
     );
     expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');

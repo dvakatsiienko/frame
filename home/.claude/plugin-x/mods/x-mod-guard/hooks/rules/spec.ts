@@ -1,7 +1,6 @@
 import { TICKET_KEY } from './command.ts';
 
 // a list or a ticket in a «>» quote or a code fence is someone's words, never the job
-export const TO_MEMBER = /🔧|🔎|\b(?:codie|coder|sixth sense|verifier)\b/i; // read-both: names before the 10-29 rename
 const SPEC_PATH = /\.scratch\/[^\s/]+\/spec\.md\b/;
 const TICKET = new RegExp(`\\b(${TICKET_KEY})-\\d+\\b`);
 const ITEM = /^\s*\d{1,2}[.)]\s+\S/;
@@ -15,8 +14,9 @@ export const SPEC_WHY =
 export const SPEC_DOOR =
     'write the job to .scratch/<feature>/spec.md and send its path';
 
-export function isSpecMissing(to: string, message: string) {
-    if (!TO_MEMBER.test(to) || SPEC_PATH.test(message)) return false;
+// the job's shape alone: who it goes to is the thread record's (FRM-570 rule 9), read by the caller
+export function isSpecMissing(message: string) {
+    if (SPEC_PATH.test(message)) return false;
     let isFenced = false;
     let items = 0;
     let isTicket = false;

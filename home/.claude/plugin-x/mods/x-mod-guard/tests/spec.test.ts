@@ -9,13 +9,35 @@ import { liveStore } from './store.ts';
 const CODIE = '⚡ 🔧 mods lane 3 codie: FRM-431';
 const NOTE = 'a lane job goes through a spec (clio:shape-lane-dispatch § 2)';
 const JOB = 'round 5:\n1. the meter\n2. the card\n3. the glide step';
+const SELF = 'a1a1a1a1-0000';
+type Thread = { sessionId: string; name?: string; pid?: number; role?: string };
+// x thread list's records: who is a codie or a sixth sense is the record's, never the name's (FRM-570 rule 9)
+const THREADS: Thread[] = [
+    { name: CODIE, pid: 31, role: 'codie', sessionId: 'c1' },
+    { name: '🦉 clio', pid: 32, sessionId: 'k1' },
+    { name: '⚡ 🔧 mods 6 | FRM-574', pid: 33, role: 'codie', sessionId: 'c2' },
+    { name: 'mods six', pid: 34, role: 'sixth-sense', sessionId: 's1' },
+    { name: '⚡ 🔧 codie: no record | FRM-1', pid: 35, sessionId: 'u1' },
+];
 
-function world(on: On) {
+function world(on: On, threads: Thread[] = THREADS) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const sent: string[] = [];
     answerPrompts(on);
-    on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
+    on('session.id', () => ({ value: SELF }));
+    on('process.run', (_$, e) => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout:
+                e.argv.join(' ') === 'x thread list --json'
+                    ? JSON.stringify({ data: { threads } })
+                    : '',
+        },
+    }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('fs.exists', () => ({ value: false }));
     on('env.get', () => ({ value: '/home' }));
@@ -90,10 +112,27 @@ test('a job with no spec path is refused unsent', async ($, on) => {
     expect([w.sent, r.deny]).toEqual([[], expect.stringContaining(NOTE)]);
 });
 
-// read-both: a session still named with a pre-10-29 member word is a member too
-for (const to of ['☕️ 🔧 coder: mods', '🌗 verifier: FRM-431'])
-    test(`a 3-item job to an old-named member is refused unsent: ${to}`, async ($, on) => {
+// FRM-570 exit 15: a member by its record, whatever its name holds
+for (const to of [
+    '⚡ 🔧 mods 6 | FRM-574',
+    'mods six',
+    'mods six [3edc10]',
+    'uds:/tmp/cc-socks/33.sock',
+])
+    test(`a 3-item job to a recorded member is refused unsent: ${to}`, async ($, on) => {
         const w = world(on);
         const r = await send($, JOB, to);
         expect([w.sent, warned(r)]).toEqual([[], true]);
     });
+
+test('a 3-item job to a codie-named thread with no record is sent unwarned', async ($, on) => {
+    world(on);
+    expect(warned(await send($, JOB, '⚡ 🔧 codie: no record | FRM-1'))).toBe(
+        false,
+    );
+});
+
+test("a member's own 3-item report to another member is sent unwarned", async ($, on) => {
+    world(on, [...THREADS, { role: 'sixth-sense', sessionId: SELF }]);
+    expect(warned(await send($, JOB))).toBe(false);
+});

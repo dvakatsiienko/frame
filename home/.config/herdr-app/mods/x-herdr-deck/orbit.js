@@ -45,18 +45,6 @@ export function stateOfPid(states, pid) {
 }
 
 /**
- * the pids `ps -o pid= -p <pids>` printed, the ones still running
- * @param {string} stdout
- */
-export const runningPids = (stdout) =>
-    new Set(
-        stdout
-            .split('\n')
-            .map((l) => Number(l.trim()))
-            .filter((n) => n > 0),
-    );
-
-/**
  * markdown reads `<word>` as html and drops it; a backslash keeps it, outside code spans, where a backslash would show
  * @param {string} text
  */

@@ -42,6 +42,16 @@ const PROJECTS = JSON.stringify({
 
 // name: this session's name in cc's registry, when a test needs one
 type World = { cwd: string; isLinearUp: boolean; name?: string };
+// x thread list's records: a codie or a sixth sense is its record's role, never its name's (FRM-570 rule 9)
+const THREADS = [
+    { name: '🌗 🔧 FRM-425 code', role: 'codie', sessionId: 'c1c1c1c1-0000' },
+    {
+        name: '⚡ 🔎 FRM-425 verify: main',
+        role: 'sixth-sense',
+        sessionId: 's1s1s1s1-0000',
+    },
+    { name: '🔧 codie', role: 'codie', sessionId: 'c2c2c2c2-0000' },
+];
 
 function world(on: On, w: World = { cwd: '/repo', isLinearUp: true }) {
     mock.clock(on, { now: 1_000_000 });
@@ -90,6 +100,21 @@ function world(on: On, w: World = { cwd: '/repo', isLinearUp: true }) {
     on('ui.log', () => ({ value: undefined }));
     on('process.run', (_$, e) => {
         reads.push([...e.argv]);
+        if (e.argv.join(' ') === 'x thread list --json') {
+            const self = THREADS.find((t) => t.name === w.name);
+            const threads = self
+                ? [...THREADS, { ...self, sessionId: 'h1h1h1h1-0000' }]
+                : THREADS;
+            return {
+                value: {
+                    exitCode: 0,
+                    isStderrTruncated: false,
+                    isStdoutTruncated: false,
+                    stderr: '',
+                    stdout: JSON.stringify({ data: { threads } }),
+                },
+            };
+        }
         return {
             value: {
                 exitCode: w.isLinearUp ? 0 : 1,

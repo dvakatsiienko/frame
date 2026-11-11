@@ -55,7 +55,7 @@ import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
 import { SIGN_CHECK, withSignCheck } from './rules/sign-check.ts';
 import { summonedSessionIds } from './rules/sixth-sense.ts';
-import { SPEC_DOOR, SPEC_WHY, TO_MEMBER, isSpecMissing } from './rules/spec.ts';
+import { SPEC_DOOR, SPEC_WHY, isSpecMissing } from './rules/spec.ts';
 import {
     RESIGN_DOOR,
     hasResign,
@@ -323,6 +323,9 @@ async function registryEntry($: EngineInterface, sid: string) {
     }
     return undefined;
 }
+
+const isMemberRole = (role: string | undefined) =>
+    role === 'codie' || role === 'sixth-sense';
 
 // one rule, one reader: x's thread records, each live session joined to the role, lane and ticket x wrote at its
 // summon; run from home so the shim runs main's x, and no answer reads as no thread (FRM-479, FRM-570)
@@ -3084,15 +3087,21 @@ export const register: Register = (on) => {
         if (
             typeof to !== 'string' ||
             typeof message !== 'string' ||
-            !isSpecMissing(to, message)
+            !isSpecMissing(message)
         )
             return next(e);
-        // a member's own traffic (sixth sense's findings, codie's «final») is a report, never a lane job
+        // a codie or a sixth sense by its thread record, never its name: `to` names its thread, a ` [ref]` after it,
+        // or its socket by pid; a member's own traffic (sixth sense's findings, codie's «final») is a report, never a job
+        const threads = await threadList($);
+        const pid = Number(to.match(/\/cc-socks\/(\d+)\.sock$/)?.[1]);
+        const name = to.replace(/\s*\[[0-9a-f]+\]$/, '');
+        const target = threads.find(
+            (t) => (pid > 0 && t.pid === pid) || t.name === name,
+        );
+        if (!isMemberRole(target?.role)) return next(e);
         const sid = await $.session.id().catch(() => undefined);
-        const from = sid
-            ? await sessionName($, sid).catch(() => undefined)
-            : undefined;
-        if (from && TO_MEMBER.test(from)) return next(e);
+        if (isMemberRole(threads.find((t) => t.sessionId === sid)?.role))
+            return next(e);
         const isWarn = await isWarnOnly($, 'spec').catch(() => true);
         await record($, {
             command: `SendMessage → ${to}: ${message}`,

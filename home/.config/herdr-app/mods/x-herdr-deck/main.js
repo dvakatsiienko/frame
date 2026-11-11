@@ -36,7 +36,6 @@ import {
     nextSeats,
     pendingPresses,
     phasesOf,
-    runningPids,
     savePress,
     seatFacts,
     sentSteer,
@@ -65,6 +64,7 @@ const STATES = `${CLAUDE}/shelf/herdr-state`;
 const LANES = `${CLAUDE}/shelf/lanes.json`;
 const USAGE = `${CLAUDE}/shelf/cc-usage-window.json`;
 const SESSIONS = `${CLAUDE}/sessions`;
+const THREADS = `${CLAUDE}/shelf/threads.json`;
 const TICKS = `${CLAUDE}/shelf/orbit-ticks`;
 const SENT_MS = 2 * 60 * 1000;
 
@@ -93,45 +93,39 @@ async function states() {
  * @returns {Promise<Row[]>}
  */
 async function sessions(shelf) {
-    const names = (
-        await readdir(SESSIONS).catch(() => /** @type {string[]} */ ([]))
-    ).filter((f) => f.endsWith('.json'));
-    const rows = (
-        await Promise.all(names.map((f) => json(`${SESSIONS}/${f}`)))
-    ).filter((s) => s?.sessionId && s.name);
-    // a registry file can outlive its process: only a running pid draws a card, so no press goes to a dead session
-    /** @type {Set<number> | null} */
-    let live = null;
-    try {
-        const pids = rows.map((/** @type {{ pid: number }} */ s) => s.pid);
-        live = runningPids(
-            (await exec('ps', ['-o', 'pid=', '-p', pids.join(',')])).stdout,
-        );
-    } catch {
-        // no answer from ps: every row stays, as before the liveness read
-    }
-    return rows
-        .filter((s) => !live || live.has(s.pid))
-        .map(
-            /** @returns {Row} */ (s) => {
-                const state = stateOfPid(shelf, s.pid);
-                const sid = state?.sid ?? s.sessionId;
-                return {
-                    asks: asksOf(state),
-                    context: state?.ctx ?? null,
-                    hot: state?.hot ?? null,
-                    model: state?.model ?? null,
-                    name: rejoin(s.name),
-                    pending: new Map(),
-                    phases: phasesOf(state),
-                    pid: s.pid,
-                    sid,
-                    status: s.status ?? 'unknown',
-                    taken: state?.taken ?? 0,
-                    wait: waitOf(s.status ?? 'unknown', state?.wait),
-                };
-            },
-        );
+    // one rule, one reader (FRM-570 rule 8): x's thread store names the live threads, a pid kept only while x finds it
+    // running on its own start time, so no press goes to a dead session; the status is still cc's, from its registry
+    // file. an unreadable store answers null, and the deck keeps its last rows marked stale
+    const store = await json(THREADS);
+    if (!Array.isArray(store?.threads)) return null;
+    const rows = await Promise.all(
+        store.threads
+            .filter((/** @type {any} */ t) => t?.pid && t.sessionId && t.name)
+            .map(async (/** @type {any} */ t) => ({
+                ...t,
+                status: (await json(`${SESSIONS}/${t.pid}.json`))?.status,
+            })),
+    );
+    return rows.map(
+        /** @returns {Row} */ (s) => {
+            const state = stateOfPid(shelf, s.pid);
+            const sid = state?.sid ?? s.sessionId;
+            return {
+                asks: asksOf(state),
+                context: state?.ctx ?? null,
+                hot: state?.hot ?? null,
+                model: state?.model ?? null,
+                name: rejoin(s.name),
+                pending: new Map(),
+                phases: phasesOf(state),
+                pid: s.pid,
+                sid,
+                status: s.status ?? 'unknown',
+                taken: state?.taken ?? 0,
+                wait: waitOf(s.status ?? 'unknown', state?.wait),
+            };
+        },
+    );
 }
 
 // a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
@@ -283,11 +277,15 @@ export default class FleetBoard extends View {
             this.week =
                 (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
                 null;
-            this.rows = (await sessions(shelf)).sort(
-                (a, b) =>
-                    (RANK[STATE[a.status]] ?? 2) -
-                        (RANK[STATE[b.status]] ?? 2) || byName(a.name, b.name),
-            );
+            const listed = await sessions(shelf);
+            this.isStale = listed === null;
+            if (listed)
+                this.rows = listed.sort(
+                    (a, b) =>
+                        (RANK[STATE[a.status]] ?? 2) -
+                            (RANK[STATE[b.status]] ?? 2) ||
+                        byName(a.name, b.name),
+                );
             const next = nextSeats(
                 /** @type {any} */ (shared(SEATS_KEY)),
                 seatFacts(this.rows, this.week),
@@ -947,7 +945,7 @@ export default class FleetBoard extends View {
             .bg(t.background)
             .child(
                 header(
-                    `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}`,
+                    `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}${this.isStale ? ' · stale, threads.json unreadable' : ''}`,
                 ),
             )
             .children(rows.map((s, i) => this.session(t, s, i)))

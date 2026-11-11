@@ -119,11 +119,17 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
 const start = ($: Engine) =>
     $.session.start({ cwd: '/tmp', isInteractive: true, surface: 'desktop' });
 
-const seat = (w: ReturnType<typeof world>, name: string) => {
+// x's thread record carries the role; a seat given none has no record
+const seat = (w: ReturnType<typeof world>, name: string, role?: string) => {
     w.files[`/home/.claude/sessions/${PID}.json`] = JSON.stringify({
         name,
         pid: PID,
         sessionId: SID,
+    });
+    w.files['/home/.claude/shelf/threads.json'] = JSON.stringify({
+        at: 0,
+        threads: role ? [{ name, role, sessionId: SID }] : [],
+        v: 1,
     });
 };
 const MEMBER = '⚡ 🔧 codie: mods lane 4';
@@ -969,22 +975,22 @@ test('🎛️ shows a pace number', async ($, on) => {
 
 /* 🔥 on a seat */
 
-for (const [name, isOn] of [
+for (const [name, isOn, role] of [
     ['🦉 clio', true],
     ['🦉 clio (side)', true],
     ['🐦‍⬛ crow', true],
     ['🎀 helga', true],
-    ['⚡ 🔧 codie: mods lane 4 | FRM-500', true],
-    ['🌗 🔎 sixth sense: x | #1', true],
+    ['⚡ 🔧 codie: mods lane 4 | FRM-500', true, 'codie'],
+    ['🌗 🔎 sixth sense: x | #1', true, 'sixth-sense'],
     ['⚡ 🔧 codie: mods lane 4 (fork)', false],
     ['frame', false],
     ['clio-notes', false],
-    ['⚡ 🔧 codie: pitchfork', true],
-    ['☕️ 🔧 FRM-9 code: x', true],
-] as const)
+    ['⚡ 🔧 codie: pitchfork', true, 'codie'],
+    ['☕️ 🔧 FRM-9 code: x', true, 'codie'],
+] as [string, boolean, string?][])
     test(`${name} ${isOn ? 'starts' : 'stays off'} 🔥`, async ($, on) => {
         const w = world(on);
-        seat(w, name);
+        seat(w, name, role);
         await start($);
         expect(w.store.get(`hot:${SID}`) !== undefined).toBe(isOn);
     });

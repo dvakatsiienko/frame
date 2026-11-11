@@ -19,6 +19,7 @@ function world(on: On) {
         return { value: undefined };
     });
     on('session.id', () => ({ value: SID }));
+    on('env.get', () => ({ value: '/home' }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     on('session.repo', () => ({ value: null }));
     on('session.append', (_$, e, next) => {
