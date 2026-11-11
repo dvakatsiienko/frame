@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T17:47:00Z'
+updated_date: '2026-11-11T18:04:00Z'
 labels:
   - m
   - clio-main
@@ -2009,4 +2009,9 @@ PK-363:W1017 (2026-11-11 19:21, dima): 4. then, once everything is inspected by 
 PK-363:W1018 (2026-11-11 19:21, dima): (context, not dima's words: he quotes clio's line «so a herdr restart now and then is a real fix, worth doing at a quiet moment whenever the window feels heavy».) it is only because of hot-reloading? or does herdr have a memory leak? ❓
 PK-363:W1024 (2026-11-11 19:45, dima, o55 steer): looks good. after we install and take a closer look, maybe we can find even more stuff to borrow. this is for you and for everyone to propose: after the research over shepherdr and herdr. (context, not dima's words: "Shepherd Herdr" read as "shepherdr and herdr"; the time is the chore time, the raw has none.)
 PK-363:W1025 (2026-11-11 19:38, dima, o59 steer): why keep dead weight? delete it. (context, not dima's words: clio names this as the my-tabs delete word; the raw itself names no tab.)
+
+PK-363:W1026 (2026-11-11 20:03, dima): add to my herdr wishlist (ticket or add to another ticket): hotkeys. i want proper hotkeys support but not messy. architect a solid hotkey support considering the herdr environment (herdr has its own hotkeys). solid hotkeys architecture from the start, something like a hotkey store or anything, you're the expert. (context, not dima's words: "herder" read as "herdr", as in earlier grooms.)
+PK-363:W1027 (2026-11-11 20:03, dima): first item: when herdr is focused but the chatter text box is not focused, the key "/" sets focus into the chatter box.
+PK-363:W1028 (2026-11-11 20:03, dima): when herdr is focused, "d" toggles the deck.
+PK-363:W1029 (2026-11-11 20:03, dima): it is for later. no grills now, just fold.
 <!-- SECTION:NOTES:END -->

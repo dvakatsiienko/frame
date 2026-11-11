@@ -443,7 +443,9 @@
   - given a wind dima already took back, then a message arrives as sent and the take-back stands
   - and the held list sits under the codie's registry name, so a /clear or a resume hands it to the next conversation
   - given a codie under 55 %, a sender that is no coordinator (a sixth sense), clio's pause and resume words, or `🐦‍🔥 second wind` switched off, then the message arrives as sent
-  - decision: the receiver holds it, so the coordinator's send never changes and one switch turns it off; nothing cancels a hold but the compact or dima's take-back
+  - decision: the receiver holds it, so the coordinator's send never changes and one switch turns it off; nothing cancels a hold but the compact or dima's take-back; past 10 min the sender is told, the hold still kept
+  - given a held message 10 min old and the codie still not wound, then its sender gets one line, «your message to <codie> is held: it is at N % and has not wound», sent to the address its message came from; the hold stays until the wind, each sender hears once per message at that message's own 10 min, a codie that wound in time tells nobody, and a reload re-arms the timer from the store (r10, dima's o62)
+  - proof: tests/wind.test.ts::a message held 10 min for a codie that has not wound tells its sender once, and the hold stays; a codie that wound inside the 10 min tells no sender; a hold kept across a reload still tells its sender at 10 min; each held message tells its own sender at its own 10 min
   - proof: tests/wind.test.ts::clio's message to a codie past 55 % becomes the wind note (+ the held message marks the wind as writing, a second message waits unseen, under 55 % reads as sent, a full sixth sense reads as sent, a sixth sense or a pause passes, a wind dima takes back hands it over, switched off holds nothing)
 - ✅ `🐦‍🔥 second wind` switched off in 🎛️ settings is off for the model too
   - given it is off, then no row draws the button or the line, no turn carries a second wind note, `op second-wind` is refused in one line naming the switch, and a named handoff never compacts
