@@ -461,6 +461,18 @@ describe('siesta-checks', () => {
             expect(out).toContain('unmeasured, 2 run(s)');
         });
 
+        test('a cpu budget over rows that log no cpu reads unmeasured, never green', () => {
+            const home = fixtureHome();
+            plant(
+                home,
+                'commit\tpnpm typecheck\tcpu\t1\t40\n',
+                step(50) + step(50) + step(50),
+            );
+            const out = section(run(home).stdout, 'gate budget');
+            expect(out).toContain('unmeasured, 0 run(s) with cpu');
+            expect(out).not.toContain('every gate step under its budget');
+        });
+
         test('a step with no budget is named', () => {
             const home = fixtureHome();
             plant(

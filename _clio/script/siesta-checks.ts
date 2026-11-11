@@ -219,16 +219,17 @@ function gateBudget(home: string, now = Date.now()) {
             lines.push(`⚪ ${label}: no runs in 24 h`);
             continue;
         }
-        if (run.walls.length < MIN_RUNS) {
-            lines.push(`⚪ ${label}: unmeasured, ${run.walls.length} run(s)`);
+        // the measure the budget reads: a cpu budget over rows that log no cpu has nothing to read
+        const measured = (b.measure === 'cpu' ? run.values : run.walls).filter(
+            Number.isFinite,
+        );
+        if (measured.length < MIN_RUNS) {
+            lines.push(
+                `⚪ ${label}: unmeasured, ${measured.length} run(s) with ${b.measure}`,
+            );
             continue;
         }
-        const p90 = quantile(
-            b.measure === 'cpu'
-                ? run.values.filter(Number.isFinite)
-                : run.walls,
-            0.9,
-        );
+        const p90 = quantile(measured, 0.9);
         const line = `${label}: p90 ${p90.toFixed(1)} s ${b.measure}, budget ${b.budget} s, median load ${quantile(run.loads, 0.5).toFixed(0)}`;
         if (
             p90 > Math.max(b.budget * BUDGET_SLACK, b.budget + BUDGET_FLOOR_S)
@@ -246,9 +247,9 @@ function gateBudget(home: string, now = Date.now()) {
     return {
         exit: red ? 1 : 0,
         name: 'gate budget',
-        output: lines.some((l) => !l.startsWith('⚪'))
+        output: lines.length
             ? lines.join('\n')
-            : `every gate step under its budget (${budgets.length} budgets)${lines.length ? `\n${lines.join('\n')}` : ''}`,
+            : `every gate step under its budget (${budgets.length} budgets)`,
     };
 }
 
