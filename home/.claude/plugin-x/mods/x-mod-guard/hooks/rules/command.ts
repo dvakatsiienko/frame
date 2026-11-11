@@ -203,7 +203,7 @@ export const basename = (p: string) => p.split('/').filter(Boolean).pop() ?? p;
 export const isFlag = (w: string) => w.startsWith('-') && w !== '-';
 // an awk whose program can run a command (`system`, a pipe, `getline` from one) or that reads a program file the guard never sees
 export const isAwkRunner = (c: { name: string; args: { text: string }[] }) =>
-    basename(c.name) === 'awk' &&
+    /^[gmn]?awk$/.test(basename(c.name)) &&
     c.args.some(
         (w) =>
             /\||\bsystem\b|\bgetline\b/.test(w.text) ||

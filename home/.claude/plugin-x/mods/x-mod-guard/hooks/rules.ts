@@ -766,6 +766,8 @@ const OPAQUE_RUNNER = /^(python[\d.]*|node|bun|deno|ruby|perl)$/;
 // what may stand before a script file: python's flags that take no value; any other runner's flag may take one
 // (`-W ignore`, `node -r ./x.js`, `ruby -I lib`), so its value would read as the file (sixth sense round 5 on e9d68294)
 const PY_BARE_FLAGS = /^-[BEIOSbdqsuv]+$/;
+// a script word that is the line's own text: stdin by name, a fd or a process substitution (sixth sense round 6 on 77f877eb)
+const STDIN_SCRIPT = /^(-|\/dev\/|<\(|>\()/;
 // every sign on a line: `x linear set <id> --add-label signed`, or `x linear body <id> --set <file>` whose file the caller
 // reads for a sign line (FRM-427, o197)
 export function signWords(
@@ -785,7 +787,7 @@ export function signWords(
             const isScriptFile =
                 OPAQUE_RUNNER.test(c.name) &&
                 script >= 0 &&
-                words[script] !== '-' &&
+                !STDIN_SCRIPT.test(words[script] ?? '') &&
                 words
                     .slice(0, script)
                     .every(
@@ -793,9 +795,19 @@ export function signWords(
                             c.name.startsWith('python') &&
                             PY_BARE_FLAGS.test(w),
                     );
-            const text = [...(isScriptFile ? [] : words), ...c.bodies].join(
-                '\n',
-            );
+            // what a pipe or a process substitution feeds a runner is its code too; the parse hands a `<(…)` to its own
+            // command, so the line's text stands in for it
+            const fed = isScriptFile
+                ? []
+                : [
+                      ...c.feeders.flatMap((f) => f.args.map((w) => w.text)),
+                      ...(/[<>]\(/.test(command) ? [command] : []),
+                  ];
+            const text = [
+                ...(isScriptFile ? [] : words),
+                ...fed,
+                ...c.bodies,
+            ].join('\n');
             if (/\blinear\b/.test(text) && /--set\b|--add-label\b/.test(text))
                 out.push(
                     ...[...new Set(text.match(TICKET_ANY) ?? [])].map((id) => ({
