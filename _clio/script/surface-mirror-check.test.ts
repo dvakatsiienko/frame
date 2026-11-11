@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+import { gitEnv } from '../../script/lib/git-fixture.ts';
+
 const script = join(import.meta.dirname, 'surface-mirror-check.ts');
 const headings = [
     'threads',
@@ -15,7 +17,7 @@ const headings = [
 ];
 
 function git(cwd: string, ...args: string[]) {
-    spawnSync('git', args, { cwd, timeout: 10_000 });
+    spawnSync('git', args, { cwd, env: gitEnv(), timeout: 10_000 });
 }
 
 function check(
@@ -52,6 +54,7 @@ function check(
     return spawnSync('node', [script], {
         cwd: root,
         encoding: 'utf8',
+        env: gitEnv(),
         timeout: 10_000,
     });
 }
