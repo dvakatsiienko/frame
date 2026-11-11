@@ -607,7 +607,8 @@ func newCopyHarness(file string, command []string, runDir string, guarded bool) 
 const guardRefused = "x verify red refused: "
 
 // a shim per package manager, first on the command's PATH, so one a script calls is refused as it runs; pnpm's own plain run
-// passes on to the real pnpm. a package manager called by its absolute path is never seen
+// passes on to the real pnpm. a package manager called by its absolute path, by "$npm_execpath", or after a PATH= reset
+// in a shell line is never seen
 func writeGuard(dir string) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
