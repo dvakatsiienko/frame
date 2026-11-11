@@ -82,6 +82,16 @@ function skip(reason: string): never {
     process.exit(0);
 }
 
+// a wake that broke never reaches her either, so it leaves its line too
+function failed(reason: string): never {
+    writeFileSync(
+        join(STATE_DIR, 'harvest.log'),
+        `${new Date().toISOString()} ${threadId} failed: ${reason}\n`,
+        { flag: 'a' },
+    );
+    fail(`failed: ${reason}`);
+}
+
 // the hook fires per thread, so a peer's wake is waited out, never dropped; the same thread's second hook then meets its own clock
 const lockPath = join(STATE_DIR, 'wake.lock');
 const lock = await takeLock();
@@ -108,7 +118,9 @@ process.on('exit', () => {
     closeSync(lock);
     unlinkSync(lockPath);
 });
-await wake(transcript, mode);
+await wake(transcript, mode).catch((error: unknown) =>
+    failed(error instanceof Error ? error.message : String(error)),
+);
 
 async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     const now = new Date();
@@ -134,7 +146,7 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     try {
         lines = readLines(transcriptPath);
     } catch {
-        fail(`cannot read transcript: ${transcriptPath}`);
+        failed(`cannot read transcript: ${transcriptPath}`);
     }
     const fromLine = Math.min(state.offsets[transcriptPath] ?? 0, lines.length);
     const delta = transcriptDelta(lines, fromLine);
@@ -167,7 +179,7 @@ async function wake(transcriptPath: string, wakeMode: Wake['mode']) {
     if (viaSocket && session) {
         await sendLine(session.messagingSocketPath, wakeLine(wakeInfo)).catch(
             (error: unknown) =>
-                fail(
+                failed(
                     `cannot reach crow's socket: ${error instanceof Error ? error.message : String(error)}`,
                 ),
         );
