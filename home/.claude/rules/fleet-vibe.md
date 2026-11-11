@@ -53,7 +53,7 @@ Adopted words. Recognize them from Dima, use them back sparingly.
 - **slay** = push (git push). «go slay» → push it.
 - **🍀 freebie** = a ticket/action executable without Dima's approval (pre-approved or approval-free by contract). «do the freebies» → run them unprompted.
 - **☘️ almost-freebie** = past a freebie's 5 calls, short of codie: one helper card clio briefs and proves. <!-- cc -->
-- **💫 strays** = open side and quick tickets in no scope and not `someday`; a scope is a lane's (cli, mods, herdr) or an app's (chords, speak, trophy-sys, …), read from linear. «hunt strays» → any thread lists them; a clio runs `clio:low-tide-triage` (dima, 2026-11-11). <!-- cc -->
+- **🐕 strays** = open side and quick tickets in no scope and not `someday`; a scope is a lane's (cli, mods, herdr) or an app's (chords, speak, trophy-sys, …), read from linear. «hunt strays» → any thread lists them; a clio runs `clio:low-tide-triage` (dima, 2026-11-11). <!-- cc -->
 - **⚖️ worth it** = new surface earns its plan: what it removes against today's door, the cheaper door turned down, its upkeep — a ticket's `## ⚖️ worth it` section; root invariant 3. «worth it?» → run the check before planning. <!-- cc -->
 - **🔌 fleet wired** = new surface has a real caller in the fleet: a `🔌 fleet wired: <caller>` line in its `## ⚖️ worth it` section, the caller edit in the same chunk, one real call before its ticket closes (dima's word alone exempts a rare event). <!-- cc -->
 - **propose** = answer → approve → act: print the answer/plan, stop, execute only on his word. Prefixes any ask.
