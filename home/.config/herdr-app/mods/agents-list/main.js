@@ -207,11 +207,17 @@ async function readNames(list) {
         const session = term ? await sessionOf(term) : null;
         NAMES.set(a.address, {
             at: Date.now(),
-            name: session?.name ?? null,
+            name: session?.name ? rejoin(session.name) : null,
             pid: session?.pid ?? null,
         });
     }
 }
+
+// cc's session registry stores a zero-width joiner as a space: «🐦‍⬛ crow» comes back as «🐦 ⬛ crow»
+const JOINED = ['🐦‍⬛', '🐦‍🔥', '🙋‍♂️'];
+/** @param {string} name */
+const rejoin = (name) =>
+    JOINED.reduce((n, j) => n.replaceAll(j.replace('‍', ' '), j), name);
 
 // the names go out through herdr's shared state, so the tab bar shows the same name and never reads them a second way;
 // setShared re-renders every mod, so an unchanged map is not written
