@@ -591,10 +591,10 @@ async function startHelga() {
         );
         process.stdout.write(started);
         // loaded only here: the tests run this script from a copy of `_clio/script` alone
-        const { keepSeatInTab } = await import(
-            '../../home/.claude/plugin-x/skills/herdr/scripts/seat-tab.ts'
+        const { keepThreadInTab } = await import(
+            '../../home/.claude/plugin-x/skills/herdr/scripts/thread-tab.ts'
         );
-        keepSeatInTab(JSON.parse(started).address, 'helga');
+        keepThreadInTab(JSON.parse(started).address, 'helga');
         return;
     }
     execFileSync('claude', ['--bg', ...claudeArgs, skill, '--remote-control'], {

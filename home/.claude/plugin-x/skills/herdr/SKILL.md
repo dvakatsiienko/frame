@@ -36,7 +36,7 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 ```
 
 - this is every member's summon door; a lane member's first task is `"$(cat <brief file>)"`, its argv per role and its preflight (`x brief summon '<the line>'`) in `x:crew-lead`
-- 📌 then its tab, the same turn (a `--no-parent` thread has none, so herdr's agents list skips it): `herdr-app do terminal.keep '{"terminal":"<t>","place":"tab"}'` returns the tab id, then `herdr-app do tab.rename '{"id":"<tab>","name":"<registry name>"}'` (`scripts/seat-tab.ts` runs both, the proof `terminal.keep` returns the tab); dima's standing ask (11-11 00:06, via main): both `do` calls need no new word. done when `herdr-app ls` shows the tab by its registry name
+- 📌 then its tab, the same turn (a `--no-parent` thread has none, so herdr's agents list skips it): `herdr-app do terminal.keep '{"terminal":"<t>","place":"tab"}'` returns the tab id, then `herdr-app do tab.rename '{"id":"<tab>","name":"<registry name>"}'` (`scripts/thread-tab.ts` runs both, the proof `terminal.keep` returns the tab); dima's standing ask (11-11 00:06, via main): both `do` calls need no new word. done when `herdr-app ls` shows the tab by its registry name
 
 - 📌 the cc `-n` is its name for `ListAgents` and `seatOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live threads
 - its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends
@@ -45,6 +45,8 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 - `--no-parent`: by default a terminal started from inside another dies with its parent's program
 - `--no-notify`: by default hc types notes about the child into the parent's prompt
 - `--keep` is not a restart: it puts a shell where a lost program was and never re-runs `claude`
+
+**a dead clio thread** — `~/frame/_clio/script/clio-revive.sh main|wing <N>` (dima's alias `clio-revive`) resumes it in its own tab, cache hot; never a hand `claude --resume` line
 
 **hand another agent thread a message, then read it** — `hc send <t> '<text>'` once `hc get <t> --json` reads `done` or `idle`, then `hc read <t> --lines 80`. an agent thread takes the text as its next prompt; `--if idle` refuses every thread that has finished a turn, its status staying `done` (probe, 2026-11-09); a plain shell reports no status, so it gets a bare `hc send` too
 

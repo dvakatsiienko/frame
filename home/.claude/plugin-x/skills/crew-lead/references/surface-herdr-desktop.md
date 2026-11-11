@@ -6,7 +6,7 @@ herdr is where every thread runs today: clio main and its wings, codie, sixth se
 
 - the head: `hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude …`, `<short>` the pane's tag (`cli-codie`), then the base line
 - `--remote-control` is a must on every herdr thread: it is what puts the thread in the claude desktop app too, dima's backup door ([surface-claude-desktop.md](surface-claude-desktop.md))
-- the tab, the same turn: a `--no-parent` thread has none and herdr's agents list skips it; `x:herdr` § start a member holds the two `do` calls, `skills/herdr/scripts/seat-tab.ts` runs both
+- the tab, the same turn: a `--no-parent` thread has none and herdr's agents list skips it; `x:herdr` § start a member holds the two `do` calls, `skills/herdr/scripts/thread-tab.ts` runs both
 - a quick lane: a pane has no bg isolation, so no `--settings`
 - `--cwd` is the target repo; a side-lane codie's first reply names its `pwd` (inference until a pane codie's reply shows it)
 - done when `herdr-app ls` shows the tab by the thread's registry name
