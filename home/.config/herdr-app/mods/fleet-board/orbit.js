@@ -294,17 +294,19 @@ export const sentSteer = (state, text) =>
  * how his second click takes a tick back: a press the stash has not read leaves the ticks file, so neither the stash
  * nor the guard ever sees it; a press it has read gets an untick line, which the stash answers by dropping the mark
  * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file
+ * @param {Ask['mark']} [mark] the stash's mark: set once it read the press
  * @returns {'drop' | 'untick'}
  */
-export const untickDoor = (pending) => (pending === 'tick' ? 'drop' : 'untick');
+export const untickDoor = (pending, mark) =>
+    pending === 'tick' && !mark ? 'drop' : 'untick';
 
 /**
- * a tick after an untick: an untick line the stash has not read leaves the file, so the stash's mark reads ticked
- * again; once the stash dropped the mark, the tick is an ordinary press
- * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file
- * @returns {'drop' | 'press'}
+ * an ask takes a steer while it draws open: never marked, or unticked though the stash still holds its tick mark
+ * @param {Ask} ask
+ * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file, or just sent
  */
-export const tickDoor = (pending) => (pending === 'untick' ? 'drop' : 'press');
+export const hasSteerBox = (ask, pending) =>
+    !ask.isLocked && (!ask.mark || pending === 'untick');
 
 // twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
 // reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)

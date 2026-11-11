@@ -26,6 +26,7 @@ import {
     asksOf,
     byName,
     dropPress,
+    hasSteerBox,
     hotOf,
     hotPressLine,
     hotPresses,
@@ -39,7 +40,6 @@ import {
     seatFacts,
     sentSteer,
     stateOfPid,
-    tickDoor,
     tickState,
     untickDoor,
     waitOf,
@@ -305,9 +305,15 @@ export default class FleetBoard extends View {
                 if (!ask || ask.mark || Date.now() - press.at > SENT_MS)
                     this.sent.delete(key);
             }
+            /** @param {Row} s @param {Ask} ask */
+            const pendingOf = (s, ask) =>
+                this.sent.get(`${s.sid}:${ask.id}`)?.verdict ??
+                s.pending.get(ask.id);
             for (const key of this.steers.keys()) {
+                const s = this.rows.find((r) => r.sid === key.split(':')[0]);
                 const ask = askOf(key);
-                if (!ask || ask.mark) this.steers.delete(key);
+                if (!s || !ask || !hasSteerBox(ask, pendingOf(s, ask)))
+                    this.steers.delete(key);
             }
             // a sent steer stays stored, and shown, until the turn takes its press or the ask leaves
             for (const s of this.rows)
@@ -316,19 +322,14 @@ export default class FleetBoard extends View {
             for (const s of this.rows)
                 for (const ask of s.asks) {
                     const key = `${s.sid}:${ask.id}`;
-                    if (ask.id && !ask.mark && !this.steers.has(key))
+                    if (
+                        ask.id &&
+                        hasSteerBox(ask, pendingOf(s, ask)) &&
+                        !this.steers.has(key)
+                    )
                         // herdr documents InputState.new for init or a handler; a refusal here costs the box, never
                         // the reload that redraws the whole board
-                        try {
-                            const box = InputState.new({
-                                placeholder: 'steer…',
-                                value: keptSteer(key),
-                            });
-                            box.on('change', () => keepSteer(key, box.value()));
-                            this.steers.set(key, box);
-                        } catch (err) {
-                            this.pressError = `steer box not made: ${err instanceof Error ? err.message : err}`;
-                        }
+                        this.makeSteerBox(key);
                 }
             this.loadedAt = new Date();
             cx.notify();
@@ -535,23 +536,6 @@ export default class FleetBoard extends View {
     /** @param {Context} cx @param {Row} s @param {Ask} ask @param {'tick' | 'replay'} verdict */
     async press(cx, s, ask, verdict) {
         const key = `${s.sid}:${ask.id}`;
-        const pending = this.sent.get(key)?.verdict ?? s.pending.get(ask.id);
-        if (verdict === 'tick' && tickDoor(pending) === 'drop') {
-            this.sent.delete(key);
-            this.pressError = null;
-            cx.notify();
-            try {
-                await dropPress(
-                    { read: readTextFile, write: writeTextFile },
-                    `${TICKS}/${s.sid}.jsonl`,
-                    ask.id,
-                    s.taken,
-                );
-            } catch (err) {
-                this.pressError = `${ask.id} not ticked: ${err instanceof Error ? err.message : err}`;
-            }
-            return cx.notify();
-        }
         const steer = this.steers.get(key)?.value().trim();
         const at = Date.now();
         this.sent.set(key, { at, verdict });
@@ -583,16 +567,33 @@ export default class FleetBoard extends View {
         cx.notify();
     }
 
+    /** @param {string} key */
+    makeSteerBox(key) {
+        try {
+            const box = InputState.new({
+                placeholder: 'steer…',
+                value: keptSteer(key),
+            });
+            box.on('change', () => keepSteer(key, box.value()));
+            this.steers.set(key, box);
+        } catch (err) {
+            this.pressError = `steer box not made: ${err instanceof Error ? err.message : err}`;
+        }
+    }
+
     // his second click on a ticked ask takes it back until a turn took it: a press the stash has not read leaves the
-    // ticks file, one it has read gets an untick line the stash answers by dropping the mark (untickDoor)
+    // ticks file, one it has read gets an untick line (untickDoor). the stash skips untick lines today
+    // (x-mod-stash hooks/orbit.ts herdrTicks), so a read tick still reaches the turn
     /** @param {Context} cx @param {Row} s @param {Ask} ask */
     async unpress(cx, s, ask) {
         const key = `${s.sid}:${ask.id}`;
+        // the steer box comes back with the tick button, at once, never at the next poll
+        if (!this.steers.has(key)) this.makeSteerBox(key);
         const io = { read: readTextFile, write: writeTextFile };
         const path = `${TICKS}/${s.sid}.jsonl`;
         this.pressError = null;
         try {
-            if (untickDoor(s.pending.get(ask.id)) === 'drop') {
+            if (untickDoor(s.pending.get(ask.id), ask.mark) === 'drop') {
                 await dropPress(io, path, ask.id, s.taken);
                 this.sent.delete(key);
             } else {

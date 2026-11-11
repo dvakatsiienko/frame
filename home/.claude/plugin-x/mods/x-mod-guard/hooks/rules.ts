@@ -963,6 +963,9 @@ const isProofText = (text: string) => {
         overrideAsked(text) !== undefined
     );
 };
+// his bare yes under the one open guarded ask is his tick (FRM-574 decided 3); «ok» and «stop it» never count
+const BARE_YES = /^(yes|go|approve|i approve|merge|do it)[.!]?$/i;
+export const isBareYes = (text: string) => BARE_YES.test(text.trim());
 const isPaneTyper = (c: { name: string; args: { text: string }[] }) =>
     PANE_TYPERS[c.name]?.(c.args.map((w) => w.text)) ?? false;
 const isFed = (c: Command) =>
@@ -1036,9 +1039,15 @@ export function paneProof(
             ...fed,
             ...(isFed(c) ? typed : []),
         ];
-        if (!texts.some(isProofText)) continue;
+        // a bare yes counts only in a running session's prompt box; a spawn's first prompt approves nothing
+        const isLive = !(
+            c.name === 'claude' ||
+            (c.name === 'hc' && verbOf(words) === 'run')
+        );
+        if (!texts.some((t) => isProofText(t) || (isLive && isBareYes(t))))
+            continue;
         return {
-            door: 'send it with SendMessage, or leave that line out: «sign <id>», a dima-ok marker and an operator-override word are his to type',
+            door: 'send it with SendMessage, or leave that line out: «sign <id>», a dima-ok marker, an operator-override word and a bare yes are his to type',
             rule: 'pane-proof',
             targets: [c.name],
             why: "keys typed into a pane arrive as dima's own composer prompt, so a seat typing his proof words there could sign or unlock for itself",

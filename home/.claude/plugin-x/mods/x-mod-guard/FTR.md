@@ -204,6 +204,12 @@
   - and a ticked command piped on runs with `set -o pipefail` first, into a reader only (`tail`, `head`, `grep`, `jq`, `cat`, `wc`, `cut`, `sort`, `uniq`, `tr`, `column`, `rg`); a pipe into a shell or anything else asks again
   - and a tick, ticked command or typed sign is spent only by a run that exits 0: a failed run keeps it for the retry
   - proof: tests/herdr-close.test.ts::a tick quoting the command passes it inside a longer line: …; a tick quoting one command passes nothing else on the line: …; a ticked command that fails keeps the tick for the retry; exit 2: …; exit 7: …
+- ✅ his bare yes is his tick on the one guarded ask open (FRM-574 decided 3)
+  - given this seat's orbit holds exactly one open ⚠️ or ✍️ ask (no mark, not resolved), when dima types «yes», «go», «approve», «i approve», «merge» or «do it» as a whole prompt at the composer or the bridge, past a session's first, then it counts as his tick on that ask for 2 h, spent once like a press
+  - and none open, two open, a plain ask, «ok», «stop it», a yes inside a sentence, a peer's message or a session's first prompt opens nothing
+  - and a seat typing a bare yes into a running session's pane (`hc send`, `hc keys`, `tmux send-keys`) is refused (rule `pane-proof`): those keys land as his composer prompt; a spawn's first prompt, which approves nothing, passes
+  - makes: his yes ticks in x-mod-guard's `$.state` `yes`
+  - proof: tests/ticks.test.ts::exit 9: his typed «${word}» under one open ⚠️ ask runs its command once; exit 9: a bare yes runs nothing when …; a bare yes from … runs nothing; a session's first prompt «yes» runs nothing; a seat typing a bare yes into a pane is refused: …; a pane message that is no bare yes passes: …
 - ✅ a sign write inside a script the line runs is a sign (FRM-574 decided 6)
   - given a script run by path (`bash <file>`, on disk or written this turn) holding a sign write, then it needs his tick or typed sign like one typed on the line; with it, the script runs, and any other line of it a rule refuses refuses the call for real (an `rm` beside the sign write), its door the sign write as a call of its own
   - proof: tests/ticks.test.ts::exit 3: his typed «sign FRM-1» carries a sign write when …; exit 3: a heredoc sign write with no sign word of his is refused; exit 10: …; a script holding only the sign write runs on his typed sign, and is refused with no word of his

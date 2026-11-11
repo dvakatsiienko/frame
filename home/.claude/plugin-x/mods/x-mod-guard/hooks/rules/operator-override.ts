@@ -14,7 +14,7 @@ const NOTE_CLOSE = '</system-reminder>';
 
 // the app glues queued session notes before his composer text. a note quotes a child's words, so only what follows the
 // last close counts: the app writes that close, so a quoted one can never end the last note early
-function typedPart(text: string) {
+export function typedPart(text: string) {
     const prompt = text.trim();
     const lastClose = prompt.lastIndexOf(NOTE_CLOSE);
     if (!prompt.startsWith(NOTE_OPEN) || lastClose < 0) return prompt;
