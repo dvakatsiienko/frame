@@ -20,6 +20,14 @@ raw: `wishkeeper-cache/baseline-2026-11-11.jsonl` (one row per run, the script's
 - the first request was cold (under half its input read from cache) in 160 of 279 runs; the median warm share 0
 - 📌 writes are the biggest cost: a 1 h ttl prices every write 1.6×, so it only wins if it cuts writes by more than that, through warm starts
 
+## the two arms, kept apart
+
+- each run's arm is read off its own cache writes, never off a date: `measure.ts` tags a run `5m` (only 5 min writes), `1h` (only 1 h writes) or `mixed`, and prints one summary line per arm
+- 5 min arm: the new card from `ee5d08f9` (2026-11-11 22:51) until the commit that sets `experimental: cacheTtl: 1h`
+- 1 h arm: from that commit (planned 2026-11-18), its sha written here when it lands
+- the old card's runs (before `ee5d08f9`) are the baseline only, never part of either arm: pass `<since>` = the arm's first commit time
+- a `mixed` run (both writes) is set aside and named in its round, never averaged into either arm
+
 ## stress list
 
 - the delta read — a siesta after a batch the last run already read — the run's reads and writes against the baseline median

@@ -1,5 +1,5 @@
 // one row per wishkeeper run since a date: its requests, cache reads and writes by ttl, output, the first request's warm share, and its cost at opus 5.5 prices
-// usage: node docs/test-drive/wishkeeper-cache/measure.ts <since YYYY-MM-DDTHH:MM> [card]
+// usage: node docs/test-drive/wishkeeper-cache/measure.ts <since YYYY-MM-DDTHH:MM, local time> [card]; rows print at_utc
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -71,7 +71,7 @@ function runOf(dir: string, meta: string) {
         1e6;
     return [
         {
-            at: first.at.slice(0, 16),
+            at_utc: first.at.slice(0, 16),
             cost: Number(cost.toFixed(3)),
             first_warm: firstIn
                 ? Number(
@@ -84,24 +84,29 @@ function runOf(dir: string, meta: string) {
             read,
             requests: usages.length,
             run: path.basename(log, '.jsonl'),
+            // the arm is read off the run's own cache writes, never off a date: a 1 h write anywhere makes it the 1 h arm
+            ttl: write1h > 0 ? (write5m > 0 ? 'mixed' : '1h') : '5m',
             write1h,
             write5m,
         },
     ];
 }
 
-rows.sort((a, b) => a.at.localeCompare(b.at));
+rows.sort((a, b) => a.at_utc.localeCompare(b.at_utc));
 for (const row of rows) console.log(JSON.stringify(row));
-const total = rows.reduce((n, r) => n + r.cost, 0);
-console.log(
-    JSON.stringify({
-        cost_per_run: rows.length
-            ? Number((total / rows.length).toFixed(3))
-            : 0,
-        first_warm_median: median(rows.map((r) => r.first_warm)),
-        runs: rows.length,
-    }),
-);
+for (const ttl of ['5m', '1h', 'mixed']) {
+    const arm = rows.filter((r) => r.ttl === ttl);
+    if (!arm.length) continue;
+    const total = arm.reduce((n, r) => n + r.cost, 0);
+    console.log(
+        JSON.stringify({
+            cost_per_run: Number((total / arm.length).toFixed(3)),
+            first_warm_median: median(arm.map((r) => r.first_warm)),
+            runs: arm.length,
+            ttl,
+        }),
+    );
+}
 
 function median(values: number[]) {
     const s = [...values].sort((a, b) => a - b);
