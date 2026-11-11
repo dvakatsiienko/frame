@@ -78,6 +78,7 @@ function world(
         idleSince = null as number | null,
         newFile = false,
         passFor = undefined as string | undefined,
+        press = undefined as string | undefined,
         ticks = [] as {
             id: string;
             text: string;
@@ -95,7 +96,16 @@ function world(
     on('state.get', (_$, e, next) =>
         e.plugin === 'x-mod-stash' && e.key === 'ticks'
             ? { value: { value: ticks, version: 1 } }
-            : next(e),
+            : e.plugin === 'x-mod-stash' && e.key === 'orbit' && press
+              ? {
+                    value: {
+                        value: {
+                            asks: [{ id: 'o7', mark: 'accepted', text: press }],
+                        },
+                        version: 1,
+                    },
+                }
+              : next(e),
     );
     on('env.get', (_$, e) => ({
         value: e.name === 'HOME' ? '/home' : undefined,
@@ -117,20 +127,22 @@ function world(
     }));
     on('fs.read', (_$, e) => ({
         value:
-            e.path === `${STORE}/${FILE}`
-                ? JSON.stringify({
-                      [`hold:${A}:${held}`]: {
-                          at: NOW - 3 * MIN,
-                          file: held,
-                          landed: true,
-                          top: '/repo',
-                      },
-                      [`holder:${A}`]: { idleSince, pid: 100, start: START },
-                      ...(passFor
-                          ? { [`pass:${passFor}:${held}`]: { at: NOW } }
-                          : {}),
-                  })
-                : '{}',
+            press && e.path === `/home/.claude/shelf/orbit-ticks/${B}.jsonl`
+                ? `${JSON.stringify({ at: NOW - MIN, id: 'o7', text: press, verdict: 'tick' })}\n`
+                : e.path === `${STORE}/${FILE}`
+                  ? JSON.stringify({
+                        [`hold:${A}:${held}`]: {
+                            at: NOW - 3 * MIN,
+                            file: held,
+                            landed: true,
+                            top: '/repo',
+                        },
+                        [`holder:${A}`]: { idleSince, pid: 100, start: START },
+                        ...(passFor
+                            ? { [`pass:${passFor}:${held}`]: { at: NOW } }
+                            : {}),
+                    })
+                  : '{}',
     }));
     on('fs.stat', (_$, e) => {
         if (newFile && e.path === '/repo/new.ts') throw new Error('ENOENT');
@@ -251,4 +263,14 @@ test("another session's pass opens nothing for this one", async ($, on) => {
     expect((await bash($, "sd 'a' 'b' x.ts")).deny).toMatch(
         /held by session b1b1b1b1/,
     );
+});
+
+// 12b (FRM-544 slice 2g): his press on x-herdr-deck on that ask clears the held file as his orbit tick does
+test('a Bash write to a held file runs once on his x-herdr-deck press quoting the file', async ($, on) => {
+    const w = world(on, { press: 'let B write `/repo/x.ts`' });
+    expect((await bash($, "sd 'a' 'b' x.ts")).deny).toBeUndefined();
+    expect((await bash($, "sd 'c' 'd' x.ts")).deny).toMatch(
+        /^x-mod-holds: \/repo\/x\.ts is held by session b1b1b1b1/,
+    );
+    expect(w.ran).toHaveLength(1);
 });
