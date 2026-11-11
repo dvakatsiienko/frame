@@ -5,22 +5,22 @@ our own mods for herdr, the fleet's cockpit. this dir mirrors `~/.config/herdr-a
 read first, in order:
 - `~/frame/herdr/PRODUCT.md` whole: what herdr is for dima, his values, the facts every seat must know
 - `~/frame/AGENTS.md` § the boundary: what is built here, what is a cc mod's, what is an `x` verb
-- `~/.config/herdr-app/AGENTS.md`: herdr's own guide, whole once, then by section; its `.d.ts` files are the api's truth
+- `~/.config/herdr-app/AGENTS.md`: herdr's own guide, whole once; its `.d.ts` files are the api's truth
 - the skills `x:herdr-customize` and `x:herdr`, then `x:guide-code` and `x:guide-ui-ux` before the first edit
 
 ## what he wants in every chunk
 
 dima's values are standing rules here (PRODUCT.md § the values quotes them). a chunk that breaks one is not done:
 
-- pretty and sharp, never clunky: a shot of every visible change goes to him, its absolute path in the reply
+- pretty and sharp, never clunky: a shot of every visible change goes to him, its path in the reply
 - ux first: every state, input and edge he meets; hotkeys welcome
 - a feature that has a choice gets its settings row, the essential knobs only, never an overload; a preference never hides in code
 - slipstream first wherever he talks to a seat, with visible feedback that it worked
 - cheap to change stays cheap: one mod per feature, plain JS, colours from `theme()`, no layer a newcomer must learn first
 - his word wins over every guard: none locks him out of any action, a merge and a delete just work; his tick and his override switch work from a guard's first commit
 - hot reload is smooth or not done: at once, no flicker, no shifted tabs, no lost text
-- no ring on a pressed or focused button: hover is its feedback
 - he lives in the Chat view: a thing he must see or click is drawn there, never only in Terminal view
+- a ux fix he wants herdr-wide lands its rule in `herdr/PRODUCT.md` § the values the same turn; later builds follow it
 
 ## for a sixth sense
 
@@ -47,5 +47,4 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 ## hazards
 
 - a `hc run --no-parent` seat has no tab until `skills/herdr/scripts/seat-tab.ts` gives it one
-- `hc ls --json` is an object, `.terminals[]`
 - a helper green in vitest can lack a herdr global (`TextEncoder`); `check` renders one frame: after a landing, shoot a view that ran it

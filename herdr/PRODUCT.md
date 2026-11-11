@@ -50,6 +50,7 @@ dima's words:
 - **every feature gets its settings row**, the essential knobs only, in one clean settings surface
 - **slipstream first** wherever he talks to a seat: a send that joins the next turn before a send that starts one, each with visible feedback
 - **cheap to modify stays cheap**: one mod per feature, plain JS, no clever layers
+- **no ring on a pressed or focused button**: hover is its only feedback; a text field keeps its focus ring
 
 ## theming
 
