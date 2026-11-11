@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('herdr', () => ({ appHome: () => '/app', exec: vi.fn() }));
-const { parseShots, shotsWith, shotsWithout } = await import('./shots.js');
+const { parseShots, shotsAfter, shotsWith, shotsWithout } = await import(
+    './shots.js'
+);
 
 describe('parseShots', () => {
     it('reads a store of thread addresses to preview paths', () => {
@@ -35,5 +37,26 @@ describe('the store per thread', () => {
         expect(shotsWithout({ t1: ['a.png'], t2: ['b.png'] }, 't1')).toEqual({
             t2: ['b.png'],
         });
+    });
+});
+
+describe('shotsAfter', () => {
+    const a = 'data/x-herdr-chatter/shots/shot-1000.png';
+    const b = 'data/x-herdr-chatter/shots/shot-3000.png';
+    it('drops the previews his prompt at that time took', () => {
+        expect(shotsAfter({ t1: [a, b] }, 't1', 2000)).toEqual({
+            gone: [a],
+            store: { t1: [b] },
+        });
+    });
+    it('clears the thread when every preview went', () => {
+        expect(shotsAfter({ t1: [a], t2: [b] }, 't1', 2000)).toEqual({
+            gone: [a],
+            store: { t2: [b] },
+        });
+    });
+    it('keeps the same store when nothing is older', () => {
+        const store = { t1: [b] };
+        expect(shotsAfter(store, 't1', 2000).store).toBe(store);
     });
 });

@@ -1,7 +1,7 @@
 // Screenshots pasted into the box, shown above it until sent. Claude Code reads the clipboard
 // itself on its paste key; a copy saved here is only the preview, kept per thread in shots.json
 // so a chat reload still shows what waits in Claude's prompt.
-import { mkdir, readFile, writeFile } from 'fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'fs/promises';
 import { appHome, exec } from 'herdr';
 
 // image() loads from the app's own directory, so the previews live under it
@@ -52,6 +52,38 @@ export const shotsWith = (store, address, rel) => ({
 export function shotsWithout(store, address) {
     const { [address]: _gone, ...rest } = store;
     return rest;
+}
+
+// a preview's paste time, from its name (saveClipboardShot writes shot-<ms>.png)
+/** @param {string} rel */
+export const shotTime = (rel) => Number(/shot-(\d+)\.png$/.exec(rel)?.[1] ?? 0);
+
+/**
+ * a thread's previews pasted after `at` (his prompt that took the older ones), and the ones that go
+ * @param {ShotStore} store @param {string} address @param {number} at
+ * @returns {{ store: ShotStore, gone: string[] }}
+ */
+export function shotsAfter(store, address, at) {
+    const list = store[address] ?? [];
+    const kept = list.filter((rel) => shotTime(rel) > at);
+    if (kept.length === list.length) return { gone: [], store };
+    const gone = list.filter((rel) => !kept.includes(rel));
+    return {
+        gone,
+        store: kept.length
+            ? { ...store, [address]: kept }
+            : shotsWithout(store, address),
+    };
+}
+
+// the preview files this chat saved: never anything outside SHOTS_DIR
+/** @param {string[]} rels */
+export async function deleteShots(rels) {
+    await Promise.all(
+        rels
+            .filter((rel) => rel.startsWith(`${SHOTS_DIR}/shot-`))
+            .map((rel) => unlink(`${appHome()}/${rel}`).catch(() => {})),
+    );
 }
 
 /** @returns {Promise<ShotStore>} */

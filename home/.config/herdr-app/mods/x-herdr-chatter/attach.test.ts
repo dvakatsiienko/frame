@@ -45,3 +45,17 @@ describe('fileName', () => {
         expect(fileName('/Users/d/notes/plan.md')).toBe('plan.md');
     });
 });
+
+describe('promptPath, the shell characters', () => {
+    it('escapes brackets, an ampersand and a dollar', () => {
+        expect(promptPath('/d/a [1] & $x.md')).toBe(
+            '/d/a\\ \\[1\\]\\ \\&\\ \\$x.md',
+        );
+    });
+});
+
+describe('promptPath, letters outside ascii', () => {
+    it('leaves a Cyrillic name as it is', () => {
+        expect(promptPath('/d/знімок.png')).toBe('/d/знімок.png');
+    });
+});

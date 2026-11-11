@@ -18,6 +18,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then «Queued, joins this turn:» and the message's start sit over the log's bottom edge, «+n more» past the first, the log never moving
   - and the chip leaves the moment the message's row reaches the transcript, where it draws as his message
   - and a thread that sat idle 5 s with the message never in its transcript drops the chip
+  - and «Send now» at the strip's end presses Claude Code's own Ctrl+Enter when its screen offers «ctrl+enter to send now», «Sending…» meanwhile; offered nothing, it says «Claude takes it at its next step» for 4 s
+  - decision: Edit and × on a queued message stay out: Claude Code's queue has no edit, they need our own hold first (clio, 23:05)
   - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the box empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
 - ⬜ his messages sit in bubbles on the right, Claude's on the left (FRM-562)
   - given «Your messages» in the chat settings is Bubbles, the default
@@ -85,12 +87,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread done with its turn, Claude Code's own box holding its dim suggestion, his box empty
   - then a dim «Tab <suggestion>» line sits above the box
   - when dima presses Tab in the empty box, or clicks the line
-  - then the suggestion fills his box, ready to edit or send; typing anything hides the line
-  - and a new session's «Try "…"» placeholder never shows as a suggestion
+  - then the suggestion fills his box, ready to edit or send, and Claude Code's own box is emptied so a send never glues onto it; typing anything hides the line
+  - and a new session's «Try "…"» placeholder never shows as a suggestion, nor anything while the thread works or asks
 - ⬜ the working row times the turn
   - given a thread at work
-  - then the row above the box shows the spinner, what Claude Code says it does, and the time since his prompt as m:ss (h:mm:ss past an hour), counting each second
-  - and the count redraws only while the shown thread works
+  - then the row above the box shows the spinner, what Claude Code says it does, and the time since his prompt in whole minutes («<1 min», «4 min», «1 h 05 min»)
+  - and it redraws once a minute, only while the shown thread works; a slash command or an interruption never restarts it
+  - decision: whole minutes, never seconds: each redraw rebuilds the chat and drops a text selection in progress (review, 00:05)
 - ⬜ effort switches while a turn runs
   - given a thread at work, a reply streaming
   - when dima picks another effort in the box's effort menu

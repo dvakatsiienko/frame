@@ -77,9 +77,11 @@ import {
     rowSizes,
 } from './rows.js';
 import {
+    deleteShots,
     loadShots,
     saveClipboardShot,
     saveShots,
+    shotsAfter,
     shotsWith,
     shotsWithout,
 } from './shots.js';
@@ -276,13 +278,16 @@ const FLIP_LIMIT = 4;
 const MEASURE_BATCH_MS = 32;
 // his message's last px, where its fork icon sits: a press there forks (rows take no handlers, clickRow)
 const FORK_W = 28;
-/** a running turn's length: «m:ss», «h:mm:ss» past an hour @param {number} ms */
+/** a thread done with its turn and asking nothing: its box is his @param {any} agent */
+const isWaitingOnHim = (agent) =>
+    agent.status === 'idle' || agent.status === 'done';
+/** a running turn's length in whole minutes: «<1 min», «4 min», «1 h 05 min» @param {number} ms */
 const turnClock = (ms) => {
-    const s = Math.max(0, Math.floor(ms / 1000));
-    const pad = (/** @type {number} */ n) => String(n).padStart(2, '0');
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    return h ? `${h}:${pad(m)}:${pad(s % 60)}` : `${m}:${pad(s % 60)}`;
+    const m = Math.max(0, Math.floor(ms / 60000));
+    if (m < 1) return '<1 min';
+    return m < 60
+        ? `${m} min`
+        : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min`;
 };
 /** a message as a markdown quote, every line under «> » @param {string} text */
 const quoted = (text) =>
@@ -1287,6 +1292,8 @@ export default class ClaudeChat extends View {
         this.pasted = new Map();
         // previews of the screenshots waiting in each thread's Claude prompt (see shots.js)
         this.shots = {};
+        // when each thread last sent, so a preview saved after the send it rode never shows
+        this.sentAt = new Map();
         // files picked with + or dropped on the box, by agent address, sent as paths with the next message
         this.files = new Map();
         // the message a reply answers, by agent address: shown above the box, sent quoted before the text
@@ -1459,8 +1466,9 @@ export default class ClaudeChat extends View {
             this.findStep(e.shift ? 1 : -1, cx),
         );
         cx.timer.every(2000, (cx) => this.tick(cx));
-        // the working row's turn timer: one redraw a second, only while the shown thread works
-        cx.timer.every(1000, (cx) => {
+        // the working row's turn timer in whole minutes: a redraw rebuilds the markdown and drops a selection in
+        // progress, so it redraws once a minute, only while the shown thread works
+        cx.timer.every(60000, (cx) => {
             if (this.turnAt && this.target()?.status === 'working') cx.notify();
         });
         this.tick(cx);
@@ -1751,7 +1759,9 @@ export default class ClaudeChat extends View {
                     await cx.sleep(150);
                     if (ready(await screen())) return;
                 }
-                await hc(['keys', address, 'esc']);
+                // Esc mid-turn would stop the turn: only an idle thread gets one to close a stray picker
+                if (this.target()?.status !== 'working')
+                    await hc(['keys', address, 'esc']);
                 throw new Error(`Claude's ${what} picker didn't open`);
             };
             try {
@@ -2491,13 +2501,23 @@ export default class ClaudeChat extends View {
             }
             const content = d.message?.content;
             if (d.type === 'user') {
-                // his prompt starts the turn the working row times; a tool result is no prompt
+                // his prompt starts the turn the working row times; a tool result, a slash command's echo
+                // (<command-name>, <local-command-stdout>) or an interruption note is no prompt
+                const said =
+                    typeof content === 'string'
+                        ? content
+                        : content?.find?.((b) => b?.type === 'text')?.text;
                 if (
                     into === this &&
-                    (typeof content === 'string' ||
-                        content?.some?.((b) => b?.type === 'text'))
-                )
-                    this.turnAt = Date.parse(d.timestamp ?? '') || this.turnAt;
+                    said &&
+                    !/^\s*(?:<[\w-]+>|\[Request interrupted)/.test(said)
+                ) {
+                    const at = Date.parse(d.timestamp ?? '');
+                    if (at) {
+                        this.turnAt = at;
+                        this.forgetShotsBefore(this.address, at);
+                    }
+                }
                 // The reply before this message: a fork "before this message" resumes up to it.
                 const before =
                     into === this && this.lastReply?.session === d.sessionId
@@ -2869,7 +2889,11 @@ export default class ClaudeChat extends View {
         const address = this.address;
         if (this.where?.container)
             return this.pasteIntoContainer(address, this.where, cx);
+        // the count belongs to the thread it was pasted into: another thread's box shows none of it
+        if (this.imagesFor !== address) this.images = 0;
+        this.imagesFor = address;
         this.images = (this.images ?? 0) + 1;
+        const pastedAt = Date.now();
         cx.spawn(async (cx) => {
             await hc([
                 'keys',
@@ -2878,6 +2902,9 @@ export default class ClaudeChat extends View {
             ]);
             const rel = await saveClipboardShot();
             if (!rel) return;
+            // a send that left before the preview was saved took this image along: no preview for it
+            if ((this.sentAt.get(address) ?? 0) >= pastedAt)
+                return deleteShots([rel]);
             this.shots = shotsWith(this.shots, address, rel);
             await saveShots(this.shots);
             cx.notify();
@@ -2937,7 +2964,10 @@ export default class ClaudeChat extends View {
     imageCount(address) {
         return this.where?.container
             ? (this.pasted.get(address)?.length ?? 0)
-            : Math.max(this.images ?? 0, this.shots[address]?.length ?? 0);
+            : Math.max(
+                  this.imagesFor === address ? (this.images ?? 0) : 0,
+                  this.shots[address]?.length ?? 0,
+              );
     }
 
     // A prompt Claude Code put back into its own box (a Stop on a sent message does it) is hidden from this view, and the
@@ -2965,6 +2995,36 @@ export default class ClaudeChat extends View {
 
     // [take it]: the text into the chat box, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
     // stops Claude (proven on a throwaway seat: full, empty and mid-turn). [send as is]: Enter on Claude's own box.
+    // Send now on a message waiting in Claude Code's own queue: its Ctrl+Enter takes it at once, mid-turn, pressed only
+    // when its screen offers «ctrl+enter to send now» (on an empty prompt the key does something else). After
+    // shepherdr's steerNow (core/send.js, MIT).
+    sendNow(cx) {
+        const address = this.address;
+        this.steering = true;
+        cx.notify();
+        cx.spawn(async (cx) => {
+            let isPressed = false;
+            for (let i = 0; i < 4 && !isPressed; i++) {
+                await cx.sleep(i ? 300 : 150);
+                const r = await hc(['read', address, '--lines', '40']).catch(
+                    () => null,
+                );
+                if (/ctrl\+enter to send now/i.test(r?.stdout ?? '')) {
+                    await hc(['keys', address, 'ctrl+enter']);
+                    isPressed = true;
+                }
+            }
+            this.steering = isPressed
+                ? null
+                : 'Claude takes it at its next step';
+            cx.notify();
+            if (isPressed) return;
+            await cx.sleep(4000);
+            this.steering = null;
+            cx.notify();
+        });
+    }
+
     takeLeft(cx) {
         const text = this.leftInBox,
             address = this.address;
@@ -3104,9 +3164,27 @@ export default class ClaudeChat extends View {
 
     /** a send or a Remove takes the screenshots out of Claude's prompt: their previews go too */
     forgetShots(address, cx) {
-        if (!this.shots[address]) return;
+        this.sentAt.set(address, Date.now());
+        const gone = this.shots[address];
+        if (!gone) return;
         this.shots = shotsWithout(this.shots, address);
-        cx.spawn(async () => saveShots(this.shots));
+        cx.spawn(async () => {
+            await saveShots(this.shots);
+            await deleteShots(gone);
+        });
+    }
+
+    // his prompt in the transcript took every screenshot pasted before it, wherever he sent it from (the
+    // Terminal view, a Stop that emptied Claude's prompt): those previews go
+    /** @param {string | null} address @param {number} at */
+    forgetShotsBefore(address, at) {
+        if (!address) return;
+        const { gone, store } = shotsAfter(this.shots, address, at);
+        if (!gone.length) return;
+        this.shots = store;
+        saveShots(store)
+            .then(() => deleteShots(gone))
+            .catch(() => {});
     }
 
     // A copy of this conversation in a new tab of the same space: `claude --resume <id> --fork-session`
@@ -5707,13 +5785,23 @@ export default class ClaudeChat extends View {
             : null;
     }
 
+    // the text read off Claude's box may be his own typing there, not a dim suggestion (the screen reads both
+    // the same): Claude's box is emptied as takeLeft does, so the next send never glues onto it
     takeGhost(cx) {
         const text = this.ghostFor(this.address);
-        if (!text) return;
+        const address = this.address;
+        if (!text || !address) return;
         this.box.set_value(text);
         this.typed = text;
-        keepDraft(this.address, text);
+        keepDraft(address, text);
         this.ghost = null;
+        const keys = [
+            ...(this.leftNormal ? ['i'] : []),
+            ...Array((Math.ceil(text.length / 40) + 2) * 2).fill('ctrl+u'),
+        ];
+        cx.spawn(async () => {
+            await hc(['keys', address, ...keys]);
+        });
         this.box.focus();
         cx.notify();
     }
@@ -5792,6 +5880,12 @@ export default class ClaudeChat extends View {
                             'model-switch',
                             `Switch to ${value}`,
                             (_e, cx) => {
+                                // a turn started since the card opened: /model mid-turn would queue behind it
+                                if (this.target()?.status === 'working') {
+                                    this.pickNote =
+                                        'Claude is working: switch after this turn';
+                                    return close(cx);
+                                }
                                 close(cx);
                                 this.pick('model', value, address, cx);
                             },
@@ -6383,6 +6477,24 @@ export default class ClaudeChat extends View {
                                                 `+${queued.length - 1} more`,
                                             ),
                                     ),
+                                )
+                                .child(
+                                    this.steering
+                                        ? div()
+                                              .flex_none()
+                                              .text_color(t.dim)
+                                              .child(
+                                                  this.steering === true
+                                                      ? 'Sending…'
+                                                      : this.steering,
+                                              )
+                                        : button(
+                                              t,
+                                              px,
+                                              'send-now',
+                                              'Send now',
+                                              (_e, cx) => this.sendNow(cx),
+                                          ),
                                 ),
                         ),
                     )
@@ -6461,7 +6573,7 @@ export default class ClaudeChat extends View {
                         ),
                     )
                     .when(
-                        agent.status !== 'working' &&
+                        isWaitingOnHim(agent) &&
                             Boolean(this.ghostFor(agent.address)),
                         (el) =>
                             el.child(
@@ -6575,7 +6687,7 @@ export default class ClaudeChat extends View {
                             )
                             .when(
                                 !menu &&
-                                    agent.status !== 'working' &&
+                                    isWaitingOnHim(agent) &&
                                     Boolean(this.ghostFor(agent.address)),
                                 (el) => el.key_context('ChatGhost'),
                             )

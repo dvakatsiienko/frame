@@ -46,4 +46,5 @@ export const withFiles = (list, added) => [
 export const fileName = (path) => path.split('/').filter(Boolean).pop() ?? path;
 
 /** a path the way a file dropped on a terminal types it, spaces escaped @param {string} path */
-export const promptPath = (path) => path.replace(/([ ()'"])/g, '\\$1');
+export const promptPath = (path) =>
+    path.replace(/([\s()'"[\]&$;|<>*?!#`{}\\])/g, '\\$1');
