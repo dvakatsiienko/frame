@@ -20,6 +20,7 @@ import {
     herdrCloseOf,
     herdrLabelsOf,
     isClioSeat,
+    isHerdrTabNew,
 } from './rules/herdr-close.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
 import { linearWrite } from './rules/linear.ts';
@@ -1096,22 +1097,23 @@ async function tickFor(
 const YES = { key: 'yes', plugin: 'x-mod-guard' } as const;
 const YES_SEEN = { key: 'yesSeen', plugin: 'x-mod-guard' } as const;
 async function keepYes($: EngineInterface, text: string, isFirst: boolean) {
-    const { value: orbit } = await $.state
-        .get(STASH_ORBIT)
-        .catch(() => ({ value: undefined }));
-    const open = (orbit?.asks ?? []).filter(
+    // an orbit read that fails keeps the last snapshot: an empty one would make every old ask new
+    const read = await $.state.get(STASH_ORBIT).catch(() => undefined);
+    if (!read) return;
+    const open = (read.value?.asks ?? []).filter(
         (a) =>
             !a.mark &&
             !a.isResolved &&
             !a.isClosed &&
             /^\s*(⚠️|✍️)/u.test(a.text),
     );
-    const { value: seen = [] } = await $.state.get(YES_SEEN);
+    const { value: seen } = await $.state.get(YES_SEEN);
     await $.state.set(
         YES_SEEN,
         open.map((a) => `${a.id}\n${a.text}`),
     );
-    if (isFirst || !isBareYes(typedPart(text))) return;
+    // no snapshot yet (a session from before this rule): nothing is known to be new, so nothing ticks
+    if (!seen || isFirst || !isBareYes(typedPart(text))) return;
     const fresh = open.filter((a) => !seen.includes(`${a.id}\n${a.text}`));
     const [ask] = fresh;
     if (fresh.length !== 1 || !ask) return;
@@ -1561,8 +1563,11 @@ async function herdrSafeOf($: EngineInterface, command: string, cwd: string) {
     const window = closes.some((c) => c.scope !== 'terminal')
         ? await herdrJson($, ['herdr-app', 'ls'])
         : undefined;
+    const { value: made = [] } = await $.state
+        .get(TABS_MADE)
+        .catch(() => ({ value: [] }));
     for (const close of closes.filter((c) => c.scope !== 'overlay')) {
-        const terminals = terminalsOf(close, window);
+        const terminals = terminalsOf(close, window, made);
         if (!terminals) continue;
         let isSafe = true;
         for (const t of terminals) {
@@ -1598,6 +1603,25 @@ async function isClioCaller($: EngineInterface, self: string | undefined) {
     const got = await herdrJson($, ['hc', 'get', self, '--json']);
     return got?.state === 'live' && isClioSeat(got.labels?.seat);
 }
+// the tabs this seat's own tab.new printed (r1, sixth sense's spec read: a mod-only tab closes on its owner's command
+// only, so one of dima's mod panels in a tab of its own stays his); a line that echoes a tab id beside a tab.new can
+// still claim one, a local guard's limit
+const TABS_MADE = { key: 'tabsMade', plugin: 'x-mod-guard' } as const;
+async function keepTabsMade(
+    $: EngineInterface,
+    command: string,
+    cwd: string,
+    text: unknown,
+) {
+    if (typeof text !== 'string') return;
+    if (!commandsDeep(command, cwd).some(isHerdrTabNew)) return;
+    const ids = [...text.matchAll(/"tab":\s*"(tb[0-9a-f]+)"/g)].flatMap((m) =>
+        m[1] ? [m[1]] : [],
+    );
+    if (!ids.length) return;
+    const { value: made = [] } = await $.state.get(TABS_MADE);
+    await $.state.set(TABS_MADE, [...made, ...ids].slice(-50));
+}
 type HerdrWindow = {
     spaces?: {
         id?: string;
@@ -1608,7 +1632,11 @@ type HerdrWindow = {
     }[];
 };
 // the terminals a close ends, as the window lists them; undefined when its target is not there
-function terminalsOf(close: HerdrClose, window: HerdrWindow | undefined) {
+function terminalsOf(
+    close: HerdrClose,
+    window: HerdrWindow | undefined,
+    made: string[] = [],
+) {
     if (close.scope === 'terminal')
         return close.target ? [close.target] : undefined;
     const spaces = window?.spaces ?? [];
@@ -1623,11 +1651,19 @@ function terminalsOf(close: HerdrClose, window: HerdrWindow | undefined) {
         .flatMap((t) => t.terminals ?? [])
         .filter((t) => close.scope !== 'pane' || t.pane === close.target)
         .flatMap((t) => (t.terminal ? [t.terminal] : []));
-    // a tab or space herdr lists with no terminal holds only mods, so its close ends none (r1: a pin-probe tab); a pane
-    // herdr never lists a mod's, so an empty pane stays unnamed
+    // a tab herdr lists with no terminal holds only mods, so its close ends none, the seat's own tab.new tab alone (r1: a
+    // pin-probe tab); a pane herdr never lists a mod's, so an empty pane or space stays unnamed
+    // only a whole listing counts: a tab with no `terminals` array, or an entry with no terminal id, is unread
+    const isWhole = tabs.every(
+        (t) =>
+            Array.isArray(t.terminals) &&
+            t.terminals.every((x) => typeof x.terminal === 'string'),
+    );
     const isNamed =
-        (close.scope === 'tab' && tabs.length > 0) ||
-        (close.scope === 'space' && spaces.some((s) => s.id === close.target));
+        isWhole &&
+        close.scope === 'tab' &&
+        tabs.length > 0 &&
+        made.includes(close.target ?? '');
     return terminals.length || isNamed ? terminals : undefined;
 }
 async function herdrJson($: EngineInterface, argv: string[]) {
@@ -2036,6 +2072,10 @@ export const register: Register = (on) => {
             const result = await next(
                 run !== typed ? { ...e, command: run } : e,
             );
+            if (result.deny === undefined && !result.isError)
+                await keepTabsMade($, typed, cwd, result.text).catch(
+                    () => undefined,
+                );
             // a call that failed never spends his word: the retry passes on it (FRM-574 decided 7)
             if (
                 (result.deny !== undefined || result.isError) &&

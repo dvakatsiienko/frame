@@ -27,6 +27,7 @@ function world(
         markedAt?: number;
         isResolved?: boolean;
     }[] = [],
+    opts: { isOrbitDown?: () => boolean; isPrompted?: boolean } = {},
 ) {
     const clock = mock.clock(on, { now: NOW });
     const store = liveStore(on);
@@ -36,8 +37,14 @@ function world(
         e.plugin === 'x-mod-stash' && e.key === 'ticks'
             ? { value: { value: ticks, version: 1 } }
             : e.plugin === 'x-mod-stash' && e.key === 'orbit'
-              ? { value: { value: { asks }, version: 1 } }
-              : next(e),
+              ? opts.isOrbitDown?.()
+                  ? { deny: 'store down' }
+                  : { value: { value: { asks }, version: 1 } }
+              : opts.isPrompted &&
+                  e.plugin === 'x-mod-guard' &&
+                  e.key === 'prompted'
+                ? { value: { value: true, version: 1 } }
+                : next(e),
     );
     on('session.id', () => ({ value: 't1t1t1t1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
@@ -2110,6 +2117,48 @@ test('a bare yes answers the one ask added since his last prompt, an older one b
     const { ran } = world(on, [], undefined, undefined, orbit);
     await askedThenSays($, orbit, OPEN_MIRROR, 'yes');
     expect([(await bash($, MIRROR)).deny, ran]).toEqual([undefined, [MIRROR]]);
+    expect((await bash($, 'git stash drop')).deny).toContain('stash');
+});
+
+// wisphunter on bc030709: a failed orbit read keeps the last snapshot, and a session with none ticks nothing
+test('a bare yes after a failed orbit read runs nothing for the ask open before', async ($, on) => {
+    let isDown = false;
+    const { ran } = world(on, [], undefined, undefined, OPEN_MIRROR, {
+        isOrbitDown: () => isDown,
+    });
+    await dimaSays($, 'go on');
+    isDown = true;
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'ok',
+        wait: false,
+    });
+    isDown = false;
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'yes',
+        wait: false,
+    });
+    expect([(await bash($, MIRROR)).deny, ran]).toEqual([
+        expect.stringContaining('mirror'),
+        [],
+    ]);
+});
+
+test('a bare yes in a session with no snapshot yet runs nothing', async ($, on) => {
+    // a session prompted before this rule: its prompted mark stands, no snapshot was ever taken
+    const { ran } = world(on, [], undefined, undefined, OPEN_MIRROR, {
+        isPrompted: true,
+    });
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'yes',
+        wait: false,
+    });
+    expect([(await bash($, MIRROR)).deny, ran]).toEqual([
+        expect.stringContaining('mirror'),
+        [],
+    ]);
 });
 
 test('a bare yes answers an ask followed since his last prompt', async ($, on) => {

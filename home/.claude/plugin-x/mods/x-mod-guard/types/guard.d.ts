@@ -15,6 +15,8 @@ declare module 'claude-code' {
         'x-mod-guard': {
             yes: { id: string; text: string; targets: string[]; at: number }[];
             yesSeen: string[];
+            // tabsMade: the herdr tab ids this seat's own `herdr-app do tab.new` printed, the tabs it may close once they hold no terminal
+            tabsMade: string[];
             signs: { id: string; at: number }[];
             firstSign: { ids: string[]; at: number } | null;
             prompted: boolean;

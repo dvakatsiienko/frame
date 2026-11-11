@@ -66,6 +66,15 @@ const jsonOf = (word: string | undefined) => {
     }
 };
 
+// a seat's own `herdr-app do tab.new`, its verb a word or the json's name: the tab it prints is the seat's to close
+export function isHerdrTabNew(c: Command) {
+    const words = c.args.map((w) => w.text);
+    if (c.name !== 'herdr-app' || words[0] !== 'do') return false;
+    return words
+        .slice(1)
+        .some((w) => w === 'tab.new' || jsonOf(w)?.name === 'tab.new');
+}
+
 export const herdrCloseKey = (close: HerdrClose) =>
     `${close.scope}:${close.target ?? ''}`;
 

@@ -123,6 +123,11 @@ const WINDOW = {
             ],
         },
         { id: 'sp2', tabs: [{ id: 'tb4', terminals: [] }] },
+        // wisphunter's rows: a tab whose listing is not whole is unread
+        {
+            id: 'sp3',
+            tabs: [{ id: 'tb5', terminals: [{ pane: 'p5' }] }, { id: 'tb6' }],
+        },
     ],
 };
 type Tick = { at: number; id: string; targets: string[]; text: string };
@@ -203,8 +208,15 @@ function world(
     on('tool.call', (_$, e) => {
         const command = 'command' in e ? String(e.command) : '';
         ran.push(command);
-        return [...fail].some((f) => command.includes(f))
-            ? { isError: true as const, result: {}, text: 'failed' }
+        if ([...fail].some((f) => command.includes(f)))
+            return { isError: true as const, result: {}, text: 'failed' };
+        // herdr's answer to a tab.new, as the real one prints it (2026-11-11 16:40)
+        const made = command.match(/"name":"(tb\w+)"/)?.[1];
+        return made
+            ? {
+                  result: {},
+                  text: `{\n  "space": "sp1",\n  "tab": "${made}",\n  "pane": "p9"\n}`,
+              }
             : { result: {}, text: 'ran' };
     });
     return { fail, ran, store };
@@ -239,6 +251,11 @@ for (const line of [
     'herdr-app do pane.close --pane p9',
     'herdr-app do tab.close --id tb2',
     'herdr-app do tab.close --id tb9',
+    // r1: a mod-only tab this seat never made (one of dima's mod panels) stays his
+    'herdr-app do tab.close --id tb3',
+    'herdr-app do space.close --id sp2',
+    'herdr-app do tab.close --id tb5',
+    'herdr-app do tab.close --id tb6',
     'herdr-app do space.close --id sp1 --confirmed true',
     'echo ok && herdr-app do overlay.close',
     'hc ls; hc kill t20',
@@ -257,9 +274,6 @@ for (const line of [
     'herdr-app do overlay.close --id palette',
     'herdr-app do pane.close --pane p1',
     'herdr-app do tab.close --id tb1',
-    // r1: a mod-only tab ends no terminal (the herdr codie's pin-probe close, refused 16:05)
-    `herdr-app do tab.close '{"id":"tb3"}' >/dev/null`,
-    'herdr-app do space.close --id sp2',
     'herdr-app do pane.split',
     'hc kill --help 2>&1 | head -15',
     `herdr-app do overlay.close '{"id":"x-probe-setvalue"}' | tr -d '\\n'`,
@@ -502,3 +516,16 @@ test('hc run starting a plain program runs', async ($, on) => {
     const { ran } = world(on);
     expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
 });
+
+// r1, the herdr codie's pin-probe close refused 16:05: a seat closes a mod-only tab its own tab.new made
+for (const made of ['tb3', 'tb5'])
+    test(`a mod-only tab this seat made closes, a half-listed one never: ${made}`, async ($, on) => {
+        const { ran } = world(on);
+        const open = `herdr-app do tab.new '{"name":"${made}","mod":"x-herdr-chatter"}' && herdr-app status`;
+        expect((await bash($, open)).deny).toBe(undefined);
+        const close = `herdr-app do tab.close '{"id":"${made}"}' >/dev/null`;
+        const r = await bash($, close);
+        expect([r.deny === undefined, ran]).toEqual(
+            made === 'tb3' ? [true, [open, close]] : [false, [open]],
+        );
+    });
