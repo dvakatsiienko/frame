@@ -19,5 +19,8 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr-tabs** — our tab bar above a space's panes, each agent tab by its session name; copied from zoo's `my-tabs` (FRM-567)
 - **draft** — what dima has typed in a box and not yet sent; kept per seat across a reload
 - **ask** — an orbit ask a seat put on his board; a **tick** (🛎️) accepts it, a **replay** (🔁) sends it back with his steer
+- **code block** — a fenced block in a reply, drawn with a ⧉ copy button that copies its text
+- **prompt card** — a fenced block under a 📋 ribbon naming a session or an agent; a click puts its prompt in dima's box, unsent
+- **chip** — inline code in the box drawn as one monospace token; the caret skips it, one delete removes it
 - **land** — copy a mod from frame into herdr's real mods folder (`pnpm herdr-mods:land`); the **watcher** lands each save that passes `herdr-app check`
 - **zoo** — the third-party setup our chat and layout were borrowed from; being taken over until its name appears nowhere

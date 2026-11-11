@@ -96,6 +96,19 @@ wish: PK-363
   - when dima clicks its 🛎️ on fleet-board
   - then that one action passes once, and fleet-board's own guarded-ask pattern is gone
 
+- ✅ an untick puts the ask back as it was before the tick
+  - given dima ticked an ask
+  - when he clicks ✅ ticked again
+  - then the ask draws open at once, its steer box and 🛎️ tick back, and his next tick lands on the first click (his hand, 14:57)
+  - decision: a tick after an untick is a plain new press, never a drop of the old lines; the drop ate his first click
+- ✅ an ask id names its seat
+  - given main clio and wing 1 both have an o8 open
+  - then the board reads `o8` for main, `w1·o8` for wing 1, and `codie·o1` for any other seat (shot 1508)
+- ⬜ no ring on a pressed button, and no tooltip on a steer box
+  - given dima presses 🛎️ tick, 🔁 replay or a 🔥 keep-hot button, or hovers a steer box
+  - then no blue border flashes while he holds the click, and no tooltip shows over the steer field
+  - decision: his word, 14:57: «remove this border entirely for all buttons»; 16:09: the steer boxes lose their tooltips
+
 ## seats — tabs
 
 - ⬜ the agents list is one flat list in dima's own order
@@ -115,6 +128,18 @@ wish: PK-363
 - ✅ a sidecar seat starts in its own named tab
   - given helga or crow starts in herdr
   - then it shows in the agents list in a tab named after it, never a number
+
+- ✅ a layout switch closes no tab
+  - given a layout is switched or the tab mod reloads
+  - then every tab stays open, the focused one too (three switches with a throwaway tab focused, 14:08)
+  - decision: our tab mod's own close() took herdr's cleanup call for a tab close and ended the focused tab (herdr-app#861); renamed closeTab
+- ⬜ one swipe on the tab strip moves one step
+  - given many seats are open
+  - when dima swipes the strip sideways or scrolls up or down over it
+  - then sideways scrolls the strip by one tab and up or down shows one tab over, once per gesture, however long its momentum runs
+- ✅ crow's 🐦‍⬛ draws whole
+  - given a session name holds an emoji with a zero-width joiner, which cc's registry stores as a space
+  - then the agents list and the deck draw 🐦‍⬛, 🐦‍🔥 and 🙋‍♂️ as one glyph (shot 1416)
 
 ## tray — quick terminal
 
@@ -252,6 +277,39 @@ wish: PK-363
   - when he presses 🛎️ tick or 🔁 replay
   - then the steer stays under the ask as «↳ his text», selectable, and leaves once the thread's turn takes the press (the 🔒 draws)
   - decision: his word, 22:54: «when i tick my steer text is hidden. do not hide it. instead, hide it when it slipstreamed»
+
+- ✅ a code block copies its command
+  - makes: the fence's exact text on the clipboard, no trailing newline
+  - given a reply holds a closed fence
+  - when dima clicks ⧉ copy at the code block's top right
+  - then the label reads ✓ copied for a moment and a paste gives the command (his hand, 16:04)
+  - and a fence still streaming draws no copy button; a fence under a «copy → terminal» ribbon stays a code block
+- ⬜ a prompt card fills the box
+  - given a reply holds a fence under a 📋 ribbon that names a session or an agent
+  - when dima clicks the card
+  - then the prompt lands in his box after what he typed, one blank line between, unsent, and the box takes the keyboard
+  - decision: in-message cards on our own column, his pick a (15:50): herdr's lazy list drops any row with its own handler (herdr-app#894)
+- ⬜ the / menu lists every skill the seat can load
+  - given the seat's folder enables a plugin through the user, project or local settings
+  - when dima types «/» and part of a name
+  - then that plugin's skills show (clio's 22 `clio:` skills in main), a match on the part after the colon too («/boot» → `clio:boot`), and a disabled plugin's skills never show
+- ⬜ inline code in the box turns into a chip
+  - given dima types «use `ls` here»
+  - when the closing backtick lands
+  - then `ls` draws as one monospace chip the caret skips and one delete removes, and the sent message reads «use `ls` here»; three backticks open a fence and make no chip
+- ⬜ a file link in a message opens
+  - when dima clicks a `file://` link in a message
+  - then the file opens in its app (a png in Preview, a folder in Finder); a web link opens in the browser as before
+- ⬜ the box is a stacked card with send in its corner
+  - given the chat shows its box
+  - then the text card, rounder and with a soft shadow, rests on a narrower card holding the model and effort pickers; a round ↑ send sits in the text card's bottom right, lit once text is typed, and the text uses the full width above one button-high bottom row
+  - and the box shows no placeholder; Enter still sends
+  - decision: his word, 15:15: «still eats space» on a right gutter; the bottom row is the one herdr allows (Textarea has no per-line inset)
+- ✅ the chat holds still at the bottom
+  - given a long chat scrolled to its newest message
+  - when a trackpad's momentum presses past the end, or a reply streams in
+  - then nothing redraws for the wheel and the view stays pinned (probe: 157 overscroll events, 0 redraws, 15:02; shot 1605)
+  - decision: every row draws whole; drawing far rows as empty boxes looped a long message between 12 px and 1285 px and nearly froze herdr in wing 1 (15:26 probe)
 
 ## scripts
 
