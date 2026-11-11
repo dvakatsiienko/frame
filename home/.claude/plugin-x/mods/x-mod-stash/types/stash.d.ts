@@ -278,9 +278,10 @@ export type StashLane = {
 
 declare module 'claude-code' {
     interface PluginState {
-        // read-only here: the ids a session's first prompt typed «sign» for, this prompt's only (x-mod-guard's contract)
+        // read-only here: the ids a session's first prompt typed «sign» for, this prompt's only, and the second Herdr start a call met (x-mod-guard's contract)
         'x-mod-guard': {
             firstSign: { ids: string[]; at: number } | null;
+            herdrStart: { at: number; command: string } | null;
         };
     }
     interface PluginState {

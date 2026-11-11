@@ -32,6 +32,7 @@ describe('twin blocks across mods', () => {
     it('finds the twins', () => {
         expect([...twins.keys()].sort()).toEqual([
             'dirname',
+            'herdr-start-ask',
             'holder-gone',
             'operator-override-store',
             'press-dir',

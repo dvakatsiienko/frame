@@ -487,6 +487,11 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the same turn orbit holds one ask `✍️ sign FRM-544: typed as this session's first prompt`, pick `sign FRM-544`, and his one tick on it signs
   - then a later prompt adds none, an open one is never doubled, and with orbit switched off nothing is added
   - proof: tests/orbit.test.ts::a first prompt's sign puts its ✍️ sign ask on his board; a batch first-prompt sign is one ask naming every id; a prompt with no first-prompt sign adds no ask; the same first-prompt sign read twice keeps one open ask; orbit switched off adds no first-prompt sign ask
+- ✅ a refused second Herdr start puts its ⚠️ ask on his board (dima's o47 and 19:09 «warn me»)
+  - given x-mod-guard refused or warned a thread's second Herdr app start in this Bash call (its `herdrStart` state, dated at or after the call began)
+  - then orbit holds one ask `⚠️ a seat wants a second Herdr window: save your typed text first`, the command in its hidden note, and his tick on it lets one start run at x-mod-guard
+  - then a start from an earlier call adds none, an open one is never doubled, and with orbit switched off nothing is added
+  - proof: tests/orbit.test.ts::a refused second Herdr start puts its ⚠️ ask on his board at that call; a start refused before this call adds no ask, and a second refusal keeps one open ask; orbit switched off adds no Herdr start ask
 - ✅ a gated ask is published with its mark, for x-herdr-deck to draw (FRM-544 slice 1)
   - given an open ask whose tick x-mod-guard reads as dima's word — a `✍️ sign <id>` ask, a ⚠️ ask, a `merge`/`land` ask, one quoting a command in backticks
   - then its item under `asks:<sid>` in the store carries `isGated: true`, a plain ask none, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern

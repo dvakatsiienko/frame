@@ -5576,3 +5576,61 @@ test('of a herdr tick and his untick read together, the untick wins', async ($, 
     await say($, 'go on');
     expect(joined(w.contexts).join('\n')).not.toMatch(/o1 🛎️/);
 });
+
+// r9, dima's 19:09 «warn me»: x-mod-guard keeps the second Herdr app start it refused; the ⚠️ ask joins his board at that
+// call, so he saves his typed draft before his tick lets one start run
+function herdrStart(on: On) {
+    const kept = { value: null as { at: number; command: string } | null };
+    on('state.get', (_$, e, next) =>
+        e.plugin === 'x-mod-guard' && e.key === 'herdrStart'
+            ? { value: { value: kept.value, version: 1 } }
+            : next(e),
+    );
+    return kept;
+}
+async function herdrRowsShown(ui: Board) {
+    return (await ui.findAll({ type: 'Text' })).filter((t) =>
+        /^o\d+: ⚠️ a seat wants a second Herdr window: save your typed text first$/u.test(
+            t.text ?? '',
+        ),
+    ).length;
+}
+
+test('a refused second Herdr start puts its ⚠️ ask on his board at that call', async ($, on) => {
+    const w = world(on);
+    const kept = herdrStart(on);
+    await start($);
+    const ui = await board($);
+    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
+    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    await ui.redraw();
+    expect(await herdrRowsShown(ui)).toBe(1);
+});
+
+test('a start refused before this call adds no ask, and a second refusal keeps one open ask', async ($, on) => {
+    const w = world(on);
+    const kept = herdrStart(on);
+    await start($);
+    const ui = await board($);
+    kept.value = { at: w.clock.now() - 1, command: 'open -na Herdr' };
+    await $.tool.call({ command: 'ls', tool: 'Bash' });
+    await ui.redraw();
+    const stale = await herdrRowsShown(ui);
+    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
+    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    await ui.redraw();
+    expect([stale, await herdrRowsShown(ui)]).toEqual([0, 1]);
+});
+
+test('orbit switched off adds no Herdr start ask', async ($, on) => {
+    const w = world(on);
+    const kept = herdrStart(on);
+    w.store.set('shown', { 'stash.orbit': false });
+    await start($);
+    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
+    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    expect([...w.store.keys()].filter((k) => k.startsWith('asks:'))).toEqual(
+        [],
+    );
+});

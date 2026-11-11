@@ -35,6 +35,7 @@ import {
 import { floor, gitDoor, opaque } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
 import { herdrClose, herdrLabel } from './rules/herdr-close.ts';
+import { herdrStart } from './rules/herdr-start.ts';
 import { isForegroundOk } from './rules/hint.ts';
 import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
@@ -455,6 +456,7 @@ export function refusals(
             floor(cmd, ctx) ??
             herdrClose(cmd, ctx) ??
             herdrLabel(cmd, ctx) ??
+            herdrStart(cmd, ctx) ??
             hazard(cmd, ctx) ??
             lockfile(cmd, ctx) ??
             overwrite(cmd, ctx) ??

@@ -2489,6 +2489,38 @@ async function askFirstSign($: EngineInterface) {
     });
 }
 
+// x-mod-guard keeps the second Herdr app start a call of this seat met; at that call his ⚠️ ask joins this orbit, so he saves
+// his typed draft before his tick lets one start run (dima's o47 and 19:09 «warn me»)
+// twin herdr-start-ask — a copy lives in x-mod-guard, which lets one start run on his tick on this ask; twins.test.ts holds them equal
+export const HERDR_START_ASK =
+    '⚠️ a seat wants a second Herdr window: save your typed text first';
+// twin end
+const GUARD_HERDR_START = { key: 'herdrStart', plugin: 'x-mod-guard' } as const;
+async function askHerdrStart($: EngineInterface, since: number) {
+    const { value: start } = await $.state.get(GUARD_HERDR_START);
+    if (!start || start.at < since) return;
+    await inMarking(async () => {
+        const o = await currentOrbit($);
+        if (o.asks.some((a) => !a.isResolved && a.text === HERDR_START_ASK))
+            return;
+        const made = orbitOp(
+            o,
+            {
+                asks: [
+                    {
+                        hiddenNote: `x-mod-guard refused \`${start.command.slice(0, 200)}\`: a second Herdr app reloads your window and drops the text you were typing. save it, then tick: one start runs`,
+                        pick: 'let one second Herdr start run',
+                        text: HERDR_START_ASK,
+                    },
+                ],
+                op: 'add',
+            },
+            true,
+        );
+        if (!('deny' in made)) await saveOrbit($, made.orbit);
+    });
+}
+
 // an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
 // carrying all of them. the submitted prompt skips this plugin's own prompt.submit hook, so the marks ride its text
 async function wakeForMarks($: EngineInterface) {
@@ -8827,7 +8859,16 @@ export const register: Register = (on) => {
                       () => undefined,
                   )
                 : undefined;
+        const before = await $.clock.now();
         const r = await next(e);
+        if (
+            e.tool === 'Bash' &&
+            !e.agentId &&
+            (await partsShown($))('stash.orbit')
+        )
+            await askHerdrStart($, before).catch(() =>
+                $.ui.log("x-mod-stash: the Herdr start's ⚠️ ask was not added"),
+            );
         if (r.deny !== undefined || e.agentId) return r;
         if (
             (e.tool as string) === WRAP_UP_TOOL &&
