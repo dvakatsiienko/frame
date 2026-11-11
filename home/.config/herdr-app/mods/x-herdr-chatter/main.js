@@ -58,6 +58,7 @@ import {
     pressLine,
     withPress,
 } from './band.js';
+import { splitBlocks, withPrompt } from './blocks.js';
 import { codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
@@ -3023,20 +3024,7 @@ export default class ClaudeChat extends View {
                         .flex_1()
                         .min_w(0)
                         .text_color(t.foreground)
-                        .child(
-                            TextView.markdown(
-                                `md-${i}`,
-                                this.markIn(i)
-                                    ? markMarkdown(
-                                          item.text,
-                                          this.marks.re,
-                                          this.markIn(i),
-                                      )
-                                    : item.text,
-                            )
-                                .selectable(true)
-                                .on_link_click(openLink),
-                        ),
+                        .child(this.replyBody(t, item, i)),
                 );
         }
         if (item.kind === 'system') return this.systemRow(t, item, i);
@@ -4301,6 +4289,129 @@ export default class ClaudeChat extends View {
                             ),
                     );
             });
+    }
+
+    // A reply cut into blocks (blocks.js): prose as markdown, a code block with a copy button, a prompt card that puts its
+    // prompt in his box. A search draws the reply whole, since its marks span the blocks.
+    replyBody(t, item, i) {
+        const whole = (/** @type {string} */ text) =>
+            TextView.markdown(`md-${i}`, text)
+                .selectable(true)
+                .on_link_click(openLink);
+        if (this.markIn(i))
+            return whole(
+                markMarkdown(item.text, this.marks.re, this.markIn(i)),
+            );
+        if (item.blocksOf !== item.text) {
+            item.blocks = splitBlocks(item.text);
+            item.blocksOf = item.text;
+        }
+        /** @type {import('./blocks.js').Block[]} */
+        const blocks = item.blocks;
+        if (blocks.length === 1 && blocks[0].kind === 'text')
+            return whole(item.text);
+        return v_flex()
+            .w_full()
+            .gap(8)
+            .children(
+                blocks.map((b, k) => {
+                    const key = `${i}-${k}`;
+                    if (b.kind === 'text')
+                        return TextView.markdown(`md-${key}`, b.text)
+                            .selectable(true)
+                            .on_link_click(openLink);
+                    if (b.kind === 'code') return this.codeBlock(t, b, key);
+                    return this.promptCard(t, b, key);
+                }),
+            );
+    }
+
+    /** @param {Theme} t @param {{ lang: string, text: string, isClosed: boolean }} b @param {string} key */
+    codeBlock(t, b, key) {
+        const isCopied =
+            this.copied?.key === key && Date.now() - this.copied.at < 1500;
+        return v_flex()
+            .w_full()
+            .rounded(8)
+            .border(1)
+            .border_color(t.border)
+            .bg(t.raised)
+            .child(
+                h_flex()
+                    .px(10)
+                    .pt(6)
+                    .items_center()
+                    .text_size(px(11))
+                    .text_color(t.muted)
+                    .child(b.lang || 'code')
+                    .child(div().flex_1())
+                    // the copy button shows once the fence is closed, never mid-stream
+                    .when(b.isClosed, (el) =>
+                        el.child(
+                            div()
+                                .id(`copy-${key}`)
+                                .px(6)
+                                .py(2)
+                                .rounded(5)
+                                .cursor_pointer()
+                                .text_color(isCopied ? t.accent : t.muted)
+                                .hover((s) =>
+                                    s.bg(t.hover).text_color(t.foreground),
+                                )
+                                .tooltip('Copy the command')
+                                .on_click((_e, cx) => {
+                                    cx.write_to_clipboard(b.text);
+                                    this.copied = { at: Date.now(), key };
+                                    cx.timer.after(1600, (cx) => cx.notify());
+                                    cx.notify();
+                                })
+                                .child(isCopied ? '✓ copied' : '⧉ copy'),
+                        ),
+                    ),
+            )
+            .child(
+                div()
+                    .px(10)
+                    .pb(8)
+                    .pt(2)
+                    .font_family(this.mono())
+                    .text_size(px(13))
+                    .child(
+                        TextView.markdown(
+                            `code-${key}`,
+                            `\`\`\`\n${b.text}\n\`\`\``,
+                        ).selectable(true),
+                    ),
+            );
+    }
+
+    /** @param {Theme} t @param {{ to: string, text: string }} b @param {string} key */
+    promptCard(t, b, key) {
+        return v_flex()
+            .id(`prompt-${key}`)
+            .w_full()
+            .gap(4)
+            .p(10)
+            .rounded(10)
+            .border(1)
+            .border_color(t.accent)
+            .cursor_pointer()
+            .hover((s) => s.bg(t.hover))
+            .tooltip('Put this prompt in your box, unsent')
+            .on_click((_e, cx) => {
+                this.box.set_value(withPrompt(this.box.value(), b.text));
+                this.box.focus();
+                cx.notify();
+            })
+            .child(
+                h_flex()
+                    .text_size(px(11))
+                    .text_color(t.accent)
+                    .child(`📋 prompt → ${b.to}`)
+                    .child(div().flex_1())
+                    .child('click to put it in your box'),
+            )
+            .child(div().text_size(px(13)).child(b.text));
     }
 
     // ---- the right-click menu
