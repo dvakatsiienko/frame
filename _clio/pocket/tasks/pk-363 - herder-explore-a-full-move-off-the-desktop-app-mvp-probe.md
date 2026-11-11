@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T18:50:00Z'
+updated_date: '2026-11-11T18:59:00Z'
 labels:
   - m
   - clio-main
@@ -2041,4 +2041,13 @@ PK-363:W1051 (2026-11-11 20:42, dima): is everyone busy meanwhile? i don't want 
 PK-363:W1052 (2026-11-11 20:42, dima): what else to explore in herdr: propose. can you use "tasks" to the right, how to see how it works? propose what else to explore. ❓ (context, not dima's words: "herder" read as "herdr", as in earlier grooms.)
 
 PK-363:W1053 (2026-11-11 20:49, dima): assistant: how to start it? ❓ (context, not dima's words: the raw has this line alone, after a separator; "assistant" is the word dima used, not a name.)
+
+PK-363:W1058 (2026-11-11 20:58, dima): autopilot: it seems it would be a really good feature for us too, because we have our shift skill. in my memory it was clunky, and we spent an enormous amount of time and effort to sharpen it. it's still a little clunky sometimes and not proven far enough. (context, not dima's words: the raw opens with an image tag only; "autopilot" is the shepherdr feature dima names; the time is the chore time, the raw has none.)
+PK-363:W1059 (2026-11-11 20:58, dima): how do you think, then? what are the best parts of autopilot and other assistant parts we could pull? i think it's your part. you could be most interested in this. ❓
+PK-363:W1060 (2026-11-11 20:58, dima): propose after i return out of the shepherdr view. now: only collect spots. (context, not dima's words: "shaperder" read as "shepherdr", as in earlier grooms.)
+PK-363:W1061 (2026-11-11 20:58, dima): so nothing special to see more? i explored all special shepherdr parts? ❓
+PK-363:W1054 (2026-11-11 20:45, dima): top-right: "files" and "changes": i think it's herdr native? let's keep them as nice to have. (context, not dima's words: "herder" read as "herdr", as in earlier grooms; the screenshots are tags only in the raw.)
+PK-363:W1055 (2026-11-11 20:45, dima): settings, left bottom: they are the default ones, herdr's.
+PK-363:W1056 (2026-11-11 20:45, dima): so "tasks": it simply lists threads that are done? ❓
+PK-363:W1057 (2026-11-11 20:45, dima): once i click on the mod Scotty from the screenshot, it just opens its window. so nothing special here? ❓ (context, not dima's words: "Scotty" is the name dima gave the mod in the screenshot.)
 <!-- SECTION:NOTES:END -->
