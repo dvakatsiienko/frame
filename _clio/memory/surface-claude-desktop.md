@@ -4,7 +4,7 @@
 
 ## the screen he reads
 
-## presses
+## presses and asks
 
 ## files and links to him
 
