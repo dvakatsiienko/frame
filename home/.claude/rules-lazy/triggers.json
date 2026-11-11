@@ -109,5 +109,29 @@
             "reply": [],
             "tool": []
         }
+    },
+    "surface-claude-desktop": {
+        "command": [],
+        "env": ["claude-desktop"],
+        "file": "~/frame/_clio/memory/surface-claude-desktop.md",
+        "input": [],
+        "project": ["/frame/_clio$"],
+        "prompt": [],
+        "signal": {
+            "reply": [],
+            "tool": []
+        }
+    },
+    "surface-herdr-desktop": {
+        "command": [],
+        "env": ["herdr"],
+        "file": "~/frame/_clio/memory/surface-herdr-desktop.md",
+        "input": [],
+        "project": ["/frame/_clio$"],
+        "prompt": [],
+        "signal": {
+            "reply": [],
+            "tool": []
+        }
     }
 }

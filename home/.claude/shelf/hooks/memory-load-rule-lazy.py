@@ -7,7 +7,9 @@
 # a rule with a `skill` stays quiet while that skill is loaded in the caller's own context. Stop logs a miss: a signal in a
 # session where the rule never loaded. a compaction drops what every memory-load-* hook loaded, so it
 # clears their marks and reloads at once each prompt or project rule loaded before it — the summary carries the
-# work on, and no trigger fires again for work already under way; a refusal-only rule refuses once more. `pnpm memory-load:replay` runs the same matching over real transcripts.
+# work on, and no trigger fires again for work already under way; a refusal-only rule refuses once more. an env trigger
+# (the app the thread runs in, scoped to its project) injects its `file` at every SessionStart, read from that start's env.
+# `pnpm memory-load:replay` runs the same matching over real transcripts.
 import glob
 import hashlib
 import json
@@ -61,7 +63,22 @@ def written_text(tool_input):
 
 
 def project_trigger(rule, cwd):
-    return first_match(TRIGGERS[rule]["project"], cwd)
+    return None if TRIGGERS[rule].get("env") else first_match(TRIGGERS[rule]["project"], cwd)
+
+
+def surface():
+    # a headless session inherits its spawner's HC_TERMINAL_ID but has no screen of its own
+    entrypoint = os.environ.get("CLAUDE_CODE_ENTRYPOINT", "")
+    if entrypoint == "sdk-cli" or os.environ.get("CLAUDE_CODE_BG"):
+        return None
+    if os.environ.get("HC_TERMINAL_ID"):
+        return "herdr"
+    return "claude-desktop" if entrypoint == "claude-desktop" else None
+
+
+def env_trigger(rule, where, cwd):
+    row = TRIGGERS[rule]
+    return row["file"] if where in row.get("env", []) and first_match(row["project"], cwd) else None
 
 
 def prompt_trigger(rule, prompt):
@@ -101,7 +118,8 @@ def is_compact_boundary(entry):
 
 def reloads_at_compaction(rule):
     # a refusal-only row re-arms instead: its text orders a retry, and nothing was refused
-    return bool(TRIGGERS[rule]["project"] or TRIGGERS[rule]["prompt"])
+    # an env row reloads from the env pass itself, which reads this start's env
+    return not TRIGGERS[rule].get("env") and bool(TRIGGERS[rule]["project"] or TRIGGERS[rule]["prompt"])
 
 
 def caller_transcript(event):
@@ -167,7 +185,7 @@ def log(event, what, detail):
 
 
 def rule_text(rule, how):
-    path = os.path.join(RULES, f"{rule}.md")
+    path = os.path.expanduser(TRIGGERS[rule].get("file", os.path.join(RULES, f"{rule}.md")))
     head = f"{rule} — a lazy rule ({path}), loaded {how}. binding for the rest of this session (memory-load-rule-lazy)"
     return f"{head}:\n\n{open(path, encoding='utf-8').read()}"
 
@@ -264,6 +282,17 @@ def on_stop(event, fresh):
             log(event, f"miss {rule}", hit)
 
 
+def on_start_env(event, session, cwd):
+    where = surface()
+    if where:
+        seen = "set" if os.environ.get("HC_TERMINAL_ID") else "unset"
+        log(event, f"env {where}", f"HC_TERMINAL_ID {seen}, entrypoint {os.environ.get('CLAUDE_CODE_ENTRYPOINT', '')}")
+    hits = {rule: env_trigger(rule, where, cwd) for rule in TRIGGERS}
+    # a leaf not written yet must not take the other loads of this start down with it
+    hits = {rule: hit for rule, hit in hits.items() if hit and os.path.isfile(os.path.expanduser(hit))}
+    return [load(event, session, r, "env", h, f"because the thread runs in {where}") for r, h in hits.items()]
+
+
 def forget(session):
     for state in glob.glob(os.path.join(tempfile.gettempdir(), "cc-memory-load-*", session)):
         open(state, "w").close()
@@ -284,6 +313,7 @@ def main():
         cwd = str(event.get("cwd", ""))
         hits = {rule: project_trigger(rule, cwd) for rule in fresh}
         loads += [load(event, session, r, "project", h, f"because the session runs in {h}") for r, h in hits.items() if h]
+        loads += on_start_env(event, session, cwd)
     elif name == "UserPromptSubmit":
         prompt = str(event.get("prompt", ""))
         hits = {rule: prompt_trigger(rule, prompt) for rule in fresh}

@@ -26,17 +26,28 @@ function session(hookPath = hook) {
     const id = randomUUID();
     const log = join(dir, 'log.tsv');
 
-    function spawnHook(event: Record<string, unknown>) {
+    function spawnHook(
+        event: Record<string, unknown>,
+        env: Record<string, string> = {},
+    ) {
         return spawnSync('python3', [hookPath], {
             encoding: 'utf8',
-            env: { ...process.env, MEMORY_LOAD_LOG: log, TMPDIR: dir },
+            env: {
+                ...surfaceFree(),
+                MEMORY_LOAD_LOG: log,
+                TMPDIR: dir,
+                ...env,
+            },
             input: JSON.stringify({ cwd: '/work', session_id: id, ...event }),
             timeout: 10_000,
         });
     }
 
-    function run(event: Record<string, unknown>) {
-        const result = spawnHook(event);
+    function run(
+        event: Record<string, unknown>,
+        env: Record<string, string> = {},
+    ) {
+        const result = spawnHook(event, env);
         const out: HookOutput = result.stdout
             ? JSON.parse(result.stdout).hookSpecificOutput
             : {};
@@ -639,6 +650,101 @@ describe('shelf and model-cards rows', () => {
     });
 });
 
+describe('surface leaves', () => {
+    const herdrLeaf = 'surface-herdr-desktop.md';
+    const desktopLeaf = 'surface-claude-desktop.md';
+    const clio = '/Users/dima/frame/_clio';
+
+    function fixtureHome() {
+        const home = mkdtempSync(join(tmpdir(), 'memory-load-home-'));
+        const memory = join(home, 'frame/_clio/memory');
+        mkdirSync(memory, { recursive: true });
+        writeFileSync(join(memory, herdrLeaf), '# herdr leaf\n');
+        writeFileSync(join(memory, desktopLeaf), '# desktop leaf\n');
+        return home;
+    }
+
+    function start(
+        env: Record<string, string>,
+        { cwd = clio, source = 'startup', s = session() } = {},
+    ) {
+        const out = s.run(
+            { cwd, hook_event_name: 'SessionStart', source },
+            { HOME: fixtureHome(), ...env },
+        );
+        return out.additionalContext ?? '';
+    }
+
+    const herdr = { CLAUDE_CODE_ENTRYPOINT: 'cli', HC_TERMINAL_ID: 't9' };
+    const desktop = { CLAUDE_CODE_ENTRYPOINT: 'claude-desktop' };
+
+    it('loads the herdr leaf in a herdr clio thread', () => {
+        const text = start(herdr);
+        expect(text).toContain(herdrLeaf);
+        expect(text).not.toContain(desktopLeaf);
+    });
+
+    it('loads the desktop leaf in a desktop clio thread', () => {
+        const text = start(desktop);
+        expect(text).toContain(desktopLeaf);
+        expect(text).not.toContain(herdrLeaf);
+    });
+
+    it('loads neither leaf in a plain terminal', () => {
+        const text = start({ CLAUDE_CODE_ENTRYPOINT: 'cli' });
+        expect(text).not.toContain(herdrLeaf);
+        expect(text).not.toContain(desktopLeaf);
+    });
+
+    it.each(['compact', 'resume'])(
+        'loads the herdr leaf again on a %s',
+        (source) => {
+            const s = session();
+            start(herdr, { s });
+            const text = start(herdr, { s, source });
+            expect(text).toContain(herdrLeaf);
+            expect(text.split(herdrLeaf).length).toBe(2);
+        },
+    );
+
+    it('loads neither leaf outside the clio dir', () => {
+        const text = start(herdr, { cwd: '/Users/dima/frame' });
+        expect(text).not.toContain(herdrLeaf);
+        expect(text).not.toContain(desktopLeaf);
+    });
+
+    it.each([
+        { ...herdr, CLAUDE_CODE_ENTRYPOINT: 'sdk-cli' },
+        { ...herdr, CLAUDE_CODE_BG: '1' },
+    ])('loads neither leaf in a headless session %j', (env) => {
+        const text = start(env);
+        expect(text).not.toContain(herdrLeaf);
+        expect(text).not.toContain(desktopLeaf);
+    });
+
+    it('keeps the other loads when a leaf is not written yet', () => {
+        const home = mkdtempSync(join(tmpdir(), 'memory-load-home-'));
+        const result = session().spawnHook(
+            { cwd: clio, hook_event_name: 'SessionStart', source: 'startup' },
+            { HOME: home, ...herdr },
+        );
+        expect(result.stdout).toContain(ruleHead);
+        expect(result.stderr).toBe('');
+    });
+
+    it('logs the surface it saw and the leaf it loaded', () => {
+        const s = session();
+        start(herdr, { s });
+        const lines = s
+            .logLines()
+            .filter((line) => !line.includes('linear-flow'));
+        expect(lines).toEqual([
+            'env herdr HC_TERMINAL_ID set, entrypoint cli',
+            `load surface-herdr-desktop by env ~/frame/_clio/memory/${herdrLeaf}`,
+        ]);
+    });
+});
+
 describe('fails open', () => {
     function hookWithOnlyLinearFlow() {
         const root = mkdtempSync(join(tmpdir(), 'memory-load-copy-'));
@@ -863,6 +969,18 @@ describe('memory-load-guide-share', () => {
         );
     });
 });
+
+// the suite runs inside herdr or the desktop app too; a surface var it inherits would load a leaf
+function surfaceFree() {
+    return Object.fromEntries(
+        Object.entries(process.env).filter(
+            ([key]) =>
+                !key.startsWith('HC_') &&
+                key !== 'CLAUDE_CODE_ENTRYPOINT' &&
+                key !== 'CLAUDE_CODE_BG',
+        ),
+    );
+}
 
 const boundary = { subtype: 'compact_boundary', type: 'system' };
 
