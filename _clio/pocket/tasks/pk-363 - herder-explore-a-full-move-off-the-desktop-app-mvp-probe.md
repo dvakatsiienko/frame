@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T14:24:00Z'
+updated_date: '2026-11-11T14:52:00Z'
 labels:
   - m
   - clio-main
@@ -1969,4 +1969,7 @@ PK-363:W986 (2026-11-11 16:22, dima): bug: when i copy a line from your reply an
 PK-363:W987 (2026-11-11 16:22, dima): ftr.md was out of sync. verified by grep: none of today's 10 herdr builds added a line there. the commit check reads only an app's own ftr file, and herdr's lives in a separate folder. codie writes the lines now; fixing the commit check goes to the cli lane. why? habit drift? a cli wisp? how do we make sure ftr is always in sync? ❓
 PK-363:W988 (2026-11-11 16:22, dima): ftr.md is now 327 lines, more than twice the size where the ftr skill says to split it into an index plus one file per area. that is a call for later, not now. but codie was just in ftr.md, so he can do the split now. propose how to split it gracefully, or say why later is better. is it already visible how to split by areas? ❓
 PK-363:W989 (2026-11-11 16:22, dima): merge mods lane and move to next chunk. (read as "merge"; flagged to clio)
+
+PK-363:W990 (2026-11-11 16:52, dima): proceed with a plan. sync your flyway with current state: clear all done items, refresh or reorder (read as "refresh or reorder"; flagged to clio), and tell the other wing to do this too.
+PK-363:W991 (2026-11-11 16:52, dima): and let's have a small skill for this. i often print an ask like this (after SW).
 <!-- SECTION:NOTES:END -->
