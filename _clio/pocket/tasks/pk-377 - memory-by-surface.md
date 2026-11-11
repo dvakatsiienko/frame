@@ -4,7 +4,7 @@ title: memory by surface
 status: open
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
-updated_date: '2026-11-11T16:39:00Z'
+updated_date: '2026-11-11T17:12:00Z'
 labels:
   - s
 dependencies: []
@@ -77,4 +77,7 @@ PK-377:W44 (2026-11-11 18:38, dima): when can herdr codie start chatter? ❓ (co
 PK-377:W45 (2026-11-11 18:38, dima): what needs to be grilled? ❓
 PK-377:W46 (2026-11-11 18:38, dima): and when do we decide how to make herdr pretty, designer or no designer? ❓
 PK-377:W47 (2026-11-11 18:38, dima): your build: wing 2 has a parked "tails chords" lane that doesn't do anything. instead of herdr codie, maybe let's hand this over to that parked lane, since it has nothing to do. (context, not dima's words: "tails chords" is kept as read; flagged to clio.)
+
+PK-377:W48 (2026-11-11 19:09, dima): memory by surface: the two clio leaves are written and committing. fully done, or is another chunk pending? ❓
+PK-377:W49 (2026-11-11 19:09, dima): when do we solve it? we are currently solving two things, grill and memory. propose how to solve them sequentially.
 <!-- SECTION:NOTES:END -->
