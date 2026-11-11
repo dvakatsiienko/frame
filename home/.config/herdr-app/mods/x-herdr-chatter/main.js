@@ -64,13 +64,7 @@ import { importOldDrafts } from './drafts.js';
 import { openTarget } from './links.js';
 import { listLines, withMarkers } from './lists.js';
 import * as ask from './question.js';
-import {
-    STUCK_PX,
-    afterReflow,
-    afterWheel,
-    farRows,
-    keptFirst,
-} from './scroll.js';
+import { STUCK_PX, afterReflow, afterWheel, keptFirst } from './scroll.js';
 import { loadableSkills } from './skills.js';
 import { wholeLines } from './slice.js';
 import {
@@ -5077,38 +5071,10 @@ export default class ClaudeChat extends View {
             this.rowFit = fit;
             this.rowH = new Map();
         }
-        // Rows far out of view draw as empty boxes of their height: herdr lays out every markdown row on each frame,
-        // which held a scroll near 50 fps in a 60-row chat (profile, 22:13). Search draws every row: it marks hits.
-        const far = this.findQ
-            ? new Set()
-            : farRows(
-                  this.rowList.map((/** @type {{ id: any }} */ r) =>
-                      this.rowH.get(r.id),
-                  ),
-                  {
-                      gap:
-                          GAPS[/** @type {keyof typeof GAPS} */ (look.space)] ??
-                          10,
-                      // the same clamped place the log draws at: an unclamped `up` past the top marked the rows on
-                      // screen far, their boxes and real heights traded places each frame, and the chat flickered
-                      up: Math.max(
-                          0,
-                          Math.min(
-                              this.up ?? 0,
-                              (this.contentH ?? 0) - (this.viewH ?? 0),
-                          ),
-                      ),
-                      viewH: this.viewH ?? 0,
-                  },
-              );
+        // every row draws whole: drawing far rows as empty boxes looped a long message between 12 px and its height,
+        // ~40 times a second (wing 1, 15:26 probe); herdr's own lazy list replaces this hand-made column (FRM-573)
         const rows = shown.map((x, k) => {
             const id = this.rowList[k].id;
-            if (far.has(k))
-                return div()
-                    .id(`row-${id}`)
-                    .w_full()
-                    .flex_none()
-                    .h(this.rowH.get(id));
             const hit = !x.work && found.has(id);
             return (
                 div()
