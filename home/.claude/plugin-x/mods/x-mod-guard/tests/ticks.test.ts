@@ -2493,6 +2493,11 @@ for (const [why, line] of [
         'a command off the allow-list',
         `${PY_SIGNS}pnpm build; x linear body FRM-1 --set /repo/b.md`,
     ],
+    // sixth sense round 5 on e9d68294: an awk that can run a command runs it out of the check's sight
+    [
+        'an awk program that runs a command',
+        `${PY_SIGNS}awk 'BEGIN{system("cp /repo/c.md /repo/b.md")}'; x linear body FRM-1 --set /repo/b.md`,
+    ],
 ] as const)
     test(`r2: ${why} stays refused with no tick`, async ($, on) => {
         const { ran } = world(on, [], SIGNED_TODAY());
@@ -2514,6 +2519,13 @@ for (const line of [
     `node -e "const c = 'x linear body FRM-1 --set /repo/b.md'; require('child_process').execSync(c)"`,
     `python3 -c "import os; os.system('x linear body FRM-1 --set /repo/b.md')"`,
     "python3 - <<'EOF'\nimport os; os.system('x linear body FRM-1 --set /repo/b.md')\nEOF",
+    // sixth sense round 5 on e9d68294: a flag's value before the inline-code flag is no script file
+    `python3 -W ignore -c "import subprocess; subprocess.run(['x','linear','body','FRM-1','--set','/repo/b.md'])"`,
+    `python3 -X dev -c "import os; os.system('x linear body FRM-1 --set /repo/b.md')"`,
+    `node -r ./x.js -e "require('child_process').execSync('x linear body FRM-1 --set /repo/b.md')"`,
+    `ruby -I lib -e "system('x linear body FRM-1 --set /repo/b.md')"`,
+    `perl -I lib -e "system('x linear body FRM-1 --set /repo/b.md')"`,
+    `awk 'BEGIN{system("x linear body FRM-1 --set /repo/b.md")}'`,
 ])
     test(`inline code naming a body set still signs: ${line.split(' ')[0]} ${line.split(' ')[1]}`, async ($, on) => {
         const { ran } = world(on, [], SIGNED_TODAY());

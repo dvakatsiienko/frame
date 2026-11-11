@@ -201,6 +201,14 @@ const REDIRECT = /^\d*(>>?|<>?|&>>?|>[|!])&?$/;
 const REDIRECT_JOINED = /^\d*(>>?|<(?!<)|&>>?|>[|!])&?\S/;
 export const basename = (p: string) => p.split('/').filter(Boolean).pop() ?? p;
 export const isFlag = (w: string) => w.startsWith('-') && w !== '-';
+// an awk whose program can run a command (`system`, a pipe, `getline` from one) or that reads a program file the guard never sees
+export const isAwkRunner = (c: { name: string; args: { text: string }[] }) =>
+    basename(c.name) === 'awk' &&
+    c.args.some(
+        (w) =>
+            /\||\bsystem\b|\bgetline\b/.test(w.text) ||
+            /^(-\w*f|--(file|include))/.test(w.text),
+    );
 // `-rf` holds f; a long flag is matched whole
 export function hasFlag(args: Word[], long: string[], short = '') {
     return args.some(
