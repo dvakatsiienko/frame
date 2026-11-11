@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T12:05:00Z'
+updated_date: '2026-11-11T12:33:00Z'
 labels:
   - m
   - clio-main
@@ -1895,4 +1895,16 @@ PK-363:W921 (2026-11-11 14:04, dima): or am i overexplaining in the main prompt 
 PK-363:W922 (2026-11-11 14:04, dima): if not like this, fix the skill.
 PK-363:W923 (2026-11-11 14:04, dima): about your confirm ask to stop anyone: this should not be wasted re-describing in your memories. this should just work.
 PK-363:W924 (2026-11-11 14:04, dima): no need to waste memory on this; just fix the guard so you can stop and start anyone without interference.
+
+PK-363:W925 (2026-11-11 14:32, dima): [Image #4] what no option can fix: rich text inside your prompt box, like lists and backticks. herdr's text box does not support it until herdr-app#858 is fixed.
+PK-363:W926 (2026-11-11 14:32, dima): ask codie to search the docs (verify) and confirm that this claim is true, that it is not supported.
+PK-363:W927 (2026-11-11 14:32, dima): another question for you, about deaths: the cause is fixed (codie renamed close()?), so i can test other layouts from oss now? ❓
+PK-363:W928 (2026-11-11 14:32, dima): yesterday you filed a ticket on the herdr desktop app github repo describing the issue we met with the kills. the issue is quite important and should reach the maintainer as soon as possible.
+PK-363:W929 (2026-11-11 14:32, dima): did you use any labels that describe the issue as critical or high importance? ❓
+PK-363:W930 (2026-11-11 14:32, dima): are there any labels, or a way to mark the issue as critical? ❓
+PK-363:W931 (2026-11-11 14:32, dima): if no other way, maybe update the title somehow to make it clearer that it is important to fix? ❓
+PK-363:W932 (2026-11-11 14:32, dima): proceed, what would be the next step? ❓
+PK-363:W933 (2026-11-11 14:32, dima): orbit ticks: they do not work correctly. i just ticked o5, then unticked. now i cannot tick at all.
+PK-363:W934 (2026-11-11 14:32, dima): instead: when i tick, then untick, it just returns to the unticked state and i can tick again. (fix now)
+PK-363:W935 (2026-11-11 14:32, dima): i allow you to do your o5.
 <!-- SECTION:NOTES:END -->
