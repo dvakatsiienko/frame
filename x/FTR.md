@@ -768,6 +768,10 @@
   - when `x stats` runs, then they are left out of every count, the span included, and `dev` says how many there were
   - when `x stats --dev` runs, then they are counted too
   - decision: dev means x/go differs from its merge base with origin/main, in a worktree or the main checkout — never the `-dirty` version, which main's x carries whenever the frame tree holds any uncommitted file and which hid 73 % of real calls; never «built in a worktree», which would hide codie's real `x lane` calls; never origin/main itself, which would mark a checkout merely behind main; lines from before the stamp count as real (dima, 2026-10-08)
+- ⬜ `x stats` tells a verb only a dev build called apart from an unused one (FRM-424)
+  - given a verb whose only trace lines are a dev build's, when `x stats` runs, with or without `--dev`, then it is in `devOnly` with its dev-call count and not in `unused`; a verb no build called is in `unused`
+  - given the copied traces of 2026-10-23 and 2026-11-05, then no `mods edit` verb reads unused and `probe bare` reads dev only, 1 call
+  - decision: `unused` is the one list a cut reads; `--dev` still only moves the totals (FRM-424:W6)
 - ✅ `x stats --outside` ranks what cc runs by hand
   - given cc session transcripts under `~/.claude/projects/`, subagents included
   - when `x stats --outside --days 7` runs
