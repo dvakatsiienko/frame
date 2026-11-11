@@ -1,7 +1,7 @@
 ---
 id: PK-377
 title: memory by surface
-status: done
+status: open
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
 updated_date: '2026-11-11T16:19:00Z'
@@ -59,4 +59,6 @@ PK-377:W33 (2026-11-11 18:09, dima, o41 steer): yes, these are stale, because if
 
 ticket: FRM-576
 close: 2026-11-11 18:20 — W2–W17, W28, W29, W31–W33 → FRM-576's wish block (renumbered W1–W21); W23–W24 → mods lane 6 rider r7 (built, b0f7c758); W25 and W30 → main flyway PK-349; W26, W27 answered in the thread; W1, W11, W12 settled by the shape; W18–W22 repeat W13–W17
+
+held: 2026-11-11 — FRM-576 sign; the item stays open for its leftover lines (W23–W27, W30), each homed on the main flyway, closed once those land
 <!-- SECTION:NOTES:END -->
