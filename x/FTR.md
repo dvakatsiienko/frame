@@ -100,6 +100,7 @@
   - given a changed plugin, when `x lane commit --bump <plugin> <msg-file> -- <paths>` runs, then one commit holds the change and the patch step of its `plugin.json`, and `plugin.json` is clean after; the flag alone makes a bump-only commit
   - given a red gate, then `plugin.json` is byte for byte as before and unstaged, so a green re-run steps the version once
   - given main and a marketplace that reads this tree, then the install is refreshed after the commit and read back at the new version; a worktree's bump rides its branch
+  - given a commit of a plugin's files without `--bump` and without its `plugin.json`, when the plugin is one a marketplace lists, then the commit lands and its result carries one `reminder` line naming `x plugin bump <plugin>`; never a refusal
   - decision: one gate run for both; a bump before a commit left `plugin.json` dirty, a commit before a bump took two gate runs (34 bump-only commits since 11-03, 20 right after a plugin commit)
 - ✅ `x lane commit` on main runs the ci jobs for the touched paths first
   - given a commit on main whose paths sit in a go module, or name a `.ts`/`.tsx` file

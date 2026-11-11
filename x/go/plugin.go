@@ -197,6 +197,29 @@ func installedAt(id, to string) (string, error) {
 		Next: "claude plugin marketplace list --json — bump where the marketplace's source lives"}
 }
 
+// unbumpedPlugin is the plugin whose files a commit changed without its plugin.json, when a marketplace lists it; ""
+// for none. the nearest plugin dir above a path owns it, so a mod with its own manifest answers for its own files
+func unbumpedPlugin(tree string, paths []string) string {
+	for _, path := range paths {
+		for dir := filepath.Dir(path); dir != "." && dir != "/"; dir = filepath.Dir(dir) {
+			rel := filepath.Join(dir, ".claude-plugin", "plugin.json")
+			var found pluginManifest
+			raw, err := os.ReadFile(filepath.Join(tree, rel))
+			if err != nil {
+				continue
+			}
+			if slices.Contains(paths, rel) || json.Unmarshal(raw, &found) != nil {
+				break
+			}
+			if market, _, _ := marketOf(tree, filepath.Join(tree, dir)); market != "" {
+				return found.Name
+			}
+			break
+		}
+	}
+	return ""
+}
+
 // findPlugin reads every tracked plugin.json; a name nobody carries lists the ones that exist
 func findPlugin(tree, name string) (manifest, dir, version string, err error) {
 	paths, err := pluginFiles(tree, "plugin.json")

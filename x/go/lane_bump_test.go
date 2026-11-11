@@ -47,6 +47,40 @@ func TestCommitBumpLandsTheChangeAndTheBumpInOneCommit(t *testing.T) {
 	}
 }
 
+func TestCommitOfAPluginWithoutBumpRemindsOnce(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name   string
+		files  map[string]string
+		paths  []string
+		plugin string
+	}{
+		{"a plugin file", map[string]string{"plug/skill.md": "changed\n"}, []string{"plug/skill.md"}, "demo"},
+		{"a mod's own file", map[string]string{"plug/mods/m/hook.md": "changed\n"}, []string{"plug/mods/m/hook.md"}, "m-mod"},
+		{"with its plugin.json", map[string]string{"plug/skill.md": "changed\n", "plug/.claude-plugin/plugin.json": "{\"name\": \"demo\", \"version\": \"1.2.9\"}\n"},
+			[]string{"plug/skill.md", "plug/.claude-plugin/plugin.json"}, ""},
+		{"a plugin no marketplace lists", map[string]string{"other/.claude-plugin/plugin.json": `{"name": "other", "version": "1.0.0"}`, "other/a.md": "changed\n"}, []string{"other/a.md"}, ""},
+		{"no plugin", map[string]string{"readme.txt": "changed\n"}, []string{"readme.txt"}, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir, _, _, env := pluginFixture(t)
+			for path, body := range c.files {
+				write(t, filepath.Join(dir, path), body)
+			}
+
+			got := xIn(t, dir, env(""), append([]string{"lane", "commit", message(t), "--"}, c.paths...)...)
+
+			reminder, _ := got.data["reminder"].(string)
+			named := c.plugin == "" || strings.Contains(reminder, "x plugin bump "+c.plugin+" ")
+			if got.code != 0 || (c.plugin == "") != (reminder == "") || !named {
+				t.Fatalf("exit %d, reminder %q, want one naming %q\n%s", got.code, reminder, c.plugin, got.stdout)
+			}
+		})
+	}
+}
+
 func TestCommitBumpUnderARedGateLeavesTheManifestAsItWas(t *testing.T) {
 	t.Parallel()
 	dir, _, _, env := pluginFixture(t)

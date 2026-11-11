@@ -375,6 +375,12 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 		data = append(data, kv{"waited", said})
 	}
 	if bumped == nil {
+		// a reminder, never a refusal: a plugin edit can wait for a later bump on purpose
+		if plugin := unbumpedPlugin(tree, present); plugin != "" {
+			reminder := plugin + " changed without --bump; its install keeps the old copy until a bump: x plugin bump " + plugin + " --apply"
+			r.Done(fmt.Sprintf("%s on %s, %s; %s", short(sha), branch.out, plural(len(present), "path"), reminder), "x lane push --apply")
+			data = append(data, kv{"reminder", reminder})
+		}
 		return data, nil
 	}
 	data = append(data, kv{"bump", ordered{{"name", bumped.name}, {"from", bumped.from}, {"to", bumped.to}}})
