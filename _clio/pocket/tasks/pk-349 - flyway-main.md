@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-11T15:32:00Z'
+updated_date: '2026-11-11T15:38:00Z'
 labels:
   - s
   - clio-main
@@ -43,12 +43,11 @@ ordinal: 1000
 - [ ] #25 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
 - [ ] #26 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
 - [ ] #27 📅 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line — on: 2026-11-10
-- [ ] #28 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #29 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #30 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #31 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #32 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #33 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #28 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #29 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #30 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #31 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #32 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -234,4 +233,8 @@ done 2026-11-11 17:31: 📅 mods scope audit against herdr: keep, park or drop, 
 done 2026-11-11 17:31: a small skill for his «sync your flyway: clear done, reorder, tell the wings» after a second wind (dima 16:52, again 17:10): seven names + ⚖️ worth it first
 
 reopened 2026-11-11 17:32: the red twin line (done note 17:08) and the herdr FTR gate map line (done note 17:11) are open again; neither home holds them yet (wishkeeper 17:20). done 17:32: the flyway-sync skill line — clio:flyway-sync in 2ac26c0a, his name tick o28. done 17:32: the mods scope audit — _clio/.scratch/herdr/scopes-audit.md, wing 1, 11-10
+
+done 2026-11-11 17:38: 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11 (FRM-550 Todo)
+
+moved 2026-11-11 17:38: FRM-550 went to wing 1 on dima's 17:35 word (clio-wing-1, beside FRM-491); not done here, its home is wing 1's flyway PK-346
 <!-- SECTION:NOTES:END -->

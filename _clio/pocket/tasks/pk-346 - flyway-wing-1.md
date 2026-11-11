@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T15:12:00Z'
+updated_date: '2026-11-11T15:37:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,26 +16,28 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-575 clio-revive: its sign through clio:shape-lane (the open probe: a throwaway seat killed and revived, cache read), then a quick lane builds it
-- [ ] #2 wishkeeper batch-3 lows: crew-lead SKILL.md:63 «a real session in a herdr pane» moves to the surface file; clio:wing:28 desktop steps point at surface-claude-desktop.md
-- [ ] #3 cli lane 8 running: FRM-560 with FRM-414 riding, slices 02 and 04 in build, 03 measured next (bar 31.5 s); then FRM-570 → FRM-424 → FRM-436, x/go one writer; spec in the wing 1 tree .scratch/cli-lane-8/
-- [ ] #4 ⏳ three rider re-signs: FRM-560 (lefthook false red, red mods twin), FRM-570 (FRM-524 rules 5, 6), FRM-436 (herdr FTR gate map) — waits for: dima's sign ticks
-- [ ] #5 ⏳ FRM-414 reviewer-reply verb name, seven offered, x gh review-threads my pick — waits for: dima's pick
-- [ ] #6 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
-- [ ] #7 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
-- [ ] #8 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
-- [ ] #9 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
-- [ ] #10 📅 FRM-551 vm: the halt half read (the halt stops vm-go-test, its ram comes back), then close; the vm has run since 11-09 22:02, never stopped — on: 2026-11-11
-- [ ] #11 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #12 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #13 📅 BYT-94: its exit 5 and 8 on a real pr, and dima's look at its card — on: 2026-11-14
-- [ ] #14 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #15 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #16 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
-- [ ] #17 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #18 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #19 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #20 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #1 FRM-491 the siesta binds on one Stop hook, and a delivered tick gets resolved: mine by hand (it edits _clio/); 📌 remind dima what it is about before i start (his 17:35 ask)
+- [ ] #2 FRM-550 a seat names the pattern dima decided before it acts against it: taken from main on his 17:35 word; 📌 remind dima what it is about before i start
+- [ ] #3 FRM-575 clio-revive: its sign through clio:shape-lane (the open probe: a throwaway seat killed and revived, cache read), then a quick lane builds it
+- [ ] #4 wishkeeper batch-3 lows: crew-lead SKILL.md:63 «a real session in a herdr pane» moves to the surface file; clio:wing:28 desktop steps point at surface-claude-desktop.md
+- [ ] #5 cli lane 8 running (#159): FRM-560 with FRM-414 riding, then FRM-570 → FRM-424 → FRM-436, x/go one writer; spec in the wing 1 tree .scratch/cli-lane-8/
+- [ ] #6 tails lane 1 running: 🌗 🔧 codie: tails lane 1 walks FRM-465 evergreen v2 → FRM-402 chords bind → (11-12) FRM-497 + FRM-406; spec in the wing 1 tree .scratch/tails-lane-1/
+- [ ] #7 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
+- [ ] #8 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
+- [ ] #9 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
+- [ ] #10 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
+- [ ] #11 📅 FRM-551 vm: the halt half read (the halt stops vm-go-test, its ram comes back), then close; the vm has run since 11-09 22:02, never stopped — on: 2026-11-11
+- [ ] #12 📅 FRM-497 speak meter 60 fps and FRM-406 join the tails lane (dima: later, tmrw or day after) — on: 2026-11-12
+- [ ] #13 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #14 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #15 📅 BYT-94: its exit 5 and 8 on a real pr, and dima's look at its card — on: 2026-11-14
+- [ ] #16 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #17 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #18 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
+- [ ] #19 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #20 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #21 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #22 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -192,4 +194,18 @@ done 2026-11-11 17:12: cli lane now, on dima's o15 tick: the parked tests codie 
 done 2026-11-11 17:12: evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
 
 done 2026-11-11 17:12: herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
+
+done 2026-11-11 17:37: FRM-491 the siesta binds on one Stop hook: mine by hand (it edits _clio/, no codie), after its sign (FRM-491 Todo)
+
+done 2026-11-11 17:37: tails lane (dima 17:33): a second codie walks FRM-465 evergreen v2 → FRM-402 chords bind, wing 1 leads it to its result — waits for: dima's sign ticks (FRM-465 In Progress, FRM-402 Todo)
+
+done 2026-11-11 17:37: cli lane 8 running: FRM-560 with FRM-414 riding, slices 02 and 04 in build, 03 measured next (bar 31.5 s); then FRM-570 → FRM-424 → FRM-436, x/go one writer; spec in the wing 1 tree .scratch/cli-lane-8/ (FRM-560 In Progress, FRM-414 In Progress, FRM-570 Todo, FRM-424 Todo, FRM-436 Todo)
+
+done 2026-11-11 17:37: wishkeeper batch-3 lows: crew-lead SKILL.md:63 «a real session in a herdr pane» moves to the surface file; clio:wing:28 desktop steps point at surface-claude-desktop.md
+
+done 2026-11-11 17:37: FRM-575 clio-revive: its sign through clio:shape-lane (the open probe: a throwaway seat killed and revived, cache read), then a quick lane builds it (FRM-575 Triage)
+
+done 2026-11-11 17:37: ⏳ FRM-414 reviewer-reply verb name, seven offered, x gh review-threads my pick — waits for: dima's pick (FRM-414 In Progress)
+
+done 2026-11-11 17:37: ⏳ three rider re-signs: FRM-560 (lefthook false red, red mods twin), FRM-570 (FRM-524 rules 5, 6), FRM-436 (herdr FTR gate map) — waits for: dima's sign ticks (FRM-560 In Progress, FRM-570 Todo, FRM-524 In Progress, FRM-436 Todo)
 <!-- SECTION:NOTES:END -->
