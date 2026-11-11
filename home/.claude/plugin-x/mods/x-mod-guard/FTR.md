@@ -41,7 +41,7 @@
   - proof: tests/hint.test.ts::a foreground chain runs with one hint naming run_in_background (x3 forms); no chain hint: …; a chain already in the background gets no hint
 - ✅ a raw pr read or a raw git add or commit gets a hint toward its x verb (FRM-374)
   - given a Bash call reads a pr with `gh pr view`, `gh pr checks`, or a `gh api` GET on a `pulls` path
-  - then it runs as typed, and the model gets one context line naming `x gh pr <n>`
+  - then it runs as typed, and the model gets one context line naming `x gh pr <n>`, once a session (a `/clear` hears it again); a `--json` read gets none (FRM-519 item 11: 187 in one session; proof: tests/hint.test.ts::two raw pr reads in one session hint once; no hint for: …--json…)
   - given a `git add` or `git commit` whose repo is frame or bytes (the cwd, a `cd`, or `-C`), then it runs with one line naming `x lane commit`; in any other repo no line is added
   - then `x gh pr`, `x lane commit`, `x as <member> -- gh …`, a `gh api` with a body or a non-GET method, quoted text and a heredoc body get no line
   - decision: a hint, never a rewrite — `x gh pr` covers only reads, and `x lane commit` adds a format step a raw commit lacks; the git-sweep refusal still stops a commit with no `--` paths
@@ -300,6 +300,7 @@
   - when `x brief check <path> --repo <dir> --json`, run from home so main's x answers, passes the brief as it is now (FRM-570: x is the stamp's one reader)
   - then it runs; a brief x does not pass, no answer from x, or no file on disk, and it is refused with the door `x brief check <path> --repo <dir>`
   - given the brief inline in the command, then it is refused with «write the brief to a file, run x brief check …», target `inline-brief`
+  - and an Agent brief is checked against the session's git top, never its root, so a session rooted in `_clio` naming a real frame path passes, while a path missing from the git top is still refused (FRM-519 item 10; proof: tests/spawn-briefs.test.ts::a brief from a session rooted in a repo subdir is checked against the git top; a path missing from the git top is still refused from a subdir session)
   - given a `claude --bg` without `/x:crew-codie` (a probe, crow), then it runs; `# dima-ok: <target>` lets a refused one run, as in every rule
   - decision: x-mod-guard sees the command before the shell runs it, so it cannot hash an expanded `$(cat …)` — it reads the named file itself (FRM-311)
   - 📌 harness-proven only; a live summon through the gate is unprobed until x v1.1 lands on main

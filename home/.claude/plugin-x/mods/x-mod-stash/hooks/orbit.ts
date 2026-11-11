@@ -223,12 +223,20 @@ export const isGuardGated = (text: string) =>
     /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
         text,
     );
-// opens with sign, a yes or an ok before it (never sign-in and its kin), or holds signed or re-sign anywhere with no negation before it
-const SIGN_PICK =
-    /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:.]?\s+(?:to\s+)?)?sign\b(?![\s-]+(?:in|up|off|out)\b)|(?<!\b(?:not|never|no|don['’]t|no need to)\s(?:re-)?)\b(?:re-sign(?:ed)?|signed)\b(?![\s-]+(?:in|up|out)\b)/iu;
-// opens with merge, a yes or a squash before it, its label form `merge: …` apart; anywhere else it counts only beside a pr
-const MERGE_PICK_OPENS =
-    /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:]?\s+(?:to\s+)?)?(?:squash and\s+)?merged?\b(?!:)/iu;
+// a pick's opening yes, however he punctuates it: «yes. », «yes — », «sure, », «yep, » (FRM-519 item 12)
+const YES = String.raw`(?:(?:yes|yep|yeah|sure|ok|okay)\b[,:.]?\s*(?:[—–-]\s*)?(?:to\s+)?)?`;
+// opens with sign, a yes before it (never sign-in and its kin; a sign-off signs), or holds signed or re-sign anywhere
+// with no negation before it
+const SIGN_PICK = new RegExp(
+    String.raw`^[^\p{L}]*${YES}sign\b(?![\s-]+(?:in|up|out)\b)|(?<!\b(?:not|never|no|don['’]t|no need to|not yet|doesn['’]t need a|does not need a)\s(?:re-)?)\b(?:re-sign(?:ed)?|signed)\b(?![\s-]+(?:in|up|out)\b)`,
+    'iu',
+);
+// opens with merge, a yes or a squash before it, its label form `merge: …`, `merge-auto` and a merge of text «into»
+// something apart; or approves the merge; anywhere else it counts only beside a pr
+const MERGE_PICK_OPENS = new RegExp(
+    String.raw`^[^\p{L}]*${YES}(?:squash and\s+)?merged?\b(?![:-])(?![^.;]*\binto\b)|^[^\p{L}]*approve\b[^.;]*\bmerge\b`,
+    'iu',
+);
 const MERGE_PICK_NAMED = /(?<!\b(?:not|never|no|don['’]t)\s)\bmerged?\b/i;
 const PR_NAMED = /#\d+|\bpr\b|\/pull\/\d+/i;
 // the two shapes x-mod-guard's quotesPr accepts as naming a pr

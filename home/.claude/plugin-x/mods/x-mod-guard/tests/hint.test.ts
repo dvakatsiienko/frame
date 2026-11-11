@@ -61,7 +61,6 @@ const PR_READS = [
     'gh pr checks 12',
     'gh api repos/o/r/pulls/12/comments',
     'gh api -X GET repos/o/r/pulls',
-    'cd /repo && gh pr view 3 --json title | jq .title',
 ] as const;
 for (const typed of PR_READS)
     test(`a raw pr read runs with an x gh pr hint: ${typed}`, async ($, on) => {
@@ -94,6 +93,10 @@ const QUIET = [
     ['/home/frame', "cat <<'EOF'\ngit add a.ts\ngh pr view 1\nEOF"],
     ['/repo', 'x gh pr 12'],
     ['/repo', 'x as codie -- gh pr view 12'],
+    // FRM-519 item 11: a --json read already wants fields x gh pr would not hand it
+    ['/repo', 'cd /repo && gh pr view 3 --json title | jq .title'],
+    ['/repo', 'gh pr view 3 --json=state'],
+    ['/repo', 'gh pr checks 3 --json name,bucket'],
     ['/repo', 'gh pr create --fill'],
     ['/repo', 'gh api repos/o/r/issues/12'],
     ['/repo', 'gh api -X POST repos/o/r/pulls/12/comments'],
@@ -105,6 +108,17 @@ for (const [cwd, typed] of QUIET)
         const r = await bash($, typed);
         expect(hinted(r.context, 'x ')).toEqual([]);
     });
+
+// FRM-519 item 11: the hint fired 187 times in one session; once a session is its whole job
+test('two raw pr reads in one session hint once', async ($, on) => {
+    world(on);
+    const first = await bash($, 'gh pr view 12');
+    const second = await bash($, 'gh pr checks 12');
+    expect([
+        hinted(first.context, 'x gh pr').length,
+        hinted(second.context, 'x gh pr').length,
+    ]).toEqual([1, 0]);
+});
 
 // FRM-394: gh's --jq is gojq, not jq
 for (const typed of [

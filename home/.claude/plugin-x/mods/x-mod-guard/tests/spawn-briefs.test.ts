@@ -35,14 +35,19 @@ function checkAnswer(text: string) {
         : JSON.stringify({ data: { checked: 1 }, ok: true });
 }
 
-function world(on: On, check: 'answers' | 'breaks' = 'answers') {
+function world(
+    on: On,
+    check: 'answers' | 'breaks' = 'answers',
+    root = '/repo',
+) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const checked: string[] = [];
+    const repos: string[] = [];
     const logs: string[] = [];
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
-    on('session.cwd', () => ({ value: '/repo' }));
-    on('session.root', () => ({ value: '/repo' }));
+    on('session.cwd', () => ({ value: root }));
+    on('session.root', () => ({ value: root }));
     on('env.get', () => ({ value: '/home' }));
     on('ui.log', (_$, e) => {
         logs.push(String(e.text));
@@ -50,7 +55,21 @@ function world(on: On, check: 'answers' | 'breaks' = 'answers') {
     });
     on('process.run', (_$, e) => {
         const stdin = e.init?.stdin ?? '';
-        if (e.argv[0] === 'x') checked.push(stdin);
+        // the git top of every dir under /repo is /repo, as `git rev-parse --show-toplevel` prints it
+        if (e.argv[0] === 'git')
+            return {
+                value: {
+                    exitCode: 0,
+                    isStderrTruncated: false,
+                    isStdoutTruncated: false,
+                    stderr: '',
+                    stdout: '/repo\n',
+                },
+            };
+        if (e.argv[0] === 'x') {
+            checked.push(stdin);
+            repos.push(String(e.argv[e.argv.indexOf('--repo') + 1]));
+        }
         const answer = checkAnswer(stdin);
         return {
             value: {
@@ -65,7 +84,7 @@ function world(on: On, check: 'answers' | 'breaks' = 'answers') {
     });
     on('agent.spawn', () => ({ agentId: 'sub-1', model: 'claude-opus-5-5' }));
     on('session.send', () => ({ isDelivered: true }));
-    return { checked, logs, store };
+    return { checked, logs, repos, store };
 }
 
 const spawn = ($: Engine, prompt: string) =>
@@ -112,6 +131,19 @@ test('the same agent brief with the path fixed runs once checked', async ($, on)
     const { checked, logs } = world(on);
     const r = await spawn($, 'FRM-1: read `home/.claude/CLAUDE.md` first');
     expect([r.deny, checked.length, logs]).toEqual([undefined, 1, []]);
+});
+
+// FRM-519 item 10: a session rooted in `_clio` checks a brief against the repo's git top, so a real frame path passes
+test('a brief from a session rooted in a repo subdir is checked against the git top', async ($, on) => {
+    const { repos } = world(on, 'answers', '/repo/_clio');
+    const r = await spawn($, 'FRM-1: read `home/.claude/CLAUDE.md` first');
+    expect([r.deny, repos]).toEqual([undefined, ['/repo']]);
+});
+
+test('a path missing from the git top is still refused from a subdir session', async ($, on) => {
+    world(on, 'answers', '/repo/_clio');
+    const r = await spawn($, `FRM-1: read ${MISSING} first`);
+    expect(r.deny).toContain('home/.claude/nope.md — no such path');
 });
 
 test('an agent brief naming to-tickets with no skip line is refused naming the quiz', async ($, on) => {

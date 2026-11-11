@@ -36,7 +36,13 @@ import {
     isHerdrTabNew,
 } from './rules/herdr-close.ts';
 import { HERDR_START_ASK, herdrStartOf } from './rules/herdr-start.ts';
-import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
+import {
+    PR_HINT,
+    bareHelps,
+    helpScripts,
+    hints,
+    verbHelps,
+} from './rules/hint.ts';
 import { linearWrite } from './rules/linear.ts';
 import {
     type MergeHolds,
@@ -206,7 +212,15 @@ const RELATIVE_MISS = /^line \d+: path (?![/~])/;
 // floor): this runs on every Agent of every session, clio's included
 async function briefFindings($: EngineInterface, text: string) {
     if (!BRIEF_SIGN.test(text)) return [];
-    const repo = await $.session.root().catch(() => $.session.cwd());
+    const root = await $.session.root().catch(() => $.session.cwd());
+    // the git top, never the root: a session rooted in `_clio` names frame's paths from frame's top (FRM-519 item 10)
+    const top = await $.process
+        .run(['git', '-C', root, 'rev-parse', '--show-toplevel'], {
+            timeoutMs: 5000,
+        })
+        .catch(() => undefined);
+    const repo =
+        top?.exitCode === 0 && top.stdout.trim() ? top.stdout.trim() : root;
     const run = await $.process.run(
         ['x', 'brief', 'check', '/dev/stdin', '--repo', repo, '--json'],
         { stdin: text, timeoutMs: 8000 },
@@ -622,6 +636,18 @@ async function isWarnOnly($: EngineInterface, rule: string) {
         'enforce'
     );
 }
+// the pr-read hint once a session: it fired 187 times in one (FRM-519 item 11); a /clear's new id hears it again
+const PR_HINTED = 'pr-hinted:';
+async function oncePrHint($: EngineInterface, found: string[]) {
+    if (!found.includes(PR_HINT)) return found;
+    const sid = await $.session.id().catch(() => undefined);
+    if (!sid) return found;
+    if (await $.store.get(PR_HINTED + sid).catch(() => undefined))
+        return found.filter((h) => h !== PR_HINT);
+    await $.store.set(PR_HINTED + sid, true).catch(() => undefined);
+    return found;
+}
+
 // a warn runs the call, so the refusal's «nothing ran» words never ride it
 const wouldRefuse = (rule: string, text: string) =>
     `x-mod-guard would refuse this (rule ${rule}, warn-only for now), and the command ran: ${text.replace(/^nothing in this command ran — x-mod-guard stopped this one command\. /, '')}`;
@@ -2242,12 +2268,16 @@ export const register: Register = (on) => {
                     : []),
                 ...(isQuiet
                     ? []
-                    : hints(command, cwd, {
-                          ...ctx,
-                          ...facts,
-                          isForeground:
-                              e.tool === 'Bash' && e.run_in_background !== true,
-                      })),
+                    : await oncePrHint(
+                          $,
+                          hints(command, cwd, {
+                              ...ctx,
+                              ...facts,
+                              isForeground:
+                                  e.tool === 'Bash' &&
+                                  e.run_in_background !== true,
+                          }),
+                      )),
             ];
             if (!context.length) return result;
             return {
