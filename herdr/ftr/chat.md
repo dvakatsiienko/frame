@@ -81,6 +81,22 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ Copy message says it copied
   - when dima right-clicks a message and picks Copy message
   - then the whole message as written is on the clipboard and «Message copied» shows above the box for 1.5 s
+- ⬜ Claude Code's suggestion shows as ghost text
+  - given a thread done with its turn, Claude Code's own box holding its dim suggestion, his box empty
+  - then a dim «Tab <suggestion>» line sits above the box
+  - when dima presses Tab in the empty box, or clicks the line
+  - then the suggestion fills his box, ready to edit or send; typing anything hides the line
+  - and a new session's «Try "…"» placeholder never shows as a suggestion
+- ⬜ the working row times the turn
+  - given a thread at work
+  - then the row above the box shows the spinner, what Claude Code says it does, and the time since his prompt as m:ss (h:mm:ss past an hour), counting each second
+  - and the count redraws only while the shown thread works
+- ⬜ effort switches while a turn runs
+  - given a thread at work, a reply streaming
+  - when dima picks another effort in the box's effort menu
+  - then Claude Code sets it for this session at once, and the menu shows the new level
+  - and the model menu still waits for the turn to end; neither opens while the thread asks him something
+  - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56)
 - ⬜ the effort shows the thread's live value
   - given a thread's last reply ran at an effort
   - then the chat box's effort reads that value, past the default in settings

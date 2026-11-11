@@ -276,6 +276,14 @@ const FLIP_LIMIT = 4;
 const MEASURE_BATCH_MS = 32;
 // his message's last px, where its fork icon sits: a press there forks (rows take no handlers, clickRow)
 const FORK_W = 28;
+/** a running turn's length: «m:ss», «h:mm:ss» past an hour @param {number} ms */
+const turnClock = (ms) => {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    const pad = (/** @type {number} */ n) => String(n).padStart(2, '0');
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return h ? `${h}:${pad(m)}:${pad(s % 60)}` : `${m}:${pad(s % 60)}`;
+};
 /** a message as a markdown quote, every line under «> » @param {string} text */
 const quoted = (text) =>
     text
@@ -1416,6 +1424,14 @@ export default class ClaudeChat extends View {
                     keystroke: 'escape',
                 })),
             );
+            // Tab in an empty box takes Claude Code's suggestion (the composer is "ChatGhost" then).
+            cx.bind_keys(
+                ['Input', 'Textarea', 'TextArea'].map((box) => ({
+                    action: 'x_herdr_chatter_ghost_take',
+                    context: `ChatGhost > ${box}`,
+                    keystroke: 'tab',
+                })),
+            );
         } catch {}
         // Search (Ctrl+F, or the header's magnifier): findQ is the query in use (typing settles for
         // 150 ms first, since a redraw rebuilds every message), findList its hits oldest first
@@ -1443,6 +1459,10 @@ export default class ClaudeChat extends View {
             this.findStep(e.shift ? 1 : -1, cx),
         );
         cx.timer.every(2000, (cx) => this.tick(cx));
+        // the working row's turn timer: one redraw a second, only while the shown thread works
+        cx.timer.every(1000, (cx) => {
+            if (this.turnAt && this.target()?.status === 'working') cx.notify();
+        });
         this.tick(cx);
     }
 
@@ -1818,10 +1838,14 @@ export default class ClaudeChat extends View {
 
     // The model and effort dropdowns at the right of the box: the trigger shows the current one
     // (or "Opus 5.5…" while a pick lands), the list opens upward with the current one ticked.
-    // Picks only while Claude waits for you: a pick while it works would queue behind the turn,
-    // and keys typed into the effort picker would land in its prompt instead.
+    // A model pick waits for Claude to wait for you: mid-turn it would queue behind the turn. Effort
+    // switches mid-turn too: Claude Code opens /effort while a reply streams and sets it at once
+    // (probed 2026-11-11 on Haiku 5.5: «Set effort level to high (this session only)»).
+    // Never while it asks: keys would answer the question.
     dropdown(t, agent, kind) {
-        const ready = agent.status !== 'working' && agent.status !== 'blocked';
+        const ready =
+            agent.status !== 'blocked' &&
+            (kind === 'effort' || agent.status !== 'working');
         const now = kind === 'model' ? this.modelNow() : this.effortNow();
         const p =
             this.pending?.address === this.address && this.pending.kind === kind
@@ -2084,6 +2108,7 @@ export default class ClaudeChat extends View {
                             : await transcriptOf(session);
                         if (this.address !== address) return;
                         this.items = [];
+                        this.turnAt = null;
                         this.tools = new Map();
                         this.skills = new Map();
                         this.subs = new Map();
@@ -2466,6 +2491,13 @@ export default class ClaudeChat extends View {
             }
             const content = d.message?.content;
             if (d.type === 'user') {
+                // his prompt starts the turn the working row times; a tool result is no prompt
+                if (
+                    into === this &&
+                    (typeof content === 'string' ||
+                        content?.some?.((b) => b?.type === 'text'))
+                )
+                    this.turnAt = Date.parse(d.timestamp ?? '') || this.turnAt;
                 // The reply before this message: a fork "before this message" resumes up to it.
                 const before =
                     into === this && this.lastReply?.session === d.sessionId
@@ -2669,6 +2701,7 @@ export default class ClaudeChat extends View {
         this.typed = '';
         keepDraft(address, '');
         this.leftInBox = null;
+        this.ghost = null;
         this.slash = null;
         // While Claude asks, what's typed is the "Type something" answer.
         if (text && ask.typeAnswer(this, text, cx)) {
@@ -2921,6 +2954,12 @@ export default class ClaudeChat extends View {
             [...this.items].reverse().find((i) => i.kind === 'user')?.text ??
             '';
         this.leftInBox = text && last && flat(last) === text ? text : null;
+        // anything else in Claude's box after a turn is its own dim suggestion: offered as ghost text; a new
+        // session's placeholder («Try "fix typecheck errors"») is no suggestion
+        this.ghost =
+            text && !this.leftInBox && !/^Try "/.test(text)
+                ? { address: agent.address, text }
+                : null;
         this.leftNormal = r?.stdout?.includes('-- NORMAL --') ?? false;
     }
 
@@ -4059,6 +4098,15 @@ export default class ClaudeChat extends View {
                             ? "Still working: Esc only stops Claude's own turn, not a background task (like /code-review). Stop that in the terminal."
                             : msg || 'Working…',
                     ),
+            )
+            .when(Boolean(this.turnAt), (el) =>
+                el.child(
+                    div()
+                        .flex_none()
+                        .text_color(t.dim)
+                        .font_family(this.mono())
+                        .child(turnClock(Date.now() - this.turnAt)),
+                ),
             )
             .when(!this.stuck, (el) =>
                 el.child(
@@ -5651,6 +5699,60 @@ export default class ClaudeChat extends View {
         );
     }
 
+    // Claude Code's suggestion for this thread, while his box is empty
+    /** @param {string | null} address */
+    ghostFor(address) {
+        return this.ghost?.address === address && !this.typed?.trim()
+            ? this.ghost.text
+            : null;
+    }
+
+    takeGhost(cx) {
+        const text = this.ghostFor(this.address);
+        if (!text) return;
+        this.box.set_value(text);
+        this.typed = text;
+        keepDraft(this.address, text);
+        this.ghost = null;
+        this.box.focus();
+        cx.notify();
+    }
+
+    // the suggestion, dim above the box: Tab or a click takes it
+    ghostLine(t, text) {
+        return h_flex()
+            .id('ghost')
+            .gap(8)
+            .items_center()
+            .mx(14)
+            .px(8)
+            .py(2)
+            .rounded(RADIUS.control)
+            .text_size(px(TEXT.sm))
+            .cursor_pointer()
+            .hover((s) => s.bg(t.hover))
+            .tooltip('Take the suggestion (Tab)')
+            .on_click((_e, cx) => this.takeGhost(cx))
+            .child(
+                div()
+                    .flex_none()
+                    .px(4)
+                    .rounded(4)
+                    .border(1)
+                    .border_color(t.border)
+                    .text_color(t.dim)
+                    .child('Tab'),
+            )
+            .child(
+                div()
+                    .flex_1()
+                    .min_w(0)
+                    .truncate()
+                    .text_color(t.dim)
+                    .child(text),
+            );
+    }
+
     // a model switch mid-conversation, asked first: the next message re-reads the whole history uncached
     modelConfirm(t, address) {
         const { value } = this.askModel;
@@ -6358,6 +6460,14 @@ export default class ClaudeChat extends View {
                                 .child(this.pickNote),
                         ),
                     )
+                    .when(
+                        agent.status !== 'working' &&
+                            Boolean(this.ghostFor(agent.address)),
+                        (el) =>
+                            el.child(
+                                this.ghostLine(t, this.ghostFor(agent.address)),
+                            ),
+                    )
                     .when(this.askModel?.address === agent.address, (el) =>
                         el.child(this.modelConfirm(t, agent.address)),
                     )
@@ -6463,8 +6573,17 @@ export default class ClaudeChat extends View {
                                     !this.stuck,
                                 (el) => el.key_context('ChatStop'),
                             )
+                            .when(
+                                !menu &&
+                                    agent.status !== 'working' &&
+                                    Boolean(this.ghostFor(agent.address)),
+                                (el) => el.key_context('ChatGhost'),
+                            )
                             .on_action('x_herdr_chatter_stop', (_e, cx) =>
                                 this.stop(cx),
+                            )
+                            .on_action('x_herdr_chatter_ghost_take', (_e, cx) =>
+                                this.takeGhost(cx),
                             )
                             .on_action('x_herdr_chatter_menu_down', (_e, cx) =>
                                 this.menuKey('down', cx),
