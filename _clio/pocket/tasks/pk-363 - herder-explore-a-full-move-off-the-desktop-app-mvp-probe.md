@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T18:59:00Z'
+updated_date: '2026-11-11T19:07:00Z'
 labels:
   - m
   - clio-main
@@ -2050,4 +2050,9 @@ PK-363:W1054 (2026-11-11 20:45, dima): top-right: "files" and "changes": i think
 PK-363:W1055 (2026-11-11 20:45, dima): settings, left bottom: they are the default ones, herdr's.
 PK-363:W1056 (2026-11-11 20:45, dima): so "tasks": it simply lists threads that are done? ❓
 PK-363:W1057 (2026-11-11 20:45, dima): once i click on the mod Scotty from the screenshot, it just opens its window. so nothing special here? ❓ (context, not dima's words: "Scotty" is the name dima gave the mod in the screenshot.)
+
+PK-363:W1064 (2026-11-11 21:05, dima): oh i see you, i write from herdr now, via tab. bring yourself to the agents list. (context, not dima's words: "heder" read as "herdr"; the screenshot is a tag only in the raw.)
+PK-363:W1065 (2026-11-11 21:05, dima): after i switch back to zoo, i see the shepherdr version of chatter beside the other parts of zoo (deck). my band is not here. (context, not dima's words: "shepader" read as "shepherdr"; the raw line opens "wisp:".)
+PK-363:W1062 (2026-11-11 20:53, dima): i started the assistant haiku. ask it around: does it see any special tools, anything useful from inside shepherdr as an assistant? (context, not dima's words: "sheparder" read as "shepherdr", as in earlier grooms; the screenshots are tags only in the raw.)
+PK-363:W1063 (2026-11-11 20:53, dima): what is autopilot? ❓
 <!-- SECTION:NOTES:END -->
