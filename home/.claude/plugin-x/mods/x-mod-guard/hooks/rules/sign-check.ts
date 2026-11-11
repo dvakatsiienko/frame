@@ -48,6 +48,7 @@ const FN = [
 const BESIDE = new Set([
     '',
     '[',
+    'awk',
     'cat',
     'cd',
     'cp',

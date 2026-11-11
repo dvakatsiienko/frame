@@ -762,6 +762,7 @@ export function bodyWritersRead(
     });
 }
 const OPAQUE_RUNNER = /^(python[\d.]*|node|bun|deno|ruby|perl)$/;
+const INLINE_CODE = /^(-[a-zA-Z]*[cemp]|--(eval|print|require|import))$/;
 // every sign on a line: `x linear set <id> --add-label signed`, or `x linear body <id> --set <file>` whose file the caller
 // reads for a sign line (FRM-427, o197)
 export function signWords(
@@ -774,7 +775,17 @@ export function signWords(
         // a program the guard cannot parse that runs a linear set or body write signs each id its text names (sixth sense
         // round 2 on a3cfd939: python's subprocess ran `x linear body … --set` past every word of his)
         if (OPAQUE_RUNNER.test(c.name)) {
-            const text = [...c.args.map((w) => w.text), ...c.bodies].join('\n');
+            // a script file's own text is read as a script the line runs, so the words after it are its data (clio's o98:
+            // a flyway line naming a body set on FRM-577 was read as a sign); inline code, stdin and a module stay code
+            const words = c.args.map((w) => w.text);
+            const script = words.findIndex((w) => !w.startsWith('-'));
+            const isScriptFile =
+                script >= 0 &&
+                words[script] !== '-' &&
+                !words.slice(0, script).some((w) => INLINE_CODE.test(w));
+            const text = [...(isScriptFile ? [] : words), ...c.bodies].join(
+                '\n',
+            );
             if (/\blinear\b/.test(text) && /--set\b|--add-label\b/.test(text))
                 out.push(
                     ...[...new Set(text.match(TICKET_ANY) ?? [])].map((id) => ({
