@@ -1,5 +1,12 @@
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    chmodSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -11,7 +18,7 @@ import { withSignCheck } from './x-mod-guard/hooks/rules/sign-check.ts';
 const dir = mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), 'sign-check-'));
 afterAll(() => rmSync(dir, { force: true, recursive: true }));
 const bin = join(dir, 'bin');
-spawnSync('mkdir', ['-p', bin]);
+mkdirSync(bin);
 // `x linear read <id>` answers the ticket's current body from current-<id>.md (no file: exit 1); a body set says `set <id>`
 writeFileSync(
     join(bin, 'x'),
@@ -30,11 +37,16 @@ const SIGNED =
     '## wish\n\n* W1 (2026-11-11, dima): x\n\n## signed\n\n✍️ signed 2026-11-11 · body 5a0d10c0\n';
 const GRANTED = `${SIGNED}merge: pre-approved\n🚫 cancelled 2026-11-11 — the merge waits for his word\n`;
 
+// the Bash tool's shell is zsh; ci's check job has bash alone, so every row runs under each shell the runner has
+const SHELLS = [
+    'bash',
+    ...(existsSync('/bin/zsh') || existsSync('/usr/bin/zsh') ? ['zsh'] : []),
+];
 function run(
     line: string,
     current: string | undefined,
     file: string,
-    shell = 'zsh',
+    shell: string,
 ) {
     const id = 'FRM-1';
     rmSync(join(dir, `current-${id}.md`), { force: true });
@@ -56,6 +68,7 @@ function run(
                 PATH: `${bin}:/usr/bin:/bin:/opt/homebrew/bin`,
                 ZDOTDIR: dir,
             },
+            timeout: 10_000,
         },
     );
     return { code: r.status, err: r.stderr, out: r.stdout.trim() };
@@ -63,7 +76,7 @@ function run(
 
 const SET = `x linear body FRM-1 --set ${join('$PWD', 'b.md')}`;
 
-describe('the run-time sign check', () => {
+describe.each(SHELLS)('the run-time sign check under %s', (shell) => {
     it.each([
         [
             'a tiny edit keeping the sign line',
@@ -77,7 +90,7 @@ describe('the run-time sign check', () => {
             `${SIGNED}✍️ re-sign pending 2026-11-11\n`,
         ],
     ])('runs the set: %s', (_why, current, file) => {
-        expect(run(SET, current, file)).toMatchObject({
+        expect(run(SET, current, file, shell)).toMatchObject({
             code: 0,
             out: 'set FRM-1',
         });
@@ -101,7 +114,7 @@ describe('the run-time sign check', () => {
         ],
         ['a body linear cannot read', undefined, SIGNED],
     ])('refuses the set: %s', (_why, current, file) => {
-        const r = run(SET, current, file);
+        const r = run(SET, current, file, shell);
         expect([r.code, r.out, r.err]).toEqual([
             1,
             '',
@@ -113,15 +126,8 @@ describe('the run-time sign check', () => {
         const loop =
             'for t in FRM-1; do x linear body $t --set=$PWD/b.md; done';
         expect([
-            run(loop, SIGNED, SIGNED).out,
-            run(loop, SIGNED, `${SIGNED}✍️ signed 2026-11-12 · body 2\n`).code,
-        ]).toEqual(['set FRM-1', 1]);
-    });
-
-    it('decides the same under bash', () => {
-        expect([
-            run(SET, SIGNED, SIGNED, 'bash').out,
-            run(SET, '', `## signed\n\n✍️ signed 2026-11-11 · body 1\n`, 'bash')
+            run(loop, SIGNED, SIGNED, shell).out,
+            run(loop, SIGNED, `${SIGNED}✍️ signed 2026-11-12 · body 2\n`, shell)
                 .code,
         ]).toEqual(['set FRM-1', 1]);
     });
