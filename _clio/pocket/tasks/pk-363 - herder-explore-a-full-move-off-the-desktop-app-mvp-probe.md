@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T11:34:00Z'
+updated_date: '2026-11-11T11:36:00Z'
 labels:
   - m
   - clio-main
@@ -1860,4 +1860,6 @@ PK-363:W871 (2026-11-11 13:30, dima): yesterday i asked main clio to do a retro 
 PK-363:W872 (2026-11-11 13:30, dima): clio made a few folds for the tilde ticket out of those retros. what was folded? ❓
 PK-363:W873 (2026-11-11 13:30, dima): then wing 1 parks and waits for my wants.
 PK-363:W874 (2026-11-11 13:30, dima): my weekly: at 4%, let's plan first. then, when 100% is reached, i press «reset» type suggested by wing 1.
+
+PK-363:W892 (2026-11-11 00:19 orbit steer o116, dima): i want you to stop asking me for requests like o116 for halt summoning and stopping everyone. you must be able to do it yourself, without even asking.
 <!-- SECTION:NOTES:END -->
