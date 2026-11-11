@@ -237,19 +237,80 @@ describe('the siesta comes due', () => {
         });
     });
 
-    test.each([
-        '_clio/memory/craft-pm.md',
-        'home/.claude/rules/code.md',
-        '_clio/plugin-clio/skills/boot/SKILL.md',
-    ])('one file of clio’s at «%s» makes it due', (file) => {
-        const home = fixtureHome();
+    const plant = (home: string, files: string[]) => {
         const repo = join(home, 'frame');
-        mkdirSync(join(repo, file, '..'), { recursive: true });
-        writeFileSync(join(repo, file), 'x');
+        for (const file of files) {
+            mkdirSync(join(repo, file, '..'), { recursive: true });
+            writeFileSync(join(repo, file), 'x');
+        }
         commit(home, 0, 'clio');
+    };
+
+    test('three memory, rule or skill text files of clio’s make it due', () => {
+        const home = fixtureHome();
+        plant(home, [
+            '_clio/memory/craft-pm.md',
+            'home/.claude/rules/code.md',
+            '_clio/plugin-clio/skills/boot/SKILL.md',
+        ]);
         expect(said(stop(home, stopInput(home)))).toContain(
-            'memory, rule or skill',
+            '3 memory, rule or skill text files',
         );
+    });
+
+    test('two memory or rule text files of clio’s make none due', () => {
+        const home = fixtureHome();
+        plant(home, ['_clio/memory/craft-pm.md', 'home/.claude/rules/code.md']);
+        expect(stop(home, stopInput(home))).toBeUndefined();
+    });
+
+    test('a skill’s code files never count as memory text', () => {
+        const home = fixtureHome();
+        plant(home, [
+            'home/.claude/plugin-x/skills/crew-adviser/scripts/wake.ts',
+            'home/.claude/plugin-x/skills/crew-adviser/scripts/wake.test.ts',
+            'home/.claude/plugin-x/skills/crew-adviser/scripts/decision.ts',
+        ]);
+        expect(stop(home, stopInput(home))).toBeUndefined();
+    });
+
+    test.each([
+        'x linear set FRM-9 --state Done',
+        "x linear set FRM-9 --state 'Canceled'",
+        "node script/ticket-sign.ts FRM-9 re-signed 'why'",
+        'x lane landed FRM-9 --pr 161 --apply',
+    ])('clio’s «%s» since the stamp makes it due', (command) => {
+        const home = fixtureHome();
+        const input = stopInput(home);
+        appendFileSync(
+            input.transcript_path,
+            `\n${JSON.stringify({ message: { content: [{ input: { command }, name: 'Bash', type: 'tool_use' }] }, timestamp: new Date().toISOString(), type: 'assistant' })}`,
+        );
+        expect(said(stop(home, input))).toContain('ticket close(s) or sign(s)');
+    });
+
+    test.each([
+        'x linear set FRM-9 --state Todo',
+        "node script/ticket-sign.ts FRM-9 changed 'tiny'",
+        'x lane landed FRM-9 --pr 161',
+    ])('clio’s «%s» makes none due', (command) => {
+        const home = fixtureHome();
+        const input = stopInput(home);
+        appendFileSync(
+            input.transcript_path,
+            `\n${JSON.stringify({ message: { content: [{ input: { command }, name: 'Bash', type: 'tool_use' }] }, timestamp: new Date().toISOString(), type: 'assistant' })}`,
+        );
+        expect(stop(home, input)).toBeUndefined();
+    });
+
+    test('a ticket close before the stamp makes none due', () => {
+        const home = fixtureHome();
+        const input = stopInput(home);
+        appendFileSync(
+            input.transcript_path,
+            `\n${JSON.stringify({ message: { content: [{ input: { command: 'x linear set FRM-9 --state Done' }, name: 'Bash', type: 'tool_use' }] }, timestamp: new Date(Date.now() - 2 * HOUR).toISOString(), type: 'assistant' })}`,
+        );
+        expect(stop(home, input)).toBeUndefined();
     });
 
     test('another agent’s memory file makes none due', () => {
@@ -531,6 +592,7 @@ describe('the siesta closes on dima’s word', () => {
             undefined,
         ]);
         run(home, ['open']);
+        run(home, ['skip', 'a fixture with no transcript']);
         run(home, ['card']);
         prompt(home, { prompt: NON_DIMA[0] ?? '' });
         expect(siesta(home).open).toBe(true);
@@ -646,6 +708,7 @@ describe('the cli', () => {
                 ).trim(),
             ).getTime(),
         ).toBeGreaterThan(Date.now() - 60_000);
+        run(home, ['skip', 'only groom bookkeeping since the last read']);
         run(home, ['card', 'a hole', 'a gap']);
         expect(siesta(home)).toMatchObject({
             card_printed: true,
@@ -663,13 +726,75 @@ describe('the cli', () => {
     });
 });
 
-function run(home: string, args: string[], input = '') {
+describe('a siesta runs wishkeeper or logs why not', () => {
+    test('a card with no wishkeeper and no skip is refused', () => {
+        const home = fixtureHome();
+        run(home, ['open']);
+        const out = run(home, ['card']);
+        expect(out.status).not.toBe(0);
+        expect(out.stderr).toContain('no wishkeeper ran');
+        expect(siesta(home).card_printed).toBe(false);
+    });
+
+    test('a skip logs its why and lets the card print', () => {
+        const home = fixtureHome();
+        run(home, ['open']);
+        run(home, ['skip', 'no reply to dima and no commit since the stamp']);
+        expect(run(home, ['card']).status).toBe(0);
+        expect(
+            readFileSync(
+                join(home, '.local/state/clio/wishkeeper-skips.log'),
+                'utf8',
+            ),
+        ).toMatch(/\tclio\tno reply to dima and no commit since the stamp\n$/);
+    });
+
+    test('a wishkeeper spawned since the open lets the card print', () => {
+        const home = fixtureHome();
+        run(home, ['open']);
+        const dir = join(home, '.claude/projects/-x');
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(
+            join(dir, `${SID}.jsonl`),
+            JSON.stringify({
+                message: {
+                    content: [
+                        {
+                            input: { subagent_type: 'wishkeeper' },
+                            name: 'Agent',
+                            type: 'tool_use',
+                        },
+                    ],
+                },
+                timestamp: new Date(Date.now() + 1000).toISOString(),
+                type: 'assistant',
+            }),
+        );
+        const out = run(home, ['card'], '', { CLAUDE_CODE_SESSION_ID: SID });
+        expect(out.status).toBe(0);
+    });
+
+    test('a next open clears the last skip', () => {
+        const home = fixtureHome();
+        run(home, ['open']);
+        run(home, ['skip', 'nothing new']);
+        run(home, ['open']);
+        expect(run(home, ['card']).status).not.toBe(0);
+    });
+});
+
+function run(
+    home: string,
+    args: string[],
+    input = '',
+    env: Record<string, string> = {},
+) {
     return spawnSync(
         'node',
         [join(import.meta.dirname, 'siesta-gate.ts'), ...args],
         {
             encoding: 'utf8',
-            env: { ...gitEnv(), HOME: home },
+            env: { ...gitEnv(), HOME: home, ...env },
             input,
             timeout: 10_000,
         },
@@ -1230,6 +1355,7 @@ describe('every clio on its own stamp', () => {
     test('a new siesta prints the last stamp and the high left open', () => {
         const home = fixtureHome();
         run(home, ['open']);
+        run(home, ['skip', 'a fixture with no transcript']);
         run(home, ['card', 'a hole']);
         const out = run(home, ['open']);
         expect(out.stdout).toMatch(/last siesta: 20/);

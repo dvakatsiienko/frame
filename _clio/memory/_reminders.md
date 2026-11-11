@@ -87,3 +87,5 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ memory by surface (FRM-576:W16): «let's try gradual, but do not forget to measure and lift after 1 week!» — re-read FRM-576 § decided «the order» against facts.md § 4, then lift — set 2026-11-11 · due: 2026-11-18
 
 ⏰ FRM-551: the first halt with no go lane reads the vm half, then closes it — dima: «reminder?» — set 2026-11-11
+
+⏰ remeasure wishkeeper, its FRM-491 change one week on: «measure only the delta … only the part that goes after the cadence for Wishkeeper is changed», against `docs/research/wishkeeper-cadence.md`; keep, partly revert or revert — set 2026-11-11 · due: 2026-11-18

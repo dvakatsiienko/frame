@@ -1,5 +1,5 @@
 ---
-description: load at every siesta — a lane member's done lands, 15 files of clio's or one memory, rule or skill file, or dima says «siesta». the pause between batches as one fixed flow; it ends with what to do next, never a dead stop.
+description: load at every siesta — a lane member's done lands, a ticket closed or signed, 15 files of clio's or 3 memory, rule or skill text files, or dima says «siesta». the pause between batches as one fixed flow; it ends with what to do next, never a dead stop.
 ---
 
 # /clio:siesta — the pause between batches
@@ -10,8 +10,9 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 
 ## when
 
-- a codie's, sixth sense's or designer's `[done]` or `final` lands
-- 15 files of clio's since the last siesta, or one memory, rule or skill file (the Stop hook's «🌤️ siesta due»); a memory sweep: `recipes/nurture-memory/recipe.md` § the run
+- a codie's, sixth sense's or designer's `[done]` or `final` lands; a progress line never
+- clio closes, cancels or signs a ticket, or lands a lane (`siesta-gate.ts` reads the commands)
+- 15 files of clio's since the last siesta, or 3 memory, rule or skill text files (`.md`; a skill's code file counts only toward the 15) (the Stop hook's «🌤️ siesta due»); a memory sweep: `recipes/nurture-memory/recipe.md` § the run
 - dima says «siesta»
 - a lane he steers live (a piece of its name on a line of `~/.local/state/clio/live-lanes`) batches its bare `[done]`s: three, or the oldest an hour old; its «final» beside a sha still counts at once (dima's tick, 2026-11-10)
 - never on a timer
@@ -22,7 +23,13 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 
 0. `node ~/frame/_clio/script/siesta-gate.ts open` prints `<last siesta>` for 1, 2.5, 2.6, 3.5 and any high left open by the last card, which joins this one; it stamps and opens
 
-1. **the checks, then wishkeeper**: `node ~/frame/_clio/script/siesta-checks.ts --since <last siesta>` runs every siesta, audit-codie too; wishkeeper is never skipped, the 5h pace included (dima, 2026-11-04: «he is a prio»): spawn the `wishkeeper` agent 🐬 in the background, siesta mode, at its medium default (`effort: high` only on dima's ask), with the checks' output, the commit range since the last siesta, the base..head of each chunk a `[done]` named with its pr unmerged, the ticket ids touched, the pocket items touched, clio's transcript path and the `<last siesta>` stamp, local with its UTC offset, to read from (for its promises and claims checks) and the open orbit asks (so it skips what is already asked) — nothing more; it reads the tickets' want itself
+1. **the checks, then wishkeeper**: `node ~/frame/_clio/script/siesta-checks.ts --since <last siesta>` runs every siesta, audit-codie too. wishkeeper runs on every siesta whose window holds a reply to dima or a commit (dima, 2026-11-04: «he is a prio»; FRM-491 re-sign, 11-11); a window with neither runs `siesta-gate.ts skip '<why>'` instead, and the card is refused until one of the two happened. spawn the `wishkeeper` agent 🐬 in the background, siesta mode, at its medium default (`effort: high` for a chunk read or a 15-file batch, or on dima's ask), with:
+   - the `<last siesta>` stamp, local with its UTC offset, and clio's transcript path (it finds the claims to dima there itself)
+   - the open findings: the open highs step 0 printed, each answered `fixed` or `still open`
+   - the checks' output, the commit range since the last siesta, the ticket ids and pocket items touched
+   - each chunk a `[done]` named with its pr unmerged: its base..head, and the head of its last wishkeeper read, so an unchanged chunk is not read twice
+   - the open orbit asks, so it skips what is already asked
+   - nothing more; it reads the tickets' want and crow's notes itself
 2. **meanwhile, the pick, in this order**: due reminders first, then In Progress tickets (W37), then the pocket (a red pocket-check section puts it before the main lane), then the main lane. the one exception: a pocket left with only small items runs the main lane plus one pocket item per batch
 2.2 **a freebie while wishkeeper reads, done, not listed** — the hunt starts in the same message as the wishkeeper spawn, since wishkeeper runs 5–7 min (dima, 2026-10-16: «while wishkeeper is waiting, you could pick up some stuff to do in the meantime for each siesta»). the sources, first hit wins: a small fix spotted this batch, an xs or s pocket item, a trial due within 3 days (`pnpm test-drive:check`) logging a round, an unread changedetector change. an inbox answer dima asked for runs beside it, never in its place; never a file wishkeeper is reading. the card's 🍀 line names what got done, or the sources checked when every one came up empty
 2.4 **the close net**: `x linear list --state "In Progress"`; step 1's close net section; a red ticket is closed now by `clio:pm` `references/closing.md`, or gets its `⏰ due:` line or its orbit ask this turn (`craft-fleet-flow` stage 8)
@@ -35,7 +42,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 3.5 **the helper count**: step 1's helper count section: `helper` and `helper-lite` spawns per live session; a member with real work and zero is nudged the same turn, and the count joins the card
 4. **check before acting** — wishkeeper owns the files and the tracker, crow owns intent, process and claims; every high finding from either, and any finding that would change a rule or a claim made to dima, is opened at its cited spot first; one not checked is printed as `unchecked`; a high's fix names its cause, «fixed» or «ticketed FRM-N», before its commit
 5. **the card**, one reply when wishkeeper is back, after `node ~/frame/_clio/script/siesta-gate.ts card '<high 1>' …` (one quoted arg each; a high settled later: `… high <n> fixed|parked <why>`):
-   - 🐬 **wishkeeper**: its top 5 and the count of the rest; its tokens and findings count go as one `## rounds` row of `docs/test-drive/pre-merge-siesta.md`
+   - 🐬 **wishkeeper**: its top 5 and the count of the rest, or the skip's why; one `## rounds` row of `docs/test-drive/pre-merge-siesta.md` per run: tokens, findings by severity, highs real y/n, acted or dropped (`docs/research/wishkeeper-cadence.md` remeasures them)
    - 🎀 **chores**: the lines of `… card-lines <transcript>`
    - 🍀 **freebie**: what step 2.2 got done; a duplication finding offers `/simplify` here
    - ➡️ **next**: your flyway's next line
