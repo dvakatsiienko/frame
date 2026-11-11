@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-11T18:19:00Z'
+updated_date: '2026-11-11T19:00:00Z'
 labels:
   - s
   - clio-main
@@ -260,4 +260,6 @@ done 2026-11-11 19:46: the «seat» → «thread» sweep also covers open linear
 done 2026-11-11 19:46: «seat» → «thread» (dima ticked 21:42: he never weighed «seat»): one scripted sweep with a dry run, about 220 doc hits in 40 files (herdr FTR 57, guard FTR 19, stash FTR 18, x:herdr 15, the glossary, the wing line in fleet-vibe and identity), each line read for sense; 202 code hits in 22 files move when that code is next touched; done = rg for the old word prints only code and dated history
 
 19:46: #10 and #12 (the seat → thread sweep, docs and open linear bodies) moved to wing 1's flyway PK-346 on dima's 19:43 handover to wing 1
+
+done 2026-11-11 21:00: FRM-566 settings: add the «borrow the shape» line from his 20:49 notes, pointing at ~/frame/.scratch/herdr-lane/shepherdr-settings-shots/ideas.md (move the shots into a kept home at the fold) (FRM-566 Todo)
 <!-- SECTION:NOTES:END -->

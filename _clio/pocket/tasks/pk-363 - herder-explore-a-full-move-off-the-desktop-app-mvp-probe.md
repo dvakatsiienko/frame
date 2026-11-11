@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T18:21:00Z'
+updated_date: '2026-11-11T18:59:00Z'
 labels:
   - m
   - clio-main
@@ -2022,4 +2022,32 @@ PK-363:W1033 (2026-11-11 20:19, dima): then I switch back to our herdr setup and
 PK-363:W1034 (2026-11-11 20:19, dima): will it work? ❓
 PK-363:W1035 (2026-11-11 20:19, dima): do you think everyone must be paused while we are doing it? ❓
 PK-363:W1036 (2026-11-11 20:19, dima): also, what if everyone dies? restoration plan. I restart you with clio-revive main zsh alias? (wing 1 just cooked it) ❓
+
+PK-363:W1037 (2026-11-11 20:42, dima): i am switched to shepherdr. looks different. what i observe: (context, not dima's words: "sheparder" read as "shepherdr", as in earlier grooms; the time is the chore time, the raw has none.)
+PK-363:W1038 (2026-11-11 20:42, dima): 1. chatter scrolling is very fast, immediate feel. it is definitely 60fps or even more.
+PK-363:W1039 (2026-11-11 20:42, dima): 2. i drag and drop a screenshot into the text box and it supports image previews. i want it (zoo image attachment support is much worse).
+PK-363:W1040 (2026-11-11 20:42, dima): 3. chatter text box model selection is much better here.
+PK-363:W1041 (2026-11-11 20:42, dima): 4. dictation not needed, i use wispr.
+PK-363:W1042 (2026-11-11 20:42, dima): 5. send button in text box can be borrowed.
+PK-363:W1043 (2026-11-11 20:42, dima): 6. tabs (top): i think they look better here. horizontal scroll goes wild the same way.
+PK-363:W1044 (2026-11-11 20:42, dima): 7. overall chatter is much better looking and has copy support and emojis. i like emojis: let's pull them and have support for both my and your messages. they should not start a turn, slipstreamed instead.
+PK-363:W1045 (2026-11-11 20:42, dima): 8. when you are in a turn, the spinner is prettier and has a timer of your turn: pulling it in.
+PK-363:W1046 (2026-11-11 20:42, dima): 9. overall i feel this chatter is much better. i wish we would start with this chatter as a base instead of zoo, but we already landed some stuff into our chatter. now this is my wish.
+PK-363:W1047 (2026-11-11 20:42, dima): after i go out of shepherdr and switch to our view, i want you to propose how to gracefully merge everything: take the best parts of both chatters (ours current and this shepherdr) into one unified solution. i like all of them but not now.
+PK-363:W1048 (2026-11-11 20:42, dima): currently do not overload me with info. the main goal is to gather as much context as possible, and you currently don't load me with info. instead guide me through shepherdr and help me explore it.
+PK-363:W1049 (2026-11-11 20:42, dima): i provided screenshots with examples of how everything looks overall and what i liked. (context, not dima's words: seven images were attached; the raw holds only their tags.)
+PK-363:W1050 (2026-11-11 20:42, dima): other than this i don't see anything else useful, because the left side and the task side to the right are empty. try to reply in short, because i'm overloaded and want everything done fast.
+PK-363:W1051 (2026-11-11 20:42, dima): is everyone busy meanwhile? i don't want everyone paused. ❓
+PK-363:W1052 (2026-11-11 20:42, dima): what else to explore in herdr: propose. can you use "tasks" to the right, how to see how it works? propose what else to explore. ❓ (context, not dima's words: "herder" read as "herdr", as in earlier grooms.)
+
+PK-363:W1053 (2026-11-11 20:49, dima): assistant: how to start it? ❓ (context, not dima's words: the raw has this line alone, after a separator; "assistant" is the word dima used, not a name.)
+
+PK-363:W1058 (2026-11-11 20:58, dima): autopilot: it seems it would be a really good feature for us too, because we have our shift skill. in my memory it was clunky, and we spent an enormous amount of time and effort to sharpen it. it's still a little clunky sometimes and not proven far enough. (context, not dima's words: the raw opens with an image tag only; "autopilot" is the shepherdr feature dima names; the time is the chore time, the raw has none.)
+PK-363:W1059 (2026-11-11 20:58, dima): how do you think, then? what are the best parts of autopilot and other assistant parts we could pull? i think it's your part. you could be most interested in this. ❓
+PK-363:W1060 (2026-11-11 20:58, dima): propose after i return out of the shepherdr view. now: only collect spots. (context, not dima's words: "shaperder" read as "shepherdr", as in earlier grooms.)
+PK-363:W1061 (2026-11-11 20:58, dima): so nothing special to see more? i explored all special shepherdr parts? ❓
+PK-363:W1054 (2026-11-11 20:45, dima): top-right: "files" and "changes": i think it's herdr native? let's keep them as nice to have. (context, not dima's words: "herder" read as "herdr", as in earlier grooms; the screenshots are tags only in the raw.)
+PK-363:W1055 (2026-11-11 20:45, dima): settings, left bottom: they are the default ones, herdr's.
+PK-363:W1056 (2026-11-11 20:45, dima): so "tasks": it simply lists threads that are done? ❓
+PK-363:W1057 (2026-11-11 20:45, dima): once i click on the mod Scotty from the screenshot, it just opens its window. so nothing special here? ❓ (context, not dima's words: "Scotty" is the name dima gave the mod in the screenshot.)
 <!-- SECTION:NOTES:END -->

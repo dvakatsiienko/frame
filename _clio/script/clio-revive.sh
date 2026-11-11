@@ -22,7 +22,7 @@ done
 [[ -n "$transcript" ]] || { echo "clio-revive: no transcript of «$name» in ~/.claude/projects/-Users-dima-frame--clio" >&2; exit 1; }
 
 sid=${transcript:t:r}
-params=$(jq -c 'select(.type == "api-request") | .params | {model, effort}' "$transcript" | tail -n 1)
+params=$(jq -c 'select(.type == "api-request") | .params | {model, effort: (.output_config.effort // .effort)}' "$transcript" | tail -n 1)
 model=$(jq -r '.model // empty' <<<"$params"); model=${model:-claude-opus-5-5}
 effort=$(jq -r '.effort // empty' <<<"$params"); effort=${effort:-medium}
 

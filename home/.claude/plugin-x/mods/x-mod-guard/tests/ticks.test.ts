@@ -1687,9 +1687,13 @@ const LINKS = new Map([
     ['/tmp/f', `${REAL}/shelf/orbit-ticks/t1.jsonl`],
     ['/tmp/c', '/home/.claude'],
     ['/tmp/b', `${REAL}/shelf/band-presses`],
+    ['/tmp/v/zz', `${REAL}/shelf/orbit-ticks`],
+    ['/tmp/u/zz', `${REAL}/shelf/orbit-ticks`],
 ]);
 // a folder past the glob fan-out
 const WIDE = Array.from({ length: 1100 }, (_, i) => `n${i}`);
+// a folder of plain files past it, as clio's grooms folder holds 1,364
+const GROOMS = Array.from({ length: 1100 }, (_, i) => `g${i}.md`);
 const DIRS = new Map([
     ['/', ['home', 'tmp']],
     ['/home', ['.claude', 'frame']],
@@ -1704,7 +1708,10 @@ const DIRS = new Map([
     [`${REAL}/plugins`, ['store', 'cache']],
     [`${REAL}/plugins/store`, []],
     [`${REAL}/plugins/cache`, []],
-    ['/tmp', ['t', 's', 'p', 'f', 'c', 'm', 'other', 'b']],
+    ['/tmp', ['t', 's', 'p', 'f', 'c', 'm', 'other', 'b', 'w', 'v', 'u']],
+    ['/tmp/w', GROOMS],
+    ['/tmp/v', [...GROOMS, 'zz']],
+    ['/tmp/u', ['a.md', 'zz']],
     ['/tmp/other', []],
     ['/tmp/m', WIDE],
     ...WIDE.map((n) => [`/tmp/m/${n}`, []] as [string, string[]]),
@@ -1742,8 +1749,10 @@ function diskWorld(on: On) {
             ? { deny: 'no such folder' }
             : {
                   value: names.map((name) => ({
-                      isLink: false,
-                      kind: 'dir' as const,
+                      isLink: LINKS.has(`${e.path}/${name}`),
+                      kind: DIRS.has(onTree(`${e.path}/${name}`) ?? '')
+                          ? ('dir' as const)
+                          : ('file' as const),
                       mtimeMs: 0,
                       name,
                       size: 0,
@@ -1783,6 +1792,11 @@ for (const line of [
     'cp f /tmp/m/*/x',
     'cp f ~/.CLAUDE/shelf/orbit-tick?/',
     'cp f ~/.claude/shelf/ORBIT-TICK?/',
+    // g4: one plain file stands for its siblings, while a link among them still lands
+    'cd /tmp/v && cp f "$(cat a.md)"',
+    'cp f /tmp/v/$x',
+    'cd /tmp/u && cp f "$(cat a.md)"',
+    'echo x > /tmp/v/$x',
     // past the word cap nothing is read, so even a harmless target counts as landing (fail closed)
     `cp ${Array.from({ length: 520 }, (_, i) => `a${i}`).join(' ')} /tmp/other/`,
 ])
@@ -1807,6 +1821,14 @@ for (const line of [
     'cd ~/frame/_clio && node script/flyway-done.ts PK-346 2 2>&1 | tail -2; node script/flyway-done.ts PK-346 1 2>&1 | tail -2; for l in "FRM-554 landing: the live check on main\'s node_modules/.bin, one real commit after it, x lane landed FRM-554 --pr 156 --apply, the close, glide l64 ended" "today\'s two almost-freebies on dima\'s 20:53 tick, a helper card each: FRM-559 prompt-groom matcher, FRM-543\'s .scratch brief path in wish-cover-on-write.sh" "the scopes sweep with dima: steps 1–4 of 7 settled and in linear; left: step 5 cli cuts, step 6 built cli and the nine duplicated rules, step 7 the rebalance; the order lives in linear sortOrder and .scratch/herdr/scopes-audit.md § the whole execution order: read it first at any boot" "FRM-384 joins cli lane 7 after FRM-554 lands: a new spec section, x lane dispatch, a next: message to the codie and its sixth sense" "📅 herdr\'s two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14"; do node script/flyway-done.ts PK-346 --add "$l" 2>&1 | tail -1; done; grep -n "^- \\[ \\]" "pocket/tasks/pk-346 - flyway-wing-1.md" | cut -c1-110',
     // past the fan-out only path words land, so a pipe's flags stay a read (clio's line, 18:58)
     'f=$(ls /tmp/m/*/x); grep -n "sign" "$f" | cut -c1-120 | tail -3',
+    // g4: helga's pocket append from a folder of 1,364 groom files (18:37), and clio's grep in the ticks folder
+    'cd /tmp/w && BACKLOG_CWD=~/frame/_clio backlog task edit PK-377 --append-notes "$(cat a.md b.md)" 2>&1 | tail -n 5',
+    'cd /tmp/w && BACKLOG_CWD=$HOME/frame/_clio backlog task edit PK-377 --append-notes "$(cat a.md b.md c.md)" 2>&1 | tail -n 5',
+    `cd ~/.claude/shelf/orbit-ticks; grep -h '"o60"' *.jsonl | tail -2`,
+    `cd /tmp/t; grep -h '"o60"' *.jsonl | tail -2`,
+    // clio's line as she ran it, from the replay
+    `cd ~/.claude/shelf/orbit-ticks; grep -h '"o60"' *.jsonl | tail -2 | cut -c1-400`,
+    'cd ~/.claude/shelf/orbit-ticks && for f in $(ls -t | head -8); do echo "== $f $(stat -f %Sm -t %H:%M:%S $f)"; tail -2 $f | cut -c1-160; done',
 ])
     test(`a write that lands outside the fenced folders runs: ${line}`, async ($, on) => {
         const { ran } = diskWorld(on);
@@ -2480,3 +2502,17 @@ test("r7: a subagent's report naming the ask is no reply of the seat's", async (
         [],
     ]);
 });
+
+// g1 (FRM-544): clio's «👀 look sent» writes on signed tickets, each refused as a sign before r2 (14:45, and 2026-11-09
+// 22:14); a stamp that adds no sign line is judged as it runs, so the line runs with no tick
+const LOOK_STAMP = `cd ~/frame/_clio && D=~/.local/state/x/linear/bodies/1e70bf35-bc95-404c-957d-ec4bdf5250e5; for t in FRM-574 FRM-573; do x linear body $t >/dev/null; node script/ticket-sign.ts $t changed "👀 look sent 2026-11-11, printed in his herdr thread (herdr has no SendUserFile door); no re-sign: tiny" >/dev/null; x linear body $t --set $D/$t.md | jq -c '.ok'; done; cd ~/frame && x lane landed FRM-574 2>&1 | jq -r '.plan.lines[]? // .data.lines[]?' | grep "🔴" | cut -c1-120`;
+const LOOK_PRINTF = `cd ~/frame && for t in FRM-549 FRM-553; do x linear body $t >/dev/null; B=~/.local/state/x/linear/bodies/$t.md; printf '\\n👀 look sent 2026-11-10\\n' >> $B; x linear body $t --set $B >/dev/null; echo "$t body $?"; done`;
+for (const [why, line, ids] of [
+    ['a ticket-sign.ts «changed» stamp', LOOK_STAMP, ['FRM-574', 'FRM-573']],
+    ['a printf of the look line', LOOK_PRINTF, ['FRM-549', 'FRM-553']],
+] as const)
+    test(`g1: a look-sent write on a signed ticket runs with no tick, judged as it runs: ${why}`, async ($, on) => {
+        const { ran } = world(on, [], SIGNED_TODAY(), SIGNED_TODAY());
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([undefined, [checked(line, ...ids)]]);
+    });

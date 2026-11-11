@@ -46,7 +46,10 @@ export function herdrStartOf(c: Command) {
                     isHerdr = true;
             } else if (OPEN_VALUED.has(`-${valued}`)) i++;
         } else if (OPEN_VALUED.has(w)) i++;
-        else if (!w.startsWith('-') && /Herdr\.app\/?$/i.test(w))
+        else if (
+            !w.startsWith('-') &&
+            /Herdr\.app(?:\/Contents\/MacOS\/Herdr)?\/?$/i.test(w)
+        )
             isHerdr = true;
     }
     return isNew && isHerdr ? 'open -n Herdr' : undefined;

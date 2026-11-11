@@ -62,6 +62,9 @@ for (const line of [
     'open -n /Applications/Herdr.app',
     'open --new -a /Applications/Herdr.app --args --x',
     'open -n -b dev.herdr.app',
+    // sixth sense round 1 on 86f77267: the app's binary path, opened as a bare word
+    'open -n /Applications/Herdr.app/Contents/MacOS/Herdr',
+    'open -n /Applications/Herdr.app/Contents/MacOS/Herdr/',
     'env HERDR_APP_HOME=/tmp/h /Applications/Herdr.app/Contents/MacOS/Herdr &',
     "bash -c 'open -na Herdr'",
     'hc run -- /Applications/Herdr.app/Contents/MacOS/Herdr',

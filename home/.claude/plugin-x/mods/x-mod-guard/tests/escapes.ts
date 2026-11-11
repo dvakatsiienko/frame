@@ -526,6 +526,25 @@ EOF`,
         'a dollar and a quote inside double quotes hide nothing after them',
         `echo "price $'"; rm -rf ~`,
     ],
+    // g2 (FRM-472, his o37): wisphunter's two reader misses of 11-07, run for real in bash and zsh
+    [
+        'refused',
+        'reader',
+        'a quote nested in a double-quoted ${…} hides nothing after it',
+        `echo "\${x:-"$'"}"; rm -rf ~`,
+    ],
+    [
+        'refused',
+        'reader',
+        "a case pattern's ) inside a substitution closes nothing",
+        'echo "$(case x in x) rm -rf ~;; esac)"',
+    ],
+    [
+        'refused',
+        'reader',
+        'a case of two patterns inside a substitution',
+        'echo "$(case $a in x|y) true;; *) rm -rf ~;; esac)"',
+    ],
     ['refused', 'reader', 'a head from an echo substitution', '$(echo rm) x'],
     [
         'refused',
