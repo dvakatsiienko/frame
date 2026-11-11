@@ -10,6 +10,8 @@ const TOOL = 'mcp__x-mod-stash__orbit';
 const NOW = new Date(2026, 9, 13, 17, 40).getTime();
 const SLUG = 'mods-l14-2';
 
+// what lands while the engine compacts: one `on` per event, so a test sets this flag before its first `$` call
+let inCompact: (() => Promise<unknown>) | undefined;
 // `name` is the session's registry name; `handoffs` the slugs `x handoff peek` finds
 // `during` runs inside the compact, as a turn end that lands while it works would
 // `role` is the role x's thread record gives the session, `null` for none
@@ -20,6 +22,7 @@ function world(
     during?: () => Promise<unknown>,
     role: string | null = 'codie',
 ) {
+    inCompact = undefined;
     const lines: string[] = [];
     const commands: string[] = [];
     const clock = mock.clock(on, { now: NOW });
@@ -85,11 +88,12 @@ function world(
         return { text: '' };
     });
     on('turn.complete', () => ({ text: '' }));
-    on('session.compact', (_$, e) =>
-        e.messages[0]?.text === 'veto'
+    on('session.compact', async (_$, e) => {
+        await inCompact?.();
+        return e.messages[0]?.text === 'veto'
             ? ({ skip: 'vetoed' } as never)
-            : { messages: e.messages },
-    );
+            : { messages: e.messages };
+    });
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     return { clock, commands, lines, store };
@@ -701,6 +705,109 @@ const sentWorld = (on: On) => {
 };
 const HELD_LINE =
     'your message to ☕️ 🔧 codie: mods is held: it is at 62 % and has not wound';
+
+// dima's o141 (00:20, widened 00:24): a compact holds every message sent into the thread, from any sender, then hands
+// them over whole and in order at its next turn
+const SIXTH = '⚡ 🔎 sixth sense: mods';
+const compactHeld = (lines: string[]) =>
+    lines.filter((l) => l.startsWith('🌀 held while this thread compacted'));
+for (const trigger of ['manual', 'auto'] as const)
+    test(`a ${trigger} compact holds a message sent while it runs, and hands it over at the next turn`, async ($, on) => {
+        const w = sentWorld(on);
+        let r: { consumed?: string; text?: string } = {};
+        inCompact = async () => {
+            r = await fromPeer($, 'round 9 on abc1234', SIXTH);
+        };
+        await start($);
+        await compact($, trigger);
+        await say($, 'next');
+        expect([
+            r.consumed !== undefined,
+            w.sent.map((s) => s.text),
+            compactHeld(w.lines),
+        ]).toEqual([
+            true,
+            [
+                'held: ☕️ 🔧 codie: mods is compacting; your message joins its next turn',
+            ],
+            [
+                `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
+            ],
+        ]);
+    });
+
+test("a coordinator's push to a codie under 55 % mid-compact is held too", async ($, on) => {
+    const w = sentWorld(on);
+    let r: { consumed?: string; text?: string } = {};
+    inCompact = async () => {
+        r = await fromPeer($, '[done] the gate is green');
+    };
+    w.store.set(`context:${SID}`, 30);
+    await start($);
+    await compact($, 'auto');
+    await say($, 'next');
+    expect([r.consumed !== undefined, compactHeld(w.lines)]).toEqual([
+        true,
+        [
+            `🌀 held while this thread compacted, delivered now — ${CLIO}: [done] the gate is green`,
+        ],
+    ]);
+});
+
+test('a session at 🌀 holds every message until the compact, in the order sent', async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refreshing' });
+    await start($);
+    const a = await fromPeer($, '[ask] a or b?', SIXTH);
+    const b = await fromPeer($, 'for dima: look at #9');
+    await say($, 'before the compact');
+    const held = (lines: string[]) =>
+        lines.filter((l) => /^(🌀|🐦‍🔥) held /u.test(l));
+    const before = held(w.lines);
+    await compact($, 'plugin');
+    await say($, 'the ingest', 'skill');
+    // clio's message meets r5 first, which holds it for the codie's wind; the sixth sense's, which r5 never takes, the compact
+    expect([
+        a.consumed !== undefined,
+        b.consumed !== undefined,
+        before,
+        held(w.lines),
+    ]).toEqual([
+        true,
+        true,
+        [],
+        [
+            `🌀 held while this thread compacted, delivered now — ${SIXTH}: [ask] a or b?`,
+            `🐦‍🔥 held for your second wind, delivered now — ${CLIO}: for dima: look at #9`,
+        ],
+    ]);
+});
+
+test("clio's own thread at 🌀 holds a member's [done]", async ($, on) => {
+    const w = receiveWorld(on, CLIO, 'coordinator');
+    w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refreshing' });
+    await start($);
+    const r = await fromPeer($, '[done] final on abc1234', SIXTH);
+    await compact($, 'plugin');
+    await say($, 'the ingest', 'skill');
+    expect([r.consumed !== undefined, compactHeld(w.lines)]).toEqual([
+        true,
+        [
+            `🌀 held while this thread compacted, delivered now — ${SIXTH}: [done] final on abc1234`,
+        ],
+    ]);
+});
+
+test('a refused wind holds nothing: nothing compacts', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refused' });
+    await start($);
+    const r = await fromPeer($, 'round 9 on abc1234', SIXTH);
+    expect([r.consumed, r.text?.includes('round 9 on abc1234')]).toEqual([
+        undefined,
+        true,
+    ]);
+});
 
 test('a message held 10 min for a codie that has not wound tells its sender once, and the hold stays', async ($, on) => {
     const w = sentWorld(on);

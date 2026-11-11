@@ -1237,8 +1237,12 @@ type HeldSteers = {
         text: string;
         reply?: string;
         isTold?: true;
+        // held because the thread was compacting, not for a codie's wind
+        isCompact?: true;
     }[];
 };
+// `compacting:<sid>`: the engine is compacting this session, from the compact's start to its end
+const COMPACTING = 'compacting:';
 // a message held this long for a codie that has not wound tells its sender once; the hold stays (dima's o62)
 const STEER_TELL_MS = 10 * 60_000;
 const steerTellLine = (name: string, context: unknown) =>
@@ -1246,7 +1250,9 @@ const steerTellLine = (name: string, context: unknown) =>
 const steerHoldNote = (from: string, context: number) =>
     `🐦‍🔥 ${from}'s message is held for your second wind: your context reads ${Math.round(context)} %, past ${STEER_HOLD_AT} %. ${WIND_WORDS} finish the step you are on, then ${WIND_HOW} the held message joins your first turn after the pickup.`;
 const steerLine = (s: HeldSteers['steers'][number]) =>
-    `🐦‍🔥 held for your second wind, delivered now — ${s.from}: ${s.text}`;
+    s.isCompact
+        ? `🌀 held while this thread compacted, delivered now — ${s.from}: ${s.text}`
+        : `🐦‍🔥 held for your second wind, delivered now — ${s.from}: ${s.text}`;
 // the turn's end lets the engine settle before the compact runs
 const WIND_DELAY_MS = 1_000;
 const QUIET_LOG = 'quiet-log:';
@@ -4300,12 +4306,58 @@ async function windOnCompact($: EngineInterface) {
     await $.store.delete(WIND + sid);
 }
 
-// held under the codie's registry name, so a /clear or a resume, which mint a new session id, still hands them over
+// held under the session's registry name, so a /clear or a resume, which mint a new session id, still hands them over;
+// a session with no name holds under its id
 async function steerKey($: EngineInterface) {
     const name = await sessionName($);
-    return name && (await selfRecord($))?.role === 'codie'
-        ? STEER_HELD + bare(name)
-        : undefined;
+    if (name) return STEER_HELD + bare(name);
+    const sid = await currentId($);
+    return sid ? STEER_HELD + sid : undefined;
+}
+
+// every message into a compacting thread, from any sender, waits for its next turn: from its 🌀 or the compact's start
+// until the compact ends; a wind refused never compacts, so it holds nothing (dima's o141, 00:20 and 00:24)
+async function holdForCompact(
+    $: EngineInterface,
+    text: string,
+    body: string,
+    from: string,
+): Promise<{ consumed: string } | undefined> {
+    const key = await steerKey($);
+    const sid = await currentId($);
+    if (!sid || !key) return undefined;
+    const was = (await windOf($, sid))?.state;
+    const isCompacting =
+        was === 'refreshing' ||
+        (await $.store.get(COMPACTING + sid).catch(() => undefined)) !==
+            undefined;
+    if (!isCompacting) return undefined;
+    const kept = await steersOf($, key);
+    if (kept.isCompacted) return undefined;
+    const reply = text.match(
+        /<cross-session-message[^>]*\sfrom="([^"]+)"/,
+    )?.[1];
+    const steer = {
+        at: await $.clock.now(),
+        from,
+        isCompact: true as const,
+        text: body,
+        ...(reply ? { isTold: true as const, reply } : {}),
+    };
+    await $.store.set(key, {
+        steers: [...kept.steers, steer],
+    } satisfies HeldSteers);
+    const name = (await sessionName($)) ?? 'this session';
+    if (reply)
+        await $.session
+            .send({
+                text: `held: ${name} is compacting; your message joins its next turn`,
+                to: reply,
+            })
+            .catch(() => undefined);
+    return {
+        consumed: `x-mod-stash held ${from}'s message while this thread compacts`,
+    };
 }
 
 async function steersOf($: EngineInterface, key: string) {
@@ -4334,8 +4386,22 @@ async function holdSteer(
 ): Promise<{ consumed: string } | { text: string } | undefined> {
     if (!(await partsShown($))('stash.second-wind')) return undefined;
     const { body, from } = peerPing(text);
-    if (!(isCoordinator(from) || isWing(from)) || isQuietPause(body))
-        return undefined;
+    if (isQuietPause(body)) return undefined;
+    // r5 first: a codie past 55 % turns a coordinator's message into its wind note; what it leaves, a compact holds
+    return (
+        (await holdForWind($, text, body, from)) ??
+        holdForCompact($, text, body, from)
+    );
+}
+
+async function holdForWind(
+    $: EngineInterface,
+    text: string,
+    body: string,
+    from: string,
+): Promise<{ consumed: string } | { text: string } | undefined> {
+    if (!(isCoordinator(from) || isWing(from))) return undefined;
+    if ((await selfRecord($))?.role !== 'codie') return undefined;
     const key = await steerKey($);
     const sid = await currentId($);
     if (!sid || !key) return undefined;
@@ -6763,7 +6829,19 @@ export const register: Register = (on) => {
     });
 
     on('session.compact', async ($, e, next) => {
-        const r = await next(e);
+        const isOwn = !e.agentId && e.trigger !== 'precompute';
+        const compacting = isOwn
+            ? await currentId($).catch(() => undefined)
+            : undefined;
+        if (compacting)
+            await $.store
+                .set(COMPACTING + compacting, await $.clock.now())
+                .catch(() => undefined);
+        const r = await next(e).finally(() =>
+            compacting
+                ? $.store.delete(COMPACTING + compacting).catch(() => undefined)
+                : undefined,
+        );
         // cc sends the whole skill list again after a compact (2.1.304), so none is reloaded here; a compact another hook
         // skipped changed nothing
         if (!e.agentId && e.trigger !== 'precompute' && !('skip' in r)) {
