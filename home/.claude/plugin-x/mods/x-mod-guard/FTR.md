@@ -522,7 +522,7 @@
   - then it is refused (rule `spawn-sixth-sense`) naming the live one and the message to send it instead, `next: <ticket> <target> final: <sha> spec: <path>`, its ticket, target, `final:` and `spec:` read from the summon's own `/x:crew-sixth-sense` line
   - given a lane with no live sixth sense, a sixth sense of another lane, a codie record, a session that no longer runs, a summon with no session id, or no answer from x, then it summons as before
   - decision: a thread's role and lane are its record, never its name (FRM-570 rule 9): a name with no member word or no emoji reads the same, and a summon x never minted is never judged
-  - 📌 known gap: alive is `x thread list`'s pid check, which reads a pid another process took as alive; the old `ps` start-time read is gone with the name parse
+  - decision: alive is `x thread list`'s word: a live pid whose start time, read by `ps` in UTC under the C locale, is the one its registry row wrote; a row outlives a crash and a pid comes back as another process
   - decision: refuse: warn-only until sixth sense's clean on 231ca09a (2026-11-02), then left `WARN_ONLY` (clio's a, 18:02: both open gaps fail open, a missed twin never a false refusal)
   - decision: x is asked only for a call that summons under a session id; no answer lets the summon go (fail open, like the agent brief check)
   - proof: tests/sixth-sense.test.ts

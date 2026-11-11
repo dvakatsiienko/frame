@@ -531,7 +531,7 @@
 
 - ⬜ `x thread list` and `x thread show <id>` answer a session's role, lane and ticket from one store (FRM-570)
   - given the session registry and the records x wrote at a summon or a dispatch, then each live session prints joined to its record by session id, its display name drawn from the record; a session with no record reads `unknown`
-  - given a pid that died (`kill -9`) or a registry file gone (an archived session), then it drops out of the store at the next call; a record whose session never started stays 10 minutes, then drops
+  - given a pid that died (`kill -9`), a registry file gone (an archived session), or a row whose `procStart` is not its pid's start time as `ps` reads it (a crashed session's pid another process took), then it drops out of the store at the next call; a record whose session never started stays 10 minutes, then drops
   - given any call, then `~/.claude/shelf/threads.json` is rewritten, so a display reads it with no spawn; x-mod-stash's hooks call `x thread list` at session start, turn end and exit
   - given `show` with a session id or a pid no live session holds, then exit 1
   - given a summon that passes `x brief summon`, then its printed argv carries a fresh `--session-id <uuid>` and the store holds that id's role, ticket, lane (the spec's dir) and lane kind (the brief's `lane:` line) before the thread runs; `x lane dispatch --apply` writes the same for its `--session` codie and `--sixth-sense`

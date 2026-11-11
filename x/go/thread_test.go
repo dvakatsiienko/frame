@@ -27,12 +27,15 @@ func threadWorld(t *testing.T) (env []string, store string, live, dead int) {
 	for sid, pid := range map[string]int{"sid-codie": live, "sid-plain": live, "sid-killed": dead} {
 		write(t, filepath.Join(sessions, sid+".json"), fmt.Sprintf(`{"sessionId":%q,"pid":%d,"name":"old name %s","cwd":"/w","status":"busy"}`, sid, pid, sid))
 	}
+	// a crashed session's row whose pid another process took: its start time is not that process's
+	write(t, filepath.Join(sessions, "sid-reused.json"), fmt.Sprintf(`{"sessionId":"sid-reused","pid":%d,"procStart":"Thu Jan  1 00:00:01 1970","cwd":"/w"}`, live))
 	now := time.Now().UnixMilli()
 	records, _ := json.Marshal(threadStore{V: 1, Threads: []thread{
 		{SessionID: "sid-codie", Role: "codie", Lane: "cli lane 8", LaneKind: "side", Ticket: "FRM-570", At: now - 3_600_000},
 		{SessionID: "sid-killed", Role: "sixth-sense", Lane: "cli lane 8", Ticket: "FRM-570", At: now - 3_600_000},
 		{SessionID: "sid-launching", Role: "sixth-sense", Lane: "mods 6", LaneKind: "quick", Ticket: "FRM-574", At: now},
 		{SessionID: "sid-never-launched", Role: "codie", Lane: "mods 6", At: now - 3_600_000},
+		{SessionID: "sid-reused", Role: "sixth-sense", Lane: "cli lane 8", At: now - 3_600_000},
 	}})
 	write(t, store, string(records))
 	return []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}, store, live, dead

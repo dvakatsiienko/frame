@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -80,6 +81,35 @@ func pidAlive(pid int) bool {
 	return err == nil || errors.Is(err, syscall.EPERM)
 }
 
+// each pid's start time as one ps reads it, in the registry's own form (utc, the c locale, spaces folded); nil when
+// ps does not answer, so a row stands on its live pid alone
+func procStarts(threads []thread, starts []string) map[int]string {
+	pids := []string{}
+	for i, t := range threads {
+		if starts[i] != "" {
+			pids = append(pids, strconv.Itoa(t.Pid))
+		}
+	}
+	if len(pids) == 0 {
+		return map[int]string{}
+	}
+	c := exec.Command("ps", "-o", "pid=,lstart=", "-p", strings.Join(pids, ","))
+	c.Env = append(os.Environ(), "LC_ALL=C", "TZ=UTC")
+	out, err := c.Output()
+	if err != nil && len(out) == 0 {
+		return nil
+	}
+	running := map[int]string{}
+	for line := range strings.Lines(string(out)) {
+		if fields := strings.Fields(line); len(fields) > 1 {
+			if pid, err := strconv.Atoi(fields[0]); err == nil {
+				running[pid] = strings.Join(fields[1:], " ")
+			}
+		}
+	}
+	return running
+}
+
 func readThreadStore(path string) threadStore {
 	var store threadStore
 	if raw, err := os.ReadFile(path); err == nil {
@@ -100,7 +130,7 @@ func refreshThreads(now time.Time) ([]thread, error) {
 			}
 		}
 	}
-	threads := []thread{}
+	threads, starts := []thread{}, []string{}
 	seen := map[string]bool{}
 	if dir := sessionsDir(); dir != "" {
 		files, _ := filepath.Glob(filepath.Join(dir, "*.json"))
@@ -114,6 +144,7 @@ func refreshThreads(now time.Time) ([]thread, error) {
 				Pid       int    `json:"pid"`
 				Name      string `json:"name"`
 				Cwd       string `json:"cwd"`
+				ProcStart string `json:"procStart"`
 			}
 			if json.Unmarshal(raw, &entry) != nil || entry.SessionID == "" || !pidAlive(entry.Pid) {
 				continue
@@ -121,9 +152,19 @@ func refreshThreads(now time.Time) ([]thread, error) {
 			t := records[entry.SessionID]
 			t.SessionID, t.Pid, t.Name, t.Cwd = entry.SessionID, entry.Pid, entry.Name, entry.Cwd
 			threads = append(threads, t)
-			seen[entry.SessionID] = true
+			starts = append(starts, strings.Join(strings.Fields(entry.ProcStart), " "))
 		}
 	}
+	// a row outlives a crash and its pid comes back as another process, so a row's start time must be its pid's
+	running := procStarts(threads, starts)
+	kept := threads[:0]
+	for i, t := range threads {
+		if starts[i] == "" || running == nil || running[t.Pid] == starts[i] {
+			kept = append(kept, t)
+			seen[t.SessionID] = true
+		}
+	}
+	threads = kept
 	for sid, t := range records {
 		if !seen[sid] && now.Sub(time.UnixMilli(t.At)) < threadLaunchWait {
 			t.Pid = 0
