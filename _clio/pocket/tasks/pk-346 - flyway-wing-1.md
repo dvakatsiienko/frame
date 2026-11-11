@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T23:09:00Z'
+updated_date: '2026-11-11T23:18:00Z'
 labels:
   - s
   - clio-wing-1
@@ -388,4 +388,9 @@ PK-346:W37 (2026-11-12 01:00, dima): pretty names possible now? ❓
 
 PK-346:W38 (2026-11-12 01:06, dima): so there are two names for threads now, the native cc thread name and the herdr one? i want thread names to be the same in the underlying cc native thread names and herdr thread names; drift will create issues. how to keep them in sync? ❓
 PK-346:W39 (2026-11-12 01:07, dima): yes. (context, not dima's words: answers wing 1's 01:08 pick, the summon builds cc's -n from the thread record so both names are one string)
+
+PK-346:W40 (2026-11-12 01:14, dima): rename via restart or resume does not always save the cache? maybe then save this habit: first always a second wind, then compact, then restart or resume, then pick up the handoff (and include your catch about idle)? ❓
+PK-346:W41 (2026-11-12 01:14, dima): well, i want the ability to rename a thread. are you sure there is no other door to rename in a simpler way? ❓
+PK-346:W42 (2026-11-12 01:18, dima, o73 steer): and create a proper solution how to make it a persistent habit. is the summon skill line enough? ❓
+01:21: W40 answered (a live /rename needs no restart, the 4-step habit not needed), W41 the door found (env -u HC_TERMINAL_ID hc send /rename), W42 o74 (dispatch renames on a record move)
 <!-- SECTION:NOTES:END -->
