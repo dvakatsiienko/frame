@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T22:00:00Z'
+updated_date: '2026-11-11T22:04:00Z'
 labels:
   - s
   - clio-wing-1
@@ -340,4 +340,6 @@ PK-346:W31 (2026-11-11 23:56, dima): and after 570 you will be able to rename th
 PK-346:W32 (2026-11-11 23:47, dima): are you sure your cli lane is not stuck, verifier did not go over 3 rounds? when will it finish? ❓
 PK-346:W33 (2026-11-11 23:48, dima): after it some important fix was planned? ❓
 PK-346:W34 (2026-11-11 23:59, dima): right, i forgot about this. then let cli lane work in the work tree, but still merge the chunks and remove the CI review. (context, not dima's words: answers clio's 23:57 line on the quick lane risk: x builds from main's own files, so a non-compiling save breaks every thread until fixed.)
+
+PK-346:W35 (2026-11-12 00:00, dima, o67 steer): i mean code review on ci, ci build should pass. (context, not dima's words: answers which «CI review» to drop on the FRM-436 + FRM-424 pr; the ci reviewer round goes, the ci build stays)
 <!-- SECTION:NOTES:END -->
