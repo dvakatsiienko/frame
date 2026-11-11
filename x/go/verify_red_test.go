@@ -1121,12 +1121,31 @@ func TestVerifyRedRefusesAPnpmCommandThatWritesTheStore(t *testing.T) {
 		{"pnpm", "--filter", "exec", "install"},
 		// what installs or builds under another name, and a bin by pnpm's shorthand, which no read can tell from one
 		{"pnpm", "pipeline"}, {"pnpm", "deploy", "out"}, {"pnpm", "approve-builds"}, {"pnpm", "vitest", "run"},
+		// a package manager behind a run, behind a launcher, or as one word of a shell line
+		{"pnpm", "exec", "pnpm", "install"}, {"pnpm", "exec", "npm", "i"}, {"env", "X=1", "pnpm", "install"},
+		{"corepack", "pnpm", "install"}, {"npx", "pnpm", "install"}, {"sh", "-c", "pnpm install"},
 	} {
 		got, log := verifyRedIn(t, f, nil, append([]string{f.file, f.anchor, f.replacement, "--"}, command...)...)
 
 		if got.code != 2 || !strings.Contains(got.stdout, "node_modules/.pnpm") || log != "" {
 			t.Errorf("%v: exit %d, the command logged %q, want a usage refusal naming the store and no run:\n%s", command, got.code, log, got.stdout)
 		}
+	}
+	wantNoWrites(t, before, treeWrites(t, watched...))
+}
+
+// a script behind a plain `pnpm run` is read by no argv check, so a package manager it calls is refused as it runs
+func TestVerifyRedRefusesAPackageManagerAScriptCalls(t *testing.T) {
+	t.Parallel()
+	f, watched := pnpmWorkspaceFixture(t)
+	write(t, filepath.Join(f.dir, "package.json"), `{"name": "p", "private": true, "scripts": {"limit": "pnpm i && limit-test"}, "devDependencies": {"runner": "workspace:*"}}`+"\n")
+	commitAll(t, f.dir)
+	before := treeWrites(t, watched...)
+
+	got, log := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, "--", "pnpm", "run", "limit")
+
+	if got.code != 1 || got.data["verdict"] != nil || log != "" || !strings.Contains(got.stdout, "may write the store") {
+		t.Fatalf("exit %d, data %v, the test logged %q, want the script's pnpm i refused before the test ran:\n%s", got.code, got.data, log, got.stdout)
 	}
 	wantNoWrites(t, before, treeWrites(t, watched...))
 }

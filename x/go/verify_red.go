@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -483,7 +484,9 @@ func (g *goHarness) run(content []byte) (redRun, error) {
 // the git-crypt set stays out: plain text never leaves the tree
 type copyHarness struct {
 	root, copy, file, cwd string
-	command               []string
+	// the dir of package manager shims put first on the command's PATH
+	guard   string
+	command []string
 	// the clean run's type errors: a mutant is broken only by one it adds, so a repo already red on tsc still proves
 	typeErrors []string
 	typed      bool
@@ -494,16 +497,33 @@ type copyHarness struct {
 // pnpm's subcommands that only run a command or a script
 var pnpmRuns = map[string]bool{"exec": true, "run": true, "run-script": true, "test": true, "t": true, "tst": true}
 
-// whether a pnpm command may write the store: any but a plain run as pnpm's first word. the list is of what may pass, since
-// a list of the writes leaked one per read: `pnpm m install`, `pnpm with <version> install`, `pnpm pipeline`, a flag's value
-// that reads as a subcommand
-func pnpmMayWriteStore(command []string) bool {
-	return strings.EqualFold(filepath.Base(command[0]), "pnpm") && (len(command) < 2 || !pnpmRuns[command[1]])
+// the tools that install a package, each of which may write a store
+var packageManagers = map[string]bool{"pnpm": true, "pnpx": true, "npm": true, "npx": true, "yarn": true, "corepack": true, "bun": true, "bunx": true}
+
+// whether a command may write the store. what passes is a leading pnpm with a plain run as its first word, since a list of
+// pnpm's writes leaked one per read (`pnpm m install`, `pnpm with <version> install`, a flag's value that reads as a
+// subcommand); past it no word, and no word of a shell line, may name a package manager (`env X=1 pnpm i`, `npx pnpm i`)
+func mayWriteStore(command []string) bool {
+	words := command
+	if strings.EqualFold(filepath.Base(command[0]), "pnpm") {
+		if len(command) < 2 || !pnpmRuns[command[1]] {
+			return true
+		}
+		words = command[2:]
+	}
+	for _, arg := range words {
+		for word := range strings.FieldsSeq(arg) {
+			if packageManagers[strings.ToLower(filepath.Base(word))] {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func newCopyHarness(file string, command []string) (redHarness, error) {
-	if pnpmMayWriteStore(command) {
-		return nil, usageFail("«"+strings.Join(command, " ")+"» may write the store, node_modules/.pnpm, which the copy shares with the real tree: after pnpm only exec, run or test comes first, its flags behind it",
+	if mayWriteStore(command) {
+		return nil, usageFail("«"+strings.Join(command, " ")+"» may write the store, node_modules/.pnpm, which the copy shares with the real tree: only a leading pnpm exec, run or test may name a package manager",
 			"run the test itself: x verify red <file> <anchor> <replacement> -- pnpm exec <runner> <test>")
 	}
 	root, err := mustGitIn(filepath.Dir(file), "rev-parse", "rev-parse", "--show-toplevel")
@@ -524,12 +544,35 @@ func newCopyHarness(file string, command []string) (redHarness, error) {
 	if err != nil {
 		return nil, err
 	}
-	h := &copyHarness{root: root, copy: filepath.Join(scratch, filepath.Base(root)), file: file, cwd: cwd, command: command}
-	if err := copyRepo(root, h.copy); err != nil {
+	h := &copyHarness{root: root, copy: filepath.Join(scratch, filepath.Base(root)), file: file, cwd: cwd, command: command, guard: filepath.Join(scratch, "guard")}
+	if err := errors.Join(copyRepo(root, h.copy), writeGuard(h.guard)); err != nil {
 		h.close()
 		return nil, err
 	}
 	return h, nil
+}
+
+// the line a guard shim prints when it refuses
+const guardRefused = "x verify red refused: "
+
+// a shim per package manager, first on the command's PATH, so one a script calls is refused as it runs; pnpm's own plain run
+// passes on to the real pnpm. a package manager called by its absolute path is never seen
+func writeGuard(dir string) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	refuse := `echo "` + guardRefused + `«$(basename "$0") $*» may write the store, node_modules/.pnpm, which the copy shares with the real tree" >&2; exit 97` + "\n"
+	for name := range packageManagers {
+		body := "#!/bin/sh\n" + refuse
+		if real, err := exec.LookPath(name); err == nil && name == "pnpm" {
+			runs := strings.Join(slices.Sorted(maps.Keys(pnpmRuns)), "|")
+			body = "#!/bin/sh\ncase \"${1-}\" in " + runs + ") exec " + quote(real) + " \"$@\" ;; esac\n" + refuse
+		}
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o755); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (h *copyHarness) close() { _ = os.RemoveAll(filepath.Dir(h.copy)) }
@@ -598,9 +641,13 @@ func (h *copyHarness) runCommand() redRun {
 	const noInstall = "pnpm_config_verify_deps_before_run"
 	c.Env = append(slices.DeleteFunc(os.Environ(), func(pair string) bool {
 		key, _, _ := strings.Cut(pair, "=")
-		return strings.EqualFold(key, noInstall)
-	}), noInstall+"=false")
+		return strings.EqualFold(key, noInstall) || key == "PATH"
+	}), noInstall+"=false", "PATH="+h.guard+string(os.PathListSeparator)+os.Getenv("PATH"))
 	got := runTestCmd(c)
+	if _, refused, found := strings.Cut(got.log, guardRefused); found {
+		line, _, _ := strings.Cut(refused, "\n")
+		return redRun{broken: "the command called a package manager: " + line, log: got.log}
+	}
 	return redRun{ok: got.ok, log: got.log, note: h.unchecked}
 }
 
