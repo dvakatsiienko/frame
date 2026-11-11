@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T14:52:00Z'
+updated_date: '2026-11-11T14:57:00Z'
 labels:
   - m
   - clio-main
@@ -1972,4 +1972,7 @@ PK-363:W989 (2026-11-11 16:22, dima): merge mods lane and move to next chunk. (r
 
 PK-363:W990 (2026-11-11 16:52, dima): proceed with a plan. sync your flyway with current state: clear all done items, refresh or reorder (read as "refresh or reorder"; flagged to clio), and tell the other wing to do this too.
 PK-363:W991 (2026-11-11 16:52, dima): and let's have a small skill for this. i often print an ask like this (after SW).
+
+PK-363:W992 (2026-11-11 16:55, dima): tell herdr codie to SW. he is at 68%. (context, not dima's words: SW means second wind; the screenshot named in the prompt is not in the raw file.)
+PK-363:W993 (2026-11-11 16:55, dima): so: change your habit. when i ask you to SW in plain words, you should second wind yourself without asking me to click anything. (native cc mod habit area, global)
 <!-- SECTION:NOTES:END -->
