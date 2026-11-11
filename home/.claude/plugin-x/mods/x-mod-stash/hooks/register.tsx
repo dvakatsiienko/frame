@@ -3549,7 +3549,7 @@ async function isBootOpen($: EngineInterface) {
     return typeof at === 'number' && (await $.clock.now()) - at < BOOT_MS;
 }
 
-// a member's name without its leading mode emoji: «⚡ 🔧 codie: FRM-1» and «🌗 🔧 codie: FRM-1» are one member
+// a member's name without its leading mode emoji: «⚡ 🔧 codie: mods lane 6 | FRM-1» and «🌗 🔧 codie: mods lane 6 | FRM-1» are one member
 const memberKey = (name: string) =>
     bare(name).replace(/^(?:☕️?|🌗|⚡️?|🌘|🎯)/u, '');
 const bare = (name: string) => name.replaceAll(/[\s\u200d]/g, '');

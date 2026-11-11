@@ -77,7 +77,7 @@ A ticket body's `## ⚖️ worth it` heading with at least one non-blank line un
 _Avoid_: value line, worth line
 
 **Lane scope**:
-The part of a thread name between `:` and `|` (`⚡ 🔎 sixth sense: mods lane 4 | main` → `mods lane 4`), spaces dropped and case folded; a name with no `|` has none. two sixth senses with one lane scope are twins, and only one may be live.
+The `lane` field of a thread's record in x's thread store, under the session id `x brief summon` minted into its argv; the thread's name is never parsed. two sixth senses with one lane scope are twins, and only one may be live; a summon with no id, or no record of a lane, is never judged.
 _Avoid_: lane id, lane name
 
 **Clio thread**:
