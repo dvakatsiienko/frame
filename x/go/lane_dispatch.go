@@ -305,6 +305,20 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 			return nil, err
 		}
 	}
+	// the threads it names get their record, so a reader asks x by session id and never parses a name
+	kind := "side"
+	if flags["quick"] == true {
+		kind = "quick"
+	}
+	for role, sid := range map[string]string{"codie": flagString(flags, "session"), "sixth-sense": flagString(flags, "sixth-sense")} {
+		if sid == "" {
+			continue
+		}
+		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: kind, Ticket: plan.Tickets[0].ID}
+		if err := writeThreadRecord(record, time.Now()); err != nil {
+			return nil, &Fail{Msg: "the thread record of " + sid + " was not written: " + err.Error(), Next: "x thread list"}
+		}
+	}
 	r.Done("dispatched; left by hand: the glide link", plan.Window)
 	return plan, nil
 }

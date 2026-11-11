@@ -322,7 +322,8 @@
             "steps": ["read", "write"],
             "touches": [
                 "linear — each ticket's signed label, state, delegate and sign block, written",
-                "~/.claude/shelf/cc-usage-window.json — the 5h window, read"
+                "~/.claude/shelf/cc-usage-window.json — the 5h window, read",
+                "~/.claude/shelf/threads.json — the record of each thread it names, written"
             ]
         },
         {
@@ -705,7 +706,8 @@
                 "~/.claude.json — the summon home's trust key, read",
                 "script/test-drive-list.ts --spawn-hook — the live trials that fit, run",
                 "ps — the age of each claude bg-spare, read",
-                "a bytes home's script/apps-essentials.ts --app <app> — the app's essentials, run"
+                "a bytes home's script/apps-essentials.ts --app <app> — the app's essentials, run",
+                "~/.claude/shelf/threads.json — the thread record under the minted session id, written"
             ]
         },
         {

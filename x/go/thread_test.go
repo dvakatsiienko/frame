@@ -17,7 +17,9 @@ func threadWorld(t *testing.T) (env []string, store string, live, dead int) {
 	sessions := t.TempDir()
 	store = filepath.Join(t.TempDir(), "threads.json")
 	live = os.Getpid()
-	gone := exec.Command("true")
+	// x's own help: a pid that exits at once, with no binary ci must install (a test binary's rerun would rebuild x)
+	gone := exec.Command(xbin, "--help")
+	gone.Env = append(os.Environ(), "X_TEST=1")
 	if err := gone.Run(); err != nil {
 		t.Fatal(err)
 	}

@@ -534,6 +534,7 @@
   - given a pid that died (`kill -9`) or a registry file gone (an archived session), then it drops out of the store at the next call; a record whose session never started stays 10 minutes, then drops
   - given any call, then `~/.claude/shelf/threads.json` is rewritten, so a display reads it with no spawn; x-mod-stash's hooks call `x thread list` at session start, turn end and exit
   - given `show` with a session id or a pid no live session holds, then exit 1
+  - given a summon that passes `x brief summon`, then its printed argv carries a fresh `--session-id <uuid>` and the store holds that id's role, ticket, lane (the spec's dir) and lane kind (the brief's `lane:` line) before the thread runs; `x lane dispatch --apply` writes the same for its `--session` codie and `--sixth-sense`
   - decision: the store sits beside x-mod-stash's `herdr-state/`, a registry mirror kept separate (wing 1, 2026-11-11)
 
 ## linear — tickets

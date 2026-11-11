@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -383,4 +384,27 @@ func TestDispatchRefusesATicketWithNoSign(t *testing.T) {
 func jsonOf(value any) string {
 	raw, _ := json.Marshal(value)
 	return string(raw)
+}
+
+// the threads a dispatch names get their record under the session ids it was given
+func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
+	t.Parallel()
+	server := dispatchServer(t, undispatched)
+	store := filepath.Join(t.TempDir(), "threads.json")
+
+	_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store},
+		"lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
+
+	var written threadStore
+	raw, _ := os.ReadFile(store)
+	if err := json.Unmarshal(raw, &written); err != nil || got.code != 0 {
+		t.Fatalf("exit %d, store %s:\n%s", got.code, raw, got.stdout)
+	}
+	shown := map[string]string{}
+	for _, th := range written.Threads {
+		shown[th.SessionID] = th.Display
+	}
+	if shown["s1"] != "🌗 🔧 cli-3 | FRM-1" || shown["s2"] != "🌗 🔎 cli-3 | FRM-1" || len(shown) != 2 {
+		t.Errorf("records %v, want s1 as codie and s2 as sixth sense on cli-3 | FRM-1", shown)
+	}
 }

@@ -85,8 +85,8 @@ func TestBriefSummonPassesACommandThatMeetsEveryStep(t *testing.T) {
 
 			got := w.summon(t, command)
 
-			if got.code != 0 || got.data["argv"] != command {
-				t.Errorf("exit %d, want 0 printing the argv:\n%s", got.code, got.stdout)
+			if got.code != 0 || got.data["argv"] != withSessionID(command, got) {
+				t.Errorf("exit %d, want 0 printing the argv with its session id:\n%s", got.code, got.stdout)
 			}
 		})
 	}
@@ -189,11 +189,55 @@ func TestBriefSummonFromAHerdrThreadWantsTheHcRunLine(t *testing.T) {
 			got := w.summon(t, command, c.env...)
 
 			switch {
-			case c.isOk && (got.code != 0 || got.data["argv"] != command):
-				t.Errorf("exit %d, want 0 printing the argv untouched:\n%s", got.code, got.stdout)
+			case c.isOk && (got.code != 0 || got.data["argv"] != withSessionID(command, got)):
+				t.Errorf("exit %d, want 0 printing the argv with only its session id added:\n%s", got.code, got.stdout)
 			case !c.isOk && (got.code == 0 || !strings.Contains(got.stdout, "step herdr:") || !strings.Contains(got.next, "hc run --bg --no-parent --no-notify --name <short> --cwd "+w.repo+" -- claude -n ") || strings.Contains(got.next, "claude --bg")):
 				t.Errorf("exit %d next %q, want a refusal naming step herdr and the hc run line:\n%s", got.code, got.next, got.stdout)
 			}
 		})
+	}
+}
+
+// the argv a passing summon prints: the command with its minted --session-id right after claude
+func withSessionID(command string, got ran) string {
+	sid, _ := got.data["sessionId"].(string)
+	return strings.Replace(command, "claude ", "claude --session-id "+sid+" ", 1)
+}
+
+// exit 14: a summoned codie and sixth sense each leave their role, lane and ticket under the id their argv carries
+func TestBriefSummonWritesTheThreadRecordUnderItsSessionID(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	env := []string{"X_THREADS=" + store, "X_SESSIONS=" + t.TempDir()}
+	brief := w.brief(t, goodBrief+"\nthe spec: /f/.scratch/cli-lane-8/spec.md\n", true)
+
+	codie := w.summon(t, codieArgv(w.repo, brief), env...)
+	again := w.summon(t, codieArgv(w.repo, brief), env...)
+	sixth := w.summon(t, sixthArgv(w, " spec: .scratch/cli-lane-8/spec.md"), env...)
+	list := xIn(t, t.TempDir(), env, "thread", "list")
+
+	ids := []string{}
+	for _, got := range []ran{codie, again, sixth} {
+		sid, _ := got.data["sessionId"].(string)
+		argv, _ := got.data["argv"].(string)
+		if got.code != 0 || len(sid) != 36 || !strings.Contains(argv, "claude --session-id "+sid+" ") {
+			t.Fatalf("exit %d, want the argv to carry the minted id %q:\n%s", got.code, sid, got.stdout)
+		}
+		ids = append(ids, sid)
+	}
+	if ids[0] == ids[1] {
+		t.Errorf("a second summon of the same line reused %s", ids[0])
+	}
+	want := map[string]string{ids[0]: "🌗 🔧 cli-lane-8 | FRM-1", ids[1]: "🌗 🔧 cli-lane-8 | FRM-1", ids[2]: "🔎 cli-lane-8 | FRM-1"}
+	shown := map[string]string{}
+	threads, _ := list.data["threads"].([]any)
+	for _, th := range threads {
+		m, _ := th.(map[string]any)
+		sid, _ := m["sessionId"].(string)
+		shown[sid], _ = m["display"].(string)
+	}
+	if list.code != 0 || len(shown) != 3 || shown[ids[0]] != want[ids[0]] || shown[ids[1]] != want[ids[1]] || shown[ids[2]] != want[ids[2]] {
+		t.Errorf("thread list shows %v, want %v:\n%s", shown, want, list.stdout)
 	}
 }

@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 var (
@@ -20,6 +21,9 @@ var (
 	ticketArg   = regexp.MustCompile(`^(?:FRM|BYT)-\d+$`)
 	reviewedArg = regexp.MustCompile(`^(?:https://github\.com/\S+/pull/\d+|main:[0-9a-f]{7,40})$`)
 	appOfBrief  = regexp.MustCompile(`\bapps/([\w-]+)/`)
+	// a lane is named by its spec's dir, the name x lane dispatch and the lane plan share
+	laneSpecDir  = regexp.MustCompile(`\.scratch/([\w.-]+)/spec\.md\b`)
+	laneKindLine = regexp.MustCompile(`(?m)^[-\s]*lane:\s*(side|quick|shift)\b`)
 )
 
 // summonCheck is one mechanical preflight step a summon command fails
@@ -173,11 +177,30 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 	if len(failed) > 0 {
 		return nil, summonRefused(failed, command)
 	}
+	// the thread's identity is its session id, minted here so the record exists before the thread runs
+	record := thread{SessionID: newSessionID(), Role: role}
+	if words := strings.Fields(first); len(words) > 1 && ticketArg.MatchString(words[1]) {
+		record.Ticket = words[1]
+	}
+	if m := laneSpecDir.FindStringSubmatch(text); m != nil {
+		record.Lane = m[1]
+	}
+	if m := laneKindLine.FindStringSubmatch(text); m != nil {
+		record.LaneKind = m[1]
+	}
+	at := claudeCall.FindStringIndex(command)
+	if at == nil {
+		return nil, usageFail("the claude call is quoted, so x cannot add its --session-id", "x brief summon "+quote(herdrClaude(command)))
+	}
+	command = command[:at[1]] + "--session-id " + record.SessionID + " " + command[at[1]:]
+	if err := writeThreadRecord(record, time.Now()); err != nil {
+		return nil, &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
+	}
 	if r.human {
 		fmt.Println(command)
 	}
 	r.Done("ok: every mechanical step holds, the argv is the summon", "")
-	return ordered{{"argv", command}, {"brief", brief}, {"home", home}, {"role", role}}, nil
+	return ordered{{"argv", command}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}}, nil
 }
 
 func summonRefused(failed []summonCheck, command string) error {
