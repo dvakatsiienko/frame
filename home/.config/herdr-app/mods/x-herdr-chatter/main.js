@@ -67,7 +67,14 @@ import { foldBlocks } from './fold.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
 import * as ask from './question.js';
-import { QUEUED_IDLE_MS, queuedAfterIdle, queuedAfterRow } from './queued.js';
+import {
+    QUEUED_IDLE_MS,
+    claudeQueueAfter,
+    isHisQueued,
+    queuedAfterIdle,
+    queuedAfterRow,
+    queuedWords,
+} from './queued.js';
 import { relayIn, relayLine } from './relay.js';
 import {
     SETTLED_READS,
@@ -105,6 +112,8 @@ const CLAUDE = `${home()}/.claude`;
 // accent: a key of ACCENTS; mine (your messages): "bubble", "box", "tint" or "bar"; bg: the theme color
 // behind the messages, or a "#rrggbb"; fg: the text color, "theme" or a "#rrggbb";
 // space: "tight", "normal" or "roomy" between them.
+// the queued messages listed over the box, the rest counted
+const QUEUED_SHOWN = 3;
 const LOOK = 'chat.look';
 // replies: Claude's messages in earlier turns stay "open" (only the work between them folds) or "folded".
 const LOOK_DEFAULT = {
@@ -1307,7 +1316,14 @@ export default class ClaudeChat extends View {
             cx.notify();
         });
         // what he sent while the thread worked, by agent address, until its row reaches the transcript (see queued.js)
+        /** @type {Map<string, import('./queued.js').Queued[]>} */
         this.queued = new Map();
+        // Claude Code's own queue as its transcript records it, by agent address (see claudeQueueAfter)
+        /** @type {Map<string, import('./queued.js').Queued[]>} */
+        this.claudeQueued = new Map();
+        // what ↑ pulled out of Claude Code's queue, in order, by agent address: a pull reads what came out
+        /** @type {Map<string, string[]>} */
+        this.popped = new Map();
         this.idleSince = new Map();
         this.box = TextareaState.new({});
         this.box.set_auto_grow(1, 8);
@@ -2131,6 +2147,7 @@ export default class ClaudeChat extends View {
                         this.head = null;
                         this.base = 0;
                         this.relayIds = new Set();
+                        this.claudeQueued.delete(address);
                         // another conversation in this thread (a /clear, a resume): it starts at its newest
                         this.follow = true;
                         this.stick = true;
@@ -2248,7 +2265,12 @@ export default class ClaudeChat extends View {
                 model: this.model,
             };
             this.items = /** @type {any[]} */ ([]);
-            this.ingest(text);
+            this.readingEarlier = true;
+            try {
+                this.ingest(text);
+            } finally {
+                this.readingEarlier = false;
+            }
             /** @type {any[]} */
             const earlier = this.items;
             Object.assign(this, kept);
@@ -2462,6 +2484,14 @@ export default class ClaudeChat extends View {
         };
         for (const line of chunk.split('\n')) {
             stamp();
+            if (
+                into === this &&
+                !this.readingEarlier &&
+                line.startsWith('{"type":"queue-operation"')
+            ) {
+                this.queueOp(line);
+                continue;
+            }
             // The conversation's lines; the rest (api requests, snapshots, modes) start with "type".
             if (!line.startsWith('{"parentUuid"')) continue;
             this.version = (this.version ?? 0) + 1;
@@ -2777,6 +2807,54 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
+    // one record of Claude Code's queue: his send shows as queued from here on, read, never guessed
+    /** @param {string} line */
+    queueOp(line) {
+        let op;
+        try {
+            op = JSON.parse(line);
+        } catch {
+            return;
+        }
+        const address = this.address;
+        this.claudeQueued.set(
+            address,
+            claudeQueueAfter(this.claudeQueued.get(address) ?? [], op),
+        );
+        if (op.operation === 'popAll' && typeof op.content === 'string')
+            this.popped.set(address, [
+                ...(this.popped.get(address) ?? []),
+                op.content,
+            ]);
+        // the send it records leaves the list kept since the press
+        if (op.operation === 'enqueue' && typeof op.content === 'string') {
+            const sent = this.queued.get(address) ?? [];
+            const words = op.content.replace(/\s+/g, ' ').trim();
+            const i = sent.findIndex(
+                (q) => q.text.replace(/\s+/g, ' ').trim() === words,
+            );
+            if (i >= 0)
+                this.queued.set(
+                    address,
+                    sent.filter((_, n) => n !== i),
+                );
+        }
+    }
+
+    // his messages waiting for the turn: Claude Code's queue first, then sends it has not recorded yet
+    /** @param {string} address @returns {{ at: number, text: string, isRecorded: boolean }[]} */
+    waiting(address) {
+        return [
+            ...(this.claudeQueued.get(address) ?? [])
+                .filter((q) => isHisQueued(q.text))
+                .map((q) => ({ ...q, isRecorded: true })),
+            ...(this.queued.get(address) ?? []).map((q) => ({
+                ...q,
+                isRecorded: false,
+            })),
+        ];
+    }
+
     // a row of his reached the transcript: a queued message it carries is no longer waiting
     /** @param {{ message?: { content?: string | { type?: string, text?: string }[] }, timestamp?: string }} d */
     joinQueued(d) {
@@ -2814,6 +2892,17 @@ export default class ClaudeChat extends View {
             this.queued.set(
                 address,
                 queuedAfterIdle(list, this.idleSince.get(address), Date.now()),
+            );
+        // an idle Claude Code holds no queue: a record missed before the loaded part of the transcript ends here
+        const recorded = this.claudeQueued.get(address);
+        if (recorded?.length)
+            this.claudeQueued.set(
+                address,
+                queuedAfterIdle(
+                    recorded,
+                    this.idleSince.get(address),
+                    Date.now(),
+                ),
             );
     }
 
@@ -3027,6 +3116,185 @@ export default class ClaudeChat extends View {
             this.steering = null;
             cx.notify();
         });
+    }
+
+    // what he sent while the thread works, one line each with its cross, over the log's bottom edge so the transcript
+    // never moves when it comes or goes
+    /** @param {any} t @param {{ text: string, isRecorded: boolean }[]} queued */
+    queuedStrip(t, queued) {
+        const shown = queued.slice(0, QUEUED_SHOWN);
+        const more = queued.length - shown.length;
+        const lineH = 24;
+        const height = 30 + shown.length * lineH + (more > 0 ? 18 : 0) + 6;
+        const lineJSX = shown.map((q, i) => {
+            return h_flex()
+                .id(`queued-${i}`)
+                .h(lineH)
+                .gap(8)
+                .items_center()
+                .child(
+                    div()
+                        .flex_1()
+                        .min_w(0)
+                        .truncate()
+                        .text_color(t.foreground)
+                        .child(queuedWords(q.text).replace(/\s+/g, ' ')),
+                )
+                .child(
+                    q.isRecorded && !this.steering
+                        ? div()
+                              .id(`queued-x-${i}`)
+                              .size(px(18))
+                              .flex()
+                              .flex_none()
+                              .items_center()
+                              .justify_center()
+                              .rounded_full()
+                              .text_color(t.muted)
+                              .cursor_pointer()
+                              .hover((s) =>
+                                  s.bg(t.hover).text_color(t.foreground),
+                              )
+                              .tooltip('Take it back into the box')
+                              .on_click((_e, cx) => this.pullQueued(q.text, cx))
+                              .child('×')
+                        : div().size(px(18)).flex_none(),
+                );
+        });
+        return v_flex()
+            .absolute()
+            .left(10)
+            .right(10)
+            .top(-(height + 6))
+            .px(10)
+            .pb(4)
+            .rounded(8)
+            .bg(t.raised)
+            .border(1)
+            .border_color(t.border)
+            .text_size(px(12))
+            .text_color(t.muted)
+            .child(
+                h_flex()
+                    .h(30)
+                    .gap(8)
+                    .items_center()
+                    .child(
+                        div()
+                            .flex_1()
+                            .child(
+                                queued.length > 1
+                                    ? `Queued, ${queued.length} join this turn`
+                                    : 'Queued, joins this turn',
+                            ),
+                    )
+                    .child(
+                        this.steering
+                            ? div()
+                                  .flex_none()
+                                  .text_color(t.dim)
+                                  .child(
+                                      this.steering === true
+                                          ? 'Sending…'
+                                          : this.steering,
+                                  )
+                            : button(t, px, 'send-now', 'Send now', (_e, cx) =>
+                                  this.sendNow(cx),
+                              ),
+                    ),
+            )
+            .children(lineJSX)
+            .when(more > 0, (el) =>
+                el.child(div().h(18).child(`+${more} more`)),
+            );
+    }
+
+    // The cross on a queued message: ↑ in Claude Code's empty prompt pulls every queued message of his into its input
+    // (its one door, probed 2026-11-12), one popAll record each, so the input is emptied, the one he crossed goes to
+    // his box and the others pulled are sent again in their order. Pressed only while its screen offers «up to edit
+    // queued messages»; a message that joined first is said so, and stays joined.
+    /** @param {string} text the crossed message as Claude Code queued it @param {import('gpui-kit').Context} cx */
+    pullQueued(text, cx) {
+        const address = this.address;
+        const chosen = this.waiting(address).find(
+            (q) => q.isRecorded && q.text === text,
+        );
+        if (!address || !chosen || this.steering) return;
+        this.steering = 'Taking it back…';
+        cx.notify();
+        cx.spawn(async (cx) => {
+            try {
+                await this.pullOut(address, chosen.text, cx);
+            } catch {
+                this.steering = null;
+                cx.notify();
+            }
+        });
+    }
+
+    /** @param {string} address @param {string} text @param {import('gpui-kit').Context} cx */
+    async pullOut(address, text, cx) {
+        /** @param {string | null} note @returns {Promise<void>} */
+        const say = async (note) => {
+            this.steering = note;
+            cx.notify();
+            if (!note) return;
+            await cx.sleep(4000);
+            if (this.steering === note) this.steering = null;
+            cx.notify();
+        };
+        const r = await hc(['read', address, '--lines', '40']).catch(
+            () => null,
+        );
+        if (!/up to edit queued messages/i.test(r?.stdout ?? ''))
+            return say('It joined the turn first');
+        this.popped.set(address, []);
+        await hc(['keys', address, 'up']);
+        // ↑ pulls every message of his, a send not recorded yet too: the records are in once they stop coming
+        let seen = 0;
+        for (let i = 0, still = 0; i < 25 && still < 3; i++) {
+            await cx.sleep(100);
+            const n = (this.popped.get(address) ?? []).length;
+            still = n && n === seen ? still + 1 : 0;
+            seen = n;
+        }
+        const pulled = this.popped.get(address) ?? [];
+        // nothing came out: whatever ↑ put in Claude's input stays there, offered by «Still in Claude's box»
+        if (!pulled.length) return say('It joined the turn first');
+        const lines = pulled.reduce(
+            (n, q) => n + q.split('\n').length + Math.ceil(q.length / 40) + 2,
+            0,
+        );
+        await hc(['keys', address, ...Array(lines * 2).fill('ctrl+u')]);
+        const isPulled = pulled.includes(text);
+        if (isPulled) {
+            const words = queuedWords(text);
+            // he may have moved to another thread meanwhile: the words go to this thread's kept draft
+            const isShown = this.address === address;
+            const had = (
+                isShown ? this.box.value() : keptDraft(address)
+            ).trim();
+            const draft = had ? `${words}\n\n${had}` : words;
+            keepDraft(address, draft);
+            if (isShown) {
+                this.box.set_value(draft);
+                this.typed = draft;
+                this.box.focus();
+            }
+            cx.notify();
+        }
+        const rest = isPulled
+            ? pulled.filter((_, n) => n !== pulled.indexOf(text))
+            : pulled;
+        for (const q of rest) {
+            const words = queuedWords(q);
+            this.queued.set(address, [
+                ...(this.queued.get(address) ?? []),
+                { at: Date.now(), text: words },
+            ]);
+            await hc(['send', address, words]);
+        }
+        await say(isPulled ? null : 'It joined the turn first');
     }
 
     takeLeft(cx) {
@@ -6326,7 +6594,7 @@ export default class ClaudeChat extends View {
         }
         this.agentWorking = agent.status === 'working';
         this.settleQueued(agent.status, cx);
-        const queued = this.queued.get(this.address) ?? [];
+        const queued = this.waiting(this.address);
         const isLeftShown =
             Boolean(this.leftInBox) && agent.status !== 'working';
         // A row's height holds only at the width and look it was measured at.
@@ -6517,65 +6785,7 @@ export default class ClaudeChat extends View {
                     .relative()
                     // over the log's bottom edge, so the transcript never moves when it comes or goes
                     .when(queued.length > 0 && !isLeftShown, (el) =>
-                        el.child(
-                            h_flex()
-                                .absolute()
-                                .left(10)
-                                .right(10)
-                                .top(-34)
-                                .h(28)
-                                .px(10)
-                                .gap(8)
-                                .items_center()
-                                .rounded(8)
-                                .bg(t.raised)
-                                .border(1)
-                                .border_color(t.border)
-                                .text_size(px(12))
-                                .text_color(t.muted)
-                                .child(
-                                    div()
-                                        .flex_none()
-                                        .child('Queued, joins this turn:'),
-                                )
-                                .child(
-                                    div()
-                                        .flex_1()
-                                        .min_w(0)
-                                        .truncate()
-                                        .text_color(t.foreground)
-                                        .child(
-                                            queued[0].text.replace(/\s+/g, ' '),
-                                        ),
-                                )
-                                .when(queued.length > 1, (el) =>
-                                    el.child(
-                                        div()
-                                            .flex_none()
-                                            .child(
-                                                `+${queued.length - 1} more`,
-                                            ),
-                                    ),
-                                )
-                                .child(
-                                    this.steering
-                                        ? div()
-                                              .flex_none()
-                                              .text_color(t.dim)
-                                              .child(
-                                                  this.steering === true
-                                                      ? 'Sending…'
-                                                      : this.steering,
-                                              )
-                                        : button(
-                                              t,
-                                              px,
-                                              'send-now',
-                                              'Send now',
-                                              (_e, cx) => this.sendNow(cx),
-                                          ),
-                                ),
-                        ),
+                        el.child(this.queuedStrip(t, queued)),
                     )
                     .when(isLeftShown, (el) =>
                         el.child(

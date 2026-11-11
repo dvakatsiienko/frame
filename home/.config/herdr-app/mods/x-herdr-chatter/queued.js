@@ -38,3 +38,51 @@ export function queuedAfterIdle(queued, idleSince, now) {
     if (idleSince === null || now - idleSince < QUEUED_IDLE_MS) return queued;
     return queued.filter((q) => q.at > idleSince);
 }
+
+// Claude Code writes its queue into the transcript as `queue-operation` records: `enqueue` at a send, `remove` when a
+// tool round takes one by its text, `dequeue` when a turn's end takes the next (his messages go before task notices:
+// 15 of 15 runs where the two orders differ, 2026-11-12), and one `popAll` per message when ↑ in the empty prompt pulls
+// his back out (probed 2026-11-12 01:19: two queued, two records)
+
+/** a queued message of his, never a task notice or another thread's message @param {string} text */
+export const isHisQueued = (text) =>
+    Boolean(text) &&
+    (!text.startsWith('<') || /^<(pasted_content|bash-input)\b/.test(text));
+
+/**
+ * Claude Code's queue after one of its transcript records
+ * @param {Queued[]} queue
+ * @param {{ operation?: string, content?: unknown, timestamp?: string }} op
+ * @returns {Queued[]}
+ */
+export function claudeQueueAfter(queue, op) {
+    const text = typeof op.content === 'string' ? op.content : '';
+    switch (op.operation) {
+        case 'enqueue':
+            return [
+                ...queue,
+                { at: Date.parse(op.timestamp ?? '') || 0, text },
+            ];
+        case 'remove':
+        case 'popAll': {
+            const i = queue.findIndex((q) => q.text === text);
+            return i < 0 ? queue : queue.filter((_, n) => n !== i);
+        }
+        case 'dequeue': {
+            const his = queue.findIndex((q) => isHisQueued(q.text));
+            const i = his < 0 ? 0 : his;
+            return queue.filter((_, n) => n !== i);
+        }
+        default:
+            return queue;
+    }
+}
+
+/** what he typed, out of the wrapper Claude Code puts around a paste @param {string} text */
+export const queuedWords = (text) =>
+    text
+        .replace(
+            /^<pasted_content\b[^>]*>\n?([\s\S]*?)\n?<\/pasted_content>$/,
+            '$1',
+        )
+        .trim();

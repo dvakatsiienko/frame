@@ -15,12 +15,19 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: Claude Code writes such a prompt as a `queued_command` attachment with `origin.kind` human, never a user entry; the chat reads it as one
 - ⬜ a prompt sent while a turn runs shows as queued until the turn takes it
   - given dima sends a thread a message while its turn is still running
-  - then «Queued, joins this turn:» and the message's start sit over the log's bottom edge, «+n more» past the first, the log never moving
-  - and the chip leaves the moment the message's row reaches the transcript, where it draws as his message
-  - and a thread that sat idle 5 s with the message never in its transcript drops the chip
-  - and «Send now» at the strip's end presses Claude Code's own Ctrl+Enter when its screen offers «ctrl+enter to send now», «Sending…» meanwhile; offered nothing, it says «Claude takes it at its next step» for 4 s
-  - decision: Edit and × on a queued message stay out: Claude Code's queue has no edit, they need our own hold first (clio, 23:05)
+  - then a strip over the log's bottom edge reads «Queued, joins this turn» and lists each queued message on its own line, three at most and «+n more» past them, the log never moving
+  - and a line leaves the moment Claude Code's own queue records it taken, where it draws as his message
+  - and a thread that sat idle 5 s with the message never in its transcript drops the line
+  - and «Send now» at the strip's top presses Claude Code's own Ctrl+Enter when its screen offers «ctrl+enter to send now», «Sending…» meanwhile; offered nothing, it says «Claude takes it at its next step» for 4 s
+  - decision: queued and joined are read from Claude Code's `queue-operation` records (enqueue, remove, dequeue, popAll), never guessed from his text
   - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the box empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
+- 🧭 a queued message comes back to the box with its × (FRM-563)
+  - given a thread mid-turn holds his queued messages
+  - when dima clicks × on one before it joins
+  - then the thread never receives it and its text is back in his box, before anything he had typed there
+  - and the others queued with it are sent again in their order
+  - and a message that joined first stays joined, the strip saying «It joined the turn first» for 4 s
+  - decision: a cross per message: ↑ in Claude Code's empty prompt pulls all of them, so the chat puts the one back and re-queues the rest (dima, o145, 2026-11-12)
 - ⬜ his messages sit in bubbles on the right, Claude's on the left (FRM-562)
   - given «Your messages» in the chat settings is Bubbles, the default
   - then his words sit in an accent-tinted bubble on the right, Claude's in a quiet bubble on the left, each at most 80 % of the width; Box, Tint and Bar draw as before

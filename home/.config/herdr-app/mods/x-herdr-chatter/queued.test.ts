@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'vitest';
 
-import { QUEUED_IDLE_MS, queuedAfterIdle, queuedAfterRow } from './queued.js';
+import {
+    QUEUED_IDLE_MS,
+    claudeQueueAfter,
+    isHisQueued,
+    queuedAfterIdle,
+    queuedAfterRow,
+    queuedWords,
+} from './queued.js';
 
 const SENT = Date.parse('2026-11-11T15:01:50.84Z');
 // dima's 17:01:54 paste to wing 1, as cc wrote it once the turn took it: a queued_command whose stamp is 0.3 s before
@@ -53,5 +60,89 @@ describe('a message sent mid-turn shows as queued until the turn takes it', () =
 
     test('a working thread keeps it, however long the turn runs', () => {
         expect(queuedAfterIdle([HIS], null, SENT + 30 * 60_000)).toEqual([HIS]);
+    });
+});
+
+// the records cc writes for its queue, as the probe thread wrote them (2026-11-12 00:58) and wing 1's transcript shows
+const op = (operation: string, content?: string) => ({
+    content,
+    operation,
+    timestamp: '2026-11-12T22:58:05.000Z',
+    type: 'queue-operation',
+});
+const replay = (...ops: ReturnType<typeof op>[]) =>
+    ops.reduce(claudeQueueAfter, [] as { at: number; text: string }[]);
+
+describe("Claude Code's queue, read from its transcript", () => {
+    test('a message he sent mid-turn waits in it', () => {
+        expect(replay(op('enqueue', 'banana')).map((q) => q.text)).toEqual([
+            'banana',
+        ]);
+    });
+    test('one the turn took at a tool round leaves it by its text', () => {
+        expect(
+            replay(
+                op('enqueue', 'a'),
+                op('enqueue', 'b'),
+                op('remove', 'b'),
+            ).map((q) => q.text),
+        ).toEqual(['a']);
+    });
+    test('a dequeue at the turn end takes his message before a task notice', () => {
+        const notice = '<task-notification>done</task-notification>';
+        expect(
+            replay(
+                op('enqueue', notice),
+                op('enqueue', 'kiwi'),
+                op('dequeue'),
+            ).map((q) => q.text),
+        ).toEqual([notice]);
+    });
+    test('↑ in the empty prompt pulls his messages out, one record each', () => {
+        const notice = '<task-notification>done</task-notification>';
+        expect(
+            replay(
+                op('enqueue', 'a'),
+                op('enqueue', notice),
+                op('enqueue', 'b'),
+                op('popAll', 'a'),
+                op('popAll', 'b'),
+            ).map((q) => q.text),
+        ).toEqual([notice]);
+    });
+    test('a dequeue or remove on an empty queue changes nothing', () => {
+        expect(replay(op('dequeue'), op('remove', 'x'))).toEqual([]);
+    });
+    test('an enqueue with no text still holds its place', () => {
+        expect(
+            replay(op('enqueue'), op('enqueue', 'a'), op('dequeue')),
+        ).toEqual([{ at: Date.parse('2026-11-12T22:58:05.000Z'), text: '' }]);
+    });
+});
+
+describe('which queued messages are his', () => {
+    test.each([
+        ['plain words', 'fix the crow emoji', true],
+        ['a paste', '<pasted_content id="1">x</pasted_content>', true],
+        ['a ! command', '<bash-input>ls</bash-input>', true],
+        ['a task notice', '<task-notification>x</task-notification>', false],
+        ['another thread', '<cross-session-message from="a">x', false],
+        ['a wake', '<wake>x</wake>', false],
+        ['nothing', '', false],
+    ])('%s', (_name, text, isHis) => {
+        expect(isHisQueued(text)).toBe(isHis);
+    });
+});
+
+describe('the words of a queued message', () => {
+    test('a paste shows its text, not its wrapper', () => {
+        expect(
+            queuedWords(
+                '<pasted_content id="36e3">\nhi there\n</pasted_content>',
+            ),
+        ).toBe('hi there');
+    });
+    test('plain words stay as they are', () => {
+        expect(queuedWords('fix the crow emoji')).toBe('fix the crow emoji');
     });
 });
