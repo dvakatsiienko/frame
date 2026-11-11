@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T11:36:00Z'
+updated_date: '2026-11-11T12:05:00Z'
 labels:
   - m
   - clio-main
@@ -1862,4 +1862,37 @@ PK-363:W873 (2026-11-11 13:30, dima): then wing 1 parks and waits for my wants.
 PK-363:W874 (2026-11-11 13:30, dima): my weekly: at 4%, let's plan first. then, when 100% is reached, i press «reset» type suggested by wing 1.
 
 PK-363:W892 (2026-11-11 00:19 orbit steer o116, dima): i want you to stop asking me for requests like o116 for halt summoning and stopping everyone. you must be able to do it yourself, without even asking.
+
+PK-363:W893 (2026-11-11 14:04, dima): chatter wisp: when i scroll it too far bottom, it seems to get stuck in some kind of infinite loop and go wild, like it tries to rerender, and it flickers very very often, ~100 times/s.
+PK-363:W894 (2026-11-11 14:04, dima): if scrolled slightly up, it does not flicker. (only your window at the moment; wing 1 is ok)
+PK-363:W895 (2026-11-11 14:04, dima): everyone is parked right now, due to no activity.
+PK-363:W896 (2026-11-11 14:04, dima): close() (deaths): can herder codie fix it right now? ❓
+PK-363:W897 (2026-11-11 14:04, dima): can it kill anyone during the fix? ❓
+PK-363:W898 (2026-11-11 14:04, dima): i want it fixed before all activity today.
+PK-363:W899 (2026-11-11 14:04, dima): when will you or wing 1 be killed? ❓
+PK-363:W900 (2026-11-11 14:04, dima): can you prep a rex with a prefilled script to revive you and wing 1 in herder, just in case? ❓
+PK-363:W901 (2026-11-11 14:04, dima): if yes, you can start herder codie now.
+PK-363:W902 (2026-11-11 14:04, dima): weekly reset decided. we spend 100% weekly. everyone stops → i reset the full week → we continue.
+PK-363:W903 (2026-11-11 14:04, dima): the guard: are you sure the planned solution is the one we want, and not wasted work? ❓
+PK-363:W904 (2026-11-11 14:04, dima): if yes, i allow starting the mods lane with it as soon as you can (with confirmation on doing the right thing: consult with crow and wing 1, otherwise consult with me).
+PK-363:W905 (2026-11-11 14:04, dima): 2 signed tickets drifted from their sign (FRM-538 and FRM-489). fix the drift.
+PK-363:W906 (2026-11-11 14:04, dima): the codeberg mirror job is red again. ask wing 1 to solve it.
+PK-363:W907 (2026-11-11 14:04, dima): why is codeberg red? ❓
+PK-363:W908 (2026-11-11 14:04, dima): 🐦‍⬛ crow's weekly grade is due today. let's solve it with wing 1.
+PK-363:W909 (2026-11-11 14:04, dima): where did you save your plan for today? did you already save it in your flyway? ❓
+PK-363:W910 (2026-11-11 14:04, dima): for you (main clio): you should keep your proposed daily plan in a flyway each boot. is it like this in the habit/boot skill? ❓
+PK-363:W911 (2026-11-11 14:04, dima): if not, refresh habits and flyway.
+PK-363:W912 (2026-11-11 14:04, dima): tell wing 1 to refresh its flyway with everything i asked for wing 1, plus everything it has on its plate.
+PK-363:W913 (2026-11-11 14:04, dima): today: FRM-567 (your look at the tabs), FRM-550 (judged against herdr, then your sign), FRM-483 (the compact timing check). do all with me? ❓
+PK-363:W914 (2026-11-11 14:04, dima): where to look? ❓
+PK-363:W915 (2026-11-11 14:04, dima): i saw the tabs, they are fine. scrolling is too fast; it goes wild on horizontal scroll when lots of threads are active.
+PK-363:W916 (2026-11-11 14:04, dima): let's solve all of these with you.
+PK-363:W917 (2026-11-11 14:04, dima): roadmap: ⚠️ three fleet milestones are missing from the queues: «x-herdr looks sharp», «fleet runs in herdr» and «the mac runs tests cheaper». fix now.
+PK-363:W918 (2026-11-11 14:04, dima): both you and wing 1 solve its flyway in low-tide mode: one at a time (smaller and mechanical stuff is allowed to batch).
+PK-363:W919 (2026-11-11 14:04, dima): by the way, is the low tide skill exactly like this? ❓
+PK-363:W920 (2026-11-11 14:04, dima): if i write only «just low tide», would you solve one at a time? ❓
+PK-363:W921 (2026-11-11 14:04, dima): or am i overexplaining in the main prompt now? ❓
+PK-363:W922 (2026-11-11 14:04, dima): if not like this, fix the skill.
+PK-363:W923 (2026-11-11 14:04, dima): about your confirm ask to stop anyone: this should not be wasted re-describing in your memories. this should just work.
+PK-363:W924 (2026-11-11 14:04, dima): no need to waste memory on this; just fix the guard so you can stop and start anyone without interference.
 <!-- SECTION:NOTES:END -->
