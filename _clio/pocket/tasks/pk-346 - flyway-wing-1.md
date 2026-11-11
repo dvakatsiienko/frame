@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T16:16:00Z'
+updated_date: '2026-11-11T16:23:00Z'
 labels:
   - s
   - clio-wing-1
@@ -219,4 +219,6 @@ done 2026-11-11 17:44: tails lane 1 running: 🌗 🔧 codie: tails lane 1 walks
 done 2026-11-11 17:44: wishkeeper batch-3 lows: crew-lead SKILL.md:63 «a real session in a herdr pane» moves to the surface file; clio:wing:28 desktop steps point at surface-claude-desktop.md
 
 done 2026-11-11 17:54: 💤 clio:wing:28 desktop start steps point at surface-claude-desktop.md: skipped, the wing skill sits at its 4400 B budget and the pointer costs 45 B — later: dima, at the next wing skill groom
+
+hoist 11-11: proposing, wing 1 (dima 18:22: strays for the tails lane, tails for wing 1)
 <!-- SECTION:NOTES:END -->
