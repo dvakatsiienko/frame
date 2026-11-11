@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T19:28:00Z'
+updated_date: '2026-11-11T19:40:00Z'
 labels:
   - m
   - clio-main
@@ -2063,4 +2063,8 @@ PK-363:W1071 (2026-11-11 21:07, dima): before we start folding out the findings,
 PK-363:W1072 (2026-11-11 21:07, dima): what's everyone doing? print a short reply with status ❓ (context, not dima's words: the raw ends mid-sentence at "status as".)
 PK-363:W1066 (2026-11-11 21:03, dima): i killed you? you are not in herdr anymore (switched from shepherdr to our theme just yet) ❓ (context, not dima's words: "herder" read as "herdr", "sheparder" as "shepherdr", as in earlier grooms.)
 PK-363:W1067 (2026-11-11 21:03, dima): i write you from the c desktop app. (context, not dima's words: "c" is written as in the raw.)
+
+PK-363:W1073 (2026-11-11 21:39, dima, o80 steer): tell what and where to click, lets solve now. (context, not dima's words: the steer's own time is not in its raw; stamped with the 21:39 chore time because no orbit-log time was found for it.)
+PK-363:W1074 (2026-11-11 21:39, dima): an overall ask to you and to codie (the herdr codie): since we are building almost from scratch, don't just copy and pull everything blindly. do it thoughtfully. along with copying implementations, look for smart solutions in both UX/UI terms and overall, and try to make things pretty and working well right away. we are not doing a quick implementation. i want proper solutions in terms of UI/UX and architecture as well. (context, not dima's words: "codie" is the herdr lane member, as written in the raw.)
+PK-363:W1075 (2026-11-11 21:39, dima): how do you think about it? should an architectural question be raised now, or is it not a good time, or is it early or redundant? ❓
 <!-- SECTION:NOTES:END -->
