@@ -181,7 +181,7 @@ describe('tree-sync land', () => {
         w.write(w.tree, 'home/.claude/plugin-x/mods/m.ts', 'm\n');
         w.land();
         expect(w.xCalls()).toBe(
-            `frame: plugin bump --apply clio\nframe: lane commit ${w.tree}/.scratch/plugin-bump-message.txt -- _clio/plugin-clio/.claude-plugin/plugin.json\nframe: lane push --apply\n`,
+            `frame: lane commit --bump clio ${w.tree}/.scratch/plugin-bump-message.txt\nframe: lane push --apply\n`,
         );
     });
 
@@ -193,7 +193,7 @@ describe('tree-sync land', () => {
         w.write(w.tree, 'home/.claude/plugin-x/skills/s.md', 's\n');
         w.land();
         expect(w.xCalls()).toBe(
-            `frame: plugin bump --apply x\nframe: lane commit ${w.tree}/.scratch/plugin-bump-message.txt -- home/.claude/plugin-x/.claude-plugin/plugin.json\nframe: lane push --apply\n`,
+            `frame: lane commit --bump x ${w.tree}/.scratch/plugin-bump-message.txt\nframe: lane push --apply\n`,
         );
     });
 
@@ -273,7 +273,7 @@ describe('tree-sync land', () => {
         w.git(w.root, 'merge', '--ff-only', '-q', 'worktree-fork-abcd1234');
         w.git(w.root, 'update-ref', 'refs/remotes/origin/main', pushed);
         w.land();
-        expect(w.xCalls()).toContain('plugin bump --apply clio');
+        expect(w.xCalls()).toContain('lane commit --bump clio');
     });
 
     test("a peer's brief lock on main is waited out", () => {
