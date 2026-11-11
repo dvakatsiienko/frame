@@ -5,6 +5,7 @@ import {
     SEATS_BEAT_MS,
     asksOf,
     byName,
+    hasSteerBox,
     hotOf,
     hotPressLine,
     hotPresses,
@@ -18,7 +19,6 @@ import {
     seatFacts,
     sentSteer,
     stateOfPid,
-    tickDoor,
     tickState,
     unbold,
     untickDoor,
@@ -379,15 +379,32 @@ describe('his second click writes the door that still reaches the seat', () => {
     test('a press the stash has read gets an untick line', () => {
         expect(untickDoor(null)).toBe('untick');
     });
+
+    test('a press still in the file but marked by the stash gets an untick line', () => {
+        expect(untickDoor('tick', 'accepted')).toBe('untick');
+    });
 });
 
-describe('a tick after an untick (dima, 14:32: «it just returns to the unticked state and i can tick again»)', () => {
-    test('an untick line still unread leaves the file, so the stash mark reads ticked again', () => {
-        expect(tickDoor('untick')).toBe('drop');
+describe('a tick after an untick (dima, 14:51: «the very next tick lands»)', () => {
+    test('an unticked ask draws its steer box though the stash still holds the tick mark', () => {
+        expect(hasSteerBox({ ...ask, mark: 'accepted' }, 'untick')).toBe(true);
     });
 
-    test('after the stash dropped the mark, a tick is an ordinary press', () => {
-        expect(tickDoor(null)).toBe('press');
+    test('a ticked ask has no steer box', () => {
+        expect(hasSteerBox({ ...ask, mark: 'accepted' }, null)).toBe(false);
+    });
+
+    test('a tick pressed after an untick is a new press line, never a drop of the old ones', () => {
+        const text = [
+            JSON.stringify({ at: 2, id: 'o5', verdict: 'tick' }),
+            JSON.stringify({ at: 3, id: 'o5', verdict: 'untick' }),
+        ].join('\n');
+        const next = withPress(
+            text,
+            { at: 4, id: 'o5', text: 'x', verdict: 'tick' },
+            1,
+        );
+        expect(pendingPresses(next, 1).get('o5')).toBe('tick');
     });
 });
 
