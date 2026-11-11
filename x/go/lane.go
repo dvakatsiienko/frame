@@ -77,7 +77,8 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	if _, err := os.Stat(msgFile); err != nil {
 		return nil, usageFail("no message file at "+msgFile, "x lane commit <msg-file> -- <paths…>")
 	}
-	if len(paths) == 0 {
+	bumpName, _ := flags["bump"].(string)
+	if len(paths) == 0 && bumpName == "" {
 		return nil, usageFail("no paths — name what goes into the commit", "x lane commit "+msgFile+" -- <paths…>")
 	}
 	message, _ := filepath.Abs(msgFile)
@@ -116,6 +117,13 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	// before all that reads the tree or the index: a git commit holds the shared index lock through its hook, so a stage outside
 	// the turn dies on a peer's, an edit in the wait would skip format and quotes, and a peer's commit moves the HEAD a dry run copies
 	namedPaths := strings.Join(paths, " ")
+	// every retry this run names carries the flag and the caller's own paths, never the manifest the bump adds
+	bumpFlag := ""
+	if bumpName != "" {
+		bumpFlag = "--bump " + bumpName + " "
+	}
+	callerPaths := slices.Clone(paths)
+	again := strings.TrimSuffix("x lane commit "+bumpFlag+msgFile+" -- "+namedPaths, " -- ")
 	verb := "x lane commit "
 	switch {
 	case dry:
@@ -124,7 +132,7 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 		verb += "--hold-unstaged "
 	}
 	if err := r.Step("turn", "waiting for the gate turn", func() (string, error) {
-		leave, err := takeGateTurn(verb+namedPaths, verb+msgFile+" -- "+namedPaths)
+		leave, err := takeGateTurn(verb+namedPaths, strings.TrimSuffix(verb+bumpFlag+msgFile+" -- "+namedPaths, " -- "))
 		leaveTurn = leave
 		return "", err
 	}); err != nil {
@@ -147,9 +155,58 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	} else {
 		r.skip("gates")
 	}
+	// the bump is written before the holds and the gates read the paths, and put back on any stop before the commit lands
+	var bumped *bumpTarget
+	landed := false
+	if bumpName == "" {
+		r.skip("bump", "refresh")
+	} else {
+		var was []byte
+		var index string
+		if err := r.Step("bump", "the plugin's patch version", func() (string, error) {
+			b, said, err := planBump(tree, bumpName)
+			if err != nil {
+				return "", err
+			}
+			if was, err = os.ReadFile(b.manifest); err != nil {
+				return "", err
+			}
+			// the index entry as it stood, so a stop puts back a staged edit too, never only HEAD's
+			staged, _ := git("ls-files", "-s", "--", b.manifest)
+			index = staged.out
+			if err := writeVersion(b.manifest, b.from, b.to); err != nil {
+				return "", err
+			}
+			bumped = &b
+			return said, nil
+		}); err != nil {
+			return nil, err
+		}
+		rel, _ := filepath.Rel(tree, bumped.manifest)
+		if !slices.Contains(paths, rel) {
+			paths = append(paths, rel)
+		}
+		defer func() {
+			if landed || (err == nil && !dry) {
+				return
+			}
+			_ = os.WriteFile(bumped.manifest, was, 0o644)
+			if dry {
+				return
+			}
+			// `<mode> <sha> <stage>\t<path>`: the entry before the bump goes back as it was
+			if mode, rest, ok := strings.Cut(index, " "); ok {
+				if sha, _, ok := strings.Cut(rest, " "); ok {
+					_, _ = git("update-index", "--cacheinfo", mode+","+sha+","+rel)
+					return
+				}
+			}
+			_, _ = git("reset", "-q", "--", rel)
+		}()
+	}
 	if err := r.Step("holds", "the paths another session holds", func() (string, error) {
 		if held := heldByOthers(tree, paths); len(held) > 0 {
-			return "", heldFail(held, msgFile, paths)
+			return "", heldFail(held, bumpFlag+msgFile, callerPaths)
 		}
 		return "none held by another session", nil
 	}); err != nil {
@@ -235,7 +292,7 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	}
 
 	if dry {
-		named := msgFile + " -- " + strings.Join(paths, " ")
+		named := strings.TrimSuffix(bumpFlag+msgFile+" -- "+namedPaths, " -- ")
 		return dryCommit(r, tree, message, dryIndex, dryTree, "x lane commit --dry "+named, "x lane commit "+named)
 	}
 
@@ -304,12 +361,14 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 				}
 			}
 			if !committed.ok {
-				return "", hookFail(committed.log, "x lane commit "+msgFile+" -- "+strings.Join(paths, " "))
+				return "", hookFail(committed.log, again)
 			}
 			sha, err = head()
 			return withWait(took, short(sha)+"  "+firstLine(message)+proven+retried), err
 		})
 	}
+	// from here the bump is in HEAD: a failed restore of the held files must not take it back
+	landed = stopped == nil
 	// the held files come back whether the hooks passed or refused
 	if aside != nil {
 		if err := r.Step("restore", "putting the held files back", func() (string, error) {
@@ -335,7 +394,37 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	if said := withWait(waited, ""); said != "" {
 		data = append(data, kv{"waited", said})
 	}
-	return data, nil
+	if bumped == nil {
+		// a reminder, never a refusal: a plugin edit can wait for a later bump on purpose
+		if plugins := unbumpedPlugins(tree, present); len(plugins) > 0 {
+			var bumps []string
+			for _, plugin := range plugins {
+				bumps = append(bumps, "x plugin bump "+plugin+" --apply")
+			}
+			reminder := strings.Join(plugins, ", ") + " changed without --bump; the install keeps the old copy until a bump: " + strings.Join(bumps, ", ")
+			r.Done(fmt.Sprintf("%s on %s, %s; %s", short(sha), branch.out, plural(len(present), "path"), reminder), "x lane push --apply")
+			data = append(data, kv{"reminder", reminder})
+		}
+		return data, nil
+	}
+	data = append(data, kv{"bump", ordered{{"name", bumped.name}, {"from", bumped.from}, {"to", bumped.to}}})
+	if bumped.market == "" {
+		r.skip("refresh")
+		return data, nil
+	}
+	// the commit stands whatever the refresh says: its fail names the claude call to run again
+	var cache string
+	if err := r.Step("refresh", "the plugin's marketplace and install", func() (string, error) {
+		found, err := refreshPlugin(bumped.name+"@"+bumped.market, bumped.market, bumped.to)
+		cache = found
+		return home(cache), err
+	}); err != nil {
+		return nil, err
+	}
+	older := olderCopies(filepath.Dir(cache), bumped.to)
+	reload := reloadLine(bumped.name, bumped.to, older)
+	r.Done(short(sha)+" on "+branch.out+", "+reload, "/reload-plugins")
+	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}, kv{"older", older}, kv{"message", reload}), nil
 }
 
 // takeGateTurn waits for the machine-wide gate turn through frame's script, so one script keeps the queue's rules; the

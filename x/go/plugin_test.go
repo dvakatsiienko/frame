@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 // pluginFixture plants a marketplace listing a plugin at its root, a mod under it and a sibling only
@@ -70,22 +73,80 @@ func TestPluginBumpReleasesIntoTheCache(t *testing.T) {
 	}
 }
 
-func TestPluginBumpRefusesInAWorktree(t *testing.T) {
+func TestPluginBumpNamesTheLiveSessionsOnAnOlderCopy(t *testing.T) {
+	t.Parallel()
+	dir, cache, _, env := pluginFixture(t)
+	now := time.Now()
+	for v, age := range map[string]time.Duration{"1.2.3": 2 * time.Hour, "1.2.4": time.Hour} {
+		write(t, filepath.Join(cache, v, ".keep"), "")
+		if err := os.Chtimes(filepath.Join(cache, v), now.Add(-age), now.Add(-age)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	sessions, home := t.TempDir(), t.TempDir()
+	live, dead := os.Getpid(), 999999
+	for _, s := range []struct {
+		name string
+		pid  int
+		age  time.Duration
+	}{
+		{"older", live, 90 * time.Minute},
+		{"current", live, 30 * time.Minute},
+		{"before any copy", live, 3 * time.Hour},
+		{"reloaded since", live, 3 * time.Hour},
+		{"quoted the tag", live, 90 * time.Minute},
+		{"gone", dead, 90 * time.Minute},
+	} {
+		id := strings.ReplaceAll(s.name, " ", "-")
+		write(t, filepath.Join(sessions, id+".json"), fmt.Sprintf(`{"name":%q,"sessionId":%q,"pid":%d,"startedAt":%d}`, s.name, id, s.pid, now.Add(-s.age).UnixMilli()))
+	}
+	since := now.Add(-20 * time.Minute).UTC().Format(time.RFC3339)
+	write(t, filepath.Join(home, ".claude/projects/p/reloaded-since.jsonl"),
+		fmt.Sprintf(`{"type":"user","timestamp":%q,"message":{"role":"user","content":"<command-name>/reload-plugins</command-name>\n<command-message>reload-plugins</command-message>"}}`+"\n", since))
+	// a Read of a file that holds the tag lands it in a tool result: no reload
+	write(t, filepath.Join(home, ".claude/projects/p/quoted-the-tag.jsonl"),
+		fmt.Sprintf(`{"type":"user","timestamp":%q,"message":{"role":"user","content":[{"type":"tool_result","content":"const reloadCommand = \"<command-name>/reload-plugins</command-name>\""}]}}`+"\n", since))
+
+	got := xIn(t, dir, append(env("1.2.4"), "X_SESSIONS="+sessions, "HOME="+home), "plugin", "bump", "demo", "--apply")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+	want := `[{"session":"before any copy","version":"unknown"},{"session":"older","version":"1.2.3"},{"session":"quoted the tag","version":"1.2.3"}]`
+	if older, _ := json.Marshal(got.data["older"]); string(older) != want {
+		t.Errorf("older %s, want %s", older, want)
+	}
+	wantMessage := "demo 1.2.4 in the cache; binds after a reload; still on an older copy: before any copy (unknown), older (1.2.3), quoted the tag (1.2.3)"
+	if message, _ := got.data["message"].(string); message != wantMessage {
+		t.Errorf("message %q, want %q", message, wantMessage)
+	}
+}
+
+func TestPluginBumpInAWorktreeCommitsOnItsBranch(t *testing.T) {
 	t.Parallel()
 	dir, _, log, env := pluginFixture(t)
 	tree := filepath.Join(t.TempDir(), "wt")
 	gitT(t, dir, "worktree", "add", "-q", "-b", "side", tree)
-	manifest := filepath.Join(tree, "plug/.claude-plugin/plugin.json")
-	was := read(t, manifest)
+	mainManifest := filepath.Join(dir, "plug/.claude-plugin/plugin.json")
+	was := read(t, mainManifest)
 
-	// the marketplace reads the worktree itself, so only the worktree check stands between it and a write
-	got := xIn(t, tree, append(env("1.2.4"), "FAKE_MARKET="+filepath.Join(tree, "plug")), "plugin", "bump", "demo", "--apply")
+	// the marketplace reads the worktree itself, so only the worktree check keeps the live install untouched
+	got := xIn(t, tree, append(env("1.2.4"), "FAKE_MARKET="+filepath.Join(tree, "plug"), "GIT_CONFIG_GLOBAL=/dev/null"), "plugin", "bump", "demo", "--apply")
 
-	if got.code != 1 || !strings.Contains(got.stdout, "is a worktree") {
+	if got.code != 0 {
 		t.Fatalf("exit %d\n%s", got.code, got.stdout)
 	}
-	if read(t, manifest) != was || exists(log) {
-		t.Error("a refused bump wrote the manifest or ran claude")
+	if files := gitT(t, tree, "show", "--name-only", "--format=", "HEAD"); files != "plug/.claude-plugin/plugin.json" {
+		t.Errorf("the branch's HEAD holds %q", files)
+	}
+	if !strings.Contains(gitT(t, tree, "show", "HEAD:plug/.claude-plugin/plugin.json"), `"version": "1.2.4"`) {
+		t.Error("the commit does not hold 1.2.4")
+	}
+	if status := gitT(t, tree, "status", "--porcelain"); status != "" {
+		t.Errorf("the worktree left %q", status)
+	}
+	if read(t, mainManifest) != was || gitT(t, dir, "status", "--porcelain") != "" || exists(log) {
+		t.Error("main's plugin.json moved, or claude refreshed the live install")
 	}
 }
 

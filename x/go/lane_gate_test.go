@@ -34,6 +34,9 @@ func gateRepo(t *testing.T, files map[string]string) string {
 		"home/.claude/plugin-x/mods/m/FTR.md":       "- ✅ a mod\n",
 		"home/.claude/plugin-x/skills/x/SKILL.md":   "# x\n",
 		"home/.claude/plugin-x/skills/x/notes.html": "<p>x</p>\n",
+		"herdr/FTR.md":                              "# herdr\n\nclaims: `home/.config/herdr-app/mods/`\n\n- [chat](ftr/chat.md)\n",
+		"herdr/ftr/chat.md":                         "- ✅ a chat\n",
+		"home/.config/herdr-app/mods/c/main.js":     "export const c = 1;\n",
 	} {
 		write(t, filepath.Join(dir, path), body)
 	}
@@ -281,14 +284,17 @@ func TestGateRefusesAppCodeWithoutItsFtr(t *testing.T) {
 		msg   string
 		names string
 	}{
-		"code alone":           {map[string]string{"web/page.tsx": "export const Page = 2;\n"}, "change\n", "web/FTR.md"},
-		"code and its ftr":     {map[string]string{"web/page.tsx": "export const Page = 2;\n", "web/FTR.md": "- ✅ a page, now 2\n"}, "change\n", ""},
-		"ftr: none":            {map[string]string{"web/page.tsx": "export const Page = 2;\n"}, "change\n\nftr: none\n", ""},
-		"a bulleted marker":    {map[string]string{"web/page.tsx": "export const Page = 2;\n"}, "change\n\n- ftr: none\n", "web/FTR.md"},
-		"a mod's code":         {map[string]string{"home/.claude/plugin-x/mods/m/hooks/a.ts": "export const a = 1;\n"}, "change\n", "home/.claude/plugin-x/mods/m/FTR.md"},
-		"a skill's html":       {map[string]string{"home/.claude/plugin-x/skills/x/notes.html": "<p>y</p>\n"}, "change\n", ""},
-		"a file in a worktree": {map[string]string{".claude/worktrees/w/web/a.ts": "export const a = 1;\n"}, "change\n", ""},
-		"code with no app":     {map[string]string{"loose.ts": "export const l = 1;\n"}, "change\n", ""},
+		"code alone":                    {map[string]string{"web/page.tsx": "export const Page = 2;\n"}, "change\n", "web/FTR.md"},
+		"code and its ftr":              {map[string]string{"web/page.tsx": "export const Page = 2;\n", "web/FTR.md": "- ✅ a page, now 2\n"}, "change\n", ""},
+		"ftr: none":                     {map[string]string{"web/page.tsx": "export const Page = 2;\n"}, "change\n\nftr: none\n", ""},
+		"a bulleted marker":             {map[string]string{"web/page.tsx": "export const Page = 2;\n"}, "change\n\n- ftr: none\n", "web/FTR.md"},
+		"a mod's code":                  {map[string]string{"home/.claude/plugin-x/mods/m/hooks/a.ts": "export const a = 1;\n"}, "change\n", "home/.claude/plugin-x/mods/m/FTR.md"},
+		"a skill's html":                {map[string]string{"home/.claude/plugin-x/skills/x/notes.html": "<p>y</p>\n"}, "change\n", ""},
+		"a file in a worktree":          {map[string]string{".claude/worktrees/w/web/a.ts": "export const a = 1;\n"}, "change\n", ""},
+		"code with no app":              {map[string]string{"loose.ts": "export const l = 1;\n"}, "change\n", ""},
+		"a herdr mod alone":             {map[string]string{"home/.config/herdr-app/mods/c/main.js": "export const c = 2;\n"}, "change\n", "herdr/FTR.md"},
+		"a herdr mod and its area ftr":  {map[string]string{"home/.config/herdr-app/mods/c/main.js": "export const c = 2;\n", "herdr/ftr/chat.md": "- ✅ a chat, now 2\n"}, "change\n", ""},
+		"a herdr mod and the herdr ftr": {map[string]string{"home/.config/herdr-app/mods/c/main.js": "export const c = 2;\n", "herdr/FTR.md": "# herdr\n\nclaims: `home/.config/herdr-app/mods/`\n\n- [chat](ftr/chat.md), now 2\n"}, "change\n", ""},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
