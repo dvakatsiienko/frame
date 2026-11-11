@@ -1180,6 +1180,8 @@ func TestVerifyRedRefusesAPnpmCommandThatWritesTheStore(t *testing.T) {
 		// a package manager behind a run, behind a launcher, or as one word of a shell line
 		{"pnpm", "exec", "pnpm", "install"}, {"pnpm", "exec", "npm", "i"}, {"env", "X=1", "pnpm", "install"},
 		{"corepack", "pnpm", "install"}, {"npx", "pnpm", "install"}, {"sh", "-c", "pnpm install"}, {"pnpm", "exec", "sh", "-c", "pnpm install"},
+		// a shell word glued to its neighbour by an operator or a quote
+		{"sh", "-c", "true;pnpm install"}, {"bash", "-c", "cd .&&pnpm i"}, {"sh", "-c", "echo $(npm i)"}, {"sh", "-c", `"pnpm" i`},
 	} {
 		got, log := verifyRedIn(t, f, nil, append([]string{f.file, f.anchor, f.replacement, "--"}, command...)...)
 
@@ -1202,6 +1204,20 @@ func TestVerifyRedRefusesAPackageManagerAScriptCalls(t *testing.T) {
 
 	if got.code != 1 || got.data["verdict"] != nil || log != "" || !strings.Contains(got.stdout, "may write the store") {
 		t.Fatalf("exit %d, data %v, the test logged %q, want the script's pnpm i refused before the test ran:\n%s", got.code, got.data, log, got.stdout)
+	}
+	wantNoWrites(t, before, treeWrites(t, watched...))
+}
+
+// a shell line no word read can take apart still meets the shim: any command after -- runs with the guard first on PATH
+func TestVerifyRedRefusesAPackageManagerAShellLineHides(t *testing.T) {
+	t.Parallel()
+	f, watched := pnpmWorkspaceFixture(t)
+	before := treeWrites(t, watched...)
+
+	got, log := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, "--", "sh", "-c", `pn""pm i && limit-test`)
+
+	if got.code != 1 || log != "" || !strings.Contains(got.stdout, "may write the store") {
+		t.Fatalf("exit %d, the test logged %q, want the hidden pnpm i refused before the test ran:\n%s", got.code, log, got.stdout)
 	}
 	wantNoWrites(t, before, treeWrites(t, watched...))
 }
