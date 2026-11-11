@@ -1,4 +1,4 @@
-# herdr — fleet-board — orbit
+# herdr — x-herdr-deck — orbit
 
 wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
@@ -34,16 +34,16 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima clicks its 🛎️ on the deck
   - then the guard reads that press as his tick for that ask's targets, within 2 h, once
   - decision: the 🛎️ is click-only; a keyed mod command is any shell's (FRM-544)
-  - decision: the «🚦 tick in its pane» door and fleet-board's own copy of the gated pattern are gone (live 18:51:40), after the guard's fences went clean at a14bca4b; his own click on a real gated ask is the last proof, set up by clio
+  - decision: the «🚦 tick in its pane» door and x-herdr-deck's own copy of the gated pattern are gone (live 18:51:40), after the guard's fences went clean at a14bca4b; his own click on a real gated ask is the last proof, set up by clio
 - 🧭 a standing override button on the board, behind slice 2 of FRM-544
   - given the operator override is off
-  - when dima clicks its button on fleet-board
+  - when dima clicks its button on x-herdr-deck
   - then the override turns on with `by: press`, and a second click turns it off
   - decision: click-only, never a keyed command: any shell can reach a keyed command (FRM-524:W53)
 - 🧭 🛎️ on every gated ask, from the stash's `isGated`
   - given an ask the guard gated (the merge brake, the override, a merge hold, a held file, a raw `gh pr merge`, a sign)
-  - when dima clicks its 🛎️ on fleet-board
-  - then that one action passes once, and fleet-board's own guarded-ask pattern is gone
+  - when dima clicks its 🛎️ on x-herdr-deck
+  - then that one action passes once, and x-herdr-deck's own guarded-ask pattern is gone
 
 - ✅ an untick puts the ask back as it was before the tick
   - given dima ticked an ask

@@ -61,7 +61,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ no seat strip above the chat: a seat's facts live in the band, its asks on the deck
   - given a seat's tab is open in the Chat view
   - then the chat starts right under the tab bar, with no strip of asks above it (shot 2021-strip-hidden)
-  - decision: the strip is gone (dima, 20:12: «can i have this dupe orbit killed? it eats UI»), lifting his 18:11 «keep for now»; its block is hidden by one `layout.hide` click, zoo.json untouched, and fleet-board's `view: seat` copy draws and reads nothing
+  - decision: the strip is gone (dima, 20:12: «can i have this dupe orbit killed? it eats UI»), lifting his 18:11 «keep for now»; its block is hidden by one `layout.hide` click, zoo.json untouched, and x-herdr-deck's `view: seat` copy draws and reads nothing
 - ⬜ the band sits right above the chat's text box, slice 1 ([FRM-565](https://linear.app/x-com/issue/FRM-565))
   - given a seat's tab is open in the Chat view
   - then three rows above his box read its «waiting on» line, the weekly usage and its context, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
@@ -119,7 +119,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then his text goes after the draft, never in front of it
 - ⬜ a steer being typed survives a board reload
   - given dima has typed into an ask's steer field
-  - when fleet-board reloads
+  - when x-herdr-deck reloads
   - then the field shows his text again
 - ⬜ a sent steer stays in sight until the thread takes it
   - given dima typed a steer on an ask

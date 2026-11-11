@@ -10,8 +10,8 @@ wish: PK-363
 ## the areas, one file each
 
 - [the setup — x-herdr](ftr/setup.md) — 1 feature
-- [fleet-board — sessions](ftr/sessions.md) — 7 features
-- [fleet-board — orbit](ftr/orbit.md) — 11 features
+- [x-herdr-deck — sessions](ftr/sessions.md) — 7 features
+- [x-herdr-deck — orbit](ftr/orbit.md) — 11 features
 - [seats — tabs](ftr/tabs.md) — 6 features
 - [tray — quick terminal](ftr/tray.md) — 1 feature
 - [chat view — x-herdr-chatter](ftr/chat.md) — 32 features

@@ -5,7 +5,7 @@ sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on 
 ## the layout
 
 - `layouts/zoo.json` is the shown layout (`herdr-app status` → `layout: zoo`); not in `installed.json`, so herdr never replaces it
-- it places: `x-herdr-chatter` (was zoo's `claude-chat`, FRM-556), `my-pane`, `my-status`, `my-tabs`, `quick-term` (twice), `zoo-agents`, `fleet-board`, plus herdr's own `changes`, `files`, `spaces`, `workspace-chrome` (twice)
+- it places: `x-herdr-chatter` (was zoo's `claude-chat`, FRM-556), `my-pane`, `my-status`, `my-tabs`, `quick-term` (twice), `zoo-agents`, `x-herdr-deck`, plus herdr's own `changes`, `files`, `spaces`, `workspace-chrome` (twice)
 - themes on disk: `atom-one-dark.json`, `win98.json`; the zoo layout names no theme of its own
 
 ## mods — zoo's (not shipped, no update path: nothing reinstalls them)
@@ -23,7 +23,7 @@ sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on 
 
 ## mods — ours
 
-- `fleet-board` — in frame, landed by `pnpm herdr-mods:land`; one «zoo» word (the views stack name in 🚦)
+- `x-herdr-deck` — in frame, landed by `pnpm herdr-mods:land`; one «zoo» word (the views stack name in 🚦)
 
 ## mods — herdr's own (shipped, replaced on every start, never edited)
 
@@ -36,5 +36,5 @@ sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on 
 
 ## in use vs idle (what a move must carry)
 
-- in his window: `x-herdr-chatter`, `agents-list`, `my-pane`, `my-status`, `my-tabs`, `quick-term`, `fleet-board`
+- in his window: `x-herdr-chatter`, `agents-list`, `my-pane`, `my-status`, `my-tabs`, `quick-term`, `x-herdr-deck`
 - on disk, unused by the zoo layout: `zoo`, `zoo-spaces`, `agent-board`, `my-new-menu` (my-tabs opens it, so it is reached)

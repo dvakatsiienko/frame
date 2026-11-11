@@ -64,7 +64,7 @@
             "kind": "ours",
             "n": 6,
             "name": "part of x-herdr-deck",
-            "today": "fleet-board (view: seat)",
+            "today": "x-herdr-deck (view: seat)",
             "what": "seat strip: ctx, week, its asks"
         },
         {
@@ -120,7 +120,7 @@
             "kind": "ours",
             "n": 13,
             "name": "x-herdr-deck (renamed last)",
-            "today": "fleet-board",
+            "today": "x-herdr-deck",
             "what": "right column: seats, orbit, glide"
         }
     ],

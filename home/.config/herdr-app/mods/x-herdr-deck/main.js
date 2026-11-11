@@ -940,7 +940,7 @@ export default class FleetBoard extends View {
         /** @param {number} n @param {string} one @param {string} many */
         const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
         return v_flex()
-            .id('fleet-board')
+            .id('x-herdr-deck')
             .font_family(SANS)
             .size_full()
             .overflow_y_scroll()

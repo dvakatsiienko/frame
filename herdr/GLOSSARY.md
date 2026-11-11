@@ -14,7 +14,7 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr-chatter-header** — the whole top row of a seat's pane, in the Chat view and the Terminal view alike: the seat's name and the switch; one row to the eye, drawn today by x-herdr-chatter in the Chat view and zoo's `my-pane` in the Terminal view
 - **x-herdr-chatter-header-tabs** — the Chat | Terminal switch inside that row
 - **x-herdr-terminal-header** — the head row of the tray (the bottom quick terminal), part of x-herdr-terminal
-- **fleet-board** — our board mod, the deck: every seat's row, their asks and the lanes' cards
+- **x-herdr-deck** — our board mod, the deck: every seat's row, their asks and the lanes' cards
 - **agents-list** — our agents list in the sidebar, each agent by its session name
 - **x-herdr-tabs** — our tab bar above a space's panes, each agent tab by its session name; copied from zoo's `my-tabs` (FRM-567)
 - **draft** — what dima has typed in a box and not yet sent; kept per seat across a reload

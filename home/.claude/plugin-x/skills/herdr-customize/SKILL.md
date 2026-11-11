@@ -1,6 +1,6 @@
 ---
 name: herdr-customize
-description: Load BEFORE changing herdr itself — a herdr mod, a herdr layout, its `keys.json`, `settings.json` or `programs.json`, anything under `~/.config/herdr-app` — «herdr mod», «a panel in herdr», «fleet-board», «zoo mod», «herdr layout», «tweak herdr».
+description: Load BEFORE changing herdr itself — a herdr mod, a herdr layout, its `keys.json`, `settings.json` or `programs.json`, anything under `~/.config/herdr-app` — «herdr mod», «a panel in herdr», «fleet-board», «x-herdr-deck», «zoo mod», «herdr layout», «tweak herdr».
 ---
 
 # herdr-customize — building inside dima's herdr
@@ -35,12 +35,12 @@ herdr-app shot /tmp/<name>.png                     # then read the png
 - herdr loads only `.js` mods; its guide names no TypeScript and its repo shows no plan for it (0.1.14). dima, PK-363:W69: «ok lets do for now. would be good to have native ts support» — JS with a JSDoc check now, native TS the day herdr ships it
 - each mod's `jsconfig.json` is written once and is ours after: `checkJs` and `strict` on, `strictNullChecks` off by design
 - the check: `pnpm -C ~/frame exec tsc -p ~/.config/herdr-app/mods/<name>/jsconfig.json` (pass the file; `-p <dir>` looks for a `tsconfig.json`). types come from JSDoc: `/** @param {string} path */`
-- `fleet-board` fails it today with 46 implicit-any errors (run 2026-11-09): a mod we own reaches 0 before its chunk closes
+- `x-herdr-deck` fails it today with 46 implicit-any errors (run 2026-11-09): a mod we own reaches 0 before its chunk closes
 
 ## where our mods live
 
 - 📌 a mod's source belongs in `~/frame/home/.config/herdr-app/mods/<name>/`, so it gets git and our gates; it reaches herdr as a real folder, copied by `pnpm herdr-mods:land <mod>` (`--watch` lands each save that passes `herdr-app check`)
-- 📌 a mod outside the mirror (every one but fleet-board today) has no undo: copy the folder aside before a rewrite
+- 📌 a mod outside the mirror (herdr's own, zoo's) has no undo: copy the folder aside before a rewrite
 - 📌 a mod linked into herdr never hot-reloads (a write through the link sends the watched dir no event), so no mod is linked: a landed real folder reloads live
 - a shipped mod or layout belongs to herdr and is replaced on every start; our copy comes from `mod.clone` or `layout.clone` and never takes upstream fixes, so it is diffed against the new shipped one at each herdr update
 - 📌 `layout.clone` switches dima's shown layout to the clone: ask before running it

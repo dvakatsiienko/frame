@@ -61,7 +61,7 @@ export const noLink = new Map<string, keyof typeof noLinkReasons>([
     ['.claude/mcp-x-cloud-chat', 'absolutePath'],
     ['.config/herdr-app/mods/AGENTS.md', 'readInRepo'],
     ['.config/herdr-app/mods/agents-list', 'landedByCopy'],
-    ['.config/herdr-app/mods/fleet-board', 'landedByCopy'],
+    ['.config/herdr-app/mods/x-herdr-deck', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-chatter', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-tabs', 'landedByCopy'],
     ['.zshrc', 'sourcedByStub'],
