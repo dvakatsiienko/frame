@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T21:29:00Z'
+updated_date: '2026-11-11T21:42:00Z'
 labels:
   - s
   - clio-wing-1
@@ -316,4 +316,6 @@ done 2026-11-11 23:26: crow second wind has no door: hc send wraps a /compact as
 done 2026-11-11 23:29: - [ ] helga's earlier PK-363 and FRM-566 groom appends: check each W-line has its home, run the missing appends (yanked from main's PK-349, her 23:26 split) (PK-363 open, FRM-566 Todo, PK-349 open)
 
 23:30: helga's PK-363/FRM-566 groom appends verified: every W-id in ~/.local/state/clio/grooms/**/*.groomed.md has its home (PK-363 953/953 in pocket pk-363, FRM-566 2/2 in its linear body), scratchpad wcover.py
+
+PK-346:W8 corrected 23:43 (wishkeeper replay case 6): the fold above bent his words; his raw reads «do all mechanical yourself first, what does not wants me». the folded line: «do all mechanical yourself first, what does not want me.» (only the «wants» typo fixed; «wants me» is his term)
 <!-- SECTION:NOTES:END -->
