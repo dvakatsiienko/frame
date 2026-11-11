@@ -4,15 +4,11 @@ import { type Engine, expect, mock, test } from 'claude-code/testing';
 import { answerPrompts, dimaSays } from './said.ts';
 
 const BRIEF = '/x:crew-codie FRM-1 build the thing\n';
-// `shasum -a 256` of BRIEF, and of BRIEF with its last letter capitalised
-const SUM = 'e24d76845f47f3137d2be715a9459fa98e2be9bd7dfb0f00aa230fb7a037f110';
-const STAMP = `/home/.local/state/x/briefs/${SUM}.json`;
-
-// files: absolute path → text, the stamps among them; env: what env.get answers past HOME
+// files: absolute path → text; passed: the brief texts x brief check passes (null: x does not answer)
 function world(
     on: On,
     files: Record<string, string>,
-    env: Record<string, string> = {},
+    passed: string[] | null = [],
 ) {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
@@ -21,8 +17,23 @@ function world(
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', (_$, e) => ({
-        value: e.name === 'HOME' ? '/home' : env[e.name],
+        value: e.name === 'HOME' ? '/home' : undefined,
     }));
+    const checks: string[][] = [];
+    on('process.run', (_$, e) => {
+        if (e.argv[1] === 'brief') checks.push([...e.argv]);
+        const text = files[e.argv[3] ?? ''];
+        const ok = text !== undefined && (passed ?? []).includes(text);
+        return {
+            value: {
+                exitCode: ok ? 0 : 1,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout: passed === null ? '' : JSON.stringify({ ok }),
+            },
+        };
+    });
     on('fs.exists', (_$, e) => ({ value: e.path in files }));
     on('fs.list', () => ({ value: [] }));
     on('fs.read', (_$, e) => {
@@ -34,7 +45,7 @@ function world(
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
     });
-    return { ran };
+    return { checks, ran };
 }
 
 const bash = ($: Engine, command: string) =>
@@ -44,16 +55,19 @@ const SPAWN =
     'claude --bg -n codie --model opus "$(cat briefs/b.md)" --remote-control';
 
 test('a codie spawn whose brief file has a stamp runs', async ($, on) => {
-    const w = world(on, { '/repo/briefs/b.md': BRIEF, [STAMP]: '{}' });
+    const w = world(on, { '/repo/briefs/b.md': BRIEF }, [BRIEF]);
     expect((await bash($, SPAWN)).deny).toBeUndefined();
     expect(w.ran).toEqual([SPAWN]);
 });
 
 test('a codie spawn whose brief changed after its check is refused with the check door', async ($, on) => {
-    const w = world(on, {
-        '/repo/briefs/b.md': BRIEF.replace('thing', 'thinG'),
-        [STAMP]: '{}',
-    });
+    const w = world(
+        on,
+        {
+            '/repo/briefs/b.md': BRIEF.replace('thing', 'thinG'),
+        },
+        [BRIEF],
+    );
     const r = await bash($, SPAWN);
     expect(r.deny).toContain('x brief check /repo/briefs/b.md --repo /repo');
     expect(w.ran).toEqual([]);
@@ -116,17 +130,27 @@ test('a brief read through < whose file names /x:crew-codie is checked', async (
     expect(w.ran).toEqual([]);
 });
 
-test('a stamp under X_STATE counts, as x brief check writes it there', async ($, on) => {
-    const w = world(
-        on,
-        {
-            '/repo/briefs/b.md': BRIEF,
-            [`/state/briefs/${SUM}.json`]: '{}',
-        },
-        { X_STATE: '/state' },
-    );
-    expect((await bash($, SPAWN)).deny).toBeUndefined();
-    expect(w.ran).toEqual([SPAWN]);
+test('the summon asks x brief check with its brief and its dir', async ($, on) => {
+    const w = world(on, { '/repo/briefs/b.md': BRIEF }, [BRIEF]);
+    await bash($, SPAWN);
+    expect(w.checks).toEqual([
+        [
+            'x',
+            'brief',
+            'check',
+            '/repo/briefs/b.md',
+            '--repo',
+            '/repo',
+            '--json',
+        ],
+    ]);
+});
+
+test('x not answering refuses the summon, naming x brief check', async ($, on) => {
+    const w = world(on, { '/repo/briefs/b.md': BRIEF }, null);
+    const r = await bash($, SPAWN);
+    expect(r.deny).toContain('x brief check /repo/briefs/b.md --repo /repo');
+    expect(w.ran).toEqual([]);
 });
 
 // FRM-574 decided 5: the herdr summon line is read as the claude call it starts
@@ -134,10 +158,13 @@ const HC_SPAWN =
     'hc run --bg --no-parent --no-notify --name codie --cwd /repo -- claude -n codie --model opus "$(cat briefs/b.md)" --remote-control';
 
 test('an hc run summon whose brief changed after its check is refused with the check door', async ($, on) => {
-    const w = world(on, {
-        '/repo/briefs/b.md': BRIEF.replace('thing', 'thinG'),
-        [STAMP]: '{}',
-    });
+    const w = world(
+        on,
+        {
+            '/repo/briefs/b.md': BRIEF.replace('thing', 'thinG'),
+        },
+        [BRIEF],
+    );
     const r = await bash($, HC_SPAWN);
     expect([r.deny, w.ran]).toEqual([
         expect.stringContaining('x brief check /repo/briefs/b.md --repo /repo'),
@@ -146,7 +173,7 @@ test('an hc run summon whose brief changed after its check is refused with the c
 });
 
 test('an hc run summon whose brief has a stamp runs untouched', async ($, on) => {
-    const w = world(on, { '/repo/briefs/b.md': BRIEF, [STAMP]: '{}' });
+    const w = world(on, { '/repo/briefs/b.md': BRIEF }, [BRIEF]);
     expect([(await bash($, HC_SPAWN)).deny, w.ran]).toEqual([
         undefined,
         [HC_SPAWN],

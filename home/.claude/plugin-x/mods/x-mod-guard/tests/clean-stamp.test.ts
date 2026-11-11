@@ -5,11 +5,26 @@ import { liveStore } from './store.ts';
 
 const SID = 'c1c1c1c1-0000';
 
-// a registry row as the desktop app writes one, 2026-11-06: its sessionId is the transcript's
-function world(on: On, name: string | null) {
+// a registry row as the desktop app writes one, 2026-11-06: its sessionId is the transcript's; role: the session's thread
+// record as x thread list answers it (FRM-570 rule 9), whatever the name says
+function world(on: On, name: string | null, role?: string, isXMissing = false) {
     mock.clock(on, { now: 1_000_000 });
     liveStore(on);
     const ran: string[] = [];
+    on('process.run', (_$, e) => ({
+        value: {
+            exitCode: isXMissing && e.argv[0] === 'x' ? 127 : 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout:
+                !isXMissing && e.argv.join(' ') === 'x thread list --json'
+                    ? JSON.stringify({
+                          data: { threads: [{ role, sessionId: SID }] },
+                      })
+                    : '',
+        },
+    }));
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
@@ -131,10 +146,16 @@ for (const line of WRITES)
         expect(ran).toEqual([]);
     });
 
-for (const name of ['🌗 🔎 sixth sense: cli lane 5 | #129', '🦉 clio'])
+// exit 15: the sixth sense is known by its record, so a name with no member word or no emoji reads the same
+for (const [name, role] of [
+    ['🌗 🔎 sixth sense: cli lane 5 | #129', 'sixth-sense'],
+    ['cli lane 5 | #129', 'sixth-sense'],
+    ['sixth sense: cli lane 5', 'sixth-sense'],
+    ['🦉 clio', undefined],
+] as const)
     for (const line of WRITES)
         test(`${name} writes it: ${line}`, async ($, on) => {
-            const { ran } = world(on, name);
+            const { ran } = world(on, name, role);
             const r = await bash($, line);
             expect(r.deny ?? '').not.toContain('clean-stamp');
             // the guard's other rules still read a write over a file unread, so only the hook's own line must run
@@ -177,3 +198,143 @@ for (const line of [
         expect(r.deny).toContain('clean-stamp');
         expect(ran).toEqual([]);
     });
+
+// FRM-570: the thread store decides who is a sixth sense, so no session writes it, a sixth sense included; x does
+const THREADS = '/home/.claude/shelf/threads.json';
+const THREAD_WRITES = WRITES.filter((l) => !l.includes('watch-pr.sh')).map(
+    (l) =>
+        l
+            .replaceAll(STORE, THREADS)
+            .replaceAll('pr-verified.{json', 'threads.{json')
+            .replaceAll('PR-verified.json', 'Threads.json')
+            .replaceAll('pr-verified.json', 'threads.json'),
+);
+for (const [name, role] of [
+    ['🌗 🔧 codie: cli lane 5 | FRM-511', 'codie'],
+    ['🌗 🔎 sixth sense: cli lane 5 | #129', 'sixth-sense'],
+    ['🦉 clio', undefined],
+] as const)
+    for (const line of THREAD_WRITES)
+        test(`${name} cannot write the thread store: ${line}`, async ($, on) => {
+            const { ran } = world(on, name, role);
+            const r = await bash($, line);
+            // a codie's carrier into the shelf meets the clean stamp's own fence first; either way the line never runs
+            expect([r.deny, ran]).toEqual([
+                expect.stringContaining('(rule clean-stamp)'),
+                [],
+            ]);
+        });
+
+for (const line of [
+    `cat ${THREADS}`,
+    `jq '.threads[] | .role' ${THREADS}`,
+    'x thread list --json',
+    `cp ${THREADS} /tmp/threads-copy.json`,
+    'rg threads.json x/go',
+])
+    test(`a read of the thread store passes: ${line}`, async ($, on) => {
+        const { ran } = world(on, '🌗 🔧 codie: cli lane 5 | FRM-511', 'codie');
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('threads.json');
+        expect(ran.length).toBe(1);
+    });
+
+// wing 1, 21:25: x writes the store from go, so the two verbs that write a role run past the fence (their line names no store)
+for (const line of [
+    `x brief summon "cd /repo && claude --bg -n 'n' \\"\\$(cat /repo/brief.md)\\" --remote-control"`,
+    'x lane dispatch FRM-511 --lane cli-lane-5 --session 1f0c --sixth-sense 2e1d --apply',
+])
+    test(`a verb that writes the thread store from x passes the fence: ${line}`, async ($, on) => {
+        const { ran } = world(on, '🦉 clio', undefined);
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('threads.json');
+        expect(ran.length).toBe(1);
+    });
+
+// sixth sense round 1, exit 10: an x that is missing names no sixth sense, so the stamp stays refused
+test('a sixth sense stamping while x is missing is refused', async ($, on) => {
+    const { ran } = world(
+        on,
+        '🌗 🔎 sixth sense: cli lane 5 | #129',
+        'sixth-sense',
+        true,
+    );
+    const r = await bash($, WRITES[0] ?? '');
+    expect([r.deny, ran]).toEqual([expect.stringContaining('clean-stamp'), []]);
+});
+
+// FRM-570 round 3, exit 17: a codie tries each path to a role or a clean stamp, and each is refused
+const CODIE = '🌗 🔧 codie: cli lane 5 | FRM-511';
+const SUMMONED =
+    "claude -p --session-id 1f0c2e1d-0000-4000-8000-000000000001 '/x:crew-sixth-sense FRM-1 main:abc codie clio spec: s'";
+for (const line of [
+    SUMMONED,
+    'claude --session-id=1f0c2e1d-0000-4000-8000-000000000001 -p hi',
+    "claude -p -n '🦉 clio' hi",
+    'claude -p --name=🦉clio hi',
+    "hc run --bg --no-parent --name x --cwd /repo -- claude --session-id 1f0c -n n 'hi'",
+    `echo '{"name":"🦉 clio"}' > /home/.claude/sessions/4242.json`,
+    'cp /tmp/forged.json ~/.claude/sessions/',
+    'cp /tmp/forged.json /home/.claude/shelf/thread?.json',
+    'cp /tmp/forged.json "/home/.claude/shelf/$f"',
+    'cp /tmp/forged.json ~/.claude/shelf/{threads,other}.json',
+])
+    test(`a codie cannot reach a role: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('clean-stamp'),
+            [],
+        ]);
+    });
+
+for (const [line, name, role] of [
+    [SUMMONED, '🦉 clio', undefined],
+    ['cat /home/.claude/sessions/4242.json', CODIE, 'codie'],
+    ["claude -p -n 'a probe' hi", CODIE, 'codie'],
+] as const)
+    test(`the coordinator's summon, or a plain read, passes: ${line}`, async ($, on) => {
+        const { ran } = world(on, name, role);
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('clean-stamp');
+        expect(ran.length).toBe(1);
+    });
+
+for (const path of [
+    '/home/.claude/shelf/threads.json',
+    '/home/.claude/shelf/pr-verified.json',
+    '/home/.claude/sessions/4242.json',
+])
+    test(`a codie's Write to ${path} is refused`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await $.tool.call({
+            content: '{}',
+            file_path: path,
+            tool: 'Write',
+        });
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('clean-stamp'),
+            [],
+        ]);
+    });
+
+for (const line of [
+    `x brief summon "cd /repo && claude --bg -n 'n' '/x:crew-sixth-sense FRM-1 main:abc codie clio spec: s'"`,
+    'X_SESSIONS=/tmp/forged X_TEST=1 x lane dispatch FRM-1 --sixth-sense 1f0c --apply',
+    'env HOME=/tmp/forged x lane dispatch FRM-1 --session 1f0c --apply',
+])
+    test(`a codie cannot run a role-giving verb: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('clean-stamp'),
+            [],
+        ]);
+    });
+
+test('a plain dispatch plan from a codie passes: x lane dispatch FRM-1 --session 1f0c', async ($, on) => {
+    const { ran } = world(on, CODIE, 'codie');
+    const r = await bash($, 'x lane dispatch FRM-1 --session 1f0c');
+    expect(r.deny ?? '').not.toContain('clean-stamp');
+    expect(ran.length).toBe(1);
+});

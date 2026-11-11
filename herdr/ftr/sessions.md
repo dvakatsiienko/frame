@@ -6,6 +6,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given the deck draws
   - then names and ask text are 15 px, secondary lines 13 px, nothing under 12 px, and no secondary text is the theme's `dim` (2.95:1 on white; `muted` is 5.48:1, 5.07:1 on a card)
   - and the three heads read «🧵 sessions: N, M working», «🪐 orbit: N asks waiting on you», «🛼 glide: N lanes», semibold 13 px under a hairline
+  - and the sessions are x's thread store's live threads (`~/.claude/shelf/threads.json`, FRM-570 rule 8), each status from cc's registry file; an unreadable store keeps the last rows, the head adding «· stale, threads.json unreadable»; not checked: the stale head in a shot
   - and each ask is a card led by its bold id, its tick a filled button and replay a quiet one, each 28 px tall; past 60 % a thread's ctx turns red and semibold (shot 1953, before and after)
   - not checked: the glide cards (below the fold in the shot), the focus ring by keyboard, the dark theme
 - ⬜ the deck's sessions and orbit sections follow the agents list's order

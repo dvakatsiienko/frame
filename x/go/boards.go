@@ -47,7 +47,6 @@ func familiesBoard() string {
 		head = append(head, ui.label.Render("verbs"))
 	}
 	b.rows = append(b.rows, columns(widths, head...)...)
-	b.rows = append(b.rows, "")
 	for _, family := range families() {
 		chip := ui.tag(family)
 		var names []string

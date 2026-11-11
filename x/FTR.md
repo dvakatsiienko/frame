@@ -191,6 +191,9 @@
   - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
   - given a pr that added a rule to x-mod-guard's `WARN_ONLY`, when `x lane landed <ticket> --pr <n>` runs, then 🔴 warn-only names the rule while the land still lists it, ✅ once it left; a pr that added none prints no such line, the older rules among them; a set that does not read reds (FRM-511)
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
+- ⬜ `x lane plan-steps <plan>` lists a lane plan's steps, the one parse of a step line, x-mod-stash's glide card its caller (FRM-570)
+  - given numbered column-0 `- [ ]`/`- [x]` lines, then each prints done or open, its text past a leading id and its separator, and its ticket; a nested, unnumbered or other-marked line prints nothing, `UTF-8` is no ticket
+  - given no plan at the path, then exit 1 naming it; no network either way, so the card never waits on one
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so; an empty `.scratch/` is clean, one holding a file stays, named
   - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session (a pid in `~/.claude/sessions/`) whose process cwd or transcript's last `cwd` is inside it, named, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
@@ -230,7 +233,7 @@
   - decision: x trusts a flag that reached it — only the mod reads dima's last typed prompt, so the proof lives in the guard (FRM-423 grill, o140)
 - ✅ under `operator-override prs`, `x lane merge-auto <pr> --apply` lands every pr on the first call (FRM-524)
   - given the store holding `prs`, on a self-edit with no sign line, red ci, no clean, open threads, no reviewer round, no required checks or a dev build, from main or a wing, on any layer of a stack, then it reads none of those and lands; a failed read of any stops nothing; the envelope's `override`, the squash message (a stack's async merge takes none) and one line in `operator-override.log` name its `by` and `at`
-  - given his hold or the brake, or a failed read of either, then it stops as today, naming which; a line's `HOME` or `X_STATE` moves neither record; `--brake-check` answers the same read for frame and bytes to x-mod-guard's raw door, writing nothing but a ref fetch, a missing clone exiting non-zero
+  - given his hold or the brake, or a failed read of either, then it stops as today, naming which; a line's `HOME` or `X_STATE` moves neither record; `--brake-check` answers the same read for frame and bytes to x-mod-guard's raw door, writing nothing but a ref fetch, a missing clone or an unread brake exiting non-zero with `brakeUnread` named and the holds still listed; beside the brake it lists every repo's held prs in one list, a hold record that does not read named in `holdsUnread`, so the guard keeps no read of its own
   - given github refuses the merge (a conflict, a draft, a ruleset), then it exits non-zero with github's words, prints no landing and logs no pass
   - given no store, a store that does not read, another scope, a grant past its `until`, or the override turned off after the read, then it waits as today
   - given a session's `HOME` or `X_STATE` pointing at a planted store, then it reads off: the path comes from the system's user record
@@ -520,6 +523,25 @@
   - given a thread id and `--body-file <file>`, when the reply runs, then the body posts byte for byte under that thread, outright, never as a pending review, and the envelope holds its url
   - given a pr that is not digits, an id that is not a `PRRT_` thread, or a body file missing or blank, then exit 2 before any request
   - decision: both go over github's graphql review threads as the x-codie-cc app, since the rest comments feed carries no resolved state, so the list and the reply share one id kind
+- ⬜ `x gh repo-slug [dir]` prints a dir's github owner/name, the one remote parse x-mod-guard calls on a merge line (FRM-570)
+  - given an origin as ssh, https or an `insteadOf` alias, then it prints `owner/name` off the configured url or the rewritten one, with no network
+  - given no origin or a non-github one, then exit 1 naming it; a dir that is not there, exit 2
+
+## thread
+
+- ⬜ `x thread list` and `x thread show <id>` answer a session's role, lane and ticket from one store (FRM-570)
+  - given the session registry and the records x wrote at a summon or a dispatch, then each live session prints joined to its record by session id, its display name drawn from the record; a session with no record reads `unknown`
+  - given a session that `/clear` or `/resume` gave a new id, then its record moves to that id through its pid and start time, the role, lane and ticket kept; a joined record's time moves to the call, so one torn registry read never ages it out
+  - given two writers at once (a refresh beside a summon's record), then a lock beside the store lets one write at a time and neither record is lost; a store that does not parse refuses the call (exit 1) and stays as it is
+  - given a dispatch onto a live thread's record, then the record keeps its pid, name, cwd and start, and the summon's lane when the dispatch names none
+  - given `x brief summon` or `x lane dispatch --apply` from a session that is no coordinator (read from the registry file on x's ancestor pid), then it refuses (exit 1) before any record or linear write; dima's own terminal and clio pass
+  - given a dispatch naming an id no thread holds, or a thread whose record holds another role, then it refuses before any linear write; a running thread with no role yet takes its record from the coordinator
+  - the display name reads `<mode> <role> <area> | <ticket>`, the area the lane's first word (`🌗 🔧 cli | FRM-570`)
+  - given a pid that died (`kill -9`), a registry file gone (an archived session), or a row whose `procStart` is not its pid's start time as `ps` reads it (a crashed session's pid another process took), then it drops out of the store at the next call; a record whose session never started stays 10 minutes, then drops; a thread once seen live stays past its pid or file only while its registry file reads torn
+  - given any call, then `~/.claude/shelf/threads.json` is rewritten, so a display reads it with no spawn; x-mod-stash's hooks call `x thread list` at session start, turn end and exit
+  - given `show` with a session id or a pid no live session holds, then exit 1
+  - given a summon that passes `x brief summon`, then its printed argv carries a fresh `--session-id <uuid>` and the store holds that id's role, ticket, lane (the spec's dir) and lane kind (the brief's `lane:` line) before the thread runs; `x lane dispatch --apply` writes the same for its `--session` codie and `--sixth-sense`
+  - decision: the store sits beside x-mod-stash's `herdr-state/`, a registry mirror kept separate (wing 1, 2026-11-11)
 
 ## linear — tickets
 
@@ -560,6 +582,10 @@
   - given a body with a `## signed` block, when the file's block lost or changed an old line, or gained none, then it refuses and names `ticket-sign.ts changed`; with one new line it passes
   - given two sessions that pulled the same ticket, when one sets and the other then sets its older file, then the second refuses: each session's pull has its own record and its own file
   - decision: a signed ticket is read from the body's `## signed` block, not the `signed` label, which leaves at dispatch (FRM-384)
+- ⬜ `x linear sign-check <id> --body-file <file>` judges a body set for dima's word, x-mod-guard's one sign judge (FRM-570)
+  - given a file with a sign line the ticket's current body lacks word for word (a new line, an old one redated), or a merge grant the current body does not hold the same way (a pre-approval added, a cancel deleted, a grant moved to another sign, a grant with no sign line), then exit 1 naming which
+  - given a file with no sign line and no grant, then exit 0 with no read of linear; a linear that does not read counts the file as new, exit 1
+  - decision: the grant is readSign's own (`signGrant`), so the merge door and the guard's judge never disagree
   - decision: a pull made before this change has no record under its session, so its set refuses once and names the pull
 - ✅ `x linear set` updates a ticket by names, in one write
   - given `--estimate XS|S|M` (1 · 2 · 3) or a number, then that estimate goes out; any other word is refused naming XS · S · M (FRM-399)

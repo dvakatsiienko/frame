@@ -44,6 +44,7 @@
         "docs/research/review-model.md",
         "docs/research/skill-authoring-best-practices/**",
         "docs/research/skill-split-scriptify-scan.md",
+        "docs/research/wishkeeper-cadence.md",
         "docs/test-drive/agent-effort.md",
         "docs/test-drive/blueprints.md",
         "docs/test-drive/cc-cloud.md",
@@ -77,6 +78,7 @@
         "docs/test-drive/system-checkup-cadence.md",
         "docs/test-drive/ts-lsp.md",
         "docs/test-drive/want-line.md",
+        "docs/test-drive/wind-down.md",
         "docs/test-drive/wisphunter.md",
         "docs/test-drive/x-changedetector.md"
     ],

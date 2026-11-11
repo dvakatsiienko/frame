@@ -322,28 +322,6 @@ export function noticeOf(
     return id && state ? { id, state } : undefined;
 }
 
-// a lane plan's steps: numbered column-0 lines only; a nested, unnumbered or other checklist line moves nothing
-export function planSteps(text: string) {
-    return text.split('\n').flatMap((line) => {
-        const m = line.match(/^- \[( |x|X)\] \d+ · (.+?)\s*$/);
-        if (!m) return [];
-        const step = m[2] ?? '';
-        const ticket = ticketOf(step);
-        // the card draws a leading id as its link, so the text is what is left past it and its separator
-        const rest =
-            ticket && step.startsWith(ticket)
-                ? step.slice(ticket.length).match(/^\s*[:·—–-]?\s+(\S.*)$/)?.[1]
-                : undefined;
-        return [
-            {
-                isDone: m[1] !== ' ',
-                text: rest ?? step,
-                ...(ticket ? { ticket } : {}),
-            },
-        ];
-    });
-}
-
 // a team key's id, so `UTF-8` or `SHA-256` in a title is never a ticket
 export const ticketOf = (name: string) =>
     name.match(/\b(?:FRM|BYT)-\d+\b/)?.[0];
@@ -367,10 +345,6 @@ export function roundOf(message: string) {
     return sha ? { n: 1, sha } : undefined;
 }
 
-// the count of a thread: its name past «codie:», the lane and its ticket, since a next chunk starts its own count
-export const codieLane = (name: string) =>
-    name.match(/^[^:]*\bcodie:\s*(\S.*?)\s*$/)?.[1];
-
 const ROUND_CAP = 3;
 // the count only signals: the cap's terms, a P0 or P1 and a scope reset, stay sixth sense's judgment
 export function roundLine(count: number) {
@@ -378,19 +352,6 @@ export function roundLine(count: number) {
     return count === ROUND_CAP
         ? `round ${count} of this lane: a next round with a P0 or P1 is past the cap of ${ROUND_CAP}`
         : `round ${count} of this lane, past the cap of ${ROUND_CAP}: with a P0 or P1 and no scope reset from sixth sense, the stop goes to the coordinator`;
-}
-
-// `<mode> <role emoji> <member name>: <scope> | <ticket>` (dima, 2026-10-30) — «⚡ 🔧 codie: mods lane 3 | FRM-467»;
-// the 10-29 shape «⚡ 🔧 mods lane 3 codie: FRM-431» and the older ☕️ 🎯 shape («☕️ 🔧 FRM-303 code: stash keep-hot») still reads true; a standing member keeps
-// its own name, badge or not — «🐦‍⬛ crow», which the registry writes with a space for the joiner
-const FLEET_NAME = /^(☕️?|🎯)\s+\S+\s+[A-Z]{2,5}-\d+\s+[\w-]+:\s+\S/u;
-const THREAD_NAME = /^(⚡️?|🌗|🌘)\s+\S+\s+(?:[^:\s]+\s+)*[\w-]+:\s+\S/u;
-export function isFleetName(name: string) {
-    return (
-        FLEET_NAME.test(name) ||
-        THREAD_NAME.test(name) ||
-        Object.hasOwn(MEMBERS, name.replace(/[^\w\s-]/gu, '').trim())
-    );
 }
 
 // the quiet ledger's count of one member's sends to clio: `sh -c LEDGER_SENDS <home> <session id> <address regex>`

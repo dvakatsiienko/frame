@@ -1,19 +1,40 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import type { Thread } from '../hooks/rules/command.ts';
 import { liveStore } from './store.ts';
 
-// FRM-479: one sixth sense a lane, reused by message. a `claude --bg` summon of a sixth sense whose lane already has a
-// live one is refused, naming the live one and the `next:` message to send it. the registry is a fixture under /home
+// FRM-479: one sixth sense a lane, reused by message. a summon under a session id whose thread record is a sixth sense of a
+// lane that already has a live one is refused, naming the live one and the `next:` message to send it. roles and lanes
+// come from x thread list (FRM-570 rule 9), never from a name
 const LIVE = '⚡ 🔎 sixth sense: mods lane 4 | main';
-const START = 'Mon Nov  2 10:49:58 2026';
-type Row = { name: string; pid: number; procStart?: string };
-const ROW: Row = { name: LIVE, pid: 64218, procStart: START };
+const NEW = '0e1b2c3d-0000-4000-8000-000000000001';
+const LANE = 'mods-lane-4';
+const LIVE_ROW: Thread = {
+    lane: LANE,
+    name: LIVE,
+    pid: 64218,
+    role: 'sixth-sense',
+    sessionId: 'a0a0a0a0-0000-4000-8000-000000000000',
+};
+const NEW_ROW: Thread = {
+    display: '🔎 mods-lane-4 | FRM-479',
+    lane: LANE,
+    role: 'sixth-sense',
+    sessionId: NEW,
+};
 
-function world(on: On, rows: Row[], alive: Record<number, string> = {}) {
+// threads: what x thread list answers (null: x does not answer); the session is clio's, who summons a sixth sense
+// (FRM-570 round 3: a summon from any other session is refused before this rule)
+const CLIO_ENTRY = JSON.stringify({
+    name: '🦉 clio',
+    sessionId: 'a1a1a1a1-0000',
+});
+function world(on: On, threads: Thread[] | null) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const ran: string[] = [];
+    const calls: string[][] = [];
     const touched: string[] = [];
     on('session.id', () => ({ value: 'a1a1a1a1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
@@ -26,47 +47,40 @@ function world(on: On, rows: Row[], alive: Record<number, string> = {}) {
         return { value: false };
     });
     on('fs.list', (_$, e) => {
+        if (e.path === '/home/.claude/sessions')
+            return {
+                value: [
+                    {
+                        isLink: false,
+                        kind: 'file' as const,
+                        mtimeMs: 0,
+                        name: '1.json',
+                        size: 1,
+                    },
+                ],
+            };
         touched.push(e.path);
-        return {
-            value:
-                e.path === '/home/.claude/sessions'
-                    ? rows.map((r) => ({
-                          isLink: false,
-                          kind: 'file' as const,
-                          mtimeMs: 0,
-                          name: `${r.pid}.json`,
-                          size: 1,
-                      }))
-                    : [],
-        };
+        return { value: [] };
     });
     on('fs.read', (_$, e) => {
+        if (e.path === '/home/.claude/sessions/1.json')
+            return { value: CLIO_ENTRY };
         touched.push(e.path);
-        const row = rows.find(
-            (r) => e.path === `/home/.claude/sessions/${r.pid}.json`,
-        );
-        if (!row) throw new Error(`ENOENT ${e.path}`);
-        return {
-            value: JSON.stringify({ kind: 'bg', status: 'busy', ...row }),
-        };
+        throw new Error(`ENOENT ${e.path}`);
     });
-    // ps prints the registry's own form only in UTC under the C locale; any other zone or locale reads as another process
     on('process.run', (_$, e) => {
-        const isRegistryForm =
-            e.init?.env?.TZ === 'UTC' && e.init?.env?.LC_ALL === 'C';
-        const stdout = Object.entries(alive)
-            .map(
-                ([pid, start]) =>
-                    `${pid.padStart(5)} ${isRegistryForm ? start : 'Mon Nov  2 12:49:58 2026'}    `,
-            )
-            .join('\n');
+        calls.push([...e.argv]);
+        const isList = e.argv.join(' ') === 'x thread list --json';
         return {
             value: {
                 exitCode: 0,
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
                 stderr: '',
-                stdout,
+                stdout:
+                    isList && threads !== null
+                        ? JSON.stringify({ data: { threads } })
+                        : '',
             },
         };
     });
@@ -75,24 +89,17 @@ function world(on: On, rows: Row[], alive: Record<number, string> = {}) {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
     });
-    return { ran, store, touched };
+    return { calls, ran, store, touched };
 }
 
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, tool: 'Bash' });
 
-// clio's quick-lane summon, in crew-lead's shape (SKILL.md § the quick lane)
-const SECOND = `cd ~/frame && claude --bg -n '${LIVE}' --model opus --effort medium '/x:crew-sixth-sense FRM-479 main:c5d775b4 ⚡ 🔧 codie: mods lane 4 | FRM-479 🦉 clio final: 9d82517f spec: .scratch/mods-lane-4/spec.md trials: none' --remote-control`;
-
-test('a second sixth sense for a lane with a live one is refused with no store switch', async ($, on) => {
-    const w = world(on, [ROW], { 64218: START });
-    const r = await bash($, SECOND);
-    expect(w.ran).toEqual([]);
-    expect(r.deny).toContain(`«${LIVE}»`);
-});
+// clio's quick-lane summon as x brief summon prints it, the minted id after claude (crew-lead § the quick lane)
+const SECOND = `cd ~/frame && claude --session-id ${NEW} --bg -n '${LIVE}' --model opus --effort medium '/x:crew-sixth-sense FRM-479 main:c5d775b4 ⚡ 🔧 codie: mods lane 4 | FRM-479 🦉 clio final: 9d82517f spec: .scratch/mods-lane-4/spec.md trials: none' --remote-control`;
 
 test('a second sixth sense for a live lane is refused with the next: message its summon carries', async ($, on) => {
-    const w = world(on, [ROW], { 64218: START });
+    const w = world(on, [LIVE_ROW, NEW_ROW]);
     const r = await bash($, SECOND);
     expect(w.ran).toEqual([]);
     expect(r.deny).toContain(`«${LIVE}»`);
@@ -101,96 +108,72 @@ test('a second sixth sense for a live lane is refused with the next: message its
     );
 });
 
-test('a --name= spelling names the summoned thread, its skill line read mid-prompt', async ($, on) => {
-    world(on, [ROW], { 64218: START });
-    const r = await bash(
-        $,
-        `claude --bg --name='⚡ 🔎 sixth sense: mods lane 4 | x' 'use the skill: /x:crew-sixth-sense FRM-1 https://github.com/x/y/pull/12 c d'`,
-    );
-    expect(r.deny).toContain(
-        '«⚡ 🔎 sixth sense: mods lane 4 | x» would be a second',
-    );
-    expect(r.deny).toContain(
-        'next: FRM-1 https://github.com/x/y/pull/12 final: <sha> spec: <path>',
-    );
-});
-
-test('a re-cased name under another mode badge names the same lane', async ($, on) => {
-    world(on, [ROW], { 64218: START });
-    const r = await bash(
-        $,
-        `claude --bg -n '🌗 🔎 sixth sense: Mods Lane 4 | #12' 'go'`,
-    );
-    expect(r.deny).toContain(`«${LIVE}»`);
-});
+// exit 15: the summon's own name says nothing; its record alone makes it a sixth sense of the lane
+for (const name of [
+    'probe',
+    '⚡ 🔎 mods lane 4 | x',
+    'sixth sense: elsewhere | 1',
+])
+    test(`a summon named «${name}» whose record is the lane's sixth sense is refused`, async ($, on) => {
+        world(on, [LIVE_ROW, NEW_ROW]);
+        const r = await bash(
+            $,
+            `claude --bg --session-id=${NEW} --name='${name}' 'use the skill: /x:crew-sixth-sense FRM-1 https://github.com/x/y/pull/12 c d'`,
+        );
+        expect(r.deny).toContain(`«${NEW_ROW.display}» would be a second`);
+        expect(r.deny).toContain(
+            'next: FRM-1 https://github.com/x/y/pull/12 final: <sha> spec: <path>',
+        );
+    });
 
 const PASSES = [
-    ['a lane with no live sixth sense', [], {}, SECOND],
+    ['a lane with no live sixth sense', [NEW_ROW], SECOND],
     [
         'a live sixth sense of another lane',
-        [{ ...ROW, name: '⚡ 🔎 sixth sense: mods lane 3 | main' }],
-        { 64218: START },
+        [{ ...LIVE_ROW, lane: 'mods-lane-3' }, NEW_ROW],
         SECOND,
     ],
     [
-        'a codie summon for the lane',
-        [ROW],
-        { 64218: START },
-        `claude --bg -n '⚡ 🔧 codie: mods lane 4 | FRM-479' 'go on'`,
-    ],
-    [
-        'a sixth sense whose name has no scope, beside a live one with none',
-        [{ ...ROW, name: '⚡ 🔎 sixth sense: main' }],
-        { 64218: START },
-        `claude --bg -n '⚡ 🔎 sixth sense: main' 'go'`,
-    ],
-    ['a registry row whose process is gone', [ROW], {}, SECOND],
-    [
-        'a registry row with no start time whose process is gone',
-        [{ name: LIVE, pid: 64218 }],
-        {},
+        'a codie record for the lane',
+        [LIVE_ROW, { ...NEW_ROW, role: 'codie' }],
         SECOND,
     ],
     [
-        'a registry row whose pid now runs another process',
-        [ROW],
-        { 64218: 'Mon Nov  2 16:01:02 2026' },
+        'a live sixth sense whose session no longer runs',
+        [{ ...LIVE_ROW, pid: undefined }, NEW_ROW],
         SECOND,
     ],
     [
-        'a codie of the lane beside a sixth sense of another lane',
-        [ROW],
-        { 64218: START },
-        `claude --bg -n '⚡ 🔎 sixth sense: mods lane 3 | main' 'go'; claude --bg -n '⚡ 🔧 codie: mods lane 4 | FRM-479' 'go on'`,
+        'a sixth sense name summoned with no session id',
+        [LIVE_ROW, NEW_ROW],
+        `claude --bg -n '${LIVE}' 'go'`,
     ],
+    ['x not answering', null, SECOND],
 ] as const;
 
-for (const [shape, rows, alive, command] of PASSES)
+for (const [shape, threads, command] of PASSES)
     test(`${shape} summons as before`, async ($, on) => {
-        const w = world(on, [...rows], alive);
+        const w = world(on, threads === null ? null : [...threads]);
         const r = await bash($, command);
         expect(r.deny).toBeUndefined();
         expect(r.context?.join('\n') ?? '').not.toContain('spawn-sixth-sense');
         expect(w.ran).toEqual([command]);
     });
 
-test('the check reads only the fixture registry', async ($, on) => {
-    const w = world(on, [ROW], { 64218: START });
+test('the check asks x thread list once', async ($, on) => {
+    const w = world(on, [LIVE_ROW, NEW_ROW]);
     await bash($, SECOND);
     expect(
-        w.touched.filter(
-            (p) => p.includes('/.claude/sessions') && !p.startsWith('/home/'),
-        ),
-    ).toEqual([]);
-    expect(w.touched.some((p) => p.includes('/.local/state'))).toBe(false);
+        w.calls.filter((c) => c.join(' ') === 'x thread list --json').length,
+    ).toBe(1);
 });
 
 test('a second sixth sense through hc run is refused as its claude --bg twin is', async ($, on) => {
-    const w = world(on, [ROW], { 64218: START });
+    const w = world(on, [LIVE_ROW, NEW_ROW]);
     const r = await bash(
         $,
         SECOND.replace(
-            'cd ~/frame && claude --bg',
+            'cd ~/frame && claude',
             'hc run --bg --no-parent --no-notify --name ss --cwd ~/frame -- claude',
         ),
     );

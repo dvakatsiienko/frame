@@ -184,7 +184,7 @@ export function mergeHold(
             door: DOOR,
             rule: 'merge-hold',
             targets: merges.flatMap((m) => m.pr ?? []),
-            why: 'a hold record under ~/.local/state/x/merge-hold is unreadable, so every merge reads as held',
+            why: "x lane merge-auto --brake-check did not read dima's holds, so every merge reads as held",
         };
     const held = merges.flatMap((m) =>
         m.pr !== undefined && holds.prs.has(m.pr) ? [`#${m.pr}`] : [],

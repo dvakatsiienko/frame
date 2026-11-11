@@ -65,6 +65,11 @@ func linearKeys(t *testing.T) string {
 
 func runLinear(t *testing.T, server *fakeLinear, env []string, argv ...string) (map[string]any, asRun) {
 	t.Helper()
+	if !slices.ContainsFunc(env, func(kv string) bool {
+		return strings.HasPrefix(kv, "X_SESSIONS=") && strings.Contains(kv, "caller-set")
+	}) {
+		env = asCaller(t, env, "🦉 clio")
+	}
 	got := runAs(t, append([]string{"X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + server.URL}, env...), argv...)
 	var envelope map[string]any
 	_ = json.Unmarshal([]byte(got.stdout), &envelope)

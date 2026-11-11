@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"regexp"
 	"slices"
 	"strings"
@@ -230,6 +231,24 @@ func repoOf(flags Flags) (string, error) {
 		return slug, nil
 	}
 	return "", usageFail("no github origin here to read the repo from", "x gh pr <pr number> --repo <owner/name>")
+}
+
+// the one door to a dir's owner/name: x-mod-guard calls it on a merge line, so no mod parses a remote itself
+func ghRepoSlug(r *Run, args []string, _ Flags) (any, error) {
+	dir := "."
+	if len(args) > 0 {
+		dir = args[0]
+	}
+	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
+		return nil, usageFail("no dir at "+dir, "x gh repo-slug <dir>")
+	}
+	r.Open(home(dir))
+	slug := originSlugIn(dir)
+	if slug == "" {
+		return nil, &Fail{Msg: "no github origin in " + home(dir), Next: "git -C " + quote(dir) + " remote -v"}
+	}
+	r.Done(slug, "")
+	return map[string]string{"repo": slug}, nil
 }
 
 // originSlugIn reads owner/name off dir's origin; an insteadOf rewrite can carry it in the configured url or the rewritten one

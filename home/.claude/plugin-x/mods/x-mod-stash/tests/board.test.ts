@@ -41,6 +41,8 @@ function fleet(
         isBoardOpen = true,
         files = undefined as string[] | undefined,
         reads = {} as Record<string, string>,
+        // x's thread records, as the store file carries them
+        threads = [] as Record<string, string>[],
         dirs = {} as Record<string, FsEntry[]>,
         isOwner = false,
         sends = {} as Record<string, string[]>,
@@ -87,6 +89,8 @@ function fleet(
             })),
     }));
     on('fs.read', (_$, e) => {
+        if (e.path === '/home/.claude/shelf/threads.json')
+            return { value: JSON.stringify({ at: 0, threads, v: 1 }) };
         const extra = reads[e.path];
         if (extra !== undefined) return { value: extra };
         const entry = REGISTRY[e.path];
@@ -797,7 +801,15 @@ test("crow's black bird keeps its joiner on the board", async ($, on) => {
 });
 
 test('the board marks a background session named off the fleet pattern', async ($, on) => {
-    fleet(on, {}, { alive: [1, 2, 3], bg: [2, 3] });
+    fleet(
+        on,
+        {},
+        {
+            alive: [1, 2, 3],
+            bg: [2, 3],
+            threads: [{ role: 'codie', sessionId: PEER }],
+        },
+    );
     const rows = await rowsBySid($);
     expect([rows[GONE]?.includes('⚠'), rows[PEER]?.includes('⚠')]).toEqual([
         true,
@@ -1266,19 +1278,27 @@ test('a member that sent clio more pings than her log holds is a gap in the ledg
 });
 
 const RENAMED = 'FRM-426 code: band and board read true';
+// a rename keeps the session id: x's one record names the peer as it is now, and its lines logged under the old name
+// carry that id (FRM-570: no record ever carries an old name)
+const RENAMED_THREADS = [{ name: PEER_NAME, role: 'codie', sessionId: PEER }];
+const loggedAsOld = (at: number) => ({
+    ...logged(`☕️ 🔧 ${RENAMED}`, at),
+    sid: PEER,
+});
 
 test('a member renamed mid-day keeps its logged pings, so the old name leaves no gap', async ($, on) => {
     const { clock, store } = fleet(
         on,
         {
             [`quiet-log:${DAY}`]: [
-                logged(`☕️ 🔧 ${RENAMED}`, NOW - 30 * MIN),
-                logged(`☕️ 🔧 ${RENAMED}`, NOW - 20 * MIN),
+                loggedAsOld(NOW - 30 * MIN),
+                loggedAsOld(NOW - 20 * MIN),
             ],
         },
         {
             isOwner: true,
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+            threads: RENAMED_THREADS,
         },
     );
     expect(await gapRow($, clock, store)).toBeUndefined();
@@ -1287,10 +1307,11 @@ test('a member renamed mid-day keeps its logged pings, so the old name leaves no
 test('a renamed member that sent more than its old-name lines hold still shows its gap', async ($, on) => {
     const { clock, store } = fleet(
         on,
-        { [`quiet-log:${DAY}`]: [logged(`☕️ 🔧 ${RENAMED}`, NOW - 30 * MIN)] },
+        { [`quiet-log:${DAY}`]: [loggedAsOld(NOW - 30 * MIN)] },
         {
             isOwner: true,
             sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+            threads: RENAMED_THREADS,
         },
     );
     expect(await gapRow($, clock, store)).toContain('(sent 2, logged 1)');
@@ -1392,6 +1413,17 @@ test('a held ping past the wait + 2 min turns the 🤫 n red', async ($, on) => 
 
 test('a numbered wing has a chair on the board', () => {
     expect(isSeated('🦉🪽 clio: wing 1')).toBe(true);
+});
+
+// FRM-570 exit 16: a role word as a name carries no chair, only x's record of the role does
+test('a session named only by a role word has no chair without its record', () => {
+    expect([
+        isSeated('codie'),
+        isSeated('🔎 sixth sense'),
+        isSeated('codie', 'codie'),
+        isSeated('🐦 ⬛ crow'),
+        isSeated('🎀 helga'),
+    ]).toEqual([false, false, true, true, true]);
 });
 
 test('a wing title with no number has no chair', () => {

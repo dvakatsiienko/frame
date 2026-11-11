@@ -87,6 +87,7 @@ test("with fleet words switched off, a reply's fleet word is stored as written",
 test("with ·-lists switched off, a reply's ·-list is drawn as written", async ($, on) => {
     world(on, { shown: { 'stash.bullets': false } });
     on('session.id', () => ({ value: 's1s1s1s1-dots' }));
+    on('env.get', () => ({ value: '/home' }));
     on('session.repo', () => ({ value: null }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     const drawn: string[] = [];
@@ -111,6 +112,7 @@ test("with ·-lists switched off, a reply's ·-list is drawn as written", async 
 test("with fleet words switched off, a reply's fleet word is drawn as written", async ($, on) => {
     world(on, { shown: { 'stash.boldwords': false } });
     on('session.id', () => ({ value: 's1s1s1s1-dots' }));
+    on('env.get', () => ({ value: '/home' }));
     on('session.repo', () => ({ value: null }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     const drawn: string[] = [];

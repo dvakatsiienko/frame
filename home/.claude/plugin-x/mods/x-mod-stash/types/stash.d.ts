@@ -253,6 +253,8 @@ export type StashLane = {
     plan?: string;
     // the linked file could not be read: the card keeps its last state until the lane ends
     isPlanGone?: boolean;
+    // `x lane plan-steps` failed on the file: the card keeps its last steps, marked stale, until x answers
+    isPlanStale?: boolean;
     // the step we are on; items.length once every step is done
     current: number;
     // clio's orbit turn count when the pointer or a done flag last moved

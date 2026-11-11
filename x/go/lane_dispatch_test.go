@@ -2,7 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -383,4 +386,75 @@ func TestDispatchRefusesATicketWithNoSign(t *testing.T) {
 func jsonOf(value any) string {
 	raw, _ := json.Marshal(value)
 	return string(raw)
+}
+
+// the threads a dispatch names get their record under the session ids it was given
+func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
+	t.Parallel()
+	server := dispatchServer(t, undispatched)
+	store := filepath.Join(t.TempDir(), "threads.json")
+
+	write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie"},{"sessionId":"s2","role":"sixth-sense"}]}`)
+	_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store},
+		"lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
+
+	var written threadStore
+	raw, _ := os.ReadFile(store)
+	if err := json.Unmarshal(raw, &written); err != nil || got.code != 0 {
+		t.Fatalf("exit %d, store %s:\n%s", got.code, raw, got.stdout)
+	}
+	shown := map[string]string{}
+	for _, th := range written.Threads {
+		shown[th.SessionID] = th.Display
+	}
+	if shown["s1"] != "🌗 🔧 cli | FRM-1" || shown["s2"] != "🌗 🔎 cli | FRM-1" || len(shown) != 2 {
+		t.Errorf("records %v, want s1 as codie and s2 as sixth sense on cli-3 | FRM-1", shown)
+	}
+}
+
+// sixth sense round 1 P1 and round 3 (exits 17, 18): a role goes only from the coordinator, to a thread a summon recorded
+// in that role or to a running thread with no role yet; never another role, never an id no thread holds, never from a
+// codie; a refusal comes before any linear write
+func TestDispatchGivesARoleOnlyFromTheCoordinatorToAKnownThread(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, caller, records, want string
+		isLive, isOk                bool
+	}{
+		{name: "an id no thread holds", caller: "🦉 clio", want: "names no thread"},
+		{name: "a codie's record", caller: "🦉 clio", records: `{"v":1,"threads":[{"sessionId":"s2","role":"codie"}]}`, isLive: true, want: "is already a codie"},
+		{name: "a codie dispatching itself", caller: "🌗 🔧 codie: cli lane 8 | FRM-570", isLive: true, want: "only the coordinator or dima"},
+		{name: "the coordinator on a running thread with no role", caller: "🦉 clio", isLive: true, isOk: true},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := dispatchServer(t, undispatched)
+			sessions, store := filepath.Join(t.TempDir(), "caller-set"), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
+			if c.isLive {
+				write(t, filepath.Join(sessions, "s2.json"), fmt.Sprintf(`{"sessionId":"s2","pid":%d}`, os.Getpid()))
+			}
+			if c.records != "" {
+				write(t, store, c.records)
+			}
+			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions}, c.caller)
+
+			_, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
+
+			written, _ := readThreadStore(store)
+			mutations := 0
+			for _, call := range server.requests() {
+				if strings.Contains(call.Query, "mutation") {
+					mutations++
+				}
+			}
+			isSixth := slices.ContainsFunc(written.Threads, func(th thread) bool { return th.SessionID == "s2" && th.Role == "sixth-sense" })
+			if c.isOk && (got.code != 0 || !isSixth) {
+				t.Fatalf("exit %d, records %+v, want s2 recorded as sixth sense:\n%s", got.code, written.Threads, got.stdout)
+			}
+			if !c.isOk && (got.code != 1 || !strings.Contains(got.stdout, c.want) || mutations != 0 || isSixth) {
+				t.Fatalf("exit %d, %d linear writes, records %+v, want exit 1 naming %q before any write:\n%s", got.code, mutations, written.Threads, c.want, got.stdout)
+			}
+		})
+	}
 }

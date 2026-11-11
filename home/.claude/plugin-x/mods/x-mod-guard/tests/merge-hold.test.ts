@@ -6,11 +6,12 @@ import { liveStore } from './store.ts';
 const HOLD_DIR = '/home/.local/state/x/merge-hold';
 
 type Tick = { at: number; id: string; targets: string[]; text: string };
-// ticks: dima's live ticks as x-mod-stash keeps them; brake: what x's brake check answers (null: it does not read)
+// holds: dima's holds as x's brake check answers them, or why it could not read them; ticks: dima's live ticks as
+// x-mod-stash keeps them; brake: what the check answers for the brake (null: x does not answer at all; 'unread': x
+// exits 1 naming brakeUnread, the holds still beside it)
 function world(
     on: On,
-    record: string | null,
-    dirStands = record !== null,
+    holds: readonly string[] | { unread: string } = [],
     ticks: Tick[] = [],
     brake: string | null = '',
     press?: string,
@@ -18,6 +19,10 @@ function world(
     mock.clock(on, { now: 1_000_000 });
     liveStore(on);
     const ran: string[] = [];
+    const checks: string[][] = [];
+    const answer = Array.isArray(holds)
+        ? { holds, holdsUnread: '' }
+        : { holds: [], holdsUnread: (holds as { unread: string }).unread };
     on('state.get', (_$, e, next) =>
         e.plugin === 'x-mod-stash' && e.key === 'ticks'
             ? { value: { value: ticks, version: 1 } }
@@ -25,24 +30,30 @@ function world(
               ? { value: { value: { asks: pressedAsk(press) }, version: 1 } }
               : next(e),
     );
-    on('process.run', (_$, e) => ({
-        value: {
-            exitCode: 0,
-            isStderrTruncated: false,
-            isStdoutTruncated: false,
-            stderr: '',
-            stdout:
-                e.argv.includes('--brake-check') && brake !== null
-                    ? JSON.stringify({ data: { brake } })
-                    : '',
-        },
-    }));
+    on('process.run', (_$, e) => {
+        if (e.argv.includes('--brake-check')) checks.push([...e.argv]);
+        return {
+            value: {
+                exitCode: brake === 'unread' ? 1 : 0,
+                isStderrTruncated: false,
+                isStdoutTruncated: false,
+                stderr: '',
+                stdout:
+                    e.argv.includes('--brake-check') && brake !== null
+                        ? JSON.stringify({
+                              data:
+                                  brake === 'unread'
+                                      ? { brakeUnread: 'no clone', ...answer }
+                                      : { brake, ...answer },
+                          })
+                        : '',
+            },
+        };
+    });
     on('session.id', () => ({ value: 'h1h1h1h1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
-    on('fs.exists', (_$, e) => ({
-        value: e.path === HOLD_DIR ? dirStands : true,
-    }));
+    on('fs.exists', () => ({ value: true }));
     on('fs.stat', (_$, e) => ({
         value: {
             isLink: false,
@@ -52,21 +63,6 @@ function world(
             size: e.path.endsWith('huge.sh') ? 1_000_000 : 0,
         },
     }));
-    on('fs.list', (_$, e) =>
-        e.path === HOLD_DIR && record !== null
-            ? {
-                  value: [
-                      {
-                          isLink: false,
-                          kind: 'file' as const,
-                          mtimeMs: 0,
-                          name: 'o_r.json',
-                          size: 1,
-                      },
-                  ],
-              }
-            : { deny: 'no such dir' },
-    );
     const scripts: Record<string, string> = {
         '/repo/echoing.sh': "echo 'gh pr merge 5'\n",
         '/repo/huge.sh': 'gh pr merge 5\n',
@@ -77,19 +73,17 @@ function world(
         '/repo/s2.sh': 'bash s1.sh\n',
     };
     on('fs.read', (_$, e) =>
-        e.path === `${HOLD_DIR}/o_r.json` && record !== null
-            ? { value: record }
-            : press && e.path === PRESSES
-              ? { value: pressLine(press, 1_000_000 - 1) }
-              : e.path in scripts
-                ? { value: scripts[e.path] ?? '' }
-                : { deny: 'no such file' },
+        press && e.path === PRESSES
+            ? { value: pressLine(press, 1_000_000 - 1) }
+            : e.path in scripts
+              ? { value: scripts[e.path] ?? '' }
+              : { deny: 'no such file' },
     );
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
     });
-    return { ran };
+    return { checks, ran };
 }
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, run_in_background: true, tool: 'Bash' });
@@ -99,10 +93,10 @@ const pressLine = (text: string, at: number) =>
     `${JSON.stringify({ at, id: 'o7', text, verdict: 'tick' })}\n`;
 const pressedAsk = (text: string) => [{ id: 'o7', mark: 'accepted', text }];
 
-const HELD_7 = '{"prs":["7"]}';
+const HELD_7 = ['7'];
 
 test('a query in a file is refused with a way to run it inline', async ($, on) => {
-    world(on, null);
+    world(on);
     const r = await bash($, 'gh api graphql -F query=@threads.graphql');
     expect(r.deny).toContain('write the query or the endpoint inline');
 });
@@ -205,7 +199,7 @@ for (const line of [
     `cat > w.sh <<'EOF'\ngh pr merge 5\nEOF\nbash w.sh`,
 ])
     test(`a raw merge is refused naming the door, nothing held: ${line}`, async ($, on) => {
-        const { ran } = world(on, null);
+        const { ran } = world(on);
         const r = await bash($, line);
         expect(ran).toEqual([]);
         expect(r.deny).toContain('x lane merge-auto');
@@ -237,7 +231,7 @@ for (const line of [
     `gh api graphql -f query='{ viewer { login } }'`,
 ])
     test(`no raw merge in: ${line.split('\n')[0]}`, async ($, on) => {
-        const { ran } = world(on, null);
+        const { ran } = world(on);
         const r = await bash($, line);
         expect([r.deny, ran.length]).toEqual([undefined, 1]);
     });
@@ -278,7 +272,7 @@ for (const line of [
         expect(ran).toEqual([]);
     });
     test(`with no hold anywhere merge-hold stays out: ${line}`, async ($, on) => {
-        world(on, null);
+        world(on);
         const r = await bash($, line);
         expect(r.deny ?? '').not.toContain('rule merge-hold');
     });
@@ -323,33 +317,36 @@ test('a graphql read with a variable of its own passes while a hold stands', asy
     expect(ran.length).toBe(1);
 });
 
-test('a record that does not parse reads as held', async ($, on) => {
-    const { ran } = world(on, 'not json');
+test('holds x cannot read read as every merge held, naming x', async ($, on) => {
+    const { ran } = world(on, { unread: 'o_r.json: not json' });
     const r = await bash($, 'gh pr merge 8');
     expect(r.deny).toContain('merge-hold');
-    expect(r.deny).toContain('unreadable');
+    expect(r.deny).toContain('x lane merge-auto --brake-check');
     expect(ran).toEqual([]);
 });
 
-test('a hold dir that exists and does not list reads as held', async ($, on) => {
-    const { ran } = world(on, null, true);
-    const r = await bash($, 'gh pr merge 8');
-    expect(r.deny).toContain('unreadable');
-    expect(ran).toEqual([]);
-});
-
-test('a record with the wrong shape reads as held', async ($, on) => {
-    const { ran } = world(on, '{"prs":"7"}');
+test('x not answering reads as every merge held, naming x', async ($, on) => {
+    const { ran } = world(on, [], [], null);
     const r = await bash($, 'gh pr merge 8');
     expect(r.deny).toContain('merge-hold');
+    expect(r.deny).toContain('x lane merge-auto --brake-check');
     expect(ran).toEqual([]);
 });
 
-test('no read of the record on a line with no raw merge', async ($, on) => {
-    const { ran } = world(on, 'not json');
+// FRM-570: an unread brake still lists his holds, so a held pr is refused as held, not as an unreadable hold record
+test('a brake x could not read still names a hold as a hold', async ($, on) => {
+    const { ran } = world(on, HELD_7, [], 'unread');
+    const r = await bash($, 'gh pr merge 7');
+    expect([r.deny, ran]).toEqual([
+        expect.stringContaining('#7 is held by dima'),
+        [],
+    ]);
+});
+
+test('no x call on a line with no raw merge', async ($, on) => {
+    const { checks, ran } = world(on, { unread: 'o_r.json: not json' });
     const r = await bash($, 'gh pr view 7');
-    expect(r.deny).toBeUndefined();
-    expect(ran.length).toBe(1);
+    expect([r.deny, ran.length, checks]).toEqual([undefined, 1, []]);
 });
 
 const RECORD = `${HOLD_DIR}/o_r.json`;
@@ -368,7 +365,7 @@ for (const line of [
     'd=~/.local/state/x; echo {} > $d/merge-hold/o_r.json',
 ])
     test(`the hold record cannot change by hand: ${line}`, async ($, on) => {
-        const { ran } = world(on, null);
+        const { ran } = world(on);
         const r = await bash($, line);
         expect(r.deny).toContain('merge-hold');
         expect(r.deny).toContain('--release-hold');
@@ -386,7 +383,7 @@ for (const line of [
     'rg merge-hold home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/merge-hold.ts',
 ])
     test(`a read of the hold record passes: ${line}`, async ($, on) => {
-        const { ran } = world(on, null);
+        const { ran } = world(on);
         const r = await bash($, line);
         expect(r.deny).toBeUndefined();
         expect(ran.length).toBe(1);
@@ -401,7 +398,7 @@ const tickOn = (line: string): Tick => ({
 });
 test('his tick on an ask quoting a held pr merge runs it once', async ($, on) => {
     const line = 'gh pr merge 7 --squash';
-    const { ran } = world(on, HELD_7, true, [tickOn(line)]);
+    const { ran } = world(on, HELD_7, [tickOn(line)]);
     const first = await bash($, line);
     const second = await bash($, line);
     expect([first.deny, second.deny !== undefined, ran]).toEqual([
@@ -413,13 +410,13 @@ test('his tick on an ask quoting a held pr merge runs it once', async ($, on) =>
 
 test('his tick on a raw merge runs it once with no hold standing', async ($, on) => {
     const line = 'gh pr merge 5 --squash';
-    const { ran } = world(on, null, false, [tickOn(line)]);
+    const { ran } = world(on, [], [tickOn(line)]);
     expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
 });
 
 test('his tick on a raw merge runs past a brake that does not read', async ($, on) => {
     const line = 'gh pr merge 5 --squash';
-    const { ran } = world(on, null, false, [tickOn(line)], null);
+    const { ran } = world(on, [], [tickOn(line)], null);
     expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
 });
 
@@ -444,7 +441,7 @@ for (const [why, ticked, line, brake] of [
     ],
 ] as const)
     test(`a held pr merge stays refused on a tick when ${why}`, async ($, on) => {
-        const { ran } = world(on, HELD_7, true, [tickOn(ticked)], brake);
+        const { ran } = world(on, HELD_7, [tickOn(ticked)], brake);
         expect([(await bash($, line)).deny !== undefined, ran]).toEqual([
             true,
             [],
@@ -454,7 +451,7 @@ for (const [why, ticked, line, brake] of [
 // 12b (FRM-544 slice 2g): his press on x-herdr-deck clears a held pr as his orbit tick does
 test('his press on x-herdr-deck on an ask quoting a held pr merge runs it once', async ($, on) => {
     const line = 'gh pr merge 7 --squash';
-    const { ran } = world(on, HELD_7, true, [], '', `⚠️ merge: \`${line}\``);
+    const { ran } = world(on, HELD_7, [], '', `⚠️ merge: \`${line}\``);
     const first = await bash($, line);
     const second = await bash($, line);
     expect([first.deny, second.deny !== undefined, ran]).toEqual([
@@ -466,7 +463,7 @@ test('his press on x-herdr-deck on an ask quoting a held pr merge runs it once',
 
 test('his press on x-herdr-deck on another pr runs no held merge', async ($, on) => {
     const other = '⚠️ merge: `gh pr merge 8 --squash`';
-    const { ran } = world(on, HELD_7, true, [], '', other);
+    const { ran } = world(on, HELD_7, [], '', other);
     const r = await bash($, 'gh pr merge 7 --squash');
     expect([r.deny !== undefined, ran]).toEqual([true, []]);
 });

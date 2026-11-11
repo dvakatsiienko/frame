@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"cmp"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 var (
@@ -21,6 +21,9 @@ var (
 	ticketArg   = regexp.MustCompile(`^(?:FRM|BYT)-\d+$`)
 	reviewedArg = regexp.MustCompile(`^(?:https://github\.com/\S+/pull/\d+|main:[0-9a-f]{7,40})$`)
 	appOfBrief  = regexp.MustCompile(`\bapps/([\w-]+)/`)
+	// a lane is named by its own spec's dir (the path after spec:), the name x lane dispatch and the lane plan share
+	laneSpecDir  = regexp.MustCompile(`\bspec:\s*['"]?[^\s'"]*?\.scratch/([\w.-]+)/spec\.md\b`)
+	laneKindLine = regexp.MustCompile(`(?m)^[-\s]*lane:\s*(side|quick|shift)\b`)
 )
 
 // summonCheck is one mechanical preflight step a summon command fails
@@ -130,8 +133,7 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 			}
 		})
 		step("stamp", "x brief check passed these bytes", func() {
-			sum := fmt.Sprintf("%x", sha256.Sum256([]byte(text)))
-			if !exists(filepath.Join(stateDir(), "briefs", sum+".json")) {
+			if _, stamp := briefStamp([]byte(text)); !exists(stamp) {
 				fail("stamp", "no x brief check stamp for these bytes", restamp(brief))
 			}
 		})
@@ -175,11 +177,33 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 	if len(failed) > 0 {
 		return nil, summonRefused(failed, command)
 	}
+	if err := coordinatorOnly("x brief summon"); err != nil {
+		return nil, err
+	}
+	// the thread's identity is its session id, minted here so the record exists before the thread runs
+	record := thread{SessionID: newSessionID(), Role: role}
+	if words := strings.Fields(first); len(words) > 1 && ticketArg.MatchString(words[1]) {
+		record.Ticket = words[1]
+	}
+	if m := laneSpecDir.FindStringSubmatch(text); m != nil {
+		record.Lane = m[1]
+	}
+	if m := laneKindLine.FindStringSubmatch(text); m != nil {
+		record.LaneKind = m[1]
+	}
+	at := claudeCallAt(command)
+	if at == nil {
+		return nil, usageFail("the claude call is quoted, so x cannot add its --session-id", "x brief summon "+quote(herdrClaude(command)))
+	}
+	command = command[:at[1]] + "--session-id " + record.SessionID + " " + command[at[1]:]
+	if err := writeThreadRecord(record, time.Now(), true); err != nil {
+		return nil, &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
+	}
 	if r.human {
 		fmt.Println(command)
 	}
 	r.Done("ok: every mechanical step holds, the argv is the summon", "")
-	return ordered{{"argv", command}, {"brief", brief}, {"home", home}, {"role", role}}, nil
+	return ordered{{"argv", command}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}}, nil
 }
 
 func summonRefused(failed []summonCheck, command string) error {
@@ -266,14 +290,38 @@ func restamp(brief string) string {
 
 // the claude call as typed, quotes kept, as a herdr terminal runs it: in a pane of its own, so no --bg
 func herdrClaude(command string) string {
-	at := claudeCall.FindStringIndex(command)
+	at := claudeCallAt(command)
 	if at == nil {
 		return "claude -n '<name>' … \"$(cat <brief>)\" --remote-control"
 	}
 	return strings.TrimSpace(bgFlag.ReplaceAllString(command[at[0]:], " "))
 }
 
-var (
-	claudeCall = regexp.MustCompile(`(?:^|[\s;&|(])claude\s`)
-	bgFlag     = regexp.MustCompile(`\s--bg(?:\s|$)`)
-)
+// the claude the command runs: the first claude word outside quotes and $( ), so a quoted name holding the word
+// never takes the --session-id; its start and the index past its space
+func claudeCallAt(command string) []int {
+	var quoted byte
+	depth := 0
+	for i := 0; i < len(command); i++ {
+		c := command[i]
+		switch {
+		case quoted != 0:
+			if c == quoted {
+				quoted = 0
+			}
+		case c == '\'' || c == '"' || c == '`':
+			quoted = c
+		case c == '$' && strings.HasPrefix(command[i:], "$("):
+			depth++
+			i++
+		case c == ')' && depth > 0:
+			depth--
+		case depth == 0 && strings.HasPrefix(command[i:], "claude") && len(command) > i+6 && strings.IndexByte(" \t\n", command[i+6]) >= 0 &&
+			(i == 0 || strings.IndexByte(" \t\n;&|(", command[i-1]) >= 0):
+			return []int{i, i + 7}
+		}
+	}
+	return nil
+}
+
+var bgFlag = regexp.MustCompile(`\s--bg(?:\s|$)`)

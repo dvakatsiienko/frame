@@ -12,11 +12,13 @@ const SLUG = 'mods-l14-2';
 
 // `name` is the session's registry name; `handoffs` the slugs `x handoff peek` finds
 // `during` runs inside the compact, as a turn end that lands while it works would
+// `role` is the role x's thread record gives the session, `null` for none
 function world(
     on: On,
     name = '☕️ 🔧 codie: mods',
     handoffs = [SLUG],
     during?: () => Promise<unknown>,
+    role: string | null = 'codie',
 ) {
     const lines: string[] = [];
     const commands: string[] = [];
@@ -46,9 +48,20 @@ function world(
             },
         };
     });
+    const files: Record<string, string> = {
+        [`/home/.claude/sessions/${PID}.json`]: JSON.stringify({
+            name,
+            pid: PID,
+        }),
+        '/home/.claude/shelf/threads.json': JSON.stringify({
+            at: 0,
+            threads: role ? [{ name, role, sessionId: SID }] : [],
+            v: 1,
+        }),
+    };
     on('fs.read', (_$, e) =>
-        e.path === `/home/.claude/sessions/${PID}.json`
-            ? { value: JSON.stringify({ name, pid: PID }) }
+        e.path in files
+            ? { value: files[e.path] ?? '' }
             : { deny: 'no such file' },
     );
     on('fs.list', () => ({ value: [] }));
@@ -135,7 +148,7 @@ test("a peer's ping carries the note too: any turn takes it", async ($, on) => {
 });
 
 test("clio's note names her good stop", async ($, on) => {
-    const w = world(on, '🦉 clio');
+    const w = world(on, '🦉 clio', undefined, undefined, null);
     w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
     await start($);
     await say($);
@@ -147,12 +160,12 @@ test("clio's note names her good stop", async ($, on) => {
 const INIT_LIST =
     /first first-act is your role's init list.*x:crew-codie, x:crew-dna read whole.*plugin-authoring.*clio: her boot/;
 
-for (const [who, name] of [
-    ['a codie', undefined],
-    ['clio', '🦉 clio'],
+for (const [who, name, role] of [
+    ['a codie', undefined, 'codie'],
+    ['clio', '🦉 clio', null],
 ] as const)
     test(`${who}'s note makes the handoff open with the role's init list`, async ($, on) => {
-        const w = world(on, name);
+        const w = world(on, name, undefined, undefined, role);
         w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
         await start($);
         await say($);
@@ -402,7 +415,13 @@ for (const [who, isOwner] of [
     ['clio', true],
 ] as const)
     test(`${who}'s second wind note carries dima's words whole`, async ($, on) => {
-        const w = world(on, isOwner ? '🦉 clio' : '☕️ 🔧 codie: mods');
+        const w = world(
+            on,
+            isOwner ? '🦉 clio' : '☕️ 🔧 codie: mods',
+            undefined,
+            undefined,
+            isOwner ? null : 'codie',
+        );
         w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
         await start($);
         await say($);
@@ -459,8 +478,8 @@ test('a foreground command started after pending: none does not block the wind',
 const CLIO = '🦉 clio';
 // the held list's key: the codie's registry name, bare
 const HELD = 'steer-held:☕️🔧codie:mods';
-const receiveWorld = (on: On, name?: string) => {
-    const w = world(on, name);
+const receiveWorld = (on: On, name?: string, role = 'codie') => {
+    const w = world(on, name, undefined, undefined, role);
     const queued: string[] = [];
     on('session.receive', (_$, e) => {
         queued.push(e.text);
@@ -549,7 +568,11 @@ test('a codie under 55 % reads the message as sent', async ($, on) => {
 });
 
 test("a full sixth sense reads clio's message as sent", async ($, on) => {
-    const w = receiveWorld(on, '⚡ 🔎 sixth sense: mods lane 6 | main');
+    const w = receiveWorld(
+        on,
+        '⚡ 🔎 sixth sense: mods lane 6 | main',
+        'sixth-sense',
+    );
     w.store.set(`context:${SID}`, 80);
     await start($);
     const toSixth = await fromPeer($, 'next: round 2');

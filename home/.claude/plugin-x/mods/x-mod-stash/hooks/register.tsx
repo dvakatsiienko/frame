@@ -74,15 +74,12 @@ import {
     boldFleetWords,
     bulletDots,
     capOf,
-    codieLane,
     dropWaitAside,
-    isFleetName,
     linkTickets,
     memberBadge,
     noticeOf,
     numberCircled,
     parseWait,
-    planSteps,
     roundLine,
     roundOf,
     ticketOf,
@@ -1473,14 +1470,7 @@ async function quietLedger($: EngineInterface, now: number) {
     const members = (await registry($)).filter(
         (r) => r.isAlive && r.base.sid !== me,
     );
-    // a log line is the member's by its session id, or by its name; a line from an older name (the member was renamed
-    // mid-day) is its own when no live member answers to that name and the role is the member's alone
-    const liveKeys = new Set(members.map((r) => memberKey(r.base.name)));
-    const roles = new Map<string, number>();
-    for (const r of members) {
-        const role = roleKey(r.base.name);
-        if (role) roles.set(role, (roles.get(role) ?? 0) + 1);
-    }
+    // a log line is the member's by its session id, which a rename mid-day keeps, or, logged with none, by its name
     for (const r of members) {
         const since = Math.max(opened, r.startedAt ?? 0);
         // the transcript by its session id, never the cwd: the registry's cwd follows a Bash `cd`
@@ -1494,15 +1484,10 @@ async function quietLedger($: EngineInterface, now: number) {
             .filter((t) => t >= since && t <= now - LEDGER_GRACE_MS).length;
         // the envelope names crow as the registry stores her («🐦 ⬛», the joiner a space), the board as rejoined: bare both
         // a member keeps its identity when its mode emoji changes (☕️ → 🌗 on a rename), so the lines match without it
-        const role = roleKey(r.base.name);
         const isOurs = (l: QuietLogLine) =>
             l.sid
                 ? l.sid === r.base.sid
-                : memberKey(l.from) === memberKey(r.base.name) ||
-                  (role !== undefined &&
-                      roles.get(role) === 1 &&
-                      roleKey(l.from) === role &&
-                      !liveKeys.has(memberKey(l.from)));
+                : memberKey(l.from) === memberKey(r.base.name);
         const logged = judged.filter((l) => isOurs(l) && l.at >= since).length;
         if (sent > logged) gaps.push({ from: r.base.name, logged, sent });
     }
@@ -2077,8 +2062,9 @@ async function laneRoundLine(
     const to = text(e.to);
     if (!round || !to || (result as { success?: boolean })?.success === false)
         return undefined;
-    const lane = codieLane((await sessionName($)) ?? '');
-    if (!lane) return undefined;
+    const self = await selfRecord($);
+    if (self?.role !== 'codie' || !self.lane) return undefined;
+    const lane = `${self.lane} | ${self.ticket ?? ''}`;
     if (await isToCoordinator($, to)) return undefined;
     const key = LANE_ROUNDS + lane;
     const kept = await $.store.get(key);
@@ -3129,6 +3115,43 @@ async function followCodies($: EngineInterface) {
     await $.store.set(LANE_MOVES, [...(await heldLaneMoves($)), ...moves]);
 }
 
+// one rule, one reader (FRM-570): x parses a lane plan's step lines; x runs only when the file's mtime moved since its
+// last parse, from home so the shim runs main's x. gone: no such file; stale: x failed, the caller keeps its last steps
+type PlanRead =
+    | { steps: { done: boolean; text: string; ticket?: string }[] }
+    | { state: 'gone' | 'stale' };
+const planParses = new Map<string, { mtimeMs: number; steps: unknown }>();
+async function readPlanSteps(
+    $: EngineInterface,
+    path: string,
+): Promise<PlanRead> {
+    const cut = path.lastIndexOf('/');
+    const entry = (await $.fs.list(path.slice(0, cut)).catch(() => [])).find(
+        (f) => f.name === path.slice(cut + 1),
+    );
+    if (!entry) return { state: 'gone' };
+    const kept = planParses.get(path);
+    if (kept?.mtimeMs === entry.mtimeMs && Array.isArray(kept.steps))
+        return { steps: kept.steps };
+    const run = await $.process
+        .run(['x', 'lane', 'plan-steps', path, '--json'], {
+            cwd: await $.env.get('HOME'),
+            timeoutMs: 4000,
+        })
+        .catch(() => undefined);
+    try {
+        const steps = (
+            JSON.parse(run?.stdout ?? '') as { data?: { steps?: unknown } }
+        ).data?.steps;
+        if (run?.exitCode !== 0 || !Array.isArray(steps))
+            return { state: 'stale' };
+        planParses.set(path, { mtimeMs: entry.mtimeMs, steps });
+        return { steps };
+    } catch {
+        return { state: 'stale' };
+    }
+}
+
 // a linked card is its lane plan file: each poll its numbered lines are the steps; an unreadable file keeps the last state
 async function followPlans($: EngineInterface) {
     if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
@@ -3145,16 +3168,25 @@ async function followPlans($: EngineInterface) {
             next.push(lane);
             continue;
         }
-        const text = await $.fs
-            .read(lane.plan.replace(/^~(?=\/)/, home))
-            .catch(() => undefined);
-        if (text === undefined) {
-            if (!lane.isPlanGone) isChanged = true;
-            next.push(lane.isPlanGone ? lane : { ...lane, isPlanGone: true });
+        const read = await readPlanSteps(
+            $,
+            lane.plan.replace(/^~(?=\/)/, home),
+        );
+        if ('state' in read) {
+            const isMarked =
+                read.state === 'gone' ? lane.isPlanGone : lane.isPlanStale;
+            if (!isMarked) isChanged = true;
+            next.push(
+                isMarked
+                    ? lane
+                    : read.state === 'gone'
+                      ? { ...lane, isPlanGone: true }
+                      : { ...lane, isPlanStale: true },
+            );
             continue;
         }
-        const steps = planSteps(text).map((s) => ({
-            isDone: s.isDone,
+        const steps = read.steps.map((s) => ({
+            isDone: s.done,
             text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
             ...(s.ticket ? { ticket: s.ticket } : {}),
         }));
@@ -3163,6 +3195,7 @@ async function followPlans($: EngineInterface) {
         const at = current < 0 ? items.length : current;
         const isSame =
             !lane.isPlanGone &&
+            !lane.isPlanStale &&
             at === lane.current &&
             JSON.stringify(items) === JSON.stringify(lane.items);
         if (isSame) {
@@ -3180,7 +3213,7 @@ async function followPlans($: EngineInterface) {
                 .delete(LANE_STEER_OLD + lane.id)
                 .catch(() => undefined);
         }
-        const { isPlanGone: _, ...rest } = lane;
+        const { isPlanGone: _, isPlanStale: __, ...rest } = lane;
         next.push({
             ...rest,
             current: at,
@@ -3514,13 +3547,6 @@ async function isBootOpen($: EngineInterface) {
 const memberKey = (name: string) =>
     bare(name).replace(/^(?:☕️?|🌗|⚡️?|🌘|🎯)/u, '');
 const bare = (name: string) => name.replaceAll(/[\s\u200d]/g, '');
-// a member keeps its role through a rename (a new ticket, a new topic): its role emoji and the word before the colon
-const roleKey = (name: string) => {
-    const key = memberKey(name);
-    const emoji = key.match(/^\p{Extended_Pictographic}\uFE0F?/u)?.[0];
-    const word = key.split(':')[0]?.match(/[A-Za-z]+$/)?.[0];
-    return emoji && word ? `${emoji}${word}` : undefined;
-};
 
 // a thread's asks show while it has any and they are under a day old
 const isLive = (v: Entry | undefined, now: number): v is Entry =>
@@ -3600,6 +3626,55 @@ async function isBgSelf($: EngineInterface) {
 async function sessionName($: EngineInterface) {
     const name = (await selfEntry($))?.name;
     return typeof name === 'string' && name ? name : undefined;
+}
+
+// one rule, one reader (FRM-570 rules 8 and 9): x's thread records, `~/.claude/shelf/threads.json`, carry each thread's
+// role, lane and ticket by session id, so no reader here parses a name; no file or no record reads as unknown, and a file
+// that does not parse (a torn or hand-broken write) reads as the last list that did, so no role drops for one bad read
+type ThreadRecord = {
+    sessionId: string;
+    name?: string;
+    role?: string;
+    lane?: string;
+    ticket?: string;
+};
+const THREADS_KEPT = 'threads-kept';
+async function threadRecords($: EngineInterface): Promise<ThreadRecord[]> {
+    const raw = await $.fs
+        .read(`${await $.env.get('HOME')}/.claude/shelf/threads.json`)
+        .catch(() => undefined);
+    if (raw === undefined) return [];
+    try {
+        const { threads } = JSON.parse(raw) as { threads?: unknown };
+        if (!Array.isArray(threads)) throw new Error('no threads list');
+        // a board render reads this often: the store is written only when the list moved
+        if (
+            JSON.stringify(await $.store.get(THREADS_KEPT)) !==
+            JSON.stringify(threads)
+        )
+            await $.store.set(THREADS_KEPT, threads);
+        return threads as ThreadRecord[];
+    } catch {
+        const kept = await $.store.get(THREADS_KEPT);
+        return Array.isArray(kept) ? (kept as ThreadRecord[]) : [];
+    }
+}
+
+async function selfRecord($: EngineInterface) {
+    const sid = await currentId($);
+    return sid
+        ? (await threadRecords($)).find((t) => t.sessionId === sid)
+        : undefined;
+}
+
+// x rewrites the store from cc's registry; run from home so the shim runs main's x; a failed run keeps the last file
+async function refreshThreads($: EngineInterface) {
+    await $.process
+        .run(['x', 'thread', 'list', '--json'], {
+            cwd: await $.env.get('HOME'),
+            timeoutMs: 4000,
+        })
+        .catch(() => undefined);
 }
 
 // twin proc-of — a copy lives in x-mod-holds; the twins lint keeps them equal
@@ -4228,7 +4303,7 @@ async function windOnCompact($: EngineInterface) {
 // held under the codie's registry name, so a /clear or a resume, which mint a new session id, still hands them over
 async function steerKey($: EngineInterface) {
     const name = await sessionName($);
-    return name && codieLane(name) !== undefined
+    return name && (await selfRecord($))?.role === 'codie'
         ? STEER_HELD + bare(name)
         : undefined;
 }
@@ -4799,7 +4874,10 @@ async function seatDefaults($: EngineInterface) {
             await $.store.set(PACE + sid, { on: true });
         else isPaceSeatHeld = true;
     }
-    if (isSeated(name) && (await $.store.get(HOT + sid)) === undefined) {
+    if (
+        isSeated(name, (await selfRecord($))?.role) &&
+        (await $.store.get(HOT + sid)) === undefined
+    ) {
         await $.store.set(HOT + sid, { since: now });
         await followHot($);
     }
@@ -5764,6 +5842,7 @@ async function members($: EngineInterface): Promise<Member[]> {
         if (isYoung && !(await isResumed($, home, r))) continue;
         shown.push(r);
     }
+    const records = await threadRecords($);
     for (const { bg, cwd, base: r } of shown) {
         if (await isUnstarted($, home, cwd, r.sid)) continue;
         const reply = (await $.store.get(REPLY + r.sid)) as
@@ -5782,7 +5861,12 @@ async function members($: EngineInterface): Promise<Member[]> {
                     (await heldStuckMs($)),
             isHot: Boolean(hotOf(await $.store.get(HOT + r.sid))),
             model: text(await $.store.get(MODEL + r.sid)),
-            offPattern: bg && !isFleetName(r.name),
+            offPattern:
+                bg &&
+                !isSeated(
+                    r.name,
+                    records.find((t) => t.sessionId === r.sid)?.role,
+                ),
             // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
             // whenever a thread is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77)
             statusSince:
@@ -5854,10 +5938,15 @@ export const isCoordinator = (name: string) =>
 export const isWing = (name: string) =>
     /^(?:🦉c?clio\(side\)|🦉🪽c?clio:wing\d+)$/u.test(bare(name));
 // clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
-// a member with a chair in the fleet; a fork or a plain session has none
-export const isSeated = (name: string) =>
+// a member with a chair in the fleet: x's thread record names its role, a standing member keeps its own name (crow,
+// helga), and clio and her wings by theirs; a fork or a plain session has none
+const STANDING_MEMBERS = new Set(['crow', 'helga']);
+export const isSeated = (name: string, role?: string) =>
     !/\(fork\)/u.test(name) &&
-    (isFleetName(name) || /^🦉\s*c?clio\b/u.test(name) || isWing(name));
+    (Boolean(role) ||
+        STANDING_MEMBERS.has(name.replace(/[^\w\s-]/gu, '').trim()) ||
+        /^🦉\s*c?clio\b/u.test(name) ||
+        isWing(name));
 export const pinOf = (name: string) =>
     isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
 
@@ -6112,15 +6201,19 @@ async function orbitCall(
                     deny: 'orbit glide: plan is an absolute or ~/ path to the lane plan file',
                 };
             const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
-            const text = await $.fs
-                .read(input.plan.replace(/^~(?=\/)/, home))
-                .catch(() => undefined);
-            if (text === undefined)
+            const read = await readPlanSteps(
+                $,
+                input.plan.replace(/^~(?=\/)/, home),
+            );
+            if ('state' in read)
                 return {
-                    deny: `orbit glide: plan file ${input.plan} cannot be read`,
+                    deny:
+                        read.state === 'gone'
+                            ? `orbit glide: plan file ${input.plan} cannot be read`
+                            : `orbit glide: x lane plan-steps could not read ${input.plan}; run it by hand to see why`,
                 };
-            const steps = planSteps(text).map((s) => ({
-                done: s.isDone,
+            const steps = read.steps.map((s) => ({
+                done: s.done,
                 text: [...s.text].slice(0, LANE_TEXT_MAX).join(''),
                 ...(s.ticket ? { ticket: s.ticket } : {}),
             }));
@@ -6226,6 +6319,7 @@ export const register: Register = (on) => {
     on('session.start', async ($, e, next) => {
         // the repo root, not the cwd: a cd in the shell must not rename the thread
         selfId = await $.session.id();
+        await refreshThreads($);
         // a hot reload's start carries the shell's cwd, which follows a `cd`: the root stays the project's
         projectDir = await $.session.root().catch(() => e.cwd);
         const top = (await $.session.repo())?.root ?? e.cwd;
@@ -6623,6 +6717,7 @@ export const register: Register = (on) => {
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
         isBusy = false;
+        await refreshThreads($);
         await inMarking(async () =>
             saveOrbit($, turnEnded(await currentOrbit($))),
         );
@@ -8047,7 +8142,7 @@ export const register: Register = (on) => {
                                           flexDirection='row'
                                           justifyContent='space-between'>
                                           <Text
-                                              bold>{`🛼 glide: ${lane.title}${laneSpan(lane)}${lane.isPlanGone ? ' · plan file gone' : ''}`}</Text>
+                                              bold>{`🛼 glide: ${lane.title}${laneSpan(lane)}${lane.isPlanGone ? ' · plan file gone' : lane.isPlanStale ? ' · steps stale, x lane plan-steps failed' : ''}`}</Text>
                                           {foldJSX(`lane:${lane.id}`)}
                                       </Box>
                                       {isFolded(`lane:${lane.id}`)
@@ -8903,6 +8998,7 @@ export const register: Register = (on) => {
 
     // a /clear or a resume leaves the conversation behind; an exit keeps only its last reply
     on('session.end', async ($, e, next) => {
+        await refreshThreads($);
         if (e.reason === 'clear' || e.reason === 'resume') {
             // the process outlives a /clear, so the next conversation is primed again: no session.start fires for it
             isPrimed = false;

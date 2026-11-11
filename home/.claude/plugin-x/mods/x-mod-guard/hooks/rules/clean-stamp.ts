@@ -1,4 +1,9 @@
-import { type Command, type Refusal, commandsDeep } from './command.ts';
+import {
+    type Command,
+    type Refusal,
+    claudeSpawn,
+    commandsDeep,
+} from './command.ts';
 
 const isStore = (text: string) => /(^|[/'"]|of=)pr-verified\b/i.test(text);
 // `cp a/pr-verified.json ~/.claude/shelf/` lands on the store with no word for it
@@ -198,6 +203,145 @@ export function touchesStore(
                 !onlyReads(c, named) &&
                 !(isWritesOnly && isReadLoop && LOOPS.has(c.name))),
     );
+}
+
+// x's thread store names who is a sixth sense, the role the clean-stamp door trusts: only x writes it (`x thread list`,
+// `x brief summon`, `x lane dispatch --apply`), never a line of any session's, a sixth sense's included (FRM-570)
+const shelfPath = (text: string) =>
+    text.replaceAll(/\/+/g, '/').replaceAll('/./', '/');
+// a name under the shelf whose literal start could still become `threads.json` once the shell expands the rest
+const SHELF_EXPANDING = /(?:\.claude|cc)\/shelf\/([^/*?[{$(`'"\s]*)[*?[{$(`]/i;
+export const isThreadStore = (text: string) => {
+    if (/(^|[/'"]|of=)threads\.(json\b|\{)/i.test(text)) return true;
+    const path = shelfPath(text);
+    const found = path.match(SHELF_EXPANDING);
+    const start = found?.[1]?.toLowerCase();
+    if (start === undefined || !'threads.json'.startsWith(start)) return false;
+    // a brace lists its words: it lands on the store only when one of them could still start it
+    const after = path.slice((found?.index ?? 0) + (found?.[0].length ?? 0));
+    const words =
+        path[(found?.index ?? 0) + (found?.[0].length ?? 1) - 1] === '{'
+            ? after.match(/^([^{}]*)\}/)?.[1]?.split(',')
+            : undefined;
+    return (
+        words === undefined ||
+        words.some(
+            (w) =>
+                /[*?[$(`]/.test(w) ||
+                'threads.json'.startsWith(`${start}${w.toLowerCase()}`),
+        )
+    );
+};
+export function threadStoreWrite(
+    command: string,
+    cwd: string,
+): Refusal | undefined {
+    // a carrier into the shelf dir lands on the store when the line names it: `cp /tmp/threads.json ~/.claude/shelf/`
+    const intoShelf = (text: string) =>
+        isStoreDir(text) && isThreadStore(command);
+    if (!touchesStore(command, cwd, isThreadStore, intoShelf)) return undefined;
+    return {
+        door: 'x thread list rewrites it from the registry, a role comes from x brief summon or x lane dispatch --apply; a read goes through cat or jq',
+        rule: 'clean-stamp',
+        targets: ['threads.json'],
+        why: 'x-mod-guard reads ~/.claude/shelf/threads.json for who is a sixth sense, whose clean opens x lane merge-auto, so only x writes it',
+    };
+}
+
+// cc's registry names each session, and the guard reads a coordinator by that name: cc writes it, never a session's line
+export const isRegistryFile = (text: string) =>
+    /(\.claude|cc)\/sessions\/[^/]+$/i.test(shelfPath(text));
+const isRegistryDir = (text: string) =>
+    /(\.claude|cc)\/sessions\/?$/i.test(shelfPath(text));
+export function registryWrite(
+    command: string,
+    cwd: string,
+): Refusal | undefined {
+    if (!touchesStore(command, cwd, isRegistryFile, isRegistryDir))
+        return undefined;
+    return {
+        door: 'cc writes its own registry; a read goes through cat or jq',
+        rule: 'clean-stamp',
+        targets: ['~/.claude/sessions'],
+        why: "x-mod-guard reads a coordinator by its registry name, so a session's write there would crown it clio",
+    };
+}
+
+// the three files a Write or an Edit could forge a role or a clean through; undefined for any other path
+export function roleStoreRefusal(path: string): Refusal | undefined {
+    if (isThreadStore(path))
+        return {
+            door: 'x thread list rewrites it from the registry, a role comes from x brief summon',
+            rule: 'clean-stamp',
+            targets: ['threads.json'],
+            why: 'x-mod-guard reads ~/.claude/shelf/threads.json for who is a sixth sense, so only x writes it',
+        };
+    if (isStore(path))
+        return {
+            door: "sixth sense's clean through watch-pr.sh --verified in its own session",
+            rule: 'clean-stamp',
+            targets: ['pr-verified.json'],
+            why: 'x lane merge-auto reads ~/.claude/shelf/pr-verified.json as the clean on a pr',
+        };
+    if (isRegistryFile(path))
+        return {
+            door: 'cc writes its own registry',
+            rule: 'clean-stamp',
+            targets: ['~/.claude/sessions'],
+            why: 'x-mod-guard reads a coordinator by its registry name',
+        };
+    return undefined;
+}
+
+// items 1 and 5: a claude call wearing another thread's identity, run by a session that is no coordinator: a
+// `--session-id` (x mints one with a role record at a summon, and only clio runs that argv), or a coordinator's
+// `-n`/`--name`, which the guard would read as clio
+const COORDINATOR_NAME = /^\s*🦉/u;
+// x gates the same two verbs by its caller's registry entry, which an env prefix could aim elsewhere; here the session is
+// read from the engine, whatever the line sets
+const isRoleVerb = (c: Command) => {
+    const words = c.args.map((w) => w.text);
+    return (
+        c.name === 'x' &&
+        ((words[0] === 'brief' && words[1] === 'summon') ||
+            (words[0] === 'lane' &&
+                words[1] === 'dispatch' &&
+                words.includes('--apply')))
+    );
+};
+export function roleSpawn(command: string, cwd: string): Refusal | undefined {
+    for (const c of commandsDeep(command, cwd)) {
+        if (isRoleVerb(c))
+            return {
+                door: 'ask the coordinator: x brief summon and x lane dispatch --apply are hers',
+                rule: 'clean-stamp',
+                targets: ['x'],
+                why: "both verbs give a thread its role, and a sixth sense's role opens the clean stamp",
+            };
+        const call = c.name === 'claude' ? c : claudeSpawn(c);
+        if (call?.name !== 'claude') continue;
+        const words = call.args.map((w) => w.text);
+        const names = words.flatMap((w, i) =>
+            w === '-n' || w === '--name'
+                ? [words[i + 1] ?? '']
+                : w.startsWith('--name=')
+                  ? [w.slice('--name='.length)]
+                  : [],
+        );
+        const isSessionId = words.some(
+            (w) => w === '--session-id' || w.startsWith('--session-id='),
+        );
+        if (isSessionId || names.some((n) => COORDINATOR_NAME.test(n)))
+            return {
+                door: 'ask the coordinator to summon it: x brief summon prints the argv, and clio runs it',
+                rule: 'clean-stamp',
+                targets: ['claude'],
+                why: isSessionId
+                    ? 'a --session-id carries the role x gave it at a summon, so only the coordinator runs one'
+                    : "a 🦉 name is the coordinator's, which the guard trusts for every role",
+            };
+    }
+    return undefined;
 }
 
 // `merge-auto` reads this store as sixth sense's clean, so only sixth sense and the coordinator write it; the caller checks

@@ -67,6 +67,12 @@ var (
 // pnpm's own commands are not scripts
 var pnpmBuiltins = []string{"install", "i", "add", "remove", "update", "exec", "dlx", "create", "link", "outdated", "why", "list", "ls", "store", "env", "view", "info"}
 
+// a pass's stamp is keyed by the sha256 of the brief's raw bytes; brief summon reads the same path
+func briefStamp(raw []byte) (sum, stamp string) {
+	sum = fmt.Sprintf("%x", sha256.Sum256(raw))
+	return sum, filepath.Join(stateDir(), "briefs", sum+".json")
+}
+
 func briefCheck(r *Run, args []string, flags Flags) (any, error) {
 	path := args[0]
 	raw, err := os.ReadFile(path)
@@ -78,7 +84,7 @@ func briefCheck(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	abs, _ := filepath.Abs(path)
-	sum := fmt.Sprintf("%x", sha256.Sum256(raw))
+	sum, stamp := briefStamp(raw)
 	r.Open(home(repo))
 
 	var lines []briefLine
@@ -154,7 +160,6 @@ func briefCheck(r *Run, args []string, flags Flags) (any, error) {
 		return nil, &Fail{Refused: true, Msg: strings.Join(msg, "\n"), Next: strings.TrimSpace("x brief check " + quote(path) + " " + repoFlag(flags))}
 	}
 
-	stamp := filepath.Join(stateDir(), "briefs", sum+".json")
 	if err := r.Step("stamp", "the pass, keyed by the brief's hash", func() (string, error) {
 		if err := os.MkdirAll(filepath.Dir(stamp), 0o700); err != nil {
 			return "", err

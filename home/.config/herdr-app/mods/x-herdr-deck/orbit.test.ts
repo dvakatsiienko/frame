@@ -15,7 +15,7 @@ import {
     nextSeats,
     pendingPresses,
     phasesOf,
-    runningPids,
+    runningThreads,
     savePress,
     seatFacts,
     sentSteer,
@@ -80,10 +80,6 @@ describe('a card finds its state file by pid', () => {
 
     test('a pid with no state file has none', () => {
         expect(stateOfPid([{ at: 1, pid: 8, sid: 'c' }], 7)).toBeNull();
-    });
-
-    test('only the pids ps printed count as running', () => {
-        expect([...runningPids(' 3308\n  412\n\n')]).toEqual([3308, 412]);
     });
 });
 
@@ -519,5 +515,17 @@ describe('the deck follows a press made on the band (dima, 23:42)', () => {
         expect(
             hotOf({ since: 1 }, { at: now - 17_000, on: false }, now).isOn,
         ).toBe(false);
+    });
+});
+
+// FRM-570: a crashed bg session leaves the deck at the next refresh, not when some session rewrites the store
+describe('runningThreads', () => {
+    const threads = [{ pid: 101 }, { pid: 202 }, { pid: 303 }];
+    test.each([
+        ['ps names the live pids', '  101\n  303\n', [101, 303]],
+        ['every pid gone', '', []],
+        ['ps gave no answer', null, [101, 202, 303]],
+    ])('%s', (_why, out, pids) => {
+        expect(runningThreads(threads, out).map((t) => t.pid)).toEqual(pids);
     });
 });

@@ -4,7 +4,6 @@ import {
     backgroundWait,
     capOf,
     capReset,
-    isFleetName,
     parseWait,
     waitSpans,
 } from '../hooks/parse.ts';
@@ -26,28 +25,6 @@ test('a 🔭 line quoted before the end is not a wait', () => {
         parseWait('the shape:\n```\n🔭 waiting on ci — a ping\n```\ndone.'),
     ).toBe(undefined);
 });
-
-for (const [name, fits] of [
-    ['☕️ 🔧 FRM-303 code: stash keep-hot', true],
-    ['🎯 🔎 BYT-12 verify: atelier', true],
-    ['⚡ 🔧 codie: mods lane 3 | FRM-467', true],
-    ['⚡ 🔎 sixth sense: mods lane 3 | main', true],
-    ['🌗 🔧 codie: cli lane | FRM-383', true],
-    ['⚡ 🔧 mods lane 3 codie: FRM-431', true],
-    ['⚡️ 🔎 mods lane 3 sixth sense: main', true],
-    ['🌗 🔧 cli lane codie: FRM-383', true],
-    ['🌘 🔧 sys codie: wisps', true],
-    ['🌗 🎨 designer: atelier', true],
-    ['⚡ lane notes', false],
-    ['🔎 sixth sense: FRM-268', false],
-    ['reply message handler', false],
-    ['🐦 ⬛ crow', true],
-    ['crow probe', false],
-    ['wisp', false],
-] as const)
-    test(`the fleet name check ${fits ? 'passes' : 'flags'} «${name}»`, () => {
-        expect(isFleetName(name)).toBe(fits);
-    });
 
 test('no background work waits on nothing', () => {
     expect(backgroundWait([])).toBe(undefined);

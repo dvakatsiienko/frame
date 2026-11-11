@@ -12,6 +12,7 @@ const PRESS = '{"prs":{"at":"2026-11-07T13:00:00.000Z","by":"press"}}';
 
 type World = {
     brake?: string;
+    holds?: string[];
     files?: Record<string, string>;
     registry?: 'bg' | 'interactive' | 'none';
 };
@@ -52,8 +53,8 @@ function world(on: On, opts: World = {}) {
                 stdout,
             },
         });
-        if (e.argv.includes('get-url'))
-            return answer(0, 'https://github.com/o/r.git\n');
+        if (e.argv.includes('repo-slug'))
+            return answer(0, JSON.stringify({ data: { repo: 'o/r' } }));
         if (e.argv.includes('--brake-check')) {
             // the argv x/go's TestBrakeCheckAnswersOneReader runs for real
             expect(e.argv).toEqual([
@@ -68,7 +69,13 @@ function world(on: On, opts: World = {}) {
                 ? answer(1, '')
                 : answer(
                       0,
-                      JSON.stringify({ data: { brake: opts.brake ?? '' } }),
+                      JSON.stringify({
+                          data: {
+                              brake: opts.brake ?? '',
+                              holds: opts.holds ?? [],
+                              holdsUnread: '',
+                          },
+                      }),
                   );
         }
         return e.argv[0] === 'id'
@@ -443,15 +450,14 @@ test('a hold-only graphql line under prs logs no pass', async ($, on) => {
     expect(appended).toEqual([]);
 });
 
-test('a hold-only graphql line under prs reads no brake', async ($, on) => {
-    const { brakeReads, ran } = world(on, {
+test('a hold-only graphql line under prs passes a brake that is on', async ($, on) => {
+    const { ran } = world(on, {
         brake: '#8 merged a head',
         files: { [REAL]: ON },
     });
     const line = `gh api graphql -F threadId=$ID -f query='mutation { a }'`;
     expect((await bash($, line)).deny).toBe(undefined);
     expect(ran).toEqual([line]);
-    expect(brakeReads).toEqual([]);
 });
 
 test('his phrase with no registry row says it moved nothing', async ($, on) => {
@@ -524,10 +530,8 @@ for (const [name, store] of [
 
 test('his hold still stops a raw merge under prs', async ($, on) => {
     const { ran } = world(on, {
-        files: {
-            '/planted-home/.local/state/x/merge-hold/o_r.json': '{"prs":["7"]}',
-            [REAL]: ON,
-        },
+        files: { [REAL]: ON },
+        holds: ['7'],
     });
     expect((await bash($, 'gh pr merge 7')).deny).toContain('held by dima');
     expect(ran).toEqual([]);
@@ -547,7 +551,7 @@ test("x's brake, its label or a revert, stops a raw merge under prs", async ($, 
 test('a brake that does not read refuses a raw merge under prs', async ($, on) => {
     const { ran } = world(on, { brake: 'fails', files: { [REAL]: ON } });
     expect((await bash($, 'gh pr merge 7')).deny).toContain(
-        'the brake did not read',
+        'x lane merge-auto --brake-check did not read',
     );
     expect(ran).toEqual([]);
 });
