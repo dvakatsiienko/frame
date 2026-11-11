@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T17:44:00Z'
+updated_date: '2026-11-11T17:46:00Z'
 labels:
   - s
   - clio-wing-1
@@ -19,29 +19,27 @@ ordinal: 1001
 - [ ] #1 FRM-491 the siesta binds on one Stop hook, and a delivered tick gets resolved: mine by hand (it edits _clio/); 📌 remind dima what it is about before i start (his 17:35 ask)
 - [ ] #2 FRM-550 a seat names the pattern dima decided before it acts against it: taken from main on his 17:35 word; 📌 remind dima what it is about before i start
 - [ ] #3 FRM-575 clio-revive: its sign through clio:shape-lane (the open probe: a throwaway seat killed and revived, cache read), then a quick lane builds it
-- [ ] #4 cli lane 8 running (#159): FRM-560 with FRM-414 riding, then FRM-570 → FRM-424 → FRM-436, x/go one writer; spec in the wing 1 tree .scratch/cli-lane-8/
-- [ ] #5 PK-349 #8 + #13 «seat» → «thread» sweep, taken from main on dima's 19:43 word: docs now as an almost-freebie, then the open linear bodies (FRM-567, FRM-568)
+- [ ] #4 PK-349 #8 + #13 «seat» → «thread» sweep, taken from main on dima's 19:43 word: docs now as an almost-freebie, then the open linear bodies (FRM-567, FRM-568)
+- [ ] #5 cli lane 8 running (#161): FRM-570 one reader per rule, rule 9 a thread's identity by session id (re-signed 19:36), names x lane plan-steps, x thread, x linear sign-check; then FRM-424 → FRM-436 → FRM-572; spec ~/frame/.scratch/cli-lane-8/
 - [ ] #6 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
 - [ ] #7 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
 - [ ] #8 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
 - [ ] #9 ⏳ renovate merge round: frame#158, bytes#152–#155 (bytes#155 its minors), prConcurrentLimit 10 kept unless he says — waits for: dima's evergreen word
 - [ ] #10 ⏳ decamp ~/projects/bytes/.claude/worktrees/FRM-465-renovate-comment: merged (bytes#156), but decamp refuses on 2 seed copies (apps/design-loupe/.runtime/, apps/trophy-sys/.env.local), codie checked both are copies — waits for: dima's word to trash them
-- [ ] #11 ⏳ FRM-570 next: to the cli codie once #159 lands and its second wind is done — waits for: #159 merge
-- [ ] #12 ⏳ PK-378 thread names drop the member word: x reader, then memory, skills, live renames — waits for: dima on o41
-- [ ] #13 ⏳ FRM-570:W5 right after FRM-570 merges: make every running thread name pretty (PK-378 shape), memory and skills first, then each live seat renamed — waits for: #161 merge
-- [ ] #14 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
-- [ ] #15 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
-- [ ] #16 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #17 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #18 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
-- [ ] #19 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #20 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #21 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
-- [ ] #22 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
-- [ ] #23 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #24 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #25 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #26 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #11 ⏳ FRM-570:W5 right after FRM-570 merges: make every running thread name pretty (PK-378 shape), memory and skills first, then each live seat renamed — waits for: #161 merge
+- [ ] #12 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
+- [ ] #13 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
+- [ ] #14 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #15 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #16 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
+- [ ] #17 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #18 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #19 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
+- [ ] #20 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
+- [ ] #21 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #22 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #23 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #24 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -236,4 +234,10 @@ done 2026-11-11 19:12: ⏳ FRM-414 re-sign: the two verb names (o25) written int
 done 2026-11-11 19:12: BYT-94 exit 8: read it on bytes#156 (a plain bytes pr, merged 11-11 16:14), then its card for dima's look (BYT-94 Done)
 
 done 2026-11-11 19:12: tails lane 1 running: 🌗 🔧 codie: tails lane 1 solves FRM-465 evergreen v2 alone (dima 17:41: FRM-402 not urgent, the speak pair rides speak v2); spec in the wing 1 tree .scratch/tails-lane-1/ (FRM-465 Todo, FRM-402 Todo)
+
+done 2026-11-11 19:45: ⏳ PK-378 thread names drop the member word: x reader, then memory, skills, live renames — waits for: dima on o41 (PK-378 open)
+
+done 2026-11-11 19:45: ⏳ FRM-570 next: to the cli codie once #159 lands and its second wind is done — waits for: #159 merge (FRM-570 In Progress)
+
+done 2026-11-11 19:45: cli lane 8 running (#159): FRM-560 with FRM-414 riding, then FRM-570 → FRM-424 → FRM-436, x/go one writer; spec in the wing 1 tree .scratch/cli-lane-8/ (FRM-560 Done, FRM-414 In Progress, FRM-570 In Progress, FRM-424 Todo, FRM-436 Todo)
 <!-- SECTION:NOTES:END -->
