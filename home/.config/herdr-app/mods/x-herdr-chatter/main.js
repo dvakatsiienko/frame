@@ -5290,7 +5290,7 @@ export default class ClaudeChat extends View {
     /** @param {import('gpui-kit').Context} cx @param {import('./band.js').BandButton} btn */
     press(cx, btn) {
         const key = /** @type {import('./band.js').PressKey} */ (btn.key);
-        if (!['wind', 'hot', 'waker', 'afk'].includes(key)) return;
+        if (!['wind', 'hot', 'waker', 'afk', 'override'].includes(key)) return;
         const on = !btn.isOn;
         const at = Date.now();
         /** @type {import('./band.js').Pending} */
@@ -5355,7 +5355,7 @@ export default class ClaudeChat extends View {
         const base = bandButtons({
             fleet: this.states?.fleet,
             isDeckShown: true,
-            override: { isOn: false },
+            override: this.override ?? { isOn: false },
             thread: this.states?.thread,
         });
         /** @type {import('./band.js').Pending} */
@@ -5374,7 +5374,7 @@ export default class ClaudeChat extends View {
         const base = bandButtons({
             fleet: this.states?.fleet,
             isDeckShown: true,
-            override: { isOn: false },
+            override: this.override ?? { isOn: false },
             thread: this.states?.thread,
         });
         /** @type {import('./band.js').Pending} */

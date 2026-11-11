@@ -70,7 +70,7 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
             ['hot', false, false],
             ['waker', false, false],
             ['afk', false, false],
-            ['override', false, false],
+            ['override', false, true],
             ['settings', false, false],
             ['board', true, true],
         ]);
@@ -202,6 +202,28 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
     });
 });
 
+describe('the 🔓 is his to press (o95)', () => {
+    const off = { isDeckShown: true, override: { isOn: false } };
+    const lock = (state: Parameters<typeof bandButtons>[0]) =>
+        bandButtons(state).find((b) => b.key === 'override');
+
+    test('it is live with no state file, since the store is read directly', () => {
+        expect(lock(off)?.isLive).toBe(true);
+    });
+
+    test('a press the store has not answered shows the state it asked for, pending', () => {
+        expect(
+            lock({ ...off, pending: { override: { at: 1, on: true } } }),
+        ).toMatchObject({ isOn: true, isPending: true });
+    });
+
+    test('with no press waiting it reads the store', () => {
+        expect(
+            lock({ ...off, override: { isOn: true, since: 'x' } }),
+        ).toMatchObject({ isOn: true, isPending: false });
+    });
+});
+
 describe('a press is one line of the band press file', () => {
     const now = Date.parse('2026-11-10T22:00:00Z');
     const day = 24 * 60 * 60 * 1000;
@@ -217,6 +239,14 @@ describe('a press is one line of the band press file', () => {
             at: now,
             button: 'afk',
             on: false,
+        });
+    });
+
+    test('the override is fleet-wide: its line names no thread', () => {
+        expect(pressLine('override', true, 'abc', now)).toEqual({
+            at: now,
+            button: 'override',
+            on: true,
         });
     });
 
