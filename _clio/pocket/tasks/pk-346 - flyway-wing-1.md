@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T19:34:00Z'
+updated_date: '2026-11-11T19:38:00Z'
 labels:
   - s
   - clio-wing-1
@@ -28,20 +28,23 @@ ordinal: 1001
 - [ ] #10 ⏳ decamp ~/projects/bytes/.claude/worktrees/FRM-465-renovate-comment: merged (bytes#156), but decamp refuses on 2 seed copies (apps/design-loupe/.runtime/, apps/trophy-sys/.env.local), codie checked both are copies — waits for: dima's word to trash them
 - [ ] #11 ⏳ right after FRM-570 merges (FRM-570:W5 «make all currently running thread names pretty. don't forget.»): the naming rule rewritten to the PK-378 shape (memory and skills first), a thread record seeded for each running thread (they read «unknown» otherwise, codie 20:58), each one renamed and its herdr tab retitled — waits for: #161 merge
 - [ ] #12 ⏳ x linear sign-check prints the body hash it judged (merge_sign.go shortHash is the reader), a rider on cli lane 8 after #161 for FRM-519 slice 19; ping the mods codie when it lands (main 21:33) — waits for: #161 merge
-- [ ] #13 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
-- [ ] #14 📅 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close — on: 2026-11-12
-- [ ] #15 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
-- [ ] #16 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #17 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #18 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
-- [ ] #19 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #20 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #21 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
-- [ ] #22 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
-- [ ] #23 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #24 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #25 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #26 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #13 ⏳ seat sweep wave B: mods (x-mod-guard, x-mod-stash, set.test) and herdr mods (deck, chatter, tabs, agents-list), ~310 hits, riders main hands to the mods and herdr codies at their next chunk boundary, rename only (main agreed 21:37) — waits for: main's lanes
+- [ ] #14 ⏳ seat sweep wave C: x/go/stacks_test.go (1 hit), a rider on cli lane 8 after #161 — waits for: #161 merge
+- [ ] #15 ⏳ x brief check offline stamp check (the summon's ~8 s networked check, codie 21:25): a FRM-572 line with seven names (x:top-seven) and a ⚖️ worth it (removes 8 s per summon; cheaper door: cache the last stamp), to dima — waits for: FRM-570 merge
+- [ ] #16 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
+- [ ] #17 📅 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close — on: 2026-11-12
+- [ ] #18 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
+- [ ] #19 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #20 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #21 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
+- [ ] #22 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #23 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #24 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
+- [ ] #25 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
+- [ ] #26 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #27 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #28 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #29 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
 <!-- AC:END -->
 
 ## Implementation Notes
