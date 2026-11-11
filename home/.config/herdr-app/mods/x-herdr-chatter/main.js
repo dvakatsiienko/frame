@@ -66,6 +66,7 @@ import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
 import * as ask from './question.js';
 import { QUEUED_IDLE_MS, queuedAfterIdle, queuedAfterRow } from './queued.js';
+import { relayIn, relayLine } from './relay.js';
 import {
     fileLinks,
     followAfterWheel,
@@ -259,6 +260,9 @@ const px = (n) => Math.round(((n * chatLook().size) / 13) * 2) / 2;
 const NARROW = 820;
 // his message's last px, where its fork icon sits: a press there forks (rows take no handlers, clickRow)
 const FORK_W = 28;
+/** a message between threads: one another thread sent, or this one's SendMessage @param {any} item */
+const isRelay = (item) =>
+    item?.kind === 'relay' || item?.name === 'SendMessage';
 /** the transcript line a row stands for, its uuid: a turn's fold by its first work item @param {any} row */
 const uuidOf = (row) =>
     row ? ((row.item ?? row.x?.work?.[0]?.[0])?.uuid ?? null) : null;
@@ -1494,6 +1498,7 @@ export default class ClaudeChat extends View {
         /** @type {string} */
         this.rowFit = '';
         this.seek = null;
+        this.relayIds = new Set();
     }
 
     // The other Claude agents' sessions, found ahead of time (one process walk for all), so
@@ -2391,6 +2396,16 @@ export default class ClaudeChat extends View {
                 into === this
             )
                 this.learnSkills(d.attachment.content);
+            // a message from another thread: one folded line, once, though it lands both queued and at a turn start
+            const relay = relayIn(d);
+            if (relay) {
+                into.relayIds ??= new Set();
+                if (!relay.msgId || !into.relayIds.has(relay.msgId)) {
+                    if (relay.msgId) into.relayIds.add(relay.msgId);
+                    into.items.push({ id: d.uuid, ...relay });
+                }
+                continue;
+            }
             d = midTurnPrompt(d) ?? d;
             if (into === this && d.type === 'user') this.joinQueued(d);
             if (d.isMeta || d.isCompactSummary) continue;
@@ -2452,6 +2467,7 @@ export default class ClaudeChat extends View {
                         });
                     else if (b.type === 'tool_use') {
                         const tool = {
+                            at: d.timestamp ?? null,
                             id: b.id,
                             input: b.input,
                             kind: 'tool',
@@ -3013,6 +3029,7 @@ export default class ClaudeChat extends View {
     // ---- drawing
 
     bubble(t, item, i) {
+        if (isRelay(item)) return this.relayRow(t, item);
         const mine = chatLook().mine;
         if (item.kind === 'user') {
             // his words: a bubble on the right in an accent tint (after shepherdr's chat), or full width on the left
@@ -3343,14 +3360,17 @@ export default class ClaudeChat extends View {
             if (to < from) to = turn.length;
             const work = turn.slice(from, to);
             const folded = keepReplies
-                ? work.filter(([x]) => x.kind !== 'claude')
+                ? work.filter(([x]) => x.kind !== 'claude' && !isRelay(x))
                 : work;
             if (!folded.length) return turn.filter(visible);
             const key = `${this.address}:${turn[0][1]}`;
             const open = this.unfolded.has(key);
             const shown = open
                 ? work
-                : work.filter(([x]) => keepReplies && x.kind === 'claude');
+                : work.filter(
+                      ([x]) =>
+                          keepReplies && (x.kind === 'claude' || isRelay(x)),
+                  );
             return [
                 ...turn.slice(0, from),
                 { key, open, work: folded },
@@ -4507,6 +4527,74 @@ export default class ClaudeChat extends View {
             : { anchor: this.firstKey, follow: false, uuid: this.firstUuid };
     }
 
+    // A message between threads, folded to one line: «sender → receiver · first words · time»; a press opens its
+    // whole text in the row below
+    /** @param {any} t @param {any} item */
+    relayRow(t, item) {
+        const open = this.open.has(item.id);
+        const self =
+            /** @type {Record<string, string>} */ (
+                shared('x-herdr-agents.names') ?? {}
+            )[this.address] ?? 'this thread';
+        const isIn = item.kind === 'relay';
+        const line = relayLine({
+            at: item.at,
+            from: isIn ? item.from : self,
+            text: isIn ? item.text : String(item.input?.message ?? ''),
+            to: isIn ? self : String(item.input?.to ?? 'another thread'),
+        });
+        return h_flex()
+            .id(`relay-${item.id}`)
+            .w_full()
+            .gap(8)
+            .items_center()
+            .py(3)
+            .px(8)
+            .rounded(6)
+            .cursor_pointer()
+            .text_size(px(12))
+            .text_color(t.muted)
+            .bg(fade(t.accent, isIn ? '14' : '0a'))
+            .hover((s) => s.bg(t.hover).text_color(t.foreground))
+            .tooltip(open ? 'fold it' : 'show the whole message')
+            .child(
+                div()
+                    .flex_none()
+                    .text_size(px(10))
+                    .text_color(t.dim)
+                    .child(open ? '▾' : '▸'),
+            )
+            .child(div().flex_1().min_w(0).truncate().child(line));
+    }
+
+    // A message between threads, opened: its whole text, selectable
+    /** @param {any} t @param {any} item */
+    relayBody(t, item) {
+        const text =
+            item.kind === 'relay'
+                ? item.text
+                : String(item.input?.message ?? '');
+        return div()
+            .w_full()
+            .pl(18)
+            .child(
+                div()
+                    .w_full()
+                    .px(10)
+                    .py(8)
+                    .rounded(6)
+                    .bg(t.surface)
+                    .border(1)
+                    .border_color(t.border)
+                    .child(
+                        TextView.markdown(
+                            `${this.pre}relay-${item.id}`,
+                            text,
+                        ).selectable(true),
+                    ),
+            );
+    }
+
     // the room around a row: the gap below it, and the side padding (a readable column when narrow)
     rowSpace() {
         const look = chatLook();
@@ -4595,9 +4683,10 @@ export default class ClaudeChat extends View {
             });
             files();
             if (
-                item.kind === 'tool' &&
-                !AGENT_TOOLS.has(item.name) &&
-                item.name !== 'AskUserQuestion' &&
+                (isRelay(item) ||
+                    (item.kind === 'tool' &&
+                        !AGENT_TOOLS.has(item.name) &&
+                        item.name !== 'AskUserQuestion')) &&
                 this.open.has(item.id)
             )
                 rows.push({ id, item, key: `${key}:detail`, kind: 'detail' });
@@ -4629,7 +4718,9 @@ export default class ClaudeChat extends View {
                     : row.kind === 'part'
                       ? this.replyPart(t, row)
                       : row.kind === 'detail'
-                        ? this.toolBody(t, row.item)
+                        ? isRelay(row.item)
+                            ? this.relayBody(t, row.item)
+                            : this.toolBody(t, row.item)
                         : this.bubble(t, row.item, row.id);
         return div()
             .w_full()
@@ -4809,7 +4900,7 @@ export default class ClaudeChat extends View {
                 await this.fork(agent, item.before, cx);
             });
             return;
-        } else if (item.kind === 'system')
+        } else if (item.kind === 'system' || isRelay(item))
             this.open.has(item.id)
                 ? this.open.delete(item.id)
                 : this.open.add(item.id);
@@ -5610,7 +5701,8 @@ export default class ClaudeChat extends View {
             look.tools === 'show' ||
             ['user', 'claude', 'note'].includes(item.kind) ||
             AGENT_TOOLS.has(item.name) ||
-            item.name === 'AskUserQuestion';
+            item.name === 'AskUserQuestion' ||
+            isRelay(item);
         // Questions a hook sent back are left out: Claude asks again at once.
         const all = (sub ? sub.items : this.items)
             .map((item, i) => [item, sub ? `${sub.name}-${i}` : i - this.base])

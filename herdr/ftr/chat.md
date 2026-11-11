@@ -164,6 +164,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given dima types «use `ls` here»
   - when the closing backtick lands
   - then `ls` draws as one monospace chip the caret skips and one delete removes, and the sent message reads «use `ls` here»; three backticks open a fence and make no chip
+- ⬜ a message between threads folds to one line (FRM-562)
+  - given another thread sends this one a message, or this one sends one with SendMessage
+  - then it draws as one line, «🦉 clio → ⚡ 🔧 codie: herdr lane · first words · 21:39», tinted, even with tool rows hidden and in a folded turn; a click opens its whole text below it, a second click folds it
+  - and a message that lands both queued mid-turn and at a turn start draws once
+  - decision: read from Claude Code's own record of the sender (`origin.kind: peer`), never from the message's text
 - ⬜ a file a reply links opens from a row under it
   - given a reply links a file with a `file://` url
   - then a «📂 <name>» row sits under the reply, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder); a web link in the text opens in the browser as before
