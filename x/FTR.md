@@ -443,8 +443,6 @@
   - given a brief whose backticks name a path, a `pnpm` script or an `x` verb the repo lacks, or a ticket id linear cannot find
   - when `x brief check <brief> --repo <path>` runs
   - then it fails and names each one with its line; a thing the brief asks to build passes when `(new)` follows it
-- ⬜ `x brief check <brief> --stamped` answers whether these bytes passed, from the hash and the stamp alone (FRM-570)
-  - given a brief whose stamp exists, then exit 0 with no repo and no network call; given a changed byte, then exit 1 naming the full `x brief check`; x-mod-guard's brief rule asks this on every codie summon
 - ✅ `x brief check` lints the exit lines
   - given a rate with no n, an exit line with no surface, an exit line into `_clio/`, a relayed approval with no time, jev with no budget, «clio pushes» under an `x:` skill whose `SKILL.md` names `x lane push`, or a «reuse» with no «keep» on its line
   - when it runs

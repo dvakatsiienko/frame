@@ -652,10 +652,6 @@
                     "description": "the repo the brief targets; defaults to the repo of the cwd",
                     "type": "string",
                     "value": "path"
-                },
-                "stamped": {
-                    "description": "only whether these bytes carry a pass stamp: the hash and the stamp, no repo, no network",
-                    "type": "boolean"
                 }
             },
             "name": "brief check",
