@@ -97,18 +97,17 @@ cd "$root" || exit 1
 changed=$(git -C "$root" diff --name-only "$before" refs/heads/main)
 # a bump writes its manifest in main, and left there it is a chore for whoever comes next
 bump() {
-	local name=$1 manifest=$2 message="$tree/.scratch/plugin-bump-message.txt"
-	x plugin bump --apply "$name" || exit 1
+	local name=$1 message="$tree/.scratch/plugin-bump-message.txt"
 	mkdir -p "$tree/.scratch"
 	echo "🔧 plugin-$name: bump for the landing of $branch" >"$message"
-	x lane commit "$message" -- "$manifest" || exit 1
+	x lane commit --bump "$name" "$message" || exit 1
 }
 if grep -q '^_clio/plugin-clio/' <<<"$changed"; then
-	bump clio _clio/plugin-clio/.claude-plugin/plugin.json
+	bump clio
 fi
 # mods run from source, so only the rest of plugin x needs a bump
 if grep '^home/.claude/plugin-x/' <<<"$changed" | grep -qv '^home/.claude/plugin-x/mods/'; then
-	bump x home/.claude/plugin-x/.claude-plugin/plugin.json
+	bump x
 fi
 # one push for the piece and its bumps: each push reruns the tests
 x lane push --apply || exit 1
