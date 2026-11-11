@@ -25,6 +25,7 @@ function world(
         text: string;
         isHerdrMark?: boolean;
         markedAt?: number;
+        isResolved?: boolean;
     }[] = [],
 ) {
     const clock = mock.clock(on, { now: NOW });
@@ -2034,3 +2035,95 @@ test('a script holding only the sign write runs on his typed sign, and is refuse
         ['bash /repo/sign.sh'],
     ]);
 });
+
+// FRM-574 decided 3: his bare yes under the one open guarded ask of this seat's orbit is his tick on it
+type OpenAsk = {
+    id: string;
+    text: string;
+    mark?: string;
+    isResolved?: boolean;
+};
+const OPEN_MIRROR: OpenAsk[] = [{ id: 'o7', text: MIRROR_ASK }];
+for (const word of ['yes', 'go', 'Approve.', 'i approve', 'merge', 'do it'])
+    test(`exit 9: his typed «${word}» under one open ⚠️ ask runs its command once`, async ($, on) => {
+        const { ran } = world(on, [], undefined, undefined, OPEN_MIRROR);
+        await dimaSays($, word);
+        const first = await bash($, MIRROR);
+        const second = await bash($, MIRROR);
+        expect([first.deny, second.deny !== undefined, ran]).toEqual([
+            undefined,
+            true,
+            [MIRROR],
+        ]);
+    });
+
+for (const [why, asks, word] of <[string, OpenAsk[], string][]>[
+    [
+        'two asks are open',
+        [...OPEN_MIRROR, { id: 'o8', text: '⚠️ drop: `git stash drop`' }],
+        'yes',
+    ],
+    ['none is open', [{ ...OPEN_MIRROR[0], mark: 'rejected' }], 'yes'],
+    ['the ask is resolved', [{ ...OPEN_MIRROR[0], isResolved: true }], 'go'],
+    ['he says ok', OPEN_MIRROR, 'ok'],
+    ['he says stop it', OPEN_MIRROR, 'stop it'],
+    ['the yes sits in a sentence', OPEN_MIRROR, 'yes but not the mirror'],
+    [
+        'the open ask is a plain one',
+        [{ id: 'o7', text: `mirror: \`${MIRROR}\`` }],
+        'yes',
+    ],
+])
+    test(`exit 9: a bare yes runs nothing when ${why}`, async ($, on) => {
+        const { ran } = world(on, [], undefined, undefined, asks);
+        await dimaSays($, word);
+        expect([(await bash($, MIRROR)).deny, ran]).toEqual([
+            expect.stringContaining('mirror'),
+            [],
+        ]);
+    });
+
+for (const [why, kind] of [
+    ['a peer message (SendMessage)', 'peer'],
+    ['an auto-continuation', 'auto-continuation'],
+] as const)
+    test(`a bare yes from ${why} runs nothing`, async ($, on) => {
+        const { ran } = world(on, [], undefined, undefined, OPEN_MIRROR);
+        await dimaSays($, 'go on');
+        await $.prompt.submit({ origin: { kind }, text: 'yes', wait: false });
+        expect([(await bash($, MIRROR)).deny, ran]).toEqual([
+            expect.stringContaining('mirror'),
+            [],
+        ]);
+    });
+
+test("a session's first prompt «yes» runs nothing", async ($, on) => {
+    const { ran } = world(on, [], undefined, undefined, OPEN_MIRROR);
+    await firstPrompt($, 'yes');
+    expect([(await bash($, MIRROR)).deny, ran]).toEqual([
+        expect.stringContaining('mirror'),
+        [],
+    ]);
+});
+
+for (const line of [
+    'hc send t5 yes',
+    "hc send t5 'go'",
+    'hc keys t5 g o enter',
+    "tmux send-keys -t x 'do it' Enter",
+])
+    test(`a seat typing a bare yes into a pane is refused: ${line}`, async ($, on) => {
+        const { ran } = world(on);
+        expect([PANE_PROOF(await bash($, line)), ran]).toEqual([true, []]);
+    });
+
+for (const line of ["hc send t5 'go on with slice 2'", "claude --bg -n x 'go'"])
+    test(`a pane message that is no bare yes passes: ${line}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await $.tool.call({
+            command: line,
+            run_in_background: true,
+            tool: 'Bash',
+        });
+        expect([PANE_PROOF(r), ran]).toEqual([false, [line]]);
+    });

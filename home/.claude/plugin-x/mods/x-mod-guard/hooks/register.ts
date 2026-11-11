@@ -41,6 +41,7 @@ import {
     overrideStoreRefusal,
     overrideStoreWrite,
     overrideTypedDown,
+    typedPart,
 } from './rules/operator-override.ts';
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
@@ -68,6 +69,7 @@ import {
     foregroundClaude,
     globMatches,
     installDirs,
+    isBareYes,
     isGlob,
     isPressPath,
     isSignAsk,
@@ -1070,7 +1072,10 @@ async function tickFor(
     const { value: seatTicks = [] } = await $.state
         .get(TICKS)
         .catch(() => ({ value: [] }));
-    const ticks = [...seatTicks, ...(await herdrTicks($))];
+    const { value: yes = [] } = await $.state
+        .get(YES)
+        .catch(() => ({ value: [] }));
+    const ticks = [...seatTicks, ...yes, ...(await herdrTicks($))];
     const { value: spent = [] } = await $.state.get(SPENT);
     const now = await $.clock.now();
     const tick = [...ticks]
@@ -1085,6 +1090,38 @@ async function tickFor(
         );
     if (tick) spends.push(`${tick.id}@${tick.at}:${scope(tick)}`);
     return tick;
+}
+// his bare yes under the one guarded ask his seat's orbit holds open is his tick on it (FRM-574 decided 3): only a prompt
+// he typed, so a SendMessage never counts and pane-proof fences his words in an `hc send` or `hc keys`; none open or two
+// open, nothing
+const YES = { key: 'yes', plugin: 'x-mod-guard' } as const;
+async function keepYes($: EngineInterface, text: string) {
+    if (!isBareYes(typedPart(text))) return;
+    const { value: orbit } = await $.state
+        .get(STASH_ORBIT)
+        .catch(() => ({ value: undefined }));
+    const open = (orbit?.asks ?? []).filter(
+        (a) =>
+            !a.mark &&
+            !a.isResolved &&
+            !a.isClosed &&
+            /^\s*(⚠️|✍️)/u.test(a.text),
+    );
+    const [ask] = open;
+    if (open.length !== 1 || !ask) return;
+    const now = await $.clock.now();
+    const { value: kept = [] } = await $.state.get(YES);
+    await $.state.set(YES, [
+        ...kept.filter((t) => now - t.at <= TICK_MS),
+        {
+            at: now,
+            id: `yes:${ask.id}`,
+            targets: [...ask.text.matchAll(/`([^`]+)`/g)].flatMap((m) =>
+                m[1] ? [m[1]] : [],
+            ),
+            text: ask.text,
+        },
+    ]);
 }
 // his typed «sign <id>» (FRM-544 slice 0): written only by this plugin's prompt.submit from his own prompt, the proof a
 // # dima-ok marker rests on; it opens what a sign tick opens for its id, each write once, inside a tick's 2 h
@@ -2878,6 +2915,7 @@ export const register: Register = (on) => {
                 await $.state.set(PROMPT, e.text).catch(() => undefined);
                 await $.state.set(TOLD, e.text).catch(() => undefined);
                 await keepTypedSigns($, e.text).catch(() => undefined);
+                await keepYes($, e.text).catch(() => undefined);
             }
             const ask = overrideAsked(e.text);
             const firstIds = isFirst ? signsTyped(e.text) : [];

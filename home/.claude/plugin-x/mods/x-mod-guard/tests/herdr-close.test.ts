@@ -334,14 +334,16 @@ for (const line of [
     'hc ls --json --label seat=helga',
 ])
     test(`a label that proves no clio passes: ${line}`, async ($, on) => {
-        const { ran } = world(on);
+        const { ran, store } = world(on);
+        store.set('rule-mode:herdr-label', 'enforce');
         const r = await bash($, line);
         expect([r.deny, ran]).toEqual([undefined, [line]]);
     });
 
 test('a clio seat spawns a wing with its clio label', async ($, on) => {
     const line = 'hc run --bg --label seat=clio-wing-3 -- claude';
-    const { ran } = world(on, [], 't40');
+    const { ran, store } = world(on, [], 't40');
+    store.set('rule-mode:herdr-label', 'enforce');
     const r = await bash($, line);
     expect([r.deny, ran]).toEqual([undefined, [line]]);
 });

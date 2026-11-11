@@ -10,7 +10,9 @@ declare module 'claude-code' {
         // written: the files a Write or a Bash call wrote in the running turn, path to text, so a later run of one reads its commands
         // signs: the ids dima typed «sign <id>» for at the composer or the bridge, each with its prompt's time, kept 2 h
         // firstSign: the ids this session's first prompt typed «sign» for, this prompt's only; x-mod-stash reads it
+        // yes: dima's bare yes typed under the one open warning or sign ask of this seat's orbit, kept as his tick on it for 2 h
         'x-mod-guard': {
+            yes: { id: string; text: string; targets: string[]; at: number }[];
             signs: { id: string; at: number }[];
             firstSign: { ids: string[]; at: number } | null;
             prompted: boolean;
@@ -40,6 +42,9 @@ declare module 'claude-code' {
                     // a mark read off his fleet-board press, and when it was made
                     isHerdrMark?: boolean;
                     markedAt?: number;
+                    // answered: a bare yes of his counts only while the ask is still open
+                    isResolved?: boolean;
+                    isClosed?: boolean;
                 }[];
             };
         };
