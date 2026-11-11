@@ -84,6 +84,7 @@ import {
     midTurnPrompt,
     systemLine,
 } from './system.js';
+import { RADIUS, TEXT, button } from './ui.js';
 
 const CLAUDE = `${home()}/.claude`;
 // The chat's look, shared by every copy and kept across restarts; the ⚙ popup changes it.
@@ -3788,21 +3789,6 @@ export default class ClaudeChat extends View {
         return settings().font_family ?? settings().font ?? 'JetBrains Mono';
     }
 
-    button(t, id, label, onClick, strong) {
-        return div()
-            .id(id)
-            .px(10)
-            .py(4)
-            .rounded(6)
-            .text_size(px(12))
-            .cursor_pointer()
-            .bg(strong ? t.solid : t.raised)
-            .text_color(strong ? t.solid_foreground : t.foreground)
-            .hover((s) => s.opacity(0.85))
-            .when(Boolean(onClick), (el) => el.on_click(onClick))
-            .child(label);
-    }
-
     status(t, agent) {
         if (agent.status === 'blocked') {
             // An AskUserQuestion: its own card. Anything else (a permission prompt): the screen.
@@ -3855,8 +3841,9 @@ export default class ClaudeChat extends View {
                         .flex_wrap()
                         .children(
                             ['1', '2', '3'].map((k) =>
-                                this.button(
+                                button(
                                     t,
+                                    px,
                                     `key-${k}`,
                                     k,
                                     this.keys(k),
@@ -3865,19 +3852,20 @@ export default class ClaudeChat extends View {
                             ),
                         )
                         .child(
-                            this.button(
+                            button(
                                 t,
+                                px,
                                 'key-enter',
                                 'Enter',
                                 this.keys('enter'),
                             ),
                         )
                         .child(
-                            this.button(t, 'key-esc', 'Esc', this.keys('esc')),
+                            button(t, px, 'key-esc', 'Esc', this.keys('esc')),
                         )
                         .child(div().flex_1())
                         .child(
-                            this.button(t, 'to-terminal', 'Open terminal', () =>
+                            button(t, px, 'to-terminal', 'Open terminal', () =>
                                 this.toTerminal(agent.address),
                             ),
                         ),
@@ -3914,7 +3902,7 @@ export default class ClaudeChat extends View {
             )
             .when(!this.stuck, (el) =>
                 el.child(
-                    this.button(t, 'stop', 'Stop', (_e, cx) => this.stop(cx)),
+                    button(t, px, 'stop', 'Stop', (_e, cx) => this.stop(cx)),
                 ),
             );
     }
@@ -4457,8 +4445,9 @@ export default class ClaudeChat extends View {
                                     .right(0)
                                     .justify_center()
                                     .child(
-                                        this.button(
+                                        button(
                                             t,
+                                            px,
                                             'prev-mine',
                                             '↑ Previous message',
                                             (_e, cx) => {
@@ -4488,8 +4477,9 @@ export default class ClaudeChat extends View {
                                 .right(0)
                                 .justify_center()
                                 .child(
-                                    this.button(
+                                    button(
                                         t,
+                                        px,
                                         'newest',
                                         fresh > 0
                                             ? `↓ ${fresh} new ${fresh === 1 ? 'message' : 'messages'}`
@@ -4750,7 +4740,7 @@ export default class ClaudeChat extends View {
                 ? h_flex()
                       .w_full()
                       .justify_center()
-                      .child(this.button(t, 'earlier', 'Show earlier'))
+                      .child(button(t, px, 'earlier', 'Show earlier'))
                 : row.kind === 'file'
                   ? this.claudeLook(t, this.fileRow(t, row), false)
                   : row.kind === 'turn'
@@ -5760,7 +5750,7 @@ export default class ClaudeChat extends View {
                 .child(text)
                 .when(Boolean(props()?.stack), (el) =>
                     el.child(
-                        this.button(t, 'show-terminal', 'Show terminal', () =>
+                        button(t, px, 'show-terminal', 'Show terminal', () =>
                             this.toTerminal(),
                         ),
                     ),
@@ -5979,7 +5969,7 @@ export default class ClaudeChat extends View {
                             ? viewSwitch(t, 'chat', () =>
                                   this.toTerminal(agent.address),
                               )
-                            : this.button(t, 'terminal', 'Terminal', () =>
+                            : button(t, px, 'terminal', 'Terminal', () =>
                                   this.toTerminal(agent.address),
                               ),
                     ),
@@ -6074,8 +6064,9 @@ export default class ClaudeChat extends View {
                                     !/\[Image #\d+\]/.test(this.leftInBox),
                                     (el) =>
                                         el.child(
-                                            this.button(
+                                            button(
                                                 t,
+                                                px,
                                                 'left-take',
                                                 'Take it',
                                                 (_e, cx) => this.takeLeft(cx),
@@ -6083,8 +6074,9 @@ export default class ClaudeChat extends View {
                                         ),
                                 )
                                 .child(
-                                    this.button(
+                                    button(
                                         t,
+                                        px,
                                         'left-send',
                                         'Send as is',
                                         (_e, cx) => this.sendLeft(cx),
@@ -6098,7 +6090,7 @@ export default class ClaudeChat extends View {
                         el.child(
                             div()
                                 .px(4)
-                                .text_size(px(12))
+                                .text_size(px(TEXT.sm))
                                 .text_color(t.muted)
                                 .child(this.pasteNote),
                         ),
@@ -6107,7 +6099,7 @@ export default class ClaudeChat extends View {
                         el.child(
                             div()
                                 .px(4)
-                                .text_size(px(12))
+                                .text_size(px(TEXT.sm))
                                 .text_color(t.accent)
                                 .child(this.pickNote),
                         ),
@@ -6118,13 +6110,13 @@ export default class ClaudeChat extends View {
                                 .gap(8)
                                 .items_center()
                                 .px(4)
-                                .text_size(px(12))
+                                .text_size(px(TEXT.sm))
                                 .text_color(t.muted)
                                 .child(
                                     div()
                                         .px(8)
                                         .py(2)
-                                        .rounded(6)
+                                        .rounded(RADIUS.control)
                                         .bg(t.raised)
                                         .text_color(t.foreground)
                                         .child(
@@ -6149,8 +6141,9 @@ export default class ClaudeChat extends View {
                                         agent.status !== 'working',
                                     (el) =>
                                         el.child(
-                                            this.button(
+                                            button(
                                                 t,
+                                                px,
                                                 'drop-images',
                                                 'Remove',
                                                 (_e, cx) => this.dropImages(cx),
@@ -6210,7 +6203,7 @@ export default class ClaudeChat extends View {
                                             .pb(6)
                                             .px(8)
                                             .items_center()
-                                            .rounded_b(12)
+                                            .rounded_b(RADIUS.bubble)
                                             .border_l(1)
                                             .border_r(1)
                                             .border_b(1)
@@ -6290,7 +6283,7 @@ export default class ClaudeChat extends View {
                                                             ? t.background
                                                             : t.dim,
                                                     )
-                                                    .text_size(px(15))
+                                                    .text_size(px(TEXT.lg))
                                                     .font_weight(700)
                                                     .hover((s) =>
                                                         s.opacity(0.85),
