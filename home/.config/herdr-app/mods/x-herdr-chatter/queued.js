@@ -1,10 +1,10 @@
-// a message sent while the seat works waits in Claude Code's queue, unseen, until the turn takes it at its next tool
+// a message sent while the thread works waits in Claude Code's queue, unseen, until the turn takes it at its next tool
 // round; the box is empty by then, so it read as lost (dima, 17:20: «yes it confused me and i want it fixed»). each
 // one shows as queued until its row reaches the transcript
 
 /** @typedef {{ at: number, text: string }} Queued */
 
-// past this, a seat idle with the message never in its transcript has dropped it: the chip goes, the turn's own rows stand
+// past this, a thread idle with the message never in its transcript has dropped it: the chip goes, the turn's own rows stand
 export const QUEUED_IDLE_MS = 5000;
 // cc stamps a queued row with its enqueue time, which can sit a moment before the send was timed here
 const STAMP_SLACK_MS = 5000;
@@ -28,9 +28,9 @@ export function queuedAfterRow(queued, text, at) {
 }
 
 /**
- * the queue once the seat has sat idle: a message never taken is dropped after the grace
+ * the queue once the thread has sat idle: a message never taken is dropped after the grace
  * @param {Queued[]} queued
- * @param {number | null} idleSince when the seat last went idle, null while it works
+ * @param {number | null} idleSince when the thread last went idle, null while it works
  * @param {number} now
  * @returns {Queued[]}
  */

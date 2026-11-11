@@ -222,7 +222,7 @@ file he names.
 📊 mini scoreboard for session wrap-ups (created / done / touched / routed) — bullet lines, not a table
 
 🚦 fleet reports as one line per session, in fixed order — 🟢 done-idle, then 🟡 working, then 🔴 blocked;
-each named by its registry name («🌗 🔧 cli lane codie: FRM-399») <!-- cc -->
+each named by its registry name («🌗 🔧 cli | FRM-399») <!-- cc -->
 
 🧾 diff-shaped state changes: `field: old → new`
 

@@ -1,5 +1,5 @@
-// every skill a seat can load, for the / menu: the transcript's own listing misses plugin skills (clio's own never showed),
-// so the chat also reads the plugins enabled for the seat's folder, through the settings layers Claude Code reads:
+// every skill a thread can load, for the / menu: the transcript's own listing misses plugin skills (clio's own never showed),
+// so the chat also reads the plugins enabled for the thread's folder, through the settings layers Claude Code reads:
 // the user's settings, then the project's settings and its local settings, a later layer winning for a plugin
 
 /**
@@ -74,9 +74,9 @@ async function enabledPlugins(fs, home, cwd) {
 }
 
 /**
- * every skill of the plugins enabled for the seat's folder, as `plugin:skill` → what it does
+ * every skill of the plugins enabled for the thread's folder, as `plugin:skill` → what it does
  * @param {SkillFs} fs
- * @param {{ home: string, cwd: string }} seat
+ * @param {{ home: string, cwd: string }} thread
  * @returns {Promise<Map<string, string>>}
  */
 export async function loadableSkills(fs, { home, cwd }) {

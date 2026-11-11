@@ -61,7 +61,7 @@ export const literalAngles = (text) =>
 export const unbold = (text) => text.replaceAll('**', '');
 
 /**
- * seats sort by the words of their name: a leading badge (🦉, ⚡ 🔧) would otherwise order them by emoji code point
+ * threads sort by the words of their name: a leading badge (🦉, ⚡ 🔧) would otherwise order them by emoji code point
  * @param {string} a
  * @param {string} b
  */
@@ -110,7 +110,7 @@ export function withPress(text, press, taken) {
 
 /**
  * the presses in the ticks file the stash has not taken yet, by ask id: the board draws them as pressed from the file
- * itself, so a press waiting on an idle seat's next turn stays ✅ however long it waits
+ * itself, so a press waiting on an idle thread's next turn stays ✅ however long it waits
  * @param {string | null} text
  * @param {number} taken
  * @returns {Map<string, Press['verdict']>}
@@ -183,23 +183,23 @@ export const savePress = (io, path, press, taken) =>
 export const dropPress = (io, path, id, taken) =>
     rewrite(io, path, (text) => withoutPress(text, id, taken));
 
-/** @typedef {{ context: number | null, wait: string | null, week: number | null }} SeatFacts */
-/** @typedef {{ at: number, seats: Record<string, SeatFacts> }} DeckSeats */
+/** @typedef {{ context: number | null, wait: string | null, week: number | null }} ThreadFacts */
+/** @typedef {{ at: number, threads: Record<string, ThreadFacts> }} DeckThreads */
 
-// herdr's shared state, the one door the chat reads a seat's facts through (a mod imports nothing outside its folder)
-export const SEATS_KEY = 'x-herdr-deck.seats';
+// herdr's shared state, the one door the chat reads a thread's facts through (a mod imports nothing outside its folder)
+export const THREADS_KEY = 'x-herdr-deck.threads';
 // unchanged facts are published again this often, so a reader can tell a live deck from a stopped one
-export const SEATS_BEAT_MS = 60 * 1000;
+export const THREADS_BEAT_MS = 60 * 1000;
 
 /**
- * the three facts each live seat shows where dima types, keyed by pid; the waiting-on line, already `waitOf`'s, is
+ * the three facts each live thread shows where dima types, keyed by pid; the waiting-on line, already `waitOf`'s, is
  * drawn plain, so markdown's ** go
  * @param {{ pid: number, status: string, context: number | null, wait: string | null }[]} rows
  * @param {number | null} week
- * @returns {Record<string, SeatFacts>}
+ * @returns {Record<string, ThreadFacts>}
  */
-export function seatFacts(rows, week) {
-    /** @type {Record<string, SeatFacts>} */
+export function threadFacts(rows, week) {
+    /** @type {Record<string, ThreadFacts>} */
     const facts = {};
     for (const row of [...rows].sort((a, b) => a.pid - b.pid))
         facts[String(row.pid)] = {
@@ -211,7 +211,7 @@ export function seatFacts(rows, week) {
 }
 
 /**
- * the waiting-on line a seat shows, on the deck's row and in the chat's band alike: only an idle seat waits on
+ * the waiting-on line a thread shows, on the deck's row and in the chat's band alike: only an idle thread waits on
  * anything; one mid-turn, blocked on a prompt or in an unknown state carries its last reply's line, which is old
  * @param {string} status
  * @param {string | null | undefined} wait
@@ -222,19 +222,20 @@ export const waitOf = (status, wait) =>
 /**
  * the value to publish, or null when the facts are the ones already out and the last beat is recent: setShared
  * re-renders every mod, so an unchanged write is skipped
- * @param {DeckSeats | null | undefined} prev
- * @param {Record<string, SeatFacts>} seats
+ * @param {DeckThreads | null | undefined} prev
+ * @param {Record<string, ThreadFacts>} threads
  * @param {number} now
- * @returns {DeckSeats | null}
+ * @returns {DeckThreads | null}
  */
-export function nextSeats(prev, seats, now) {
+export function nextThreads(prev, threads, now) {
     const same =
-        prev != null && JSON.stringify(prev.seats) === JSON.stringify(seats);
-    if (same && now - prev.at < SEATS_BEAT_MS) return null;
-    return { at: now, seats };
+        prev != null &&
+        JSON.stringify(prev.threads) === JSON.stringify(threads);
+    if (same && now - prev.at < THREADS_BEAT_MS) return null;
+    return { at: now, threads };
 }
 
-// the agents list publishes the pids it shows, in its order: his drag there orders the deck too, a seat it does not
+// the agents list publishes the pids it shows, in its order: his drag there orders the deck too, a thread it does not
 // show going last; one rule, read from shared state, since a mod imports nothing outside its folder
 export const ORDER_KEY = 'x-herdr-agents.order';
 
@@ -289,15 +290,15 @@ export const untickDoor = (pending, mark) =>
     pending === 'tick' && !mark ? 'drop' : 'untick';
 
 /**
- * an ask's id as the board draws it: every seat numbers its asks on its own, so a wing's reads `w1·o8`, another
- * seat's `codie·o1`, and only main clio's stays bare
- * @param {string} seat the session's name
+ * an ask's id as the board draws it: every thread numbers its asks on its own, so a wing's reads `w1·o8`, another
+ * thread's `codie·o1`, and only main clio's stays bare
+ * @param {string} thread the session's name
  * @param {string} id
  */
-export function askLabel(seat, id) {
-    const wing = /\bwing (\d+)/.exec(seat);
+export function askLabel(thread, id) {
+    const wing = /\bwing (\d+)/.exec(thread);
     if (wing) return `w${wing[1]}·${id}`;
-    const word = /[a-z][\w-]*/i.exec(seat)?.[0];
+    const word = /[a-z][\w-]*/i.exec(thread)?.[0];
     return !word || word === 'clio' ? id : `${word}·${id}`;
 }
 

@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-11T22:17:00Z'
+updated_date: '2026-11-11T22:20:00Z'
 labels:
   - s
   - clio-main
@@ -41,7 +41,7 @@ ordinal: 1000
 - [ ] #23 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
 - [ ] #24 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
 - [ ] #25 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #26 ⏳ mods rider: the second-wind hold notice reaches every thread slipstreamed (quiet comms holds only sends into clio today, FTR.md:832), his o138 tick 00:11 — waits for: the next mods chunk
+- [ ] #26 ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
 - [ ] #27 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
 - [ ] #28 📅 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order — on: 2026-11-12
 - [ ] #29 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
@@ -301,4 +301,6 @@ done 2026-11-12 00:13: mods lane 6 card: once r9 and r10 land (63d5fa57, 990334f
 done 2026-11-12 00:13: his habit ask (PK-377:W25): «do not start multiple grills or reviews at once» — a memory line for habit-dima-comms, proposed to him (his words, so asked) (PK-377 open)
 
 done 2026-11-12 00:17: upstream comments on herdr-app#894 (on_item_link_click for lazy-list rows) and #794 (measured), drafted through x:writing-for-humans, shown to dima first
+
+done 2026-11-12 00:20: ⏳ mods rider: the second-wind hold notice reaches every thread slipstreamed (quiet comms holds only sends into clio today, FTR.md:832), his o138 tick 00:11 — waits for: the next mods chunk
 <!-- SECTION:NOTES:END -->

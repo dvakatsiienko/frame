@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T22:00:00Z'
+updated_date: '2026-11-11T22:25:00Z'
 labels:
   - m
   - clio-main
@@ -2137,4 +2137,23 @@ PK-363:W1135 (2026-11-11 23:51, dima, o131 steer): yes, halt with me only. usual
 PK-363:W1136 (2026-11-11 23:46, dima): there is a catch with the wind down. i think it's better to have one wind down, and only main clio does it.
 PK-363:W1137 (2026-11-11 23:46, dima): along with it you consult your wings if they run their own lanes, like wing 1 today. wing 1 owns the cli lane, so you ask it to estimate its own wing. you are responsible for the wind down and guide your wings through it. (context, not dima's words: wing 1 is the wing that owns the cli lane.)
 PK-363:W1138 (2026-11-11 23:46, dima): to estimate more precisely, consult existing wings. if a wing has its lane, you estimate that lane yourself and ask the wing to estimate it too. or better, each wing estimates itself, so a median number D is picked. (context, not dima's words: D is the median estimate.)
+
+PK-363:W1139 (2026-11-12 00:06, dima): when you or your wing second-winds, you send a push message for everyone, and everyone makes a turn. with a lot of threads running that is a lot. maybe change the habit: send a slipstreamed message, so they don't wake other threads but still get it on their next move. what do you think? ❓ (topic: second-wind hold. context, not dima's words: the raw opens with image #72.)
+PK-363:W1140 (2026-11-12 00:09, dima): which tails? ❓ (topic: second-wind hold. context, not dima's words: answers clio's line "after the reset, the 5 tails.")
+PK-363:W1141 (2026-11-12 00:09, dima): i mean the silent comms. we have silent comms where you send a message to another thread, not as a push, but so it joins that thread's next turn in the slipstream. did you forget what the slipstream is, or what? ❓ (topic: second-wind hold. context, not dima's words: answers clio's line "a true slipstream send ... not checked.")
+PK-363:W1142 (2026-11-12 00:09, dima): as for your proposal, maybe it is fine, but what if a session is parked and then resumes because of a waiter? e.g. a thread waits on a PR, an event, CI or a code review, so it is parked for that. i think you should message everyone, whether parked or not, and message them in a slipstreamed way instead of pushing. do you remember what the slipstream is or not? ❓ (topic: second-wind hold. context, not dima's words: answers clio's line "the better fix: send the notice only to busy threads".)
+PK-363:W1143 (2026-11-12 00:17, dima): oh i see now about the slipstream. slipstream worked only in your thread, not outside it. (topic: second-wind hold.)
+PK-363:W1144 (2026-11-12 00:17, dima): is the slipstream in support applied to your wings too? ❓ (topic: second-wind hold.)
+PK-363:W1145 (2026-11-12 00:17, dima): okay, add it as a rider to the current mods chunk (prio if possible). (topic: second-wind hold.)
+PK-363:W1146 (2026-11-12 00:17, dima): once done, update your second-wind habits so you always slipstream all sw notices. (topic: second-wind hold.)
+PK-363:W1147 (2026-11-12 00:17, dima): and tell me if my slipstream idea is good and works for second-wind notices. will it work for edge cases? ❓ (topic: second-wind hold.)
+PK-363:W1148 (2026-11-12 00:20, dima, o141 steer): sounds good. i like the simpler fix. (topic: second-wind hold. context, not dima's words: answers clio's line "a simpler fix covers all three gaps.")
+PK-363:W1149 (2026-11-12 00:20, dima, o141 steer): maybe it works for any thread then, because e.g. if codie is compacting and you send him a push message, he can also lose it. this change could be useful for any thread, actually. how do you think? ❓ (topic: second-wind hold. context, not dima's words: answers the o141 ask on the mod's quiet hold rider; the orbit text in the raw is not a W-line.)
+→ settled 00:20 (o141 + his 00:20 widen): the compact hold lives in x-mod-stash for every thread, briefed to the mods codie after 14c; W1144 answered: no, quiet comms holds only main (register.tsx:1304); W1147 answered in thread 00:19
+
+correction 00:25: W1148 and W1149 came from his typed 00:20 prompt, not an o141 steer (o141 was a plain tick)
+
+PK-363:W1150 (2026-11-12 00:21, dima): another thing i asked you today is to reply "verified" and omit unverified answers. i like the new approach. when we help, remind me to revisit this topic and suggest how to properly integrate it. (topic: verified habit.)
+PK-363:W1151 (2026-11-12 00:22, dima): okay, i go cook. finish all tails if there are still unfinished ones, and stay parked. observe your wind-down and put orbit asks if anything comes up. (topic: wind-down night.)
+PK-363:W1152 (2026-11-12 00:22, dima): merge everything automatically (i've enabled it) and override. (topic: wind-down night.)
 <!-- SECTION:NOTES:END -->

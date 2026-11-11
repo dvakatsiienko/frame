@@ -1,4 +1,4 @@
-// the lines Claude Code writes into a seat's transcript that dima never typed: a plugin's message (an orbit tick
+// the lines Claude Code writes into a thread's transcript that dima never typed: a plugin's message (an orbit tick
 // arrives as one), a background task's notice, a synthetic «No response requested.»; and the wrappers it puts around
 // his own text. the chat folds, hides or shows them, his pick in settings (dima, 20:27: «can system messages be removed
 // from my view?»)

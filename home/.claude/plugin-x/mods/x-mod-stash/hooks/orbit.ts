@@ -223,14 +223,19 @@ export const isGuardGated = (text: string) =>
     /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
         text,
     );
-// opens with sign, a yes or an ok before it (never sign-in and its kin), or holds signed or re-sign anywhere with no negation before it
-const SIGN_PICK =
-    /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:.]?\s+(?:to\s+)?)?sign\b(?![\s-]+(?:in|up|off|out)\b)|(?<!\b(?:not|never|no|don['’]t|no need to)\s(?:re-)?)\b(?:re-sign(?:ed)?|signed)\b(?![\s-]+(?:in|up|out)\b)/iu;
-// opens with merge, a yes or a squash before it, its label form `merge: …` apart; anywhere else it counts only beside a pr
-const MERGE_PICK_OPENS =
-    /^[^\p{L}]*(?:(?:yes|ok|okay)\b[,:]?\s+(?:to\s+)?)?(?:squash and\s+)?merged?\b(?!:)/iu;
-const MERGE_PICK_NAMED = /(?<!\b(?:not|never|no|don['’]t)\s)\bmerged?\b/i;
-const PR_NAMED = /#\d+|\bpr\b|\/pull\/\d+/i;
+// a sign or merge verb anywhere in a pick wants its ask's shape, whatever opens the pick: only a negation leading it
+// lets it pass, never a list of openers (FRM-519 exit 3, sixth sense round 8 on 2093f838)
+const NOT = String.raw`not|not yet|never|no|don['’]t|doesn['’]t|no need to|doesn['’]t need a|does not need a|without`;
+// sign-in and its kin are no sign; a sign-off signs
+const SIGN_PICK = new RegExp(
+    String.raw`(?<!\b(?:${NOT})\s(?:re-)?)\b(?:re-)?sign(?:s|ed|ing)?\b(?![\s-]+(?:in|up|out)\b)`,
+    'iu',
+);
+// its label form `merge: …`, `merge-auto` and a merge of text «into» something are no merge of a pr
+const MERGE_PICK = new RegExp(
+    String.raw`(?<!\b(?:${NOT})\s)\bmerg(?:e|es|ed|ing)\b(?![:-])(?![^.;]*\binto\b)`,
+    'iu',
+);
 // the two shapes x-mod-guard's quotesPr accepts as naming a pr
 export const MERGE_ASK =
     /github\.com\/[\w.-]+\/[\w.-]+\/pull\/\d+|(?:^|\s)⚠️ merge [\w.-]+#\d+/u;
@@ -242,10 +247,7 @@ function misShapedAsk(op: string, text: string, pick: string) {
             deny: `orbit ${op}: a pick that signs needs the text to read «✍️ sign <id>: <title>», the shape x-mod-guard reads when it signs`,
         };
     if (SIGN_ASK.test(text)) return undefined;
-    const isMergePick =
-        MERGE_PICK_OPENS.test(pick) ||
-        (MERGE_PICK_NAMED.test(pick) && PR_NAMED.test(pick));
-    return isMergePick && !MERGE_ASK.test(text)
+    return MERGE_PICK.test(pick) && !MERGE_ASK.test(text)
         ? {
               deny: `orbit ${op}: a pick that merges needs the pr's url in the text, or «⚠️ merge <repo>#<n>», the shape x-mod-guard reads for --dima-ok`,
           }

@@ -50,8 +50,8 @@ import {
     PENDING_MS,
     PRESS_DIR,
     PRESS_FILE,
-    SEATS_KEY,
     STATE_DIR,
+    THREADS_KEY,
     bandButtons,
     bandOf,
     overrideOf,
@@ -921,7 +921,7 @@ function boxText(screen) {
     return box.join(' ').replace(/\s+/g, ' ').trim();
 }
 const flat = (s) => s.replace(/\s+/g, ' ').trim();
-// The chat box's draft per seat, kept across a reload of this mod (localStorage outlives a copy).
+// The chat box's draft per thread, kept across a reload of this mod (localStorage outlives a copy).
 const draftKey = (address) => `draft:${address}`;
 function keptDraft(address) {
     try {
@@ -944,7 +944,7 @@ const skillFs = {
     read: (path) => readFile(path, 'utf8').catch(() => null),
 };
 
-// where he was reading each seat, kept across a reload of this mod, written only by his own scroll or click
+// where he was reading each thread, kept across a reload of this mod, written only by his own scroll or click
 /** @param {string} address */
 const scrollKey = (address) => `scroll:${address}`;
 /** @typedef {{ anchor: string | null, follow: boolean, uuid?: string | null }} Place */
@@ -1302,7 +1302,7 @@ export default class ClaudeChat extends View {
             this.shots = await loadShots();
             cx.notify();
         });
-        // what he sent while the seat worked, by agent address, until its row reaches the transcript (see queued.js)
+        // what he sent while the thread worked, by agent address, until its row reaches the transcript (see queued.js)
         this.queued = new Map();
         this.idleSince = new Map();
         this.box = TextareaState.new({});
@@ -1475,8 +1475,8 @@ export default class ClaudeChat extends View {
     }
 
     // Each agent's chat is kept, so going back to one shows it at once; the tick then catches up.
-    // The draft is written only where it changes (typing, a quote, a completion, a send), under the seat the box shows:
-    // a switch never writes, since the box it leaves may not hold that seat's draft, and an empty one would erase it.
+    // The draft is written only where it changes (typing, a quote, a completion, a send), under the thread the box shows:
+    // a switch never writes, since the box it leaves may not hold that thread's draft, and an empty one would erase it.
     reset(address) {
         if (this.box) {
             this.box.set_value(keptDraft(address));
@@ -1534,7 +1534,7 @@ export default class ClaudeChat extends View {
         this.effort = kept.effort ?? null;
         this.drop = null;
         this.pickNote = null;
-        // where he was reading this seat: kept in the cache across a tab switch, in localStorage across a reload
+        // where he was reading this thread: kept in the cache across a tab switch, in localStorage across a reload
         const stored = kept.items ? null : keptScroll(address);
         /** @type {boolean} */
         this.follow = kept.follow ?? stored?.follow ?? true;
@@ -1979,7 +1979,7 @@ export default class ClaudeChat extends View {
     tick(cx) {
         // the band's facts age without a redraw: a deck that stopped publishing changes nothing, so the flip is drawn here
         const isStale = bandOf(
-            shared(SEATS_KEY),
+            shared(THREADS_KEY),
             this.where?.container ? null : this.where?.pid,
             Date.now(),
         ).isStale;
@@ -2127,7 +2127,7 @@ export default class ClaudeChat extends View {
                         this.head = null;
                         this.base = 0;
                         this.relayIds = new Set();
-                        // another conversation in this seat (a /clear, a resume): it starts at its newest
+                        // another conversation in this thread (a /clear, a resume): it starts at its newest
                         this.follow = true;
                         this.stick = true;
                         this.anchor = null;
@@ -2557,7 +2557,7 @@ export default class ClaudeChat extends View {
                     this.lastReply = { session: d.sessionId, uuid: d.uuid };
                 if (into === this && /^claude-/.test(d.message?.model ?? ''))
                     this.model = modelLabel(d.message.model);
-                // the effort the reply ran at, as Claude Code stamps it on the row: the seat's live value, past any default
+                // the effort the reply ran at, as Claude Code stamps it on the row: the thread's live value, past any default
                 if (into === this && EFFORTS.includes(d.effort))
                     this.effort = { level: d.effort, model: this.modelNow() };
                 for (const b of content ?? []) {
@@ -2631,7 +2631,7 @@ export default class ClaudeChat extends View {
         }
     }
 
-    // The plugin skills enabled for the seat's folder join the / menu (skills.js), read once per session; a mod reload
+    // The plugin skills enabled for the thread's folder join the / menu (skills.js), read once per session; a mod reload
     // restores the session without adopting it again, so the menu asks for them itself
     ensurePluginSkills() {
         const session = this.session;
@@ -2792,7 +2792,7 @@ export default class ClaudeChat extends View {
         );
     }
 
-    // a seat that sat idle past the grace with a message never taken drops it; a redraw comes when the grace ends
+    // a thread that sat idle past the grace with a message never taken drops it; a redraw comes when the grace ends
     /** @param {string} status @param {import('gpui-kit').Context} cx */
     settleQueued(status, cx) {
         const address = this.address;
@@ -2994,7 +2994,7 @@ export default class ClaudeChat extends View {
     }
 
     // [take it]: the text into the chat box, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
-    // stops Claude (proven on a throwaway seat: full, empty and mid-turn). [send as is]: Enter on Claude's own box.
+    // stops Claude (proven on a throwaway thread: full, empty and mid-turn). [send as is]: Enter on Claude's own box.
     // Send now on a message waiting in Claude Code's own queue: its Ctrl+Enter takes it at once, mid-turn, pressed only
     // when its screen offers «ctrl+enter to send now» (on an empty prompt the key does something else). After
     // shepherdr's steerNow (core/send.js, MIT).
@@ -3632,7 +3632,7 @@ export default class ClaudeChat extends View {
 
     // The chat cut at each of your messages. The last turn is all open; in each earlier one your
     // message and Claude's replies stay, and the work between them (tool calls, notes) is one row
-    // until clicked open, so scrolling up reads like the conversation. A seat pushes reports between
+    // until clicked open, so scrolling up reads like the conversation. A thread pushes reports between
     // your messages (a peer's ping starts no turn), so with replies "folded" only the turn's last
     // one would stay, and a report he must read hid in the row.
     turns(all, visible) {
@@ -4589,7 +4589,7 @@ export default class ClaudeChat extends View {
                 this.anchor.key = keys[at];
                 this.scroll.scroll_to_item(at, this.anchor.how);
             } else if (Date.now() > this.anchor.until) {
-                // his row never came (a /clear, a trimmed transcript): the newest, never another seat's offset
+                // his row never came (a /clear, a trimmed transcript): the newest, never another thread's offset
                 this.reanchor = false;
                 this.anchor = null;
                 this.follow = true;
@@ -5483,9 +5483,9 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // The seat's band where he types: what it waits on, its weekly usage and its context, from the facts the deck's
+    // The thread's band where he types: what it waits on, its weekly usage and its context, from the facts the deck's
     // mod publishes (`band.js`). Three rows of one height always, so nothing under or above it moves when a fact
-    // changes; a seat the deck has stopped reading draws dimmed, never as a live number.
+    // changes; a thread the deck has stopped reading draws dimmed, never as a live number.
     // whether his layout shows the deck's block now; a layout without it reads as shown, so 🚦 offers a hide
     deckShown() {
         /** @param {any} node @returns {any} */
@@ -5655,7 +5655,7 @@ export default class ClaudeChat extends View {
 
     band(t) {
         const pid = this.where?.container ? null : this.where?.pid;
-        const b = bandOf(shared(SEATS_KEY), pid, Date.now());
+        const b = bandOf(shared(THREADS_KEY), pid, Date.now());
         const ink = b.isStale ? t.dim : t.muted;
         const row = (id) =>
             h_flex().id(id).h(px(18)).gap(8).items_center().min_w(0);
@@ -5710,7 +5710,7 @@ export default class ClaudeChat extends View {
         };
         return (
             v_flex()
-                .id('seat-band')
+                .id('thread-band')
                 .flex_none()
                 .px(10)
                 .py(4)
@@ -5718,7 +5718,7 @@ export default class ClaudeChat extends View {
                 .bg(t.raised)
                 .when(b.isStale, (el) =>
                     el.tooltip(
-                        'the deck has not read this seat for over 2 minutes',
+                        'the deck has not read this thread for over 2 minutes',
                     ),
                 )
                 .child(
@@ -6168,7 +6168,7 @@ export default class ClaudeChat extends View {
         const t = chatTheme();
         const agent = this.target();
         // Another agent: the switch runs at once in a task, never here: reset() sets the box's caret, which herdr refuses
-        // during render, and a refused render left the box on the new seat's draft under the old seat's address.
+        // during render, and a refused render left the box on the new thread's draft under the old thread's address.
         if ((agent?.address ?? null) !== this.address)
             cx.timer.after(0, (cx) => this.tick(cx));
         // Clicking a character or a tab gives the keyboard to that (hidden) terminal: take it back

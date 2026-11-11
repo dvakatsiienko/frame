@@ -34,8 +34,8 @@ Adopted words. Recognize them from Dima, use them back sparingly.
   only the kind word: the **main lane** is ours, this thread, where the operational work is solved; a **side lane** is
   any lane not ours, summoned while we work the main lane: codie with a pr always, sixth sense on by default; a **quick
   lane** is a side lane with no pr, on main, sixth sense off by default; a **shift** is a lane run from a
-  written plan while his AFK tick is on, `clio:shift` its contract. a thread name reads `<mode> <role emoji> <member name>: <scope> |
-  <ticket or what>`, the scope optional, mode `🌗` side, `⚡` quick, `🌘` shift: `⚡ 🔧 codie: mods lane 3 | FRM-467`.
+  written plan while his AFK tick is on, `clio:shift` its contract. a thread name reads `<mode> <role emoji> <area word> |
+  <ticket or pr>`, mode `🌗` side, `⚡` quick, `🌘` shift (PK-378): `⚡ 🔧 mods | FRM-574`; clio, wings, crow, helga keep theirs.
 - **🪽 wing** (dima, 2026-11-06, was «side channel») — clio in a second thread beside the main thread, numbered: `🦉🪽 clio: wing 1`; «your wing 2» never means a lane (`clio:wing`). a clio's flow is named by its thread, «wing 2 lane»; `clio-main`, `clio-wing-2` sit on labels, a wing's on its tree and branch. <!-- cc -->
 - **flyway** (was «day plan») — a clio lane's live plan, never closed: `habit-shared-files`. <!-- cc -->
 - lane init (the contract: `craft-fleet-flow`):

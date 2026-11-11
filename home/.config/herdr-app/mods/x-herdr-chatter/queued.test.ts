@@ -37,21 +37,21 @@ describe('a message sent mid-turn shows as queued until the turn takes it', () =
         ]);
     });
 
-    test('a seat idle past the grace with the message never joined drops it', () => {
+    test('a thread idle past the grace with the message never joined drops it', () => {
         const idleSince = SENT + 2000;
         expect(
             queuedAfterIdle([HIS], idleSince, idleSince + QUEUED_IDLE_MS),
         ).toEqual([]);
     });
 
-    test('a seat just gone idle keeps it, the queued prompt starts the next turn', () => {
+    test('a thread just gone idle keeps it, the queued prompt starts the next turn', () => {
         const idleSince = SENT + 2000;
         expect(queuedAfterIdle([HIS], idleSince, idleSince + 1000)).toEqual([
             HIS,
         ]);
     });
 
-    test('a working seat keeps it, however long the turn runs', () => {
+    test('a working thread keeps it, however long the turn runs', () => {
         expect(queuedAfterIdle([HIS], null, SENT + 30 * 60_000)).toEqual([HIS]);
     });
 });

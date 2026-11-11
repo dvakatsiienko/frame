@@ -1,4 +1,4 @@
-// a tab names its seat by the session name, with the member word after the badges dropped: the badge already says
+// a tab names its thread by the session name, with the member word after the badges dropped: the badge already says
 // who, and at a tab's width «⚡ 🔧 codie…» three times told nothing apart; the whole name stays on hover
 
 /**

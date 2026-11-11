@@ -89,3 +89,5 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ FRM-551: the first halt with no go lane reads the vm half, then closes it — dima: «reminder?» — set 2026-11-11
 
 ⏰ remeasure wishkeeper, its FRM-491 change one week on: «measure only the delta … only the part that goes after the cadence for Wishkeeper is changed», against `docs/research/wishkeeper-cadence.md`; keep, partly revert or revert — set 2026-11-11 · due: 2026-11-18
+
+⏰ at the halt: the «verified» habit (PK-363:W955), my proposal to land it — dima: «remind me to revisit» — set 2026-11-12
