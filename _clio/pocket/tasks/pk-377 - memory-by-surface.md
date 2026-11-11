@@ -4,7 +4,7 @@ title: memory by surface
 status: open
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
-updated_date: '2026-11-11T16:38:00Z'
+updated_date: '2026-11-11T16:39:00Z'
 labels:
   - s
 dependencies: []
@@ -67,4 +67,14 @@ PK-377:W35 (2026-11-11 18:10, dima): threads started in a plain terminal (cc wit
 PK-377:W36 (2026-11-11 18:24, dima): who solves this: you or quicklane? ❓
 PK-377:W37 (2026-11-11 18:24, dima): use author-memory.
 PK-377:W38 (2026-11-11 18:24, dima): herdr codie has nothing to do. let's have him busy as soon as we solve memories. (read "herder codie" as "herdr codie"; flagged to clio.)
+
+PK-377:W39 (2026-11-11 18:15, dima): go.
+PK-377:W40 (2026-11-11 18:38, dima, o44 steer): wing 2 has a lane pending. it's parked. (context, not dima's words: "wink 2" read as "wing 2", per clio's wispr note.)
+PK-377:W41 (2026-11-11 18:38, dima): proceed, let's solve everything.
+PK-377:W42 (2026-11-11 18:38, dima): where do you need me? ❓
+PK-377:W43 (2026-11-11 18:38, dima): what's the next step? ❓
+PK-377:W44 (2026-11-11 18:38, dima): when can herdr codie start chatter? ❓ (context, not dima's words: "herder codie" read as "herdr codie"; flagged to clio.)
+PK-377:W45 (2026-11-11 18:38, dima): what needs to be grilled? ❓
+PK-377:W46 (2026-11-11 18:38, dima): and when do we decide how to make herdr pretty, designer or no designer? ❓
+PK-377:W47 (2026-11-11 18:38, dima): your build: wing 2 has a parked "tails chords" lane that doesn't do anything. instead of herdr codie, maybe let's hand this over to that parked lane, since it has nothing to do. (context, not dima's words: "tails chords" is kept as read; flagged to clio.)
 <!-- SECTION:NOTES:END -->
