@@ -329,6 +329,7 @@ for (const line of [
     "hc label t43 'seat=clio-wing-3'",
     // sixth sense round 1 on 23037434: a relabel the guard cannot read
     'echo seat=clio | xargs hc label t43',
+    'xargs -a /tmp/kv hc label t43',
     'KV=seat=clio; hc label t43 $KV',
     `echo '{"method":"terminal.label","params":{"terminal":"t43","labels":{"seat":"clio"}}}' | hc connect`,
     'hc connect < /tmp/rpc.jsonl',
