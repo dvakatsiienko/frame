@@ -155,6 +155,19 @@ function writesNamed(command: string, named: (text: string) => boolean) {
         );
 }
 
+// a quoted sentence a script writes into a doc names a store as prose, never as the file it opens (FRM-519 14h): three
+// words and no code inside the quotes; `'at <store>'.split()[1]` keeps too few words to pass
+const PROSE = /'([^'\n]*)'|"([^"\n]*)"/g;
+function withoutProse(command: string) {
+    return command.replace(PROSE, (literal, single, double) => {
+        const text: string = single ?? double;
+        const isProse =
+            !/[()=`$]/.test(text) &&
+            (text.match(/(^|\s)[a-z]{2,}(?=\s|$)/gi)?.length ?? 0) >= 3;
+        return isProse ? "''" : literal;
+    });
+}
+
 // writers are too many to list, and each one missed is a hole: past the few commands that only read, naming a store is touching it
 export function touchesStore(
     command: string,
@@ -168,9 +181,10 @@ export function touchesStore(
     const parsed = commandsDeep(command, cwd);
     const runsOpaque = (c: Command) =>
         OPAQUE.test(c.name) || c.wrappers.some((w) => OPAQUE.test(w));
+    const code = withoutProse(command);
     if (
         parsed.some(runsOpaque) &&
-        (isWritesOnly ? writesNamed(command, named) : named(command))
+        (isWritesOnly ? writesNamed(code, named) : named(code))
     )
         return true;
     // a loop over the folder's names hands each name to its body, so it reads only when every command on the line is a

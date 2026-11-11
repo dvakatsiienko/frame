@@ -466,6 +466,7 @@
 - ⬜ only sixth sense and the coordinator write the clean (FRM-511)
   - given a Bash line running `watch-pr.sh --verified` or writing `~/.claude/shelf/pr-verified.json` (a redirect, `tee`, `cp`, `mv`, `sed -i`, an inline python or node write) from a session whose thread record (`x thread list`) is no sixth sense and whose registry name is not `🦉 clio`, or that the registry does not list, then nothing runs and the refusal (rule `clean-stamp`) names who writes it; `🦉 clio (side)` is refused; a read or a copy out of the store passes
   - decision: past `cat`, `jq`, `rg` and the few like them, naming the store counts as touching it, and an inline script over it is refused even when it only reads: writers are too many to list; a commit message or a pr body that spells the store's path out is refused too, the price of that list
+  - decision: a script's quoted sentence (three words, no code inside the quotes) is prose it writes into a doc, so a store named there is no touch; this holds for the thread store and cc's registry too (FRM-519 14h)
   - known gap: the shared evasion above, a script run by path that writes the store from inside, and the `Write` and `Edit` tools, which a Bash rule never reads
   - proof: tests/clean-stamp.test.ts
 - ✅ a foreground `claude -p` is refused (FRM-395)

@@ -199,6 +199,31 @@ for (const line of [
         expect(ran).toEqual([]);
     });
 
+// FRM-519 14h: a store named inside a sentence the script writes into a doc is prose, not the file it opens
+// (codie's FTR edit at 01:03, wing 1's spec edit at 01:10)
+for (const line of [
+    "python3 - <<'EOF'\nfrom pathlib import Path\np = Path('x-mod-guard/FTR.md')\np.write_text(p.read_text().replace('old', 'a merge reads ~/.claude/shelf/pr-verified.json first'))\nEOF",
+    "python3 - <<'EOF'\nimport os\np = os.path.expanduser('~/frame/.scratch/cli-lane-8/spec.md')\nopen(p, 'a').write('\\n- the seat id is read from ~/.claude/sessions/<pid>.json\\n')\nEOF",
+])
+    test(`a script writing a doc that names a store in prose passes: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('clean-stamp');
+        expect(ran.length).toBe(1);
+    });
+
+for (const line of [
+    "python3 - <<'EOF'\np = 'at ~/.claude/sessions/4242.json'.split()[1]\nopen(p, 'w').write('{}')\nEOF",
+    "python3 - <<'EOF'\nopen('/home/.claude/shelf/pr-verified.json', 'w').write('the clean holds now')\nEOF",
+    `python3 - <<'EOF'\nexec('open("/home/.claude/sessions/4242.json", "w").write("the seat is mine now")')\nEOF`,
+])
+    test(`a store path outside a sentence still counts: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect(r.deny).toContain('clean-stamp');
+        expect(ran).toEqual([]);
+    });
+
 // FRM-570: the thread store decides who is a sixth sense, so no session writes it, a sixth sense included; x does
 const THREADS = '/home/.claude/shelf/threads.json';
 const THREAD_WRITES = WRITES.filter((l) => !l.includes('watch-pr.sh')).map(
