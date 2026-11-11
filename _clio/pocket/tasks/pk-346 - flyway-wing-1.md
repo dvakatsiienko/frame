@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T20:27:00Z'
+updated_date: '2026-11-11T20:56:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,31 +16,31 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-491 the siesta binds on one Stop hook, and a delivered tick gets resolved: mine by hand (it edits _clio/); 📌 remind dima what it is about before i start (his 17:35 ask)
-- [ ] #2 cli lane 8 running (#161): FRM-570 one reader per rule, rule 9 a thread's identity by session id (re-signed 19:36), names x lane plan-steps, x thread, x linear sign-check; then FRM-424 → FRM-436 → FRM-572; spec ~/frame/.scratch/cli-lane-8/
-- [ ] #3 «seat» saved names, renamed only with every reader in the same change: the ~/.local/state/clio/seats/ dir (siesta-gate, live files to migrate), the seat key in ctx-init trace rows (a read-both fallback), the seat=clio / seat=crow herdr labels (x-mod-guard, prompt-groom read them), CLIO_SEAT, seatOf (prompt-groom imports it)
-- [ ] #4 crow second wind has no door: hc send wraps a /compact as text (it never runs), hc keys + enter ran it at 22:07 but x-mod-guard's pane-keys rule warns on it; find crow's own door (her second-wind press, or an x verb that compacts an idle crow) and tell main, crow is hers (dima 22:03)
-- [ ] #5 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
-- [ ] #6 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
-- [ ] #7 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
-- [ ] #8 ⏳ renovate merge round: frame#158, bytes#152–#155 (bytes#155 its minors), prConcurrentLimit 10 kept unless he says — waits for: dima's evergreen word
-- [ ] #9 ⏳ decamp ~/projects/bytes/.claude/worktrees/FRM-465-renovate-comment: merged (bytes#156), but decamp refuses on 2 seed copies (apps/design-loupe/.runtime/, apps/trophy-sys/.env.local), codie checked both are copies — waits for: dima's word to trash them
-- [ ] #10 ⏳ right after FRM-570 merges (FRM-570:W5 «make all currently running thread names pretty. don't forget.»): the naming rule rewritten to the PK-378 shape (memory and skills first), a thread record seeded for each running thread (they read «unknown» otherwise, codie 20:58), each one renamed and its herdr tab retitled — waits for: #161 merge
-- [ ] #11 ⏳ x linear sign-check prints the body hash it judged (merge_sign.go shortHash is the reader), a rider on cli lane 8 after #161 for FRM-519 slice 19; ping the mods codie when it lands (main 21:33) — waits for: #161 merge
-- [ ] #12 ⏳ seat sweep wave B: mods (x-mod-guard, x-mod-stash, set.test) and herdr mods (deck, chatter, tabs, agents-list), ~310 hits, riders main hands to the mods and herdr codies at their next chunk boundary, rename only (main agreed 21:37) — waits for: main's lanes
-- [ ] #13 ⏳ seat sweep wave C: x/go/stacks_test.go (1 hit), a rider on cli lane 8 after #161 — waits for: #161 merge
-- [ ] #14 ⏳ x brief check offline stamp check (the summon's ~8 s networked check, codie 21:25): a FRM-572 line with seven names (x:top-seven) and a ⚖️ worth it (removes 8 s per summon; cheaper door: cache the last stamp), to dima — waits for: FRM-570 merge
-- [ ] #15 ⏳ FRM-570:W4 follow-up chunk (dima o61): clio, wings, crow and helga get a thread record from their own starts (clio-start, the wing summon, crow:start, helga boot), so the guard and stash stop matching them by name (register.ts:160-163, register.tsx:5886-5903); shape and his sign after #161 merges — waits for: #161 merge
-- [ ] #16 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
-- [ ] #17 📅 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close — on: 2026-11-12
-- [ ] #18 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
-- [ ] #19 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #20 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #21 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
-- [ ] #22 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #23 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #24 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
-- [ ] #25 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
+- [ ] #1 cli lane 8 running (#161): FRM-570 one reader per rule, rule 9 a thread's identity by session id (re-signed 19:36), names x lane plan-steps, x thread, x linear sign-check; then FRM-424 → FRM-436 → FRM-572; spec ~/frame/.scratch/cli-lane-8/
+- [ ] #2 «seat» saved names, renamed only with every reader in the same change: the ~/.local/state/clio/seats/ dir (siesta-gate, live files to migrate), the seat key in ctx-init trace rows (a read-both fallback), the seat=clio / seat=crow herdr labels (x-mod-guard, prompt-groom read them), CLIO_SEAT, seatOf (prompt-groom imports it)
+- [ ] #3 crow second wind has no door: hc send wraps a /compact as text (it never runs), hc keys + enter ran it at 22:07 but x-mod-guard's pane-keys rule warns on it; find crow's own door (her second-wind press, or an x verb that compacts an idle crow) and tell main, crow is hers (dima 22:03)
+- [ ] #4 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
+- [ ] #5 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
+- [ ] #6 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
+- [ ] #7 ⏳ renovate merge round: frame#158, bytes#152–#155 (bytes#155 its minors), prConcurrentLimit 10 kept unless he says — waits for: dima's evergreen word
+- [ ] #8 ⏳ decamp ~/projects/bytes/.claude/worktrees/FRM-465-renovate-comment: merged (bytes#156), but decamp refuses on 2 seed copies (apps/design-loupe/.runtime/, apps/trophy-sys/.env.local), codie checked both are copies — waits for: dima's word to trash them
+- [ ] #9 ⏳ right after FRM-570 merges (FRM-570:W5 «make all currently running thread names pretty. don't forget.»): the naming rule rewritten to the PK-378 shape (memory and skills first), a thread record seeded for each running thread (they read «unknown» otherwise, codie 20:58), each one renamed and its herdr tab retitled — waits for: #161 merge
+- [ ] #10 ⏳ x linear sign-check prints the body hash it judged (merge_sign.go shortHash is the reader), a rider on cli lane 8 after #161 for FRM-519 slice 19; ping the mods codie when it lands (main 21:33) — waits for: #161 merge
+- [ ] #11 ⏳ seat sweep wave B: mods (x-mod-guard, x-mod-stash, set.test) and herdr mods (deck, chatter, tabs, agents-list), ~310 hits, riders main hands to the mods and herdr codies at their next chunk boundary, rename only (main agreed 21:37) — waits for: main's lanes
+- [ ] #12 ⏳ seat sweep wave C: x/go/stacks_test.go (1 hit), a rider on cli lane 8 after #161 — waits for: #161 merge
+- [ ] #13 ⏳ x brief check offline stamp check (the summon's ~8 s networked check, codie 21:25): a FRM-572 line with seven names (x:top-seven) and a ⚖️ worth it (removes 8 s per summon; cheaper door: cache the last stamp), to dima — waits for: FRM-570 merge
+- [ ] #14 ⏳ FRM-570:W4 follow-up chunk (dima o61): clio, wings, crow and helga get a thread record from their own starts (clio-start, the wing summon, crow:start, helga boot), so the guard and stash stop matching them by name (register.ts:160-163, register.tsx:5886-5903); shape and his sign after #161 merges — waits for: #161 merge
+- [ ] #15 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
+- [ ] #16 📅 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close — on: 2026-11-12
+- [ ] #17 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
+- [ ] #18 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #19 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #20 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
+- [ ] #21 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #22 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #23 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
+- [ ] #24 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
+- [ ] #25 📅 FRM-491 remeasure: only runs after ee5d08f9, against docs/research/wishkeeper-cadence.md, then keep, partly revert or revert, and close; the wishkeeper-cache trial switches to its 1 h arm the same day — on: 2026-11-18
 - [ ] #26 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
 - [ ] #27 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #28 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
@@ -293,7 +293,11 @@ done 2026-11-11 21:56: siesta 20:19 tails (wishkeeper, 18 findings, file in the 
 PK-346:W15 (2026-11-11 22:02, dima): crow is at 60% ctx. its second wind not fixed yet? sw him properly. ❓ (context, not dima's words: "crow" is clio's sidecar; "sw" is second wind.)
 PK-346:W16 (2026-11-11 22:03, dima): or tell copypaste, I do it manually. (context, not dima's words: continues the 22:02 line, which asks about crow's second wind.)
 
-done 2026-11-11 22:27: crow second wind has no door: hc send wraps a /compact as text (it never runs), hc keys + enter ran it at 22:07 but x-mod-guard's pane-keys rule warns on it; find crow's own door (her 🐦‍🔥 press, or an x verb that compacts an idle crow) and tell main, crow is hers (dima 22:03)
+done 2026-11-11 22:27: crow second wind has no door: hc send wraps a /compact as text (it never runs), hc keys + enter ran it at 22:07 but x-mod-guard's pane-keys rule warns on it; find crow's own door (her 🐦🔥 press, or an x verb that compacts an idle crow) and tell main, crow is hers (dima 22:03)
 
 22:28: the crow second-wind line re-added without a joined emoji (pocket-check, Backlog.md #949), not done
+
+done 2026-11-11 22:56: FRM-491 the siesta binds on one Stop hook, and a delivered tick gets resolved: mine by hand (it edits _clio/); 📌 remind dima what it is about before i start (his 17:35 ask) (FRM-491 In Progress)
+
+22:58: FRM-491 built and landed (ee5d08f9), ⏰ due 11-18 comment on the ticket; its old open line closed, the remeasure line dated 11-18 replaces it
 <!-- SECTION:NOTES:END -->
