@@ -31,7 +31,21 @@ function world(
     on('session.root', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
     on('fs.exists', (_$, e) => ({ value: e.path in files }));
-    on('fs.list', () => ({ value: [] }));
+    // the session registry, when a row plants one: `/home/.claude/sessions/<file>.json`
+    on('fs.list', (_$, e) => ({
+        value:
+            e.path === '/home/.claude/sessions'
+                ? Object.keys(files)
+                      .filter((p) => p.startsWith(`${e.path}/`))
+                      .map((p) => ({
+                          isLink: false,
+                          kind: 'file' as const,
+                          mtimeMs: 0,
+                          name: p.slice(e.path.length + 1),
+                          size: 1,
+                      }))
+                : [],
+    }));
     on('fs.read', (_$, e) => {
         const text = files[e.path];
         if (text === undefined) throw new Error(`ENOENT ${e.path}`);
@@ -81,6 +95,30 @@ const WORTH =
     '## wish\n\nW1\n\n## ⚖️ worth it\n\nnone — fix\n\n## why\n\na reason\n';
 const CREATE = (flags: string) =>
     `x as clio -- linear issue create --title t ${flags}`;
+
+// FRM-519 item 5, a row only: a numbered wing reads as the coordinator, so its create meets only the worth rule
+const seat = (name: string) => ({
+    '/home/.claude/sessions/1.json': JSON.stringify({
+        name,
+        sessionId: 'w1w1w1w1-0000',
+    }),
+});
+for (const [name, body, isRefused] of [
+    ['🦉🪽 clio: wing 1', WORTH, false],
+    ['🦉🪽 clio: wing 1', NO_WORTH, true],
+    ['⚡ 🔧 codie: mods lane 6 | FRM-519', WORTH, true],
+] as const)
+    test(`a create from «${name}» ${body === WORTH ? 'with' : 'with no'} worth section is ${isRefused ? 'refused' : 'run'}`, async ($, on) => {
+        const w = world(on, { ...seat(name), '/repo/b.md': body });
+        const command = CREATE(
+            '--project cli --milestone v --description-file b.md',
+        );
+        const r = await bash($, command);
+        expect([w.ran.length, refused(r)]).toEqual([
+            isRefused ? 0 : 1,
+            isRefused,
+        ]);
+    });
 
 test('a cli create with no worth section is refused', async ($, on) => {
     const w = world(on, { '/repo/b.md': NO_WORTH });
