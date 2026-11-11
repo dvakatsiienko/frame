@@ -13,6 +13,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then it draws as his message at the place he sent it, a shot or a paste in it too, marked no differently
   - and a peer's message or a task notice queued the same way does not draw as his
   - decision: Claude Code writes such a prompt as a `queued_command` attachment with `origin.kind` human, never a user entry; the chat reads it as one
+- ⬜ a prompt sent while a turn runs shows as queued until the turn takes it
+  - given dima sends a seat a message while its turn is still running
+  - then «Queued, joins this turn:» and the message's start sit over the log's bottom edge, «+n more» past the first, the log never moving
+  - and the chip leaves the moment the message's row reaches the transcript, where it draws as his message
+  - and a seat that sat idle 5 s with the message never in its transcript drops the chip
+  - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the box empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
 - ⬜ a big thread opens at once on its newest part
   - given a seat whose transcript is past 4 MB (clio's 56 MB, wing 1's 23 MB)
   - when dima opens its tab

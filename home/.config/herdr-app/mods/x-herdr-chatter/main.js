@@ -65,6 +65,7 @@ import { importOldDrafts } from './drafts.js';
 import { openTarget } from './links.js';
 import { listLines, withMarkers } from './lists.js';
 import * as ask from './question.js';
+import { QUEUED_IDLE_MS, queuedAfterIdle, queuedAfterRow } from './queued.js';
 import { STUCK_PX, afterReflow, afterWheel, keptFirst } from './scroll.js';
 import { loadableSkills, menuMatches } from './skills.js';
 import { wholeLines } from './slice.js';
@@ -1225,6 +1226,9 @@ export default class ClaudeChat extends View {
         // Images pasted for a dev container's Claude: their paths in the container, by agent address,
         // sent with the next message (see pasteIntoContainer).
         this.pasted = new Map();
+        // what he sent while the seat worked, by agent address, until its row reaches the transcript (see queued.js)
+        this.queued = new Map();
+        this.idleSince = new Map();
         this.box = TextareaState.new({});
         this.box.set_auto_grow(1, 8);
         cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
@@ -2346,6 +2350,7 @@ export default class ClaudeChat extends View {
             )
                 this.learnSkills(d.attachment.content);
             d = midTurnPrompt(d) ?? d;
+            if (into === this && d.type === 'user') this.joinQueued(d);
             if (d.isMeta || d.isCompactSummary) continue;
             // a plugin's message, a task notice, a synthetic reply: drawn as the settings' «System lines» say
             const system = systemLine(d);
@@ -2568,6 +2573,11 @@ export default class ClaudeChat extends View {
             .join('\n');
         // Pasted images are already in Claude's prompt: Enter alone sends them.
         const idle = this.target()?.status === 'idle';
+        if (!idle && text)
+            this.queued.set(address, [
+                ...(this.queued.get(address) ?? []),
+                { at: Date.now(), text },
+            ]);
         cx.spawn(async (cx) => {
             if (idle) await this.leaveMenu(address, cx);
             await hc(
@@ -2579,6 +2589,46 @@ export default class ClaudeChat extends View {
         // These open a menu or a screen in Claude's terminal: show it there.
         if (OPENS.has(text.slice(1))) this.toTerminal(address);
         cx.notify();
+    }
+
+    // a row of his reached the transcript: a queued message it carries is no longer waiting
+    /** @param {{ message?: { content?: string | { type?: string, text?: string }[] }, timestamp?: string }} d */
+    joinQueued(d) {
+        const list = this.queued.get(this.address);
+        if (!list?.length) return;
+        const content = d.message?.content;
+        const text =
+            typeof content === 'string'
+                ? content
+                : (content ?? [])
+                      .filter((b) => b?.type === 'text')
+                      .map((b) => b.text)
+                      .join('\n');
+        this.queued.set(
+            this.address,
+            queuedAfterRow(list, text, Date.parse(d.timestamp ?? '') || 0),
+        );
+    }
+
+    // a seat that sat idle past the grace with a message never taken drops it; a redraw comes when the grace ends
+    /** @param {string} status @param {import('gpui-kit').Context} cx */
+    settleQueued(status, cx) {
+        const address = this.address;
+        const list = this.queued.get(address);
+        if (status === 'working' || status === 'blocked') {
+            this.idleSince.delete(address);
+            return;
+        }
+        if (!this.idleSince.has(address)) {
+            this.idleSince.set(address, Date.now());
+            if (list?.length)
+                cx.timer.after(QUEUED_IDLE_MS + 100, (cx) => cx.notify());
+        }
+        if (list?.length)
+            this.queued.set(
+                address,
+                queuedAfterIdle(list, this.idleSince.get(address), Date.now()),
+            );
     }
 
     menu(t) {
@@ -5165,6 +5215,10 @@ export default class ClaudeChat extends View {
         this.firstShown = shown.length ? rowId(shown[0]) : null;
         const hidden = listed.length - shown.length;
         this.agentWorking = agent.status === 'working';
+        this.settleQueued(agent.status, cx);
+        const queued = this.queued.get(this.address) ?? [];
+        const isLeftShown =
+            Boolean(this.leftInBox) && agent.status !== 'working';
         // Each row measured, so ↑ Previous message knows where your messages are (see prevMine).
         this.rowList = shown.map((x) => ({
             id: x.work ? x.key : x[1],
@@ -5407,60 +5461,100 @@ export default class ClaudeChat extends View {
                     .bg(t.chrome)
                     .relative()
                     // over the log's bottom edge, so the transcript never moves when it comes or goes
-                    .when(
-                        Boolean(this.leftInBox) && agent.status !== 'working',
-                        (el) =>
-                            el.child(
-                                h_flex()
-                                    .absolute()
-                                    .left(10)
-                                    .right(10)
-                                    .top(-34)
-                                    .h(28)
-                                    .px(10)
-                                    .gap(8)
-                                    .items_center()
-                                    .rounded(8)
-                                    .bg(t.raised)
-                                    .border(1)
-                                    .border_color(t.border)
-                                    .text_size(px(12))
-                                    .text_color(t.muted)
-                                    .child(
+                    .when(queued.length > 0 && !isLeftShown, (el) =>
+                        el.child(
+                            h_flex()
+                                .absolute()
+                                .left(10)
+                                .right(10)
+                                .top(-34)
+                                .h(28)
+                                .px(10)
+                                .gap(8)
+                                .items_center()
+                                .rounded(8)
+                                .bg(t.raised)
+                                .border(1)
+                                .border_color(t.border)
+                                .text_size(px(12))
+                                .text_color(t.muted)
+                                .child(
+                                    div()
+                                        .flex_none()
+                                        .child('Queued, joins this turn:'),
+                                )
+                                .child(
+                                    div()
+                                        .flex_1()
+                                        .min_w(0)
+                                        .truncate()
+                                        .text_color(t.foreground)
+                                        .child(
+                                            queued[0].text.replace(/\s+/g, ' '),
+                                        ),
+                                )
+                                .when(queued.length > 1, (el) =>
+                                    el.child(
                                         div()
                                             .flex_none()
-                                            .child("Still in Claude's box:"),
-                                    )
-                                    .child(
-                                        div()
-                                            .flex_1()
-                                            .min_w(0)
-                                            .truncate()
-                                            .text_color(t.foreground)
-                                            .child(this.leftInBox),
-                                    )
-                                    .when(
-                                        !/\[Image #\d+\]/.test(this.leftInBox),
-                                        (el) =>
-                                            el.child(
-                                                this.button(
-                                                    t,
-                                                    'left-take',
-                                                    'Take it',
-                                                    (_e, cx) =>
-                                                        this.takeLeft(cx),
-                                                ),
+                                            .child(
+                                                `+${queued.length - 1} more`,
                                             ),
-                                    )
-                                    .child(
-                                        this.button(
-                                            t,
-                                            'left-send',
-                                            'Send as is',
-                                            (_e, cx) => this.sendLeft(cx),
-                                        ),
                                     ),
-                            ),
+                                ),
+                        ),
+                    )
+                    .when(isLeftShown, (el) =>
+                        el.child(
+                            h_flex()
+                                .absolute()
+                                .left(10)
+                                .right(10)
+                                .top(-34)
+                                .h(28)
+                                .px(10)
+                                .gap(8)
+                                .items_center()
+                                .rounded(8)
+                                .bg(t.raised)
+                                .border(1)
+                                .border_color(t.border)
+                                .text_size(px(12))
+                                .text_color(t.muted)
+                                .child(
+                                    div()
+                                        .flex_none()
+                                        .child("Still in Claude's box:"),
+                                )
+                                .child(
+                                    div()
+                                        .flex_1()
+                                        .min_w(0)
+                                        .truncate()
+                                        .text_color(t.foreground)
+                                        .child(this.leftInBox),
+                                )
+                                .when(
+                                    !/\[Image #\d+\]/.test(this.leftInBox),
+                                    (el) =>
+                                        el.child(
+                                            this.button(
+                                                t,
+                                                'left-take',
+                                                'Take it',
+                                                (_e, cx) => this.takeLeft(cx),
+                                            ),
+                                        ),
+                                )
+                                .child(
+                                    this.button(
+                                        t,
+                                        'left-send',
+                                        'Send as is',
+                                        (_e, cx) => this.sendLeft(cx),
+                                    ),
+                                ),
+                        ),
                     )
                     .when(Boolean(chips), (el) => el.child(chips))
                     .when(Boolean(status), (el) => el.child(status))
