@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-11T17:28:00Z'
-updated_date: '2026-11-11T17:28:00Z'
+updated_date: '2026-11-11T19:43:00Z'
 labels:
   - s
   - clio-wing-1
@@ -27,4 +27,6 @@ PK-378:W5 (2026-11-11 19:15, dima): new: an emoji that tells where the lane work
 PK-378:W6 (2026-11-11 19:25, dima): implement new thread names everywhere in all your memories and skills. use the auto memory skill to update and refresh all current running thread names, so they reflect where they are currently.
 
 kept here, not FRM-567: that one is herdr's tab label, this is the cc session name every seat carries. the thread names wait on o41: the x reader first, or a mods rider now.
+
+PK-378:W7 (2026-11-11 21:42, dima): also, rename threads to the pretty new format whenever you can. (context, not dima's words: "threads" as written in the raw.)
 <!-- SECTION:NOTES:END -->
