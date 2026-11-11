@@ -66,10 +66,41 @@ export const STORE_WHY =
     "operator-override opens merge-auto's every check, and only dima flips it";
 
 // x and this mod are its two writers: a session's hand on it would grant itself every merge
+// readers that print what they read, so a line of them in the store's folder writes nothing (FRM-574 rider: wing 1's awk loop
+// in ~/.local/state/x read an awk program `{print $1}` as a path in that folder); awk only with no redirect, pipe, system or
+// getline in its program
+const STORE_READERS = new Set([
+    '',
+    'cat',
+    'cd',
+    'cut',
+    'done',
+    'echo',
+    'for',
+    'grep',
+    'head',
+    'jq',
+    'rg',
+    'sort',
+    'tail',
+    'uniq',
+    'wc',
+]);
+const isPlainAwk = (c: { name: string; args: { text: string }[] }) =>
+    c.name === 'awk' &&
+    c.args.every((w) => !/[>|]|\bsystem\b|\bgetline\b/.test(w.text));
+const isStoreRead = (command: string, cwd: string) =>
+    commandsDeep(command, cwd).every(
+        (c) =>
+            (STORE_READERS.has(c.name) || isPlainAwk(c)) &&
+            !c.writes.length &&
+            !c.appends.length,
+    );
 export function overrideStoreWrite(
     command: string,
     cwd: string,
 ): Refusal | undefined {
+    if (isStoreRead(command, cwd)) return undefined;
     // a bare `$F` after a `cd` names the store only with its dir joined on
     const isJoinedWrite = commandsDeep(command, cwd).some((c) =>
         [...c.writes, ...c.appends].some((w) =>

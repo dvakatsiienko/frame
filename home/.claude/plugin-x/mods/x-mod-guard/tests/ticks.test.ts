@@ -2134,7 +2134,7 @@ for (const line of ["hc send t5 'go on with slice 2'", "claude --bg -n x 'go'"])
 test('exit 10: a warn-only line ahead of a floor one in a sign script still refuses the script', async ($, on) => {
     const { ran } = scriptWorld(
         on,
-        `git push\nrm -rf /tmp/fixture\n${SCRIPT_SIGN}`,
+        `$CMD foo\nrm -rf /tmp/fixture\n${SCRIPT_SIGN}`,
     );
     await hisNext($, 'sign FRM-1');
     const r = await bash($, 'bash /repo/sign.sh');

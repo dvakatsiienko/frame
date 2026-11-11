@@ -328,6 +328,9 @@ for (const line of [
     `sed -i '' s/a/b/ ${REAL}`,
     `python3 -c "open('${REAL}','w')"`,
     `mv ${REAL.replace('.json', '.log')} /tmp/gone`,
+    // exit 14: an awk that writes is no read
+    `cd /real-home/.local/state/x && awk '{print > "operator-override.json"}' gate-steps.log`,
+    `cd /real-home/.local/state/x && awk 'BEGIN{system("cp /tmp/p operator-override.json")}'`,
 ])
     test(`a Bash write on the store is refused: ${line}`, async ($, on) => {
         const { ran } = world(on);
@@ -337,6 +340,9 @@ for (const line of [
     });
 
 for (const line of [
+    // FRM-574 rider, exit 14: wing 1's read-only awk loop in the store's folder (15:16)
+    "cd /real-home/.local/state/x; for d in a b; do awk '/x/' $d/test-commit.log; awk '{print $1}' gate-steps.log | sort | uniq -c; done",
+    "cd /real-home/.local/state/x && awk '{print $1}' gate-steps.log | head -3",
     `cat ${REAL}`,
     `jq . ${REAL}`,
     `tail -n 3 ${REAL.replace('.json', '.log')}`,
