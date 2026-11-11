@@ -454,3 +454,147 @@ test('a foreground command started after pending: none does not block the wind',
     await w.clock.advance(2_000);
     expect(w.commands.filter((c) => c.startsWith('/compact'))).toHaveLength(1);
 });
+
+// r5 (dima's o23): a coordinator's message to a codie past 55 % context waits for the codie's second wind
+const CLIO = '🦉 clio';
+const receiveWorld = (on: On, name?: string) => {
+    const w = world(on, name);
+    const queued: string[] = [];
+    on('session.receive', (_$, e) => {
+        queued.push(e.text);
+        return { text: e.text };
+    });
+    return { ...w, queued };
+};
+const fromPeer = ($: Engine, body: string, from = CLIO) =>
+    $.session.receive({
+        origin: { kind: 'peer' },
+        text: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${from}" from-mode="bypass">\n${body}\n</cross-session-message>`,
+    }) as Promise<{ consumed?: string; text?: string }>;
+const delivered = (lines: string[]) =>
+    lines.filter((l) => l.startsWith('🐦‍🔥 held for your second wind'));
+
+test("clio's message to a codie past 55 % becomes the wind note, and joins the first turn after the compact", async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    const r = await fromPeer($, 'next: r6, then 12b');
+    await say($, 'the rewritten ping', 'peer');
+    const before = delivered(w.lines);
+    await compact($, 'plugin');
+    await say($, 'the ingest', 'skill');
+    await say($, 'later');
+    expect([
+        r.text?.includes(
+            "🦉 clio's message is held for your second wind: your context reads 62 %",
+        ),
+        r.text?.includes('next: r6'),
+        (w.store.get(`wind:${SID}`) as { state?: string } | undefined)?.state,
+        before,
+        delivered(w.lines),
+    ]).toEqual([
+        true,
+        false,
+        undefined,
+        [],
+        [
+            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: next: r6, then 12b',
+        ],
+    ]);
+});
+
+test('the held message marks the wind as writing, so the board reads ✍️', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 70);
+    await start($);
+    await fromPeer($, 'next: r6');
+    expect((w.store.get(`wind:${SID}`) as { state?: string }).state).toBe(
+        'writing',
+    );
+});
+
+test('a second message while one is held waits unseen, and both join after the compact', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'one');
+    const r = await fromPeer($, 'two');
+    await compact($, 'plugin');
+    await say($, 'the ingest', 'skill');
+    expect([
+        r.consumed !== undefined,
+        w.queued.length,
+        delivered(w.lines),
+    ]).toEqual([
+        true,
+        1,
+        [
+            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: one',
+            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: two',
+        ],
+    ]);
+});
+
+test('a codie under 55 % reads the message as sent', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 54);
+    await start($);
+    const r = await fromPeer($, 'next: r6');
+    expect([
+        r.text?.includes('next: r6'),
+        w.store.has(`steer-held:${SID}`),
+    ]).toEqual([true, false]);
+});
+
+test("a full sixth sense reads clio's message as sent", async ($, on) => {
+    const w = receiveWorld(on, '⚡ 🔎 sixth sense: mods lane 6 | main');
+    w.store.set(`context:${SID}`, 80);
+    await start($);
+    const toSixth = await fromPeer($, 'next: round 2');
+    expect(toSixth.text?.includes('next: round 2')).toBe(true);
+});
+
+test('a sixth sense or a pause reaching a full codie passes as sent', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 80);
+    await start($);
+    const fromSixth = await fromPeer(
+        $,
+        'round 1: clean',
+        '⚡ 🔎 sixth sense: mods lane 6 | main',
+    );
+    const pause = await fromPeer(
+        $,
+        'pause — hold every message until «resume»',
+    );
+    const fromWing = await fromPeer($, 'next: r6', '🦉🪽 clio: wing 1');
+    expect([
+        fromSixth.text?.includes('round 1: clean'),
+        pause.text?.includes('pause'),
+        fromWing.text?.includes("🦉🪽 clio: wing 1's message is held"),
+    ]).toEqual([true, true, true]);
+});
+
+test('a wind dima takes back hands the held message over at the next turn', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'cancelled' });
+    await say($, 'his prompt');
+    expect(delivered(w.lines)).toEqual([
+        '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: next: r6',
+    ]);
+});
+
+test('🐦‍🔥 second wind switched off holds nothing', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 90);
+    w.store.set('shown', { 'stash.second-wind': false });
+    await start($);
+    const r = await fromPeer($, 'next: r6');
+    expect([
+        r.text?.includes('next: r6'),
+        w.store.has(`steer-held:${SID}`),
+    ]).toEqual([true, false]);
+});
