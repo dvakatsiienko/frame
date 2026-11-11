@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"cmp"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -130,8 +129,7 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 			}
 		})
 		step("stamp", "x brief check passed these bytes", func() {
-			sum := fmt.Sprintf("%x", sha256.Sum256([]byte(text)))
-			if !exists(filepath.Join(stateDir(), "briefs", sum+".json")) {
+			if _, stamp := briefStamp([]byte(text)); !exists(stamp) {
 				fail("stamp", "no x brief check stamp for these bytes", restamp(brief))
 			}
 		})
