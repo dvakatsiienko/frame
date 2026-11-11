@@ -4,7 +4,7 @@ title: 'flyway: wing 2'
 status: open
 assignee: []
 created_date: '2026-11-06T12:23:00Z'
-updated_date: '2026-11-09T20:54:00Z'
+updated_date: '2026-11-11T14:32:00Z'
 labels:
   - m
   - clio-wing-2
@@ -22,9 +22,10 @@ dima's pick 14:23: the side channel's durable plan lives here, a checkbox list, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
-- [ ] #2 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
-- [ ] #3 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go, stacks.go, habit-shared-files, the siesta skill, prompt-groom.ts, craft-fleet-flow, shape-lane-dispatch, crew-codie and watch-pr.sh changed since its last version — later: dima 20:21 («i tell when»)
+- [ ] #1 cli rider from main (dima 16:32): x lane gate maps herdr-app/mods/ → herdr/FTR.md + herdr/ftr/*.md, so a herdr commit without its FTR line is refused; 10 herdr builds passed with none on 11-11
+- [ ] #2 💤 FRM-454 helga on Sonnet: a shape-idea grill with dima before any sign — later: dima 19:58
+- [ ] #3 💤 PK-362 steamac disk 256 → 192 gb — later: dima 20:17 («i tell when»)
+- [ ] #4 💤 redraw the crew-pm board: pocket-check.ts, merge_auto.go, stacks.go, habit-shared-files, the siesta skill, prompt-groom.ts, craft-fleet-flow, shape-lane-dispatch, crew-codie and watch-pr.sh changed since its last version — later: dima 20:21 («i tell when»)
 <!-- AC:END -->
 
 ## Implementation Notes
