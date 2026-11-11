@@ -111,7 +111,7 @@ func pluginBump(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		if err := r.Step("commit", "the bump, on this tree's branch", func() (string, error) {
 			committed, _, err := lockedGit("commit", "-q", "-m", fmt.Sprintf("🔧 %s: bump to %s", name, to), "--", manifest)
 			if err != nil {
-				return "", err
+				return "", errors.Join(writeVersion(manifest, to, from), err)
 			}
 			if !committed.ok {
 				return "", errors.Join(writeVersion(manifest, to, from), hookFail(committed.log, "x plugin bump "+name+" --apply"))
@@ -197,9 +197,10 @@ func installedAt(id, to string) (string, error) {
 		Next: "claude plugin marketplace list --json — bump where the marketplace's source lives"}
 }
 
-// unbumpedPlugin is the plugin whose files a commit changed without its plugin.json, when a marketplace lists it; ""
-// for none. the nearest plugin dir above a path owns it, so a mod with its own manifest answers for its own files
-func unbumpedPlugin(tree string, paths []string) string {
+// unbumpedPlugins are the plugins whose files a commit changed without their plugin.json, each one a marketplace
+// lists. the nearest plugin dir above a path owns it, so a mod with its own manifest answers for its own files
+func unbumpedPlugins(tree string, paths []string) []string {
+	var names []string
 	for _, path := range paths {
 		for dir := filepath.Dir(path); dir != "." && dir != "/"; dir = filepath.Dir(dir) {
 			rel := filepath.Join(dir, ".claude-plugin", "plugin.json")
@@ -211,13 +212,13 @@ func unbumpedPlugin(tree string, paths []string) string {
 			if slices.Contains(paths, rel) || json.Unmarshal(raw, &found) != nil {
 				break
 			}
-			if market, _, _ := marketOf(tree, filepath.Join(tree, dir)); market != "" {
-				return found.Name
+			if market, _, _ := marketOf(tree, filepath.Join(tree, dir)); market != "" && !slices.Contains(names, found.Name) {
+				names = append(names, found.Name)
 			}
 			break
 		}
 	}
-	return ""
+	return names
 }
 
 // findPlugin reads every tracked plugin.json; a name nobody carries lists the ones that exist

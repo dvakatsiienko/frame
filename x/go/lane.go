@@ -117,6 +117,13 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	// before all that reads the tree or the index: a git commit holds the shared index lock through its hook, so a stage outside
 	// the turn dies on a peer's, an edit in the wait would skip format and quotes, and a peer's commit moves the HEAD a dry run copies
 	namedPaths := strings.Join(paths, " ")
+	// every retry this run names carries the flag and the caller's own paths, never the manifest the bump adds
+	bumpFlag := ""
+	if bumpName != "" {
+		bumpFlag = "--bump " + bumpName + " "
+	}
+	callerPaths := slices.Clone(paths)
+	again := strings.TrimSuffix("x lane commit "+bumpFlag+msgFile+" -- "+namedPaths, " -- ")
 	verb := "x lane commit "
 	switch {
 	case dry:
@@ -125,7 +132,7 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 		verb += "--hold-unstaged "
 	}
 	if err := r.Step("turn", "waiting for the gate turn", func() (string, error) {
-		leave, err := takeGateTurn(verb+namedPaths, verb+msgFile+" -- "+namedPaths)
+		leave, err := takeGateTurn(verb+namedPaths, strings.TrimSuffix(verb+bumpFlag+msgFile+" -- "+namedPaths, " -- "))
 		leaveTurn = leave
 		return "", err
 	}); err != nil {
@@ -155,6 +162,7 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 		r.skip("bump", "refresh")
 	} else {
 		var was []byte
+		var index string
 		if err := r.Step("bump", "the plugin's patch version", func() (string, error) {
 			b, said, err := planBump(tree, bumpName)
 			if err != nil {
@@ -163,6 +171,9 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 			if was, err = os.ReadFile(b.manifest); err != nil {
 				return "", err
 			}
+			// the index entry as it stood, so a stop puts back a staged edit too, never only HEAD's
+			staged, _ := git("ls-files", "-s", "--", b.manifest)
+			index = staged.out
 			if err := writeVersion(b.manifest, b.from, b.to); err != nil {
 				return "", err
 			}
@@ -180,14 +191,22 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 				return
 			}
 			_ = os.WriteFile(bumped.manifest, was, 0o644)
-			if !dry {
-				_, _ = git("reset", "-q", "--", rel)
+			if dry {
+				return
 			}
+			// `<mode> <sha> <stage>\t<path>`: the entry before the bump goes back as it was
+			if mode, rest, ok := strings.Cut(index, " "); ok {
+				if sha, _, ok := strings.Cut(rest, " "); ok {
+					_, _ = git("update-index", "--cacheinfo", mode+","+sha+","+rel)
+					return
+				}
+			}
+			_, _ = git("reset", "-q", "--", rel)
 		}()
 	}
 	if err := r.Step("holds", "the paths another session holds", func() (string, error) {
 		if held := heldByOthers(tree, paths); len(held) > 0 {
-			return "", heldFail(held, msgFile, paths)
+			return "", heldFail(held, bumpFlag+msgFile, callerPaths)
 		}
 		return "none held by another session", nil
 	}); err != nil {
@@ -273,7 +292,7 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	}
 
 	if dry {
-		named := msgFile + " -- " + strings.Join(paths, " ")
+		named := strings.TrimSuffix(bumpFlag+msgFile+" -- "+namedPaths, " -- ")
 		return dryCommit(r, tree, message, dryIndex, dryTree, "x lane commit --dry "+named, "x lane commit "+named)
 	}
 
@@ -342,12 +361,14 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 				}
 			}
 			if !committed.ok {
-				return "", hookFail(committed.log, "x lane commit "+msgFile+" -- "+strings.Join(paths, " "))
+				return "", hookFail(committed.log, again)
 			}
 			sha, err = head()
 			return withWait(took, short(sha)+"  "+firstLine(message)+proven+retried), err
 		})
 	}
+	// from here the bump is in HEAD: a failed restore of the held files must not take it back
+	landed = stopped == nil
 	// the held files come back whether the hooks passed or refused
 	if aside != nil {
 		if err := r.Step("restore", "putting the held files back", func() (string, error) {
@@ -367,7 +388,6 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	if stopped != nil {
 		return nil, stopped
 	}
-	landed = true
 	branch, _ := git("symbolic-ref", "--quiet", "--short", "HEAD")
 	r.Done(fmt.Sprintf("%s on %s, %s", short(sha), branch.out, plural(len(present), "path")), "x lane push --apply")
 	data := ordered{{"branch", branch.out}, {"sha", sha}, {"tree", tree}}
@@ -376,8 +396,12 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	}
 	if bumped == nil {
 		// a reminder, never a refusal: a plugin edit can wait for a later bump on purpose
-		if plugin := unbumpedPlugin(tree, present); plugin != "" {
-			reminder := plugin + " changed without --bump; its install keeps the old copy until a bump: x plugin bump " + plugin + " --apply"
+		if plugins := unbumpedPlugins(tree, present); len(plugins) > 0 {
+			var bumps []string
+			for _, plugin := range plugins {
+				bumps = append(bumps, "x plugin bump "+plugin+" --apply")
+			}
+			reminder := strings.Join(plugins, ", ") + " changed without --bump; the install keeps the old copy until a bump: " + strings.Join(bumps, ", ")
 			r.Done(fmt.Sprintf("%s on %s, %s; %s", short(sha), branch.out, plural(len(present), "path"), reminder), "x lane push --apply")
 			data = append(data, kv{"reminder", reminder})
 		}

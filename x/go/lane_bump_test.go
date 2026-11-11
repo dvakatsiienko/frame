@@ -85,7 +85,11 @@ func TestCommitBumpUnderARedGateLeavesTheManifestAsItWas(t *testing.T) {
 	t.Parallel()
 	dir, _, _, env := pluginFixture(t)
 	manifest := filepath.Join(dir, "plug/.claude-plugin/plugin.json")
+	// a staged edit of the manifest's description stands before the run, and must stand after it
+	write(t, manifest, strings.Replace(read(t, manifest), "keeps its shape", "staged before", 1))
+	gitT(t, dir, "add", "plug/.claude-plugin/plugin.json")
 	was := read(t, manifest)
+	stagedBefore := gitT(t, dir, "ls-files", "-s", "--", "plug/.claude-plugin/plugin.json")
 	hook := filepath.Join(dir, ".git/hooks/pre-commit")
 	write(t, hook, "#!/bin/sh\necho a red gate\nexit 1\n")
 	write(t, filepath.Join(dir, "plug/skill.md"), "a changed skill\n")
@@ -99,8 +103,11 @@ func TestCommitBumpUnderARedGateLeavesTheManifestAsItWas(t *testing.T) {
 	if read(t, manifest) != was {
 		t.Errorf("plugin.json moved under a red gate: %q", read(t, manifest))
 	}
-	if staged := gitT(t, dir, "diff", "--cached", "--name-only", "--", "plug/.claude-plugin/plugin.json"); staged != "" {
-		t.Errorf("plugin.json stayed staged: %q", staged)
+	if staged := gitT(t, dir, "ls-files", "-s", "--", "plug/.claude-plugin/plugin.json"); staged != stagedBefore {
+		t.Errorf("plugin.json's index entry %q, want the staged one %q", staged, stagedBefore)
+	}
+	if !strings.Contains(red.stdout, "x lane commit --bump demo ") || strings.Contains(red.stdout, "-- plug/skill.md plug/.claude-plugin") {
+		t.Errorf("the retry drops --bump or names the manifest\n%s", red.stdout)
 	}
 
 	write(t, hook, "#!/bin/sh\nexit 0\n")

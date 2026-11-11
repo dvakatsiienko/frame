@@ -94,20 +94,25 @@ func TestPluginBumpNamesTheLiveSessionsOnAnOlderCopy(t *testing.T) {
 		{"current", live, 30 * time.Minute},
 		{"before any copy", live, 3 * time.Hour},
 		{"reloaded since", live, 3 * time.Hour},
+		{"quoted the tag", live, 90 * time.Minute},
 		{"gone", dead, 90 * time.Minute},
 	} {
 		id := strings.ReplaceAll(s.name, " ", "-")
 		write(t, filepath.Join(sessions, id+".json"), fmt.Sprintf(`{"name":%q,"sessionId":%q,"pid":%d,"startedAt":%d}`, s.name, id, s.pid, now.Add(-s.age).UnixMilli()))
 	}
+	since := now.Add(-20 * time.Minute).UTC().Format(time.RFC3339)
 	write(t, filepath.Join(home, ".claude/projects/p/reloaded-since.jsonl"),
-		fmt.Sprintf(`{"timestamp":%q,"message":{"content":"<command-name>/reload-plugins</command-name>"}}`+"\n", now.Add(-20*time.Minute).UTC().Format(time.RFC3339)))
+		fmt.Sprintf(`{"type":"user","timestamp":%q,"message":{"role":"user","content":"<command-name>/reload-plugins</command-name>\n<command-message>reload-plugins</command-message>"}}`+"\n", since))
+	// a Read of a file that holds the tag lands it in a tool result: no reload
+	write(t, filepath.Join(home, ".claude/projects/p/quoted-the-tag.jsonl"),
+		fmt.Sprintf(`{"type":"user","timestamp":%q,"message":{"role":"user","content":[{"type":"tool_result","content":"const reloadCommand = \"<command-name>/reload-plugins</command-name>\""}]}}`+"\n", since))
 
 	got := xIn(t, dir, append(env("1.2.4"), "X_SESSIONS="+sessions, "HOME="+home), "plugin", "bump", "demo", "--apply")
 
 	if got.code != 0 {
 		t.Fatalf("exit %d\n%s", got.code, got.stdout)
 	}
-	want := `[{"session":"before any copy","version":"unknown"},{"session":"older","version":"1.2.3"}]`
+	want := `[{"session":"before any copy","version":"unknown"},{"session":"older","version":"1.2.3"},{"session":"quoted the tag","version":"1.2.3"}]`
 	if older, _ := json.Marshal(got.data["older"]); string(older) != want {
 		t.Errorf("older %s, want %s", older, want)
 	}
