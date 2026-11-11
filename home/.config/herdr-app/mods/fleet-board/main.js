@@ -648,130 +648,156 @@ export default class FleetBoard extends View {
                 .on_click((_e, cx) => onClick(cx))
                 .child(label);
         // an ask is a card: the section head carries the 🪐, the bold id leads
-        return v_flex()
-            .p(12)
-            .gap(8)
-            .rounded(8)
-            .bg(t.raised)
-            .child(
-                prose(
-                    `ask-${i}-${j}`,
-                    ask.id
-                        ? `**${askLabel(s.name, ask.id)}**: ${ask.text}`
-                        : ask.text,
-                    t.foreground,
-                    SIZE.main,
-                ),
-            )
-            .when(Boolean(ask.pick), (el) =>
-                el.child(
-                    prose(
-                        `pick-${i}-${j}`,
-                        `pick: ${ask.pick}`,
-                        t.muted,
-                        SIZE.secondary,
-                    ),
-                ),
-            )
-            .when(Boolean(ask.id) && !done, (el) =>
-                el.child(
+        return (
+            v_flex()
+                .p(12)
+                .gap(8)
+                .rounded(8)
+                .bg(t.raised)
+                // the id sits outside the selectable text, so a double-click or a drag takes the ask alone (his F4 reads
+                // the selection aloud, dima 16:33)
+                .child(
                     h_flex()
-                        .gap(8)
-                        .items_center()
-                        .child(
-                            button(
-                                'tick',
-                                '🛎️ tick',
-                                ask.isGated
-                                    ? 'your word for this guarded action: it runs once, within 2 h'
-                                    : 'good to go: the session takes the pick',
-                                (cx) =>
-                                    cx.spawn((cx) =>
-                                        this.press(cx, s, ask, 'tick'),
-                                    ),
-                                true,
-                            ),
-                        )
-                        .child(
-                            button(
-                                'replay',
-                                '🔁 replay',
-                                'another round, with your steer',
-                                (cx) =>
-                                    cx.spawn((cx) =>
-                                        this.press(cx, s, ask, 'replay'),
-                                    ),
-                            ),
-                        )
-                        .when(Boolean(steer), (row) =>
-                            row.child(
+                        .w_full()
+                        .gap(6)
+                        .items_start()
+                        .when(Boolean(ask.id), (el) =>
+                            el.child(
                                 div()
-                                    .id(`steer-${key}`)
-                                    .flex_1()
-                                    .min_w(0)
-                                    .h(28)
-                                    .px(8)
-                                    .flex()
-                                    .items_center()
-                                    .rounded(6)
-                                    .focus((st) =>
-                                        st.border_color(t.accent).border_2(),
-                                    )
-                                    .border_1()
-                                    .border_color(t.border)
-                                    .bg(t.background)
-                                    .cursor_text()
-                                    .on_mouse_down('left', (_e, cx) =>
-                                        cx.stop_propagation(),
-                                    )
-                                    .child(
-                                        Input.new(steer)
-                                            .w_full()
-                                            .text_size(SIZE.secondary)
-                                            .text_color(t.foreground),
-                                    ),
+                                    .flex_none()
+                                    .font_semibold()
+                                    .text_size(SIZE.main)
+                                    .text_color(t.foreground)
+                                    .child(askLabel(s.name, ask.id ?? '')),
                             ),
-                        ),
-                ),
-            )
-            .when(Boolean(sentText), (el) =>
-                el.child(
-                    div()
-                        .id(`sent-steer-${key}`)
-                        .text_size(SIZE.secondary)
-                        .text_color(t.muted)
+                        )
                         .child(
-                            TextView.markdown(
-                                `sent-steer-md-${key}`,
-                                `↳ ${literalAngles(sentText ?? '')}`,
-                            ).selectable(true),
+                            div()
+                                .flex_1()
+                                .min_w(0)
+                                .child(
+                                    prose(
+                                        `ask-${i}-${j}`,
+                                        ask.text,
+                                        t.foreground,
+                                        SIZE.main,
+                                    ),
+                                ),
                         ),
-                ),
-            )
-            .when(canUntick, (el) =>
-                el.child(
-                    h_flex().child(
-                        button(
-                            'untick',
-                            '✅ ticked',
-                            'ticked: click again to take it back, until a turn takes it',
-                            (cx) => cx.spawn((cx) => this.unpress(cx, s, ask)),
+                )
+                .when(Boolean(ask.pick), (el) =>
+                    el.child(
+                        prose(
+                            `pick-${i}-${j}`,
+                            `pick: ${ask.pick}`,
+                            t.muted,
+                            SIZE.secondary,
                         ),
                     ),
-                ),
-            )
-            .when(done && !canUntick, (el) =>
-                el.child(
-                    div()
-                        .text_size(SIZE.secondary)
-                        .text_color(t.muted)
-                        .child(
-                            state === 'locked'
-                                ? '🔒 ticked, the session took it'
-                                : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
+                )
+                .when(Boolean(ask.id) && !done, (el) =>
+                    el.child(
+                        h_flex()
+                            .gap(8)
+                            .items_center()
+                            .child(
+                                button(
+                                    'tick',
+                                    '🛎️ tick',
+                                    ask.isGated
+                                        ? 'your word for this guarded action: it runs once, within 2 h'
+                                        : 'good to go: the session takes the pick',
+                                    (cx) =>
+                                        cx.spawn((cx) =>
+                                            this.press(cx, s, ask, 'tick'),
+                                        ),
+                                    true,
+                                ),
+                            )
+                            .child(
+                                button(
+                                    'replay',
+                                    '🔁 replay',
+                                    'another round, with your steer',
+                                    (cx) =>
+                                        cx.spawn((cx) =>
+                                            this.press(cx, s, ask, 'replay'),
+                                        ),
+                                ),
+                            )
+                            .when(Boolean(steer), (row) =>
+                                row.child(
+                                    div()
+                                        .id(`steer-${key}`)
+                                        .flex_1()
+                                        .min_w(0)
+                                        .h(28)
+                                        .px(8)
+                                        .flex()
+                                        .items_center()
+                                        .rounded(6)
+                                        .focus((st) =>
+                                            st
+                                                .border_color(t.accent)
+                                                .border_2(),
+                                        )
+                                        .border_1()
+                                        .border_color(t.border)
+                                        .bg(t.background)
+                                        .cursor_text()
+                                        .on_mouse_down('left', (_e, cx) =>
+                                            cx.stop_propagation(),
+                                        )
+                                        .child(
+                                            Input.new(steer)
+                                                .w_full()
+                                                .text_size(SIZE.secondary)
+                                                .text_color(t.foreground),
+                                        ),
+                                ),
+                            ),
+                    ),
+                )
+                .when(Boolean(sentText), (el) =>
+                    el.child(
+                        div()
+                            .id(`sent-steer-${key}`)
+                            .text_size(SIZE.secondary)
+                            .text_color(t.muted)
+                            .child(
+                                TextView.markdown(
+                                    `sent-steer-md-${key}`,
+                                    `↳ ${literalAngles(sentText ?? '')}`,
+                                ).selectable(true),
+                            ),
+                    ),
+                )
+                .when(canUntick, (el) =>
+                    el.child(
+                        h_flex().child(
+                            button(
+                                'untick',
+                                '✅ ticked',
+                                'ticked: click again to take it back, until a turn takes it',
+                                (cx) =>
+                                    cx.spawn((cx) => this.unpress(cx, s, ask)),
+                            ),
                         ),
-                ),
-            );
+                    ),
+                )
+                .when(done && !canUntick, (el) =>
+                    el.child(
+                        div()
+                            .text_size(SIZE.secondary)
+                            .text_color(t.muted)
+                            .child(
+                                state === 'locked'
+                                    ? '🔒 ticked, the session took it'
+                                    : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
+                            ),
+                    ),
+                )
+        );
     }
 
     /** @param {Theme} t @param {Row[]} rows */
