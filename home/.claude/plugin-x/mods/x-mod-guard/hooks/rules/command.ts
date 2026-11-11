@@ -1286,7 +1286,8 @@ export function tickedRest(command: string, quoted: string) {
 // the command `hc exec` runs, or the program an `hc run` starts that is no claude (claudeSpawn reads that one): judged as
 // the line it is, so `hc run -- hc kill <t>` meets herdr-close (sixth sense round 2 on a3cfd939); one word holding a space
 // reads as the line it spells, the cautious side of a program name no shell splits
-const HC_EXEC_VALUED = new Set(['--cwd', '--env', '--on']);
+// as `hc exec --help` lists them; a missed one reads its value as the program (sixth sense round 3: `--timeout 30`)
+const HC_EXEC_VALUED = new Set(['--cwd', '--env', '--on', '--timeout']);
 const shellQuote = (w: string) => `'${w.replaceAll("'", `'\\''`)}'`;
 function herdrStarted(c: Command) {
     if (c.name !== 'hc') return undefined;

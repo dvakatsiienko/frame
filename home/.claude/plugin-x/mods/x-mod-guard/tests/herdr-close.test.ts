@@ -467,6 +467,12 @@ for (const [line, overlays] of [
 for (const [line, word] of [
     ["hc exec 'hc kill t40'", 'herdr'],
     ['hc exec hc kill t40', 'herdr'],
+    // sixth sense round 3 on c803666c: every valued hc exec flag, as `hc exec --help` lists them
+    ['hc exec --timeout 30 hc kill t40', 'herdr'],
+    ['hc exec --on box hc kill t40', 'herdr'],
+    ['hc exec --cwd /tmp hc kill t40', 'herdr'],
+    ['hc exec --env K=V hc kill t40', 'herdr'],
+    ['hc run --timeout 30 --parent t9 --label k=v -- hc kill t40', 'herdr'],
     ['hc run -- hc kill t40', 'herdr'],
     ['hc run --bg --name k -- hc kill t44', 'herdr'],
     ["hc exec 'hc label t9 seat=clio'", 'label'],
