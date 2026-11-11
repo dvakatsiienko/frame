@@ -2511,7 +2511,7 @@ test('a script argument naming a body set signs nothing', async ($, on) => {
     expect([r.deny, ran]).toEqual([undefined, [FLYWAY]]);
 });
 for (const line of [
-    `node -e "require('child_process').execSync('x linear body FRM-1 --set /repo/b.md')"`,
+    `node -e "const c = 'x linear body FRM-1 --set /repo/b.md'; require('child_process').execSync(c)"`,
     `python3 -c "import os; os.system('x linear body FRM-1 --set /repo/b.md')"`,
     "python3 - <<'EOF'\nimport os; os.system('x linear body FRM-1 --set /repo/b.md')\nEOF",
 ])
