@@ -54,6 +54,8 @@ same 6 slips, same transcript, through the FRM-502 `packWake` and `decisionOf` u
 ## the weekly grade (standing)
 once a week clio draws 5 notes from `notes.jsonl` for dima to grade, and logs a round here: his grades, the `--changed` share over `verdicts.jsonl`, and the `#dima-caught` lines crow flagged first.
 
+- 2026-11-11 · wing 1 · 5 of the week's 107 sent notes (every 21st): 11-04 FRM-501 round 2, 11-06 the one-door overclaim, 11-07 the unflipped override, 11-09 FRM-550 Q2's new crow duty, 11-10 helga's lost theming W5 · dima's grades: hit, hit, hit, hit, meh (his tick on wing 1's read, o4) · `--changed` since 11-04: 235 of 254 verdicts changed something (92.5 %), 129 older rows carry no field · `#dima-caught` first-flagged: not counted this round
+
 ## verdict
 
 ### round, 2026-11-04 halt
