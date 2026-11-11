@@ -1,10 +1,10 @@
 ---
 id: PK-377
 title: memory by surface
-status: open
+status: done
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
-updated_date: '2026-11-11T16:10:00Z'
+updated_date: '2026-11-11T16:19:00Z'
 labels:
   - s
 dependencies: []
@@ -56,4 +56,7 @@ PK-377:W30 (2026-11-11 17:51, dima): are there too many siestas, or not? is my s
 PK-377:W31 (2026-11-11 18:09, dima, o38 steer): yes, but the band is very similar between the cc desktop app and the herdr desktop app. overall they are shaped the same, so this part should be fine. when the layout is different and drift is present, then it is worth putting into memories. (context, not dima's words: the line dima answers is "the phoenix icon is on herdr's band in herdr and on cc's band in the desktop app; only those 'where to press' lines go in each app's leaf; that's Q1 of round 2." the band is kept as read; flagged to clio.)
 PK-377:W32 (2026-11-11 18:09, dima, o39 steer): let's start from this, but i actually wanted to inspect your full memory and remove the memory salad entirely. propose where we can have it.
 PK-377:W33 (2026-11-11 18:09, dima, o41 steer): yes, these are stale, because if we make this conditional, the environment will be decided by the actual environment. it's live and different depending on the environment i start everyone in.
+
+ticket: FRM-576
+close: 2026-11-11 18:20 — W2–W17, W28, W29, W31–W33 → FRM-576's wish block (renumbered W1–W21); W23–W24 → mods lane 6 rider r7 (built, b0f7c758); W25 and W30 → main flyway PK-349; W26, W27 answered in the thread; W1, W11, W12 settled by the shape; W18–W22 repeat W13–W17
 <!-- SECTION:NOTES:END -->
