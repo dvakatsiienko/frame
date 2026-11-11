@@ -123,6 +123,7 @@ describe('siesta-checks', () => {
             '## audit-codie',
             '## gates drift',
             '## vm down',
+            '## gate budget',
             '## retros',
         ]);
         expect(heads.every((h) => h.endsWith('exit 0'))).toBe(true);
@@ -382,5 +383,134 @@ describe('siesta-checks', () => {
         expect(section(run(home).stdout, 'gates drift')).toMatch(
             /· not checked\n/,
         );
+    });
+
+    describe('gate budget', () => {
+        // one gate-steps.log row: ts, load, src, ref, sha, wall s, exit, cmd, cpu
+        const step = (
+            wall: number,
+            cmd = 'pnpm typecheck',
+            load = 4,
+            at = new Date(),
+        ) =>
+            `${at.toISOString()}\t${load}\tcommit\tmain\tabc\t${wall}\t0\t${cmd}\t-\t-\n`;
+        const plant = (home: string, budgets: string, rows: string) => {
+            writeFileSync(
+                join(home, 'frame/_clio/script/gate-budgets.tsv'),
+                `# header\n${budgets}`,
+            );
+            mkdirSync(join(home, '.local/state/x'), { recursive: true });
+            writeFileSync(join(home, '.local/state/x/gate-steps.log'), rows);
+        };
+
+        test('a step whose 24 h p90 runs past its budget × 1.25 reds, naming its p90, budget and median load', () => {
+            const home = fixtureHome();
+            plant(
+                home,
+                'commit\tpnpm typecheck\twall\t10\t40\n',
+                step(20) + step(21) + step(22, 'pnpm typecheck', 9),
+            );
+            const out = section(run(home).stdout, 'gate budget');
+            expect(out).toMatch(/· exit 1\n/);
+            expect(out).toContain(
+                '🔴 commit · pnpm typecheck: p90 21.8 s wall, budget 10 s, median load 4',
+            );
+        });
+
+        test('every step under its budget is green and one line long', () => {
+            const home = fixtureHome();
+            plant(
+                home,
+                'commit\tpnpm typecheck\twall\t10\t40\n',
+                step(9) + step(10) + step(11),
+            );
+            expect(section(run(home).stdout, 'gate budget')).toMatch(
+                /· exit 0\nevery gate step under its budget \(1 budgets\)\n/,
+            );
+        });
+
+        test('a row from the worktree and one from main fold into one step', () => {
+            const home = fixtureHome();
+            const lint = (p: string) => `node ./script/commit-msg-lint.ts ${p}`;
+            plant(
+                home,
+                'commit\tnode ./script/commit-msg-lint.ts …\twall\t1\t40\n',
+                step(9, lint('/Users/x/frame/.git/COMMIT_EDITMSG')) +
+                    step(
+                        9,
+                        lint('/Users/x/frame/.git/worktrees/w/COMMIT_EDITMSG'),
+                    ) +
+                    step(9, lint('/private/tmp/t/COMMIT_EDITMSG')),
+            );
+            expect(section(run(home).stdout, 'gate budget')).toContain(
+                '🔴 commit · node ./script/commit-msg-lint.ts …: p90 9.0 s',
+            );
+        });
+
+        test('a step with under 3 runs reads unmeasured, never red', () => {
+            const home = fixtureHome();
+            plant(
+                home,
+                'commit\tpnpm typecheck\twall\t1\t40\n',
+                step(50) + step(50),
+            );
+            const out = section(run(home).stdout, 'gate budget');
+            expect(out).toMatch(/· exit 0\n/);
+            expect(out).toContain('unmeasured, 2 run(s)');
+        });
+
+        test('a step with no budget is named', () => {
+            const home = fixtureHome();
+            plant(
+                home,
+                'commit\tpnpm typecheck\twall\t10\t40\n',
+                step(3, 'pnpm new-gate') +
+                    step(3, 'pnpm new-gate') +
+                    step(4, 'pnpm new-gate'),
+            );
+            expect(section(run(home).stdout, 'gate budget')).toContain(
+                '🟡 commit · pnpm new-gate: no budget, 3 runs',
+            );
+        });
+
+        test('rows older than 24 h count for nothing', () => {
+            const home = fixtureHome();
+            const old = new Date(Date.now() - 25 * 60 * 60 * 1000);
+            plant(
+                home,
+                'commit\tpnpm typecheck\twall\t1\t40\n',
+                step(50, 'pnpm typecheck', 4, old).repeat(3),
+            );
+            expect(section(run(home).stdout, 'gate budget')).toContain(
+                'no runs in 24 h',
+            );
+        });
+
+        test('a quiet log while commits landed on main reds as logger silent', () => {
+            const home = fixtureHome();
+            plant(home, 'commit\tpnpm typecheck\twall\t10\t40\n', '');
+            const repo = join(home, 'frame');
+            const git = (...args: string[]) =>
+                spawnSync(
+                    'git',
+                    [
+                        '-C',
+                        repo,
+                        '-c',
+                        'user.name=t',
+                        '-c',
+                        'user.email=t@t',
+                        '-c',
+                        'commit.gpgsign=false',
+                        ...args,
+                    ],
+                    { encoding: 'utf8' },
+                );
+            git('init', '-q', '-b', 'main');
+            git('commit', '-q', '--allow-empty', '-m', 'landed');
+            const out = section(run(home).stdout, 'gate budget');
+            expect(out).toMatch(/· exit 1\n/);
+            expect(out).toContain('logger silent');
+        });
     });
 });

@@ -1,0 +1,21 @@
+# gate step budgets for siesta-checks § gate budget (FRM-539): src, step (absolute paths folded to …, cut at 60), measure, budget s, quiet runs
+# source window: gate-steps.log rows 2026-11-06 21:01 → 2026-11-11 15:58 with 1-min load under 10 and exit 0, p90; moved by hand on a read, never auto-tuned
+commit	node ./script/commit-agent-trailer.ts …	wall	1.0	221
+commit	node ./script/commit-msg-lint.ts …	wall	1.0	222
+commit	pnpm mods:test --skip-tested	wall	121.4	20
+commit	pnpm typecheck	wall	2.0	335
+commit	script/test-commit.sh pnpm test	wall	23.0	331
+commit	sh -c cd x/go && GIT_CONFIG_GLOBAL=/dev/null GOFLAGS=-buildv	wall	9.0	11
+commit	sh -c git diff --cached --name-only --no-renames | awk 'NR =	wall	2.0	174
+commit	sh -c pnpm mods:typecheck && pnpm mods:skew	wall	17.6	19
+commit	sh -c { git diff --cached --name-only --no-renames || echo s	wall	43.0	61
+other	pnpm typecheck	wall	3.0	5
+other	script/test-commit.sh pnpm test	cpu	108.6	5
+other	sh -c cd x/go && GIT_CONFIG_GLOBAL=/dev/null GOFLAGS=-buildv	wall	72.4	5
+other	sh -c node recipes/nurture-memory/scripts/memory-lint.ts hom	wall	2.0	5
+other	sh -c node script/git-crypt-rename-check.ts	wall	2.0	5
+other	sh -c node script/retired-names-check.ts	wall	2.0	4
+other	sh -c pnpm exec biome check --no-errors-on-unmatched --max-d	wall	3.0	4
+other	sh -c pnpm mods:typecheck && pnpm mods:skew	wall	9.0	3
+other	test:twin	wall	47.6	7
+push	test:twin	wall	60.0	83

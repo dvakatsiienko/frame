@@ -12,6 +12,12 @@ const NOT_CHECKED = 2;
 // the same drafts and wish line wish-cover-on-write.sh checks at write time
 const DRAFT_NAME = /^(spec\.md|.*proposal.*\.md|.*review.*\.md)$/;
 const WISH_LINE = /^wish: *\[?(?:PK|FRM|BYT)-\d+.*$/gim;
+const DAY_MS = 24 * 60 * 60 * 1000;
+// under 3 runs a p90 is one run's noise: «unmeasured», never green
+const MIN_RUNS = 3;
+// red past budget × 1.25, and never for a step whose whole-second rows wobble by a second or two
+const BUDGET_SLACK = 1.25;
+const BUDGET_FLOOR_S = 2;
 
 function main(home: string, since: string) {
     const scripts = path.join(home, 'frame/_clio/script');
@@ -28,6 +34,7 @@ function main(home: string, since: string) {
         auditCodie(home, since),
         gatesDrift(home),
         vmDown(home, since),
+        gateBudget(home),
         retros(home),
     ];
     for (const s of sections)
@@ -163,6 +170,124 @@ function vmDown(home: string, since: string) {
             ? `🔴 ${down.length} go run(s) on the mac since ${since}, the vm was down: limactl start --tty=false vm-go-test`
             : 'no go run fell back to the mac',
     };
+}
+
+// a gate step whose last-24 h p90 runs past its budget (FRM-539): a slowdown named the day it starts, never felt first;
+// a quiet log while commits landed is red too, since no rows reads exactly like no slowdown
+function gateBudget(home: string, now = Date.now()) {
+    const from = now - DAY_MS;
+    const budgets = readText(
+        path.join(home, 'frame/_clio/script/gate-budgets.tsv'),
+    )
+        .split('\n')
+        .filter((l) => l && !l.startsWith('#'))
+        .map((l) => l.split('\t'))
+        .map(([src = '', step = '', measure = '', budget = '']) => ({
+            budget: Number(budget),
+            key: `${src}\t${step}`,
+            measure,
+        }));
+    const runs = new Map<
+        string,
+        { loads: number[]; values: number[]; walls: number[] }
+    >();
+    for (const f of readText(path.join(home, '.local/state/x/gate-steps.log'))
+        .split('\n')
+        .map((row) => row.split('\t'))) {
+        const at = Date.parse(f[0] ?? '');
+        if (!(at > from) || f[7] === 'test:twin:skipped' || f[6] !== '0')
+            continue;
+        const key = `${f[2]}\t${stepName(f[7] ?? '')}`;
+        const run = runs.get(key) ?? { loads: [], values: [], walls: [] };
+        run.loads.push(Number(f[1]));
+        run.walls.push(Number(f[5]));
+        run.values.push(Number(f[8]));
+        runs.set(key, run);
+    }
+    const lines: string[] = [];
+    let red = false;
+    if (!runs.size && landedSince(home, from)) {
+        red = true;
+        lines.push(
+            '🔴 logger silent: commits landed on main in the last 24 h, and gate-steps.log holds no row',
+        );
+    }
+    for (const b of budgets) {
+        const run = runs.get(b.key);
+        const label = b.key.replace('\t', ' · ');
+        if (!run) {
+            lines.push(`⚪ ${label}: no runs in 24 h`);
+            continue;
+        }
+        if (run.walls.length < MIN_RUNS) {
+            lines.push(`⚪ ${label}: unmeasured, ${run.walls.length} run(s)`);
+            continue;
+        }
+        const p90 = quantile(
+            b.measure === 'cpu'
+                ? run.values.filter(Number.isFinite)
+                : run.walls,
+            0.9,
+        );
+        const line = `${label}: p90 ${p90.toFixed(1)} s ${b.measure}, budget ${b.budget} s, median load ${quantile(run.loads, 0.5).toFixed(0)}`;
+        if (
+            p90 > Math.max(b.budget * BUDGET_SLACK, b.budget + BUDGET_FLOOR_S)
+        ) {
+            red = true;
+            lines.push(`🔴 ${line}`);
+        }
+    }
+    const known = new Set(budgets.map((b) => b.key));
+    for (const [key, run] of runs)
+        if (!known.has(key) && run.walls.length >= MIN_RUNS)
+            lines.push(
+                `🟡 ${key.replace('\t', ' · ')}: no budget, ${run.walls.length} runs, p90 ${quantile(run.walls, 0.9).toFixed(1)} s`,
+            );
+    return {
+        exit: red ? 1 : 0,
+        name: 'gate budget',
+        output: lines.some((l) => !l.startsWith('⚪'))
+            ? lines.join('\n')
+            : `every gate step under its budget (${budgets.length} budgets)${lines.length ? `\n${lines.join('\n')}` : ''}`,
+    };
+}
+
+// the step as gate-budgets.tsv names it: absolute paths folded, so a worktree's run and main's share one step
+function stepName(cmd: string) {
+    return cmd
+        .replace(/(\/Users|\/private|\/var|\/tmp)\/\S+/g, '…')
+        .replace(/\s+/g, ' ')
+        .slice(0, 60)
+        .trim();
+}
+
+function quantile(values: number[], q: number) {
+    const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+    if (!sorted.length) return 0;
+    const at = (sorted.length - 1) * q;
+    const low = Math.floor(at);
+    const high = Math.ceil(at);
+    return (
+        (sorted[low] ?? 0) +
+        ((sorted[high] ?? 0) - (sorted[low] ?? 0)) * (at - low)
+    );
+}
+
+function landedSince(home: string, from: number) {
+    const out = spawnSync(
+        'git',
+        [
+            '-C',
+            path.join(home, 'frame'),
+            'log',
+            'main',
+            '--since',
+            new Date(from).toISOString(),
+            '--format=%h',
+        ],
+        { encoding: 'utf8', timeout: RUN_TIMEOUT_MS },
+    );
+    return out.status === 0 && out.stdout.trim().length > 0;
 }
 
 // lefthook's two shapes: `commands:` keys (frame) and named `jobs:` entries (bytes)
