@@ -275,7 +275,7 @@ PK-346:W5 (2026-11-11 21:15, dima): if yes, i have an ask for you. during today 
 PK-346:W6 (2026-11-11 21:15, dima): then propose 5 flyway items to solve. solve your own, and help clio's flyway (you can yank). propose in /clio:low-tide mode, in execution order. (context, not dima's words: "/clio:low-tide" as written in the raw; "yank" as written.)
 
 PK-346:W7 (2026-11-11 21:32, dima): later, move it 2+ days ahead. (context, not dima's words: the steer answers the first line of the raw, about the agent-desktop test drive that moved up to today.)
-PK-346:W8 (2026-11-11 21:32, dima): do all the mechanical stuff yourself first, whatever doesn't need me. (context, not dima's words: the steer answers the "Low tide proposal: 5 items, in run order" header.)
+PK-346:W8 (2026-11-11 21:32, dima): do all mechanical yourself first, what does not want me. (context, not dima's words: the steer answers the "Low tide proposal: 5 items, in run order" header.)
 PK-346:W9 (2026-11-11 21:32, dima): do, if you need me - ask. (context, not dima's words: the steer answers item 1 of the low tide proposal, the groom check reading the newest clio transcript.)
 PK-346:W10 (2026-11-11 21:32, dima): also do. (context, not dima's words: the steer answers item 2 of the low tide proposal, the duplicate wish id, which runs in the same batch as item 1.)
 PK-346:W11 (2026-11-11 21:32, dima): save this for later, i want to know details but i am busy with main clio, brb to you later. (context, not dima's words: the steer answers item 3 of the low tide proposal, the rest of the siesta fixes.)
