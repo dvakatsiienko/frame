@@ -84,6 +84,6 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 
 ⏰ 🔬 the fable reset test — dima 2026-11-10 16:18 (PK-363): he runs main clio as Fable 5.2 medium until the fable part of the weekly usage reaches 100, then clicks one of his 3 resets (expire 2027-03-08, wing 1) and we see what it resets. three outcomes he named: the whole week resets (wanted); only the share fable took out of the weekly bar is given back, the other models' share stays (wing 1's reading, «kind of fine»); only the fable meter resets and the weekly bar is untouched (the worst case, unwanted). before his click: copy `~/.claude/shelf/cc-usage-window.json` and note both meters; after: read them again and write the outcome to `docs/test-drive/` or the model cards. baseline at 16:18: weekly 47 % (41 % at the 14:52 boot), fable 9 % by his read — set 2026-11-10
 
-⏰ memory by surface (PK-377), his o36 steer: «lets try gradual but do not forget to measure and lift after 1w!» — measure clio's surface leaves, then lift the split to the fleet — set 2026-11-11 · due: 2026-11-18
+⏰ memory by surface (FRM-576:W16): «let's try gradual, but do not forget to measure and lift after 1 week!» — re-read FRM-576 § decided «the order» against facts.md § 4, then lift — set 2026-11-11 · due: 2026-11-18
 
 ⏰ FRM-551: the first halt with no go lane reads the vm half, then closes it — dima: «reminder?» — set 2026-11-11
