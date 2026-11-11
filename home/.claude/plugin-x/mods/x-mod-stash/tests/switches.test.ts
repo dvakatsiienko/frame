@@ -140,7 +140,7 @@ async function mount($: Engine) {
             title: 'fleet board',
             view: {},
         },
-        requestId: 'fleet-board',
+        requestId: 'x-cc-deck',
         surface: 'desktop',
     });
     return { band, board };

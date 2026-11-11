@@ -68,7 +68,7 @@ function world(on: On, files: Record<string, string> = {}) {
                 ? []
                 : [
                       {
-                          id: 'fleet-board',
+                          id: 'x-cc-deck',
                           isFocused: false,
                           isPlaced: true,
                           isShown: true,
@@ -148,7 +148,7 @@ const board = ($: Engine) =>
             title: 'fleet board',
             view: {},
         },
-        requestId: 'fleet-board',
+        requestId: 'x-cc-deck',
         surface: 'desktop',
     });
 

@@ -160,7 +160,9 @@ const AWAY_NOTE =
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
 const POLL_MS = 4000;
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
-const BOARD = 'fleet-board';
+const BOARD = 'x-cc-deck';
+// read-both: the board's id before dima's x-cc-deck name (o25); a reload finds it open and swaps it
+const OLD_BOARD = 'fleet-board';
 // 🎛️ is a pane of its own, which the surface tabs beside 🚦: the band is capped by cc, the list outgrew it (dima's pick a of
 // four homes, 16:20); a tab row inside a pane was proven too, kept as an idea in api-map.md
 const SETTINGS_PANE = 'stash-settings';
@@ -5975,6 +5977,11 @@ export const register: Register = (on) => {
             return undefined;
         });
         await seatDefaults($).catch(() => undefined);
+        const panes = await $.ui.panes().catch(() => undefined);
+        if (panes?.some((p) => p.id === OLD_BOARD)) {
+            await $.ui.close({ id: OLD_BOARD }).catch(() => undefined);
+            await openBoard($).catch(() => undefined);
+        }
         // what a reload finds in `$.state`, read once: every get of one dispatch reads the moment it began
         const kept = {
             cap: (await $.state.get(CAP)).value,

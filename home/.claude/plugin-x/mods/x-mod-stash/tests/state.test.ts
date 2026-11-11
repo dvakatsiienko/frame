@@ -58,7 +58,7 @@ async function reloaded(
         value: isBoardOpen
             ? [
                   {
-                      id: 'fleet-board',
+                      id: 'x-cc-deck',
                       isFocused: false,
                       isPlaced: true,
                       isShown: true,
@@ -120,7 +120,7 @@ test('the board draws with no file or process read', async ($, on) => {
             title: 'fleet board',
             view: {},
         },
-        requestId: 'fleet-board',
+        requestId: 'x-cc-deck',
         surface: 'desktop',
     });
     expect(s.calls.io - before).toBe(0);

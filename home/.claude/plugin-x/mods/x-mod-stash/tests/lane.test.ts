@@ -128,7 +128,7 @@ const board = ($: Engine) =>
             title: 'fleet board',
             view: {},
         },
-        requestId: 'fleet-board',
+        requestId: 'x-cc-deck',
         surface: 'desktop',
     });
 type Board = Awaited<ReturnType<typeof board>>;
@@ -623,7 +623,7 @@ test('a taken steer clears from the box once clio took it', async ($, on) => {
     on('ui.panes', () => ({
         value: [
             {
-                id: 'fleet-board',
+                id: 'x-cc-deck',
                 isFocused: false,
                 isPlaced: true,
                 isShown: true,
@@ -1977,7 +1977,7 @@ test('a glide steer clio took while he was away is not offered back over a newer
     on('ui.panes', () => ({
         value: [
             {
-                id: 'fleet-board',
+                id: 'x-cc-deck',
                 isFocused: false,
                 isPlaced: true,
                 isShown: true,

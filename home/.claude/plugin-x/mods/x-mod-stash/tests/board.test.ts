@@ -145,7 +145,7 @@ async function board($: Engine) {
             title: 'fleet board',
             view: {},
         },
-        requestId: 'fleet-board',
+        requestId: 'x-cc-deck',
         surface: 'desktop',
     });
 }
@@ -828,7 +828,7 @@ function panes(on: On, isOpen: boolean) {
         value: isOpen
             ? [
                   {
-                      id: 'fleet-board',
+                      id: 'x-cc-deck',
                       isFocused: false,
                       isPlaced: true,
                       isShown: true,
@@ -854,7 +854,7 @@ test('🚦 in the row opens a closed board', async ($, on) => {
     const calls = panes(on, false);
     const ui = await band($);
     await ui.press({ key: 'board' });
-    expect(calls).toEqual(['open fleet-board']);
+    expect(calls).toEqual(['open x-cc-deck']);
 });
 
 test('🚦 in the row closes an open board', async ($, on) => {
@@ -862,7 +862,38 @@ test('🚦 in the row closes an open board', async ($, on) => {
     const calls = panes(on, true);
     const ui = await band($);
     await ui.press({ key: 'board' });
-    expect(calls).toEqual(['close fleet-board']);
+    expect(calls).toEqual(['close x-cc-deck']);
+});
+
+test('a reload that finds the board open under its old id reopens it as x-cc-deck', async ($, on) => {
+    fleet(on, {}, { isBoardOpen: false });
+    const calls: string[] = [];
+    on('ui.panes', () => ({
+        value: [
+            {
+                id: 'fleet-board',
+                isFocused: false,
+                isPlaced: true,
+                isShown: true,
+                plugin: 'x-mod-stash',
+                title: '🚦 board',
+            },
+        ],
+    }));
+    on('ui.open', (_$, e) => {
+        calls.push(`open ${e.id}`);
+        return { value: { isPlaced: true as const } };
+    });
+    on('ui.close', (_$, e) => {
+        calls.push(`close ${e.id}`);
+        return { value: undefined };
+    });
+    await $.session.start({
+        cwd: '/tmp',
+        isInteractive: true,
+        surface: 'desktop',
+    });
+    expect(calls).toEqual(['close fleet-board', 'open x-cc-deck']);
 });
 
 // the model answers every request with nothing; `step` sends one of this session's main loop, or of a subagent's when `agentId` is given
