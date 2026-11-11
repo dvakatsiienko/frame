@@ -300,9 +300,9 @@ const OPENS = new Set([
 // how settings.json's "model" names the default. Read off Claude 2.1.318, 2026-11-05.
 const MODELS = [
     ['opus', 'Opus 5.5'],
-    ['fable', 'Fable 5.1'],
     ['sonnet', 'Sonnet 5.5'],
     ['haiku', 'Haiku 5.5'],
+    ['fable', 'Fable 5.2'],
 ];
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 // "claude-opus-5-5" → "Opus 5.5"; a display name stays as it is.
@@ -1216,10 +1216,7 @@ export default class ClaudeChat extends View {
         // Images pasted for a dev container's Claude: their paths in the container, by agent address,
         // sent with the next message (see pasteIntoContainer).
         this.pasted = new Map();
-        this.box = TextareaState.new({
-            placeholder:
-                'Message Claude…  (Enter sends, Shift+Enter: new line)',
-        });
+        this.box = TextareaState.new({});
         this.box.set_auto_grow(1, 8);
         cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
             const old = `${appHome()}/data/claude-chat`;
@@ -1268,8 +1265,11 @@ export default class ClaudeChat extends View {
                 );
                 if (fixed !== now) return this.box.set_value(fixed);
             }
+            const hadText = Boolean(this.typed?.trim());
             this.typed = now;
             keepDraft(this.address, this.typed);
+            // the send button lights up with the first character and dims when the box empties
+            if (hadText !== Boolean(now.trim())) cx.notify();
             // Enter's newline, typed at the word (it arrives before submit): keep the menu as it was
             // for submit to use; complete() drops the newline.
             if (
@@ -4146,6 +4146,12 @@ export default class ClaudeChat extends View {
                     e.delta.y,
                     max,
                 );
+                // a wheel pressed past either end moves nothing: no redraw, or a trackpad's momentum
+                // at the bottom redrew every row ~100 times a second and the chat flickered
+                const isSame =
+                    next.up === clamp(this.up ?? 0) &&
+                    next.follow === this.follow;
+                if (isSame && !this.ctx) return;
                 this.up = next.up;
                 this.follow = next.follow;
                 keepScroll(this.address, next);
@@ -4404,7 +4410,6 @@ export default class ClaudeChat extends View {
                     el
                         .cursor_pointer()
                         .hover((s) => s.opacity(0.85))
-                        .focus((s) => s.border_color(t.accent).border_2())
                         .on_click((_e, cx) => {
                             if (btn.key === 'board')
                                 run('layout.toggle', { id: DECK_BLOCK });
@@ -5403,7 +5408,6 @@ export default class ClaudeChat extends View {
                     .child(this.band(t))
                     // While the menu is open, ↑ ↓ Tab Esc are its keys (bound in init); ← → Home End close
                     // it (the caret would leave the word with no change event), and the next press moves.
-                    // No Send button: Enter sends (the placeholder says so).
                     .child(
                         h_flex()
                             .id('composer')
@@ -5436,28 +5440,27 @@ export default class ClaudeChat extends View {
                                 this.menuKey('leave', cx),
                             )
                             .items_end()
-                            // the model and effort pickers sit inside the box, bottom right (dima, 23:16, his drawn
-                            // shot): the box takes the whole width, the text the rest of it
+                            // a stacked card (dima, 14:33 and 15:02 shots): the rounder text card in front casts a
+                            // soft shadow onto a narrower card tucked under it, which holds the pickers and send.
+                            // column-reverse paints the front card last, so its shadow lands on the back one
                             .child(
-                                h_flex()
+                                v_flex()
                                     .flex_1()
                                     .min_w(0)
-                                    .items_end()
-                                    .gap(6)
-                                    .p(6)
-                                    .rounded(8)
-                                    .bg(t.background)
-                                    .border(1)
-                                    .border_color(t.input)
-                                    .child(
-                                        div()
-                                            .flex_1()
-                                            .min_w(0)
-                                            .child(Textarea.new(this.box)),
-                                    )
+                                    .flex_col_reverse()
                                     .child(
                                         h_flex()
-                                            .flex_none()
+                                            .mx(14)
+                                            .pt(16)
+                                            .pb(6)
+                                            .px(8)
+                                            .items_center()
+                                            .rounded_b(12)
+                                            .border_l(1)
+                                            .border_r(1)
+                                            .border_b(1)
+                                            .border_color(t.border)
+                                            .bg(t.raised)
                                             .gap(6)
                                             .child(
                                                 this.dropdown(
@@ -5472,7 +5475,50 @@ export default class ClaudeChat extends View {
                                                     agent,
                                                     'effort',
                                                 ),
+                                            )
+                                            .child(div().flex_1())
+                                            .child(
+                                                div()
+                                                    .id('send')
+                                                    .size(28)
+                                                    .flex()
+                                                    .items_center()
+                                                    .justify_center()
+                                                    .rounded(8)
+                                                    .bg(
+                                                        this.typed?.trim()
+                                                            ? t.accent
+                                                            : t.raised,
+                                                    )
+                                                    .text_color(
+                                                        this.typed?.trim()
+                                                            ? t.background
+                                                            : t.dim,
+                                                    )
+                                                    .text_size(px(15))
+                                                    .font_weight(700)
+                                                    .hover((s) =>
+                                                        s.opacity(0.85),
+                                                    )
+                                                    .tooltip('Send (Enter)')
+                                                    .on_click((_e, cx) =>
+                                                        this.send(cx),
+                                                    )
+                                                    .child('↑'),
                                             ),
+                                    )
+                                    .child(
+                                        div()
+                                            .w_full()
+                                            .mb(-10)
+                                            .px(14)
+                                            .py(12)
+                                            .rounded(16)
+                                            .bg(t.background)
+                                            .border(1)
+                                            .border_color(t.border)
+                                            .shadow_md()
+                                            .child(Textarea.new(this.box)),
                                     ),
                             ),
                     ),
