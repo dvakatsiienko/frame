@@ -715,6 +715,7 @@ describe('surface leaves', () => {
 
     it.each([
         { ...herdr, CLAUDE_CODE_ENTRYPOINT: 'sdk-cli' },
+        { ...herdr, CLAUDE_CODE_ENTRYPOINT: 'sdk-ts' },
         { ...herdr, CLAUDE_CODE_BG: '1' },
     ])('loads neither leaf in a headless session %j', (env) => {
         const text = start(env);
@@ -730,6 +731,18 @@ describe('surface leaves', () => {
         );
         expect(result.stdout).toContain(ruleHead);
         expect(result.stderr).toBe('');
+    });
+
+    it('keeps the other loads when a leaf cannot be read', () => {
+        const home = fixtureHome();
+        const leaf = join(home, 'frame/_clio/memory', herdrLeaf);
+        chmodSync(leaf, 0o000);
+        const result = session().spawnHook(
+            { cwd: clio, hook_event_name: 'SessionStart', source: 'startup' },
+            { HOME: home, ...herdr },
+        );
+        chmodSync(leaf, 0o644);
+        expect(result.stdout).toContain(ruleHead);
     });
 
     it('logs the surface it saw and the leaf it loaded', () => {

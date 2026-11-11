@@ -67,11 +67,11 @@ def project_trigger(rule, cwd):
 
 
 def surface():
-    # a headless session inherits its spawner's HC_TERMINAL_ID but has no screen of its own
+    # only an interactive start has a screen: a headless one (an sdk entrypoint, a --bg session) inherits its spawner's HC_TERMINAL_ID
     entrypoint = os.environ.get("CLAUDE_CODE_ENTRYPOINT", "")
-    if entrypoint == "sdk-cli" or os.environ.get("CLAUDE_CODE_BG"):
+    if os.environ.get("CLAUDE_CODE_BG"):
         return None
-    if os.environ.get("HC_TERMINAL_ID"):
+    if entrypoint == "cli" and os.environ.get("HC_TERMINAL_ID"):
         return "herdr"
     return "claude-desktop" if entrypoint == "claude-desktop" else None
 
@@ -313,7 +313,10 @@ def main():
         cwd = str(event.get("cwd", ""))
         hits = {rule: project_trigger(rule, cwd) for rule in fresh}
         loads += [load(event, session, r, "project", h, f"because the session runs in {h}") for r, h in hits.items() if h]
-        loads += on_start_env(event, session, cwd)
+        try:
+            loads += on_start_env(event, session, cwd)
+        except Exception as error:  # a leaf that will not read must not drop the project loads already marked
+            print(f"memory-load-rule-lazy: {error}", file=sys.stderr)
     elif name == "UserPromptSubmit":
         prompt = str(event.get("prompt", ""))
         hits = {rule: prompt_trigger(rule, prompt) for rule in fresh}
