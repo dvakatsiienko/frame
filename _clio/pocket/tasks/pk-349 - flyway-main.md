@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-11T19:01:00Z'
+updated_date: '2026-11-11T19:18:00Z'
 labels:
   - s
   - clio-main
@@ -38,22 +38,20 @@ ordinal: 1000
 - [ ] #20 mods rider r6, now mine (mods codie 18:42): _clio/.claude/hooks/fork-guard.sh allows a wing's edit of a ~/.claude/shelf/handoffs/ file whose name carries that wing's own token; proven with a fixture-HOME driver plus a mutation run (_clio/AGENTS.md)
 - [ ] #21 crow replay row (crow 19:03): the proposal wake for grill-chat-3 made an empty packet dir 202611111856d59 and never reached her; a wake that cannot write its packet leaves a «failed: <reason>» line in harvest.log
 - [ ] #22 prompt-groom.ts --no-wish refuses a prompt holding a want marker («i want», «always», «should», ❓, ← on a line of ours) and sends it to helga's groom (his o43 tick via wing 1, 19:29): measure the false refuses on this week's grooms first, warn before it enforces if the count is high
-- [ ] #23 prompt-groom.ts --next <home> counts only the homes, so two grooms not yet appended both got W1013 (helga caught it 19:45): --next also reads ~/.local/state/clio/grooms/*.groomed.md; a freebie, proven by a fixture
-- [ ] #24 his ❓ PK-363:W1018 (hot reloads or a leak?): re-read herdr's memory at the halt, 215 MB at 19:28; steady growth with no reloads means a leak, the answer goes to him
-- [ ] #25 mods lane 6 card: once r9 and r10 land (63d5fa57, 990334f5 on main), the riders show on the card as one step, as told to dima 19:51
-- [ ] #26 mods row (his o67 tick): the glide subcard becomes a read-only view of a member's asks, its tick no longer joins the member's turn; x-mod-stash FTR.md:1061 exit 3 changes with it; for the next mods lane
-- [ ] #27 prompt-groom --day without --transcript reads the newest clio transcript, which may be a wing's or a probe's, so it reds another board's steers (o1–o33 at 21:00); the Stop hook and the siesta pass this thread's own transcript, a freebie
-- [ ] #28 the siesta trigger reshaped, his words (00:56): «one siesta per hour is too rare. Wishkeeper is useful but not when I ask you some plain questions … When I just chat there is no need for Wishkeeper … it should run when something important is worth checking. For example when you do batches and make a lot of changes that are important to catch». so: the trigger is the size and weight of a batch (a lane’s done with commits, a ticket close or sign, a many-file batch), never a chat turn or a one-line edit; no time cap; 7 runs in 2 h on 11-10 night, 4 from small rule edits — on: 2026-11-11
-- [ ] #29 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
-- [ ] #30 ⏳ the red twin past `x mods edit test` (a red twins.test.ts reached main, 45e64cc0): its home is a rider on FRM-560, wing 1's PK-346 #4 — waits for: dima's sign tick on FRM-560's re-sign
-- [ ] #31 ⏳ the herdr FTR gate map (dima 16:32, «ensure not forgotten»): x lane gate maps herdr-app/mods/ → herdr/FTR.md + herdr/ftr/*.md; stays open until FRM-436's body carries it (wing 1's PK-346 #4) — waits for: dima's sign tick on FRM-436
-- [ ] #32 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #33 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #34 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #35 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #36 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #37 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #38 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #23 his ❓ PK-363:W1018 (hot reloads or a leak?): re-read herdr's memory at the halt, 215 MB at 19:28; steady growth with no reloads means a leak, the answer goes to him
+- [ ] #24 mods lane 6 card: once r9 and r10 land (63d5fa57, 990334f5 on main), the riders show on the card as one step, as told to dima 19:51
+- [ ] #25 mods row (his o67 tick): the glide subcard becomes a read-only view of a member's asks, its tick no longer joins the member's turn; x-mod-stash FTR.md:1061 exit 3 changes with it; for the next mods lane
+- [ ] #26 the siesta trigger reshaped, his words (00:56): «one siesta per hour is too rare. Wishkeeper is useful but not when I ask you some plain questions … When I just chat there is no need for Wishkeeper … it should run when something important is worth checking. For example when you do batches and make a lot of changes that are important to catch». so: the trigger is the size and weight of a batch (a lane’s done with commits, a ticket close or sign, a many-file batch), never a chat turn or a one-line edit; no time cap; 7 runs in 2 h on 11-10 night, 4 from small rule edits — on: 2026-11-11
+- [ ] #27 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+- [ ] #28 ⏳ the red twin past `x mods edit test` (a red twins.test.ts reached main, 45e64cc0): its home is a rider on FRM-560, wing 1's PK-346 #4 — waits for: dima's sign tick on FRM-560's re-sign
+- [ ] #29 ⏳ the herdr FTR gate map (dima 16:32, «ensure not forgotten»): x lane gate maps herdr-app/mods/ → herdr/FTR.md + herdr/ftr/*.md; stays open until FRM-436's body carries it (wing 1's PK-346 #4) — waits for: dima's sign tick on FRM-436
+- [ ] #30 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #31 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #32 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #33 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #34 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #35 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #36 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -263,4 +261,8 @@ done 2026-11-11 19:46: «seat» → «thread» (dima ticked 21:42: he never weig
 19:46: #10 and #12 (the seat → thread sweep, docs and open linear bodies) moved to wing 1's flyway PK-346 on dima's 19:43 handover to wing 1
 
 done 2026-11-11 21:00: FRM-566 settings: add the «borrow the shape» line from his 20:49 notes, pointing at ~/frame/.scratch/herdr-lane/shepherdr-settings-shots/ideas.md (move the shots into a kept home at the fold) (FRM-566 Todo)
+
+done 2026-11-11 21:18: prompt-groom --day without --transcript reads the newest clio transcript, which may be a wing's or a probe's, so it reds another board's steers (o1–o33 at 21:00); the Stop hook and the siesta pass this thread's own transcript, a freebie
+
+done 2026-11-11 21:18: prompt-groom.ts --next <home> counts only the homes, so two grooms not yet appended both got W1013 (helga caught it 19:45): --next also reads ~/.local/state/clio/grooms/*.groomed.md; a freebie, proven by a fixture
 <!-- SECTION:NOTES:END -->

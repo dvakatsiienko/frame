@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T19:07:00Z'
+updated_date: '2026-11-11T19:28:00Z'
 labels:
   - m
   - clio-main
@@ -2055,4 +2055,12 @@ PK-363:W1064 (2026-11-11 21:05, dima): oh i see you, i write from herdr now, via
 PK-363:W1065 (2026-11-11 21:05, dima): after i switch back to zoo, i see the shepherdr version of chatter beside the other parts of zoo (deck). my band is not here. (context, not dima's words: "shepader" read as "shepherdr"; the raw line opens "wisp:".)
 PK-363:W1062 (2026-11-11 20:53, dima): i started the assistant haiku. ask it around: does it see any special tools, anything useful from inside shepherdr as an assistant? (context, not dima's words: "sheparder" read as "shepherdr", as in earlier grooms; the screenshots are tags only in the raw.)
 PK-363:W1063 (2026-11-11 20:53, dima): what is autopilot? ❓
+
+PK-363:W1068 (2026-11-11 21:07, dima): now, fine. i think keep shepherdr for now. (context, not dima's words: the raw opens with a screenshot tag only.)
+PK-363:W1069 (2026-11-11 21:07, dima): so let me settle after the switch, lots of stuff. print short. i bet you collected a lot of info, but do not flush everything to me at once. structure the findings for me in parts.
+PK-363:W1070 (2026-11-11 21:07, dima): tell yourself what you found, what wingwand found, what herdr codie found, and what the researcher found. let's create a borrow plan and proceed. propose how to move. (context, not dima's words: "wingwand" is written as in the raw.)
+PK-363:W1071 (2026-11-11 21:07, dima): before we start folding out the findings, say if anyone is blocked. what i want is for everyone to have something to do. from what i see, the cli lane is blocked, or what?
+PK-363:W1072 (2026-11-11 21:07, dima): what's everyone doing? print a short reply with status ❓ (context, not dima's words: the raw ends mid-sentence at "status as".)
+PK-363:W1066 (2026-11-11 21:03, dima): i killed you? you are not in herdr anymore (switched from shepherdr to our theme just yet) ❓ (context, not dima's words: "herder" read as "herdr", "sheparder" as "shepherdr", as in earlier grooms.)
+PK-363:W1067 (2026-11-11 21:03, dima): i write you from the c desktop app. (context, not dima's words: "c" is written as in the raw.)
 <!-- SECTION:NOTES:END -->
