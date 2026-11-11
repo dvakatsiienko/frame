@@ -3,11 +3,9 @@ name: CI
 on:
   pull_request:
   push:
-    # `renovate/**` is required, not decorative. renovate.json sets
-    # `prCreation: "not-pending"`, which holds a PR back until the branch's
-    # checks finish — and a branch carrying no checks reads as pending forever,
-    # so the PR would never open. Running CI on the bare branch is also what
-    # makes patch automerge mean something here.
+    # `renovate/**` is required, not decorative: patch automerge waits on the
+    # branch's checks, and a branch carrying none would leave it nothing to
+    # wait for.
     branches: [main, 'renovate/**']
 
 concurrency:
