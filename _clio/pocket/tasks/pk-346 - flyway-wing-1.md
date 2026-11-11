@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T20:56:00Z'
+updated_date: '2026-11-11T21:10:00Z'
 labels:
   - s
   - clio-wing-1
@@ -300,4 +300,11 @@ done 2026-11-11 22:27: crow second wind has no door: hc send wraps a /compact as
 done 2026-11-11 22:56: FRM-491 the siesta binds on one Stop hook, and a delivered tick gets resolved: mine by hand (it edits _clio/); 📌 remind dima what it is about before i start (his 17:35 ask) (FRM-491 In Progress)
 
 22:58: FRM-491 built and landed (ee5d08f9), ⏰ due 11-18 comment on the ticket; its old open line closed, the remeasure line dated 11-18 replaces it
+
+PK-346:W17 (2026-11-11 22:52, dima): hunt your tails, and stay parked. I go grill with clio and brb.
+PK-346:W18 (2026-11-11 22:52, dima): after the tails are hunted, take a SW.
+PK-346:W19 (2026-11-11 22:52, dima): I previously asked to low-tide over the piled-up flyways, yours and clio's. Do /clio:flyway-sync, then propose what else you can do (close other agreed mechanical stuff you can solve yourself).
+PK-346:W20 (2026-11-11 22:52, dima): I go to clio now.
+PK-346:W21 (2026-11-11 23:01, dima): print the cli plan, and when I can have new pretty thread names.
+PK-346:W22 (2026-11-11 23:05, dima): is that tomorrow because midnight is in an hour or less, or what? ❓
 <!-- SECTION:NOTES:END -->
