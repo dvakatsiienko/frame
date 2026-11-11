@@ -426,10 +426,12 @@
   - given an orbit ask `✍️ sign FRM-1, FRM-2: <title>` (also `FRM-1 and FRM-2`, `FRM-1 FRM-2`)
   - when dima ticks it, then `x linear set <id> --add-label signed` and `x linear body <id> --set <file>` land on each id it names, and an id it does not name (`FRM-3`, or `FRM-14` beside `FRM-1`) stays refused
   - proof: tests/ticks.test.ts
-- ✅ merge-auto's `--dima-ok <pr>` runs only when dima's last typed prompt names that pr (FRM-423)
+- ✅ merge-auto's `--dima-ok <pr>` runs only when dima's last typed prompt tells it to merge that pr (FRM-423, FRM-519 item 15)
   - given a Bash call running `x lane merge-auto … --dima-ok <pr>` (or `--dima-ok=<pr>`)
-  - when dima's last prompt typed at the composer or sent over the bridge names the pr as a whole word, `104` or `#104`, by the same match as a dima-ok marker
-  - then it runs; when no such prompt exists, it names another number (`1041`, `#10`), or only a peer or a notification said it, then nothing runs and the refusal (rule `dima-ok-flag`) names the numbers his prompt lacks
+  - when dima's last prompt typed at the composer or sent over the bridge says «merge <n>», «land <n>» or «ship <n>» (`#104` too, a list like «merge 103 and 104» too), outside a quote, with no `not`, `never`, `no` or `…n't` before the verb, and not in a question
+  - then it runs; when no such prompt exists, it names another number (`1041`, `#10`), names the pr only in a question («why is 104 red»), a «don't merge 104», «shouldn't merge 104», a quoted «merge 104», or only a peer or a notification said it, then nothing runs and the refusal (rule `dima-ok-flag`) names the words that open it for this pr
+  - decision: «go ahead with #104» and «ok «#104» lands» passed before and refuse now: his number inside any sentence once opened the flag, so «why is 131 red, don't merge it» passed (FRM-503's audit, door 3; his tick o120)
+  - proof: tests/merge-word.test.ts::merge-auto's --dima-ok runs when dima's last prompt says …; merge-auto's --dima-ok stays refused when dima's prompt says …
   - given `x lane merge-auto` with no `--dima-ok`, then the rule never judges it
   - decision: x trusts a `--dima-ok` that reached it, since only this mod reads dima's last typed prompt; the flag never lifts merge-auto's brake (FRM-423 grill, o140)
   - decision: a refusal from day one, never warn-only — a warning would run the merge it means to stop (dima's o102, the `foreground-claude` precedent)

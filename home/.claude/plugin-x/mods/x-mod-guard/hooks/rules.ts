@@ -1411,6 +1411,20 @@ export function withDimaOk(command: string, pr: string) {
     }
     return undefined;
 }
+// his instruction to merge a pr: «merge <n>», «land <n>» or «ship <n>», a list of numbers allowed, outside a quote, with no
+// negation before the verb and not in a question; a number anywhere else in his prompt is no word (FRM-519 item 15)
+const QUOTED = /«[^»]*»|"[^"]*"|“[^”]*”|`[^`]*`/g;
+export function saysMerge(prompt: string, pr: string) {
+    if (!/^\d+$/.test(pr)) return false;
+    const said = new RegExp(
+        String.raw`(?<!(?:n['’]t|\bnot|\bnever|\bno)\s)\b(?:merge|land|ship)\s+(?:#?\d+\s*(?:,|and|&)\s*)*#?${pr}\b`,
+        'i',
+    );
+    return prompt
+        .replaceAll(QUOTED, ' ')
+        .split(/(?<=[.!?\n])/)
+        .some((s) => !s.trim().endsWith('?') && said.test(s));
+}
 export function mergeWord(command: string, cwd: string): Refusal | undefined {
     const words = mergeAutoCalls(command, cwd).flatMap((c) => c.words);
     if (!words.length) return undefined;
@@ -1423,10 +1437,10 @@ export function mergeWord(command: string, cwd: string): Refusal | undefined {
     );
     if (!targets.length) return undefined;
     return {
-        door: "ask dima; his own next prompt naming the pr (104 or #104), or his tick on an orbit ask quoting the pr url, lets merge-auto's --dima-ok through. a bg session counts only what dima types into it himself",
+        door: `ask dima; his own next prompt «merge ${targets[0] ?? '<n>'}», «land ${targets[0] ?? '<n>'}» or «ship ${targets[0] ?? '<n>'}», or his tick on an orbit ask quoting the pr url, lets merge-auto's --dima-ok through. a bg session counts only what dima types into it himself`,
         rule: 'dima-ok-flag',
         targets,
-        why: "merge-auto's --dima-ok stands for dima's word on a self-edit, and counts only when his last typed prompt names the pr or his tick quotes it",
+        why: "merge-auto's --dima-ok stands for dima's word on a self-edit, and counts only when his last typed prompt tells it to merge, land or ship the pr, or his tick quotes it",
     };
 }
 

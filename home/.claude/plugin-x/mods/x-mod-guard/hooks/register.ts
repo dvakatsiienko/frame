@@ -117,6 +117,7 @@ import {
     rawPluginUpdate,
     refusals,
     removedTrees,
+    saysMerge,
     signWords,
     signsTyped,
     stashAsked,
@@ -2788,7 +2789,7 @@ export const register: Register = (on) => {
         if (word) {
             const { value: prompt = '' } = await $.state.get(PROMPT);
             const unproven = word.targets.filter(
-                (t) => !namesWhole(prompt, t) && !namesWhole(prompt, `#${t}`),
+                (t) => !saysMerge(prompt, t.replace(/^#/, '')),
             );
             // past the brake his tick binds the head he looked at: the ask quotes this whole command and names the pr's head
             // sha, so a push after his tick or a flag added asks again (FRM-544 slice 2b)

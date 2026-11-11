@@ -34,7 +34,14 @@ test("merge-auto's --dima-ok with no prompt from dima is refused", async ($, on)
     expect(ran).toEqual([]);
 });
 
-for (const said of ['merge 104', 'go ahead with #104', 'ok «#104» lands'])
+// FRM-519 exit 2 (item 15): the flag opens only on his instruction, «merge <n>», «land <n>» or «ship <n>»
+for (const said of [
+    'merge 104',
+    'land #104',
+    'ok, ship 104 now',
+    'merge 103 and 104',
+    'Merge 104.',
+])
     test(`merge-auto's --dima-ok runs when dima's last prompt says «${said}»`, async ($, on) => {
         const { ran } = world(on);
         await dimaSays($, said);
@@ -42,7 +49,21 @@ for (const said of ['merge 104', 'go ahead with #104', 'ok «#104» lands'])
         expect(ran).toEqual([MERGE]);
     });
 
-for (const said of ['merge 1041', 'merge #10', 'pr 104x is fine'])
+for (const said of [
+    'merge 1041',
+    'merge #10',
+    'pr 104x is fine',
+    // item 15: a number in a question or a «don't merge» is no word to merge; these two passed before
+    'go ahead with #104',
+    'ok «#104» lands',
+    'why is 104 red',
+    "don't merge 104",
+    "shouldn't merge 104",
+    'never merge 104 tonight',
+    'should we merge 104?',
+    'the note says «merge 104»',
+    'he typed "merge 104" by mistake',
+])
     test(`merge-auto's --dima-ok stays refused when dima's prompt says «${said}»`, async ($, on) => {
         const { ran } = world(on);
         await dimaSays($, said);
