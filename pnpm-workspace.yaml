@@ -23,3 +23,6 @@ minimumReleaseAgeExclude:
   - three@0.186.1
 
 autoDedupe: true
+# recorded in the lockfile, so pnpm reads a frozen lockfile as up to date and installs nothing before an exec or a run
+lockfile:
+  includeResolutionSettings: true
