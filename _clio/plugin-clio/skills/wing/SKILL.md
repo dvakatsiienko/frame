@@ -22,10 +22,10 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
 
 ## open one
 
-herdr first (dima, 11-10): `ListAgents` numbers the live wings by their `-n` names, then `crew-lead`'s herdr surface file with `-n '🦉🪽 clio: wing <N>'`, `--cwd ~/frame/_clio`, the fresh prompt below as its first task. the desktop app (`crew-lead`'s `surface-claude-desktop.md`) is the fallback, a forked wing's only door:
+herdr first (dima, 11-10), the desktop app the fallback and a forked wing's only door; each surface's start door is its leaf's (`surface-herdr-desktop`, `surface-claude-desktop` § threads):
 
-1. several may run (dima, 2026-11-06): `mcp__ccd_session_mgmt__list_sessions`; the new one takes his number, else the lowest no live wing holds
-2. `mcp__ccd_session__start_session`, initiation `user_asked`, title `🦉🪽 clio: wing <N>`:
+1. several may run (dima, 2026-11-06): the live wings listed by the leaf's door; the new one takes his number, else the lowest no live wing holds
+2. started by the leaf's door, titled `🦉🪽 clio: wing <N>`:
    - fresh: context `fresh`, cwd `~/frame/_clio`, use_worktree false, prompt «greet dima in one line; read your flyway, clean its finished lines, then work it with him», background naming today's roadmap step, the day's chores and what he asked the wing for
    - forked: context `fork`, prompt «you are a wing; greet dima in one line; read your flyway, clean its finished lines, then work it with him»
 3. done: the result names a started session, linked in one line as `[its title](#local_<id>)`

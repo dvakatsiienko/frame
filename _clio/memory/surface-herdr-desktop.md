@@ -5,6 +5,7 @@ this leaf loaded means this thread runs in herdr (`HC_TERMINAL_ID` set); the Cla
 ## threads
 
 - every seat is a herdr pane; mine is the tab «🦉 clio»; a summon is `hc run`, its tab given by `x:herdr`'s `seat-tab.ts`
+- a wing: the live ones numbered by their `-n` names in `ListAgents`; started by `crew-lead`'s herdr surface file with `-n '🦉🪽 clio: wing <N>'`, `--cwd ~/frame/_clio`, the fresh prompt as its first task (`clio:wing` § open one)
 - a herdr thread opened in the desktop app through remote control stays a herdr thread: where it runs decides, never where he reads (inference from the env detection, not probed)
 
 ## the screen he reads

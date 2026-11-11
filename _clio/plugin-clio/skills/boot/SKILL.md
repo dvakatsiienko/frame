@@ -7,7 +7,7 @@ argument-hint: "[mini | board | <handoff slug>]"
 
 light boot by default. an argument that loosely means the full picture — «board», «full», or
 similar — adds tracker orientation; any other argument is a handoff topic, ingested at step 4
-(`/clio:boot <slug>` is the whole opener — one skill per message is all the desktop box sends).
+(`/clio:boot <slug>` is the whole opener).
 run silently, report as ONE opening message, after the two reviews (step 8); a harness «say what you're doing» nudge before it gets «booting, board next» and nothing more.
 
 🎯 **the boot ORIENTS, it never resolves.** steps 1–8 are pure parse-and-assemble: no answers
@@ -26,7 +26,7 @@ the SessionStart hook printed `=== clio boot digest · <time> ===` at the top of
 - a `🚨 FAIL ·` line → report it first, before any work; a check that could not run prints FAIL, and `=== all checks green ===` is the only green.
 - the barrel probe (`method-silent-failures`), silently: the board says «barrel probe ok»; a miss → the move `method-silent-failures` holds.
 - a new always-wanted check lands in the script, never in this file.
-- 🎭 `set_session_output_style` (`self`, `output-glados`), then `get_session` reads it back: the desktop ignores the project `outputStyle`
+- 🎭 the output style `output-glados`: set by the surface leaf's door when the surface ignores the project `outputStyle`
 
 ## 2. the roadmap block 🧭
 the prefetch prints the linear initiative «roadmap»: its status and nine-line body, the attached
