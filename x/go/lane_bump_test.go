@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestCommitBumpLandsTheChangeAndTheBumpInOneCommit(t *testing.T) {
@@ -44,6 +47,26 @@ func TestCommitBumpLandsTheChangeAndTheBumpInOneCommit(t *testing.T) {
 				t.Errorf("claude ran %q", calls)
 			}
 		})
+	}
+}
+
+func TestCommitBumpNamesTheLiveSessionsOnAnOlderCopy(t *testing.T) {
+	t.Parallel()
+	dir, cache, _, env := pluginFixture(t)
+	old := time.Now().Add(-2 * time.Hour)
+	write(t, filepath.Join(cache, "1.2.3", ".keep"), "")
+	if err := os.Chtimes(filepath.Join(cache, "1.2.3"), old, old); err != nil {
+		t.Fatal(err)
+	}
+	sessions := t.TempDir()
+	write(t, filepath.Join(sessions, "a.json"), fmt.Sprintf(`{"name":"on the old copy","sessionId":"a","pid":%d,"startedAt":%d}`,
+		os.Getpid(), time.Now().Add(-time.Hour).UnixMilli()))
+	write(t, filepath.Join(dir, "plug/skill.md"), "a changed skill\n")
+
+	got := xIn(t, dir, append(env("1.2.4"), "X_SESSIONS="+sessions, "HOME="+t.TempDir()), "lane", "commit", "--bump", "demo", message(t), "--", "plug/skill.md")
+
+	if want := `[{"session":"on the old copy","version":"1.2.3"}]`; got.code != 0 || marshal(got.data["older"]) != want {
+		t.Fatalf("exit %d, older %s, want %s\n%s", got.code, marshal(got.data["older"]), want, got.stdout)
 	}
 }
 
