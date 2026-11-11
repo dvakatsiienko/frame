@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T21:48:00Z'
+updated_date: '2026-11-11T21:55:00Z'
 labels:
   - s
   - clio-wing-1
@@ -327,4 +327,10 @@ PK-346:W24 (2026-11-11 23:15, dima): pick a good spot (do not break your current
 
 PK-346:W25 (2026-11-11 23:47, dima): why do you want to add a retired line? just eradicate the term «seat» and leave no references. (context, not dima's words: his steer on o65, the «seat» retired-term line in fleet-vibe; it replaces that line with a full removal)
 23:49: o65 answered: no retired line; flyway #2 («seat» saved names) widens to every reference, waves B and C with it, done when rg --hidden -i for the word seat over frame prints nothing (today 371 hits in 70 files)
+
+PK-346:W26 (2026-11-11 23:53, dima): so what useful gain we have out of it? ❓ (context, not dima's words: answers clio's 23:51 line on the 7 wishkeeper cards: replay test, 6 of 7 caught, cheaper auditor.)
+PK-346:W27 (2026-11-11 23:53, dima): yes. (context, not dima's words: answers clio's 23:51 line on the «seat» removal as the next chunk, «if it fits your window (ends ~02:20)».)
+PK-346:W28 (2026-11-11 23:53, dima): pick best most useful 2 cli chunks that could be completed before ~2:00
+PK-346:W29 (2026-11-11 23:53, dima): e.g. what cli lane can take after 570? ❓ (context, not dima's words: 570 is FRM-570, cli lane 8's running chunk.)
+23:56: W26 answered (the replay is insurance on the cheaper card, plus the 11-18 baseline), W27 taken (the «seat» removal runs tonight, herdr paths tomorrow), W28 and W29 answered as o67 (FRM-436, then FRM-424)
 <!-- SECTION:NOTES:END -->
