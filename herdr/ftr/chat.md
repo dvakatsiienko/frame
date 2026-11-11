@@ -33,6 +33,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given the chat's font is Sans
   - then a reply's markdown bold reads bold (shot 1928)
   - decision: Sans is the system font: herdr's own UI font, Geist, ships one face and drew bold flat
+- 🐞 a triple click selects a reply's whole paragraph
+  - given a reply's paragraph holds inline code and wraps
+  - when he triple clicks a word in it
+  - then the whole paragraph is selected; today only the clicked row is, since gpui-kit lays such a paragraph out a row at a time
+  - decision: inline code keeps its chips, and the fix waits on gpui-kit (his tick, 18:35): [gpui-kit#3933](https://github.com/longbridge/gpui-kit/issues/3933)
 - ✅ the chat is ours by name: `x-herdr-chatter`
   - makes: `home/.config/herdr-app/mods/x-herdr-chatter`, landed into `~/.config/herdr-app/mods/x-herdr-chatter` by `herdr-mods:land`
   - given `layouts/zoo.json` places `x-herdr-chatter`
