@@ -16,10 +16,10 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 now (dima 17:10, «do now»): shape-idea for memory by surface, clio and fleet memory mirrored, the env detected; then the herdr interview, then the tilde grill
+- [ ] #1 now (dima 17:10, «do now»): shape-idea for memory by surface, clio and fleet memory mirrored, the env detected; then the herdr interview (his OSS layouts and shots, the stacked composer's next look, designer or codie for the looks; not run yet), then the tilde grill
 - [ ] #2 a small skill for his «sync your flyway: clear done, reorder, tell the wings» after a second wind (dima 16:52, again 17:10): seven names + ⚖️ worth it first
 - [ ] #3 PK-363 herdr move: the wish behind the herdr lane and tomorrow's boot, its state in .scratch/herdr/plan.md
-- [ ] #4 📎 the for-you row on fleet-board (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #4 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
 - [ ] #5 grill 5 round 2: the setup's name (seven), then wing 1's zoo pairs for his keep-or-go-back, his own sounds, a tick for every refusal
 - [ ] #6 the halt's milestone refresh, from wing 1's sweep (dima 20:31: «all milestone ticket execution order is properly groomed and saved in Linear … next boot … you don't forget the order»): drop or flip the two blocks links that contradict his ticked mods order (FRM-504 blocks FRM-519, FRM-505 blocks FRM-504); point the initiative's two queues and the halt handoff at .scratch/herdr/scopes-audit.md § the whole execution order; give tonight's four ticketless herdr builds (deck beautify, strip removal, orbit in the agents list's order, tab short labels) and the watcher's «main.js lands last» a ticket line and an FTR line
 - [ ] #7 the 💡💡💡💡💡 line to dima (PK-363:W571) fires only when FRM-544 closes with his W4 met: a tick runs a delete and a merge, proven by his own press
