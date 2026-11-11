@@ -28,6 +28,7 @@ import {
 } from 'herdr';
 
 import { SOUNDS_ON, isSoundOn, startJobs } from './jobs.js';
+import { threadName } from './name.js';
 import { heirs, inOrder, moved, nextOrder } from './order.js';
 
 function find(node, id) {
@@ -214,17 +215,11 @@ async function readNames(list) {
         const session = term ? await sessionOf(term) : null;
         NAMES.set(a.address, {
             at: Date.now(),
-            name: session?.name ? rejoin(session.name) : null,
+            name: threadName(session),
             pid: session?.pid ?? null,
         });
     }
 }
-
-// cc's session registry stores a zero-width joiner as a space: «🐦‍⬛ crow» comes back as «🐦 ⬛ crow»
-const JOINED = ['🐦‍⬛', '🐦‍🔥', '🙋‍♂️'];
-/** @param {string} name */
-const rejoin = (name) =>
-    JOINED.reduce((n, j) => n.replaceAll(j.replace('‍', ' '), j), name);
 
 // the names go out through herdr's shared state, so the tab bar shows the same name and never reads them a second way;
 // setShared re-renders every mod, so an unchanged map is not written

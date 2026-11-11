@@ -19,6 +19,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and past the bar's width a sideways swipe moves it one tab, and a newly active tab is brought into view (his word, 20:52: the scroll was too fast)
   - and a click, the ×, the + menu and a right-click do what they did under zoo's tabs
   - decision: the agents list reads each session name once and publishes it (`x-herdr-agents.names`); the tab bar reads that, never a second naming rule
+  - and a thread with a record shows its pretty name, `🌗 🔧 cli | FRM-436`, drawn by x from the record in `~/.claude/shelf/threads.json`; a thread with none («unknown») keeps its registry name, which a live session can never change (`agents-list/name.test.ts`, dima 01:02 «why i see old names in herdr's agent list?»)
   - not checked: in his tab bar, until the layout switch his tick allows (shots 1942 before and after, drawn as an overlay)
 - ✅ a sidecar thread starts in its own named tab
   - given helga or crow starts in herdr
