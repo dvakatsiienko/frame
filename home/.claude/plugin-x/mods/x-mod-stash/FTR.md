@@ -116,7 +116,7 @@
   - decision: once per flip; the note rides the tool result as context, the model reads it and dima does not see it
 - ✅ a band switch answers its press at once (dima, 2026-11-06)
   - given a press on 🐦‍🔥, 💨, ⏰, 🔥, 🔋, 🎛️ or 🚦, then the chip draws first and the store is written after; 💨 still reads the store, so a flip from another session stays the truth; a failed write puts the switch back, the store too, and logs one line; a poll during a press leaves it alone
-  - proof: tests/band.test.ts::… draws before its store write; ::… goes back when its store write fails; ::afk reads the store, so a flip from another session still wins; ::… draws before its pane opens; ::a poll during the draw leaves the … press standing; ::a half-failed … puts its first write back — not asserted: 🔋's order, its chip draws only in a coordinator's seat
+  - proof: tests/band.test.ts::… draws before its store write; ::… goes back when its store write fails; ::afk reads the store, so a flip from another session still wins; ::… draws before its pane opens; ::a poll during the draw leaves the … press standing; ::a half-failed … puts its first write back — not asserted: 🔋's order, its chip draws only in a coordinator's thread
 - ✅ keep-hot switch: `🔥 hot` in the row before `⏰` and afk, on by default for a seated member, off for the rest, the `secondary` chip when on
   - decision: a keep-alive, not a one-shot — on dima's 2026-10-04 live test the ping fired, then 🔥 went unticked; it stays on until dima switches it off
   - decision: 🔥 lives in the x-mod-stash store under the session's id, not in the mod's memory — a reload or a worker respawn wipes that memory and cancels its timers, and nothing else in the code ever turns 🔥 off
@@ -483,21 +483,21 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
 - 📌 the desktop Code tab's look (the pane's lower half, the steer `Input`) is dima's eye
 
 - ✅ a first prompt's sign puts its ✍️ sign ask on his board (FRM-544 slice 2f)
-  - given a session's first prompt is «sign FRM-544» (or several ids), which x-mod-guard signs nothing on, since a seat's spawn brief reads the same
+  - given a session's first prompt is «sign FRM-544» (or several ids), which x-mod-guard signs nothing on, since a thread's spawn brief reads the same
   - then the same turn orbit holds one ask `✍️ sign FRM-544: typed as this session's first prompt`, pick `sign FRM-544`, and his one tick on it signs
   - then a later prompt adds none, an open one is never doubled, and with orbit switched off nothing is added
   - proof: tests/orbit.test.ts::a first prompt's sign puts its ✍️ sign ask on his board; a batch first-prompt sign is one ask naming every id; a prompt with no first-prompt sign adds no ask; the same first-prompt sign read twice keeps one open ask; orbit switched off adds no first-prompt sign ask
 - ✅ a gated ask is published with its mark, for x-herdr-deck to draw (FRM-544 slice 1)
   - given an open ask whose tick x-mod-guard reads as dima's word — a `✍️ sign <id>` ask, a ⚠️ ask, a `merge`/`land` ask, one quoting a command in backticks
   - then its item under `asks:<sid>` in the store carries `isGated: true`, a plain ask none, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern
-  - and x-herdr-deck's presses in `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, which this mod reads as marks, x-mod-guard now reads as his tick too, its `ticks-write` rule keeping every seat's tool call out of that folder (reversing FRM-552's decision 4 on his word)
+  - and x-herdr-deck's presses in `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, which this mod reads as marks, x-mod-guard now reads as his tick too, its `ticks-write` rule keeping every thread's tool call out of that folder (reversing FRM-552's decision 4 on his word)
   - proof: tests/orbit.test.ts::a gated ask carries isGated in the store, a plain ask none
   - and a new x-herdr-deck press replaces the ask's mark, the newest press winning (within one read too), so his ↩️ then 🛎 ticks; a ↩️ that replaces an accepted mark takes its tick record with it, so x-mod-guard honours no tick the board no longer shows (sixth sense round 1 on FRM-544: the first press once won, which locked him out)
-  - decision: the newest press wins over a seat-board mark made before it, reversing «the first press wins, a desktop one included» (his 16:26 rule «my ticks should have a priority over everything»)
+  - decision: the newest press wins over a thread-board mark made before it, reversing «the first press wins, a desktop one included» (his 16:26 rule «my ticks should have a priority over everything»)
   - and a herdr ↩️ after a herdr 🛎 a turn already took drops that tick record too, though the turn's end cleared the mark: the deck's tick is a toggle, so a 🛎 he takes back opens nothing for the rest of its 2 h
   - and his untick on x-herdr-deck (an `untick` press newer than the tick) takes the ask's mark, its steer and its tick record back, so the next turn carries no mark and a later tick marks it again (FRM-574 rider, PK-363:W934); x-mod-guard reads an untick as taking the press back too
   - proof: tests/orbit.test.ts::exit 12: a herdr untick after a read tick leaves the next turn no mark, and a tick after it marks again; of a herdr tick and his untick read together, the untick wins
-  - proof: tests/orbit.test.ts::a herdr replay after a desktop tick takes it back, its tick record with it; of two herdr presses on one ask read together, the newest wins; a herdr 🛎 after his ↩️ on the seat board ticks the ask; a herdr ↩️ after a herdr tick a turn took drops its tick record
+  - proof: tests/orbit.test.ts::a herdr replay after a desktop tick takes it back, its tick record with it; of two herdr presses on one ask read together, the newest wins; a herdr 🛎 after his ↩️ on the thread board ticks the ask; a herdr ↩️ after a herdr tick a turn took drops its tick record
 
 - ✅ orbit lists this session's open asks, oldest first
   - given clio ends a turn with something for dima to decide
@@ -785,25 +785,25 @@ herdr reads no private store (frame `AGENTS.md` § the boundary), so every threa
 - ✅ 🔥 on by default for a seated member
   - given clio, a wing, crow, helga or a lane member with no `hot:` key, then 🔥 starts on; a plain session or a fork stays off; off is a written `{ off: true }`, so a click off stays off
   - and a 🔥 session idle at 45 min left whose last turn + 60 min falls before the reset gets one ping; a cache that outlives the reset gets none; at 100 % used no ping is sent
-  - proof: tests/pace.test.ts::🦉 clio starts 🔥 (+ a row per seat); ::a 🔥 click off is written and stays off across a restart; ::a cache dying before the reset gets one ping at 45 min left; ::a cache that outlives the reset gets no late ping; ::at 100 % no ping is sent
+  - proof: tests/pace.test.ts::🦉 clio starts 🔥 (+ a row per thread); ::a 🔥 click off is written and stays off across a restart; ::a cache dying before the reset gets one ping at 45 min left; ::a cache that outlives the reset gets no late ping; ::at 100 % no ping is sent
 - ✅ a quiet meter is normal while everyone is parked
   - given a meter file older than 10 min, or the first 10 % of a window, then no park rung fires and the stored rung stands, no lower rung sent in its place; its used % stands and the rung moves with the clock, so the resume still does
   - proof: tests/pace.test.ts::a meter 40 min old still fires the resume once the clock carries pace back; ::a meter 40 min old never fires a park; ::the first 10 % of a fresh window sends no park; ::a stale park stays quiet at 78 % used, no flap through a lower rung; ::a meter written before its window opened clears the rung with no line; ::with no pace key no line ever; ::a pace key deleted before the crossing sends no line
 - ✅ 🔋 in the coordinator's band, on by default
-  - given the coordinator's band (the seat check `isLaneOwner`, so a coming coordinator joins by one edit), then 🔋 sits between 🔥 and ⏰, the `secondary` chip while on, plain while off, and names itself on hover
+  - given the coordinator's band (the thread check `isLaneOwner`, so a coming coordinator joins by one edit), then 🔋 sits between 🔥 and ⏰, the `secondary` chip while on, plain while off, and names itself on hover
   - when dima presses it, then `pace:<id>` flips between `{ on: true }` and `{ off: true }`; a press never turns ⏰ on, and off during a shift ends the shift, putting ⏰ back
-  - given any other seat's band, then no 🔋 and no key
+  - given any other thread's band, then no 🔋 and no key
   - given a coordinator session whose key was never written, at its start, a `/clear` or its first turn end, then it starts on, and a window already past a rung sends that line at once; a written off stands across a restart, from a press or from `mods:set pace off`, a quit included
   - decision: off is a written value, so the default arms only a key never written (blind critic, FRM-500)
   - decision: only a key with `since`, a shift's `on`, moves ⏰ (dima, 13:00)
-  - proof: tests/pace.test.ts::a new 🦉 clio session starts on, with no ⏰, and hears the crossing; ::click off, restart with the same id, cross +5: no line; ::🔋 sits between 🔥 and ⏰ and one click flips the key; ::any other seat draws no 🔋 and writes no key; ::🔋 off during a shift ends the shift: ⏰ goes back; ::the door’s off holds across a restart like a click; ::/clear on the coordinator seat arms a key never written; ::a door write redraws 🔋: the next press is the opposite of what it shows; ::a registry row named after the start arms at the first turn end
+  - proof: tests/pace.test.ts::a new 🦉 clio session starts on, with no ⏰, and hears the crossing; ::click off, restart with the same id, cross +5: no line; ::🔋 sits between 🔥 and ⏰ and one click flips the key; ::any other thread draws no 🔋 and writes no key; ::🔋 off during a shift ends the shift: ⏰ goes back; ::the door’s off holds across a restart like a click; ::/clear on the coordinator thread arms a key never written; ::a door write redraws 🔋: the next press is the opposite of what it shows; ::a registry row named after the start arms at the first turn end
 - ✅ a line reaches a dead target once it is back
   - given a queued send, then it counts as sent, no second line while it waits; given a target refused for 20 polls and revived, then one line; a key whose session ended sends nothing, since only its own session polls it
   - proof: tests/pace.test.ts::a queued send counts as sent: no second line while it waits; ::a dead target revived after 20 polls gets one line; ::a refused rung write leaves the watch alive: the line once, then the resume; ::a store refusing every rung write costs one line, not a turn per poll; ::a line on its way never rides its own turn as a second line; ::an ended session’s key sends nothing: only its own session polls it
 - ✅ a shift switches it with no click, and ⏰ with it
   - given `pnpm mods:set pace on` (`end` puts back the key it found, `off` writes `{ off: true }`, clio's registry row by default, crow's door into the store file), then the session's next poll turns ⏰ waker on with the state it found kept, and the end puts that state back, so a clio on by default stays on
   - and start, start, end changes nothing more; a change of dima's during the shift is kept; a second start turns ⏰ back on, and the end still restores what the first found (W1958: he may forget); a start with no end expires when its window resets, past the waker's own resume; a shift ending during 💨 afk changes what afk off puts back
-  - and the 🎛️ `stash · knobs` row `🔋 pace watch: this session` shows and flips this session's key; the part `🔋 pace watch: all sessions` off draws no row, sends nothing, writes no seat key and puts ⏰ back
+  - and the 🎛️ `stash · knobs` row `🔋 pace watch: this session` shows and flips this session's key; the part `🔋 pace watch: all sessions` off draws no row, sends nothing, writes no thread key and puts ⏰ back
   - proof: tests/pace.test.ts::a shift's end restores the waker its start found; ::a waker found on stays on at the end; ::start, start, end leaves a waker found off, off; ::dima's change during the shift is kept at the end; ::a second start turns ⏰ back on after dima switched it off; ::the end restores the state the first start found, past a second start; ::a start with no end expires when its window resets; ::at the reset ⏰ stays on past the waker's own resume; ::an old meter at the start never ends the shift it just began; ::a start with no meter takes its expiry from a later poll; ::a shift ending during afk changes what afk off puts back; ::the part switched off mid-shift restores the waker; ::the 🎛️ row flips this session's key; ::the part off draws no row; tests/switches.test.ts — not asserted: a `/clear` changes the session id and leaves the key behind, as keep-hot's does
 
 ## quiet comms — member pings off clio's thread

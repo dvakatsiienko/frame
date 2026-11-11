@@ -35,7 +35,7 @@ keeps clio's adviser (today: crow) true: what it hunts, how it talks to her, whi
 2. **distill the last run's `last/`** before any new lane; name what it already answered. done: a list of answered vs open vectors.
 3. **lanes, from one brief**: `researcher` (sources, papers, code) + `pnpm research:lanes` (exa + parallel) + a `neuroarxiv` lane every run (dima, 2026-10-21), its paper reads one `helper-lite` per paper. done: every lane landed or failed out loud. (template)
 4. **the self-report**: after the lanes land, ping the adviser for what it lacked, would drop or would hunt, as evidence for the analysis (step 5). done: its answer in `last/consult-report.md`. (script)
-5. **analysis**: `notes.jsonl` + `verdicts.jsonl` per channel and arm (session wakes, plan critiques: notes vs `none`, ok vs miss, latency to the catch, tokens and cost per wake), `harvest.log` (timeouts, gaps), the flawlog since the last run (what it caught first, what it never caught), `steers.md` obeyed or not; the runner adds what it saw live from its own seat. done: the numbers in the findings print. (script)
+5. **analysis**: `notes.jsonl` + `verdicts.jsonl` per channel and arm (session wakes, plan critiques: notes vs `none`, ok vs miss, latency to the catch, tokens and cost per wake), `harvest.log` (timeouts, gaps), the flawlog since the last run (what it caught first, what it never caught), `steers.md` obeyed or not; the runner adds what it saw live from its own thread. done: the numbers in the findings print. (script)
 6. **the critical review of the whole setup**: keep, revamp, or retire the adviser — written as a verdict with its evidence, every run. done: one line, never skipped. (open)
 7. **distill** into the artifacts; findings print, ≤3 verdicts to dima. done: printed, each verdicted. (open)
 8. **log** today's line. done: `log.md` has it.
@@ -57,7 +57,7 @@ the owner's vectors, in the outside world:
 ### analysis
 
 our own evidence:
-- clio's wants from her adviser, seat by seat — as coordinator (dropped asks, stalls, briefs), as pm (tickets, the pocket, the order), as cto (flow numbers, root fixes) — written by clio from her own misses, then checked against what crow hunts today
+- clio's wants from her adviser, thread by thread — as coordinator (dropped asks, stalls, briefs), as pm (tickets, the pocket, the order), as cto (flow numbers, root fixes) — written by clio from her own misses, then checked against what crow hunts today
 - everyone's misses — clio's, dima's, any member's — the adviser's primary goal (dima, 2026-10-08): for dima, one detector per kind (a dropped ask, a call that contradicts his own earlier verdict, overload building), each tested on a real thread
 - operator overload: the signals (reply gaps, message length, rounds on one item) are only the trigger — the note's value is the remedy it proposes (split the batch, hold member traffic, collapse the asks), judged by whether the next replies shrink (dima: «what would be truly useful is proposing how to resolve it, not only spotting it») (park: the signal list + the remedy list)
 - the plan-critique arm: cost per vetted catch, and whether its catches land before the seal or after it
@@ -74,7 +74,7 @@ settled: «the comms model: pings or reads» — it reads her transcript on a wa
 
 ## artifacts
 
-- `x:crew-adviser` (`home/.claude/plugin-x/skills/crew-adviser/SKILL.md`) — the seat's contract: hunts, bar, note shape, timing, modes; crow's boot prompt
+- `x:crew-adviser` (`home/.claude/plugin-x/skills/crew-adviser/SKILL.md`) — the thread's contract: hunts, bar, note shape, timing, modes; crow's boot prompt
 - `_crow/AGENTS.md` — the mechanics and the facts that bite
 - `~/.local/state/crow/leaves.txt` — the memory slice it gets per wake
 - `docs/test-drive/crow.md` — the trial and its log

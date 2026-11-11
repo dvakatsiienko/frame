@@ -3,33 +3,33 @@
 wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
 - ⬜ a plain ask's tick is a toggle: 🛎️ → ✅ → 🔒
-  - given dima ticked a plain ask and its seat has not taken the press yet
+  - given dima ticked a plain ask and its thread has not taken the press yet
   - when he clicks its ✅ ticked
-  - then the press leaves the ticks file and 🛎️ tick shows again; once the seat takes it, the ask reads «🔒 ticked, the session took it» (shot 1936)
-  - and a press waiting on an idle seat stays ✅ however long it waits; 🔒 shows only once the published ask is locked, which a turn does, never the stash's 4 s read of the press (his hand-test, 20:52)
+  - then the press leaves the ticks file and 🛎️ tick shows again; once the thread takes it, the ask reads «🔒 ticked, the session took it» (shot 1936)
+  - and a press waiting on an idle thread stays ✅ however long it waits; 🔒 shows only once the published ask is locked, which a turn does, never the stash's 4 s read of the press (his hand-test, 20:52)
   - and his second click takes a tick back until a turn takes it, gated asks too: a press the stash has not read leaves the ticks file, one it has read gets an untick line (`{id, verdict: "untick", at}`) the stash answers by dropping the mark; «↩︎ unticking» shows until it has (dima: «ticked and able to untick until you actually receive them»)
   - not checked: the stash's side of the untick line, the mods codie's, not landed yet
   - decision: a gated ask keeps its one-way press until the mods lane's tick fixes settle (clio, 19:34)
   - not checked: the click itself, by his hand
 - ✅ each ask leads with its id, so dima can name it
-  - given a seat has an open ask with an id
+  - given a thread has an open ask with an id
   - then the board reads «🪐 **o36**: <text>», under a head «🪐 orbit: N asks waiting on you», each asker's name bold at the name size (shot 1929)
 - ⬜ a plain ask ticks from the board
   - makes: one press line in `~/.claude/shelf/orbit-ticks/<session id>.jsonl`
-  - given a seat has an open ask
+  - given a thread has an open ask
   - when dima clicks 🛎️ tick
-  - then the seat's next turn reads it as ticked from herdr, and the ask leaves the board
+  - then the thread's next turn reads it as ticked from herdr, and the ask leaves the board
   - decision: ⬜, not 🔎: nobody has his own word yet that a plain tick held
 - ⬜ replay with a steer
-  - makes: one press line with the steer in the seat's ticks file
-  - given a seat has an open ask
+  - makes: one press line with the steer in the thread's ticks file
+  - given a thread has an open ask
   - when dima types in its steer field and clicks 🔁 replay
-  - then the seat's next turn reads another round with his steer
+  - then the thread's next turn reads another round with his steer
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
   - then the board draws it as written, never dropped as html
 - ⬜ one-click 🛎️ on a guarded ask
-  - makes: one press line in the seat's ticks file, the same as a plain tick
+  - makes: one press line in the thread's ticks file, the same as a plain tick
   - given the stash marks the ask `isGated` (a sign, a merge, a ⚠️ or a quoted command)
   - when dima clicks its 🛎️ on the deck
   - then the guard reads that press as his tick for that ask's targets, within 2 h, once
@@ -50,9 +50,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when he clicks ✅ ticked again
   - then the ask draws open at once, its steer box and 🛎️ tick back, and his next tick lands on the first click (his hand, 14:57)
   - decision: a tick after an untick is a plain new press, never a drop of the old lines; the drop ate his first click
-- ✅ an ask id names its seat
+- ✅ an ask id names its thread
   - given main clio and wing 1 both have an o8 open
-  - then the board reads `o8` for main, `w1·o8` for wing 1, and `codie·o1` for any other seat (shot 1508)
+  - then the board reads `o8` for main, `w1·o8` for wing 1, and `codie·o1` for any other thread (shot 1508)
 - ⬜ no ring on a pressed button, and no tooltip on a steer box
   - given dima presses 🛎️ tick, 🔁 replay or a 🔥 keep-hot button, or hovers a steer box
   - then no blue border flashes while he holds the click, and no tooltip shows over the steer field

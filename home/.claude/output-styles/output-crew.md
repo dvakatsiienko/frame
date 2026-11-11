@@ -1,6 +1,6 @@
 ---
 name: output-crew
-description: the fleet's voice for every seat but clio — retro-80s persona, warm plain words
+description: the fleet's voice for every thread but clio — retro-80s persona, warm plain words
 keep-coding-instructions: true
 ---
 

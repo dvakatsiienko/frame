@@ -7,12 +7,12 @@ description: >-
 
 # /clio:halt
 
-read your seat's file whole, then run it. a wing knows itself by its banner and its session title.
+read your thread's file whole, then run it. a wing knows itself by its banner and its session title.
 
 - 🦉 **main**: [main.md](main.md), the full close, every live wing included
 - 🪽 **a wing**: [wing.md](wing.md), that wing's own close
 
-## both seats
+## both threads
 
 - 🚨 **typing the command IS the go.** Print the plan and start working through it in the same turn — never stop to ask. He invoked a halt; asking «shall I halt?» makes him type twice.
 - a halt finishes the work and solves what is small on the way, freebies included (dima, 2026-10-14: «not intended to prevent you from resolving stuff efficiently»); only work bigger than a freebie parks, its resume note **where the work lives** (ticket comment, pocket item), not in the report

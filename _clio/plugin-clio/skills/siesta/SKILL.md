@@ -6,7 +6,7 @@ description: load at every siesta — a lane member's done lands, 15 files of cl
 
 dima, 2026-10-10: a siesta should be useful with the least noise — once we kick off from it, the next thing is already picked. this skill is the whole flow and its «when» is the one trigger list; `fleet-vibe` holds the word.
 
-🪽 **every clio runs it, on its own stamp** (PK-351:W78): the gate finds the seat. a wing's batch, tickets, lanes and flyway are its own, and it never moves or touches main's; step 3.2 and the chores line are main's alone; 3.3 runs in every seat (o76).
+🪽 **every clio runs it, on its own stamp** (PK-351:W78): the gate finds the thread. a wing's batch, tickets, lanes and flyway are its own, and it never moves or touches main's; step 3.2 and the chores line are main's alone; 3.3 runs in every thread (o76).
 
 ## when
 

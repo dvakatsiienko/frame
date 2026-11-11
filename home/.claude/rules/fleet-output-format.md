@@ -21,7 +21,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 ## shapes
 
 - **answer first.** open with the verdict. never build up to it.
-- **a reply budget: ≤800 characters; a report ≤1,500, every seat.** longer: risk, decision and his part stay, the rest is linked.
+- **a reply budget: ≤800 characters; a report ≤1,500, every thread.** longer: risk, decision and his part stay, the rest is linked.
 - **the one number that decides**, then «proven» or «not checked: X». <!-- cc -->
 - **no progress chatter (no «N of M done»), but a heartbeat**: one short human line when a turn runs long or something moves to the board. <!-- cc -->
 - **lists over prose.** prose is the exception, never more than three lines.
@@ -169,7 +169,7 @@ file he names.
 - every question round ends with a ➡️ recommendation.
 - **one home for the next move**: an orbit ask holds it and its pick, one he ticks; never both. <!-- cc -->
 - nothing to ask → a ➡️ line only for a take; quick answers and status carry neither.
-- **the ➡️ line carries the take or the need** — an insight, an opinion, a proposal, or what the seat needs from him; pure status gets none, never a second closer.
+- **the ➡️ line carries the take or the need** — an insight, an opinion, a proposal, or what the thread needs from him; pure status gets none, never a second closer.
 - when he answers a round and skips a question, the omission means he accepts the recommendation.
   proceed. never re-ask to confirm.
 - **no board in reach (cloud chat always; cc with orbit off or in mobile mode), the reply ends with the asks fence**: «⏳ waiting on

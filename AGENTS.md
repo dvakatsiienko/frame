@@ -17,12 +17,12 @@ clio from here: load `x:clio-mode`.
 before planning or building a piece, ask in order (dima, 2026-11-10, PK-363:W213, on trial):
 
 1. it unlocks something on his word, or must happen inside a running cc turn → **a cc mod** (`home/.claude/plugin-x/mods/`): a refusal, a hold, a count, a tool, a press that signs, merges or deletes
-2. he reads or clicks it across seats, no proof needed → **herdr** (`home/.config/herdr-app/mods/`): x-herdr-deck, chatter, a plain tick, a preference
+2. he reads or clicks it across threads, no proof needed → **herdr** (`home/.config/herdr-app/mods/`): x-herdr-deck, chatter, a plain tick, a preference
 3. a rule two areas need, or an operation a script runs → **the cli** (`x/`): one go reader, json out, the others call it
 
 - **a store is the contract**: a mod writes each state herdr draws to its own file in `~/.claude/shelf/`, herdr answers through a file that mod reads; no area reads another's private store
 - **logic is written once, in `x`**: never a copy
-- **a press that unlocks is proven**: the in-seat press, or a file only his press can write
+- **a press that unlocks is proven**: the in-thread press, or a file only his press can write
 - **none of the three**: clio's own hooks and scripts stay under `_clio/`, a classic hook moves into a cc mod only when it needs mod state; an agent card lives under `home/.claude/agents/`
 
 ## the dotfiles

@@ -16,18 +16,18 @@ dima's words:
 >
 > PK-363:W285 (2026-11-10 inbox, dima) herder seems cheap to modify. let's remember this quality and get maximum gains out of it, without turning it into "now it's expensive to modify".
 
-- **what it is:** herdr is a native terminal app. for us it is the fleet's cockpit: the one window where dima sees every seat, reads and answers them, and reaches every knob (his tick on grill 4's Q4, 2026-11-10)
+- **what it is:** herdr is a native terminal app. for us it is the fleet's cockpit: the one window where dima sees every thread, reads and answers them, and reaches every knob (his tick on grill 4's Q4, 2026-11-10)
 - **the name:** `x-herdr` is our setup inside herdr: its layout and our mods, each mod under its own name (his pick, 2026-11-10 17:17: «it is plain but clean»)
-- **who:** dima first. the seats run inside it, but what we build in it is built for his eyes and hands
+- **who:** dima first. the threads run inside it, but what we build in it is built for his eyes and hands
 - **why we want it:** the desktop app's UI is not ours to shape; herdr's is, and cheaply: a mod is a folder and a `main.js`, a save reloads it
-- **best at:** one live view over all seats at once (who works, who is blocked, whose pane is whose), native UI, and being cheap to change
+- **best at:** one live view over all threads at once (who works, who is blocked, whose pane is whose), native UI, and being cheap to change
 - **the fallback:** the claude desktop app stays his fallback until herdr matches it card by card; each desktop card retires only when its herdr twin passes its own check
 
 ## what herdr is not — the boundary
 
 `frame/AGENTS.md` § the boundary is the rule; for herdr it means:
 
-- herdr holds what he reads or clicks across seats. a thing that must happen inside a running cc turn (a refusal, a hold, a count) is a cc mod's; a rule two areas need is an `x` verb
+- herdr holds what he reads or clicks across threads. a thing that must happen inside a running cc turn (a refusal, a hold, a count) is a cc mod's; a rule two areas need is an `x` verb
 - herdr never reads a cc mod's private store: the mod writes each state herdr draws to its own file in `~/.claude/shelf/`
 - a press that unlocks (a sign, a merge, a delete) is proven by a file only his press can write, fenced by the guard; herdr never stands in for that proof
 
@@ -48,7 +48,7 @@ dima's words:
 - **pretty and sharp, no clunky UI.** a shot of every visible change goes to him; a sixth sense on a herdr chunk grades the look by taste, and a look it dislikes does not pass
 - **ux first, hotkeys welcome.** every state, input and edge he meets counts; `x:guide-ui-ux` holds the defaults
 - **every feature gets its settings row**, the essential knobs only, in one clean settings surface
-- **slipstream first** wherever he talks to a seat: a send that joins the next turn before a send that starts one, each with visible feedback
+- **slipstream first** wherever he talks to a thread: a send that joins the next turn before a send that starts one, each with visible feedback
 - **cheap to modify stays cheap**: one mod per feature, plain JS, no clever layers
 - **no ring on a pressed or focused button**: hover is its only feedback; a text field keeps its focus ring
 - **a tooltip only on an action with no text** (an emoji or icon button), a few words naming what it does; never one that repeats the text in view
@@ -63,13 +63,13 @@ dima's words:
 - herdr has themes: four built in, custom `themes/<name>.json`, a light and dark pair, and `theme()` for mods. every mod of ours takes its colours from `theme()`, so a theme change reaches it for free
 - the first solid theme comes after the functions are stable
 
-## facts every seat must know
+## facts every thread must know
 
 > PK-363:W321 (2026-11-10 15:01, dima) herdr restarts are safe: restarts are one of the most visible and important perks of herdr to know. Only the theme switch is destructive right now (probably a herdr bug).
 
-- **a herdr restart is safe**: seats survive it. a restart to load a mod is fine, and it is his hand
+- **a herdr restart is safe**: threads survive it. a restart to load a mod is fine, and it is his hand
 - **a layout change kills the thread in the focused tab** (a `layouts/*.json` save, `layout.switch`, a click on a layout in Settings › Look): probed 2026-11-11 on 0.1.15, signal 9 within a second, filed as herdr-app#861. before one: focus a throwaway tab, run it from rex, cancel any «Close…?» dialog. a theme change killed nothing in the probes (the 14:08 death was a layout switch), and the 0.1.14 bare `overlay.close` kill is gone in 0.1.15
-- the mods a cc session draws (the band, the 🚦 board) show in a seat's Terminal view; the Chat view hides them, and he lives in the Chat view
+- the mods a cc session draws (the band, the 🚦 board) show in a thread's Terminal view; the Chat view hides them, and he lives in the Chat view
 - animations are native (transition, spring, loop); there is no DOM, so no react, no motion.dev, no dnd-kit; files dropped from outside reach a mod through `on_drop`
 - herdr's own guide is `~/.config/herdr-app/AGENTS.md`; the proofs behind these lines: `_clio/.scratch/herdr/verified-answers.md` (wing 1, 2026-11-10, herdr-app 0.1.14)
 

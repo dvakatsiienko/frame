@@ -10,7 +10,7 @@ was: [refresh-branch-classification, refresh-jev, refresh-classification]
 
 # refresh-crew-classifier
 
-keeps the classifier seat true: the engine (jev today, unless a better one wins), our flows on it, and the craft of writing them. born 2026-10-05 from FRM-305.
+keeps the classifier thread true: the engine (jev today, unless a better one wins), our flows on it, and the craft of writing them. born 2026-10-05 from FRM-305.
 
 ## the want
 
@@ -58,7 +58,7 @@ keeps the classifier seat true: the engine (jev today, unless a better one wins)
 6. **a cheap baseline, every run** — the same fixtures through a small model with a schema (haiku) beside jev: «is jev still worth it» gets a number each run
 7. **the flow inventory** — every jev flow in the fleet on one list: owner, vet state, last tuned, weekly cost; a flow nobody reads or tunes is cut
 8. **the budget gate** — what stops a replay or a bulk run from overspending again (the 10-05 freeze: $4.43 in a day on a $5 monthly credit), which flows are fail-soft when the engine is down or out of credit, and which engine each flow could fall back to
-9. **never retire the seat for lack of prior art** — the field is young; a verdict on the seat names the engine it judged, and «retire» is a verdict on an engine, never on the operation
+9. **never retire the thread for lack of prior art** — the field is young; a verdict on the thread names the engine it judged, and «retire» is a verdict on an engine, never on the operation
 10. **classification candidates from inside** — scan the flawlog and codie retros for judgment calls agents keep making by hand; each is a candidate flow
 
 ## artifacts

@@ -12,7 +12,7 @@ wish: PK-363
 - [the setup — x-herdr](ftr/setup.md) — 1 feature
 - [x-herdr-deck — sessions](ftr/sessions.md) — 7 features
 - [x-herdr-deck — orbit](ftr/orbit.md) — 11 features
-- [seats — tabs](ftr/tabs.md) — 6 features
+- [threads — tabs](ftr/tabs.md) — 6 features
 - [tray — quick terminal](ftr/tray.md) — 1 feature
 - [chat view — x-herdr-chatter](ftr/chat.md) — 32 features
 - [scripts](ftr/scripts.md) — 2 features

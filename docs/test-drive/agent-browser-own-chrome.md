@@ -23,7 +23,7 @@ dima, 2026-11-10 01:20: «shape-test-drive for 2 weeks», after a probe through 
 - a settings page he asks for — any account setting — calls, and the confirm ask before the save
 - read-only dashboard read — linear, vercel, github web — seconds vs the cli door
 - `state save` from his Chrome into a file, reused by a headless session — a login reused without his Chrome — works yes / no
-- two seats at once with `--pin-tab` — main and a wing — each keeps its tab, yes / no
+- two threads at once with `--pin-tab` — main and a wing — each keeps its tab, yes / no
 - with the toggle off — the error is clear and names the fix, yes / no
 
 ## rounds

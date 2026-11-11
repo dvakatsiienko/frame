@@ -3,7 +3,7 @@ name: wing
 description: load when dima asks for a wing — «wing», «second wing», «side channel», «fresh side channel», «forked side channel», «open a side channel» — at any time, in a boot prompt too.
 ---
 
-# wing — a 🪽 wing, clio in a second seat beside the main thread
+# wing — a 🪽 wing, clio in a second thread beside the main thread
 
 a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questions, research, fixes, chores, plans and grills, so the main stays on its lanes. the fork-guard banner gives its role and closing rules; this skill opens the door and draws the split.
 
@@ -32,7 +32,7 @@ herdr first (dima, 11-10), the desktop app the fallback and a forked wing's only
 
 ## the flyway
 
-a wing's plan, seat, tree and branch carry its number and outlive the session, for the next wing of that number: `habit-shared-files` § the flyway.
+a wing's plan, thread, tree and branch carry its number and outlive the session, for the next wing of that number: `habit-shared-files` § the flyway.
 
 a new tree: `git -C ~/frame -c filter.git-crypt.smudge=cat -c filter.git-crypt.required=false worktree add -b clio-wing-<N> ~/frame/.claude/worktrees/clio-wing-<N> main`, then `x lane seed <tree>`.
 

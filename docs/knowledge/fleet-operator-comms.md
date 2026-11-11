@@ -54,17 +54,17 @@ kept by `recipes/refresh-fleet-operator-comms`; each run merges its numbers here
 
 ## run 2 — 2026-11-09, the multi-wing picture (windows: 10-10→10-27 · side channels 10-28→11-05 · wings 11-06→)
 
-- the queue: 2+ seats wait on him at once in 10 % → 23 % → 42 % (today) of his waiting minutes; long waits still mostly fall with fewer than 3 waiting (14 of 15 over 8 min)
+- the queue: 2+ threads wait on him at once in 10 % → 23 % → 42 % (today) of his waiting minutes; long waits still mostly fall with fewer than 3 waiting (14 of 15 over 8 min)
 - length: his answer wait is flat under 1,500 chars (1.6 / 1.5 min median), 3.0 past it (79 of 430 turns since 10-28); a correlation
 - advice share: main's median reply 1,146 → 336 chars, replies with an opinion or proposal 48 % → 33 %; wings run ~40 % longer than main
 - --bg on the board: 519 orbit calls in the wing days, 95 % phases no board draws (~165k tokens); 6 of 9 asks unanswered at the session's end
-- grills only in orbit: 6 of 102 rounds since 10-28, 5 from side or wing seats, 2 after the 11-07 rule
+- grills only in orbit: 6 of 102 rounds since 10-28, 5 from side or wing threads, 2 after the 11-07 rule
 - not measured this run: buried pushback, boundary vs mid-task timing, sycophancy (each needs a model read); labels pattern-only, the gold set is keyed to run 1's ids
 - the raw tables: the recipe's `last/` (gitignored), `hunts-result.md` the read
 
 ## levers
 
-- landed 2026-11-09 (his yes, PK-364): the 1,500 cap in every seat, the ➡️ line carries the take or the need, a risk never softened, styles tone-only (`output-fun` → `output-crew`, glados guarded identical), --bg writes no phases, wings start in glados; open: [FRM-540](https://linear.app/x-com/issue/FRM-540) --bg phases in the mod, [FRM-541](https://linear.app/x-com/issue/FRM-541) the grill guard, [FRM-542](https://linear.app/x-com/issue/FRM-542) every seat's prompt log, [FRM-543](https://linear.app/x-com/issue/FRM-543) the wish check on briefs
+- landed 2026-11-09 (his yes, PK-364): the 1,500 cap in every thread, the ➡️ line carries the take or the need, a risk never softened, styles tone-only (`output-fun` → `output-crew`, glados guarded identical), --bg writes no phases, wings start in glados; open: [FRM-540](https://linear.app/x-com/issue/FRM-540) --bg phases in the mod, [FRM-541](https://linear.app/x-com/issue/FRM-541) the grill guard, [FRM-542](https://linear.app/x-com/issue/FRM-542) every thread's prompt log, [FRM-543](https://linear.app/x-com/issue/FRM-543) the wish check on briefs
 - landed 2026-10-10 (his yes): the reply budget, one home for the next move, «ok» accepts the fence, glosses, proof in commits, a)/b) choices, push + commit batched per siesta
 - landed 2026-10-10 → 10-12, mod-shaped: asks in orbit, phases, glide lane cards, 🐠 catch, quiet comms (💨 slipstream); still open: the plugin-reload friction
 

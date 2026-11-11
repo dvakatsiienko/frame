@@ -94,7 +94,7 @@ A choice the session made without asking that would cost a redo if wrong, shown 
 _Avoid_: guess, assumed ask
 
 **Pace watch**:
-a session's own stash telling it, through one line, when the 5h window changes its rung on the ladder, on while `pace:<session id>` sits in the store without `{ off: true }`, the coordinator's seat on by default; no model between the lines.
+a session's own stash telling it, through one line, when the 5h window changes its rung on the ladder, on while `pace:<session id>` sits in the store without `{ off: true }`, the coordinator's thread on by default; no model between the lines.
 
 **Quiet comms**:
 clio's thread holding a member's message until her next turn or the idle flush instead of starting one, unless it pushes: it opens `[ask]`, `[done]` or `[escalate]`, names dima in words, or is the member's first answer to her within 30 min; the sender's own stash adds the rule to its SendMessage result; on by default, `/quiet off` (or 🎛️) its revert. each of the three tags has its own 🎛️ switch: a **push kind** switched off holds like an untagged line. a **lone shape**, the app's or engine's notice that a member's turn ended, logs one line and goes no further, afk or not or a shift runs.
