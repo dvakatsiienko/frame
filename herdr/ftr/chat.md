@@ -174,6 +174,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a reply links a file with a `file://` url
   - then a «📂 <name>» row sits under the reply, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder); a web link in the text opens in the browser as before
   - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
+- ⬜ files attach to the next message
+  - given a thread's box in the Chat view
+  - when dima presses + at the left of the lower card and picks files, or drops files on the box
+  - then each shows as a «📎 name» chip above the box, its path on hover, × takes it off
+  - and Send puts each path on its own line after the text, spaces escaped the way a terminal drop types them
+  - decision: a dev container's box shows no + (its Claude cannot read a mac path)
 - ⬜ the box is a stacked card with send in its corner
   - given the chat shows its box
   - then the text card, rounder and with a soft shadow, rests on a narrower card holding the model and effort pickers; a round ↑ send sits in the text card's bottom right, lit once text is typed, and the text uses the full width above one button-high bottom row

@@ -43,6 +43,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import { fileName, pickFiles, promptPath, withFiles } from './attach.js';
 import {
     DECK_BLOCK,
     OVERRIDE_STORE,
@@ -1271,6 +1272,8 @@ export default class ClaudeChat extends View {
         this.pasted = new Map();
         // previews of the screenshots waiting in each thread's Claude prompt (see shots.js)
         this.shots = {};
+        // files picked with + or dropped on the box, by agent address, sent as paths with the next message
+        this.files = new Map();
         cx.spawn(async (cx) => {
             this.shots = await loadShots();
             cx.notify();
@@ -2635,7 +2638,12 @@ export default class ClaudeChat extends View {
 
     send(cx) {
         const text = this.box.value().trim();
-        if (!this.address || (!text && !this.imageCount(this.address))) return;
+        const attached = this.files.get(this.address) ?? [];
+        if (
+            !this.address ||
+            (!text && !attached.length && !this.imageCount(this.address))
+        )
+            return;
         const address = this.address;
         this.box.set_value('');
         this.typed = '';
@@ -2654,7 +2662,12 @@ export default class ClaudeChat extends View {
             ? (this.pasted.get(address) ?? [])
             : [];
         this.pasted.delete(address);
-        const message = [text, ...files.map((f) => `[Image: ${f}]`)]
+        this.files.delete(address);
+        const message = [
+            text,
+            ...files.map((f) => `[Image: ${f}]`),
+            ...attached.map(promptPath),
+        ]
             .filter(Boolean)
             .join('\n');
         // Pasted images are already in Claude's prompt: Enter alone sends them.
@@ -2935,6 +2948,96 @@ export default class ClaudeChat extends View {
             await hc(['keys', address, 'esc', 'esc']);
         });
         cx.notify();
+    }
+
+    /** @param {string | null} address @param {string[]} paths */
+    addFiles(address, paths, cx) {
+        if (!address || !paths.length) return;
+        this.files.set(
+            address,
+            withFiles(this.files.get(address) ?? [], paths),
+        );
+        cx.notify();
+    }
+
+    // + at the left of the box's lower card: the mac's own picker, several files at once
+    attachButton(t) {
+        return div()
+            .id('attach')
+            .size(px(24))
+            .flex()
+            .flex_none()
+            .items_center()
+            .justify_center()
+            .rounded_full()
+            .text_size(px(TEXT.lg))
+            .text_color(t.muted)
+            .cursor_pointer()
+            .hover((s) => s.bg(t.hover).text_color(t.foreground))
+            .tooltip('Attach files')
+            .on_click((_e, cx) => {
+                const address = this.address;
+                cx.spawn(async (cx) =>
+                    this.addFiles(address, await pickFiles(), cx),
+                );
+            })
+            .child('+');
+    }
+
+    // the files waiting for the next send, each a chip with ×
+    fileChips(t, address) {
+        const list = this.files.get(address) ?? [];
+        return h_flex()
+            .flex_wrap()
+            .gap(6)
+            .px(4)
+            .children(
+                list.map((path, i) =>
+                    h_flex()
+                        .id(`file-${i}`)
+                        .gap(6)
+                        .items_center()
+                        .pl(8)
+                        .pr(4)
+                        .py(2)
+                        .max_w(px(260))
+                        .rounded(RADIUS.control)
+                        .bg(t.raised)
+                        .text_size(px(TEXT.sm))
+                        .text_color(t.foreground)
+                        .tooltip(path)
+                        .child(
+                            div()
+                                .min_w(0)
+                                .truncate()
+                                .child(`📎 ${fileName(path)}`),
+                        )
+                        .child(
+                            div()
+                                .id(`file-x-${i}`)
+                                .size(px(18))
+                                .flex()
+                                .flex_none()
+                                .items_center()
+                                .justify_center()
+                                .rounded_full()
+                                .text_color(t.muted)
+                                .cursor_pointer()
+                                .hover((s) =>
+                                    s.bg(t.hover).text_color(t.foreground),
+                                )
+                                .tooltip('Remove')
+                                .on_click((_e, cx) => {
+                                    this.files.set(
+                                        address,
+                                        list.filter((p) => p !== path),
+                                    );
+                                    cx.notify();
+                                })
+                                .child('×'),
+                        ),
+                ),
+            );
     }
 
     /** a send or a Remove takes the screenshots out of Claude's prompt: their previews go too */
@@ -6138,6 +6241,10 @@ export default class ClaudeChat extends View {
                                 .child(this.pickNote),
                         ),
                     )
+                    .when(
+                        Boolean(this.files.get(agent.address)?.length),
+                        (el) => el.child(this.fileChips(t, agent.address)),
+                    )
                     .when(images > 0, (el) =>
                         el.child(
                             h_flex()
@@ -6215,6 +6322,15 @@ export default class ClaudeChat extends View {
                         h_flex()
                             .id('composer')
                             .track_focus(this.keyboard)
+                            .when(!this.where?.container, (el) =>
+                                el.on_drop((e, cx) =>
+                                    this.addFiles(
+                                        this.address,
+                                        e?.paths ?? [],
+                                        cx,
+                                    ),
+                                ),
+                            )
                             .when(Boolean(menu), (el) =>
                                 el.key_context('ChatSlash'),
                             )
@@ -6265,6 +6381,13 @@ export default class ClaudeChat extends View {
                                             .border_color(t.border)
                                             .bg(t.raised)
                                             .gap(6)
+                                            .when(
+                                                !this.where?.container,
+                                                (el) =>
+                                                    el.child(
+                                                        this.attachButton(t),
+                                                    ),
+                                            )
                                             .child(
                                                 this.dropdown(
                                                     t,
