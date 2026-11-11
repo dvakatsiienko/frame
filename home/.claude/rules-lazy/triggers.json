@@ -115,7 +115,9 @@
         "env": ["claude-desktop"],
         "file": "~/frame/_clio/memory/surface-claude-desktop.md",
         "input": [],
-        "project": ["/frame(?:/\\.claude/worktrees/clio-wing-\\d+)?/_clio$"],
+        "project": [
+            "/frame(?:/_clio|/\\.claude/worktrees/clio-wing-\\d+(?:/_clio)?)$"
+        ],
         "prompt": [],
         "signal": {
             "reply": [],
@@ -127,7 +129,9 @@
         "env": ["herdr"],
         "file": "~/frame/_clio/memory/surface-herdr-desktop.md",
         "input": [],
-        "project": ["/frame(?:/\\.claude/worktrees/clio-wing-\\d+)?/_clio$"],
+        "project": [
+            "/frame(?:/_clio|/\\.claude/worktrees/clio-wing-\\d+(?:/_clio)?)$"
+        ],
         "prompt": [],
         "signal": {
             "reply": [],

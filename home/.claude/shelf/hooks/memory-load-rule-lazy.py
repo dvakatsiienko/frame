@@ -76,9 +76,10 @@ def surface():
     return "claude-desktop" if entrypoint == "claude-desktop" else None
 
 
-def env_trigger(rule, where, cwd):
+def env_trigger(rule, where, cwd, held):
+    # a leaf this session already holds stays through a compact or a resume wherever the cwd moved
     row = TRIGGERS[rule]
-    return row["file"] if where in row.get("env", []) and first_match(row["project"], cwd) else None
+    return row["file"] if where in row.get("env", []) and (rule in held or first_match(row["project"], cwd)) else None
 
 
 def prompt_trigger(rule, prompt):
@@ -282,12 +283,12 @@ def on_stop(event, fresh):
             log(event, f"miss {rule}", hit)
 
 
-def on_start_env(event, session, cwd):
+def on_start_env(event, session, cwd, held):
     where = surface()
     if where:
         seen = "set" if os.environ.get("HC_TERMINAL_ID") else "unset"
         log(event, f"env {where}", f"HC_TERMINAL_ID {seen}, entrypoint {os.environ.get('CLAUDE_CODE_ENTRYPOINT', '')}")
-    hits = {rule: env_trigger(rule, where, cwd) for rule in TRIGGERS}
+    hits = {rule: env_trigger(rule, where, cwd, held) for rule in TRIGGERS}
     # a leaf not written yet must not take the other loads of this start down with it
     hits = {rule: hit for rule, hit in hits.items() if hit and os.path.isfile(os.path.expanduser(hit))}
     return [load(event, session, r, "env", h, f"because the thread runs in {where}") for r, h in hits.items()]
@@ -304,8 +305,9 @@ def main():
     session = "-".join(str(part) for part in (event.get("session_id") or "none", event.get("agent_id")) if part)
     name = event.get("hook_event_name")
     loads = []
+    held = loaded(session)
     if name == "SessionStart" and event.get("source") == "compact":
-        before = loaded(session)
+        before = held
         forget(session)
         loads += [load(event, session, r, "compaction", "compact", "again after a compaction") for r in before & set(TRIGGERS) if reloads_at_compaction(r)]
     fresh = [rule for rule in TRIGGERS if rule not in loaded(session)]
@@ -314,7 +316,7 @@ def main():
         hits = {rule: project_trigger(rule, cwd) for rule in fresh}
         loads += [load(event, session, r, "project", h, f"because the session runs in {h}") for r, h in hits.items() if h]
         try:
-            loads += on_start_env(event, session, cwd)
+            loads += on_start_env(event, session, cwd, held)
         except Exception as error:  # a leaf that will not read must not drop the project loads already marked
             print(f"memory-load-rule-lazy: {error}", file=sys.stderr)
     elif name == "UserPromptSubmit":
