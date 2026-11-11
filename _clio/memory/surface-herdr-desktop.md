@@ -30,3 +30,4 @@ this leaf loaded means this thread runs in herdr (`HC_TERMINAL_ID` set); the Cla
 
 - never start a second Herdr window, even on a throwaway home: his window reloads and loses his typed draft (twin: herdr mods `AGENTS.md` § never)
 - a herdr restart is his hand alone
+- stopping a space's last thread pops «Close space?»: say so before the stop (his «not a good surprise»)
