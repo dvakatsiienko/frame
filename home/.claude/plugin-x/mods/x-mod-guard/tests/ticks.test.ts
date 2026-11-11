@@ -2522,7 +2522,7 @@ for (const line of [
     // sixth sense round 5 on e9d68294: a flag's value before the inline-code flag is no script file
     `python3 -W ignore -c "import subprocess; subprocess.run(['x','linear','body','FRM-1','--set','/repo/b.md'])"`,
     `python3 -X dev -c "import os; os.system('x linear body FRM-1 --set /repo/b.md')"`,
-    `node -r ./x.js -e "require('child_process').execSync('x linear body FRM-1 --set /repo/b.md')"`,
+    `node -r ./x.js -e "const c = 'x linear body FRM-1 --set /repo/b.md'; require('child_process').execSync(c)"`,
     `ruby -I lib -e "system('x linear body FRM-1 --set /repo/b.md')"`,
     `perl -I lib -e "system('x linear body FRM-1 --set /repo/b.md')"`,
     `awk 'BEGIN{system("x linear body FRM-1 --set /repo/b.md")}'`,
