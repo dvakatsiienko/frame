@@ -314,10 +314,10 @@ test.each(recipes)('%s has the recipe shape', (name) => {
     }
 
     // R4
-    const seats = [fields?.owner ?? []].flat();
-    expect(seats.length, `${name}: owner names a seat`).toBeGreaterThan(0);
-    for (const seat of seats) {
-        expect(owners, `${name}: owner seat`).toContain(seat);
+    const threads = [fields?.owner ?? []].flat();
+    expect(threads.length, `${name}: owner names a thread`).toBeGreaterThan(0);
+    for (const thread of threads) {
+        expect(owners, `${name}: owner thread`).toContain(thread);
     }
 
     // R5

@@ -387,7 +387,9 @@ describe('--day', () => {
         now?: string | null;
         pocket?: Record<string, string>;
         prompts?: string;
-        steers?: string[];
+        seatTranscripts?: Record<string, string[]>;
+        sessionId?: string;
+        steers?: string[] | null;
     }) {
         const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));
         try {
@@ -402,6 +404,13 @@ describe('--day', () => {
             );
             const transcript = join(root, 't.jsonl');
             writeFileSync(transcript, (opts.steers ?? []).join('\n'));
+            for (const [file, rows] of Object.entries(
+                opts.seatTranscripts ?? {},
+            )) {
+                const at = join(root, '.claude/projects', file);
+                mkdirSync(join(at, '..'), { recursive: true });
+                writeFileSync(at, rows.join('\n'));
+            }
             for (const [dir, files] of [
                 ['grooms', opts.grooms],
                 ['pocket', opts.pocket],
@@ -424,13 +433,15 @@ describe('--day', () => {
                     ...(opts.now === null
                         ? []
                         : ['--now', opts.now ?? '10:30']),
-                    '--transcript',
-                    transcript,
+                    ...(opts.steers === null
+                        ? []
+                        : ['--transcript', transcript]),
                 ],
                 {
                     encoding: 'utf8',
                     env: {
                         ...process.env,
+                        CLAUDE_CODE_SESSION_ID: opts.sessionId ?? '',
                         CLIO_SEAT: '',
                         HOME: root,
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
@@ -566,6 +577,37 @@ describe('--day', () => {
                 steers: [steer('o68', 'other'), steer('o69', 'thanks')],
             }).status,
         ).toBe(0);
+    });
+
+    const otherSeat = {
+        '-Users-dima-frame--clio/other-seat.jsonl': [
+            steer('o4', 'another board steer'),
+        ],
+    };
+
+    test('with no transcript and no session id, another seat’s steer is owed nothing', () => {
+        const out = run({
+            prompts: '',
+            seatTranscripts: otherSeat,
+            steers: null,
+        });
+        expect(out.stdout).not.toContain('o4');
+        expect(out.status).toBe(0);
+    });
+
+    test('with no transcript, the session id names this thread’s own', () => {
+        const out = run({
+            prompts: '',
+            seatTranscripts: {
+                ...otherSeat,
+                '-Users-dima-frame--claude-worktrees-clio-wing-1--clio/abc.jsonl':
+                    [steer('o5', 'this board steer')],
+            },
+            sessionId: 'abc',
+            steers: null,
+        });
+        expect(out.stdout).toContain('o5 — no groom: this board steer');
+        expect(out.stdout).not.toContain('o4');
     });
 
     test('a steer of another day is not checked', () => {

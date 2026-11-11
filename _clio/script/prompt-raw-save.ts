@@ -103,7 +103,7 @@ export function entryFor(prompt: string, at: Date) {
     return `## ${hh}:${mm}\n\n${prompt.trim()}\n\n`;
 }
 
-// a seat's turn cannot end while 5 or more prompts or steers wait past 30 minutes for a groom (dima's o76, 2026-11-09)
+// a thread's turn cannot end while 5 or more prompts or steers wait past 30 minutes for a groom (dima's o76, 2026-11-09)
 export const GROOM_BLOCK_AT = 5;
 export function groomBlock(
     dayText: string,
@@ -126,13 +126,13 @@ export function groomBlock(
         : undefined;
 }
 
-function seatDay(seat: string, now: Date, transcriptPath?: string) {
+function threadDay(thread: string, now: Date, transcriptPath?: string) {
     const day = now.toLocaleDateString('sv');
-    const file = path.join(rawRoot, seat, `${day}.md`);
+    const file = path.join(rawRoot, thread, `${day}.md`);
     const noWish = path.join(
         process.env.PROMPT_GROOM_DIR ??
             path.join(process.env.HOME ?? '', '.local/state/clio/grooms'),
-        seat,
+        thread,
         `${day}.no-wish.md`,
     );
     const noWishText = existsSync(noWish) ? readFileSync(noWish, 'utf8') : '';
@@ -153,9 +153,9 @@ if (import.meta.main && process.argv[2] === '--stop') {
         stop_hook_active?: boolean;
         transcript_path?: string;
     };
-    const seat = seatOf();
-    if (!input.stop_hook_active && seat !== undefined) {
-        const d = seatDay(seat, new Date(), input.transcript_path);
+    const thread = seatOf();
+    if (!input.stop_hook_active && thread !== undefined) {
+        const d = threadDay(thread, new Date(), input.transcript_path);
         const reason = groomBlock(
             d.dayText,
             d.day,
@@ -170,18 +170,18 @@ if (import.meta.main && process.argv[2] === '--stop') {
         readFileSync(0, 'utf8') || '{}',
     ) as { prompt?: string; transcript_path?: string };
     const text = dimasText(prompt);
-    // a session that is no clio seat (a plain fork, a sidecar) keeps no log
-    const seat = seatOf();
-    if (text && seat !== undefined) {
+    // a session that is no clio thread (a plain fork, a sidecar) keeps no log
+    const thread = seatOf();
+    if (text && thread !== undefined) {
         const now = new Date();
-        const { file } = seatDay(seat, now);
+        const { file } = threadDay(thread, now);
         mkdirSync(path.dirname(file), { recursive: true });
         const line = existsSync(file)
             ? readFileSync(file, 'utf8').split('\n').length
             : 1;
         appendFileSync(file, entryFor(text, now));
         console.log(`raw saved · ${file}:${line}`);
-        const d = seatDay(seat, now, transcript_path);
+        const d = threadDay(thread, now, transcript_path);
         const nudge = groomNudge(
             d.dayText,
             d.day,

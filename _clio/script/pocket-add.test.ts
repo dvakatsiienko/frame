@@ -4,7 +4,7 @@ import { flywayOrdinal } from './flyway-done.ts';
 import { isWingNumber, ordinalFor, searchTerm } from './pocket-add.ts';
 
 describe('flywayOrdinal', () => {
-    test('the flyways sit on top in seat order', () => {
+    test('the flyways sit on top in thread order', () => {
         expect(
             [
                 'flyway: main',

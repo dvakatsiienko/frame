@@ -36,7 +36,7 @@ const PARKED_LINE = /^parked:\s*\S/m;
 const ZERO_WIDTH_JOINER = String.fromCodePoint(0x200d);
 // the boot seeds it every evergreen day; counting it would trip the caps weekly by design
 const CAP_FREE_TITLE = /^🧬 evergreen turn|^flyway: /;
-// a seat's live plan: never closed, its finished lines cleaned at each halt or boot (PK-351:W69-W75)
+// a thread's live plan: never closed, its finished lines cleaned at each halt or boot (PK-351:W69-W75)
 const FLYWAY_TITLE = /^flyway: (main|wing ([1-9]\d*))$/;
 const POCKET_ID = /\bPK-\d+\b/g;
 // the wish-accounting reds apply to items born or touched from this day on
@@ -103,10 +103,10 @@ export function checkPocket(
             front.scalars.updated_date || front.scalars.created_date || '',
         );
         if (title.startsWith('flyway:')) {
-            const seat = title.match(FLYWAY_TITLE);
+            const thread = title.match(FLYWAY_TITLE);
             const label =
-                seat && (seat[2] ? `clio-wing-${seat[2]}` : 'clio-main');
-            if (!seat)
+                thread && (thread[2] ? `clio-wing-${thread[2]}` : 'clio-main');
+            if (!thread)
                 report(
                     'a flyway is titled «flyway: main» or «flyway: wing <N>»',
                 );
@@ -115,7 +115,7 @@ export function checkPocket(
                     'a flyway never closes: reopen it; its lines are cleaned, the item stays',
                 );
             if (label && !(front.lists.labels ?? []).includes(label))
-                report(`a flyway carries its seat's label, ${label}`);
+                report(`a flyway carries its thread's label, ${label}`);
             const slot = flywayOrdinal(title);
             if (
                 slot &&
@@ -123,10 +123,10 @@ export function checkPocket(
                     Number(front.scalars.ordinal) !== slot)
             )
                 report(
-                    `a flyway sits on the pocket's top in seat order: backlog task edit ${id} --priority now --ordinal ${slot}`,
+                    `a flyway sits on the pocket's top in thread order: backlog task edit ${id} --priority now --ordinal ${slot}`,
                 );
             if (flywayTitles.has(title))
-                report(`a second «${title}»: one flyway per seat`);
+                report(`a second «${title}»: one flyway per thread`);
             flywayTitles.add(title);
             // dima, 2026-11-09 (o66, o68): open lines, then ⏳ waits, then 📅 dated, then 💤 later; a finished line leaves that turn
             const lines = flywayLines(text);

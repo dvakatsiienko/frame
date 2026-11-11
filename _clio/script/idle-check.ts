@@ -9,6 +9,19 @@ const query = process.argv[2] ?? '';
 if (!query) fail('usage: node idle-check.ts <registry name or a part of it>');
 
 const matches = liveSessions().filter((s) => s.name?.includes(query));
+
+// a missed trust key holds a fresh thread on Claude Code's folder-trust dialog, before any status or turn;
+// the phrases are shepherdr's (mods/tasks/bin/herdr_task/agents.py TRUST)
+const TRUST =
+    /Quick safety check|Do you trust the files in this folder|Yes, I trust this folder/i;
+const trusting = trustAsking(query, new Set(matches.map((s) => s.pid)));
+for (const pane of trusting) {
+    console.log(
+        `🔴 trust dialog: ${pane.name ?? pane.address} (${pane.address}) waits on its folder-trust key for ${pane.cwd} — not a stall`,
+    );
+}
+if (trusting.length && !matches.length) process.exit(0);
+
 const [session] = matches;
 if (!session || matches.length > 1)
     fail(
@@ -51,6 +64,38 @@ function lastAssistantText(path: string): string {
     return '';
 }
 
+function trustAsking(query: string, pids: Set<number>): Pane[] {
+    const fresh = (
+        (JSON.parse(hc(['ls', '--json']) || '{}') as { terminals?: Pane[] })
+            .terminals ?? []
+    ).filter((pane) => pane.agent === 'claude-code' && !pane.turn);
+    return fresh.filter(
+        (pane) =>
+            (pane.name?.includes(query) ||
+                pids.has(
+                    (
+                        JSON.parse(
+                            hc(['get', pane.address, '--json']) || '{}',
+                        ) as {
+                            pid?: number;
+                        }
+                    ).pid ?? -1,
+                )) &&
+            TRUST.test(hc(['read', pane.address])),
+    );
+}
+
+function hc(args: string[]): string {
+    try {
+        return execFileSync('hc', args, {
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+        });
+    } catch {
+        return '';
+    }
+}
+
 function git(cwd: string, args: string[]): string {
     try {
         return execFileSync('git', ['-C', cwd, ...args], {
@@ -68,6 +113,14 @@ function fail(message: string): never {
 }
 
 /* Types */
+
+interface Pane {
+    address: string;
+    agent?: string;
+    cwd?: string;
+    name?: string | null;
+    turn?: number;
+}
 
 interface TranscriptRecord {
     type: string;

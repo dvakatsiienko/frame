@@ -14,6 +14,7 @@ function world(
     holds: readonly string[] | { unread: string } = [],
     ticks: Tick[] = [],
     brake: string | null = '',
+    press?: string,
 ) {
     mock.clock(on, { now: 1_000_000 });
     liveStore(on);
@@ -25,7 +26,9 @@ function world(
     on('state.get', (_$, e, next) =>
         e.plugin === 'x-mod-stash' && e.key === 'ticks'
             ? { value: { value: ticks, version: 1 } }
-            : next(e),
+            : e.plugin === 'x-mod-stash' && e.key === 'orbit' && press
+              ? { value: { value: { asks: pressedAsk(press) }, version: 1 } }
+              : next(e),
     );
     on('process.run', (_$, e) => {
         if (e.argv.includes('--brake-check')) checks.push([...e.argv]);
@@ -70,9 +73,11 @@ function world(
         '/repo/s2.sh': 'bash s1.sh\n',
     };
     on('fs.read', (_$, e) =>
-        e.path in scripts
-            ? { value: scripts[e.path] ?? '' }
-            : { deny: 'no such file' },
+        press && e.path === PRESSES
+            ? { value: pressLine(press, 1_000_000 - 1) }
+            : e.path in scripts
+              ? { value: scripts[e.path] ?? '' }
+              : { deny: 'no such file' },
     );
     on('tool.call', (_$, e) => {
         ran.push('command' in e ? String(e.command) : '');
@@ -82,6 +87,11 @@ function world(
 }
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, run_in_background: true, tool: 'Bash' });
+// his 🛎 on x-herdr-deck: x-herdr-deck writes the press, x-mod-stash keeps the ask accepted (FRM-544 slice 2g)
+const PRESSES = '/home/.claude/shelf/orbit-ticks/h1h1h1h1-0000.jsonl';
+const pressLine = (text: string, at: number) =>
+    `${JSON.stringify({ at, id: 'o7', text, verdict: 'tick' })}\n`;
+const pressedAsk = (text: string) => [{ id: 'o7', mark: 'accepted', text }];
 
 const HELD_7 = ['7'];
 
@@ -426,3 +436,23 @@ for (const [why, ticked, line, brake] of [
             [],
         ]);
     });
+
+// 12b (FRM-544 slice 2g): his press on x-herdr-deck clears a held pr as his orbit tick does
+test('his press on x-herdr-deck on an ask quoting a held pr merge runs it once', async ($, on) => {
+    const line = 'gh pr merge 7 --squash';
+    const { ran } = world(on, HELD_7, [], '', `⚠️ merge: \`${line}\``);
+    const first = await bash($, line);
+    const second = await bash($, line);
+    expect([first.deny, second.deny !== undefined, ran]).toEqual([
+        undefined,
+        true,
+        [line],
+    ]);
+});
+
+test('his press on x-herdr-deck on another pr runs no held merge', async ($, on) => {
+    const other = '⚠️ merge: `gh pr merge 8 --squash`';
+    const { ran } = world(on, HELD_7, [], '', other);
+    const r = await bash($, 'gh pr merge 7 --squash');
+    expect([r.deny !== undefined, ran]).toEqual([true, []]);
+});

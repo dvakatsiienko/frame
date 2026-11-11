@@ -89,10 +89,10 @@ describe('fork-guard', () => {
         );
         return state;
     };
-    const seat = (state: string) =>
+    const thread = (state: string) =>
         readFileSync(join(state, 'main-session'), 'utf8');
 
-    test('a compact never takes the seat, even an empty one', () => {
+    test('a compact never takes the thread, even an empty one', () => {
         const state = deadMain();
         const out = run(
             ['start'],
@@ -101,10 +101,10 @@ describe('fork-guard', () => {
             '{"session_id":"s-wing","source":"compact"}',
         );
         expect(out.stdout).toContain('in a wing thread');
-        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+        expect(thread(state)).toContain(`pid=${DEAD_PID}`);
     });
 
-    test('a /clear never takes an empty seat', () => {
+    test('a /clear never takes an empty thread', () => {
         const state = deadMain();
         const out = run(
             ['start'],
@@ -113,10 +113,10 @@ describe('fork-guard', () => {
             '{"session_id":"s-new","source":"clear"}',
         );
         expect(out.stdout).toContain('in a wing thread');
-        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+        expect(thread(state)).toContain(`pid=${DEAD_PID}`);
     });
 
-    test('a wing in forks.log resuming finds the seat empty and stays a wing', () => {
+    test('a wing in forks.log resuming finds the thread empty and stays a wing', () => {
         const state = deadMain();
         writeFileSync(join(state, 'forks.log'), 's-wing 2026-11-07 14:01\n');
         const out = run(
@@ -126,10 +126,10 @@ describe('fork-guard', () => {
             '{"session_id":"s-wing","source":"resume"}',
         );
         expect(out.stdout).toContain('in a wing thread');
-        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+        expect(thread(state)).toContain(`pid=${DEAD_PID}`);
     });
 
-    test('a session the registry names a wing never takes the seat', () => {
+    test('a session the registry names a wing never takes the thread', () => {
         const state = deadMain();
         const sessions = mkdtempSync(join(tmpdir(), 'fg-s-'));
         writeFileSync(
@@ -148,10 +148,10 @@ describe('fork-guard', () => {
             timeout: 10_000,
         });
         expect(out.stdout).toContain('in a wing thread');
-        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+        expect(thread(state)).toContain(`pid=${DEAD_PID}`);
     });
 
-    test('a parked sidecar takes no seat, no banner and no forks.log line', () => {
+    test('a parked sidecar takes no thread, no banner and no forks.log line', () => {
         const state = deadMain();
         const sessions = mkdtempSync(join(tmpdir(), 'fg-s-'));
         writeFileSync(
@@ -170,11 +170,11 @@ describe('fork-guard', () => {
             timeout: 10_000,
         });
         expect(out.stdout).toBe('');
-        expect(seat(state)).toContain(`pid=${DEAD_PID}`);
+        expect(thread(state)).toContain(`pid=${DEAD_PID}`);
         expect(existsSync(join(state, 'forks.log'))).toBe(false);
     });
 
-    test('the recorded main restarting takes her seat back from any pid', () => {
+    test('the recorded main restarting takes her thread back from any pid', () => {
         const state = mkdtempSync(join(tmpdir(), 'fg-'));
         writeFileSync(
             join(state, 'main-session'),
@@ -187,7 +187,7 @@ describe('fork-guard', () => {
             '{"session_id":"s-main","source":"resume"}',
         );
         expect(out.stdout).toBe('');
-        expect(seat(state)).toContain(`pid=${process.pid}`);
+        expect(thread(state)).toContain(`pid=${process.pid}`);
     });
 
     test('with the main dead, a wing stays guarded and main-only stays off', () => {

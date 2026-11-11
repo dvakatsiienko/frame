@@ -49,7 +49,7 @@
             "n": 4,
             "name": "x-herdr-tabs",
             "today": "x-herdr-tabs",
-            "what": "tabs: one per seat"
+            "what": "tabs: one per thread"
         },
         {
             "boxes": [[937, 4, 958, 32]],
@@ -65,7 +65,7 @@
             "n": 6,
             "name": "part of x-herdr-deck",
             "today": "x-herdr-deck (view: seat)",
-            "what": "seat strip: ctx, week, its asks"
+            "what": "thread strip: ctx, week, its asks"
         },
         {
             "boxes": [[234, 147, 770, 168]],
@@ -73,7 +73,7 @@
             "n": 7,
             "name": "x-herdr-chatter-header (tabs: -header-tabs)",
             "today": "x-herdr-chatter + my-pane",
-            "what": "seat's top row (both views), with its Chat | Terminal tabs"
+            "what": "thread's top row (both views), with its Chat | Terminal tabs"
         },
         {
             "boxes": [[234, 170, 770, 592]],
@@ -121,7 +121,7 @@
             "n": 13,
             "name": "x-herdr-deck (renamed last)",
             "today": "x-herdr-deck",
-            "what": "right column: seats, orbit, glide"
+            "what": "right column: threads, orbit, glide"
         }
     ],
     "title": "herdr window map: each part, its name"

@@ -222,21 +222,21 @@ describe('a pocket red blocks its owner, once per id', () => {
 
     describe('in a wing', () => {
         const sessions = join(fixtures, '.claude/sessions');
-        const seat = (name: string, kind = 'interactive') => {
+        const thread = (name: string, kind = 'interactive') => {
             mkdirSync(sessions, { recursive: true });
             writeFileSync(
-                join(sessions, 'seat.json'),
-                JSON.stringify({ kind, name, sessionId: 'sid-seat' }),
+                join(sessions, 'thread.json'),
+                JSON.stringify({ kind, name, sessionId: 'sid-thread' }),
             );
         };
-        const asSeat = { ...write, session_id: 'sid-seat' };
+        const asThread = { ...write, session_id: 'sid-thread' };
 
         test('its own item blocks it, once', () => {
-            seat('🦉🪽 clio: wing 2');
+            thread('🦉🪽 clio: wing 2');
             itemWith('  - clio-wing-2\n');
-            const out = run(asSeat, redWith('a'));
+            const out = run(asThread, redWith('a'));
             const repeat = run(
-                asSeat,
+                asThread,
                 redWith('a'),
                 commitStub,
                 fixtures,
@@ -249,30 +249,30 @@ describe('a pocket red blocks its owner, once per id', () => {
         });
 
         test("another wing's item leaves it alone", () => {
-            seat('🦉🪽 clio: wing 2');
+            thread('🦉🪽 clio: wing 2');
             itemWith('  - clio-wing-1\n');
-            const out = run(asSeat, redWith('a'));
+            const out = run(asThread, redWith('a'));
             rmSync(item);
             rmSync(sessions, { recursive: true });
             expect(out?.reason ?? '').not.toContain('PK-1');
         });
 
         test("an unlabelled item is main's, not a wing's", () => {
-            seat('🦉🪽 clio: wing 2');
+            thread('🦉🪽 clio: wing 2');
             itemWith('');
-            const out = run(asSeat, redWith('a'));
+            const out = run(asThread, redWith('a'));
             rmSync(item);
             rmSync(sessions, { recursive: true });
             expect(out?.reason ?? '').not.toContain('PK-1');
         });
 
         test('a session that is neither a wing nor the recorded main is never blocked', () => {
-            seat('💻 a stray session');
+            thread('💻 a stray session');
             const recorded = join(fixtures, '.local/state/clio/main-session');
             mkdirSync(join(fixtures, '.local/state/clio'), { recursive: true });
             writeFileSync(recorded, 'pid=1\nsession=sid-main\n');
             itemWith('');
-            const out = run(asSeat, redWith('a'));
+            const out = run(asThread, redWith('a'));
             rmSync(item);
             rmSync(recorded);
             rmSync(sessions, { recursive: true });
@@ -280,9 +280,9 @@ describe('a pocket red blocks its owner, once per id', () => {
         });
 
         test('a parked sidecar is never blocked', () => {
-            seat('🎀 helga', 'bg');
+            thread('🎀 helga', 'bg');
             itemWith('');
-            const out = run(asSeat, redWith('a'));
+            const out = run(asThread, redWith('a'));
             rmSync(item);
             rmSync(sessions, { recursive: true });
             expect(out).toBe(undefined);

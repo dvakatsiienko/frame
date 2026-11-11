@@ -1353,6 +1353,19 @@ for (const [why, ask, line, other] of [
         MIRROR,
         'git push --mirror backup',
     ],
+    // 12b (FRM-544 slice 2g): the brake and a raw merge clear from x-herdr-deck as from orbit
+    [
+        'the brake ask at the pr head',
+        brakeTick().text,
+        BRAKE,
+        'x lane merge-auto 105 --apply --release-brake --dima-ok 105',
+    ],
+    [
+        'a raw merge ask',
+        '⚠️ merge: `gh pr merge 104 --squash`',
+        'gh pr merge 104 --squash',
+        'gh pr merge 105 --squash',
+    ],
 ] as const) {
     // a sign covers its ticket's writes for 2 h (wing 1, 19:14); a merge or a command runs once
     const isSign = why === 'a sign ask';

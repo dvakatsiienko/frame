@@ -22,7 +22,7 @@ import {
     lineOf,
     readTrace,
     scan,
-    seatOf,
+    threadOf,
     verbFor,
 } from './ctx-init-trace.ts';
 
@@ -69,7 +69,7 @@ function fixture() {
 }
 
 describe('the init-context scan', () => {
-    it('writes a row with the session seat, model, init number', async () => {
+    it('writes a row with the session thread, model, init number', async () => {
         const f = fixture();
         f.put('-Users-dima-frame-cclio', 's1', [user('hi'), assistant('s1')]);
         await scan(f.file, f.projects);
@@ -145,15 +145,18 @@ describe('the init-context scan', () => {
         expect(readTrace(f.file)[0]?.chars).toBe(800);
     });
 
-    it('reads a row stored under a seat name from before the 10-29 rename as its new seat', () => {
+    it('reads a row stored under a thread name from before the 10-29 rename as its new thread', () => {
         const file = path.join(
-            mkdtempSync(path.join(tmpdir(), 'ctx-seat-')),
+            mkdtempSync(path.join(tmpdir(), 'ctx-thread-')),
             'trace.jsonl',
         );
         writeFileSync(
             file,
             ['cclio', 'ccrow', 'composer'] // read-both
-                .map((seat) => `${JSON.stringify({ seat, sid: seat })}\n`)
+                .map(
+                    (thread) =>
+                        `${JSON.stringify({ seat: thread, sid: thread })}\n`,
+                )
                 .join(''),
         );
         expect(readTrace(file).map((r) => r.seat)).toEqual([
@@ -164,7 +167,7 @@ describe('the init-context scan', () => {
     });
 });
 
-describe('a session names its seat', () => {
+describe('a session names its thread', () => {
     it.each([
         ['-Users-dima-frame-cclio', 'hi', 'clio'],
         ['-Users-dima--local-state-ccrow-plans-2026', 'hi', 'crow'],
@@ -178,8 +181,8 @@ describe('a session names its seat', () => {
         ['-Users-dima-frame', 'use the crew-codie skill', 'codie'],
         ['-Users-dima-bytes', '/x:crew-sixth-sense FRM-1', 'sixth-sense'],
         ['-Users-dima-bytes', 'hi', 'other'],
-    ])('%s with «%s» is %s', (dir, first, seat) => {
-        expect(seatOf(dir, first)).toBe(seat);
+    ])('%s with «%s» is %s', (dir, first, thread) => {
+        expect(threadOf(dir, first)).toBe(thread);
     });
 });
 
@@ -219,7 +222,7 @@ describe('the growth alarm', () => {
                 model: 'claude-opus-5-5',
                 now: 112_000,
                 ref: 100_000,
-                seat: 'clio',
+                thread: 'clio',
             },
         ]);
     });
@@ -249,7 +252,7 @@ describe('the growth alarm', () => {
         expect(kinds(rows, baselineOf(rows))).toEqual([]);
     });
 
-    it('never alarms a session no seat claimed', () => {
+    it('never alarms a session no thread claimed', () => {
         const rows = weeks(100_000, 150_000).map((r) => ({
             ...r,
             seat: 'other' as const,
@@ -272,7 +275,7 @@ describe('the first-run baseline', () => {
 });
 
 describe('the slow creep check', () => {
-    // a seat growing 4 % a week: the week-to-week check never fires, the baseline from the first run does by week 5
+    // a thread growing 4 % a week: the week-to-week check never fires, the baseline from the first run does by week 5
     const level = (w: number) => Math.round(100_000 * 1.04 ** w);
     const T0 = NOW;
     const rowsUpTo = (w: number) =>
@@ -363,7 +366,7 @@ describe('the alarm line names its cause and one proposal per file', () => {
 describe('the boot digest', () => {
     const none = () => [];
 
-    it('prints each seat and model with its starting number, in seat order', () => {
+    it('prints each thread and model with its starting number, in thread order', () => {
         const rows = [
             ...[1, 2, 3].map((d) => ({
                 ...row(d, 100_000),
@@ -376,7 +379,7 @@ describe('the boot digest', () => {
         ]);
     });
 
-    it('adds the alarm line under it when a seat grew', () => {
+    it('adds the alarm line under it when a thread grew', () => {
         const rows = weeks(100_000, 112_000);
         expect(digestOf(rows, {}, NOW, none)).toEqual([
             'starting ctx (net, newest 5 sessions): clio 112k opus-5-5 · crow no session in 14 days · helga no session in 14 days · codie no session in 14 days · sixth-sense no session in 14 days · cc no session in 14 days',

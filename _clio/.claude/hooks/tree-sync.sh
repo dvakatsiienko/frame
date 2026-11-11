@@ -6,8 +6,8 @@ set -uo pipefail
 root="${TREE_SYNC_ROOT:-$HOME/frame}"
 trees="$root/.claude/worktrees"
 
-# the seat's tree outlives the session, so its number is read from the registry; a tree from before seats goes by session id
-seat_tree() {
+# the thread's tree outlives the session, so its number is read from the registry; a tree from before threads goes by session id
+thread_tree() {
 	local sid=$1 file name
 	file=$(grep -lE "\"sessionId\": *\"$sid" "${TREE_SYNC_SESSIONS:-$HOME/.claude/sessions}"/*.json 2>/dev/null | head -1)
 	if [ -n "$file" ] && [[ $(<"$file") =~ \"name\":\ *\"[^\"]*wing\ ([0-9]+) ]]; then
@@ -58,7 +58,7 @@ sync_tree() {
 if [ "${1:-}" != land ]; then
 	input=$(cat)
 	[[ $input =~ \"session_id\":\ *\"([^\"]+) ]] || exit 0
-	tree=$(seat_tree "${BASH_REMATCH[1]}")
+	tree=$(thread_tree "${BASH_REMATCH[1]}")
 	[ -d "$tree" ] || exit 0
 	sync_tree "$tree"
 	ahead=$(git -C "$tree" rev-list --count refs/heads/main..HEAD 2>/dev/null) || exit 0
@@ -67,7 +67,7 @@ if [ "${1:-}" != land ]; then
 fi
 
 sid="${CLAUDE_CODE_SESSION_ID:-}"
-tree=$(seat_tree "$sid")
+tree=$(thread_tree "$sid")
 [ -n "$sid" ] && [ -d "$tree" ] || {
 	echo "tree-sync land: no tree for this session, $tree" >&2
 	exit 2

@@ -13,15 +13,17 @@ import {
     Input,
     InputState,
     Popover,
+    Scrollbar,
     TextView,
     Textarea,
     TextareaState,
+    VirtualListScrollHandle,
     h_flex,
     v_flex,
+    v_virtual_list,
 } from 'gpui-base';
 import { View, div, svg } from 'gpui-kit';
 import {
-    agents,
     appHome,
     exec,
     focused,
@@ -30,14 +32,12 @@ import {
     layout,
     notify,
     openOverlay,
-    panes,
     props,
     readTextFile,
     run,
     setShared,
     settings,
     shared,
-    terminals,
     theme,
     watchFolder,
     writeTextFile,
@@ -62,11 +62,18 @@ import { splitBlocks, withPrompt } from './blocks.js';
 import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
-import { openTarget } from './links.js';
 import { listLines, withMarkers } from './lists.js';
+import { agents, inRender, panes, terminals } from './live.js';
 import * as ask from './question.js';
 import { QUEUED_IDLE_MS, queuedAfterIdle, queuedAfterRow } from './queued.js';
-import { STUCK_PX, afterReflow, afterWheel, keptFirst } from './scroll.js';
+import { relayIn, relayLine } from './relay.js';
+import {
+    fileLinks,
+    followAfterWheel,
+    measureOrder,
+    prevMineIndex,
+    rowSizes,
+} from './rows.js';
 import { loadableSkills, menuMatches } from './skills.js';
 import { wholeLines } from './slice.js';
 import {
@@ -81,7 +88,7 @@ const CLAUDE = `${home()}/.claude`;
 // The chat's look, shared by every copy and kept across restarts; the ⚙ popup changes it.
 // size: the message text in px (the rest scales with it); font: "ui" or "mono" (the terminals');
 // width: "full" or "narrow" (a readable column); tools: "show" or "hide" the tool-call rows;
-// accent: a key of ACCENTS; mine (your messages): "box", "tint" or "bar"; bg: the theme color
+// accent: a key of ACCENTS; mine (your messages): "bubble", "box", "tint" or "bar"; bg: the theme color
 // behind the messages, or a "#rrggbb"; fg: the text color, "theme" or a "#rrggbb";
 // space: "tight", "normal" or "roomy" between them.
 const LOOK = 'chat.look';
@@ -91,7 +98,7 @@ const LOOK_DEFAULT = {
     bg: 'background',
     fg: 'theme',
     font: 'ui',
-    mine: 'box',
+    mine: 'bubble',
     replies: 'open',
     size: 13,
     space: 'normal',
@@ -100,6 +107,12 @@ const LOOK_DEFAULT = {
     width: 'full',
 };
 const HEX = /^#[0-9a-f]{6}$/i;
+/**
+ * a row of the chat's list (rowsOf): its key is the list's and its press's
+ * @typedef {{ key: string, kind: 'earlier' | 'turn' | 'item' | 'detail' | 'part' | 'file', id?: string | number,
+ *   item?: any, x?: any, mine?: boolean, part?: 'text' | 'codehead' | 'code' | 'prompt', b?: any, isFirst?: boolean,
+ *   label?: string, path?: string }} Row
+ */
 // Ready-made picks beside the hex boxes: dark and light backgrounds, and text for either.
 // Maps, never objects: the swatches draw in this order, and a formatter sorts an object's keys.
 const BGS = new Map([
@@ -245,9 +258,26 @@ const fade = (color, alpha) =>
 // A text size from the 13 px design, scaled to the chosen size.
 const px = (n) => Math.round(((n * chatLook().size) / 13) * 2) / 2;
 const NARROW = 820;
-// How many messages to draw at first; "Show earlier" adds this many more. Every frame lays out each drawn row:
-// 120 lagged his scroll in a busy chat (2026-11-10 21:40).
-const PAGE = 60;
+// his message's last px, where its fork icon sits: a press there forks (rows take no handlers, clickRow)
+const FORK_W = 28;
+/** a message between threads: one another thread sent, or this one's SendMessage @param {any} item */
+const isRelay = (item) =>
+    item?.kind === 'relay' || item?.name === 'SendMessage';
+/** the transcript line a row stands for, its uuid: a turn's fold by its first work item @param {any} row */
+const uuidOf = (row) =>
+    row ? ((row.item ?? row.x?.work?.[0]?.[0])?.uuid ?? null) : null;
+/** a row's height before the measurer has drawn it, so the list places it near where it will be @param {any} row */
+const guessHeight = (row) =>
+    row.kind === 'turn' ||
+    row.kind === 'earlier' ||
+    row.kind === 'file' ||
+    row.part === 'codehead'
+        ? 28
+        : row.mine
+          ? 44
+          : row.item?.kind === 'tool'
+            ? 24
+            : 60;
 // How much of a local transcript is decoded and read at a time (see readAfter).
 const LOAD_SLICE = 4 * 1024 * 1024;
 const MAX_DETAIL = 4000;
@@ -878,26 +908,22 @@ const skillFs = {
     read: (path) => readFile(path, 'utf8').catch(() => null),
 };
 
-/** @param {string} url */
-const openLink = (url) => {
-    exec('open', [openTarget(url)]).catch(() => {});
-};
-
 // where he was reading each seat, kept across a reload of this mod, written only by his own scroll or click
 /** @param {string} address */
 const scrollKey = (address) => `scroll:${address}`;
-/** @param {string} address @returns {import('./scroll.js').Scroll | null} */
+/** @typedef {{ anchor: string | null, follow: boolean, uuid?: string | null }} Place */
+/** @param {string} address @returns {Place | null} */
 function keptScroll(address) {
     try {
         const kept = JSON.parse(
             localStorage.getItem(scrollKey(address)) ?? 'null',
         );
-        return typeof kept?.up === 'number' ? kept : null;
+        return typeof kept?.follow === 'boolean' ? kept : null;
     } catch {
         return null;
     }
 }
-/** @param {string | null} address @param {import('./scroll.js').Scroll} scroll */
+/** @param {string | null} address @param {Place} scroll */
 function keepScroll(address, scroll) {
     try {
         if (address)
@@ -1219,6 +1245,8 @@ export default class ClaudeChat extends View {
             return;
         }
         this.cache = new Map();
+        this.scroll = VirtualListScrollHandle.new();
+        this.measureGen = 0;
         this.reset(null);
         this.open = new Set();
         // Earlier turns whose work was clicked open, as "<address>:<index of its first item>".
@@ -1399,17 +1427,17 @@ export default class ClaudeChat extends View {
             });
         }
         this.leftInBox = null;
+        if (this.address) keepScroll(this.address, this.place());
         if (this.address)
             this.cache.set(this.address, {
+                anchor: this.follow ? null : this.firstKey,
                 base: this.base,
                 effort: this.effort,
                 file: this.file,
-                firstShown: this.firstShown,
                 follow: this.follow,
                 head: this.head,
                 items: this.items,
                 lastReply: this.lastReply,
-                limit: this.limit,
                 looked: this.looked,
                 model: this.model,
                 pos: this.pos,
@@ -1417,7 +1445,6 @@ export default class ClaudeChat extends View {
                 skills: this.skills,
                 subs: this.subs,
                 tools: this.tools,
-                up: this.up,
                 where: this.where,
             });
         this.address = address;
@@ -1447,19 +1474,31 @@ export default class ClaudeChat extends View {
         this.pickNote = null;
         // where he was reading this seat: kept in the cache across a tab switch, in localStorage across a reload
         const stored = kept.items ? null : keptScroll(address);
+        /** @type {boolean} */
         this.follow = kept.follow ?? stored?.follow ?? true;
-        this.up = this.follow ? 0 : (kept.up ?? stored?.up ?? 0);
-        this.limit = kept.limit ?? PAGE;
-        this.firstShown = kept.firstShown ?? null;
-        // a reload refills the log from the transcript: its growth is not new content below him
-        this.filling = !kept.items;
-        this.contentH = null;
+        const anchor = this.follow
+            ? null
+            : (kept.anchor ?? stored?.anchor ?? null);
+        const uuid = kept.items ? null : (stored?.uuid ?? null);
+        /** @type {{ how: 'top' | 'center', key: string, uuid?: string | null, until: number } | null} */
+        this.anchor =
+            anchor || uuid
+                ? { how: 'top', key: anchor, until: Date.now() + 8000, uuid }
+                : null;
+        if (!this.anchor) this.follow = true;
+        this.reanchor = Boolean(this.anchor);
+        this.firstKey = anchor;
+        this.firstUuid = uuid;
+        this.stick = this.follow;
+        this.range = null;
         this.problem = null;
         this.screen = null;
         this.rowH = new Map();
+        this.measuredAt = new Map();
         /** @type {string} */
         this.rowFit = '';
         this.seek = null;
+        this.relayIds = new Set();
     }
 
     // The other Claude agents' sessions, found ahead of time (one process walk for all), so
@@ -2005,11 +2044,10 @@ export default class ClaudeChat extends View {
                         this.pos = 0;
                         this.head = null;
                         this.base = 0;
-                        this.limit = PAGE;
                         // another conversation in this seat (a /clear, a resume): it starts at its newest
                         this.follow = true;
-                        this.up = 0;
-                        this.firstShown = null;
+                        this.stick = true;
+                        this.anchor = null;
                         this.session = session;
                         this.file = file;
                         this.ensurePluginSkills();
@@ -2130,7 +2168,6 @@ export default class ClaudeChat extends View {
             this.items = earlier.concat(later);
             this.base += earlier.length;
             this.head = from;
-            this.limit += PAGE;
         } finally {
             this.earlierLoading = false;
         }
@@ -2185,7 +2222,6 @@ export default class ClaudeChat extends View {
             } while (this.again && file === this.file);
         } finally {
             if (this.loading === file) this.loading = null;
-            this.filling = false;
         }
     }
 
@@ -2327,7 +2363,17 @@ export default class ClaudeChat extends View {
 
     // `into`: this chat, or a sub-agent (whose lines are all "sidechain" ones).
     ingest(chunk, into = this) {
+        // each item gets its line's uuid and its place among that line's items: where he reads, kept across a reload
+        let stampFrom = into.items.length;
+        /** @type {string | null} */
+        let stampUuid = null;
+        const stamp = () => {
+            for (let k = stampFrom; k < into.items.length; k++)
+                into.items[k].uuid ??= `${stampUuid}:${k - stampFrom}`;
+            stampFrom = into.items.length;
+        };
         for (const line of chunk.split('\n')) {
+            stamp();
             // The conversation's lines; the rest (api requests, snapshots, modes) start with "type".
             if (!line.startsWith('{"parentUuid"')) continue;
             this.version = (this.version ?? 0) + 1;
@@ -2337,6 +2383,7 @@ export default class ClaudeChat extends View {
             } catch {
                 continue;
             }
+            stampUuid = d.uuid ?? null;
             if (d.isSidechain && into === this) continue;
             if (d.type === 'system' && d.subtype === 'compact_boundary')
                 into.items.push({
@@ -2349,6 +2396,16 @@ export default class ClaudeChat extends View {
                 into === this
             )
                 this.learnSkills(d.attachment.content);
+            // a message from another thread: one folded line, once, though it lands both queued and at a turn start
+            const relay = relayIn(d);
+            if (relay) {
+                into.relayIds ??= new Set();
+                if (!relay.msgId || !into.relayIds.has(relay.msgId)) {
+                    if (relay.msgId) into.relayIds.add(relay.msgId);
+                    into.items.push({ id: d.uuid, ...relay });
+                }
+                continue;
+            }
             d = midTurnPrompt(d) ?? d;
             if (into === this && d.type === 'user') this.joinQueued(d);
             if (d.isMeta || d.isCompactSummary) continue;
@@ -2410,6 +2467,7 @@ export default class ClaudeChat extends View {
                         });
                     else if (b.type === 'tool_use') {
                         const tool = {
+                            at: d.timestamp ?? null,
                             id: b.id,
                             input: b.input,
                             kind: 'tool',
@@ -2421,6 +2479,7 @@ export default class ClaudeChat extends View {
                 }
             }
         }
+        stamp();
     }
 
     // What the person typed, or what Claude Code put in their turn (slash commands, ! commands).
@@ -2970,110 +3029,100 @@ export default class ClaudeChat extends View {
     // ---- drawing
 
     bubble(t, item, i) {
+        if (isRelay(item)) return this.relayRow(t, item);
+        const mine = chatLook().mine;
         if (item.kind === 'user') {
-            // Full width on the left: a box like the VS Code extension's, tinted with the accent, or a bar.
-            const mine = chatLook().mine;
-            return (
-                div()
+            // his words: a bubble on the right in an accent tint (after shepherdr's chat), or full width on the left
+            // as a box like the VS Code extension's, tinted with the accent, or a bar
+            const words = TextView.markdown(
+                `${this.pre}me-${i}`,
+                this.markIn(i)
+                    ? plainMarked(item.text, this.marks.re, this.markIn(i))
+                    : typedOf(item),
+            ).selectable(true);
+            const fork = Boolean(item.before && this.agentNow);
+            // the fork's press lands by where it was (clickRow): its column is the row's last FORK_W px
+            const forkJSX = h_flex()
+                .w(FORK_W)
+                .flex_none()
+                .justify_end()
+                .when(fork, (el) =>
+                    el.child(
+                        div()
+                            .id(`fork-${i}`)
+                            .p(2)
+                            .rounded(4)
+                            .text_color(t.dim)
+                            .cursor_pointer()
+                            .hover((s) =>
+                                s.bg(t.hover).text_color(t.foreground),
+                            )
+                            .tooltip(
+                                'Fork from here: a copy of the conversation up to just before this message, in a new tab',
+                            )
+                            .child(
+                                svg(
+                                    'mods/workspace-chrome/git-branch.svg',
+                                ).size(13),
+                            ),
+                    ),
+                );
+            if (mine === 'bubble')
+                return h_flex()
                     .w_full()
-                    .px(12)
-                    .py(8)
-                    .text_color(t.foreground)
-                    .on_mouse_down('right', (e) => this.ctxHit(e, item))
-                    .when(mine === 'box', (el) =>
-                        el
-                            .rounded(8)
-                            .bg(t.surface)
-                            .border(1)
-                            .border_color(t.border),
-                    )
-                    .when(mine === 'tint', (el) =>
-                        el
-                            .rounded(8)
-                            .bg(fade(t.accent, '1f'))
-                            .border(1)
-                            .border_color(fade(t.accent, '59')),
-                    )
-                    .when(mine === 'bar', (el) =>
-                        el.border_l(3).border_color(t.accent),
-                    )
-                    // A TextView so it can be selected like Claude's text; escaped so it shows as typed.
+                    .items_center()
                     .child(
                         h_flex()
-                            .w_full()
-                            .gap(8)
-                            .items_center()
+                            .flex_1()
+                            .min_w(0)
+                            .justify_end()
                             .child(
                                 div()
-                                    .flex_1()
-                                    .min_w(0)
-                                    .child(
-                                        TextView.markdown(
-                                            `me-${i}`,
-                                            this.markIn(i)
-                                                ? plainMarked(
-                                                      item.text,
-                                                      this.marks.re,
-                                                      this.markIn(i),
-                                                  )
-                                                : typedOf(item),
-                                        )
-                                            .selectable(true)
-                                            .on_link_click(openLink),
-                                    ),
-                            )
-                            .when(Boolean(item.before && this.agentNow), (el) =>
-                                el.child(
-                                    div()
-                                        .id(`fork-${i}`)
-                                        .flex_none()
-                                        .p(2)
-                                        .rounded(4)
-                                        .text_color(t.dim)
-                                        .cursor_pointer()
-                                        .hover((s) =>
-                                            s
-                                                .bg(t.hover)
-                                                .text_color(t.foreground),
-                                        )
-                                        .tooltip(
-                                            'Fork from here: a copy of the conversation up to just before this message, in a new tab',
-                                        )
-                                        .on_click((_e, cx) => {
-                                            const agent = this.agentNow;
-                                            cx.spawn(async (cx) => {
-                                                await this.fork(
-                                                    agent,
-                                                    item.before,
-                                                    cx,
-                                                );
-                                            });
-                                        })
-                                        .child(
-                                            svg(
-                                                'mods/workspace-chrome/git-branch.svg',
-                                            ).size(13),
-                                        ),
-                                ),
+                                    .max_w(this.bubbleW)
+                                    .px(12)
+                                    .py(8)
+                                    .rounded(12)
+                                    .bg(fade(t.accent, '33'))
+                                    .border(1)
+                                    .border_color(fade(t.accent, '4d'))
+                                    .text_color(t.foreground)
+                                    .child(words),
                             ),
                     )
-            );
-        }
-        if (item.kind === 'claude') {
-            return h_flex()
+                    .child(forkJSX);
+            return div()
                 .w_full()
-                .gap(8)
-                .items_start()
-                .on_mouse_down('right', (e) => this.ctxHit(e, item))
-                .child(div().mt(4).size(8).flex_none().rounded(4).bg(t.accent))
+                .px(12)
+                .py(8)
+                .text_color(t.foreground)
+                .when(mine === 'box', (el) =>
+                    el
+                        .rounded(8)
+                        .bg(t.surface)
+                        .border(1)
+                        .border_color(t.border),
+                )
+                .when(mine === 'tint', (el) =>
+                    el
+                        .rounded(8)
+                        .bg(fade(t.accent, '1f'))
+                        .border(1)
+                        .border_color(fade(t.accent, '59')),
+                )
+                .when(mine === 'bar', (el) =>
+                    el.border_l(3).border_color(t.accent),
+                )
                 .child(
-                    div()
-                        .flex_1()
-                        .min_w(0)
-                        .text_color(t.foreground)
-                        .child(this.replyBody(t, item, i)),
+                    h_flex()
+                        .w_full()
+                        .gap(8)
+                        .items_center()
+                        .child(div().flex_1().min_w(0).child(words))
+                        .child(forkJSX),
                 );
         }
+        if (item.kind === 'claude')
+            return this.claudeLook(t, this.replyBody(t, item, i), true);
         if (item.kind === 'system') return this.systemRow(t, item, i);
         if (item.kind === 'note') {
             return div()
@@ -3098,6 +3147,39 @@ export default class ClaudeChat extends View {
         return this.tool(t, item, i);
     }
 
+    // Claude's words: on the left in a quiet bubble, or after an accent dot; a reply cut into rows dots only its first
+    /** @param {any} t @param {any} body @param {boolean} isFirst */
+    claudeLook(t, body, isFirst) {
+        if (chatLook().mine === 'bubble')
+            return h_flex()
+                .w_full()
+                .child(
+                    div()
+                        .max_w(this.bubbleW)
+                        .px(12)
+                        .py(8)
+                        .rounded(12)
+                        .bg(t.raised)
+                        .text_color(t.foreground)
+                        .child(body),
+                );
+        return h_flex()
+            .w_full()
+            .gap(8)
+            .items_start()
+            .child(
+                div()
+                    .mt(4)
+                    .size(8)
+                    .flex_none()
+                    .rounded(4)
+                    .when(isFirst, (el) => el.bg(t.accent)),
+            )
+            .child(
+                div().flex_1().min_w(0).text_color(t.foreground).child(body),
+            );
+    }
+
     // A line he never typed: folded to one dim line that opens to its whole text on a click, or shown whole
     /** @param {any} t @param {{ id: string, label: string, text: string }} item @param {number | string} i */
     systemRow(t, item, i) {
@@ -3119,12 +3201,6 @@ export default class ClaudeChat extends View {
                     .cursor_pointer()
                     .hover((s) => s.bg(t.hover))
                     .tooltip(open ? 'fold it' : 'show the whole line')
-                    .on_click((_e, cx) => {
-                        this.open.has(item.id)
-                            ? this.open.delete(item.id)
-                            : this.open.add(item.id);
-                        cx.notify();
-                    })
                     .child(`${open ? '▾' : '▸'} ${item.label}`),
             )
             .when(open && item.text !== item.label, (el) =>
@@ -3194,14 +3270,7 @@ export default class ClaudeChat extends View {
                     .when(Boolean(sub), (el) =>
                         el
                             .cursor_pointer()
-                            .hover((s) => s.border_color(t.accent))
-                            .on_click((_e, cx) => {
-                                this.trail.push(item.id);
-                                this.up = 0;
-                                this.follow = true;
-                                this.limit = PAGE;
-                                cx.notify();
-                            }),
+                            .hover((s) => s.border_color(t.accent)),
                     )
                     .child(
                         h_flex()
@@ -3291,14 +3360,17 @@ export default class ClaudeChat extends View {
             if (to < from) to = turn.length;
             const work = turn.slice(from, to);
             const folded = keepReplies
-                ? work.filter(([x]) => x.kind !== 'claude')
+                ? work.filter(([x]) => x.kind !== 'claude' && !isRelay(x))
                 : work;
             if (!folded.length) return turn.filter(visible);
             const key = `${this.address}:${turn[0][1]}`;
             const open = this.unfolded.has(key);
             const shown = open
                 ? work
-                : work.filter(([x]) => keepReplies && x.kind === 'claude');
+                : work.filter(
+                      ([x]) =>
+                          keepReplies && (x.kind === 'claude' || isRelay(x)),
+                  );
             return [
                 ...turn.slice(0, from),
                 { key, open, work: folded },
@@ -3341,14 +3413,6 @@ export default class ClaudeChat extends View {
                     .text_size(px(12))
                     .text_color(t.dim)
                     .hover((s) => s.bg(t.hover).text_color(t.foreground))
-                    // The row stays where it is and the work opens below it (see log's on_size_change).
-                    .on_click((_e, cx) => {
-                        open
-                            ? this.unfolded.delete(key)
-                            : this.unfolded.add(key);
-                        this.holdTop = true;
-                        cx.notify();
-                    })
                     .child(
                         h_flex()
                             .w(12)
@@ -3401,9 +3465,8 @@ export default class ClaudeChat extends View {
                     .hover((s) => s.bg(t.hover))
                     .on_click((_e, cx) => {
                         this.trail.pop();
-                        this.up = 0;
                         this.follow = true;
-                        this.limit = PAGE;
+                        this.stick = true;
                         cx.notify();
                     })
                     .child(this.trail.length > 1 ? '‹ Back' : '‹ Main chat'),
@@ -3480,9 +3543,8 @@ export default class ClaudeChat extends View {
                         .hover((x) => x.opacity(0.85))
                         .on_click((_e, cx) => {
                             this.trail = [id];
-                            this.up = 0;
                             this.follow = true;
-                            this.limit = PAGE;
+                            this.stick = true;
                             cx.notify();
                         })
                         .child(
@@ -3507,7 +3569,7 @@ export default class ClaudeChat extends View {
     tool(t, item, i) {
         const open = this.open.has(item.id);
         const pending = item.result === undefined;
-        // From render (agents() per row was a host call for each of up to PAGE rows).
+        // From render (agents() per row was a host call for each row).
         const working = pending && this.agentWorking;
         const diff = diffOf(item);
         const mark = pending
@@ -3534,12 +3596,6 @@ export default class ClaudeChat extends View {
                     .rounded(6)
                     .cursor_pointer()
                     .hover((s) => s.bg(t.hover))
-                    .on_click((_e, cx) => {
-                        open
-                            ? this.open.delete(item.id)
-                            : this.open.add(item.id);
-                        cx.notify();
-                    })
                     .child(
                         h_flex().w(12).flex_none().justify_center().child(mark),
                     )
@@ -3588,11 +3644,18 @@ export default class ClaudeChat extends View {
                             .text_color(t.dim)
                             .child(open ? '▾' : '▸'),
                     ),
-            )
-            .when(open && Boolean(diff), (el) =>
-                el.child(this.diffView(t, item, diff)),
-            )
-            .when(open && !diff, (el) =>
+            );
+    }
+
+    // A tool's opened detail: its diff, or its input and output.
+    toolBody(t, item) {
+        const pending = item.result === undefined;
+        const diff = diffOf(item);
+        return v_flex()
+            .w_full()
+            .pl(16)
+            .when(Boolean(diff), (el) => el.child(this.diffView(t, item, diff)))
+            .when(!diff, (el) =>
                 el.child(
                     v_flex()
                         .ml(26)
@@ -3724,7 +3787,7 @@ export default class ClaudeChat extends View {
             .bg(strong ? t.solid : t.raised)
             .text_color(strong ? t.solid_foreground : t.foreground)
             .hover((s) => s.opacity(0.85))
-            .on_click(onClick)
+            .when(Boolean(onClick), (el) => el.on_click(onClick))
             .child(label);
     }
 
@@ -4091,6 +4154,7 @@ export default class ClaudeChat extends View {
                 row(
                     'Your messages',
                     pills(
+                        seg('mine', 'bubble', 'Bubbles'),
                         seg('mine', 'box', 'Box'),
                         seg('mine', 'tint', 'Tint'),
                         seg('mine', 'bar', 'Bar'),
@@ -4191,244 +4255,751 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // A scroller held at the bottom (GPUI's start at the top and can't be moved from here): the
-    // messages hang from the bottom edge, `this.up` px lowered to show older ones. While scrolled
-    // up, new messages grow `up` too, so what you're reading stays put.
+    // The conversation in herdr's lazy list: only the rows on screen are drawn, each at the height the measurer found
+    // out of sight, and the list scrolls natively; a wheel step redraws nothing unless following the newest flips.
     log(t, agent, rows, sub) {
-        const clamp = (up) =>
-            Math.max(0, Math.min(up, (this.contentH ?? 0) - (this.viewH ?? 0)));
         const key = sub ? `${agent.address}-${sub.name}` : agent.address;
-        return div()
-            .id(`log-${key}`)
-            .relative()
-            .flex_1()
-            .min_h(0)
-            .overflow_hidden()
-            .on_size_change((s, cx) => {
-                this.viewH = s.height;
-                this.viewW = s.width;
-                if (!this.filling) this.up = clamp(this.up ?? 0);
-                cx.notify();
-            })
-            .on_scroll_wheel((e, cx) => {
-                const max = Math.max(
-                    0,
-                    (this.contentH ?? 0) - (this.viewH ?? 0),
-                );
-                const next = afterWheel(
-                    { follow: this.follow, up: clamp(this.up ?? 0) },
-                    e.delta.y,
-                    max,
-                );
-                // a wheel pressed past either end moves nothing: no redraw, or a trackpad's momentum
-                // at the bottom redrew every row ~100 times a second and the chat flickered
-                const isSame =
-                    next.up === clamp(this.up ?? 0) &&
-                    next.follow === this.follow;
-                if (isSame && !this.ctx) return;
-                this.up = next.up;
-                this.follow = next.follow;
-                keepScroll(this.address, next);
-                this.ctx = null;
-                cx.notify();
-            })
-            .on_mouse_down('right', (e, cx) => this.openCtx(e, cx))
-            .child(
-                v_flex()
-                    .id(`log-body-${key}`)
-                    .absolute()
-                    .left(0)
-                    .right(0)
-                    .bottom(-clamp(this.up ?? 0))
-                    .px(
-                        chatLook().width === 'narrow'
-                            ? Math.max(16, ((this.viewW ?? 0) - NARROW) / 2)
-                            : 16,
-                    )
-                    .py(12)
-                    .gap(GAPS[chatLook().space] ?? 10)
-                    .on_size_change((s, cx) => {
-                        // one rule (scroll.js): while he follows, the newest shows; while he reads, new height goes
-                        // below his place and he stays on it. A turn he opens grows below the row he clicked.
-                        const from = this.contentH ?? null;
-                        /** @type {import('./scroll.js').Scroll} */
-                        const next = this.holdTop
-                            ? {
-                                  follow: false,
-                                  up:
-                                      (this.up ?? 0) +
-                                      s.height -
-                                      (from ?? s.height),
-                              }
-                            : afterReflow(
-                                  { follow: this.follow, up: this.up ?? 0 },
-                                  {
-                                      from,
-                                      isFilling: this.filling,
-                                      to: s.height,
-                                  },
-                              );
-                        this.holdTop = false;
-                        this.contentH = s.height;
-                        this.follow = next.follow;
-                        this.up = this.filling ? next.up : clamp(next.up);
-                        cx.notify();
-                    })
-                    .when(
-                        Boolean(this.problem) && !this.items.length && !sub,
-                        (el) =>
-                            el.child(
-                                div().text_color(t.dim).child(this.problem),
-                            ),
-                    )
-                    .children(rows),
-            )
-            .when(Boolean(this.ctx), (el) => el.child(this.ctxMenu(t)))
-            .when(!this.follow && clamp(this.up ?? 0) > STUCK_PX, (el) => {
-                const prev = this.prevMine();
-                const to = prev === null ? null : clamp(prev);
-                return el
-                    .when(to !== null && to > this.up + 1, (el) =>
+        const z = Number(settings().zoom) || 1;
+        const { gap, pad } = this.rowSpace();
+        const keys = rows.map((r) => r.key);
+        const sizes = rowSizes(
+            keys,
+            this.rowH,
+            (i) => guessHeight(rows[i]) + gap,
+        );
+        /** @type {number} */
+        const total = sizes.reduce((a, b) => a + b, 0);
+        if (
+            this.follow &&
+            (total !== this.total || rows.length !== this.shownCount)
+        )
+            this.stick = true;
+        /** @type {number} */
+        this.total = total;
+        this.shownCount = rows.length;
+        if (this.seek !== null) {
+            const at = rows.findIndex((r) => r.id === this.seek && !r.part);
+            const first =
+                at >= 0 ? at : rows.findIndex((r) => r.id === this.seek);
+            this.seek = null;
+            if (first >= 0) {
+                this.follow = false;
+                this.anchor = {
+                    how: 'center',
+                    key: keys[first],
+                    until: Date.now() + 1500,
+                };
+                this.reanchor = true;
+            }
+        }
+        if (this.reanchor && this.anchor) {
+            const { uuid } = this.anchor;
+            const at = uuid
+                ? rows.findIndex((r) => uuidOf(r) === uuid)
+                : keys.indexOf(this.anchor.key);
+            if (at >= 0) {
+                this.reanchor = false;
+                this.anchor.key = keys[at];
+                this.scroll.scroll_to_item(at, this.anchor.how);
+            } else if (Date.now() > this.anchor.until) {
+                // his row never came (a /clear, a trimmed transcript): the newest, never another seat's offset
+                this.reanchor = false;
+                this.anchor = null;
+                this.follow = true;
+                this.stick = true;
+            }
+        }
+        if (this.anchor && !this.reanchor && Date.now() > this.anchor.until)
+            this.anchor = null;
+        if (this.stick) {
+            this.stick = false;
+            if (this.follow) this.scroll.scroll_to_bottom();
+        }
+        const gen = this.measureGen;
+        const listId = `chat-rows-${key}`;
+        const list = v_virtual_list(
+            listId,
+            rows.length,
+            sizes,
+            (i) => keys[i],
+            (range) => {
+                this.range = range;
+                this.firstKey = keys[range.start] ?? null;
+                this.firstUuid = uuidOf(rows[range.start]);
+                const out = [];
+                for (let i = range.start; i < range.end; i++)
+                    out.push(
+                        this.rowView(t, rows[i], `v${gen}-`, gap, pad)
+                            .h(sizes[i])
+                            .overflow_hidden(),
+                    );
+                return out;
+            },
+        )
+            .track_scroll(this.scroll)
+            .size_full()
+            .on_item_click((k, cx) => this.clickRow(k, cx))
+            .on_item_secondary_click((k, e) => {
+                const row = this.flat.find((r) => r.key === k);
+                if (row?.item?.text) this.ctxHit(e, row.item);
+            });
+        const prev = this.follow
+            ? -1
+            : prevMineIndex(rows, this.range?.start ?? rows.length);
+        // the newest row when he left the bottom: what came after it is new to him, counted on the pill
+        if (this.follow) this.leftUuid = undefined;
+        else if (this.leftUuid === undefined)
+            this.leftUuid = uuidOf(rows[rows.length - 1]);
+        const left = this.leftUuid
+            ? rows.findIndex((r) => uuidOf(r) === this.leftUuid)
+            : -1;
+        const fresh =
+            left < 0
+                ? 0
+                : rows
+                      .slice(left + 1)
+                      .filter(
+                          (r) =>
+                              (r.kind === 'item' &&
+                                  ['user', 'claude'].includes(r.item.kind)) ||
+                              (r.kind === 'part' && r.isFirst),
+                      ).length;
+        return (
+            div()
+                .id(`log-${key}`)
+                .relative()
+                .flex_1()
+                .min_h(0)
+                .overflow_hidden()
+                .on_size_change((s, cx) => {
+                    const w = s.width / z;
+                    const h = s.height / z;
+                    if (w === this.viewW && h === this.viewH) return;
+                    /** @type {number} */
+                    this.viewW = w;
+                    this.viewH = h;
+                    if (this.follow) this.stick = true;
+                    cx.notify();
+                })
+                // where a press landed across the row (rows take no handlers): the fork's column (clickRow)
+                .on_mouse_down('left', (e) => {
+                    this.pressX = (e.local_position?.x ?? -1) / z;
+                    const y = (e.local_position?.y ?? -1) / z;
+                    // ↑ Previous message and ↓ Newest float 10 px in from the top and bottom, centered; the menu covers
+                    // what it is over: a press there is theirs, not the row's under it
+                    const isFloat =
+                        !this.follow &&
+                        Math.abs(this.pressX - (this.viewW ?? 0) / 2) < 90 &&
+                        (y < 40 || y > (this.viewH ?? 0) - 40);
+                    this.pressFloat = isFloat || Boolean(this.ctx);
+                })
+                .on_scroll_wheel((e, cx) => {
+                    const isAtEnd = (this.range?.end ?? 0) >= rows.length;
+                    const follow = followAfterWheel(
+                        this.follow,
+                        e.delta?.y ?? 0,
+                        isAtEnd,
+                    );
+                    const now = Date.now();
+                    if (!follow && now - (this.keptAt ?? 0) > 500) {
+                        this.keptAt = now;
+                        keepScroll(this.address, this.place());
+                    }
+                    if (follow === this.follow && !this.ctx && !this.anchor)
+                        return;
+                    this.follow = follow;
+                    this.anchor = null;
+                    this.ctx = null;
+                    keepScroll(this.address, this.place());
+                    cx.notify();
+                })
+                .on_mouse_down('right', (e, cx) => this.openCtx(e, cx))
+                .when(
+                    Boolean(this.problem) && !this.items.length && !sub,
+                    (el) =>
                         el.child(
+                            div().p(16).text_color(t.dim).child(this.problem),
+                        ),
+                )
+                .child(
+                    v_flex()
+                        .absolute()
+                        .inset_0()
+                        .pt(12)
+                        .child(list)
+                        .child(Scrollbar.vertical(listId).absolute().inset_0()),
+                )
+                .child(this.measurer(t, rows, keys, gap, pad))
+                .when(Boolean(this.ctx), (el) => el.child(this.ctxMenu(t)))
+                .when(!this.follow, (el) =>
+                    el
+                        .when(prev >= 0, (el) =>
+                            el.child(
+                                h_flex()
+                                    .absolute()
+                                    .top(10)
+                                    .left(0)
+                                    .right(0)
+                                    .justify_center()
+                                    .child(
+                                        this.button(
+                                            t,
+                                            'prev-mine',
+                                            '↑ Previous message',
+                                            (_e, cx) => {
+                                                const at = prevMineIndex(
+                                                    rows,
+                                                    this.range?.start ??
+                                                        rows.length,
+                                                );
+                                                if (at < 0) return;
+                                                this.anchor = {
+                                                    how: 'top',
+                                                    key: keys[at],
+                                                    until: Date.now() + 1500,
+                                                };
+                                                this.reanchor = true;
+                                                cx.notify();
+                                            },
+                                        ),
+                                    ),
+                            ),
+                        )
+                        .child(
                             h_flex()
                                 .absolute()
-                                .top(10)
+                                .bottom(10)
                                 .left(0)
                                 .right(0)
                                 .justify_center()
                                 .child(
                                     this.button(
                                         t,
-                                        'prev-mine',
-                                        '↑ Previous message',
+                                        'newest',
+                                        fresh > 0
+                                            ? `↓ ${fresh} new ${fresh === 1 ? 'message' : 'messages'}`
+                                            : '↓ Newest',
                                         (_e, cx) => {
-                                            this.up = to;
-                                            this.follow = false;
+                                            this.follow = true;
+                                            this.stick = true;
+                                            this.anchor = null;
+                                            keepScroll(
+                                                this.address,
+                                                this.place(),
+                                            );
                                             cx.notify();
                                         },
+                                        true,
                                     ),
                                 ),
                         ),
-                    )
-                    .child(
-                        h_flex()
-                            .absolute()
-                            .bottom(10)
-                            .left(0)
-                            .right(0)
-                            .justify_center()
-                            .child(
-                                this.button(
-                                    t,
-                                    'newest',
-                                    '↓ Newest',
-                                    (_e, cx) => {
-                                        this.up = 0;
-                                        this.follow = true;
-                                        keepScroll(this.address, {
-                                            follow: true,
-                                            up: 0,
-                                        });
-                                        cx.notify();
-                                    },
-                                    true,
-                                ),
-                            ),
-                    );
-            });
+                )
+        );
     }
 
-    // A reply cut into blocks (blocks.js): prose as markdown, a code block with a copy button, a prompt card that puts its
-    // prompt in his box. A search draws the reply whole, since its marks span the blocks.
-    replyBody(t, item, i) {
-        const whole = (/** @type {string} */ text) =>
-            TextView.markdown(`md-${i}`, text)
-                .selectable(true)
-                .on_link_click(openLink);
-        if (this.markIn(i))
-            return whole(
-                markMarkdown(item.text, this.marks.re, this.markIn(i)),
+    // A file the reply links: its name with a folder glyph, the whole path on hover; a press opens it the way Finder
+    // would (a png in Preview, a dir in Finder)
+    /** @param {any} t @param {Row} row */
+    fileRow(t, row) {
+        return h_flex()
+            .id(`file-${row.key}`)
+            .gap(6)
+            .items_center()
+            .px(8)
+            .py(3)
+            .rounded(6)
+            .border(1)
+            .border_color(t.border)
+            .cursor_pointer()
+            .text_size(px(12))
+            .text_color(t.muted)
+            .hover((s) => s.bg(t.hover).text_color(t.foreground))
+            .tooltip(row.path)
+            .child('📂')
+            .child(div().truncate().child(row.label));
+    }
+
+    // where he reads, as the store keeps it: the row's key for a tab switch, its item's uuid for a reload
+    /** @returns {Place} */
+    place() {
+        return this.follow
+            ? { anchor: null, follow: true, uuid: null }
+            : { anchor: this.firstKey, follow: false, uuid: this.firstUuid };
+    }
+
+    // A message between threads, folded to one line: «sender → receiver · first words · time»; a press opens its
+    // whole text in the row below
+    /** @param {any} t @param {any} item */
+    relayRow(t, item) {
+        const open = this.open.has(item.id);
+        const self =
+            /** @type {Record<string, string>} */ (
+                shared('x-herdr-agents.names') ?? {}
+            )[this.address] ?? 'this thread';
+        const isIn = item.kind === 'relay';
+        const line = relayLine({
+            at: item.at,
+            from: isIn ? item.from : self,
+            text: isIn ? item.text : String(item.input?.message ?? ''),
+            to: isIn ? self : String(item.input?.to ?? 'another thread'),
+        });
+        return h_flex()
+            .id(`relay-${item.id}`)
+            .w_full()
+            .gap(8)
+            .items_center()
+            .py(3)
+            .px(8)
+            .rounded(6)
+            .cursor_pointer()
+            .text_size(px(12))
+            .text_color(t.muted)
+            .bg(fade(t.accent, isIn ? '14' : '0a'))
+            .hover((s) => s.bg(t.hover).text_color(t.foreground))
+            .tooltip(open ? 'fold it' : 'show the whole message')
+            .child(
+                div()
+                    .flex_none()
+                    .text_size(px(10))
+                    .text_color(t.dim)
+                    .child(open ? '▾' : '▸'),
+            )
+            .child(div().flex_1().min_w(0).truncate().child(line));
+    }
+
+    // A message between threads, opened: its whole text, selectable
+    /** @param {any} t @param {any} item */
+    relayBody(t, item) {
+        const text =
+            item.kind === 'relay'
+                ? item.text
+                : String(item.input?.message ?? '');
+        return div()
+            .w_full()
+            .pl(18)
+            .child(
+                div()
+                    .w_full()
+                    .px(10)
+                    .py(8)
+                    .rounded(6)
+                    .bg(t.surface)
+                    .border(1)
+                    .border_color(t.border)
+                    .child(
+                        TextView.markdown(
+                            `${this.pre}relay-${item.id}`,
+                            text,
+                        ).selectable(true),
+                    ),
             );
+    }
+
+    // the room around a row: the gap below it, and the side padding (a readable column when narrow)
+    rowSpace() {
+        const look = chatLook();
+        const pad =
+            look.width === 'narrow'
+                ? Math.max(16, ((this.viewW ?? 0) - NARROW) / 2)
+                : 16;
+        return { gap: GAPS[look.space] ?? 10, pad };
+    }
+
+    // The rows the list shows, each with the key the list and its press report: a turn's fold, a message, a tool and
+    // its opened detail, and a reply cut into blocks when it holds code or a prompt card.
+    /** @param {any[]} listed @param {any} sub @returns {Row[]} */
+    rowsOf(listed, sub) {
+        /** @type {Row[]} */
+        const rows = [];
+        if (!sub && this.head > 0)
+            rows.push({ key: 'earlier', kind: 'earlier' });
+        for (const x of listed) {
+            if (x.work) {
+                rows.push({ key: x.key, kind: 'turn', x });
+                continue;
+            }
+            const [item, id] = x;
+            const key = String(id);
+            const files = () => {
+                if (item.kind !== 'claude') return;
+                if (item.filesOf !== item.text) {
+                    item.files = fileLinks(item.text);
+                    item.filesOf = item.text;
+                }
+                rows.push(
+                    ...item.files.map(
+                        (
+                            /** @type {{ label: string, path: string }} */ f,
+                            /** @type {number} */ k,
+                        ) => ({
+                            id,
+                            key: `${key}:f${k}`,
+                            kind: /** @type {'file'} */ ('file'),
+                            ...f,
+                        }),
+                    ),
+                );
+            };
+            if (item.kind === 'claude' && !this.markIn(id)) {
+                const blocks = this.blocksOf(item);
+                if (blocks.length > 1 || blocks[0]?.kind !== 'text') {
+                    blocks.forEach((b, k) => {
+                        const at = {
+                            b,
+                            id,
+                            isFirst: k === 0,
+                            item,
+                            kind: /** @type {'part'} */ ('part'),
+                        };
+                        if (b.kind === 'code') {
+                            rows.push({
+                                ...at,
+                                key: `${key}:${k}h`,
+                                part: 'codehead',
+                            });
+                            rows.push({
+                                ...at,
+                                isFirst: false,
+                                key: `${key}:${k}`,
+                                part: 'code',
+                            });
+                        } else
+                            rows.push({
+                                ...at,
+                                key: `${key}:${k}`,
+                                part: b.kind === 'text' ? 'text' : 'prompt',
+                            });
+                    });
+                    files();
+                    continue;
+                }
+            }
+            rows.push({
+                id,
+                item,
+                key,
+                kind: 'item',
+                mine: item.kind === 'user',
+            });
+            files();
+            if (
+                (isRelay(item) ||
+                    (item.kind === 'tool' &&
+                        !AGENT_TOOLS.has(item.name) &&
+                        item.name !== 'AskUserQuestion')) &&
+                this.open.has(item.id)
+            )
+                rows.push({ id, item, key: `${key}:detail`, kind: 'detail' });
+        }
+        this.flat = rows;
+        return rows;
+    }
+
+    // One row as the list and the measurer draw it, with no handlers (a list row may hold none): `pre` keeps the two
+    // copies' text views apart, so a reply keeps the wrap it was laid out at in each.
+    rowView(t, row, pre, gap, pad) {
+        this.pre = pre;
+        const { current, found } = this.hits;
+        const hit =
+            row.id !== undefined &&
+            !row.part &&
+            row.kind !== 'file' &&
+            found.has(row.id);
+        const body =
+            row.kind === 'earlier'
+                ? h_flex()
+                      .w_full()
+                      .justify_center()
+                      .child(this.button(t, 'earlier', 'Show earlier'))
+                : row.kind === 'file'
+                  ? this.claudeLook(t, this.fileRow(t, row), false)
+                  : row.kind === 'turn'
+                    ? this.turnRow(t, row.x, found)
+                    : row.kind === 'part'
+                      ? this.replyPart(t, row)
+                      : row.kind === 'detail'
+                        ? isRelay(row.item)
+                            ? this.relayBody(t, row.item)
+                            : this.toolBody(t, row.item)
+                        : this.bubble(t, row.item, row.id);
+        return div()
+            .w_full()
+            .px(pad)
+            .pb(row.part === 'codehead' ? 0 : gap)
+            .child(
+                div()
+                    .w_full()
+                    // Search hits tinted, the current one outlined (the same padding on all, so moving between
+                    // them doesn't shift the rows).
+                    .when(hit, (el) =>
+                        el
+                            .p(3)
+                            .rounded(8)
+                            .border(1)
+                            .bg(
+                                fade(
+                                    t.accent,
+                                    row.id === current ? '1f' : '0d',
+                                ),
+                            )
+                            .border_color(
+                                row.id === current
+                                    ? t.accent
+                                    : fade(t.accent, '33'),
+                            ),
+                    )
+                    .child(body),
+            );
+    }
+
+    // Rows not measured yet, drawn once out of sight at the list's width; their heights go to the list, which then
+    // places every row exactly. Those near what is shown go first (after shepherdr's chat, MIT).
+    measurer(t, rows, keys, gap, pad) {
+        const now = Date.now();
+        const anchored =
+            this.anchor && now < this.anchor.until
+                ? keys.indexOf(this.anchor.key)
+                : -1;
+        const near =
+            anchored >= 0
+                ? anchored
+                : this.range
+                  ? this.range.start
+                  : rows.length - 1;
+        const order = measureOrder(keys, this.rowH, this.measuredAt, near, now);
+        const gen = this.measureGen;
+        return div()
+            .absolute()
+            .top(0)
+            .left(0)
+            .w(this.viewW ?? 0)
+            .h(0)
+            .overflow_hidden()
+            .opacity(0)
+            .child(
+                v_flex()
+                    .w_full()
+                    .children(
+                        order.map((i) =>
+                            div()
+                                .id(`m${gen}-${keys[i]}`)
+                                .flex_none()
+                                .w_full()
+                                .on_size_change((s, cx) => {
+                                    if (gen !== this.measureGen) return;
+                                    const k = keys[i];
+                                    if (!this.measuredAt.has(k))
+                                        this.measuredAt.set(k, Date.now());
+                                    const h =
+                                        s.height /
+                                        (Number(settings().zoom) || 1);
+                                    if (this.rowH.get(k) === h) return;
+                                    this.rowH.set(k, h);
+                                    if (this.follow) this.stick = true;
+                                    else if (
+                                        !this.anchor &&
+                                        this.firstKey &&
+                                        i < (this.range?.start ?? 0)
+                                    ) {
+                                        this.anchor = {
+                                            how: 'top',
+                                            key: this.firstKey,
+                                            until: Date.now() + 300,
+                                            uuid: null,
+                                        };
+                                        this.reanchor = true;
+                                    }
+                                    if (
+                                        this.anchor &&
+                                        Date.now() < this.anchor.until
+                                    )
+                                        this.reanchor = true;
+                                    cx.notify();
+                                })
+                                .child(
+                                    this.rowView(
+                                        t,
+                                        rows[i],
+                                        `m${gen}-`,
+                                        gap,
+                                        pad,
+                                    ),
+                                ),
+                        ),
+                    ),
+            );
+    }
+
+    // A press on a row, by its key (rows take no handlers): what it does by the row's kind, and for his message, where
+    // across the row it landed.
+    clickRow(key, cx) {
+        const row = this.flat?.find((r) => r.key === key);
+        if (!row || this.pressFloat) return;
+        const item = row.item;
+        if (row.kind === 'earlier') {
+            const anchor =
+                this.firstKey === 'earlier'
+                    ? (this.flat[1]?.key ?? null)
+                    : this.firstKey;
+            cx.spawn(async (/** @type {any} */ cx) => {
+                await this.loadEarlier();
+                if (anchor) {
+                    this.follow = false;
+                    this.anchor = {
+                        how: 'top',
+                        key: anchor,
+                        until: Date.now() + 1500,
+                    };
+                    this.reanchor = true;
+                }
+                cx.notify();
+            });
+            return;
+        }
+        if (row.kind === 'file') {
+            exec('open', [row.path]).catch(() => {});
+            return;
+        }
+        if (row.kind === 'turn') {
+            // the row stays where it is and the work opens below it
+            this.unfolded.has(key)
+                ? this.unfolded.delete(key)
+                : this.unfolded.add(key);
+            this.follow = false;
+        } else if (row.part === 'codehead') {
+            if (!row.b.isClosed) return;
+            cx.write_to_clipboard(row.b.text);
+            this.copied = { at: Date.now(), key };
+            cx.timer.after(1600, (cx) => cx.notify());
+        } else if (row.part === 'prompt') {
+            this.box.set_value(withPrompt(this.box.value(), row.b.text));
+            this.box.focus();
+        } else if (row.kind === 'detail' || row.kind === 'part') return;
+        else if (item.kind === 'user') {
+            const { pad } = this.rowSpace();
+            const inset =
+                (chatLook().mine === 'bubble' ? 0 : 12) +
+                (this.hits.found.has(row.id) ? 4 : 0);
+            const edge = (this.viewW ?? 0) - pad - inset;
+            const agent = this.agentNow;
+            if (
+                !item.before ||
+                !agent ||
+                (this.pressX ?? -1) < edge - FORK_W ||
+                (this.pressX ?? -1) > edge
+            )
+                return;
+            cx.spawn(async (/** @type {any} */ cx) => {
+                await this.fork(agent, item.before, cx);
+            });
+            return;
+        } else if (item.kind === 'system' || isRelay(item))
+            this.open.has(item.id)
+                ? this.open.delete(item.id)
+                : this.open.add(item.id);
+        else if (AGENT_TOOLS.has(item.name)) {
+            if (!this.subs.get(item.id)) return;
+            this.trail.push(item.id);
+            this.follow = true;
+            this.stick = true;
+        } else if (item.kind === 'tool' && item.name !== 'AskUserQuestion')
+            this.open.has(item.id)
+                ? this.open.delete(item.id)
+                : this.open.add(item.id);
+        else return;
+        cx.notify();
+    }
+
+    // A reply as one row: whole, or with a search's marks, which span its blocks. A reply with code or a prompt card is
+    // cut into rows instead (rowsOf), so the copy and the card take a press of their own.
+    replyBody(_t, item, i) {
+        const text = this.markIn(i)
+            ? markMarkdown(item.text, this.marks.re, this.markIn(i))
+            : item.text;
+        return TextView.markdown(`${this.pre}md-${i}`, text).selectable(true);
+    }
+
+    /** @param {{ text: string, blocks?: any[], blocksOf?: string }} item @returns {import('./blocks.js').Block[]} */
+    blocksOf(item) {
         if (item.blocksOf !== item.text) {
             item.blocks = splitBlocks(item.text);
             item.blocksOf = item.text;
         }
-        /** @type {import('./blocks.js').Block[]} */
-        const blocks = item.blocks;
-        if (blocks.length === 1 && blocks[0].kind === 'text')
-            return whole(item.text);
-        return v_flex()
-            .w_full()
-            .gap(8)
-            .children(
-                blocks.map((b, k) => {
-                    const key = `${i}-${k}`;
-                    if (b.kind === 'text')
-                        return TextView.markdown(`md-${key}`, b.text)
-                            .selectable(true)
-                            .on_link_click(openLink);
-                    if (b.kind === 'code') return this.codeBlock(t, b, key);
-                    return this.promptCard(t, b, key);
-                }),
-            );
+        return item.blocks;
     }
 
-    /** @param {Theme} t @param {{ lang: string, text: string, isClosed: boolean }} b @param {string} key */
-    codeBlock(t, b, key) {
-        const isCopied =
-            this.copied?.key === key && Date.now() - this.copied.at < 1500;
-        return v_flex()
-            .w_full()
-            .rounded(8)
-            .border(1)
-            .border_color(t.border)
-            .bg(t.raised)
-            .child(
-                h_flex()
-                    .px(10)
-                    .pt(6)
-                    .items_center()
-                    .text_size(px(11))
-                    .text_color(t.muted)
-                    .child(b.lang || 'code')
-                    .child(div().flex_1())
-                    // the copy button shows once the fence is closed, never mid-stream
-                    .when(b.isClosed, (el) =>
-                        el.child(
-                            div()
-                                .id(`copy-${key}`)
-                                .px(6)
-                                .py(2)
-                                .rounded(5)
-                                .cursor_pointer()
-                                .text_color(isCopied ? t.accent : t.muted)
-                                .hover((s) =>
-                                    s.bg(t.hover).text_color(t.foreground),
-                                )
-                                .on_click((_e, cx) => {
-                                    cx.write_to_clipboard(b.text);
-                                    this.copied = { at: Date.now(), key };
-                                    cx.timer.after(1600, (cx) => cx.notify());
-                                    cx.notify();
-                                })
-                                .child(isCopied ? '✓ copied' : '⧉ copy'),
-                        ),
-                    ),
-            )
-            .child(
-                div()
-                    .px(10)
-                    .pb(8)
-                    .pt(2)
-                    .font_family(this.mono())
-                    .text_size(px(13))
-                    .child(
-                        TextView.markdown(
-                            `code-${key}`,
-                            `\`\`\`\n${b.text}\n\`\`\``,
-                        ).selectable(true),
-                    ),
+    // One block of a reply cut into rows: prose, a code block's head (the language and the copy) or body, a prompt card.
+    replyPart(t, row) {
+        const { b, part } = row;
+        if (part === 'text')
+            return this.claudeLook(
+                t,
+                TextView.markdown(
+                    `${this.pre}md-${row.key}`,
+                    b.text,
+                ).selectable(true),
+                row.isFirst,
             );
+        if (part === 'prompt')
+            return this.claudeLook(
+                t,
+                this.promptCard(t, b, row.key),
+                row.isFirst,
+            );
+        const isCopied =
+            this.copied?.key === row.key && Date.now() - this.copied.at < 1500;
+        const box =
+            part === 'codehead'
+                ? h_flex()
+                      .w_full()
+                      .px(10)
+                      .pt(6)
+                      .pb(2)
+                      .items_center()
+                      .rounded_t(8)
+                      .border_t(1)
+                      .border_x(1)
+                      .border_color(t.border)
+                      .bg(t.raised)
+                      .text_size(px(11))
+                      .text_color(t.muted)
+                      .child(b.lang || 'code')
+                      .child(div().flex_1())
+                      // the copy button shows once the fence is closed, never mid-stream
+                      .when(b.isClosed, (el) =>
+                          el.child(
+                              div()
+                                  .id(`copy-${row.key}`)
+                                  .px(6)
+                                  .py(2)
+                                  .rounded(5)
+                                  .cursor_pointer()
+                                  .text_color(isCopied ? t.accent : t.muted)
+                                  .hover((s) =>
+                                      s.bg(t.hover).text_color(t.foreground),
+                                  )
+                                  .child(isCopied ? '✓ copied' : '⧉ copy'),
+                          ),
+                      )
+                : div()
+                      .w_full()
+                      .px(10)
+                      .pb(8)
+                      .pt(2)
+                      .rounded_b(8)
+                      .border_b(1)
+                      .border_x(1)
+                      .border_color(t.border)
+                      .bg(t.raised)
+                      .font_family(this.mono())
+                      .text_size(px(13))
+                      .child(
+                          TextView.markdown(
+                              `${this.pre}code-${row.key}`,
+                              `\`\`\`\n${b.text}\n\`\`\``,
+                          ).selectable(true),
+                      );
+        return this.claudeLook(t, box, false);
     }
 
     /** @param {Theme} t @param {{ to: string, text: string }} b @param {string} key */
@@ -4443,11 +5014,6 @@ export default class ClaudeChat extends View {
             .border_color(t.accent)
             .cursor_pointer()
             .hover((s) => s.bg(t.hover))
-            .on_click((_e, cx) => {
-                this.box.set_value(withPrompt(this.box.value(), b.text));
-                this.box.focus();
-                cx.notify();
-            })
             .child(
                 h_flex()
                     .text_size(px(11))
@@ -4862,25 +5428,6 @@ export default class ClaudeChat extends View {
         this.box.focus();
     }
 
-    // The `up` that puts the nearest of your messages starting above the view at its top, or null
-    // if none is loaded. Rows hang from the bottom, so a row's top is the heights below it summed.
-    prevMine() {
-        const room = 44; // below the button, which floats at the top
-
-        const gap = GAPS[chatLook().space] ?? 10;
-        const viewTop = (this.up ?? 0) + (this.viewH ?? 0) - room;
-        let below = 12; // the body's bottom padding
-        for (let k = (this.rowList ?? []).length - 1; k >= 0; k--) {
-            const h = this.rowH.get(this.rowList[k].id);
-            if (h === undefined) return null;
-            const top = below + h;
-            if (this.rowList[k].mine && top > viewTop + 4)
-                return top - (this.viewH ?? 0) + room;
-            below = top + gap;
-        }
-        return null;
-    }
-
     // ---- search
 
     openFind(cx) {
@@ -4921,11 +5468,10 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
-    // Scrolls to a hit (see resolveSeek). A hit in a tool's input or output, not its one-line
+    // Scrolls to a hit (log centers it). A hit in a tool's input or output, not its one-line
     // summary, opens the row.
     seekTo({ item, id }) {
         this.seek = id;
-        this.seekTries = 0;
         this.seekShown = false;
         if (
             item.kind === 'tool' &&
@@ -4987,34 +5533,6 @@ export default class ClaudeChat extends View {
                 ? MARK.current
                 : MARK.hit
             : null;
-    }
-
-    // Puts the row being sought in the middle of the view (its top, if it's taller), once the rows
-    // are measured: a frame or more after the jump, so a turn or tool row it opened has its height.
-    resolveSeek(cx) {
-        const list = this.rowList ?? [];
-        const k = list.findIndex((r) => r.id === this.seek);
-        const tries = this.seekTries++;
-        const ready =
-            k >= 0 &&
-            tries > 0 &&
-            list.slice(k).every((r) => this.rowH.has(r.id));
-        if (!ready && tries < 6) {
-            cx.timer.after(80, (cx) => cx.notify());
-            return;
-        }
-        this.seek = null;
-        if (k < 0) return;
-        const gap = GAPS[chatLook().space] ?? 10;
-        let below = 12; // the body's bottom padding
-        for (let j = list.length - 1; j > k; j--)
-            below += (this.rowH.get(list[j].id) ?? 0) + gap;
-        const h = this.rowH.get(list[k].id) ?? 0;
-        const view = this.viewH ?? 0;
-        const up =
-            h > view - 60 ? below + h - view + 30 : below + h / 2 - view / 2;
-        this.up = Math.max(0, Math.min(up, (this.contentH ?? 0) - view));
-        this.follow = false;
     }
 
     findBar(t) {
@@ -5120,6 +5638,11 @@ export default class ClaudeChat extends View {
     }
 
     render(cx) {
+        return inRender(() => this.renderView(cx));
+    }
+
+    /** @param {any} cx */
+    renderView(cx) {
         if (props()?.settings) return this.settingsMenu(theme());
         const t = chatTheme();
         const agent = this.target();
@@ -5171,7 +5694,8 @@ export default class ClaudeChat extends View {
             look.tools === 'show' ||
             ['user', 'claude', 'note'].includes(item.kind) ||
             AGENT_TOOLS.has(item.name) ||
-            item.name === 'AskUserQuestion';
+            item.name === 'AskUserQuestion' ||
+            isRelay(item);
         // Questions a hook sent back are left out: Claude asks again at once.
         const all = (sub ? sub.items : this.items)
             .map((item, i) => [item, sub ? `${sub.name}-${i}` : i - this.base])
@@ -5199,104 +5723,34 @@ export default class ClaudeChat extends View {
                 this.unfolded.add(fold.key);
                 listed = this.turns(all, visible);
             }
-            const at = listed.findIndex((x) => !x.work && x[1] === this.seek);
-            if (at >= 0 && listed.length - at > this.limit)
-                this.limit = listed.length - at + 10;
         }
-        /** @param {any} x */
-        const rowId = (x) => (x.work ? x.key : String(x[1]));
-        this.limit = keptFirst(
-            listed.map(rowId),
-            this.limit,
-            this.firstShown,
-            this.follow,
-        );
-        const shown = listed.slice(-this.limit);
-        this.firstShown = shown.length ? rowId(shown[0]) : null;
-        const hidden = listed.length - shown.length;
         this.agentWorking = agent.status === 'working';
         this.settleQueued(agent.status, cx);
         const queued = this.queued.get(this.address) ?? [];
         const isLeftShown =
             Boolean(this.leftInBox) && agent.status !== 'working';
-        // Each row measured, so ↑ Previous message knows where your messages are (see prevMine).
-        this.rowList = shown.map((x) => ({
-            id: x.work ? x.key : x[1],
-            mine: !x.work && x[0].kind === 'user',
-        }));
         // A row's height holds only at the width and look it was measured at.
         /** @type {string} */
-        const fit = `${Math.round(this.viewW ?? 0)}|${look.size}|${look.space}|${look.width}|${look.tools}|${look.replies}`;
+        const fit = `${Math.round(this.viewW ?? 0)}|${look.size}|${look.space}|${look.width}|${look.tools}|${look.replies}|${look.mine}|${look.font}|${look.system}`;
         if (fit !== this.rowFit) {
             this.rowFit = fit;
             this.rowH = new Map();
+            this.measuredAt = new Map();
+            this.measureGen++;
         }
-        // every row draws whole: drawing far rows as empty boxes looped a long message between 12 px and its height,
-        // ~40 times a second (wing 1, 15:26 probe); herdr's own lazy list replaces this hand-made column (FRM-573)
-        const rows = shown.map((x, k) => {
-            const id = this.rowList[k].id;
-            const hit = !x.work && found.has(id);
-            return (
-                div()
-                    .id(`row-${id}`)
-                    .w_full()
-                    .on_size_change((s) => {
-                        this.rowH.set(id, s.height);
-                    })
-                    // Search hits tinted, the current one outlined (the same padding on all, so moving between
-                    // them doesn't shift the rows).
-                    .when(hit, (el) =>
-                        el
-                            .p(3)
-                            .rounded(8)
-                            .border(1)
-                            .bg(fade(t.accent, id === current ? '1f' : '0d'))
-                            .border_color(
-                                id === current
-                                    ? t.accent
-                                    : fade(t.accent, '33'),
-                            ),
-                    )
-                    .child(
-                        x.work
-                            ? this.turnRow(t, x, found)
-                            : this.bubble(t, x[0], x[1]),
-                    )
-            );
-        });
-        if (this.seek !== null) this.resolveSeek(cx);
+        const { pad } = this.rowSpace();
+        this.bubbleW = Math.max(
+            240,
+            Math.floor(((this.viewW ?? 0) - 2 * pad - FORK_W) * 0.8),
+        );
+        this.hits = { current, found };
+        const rows = this.rowsOf(listed, sub);
         // Built once each: they're shown only when there is one.
         const chips = this.subChips(t);
         const status = this.status(t, agent);
         const images = this.imageCount(agent.address);
         const menu = this.menu(t);
         this.settlePick();
-        if (hidden > 0 || (!sub && this.head > 0))
-            rows.unshift(
-                h_flex()
-                    .w_full()
-                    .justify_center()
-                    .child(
-                        this.button(
-                            t,
-                            'earlier',
-                            hidden > 0
-                                ? `Show earlier (${hidden})`
-                                : 'Show earlier',
-                            (_e, cx) => {
-                                if (hidden > 0) {
-                                    this.limit += PAGE;
-                                    cx.notify();
-                                    return;
-                                }
-                                cx.spawn(async (/** @type {any} */ cx) => {
-                                    await this.loadEarlier();
-                                    cx.notify();
-                                });
-                            },
-                        ),
-                    ),
-            );
 
         // Ctrl+F from anywhere in the chat (the box, the search box) opens the search, or goes back to it.
         return root

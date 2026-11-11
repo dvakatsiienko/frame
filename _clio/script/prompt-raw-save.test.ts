@@ -176,8 +176,8 @@ describe('wingNudge', () => {
 });
 
 describe('seatOf', () => {
-    function seatHome(mainPid: number, sessions: Record<number, string>) {
-        const home = mkdtempSync(join(tmpdir(), 'seat-'));
+    function threadHome(mainPid: number, sessions: Record<number, string>) {
+        const home = mkdtempSync(join(tmpdir(), 'thread-'));
         mkdirSync(join(home, '.local/state/clio'), { recursive: true });
         mkdirSync(join(home, '.claude/sessions'), { recursive: true });
         writeFileSync(
@@ -192,28 +192,28 @@ describe('seatOf', () => {
         return home;
     }
 
-    test('the main seat writes at the root', () => {
-        expect(seatOf(seatHome(10, { 10: '🦉 clio' }), 10)).toBe('');
+    test('the main thread writes at the root', () => {
+        expect(seatOf(threadHome(10, { 10: '🦉 clio' }), 10)).toBe('');
     });
 
     test.each([
         ['the desktop title', '🦉🪽 clio: wing 3'],
-        ['a herdr seat name', 'wing-3'],
+        ['a herdr thread name', 'wing-3'],
     ])('a wing by %s writes in its own folder', (_kind, name) => {
-        expect(seatOf(seatHome(10, { 11: name }), 11)).toBe('wing-3');
+        expect(seatOf(threadHome(10, { 11: name }), 11)).toBe('wing-3');
     });
 
     test.each([
         ['a plain fork', '🦉 clio (fork)'],
         ['a lane member', '🌗 🔧 codie: cli lane | FRM-383'],
     ])('%s keeps no log', (_kind, name) => {
-        expect(seatOf(seatHome(10, { 12: name }), 12)).toBeUndefined();
+        expect(seatOf(threadHome(10, { 12: name }), 12)).toBeUndefined();
     });
 });
 
 describe('the hook in a wing', () => {
     test('a wing prompt lands in the wing folder, never in main log', () => {
-        const home = mkdtempSync(join(tmpdir(), 'seat-hook-'));
+        const home = mkdtempSync(join(tmpdir(), 'thread-hook-'));
         const out = spawnSync(
             'node',
             [join(import.meta.dirname, 'prompt-raw-save.ts')],

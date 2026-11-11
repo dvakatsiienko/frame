@@ -545,6 +545,44 @@ EOF`,
         'a case of two patterns inside a substitution',
         'echo "$(case $a in x|y) true;; *) rm -rf ~;; esac)"',
     ],
+    // sixth sense round 1 on 9de26fa4: run for real in bash and zsh -f
+    [
+        'refused',
+        'reader',
+        "a case pattern's leading ( inside a substitution opens nothing",
+        'echo "$(case $a in (x) rm -rf ~;; esac)"',
+    ],
+    [
+        'refused',
+        'reader',
+        "a second pattern's leading ( after ;; opens nothing",
+        'echo "$(case $a in (x) true;; (y) rm -rf ~;; esac)"',
+    ],
+    [
+        'refused',
+        'reader',
+        'a subshell in a case body is still a subshell',
+        'case x in x) (rm -rf ~);; esac',
+    ],
+    [
+        'refused',
+        'reader',
+        'a single quote in a double-quoted ${…} hides nothing after it',
+        `echo "\${x:-'"'}"; rm -rf ~`,
+    ],
+    // round 2 on f808cbe1: zsh keeps the `'` literal and runs what follows
+    [
+        'refused',
+        'reader',
+        'a lone single quote in a double-quoted ${…} hides nothing in zsh',
+        `echo "\${x:-'a'b'}"; rm -rf ~`,
+    ],
+    [
+        'refused',
+        'reader',
+        'a quoted double quote in a double-quoted ${…} hides nothing in zsh',
+        `echo "\${x:-'"'"'}"; rm -rf ~`,
+    ],
     ['refused', 'reader', 'a head from an echo substitution', '$(echo rm) x'],
     [
         'refused',

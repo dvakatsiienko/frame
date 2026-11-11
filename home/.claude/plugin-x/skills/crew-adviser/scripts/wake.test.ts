@@ -131,6 +131,16 @@ console.log(JSON.stringify([s.offsets, s.lastWakeAt]));`;
     ]);
 });
 
+test('a wake that cannot reach crow leaves a failed line in harvest.log', async () => {
+    const fixture = home();
+    for (const server of servers.splice(0)) server.close();
+    await fixture.wake('main');
+    const log = join(fixture.state, 'harvest.log');
+    expect(existsSync(log) && readFileSync(log, 'utf8')).toMatch(
+        / main failed: cannot reach crow's socket/,
+    );
+});
+
 test('a skipped trigger names its thread and reason in harvest.log', async () => {
     const fixture = home();
     await fixture.wake('wing');

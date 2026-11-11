@@ -134,10 +134,10 @@ describe('tree-sync on a prompt', () => {
     });
 });
 
-describe('tree-sync seat', () => {
-    test('a wing named in the registry syncs its seat tree, whatever its session id', () => {
+describe('tree-sync thread', () => {
+    test('a wing named in the registry syncs its thread tree, whatever its session id', () => {
         const w = world();
-        const seat = w.addTree('clio-wing-2');
+        const thread = w.addTree('clio-wing-2');
         const sessions = mkdtempSync(join(tmpdir(), 'tree-sync-s-'));
         writeFileSync(
             join(sessions, '1.json'),
@@ -154,7 +154,7 @@ describe('tree-sync seat', () => {
             timeout: 10_000,
         });
         expect(out.stdout).toContain('tree synced');
-        expect(existsSync(join(seat, 'b.txt'))).toBe(true);
+        expect(existsSync(join(thread, 'b.txt'))).toBe(true);
     });
 });
 

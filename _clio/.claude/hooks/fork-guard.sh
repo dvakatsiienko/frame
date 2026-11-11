@@ -24,11 +24,11 @@ cc_pid() {
 
 me=$(cc_pid)
 main_pid=$(sed -n 's/^pid=//p' "$main_file" 2>/dev/null)
-# a dead main leaves the seat empty until a start fills it, so no wing's guard lifts in the gap
+# a dead main leaves the thread empty until a start fills it, so no wing's guard lifts in the gap
 is_main() { [ "$main_pid" = "$me" ]; }
 
-# a compact, a /clear, a known wing and a session her registry names a wing never take the seat, even an empty one
-takes_seat() {
+# a compact, a /clear, a known wing and a session her registry names a wing never take the thread, even an empty one
+takes_thread() {
 	is_main && return 0
 	[ -n "$session" ] && [ "$session" = "$(sed -n 's/^session=//p' "$main_file" 2>/dev/null)" ] && return 0
 	case "$source" in compact | clear) return 1 ;; esac
@@ -45,7 +45,7 @@ start)
 	entry=$(jq -r '[.kind // "", .name // ""] | @tsv' "${FORK_GUARD_SESSIONS:-$HOME/.claude/sessions}/$me.json" 2>/dev/null)
 	# crow and helga are parked sidecars, neither the main nor a wing
 	[[ $entry == bg$'\t'* ]] && exit 0
-	if takes_seat; then
+	if takes_thread; then
 		printf 'pid=%s\nsession=%s\n' "$me" "$session" >"$main_file"
 	else
 		# a fork's /compact starts it again; it keeps its one line

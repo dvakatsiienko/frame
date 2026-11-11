@@ -140,7 +140,7 @@ sync_tree() {
         GIT_COMMITTER_EMAIL=test-vm-go@localhost git commit-tree ${parent:+-p "$parent"} -m "test-vm-go $id" "$tree") || return
     # send-pack is the transport alone: a push into our own vm runs none of the repo's pre-push gates; its words print only on a failure.
     # refs/base/head holds a parent for the next push to negotiate against, or every run would send the whole history again;
-    # its own push after, best effort, since two seats moving it at once refuse each other
+    # its own push after, best effort, since two threads moving it at once refuse each other
     local pushed
     local ssh_command="ssh -F '$lima_home/$vm/ssh.config' -o BatchMode=yes -o ConnectTimeout=5"
     pushed=$(GIT_SSH_COMMAND=$ssh_command timeout "$deadline" git send-pack --force "lima-$vm:runs.git" "$commit:refs/runs/$id" 2>&1) || {

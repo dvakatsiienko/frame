@@ -19,16 +19,22 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and the chip leaves the moment the message's row reaches the transcript, where it draws as his message
   - and a thread that sat idle 5 s with the message never in its transcript drops the chip
   - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the box empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
+- ⬜ his messages sit in bubbles on the right, Claude's on the left (FRM-562)
+  - given «Your messages» in the chat settings is Bubbles, the default
+  - then his words sit in an accent-tinted bubble on the right, Claude's in a quiet bubble on the left, each at most 80 % of the width; Box, Tint and Bar draw as before
+  - decision: their bubbles, after shepherdr's chat (dima, 21:13)
 - ⬜ a big thread opens at once on its newest part
   - given a thread whose transcript is past 4 MB (clio's 56 MB, wing 1's 23 MB)
   - when dima opens its tab
   - then the newest messages draw within a moment (clio's: 3.9 s → 0.6 s to the first frame), and «Show earlier» at the top reads the next older part in above, his scroll place kept
   - decision: read on his ask, never all on open: the read of every slice, not the parse or the draw, took the time (2.1 s of 2.3 s)
-- ⬜ the chat scrolls smoothly in a long thread
-  - given a thread with 60 messages drawn
-  - when dima scrolls with the trackpad
-  - then only the messages within one view of what he reads lay out their text; the rest keep their measured height, so his place and «following» hold as before
-  - decision: the profile (22:13–22:18) put the cost in herdr laying out every markdown row on every wheel frame: the same tab ran 40–61 frames a second as markdown and 84–98 as plain text, while the mod's own work held at ~3 ms. Search draws every row, since it marks hits
+- ⬜ the chat scrolls smoothly in a long thread (FRM-562)
+  - given a thread with every loaded message in its chat
+  - when dima flings it with the trackpad
+  - then herdr's own list scrolls it and draws only the messages on screen; a wheel step redraws nothing, and every press in a message (fork, the right-click menu, a fold, copy, a prompt card, a 📂 file) still works
+  - decision: herdr's lazy list with each row's height measured out of sight (after shepherdr's chat): the old column drew all 60 rows every frame and redrew the mod on every wheel event; before, his 8 s fling spent 16.3 % of herdr's main thread drawing (21:27)
+  - decision: a list row may hold no handler (a link handler inside one blanks the whole list, probe 21:23), so a press acts by the row it landed on, and the fork by where across the row
+  - not checked: the fling after, by his hand
 - ✅ **bold** and *italic* in replies draw bold and italic
   - given the chat's font is Sans
   - then a reply's markdown bold reads bold (shot 1928)
@@ -116,9 +122,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ once he scrolls up, nothing but his own hand moves his view (FRM-562:W18, W19)
   - given he scrolled up in a thread's chat
   - when a reply, a tool line, a peer or plugin line, a turn end, a store change, a resize or a reload of the mod arrives
-  - then the text he reads stays where it is; only his scroll to the end or a click on «↓ Newest» brings him back to following
-  - and each thread keeps its place across a tab switch, and across a reload of the mod
-  - decision: «following» is a state he enters and leaves by his own scroll or click, never set by a redraw (scroll.js, one rule)
+  - then the text he reads stays where it is; only his scroll to the end or a click on the «↓ Newest» pill brings him back to following
+  - and the pill counts what arrived since he left the bottom: «↓ 3 new messages»
+  - and each thread keeps its place across a tab switch, and across a reload of the mod (by the message's transcript id)
+  - decision: «following» is a state he enters and leaves by his own scroll or click, never set by a redraw; the wheel only flips it (rows.js)
   - not checked: by his hand in his window
 - ✅ a resize keeps the chat on its newest message
   - given the chat is following, his own scroll at the end
@@ -157,9 +164,15 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given dima types «use `ls` here»
   - when the closing backtick lands
   - then `ls` draws as one monospace chip the caret skips and one delete removes, and the sent message reads «use `ls` here»; three backticks open a fence and make no chip
-- ⬜ a file link in a message opens
-  - when dima clicks a `file://` link in a message
-  - then the file opens in its app (a png in Preview, a folder in Finder); a web link opens in the browser as before
+- ⬜ a message between threads folds to one line (FRM-562)
+  - given another thread sends this one a message, or this one sends one with SendMessage
+  - then it draws as one line, «🦉 clio → ⚡ 🔧 codie: herdr lane · first words · 21:39», tinted, even with tool rows hidden and in a folded turn; a click opens its whole text below it, a second click folds it
+  - and a message that lands both queued mid-turn and at a turn start draws once
+  - decision: read from Claude Code's own record of the sender (`origin.kind: peer`), never from the message's text
+- ⬜ a file a reply links opens from a row under it
+  - given a reply links a file with a `file://` url
+  - then a «📂 <name>» row sits under the reply, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder); a web link in the text opens in the browser as before
+  - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
 - ⬜ the box is a stacked card with send in its corner
   - given the chat shows its box
   - then the text card, rounder and with a soft shadow, rests on a narrower card holding the model and effort pickers; a round ↑ send sits in the text card's bottom right, lit once text is typed, and the text uses the full width above one button-high bottom row
@@ -169,4 +182,4 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a long chat scrolled to its newest message
   - when a trackpad's momentum presses past the end, or a reply streams in
   - then nothing redraws for the wheel and the view stays pinned (probe: 157 overscroll events, 0 redraws, 15:02; shot 1605)
-  - decision: every row draws whole; drawing far rows as empty boxes looped a long message between 12 px and 1285 px and nearly froze herdr in wing 1 (15:26 probe)
+  - decision: a row's height comes from the measurer, never from the row drawn in the list: drawing far rows as empty boxes once looped a long message between 12 px and 1285 px and nearly froze herdr in wing 1 (15:26 probe)
