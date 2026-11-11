@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-10T22:18:00Z'
+updated_date: '2026-11-11T11:34:00Z'
 labels:
   - m
   - clio-main
@@ -1785,4 +1785,79 @@ PK-363:W818 (2026-11-10 01:57, dima): dont kill wing1
 PK-363:W819 (2026-11-10 02:25, dima): delete codie/FRM-551-vm-go-test
 PK-363:W820 (2026-11-10 02:28, dima): your flyway #5 — cleared? ❓
 PK-363:W821 (2026-11-10 20:58, dima): It is a mod slaying ticket? Maybe it is your ticket, not Wing 1? ❓
+
+PK-363:W875 (2026-11-11 00:38, dima): [Image #54] No, file a GitHub issue now. We are writing for humans.
+PK-363:W876 (2026-11-11 00:38, dima): also update all necessary places with your recent information. maybe you update some memories or something like this. update all necessary places about this knowledge now so no one dies anymore.
+PK-363:W877 (2026-11-11 00:38, dima): how do you expect this test important knowledge to survive until tomorrow? ❓
+PK-363:W878 (2026-11-11 00:38, dima): and there is another test i want to do. today at some point, i accidentally switched a layout in settings manually via a click by myself, and your thread was reset too. it happened during the boot today.
+PK-363:W879 (2026-11-11 00:38, dima): what i propose: you update all necessary places and file a ticket about this issue so maintainers of the Herdr desktop app know how to fix it. then you update Handoff and everything so you can potentially be killed. then i make this layout change and see how you survive.
+PK-363:W880 (2026-11-11 00:38, dima): if you survive, then it means something; but if you will die, i will not. i can actually respond to you via the script you told me.
+PK-363:W881 (2026-11-11 00:38, dima): how can you trace it? ❓
+
+PK-363:W882 (2026-11-11 00:54, dima): Stop wishkeeper Flow. It is not needed now.
+PK-363:W883 (2026-11-11 00:54, dima): why is wishkeeper Flow running so often? do you have some automated hook or what? ❓
+PK-363:W884 (2026-11-11 00:54, dima): it is a wishkeeper run. it gets executed too often. go measure how many times wishkeeper Flow ran redundantly during the last 2 hours, for example.
+
+PK-363:W885 (2026-11-11 00:56, dima): No, one siesta per hour is too rare.
+PK-363:W886 (2026-11-11 00:56, dima): wishkeeper is useful, but not when i ask you some plain questions, like "recent 10 messages", for example.
+PK-363:W887 (2026-11-11 00:56, dima): when i just chat, there is no need for wishkeeper.
+PK-363:W888 (2026-11-11 00:56, dima): as it is, wishkeeper is very useful, but it should run when something important is worth checking.
+PK-363:W889 (2026-11-11 00:56, dima): for example, when you do batches and make a lot of changes that are important to catch with wishkeeper.
+
+PK-363:W890 (2026-11-11 00:57, dima): yes, these take wishkeeper.
+PK-363:W891 (2026-11-11 00:57, dima): i stop you now? how to stop you properly in herder? clear? ❓
+
+PK-363:W822 (2026-11-11 13:30, dima): /clio:boot pm-revamp-halt. Boot as planned, and park.
+PK-363:W823 (2026-11-11 13:30, dima): start wing 1 as soon as you can and give it a question (it is for you too, but wing 1 answers).
+PK-363:W824 (2026-11-11 13:30, dima): we are at 96% weekly window currently.
+PK-363:W825 (2026-11-11 13:30, dima): yesterday fable 5.2 was released and i received 3 weekly fable-only resets.
+PK-363:W826 (2026-11-11 13:30, dima): so i wanted to burn window as much as possible, then do a reset and have free work done. there are a few catches:
+PK-363:W827 (2026-11-11 13:30, dima): the reset area: i wanted the reset to work for all models. but it seems to work only for fable.
+PK-363:W828 (2026-11-11 13:30, dima): what i assume and what i want: spent 100% fable-specific window (100% fable = 50% overall weekly), press reset fable, and get that 50% of weekly back to spend on opus 5.5 instead.
+PK-363:W829 (2026-11-11 13:30, dima): what i do not want: spent 100% fable plus 50% overall weekly (it is automatic) → reset → now fable is 0% but weekly still 50%.
+PK-363:W830 (2026-11-11 13:30, dima): what i did: yesterday i burned fable to 78% (fable meter) via two clios running fable 5.2 + 1 cli codie as fable 5.2, all mediums.
+PK-363:W831 (2026-11-11 13:30, dima): while it was burning, the overall weekly climbed to 96% (i started at ~46% overall weekly).
+PK-363:W832 (2026-11-11 13:30, dima): sometime after that i got a 4th real reset for the whole week (what i want 🎉).
+PK-363:W833 (2026-11-11 13:30, dima): and now i am confused how to act to save up on usage and do the most. this is a question to wing 1.
+PK-363:W834 (2026-11-11 13:30, dima): what is the most efficient move with the currently filled ctx and my 4 resets? ❓
+PK-363:W835 (2026-11-11 13:30, dima): reset fable? it will (i hope and want) give back ~39% of weekly, then burn it today and use real weekly? ❓
+PK-363:W836 (2026-11-11 13:30, dima): not reset fable (it's not 100%), burn remaining 4% weekly with opuses, then real weekly reset. this will work, but i do not like that i kind of went into the fable route, spent a lot via fable (fable is expensive), and now my weekly reset is less efficient.
+PK-363:W837 (2026-11-11 13:30, dima): what reset strat is currently best for me? propose. i want to get the most out of it. ❓
+PK-363:W838 (2026-11-11 13:30, dima): to main clio: no fable 5.2 today, everyone is medium. double check that fable 5.2 has not crept into some autostarting in settings, so you do not summon someone as fable 5.2 accidentally.
+PK-363:W839 (2026-11-11 13:30, dima): to main clio: no lanes until we settle where we are and plan properly.
+PK-363:W840 (2026-11-11 13:30, dima): to main clio: i want to stabilize herder today.
+PK-363:W841 (2026-11-11 13:30, dima): i want a pretty-looking herder today.
+PK-363:W842 (2026-11-11 13:30, dima): test out a few herder layouts i liked and borrow the best parts from them.
+PK-363:W843 (2026-11-11 13:30, dima): optionally, draw a design for herder today to make it pretty.
+PK-363:W844 (2026-11-11 13:30, dima): i want guard issues fixed once and for all. yesterday it got worse: now you ask me to confirm when you want to stop a thread. stop it. i want you to stop locking yourself out and ask me everything. yesterday wing 1 could not even resign a ticket for the whole 4 turns because of the guard. ticks in orbit MUST work for anything.
+PK-363:W845 (2026-11-11 13:30, dima): see what was done yesterday, analyze the issues from yesterday, and propose how and where to fix them. you told mods lane fix is planned as the next chunk, but i want it to be TRUE and no wasted time and effort doing the wrong thing.
+PK-363:W846 (2026-11-11 13:30, dima): help me move to herder and make it pretty.
+PK-363:W847 (2026-11-11 13:30, dima): i looked into OSS herder layouts and picked a few i like. i will show them. ask me. i will show layouts and looks.
+PK-363:W848 (2026-11-11 13:30, dima): i will also show you screenshots of what i liked in other people's layouts (OSS).
+PK-363:W849 (2026-11-11 13:30, dima): interview me on what i want out of herder.
+PK-363:W850 (2026-11-11 13:30, dima): propose: start a designer to draw a herder prototype in claude-design skill, or herder codie can make it pretty without a designer? ❓
+PK-363:W851 (2026-11-11 13:30, dima): is our designer setup compatible with drawing for herder? ❓
+PK-363:W852 (2026-11-11 13:30, dima): the looks, i think, are nonblocking: herder can implement chatter meanwhile.
+PK-363:W853 (2026-11-11 13:30, dima): chatter ticket: is it ready for dispatch? what did we not grill on? ❓
+PK-363:W854 (2026-11-11 13:30, dima): i worry about the framework and «pretty chat window» tech choice. yesterday half a day was spent on fixing chatter layout issues (very laggy) and other tweaks.
+PK-363:W855 (2026-11-11 13:30, dima): is using native chatter from scratch the correct decision? ❓
+PK-363:W856 (2026-11-11 13:30, dima): are you sure we cannot use some proper md rendering framework? or pull in any other tools to make chatter more powerful? ❓
+PK-363:W857 (2026-11-11 13:30, dima): for example, my text box prompt does not support rich text formatting, so bulleted and numbered lists are pasted off there, `` backticks not working, not all skills autocomplete.
+PK-363:W858 (2026-11-11 13:30, dima): for example, wisp: clio's plugins skill does not autocomplete (not good).
+PK-363:W859 (2026-11-11 13:30, dima): yesterday you made a few research passes on this topic and a few decisions were made. review, take another look. propose a weighed decision, consult with herder codie how to act better (herder codie should be active at this point already, i think).
+PK-363:W860 (2026-11-11 13:30, dima): plan: so main clio runs the mods lane (as soon as we decide, ideally sooner so we start burning weekly), then we plan herder moves and the herder lane starts.
+PK-363:W861 (2026-11-11 13:30, dima): main clio's evergreen is delegated to wing 1 after my reset question is answered (on my word).
+PK-363:W862 (2026-11-11 13:30, dima): to main clio: let's start the mods lane asap. i want you to review the plan for mods scope and promise that you will make ticks work so you stop asking me to print stuff into the thread.
+PK-363:W863 (2026-11-11 13:30, dima): you are not allowed to be unable to do stuff like delete/merge/sign.
+PK-363:W864 (2026-11-11 13:30, dima): yesterday you made me angry twice. do you want to make me angry today again? ❓
+PK-363:W865 (2026-11-11 13:30, dima): wing 1: solve my question about reset.
+PK-363:W866 (2026-11-11 13:30, dima): wing 1: review yesterday's incident with the killed main clio and wing 1 (main clio died twice). after the halt, me and main clio did probes. analyze them.
+PK-363:W867 (2026-11-11 13:30, dima): wing 1: tell what fixes are applied.
+PK-363:W868 (2026-11-11 13:30, dima): wing 1: tell what is not protected yet and how to protect it.
+PK-363:W869 (2026-11-11 13:30, dima): wing 1: what gaps are present? ❓
+PK-363:W870 (2026-11-11 13:30, dima): i want no one to die randomly, especially main coordinators! (all of them)
+PK-363:W871 (2026-11-11 13:30, dima): yesterday i asked main clio to do a retro about comms issues, and clio spawned 3 retros. are they results still present on disc, and are they processed and folded? ❓
+PK-363:W872 (2026-11-11 13:30, dima): clio made a few folds for the tilde ticket out of those retros. what was folded? ❓
+PK-363:W873 (2026-11-11 13:30, dima): then wing 1 parks and waits for my wants.
+PK-363:W874 (2026-11-11 13:30, dima): my weekly: at 4%, let's plan first. then, when 100% is reached, i press «reset» type suggested by wing 1.
 <!-- SECTION:NOTES:END -->
