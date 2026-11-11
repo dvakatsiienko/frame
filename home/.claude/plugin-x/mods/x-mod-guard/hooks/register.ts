@@ -1020,7 +1020,15 @@ const guardedOf = (command: string) =>
     spaced(command.replace(/\s#\s*dima-ok:.*$/, ''));
 const quotesCommand = (command: string) => (t: Tick) =>
     t.targets.some((q) => spaced(q) === guardedOf(command));
-type Tick = { id: string; text: string; targets: string[]; at: number };
+// markAt: the time x-mod-stash marked the press's ask, so spending the press spends the mark that stands for it once
+// x-herdr-deck prunes the press (12b's live click: his one press ran the brake twice)
+type Tick = {
+    id: string;
+    text: string;
+    targets: string[];
+    at: number;
+    markAt?: number;
+};
 // his presses on x-herdr-deck for this session (FRM-544 slice 1, reversing FRM-552's decision 4 on his word): the ticks-write
 // rule keeps every seat's tool call out of that folder, so only x-herdr-deck writes it; a file that cannot be read is no tick
 async function herdrTicks($: EngineInterface): Promise<Tick[]> {
@@ -1036,14 +1044,18 @@ async function herdrTicks($: EngineInterface): Promise<Tick[]> {
     const { value: orbit } = await $.state
         .get(STASH_ORBIT)
         .catch(() => ({ value: undefined }));
-    const pressed = pressTicks(text).filter((t) =>
-        orbit?.asks.some(
+    const pressed = pressTicks(text).flatMap((t) => {
+        const a = orbit?.asks.find(
             (a) =>
                 `herdr:${a.id}` === t.id &&
                 a.text === t.text &&
                 a.mark === 'accepted',
-        ),
-    );
+        );
+        if (!a) return [];
+        return typeof a.markedAt === 'number'
+            ? [{ ...t, markAt: a.markedAt }]
+            : [t];
+    });
     // x-herdr-deck prunes a press from the file once x-mod-stash has taken it, so his next press there drops it: the
     // accepted mark x-mod-stash kept from it stands for the press, at the time it was marked (wing 1's o13, 19:08)
     const marked = (orbit?.asks ?? []).flatMap((a) =>
@@ -1092,6 +1104,10 @@ async function tickFor(
     const ticks = [...seatTicks, ...yes, ...(await herdrTicks($))];
     const { value: spent = [] } = await $.state.get(SPENT);
     const now = await $.clock.now();
+    const keys = (t: Tick) =>
+        [t.at, t.markAt]
+            .filter((at) => at !== undefined)
+            .map((at) => `${t.id}@${at}:${scope(t)}`);
     const tick = [...ticks]
         .reverse()
         .find(
@@ -1099,10 +1115,9 @@ async function tickFor(
                 now - t.at <= TICK_MS &&
                 t.at <= now &&
                 covers(t) &&
-                !spent.includes(`${t.id}@${t.at}:${scope(t)}`) &&
-                !spends.includes(`${t.id}@${t.at}:${scope(t)}`),
+                !keys(t).some((k) => spent.includes(k) || spends.includes(k)),
         );
-    if (tick) spends.push(`${tick.id}@${tick.at}:${scope(tick)}`);
+    if (tick) spends.push(...keys(tick));
     return tick;
 }
 // his bare yes under the one guarded ask his seat's orbit added since his last typed prompt is his tick on it (FRM-574

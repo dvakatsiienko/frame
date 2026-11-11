@@ -1366,6 +1366,30 @@ for (const [why, ask, line, other] of [
         ]).toEqual([undefined, !isSign, true, isSign ? 2 : 1]);
     });
 
+    // 12b's live click, 21:51: his one press ran the brake twice: x-herdr-deck pruned the spent press, and x-mod-stash's
+    // mark of it, at its own time, counted as a second press
+    test(`a x-herdr-deck press on ${why} pruned after its run counts no second time as its mark${isSign ? ', a retry too' : ''}`, async ($, on) => {
+        const lines = [press(ask, NOW - 1000)];
+        const p = JSON.parse(press(ask)) as { id: string; text: string };
+        const { ran } = pressWorld(on, lines, [
+            {
+                id: p.id,
+                isHerdrMark: true,
+                mark: 'accepted',
+                markedAt: NOW - 1,
+                text: p.text,
+            },
+        ]);
+        const first = await bash($, line);
+        lines.splice(0);
+        const second = await bash($, line);
+        expect([first.deny, second.deny !== undefined, ran.length]).toEqual([
+            undefined,
+            !isSign,
+            isSign ? 2 : 1,
+        ]);
+    });
+
     test(`a x-herdr-deck press on ${why} older than 2 h proves nothing`, async ($, on) => {
         const { clock, ran } = pressWorld(on, [press(ask)]);
         await clock.advance(2 * 60 * 60 * 1000 + 1);
