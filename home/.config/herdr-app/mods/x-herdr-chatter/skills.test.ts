@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, test } from 'vitest';
 
-import { loadableSkills, skillHead } from './skills.js';
+import { loadableSkills, menuMatches, skillHead } from './skills.js';
 
 const fs = {
     list: (dir: string) => readdir(dir).catch((): string[] => []),
@@ -90,5 +90,28 @@ describe('a SKILL.md head', () => {
                 '---\nname: dna\ndescription: >-\n  Load as step 0\n  of a member.\n---\n',
             ),
         ).toEqual({ description: 'Load as step 0 of a member.', name: 'dna' });
+    });
+});
+
+describe('the / menu matches either half of a skill name', () => {
+    const all: [string, string][] = [
+        ['bootstrap-x', ''],
+        ['reboot', ''],
+        ['clio:boot', 'start a coordinator'],
+        ['x:crew-codie', ''],
+    ];
+
+    test('«boot» lists clio:boot right after a name that starts with it', () => {
+        expect(menuMatches(all, 'boot').map(([n]) => n)).toEqual([
+            'bootstrap-x',
+            'clio:boot',
+            'reboot',
+        ]);
+    });
+
+    test('a prefix of the skill half finds it', () => {
+        expect(menuMatches(all, 'crew').map(([n]) => n)).toEqual([
+            'x:crew-codie',
+        ]);
     });
 });

@@ -721,9 +721,6 @@ export default class FleetBoard extends View {
                                     .border_color(t.border)
                                     .bg(t.background)
                                     .cursor_text()
-                                    .tooltip(
-                                        'your steer, sent with 🛎️ tick or 🔁 replay',
-                                    )
                                     .on_mouse_down('left', (_e, cx) =>
                                         cx.stop_propagation(),
                                     )
@@ -743,9 +740,6 @@ export default class FleetBoard extends View {
                         .id(`sent-steer-${key}`)
                         .text_size(SIZE.secondary)
                         .text_color(t.muted)
-                        .tooltip(
-                            'your steer, sent; it leaves once the thread takes it',
-                        )
                         .child(
                             TextView.markdown(
                                 `sent-steer-md-${key}`,

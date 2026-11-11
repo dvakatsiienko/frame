@@ -66,7 +66,7 @@ import { openTarget } from './links.js';
 import { listLines, withMarkers } from './lists.js';
 import * as ask from './question.js';
 import { STUCK_PX, afterReflow, afterWheel, keptFirst } from './scroll.js';
-import { loadableSkills } from './skills.js';
+import { loadableSkills, menuMatches } from './skills.js';
 import { wholeLines } from './slice.js';
 import {
     SYSTEM_MODES,
@@ -2013,18 +2013,7 @@ export default class ClaudeChat extends View {
                         this.firstShown = null;
                         this.session = session;
                         this.file = file;
-                        // the plugin skills enabled for its folder join the / menu (skills.js); its listing misses them
-                        this.pluginSkills = new Map();
-                        if (!where.container)
-                            loadableSkills(skillFs, {
-                                cwd: session.cwd,
-                                home: home(),
-                            })
-                                .then((found) => {
-                                    if (this.session === session)
-                                        this.pluginSkills = found;
-                                })
-                                .catch(() => {});
+                        this.ensurePluginSkills();
                         this.problem = file
                             ? null
                             : 'No transcript yet: say something.';
@@ -2482,10 +2471,26 @@ export default class ClaudeChat extends View {
         }
     }
 
+    // The plugin skills enabled for the seat's folder join the / menu (skills.js), read once per session; a mod reload
+    // restores the session without adopting it again, so the menu asks for them itself
+    ensurePluginSkills() {
+        const session = this.session;
+        if (!session?.cwd || this.where?.container) return;
+        if (this.pluginSkillsOf === session.sessionId) return;
+        this.pluginSkillsOf = session.sessionId;
+        this.pluginSkills = new Map();
+        loadableSkills(skillFs, { cwd: session.cwd, home: home() })
+            .then((found) => {
+                if (this.session === session) this.pluginSkills = found;
+            })
+            .catch(() => {});
+    }
+
     // The / menu: Claude's commands and this session's skills matching what's typed after "/",
     // names that start with it first.
     matches() {
         if (!this.slash || this.menuOff) return [];
+        this.ensurePluginSkills();
         const q = this.slash.q.toLowerCase();
         const known = new Set(COMMANDS.map(([name]) => name));
         const all = [
@@ -2495,10 +2500,7 @@ export default class ClaudeChat extends View {
                 ([name]) => !known.has(name) && !this.skills.has(name),
             ),
         ];
-        return [
-            ...all.filter(([n]) => n.startsWith(q)),
-            ...all.filter(([n]) => !n.startsWith(q) && n.includes(q)),
-        ].slice(0, 8);
+        return menuMatches(all, q);
     }
 
     // Puts the picked name in place of the "/word" being typed (Enter's newline dropped), with

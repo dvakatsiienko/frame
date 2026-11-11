@@ -6,6 +6,23 @@
  * @typedef {{ read: (path: string) => Promise<string | null>, list: (dir: string) => Promise<string[]> }} SkillFs
  */
 
+/**
+ * the / menu's matches for what follows the «/»: a name that starts with it, then one whose part after a colon starts
+ * with it (he types «boot» for `clio:boot`), then one that holds it anywhere; at most 8
+ * @param {[string, string][]} all
+ * @param {string} q
+ */
+export function menuMatches(all, q) {
+    const half = (/** @type {string} */ n) =>
+        n.includes(':') && n.split(':').slice(1).join(':').startsWith(q);
+    const first = all.filter(([n]) => n.startsWith(q));
+    const second = all.filter(([n]) => !n.startsWith(q) && half(n));
+    const third = all.filter(
+        ([n]) => !n.startsWith(q) && !half(n) && n.includes(q),
+    );
+    return [...first, ...second, ...third].slice(0, 8);
+}
+
 /** @param {string | null} text */
 const json = (text) => {
     try {
