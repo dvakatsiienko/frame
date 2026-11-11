@@ -2402,7 +2402,7 @@ async function absorbMarks($: EngineInterface) {
                     (a.mark === 'accepted' || !marks[a.id])
                 )
                     retracted.push(a);
-                // his 🛎 from herdr gets the tick record a seat-board 🛎 gets: fleet-board prunes the press once read
+                // his 🛎 from herdr gets the tick record a seat-board 🛎 gets: x-herdr-deck prunes the press once read
                 // and the turn that takes the ask clears its mark, so the record is what x-mod-guard honours for 2 h
                 // (clio's o49 at 19:30, wing 1's o13 at 19:08)
                 if (

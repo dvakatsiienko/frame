@@ -1005,8 +1005,8 @@ const guardedOf = (command: string) =>
 const quotesCommand = (command: string) => (t: Tick) =>
     t.targets.some((q) => spaced(q) === guardedOf(command));
 type Tick = { id: string; text: string; targets: string[]; at: number };
-// his presses on fleet-board for this session (FRM-544 slice 1, reversing FRM-552's decision 4 on his word): the ticks-write
-// rule keeps every seat's tool call out of that folder, so only fleet-board writes it; a file that cannot be read is no tick
+// his presses on x-herdr-deck for this session (FRM-544 slice 1, reversing FRM-552's decision 4 on his word): the ticks-write
+// rule keeps every seat's tool call out of that folder, so only x-herdr-deck writes it; a file that cannot be read is no tick
 async function herdrTicks($: EngineInterface): Promise<Tick[]> {
     const sid = await $.session.id().catch(() => undefined);
     const home = await $.env.get('HOME').catch(() => undefined);
@@ -1028,7 +1028,7 @@ async function herdrTicks($: EngineInterface): Promise<Tick[]> {
                 a.mark === 'accepted',
         ),
     );
-    // fleet-board prunes a press from the file once x-mod-stash has taken it, so his next press there drops it: the
+    // x-herdr-deck prunes a press from the file once x-mod-stash has taken it, so his next press there drops it: the
     // accepted mark x-mod-stash kept from it stands for the press, at the time it was marked (wing 1's o13, 19:08)
     const marked = (orbit?.asks ?? []).flatMap((a) =>
         a.mark === 'accepted' &&

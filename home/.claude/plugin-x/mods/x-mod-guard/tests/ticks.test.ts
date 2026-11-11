@@ -13,7 +13,7 @@ type Tick = { at: number; id: string; targets: string[]; text: string };
 
 // `body` is the ticket's current description as linear holds it; none = linear cannot be read
 // cat: what a `cat` of the body file prints, when the hook's own read cannot reach it
-// asks: the seat's own orbit asks, x-mod-stash's `$.state` orbit, which a fleet-board press must match
+// asks: the seat's own orbit asks, x-mod-stash's `$.state` orbit, which a x-herdr-deck press must match
 function world(
     on: On,
     ticks: Tick[] = [],
@@ -1156,7 +1156,7 @@ test('the 15:24 replay: a pasted «sign FRM-544 ← …» and a typed «sign FRM
     expect([results, ran]).toEqual([[false, false, false, false], writes]);
 });
 
-// FRM-544 slice 1: fleet-board writes his presses to the ticks folder, and with every seat's write fenced out the guard
+// FRM-544 slice 1: x-herdr-deck writes his presses to the ticks folder, and with every seat's write fenced out the guard
 // reads a press there as his tick
 const TICKS_FENCED = (r: { deny?: string }) =>
     (r.deny ?? '').includes("a seat's write would forge one");
@@ -1325,7 +1325,7 @@ for (const [why, ask, line, other] of [
 ] as const) {
     // a sign covers its ticket's writes for 2 h (wing 1, 19:14); a merge or a command runs once
     const isSign = why === 'a sign ask';
-    test(`a fleet-board press on ${why} runs its target${isSign ? ', a retry too' : ' once'}`, async ($, on) => {
+    test(`a x-herdr-deck press on ${why} runs its target${isSign ? ', a retry too' : ' once'}`, async ($, on) => {
         const { ran } = pressWorld(on, [press(ask)]);
         const first = await bash($, line);
         const second = await bash($, line);
@@ -1338,7 +1338,7 @@ for (const [why, ask, line, other] of [
         ]).toEqual([undefined, !isSign, true, isSign ? 2 : 1]);
     });
 
-    test(`a fleet-board press on ${why} older than 2 h proves nothing`, async ($, on) => {
+    test(`a x-herdr-deck press on ${why} older than 2 h proves nothing`, async ($, on) => {
         const { clock, ran } = pressWorld(on, [press(ask)]);
         await clock.advance(2 * 60 * 60 * 1000 + 1);
         expect([(await bash($, line)).deny !== undefined, ran]).toEqual([
@@ -1366,7 +1366,7 @@ test('a press with no ask text proves nothing', async ($, on) => {
     expect([r.deny !== undefined, ran]).toEqual([true, []]);
 });
 
-// wing 1's o13, 19:08: fleet-board prunes a press x-mod-stash has taken, so his next press there drops it from the file;
+// wing 1's o13, 19:08: x-herdr-deck prunes a press x-mod-stash has taken, so his next press there drops it from the file;
 // the accepted mark x-mod-stash kept from it stands for it, at the time it was marked
 const SIGN_ASK_1 = '✍️ sign FRM-1: a small ticket';
 const herdrMarked = (markedAt: number, isHerdrMark = true) => [
@@ -1440,7 +1440,7 @@ for (const [why, asks] of [
     ],
     ["the seat's orbit holds no such ask", []],
 ] as const)
-    test(`a fleet-board press proves nothing when ${why}`, async ($, on) => {
+    test(`a x-herdr-deck press proves nothing when ${why}`, async ($, on) => {
         const { ran } = pressWorld(on, [press(MIRROR_ASK)], [...asks]);
         expect([(await bash($, MIRROR)).deny !== undefined, ran]).toEqual([
             true,
@@ -1475,7 +1475,7 @@ for (const line of [
     'git check-ignore -v home/.claude/shelf/orbit-ticks/x.jsonl',
     'git ls-files home/.claude/shelf/orbit-ticks',
     'git log --oneline -- home/.claude/shelf/orbit-ticks',
-    'cat home/.config/herdr-app/mods/fleet-board/orbit-ticks.ts',
+    'cat home/.config/herdr-app/mods/x-herdr-deck/orbit-ticks.ts',
     'jq . ~/.claude/plugins/store/x-mod-stash_inline-99d499f0f4e0.json',
     // replay 18:50: a program fills the terminal a typer aims at, or a herdr call that types nothing; real lines
     'T=$(hc run --bg --no-parent --no-notify --name codie-tabprobe --json -- cat | jq -r .address); hc keys $T h i',

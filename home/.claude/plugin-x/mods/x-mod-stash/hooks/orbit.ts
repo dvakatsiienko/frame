@@ -218,7 +218,7 @@ export const SIGN_ASK =
     /(?:^|\s)✍️ sign ((?:FRM|BYT)-\d+(?:(?:,\s*|\s+and\s+|\s+)(?:FRM|BYT)-\d+)*):/u;
 // twin end
 // an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command; published as
-// `isGated` beside the ask, so fleet-board draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
+// `isGated` beside the ask, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
 export const isGuardGated = (text: string) =>
     /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
         text,

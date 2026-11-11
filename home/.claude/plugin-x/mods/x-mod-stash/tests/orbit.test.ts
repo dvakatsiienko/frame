@@ -2336,7 +2336,7 @@ test('the link rides the ask a glide card draws from the store', async ($, on) =
     ).toBe('https://github.com/x/y/pull/7');
 });
 
-// FRM-544 slice 1: fleet-board draws the gated mark the stash publishes, never its own copy of the pattern
+// FRM-544 slice 1: x-herdr-deck draws the gated mark the stash publishes, never its own copy of the pattern
 test('a gated ask carries isGated in the store, a plain ask none', async ($, on) => {
     const w = world(on);
     await start($);
@@ -2474,7 +2474,7 @@ test('a herdr replay after a desktop tick takes it back, its tick record with it
     ]).toEqual([false, 0]);
 });
 
-// clio's o49 at 19:30: fleet-board prunes a press once read and the turn that takes the ask clears its mark, so a herdr
+// clio's o49 at 19:30: x-herdr-deck prunes a press once read and the turn that takes the ask clears its mark, so a herdr
 // 🛎 writes the tick record a seat-board 🛎 writes, which x-mod-guard honours for 2 h
 test('a herdr tick writes the tick record a seat-board tick writes', async ($, on) => {
     const files: Record<string, string> = {};
@@ -5534,7 +5534,7 @@ test('orbit switched off adds no first-prompt sign ask', async ($, on) => {
     );
 });
 
-// FRM-574 rider, PK-363:W934: his untick on fleet-board takes back a tick the stash already read, and a tick after it
+// FRM-574 rider, PK-363:W934: his untick on x-herdr-deck takes back a tick the stash already read, and a tick after it
 // marks the ask again
 test('exit 12: a herdr untick after a read tick leaves the next turn no mark, and a tick after it marks again', async ($, on) => {
     const files: Record<string, string> = {};

@@ -28,7 +28,7 @@ two sessions, A and B, in one checkout.
 - ✅ dima's tick passes a held file for the asking session (FRM-544 slice 2d)
   - makes: a `pass:<B>:<path>` key in this store, and a `passed:<A>:<B>:<path>` line for the holder
   - given A holds `x.ts` and B's refused edit raised an ask quoting `/repo/x.ts` in one backtick span (`~/…` and a linked folder resolve)
-  - when dima ticks it, in orbit or on fleet-board, within 2 h
+  - when dima ticks it, in orbit or on x-herdr-deck, within 2 h
   - then B's edits of `x.ts` go through until B's next commit through Bash or its turn's end, and B takes no hold of its own
   - then A's next prompt carries one line naming B and the file; the hold stays A's for every other session
   - then the tick is spent: after the pass ends, B is refused again until a new tick; a tick quoting another file, or only prose, older than 2 h or stamped ahead of now opens nothing

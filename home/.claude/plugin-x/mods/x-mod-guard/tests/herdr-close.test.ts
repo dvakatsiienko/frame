@@ -464,11 +464,11 @@ for (const [why, line, overlays] of [
     });
 
 for (const [line, overlays] of [
-    ['herdr-app do mod.open --name fleet-board', []],
-    ['herdr-app do mod.open --name fleet-board', ['fleet-board']],
+    ['herdr-app do mod.open --name x-herdr-deck', []],
+    ['herdr-app do mod.open --name x-herdr-deck', ['x-herdr-deck']],
     [
-        `herdr-app do overlay.close '{"id":"fleet-board"}'`,
-        [{ name: 'fleet-board' }],
+        `herdr-app do overlay.close '{"id":"x-herdr-deck"}'`,
+        [{ name: 'x-herdr-deck' }],
     ],
 ] as const)
     test(`an overlay close or toggle herdr can answer for runs: ${line} with ${JSON.stringify(overlays)}`, async ($, on) => {

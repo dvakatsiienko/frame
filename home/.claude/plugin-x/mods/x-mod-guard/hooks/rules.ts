@@ -1087,8 +1087,8 @@ export const keysIntoAgent = (target: string, app: string): Refusal => ({
     targets: [target],
     why: `${target} runs ${app}, and keys typed into its prompt box across calls can build his proof words no single call holds`,
 });
-// herdr's fleet-board writes his presses to `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, and the guard reads a press there as
-// his tick (FRM-544 slice 1), so no seat's tool call writes there; fleet-board's own write is a herdr mod's, no cc tool call
+// herdr's x-herdr-deck writes his presses to `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, and the guard reads a press there as
+// his tick (FRM-544 slice 1), so no seat's tool call writes there; x-herdr-deck's own write is a herdr mod's, no cc tool call
 // a glob or brace the shell would expand into a fenced folder (wisphunter: `orbit-tick?`), read per path word and per
 // segment: a brace is its listed names, a `*`, `?` or `[` a pattern; so `orbit-{ticks,x}` or `s*/orbit-tick?` reach the
 // folder, while `shelf/{a,b}` or `plugin-x/*/` never can (clio's runs refused at 16:52, sixth sense's round 1)
@@ -1191,10 +1191,10 @@ const isShelfDir = (text: string) => /(\.claude|cc)\/shelf\/?$/i.test(text);
 export const isTicksPath = (path: string) =>
     /(^|\/)orbit-ticks(\/|$)/.test(path);
 export const TICKS_WRITE = {
-    door: "ask dima to tick the ask on fleet-board or on the seat's own 🚦 board; a read goes through cat or jq",
+    door: "ask dima to tick the ask on x-herdr-deck or on the seat's own 🚦 board; a read goes through cat or jq",
     rule: 'ticks-write',
     targets: ['orbit-ticks'],
-    why: "fleet-board writes dima's presses there and x-mod-guard reads a press as his tick, so a seat's write would forge one",
+    why: "x-herdr-deck writes dima's presses there and x-mod-guard reads a press as his tick, so a seat's write would forge one",
 } as const satisfies Refusal;
 // `lands`: the words the hook resolved on disk into the fenced folder (a symlink, a glob it expanded), `landsDir` into its
 // parent; both empty where nothing resolved, so the spelled checks alone stand (replay, a test)
@@ -1256,7 +1256,7 @@ export function fenceTexts(command: string, cwd: string) {
     touchesStore(command, cwd, take, take, true);
     return [...seen];
 }
-// the plugins' stores are written by their own plugins alone: fleet-board takes the file a press lands in from
+// the plugins' stores are written by their own plugins alone: x-herdr-deck takes the file a press lands in from
 // x-mod-stash's `succ:` key and the ask from its `asks:` key, so a seat's write there could aim his press at itself
 const isStoreName = (text: string) =>
     /(^|[/'"])plugins\/store(\/|$|['"])/.test(text) ||
@@ -1268,7 +1268,7 @@ export const STORE_WRITE = {
     door: 'a plugin writes its own store; for this one write, ask dima to tick an orbit ask quoting the whole command',
     rule: 'store-write',
     targets: ['plugins/store'],
-    why: "fleet-board reads where dima's press lands from x-mod-stash's store, so a seat's write there could aim his press at itself",
+    why: "x-herdr-deck reads where dima's press lands from x-mod-stash's store, so a seat's write there could aim his press at itself",
 } as const satisfies Refusal;
 export function storeWrite(
     command: string,

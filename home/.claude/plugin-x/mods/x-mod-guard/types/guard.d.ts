@@ -35,13 +35,13 @@ declare module 'claude-code' {
                 targets: string[];
                 at: number;
             }[];
-            // the session's own asks; a fleet-board press counts only on one he accepted here
+            // the session's own asks; a x-herdr-deck press counts only on one he accepted here
             orbit: {
                 asks: {
                     id: string;
                     text: string;
                     mark?: string;
-                    // a mark read off his fleet-board press, and when it was made
+                    // a mark read off his x-herdr-deck press, and when it was made
                     isHerdrMark?: boolean;
                     markedAt?: number;
                     // answered: a bare yes of his counts only while the ask is still open
