@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T19:40:00Z'
+updated_date: '2026-11-11T19:57:00Z'
 labels:
   - m
   - clio-main
@@ -2067,4 +2067,8 @@ PK-363:W1067 (2026-11-11 21:03, dima): i write you from the c desktop app. (cont
 PK-363:W1073 (2026-11-11 21:39, dima, o80 steer): tell what and where to click, lets solve now. (context, not dima's words: the steer's own time is not in its raw; stamped with the 21:39 chore time because no orbit-log time was found for it.)
 PK-363:W1074 (2026-11-11 21:39, dima): an overall ask to you and to codie (the herdr codie): since we are building almost from scratch, don't just copy and pull everything blindly. do it thoughtfully. along with copying implementations, look for smart solutions in both UX/UI terms and overall, and try to make things pretty and working well right away. we are not doing a quick implementation. i want proper solutions in terms of UI/UX and architecture as well. (context, not dima's words: "codie" is the herdr lane member, as written in the raw.)
 PK-363:W1075 (2026-11-11 21:39, dima): how do you think about it? should an architectural question be raised now, or is it not a good time, or is it early or redundant? ❓
+
+PK-363:W1076 (2026-11-11 21:43, dima): yes, drift. the 🔧 codie's question was already in my orbit, and my 🔔 line repeated it. from now on, only the orbit ask. (context, not dima's words: "yes, drift" answers clio's question on the 🔔 lines; the 🔧 line is codie's question; the steer time is the 2143 chore time, since the raw has no time for it.)
+PK-363:W1077 (2026-11-11 21:43, dima): why did it drift? how to solve? did the silent message system stop working? i thought we finished it. ❓ (context, not dima's words: a question that follows W1076.)
+PK-363:W1078 (2026-11-11 21:43, dima): design and architecture. maybe parked tails lane codie can help? ❓ (context, not dima's words: "design and architecture" is a topic on its own line in the raw; "tails" as written, meaning the parked lanes.)
 <!-- SECTION:NOTES:END -->
