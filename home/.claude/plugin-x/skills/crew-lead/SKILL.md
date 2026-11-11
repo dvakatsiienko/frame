@@ -30,14 +30,15 @@ the split is **disposable vs watchable**, never research vs code.
 
 - **subagent, fork, worktree agent** — disposable, inside the coordinator: `x:crew-subagent`.
 - **a seat** — a real cc session, on whichever surface runs it. the base is cc native and holds on every surface: the `claude` line in § preflight, the argv; a surface only puts its head before that line and its tab, find and stop steps after it
+- **`claude --bg`**, cc native, no surface: survives a coordinator reset, herdr shows it only by an attach pane; head `cd <repo> && claude --bg`, a quick lane adds `--settings '{"worktree":{"bgIsolation":"none"}}'` before the prompt; facts: [spawn-mechanics.md](references/spawn-mechanics.md) § 5
 - **the surfaces**, one file each, read before a summon on it:
   - **herdr desktop, the default**: [references/surface-herdr-desktop.md](references/surface-herdr-desktop.md) (dima, 2026-11-10: «Herdr's native way is first»; «I want you to summon everyone in Herdr's native way»)
-  - **claude desktop, the backup**: [references/surface-claude-desktop.md](references/surface-claude-desktop.md), the desktop thread and `--bg`; a summon there says why to dima
-  - a new harness gets its own `surface-<name>.md` here and a line in this list; the default moves by editing this list
-- **everyone is summoned in herdr, the mods codie and clio's wings too** (dima, 2026-11-11: «now we're in Herdr so everyone is in Herdr»)
+  - **claude desktop, the backup**: [references/surface-claude-desktop.md](references/surface-claude-desktop.md), the desktop thread; a summon there says why to dima
+  - a new harness: its own `surface-<name>.md` and a line here, which also names the default
+- **everyone is summoned in herdr, the mods codie and clio's wings too** (dima, 2026-11-11: «Everyone gets summoned in Herdr. The desktop app fallback was when I was running everyone in the Claude desktop app but now we're in Herdr so everyone is in Herdr»)
   - a mods lane is a quick lane, on main in dima's checkout, never a worktree or a pr, so he sees each mod change live, unless he asks for a stack (it needs prs); its sixth sense is optional, his call per lane (dima, 2026-10-27)
 - **cloud** (`claude --cloud`) — codie on an anthropic vm: survives the mac sleeping, the cloud credit pays first, carries nothing of ours, cannot message back. the procedure is `x:crew-cloud`.
-- **`/fork [prompt]`** (dima's door, his side research too) copies this conversation into a new background session; reach for it when the job needs this thread's context and the brief would be longer than the context it replaces. the desktop's **side chat** (`/btw`) opened from clio's tab is a live fork, fork-guard's banner and all; opened from a fork's tab it is a read-only copy that fires no hooks and sends nothing, its keepers reaching the main by dima's paste (both proven 2026-10-27).
+- **`/fork [prompt]`** (dima's door) copies this conversation into a new background session; reach for it when a brief would be longer than the context it replaces. the desktop's **side chat** (`/btw`) opened from clio's tab is a live fork, fork-guard's banner and all; opened from a fork's tab it is a read-only copy that fires no hooks and sends nothing, its keepers reaching the main by dima's paste (both proven 2026-10-27).
 
 ### pick-ups and refreshes
 
@@ -57,6 +58,7 @@ the mechanical steps run as one: `x brief summon "<command>"` refuses a skipped 
 - 🚫 **a running member's model never switches** (it re-reads the history uncached, model-cards' `/model` line); only on dima's word for that session (2026-10-30: «It is a banned move»); a repeat earns a deny rule
 - **reuse or summon** — an idle member revives by message, context intact; [models.md](models.md) § summon or reuse holds the order; a summon or a parallel lane says why in its brief; one sixth sense a lane, reused; next side lane at «final», a trial
 - **trust key** — a summon reads its exact folder in `~/.claude.json` (`projects[<path>].hasTrustDialogAccepted`), never a trusted parent; a new summon home gets the key in one command, `jq … ~/.claude.json > tmp && mv tmp ~/.claude.json`, since every live session writes that file; never a `cp` from an older copy.
+- **spare age**, `--bg` only — a `--bg` summon claims a pre-warmed `claude bg-spare`; a day-old one booted codie without the root `AGENTS.md`, so a day old → `claude daemon stop --keep-workers`; the brief's «name your loaded AGENTS.md paths» line is the belt.
 - **app essentials** — the target app passes `node ~/projects/bytes/script/apps-essentials.ts --app <app>` (`x:app-setup-essentials`); a red row is filled before the summon, or the brief says which row codie fills first. a 🟡 row rides the brief too, after the app's wisps.
 - **tier and cwd** — code, a repo, a real filesystem ⇒ a real session in a herdr pane, `--cwd <target repo>`: its stack derives from that cwd. a side-lane codie makes its tree by `x:crew-dna` (inference for a pane codie: its first reply names its `pwd`).
 - **the summon word** — dima's pick of signed chunks in `clio:shape-lane-dispatch` is the summon; no second ask (the contract: clio's `craft-fleet-flow` § lane init). no sealed exit lines in the spec, no summon. codie gets a sixth sense by default; a quick lane's pick says sixth sense yes or no, and dima says himself when he wants none elsewhere. freebies and dima-mode codies get no sixth sense.

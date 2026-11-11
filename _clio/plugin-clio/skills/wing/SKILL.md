@@ -22,7 +22,7 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
 
 ## open one
 
-herdr first (dima, 11-10): `ListAgents` numbers the live wings by their `-n` names, then `x:herdr` § start a member in a pane with `-n '🦉🪽 clio: wing <N>'`, `--cwd ~/frame/_clio`, the fresh prompt below as its first task. the desktop app is the fallback, a forked wing's only door:
+herdr first (dima, 11-10): `ListAgents` numbers the live wings by their `-n` names, then `x:crew-lead`'s herdr surface file with `-n '🦉🪽 clio: wing <N>'`, `--cwd ~/frame/_clio`, the fresh prompt below as its first task. the desktop app is the fallback, a forked wing's only door:
 
 1. several may run (dima, 2026-11-06): `mcp__ccd_session_mgmt__list_sessions`; the new one takes his number, else the lowest no live wing holds
 2. `mcp__ccd_session__start_session`, initiation `user_asked`, title `🦉🪽 clio: wing <N>`:
