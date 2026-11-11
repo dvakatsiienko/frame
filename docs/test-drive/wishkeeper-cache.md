@@ -20,6 +20,8 @@ raw: `wishkeeper-cache/baseline-2026-11-11.jsonl` (one row per run, the script's
 - the first request was cold (under half its input read from cache) in 160 of 279 runs; the median warm share 0
 - 📌 writes are the biggest cost: a 1 h ttl prices every write 1.6×, so it only wins if it cuts writes by more than that, through warm starts
 
+the regression set: `wishkeeper-cache/regression-set.md`, seven real highs, replayed at every card change and at the remeasure.
+
 ## the two arms, kept apart
 
 - each run's arm is read off its own cache writes, never off a date: `measure.ts` tags a run `5m` (only 5 min writes), `1h` (only 1 h writes) or `mixed`, and prints one summary line per arm
