@@ -1233,8 +1233,19 @@ const STEER_HOLD_AT = 55;
 const STEER_HELD = 'steer-held:';
 type HeldSteers = {
     isCompacted?: true;
-    steers: { at: number; from: string; text: string }[];
+    // reply: the sender's address, as its message carried it; isTold: its sender heard the hold outlived STEER_TELL_MS
+    steers: {
+        at: number;
+        from: string;
+        text: string;
+        reply?: string;
+        isTold?: true;
+    }[];
 };
+// a message held this long for a codie that has not wound tells its sender once; the hold stays (dima's o62)
+const STEER_TELL_MS = 10 * 60_000;
+const steerTellLine = (name: string, context: unknown) =>
+    `your message to ${name} is held: it is at ${typeof context === 'number' ? `${Math.round(context)} %` : `past ${STEER_HOLD_AT} %`} and has not wound`;
 const steerHoldNote = (from: string, context: number) =>
     `🐦‍🔥 ${from}'s message is held for your second wind: your context reads ${Math.round(context)} %, past ${STEER_HOLD_AT} %. ${WIND_WORDS} finish the step you are on, then ${WIND_HOW} the held message joins your first turn after the pickup.`;
 const steerLine = (s: HeldSteers['steers'][number]) =>
@@ -4205,11 +4216,18 @@ async function holdSteer(
     const was = (await windOf($, sid))?.state;
     const isWinding = was === 'writing' || was === 'refreshing';
     const at = await $.clock.now();
+    const reply = text.match(
+        /<cross-session-message[^>]*\sfrom="([^"]+)"/,
+    )?.[1];
     const held = {
-        steers: [...kept.steers, { at, from, text: body }],
+        steers: [
+            ...kept.steers,
+            { at, from, text: body, ...(reply ? { reply } : {}) },
+        ],
     } satisfies HeldSteers;
     if (kept.steers.length && isWinding) {
         await $.store.set(key, held);
+        armSteerTell($, at, at);
         return {
             consumed: `x-mod-stash held ${from}'s message for this codie's second wind`,
         };
@@ -4221,6 +4239,7 @@ async function holdSteer(
     // the wind first: a message held with no wind behind it would wait for nothing
     await $.store.set(WIND + sid, { at, state: 'writing' } satisfies StashWind);
     await $.store.set(key, held);
+    armSteerTell($, at, at);
     await load($).catch(() => undefined);
     const open = text.match(/<cross-session-message[^>]*>/)?.[0];
     const note = steerHoldNote(from, context);
@@ -4240,6 +4259,53 @@ async function takeSteers($: EngineInterface, isOn: IsPartOn) {
         return [];
     await $.store.delete(key);
     return kept.steers.map(steerLine);
+}
+
+function armSteerTell($: EngineInterface, heldAt: number, now: number) {
+    $.clock.after(Math.max(0, heldAt + STEER_TELL_MS - now), () =>
+        tellHeldSenders($).catch(() =>
+            $.ui.log("x-mod-stash: a held message's sender was not told"),
+        ),
+    );
+}
+
+// a reload drops the timers: the start arms one for the oldest held message whose sender has not heard
+async function armHeldTells($: EngineInterface) {
+    const key = await steerKey($);
+    if (!key) return;
+    const kept = await steersOf($, key);
+    const first = kept.steers.find((s) => !s.isTold && s.reply);
+    if (first && !kept.isCompacted)
+        armSteerTell($, first.at, await $.clock.now());
+}
+
+async function tellHeldSenders($: EngineInterface) {
+    const key = await steerKey($);
+    const sid = await currentId($);
+    if (!key || !sid) return;
+    const kept = await steersOf($, key);
+    if (kept.isCompacted) return;
+    const now = await $.clock.now();
+    const due = kept.steers.filter(
+        (s) => !s.isTold && s.reply && now - s.at >= STEER_TELL_MS,
+    );
+    if (!due.length) return;
+    const line = steerTellLine(
+        (await sessionName($)) ?? 'this codie',
+        await $.store.get(CONTEXT + sid).catch(() => undefined),
+    );
+    for (const reply of new Set(due.map((s) => s.reply as string)))
+        await $.session.send({ text: line, to: reply }).catch(() => undefined);
+    await $.store.set(key, {
+        ...kept,
+        steers: kept.steers.map((s) =>
+            due.includes(s) ? { ...s, isTold: true as const } : s,
+        ),
+    } satisfies HeldSteers);
+    const next = kept.steers.find(
+        (s) => !s.isTold && s.reply && !due.includes(s),
+    );
+    if (next) armSteerTell($, next.at, now);
 }
 
 async function steersOnCompact($: EngineInterface) {
@@ -6113,6 +6179,7 @@ export const register: Register = (on) => {
             return undefined;
         });
         await seatDefaults($).catch(() => undefined);
+        await armHeldTells($).catch(() => undefined);
         const panes = await $.ui.panes().catch(() => undefined);
         if (panes?.some((p) => p.id === OLD_BOARD)) {
             await $.ui.close({ id: OLD_BOARD }).catch(() => undefined);
