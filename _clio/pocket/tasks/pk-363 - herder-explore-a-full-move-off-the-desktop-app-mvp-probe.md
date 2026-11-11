@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T12:55:00Z'
+updated_date: '2026-11-11T13:10:00Z'
 labels:
   - m
   - clio-main
@@ -1919,4 +1919,19 @@ PK-363:W941 (2026-11-11 14:51, dima): i tick again. ← ticks.
 PK-363:W942 (2026-11-11 14:51, dima): ok, do. (answers the offer to draft a short thank-you comment confirming the rename fixed it)
 PK-363:W943 (2026-11-11 14:51, dima): ask codie to try to make it pretty. (answers the stacked card: the one cost is that the folder and branch strip moves into the prompt box area; it goes into the looks lane)
 PK-363:W944 (2026-11-11 14:51, dima): model and effort selection and the send button waste space in the text box. they can move into that nested card (but probe first if it does not look ugly).
+
+PK-363:W945 (2026-11-11 15:02, dima): [Images #8, #9, #10] can you print the paths: before `~/.local/state/looks/PK-363/1500-before-crop.png`, after `~/.local/state/looks/PK-363/1501-left.png` and `~/.local/state/looks/PK-363/1501-right.png`? is there a way so i can click them? ❓
+PK-363:W946 (2026-11-11 15:02, dima): stacked cards: the text box started to look better than before, but it is a little plain.
+PK-363:W947 (2026-11-11 15:02, dima): in the screenshot where i asked if you can do it like this, the stacked cards are prettier. they differ in size, and the card in the background is slightly shadowed by the card in front. it looks very pretty, like a real stacking effect.
+PK-363:W948 (2026-11-11 15:02, dima): the stacked text box in herdr looks slightly plain, so the stacking effect does not come through well. is it because of the herdr API, which does not allow such granular styling of stacking? ❓
+PK-363:W949 (2026-11-11 15:02, dima): can i have more flexible styling of elements in herdr, so those stacking effects can look prettier? ❓
+PK-363:W950 (2026-11-11 15:02, dima): propose top 7 in the main thread: i did not see you propose it.
+PK-363:W951 (2026-11-11 15:02, dima): (context, not dima's words: "o8 do not reply it was for wing 1" was addressed to wing 1, not to clio)
+
+PK-363:W952 (2026-11-11 15:10, dima): [Images #12] the three screenshots as links. if the chat window does not open them on click, that is a chat bug, and the herdr 🔧 codie will fix it. nothing opens when i click.
+PK-363:W953 (2026-11-11 15:10, dima): is it herdr? probably not. herdr's styling engine usually supports shadows, rounded corners and inset widths. (my inference from the framework herdr builds on, not checked) ❓
+PK-363:W954 (2026-11-11 15:10, dima): when i ask questions like this, i expect you to always verify. can you consult codie before answering and actually check the docs? you have all doors for that. i want verified answers.
+PK-363:W955 (2026-11-11 15:10, dima): standing rule, from today until halt, for you, herdr, codie and your wing: everyone answers "verified" or "not", and whenever i ask, i expect verified answers.
+PK-363:W956 (2026-11-11 15:10, dima): stacked text box: now it looks much better, but the buttons do not quite fit (style). i will iterate on style later, when we decide whether to use a designer. for now, ask codie to do cheap wins: make it prettier overall (model and effort pickers).
+PK-363:W957 (2026-11-11 15:10, dima): blue send button: can it move into the main text box area, positioned absolutely in the bottom-right corner, so it does not eat layout? ❓
 <!-- SECTION:NOTES:END -->
