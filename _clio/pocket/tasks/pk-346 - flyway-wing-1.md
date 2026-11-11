@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T21:55:00Z'
+updated_date: '2026-11-11T21:57:00Z'
 labels:
   - s
   - clio-wing-1
@@ -333,4 +333,7 @@ PK-346:W27 (2026-11-11 23:53, dima): yes. (context, not dima's words: answers cl
 PK-346:W28 (2026-11-11 23:53, dima): pick best most useful 2 cli chunks that could be completed before ~2:00
 PK-346:W29 (2026-11-11 23:53, dima): e.g. what cli lane can take after 570? ❓ (context, not dima's words: 570 is FRM-570, cli lane 8's running chunk.)
 23:56: W26 answered (the replay is insurance on the cheaper card, plus the 11-18 baseline), W27 taken (the «seat» removal runs tonight, herdr paths tomorrow), W28 and W29 answered as o67 (FRM-436, then FRM-424)
+
+PK-346:W30 (2026-11-11 23:56, dima): possible to merge then and switch cli lane to quick lane? ❓ (context, not dima's words: answers clio's 23:55 report lines on FRM-436, the commit bump verb, and FRM-424, unused-verb counts in x stats.)
+PK-346:W31 (2026-11-11 23:56, dima): and after 570 you will be able to rename threads to pretty shape? ❓ (context, not dima's words: 570 is FRM-570 per clio.)
 <!-- SECTION:NOTES:END -->

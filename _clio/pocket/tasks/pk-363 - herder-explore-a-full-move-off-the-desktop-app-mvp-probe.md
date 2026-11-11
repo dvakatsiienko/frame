@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T21:52:00Z'
+updated_date: '2026-11-11T22:00:00Z'
 labels:
   - m
   - clio-main
@@ -2133,4 +2133,8 @@ PK-363:W1134 (2026-11-11 23:51, dima, o130 steer): yes, and print estimates as s
 PK-363:W1133 (2026-11-11 23:51, dima, o127 steer): if the day was short like ~5hrs or less - you peek into prev day cadance and estimate median
 PK-363:W1131 (2026-11-11 23:38, dima): what just opened «close space» popup? not a good surprise ❓ (context, not dima's words: the raw holds an image, #70.)
 PK-363:W1135 (2026-11-11 23:51, dima, o131 steer): yes, halt with me only. usually we have some tails and a little prep work (planning next day before halting)
+
+PK-363:W1136 (2026-11-11 23:46, dima): there is a catch with the wind down. i think it's better to have one wind down, and only main clio does it.
+PK-363:W1137 (2026-11-11 23:46, dima): along with it you consult your wings if they run their own lanes, like wing 1 today. wing 1 owns the cli lane, so you ask it to estimate its own wing. you are responsible for the wind down and guide your wings through it. (context, not dima's words: wing 1 is the wing that owns the cli lane.)
+PK-363:W1138 (2026-11-11 23:46, dima): to estimate more precisely, consult existing wings. if a wing has its lane, you estimate that lane yourself and ask the wing to estimate it too. or better, each wing estimates itself, so a median number D is picked. (context, not dima's words: D is the median estimate.)
 <!-- SECTION:NOTES:END -->
