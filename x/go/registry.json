@@ -23,6 +23,11 @@
             "name": "fleet"
         },
         {
+            "example": "x thread show 61711",
+            "gist": "a session's role, lane and ticket",
+            "name": "thread"
+        },
+        {
             "example": "x brief check brief.md --repo ~/frame",
             "gist": "a spawn brief read against its repo",
             "name": "brief"
@@ -1159,6 +1164,31 @@
             "touches": [
                 "~/.claude/projects/ — the session transcripts, one level deep",
                 "linear's graphql api — the estimate and state of each ticket codie worked in the window"
+            ]
+        },
+        {
+            "args": [],
+            "name": "thread list",
+            "needsApply": false,
+            "purpose": "list every live session with its role, lane and ticket, and rewrite the store a display reads with no spawn",
+            "touches": [
+                "~/.claude/sessions/ — the registry, read",
+                "~/.claude/shelf/threads.json — the store, rewritten ($X_THREADS in tests)"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "a session id or a pid",
+                    "name": "id"
+                }
+            ],
+            "name": "thread show",
+            "needsApply": false,
+            "purpose": "print one live session's role, lane, ticket and display name, by session id or pid; no record reads as unknown",
+            "touches": [
+                "~/.claude/sessions/ — the registry, read",
+                "~/.claude/shelf/threads.json — the store, rewritten ($X_THREADS in tests)"
             ]
         },
         {

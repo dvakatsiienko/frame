@@ -80,6 +80,8 @@ var impls = map[string]Impl{
 	"as":                          {Run: as, Undone: "the command did not run"},
 	"gh pr":                       {Run: ghPr},
 	"gh repo-slug":                {Run: ghRepoSlug},
+	"thread list":                 {Run: threadList},
+	"thread show":                 {Run: threadShow},
 	"gh pr-review-comments-list":  {Run: ghReviewCommentsList},
 	"gh pr-review-comments-reply": {Run: ghReviewCommentsReply, Undone: "nothing was posted"},
 	"linear read":                 {Run: linearRead},

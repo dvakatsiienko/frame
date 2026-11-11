@@ -527,6 +527,15 @@
   - given an origin as ssh, https or an `insteadOf` alias, then it prints `owner/name` off the configured url or the rewritten one, with no network
   - given no origin or a non-github one, then exit 1 naming it; a dir that is not there, exit 2
 
+## thread
+
+- ⬜ `x thread list` and `x thread show <id>` answer a session's role, lane and ticket from one store (FRM-570)
+  - given the session registry and the records x wrote at a summon or a dispatch, then each live session prints joined to its record by session id, its display name drawn from the record; a session with no record reads `unknown`
+  - given a pid that died (`kill -9`) or a registry file gone (an archived session), then it drops out of the store at the next call; a record whose session never started stays 10 minutes, then drops
+  - given any call, then `~/.claude/shelf/threads.json` is rewritten, so a display reads it with no spawn; x-mod-stash's hooks call `x thread list` at session start, turn end and exit
+  - given `show` with a session id or a pid no live session holds, then exit 1
+  - decision: the store sits beside x-mod-stash's `herdr-state/`, a registry mirror kept separate (wing 1, 2026-11-11)
+
 ## linear — tickets
 
 - ✅ `x linear read <ids…>` reads tickets in one request
