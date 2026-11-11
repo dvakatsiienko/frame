@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T23:06:00Z'
+updated_date: '2026-11-11T23:48:00Z'
 labels:
   - m
   - clio-main
@@ -2162,4 +2162,6 @@ PK-363:W1154 (2026-11-12 --:--, dima, o142 steer): how big is it? mods lane ride
 PK-363:W1155 (2026-11-12 01:04, dima): chatter wisp, unintended strange scrolling. when i click and hold LMB in the place shown in the screenshot (i usually select text that way), and slightly move the mouse up while holding, the chatter scrolls to the top. i want to select text instead, but i move the mouse in a messy way and the scroll happens. tell codie to find out what causes the scrolls and remove them. i do not want any similar behaviour; i scroll with the mouse wheel or with the trackpad. (topic: chatter wisp. context, not dima's words: the raw opens with a screenshot, image #74.)
 
 correction 01:06: W1154's time is 00:59 (his o142 steer)
+
+PK-363:W1154 (2026-11-12 00:59, dima, o142 steer): how big is it? mods lane rider (current)? ❓ (topic: override scopes. context, not dima's words: none.)
 <!-- SECTION:NOTES:END -->
