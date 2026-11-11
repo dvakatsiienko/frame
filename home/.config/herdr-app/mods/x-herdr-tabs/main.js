@@ -153,7 +153,7 @@ export default class Tabs extends View {
 
     // The × on a tab: one with an agent asks first (the shipped `confirm` dialog), since a closed
     // tab can't be reopened. Other tabs close at once, as in Herdr's own `tabs`.
-    close(c, name, space) {
+    closeTab(c, name, space) {
         const mine = agents().filter((a) => a.tab === c.id);
         if (!mine.length) return run('tab.close', { id: c.id });
         const state = mine.some((a) => a.status === 'working')
@@ -368,7 +368,7 @@ export default class Tabs extends View {
                                 .on_mouse_down('left', stop)
                                 .on_click((_e, cx) => {
                                     cx.stop_propagation();
-                                    this.close(c, name, space);
+                                    this.closeTab(c, name, space);
                                 })
                                 .child(svg('mods/pane/close.svg').size(12)),
                         ),
