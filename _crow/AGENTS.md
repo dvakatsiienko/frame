@@ -22,7 +22,7 @@
 - crow lives one clio session, in one of two modes, both first-class (dima, 2026-10-21):
   - **`--bg`** — clio's boot runs `pnpm crow:start opus` (opus 5.5 medium; refuses while one is live): settings `project,local`, the stash mod only, so x-mod-guard is absent; wakes go over her socket
   - **desktop tab** — dima opens a Code tab in `~/.local/state/crow/` named «🐦‍⬛ crow» and sends the opener; clio's boot runs `pnpm crow:keep-cache-hot` (finds the tab, writes its 🔥 key): settings `user,project,local`, so every user hook, mod and rule loads, x-mod-guard included; wakes go through `relay.json` (facts that bite)
-  - the halt runs `pnpm crow:stop` for `--bg` (FRM-335); a tab is closed by dima
+  - the halt runs `pnpm crow:stop` for `--bg` (FRM-335) and for a herdr pane crow (`crow:start opus --pane`), whose herdr terminal it kills by its cwd; a desktop tab is closed by dima
   - `pnpm crow:stop` — `claude stop <jobId>`, switches 🔥 off, waits until the process is gone.
     it harvests nothing; the halt reads `notes.jsonl` and `verdicts.jsonl` itself.
 - a start is a herdr pane (`crow:start opus --pane`), `--bg --remote-control` its fallback, from `~/.local/state/crow/`. that home is
