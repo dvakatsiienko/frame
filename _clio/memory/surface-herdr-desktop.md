@@ -19,7 +19,7 @@ this leaf loaded means this thread runs in herdr (`HC_TERMINAL_ID` set); the Cla
 
 ## files and links to him
 
-- a `file://` markdown link opens in his chat; a seat is named by its tab name, there is no session link
+- a `file://` markdown link opens in his chat; a thread is named by its tab name, there is no session link
 - a fenced copy block gets herdr's copy button; a block whose ribbon names a session or an agent becomes a prompt card he clicks
 
 ## browser

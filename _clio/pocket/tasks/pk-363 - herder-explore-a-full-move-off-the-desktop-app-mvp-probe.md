@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T21:15:00Z'
+updated_date: '2026-11-11T22:00:00Z'
 labels:
   - m
   - clio-main
@@ -2107,4 +2107,34 @@ PK-363:W1108 (2026-11-11 23:14, dima, o114 steer): yes, no artifacts, plain, cle
 PK-363:W1109 (2026-11-11 23:13, dima): is settings worth architecture and plan? ❓
 PK-363:W1110 (2026-11-11 23:13, dima): when we will have a designer decision? ❓
 PK-363:W1111 (2026-11-11 23:13, dima): i want pretty look in herdr.
+
+PK-363:W1112 (2026-11-11 23:24, dima): okay then tomorrow we shape two things for herdr: settings (create architecture, grill how to make good, reuse shepherdr shape as an idea).
+PK-363:W1113 (2026-11-11 23:24, dima): then grill on the look - pick use designer or not.
+PK-363:W1114 (2026-11-11 23:24, dima): its getting late. i have 2-3hrs. i want you to plan everyone in a way so in 2-3h every lane can be gracefully stopped.
+PK-363:W1115 (2026-11-11 23:24, dima): so only you, wing 1 and herdr lane left. propose who do what. see everywhere if there is work pending or planned for tails lane (its parked). print as first reply.
+PK-363:W1116 (2026-11-11 23:24, dima): then - peek into your flyway. you have a whole bunch piled up. propose 5 flyway items you can solve without me (or items that want me for quick look/decision while im here).
+PK-363:W1117 (2026-11-11 23:24, dima): you propose them i approve, optionally answer questions or make important decisions. then you start and i go cook.
+PK-363:W1118 (2026-11-11 23:24, dima): wing 1 also solves tails - consult with it so you not fight over flyway items (i asked it to solve its own flyway and yank from yours to help - you can also help wing 1) - decide who does what - solve tails.
+PK-363:W1119 (2026-11-11 23:36, dima): why it have «only work left» while it is parked for half of the day? (context, not dima's words: the reply before the arrow says the tails lane's only work left is closing FRM-465, and wing 1 closes it.) ❓
+PK-363:W1120 (2026-11-11 23:36, dima): tell it to finish now.
+PK-363:W1121 (2026-11-11 23:36, dima): print 2 planned best and most wanted chunks for mods lane that could go after current one.
+PK-363:W1122 (2026-11-11 23:36, dima): so tails lane have a reason to be parked? so it can be stopped? ❓
+PK-363:W1123 (2026-11-11 23:36, dima): do all but after my ask about wind-down. (context, not dima's words: the five tails list in the raw is a quoted reply.)
+PK-363:W1124 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): Recently I asked you about wind down. I feel that I sometimes will ask you the same. I already asked for it a few times, for a gradual wind-down like this, when I know that in 2 or 3 hours I want to finish everything for today. We still have a window for that.
+PK-363:W1125 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): Let's have a skill for this. Propose how to shape the skill that describes what I just asked for in a good shape. It is important for a few things to be included:
+PK-363:W1126 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): 1. The estimate. You are often and almost always off with estimates because it's a well-known mismatch for agentic models. Try, each time I ask you for a wind-down (usually I will ask for it at the end of the day after we code for a day), to never estimate based on inference. Always estimate based on the current day's progress. For example you can look into the overall cadence of everything that was done today for all lanes and estimate the progress for everyone based on the actual progress of all lanes, verified, not the inference.
+PK-363:W1127 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): 2. The way you park everyone. Because of the previous problem with off estimates, you can stop everyone earlier than I wanted. When I ask for a wind-down it means that I want the stuff to be completed but everything was stopped earlier than needed. As a safeguard for such a case, the mode for stopping the lanes in wind-down mode is the following: you let the lanes gracefully finish their current chunks and fully merge them. Afterwards they are parked, not stopped. For example if you merge and park a lane too quickly or earlier than needed, and I peek into your window and spot it, I can then ask you to resume the lane with the next chunk. The lane is ready for that. Otherwise I could tell you to stop it truly for sure. It's a word from me. The actual lane stopping, the final word, is by me within the scope of wind-down.
+PK-363:W1128 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): The most important part in the window is your estimate. It must be precise but I know that you are off with it. It is hard for you to provide a precise estimate from inference because it's off. That's why I asked you to verify your estimation based on the cadence.
+PK-363:W1129 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): Also another point about wind-down: each wind-down is dynamic and I have to tell you the number for each wind-down. If I don't tell you the number, you should clarify it each time. For example how much time do I tell you to allocate for wind-down? Today I told you up to 3 hours.
+PK-363:W1130 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): This is my take on this skill. Propose your own ideas and let's do a quick shape idea over this skill. After this skill is fully completed and sealed, let's run it over today's lanes and then you take a second wind and do the 5 tails you proposed.
+
+PK-363:W1132 (2026-11-11 23:39, dima, o121 steer): stop it and its glide. (context, not dima's words: "it" is the tails codie; the raw is the text of orbit ask o121, not a close-space popup line.)
+PK-363:W1134 (2026-11-11 23:51, dima, o130 steer): yes, and print estimates as short, clear messages in your thread. (context, not dima's words: answers a question that is not in this raw.)
+PK-363:W1133 (2026-11-11 23:51, dima, o127 steer): if the day was short like ~5hrs or less - you peek into prev day cadance and estimate median
+PK-363:W1131 (2026-11-11 23:38, dima): what just opened «close space» popup? not a good surprise ❓ (context, not dima's words: the raw holds an image, #70.)
+PK-363:W1135 (2026-11-11 23:51, dima, o131 steer): yes, halt with me only. usually we have some tails and a little prep work (planning next day before halting)
+
+PK-363:W1136 (2026-11-11 23:46, dima): there is a catch with the wind down. i think it's better to have one wind down, and only main clio does it.
+PK-363:W1137 (2026-11-11 23:46, dima): along with it you consult your wings if they run their own lanes, like wing 1 today. wing 1 owns the cli lane, so you ask it to estimate its own wing. you are responsible for the wind down and guide your wings through it. (context, not dima's words: wing 1 is the wing that owns the cli lane.)
+PK-363:W1138 (2026-11-11 23:46, dima): to estimate more precisely, consult existing wings. if a wing has its lane, you estimate that lane yourself and ask the wing to estimate it too. or better, each wing estimates itself, so a median number D is picked. (context, not dima's words: D is the median estimate.)
 <!-- SECTION:NOTES:END -->

@@ -43,6 +43,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import { fileName, pickFiles, promptPath, withFiles } from './attach.js';
 import {
     DECK_BLOCK,
     OVERRIDE_STORE,
@@ -275,6 +276,21 @@ const FLIP_LIMIT = 4;
 const MEASURE_BATCH_MS = 32;
 // his message's last px, where its fork icon sits: a press there forks (rows take no handlers, clickRow)
 const FORK_W = 28;
+/** a running turn's length: «m:ss», «h:mm:ss» past an hour @param {number} ms */
+const turnClock = (ms) => {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    const pad = (/** @type {number} */ n) => String(n).padStart(2, '0');
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return h ? `${h}:${pad(m)}:${pad(s % 60)}` : `${m}:${pad(s % 60)}`;
+};
+/** a message as a markdown quote, every line under «> » @param {string} text */
+const quoted = (text) =>
+    text
+        .trim()
+        .split(/\r?\n/)
+        .map((l) => `> ${l}`)
+        .join('\n');
 /** a message between threads: one another thread sent, or this one's SendMessage @param {any} item */
 const isRelay = (item) =>
     item?.kind === 'relay' || item?.name === 'SendMessage';
@@ -1271,6 +1287,10 @@ export default class ClaudeChat extends View {
         this.pasted = new Map();
         // previews of the screenshots waiting in each thread's Claude prompt (see shots.js)
         this.shots = {};
+        // files picked with + or dropped on the box, by agent address, sent as paths with the next message
+        this.files = new Map();
+        // the message a reply answers, by agent address: shown above the box, sent quoted before the text
+        this.replies = new Map();
         cx.spawn(async (cx) => {
             this.shots = await loadShots();
             cx.notify();
@@ -1404,6 +1424,14 @@ export default class ClaudeChat extends View {
                     keystroke: 'escape',
                 })),
             );
+            // Tab in an empty box takes Claude Code's suggestion (the composer is "ChatGhost" then).
+            cx.bind_keys(
+                ['Input', 'Textarea', 'TextArea'].map((box) => ({
+                    action: 'x_herdr_chatter_ghost_take',
+                    context: `ChatGhost > ${box}`,
+                    keystroke: 'tab',
+                })),
+            );
         } catch {}
         // Search (Ctrl+F, or the header's magnifier): findQ is the query in use (typing settles for
         // 150 ms first, since a redraw rebuilds every message), findList its hits oldest first
@@ -1431,6 +1459,10 @@ export default class ClaudeChat extends View {
             this.findStep(e.shift ? 1 : -1, cx),
         );
         cx.timer.every(2000, (cx) => this.tick(cx));
+        // the working row's turn timer: one redraw a second, only while the shown thread works
+        cx.timer.every(1000, (cx) => {
+            if (this.turnAt && this.target()?.status === 'working') cx.notify();
+        });
         this.tick(cx);
     }
 
@@ -1774,7 +1806,12 @@ export default class ClaudeChat extends View {
                 // re-read on your next message", "❯ 1. Yes, switch to low"): the pick was the answer.
                 for (let i = 0; i < 8; i++) {
                     await cx.sleep(200);
-                    if (/^\s*❯\s*1\.\s+Yes, switch/m.test(await screen())) {
+                    const s = await screen();
+                    // Claude's own model prompt reads «Switch model?» over a first row «❯ 1. Yes…»
+                    if (
+                        /^\s*❯\s*1\.\s+Yes, switch/m.test(s) ||
+                        (/Switch model\?/.test(s) && /❯\s*1\.\s*Yes/.test(s))
+                    ) {
                         await hc(['keys', address, 'enter']);
                         break;
                     }
@@ -1801,10 +1838,14 @@ export default class ClaudeChat extends View {
 
     // The model and effort dropdowns at the right of the box: the trigger shows the current one
     // (or "Opus 5.5…" while a pick lands), the list opens upward with the current one ticked.
-    // Picks only while Claude waits for you: a pick while it works would queue behind the turn,
-    // and keys typed into the effort picker would land in its prompt instead.
+    // A model pick waits for Claude to wait for you: mid-turn it would queue behind the turn. Effort
+    // switches mid-turn too: Claude Code opens /effort while a reply streams and sets it at once
+    // (probed 2026-11-11 on Haiku 5.5: «Set effort level to high (this session only)»).
+    // Never while it asks: keys would answer the question.
     dropdown(t, agent, kind) {
-        const ready = agent.status !== 'working' && agent.status !== 'blocked';
+        const ready =
+            agent.status !== 'blocked' &&
+            (kind === 'effort' || agent.status !== 'working');
         const now = kind === 'model' ? this.modelNow() : this.effortNow();
         const p =
             this.pending?.address === this.address && this.pending.kind === kind
@@ -1860,7 +1901,13 @@ export default class ClaudeChat extends View {
                         .hover((s) => s.bg(t.hover).text_color(t.foreground))
                         .on_click((_e, cx) => {
                             this.drop = null;
-                            this.pick(kind, value, agent.address, cx);
+                            // a model switch mid-conversation drops the hot cache: it asks first
+                            if (kind === 'model' && this.flat?.length)
+                                this.askModel = {
+                                    address: agent.address,
+                                    value,
+                                };
+                            else this.pick(kind, value, agent.address, cx);
                             this.box.focus();
                         }),
                 )
@@ -2061,6 +2108,7 @@ export default class ClaudeChat extends View {
                             : await transcriptOf(session);
                         if (this.address !== address) return;
                         this.items = [];
+                        this.turnAt = null;
                         this.tools = new Map();
                         this.skills = new Map();
                         this.subs = new Map();
@@ -2443,6 +2491,13 @@ export default class ClaudeChat extends View {
             }
             const content = d.message?.content;
             if (d.type === 'user') {
+                // his prompt starts the turn the working row times; a tool result is no prompt
+                if (
+                    into === this &&
+                    (typeof content === 'string' ||
+                        content?.some?.((b) => b?.type === 'text'))
+                )
+                    this.turnAt = Date.parse(d.timestamp ?? '') || this.turnAt;
                 // The reply before this message: a fork "before this message" resumes up to it.
                 const before =
                     into === this && this.lastReply?.session === d.sessionId
@@ -2635,12 +2690,18 @@ export default class ClaudeChat extends View {
 
     send(cx) {
         const text = this.box.value().trim();
-        if (!this.address || (!text && !this.imageCount(this.address))) return;
+        const attached = this.files.get(this.address) ?? [];
+        if (
+            !this.address ||
+            (!text && !attached.length && !this.imageCount(this.address))
+        )
+            return;
         const address = this.address;
         this.box.set_value('');
         this.typed = '';
         keepDraft(address, '');
         this.leftInBox = null;
+        this.ghost = null;
         this.slash = null;
         // While Claude asks, what's typed is the "Type something" answer.
         if (text && ask.typeAnswer(this, text, cx)) {
@@ -2654,7 +2715,15 @@ export default class ClaudeChat extends View {
             ? (this.pasted.get(address) ?? [])
             : [];
         this.pasted.delete(address);
-        const message = [text, ...files.map((f) => `[Image: ${f}]`)]
+        this.files.delete(address);
+        const replyTo = this.replies.get(address);
+        this.replies.delete(address);
+        const message = [
+            replyTo ? `${quoted(replyTo)}\n` : '',
+            text,
+            ...files.map((f) => `[Image: ${f}]`),
+            ...attached.map(promptPath),
+        ]
             .filter(Boolean)
             .join('\n');
         // Pasted images are already in Claude's prompt: Enter alone sends them.
@@ -2885,6 +2954,12 @@ export default class ClaudeChat extends View {
             [...this.items].reverse().find((i) => i.kind === 'user')?.text ??
             '';
         this.leftInBox = text && last && flat(last) === text ? text : null;
+        // anything else in Claude's box after a turn is its own dim suggestion: offered as ghost text; a new
+        // session's placeholder («Try "fix typecheck errors"») is no suggestion
+        this.ghost =
+            text && !this.leftInBox && !/^Try "/.test(text)
+                ? { address: agent.address, text }
+                : null;
         this.leftNormal = r?.stdout?.includes('-- NORMAL --') ?? false;
     }
 
@@ -2935,6 +3010,96 @@ export default class ClaudeChat extends View {
             await hc(['keys', address, 'esc', 'esc']);
         });
         cx.notify();
+    }
+
+    /** @param {string | null} address @param {string[]} paths */
+    addFiles(address, paths, cx) {
+        if (!address || !paths.length) return;
+        this.files.set(
+            address,
+            withFiles(this.files.get(address) ?? [], paths),
+        );
+        cx.notify();
+    }
+
+    // + at the left of the box's lower card: the mac's own picker, several files at once
+    attachButton(t) {
+        return div()
+            .id('attach')
+            .size(px(24))
+            .flex()
+            .flex_none()
+            .items_center()
+            .justify_center()
+            .rounded_full()
+            .text_size(px(TEXT.lg))
+            .text_color(t.muted)
+            .cursor_pointer()
+            .hover((s) => s.bg(t.hover).text_color(t.foreground))
+            .tooltip('Attach files')
+            .on_click((_e, cx) => {
+                const address = this.address;
+                cx.spawn(async (cx) =>
+                    this.addFiles(address, await pickFiles(), cx),
+                );
+            })
+            .child('+');
+    }
+
+    // the files waiting for the next send, each a chip with ×
+    fileChips(t, address) {
+        const list = this.files.get(address) ?? [];
+        return h_flex()
+            .flex_wrap()
+            .gap(6)
+            .px(4)
+            .children(
+                list.map((path, i) =>
+                    h_flex()
+                        .id(`file-${i}`)
+                        .gap(6)
+                        .items_center()
+                        .pl(8)
+                        .pr(4)
+                        .py(2)
+                        .max_w(px(260))
+                        .rounded(RADIUS.control)
+                        .bg(t.raised)
+                        .text_size(px(TEXT.sm))
+                        .text_color(t.foreground)
+                        .tooltip(path)
+                        .child(
+                            div()
+                                .min_w(0)
+                                .truncate()
+                                .child(`📎 ${fileName(path)}`),
+                        )
+                        .child(
+                            div()
+                                .id(`file-x-${i}`)
+                                .size(px(18))
+                                .flex()
+                                .flex_none()
+                                .items_center()
+                                .justify_center()
+                                .rounded_full()
+                                .text_color(t.muted)
+                                .cursor_pointer()
+                                .hover((s) =>
+                                    s.bg(t.hover).text_color(t.foreground),
+                                )
+                                .tooltip('Remove')
+                                .on_click((_e, cx) => {
+                                    this.files.set(
+                                        address,
+                                        list.filter((p) => p !== path),
+                                    );
+                                    cx.notify();
+                                })
+                                .child('×'),
+                        ),
+                ),
+            );
     }
 
     /** a send or a Remove takes the screenshots out of Claude's prompt: their previews go too */
@@ -3933,6 +4098,15 @@ export default class ClaudeChat extends View {
                             ? "Still working: Esc only stops Claude's own turn, not a background task (like /code-review). Stop that in the terminal."
                             : msg || 'Working…',
                     ),
+            )
+            .when(Boolean(this.turnAt), (el) =>
+                el.child(
+                    div()
+                        .flex_none()
+                        .text_color(t.dim)
+                        .font_family(this.mono())
+                        .child(turnClock(Date.now() - this.turnAt)),
+                ),
             )
             .when(!this.stuck, (el) =>
                 el.child(
@@ -5161,8 +5335,8 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
-    // Copy message = the whole message as written (markdown); Quote in chat = it goes into the box
-    // as a "> " quote. A press anywhere else closes the menu.
+    // Copy message = the whole message as written (markdown); Reply = it waits above the box and goes
+    // quoted before the next send. A press anywhere else closes the menu.
     ctxMenu(t) {
         const W = 200,
             H = 2 * 27 + 8;
@@ -5211,12 +5385,23 @@ export default class ClaudeChat extends View {
             .shadow_md()
             .on_mouse_down_out((_e, cx) => close(cx))
             .child(
-                row('copy-msg', 'Copy message', (cx) =>
-                    cx.write_to_clipboard(text),
-                ),
+                row('copy-msg', 'Copy message', (cx) => {
+                    cx.write_to_clipboard(text);
+                    // the menu closes at once: the box's note line says it worked
+                    const note = 'Message copied';
+                    this.pickNote = note;
+                    cx.timer.after(1500, (cx) => {
+                        if (this.pickNote !== note) return;
+                        this.pickNote = null;
+                        cx.notify();
+                    });
+                }),
             )
             .child(
-                row('quote', 'Quote message in chat', () => this.quote(text)),
+                row('reply', 'Reply', () => {
+                    this.replies.set(this.address, text);
+                    this.box.focus();
+                }),
             );
     }
 
@@ -5514,22 +5699,159 @@ export default class ClaudeChat extends View {
         );
     }
 
-    // Puts text into the box as a markdown quote, after what's there, and gives the box the keyboard.
-    quote(text) {
-        const quoted = text
-            .trim()
-            .split(/\r?\n/)
-            .map((l) => `> ${l}`)
-            .join('\n');
-        const had = this.box.value();
-        this.box.set_value(
-            had.trim()
-                ? `${had.replace(/\s+$/, '')}\n\n${quoted}\n\n`
-                : `${quoted}\n\n`,
-        );
-        this.typed = this.box.value();
-        keepDraft(this.address, this.typed);
+    // Claude Code's suggestion for this thread, while his box is empty
+    /** @param {string | null} address */
+    ghostFor(address) {
+        return this.ghost?.address === address && !this.typed?.trim()
+            ? this.ghost.text
+            : null;
+    }
+
+    takeGhost(cx) {
+        const text = this.ghostFor(this.address);
+        if (!text) return;
+        this.box.set_value(text);
+        this.typed = text;
+        keepDraft(this.address, text);
+        this.ghost = null;
         this.box.focus();
+        cx.notify();
+    }
+
+    // the suggestion, dim above the box: Tab or a click takes it
+    ghostLine(t, text) {
+        return h_flex()
+            .id('ghost')
+            .gap(8)
+            .items_center()
+            .mx(14)
+            .px(8)
+            .py(2)
+            .rounded(RADIUS.control)
+            .text_size(px(TEXT.sm))
+            .cursor_pointer()
+            .hover((s) => s.bg(t.hover))
+            .tooltip('Take the suggestion (Tab)')
+            .on_click((_e, cx) => this.takeGhost(cx))
+            .child(
+                div()
+                    .flex_none()
+                    .px(4)
+                    .rounded(4)
+                    .border(1)
+                    .border_color(t.border)
+                    .text_color(t.dim)
+                    .child('Tab'),
+            )
+            .child(
+                div()
+                    .flex_1()
+                    .min_w(0)
+                    .truncate()
+                    .text_color(t.dim)
+                    .child(text),
+            );
+    }
+
+    // a model switch mid-conversation, asked first: the next message re-reads the whole history uncached
+    modelConfirm(t, address) {
+        const { value } = this.askModel;
+        const close = (cx) => {
+            this.askModel = null;
+            cx.notify();
+        };
+        return v_flex()
+            .gap(8)
+            .mx(14)
+            .p(10)
+            .rounded(RADIUS.card)
+            .border(1)
+            .border_color(t.border)
+            .bg(t.raised)
+            .text_size(px(TEXT.sm))
+            .child(
+                div()
+                    .text_color(t.foreground)
+                    .font_weight(600)
+                    .child(`Switch this thread to ${value}?`),
+            )
+            .child(
+                div()
+                    .text_color(t.muted)
+                    .child(
+                        'Its cache is lost: the next message re-reads the whole conversation, slower and pricier.',
+                    ),
+            )
+            .child(
+                h_flex()
+                    .gap(6)
+                    .child(
+                        button(
+                            t,
+                            px,
+                            'model-switch',
+                            `Switch to ${value}`,
+                            (_e, cx) => {
+                                close(cx);
+                                this.pick('model', value, address, cx);
+                            },
+                            true,
+                        ),
+                    )
+                    .child(
+                        button(
+                            t,
+                            px,
+                            'model-keep',
+                            'Keep the cache',
+                            (_e, cx) => close(cx),
+                        ),
+                    ),
+            );
+    }
+
+    // the message a reply answers, one line above the box: its first words, × drops it
+    replyStrip(t, address) {
+        const text = this.replies.get(address) ?? '';
+        return h_flex()
+            .gap(8)
+            .items_center()
+            .mx(14)
+            .px(8)
+            .py(4)
+            .rounded(RADIUS.control)
+            .border_l(2)
+            .border_color(t.accent)
+            .bg(t.raised)
+            .text_size(px(TEXT.sm))
+            .child(div().flex_none().text_color(t.accent).child('↩ Reply'))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w(0)
+                    .truncate()
+                    .text_color(t.muted)
+                    .child(text.replace(/\s+/g, ' ').trim()),
+            )
+            .child(
+                div()
+                    .id('reply-x')
+                    .size(px(18))
+                    .flex()
+                    .flex_none()
+                    .items_center()
+                    .justify_center()
+                    .rounded_full()
+                    .text_color(t.muted)
+                    .cursor_pointer()
+                    .hover((s) => s.bg(t.hover).text_color(t.foreground))
+                    .tooltip('Drop the reply')
+                    .on_click((_e, cx) => {
+                        this.replies.delete(address);
+                        cx.notify();
+                    })
+                    .child('×'),
+            );
     }
 
     // ---- search
@@ -6138,6 +6460,24 @@ export default class ClaudeChat extends View {
                                 .child(this.pickNote),
                         ),
                     )
+                    .when(
+                        agent.status !== 'working' &&
+                            Boolean(this.ghostFor(agent.address)),
+                        (el) =>
+                            el.child(
+                                this.ghostLine(t, this.ghostFor(agent.address)),
+                            ),
+                    )
+                    .when(this.askModel?.address === agent.address, (el) =>
+                        el.child(this.modelConfirm(t, agent.address)),
+                    )
+                    .when(this.replies.has(agent.address), (el) =>
+                        el.child(this.replyStrip(t, agent.address)),
+                    )
+                    .when(
+                        Boolean(this.files.get(agent.address)?.length),
+                        (el) => el.child(this.fileChips(t, agent.address)),
+                    )
                     .when(images > 0, (el) =>
                         el.child(
                             h_flex()
@@ -6215,6 +6555,15 @@ export default class ClaudeChat extends View {
                         h_flex()
                             .id('composer')
                             .track_focus(this.keyboard)
+                            .when(!this.where?.container, (el) =>
+                                el.on_drop((e, cx) =>
+                                    this.addFiles(
+                                        this.address,
+                                        e?.paths ?? [],
+                                        cx,
+                                    ),
+                                ),
+                            )
                             .when(Boolean(menu), (el) =>
                                 el.key_context('ChatSlash'),
                             )
@@ -6224,8 +6573,17 @@ export default class ClaudeChat extends View {
                                     !this.stuck,
                                 (el) => el.key_context('ChatStop'),
                             )
+                            .when(
+                                !menu &&
+                                    agent.status !== 'working' &&
+                                    Boolean(this.ghostFor(agent.address)),
+                                (el) => el.key_context('ChatGhost'),
+                            )
                             .on_action('x_herdr_chatter_stop', (_e, cx) =>
                                 this.stop(cx),
+                            )
+                            .on_action('x_herdr_chatter_ghost_take', (_e, cx) =>
+                                this.takeGhost(cx),
                             )
                             .on_action('x_herdr_chatter_menu_down', (_e, cx) =>
                                 this.menuKey('down', cx),
@@ -6265,6 +6623,13 @@ export default class ClaudeChat extends View {
                                             .border_color(t.border)
                                             .bg(t.raised)
                                             .gap(6)
+                                            .when(
+                                                !this.where?.container,
+                                                (el) =>
+                                                    el.child(
+                                                        this.attachButton(t),
+                                                    ),
+                                            )
                                             .child(
                                                 this.dropdown(
                                                     t,

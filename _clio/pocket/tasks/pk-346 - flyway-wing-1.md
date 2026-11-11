@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T21:29:00Z'
+updated_date: '2026-11-11T22:00:00Z'
 labels:
   - s
   - clio-wing-1
@@ -316,4 +316,28 @@ done 2026-11-11 23:26: crow second wind has no door: hc send wraps a /compact as
 done 2026-11-11 23:29: - [ ] helga's earlier PK-363 and FRM-566 groom appends: check each W-line has its home, run the missing appends (yanked from main's PK-349, her 23:26 split) (PK-363 open, FRM-566 Todo, PK-349 open)
 
 23:30: helga's PK-363/FRM-566 groom appends verified: every W-id in ~/.local/state/clio/grooms/**/*.groomed.md has its home (PK-363 953/953 in pocket pk-363, FRM-566 2/2 in its linear body), scratchpad wcover.py
+
+23:43 correction to PK-346:W8 (wishkeeper replay case 6): the fold above bent his words; his raw reads «do all mechanical yourself first, what does not wants me». the folded line: «do all mechanical yourself first, what does not want me.» (only the «wants» typo fixed; «wants me» is his term)
+
+23:44: wishkeeper regression replay, first round: 6 of 7 caught, case 2 missed (docs/test-drive/wishkeeper-cache/regression-set.md § replays)
+
+PK-346:W23 (2026-11-11 23:15, dima): when you will SW? ❓
+PK-346:W24 (2026-11-11 23:15, dima): pick a good spot (do not break your current turns, after you land meaningful part). (context, not dima's words: the raw ends with the note "you are 61% ctx"; «prick» in the raw read as «pick».)
+23:49: W23 and W24 answered: the second wind ran at 23:20, after the FRM-491 land and the siesta card
+
+PK-346:W25 (2026-11-11 23:47, dima): why do you want to add a retired line? just eradicate the term «seat» and leave no references. (context, not dima's words: his steer on o65, the «seat» retired-term line in fleet-vibe; it replaces that line with a full removal)
+23:49: o65 answered: no retired line; flyway #2 («seat» saved names) widens to every reference, waves B and C with it, done when rg --hidden -i for the word seat over frame prints nothing (today 371 hits in 70 files)
+
+PK-346:W26 (2026-11-11 23:53, dima): so what useful gain we have out of it? ❓ (context, not dima's words: answers clio's 23:51 line on the 7 wishkeeper cards: replay test, 6 of 7 caught, cheaper auditor.)
+PK-346:W27 (2026-11-11 23:53, dima): yes. (context, not dima's words: answers clio's 23:51 line on the «seat» removal as the next chunk, «if it fits your window (ends ~02:20)».)
+PK-346:W28 (2026-11-11 23:53, dima): pick best most useful 2 cli chunks that could be completed before ~2:00
+PK-346:W29 (2026-11-11 23:53, dima): e.g. what cli lane can take after 570? ❓ (context, not dima's words: 570 is FRM-570, cli lane 8's running chunk.)
+23:56: W26 answered (the replay is insurance on the cheaper card, plus the 11-18 baseline), W27 taken (the «seat» removal runs tonight, herdr paths tomorrow), W28 and W29 answered as o67 (FRM-436, then FRM-424)
+
+PK-346:W30 (2026-11-11 23:56, dima): possible to merge then and switch cli lane to quick lane? ❓ (context, not dima's words: answers clio's 23:55 report lines on FRM-436, the commit bump verb, and FRM-424, unused-verb counts in x stats.)
+PK-346:W31 (2026-11-11 23:56, dima): and after 570 you will be able to rename threads to pretty shape? ❓ (context, not dima's words: 570 is FRM-570 per clio.)
+
+PK-346:W32 (2026-11-11 23:47, dima): are you sure your cli lane is not stuck, verifier did not go over 3 rounds? when will it finish? ❓
+PK-346:W33 (2026-11-11 23:48, dima): after it some important fix was planned? ❓
+PK-346:W34 (2026-11-11 23:59, dima): right, i forgot about this. then let cli lane work in the work tree, but still merge the chunks and remove the CI review. (context, not dima's words: answers clio's 23:57 line on the quick lane risk: x builds from main's own files, so a non-compiling save breaks every thread until fixed.)
 <!-- SECTION:NOTES:END -->

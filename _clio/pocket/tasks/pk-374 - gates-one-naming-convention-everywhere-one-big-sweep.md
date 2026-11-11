@@ -4,7 +4,7 @@ title: 'gates: one naming convention everywhere, one big sweep'
 status: open
 assignee: []
 created_date: '2026-11-09T20:03:00Z'
-updated_date: '2026-11-10T12:49:00Z'
+updated_date: '2026-11-11T22:00:00Z'
 labels:
   - s
 dependencies: []
@@ -57,4 +57,6 @@ PK-374:W17 (2026-11-09 22:39, dima, o80 steer): let's keep this pocket item park
 PK-374:W18 (2026-11-09 21:59, dima): gates: do the cheap wins and clean up everywhere.
 
 note 2026-11-10 14:50 wing 1: the 21:59 groom (siesta red). W1–W4 carry the 21:59 stamp but fold the o80 steer, the same words as W8–W17 (22:39); kept as written, W8–W17 is the sanctioned fold
+
+kept: 2026-11-12 — 💤 on his word (o80), unchanged
 <!-- SECTION:NOTES:END -->

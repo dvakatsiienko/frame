@@ -2562,6 +2562,13 @@ for (const line of [
     `ruby -I lib -e "system('x linear body FRM-1 --set /repo/b.md')"`,
     `perl -I lib -e "system('x linear body FRM-1 --set /repo/b.md')"`,
     `awk 'BEGIN{system("x linear body FRM-1 --set /repo/b.md")}'`,
+    // sixth sense round 6 on 77f877eb: stdin named as a path, a here-string, a process substitution, and awk's other names
+    `python3 /dev/fd/0 <<< "import os; os.system('x linear body FRM-1 --set /repo/b.md')"`,
+    `python3 /dev/stdin <<< "import os; os.system('x linear body FRM-1 --set /repo/b.md')"`,
+    `python3 <(printf '%s' "import os; os.system('x linear body FRM-1 --set /repo/b.md')")`,
+    `gawk 'BEGIN{system("x linear body FRM-1 --set /repo/b.md")}'`,
+    `mawk 'BEGIN{system("x linear body FRM-1 --set /repo/b.md")}'`,
+    `printf '%s' "import os; os.system('x linear body FRM-1 --set /repo/b.md')" | python3`,
 ])
     test(`inline code naming a body set still signs: ${line.split(' ')[0]} ${line.split(' ')[1]}`, async ($, on) => {
         const { ran } = world(on, [], SIGNED_TODAY());

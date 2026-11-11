@@ -73,6 +73,30 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given its pure helpers (`drafts.js`, the turn fold, the `hc send` reading)
   - then each has a vitest file beside it, run by the commit gate
 
+- ⬜ a model switch mid-conversation asks first
+  - given a thread whose chat holds messages
+  - when dima picks another model in the box's model menu
+  - then a card above the box says the cache is lost and the next message re-reads the whole conversation, with «Switch to <model>» and «Keep the cache»
+  - and Switch runs the pick, answering Claude Code's own «Switch model?» with its Yes; a new thread switches at once
+- ⬜ Copy message says it copied
+  - when dima right-clicks a message and picks Copy message
+  - then the whole message as written is on the clipboard and «Message copied» shows above the box for 1.5 s
+- ⬜ Claude Code's suggestion shows as ghost text
+  - given a thread done with its turn, Claude Code's own box holding its dim suggestion, his box empty
+  - then a dim «Tab <suggestion>» line sits above the box
+  - when dima presses Tab in the empty box, or clicks the line
+  - then the suggestion fills his box, ready to edit or send; typing anything hides the line
+  - and a new session's «Try "…"» placeholder never shows as a suggestion
+- ⬜ the working row times the turn
+  - given a thread at work
+  - then the row above the box shows the spinner, what Claude Code says it does, and the time since his prompt as m:ss (h:mm:ss past an hour), counting each second
+  - and the count redraws only while the shown thread works
+- ⬜ effort switches while a turn runs
+  - given a thread at work, a reply streaming
+  - when dima picks another effort in the box's effort menu
+  - then Claude Code sets it for this session at once, and the menu shows the new level
+  - and the model menu still waits for the turn to end; neither opens while the thread asks him something
+  - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56)
 - ⬜ the effort shows the thread's live value
   - given a thread's last reply ran at an effort
   - then the chat box's effort reads that value, past the default in settings
@@ -174,6 +198,18 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a reply links a file with a `file://` url
   - then a «📂 <name>» row sits under the reply, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder); a web link in the text opens in the browser as before
   - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
+- ⬜ a reply answers one message
+  - given a message in the chat
+  - when dima right-clicks it and picks Reply
+  - then an «↩ Reply» strip above the box shows the message's first words, × drops it
+  - and the next send goes with the message quoted («> » lines) before his text
+  - decision: Reply replaces «Quote message in chat», which pasted the quote into the box; right-click, since a lazy-list row takes no hover (herdr-app#598)
+- ⬜ files attach to the next message
+  - given a thread's box in the Chat view
+  - when dima presses + at the left of the lower card and picks files, or drops files on the box
+  - then each shows as a «📎 name» chip above the box, its path on hover, × takes it off
+  - and Send puts each path on its own line after the text, spaces escaped the way a terminal drop types them
+  - decision: a dev container's box shows no + (its Claude cannot read a mac path)
 - ⬜ the box is a stacked card with send in its corner
   - given the chat shows its box
   - then the text card, rounder and with a soft shadow, rests on a narrower card holding the model and effort pickers; a round ↑ send sits in the text card's bottom right, lit once text is typed, and the text uses the full width above one button-high bottom row

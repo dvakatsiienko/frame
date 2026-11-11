@@ -43,4 +43,6 @@ the regression set: `wishkeeper-cache/regression-set.md`, seven real highs, repl
 
 ## rounds
 
+- 2026-11-11 23:45 · the regression set's first replay, 7 blind runs on the new card (29db59e4), not siesta runs, so kept out of both arms' averages · caught 6/7, case 2 missed (`regression-set.md` § replays) · $3.27 a run (7 runs, $22.89), 5 min writes only, first-request warm share median 0.69 against the baseline's 0 · `measure.ts 2026-11-11T21:33:00Z`
+
 ## verdict
