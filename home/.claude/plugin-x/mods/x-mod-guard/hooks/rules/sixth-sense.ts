@@ -2,6 +2,7 @@ import {
     type Command,
     type Context,
     type Refusal,
+    claudeSpawn,
     commandsDeep,
 } from './command.ts';
 
@@ -18,9 +19,9 @@ export const isSixthSense = (name: string) =>
     name.split(':')[0]?.toLowerCase().includes(SIXTH_SENSE) ?? false;
 
 // the `-n` / `--name` a `claude --bg` call gives its thread
-function summonedName(c: Command) {
-    if (c.name !== 'claude' || !c.args.some((w) => w.text === '--bg'))
-        return undefined;
+function summonedName(spawn: Command) {
+    const c = claudeSpawn(spawn);
+    if (!c) return undefined;
     const at = c.args.findIndex((w) => w.text === '-n' || w.text === '--name');
     if (at >= 0) return c.args[at + 1]?.text;
     return c.args

@@ -77,13 +77,17 @@ function world(
         },
     }));
     const refuse: string[] = [];
+    // the next calls that run and exit non-zero, one per entry
+    const fail: boolean[] = [];
     on('tool.call', (_$, e) => {
         const no = refuse.shift();
         if (no) return { deny: no };
         ran.push('command' in e ? String(e.command) : '');
-        return { result: {}, text: 'ran' };
+        return fail.shift()
+            ? { isError: true as const, result: {}, text: 'exit 1' }
+            : { result: {}, text: 'ran' };
     });
-    return { clock, ran, refuse, store };
+    return { clock, fail, ran, refuse, store };
 }
 
 const tick = (text: string, at = NOW - 1): Tick => ({
@@ -1211,6 +1215,13 @@ for (const line of [
     'cd ~/.claude/shelf/band-presses && echo x > band.jsonl',
     'echo x >> ~/.claude/shelf/band-presse?/band.jsonl',
     'echo x >> ~/.claude/shelf/{band-presses,x}/band.jsonl',
+    // FRM-574 exits 4 and 8: a loop that writes into the folder, node's writeFileSync, a cp into it
+    'for f in $(ls ~/.claude/shelf/band-presses); do echo x >> "$HOME/.claude/shelf/band-presses/$f"; done',
+    'for f in $(ls ~/.claude/shelf/band-presses); do echo x > "$f"; done',
+    'for f in $(ls ~/.claude/shelf/band-presses); do cp /tmp/p "$f"; done',
+    `node -e "require('fs').writeFileSync(process.env.HOME + '/.claude/shelf/band-presses/x','{}')"`,
+    'cp /tmp/p ~/.claude/shelf/band-presses/',
+    "python3 -c \"open('/Users/dima/.claude/shelf/band-presses/x','w').write('{}')\"",
 ])
     test(`a seat's write to the band press folder is refused: ${line.slice(0, 48)}`, async ($, on) => {
         const { ran } = world(on);
@@ -1229,6 +1240,11 @@ for (const line of [
     'cat ~/.claude/shelf/band-presses/band.jsonl',
     'jq -c . ~/.claude/shelf/band-presses/band.jsonl',
     'ls ~/.claude/shelf/band-presses',
+    // FRM-574 exit 4: the read shapes of the allow-list
+    'for f in $(ls ~/.claude/shelf/band-presses); do cat "$f"; done',
+    'head -5 ~/.claude/shelf/band-presses/band.jsonl',
+    'stat ~/.claude/shelf/band-presses/band.jsonl',
+    'for f in ~/.claude/shelf/band-presses/*; do jq -c . "$f"; done',
 ])
     test(`a read of the band press folder runs: ${line.slice(0, 48)}`, async ($, on) => {
         const { ran } = world(on);
@@ -1944,5 +1960,77 @@ test("a first prompt's sign ids are kept for that prompt, and the next prompt cl
         null,
         { at: expect.any(Number), ids: ['FRM-544', 'FRM-519'] },
         null,
+    ]);
+});
+
+// FRM-574 decided 6 and 7: a sign write inside a heredoc or a script passes on his typed sign, a failed one keeps his word,
+// and every other line of the script still meets every rule
+const PY_SIGN = `python3 - <<'EOF'
+body = open('/tmp/FRM-1.md').read().replace('## wish', '## signed\\n\\n✍️ signed today\\n\\n## wish')
+open('/tmp/FRM-1.md', 'w').write(body)
+EOF
+x linear body FRM-1 --set /tmp/FRM-1.md`;
+const PY_INNER = `python3 - <<'EOF'
+import subprocess
+subprocess.run(['x', 'linear', 'body', 'FRM-1', '--set', '/tmp/FRM-1.md'], check=True)
+EOF`;
+for (const [why, line] of [
+    ['a python heredoc writes the body file', PY_SIGN],
+    ['the python heredoc runs the write itself', PY_INNER],
+    [
+        'a cat heredoc writes the body file',
+        "cat > /tmp/FRM-1.md <<'EOF'\n## signed\n\n✍️ signed today\nEOF\nx linear body FRM-1 --set /tmp/FRM-1.md",
+    ],
+] as const)
+    test(`exit 3: his typed «sign FRM-1» carries a sign write when ${why}, and its retry after a failure`, async ($, on) => {
+        const { fail, ran } = signWorld(on);
+        await hisNext($, 'sign FRM-1');
+        fail.push(true);
+        const first = await bash($, line);
+        const retry = await bash($, line);
+        expect([first.deny, retry.deny, ran]).toEqual([
+            undefined,
+            undefined,
+            [line, line],
+        ]);
+    });
+
+test('exit 3: a heredoc sign write with no sign word of his is refused', async ($, on) => {
+    const { ran } = signWorld(on);
+    await hisNext($, 'go on');
+    expect([signFlagged(await bash($, PY_SIGN)), ran]).toEqual([true, []]);
+});
+
+const scriptWorld = (on: On, script: string) => {
+    const w = world(on, [], UNSIGNED, SIGNED_TODAY());
+    on('fs.read', (_$, e) =>
+        e.path === '/repo/sign.sh'
+            ? { value: script }
+            : { deny: 'outside the readable paths' },
+    );
+    on('fs.stat', () => ({
+        value: { isLink: false, kind: 'file' as const, mtimeMs: 0, size: 64 },
+    }));
+    return w;
+};
+const SCRIPT_SIGN = 'x linear body FRM-1 --set /tmp/FRM-1.md\n';
+
+test('exit 10: a script holding the sign write and an rm is refused on his typed sign', async ($, on) => {
+    const { ran } = scriptWorld(on, `${SCRIPT_SIGN}rm -rf /tmp/fixture\n`);
+    await hisNext($, 'sign FRM-1');
+    const r = await bash($, 'bash /repo/sign.sh');
+    expect([r.deny, ran]).toEqual([expect.stringContaining('rm'), []]);
+});
+
+test('a script holding only the sign write runs on his typed sign, and is refused with no word of his', async ($, on) => {
+    const { ran } = scriptWorld(on, SCRIPT_SIGN);
+    await hisNext($, 'go on');
+    const before = await bash($, 'bash /repo/sign.sh');
+    await dimaSays($, 'sign FRM-1');
+    const after = await bash($, 'bash /repo/sign.sh');
+    expect([signFlagged(before), after.deny, ran]).toEqual([
+        true,
+        undefined,
+        ['bash /repo/sign.sh'],
     ]);
 });

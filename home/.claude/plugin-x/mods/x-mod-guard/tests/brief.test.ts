@@ -128,3 +128,27 @@ test('a stamp under X_STATE counts, as x brief check writes it there', async ($,
     expect((await bash($, SPAWN)).deny).toBeUndefined();
     expect(w.ran).toEqual([SPAWN]);
 });
+
+// FRM-574 decided 5: the herdr summon line is read as the claude call it starts
+const HC_SPAWN =
+    'hc run --bg --no-parent --no-notify --name codie --cwd /repo -- claude -n codie --model opus "$(cat briefs/b.md)" --remote-control';
+
+test('an hc run summon whose brief changed after its check is refused with the check door', async ($, on) => {
+    const w = world(on, {
+        '/repo/briefs/b.md': BRIEF.replace('thing', 'thinG'),
+        [STAMP]: '{}',
+    });
+    const r = await bash($, HC_SPAWN);
+    expect([r.deny, w.ran]).toEqual([
+        expect.stringContaining('x brief check /repo/briefs/b.md --repo /repo'),
+        [],
+    ]);
+});
+
+test('an hc run summon whose brief has a stamp runs untouched', async ($, on) => {
+    const w = world(on, { '/repo/briefs/b.md': BRIEF, [STAMP]: '{}' });
+    expect([(await bash($, HC_SPAWN)).deny, w.ran]).toEqual([
+        undefined,
+        [HC_SPAWN],
+    ]);
+});

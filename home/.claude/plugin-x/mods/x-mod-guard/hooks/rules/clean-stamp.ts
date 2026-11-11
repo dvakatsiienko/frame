@@ -150,6 +150,14 @@ export function touchesStore(
         (isWritesOnly ? writesNamed(command, named) : named(command))
     )
         return true;
+    // a loop over the folder's names hands each name to its body, so it reads only when nothing on the line writes
+    const writesNothing = parsed.every(
+        (c) =>
+            !c.writes.length &&
+            !c.appends.length &&
+            !CARRIERS.has(c.name) &&
+            !runsOpaque(c),
+    );
     return parsed.some(
         (c) =>
             // a relative target after a `cd` is judged where it lands too (`cd <shelf> && … > orbit-t*/x`)
@@ -169,9 +177,11 @@ export function touchesStore(
                 !(isWritesOnly && (LOOPS.has(c.name) || runsOpaque(c)))) ||
             (CARRIERS.has(c.name) && carriesDir(c, namedDir)) ||
             // `trash "$(realpath <store>)"`: the name reaches the word through a substitution
+            // a loop's list writes nothing: `for f in $(ls <folder>)` is judged by its body (FRM-574 decided 8)
             (c.args.some((w) => w.isExpanding) &&
                 c.feeders.some((f) => f.args.some((w) => named(w.text))) &&
-                !onlyReads(c, named)),
+                !onlyReads(c, named) &&
+                !(isWritesOnly && writesNothing && LOOPS.has(c.name))),
     );
 }
 

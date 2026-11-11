@@ -2,6 +2,7 @@ import {
     type Command,
     type Context,
     type Refusal,
+    claudeSpawn,
     commandsDeep,
     operands,
     resolve,
@@ -12,9 +13,9 @@ const CODIE = '/x:crew-codie';
 const READERS = new Set(['cat', 'sed', 'head', 'tail', 'awk', 'less', 'bat']);
 const INLINE = 'inline-brief';
 // a `claude --bg` call's brief file: the one `$(cat <path>)`, `$(< <path>)`, `cat <path> |` or `< <path>` reads
-function spawnBrief(c: Command, ctx: Context) {
-    if (c.name !== 'claude' || !c.args.some((w) => w.text === '--bg'))
-        return undefined;
+function spawnBrief(spawn: Command, ctx: Context) {
+    const c = claudeSpawn(spawn);
+    if (!c) return undefined;
     const dir = resolve(c.dir, '/', ctx);
     const text =
         c.feeders.flatMap((f) =>

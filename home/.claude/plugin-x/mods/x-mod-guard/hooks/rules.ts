@@ -34,7 +34,7 @@ import {
 } from './rules/command.ts';
 import { floor, gitDoor, opaque } from './rules/floor.ts';
 import { hazard } from './rules/hazard.ts';
-import { herdrClose } from './rules/herdr-close.ts';
+import { herdrClose, herdrLabel } from './rules/herdr-close.ts';
 import { isForegroundOk } from './rules/hint.ts';
 import { background, commentMidline, lint, unbraced } from './rules/lint.ts';
 import { frozenInstallDirs, lockfile } from './rules/lockfile.ts';
@@ -454,6 +454,7 @@ export function refusals(
         const judge = (cmd: Command, next: Command | undefined) =>
             floor(cmd, ctx) ??
             herdrClose(cmd, ctx) ??
+            herdrLabel(cmd, ctx) ??
             hazard(cmd, ctx) ??
             lockfile(cmd, ctx) ??
             overwrite(cmd, ctx) ??

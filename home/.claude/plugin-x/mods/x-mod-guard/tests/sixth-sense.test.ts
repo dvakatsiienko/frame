@@ -184,3 +184,15 @@ test('the check reads only the fixture registry', async ($, on) => {
     ).toEqual([]);
     expect(w.touched.some((p) => p.includes('/.local/state'))).toBe(false);
 });
+
+test('a second sixth sense through hc run is refused as its claude --bg twin is', async ($, on) => {
+    const w = world(on, [ROW], { 64218: START });
+    const r = await bash(
+        $,
+        SECOND.replace(
+            'cd ~/frame && claude --bg',
+            'hc run --bg --no-parent --no-notify --name ss --cwd ~/frame -- claude',
+        ),
+    );
+    expect([r.deny, w.ran]).toEqual([expect.stringContaining(`«${LIVE}»`), []]);
+});

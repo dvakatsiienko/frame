@@ -46,6 +46,8 @@ export type Context = {
     milestoneNames?: Map<string, string>;
     // the herdr closes (herdr-close.ts's herdrCloseKey) whose terminals herdr named, none of them a live seat
     herdrSafe?: Set<string>;
+    // this seat's own terminal is labelled a clio seat (herdr-close.ts's isClioSeat), read only when the command spawns one
+    isClioSeat?: boolean;
 };
 // a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check stamped its bytes
 export type Brief = { isCodie: boolean; isStamped: boolean };
@@ -1218,4 +1220,89 @@ function xAsCommand(words: string[]) {
         isMemberRead = true;
     }
     return -1;
+}
+
+// a redirect that only moves a stream to another fd or to /dev/null: it changes what a ticked command prints, never what it does
+const FD_ONLY = /^(\d?>&\d|&>>?\/dev\/null|\d?>>?\/dev\/null)$/;
+// what a ticked command may pipe into: readers that print, never one that runs or writes what it reads
+const PIPE_READERS = new Set([
+    'cat',
+    'column',
+    'cut',
+    'grep',
+    'head',
+    'jq',
+    'rg',
+    'sort',
+    'tail',
+    'tr',
+    'uniq',
+    'wc',
+]);
+// the line with one ticked command spelled whole in it swapped for `true`, so the rest is judged by every rule
+// (FRM-574 decided 2); `isPiped` when its output feeds a pipe, whose exit would hide its own. undefined when the quote
+// is not one whole command of the line, its own fd redirects aside
+export function tickedRest(command: string, quoted: string) {
+    const q = parse(quoted).segments;
+    const want = q[0]?.words.map((w) => w.text);
+    if (q.length !== 1 || !want?.length || q[0]?.subst.length) return undefined;
+    const segs = parse(command).segments;
+    for (
+        let at = command.indexOf(quoted);
+        at >= 0;
+        at = command.indexOf(quoted, at + 1)
+    ) {
+        const rest = `${command.slice(0, at)}true${command.slice(at + quoted.length)}`;
+        const swapped = parse(rest).segments;
+        if (swapped.length !== segs.length) continue;
+        const i = swapped.findIndex(
+            (s, j) =>
+                s.words[0]?.text === 'true' &&
+                s.words.slice(1).every((w) => FD_ONLY.test(w.text)) &&
+                !s.subst.length &&
+                segs[j]?.words.map((w) => w.text).join('\u0000') ===
+                    [...want, ...s.words.slice(1).map((w) => w.text)].join(
+                        '\u0000',
+                    ),
+        );
+        if (i < 0) continue;
+        const isPiped = swapped[i]?.sep === '|';
+        if (isPiped && !PIPE_READERS.has(swapped[i + 1]?.words[0]?.text ?? ''))
+            continue;
+        return { isPiped, rest };
+    }
+    return undefined;
+}
+
+// a claude this command starts as a thread of its own: `claude --bg …`, or the claude an `hc run … -- claude …` starts in a
+// herdr terminal, read as that call, `--cwd` its dir (FRM-574 decided 5)
+const HC_RUN_VALUED = new Set([
+    '--cwd',
+    '--label',
+    '--name',
+    '--on',
+    '--parent',
+    '--timeout',
+]);
+export function claudeSpawn(c: Command): Command | undefined {
+    if (c.name === 'claude')
+        return c.args.some((w) => w.text === '--bg') ? c : undefined;
+    if (c.name !== 'hc') return undefined;
+    const words = c.args.map((w) => w.text);
+    const verb = words.findIndex((w) => !w.startsWith('-'));
+    if (words[verb] !== 'run') return undefined;
+    let dir = c.dir;
+    for (let i = verb + 1; i < words.length; i++) {
+        const w = words[i] ?? '';
+        if (w === '--') continue;
+        if (w.startsWith('--cwd=')) dir = w.slice('--cwd='.length);
+        else if (HC_RUN_VALUED.has(w)) {
+            if (w === '--cwd') dir = words[i + 1] ?? dir;
+            i++;
+        } else if (!w.startsWith('-'))
+            return basename(w) === 'claude'
+                ? { ...c, args: c.args.slice(i + 1), dir, name: 'claude' }
+                : undefined;
+    }
+    return undefined;
 }

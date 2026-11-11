@@ -80,6 +80,13 @@ _Avoid_: value line, worth line
 The part of a thread name between `:` and `|` (`⚡ 🔎 sixth sense: mods lane 4 | main` → `mods lane 4`), spaces dropped and case folded; a name with no `|` has none. two sixth senses with one lane scope are twins, and only one may be live.
 _Avoid_: lane id, lane name
 
+**Clio seat**:
+A herdr terminal labelled `seat=clio` (main) or `seat=clio-wing-<n>` (a wing), read through `hc get`; the label its spawner set, never a cc name the session gives itself. a clio seat ends any seat that is not one, and no seat ends a clio seat without his tick.
+_Avoid_: coordinator terminal, clio pane
+
+**Lead label**:
+A terminal's `lead=<registry name>` label, set at its spawn: that registry name's seat may end it.
+
 **Operator-override**: x's word, defined in `x/GLOSSARY.md`; only dima's whole typed prompt flips it here, and the `raw-merge` rule asks it.
 
 **Hold**, **Holder**, **Release**: x-mod-holds' words, defined in its `GLOSSARY.md`; guard refuses a Bash write to a held file.

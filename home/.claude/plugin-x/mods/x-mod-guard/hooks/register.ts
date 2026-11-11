@@ -10,6 +10,7 @@ import {
     laidOver,
     resolve,
     scriptRun,
+    tickedRest,
 } from './rules/command.ts';
 import { linearWritePiped, stashSweep, stashSweeps } from './rules/floor.ts';
 import { trashedPaths } from './rules/hazard.ts';
@@ -17,6 +18,8 @@ import {
     type HerdrClose,
     herdrCloseKey,
     herdrCloseOf,
+    herdrLabelsOf,
+    isClioSeat,
 } from './rules/herdr-close.ts';
 import { bareHelps, helpScripts, hints, verbHelps } from './rules/hint.ts';
 import { linearWrite } from './rules/linear.ts';
@@ -604,6 +607,8 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     'write-then-run',
     // warn-only until sixth sense's clean and a 2-day replay with 0 fires on real calls (clio, 17:04)
     'pane-keys',
+    // FRM-574: the fence beside a clio's own close, a new refusal
+    'herdr-label',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
@@ -1056,10 +1061,12 @@ const pressedSince = (text: string, id: string, at: number) =>
 const STASH_ORBIT = { key: 'orbit', plugin: 'x-mod-stash' } as const;
 async function tickFor(
     $: EngineInterface,
-    scope: string,
+    scopeOf: string | ((tick: Tick) => string),
     covers: (tick: Tick) => boolean,
     spends: string[],
 ) {
+    const scope = (t: Tick) =>
+        typeof scopeOf === 'string' ? scopeOf : scopeOf(t);
     const { value: seatTicks = [] } = await $.state
         .get(TICKS)
         .catch(() => ({ value: [] }));
@@ -1072,11 +1079,11 @@ async function tickFor(
             (t) =>
                 now - t.at <= TICK_MS &&
                 t.at <= now &&
-                !spent.includes(`${t.id}@${t.at}:${scope}`) &&
-                !spends.includes(`${t.id}@${t.at}:${scope}`) &&
-                covers(t),
+                covers(t) &&
+                !spent.includes(`${t.id}@${t.at}:${scope(t)}`) &&
+                !spends.includes(`${t.id}@${t.at}:${scope(t)}`),
         );
-    if (tick) spends.push(`${tick.id}@${tick.at}:${scope}`);
+    if (tick) spends.push(`${tick.id}@${tick.at}:${scope(tick)}`);
     return tick;
 }
 // his typed «sign <id>» (FRM-544 slice 0): written only by this plugin's prompt.submit from his own prompt, the proof a
@@ -1133,23 +1140,23 @@ async function typedSignFor(
     if (sign) spends.push(key(sign.at));
     return sign;
 }
-// the raw merges a script run by path holds, as far as the guard reads one (BYT-94): a file this turn or this line wrote, or
-// the one on disk; a file past the cap, or a language other than shell, stays the rule's known gap
+// the scripts a line runs by path, as far as the guard reads one (BYT-94): a file this turn or this line wrote, or the one
+// on disk, each with the scripts it runs in turn; a file past the cap, or a language other than shell, stays the rules' gap
 const SCRIPT_READ_MAX = 256 * 1024;
-async function scriptMerges(
+async function scriptTexts(
     $: EngineInterface,
     command: string,
     cwd: string,
     ctx: Context,
     seen = new Set<string>(),
-): Promise<ReturnType<typeof rawMerges>> {
+): Promise<{ dir: string; path: string; text: string }[]> {
     const written = new Map<string, string>([
         ...(ctx.written ?? []),
         ...lineWrites(command, cwd, ctx).map(
             ([path, text]): [string, string] => [path, text],
         ),
     ]);
-    const found: ReturnType<typeof rawMerges> = [];
+    const found: { dir: string; path: string; text: string }[] = [];
     for (const c of commandsDeep(command, cwd)) {
         const ran = scriptRun(c, ctx);
         if (ran === undefined || seen.has(ran)) continue;
@@ -1168,11 +1175,22 @@ async function scriptMerges(
                 : undefined);
         if (!text) continue;
         found.push(
-            ...rawMerges(text, c.dir),
-            ...(await scriptMerges($, text, c.dir, { ...ctx, written }, seen)),
+            { dir: c.dir, path: ran, text },
+            ...(await scriptTexts($, text, c.dir, { ...ctx, written }, seen)),
         );
     }
     return found;
+}
+// the raw merges a script run by path holds
+async function scriptMerges(
+    $: EngineInterface,
+    command: string,
+    cwd: string,
+    ctx: Context,
+) {
+    return (await scriptTexts($, command, cwd, ctx)).flatMap((s) =>
+        rawMerges(s.text, s.dir),
+    );
 }
 // the github slug merge-auto reads when no --repo names one: the dir's origin, as x/go/gh.go repoOf does
 // the head sha github holds for the pr now; undefined when it does not read, so the brake's tick stays shut
@@ -1457,40 +1475,88 @@ async function markSeen($: EngineInterface, path: string) {
 
 // the herdr closes on the line that end no live seat: herdr names every terminal each one ends, and none carries a
 // `seat=` label or runs a claude agent this seat did not start; a terminal that finished ends nothing. a close herdr
-// cannot answer for stays out, so it is refused (dima's o53)
+// cannot answer for stays out, so it is refused (dima's o53). a clio seat ends any seat but a clio's, and a lead the seat
+// it labelled `lead=<its registry name>` (FRM-574 decided 1); a clio seat is ended by none
 async function herdrSafeOf($: EngineInterface, command: string, cwd: string) {
     const safe = new Set<string>();
     const closes = commandsDeep(command, cwd).flatMap((c) => {
         const close = herdrCloseOf(c);
         return close?.target &&
             !close.target.includes('$') &&
-            ['pane', 'space', 'tab', 'terminal'].includes(close.scope)
+            ['overlay', 'pane', 'space', 'tab', 'terminal'].includes(
+                close.scope,
+            )
             ? [close]
             : [];
     });
     if (!closes.length) return safe;
+    // an overlay close is safe on what herdr lists open; a mod toggle on a mod not open opens it
+    const status = closes.some((c) => c.scope === 'overlay')
+        ? await herdrJson($, ['herdr-app', 'status'])
+        : undefined;
+    const open: unknown[] = Array.isArray(status?.overlays)
+        ? status.overlays
+        : [];
+    for (const close of closes.filter((c) => c.scope === 'overlay'))
+        if (
+            status &&
+            (close.verb === 'herdr-app do mod.open' ||
+                open.some(
+                    (o) =>
+                        o === close.target ||
+                        (typeof o === 'object' &&
+                            o !== null &&
+                            ((o as { id?: unknown }).id === close.target ||
+                                (o as { name?: unknown }).name ===
+                                    close.target)),
+                ))
+        )
+            safe.add(herdrCloseKey(close));
     const self = await $.env.get('HC_TERMINAL_ID').catch(() => undefined);
+    const isClio = await isClioCaller($, self);
+    const sid = await $.session.id().catch(() => undefined);
+    const name = sid
+        ? await sessionName($, sid).catch(() => undefined)
+        : undefined;
     const window = closes.some((c) => c.scope !== 'terminal')
         ? await herdrJson($, ['herdr-app', 'ls'])
         : undefined;
-    for (const close of closes) {
+    for (const close of closes.filter((c) => c.scope !== 'overlay')) {
         const terminals = terminalsOf(close, window);
         if (!terminals) continue;
         let isSafe = true;
         for (const t of terminals) {
             const got = await herdrJson($, ['hc', 'get', t, '--json']);
-            const isSeat =
-                got?.state === 'live' &&
-                (typeof got.labels?.seat === 'string' ||
-                    (/claude/.test(
-                        `${got.status?.app ?? ''} ${got.argv?.[0] ?? ''}`,
-                    ) &&
-                        got.parent !== self));
-            if (!got || isSeat) isSafe = false;
+            if (!got) {
+                isSafe = false;
+                continue;
+            }
+            if (got.state !== 'live') continue;
+            const seat = got.labels?.seat;
+            if (isClioSeat(seat)) {
+                isSafe = false;
+                continue;
+            }
+            if (isClio || (name !== undefined && got.labels?.lead === name))
+                continue;
+            if (
+                typeof seat === 'string' ||
+                (/claude/.test(
+                    `${got.status?.app ?? ''} ${got.argv?.[0] ?? ''}`,
+                ) &&
+                    got.parent !== self)
+            )
+                isSafe = false;
         }
         if (isSafe) safe.add(herdrCloseKey(close));
     }
     return safe;
+}
+// this seat's own terminal, as herdr labels it; an env with no terminal, or one herdr cannot read, is no clio
+async function isClioCaller($: EngineInterface, self: string | undefined) {
+    if (!self) return false;
+    const got = await herdrJson($, ['hc', 'get', self, '--json']);
+    return got?.state === 'live' && isClioSeat(got.labels?.seat);
 }
 type HerdrWindow = {
     spaces?: {
@@ -1610,6 +1676,16 @@ async function lookUp(
         herdrSafe: await herdrSafeOf($, command, cwd).catch(
             () => new Set<string>(),
         ),
+        isClioSeat: commandsDeep(command, cwd).some((c) =>
+            herdrLabelsOf(c)?.pairs.some(
+                ([k, v]) => k === 'seat' && isClioSeat(v),
+            ),
+        )
+            ? await isClioCaller(
+                  $,
+                  await $.env.get('HC_TERMINAL_ID').catch(() => undefined),
+              ).catch(() => false)
+            : undefined,
         kinds,
         manifestDirs,
         milestoneNames,
@@ -1849,7 +1925,11 @@ export const register: Register = (on) => {
             const result = await next(
                 run !== typed ? { ...e, command: run } : e,
             );
-            if (result.deny !== undefined && spends.length) {
+            // a call that failed never spends his word: the retry passes on it (FRM-574 decided 7)
+            if (
+                (result.deny !== undefined || result.isError) &&
+                spends.length
+            ) {
                 const { value: held = [] } = await $.state.get(SPENT);
                 await $.state.set(
                     SPENT,
@@ -2077,7 +2157,29 @@ export const register: Register = (on) => {
         // before the command runs, so one this command writes, one behind a variable and one that cannot be read count as new
         // every sign on the line is judged on its own (R2: a second sign behind an old one)
         const written = writtenPaths(typed, cwd, ctx);
-        for (const sign of signWords(typed, cwd, ctx)) {
+        // a sign write in a script the line runs is a sign like one typed on the line, and on his word every other line of
+        // that script still meets every rule, a floor one refusing for real (FRM-574 decided 6)
+        const signScripts = (
+            await scriptTexts($, typed, cwd, ctx).catch(() => [])
+        ).filter((s) => signWords(s.text, s.dir, ctx).length > 0);
+        for (const script of signScripts) {
+            const r = refusals(script.text, script.dir, {
+                ...ctx,
+                ...facts,
+            })[0];
+            if (!r) continue;
+            const said = `x-mod-guard stopped this one command. instead: run the sign write as a call of its own. why: ${script.path} holds a sign write beside a refused command (rule ${r.rule}): ${r.why}.`;
+            const stop = await enforce(
+                { ...r, door: 'run the sign write as a call of its own' },
+                `nothing in this command ran — ${said}`,
+                said,
+            );
+            if (stop) return stop;
+        }
+        for (const sign of [
+            ...signWords(typed, cwd, ctx),
+            ...signScripts.flatMap((s) => signWords(s.text, s.dir, ctx)),
+        ]) {
             const signText =
                 sign.file === undefined ||
                 sign.file.includes('$') ||
@@ -2438,6 +2540,46 @@ export const register: Register = (on) => {
                 quotesCommand(command),
                 spends,
             );
+            // his tick on one command of a longer line passes that one; the rest of the line meets every rule, and a pipe it
+            // feeds runs with pipefail, so a failed run reads as failed and keeps his tick (FRM-574 decided 2 and 7)
+            const spanOf = (t: Tick) =>
+                t.targets.find((q) => tickedRest(command, q.trim()));
+            const inLine = tick
+                ? undefined
+                : await tickFor(
+                      $,
+                      (t) => guardedOf(spanOf(t) ?? ''),
+                      (t) => {
+                          const q = spanOf(t);
+                          const swap = q && tickedRest(command, q.trim());
+                          return (
+                              !!swap &&
+                              check(swap.rest, cwd, { ...ctx, ...facts })
+                                  .kind === 'run'
+                          );
+                      },
+                      spends,
+                  );
+            const swap =
+                inLine && tickedRest(command, spanOf(inLine)?.trim() ?? '');
+            if (inLine && swap) {
+                await record($, {
+                    command,
+                    door: `dima's tick on ${inLine.id}, inside the line`,
+                    kind: 'escaped',
+                    rule: [...new Set(found.map((r) => r.rule))].join(', '),
+                    target: targets.join(', '),
+                    why: inLine.text,
+                });
+                $.ui.log(
+                    `x-mod-guard: ran on dima's tick ${inLine.id}: ${targets.join(', ')}`,
+                );
+                if (!swap.isPiped) return go();
+                notes.push(
+                    "set -o pipefail first, so the ticked command's own exit is the one read and a failed run keeps dima's tick",
+                );
+                return go(`set -o pipefail; ${command}`);
+            }
             // every refusal on the line is judged: a warn-only one ahead of a floor rule never runs the line past it, and
             // one the marker names waits for the marker's own proof, so a warn-only flag never turns a proven marker into a deny
             if (!tick) {

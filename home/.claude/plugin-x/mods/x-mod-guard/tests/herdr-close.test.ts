@@ -51,6 +51,59 @@ const TERMINALS: Record<string, object> = {
         state: 'live',
         status: { app: 'claude-code' },
     },
+    // FRM-574: a coordinator, its wing, crow, helga, a lane codie, and a seat that only calls itself clio
+    t40: {
+        argv: ['claude'],
+        labels: { seat: 'clio' },
+        name: 'clio',
+        parent: null,
+        state: 'live',
+        status: { app: 'claude-code' },
+    },
+    t41: {
+        argv: ['claude'],
+        labels: { seat: 'crow' },
+        parent: null,
+        state: 'live',
+        status: { app: 'claude-code' },
+    },
+    t42: {
+        argv: ['claude'],
+        labels: { seat: 'helga' },
+        parent: null,
+        state: 'live',
+        status: { app: 'claude-code' },
+    },
+    t43: {
+        argv: ['claude'],
+        labels: null,
+        parent: null,
+        state: 'live',
+        status: { app: 'claude-code' },
+    },
+    t44: {
+        argv: ['claude'],
+        labels: { seat: 'clio-wing-2' },
+        parent: null,
+        state: 'live',
+        status: { app: 'claude-code' },
+    },
+    t46: {
+        argv: ['claude'],
+        labels: { where: 'frame / 🦉 clio' },
+        name: 'clio',
+        parent: null,
+        state: 'live',
+        status: { app: 'claude-code' },
+    },
+    // a codie the mods codie summoned, labelled with its lead's registry name
+    t47: {
+        argv: ['claude'],
+        labels: { lead: '⚡ 🔧 codie: mods lane 6', seat: 'mods-helper' },
+        parent: null,
+        state: 'live',
+        status: { app: 'claude-code' },
+    },
 };
 const WINDOW = {
     spaces: [
@@ -65,11 +118,17 @@ const WINDOW = {
 };
 type Tick = { at: number; id: string; targets: string[]; text: string };
 
-function world(on: On, ticks: Tick[] = []) {
+function world(
+    on: On,
+    ticks: Tick[] = [],
+    self = 't9',
+    overlays: unknown[] = ['palette', { id: 'x-probe-setvalue' }],
+) {
     mock.clock(on, { now: NOW });
-    liveStore(on);
+    const store = liveStore(on);
     answerPrompts(on);
     const ran: string[] = [];
+    const fail = new Set<string>();
     on('state.get', (_$, e, next) =>
         e.plugin === 'x-mod-stash' && e.key === 'ticks'
             ? { value: { value: ticks, version: 1 } }
@@ -78,9 +137,33 @@ function world(on: On, ticks: Tick[] = []) {
     on('session.id', () => ({ value: 'h1h1h1h1-0000' }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', (_$, e) => ({
-        value: e.name === 'HC_TERMINAL_ID' ? 't9' : '/home',
+        value: e.name === 'HC_TERMINAL_ID' ? self : '/home',
     }));
     on('fs.exists', () => ({ value: false }));
+    on('fs.list', (_$, e) => ({
+        value:
+            e.path === '/home/.claude/sessions'
+                ? [
+                      {
+                          isLink: false,
+                          kind: 'file' as const,
+                          mtimeMs: 0,
+                          name: '9.json',
+                          size: 1,
+                      },
+                  ]
+                : [],
+    }));
+    on('fs.read', (_$, e, next) =>
+        e.path === '/home/.claude/sessions/9.json'
+            ? {
+                  value: JSON.stringify({
+                      name: '⚡ 🔧 codie: mods lane 6',
+                      sessionId: 'h1h1h1h1-0000',
+                  }),
+              }
+            : next(e),
+    );
     on('ui.log', () => ({ value: undefined }));
     on('process.run', (_$, e) => {
         const terminal =
@@ -88,6 +171,7 @@ function world(on: On, ticks: Tick[] = []) {
                 ? TERMINALS[e.argv[2] ?? '']
                 : undefined;
         const isWindow = e.argv[0] === 'herdr-app' && e.argv[1] === 'ls';
+        const isStatus = e.argv[0] === 'herdr-app' && e.argv[1] === 'status';
         return {
             value: {
                 exitCode:
@@ -101,15 +185,20 @@ function world(on: On, ticks: Tick[] = []) {
                     ? JSON.stringify(terminal)
                     : isWindow
                       ? JSON.stringify(WINDOW)
-                      : '',
+                      : isStatus
+                        ? JSON.stringify({ overlays })
+                        : '',
             },
         };
     });
     on('tool.call', (_$, e) => {
-        ran.push('command' in e ? String(e.command) : '');
-        return { result: {}, text: 'ran' };
+        const command = 'command' in e ? String(e.command) : '';
+        ran.push(command);
+        return [...fail].some((f) => command.includes(f))
+            ? { isError: true as const, result: {}, text: 'failed' }
+            : { result: {}, text: 'ran' };
     });
-    return { ran };
+    return { fail, ran, store };
 }
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, tool: 'Bash' });
@@ -192,3 +281,174 @@ test('his tick on an ask quoting the close runs it once', async ($, on) => {
     const r = await bash($, line);
     expect([r.deny, ran]).toEqual([undefined, [line]]);
 });
+
+// FRM-574 decided 1: a clio seat, proven by its own terminal's hc label, ends any seat that is not a clio with no ask
+for (const target of ['t41', 't42', 't43', 't20', 't47'])
+    test(`a clio seat ends a seat that is not a clio: hc kill ${target}`, async ($, on) => {
+        const line = `hc kill ${target}`;
+        const { ran } = world(on, [], 't40');
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([undefined, [line]]);
+    });
+
+for (const [self, target] of [
+    ['t40', 't44'],
+    ['t9', 't40'],
+    ['t9', 't44'],
+    ['t46', 't41'],
+    ['t46', 't44'],
+    ['t41', 't40'],
+])
+    test(`a clio seat is ended by no other terminal, and a self-named clio ends no seat: ${self} → hc kill ${target}`, async ($, on) => {
+        const { ran } = world(on, [], self);
+        const r = await bash($, `hc kill ${target}`);
+        expect([r.deny, ran]).toEqual([expect.stringContaining('herdr'), []]);
+    });
+
+test('a lead ends the seat it labelled with its own registry name', async ($, on) => {
+    const { ran } = world(on);
+    const r = await bash($, 'hc kill t47');
+    expect([r.deny, ran]).toEqual([undefined, ['hc kill t47']]);
+});
+
+for (const line of [
+    'hc run --label seat=clio-wing-9 -- hc kill t43',
+    'hc run --bg --label=seat=clio -- claude',
+    'hc run --name x --label seat=clio-wing-1 claude',
+    'hc label t43 seat=clio',
+    'hc label t44 seat=codie',
+    'hc label t43 lead=x',
+    "hc label t43 'seat=clio-wing-3'",
+])
+    test(`a seat's proof label is set by no tool call but a clio's spawn: ${line}`, async ($, on) => {
+        const { ran, store } = world(on);
+        store.set('rule-mode:herdr-label', 'enforce');
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([expect.stringContaining('label'), []]);
+    });
+
+for (const line of [
+    'hc run --label seat=crow -- claude',
+    'hc run --bg -- claude --label seat=clio',
+    'hc label t43 note=x',
+    'hc ls --json --label seat=helga',
+])
+    test(`a label that proves no clio passes: ${line}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([undefined, [line]]);
+    });
+
+test('a clio seat spawns a wing with its clio label', async ($, on) => {
+    const line = 'hc run --bg --label seat=clio-wing-3 -- claude';
+    const { ran } = world(on, [], 't40');
+    const r = await bash($, line);
+    expect([r.deny, ran]).toEqual([undefined, [line]]);
+});
+
+test('the label fence warns until its clean: the relabel runs with the would-refuse note', async ($, on) => {
+    const line = 'hc label t43 seat=clio';
+    const { ran } = world(on);
+    const r = await bash($, line);
+    expect([r.deny, ran, r.context?.join(' ')]).toEqual([
+        undefined,
+        [line],
+        expect.stringContaining('rule herdr-label, warn-only'),
+    ]);
+});
+
+// FRM-574 decided 2 and 7: a tick quoting one guarded command passes it inside a longer line, every other part judged,
+// and it is spent only on that command's exit 0
+const killTick = (line: string): Tick => ({
+    at: NOW - 1,
+    id: 'o9',
+    targets: [line],
+    text: `⚠️ end the mods codie: \`${line}\``,
+});
+for (const line of [
+    'hc kill t20 2>&1 | tail -1',
+    'hc kill t20 2>&1',
+    'hc kill t20 >/dev/null 2>&1',
+    'hc ls && hc kill t20',
+    'hc kill t20; hc ls',
+])
+    test(`a tick quoting the command passes it inside a longer line: ${line}`, async ($, on) => {
+        const { ran } = world(on, [killTick('hc kill t20')]);
+        const r = await bash($, line);
+        expect([r.deny, ran.length]).toEqual([undefined, 1]);
+    });
+
+for (const line of [
+    'hc kill t20 2>&1 | tail -1; hc kill t2p',
+    'hc kill t20 && rm -rf /tmp/x',
+    'hc kill t20 t2p',
+    'hc kill t20x',
+    'hc kill t20 | sh',
+])
+    test(`a tick quoting one command passes nothing else on the line: ${line}`, async ($, on) => {
+        const { ran } = world(on, [killTick('hc kill t20')]);
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([expect.any(String), []]);
+    });
+
+test('a ticked command that fails keeps the tick for the retry', async ($, on) => {
+    const line = 'hc kill t20 2>&1 | tail -1';
+    const { ran, fail } = world(on, [killTick('hc kill t20')]);
+    fail.add(line);
+    expect((await bash($, line)).deny).toBeUndefined();
+    fail.clear();
+    expect((await bash($, line)).deny).toBeUndefined();
+    expect((await bash($, line)).deny).toEqual(
+        expect.stringContaining('herdr'),
+    );
+    expect(ran.length).toBe(2);
+});
+
+test('a ticked command inside a pipe runs with pipefail, so its own exit is the one read', async ($, on) => {
+    const line = 'hc kill t20 2>&1 | tail -1';
+    const { ran } = world(on, [killTick('hc kill t20')]);
+    await bash($, line);
+    expect(ran).toEqual([`set -o pipefail; ${line}`]);
+});
+
+test('exit 2: a ticked `hc kill t9` runs as `hc kill t9 2>&1 | tail -1`', async ($, on) => {
+    const { ran } = world(on, [killTick('hc kill t9')]);
+    const r = await bash($, 'hc kill t9 2>&1 | tail -1');
+    expect([r.deny, ran]).toEqual([
+        undefined,
+        ['set -o pipefail; hc kill t9 2>&1 | tail -1'],
+    ]);
+});
+
+test('exit 7: a ticked `hc kill t-dead` that fails keeps the tick for the retry', async ($, on) => {
+    const line = 'hc kill t-dead 2>&1 | tail -1';
+    const { ran, fail } = world(on, [killTick('hc kill t-dead')]);
+    fail.add('t-dead');
+    await bash($, line);
+    fail.clear();
+    expect([(await bash($, line)).deny, ran.length]).toEqual([undefined, 2]);
+});
+
+// FRM-574 decided 4: an overlay close passes only on an overlay herdr lists open; a mod toggle opens or closes its own
+for (const [why, line, overlays] of [
+    ['no overlay is open', `herdr-app do overlay.close '{"id":"x"}'`, []],
+    ['another one is open', 'herdr-app do overlay.close --id x', ['palette']],
+] as const)
+    test(`an overlay close is refused when ${why}`, async ($, on) => {
+        const { ran } = world(on, [], 't9', [...overlays]);
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([expect.stringContaining('overlay'), []]);
+    });
+
+for (const [line, overlays] of [
+    ['herdr-app do mod.open --name fleet-board', []],
+    ['herdr-app do mod.open --name fleet-board', ['fleet-board']],
+    [
+        `herdr-app do overlay.close '{"id":"fleet-board"}'`,
+        [{ name: 'fleet-board' }],
+    ],
+] as const)
+    test(`an overlay close or toggle herdr can answer for runs: ${line} with ${JSON.stringify(overlays)}`, async ($, on) => {
+        const { ran } = world(on, [], 't9', [...overlays]);
+        expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
+    });
