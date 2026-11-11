@@ -1412,8 +1412,9 @@ export function withDimaOk(command: string, pr: string) {
     }
     return undefined;
 }
-// his instruction to merge a pr: «merge <n>», «land <n>» or «ship <n>», a list of numbers allowed, outside a quote, with no
-// negation before the verb and not in a question; a number anywhere else in his prompt is no word (FRM-519 item 15)
+// his instruction to merge a pr: a sentence that opens on «merge <n>», «land <n>» or «ship <n>» (after a yes, ok or
+// please), a list of numbers allowed, outside a quote, with no negation anywhere in it and no question; a number anywhere
+// else in his prompt is no word (FRM-519 item 15)
 const QUOTED = /«[^»]*»|"[^"]*"|“[^”]*”|`[^`]*`/g;
 export function saysMerge(prompt: string, pr: string) {
     if (!/^\d+$/.test(pr)) return false;
@@ -1422,13 +1423,16 @@ export function saysMerge(prompt: string, pr: string) {
 // `pr` a number, or `\d+` for any: pane-proof fences a seat typing any of them (FRM-519 exit 8)
 function saysMergeOf(prompt: string, pr: string) {
     const said = new RegExp(
-        String.raw`(?<!(?:n['’]t|\bnot|\bnever|\bno)\s)\b(?:merge|land|ship)\s+(?:#?\d+\s*(?:,|and|&)\s*)*#?${pr}\b`,
+        String.raw`^\s*(?:(?:yes|yeah|ok|okay|please|sure)\b[\s,!]*)*(?:merge|land|ship)\s+(?:#?\d+\s*(?:,|and|&)\s*)*#?${pr}\b`,
         'i',
     );
+    const negated = /n['’]t\b|\b(?:not|never|no|nope|later)\b/i;
     return prompt
         .replaceAll(QUOTED, ' ')
         .split(/(?<=[.!?\n])/)
-        .some((s) => !s.trim().endsWith('?') && said.test(s));
+        .some(
+            (s) => !s.trim().endsWith('?') && !negated.test(s) && said.test(s),
+        );
 }
 export function mergeWord(command: string, cwd: string): Refusal | undefined {
     const words = mergeAutoCalls(command, cwd).flatMap((c) => c.words);

@@ -41,6 +41,10 @@ for (const said of [
     'ok, ship 104 now',
     'merge 103 and 104',
     'Merge 104.',
+    'yes, merge 104',
+    'merge #104 please',
+    'land 104!',
+    'the ci is green. merge 104',
 ])
     test(`merge-auto's --dima-ok runs when dima's last prompt says «${said}»`, async ($, on) => {
         const { ran } = world(on);
@@ -63,6 +67,13 @@ for (const said of [
     'should we merge 104?',
     'the note says «merge 104»',
     'he typed "merge 104" by mistake',
+    // round 10: the verb opens his sentence, and a negation anywhere in it refuses
+    "don't you dare merge 104",
+    "please don't ever merge 104",
+    'never, ever merge 104',
+    'no way, merge 104 is wrong',
+    'I wonder if we should merge 104',
+    'merge 104 later, not now',
 ])
     test(`merge-auto's --dima-ok stays refused when dima's prompt says «${said}»`, async ($, on) => {
         const { ran } = world(on);

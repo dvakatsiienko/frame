@@ -429,7 +429,7 @@
   - proof: tests/ticks.test.ts
 - ✅ merge-auto's `--dima-ok <pr>` runs only when dima's last typed prompt tells it to merge that pr (FRM-423, FRM-519 item 15)
   - given a Bash call running `x lane merge-auto … --dima-ok <pr>` (or `--dima-ok=<pr>`)
-  - when dima's last prompt typed at the composer or sent over the bridge says «merge <n>», «land <n>» or «ship <n>» (`#104` too, a list like «merge 103 and 104» too), outside a quote, with no `not`, `never`, `no` or `…n't` before the verb, and not in a question
+  - when dima's last prompt typed at the composer or sent over the bridge says «merge <n>», «land <n>» or «ship <n>» (`#104` too, a list like «merge 103 and 104» too), as the opening of a sentence (after a yes, ok or please), outside a quote, with no `not`, `never`, `no`, `nope`, `later` or `…n't` anywhere in that sentence, and not in a question
   - then it runs; when no such prompt exists, it names another number (`1041`, `#10`), names the pr only in a question («why is 104 red»), a «don't merge 104», «shouldn't merge 104», a quoted «merge 104», or only a peer or a notification said it, then nothing runs and the refusal (rule `dima-ok-flag`) names the words that open it for this pr
   - decision: «go ahead with #104» and «ok «#104» lands» passed before and refuse now: his number inside any sentence once opened the flag, so «why is 131 red, don't merge it» passed (FRM-503's audit, door 3; his tick o120)
   - proof: tests/merge-word.test.ts::merge-auto's --dima-ok runs when dima's last prompt says …; merge-auto's --dima-ok stays refused when dima's prompt says …
