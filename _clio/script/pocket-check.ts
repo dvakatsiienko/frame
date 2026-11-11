@@ -486,9 +486,10 @@ function noteLines(text: string): string[] {
         text
             .split('<!-- SECTION:NOTES:BEGIN -->\n')[1]
             ?.split('<!-- SECTION:NOTES:END -->')[0] ?? '';
+    // a joiner stripped for Backlog.md #949 keeps the line
     return body
         .split('\n')
-        .map((line) => line.trim())
+        .map((line) => line.replaceAll(ZERO_WIDTH_JOINER, '').trim())
         .filter(Boolean);
 }
 

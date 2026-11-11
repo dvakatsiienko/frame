@@ -964,6 +964,15 @@ describe('lostNoteLines', () => {
         ]);
     });
 
+    test('a note line that only lost its emoji joiner is not lost', () => {
+        expect(
+            lostNoteLines(
+                notes('done: \u{1F426}⬛ crow grade'),
+                notes('done: \u{1F426}‍⬛ crow grade'),
+            ),
+        ).toEqual([]);
+    });
+
     test('a task with no notes at HEAD has nothing to lose', () => {
         expect(lostNoteLines(notes('done'), 'no notes here')).toEqual([]);
     });
