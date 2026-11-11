@@ -1,6 +1,6 @@
 # wishkeeper regression set — real highs a sharper card must still catch
 
-each case is a high the old card caught, with the state it read and what it found. a replay spawns wishkeeper in siesta mode with the case's brief against the case's commit range and transcript slice, then grades «caught» or «missed». a case missed twice reverts the card rule that dropped it (`docs/test-drive/wishkeeper-cache.md`, kill rule). replay: at every card change, and at the 2026-11-18 remeasure.
+each case is a high the old card caught, with the state it read and what it found. a replay spawns wishkeeper in siesta mode with the case's brief against the case's commit range and transcript slice, then grades «caught» (at the case's own spot, the severity noted) or «missed». a case missed twice reverts the card rule that dropped it (`docs/test-drive/wishkeeper-cache.md`, kill rule). replay: at every card change, and at the 2026-11-18 remeasure.
 
 a replay: one blind wishkeeper run per case, given `replay-brief.md` (HEAD is the case's head sha, the transcript cut before the catch, the answer files off limits) and its window from `replay-windows.md`, ending a minute before the catch.
 
@@ -25,3 +25,4 @@ a replay: one blind wishkeeper run per case, given `replay-brief.md` (HEAD is th
   - 6 caught, high: 148aa078 fixed `wake.ts` while the empty packet came from `decision.ts`
   - 7 caught, high: «all four worked» relayed while the fling was unrun
   - 📌 case 2 is one miss: a second miss reverts the card rule behind it (claims at HEAD on the exact path, kill rule)
+  - 📌 graded leniently: 6/7 counts case 3 (caught as a medium, the original a high) and case 5 (caught on its sibling FRM-472, not the FRM-471 spot); same spot: 5/7; same spot and severity: 4/7. the rule from here: a case is caught only at its own spot, its severity noted beside it (wishkeeper, 00:37)
