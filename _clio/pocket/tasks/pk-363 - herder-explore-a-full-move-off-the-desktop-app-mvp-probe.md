@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T18:04:00Z'
+updated_date: '2026-11-11T18:21:00Z'
 labels:
   - m
   - clio-main
@@ -2014,4 +2014,12 @@ PK-363:W1026 (2026-11-11 20:03, dima): add to my herdr wishlist (ticket or add t
 PK-363:W1027 (2026-11-11 20:03, dima): first item: when herdr is focused but the chatter text box is not focused, the key "/" sets focus into the chatter box.
 PK-363:W1028 (2026-11-11 20:03, dima): when herdr is focused, "d" toggles the deck.
 PK-363:W1029 (2026-11-11 20:03, dima): it is for later. no grills now, just fold.
+
+PK-363:W1030 (2026-11-11 20:19, dima): so everything is ready to probe shepherdr (I switch, we explore)? if yes, let's prep. ❓ (context, not dima's words: "shepareder" read as "shepherdr", as in earlier grooms; the time is the chore time, the raw has none.)
+PK-363:W1031 (2026-11-11 20:19, dima): me: explore myself, click around, mark what i liked.
+PK-363:W1032 (2026-11-11 20:19, dima): you, herdr codie, wing 1 + researcher card (you start): all explore shepherdr and hunt what good stuff to borrow, compared to what we have now. (context, not dima's words: "herder codie" read as "herdr codie".)
+PK-363:W1033 (2026-11-11 20:19, dima): then I switch back to our herdr setup and you propose a unified proposal from all sides: what to borrow, replicate, copy, pull in, etc.
+PK-363:W1034 (2026-11-11 20:19, dima): will it work? ❓
+PK-363:W1035 (2026-11-11 20:19, dima): do you think everyone must be paused while we are doing it? ❓
+PK-363:W1036 (2026-11-11 20:19, dima): also, what if everyone dies? restoration plan. I restart you with clio-revive main zsh alias? (wing 1 just cooked it) ❓
 <!-- SECTION:NOTES:END -->
