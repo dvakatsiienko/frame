@@ -439,7 +439,9 @@
   - makes: a `steer-held:<session id>` key in the store, the held messages in order
   - given a codie whose ctx meter reads 55 % or more, when 🦉 clio or a wing sends it a message, then the codie reads a second wind note naming the sender and its fill instead of the message, and its 🐦‍🔥 reads ✍️
   - and a next message while one is held starts no turn; every held message joins the first turn after the compact, once, in the order sent
-  - given dima takes the wind back, then the held messages join the codie's next turn
+  - given dima takes the wind back, or `🐦‍🔥 second wind` is switched off mid-hold, then the held messages join the codie's next turn, and a message after that arrives as sent; a wind refused for work started after `pending: none` keeps them held until the compact
+  - given a wind dima already took back, then a message arrives as sent and the take-back stands
+  - and the held list sits under the codie's registry name, so a /clear or a resume hands it to the next conversation
   - given a codie under 55 %, a sender that is no coordinator (a sixth sense), clio's pause and resume words, or `🐦‍🔥 second wind` switched off, then the message arrives as sent
   - decision: the receiver holds it, so the coordinator's send never changes and one switch turns it off; nothing cancels a hold but the compact or dima's take-back
   - proof: tests/wind.test.ts::clio's message to a codie past 55 % becomes the wind note (+ the held message marks the wind as writing, a second message waits unseen, under 55 % reads as sent, a full sixth sense reads as sent, a sixth sense or a pause passes, a wind dima takes back hands it over, switched off holds nothing)

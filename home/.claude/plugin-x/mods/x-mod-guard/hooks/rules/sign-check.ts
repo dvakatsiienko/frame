@@ -4,7 +4,8 @@ import { commandsDeep, peel } from './command.ts';
 // a body set whose file this line writes is judged as it runs: its `x` becomes this function, which reads the file once,
 // judges those bytes against the ticket's current body (a sign line or a `## signed` merge grant it lacks word for word,
 // the judge `hasNewSignLine` runs ahead) and sends the same bytes on stdin, held in the shell, never reopened by path, so
-// neither the line nor a watcher writing the file can change what was judged (dima's o43). a body
+// neither the line nor a watcher writing the file can change what was judged (dima's o43); `builtin`, since zsh's
+// `command printf` runs /usr/bin/printf, where a body near ARG_MAX would fail. a body
 // that does not read refuses too. the seat writes the rest of the line, so the check runs only where nothing on it can
 // reach the function: every other command on an allow-list, no function, alias or path override, and every body set of
 // its ids renamed; anything else is judged before the line runs, as before (wisphunter and security on 6c6c57cf)
@@ -37,9 +38,9 @@ const FN = [
     `[ "$k" = 1 ] || { ${NO} "it names --set $k times"; return 1; };`,
     `b=$(command cat -- "$f" && printf x) || { ${NO} "$f did not read"; return 1; }; b=\${b%x};`,
     `cur=$(command x linear read "$id" | command jq -er '.data.tickets[0] | objects | (.description // "") | strings') || { ${NO} "$id's current body did not read, so $f counts as a new sign"; return 1; };`,
-    `command printf %s "$b" | XG_CUR=$cur command awk '${NEW_SIGN}' || { ${NO} "$f holds a sign line or a merge grant $id's body lacks"; return 1; };`,
+    `builtin printf %s "$b" | XG_CUR=$cur command awk '${NEW_SIGN}' || { ${NO} "$f holds a sign line or a merge grant $id's body lacks"; return 1; };`,
     'p=; for a in "$@"; do if [ "$p" = --set ]; then n+=(/dev/stdin); else case $a in --set=*) n+=(--set=/dev/stdin);; *) n+=("$a");; esac; fi; p=$a; done;',
-    'command printf %s "$b" | command x "${n[@]}"; };',
+    'builtin printf %s "$b" | command x "${n[@]}"; };',
 ].join(' ');
 
 // what may share a line with a checked body set: none of these can define a function or alias, change the path, or run

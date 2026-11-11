@@ -184,6 +184,13 @@ describe.each(SHELLS)('the run-time sign check under %s', (shell) => {
         },
     );
 
+    // zsh's `command printf` is /usr/bin/printf, which takes the body as one argv word (wisphunter on 93fd7f56)
+    it('sends a body past the argument limit whole', () => {
+        const big = `${SIGNED}${'a'.repeat(1_500_000)}\n`;
+        const r = run(SET, SIGNED, big, shell);
+        expect([r.code, r.sent?.length]).toEqual([0, big.length]);
+    });
+
     it.each([
         [
             'a second --set',
