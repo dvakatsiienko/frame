@@ -1,9 +1,10 @@
 import { type Segment, type Word, parse } from '../shell.ts';
 import { commandsDeep, peel } from './command.ts';
 
-// a body set whose file this line writes is judged as it runs: its `x` becomes this function, which copies the file,
-// judges the copy against the ticket's current body (a sign line or a `## signed` merge grant it lacks word for word,
-// the judge `hasNewSignLine` runs ahead) and sends that copy, so nothing on the line can change what was judged. a body
+// a body set whose file this line writes is judged as it runs: its `x` becomes this function, which reads the file once,
+// judges those bytes against the ticket's current body (a sign line or a `## signed` merge grant it lacks word for word,
+// the judge `hasNewSignLine` runs ahead) and sends the same bytes on stdin, held in the shell, never reopened by path, so
+// neither the line nor a watcher writing the file can change what was judged (dima's o43). a body
 // that does not read refuses too. the seat writes the rest of the line, so the check runs only where nothing on it can
 // reach the function: every other command on an allow-list, no function, alias or path override, and every body set of
 // its ids renamed; anything else is judged before the line runs, as before (wisphunter and security on 6c6c57cf)
@@ -29,17 +30,16 @@ const NEW_SIGN = [
 const DOOR =
     'ask dima to tick «✍️ sign $id: <title>», or to type «sign $id» himself';
 const FN = [
-    `${NO}() { [ -n "$2" ] && command rm -f -- "$2"; echo "x-mod-guard refused this body set: $1. ${DOOR}" >&2; return 1; };`,
-    `${SIGN_CHECK}() { local id=$3 f= p= a t rc cur k=0; local -a n;`,
+    `${NO}() { echo "x-mod-guard refused this body set: $1. ${DOOR}" >&2; return 1; };`,
+    `${SIGN_CHECK}() { local id=$3 f= p= a b cur k=0; local -a n;`,
     `case $id in FRM-[0-9]*|BYT-[0-9]*) ;; *) ${NO} "its ticket id is not the verb's first word"; return 1;; esac;`,
     'for a in "$@"; do [ "$p" = --set ] && { f=$a; k=$((k+1)); }; case $a in --set=*) f=${a#--set=}; k=$((k+1));; esac; p=$a; done;',
     `[ "$k" = 1 ] || { ${NO} "it names --set $k times"; return 1; };`,
-    `t=$(command mktemp "\${TMPDIR:-/tmp}/x-mod-guard-sign.XXXXXX") || { ${NO} "no copy of $f could be made"; return 1; };`,
-    `command cat -- "$f" > "$t" || { ${NO} "$f did not read" "$t"; return 1; };`,
-    `cur=$(command x linear read "$id" | command jq -er '.data.tickets[0] | objects | (.description // "") | strings') || { ${NO} "$id's current body did not read, so $f counts as a new sign" "$t"; return 1; };`,
-    `XG_CUR=$cur command awk '${NEW_SIGN}' < "$t" || { ${NO} "$f holds a sign line or a merge grant $id's body lacks" "$t"; return 1; };`,
-    'p=; for a in "$@"; do if [ "$p" = --set ]; then n+=("$t"); else case $a in --set=*) n+=("--set=$t");; *) n+=("$a");; esac; fi; p=$a; done;',
-    'command x "${n[@]}"; rc=$?; command rm -f -- "$t"; return $rc; };',
+    `b=$(command cat -- "$f" && printf x) || { ${NO} "$f did not read"; return 1; }; b=\${b%x};`,
+    `cur=$(command x linear read "$id" | command jq -er '.data.tickets[0] | objects | (.description // "") | strings') || { ${NO} "$id's current body did not read, so $f counts as a new sign"; return 1; };`,
+    `command printf %s "$b" | XG_CUR=$cur command awk '${NEW_SIGN}' || { ${NO} "$f holds a sign line or a merge grant $id's body lacks"; return 1; };`,
+    'p=; for a in "$@"; do if [ "$p" = --set ]; then n+=(/dev/stdin); else case $a in --set=*) n+=(--set=/dev/stdin);; *) n+=("$a");; esac; fi; p=$a; done;',
+    'command printf %s "$b" | command x "${n[@]}"; };',
 ].join(' ');
 
 // what may share a line with a checked body set: none of these can define a function or alias, change the path, or run

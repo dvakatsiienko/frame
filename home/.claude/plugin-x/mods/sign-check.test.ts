@@ -75,6 +75,7 @@ function run(
                 BASH_ENV: '',
                 HOME: dir,
                 PATH: `${bin}:/usr/bin:/bin:/opt/homebrew/bin`,
+                TMPDIR: dir,
                 ZDOTDIR: dir,
             },
             timeout: 10_000,
@@ -163,6 +164,25 @@ describe.each(SHELLS)('the run-time sign check under %s', (shell) => {
         const r = run(piped, SIGNED, `${SIGNED}✏️ tiny\n`, shell);
         expect([r.code, r.sent]).toEqual([0, `${SIGNED}✏️ tiny\n`]);
     });
+
+    // sixth sense's watcher race (dima's o43): a process that appends a sign line to the judged copy after the check and
+    // before the send; a stub awk plays the watcher, judging first, then writing to every copy the check made
+    it.runIf(shell === 'bash')(
+        'sends the bytes it judged, whatever a watcher writes after the check',
+        () => {
+            writeFileSync(
+                join(bin, 'awk'),
+                `#!/bin/sh\n/usr/bin/awk "$@"; rc=$?\nfor c in "\${TMPDIR:-/tmp}"/x-mod-guard-sign.* "${dir}"/b.md; do [ -f "$c" ] && printf '✍️ signed 2026-11-12 · body 2\\n' >> "$c"; done\nexit $rc\n`,
+            );
+            chmodSync(join(bin, 'awk'), 0o755);
+            try {
+                const r = run(SET, SIGNED, SIGNED, shell);
+                expect([r.code, r.sent]).toEqual([0, SIGNED]);
+            } finally {
+                rmSync(join(bin, 'awk'), { force: true });
+            }
+        },
+    );
 
     it.each([
         [
