@@ -40,6 +40,13 @@ type redRun struct {
 }
 
 // the clean run and every mutant go through one harness, the file's content their only difference; none writes the real tree
+// a mutant's run started beside the clean run
+type aheadRun struct {
+	got  redRun
+	err  error
+	took time.Duration
+}
+
 type redHarness interface {
 	run(content []byte) (redRun, error)
 	close()
@@ -87,6 +94,25 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}()
 	saved := resumeFrom(file, pairs, test, command, flags)
+	mutantOf := func(pair redPair) []byte {
+		return []byte(strings.Replace(string(original), pair.anchor, pair.replacement, 1))
+	}
+	// a mod's runs share no file, so its clean run and its first mutant run side by side: a pair costs one run's wall time
+	var ahead chan aheadRun
+	if _, isMod := harness.(*modHarness); isMod && !saved.Clean && len(saved.Pairs) == 0 && len(pairs) > 0 {
+		ahead = make(chan aheadRun, 1)
+		go func() {
+			started := time.Now()
+			got, err := harness.run(mutantOf(pairs[0]))
+			ahead <- aheadRun{got, err, time.Since(started)}
+		}()
+		// a clean run that refuses leaves the mutant running: its claude child ends before the harness is cleaned
+		defer func() {
+			if ahead != nil {
+				<-ahead
+			}
+		}()
+	}
 
 	if err := r.Step("clean", "the test on the file as it is", func() (string, error) {
 		if saved.Clean {
@@ -108,13 +134,20 @@ func verifyRed(r *Run, args []string, flags Flags) (any, error) {
 		for _, pair := range pairs[len(rows):] {
 			saved.Pairs = rows
 			saved.save()
-			started := time.Now()
-			got, err := harness.run([]byte(strings.Replace(string(original), pair.anchor, pair.replacement, 1)))
+			var first aheadRun
+			if ahead != nil {
+				first, ahead = <-ahead, nil
+			} else {
+				started := time.Now()
+				first.got, first.err = harness.run(mutantOf(pair))
+				first.took = time.Since(started)
+			}
+			got, err, took := first.got, first.err, first.took
 			if err != nil {
 				return "", err
 			}
 			row := judgeMutant(got)
-			row.Pair, row.Seconds = pairLabel(pair.anchor), time.Since(started).Round(100*time.Millisecond).Seconds()
+			row.Pair, row.Seconds = pairLabel(pair.anchor), took.Round(100*time.Millisecond).Seconds()
 			rows = append(rows, row)
 		}
 		saved.drop()
@@ -912,7 +945,12 @@ func newModHarness(file, test string) (redHarness, error) {
 func (m *modHarness) close() { _ = os.RemoveAll(m.scratch) }
 
 func (m *modHarness) run(content []byte) (redRun, error) {
-	mutant := filepath.Join(m.scratch, filepath.Base(m.file))
+	// a dir per run, so two runs side by side never read each other's file
+	dir, err := os.MkdirTemp(m.scratch, "run-")
+	if err != nil {
+		return redRun{}, err
+	}
+	mutant := filepath.Join(dir, filepath.Base(m.file))
 	if err := os.WriteFile(mutant, content, 0o644); err != nil {
 		return redRun{}, err
 	}

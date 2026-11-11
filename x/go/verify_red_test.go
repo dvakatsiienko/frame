@@ -378,7 +378,7 @@ func TestVerifyRedTakesAnAnchorOpeningOnATab(t *testing.T) {
 	}
 }
 
-// ported from red-proof's suite: a mod's red base names the failed test and runs it once
+// ported from red-proof's suite: a mod's red base names the failed test; its first mutant ran beside it, so two runs and no more
 func TestVerifyRedRefusesAModsRedBase(t *testing.T) {
 	t.Parallel()
 	f := modRedFixture(t)
@@ -387,8 +387,8 @@ func TestVerifyRedRefusesAModsRedBase(t *testing.T) {
 
 	got, log := verifyRedIn(t, f, nil, f.file, "/* MUTANT */", "", f.test)
 
-	if got.code != 1 || !strings.Contains(got.stdout, "a.test.ts reads the hook") || strings.Count(log, "\n") != 1 {
-		t.Fatalf("exit %d, %d runs, want a refusal naming the failed test after one run:\n%s", got.code, strings.Count(log, "\n"), got.stdout)
+	if got.code != 1 || !strings.Contains(got.stdout, "a.test.ts reads the hook") || strings.Count(log, "\n") != 2 {
+		t.Fatalf("exit %d, %d runs, want a refusal naming the failed test after the clean run and the mutant beside it:\n%s", got.code, strings.Count(log, "\n"), got.stdout)
 	}
 }
 
@@ -583,6 +583,30 @@ func TestVerifyRedMutatesAFileAGoTestReadsAtRuntime(t *testing.T) {
 
 	if got.code != 0 || got.data["verdict"] != verdictRed {
 		t.Fatalf("exit %d, data %v, want red on a file read at runtime:\n%s", got.code, got.data, got.stdout)
+	}
+}
+
+// a mod's clean run and its first mutant share nothing, so they run side by side: each run waits up to 5 s for the other to start
+func TestVerifyRedRunsAModsCleanRunBesideItsFirstMutant(t *testing.T) {
+	t.Parallel()
+	f := modRedFixture(t)
+	bin := strings.TrimPrefix(strings.SplitN(f.env[0], ":", 2)[0], "PATH=")
+	write(t, filepath.Join(bin, "claude"), `#!/bin/sh
+d="$3"
+[ "$2" = validate ] && { echo "✔ Validation passed"; exit 0; }
+echo start >> "$VERIFY_LOG"
+i=0
+while [ "$(grep -c start "$VERIFY_LOG")" -lt 2 ] && [ $i -lt 50 ]; do sleep 0.1; i=$((i + 1)); done
+echo end >> "$VERIFY_LOG"
+echo "tests/a.test.ts:"
+if grep -q MUTANT "$d"/hooks/*; then echo "(fail) a.test.ts reads the hook [1.0ms]"; echo "  AssertionError: expected 1 to be 2"; exit 1; fi
+echo "(pass) a.test.ts [1.0ms]"; echo "Ran 1 tests across 1 files."
+`)
+
+	got, log := verifyRedIn(t, f, nil, f.file, f.anchor, f.replacement, f.test)
+
+	if got.code != 0 || got.data["verdict"] != verdictRed || log != "start\nstart\nend\nend\n" {
+		t.Fatalf("exit %d, data %v, the runs logged %q, want red off two runs that overlapped:\n%s", got.code, got.data, log, got.stdout)
 	}
 }
 
@@ -1139,7 +1163,7 @@ func TestVerifyRedRefusesAPnpmCommandThatWritesTheStore(t *testing.T) {
 		{"pnpm", "pipeline"}, {"pnpm", "deploy", "out"}, {"pnpm", "approve-builds"}, {"pnpm", "vitest", "run"},
 		// a package manager behind a run, behind a launcher, or as one word of a shell line
 		{"pnpm", "exec", "pnpm", "install"}, {"pnpm", "exec", "npm", "i"}, {"env", "X=1", "pnpm", "install"},
-		{"corepack", "pnpm", "install"}, {"npx", "pnpm", "install"}, {"sh", "-c", "pnpm install"},
+		{"corepack", "pnpm", "install"}, {"npx", "pnpm", "install"}, {"sh", "-c", "pnpm install"}, {"pnpm", "exec", "sh", "-c", "pnpm install"},
 	} {
 		got, log := verifyRedIn(t, f, nil, append([]string{f.file, f.anchor, f.replacement, "--"}, command...)...)
 
