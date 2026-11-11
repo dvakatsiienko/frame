@@ -32,6 +32,10 @@ func TestLinearSignCheckRefusesABodyAddingDimasWord(t *testing.T) {
 		{name: "a grant moved to another sign", current: "## why\n\n✍️ re-signed 2026-11-11 · body aaaaaaaa\n\n" + signCheckBody + "merge: pre-approved\n", file: "## why\n\n" + signCheckBody + "✍️ re-signed 2026-11-11 · body aaaaaaaa\nmerge: pre-approved\n", want: "a merge grant", reads: 1},
 		{name: "a grant with no sign line", current: "## why\n\nthe want\n", file: "## why\n\nthe want\n\n## signed\n\nmerge: pre-approved\n", want: "a merge grant", reads: 1},
 		{name: "a grant kept as it was", current: signCheckBody + "merge: pre-approved\n", file: signCheckBody + "merge: pre-approved\n", reads: 1},
+		{name: "a pre-approval added under a re-sign that follows a cancel", current: signCheckBody + "🚫 cancelled 2026-11-11\n✍️ re-signed 2026-11-11 · body bbbbbbbb\n", file: signCheckBody + "🚫 cancelled 2026-11-11\n✍️ re-signed 2026-11-11 · body bbbbbbbb\nmerge: pre-approved\n", want: "a merge grant", reads: 1},
+		{name: "a re-sign pending line deleted", current: signCheckBody + "merge: pre-approved\n✍️ re-sign pending — scope moved\n", file: signCheckBody + "merge: pre-approved\n", want: "a merge grant", reads: 1},
+		{name: "the sign line deleted under a pre-approval, a tiny line kept", current: signCheckBody + "merge: pre-approved\n", file: "## why\n\nthe want\n\n## signed\n\nmerge: pre-approved\n✏️ changed 1970-01-01 — tiny\n", want: "a merge grant", reads: 1},
+		{name: "a cancel line added under a grant", current: signCheckBody + "merge: pre-approved\n", file: signCheckBody + "merge: pre-approved\n🚫 cancelled 2026-11-11\n", reads: 1},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

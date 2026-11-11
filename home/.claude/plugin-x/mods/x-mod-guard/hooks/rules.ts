@@ -1356,8 +1356,6 @@ export const mergeAutoRepo = (words: string[]) =>
               : [],
     )[0];
 // the github slug in a remote url: `git@github.com:o/n.git`, `https://github.com/o/n`
-export const remoteSlug = (url: string) =>
-    url.trim().match(/github\.com[:/]([\w.-]+\/[\w.-]+?)(?:\.git)?\/?$/)?.[1];
 // `--dima-ok <pr>` added right after a top-level merge-auto call's own last word, so a following `&&`, `;` or comment
 // keeps it; a call in a nested shell, or one whose last word is not a plain word, gets none
 export function withDimaOk(command: string, pr: string) {

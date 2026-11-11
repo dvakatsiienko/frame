@@ -30,11 +30,11 @@ function spawnBrief(spawn: Command, ctx: Context) {
         file: text ? { path: resolve(text, dir, ctx), text } : undefined,
     };
 }
-// the brief files every codie summon in the command reads, for the caller to hash and look up
+// the brief files every codie summon in the command reads, each with its summon dir, for the caller to ask x brief check
 export function briefPaths(command: string, cwd: string, ctx: Context = {}) {
     return commandsDeep(command, cwd).flatMap((c) => {
-        const path = spawnBrief(c, ctx)?.file?.path;
-        return path ? [path] : [];
+        const spawn = spawnBrief(c, ctx);
+        return spawn?.file ? [{ dir: spawn.dir, path: spawn.file.path }] : [];
     });
 }
 // a codie summon runs only on a brief whose bytes passed x brief check
@@ -61,7 +61,7 @@ export function brief(c: Command, ctx: Context): Refusal | undefined {
         rule: 'brief',
         targets: [file.text],
         why: found
-            ? 'the brief has no clean x brief check stamp for its current bytes'
+            ? 'x brief check did not pass the brief as it is now'
             : 'the brief file is missing',
     };
 }

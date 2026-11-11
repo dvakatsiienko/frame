@@ -2,31 +2,13 @@ import { type Segment, type Word, parse } from '../shell.ts';
 import { commandsDeep, peel } from './command.ts';
 
 // a body set whose file this line writes is judged as it runs: its `x` becomes this function, which reads the file once,
-// judges those bytes against the ticket's current body (a sign line or a `## signed` merge grant it lacks word for word,
-// the judge `hasNewSignLine` runs ahead) and sends the same bytes on stdin, held in the shell, never reopened by path, so
+// has x linear sign-check judge those bytes (the judge `hasNewSignLine` asks ahead) and sends the same bytes on stdin, held in the shell, never reopened by path, so
 // neither the line nor a watcher writing the file can change what was judged (dima's o43). a body
 // that does not read refuses too. the seat writes the rest of the line, so the check runs only where nothing on it can
 // reach the function: every other command on an allow-list, no function, alias or path override, and every body set of
 // its ids renamed; anything else is judged before the line runs, as before (wisphunter and security on 6c6c57cf)
 export const SIGN_CHECK = '__x_mod_guard_sign_set';
 const NO = '__x_mod_guard_sign_no';
-const NEW_SIGN = [
-    'function grant(L, n,   h, i, e, at, s, pre) {',
-    '  h = 0; for (i = 1; i <= n; i++) if (L[i] ~ /^## signed[ \\t]*$/) h = i',
-    '  if (!h) return "!"',
-    '  e = n + 1; for (i = h + 1; i <= n; i++) if (L[i] ~ /^## /) { e = i; break }',
-    '  at = 0; for (i = h + 1; i < e; i++) if (L[i] ~ /^✍️ (re-)?signed/) at = i',
-    '  s = at ? at : h + 1; pre = 0',
-    '  for (i = s; i < e; i++) {',
-    '    if (L[i] ~ /^(🚫 cancelled|✍️ re-sign pending)/) return "!"',
-    '    if (L[i] ~ /^merge: pre-approved[ \\t]*$/) pre = 1',
-    '  }',
-    '  return pre ? (at ? L[at] : "") : "!"',
-    '}',
-    'BEGIN { n = split(ENVIRON["XG_CUR"], C, "\\n"); for (i = 1; i <= n; i++) H[C[i]] = 1 }',
-    '{ F[++m] = $0; if ($0 ~ /^✍️ (re-)?signed / && !($0 in H)) bad = 1 }',
-    'END { if (!bad) { g = grant(F, m); if (g != "!" && g != grant(C, n)) bad = 1 } exit bad }',
-].join('\n');
 const DOOR =
     'ask dima to tick «✍️ sign $id: <title>», or to type «sign $id» himself';
 const FN = [
@@ -36,8 +18,7 @@ const FN = [
     'for a in "$@"; do [ "$p" = --set ] && { f=$a; k=$((k+1)); }; case $a in --set=*) f=${a#--set=}; k=$((k+1));; esac; p=$a; done;',
     `[ "$k" = 1 ] || { ${NO} "it names --set $k times"; return 1; };`,
     `b=$(command cat -- "$f" && printf x) || { ${NO} "$f did not read"; return 1; }; b=\${b%x};`,
-    `cur=$(command x linear read "$id" | command jq -er '.data.tickets[0] | objects | (.description // "") | strings') || { ${NO} "$id's current body did not read, so $f counts as a new sign"; return 1; };`,
-    `command printf %s "$b" | XG_CUR=$cur command awk '${NEW_SIGN}' || { ${NO} "$f holds a sign line or a merge grant $id's body lacks"; return 1; };`,
+    `command printf %s "$b" | command x linear sign-check "$id" --body-file /dev/stdin >&2 || { ${NO} "x linear sign-check counts $f as a new sign or a moved merge grant (or did not read $id)"; return 1; };`,
     'p=; for a in "$@"; do if [ "$p" = --set ]; then n+=(/dev/stdin); else case $a in --set=*) n+=(--set=/dev/stdin);; *) n+=("$a");; esac; fi; p=$a; done;',
     'command printf %s "$b" | command x "${n[@]}"; };',
 ].join(' ');

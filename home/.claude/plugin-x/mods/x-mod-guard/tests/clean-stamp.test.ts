@@ -5,11 +5,26 @@ import { liveStore } from './store.ts';
 
 const SID = 'c1c1c1c1-0000';
 
-// a registry row as the desktop app writes one, 2026-11-06: its sessionId is the transcript's
-function world(on: On, name: string | null) {
+// a registry row as the desktop app writes one, 2026-11-06: its sessionId is the transcript's; role: the session's thread
+// record as x thread list answers it (FRM-570 rule 9), whatever the name says
+function world(on: On, name: string | null, role?: string) {
     mock.clock(on, { now: 1_000_000 });
     liveStore(on);
     const ran: string[] = [];
+    on('process.run', (_$, e) => ({
+        value: {
+            exitCode: 0,
+            isStderrTruncated: false,
+            isStdoutTruncated: false,
+            stderr: '',
+            stdout:
+                e.argv.join(' ') === 'x thread list --json'
+                    ? JSON.stringify({
+                          data: { threads: [{ role, sessionId: SID }] },
+                      })
+                    : '',
+        },
+    }));
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
@@ -131,10 +146,16 @@ for (const line of WRITES)
         expect(ran).toEqual([]);
     });
 
-for (const name of ['🌗 🔎 sixth sense: cli lane 5 | #129', '🦉 clio'])
+// exit 15: the sixth sense is known by its record, so a name with no member word or no emoji reads the same
+for (const [name, role] of [
+    ['🌗 🔎 sixth sense: cli lane 5 | #129', 'sixth-sense'],
+    ['cli lane 5 | #129', 'sixth-sense'],
+    ['sixth sense: cli lane 5', 'sixth-sense'],
+    ['🦉 clio', undefined],
+] as const)
     for (const line of WRITES)
         test(`${name} writes it: ${line}`, async ($, on) => {
-            const { ran } = world(on, name);
+            const { ran } = world(on, name, role);
             const r = await bash($, line);
             expect(r.deny ?? '').not.toContain('clean-stamp');
             // the guard's other rules still read a write over a file unread, so only the hook's own line must run

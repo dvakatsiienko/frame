@@ -2,7 +2,13 @@ import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
 import { cleanStampWrite } from './rules/clean-stamp.ts';
-import type { Brief, Context, Refusal, Written } from './rules/command.ts';
+import type {
+    Brief,
+    Context,
+    Refusal,
+    Thread,
+    Written,
+} from './rules/command.ts';
 import {
     TICKET_KEY,
     UNREAD,
@@ -47,7 +53,7 @@ import {
 import { overwrittenPaths, writtenPaths } from './rules/overwrite.ts';
 import { rewrite } from './rules/rewrite.ts';
 import { SIGN_CHECK, withSignCheck } from './rules/sign-check.ts';
-import { isSixthSense, sixthSenseSummons } from './rules/sixth-sense.ts';
+import { summonedSessionIds } from './rules/sixth-sense.ts';
 import { SPEC_DOOR, SPEC_WHY, TO_MEMBER, isSpecMissing } from './rules/spec.ts';
 import {
     RESIGN_DOOR,
@@ -97,7 +103,6 @@ import {
     rawLinear,
     rawPluginUpdate,
     refusals,
-    remoteSlug,
     removedTrees,
     signWords,
     signsTyped,
@@ -233,26 +238,30 @@ async function trialGap($: EngineInterface, prompt: string) {
 }
 
 const CODIE_IDS = ['/x:crew-codie', '/x:crew-coder']; // read-both: the skill id before 10-29
-// what x brief check stamps: sha256 over the file's raw bytes, under $X_STATE or ~/.local/state/x (x/go/brief.go)
+// one rule, one reader: x brief check's word on the brief as it is now; run from home so the shim runs main's x, and
+// no answer reads as not passed
 async function readBrief(
     $: EngineInterface,
-    path: string,
+    brief: { dir: string; path: string },
     home: string | undefined,
 ): Promise<Brief> {
-    const { base64 } = await $.fs.read(path, { as: 'bytes' });
-    const bytes = Uint8Array.from(atob(base64), (ch) => ch.charCodeAt(0));
-    const sum = [
-        ...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
-    ]
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-    const state = (await $.env.get('X_STATE')) || `${home}/.local/state/x`;
-    return {
-        isCodie: CODIE_IDS.some((id) =>
-            new TextDecoder().decode(bytes).includes(id),
-        ),
-        isStamped: await $.fs.exists(`${state}/briefs/${sum}.json`),
-    };
+    const text = await $.fs.read(brief.path);
+    const run = await $.process
+        .run(
+            ['x', 'brief', 'check', brief.path, '--repo', brief.dir, '--json'],
+            { cwd: home, timeoutMs: 8000 },
+        )
+        .catch(() => undefined);
+    const isStamped = (() => {
+        try {
+            return (
+                (JSON.parse(run?.stdout ?? '') as { ok?: unknown }).ok === true
+            );
+        } catch {
+            return false;
+        }
+    })();
+    return { isCodie: CODIE_IDS.some((id) => text.includes(id)), isStamped };
 }
 
 // the dir a repo's `backlog.config.yml` names as `backlog_directory` (clio's pocket: `pocket`), else none
@@ -314,54 +323,23 @@ async function registryEntry($: EngineInterface, sid: string) {
     return undefined;
 }
 
-// the registry names of the sixth senses whose process still runs: a row outlives a crash, and a pid comes back as another
-// process, so ps must name the pid with the start time the row wrote, in UTC as the registry writes it (FRM-479)
-async function liveSixthSenses($: EngineInterface) {
-    const dir = `${await $.env.get('HOME')}/.claude/sessions`;
-    const rows: { name: string; pid: number; start?: string }[] = [];
-    for (const f of await $.fs.list(dir).catch(() => [])) {
-        if (!f.name.endsWith('.json')) continue;
-        try {
-            const v = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as {
-                name?: unknown;
-                pid?: unknown;
-                procStart?: unknown;
-            };
-            if (
-                typeof v.name === 'string' &&
-                typeof v.pid === 'number' &&
-                isSixthSense(v.name)
-            )
-                rows.push({
-                    name: v.name,
-                    pid: v.pid,
-                    start:
-                        typeof v.procStart === 'string'
-                            ? v.procStart.replaceAll(/\s+/g, ' ')
-                            : undefined,
-                });
-        } catch {}
+// one rule, one reader: x's thread records, each live session joined to the role, lane and ticket x wrote at its
+// summon; run from home so the shim runs main's x, and no answer reads as no thread (FRM-479, FRM-570)
+async function threadList($: EngineInterface): Promise<Thread[]> {
+    const run = await $.process
+        .run(['x', 'thread', 'list', '--json'], {
+            cwd: await $.env.get('HOME'),
+            timeoutMs: 4000,
+        })
+        .catch(() => undefined);
+    try {
+        const { data } = JSON.parse(run?.stdout ?? '') as {
+            data?: { threads?: Thread[] };
+        };
+        return data?.threads ?? [];
+    } catch {
+        return [];
     }
-    if (!rows.length) return [];
-    const ps = await $.process.run(
-        ['ps', '-o', 'pid=,lstart=', '-p', rows.map((r) => r.pid).join(',')],
-        { env: { LC_ALL: 'C', TZ: 'UTC' }, timeoutMs: 4000 },
-    );
-    const running = new Map(
-        ps.stdout.split('\n').flatMap((line) => {
-            const m = line.trim().match(/^(\d+)\s+(.+)$/);
-            return m
-                ? [[Number(m[1]), m[2]?.replaceAll(/\s+/g, ' ').trim()]]
-                : [];
-        }),
-    );
-    return rows
-        .filter(
-            (r) =>
-                running.has(r.pid) &&
-                (!r.start || running.get(r.pid) === r.start),
-        )
-        .map((r) => r.name);
 }
 
 // a milestone id's name, read through x's api door (FRM-486); undefined when linear does not answer in 3 s
@@ -516,8 +494,9 @@ async function overrideLogPass(
 }
 
 const BRAKE_UNREAD = 'the brake did not read, so it reads on';
-// one rule, one reader: x's brakeOn answers for each repo the line merges in, and a failed read refuses
-async function rawMergeBrake($: EngineInterface) {
+// one rule, one reader: x's --brake-check answers the brake (brakeOn, per repo the line may merge in) and dima's holds
+// (readAllHolds, a pr number across repos held in each); a failed read reads as braked and as every merge held
+async function rawMergeCheck($: EngineInterface) {
     const store = await overrideStorePath($);
     const home = store?.replace(/\/\.local\/state\/x\/[^/]*$/, '');
     // outside any tree, so the shim runs main's x and a stale worktree can't answer; a line can't name its repo safely, so
@@ -528,38 +507,27 @@ async function rawMergeBrake($: EngineInterface) {
             timeoutMs: 20000,
         })
         .catch(() => undefined);
+    const unread = {
+        brake: BRAKE_UNREAD,
+        holds: { isUnreadable: true, prs: new Set() } satisfies MergeHolds,
+    };
     try {
         const { data } = JSON.parse(read?.stdout ?? '') as {
-            data?: { brake?: unknown };
+            data?: { brake?: unknown; holds?: unknown; holdsUnread?: unknown };
         };
-        if (typeof data?.brake !== 'string') return BRAKE_UNREAD;
-        return data.brake ? `the brake is on: ${data.brake}` : undefined;
+        if (typeof data?.brake !== 'string') return unread;
+        const held = Array.isArray(data.holds) ? data.holds : undefined;
+        const isHeldRead = held !== undefined && data.holdsUnread === '';
+        return {
+            brake: data.brake ? `the brake is on: ${data.brake}` : undefined,
+            holds: {
+                isUnreadable: !isHeldRead,
+                prs: new Set(isHeldRead ? held.map(String) : []),
+            } satisfies MergeHolds,
+        };
     } catch {
-        return BRAKE_UNREAD;
+        return unread;
     }
-}
-
-// x's own record of dima's holds, one file per repo (`x/go/merge_hold.go`); a pr number across repos counts as held in each,
-// the safe side. no dir is no hold; a file that does not read holds everything
-async function readMergeHolds($: EngineInterface) {
-    const dir = `${await $.env.get('HOME')}/.local/state/x/merge-hold`;
-    const holds: MergeHolds = { isUnreadable: false, prs: new Set() };
-    if (!(await $.fs.exists(dir).catch(() => true))) return holds;
-    const files = await $.fs.list(dir).catch(() => undefined);
-    if (!files) return { ...holds, isUnreadable: true };
-    for (const f of files) {
-        if (!f.name.endsWith('.json')) continue;
-        try {
-            const note = JSON.parse(await $.fs.read(`${dir}/${f.name}`)) as {
-                prs?: unknown;
-            };
-            if (!Array.isArray(note.prs)) throw new Error('no prs list');
-            for (const pr of note.prs) holds.prs.add(String(pr));
-        } catch {
-            holds.isUnreadable = true;
-        }
-    }
-    return holds;
 }
 
 // one key per event, so parallel sessions never overwrite each other; the oldest past KEEP are dropped
@@ -1281,7 +1249,6 @@ async function scriptMerges(
         rawMerges(s.text, s.dir),
     );
 }
-// the github slug merge-auto reads when no --repo names one: the dir's origin, as x/go/gh.go repoOf does
 // the head sha github holds for the pr now; undefined when it does not read, so the brake's tick stays shut
 async function prHead(
     $: EngineInterface,
@@ -1309,11 +1276,23 @@ async function prHead(
     const sha = r?.exitCode === 0 ? r.stdout.trim() : '';
     return /^[0-9a-f]{40}$/.test(sha) ? sha : undefined;
 }
+// one rule, one reader: the github slug merge-auto reads when no --repo names one, from x itself; run from home so the
+// shim runs main's x, and no answer leaves the tick shut
 async function repoOf($: EngineInterface, dir: string) {
     const r = await $.process
-        .run(['git', '-C', dir, 'remote', 'get-url', 'origin'])
+        .run(['x', 'gh', 'repo-slug', dir, '--json'], {
+            cwd: await $.env.get('HOME'),
+            timeoutMs: 5000,
+        })
         .catch(() => undefined);
-    return r?.exitCode === 0 ? remoteSlug(r.stdout) : undefined;
+    try {
+        const { data } = JSON.parse(r?.stdout ?? '') as {
+            data?: { repo?: unknown };
+        };
+        return typeof data?.repo === 'string' ? data.repo : undefined;
+    } catch {
+        return undefined;
+    }
 }
 const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
 // a --bg session's spawn prompt arrives as `composer` and dima's typing there as `bridge` (measured 2026-10-09, FRM-358),
@@ -1744,9 +1723,9 @@ async function lookUp(
     for (const tree of removedTrees(command, cwd, ctx))
         if (await isCleanTree($, tree)) cleanTrees.add(tree);
     const briefs = new Map<string, Brief>();
-    for (const path of briefPaths(command, cwd, ctx))
-        if (await $.fs.exists(path))
-            briefs.set(path, await readBrief($, path, ctx.home));
+    for (const found of briefPaths(command, cwd, ctx))
+        if (await $.fs.exists(found.path))
+            briefs.set(found.path, await readBrief($, found, ctx.home));
     const manifestDirs = new Set<string>();
     for (const dir of installDirs(command, cwd, ctx))
         if (await isManifestChanged($, dir)) manifestDirs.add(dir);
@@ -1767,8 +1746,8 @@ async function lookUp(
     const { value: helped = [] } = await $.state
         .get(HELPED)
         .catch(() => ({ value: [] }));
-    const sixthSenses = sixthSenseSummons(command, cwd).length
-        ? await liveSixthSenses($).catch(() => [])
+    const threads = summonedSessionIds(command, cwd).length
+        ? await threadList($)
         : [];
     const worthFiles = new Map<string, string | undefined>();
     const milestoneNames = new Map<string, string>();
@@ -1824,7 +1803,7 @@ async function lookUp(
                 : [],
         missing,
         notedTasks,
-        sixthSenses,
+        threads,
         unsafeTmp,
         worthFiles,
     };
@@ -1956,49 +1935,35 @@ async function signFile($: EngineInterface, file: string) {
         .catch(() => undefined);
     return run?.exitCode === 0 ? run.stdout : undefined;
 }
-// a new sign: a sign line the ticket's current body lacks word for word, whatever its date (a backdated line, one dated
-// tomorrow, an old line whose text changed: sixth sense R1 on FRM-478), or a block x now grants a merge from where it did
-// not, or from another sign (R2: a pre-approval added, a cancel deleted); an unreadable linear counts it as new
-const SIGN_LINE = /^✍️ (re-)?signed /u;
-// what x's merge door grants from a body's last ## signed block (x/go/merge_sign.go readSign): the sign line the grant
-// hangs on ('' when the block holds none, and x reads the whole block), or undefined when it grants nothing — a cancel
-// or a re-sign pending after the last sign voids it, and a grant needs a `merge: pre-approved` line after it
-function grantOf(body: string) {
-    const heading = [...body.matchAll(/^## signed\s*$/gmu)].at(-1);
-    if (!heading) return undefined;
-    const rest = body.slice((heading.index ?? 0) + heading[0].length);
-    const end = rest.search(/^## /mu);
-    const block = end < 0 ? rest : rest.slice(0, end);
-    const lines = block.split('\n');
-    const at = lines.findLastIndex((l) => /^✍️ (re-)?signed\b/u.test(l));
-    const since = lines.slice(Math.max(at, 0));
-    if (since.some((l) => /^(🚫 cancelled|✍️ re-sign pending)\b/u.test(l)))
-        return undefined;
-    if (!since.some((l) => /^merge: pre-approved\s*$/u.test(l)))
-        return undefined;
-    return at < 0 ? '' : lines[at];
-}
+// one rule, one reader: x linear sign-check judges the body against the ticket's current one (a sign line it lacks word
+// for word, or a merge grant x would read anew); a refusal, an unread linear or no answer from x counts as a new sign.
+// run from home so the shim runs main's x
 async function hasNewSignLine($: EngineInterface, id: string, body: string) {
-    const lines = body.split('\n').filter((l) => SIGN_LINE.test(l));
-    const grant = grantOf(body);
-    if (!lines.length && grant === undefined) return false;
-    const run = await $.process.run(['x', 'linear', 'read', id], {
-        timeoutMs: 8000,
-    });
-    let current: string | undefined;
+    // a trigger, not the judge: a body naming no sign and no ## signed block cannot bring one, so x is not spawned
+    if (!/✍️|^## signed/mu.test(body)) return false;
+    const run = await $.process
+        .run(
+            [
+                'x',
+                'linear',
+                'sign-check',
+                id,
+                '--body-file',
+                '/dev/stdin',
+                '--json',
+            ],
+            { cwd: await $.env.get('HOME'), stdin: body, timeoutMs: 8000 },
+        )
+        .catch(() => undefined);
     try {
-        current = (
-            JSON.parse(run.stdout) as {
-                data?: { tickets?: { description?: string }[] };
-            }
-        ).data?.tickets?.[0]?.description;
-    } catch {}
-    if (run.exitCode !== 0 || current === undefined) return true;
-    const held = new Set(current.split('\n'));
-    return (
-        lines.some((l) => !held.has(l)) ||
-        (grant !== undefined && grantOf(current) !== grant)
-    );
+        const out = JSON.parse(run?.stdout ?? '') as {
+            data?: { newSign?: unknown };
+            ok?: unknown;
+        };
+        return !(out.ok === true && out.data?.newSign === false);
+    } catch {
+        return true;
+    }
 }
 const MILESTONES = 'linear-milestones';
 const LINEAR_DOWN = 'linear-down';
@@ -2526,7 +2491,11 @@ export const register: Register = (on) => {
         if (stamp) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
-            if (!name || !(isSixthSense(name) || isCoordinator(name))) {
+            // a sixth sense by its thread record, never by its name
+            const role = sid
+                ? (await threadList($)).find((t) => t.sessionId === sid)?.role
+                : undefined;
+            if (role !== 'sixth-sense' && !(name && isCoordinator(name))) {
                 const said = `x-mod-guard stopped this one command. instead: ${stamp.door}. why: ${stamp.why} (rule ${stamp.rule}).`;
                 const stop = await enforce(
                     stamp,
@@ -2613,16 +2582,15 @@ export const register: Register = (on) => {
                     quotesCommand(typed),
                     spends,
                 )) !== undefined;
-            const held = isTicked
-                ? undefined
-                : mergeHold(merges, await readMergeHolds($));
+            const check = await rawMergeCheck($);
+            const held = isTicked ? undefined : mergeHold(merges, check.holds);
             const override = held
                 ? undefined
                 : await overrideGrant($, 'prs').catch(() => undefined);
             const landsAny = merges.some((m) => !m.isHoldOnly);
             const braked =
                 !held && (override || isTicked) && landsAny
-                    ? await rawMergeBrake($)
+                    ? check.brake
                     : undefined;
             // his tick stops only on a brake that reads on: an unread brake never outranks his word
             const brake =

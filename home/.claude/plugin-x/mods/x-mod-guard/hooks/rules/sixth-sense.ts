@@ -6,42 +6,44 @@ import {
     commandsDeep,
 } from './command.ts';
 
-// one sixth sense a lane, reused by message (FRM-479): a thread name reads `<mode> 🔎 sixth sense: <scope> | <what>`, and
-// the scope names the lane; a name with no `|` has no scope (`⚡ 🔎 sixth sense: main`), names no lane and is never judged
-const SIXTH_SENSE = 'sixth sense';
+// one sixth sense a lane, reused by message (FRM-479): a thread's role and lane are its record in x's thread store, under
+// the session id `x brief summon` minted into the argv; the name is never parsed, and a summon with no id or no record of
+// a lane is never judged
 const SKILL = '/x:crew-sixth-sense';
-const laneOf = (name: string) =>
-    name
-        .match(/:([^|]*)\|/)?.[1]
-        ?.replaceAll(/[\s\u200d]/g, '')
-        .toLowerCase() || undefined;
-export const isSixthSense = (name: string) =>
-    name.split(':')[0]?.toLowerCase().includes(SIXTH_SENSE) ?? false;
+const SIXTH_SENSE = 'sixth-sense';
 
-// the `-n` / `--name` a `claude --bg` call gives its thread
-function summonedName(spawn: Command) {
+// the `--session-id` a claude call starts its thread under
+function summonedSessionId(spawn: Command) {
     const c = claudeSpawn(spawn);
     if (!c) return undefined;
-    const at = c.args.findIndex((w) => w.text === '-n' || w.text === '--name');
+    const at = c.args.findIndex((w) => w.text === '--session-id');
     if (at >= 0) return c.args[at + 1]?.text;
     return c.args
-        .find((w) => w.text.startsWith('--name='))
-        ?.text.slice('--name='.length);
+        .find((w) => w.text.startsWith('--session-id='))
+        ?.text.slice('--session-id='.length);
 }
-// the sixth sense names a command summons, for the caller to look up live twins of
-export function sixthSenseSummons(command: string, cwd: string) {
+// the session ids a command summons under, for the caller to read the thread records of
+export function summonedSessionIds(command: string, cwd: string) {
     return commandsDeep(command, cwd).flatMap((c) => {
-        const name = summonedName(c);
-        return name && isSixthSense(name) && laneOf(name) ? [name] : [];
+        const sid = summonedSessionId(c);
+        return sid ? [sid] : [];
     });
 }
 export function spawnSixthSense(c: Command, ctx: Context): Refusal | undefined {
-    const name = summonedName(c);
-    if (!name || !isSixthSense(name)) return undefined;
-    const lane = laneOf(name);
-    if (!lane) return undefined;
-    const live = ctx.sixthSenses?.find((n) => laneOf(n) === lane);
+    const sid = summonedSessionId(c);
+    const me = ctx.threads?.find((t) => t.sessionId === sid);
+    if (!me || me.role !== SIXTH_SENSE || !me.lane) return undefined;
+    const lane = me.lane;
+    const twin = ctx.threads?.find(
+        (t) =>
+            t.role === SIXTH_SENSE &&
+            t.lane === lane &&
+            t.pid !== undefined &&
+            t.sessionId !== sid,
+    );
+    const live = twin?.name ?? twin?.display;
     if (!live) return undefined;
+    const name = me.display ?? sid ?? '';
     // the summon's own skill line carries the chunk: `/x:crew-sixth-sense <ticket> <pr url | main:<base>> … final: <sha> spec: <path>`
     const words =
         c.args
