@@ -198,3 +198,43 @@ for (const line of [
         expect(r.deny).toContain('clean-stamp');
         expect(ran).toEqual([]);
     });
+
+// FRM-570: the thread store decides who is a sixth sense, so no session writes it, a sixth sense included; x does
+const THREADS = '/home/.claude/shelf/threads.json';
+const THREAD_WRITES = WRITES.filter((l) => !l.includes('watch-pr.sh')).map(
+    (l) =>
+        l
+            .replaceAll(STORE, THREADS)
+            .replaceAll('pr-verified.{json', 'threads.{json')
+            .replaceAll('PR-verified.json', 'Threads.json')
+            .replaceAll('pr-verified.json', 'threads.json'),
+);
+for (const [name, role] of [
+    ['🌗 🔧 codie: cli lane 5 | FRM-511', 'codie'],
+    ['🌗 🔎 sixth sense: cli lane 5 | #129', 'sixth-sense'],
+    ['🦉 clio', undefined],
+] as const)
+    for (const line of THREAD_WRITES)
+        test(`${name} cannot write the thread store: ${line}`, async ($, on) => {
+            const { ran } = world(on, name, role);
+            const r = await bash($, line);
+            // a codie's carrier into the shelf meets the clean stamp's own fence first; either way the line never runs
+            expect([r.deny, ran]).toEqual([
+                expect.stringContaining('(rule clean-stamp)'),
+                [],
+            ]);
+        });
+
+for (const line of [
+    `cat ${THREADS}`,
+    `jq '.threads[] | .role' ${THREADS}`,
+    'x thread list --json',
+    `cp ${THREADS} /tmp/threads-copy.json`,
+    'rg threads.json x/go',
+])
+    test(`a read of the thread store passes: ${line}`, async ($, on) => {
+        const { ran } = world(on, '🌗 🔧 codie: cli lane 5 | FRM-511', 'codie');
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('threads.json');
+        expect(ran.length).toBe(1);
+    });

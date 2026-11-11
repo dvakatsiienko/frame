@@ -200,6 +200,26 @@ export function touchesStore(
     );
 }
 
+// x's thread store names who is a sixth sense, the role the clean-stamp door trusts: only x writes it (`x thread list`,
+// `x brief summon`, `x lane dispatch --apply`), never a line of any session's, a sixth sense's included (FRM-570)
+const isThreadStore = (text: string) =>
+    /(^|[/'"]|of=)threads\.(json\b|\{)/i.test(text);
+export function threadStoreWrite(
+    command: string,
+    cwd: string,
+): Refusal | undefined {
+    // a carrier into the shelf dir lands on the store when the line names it: `cp /tmp/threads.json ~/.claude/shelf/`
+    const intoShelf = (text: string) =>
+        isStoreDir(text) && isThreadStore(command);
+    if (!touchesStore(command, cwd, isThreadStore, intoShelf)) return undefined;
+    return {
+        door: 'x thread list rewrites it from the registry, a role comes from x brief summon or x lane dispatch --apply; a read goes through cat or jq',
+        rule: 'clean-stamp',
+        targets: ['threads.json'],
+        why: 'x-mod-guard reads ~/.claude/shelf/threads.json for who is a sixth sense, whose clean opens x lane merge-auto, so only x writes it',
+    };
+}
+
 // `merge-auto` reads this store as sixth sense's clean, so only sixth sense and the coordinator write it; the caller checks
 // who runs the line. a script run by path writes unseen: a Bash rule reads the line, never what the line goes on to run
 export function cleanStampWrite(

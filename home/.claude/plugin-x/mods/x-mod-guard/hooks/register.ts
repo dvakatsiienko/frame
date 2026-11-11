@@ -1,7 +1,7 @@
 import type { EngineInterface, Register } from 'claude-code';
 
 import { briefPaths } from './rules/brief.ts';
-import { cleanStampWrite } from './rules/clean-stamp.ts';
+import { cleanStampWrite, threadStoreWrite } from './rules/clean-stamp.ts';
 import type {
     Brief,
     Context,
@@ -2539,6 +2539,16 @@ export const register: Register = (on) => {
                 );
                 if (stop) return stop;
             }
+        }
+        const threadsWrite = threadStoreWrite(typed, cwd);
+        if (threadsWrite) {
+            const said = `x-mod-guard stopped this one command. instead: ${threadsWrite.door}. why: ${threadsWrite.why} (rule ${threadsWrite.rule}).`;
+            const stop = await enforce(
+                threadsWrite,
+                `nothing in this command ran — ${said}`,
+                said,
+            );
+            if (stop) return stop;
         }
         // born refusing: the folder is a tick only while no seat writes it, and the store aims a press (FRM-544 slice 1)
         // a resolve that throws leaves the spelled checks standing
