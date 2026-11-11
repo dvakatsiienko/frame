@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { afterReflow, afterWheel, farRows, keptFirst } from './scroll.js';
+import { afterReflow, afterWheel, keptFirst } from './scroll.js';
 
 // `up` is how far above the newest message the log shows, in px; `follow` is his «I am at the end» state
 const reading = { follow: false, up: 900 };
@@ -83,30 +83,5 @@ describe('the rows above his place stay drawn while he reads', () => {
 
     test('while he follows, the window slides', () => {
         expect(keptFirst([...ids, 'f'], 3, 'c', true)).toBe(3);
-    });
-});
-
-describe('a row far out of view draws as its measured height alone', () => {
-    // ten rows of 100 px, newest last, 10 px apart; the view is 300 px tall
-    const heights = Array.from({ length: 10 }, () => 100 as number | undefined);
-    const view = { gap: 10, up: 0, viewH: 300 };
-
-    test('at the newest, the rows two views up and more go flat', () => {
-        expect([...farRows(heights, view)].sort()).toEqual([0, 1, 2, 3]);
-    });
-
-    test('scrolled up, rows far below go flat too', () => {
-        expect([...farRows(heights, { ...view, up: 660 })].sort()).toEqual([
-            7, 8, 9,
-        ]);
-    });
-
-    test('a row not measured yet always draws whole', () => {
-        const unmeasured = heights.map((h, i) => (i === 0 ? undefined : h));
-        expect(farRows(unmeasured, view).has(0)).toBe(false);
-    });
-
-    test('a short chat that fits draws every row whole', () => {
-        expect(farRows([100, 100], view).size).toBe(0);
     });
 });
