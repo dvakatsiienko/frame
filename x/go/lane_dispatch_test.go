@@ -412,6 +412,50 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 	}
 }
 
+// exit 28: a dispatch renames an idle thread to the display its record now draws, and hands a busy one the exact command
+func TestDispatchRenamesAThreadByItsNewRecord(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, state string
+		isRenamed   bool
+	}{
+		{"idle", "done", true},
+		{"busy", "working", false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := dispatchServer(t, undispatched)
+			sessions, store, bin := t.TempDir(), filepath.Join(t.TempDir(), "threads.json"), t.TempDir()
+			log := filepath.Join(bin, "hc.log")
+			write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
+			write(t, filepath.Join(bin, "hc"), fmt.Sprintf(`#!/bin/sh
+case "$1" in
+ls) echo '{"terminals":[{"address":"t1","agent":"zsh"},{"address":"t9","agent":"claude-code"}]}' ;;
+get) echo '{"pid":%d,"status":{"state":"%s"}}' ;;
+send) echo "send $2 $3 term=${HC_TERMINAL_ID:-unset}" >> %s ;;
+esac
+`, os.Getpid(), c.state, log))
+			if err := os.Chmod(filepath.Join(bin, "hc"), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc"), "HC_TERMINAL_ID=t3b"}, "🦉 clio")
+
+			envelope, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "cli-3", "--apply")
+
+			sent, _ := os.ReadFile(log)
+			command := "env -u HC_TERMINAL_ID hc send t9 '/rename 🌗 🔧 cli | FRM-1'"
+			data, _ := envelope["data"].(map[string]any)
+			renames := jsonOf(data["renames"])
+			if got.code != 0 || !strings.Contains(renames, jsonOf(command)) {
+				t.Fatalf("exit %d, renames %s, want the command %q:\n%s", got.code, renames, command, got.stdout)
+			}
+			if want := "send t9 /rename 🌗 🔧 cli | FRM-1 term=unset\n"; c.isRenamed != (string(sent) == want) || (!c.isRenamed && len(sent) > 0) {
+				t.Errorf("hc got %q; renamed want %v", sent, c.isRenamed)
+			}
+		})
+	}
+}
+
 // sixth sense round 1 P1 and round 3 (exits 17, 18): a role goes only from the coordinator, to a thread a summon recorded
 // in that role or to a running thread with no role yet; never another role, never an id no thread holds, never from a
 // codie; a refusal comes before any linear write

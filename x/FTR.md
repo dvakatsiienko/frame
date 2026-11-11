@@ -549,6 +549,7 @@
   - given `show` with a session id or a pid no live session holds, then exit 1
   - given a summon that passes `x brief summon`, then its printed argv carries a fresh `--session-id <uuid>` and the store holds that id's role, ticket, lane (the spec's dir) and lane kind (the brief's `lane:` line) before the thread runs; `x lane dispatch --apply` writes the same for its `--session` codie and `--sixth-sense`
   - and its `-n` is the display drawn from that record, the one `x thread show <sid>` prints, never the name the command typed; the envelope's `display` holds it (FRM-436 rider, dima o72)
+  - given `x lane dispatch --apply` moves a live thread's record, then its herdr terminal (the one whose pid the registry holds) gets `/rename <display>` when it sits idle, through `env -u HC_TERMINAL_ID hc send`, since a slash command typed from inside a herdr thread arrives tag-wrapped and never runs; a busy one is renamed by nothing and `renames` carries that exact command (FRM-436 rider, dima o74)
   - decision: the store sits beside x-mod-stash's `herdr-state/`, a registry mirror kept separate (wing 1, 2026-11-11)
 
 ## linear — tickets
