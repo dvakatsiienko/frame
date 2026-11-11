@@ -10,7 +10,7 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
 
 📌 who runs the compact: me, always — his plain word or a 🐦‍🔥 press ends with the stash tool's `second-wind` op naming the CST slug, and the mod runs the compact + ingest at that turn's end; he clicks nothing (dima, 2026-11-11).
 
-## 0. finish the topic, then stop taking new work and send the notice
+## 0. finish the topic, then stop taking new work
 
 - **in a shift** (`clio:shift` § surviving a compaction): the topic is the current step, members keep working and are carried, the flawlog flush and the after-pickup move go into the plan's `## log` for the report, and the compact door is the `second-wind` op with the CST slug
 - **a 🐦‍🔥 second wind is graceful, never urgent** (dima, 2026-10-14: «a request, not an ask to do it as soon as possible … gracefully prepare yourself: resolve all subagents and park all stuff before compacting, to avoid data loss») — the same for codie's second wind
@@ -18,8 +18,7 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
 - **only a topic not yet started waits**: it goes to the CST as a first-act; the small open tails close first (an ask whose answer is known, an uncommitted fix, a reply a member waits on), and the wishkeeper of the batch being closed is always waited for, never carried
 
 - **the after-pickup move goes to orbit at once**, mid-turn too: «right after the pickup i'd do X» as an ask he can tick before the reset
-- **the notice, in any clio, means one thing: hold messages to me** (`<me>` = `main clio` or `wing <N>`). everyone `ListAgents` shows, every clio and every member, crow and helga too, gets one `SendMessage`, these words exactly, since `x-mod-stash` reads them as no work: «second wind — <me> is second-winding: hold messages to <me> until it says back. nothing else pauses, keep working.» a message that lands mid-compact arrives in a thinned thread and its detail is lost. the notice's roster goes into the CST.
-- **the reply says what it did**: «second-wind notice sent, messages to me hold until i'm back». the fleet keeps working through it.
+- **no notice goes out**: `x-mod-stash` holds every message sent to a compacting thread, any sender and any tag, and releases them whole and in order into the first turn after the compact (FTR.md § second wind, FRM-519 14j; his o141). the roster still goes into the CST
 - **main only**, since the file pauses crow for every clio: `touch ~/.local/state/crow/paused`, every wake skips while it exists; a wing's compact wakes her on its own thread.
 
 ## 1. the keep/drop list — decided, never asked
@@ -61,7 +60,7 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
 
 ## 4. the second-wind op
 
-no fence: the `second-wind` op with the CST slug, and the reply says the reset runs at this turn's end; the mod compacts, then ingests the CST on top of what the compact kept. **then the back line to the notice's roster**: «second wind — <me> is back: send what you held.», with `notify_when_idle: true` to each member i coordinate (a compact drops every idle subscription, silently), and on main `trash ~/.local/state/crow/paused` — then read whatever they held. **after the ingest, before anything else: re-read `inbox.md` and
+no fence: the `second-wind` op with the CST slug, and the reply says the reset runs at this turn's end; the mod compacts, then ingests the CST on top of what the compact kept. **then** a bare `SendMessage` with `notify_when_idle: true` and no message to each member i coordinate (a compact drops every idle subscription, silently), and on main `trash ~/.local/state/crow/paused` — then read what the hold released. **after the ingest, before anything else: re-read `inbox.md` and
 diff it against the pocket** — every inbox item must carry the `✅` mark AND a pocket item with
 its details; an unmarked or detail-less one is restored from the inbox on the spot, out loud; then `clio:flyway-sync`. the prefetch hook re-runs on compact by itself (queue, roadmap,
 handoffs, reminders).
