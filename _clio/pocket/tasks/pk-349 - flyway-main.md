@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-11T21:10:00Z'
+updated_date: '2026-11-11T21:14:00Z'
 labels:
   - s
   - clio-main
@@ -46,16 +46,17 @@ ordinal: 1000
 - [ ] #28 helga's earlier PK-363 and FRM-566 groom appends: check each W-line has its home, run the missing appends
 - [ ] #29 groom homes blocked: the guard refuses the body write for the hotkeys and chat tickets; their new W-lines wait in grooms/ — find the guard rule, fix or ask
 - [ ] #30 crow wake hook fix (relative proposal path, redirect read as a pr): staged, 204 tests green; the commit waits on the lane gate groom — read crew-adviser scripts whole, groom, then commit with its groom line
-- [ ] #31 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
-- [ ] #32 ⏳ the red twin past `x mods edit test` (a red twins.test.ts reached main, 45e64cc0): its home is a rider on FRM-560, wing 1's PK-346 #4 — waits for: dima's sign tick on FRM-560's re-sign
-- [ ] #33 ⏳ the herdr FTR gate map (dima 16:32, «ensure not forgotten»): x lane gate maps herdr-app/mods/ → herdr/FTR.md + herdr/ftr/*.md; stays open until FRM-436's body carries it (wing 1's PK-346 #4) — waits for: dima's sign tick on FRM-436
-- [ ] #34 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #35 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #36 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #37 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #38 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #39 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #40 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #31 autopilot: rounds 1–3 settled (grill-borrow-2/3-proposal.md § answers); shape it into one ticket through clio:shape-idea (prior art: shepherdr assistant.md + automations.py, our clio:shift), born in Triage, then the test-drive night
+- [ ] #32 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+- [ ] #33 ⏳ the red twin past `x mods edit test` (a red twins.test.ts reached main, 45e64cc0): its home is a rider on FRM-560, wing 1's PK-346 #4 — waits for: dima's sign tick on FRM-560's re-sign
+- [ ] #34 ⏳ the herdr FTR gate map (dima 16:32, «ensure not forgotten»): x lane gate maps herdr-app/mods/ → herdr/FTR.md + herdr/ftr/*.md; stays open until FRM-436's body carries it (wing 1's PK-346 #4) — waits for: dima's sign tick on FRM-436
+- [ ] #35 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #36 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #37 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #38 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #39 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #40 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #41 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes

@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T20:58:00Z'
+updated_date: '2026-11-11T21:15:00Z'
 labels:
   - m
   - clio-main
@@ -2097,4 +2097,14 @@ PK-363:W1094 (2026-11-11 22:56, dima): currently the instructions are shaped as 
 PK-363:W1095 (2026-11-11 22:56, dima): okay, but let's also have an ability for settings to make them editable by you, just in case it's the settings scope.
 PK-363:W1101 (2026-11-11 22:56, dima): what is 20m clock? ❓ (context, not dima's words: the raw first quotes crow: a 20-minute clock costs about 72 extra turns a day, so Q3 now uses events only.)
 PK-363:W1102 (2026-11-11 22:56, dima): proceed. are you sure autopilot shape is good? ❓
+
+PK-363:W1103 (2026-11-11 23:00, dima): find some tails you could solve without me.
+PK-363:W1104 (2026-11-11 23:02, dima): lets do if another round left. (context, not dima's words: the line before the arrow is a quoted reply saying there is one autopilot round and nothing else tonight.)
+PK-363:W1105 (2026-11-11 23:14, dima, o112 steer): Maybe let's just have a dedicated switch for autopilot, the same or similar as «shepardr» have? ❓
+PK-363:W1106 (2026-11-11 23:14, dima, o112 steer): the real «switch» element not a button - i saw it was shaped as real switch like in html, and do not tie afk btn to it let it be separate
+PK-363:W1107 (2026-11-11 23:14, dima, o112 steer): toggle yes, not a button. and if i like the toggle (switch) i may move other buttons in my band to toggle (switch) shape (another element type)
+PK-363:W1108 (2026-11-11 23:14, dima, o114 steer): yes, no artifacts, plain, clean, well readable report.
+PK-363:W1109 (2026-11-11 23:13, dima): is settings worth architecture and plan? ❓
+PK-363:W1110 (2026-11-11 23:13, dima): when we will have a designer decision? ❓
+PK-363:W1111 (2026-11-11 23:13, dima): i want pretty look in herdr.
 <!-- SECTION:NOTES:END -->
