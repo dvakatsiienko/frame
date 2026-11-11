@@ -189,30 +189,39 @@ export default class Tabs extends View {
             width: this.barW,
         });
         this.activeId = activeId;
-        // one tab per swipe: a gesture steps once, at its first 24 px sideways, and its momentum events that follow
-        // within 250 ms of each other belong to it; a pause starts the next swipe, so a wheel notch steps once too
+        // one step per swipe: a gesture steps once, at its first 24 px, and its momentum events that follow within
+        // 250 ms of each other belong to it; a pause starts the next swipe, so a wheel notch steps once too.
+        // sideways scrolls the strip, up or down shows the previous or next tab; a sideways swipe's small vertical
+        // noise once switched tabs on every event
         const swipe = (e, cx) => {
+            cx.stop_propagation();
             const now = Date.now();
             const isSameSwipe =
                 e.touch_phase !== 'started' && now - (this.swipeAt ?? 0) < 250;
             this.swipeAt = now;
             if (!isSameSwipe) {
                 this.swipeX = 0;
+                this.swipeY = 0;
                 this.swiped = false;
             }
             if (this.swiped) return;
             this.swipeX = (this.swipeX ?? 0) + e.delta.x;
-            if (Math.abs(this.swipeX) < 24) return;
-            const step = this.swipeX < 0 ? 1 : -1;
+            this.swipeY = (this.swipeY ?? 0) + e.delta.y;
+            const isSideways = Math.abs(this.swipeX) >= Math.abs(this.swipeY);
+            if (Math.max(Math.abs(this.swipeX), Math.abs(this.swipeY)) < 24)
+                return;
             this.swiped = true;
+            if (!isSideways) {
+                run(this.swipeY > 0 ? 'tab.prev' : 'tab.next');
+                return;
+            }
             this.first = firstTab({
                 active,
                 count: shown.length,
                 first: this.first,
-                step,
+                step: this.swipeX < 0 ? 1 : -1,
                 width: this.barW,
             });
-            cx.stop_propagation();
             cx.notify();
         };
         const stop = (_e, cx) => cx.stop_propagation();
@@ -435,10 +444,7 @@ export default class Tabs extends View {
             .on_mouse_up('left', () => {
                 this.pressed = null;
             })
-            .on_scroll_wheel((e) => {
-                if (Math.abs(e.delta.y) >= 1)
-                    run(e.delta.y > 0 ? 'tab.prev' : 'tab.next');
-            })
+            .on_scroll_wheel(swipe)
             .child(
                 h_flex()
                     .id('tab-scroll')
@@ -453,7 +459,6 @@ export default class Tabs extends View {
                         this.barW = s.width;
                         cx.notify();
                     })
-                    .on_scroll_wheel(swipe)
                     .children(
                         shown
                             .slice(this.first)
