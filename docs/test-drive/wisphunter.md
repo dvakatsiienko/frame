@@ -93,4 +93,7 @@ group by 1 order by 2 desc;
 - one plain-card read on part A's last diff before its close: 6 findings, all 6 fixed and landed (bbc33ffc, per the codie's done report on FRM-562); the findings' own text not opened by clio, so «real» is the codie's word, not checked
 - context: the same chunk's scroll regression (58.9 % of herdr's main thread on a fling) was caught by dima's hand and a sample, never by a review, since a diff read can't see frame cost
 
+### round 8 — a live lane's final read, 2026-11-12 (herdr codie, FRM-562 part B, clio's log)
+- one plain-card read on part B's slices 17–27 before its close: 6 findings, all fixed in d2cf8246 (the codie's [done], 00:09); «real» is the codie's word, the findings' text not opened by clio, so not checked
+
 ## verdict
