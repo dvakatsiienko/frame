@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T20:26:00Z'
+updated_date: '2026-11-11T20:27:00Z'
 labels:
   - s
   - clio-wing-1
@@ -19,7 +19,7 @@ ordinal: 1001
 - [ ] #1 FRM-491 the siesta binds on one Stop hook, and a delivered tick gets resolved: mine by hand (it edits _clio/); 📌 remind dima what it is about before i start (his 17:35 ask)
 - [ ] #2 cli lane 8 running (#161): FRM-570 one reader per rule, rule 9 a thread's identity by session id (re-signed 19:36), names x lane plan-steps, x thread, x linear sign-check; then FRM-424 → FRM-436 → FRM-572; spec ~/frame/.scratch/cli-lane-8/
 - [ ] #3 «seat» saved names, renamed only with every reader in the same change: the ~/.local/state/clio/seats/ dir (siesta-gate, live files to migrate), the seat key in ctx-init trace rows (a read-both fallback), the seat=clio / seat=crow herdr labels (x-mod-guard, prompt-groom read them), CLIO_SEAT, seatOf (prompt-groom imports it)
-- [ ] #4 crow second wind has no door: hc send wraps a /compact as text (it never runs), hc keys + enter ran it at 22:07 but x-mod-guard's pane-keys rule warns on it; find crow's own door (her 🐦‍🔥 press, or an x verb that compacts an idle crow) and tell main, crow is hers (dima 22:03)
+- [ ] #4 crow second wind has no door: hc send wraps a /compact as text (it never runs), hc keys + enter ran it at 22:07 but x-mod-guard's pane-keys rule warns on it; find crow's own door (her second-wind press, or an x verb that compacts an idle crow) and tell main, crow is hers (dima 22:03)
 - [ ] #5 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
 - [ ] #6 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
 - [ ] #7 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
@@ -292,4 +292,8 @@ done 2026-11-11 21:56: siesta 20:19 tails (wishkeeper, 18 findings, file in the 
 
 PK-346:W15 (2026-11-11 22:02, dima): crow is at 60% ctx. its second wind not fixed yet? sw him properly. ❓ (context, not dima's words: "crow" is clio's sidecar; "sw" is second wind.)
 PK-346:W16 (2026-11-11 22:03, dima): or tell copypaste, I do it manually. (context, not dima's words: continues the 22:02 line, which asks about crow's second wind.)
+
+done 2026-11-11 22:27: crow second wind has no door: hc send wraps a /compact as text (it never runs), hc keys + enter ran it at 22:07 but x-mod-guard's pane-keys rule warns on it; find crow's own door (her 🐦‍🔥 press, or an x verb that compacts an idle crow) and tell main, crow is hers (dima 22:03)
+
+22:28: the crow second-wind line re-added without a joined emoji (pocket-check, Backlog.md #949), not done
 <!-- SECTION:NOTES:END -->
