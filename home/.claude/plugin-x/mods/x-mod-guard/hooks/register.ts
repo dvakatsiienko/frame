@@ -1097,6 +1097,32 @@ async function tickFor(
 // it counts as new
 const YES = { key: 'yes', plugin: 'x-mod-guard' } as const;
 const YES_SEEN = { key: 'yesSeen', plugin: 'x-mod-guard' } as const;
+// r7 (his o27): the seat's last reply, which a bare yes answers only where it named the ask: by its id, a command the ask
+// quotes, or the first three subject words of its text; a reply asking him something else leaves his yes to that
+const REPLY = { key: 'reply', plugin: 'x-mod-guard' } as const;
+const REPLY_MAX = 8000;
+const SUBJECT_WORDS = 3;
+function namesAsk(reply: string, ask: { id: string; text: string }) {
+    const said = reply.toLowerCase();
+    if (new RegExp(`(^|[^\\w])${ask.id}($|[^\\w])`, 'u').test(said))
+        return true;
+    const quoted = [...ask.text.matchAll(/`([^`]+)`/g)].flatMap((m) =>
+        m[1] ? [m[1].toLowerCase()] : [],
+    );
+    if (quoted.some((q) => said.includes(q))) return true;
+    const subject = ask.text
+        .replace(/^\s*(⚠️|✍️)\s*/u, '')
+        .split(/:|—/u)[0]
+        ?.toLowerCase()
+        .match(/\p{L}[\p{L}\d-]{3,}/gu)
+        ?.slice(0, SUBJECT_WORDS);
+    return (
+        !!subject?.length &&
+        subject.every((w) =>
+            new RegExp(`(^|[^\\p{L}])${w}($|[^\\p{L}])`, 'u').test(said),
+        )
+    );
+}
 async function keepYes($: EngineInterface, text: string, isFirst: boolean) {
     // an orbit read that fails keeps the last snapshot: an empty one would make every old ask new
     const read = await $.state.get(STASH_ORBIT).catch(() => undefined);
@@ -1118,6 +1144,10 @@ async function keepYes($: EngineInterface, text: string, isFirst: boolean) {
     const fresh = open.filter((a) => !seen.includes(`${a.id}\n${a.text}`));
     const [ask] = fresh;
     if (fresh.length !== 1 || !ask) return;
+    const { value: reply = '' } = await $.state
+        .get(REPLY)
+        .catch(() => ({ value: '' }));
+    if (!namesAsk(reply, ask)) return;
     const now = await $.clock.now();
     const { value: kept = [] } = await $.state.get(YES);
     await $.state.set(YES, [
@@ -3125,6 +3155,9 @@ export const register: Register = (on) => {
         if (!e.agentId) {
             await $.state.set(TOLD, '').catch(() => undefined);
             await $.state.set(WRITTEN, {}).catch(() => undefined);
+            await $.state
+                .set(REPLY, e.answer.slice(-REPLY_MAX))
+                .catch(() => undefined);
         }
         return next(e);
     });
