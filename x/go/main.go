@@ -78,6 +78,7 @@ var impls = map[string]Impl{
 	"brief preflight":             {Run: briefPreflight},
 	"as":                          {Run: as, Undone: "the command did not run"},
 	"gh pr":                       {Run: ghPr},
+	"gh repo-slug":                {Run: ghRepoSlug},
 	"gh pr-review-comments-list":  {Run: ghReviewCommentsList},
 	"gh pr-review-comments-reply": {Run: ghReviewCommentsReply, Undone: "nothing was posted"},
 	"linear read":                 {Run: linearRead},

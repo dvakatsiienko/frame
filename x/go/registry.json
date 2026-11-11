@@ -19,7 +19,7 @@
         },
         {
             "example": "x fleet flow --days 14",
-            "gist": "the fleet measuring itself: flow, codie audits, agent ops",
+            "gist": "the fleet measuring itself",
             "name": "fleet"
         },
         {
@@ -1213,6 +1213,18 @@
             "touches": [
                 "github's graphql api ($X_GITHUB_URL in tests), as the x-codie-cc app"
             ]
+        },
+        {
+            "args": [
+                {
+                    "description": "a git dir; the cwd when absent",
+                    "isOptional": true,
+                    "name": "dir"
+                }
+            ],
+            "name": "gh repo-slug",
+            "needsApply": false,
+            "purpose": "print a dir's github owner/name off its origin remote, an insteadOf rewrite honoured; no network"
         },
         {
             "args": [

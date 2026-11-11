@@ -292,6 +292,48 @@ func TestGhPrReadsTheRepoFromTheOriginRemote(t *testing.T) {
 	}
 }
 
+// x-mod-guard's merge lines ask this verb for a dir's repo, so its own remote parse goes
+func TestGhRepoSlugReadsTheOriginThroughInsteadOf(t *testing.T) {
+	t.Parallel()
+	cases := []struct{ name, remote, insteadOf, want string }{
+		{name: "ssh", remote: "git@github.com:o/r.git", want: "o/r"},
+		{name: "an insteadOf alias", remote: "gh:o/r", insteadOf: "https://github.com/", want: "o/r"},
+		{name: "not github", remote: "https://gitlab.com/o/r.git"},
+		{name: "no origin"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir := repo(t)
+			if c.remote != "" {
+				gitT(t, dir, "remote", "add", "origin", c.remote)
+			}
+			if c.insteadOf != "" {
+				gitT(t, dir, "config", "url."+c.insteadOf+".insteadOf", "gh:")
+			}
+
+			got := xIn(t, t.TempDir(), nil, "gh", "repo-slug", dir)
+
+			if c.want == "" {
+				if got.code != 1 || !strings.Contains(got.stdout, "no github origin") {
+					t.Fatalf("exit %d, want 1 naming no github origin:\n%s", got.code, got.stdout)
+				}
+				return
+			}
+			if got.code != 0 || got.data["repo"] != c.want {
+				t.Fatalf("exit %d, repo %v, want %s:\n%s", got.code, got.data["repo"], c.want, got.stdout)
+			}
+		})
+	}
+}
+
+func TestGhRepoSlugRefusesADirThatIsNotThere(t *testing.T) {
+	t.Parallel()
+	if got := xIn(t, t.TempDir(), nil, "gh", "repo-slug", "/no/such/dir"); got.code != 2 {
+		t.Fatalf("exit %d, want 2:\n%s", got.code, got.stdout)
+	}
+}
+
 func TestGhPrNamesAMissingPr(t *testing.T) {
 	t.Parallel()
 	got, _ := runGhPr(t, prPages(), nil, "8", "--repo", "o/r")

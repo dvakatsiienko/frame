@@ -520,6 +520,9 @@
   - given a thread id and `--body-file <file>`, when the reply runs, then the body posts byte for byte under that thread, outright, never as a pending review, and the envelope holds its url
   - given a pr that is not digits, an id that is not a `PRRT_` thread, or a body file missing or blank, then exit 2 before any request
   - decision: both go over github's graphql review threads as the x-codie-cc app, since the rest comments feed carries no resolved state, so the list and the reply share one id kind
+- ⬜ `x gh repo-slug [dir]` prints a dir's github owner/name, the one remote parse x-mod-guard calls on a merge line (FRM-570)
+  - given an origin as ssh, https or an `insteadOf` alias, then it prints `owner/name` off the configured url or the rewritten one, with no network
+  - given no origin or a non-github one, then exit 1 naming it; a dir that is not there, exit 2
 
 ## linear — tickets
 
