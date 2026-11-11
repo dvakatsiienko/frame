@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -82,15 +83,11 @@ func pluginBumpPlan(r *Run, args []string, _ Flags) (any, error) {
 	if err := r.Step("plan", "finding the plugin and its marketplace", func() (string, error) {
 		planned, said, err := planBump(tree, name)
 		b = planned
-		if err == nil && b.linked {
-			return "", &Fail{Refused: true, Msg: home(tree) + " is a worktree — a plugin bump runs from the main checkout; nothing written",
-				Next: "cd " + quote(filepath.Dir(b.common)) + " && x plugin bump " + name + " --apply"}
-		}
 		return said, err
 	}); err != nil {
 		return nil, err
 	}
-	return ordered{{"name", name}, {"manifest", b.manifest}, {"from", b.from}, {"to", b.to}, {"marketplace", b.market}}, nil
+	return ordered{{"name", name}, {"manifest", b.manifest}, {"from", b.from}, {"to", b.to}, {"marketplace", b.market}, {"worktree", b.linked}}, nil
 }
 
 func askPluginBump(plan any) string {
@@ -107,6 +104,27 @@ func pluginBump(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return nil, err
 	}
 	data := ordered{{"name", name}, {"from", from}, {"to", to}, {"marketplace", market}}
+	// a worktree's bump commits on its own branch: an uncommitted plugin.json in main is what the fork guard refused
+	if fields[5].value == true {
+		r.skip("marketplace", "update", "cache")
+		var sha string
+		if err := r.Step("commit", "the bump, on this tree's branch", func() (string, error) {
+			committed, _, err := lockedGit("commit", "-q", "-m", fmt.Sprintf("🔧 %s: bump to %s", name, to), "--", manifest)
+			if err != nil {
+				return "", err
+			}
+			if !committed.ok {
+				return "", errors.Join(writeVersion(manifest, to, from), hookFail(committed.log, "x plugin bump "+name+" --apply"))
+			}
+			sha, err = head()
+			return short(sha), err
+		}); err != nil {
+			return nil, err
+		}
+		r.Done(fmt.Sprintf("%s %s committed on this branch; the release is main's at the merge", name, to), "x lane push --apply")
+		return append(data, kv{"sha", sha}), nil
+	}
+	r.skip("commit")
 	if market == "" {
 		r.skip("marketplace", "update", "cache")
 		r.Done(fmt.Sprintf("%s %s, bump only — not installed from a marketplace", name, to), "")

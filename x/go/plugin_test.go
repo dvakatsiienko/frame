@@ -113,22 +113,31 @@ func TestPluginBumpNamesTheLiveSessionsOnAnOlderCopy(t *testing.T) {
 	}
 }
 
-func TestPluginBumpRefusesInAWorktree(t *testing.T) {
+func TestPluginBumpInAWorktreeCommitsOnItsBranch(t *testing.T) {
 	t.Parallel()
 	dir, _, log, env := pluginFixture(t)
 	tree := filepath.Join(t.TempDir(), "wt")
 	gitT(t, dir, "worktree", "add", "-q", "-b", "side", tree)
-	manifest := filepath.Join(tree, "plug/.claude-plugin/plugin.json")
-	was := read(t, manifest)
+	mainManifest := filepath.Join(dir, "plug/.claude-plugin/plugin.json")
+	was := read(t, mainManifest)
 
-	// the marketplace reads the worktree itself, so only the worktree check stands between it and a write
-	got := xIn(t, tree, append(env("1.2.4"), "FAKE_MARKET="+filepath.Join(tree, "plug")), "plugin", "bump", "demo", "--apply")
+	// the marketplace reads the worktree itself, so only the worktree check keeps the live install untouched
+	got := xIn(t, tree, append(env("1.2.4"), "FAKE_MARKET="+filepath.Join(tree, "plug"), "GIT_CONFIG_GLOBAL=/dev/null"), "plugin", "bump", "demo", "--apply")
 
-	if got.code != 1 || !strings.Contains(got.stdout, "is a worktree") {
+	if got.code != 0 {
 		t.Fatalf("exit %d\n%s", got.code, got.stdout)
 	}
-	if read(t, manifest) != was || exists(log) {
-		t.Error("a refused bump wrote the manifest or ran claude")
+	if files := gitT(t, tree, "show", "--name-only", "--format=", "HEAD"); files != "plug/.claude-plugin/plugin.json" {
+		t.Errorf("the branch's HEAD holds %q", files)
+	}
+	if !strings.Contains(gitT(t, tree, "show", "HEAD:plug/.claude-plugin/plugin.json"), `"version": "1.2.4"`) {
+		t.Error("the commit does not hold 1.2.4")
+	}
+	if status := gitT(t, tree, "status", "--porcelain"); status != "" {
+		t.Errorf("the worktree left %q", status)
+	}
+	if read(t, mainManifest) != was || gitT(t, dir, "status", "--porcelain") != "" || exists(log) {
+		t.Error("main's plugin.json moved, or claude refreshed the live install")
 	}
 }
 

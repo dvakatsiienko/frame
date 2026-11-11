@@ -652,7 +652,7 @@
   - makes: the patch version moved by one in the plugin's `.claude-plugin/plugin.json`, a line edit
   - given a tracked plugin dir at a.b.c that a tracked marketplace lists by source
   - when it runs, then the manifest reads a.b.(c+1), `claude plugin marketplace update` and `claude plugin update` run, `claude plugin list` reports the install at the new version with its cache dir on disk, and the board ends on `next /reload-plugins`
-  - given a linked worktree, then the plan refuses before anything is written, whatever its marketplace reads, and names the main checkout
+  - given a linked worktree (a wing's tree), then the bump commits on its branch, whatever its marketplace reads: main's `plugin.json` stays clean and the live install is never refreshed; the release is main's at the merge (FRM-436, from FRM-519 item 8)
   - given a tree its marketplace does not read, then the plan refuses: nothing is written and nothing refreshed
   - decision: `pnpm plugin:release` retired into this verb (FRM-359); its moved-since status and the cloud chat symlink audit did not move
   - given an install that stays at the old version, then it exits 1 naming the version claude reports — also when a dir for the new version is already in the cache
