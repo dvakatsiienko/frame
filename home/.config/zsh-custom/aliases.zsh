@@ -87,5 +87,6 @@ alias cc-lean='(cd "$(mktemp -d)" && claude --safe-mode --strict-mcp-config)'
 alias clio='cd ~/frame/_clio && claude -n "🦉 clio" --remote-control "🦉 clio"'
 alias clio-herdr='~/frame/_clio/script/clio-start.sh'   # clio in a herdr tab, no first message
 alias clio-list='~/frame/_clio/.claude/hooks/boot-prefetch.sh'
+alias clio-revive='~/frame/_clio/script/clio-revive.sh'   # a dead clio thread back in its own tab: clio-revive main | wing <N>
 alias hk='pnpm --dir ~/frame --silent hotkeys:top'   # which chords + apps i actually use
 alias pk='BACKLOG_CWD=~/frame/_clio backlog'   # clio's pocket (Backlog.md): pk board, pk search <word>
