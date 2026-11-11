@@ -69,17 +69,21 @@ import { agents, inRender, panes, terminals } from './live.js';
 import * as ask from './question.js';
 import {
     QUEUED_IDLE_MS,
+    QUEUED_SHOWN,
     claudeQueueAfter,
     isHisQueued,
     queuedAfterIdle,
     queuedAfterRow,
+    queuedStripCover,
     queuedWords,
 } from './queued.js';
 import { relayIn, relayLine } from './relay.js';
 import {
+    LEFT_STRIP_COVER,
     SETTLED_READS,
     fileLinks,
     followAfterWheel,
+    isPressUnderStrip,
     isRowClipped,
     measureOrder,
     prevMineIndex,
@@ -112,8 +116,9 @@ const CLAUDE = `${home()}/.claude`;
 // accent: a key of ACCENTS; mine (your messages): "bubble", "box", "tint" or "bar"; bg: the theme color
 // behind the messages, or a "#rrggbb"; fg: the text color, "theme" or a "#rrggbb";
 // space: "tight", "normal" or "roomy" between them.
-// the queued messages listed over the box, the rest counted
-const QUEUED_SHOWN = 3;
+// the × on a queued message: off until a pull that re-sends the others is proven, his second «test» was pulled and
+// never came back (FRM-563, 01:39)
+const IS_UNDO_SEND_ON = false;
 const LOOK = 'chat.look';
 // replies: Claude's messages in earlier turns stay "open" (only the work between them folds) or "folded".
 const LOOK_DEFAULT = {
@@ -3125,7 +3130,8 @@ export default class ClaudeChat extends View {
         const shown = queued.slice(0, QUEUED_SHOWN);
         const more = queued.length - shown.length;
         const lineH = 24;
-        const height = 30 + shown.length * lineH + (more > 0 ? 18 : 0) + 6;
+        // the gap above the box is the cover's last 6 px
+        const height = queuedStripCover(queued.length) - 6;
         const lineJSX = shown.map((q, i) => {
             return h_flex()
                 .id(`queued-${i}`)
@@ -3141,7 +3147,7 @@ export default class ClaudeChat extends View {
                         .child(queuedWords(q.text).replace(/\s+/g, ' ')),
                 )
                 .child(
-                    q.isRecorded && !this.steering
+                    IS_UNDO_SEND_ON && q.isRecorded && !this.steering
                         ? div()
                               .id(`queued-x-${i}`)
                               .size(px(18))
@@ -4952,7 +4958,14 @@ export default class ClaudeChat extends View {
                         !this.follow &&
                         Math.abs(this.pressX - (this.viewW ?? 0) / 2) < 90 &&
                         ((prev >= 0 && y < 40) || y > (this.viewH ?? 0) - 40);
-                    this.pressFloat = isFloat || Boolean(this.ctx);
+                    this.pressFloat =
+                        isFloat ||
+                        Boolean(this.ctx) ||
+                        isPressUnderStrip(
+                            y,
+                            this.viewH ?? 0,
+                            this.stripCover ?? 0,
+                        );
                 })
                 .on_scroll_wheel((e, cx) => {
                     this.wheelAt = Date.now();
@@ -6597,6 +6610,12 @@ export default class ClaudeChat extends View {
         const queued = this.waiting(this.address);
         const isLeftShown =
             Boolean(this.leftInBox) && agent.status !== 'working';
+        // how far a strip covers the log's bottom: a press there is the strip's, never the row's under it
+        this.stripCover = isLeftShown
+            ? LEFT_STRIP_COVER
+            : queued.length
+              ? queuedStripCover(queued.length)
+              : 0;
         // A row's height holds only at the width and look it was measured at.
         /** @type {string} */
         const fit = `${Math.round(this.viewW ?? 0)}|${look.size}|${look.space}|${look.width}|${look.tools}|${look.replies}|${look.mine}|${look.font}|${look.system}`;
@@ -6793,7 +6812,7 @@ export default class ClaudeChat extends View {
                                 .absolute()
                                 .left(10)
                                 .right(10)
-                                .top(-34)
+                                .top(-LEFT_STRIP_COVER)
                                 .h(28)
                                 .px(10)
                                 .gap(8)

@@ -86,3 +86,20 @@ export const queuedWords = (text) =>
             '$1',
         )
         .trim();
+
+// the queued messages listed over the box, the rest counted
+export const QUEUED_SHOWN = 3;
+const STRIP_HEAD = 30;
+const STRIP_LINE = 24;
+const STRIP_MORE = 18;
+const STRIP_FOOT = 6;
+// the strip floats this far above the box
+const STRIP_GAP = 6;
+
+/** how far up from the log's bottom the queued strip covers it, its gap included @param {number} count */
+export const queuedStripCover = (count) =>
+    STRIP_HEAD +
+    Math.min(count, QUEUED_SHOWN) * STRIP_LINE +
+    (count > QUEUED_SHOWN ? STRIP_MORE : 0) +
+    STRIP_FOOT +
+    STRIP_GAP;

@@ -38,6 +38,19 @@ export function isRowClipped(key, heights) {
     return !(Number.isFinite(h) && h > 0 && h <= MAX_ROW_PX);
 }
 
+// «Still in Claude's box» covers the log's bottom this far, its 6 px gap included
+export const LEFT_STRIP_COVER = 34;
+
+/**
+ * whether a press in the log landed under a strip floating over its bottom edge: the press is the strip's, and the row
+ * under it never takes it (a × over a message's fork column forked the thread, dima 01:39)
+ * @param {number} y the press, from the log's top
+ * @param {number} viewH the log's height
+ * @param {number} cover how far up from the log's bottom a strip covers it, 0 when none shows
+ */
+export const isPressUnderStrip = (y, viewH, cover) =>
+    cover > 0 && y >= viewH - cover;
+
 /**
  * which rows the measurer draws this pass: never-measured ones nearest `near` first, then ones not yet read the same
  * twice (markdown can lay out a moment after its first frame); a settled chat draws none, since every frame lays out

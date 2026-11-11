@@ -1,11 +1,14 @@
 import { describe, expect, test } from 'vitest';
 
+import { queuedStripCover } from './queued.js';
 import {
+    LEFT_STRIP_COVER,
     MAX_ROW_PX,
     MEASURE_MAX,
     MEASURE_NEW,
     fileLinks,
     followAfterWheel,
+    isPressUnderStrip,
     isRowClipped,
     measureOrder,
     prevMineIndex,
@@ -184,5 +187,20 @@ describe('a row clips only while its size is not its own height', () => {
     });
     test('a runaway height cut to the cap clips', () => {
         expect(isRowClipped('a', new Map([['a', MAX_ROW_PX + 1]]))).toBe(true);
+    });
+});
+
+describe('a press under a strip over the log is the strip’s, never the row’s', () => {
+    test('a press on Send now or a ×, inside the queued strip, never forks the row under it', () => {
+        expect(isPressUnderStrip(580, 600, queuedStripCover(1))).toBe(true);
+    });
+    test('a press on Take it, inside «Still in Claude’s box», never forks the row under it', () => {
+        expect(isPressUnderStrip(580, 600, LEFT_STRIP_COVER)).toBe(true);
+    });
+    test('a press above the strip reaches the row', () => {
+        expect(isPressUnderStrip(500, 600, LEFT_STRIP_COVER)).toBe(false);
+    });
+    test('with no strip every press reaches the row', () => {
+        expect(isPressUnderStrip(600, 600, 0)).toBe(false);
     });
 });

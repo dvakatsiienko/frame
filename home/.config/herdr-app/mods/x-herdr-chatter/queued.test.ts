@@ -6,6 +6,7 @@ import {
     isHisQueued,
     queuedAfterIdle,
     queuedAfterRow,
+    queuedStripCover,
     queuedWords,
 } from './queued.js';
 
@@ -144,5 +145,14 @@ describe('the words of a queued message', () => {
     });
     test('plain words stay as they are', () => {
         expect(queuedWords('fix the crow emoji')).toBe('fix the crow emoji');
+    });
+});
+
+describe('the strip over the log', () => {
+    test('one queued message covers its line, the header and the gap', () => {
+        expect(queuedStripCover(1)).toBe(30 + 24 + 6 + 6);
+    });
+    test('past three, the rest are one counted line', () => {
+        expect(queuedStripCover(5)).toBe(30 + 3 * 24 + 18 + 6 + 6);
     });
 });

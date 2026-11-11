@@ -21,7 +21,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and «Send now» at the strip's top presses Claude Code's own Ctrl+Enter when its screen offers «ctrl+enter to send now», «Sending…» meanwhile; offered nothing, it says «Claude takes it at its next step» for 4 s
   - decision: queued and joined are read from Claude Code's `queue-operation` records (enqueue, remove, dequeue, popAll), never guessed from his text
   - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the box empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
-- 🧭 a queued message comes back to the box with its × (FRM-563)
+  - and a press on the strip («Send now», «Take it», a ×) is the strip's alone: the message under it never forks
+- 🐞 a queued message comes back to the box with its × (FRM-563)
+  - decision: hidden behind `IS_UNDO_SEND_ON` until the re-send is proven: his second queued «test» was pulled and never came back (01:39)
   - given a thread mid-turn holds his queued messages
   - when dima clicks × on one before it joins
   - then the thread never receives it and its text is back in his box, before anything he had typed there
