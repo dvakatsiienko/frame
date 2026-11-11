@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-11T19:34:00Z'
+updated_date: '2026-11-11T19:56:00Z'
 labels:
   - s
   - clio-main
@@ -17,40 +17,44 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 now: FRM-576 chunk 2 next batch — halt/main.md:8 and :18 (list_sessions vs ListAgents, archive_session vs hc kill: both doors into the leaves), the crew-dna and crew-codie ask lines per his o63 (a member asks its coordinator first), _reminders :22 :37 :60 (dated; his :37 quote shown to him), grill-chat-3 W667–W668 re-fold in PK-363, then a fresh rg over _clio memory and clio skills for desktop|herdr doors; exit 8 at his next desktop thread
-- [ ] #2 shepherdr install-and-inspect round by his plan (o61 ticked): back up keys.json, install --no-hooks, pause everyone, he switches to its layout and explores, researcher + herdr codie + wing 1 + clio inspect, switch back, resume, its launchd service unloaded after; then the chat borrow chunk on FRM-562 for herdr codie, then the herdr-app#794 measured comment, drafted through x:writing-for-humans and shown to him first
-- [ ] #3 the herdr interview: his OSS layouts and shots, the stacked composer's next look, designer or codie for the looks; not run yet
-- [ ] #4 PK-363 herdr move: the wish behind the herdr lane and tomorrow's boot, its state in .scratch/herdr/plan.md
-- [ ] #5 grill 5 round 2: the setup's name (seven), then wing 1's zoo pairs for his keep-or-go-back, his own sounds, a tick for every refusal
-- [ ] #6 the halt's milestone refresh, from wing 1's sweep (dima 20:31: «all milestone ticket execution order is properly groomed and saved in Linear … next boot … you don't forget the order»): drop or flip the two blocks links that contradict his ticked mods order (FRM-504 blocks FRM-519, FRM-505 blocks FRM-504); point the initiative's two queues and the halt handoff at .scratch/herdr/scopes-audit.md § the whole execution order; give tonight's four ticketless herdr builds (deck beautify, strip removal, orbit in the agents list's order, tab short labels) and the watcher's «main.js lands last» a ticket line and an FTR line
-- [ ] #7 the 💡💡💡💡💡 line to dima (PK-363:W571) fires only when FRM-544 closes with his W4 met: a tick runs a delete and a merge, proven by his own press
-- [ ] #8 FRM-571 (holds land in a shelf file, x stops reading the private store): Triage, born by wing 1 on his 21:30 tick; shape and his sign, then the mods lane right after FRM-568
-- [ ] #9 mods lane riders, re-signed 21:37: FRM-519 item 22 (the raw api sign door) and FRM-524 two lines (the guard asks x for the hold path and the brief stamp); in the lane plan not-greenlit, spec sections owed at their turn
-- [ ] #10 from wing 1 sweep (21:56): FRM-538 needs «✍️ sign FRM-538» at its dispatch (nine W-lines joined as tiny after its last sign, his tick); FRM-489 gets a «changed, text unchanged» line at dispatch; the sign hash reader wants a fix (linear escapes ~, [x] and _clio/ inside the body, and words after the hash on a sign line), mine, beside ticket-sign.ts
-- [ ] #11 wing 1's summon leftovers: the mods codie's first door (does a pane draw mods for him), /handoff spawn still starts claude --bg, a pane wing's first task has no background field, the crew-pm board redraw
-- [ ] #12 carried from the 11-10 halt, not run: the trial board (pnpm test-drive:check, ts-lsp due), one checkup slice, two stale board redraws (crew-pm, refresh-crew-coordinator), crow note-vet and the crow-receipts round, the milestone order refresh, x linear archive, the kill side, the four budget rows groomed back, x plugin bump --apply clio
-- [ ] #13 herdr updated itself to 0.1.15 / core 0.1.20 on 11-10 evening with threads live; herdr-core 0.1.20 notes still unread
-- [ ] #14 quiet comms gate: a second [done] from one member within minutes is held; propose to dima after the mods lane runs
-- [ ] #15 guard: awk -f, rg --pre, sort --compress-program can run a program inside ~/.local/state/x (sixth sense, FRM-574 round 3): a ticket in safer, quieter mods
-- [ ] #16 herdr lane chunk 1 (its 11-10 date passed, check FRM-568's band slices first), shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping)
-- [ ] #17 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line (its 11-10 date passed)
-- [ ] #18 his siesta question, after the memory grill (PK-377:W30): too many siestas? over-tuned? wishkeeper finds a lot each time but is not free; answer with today's count (W884) and the trigger (W883), then his pick
-- [ ] #19 his habit ask (PK-377:W25): «do not start multiple grills or reviews at once» — a memory line for habit-dima-comms, proposed to him (his words, so asked)
-- [ ] #20 mods rider r6, now mine (mods codie 18:42): _clio/.claude/hooks/fork-guard.sh allows a wing's edit of a ~/.claude/shelf/handoffs/ file whose name carries that wing's own token; proven with a fixture-HOME driver plus a mutation run (_clio/AGENTS.md)
-- [ ] #21 prompt-groom.ts --no-wish refuses a prompt holding a want marker («i want», «always», «should», ❓, ← on a line of ours) and sends it to helga's groom (his o43 tick via wing 1, 19:29): measure the false refuses on this week's grooms first, warn before it enforces if the count is high
-- [ ] #22 his ❓ PK-363:W1018 (hot reloads or a leak?): re-read herdr's memory at the halt, 215 MB at 19:28; steady growth with no reloads means a leak, the answer goes to him
-- [ ] #23 mods lane 6 card: once r9 and r10 land (63d5fa57, 990334f5 on main), the riders show on the card as one step, as told to dima 19:51
-- [ ] #24 mods row (his o67 tick): the glide subcard becomes a read-only view of a member's asks, its tick no longer joins the member's turn; x-mod-stash FTR.md:1061 exit 3 changes with it; for the next mods lane
-- [ ] #25 the siesta trigger reshaped, his words (00:56): «one siesta per hour is too rare. Wishkeeper is useful but not when I ask you some plain questions … When I just chat there is no need for Wishkeeper … it should run when something important is worth checking. For example when you do batches and make a lot of changes that are important to catch». so: the trigger is the size and weight of a batch (a lane’s done with commits, a ticket close or sign, a many-file batch), never a chat turn or a one-line edit; no time cap; 7 runs in 2 h on 11-10 night, 4 from small rule edits — on: 2026-11-11
-- [ ] #26 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
-- [ ] #27 ⏳ the red twin past `x mods edit test` (a red twins.test.ts reached main, 45e64cc0): its home is a rider on FRM-560, wing 1's PK-346 #4 — waits for: dima's sign tick on FRM-560's re-sign
-- [ ] #28 ⏳ the herdr FTR gate map (dima 16:32, «ensure not forgotten»): x lane gate maps herdr-app/mods/ → herdr/FTR.md + herdr/ftr/*.md; stays open until FRM-436's body carries it (wing 1's PK-346 #4) — waits for: dima's sign tick on FRM-436
-- [ ] #29 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #30 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #31 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #32 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #33 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #34 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #35 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #2 the herdr interview: his OSS layouts and shots, the stacked composer's next look, designer or codie for the looks; not run yet
+- [ ] #3 PK-363 herdr move: the wish behind the herdr lane and tomorrow's boot, its state in .scratch/herdr/plan.md
+- [ ] #4 grill 5 round 2: the setup's name (seven), then wing 1's zoo pairs for his keep-or-go-back, his own sounds, a tick for every refusal
+- [ ] #5 the halt's milestone refresh, from wing 1's sweep (dima 20:31: «all milestone ticket execution order is properly groomed and saved in Linear … next boot … you don't forget the order»): drop or flip the two blocks links that contradict his ticked mods order (FRM-504 blocks FRM-519, FRM-505 blocks FRM-504); point the initiative's two queues and the halt handoff at .scratch/herdr/scopes-audit.md § the whole execution order; give tonight's four ticketless herdr builds (deck beautify, strip removal, orbit in the agents list's order, tab short labels) and the watcher's «main.js lands last» a ticket line and an FTR line
+- [ ] #6 the 💡💡💡💡💡 line to dima (PK-363:W571) fires only when FRM-544 closes with his W4 met: a tick runs a delete and a merge, proven by his own press
+- [ ] #7 FRM-571 (holds land in a shelf file, x stops reading the private store): Triage, born by wing 1 on his 21:30 tick; shape and his sign, then the mods lane right after FRM-568
+- [ ] #8 mods lane riders, re-signed 21:37: FRM-519 item 22 (the raw api sign door) and FRM-524 two lines (the guard asks x for the hold path and the brief stamp); in the lane plan not-greenlit, spec sections owed at their turn
+- [ ] #9 from wing 1 sweep (21:56): FRM-538 needs «✍️ sign FRM-538» at its dispatch (nine W-lines joined as tiny after its last sign, his tick); FRM-489 gets a «changed, text unchanged» line at dispatch; the sign hash reader wants a fix (linear escapes ~, [x] and _clio/ inside the body, and words after the hash on a sign line), mine, beside ticket-sign.ts
+- [ ] #10 wing 1's summon leftovers: the mods codie's first door (does a pane draw mods for him), /handoff spawn still starts claude --bg, a pane wing's first task has no background field, the crew-pm board redraw
+- [ ] #11 carried from the 11-10 halt, not run: the trial board (pnpm test-drive:check, ts-lsp due), one checkup slice, two stale board redraws (crew-pm, refresh-crew-coordinator), crow note-vet and the crow-receipts round, the milestone order refresh, x linear archive, the kill side, the four budget rows groomed back, x plugin bump --apply clio
+- [ ] #12 herdr updated itself to 0.1.15 / core 0.1.20 on 11-10 evening with threads live; herdr-core 0.1.20 notes still unread
+- [ ] #13 quiet comms gate: a second [done] from one member within minutes is held; propose to dima after the mods lane runs
+- [ ] #14 guard: awk -f, rg --pre, sort --compress-program can run a program inside ~/.local/state/x (sixth sense, FRM-574 round 3): a ticket in safer, quieter mods
+- [ ] #15 herdr lane chunk 1 (its 11-10 date passed, check FRM-568's band slices first), shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping)
+- [ ] #16 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line (its 11-10 date passed)
+- [ ] #17 his siesta question, after the memory grill (PK-377:W30): too many siestas? over-tuned? wishkeeper finds a lot each time but is not free; answer with today's count (W884) and the trigger (W883), then his pick
+- [ ] #18 his habit ask (PK-377:W25): «do not start multiple grills or reviews at once» — a memory line for habit-dima-comms, proposed to him (his words, so asked)
+- [ ] #19 mods rider r6, now mine (mods codie 18:42): _clio/.claude/hooks/fork-guard.sh allows a wing's edit of a ~/.claude/shelf/handoffs/ file whose name carries that wing's own token; proven with a fixture-HOME driver plus a mutation run (_clio/AGENTS.md)
+- [ ] #20 prompt-groom.ts --no-wish refuses a prompt holding a want marker («i want», «always», «should», ❓, ← on a line of ours) and sends it to helga's groom (his o43 tick via wing 1, 19:29): measure the false refuses on this week's grooms first, warn before it enforces if the count is high
+- [ ] #21 his ❓ PK-363:W1018 (hot reloads or a leak?): re-read herdr's memory at the halt, 215 MB at 19:28; steady growth with no reloads means a leak, the answer goes to him
+- [ ] #22 mods lane 6 card: once r9 and r10 land (63d5fa57, 990334f5 on main), the riders show on the card as one step, as told to dima 19:51
+- [ ] #23 mods row (his o67 tick): the glide subcard becomes a read-only view of a member's asks, its tick no longer joins the member's turn; x-mod-stash FTR.md:1061 exit 3 changes with it; for the next mods lane
+- [ ] #24 upstream comments on herdr-app#894 (on_item_link_click for lazy-list rows) and #794 (measured), drafted through x:writing-for-humans, shown to dima first
+- [ ] #25 FRM-519 P1 from 12b exit 6: any thread's hc send naming a pr number opens --dima-ok there; pane-proof must refuse text not from his keyboard — the body line and the spec section, then the mods codie's red row
+- [ ] #26 glide l71 (memory lane) and l72 (mods lane 6): step or end each from its lane plan
+- [ ] #27 name a desktop-only Claude thread to dima once, for FRM-576 exit 8 and PK-349 #29 probe 4b
+- [ ] #28 helga's earlier PK-363 and FRM-566 groom appends: check each W-line has its home, run the missing appends
+- [ ] #29 the siesta trigger reshaped, his words (00:56): «one siesta per hour is too rare. Wishkeeper is useful but not when I ask you some plain questions … When I just chat there is no need for Wishkeeper … it should run when something important is worth checking. For example when you do batches and make a lot of changes that are important to catch». so: the trigger is the size and weight of a batch (a lane’s done with commits, a ticket close or sign, a many-file batch), never a chat turn or a one-line edit; no time cap; 7 runs in 2 h on 11-10 night, 4 from small rule edits — on: 2026-11-11
+- [ ] #30 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+- [ ] #31 ⏳ the red twin past `x mods edit test` (a red twins.test.ts reached main, 45e64cc0): its home is a rider on FRM-560, wing 1's PK-346 #4 — waits for: dima's sign tick on FRM-560's re-sign
+- [ ] #32 ⏳ the herdr FTR gate map (dima 16:32, «ensure not forgotten»): x lane gate maps herdr-app/mods/ → herdr/FTR.md + herdr/ftr/*.md; stays open until FRM-436's body carries it (wing 1's PK-346 #4) — waits for: dima's sign tick on FRM-436
+- [ ] #33 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #34 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #35 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #36 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #37 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #38 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #39 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -268,4 +272,8 @@ done 2026-11-11 21:18: prompt-groom.ts --next <home> counts only the homes, so t
 done 2026-11-11 21:34: crow replay row (crow 19:03): the proposal wake for grill-chat-3 made an empty packet dir 202611111856d59 and never reached her; a wake that cannot write its packet leaves a «failed: <reason>» line in harvest.log
 
 yanked 2026-11-11 21:34 to wing 1 (PK-346), dima's o56 tick: crow replay row (failed wake logs «failed»)
+
+done 2026-11-11 21:50: shepherdr install-and-inspect round by his plan (o61 ticked): back up keys.json, install --no-hooks, pause everyone, he switches to its layout and explores, researcher + herdr codie + wing 1 + clio inspect, switch back, resume, its launchd service unloaded after; then the chat borrow chunk on FRM-562 for herdr codie, then the herdr-app#794 measured comment, drafted through x:writing-for-humans and shown to him first (FRM-562 Todo)
+
+correction 21:55: the #2 line's #794 comment moved to its own line (upstream comments); the launchd unload was dropped on dima's 21:07 «keep shepherdr for now»
 <!-- SECTION:NOTES:END -->
