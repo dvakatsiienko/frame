@@ -276,6 +276,13 @@ const FLIP_LIMIT = 4;
 const MEASURE_BATCH_MS = 32;
 // his message's last px, where its fork icon sits: a press there forks (rows take no handlers, clickRow)
 const FORK_W = 28;
+/** a message as a markdown quote, every line under «> » @param {string} text */
+const quoted = (text) =>
+    text
+        .trim()
+        .split(/\r?\n/)
+        .map((l) => `> ${l}`)
+        .join('\n');
 /** a message between threads: one another thread sent, or this one's SendMessage @param {any} item */
 const isRelay = (item) =>
     item?.kind === 'relay' || item?.name === 'SendMessage';
@@ -1274,6 +1281,8 @@ export default class ClaudeChat extends View {
         this.shots = {};
         // files picked with + or dropped on the box, by agent address, sent as paths with the next message
         this.files = new Map();
+        // the message a reply answers, by agent address: shown above the box, sent quoted before the text
+        this.replies = new Map();
         cx.spawn(async (cx) => {
             this.shots = await loadShots();
             cx.notify();
@@ -2663,7 +2672,10 @@ export default class ClaudeChat extends View {
             : [];
         this.pasted.delete(address);
         this.files.delete(address);
+        const replyTo = this.replies.get(address);
+        this.replies.delete(address);
         const message = [
+            replyTo ? `${quoted(replyTo)}\n` : '',
             text,
             ...files.map((f) => `[Image: ${f}]`),
             ...attached.map(promptPath),
@@ -5264,8 +5276,8 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
-    // Copy message = the whole message as written (markdown); Quote in chat = it goes into the box
-    // as a "> " quote. A press anywhere else closes the menu.
+    // Copy message = the whole message as written (markdown); Reply = it waits above the box and goes
+    // quoted before the next send. A press anywhere else closes the menu.
     ctxMenu(t) {
         const W = 200,
             H = 2 * 27 + 8;
@@ -5319,7 +5331,10 @@ export default class ClaudeChat extends View {
                 ),
             )
             .child(
-                row('quote', 'Quote message in chat', () => this.quote(text)),
+                row('reply', 'Reply', () => {
+                    this.replies.set(this.address, text);
+                    this.box.focus();
+                }),
             );
     }
 
@@ -5617,22 +5632,48 @@ export default class ClaudeChat extends View {
         );
     }
 
-    // Puts text into the box as a markdown quote, after what's there, and gives the box the keyboard.
-    quote(text) {
-        const quoted = text
-            .trim()
-            .split(/\r?\n/)
-            .map((l) => `> ${l}`)
-            .join('\n');
-        const had = this.box.value();
-        this.box.set_value(
-            had.trim()
-                ? `${had.replace(/\s+$/, '')}\n\n${quoted}\n\n`
-                : `${quoted}\n\n`,
-        );
-        this.typed = this.box.value();
-        keepDraft(this.address, this.typed);
-        this.box.focus();
+    // the message a reply answers, one line above the box: its first words, × drops it
+    replyStrip(t, address) {
+        const text = this.replies.get(address) ?? '';
+        return h_flex()
+            .gap(8)
+            .items_center()
+            .mx(14)
+            .px(8)
+            .py(4)
+            .rounded(RADIUS.control)
+            .border_l(2)
+            .border_color(t.accent)
+            .bg(t.raised)
+            .text_size(px(TEXT.sm))
+            .child(div().flex_none().text_color(t.accent).child('↩ Reply'))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w(0)
+                    .truncate()
+                    .text_color(t.muted)
+                    .child(text.replace(/\s+/g, ' ').trim()),
+            )
+            .child(
+                div()
+                    .id('reply-x')
+                    .size(px(18))
+                    .flex()
+                    .flex_none()
+                    .items_center()
+                    .justify_center()
+                    .rounded_full()
+                    .text_color(t.muted)
+                    .cursor_pointer()
+                    .hover((s) => s.bg(t.hover).text_color(t.foreground))
+                    .tooltip('Drop the reply')
+                    .on_click((_e, cx) => {
+                        this.replies.delete(address);
+                        cx.notify();
+                    })
+                    .child('×'),
+            );
     }
 
     // ---- search
@@ -6240,6 +6281,9 @@ export default class ClaudeChat extends View {
                                 .text_color(t.accent)
                                 .child(this.pickNote),
                         ),
+                    )
+                    .when(this.replies.has(agent.address), (el) =>
+                        el.child(this.replyStrip(t, agent.address)),
                     )
                     .when(
                         Boolean(this.files.get(agent.address)?.length),
