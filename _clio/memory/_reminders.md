@@ -64,7 +64,7 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
   (dima, 2026-11-04, o85: «keep opus for now»; ask again before a real start)
 ⏰ when clio can flip keep-hot herself (`mods:set hot` lands, FRM-505): remind dima to update her habits — the shift turns keep-hot on for every member itself (`clio:shift` § hot caches) — set 2026-11-03
 ⏰ when the automated second wind lands (pk-307's chunk): tell dima it is done — every session winds itself at the 🎛️ thresholds (55 % notice, 65 % a must, global values) — set 2026-11-03
-⏰ 🦉🐦‍⬛ crow's weekly grade, 2026-11-11, again 11-17 — draw 5 notes from `~/.local/state/crow/notes.jsonl` for dima to grade, log the round in `docs/test-drive/crow-receipts.md` (FRM-502) — due: 2026-11-11
+⏰ 🦉🐦‍⬛ crow's weekly grade — 5 notes from `~/.local/state/crow/notes.jsonl` as five plain lines, one word each, never orbit picks; the round in `docs/test-drive/crow-receipts.md` (FRM-502) — due: 2026-11-17
 ⏰ 🦉 optional, on his word, back on the $100 plan: pace watch on: `pnpm -C ~/frame mods:set part stash.pace-watch on`, lift the ⏸️ lines in `habit-ctx-load-balancing` and `clio:shift` — set 2026-11-05 · due: 2026-12-05
 ⏰ 🦉 read the Console balance, the gifted $200 expires 12-08: spend it on useful mechanical batch work, never on crow, helga or jev's measure (PK-304) — set 2026-11-07 · due: 2026-12-01
 ⏰ 🦉 when [FRM-501](https://linear.app/x-com/issue/FRM-501) and [FRM-505](https://linear.app/x-com/issue/FRM-505) land: sync the habits with the fresh mods, the shift skill with quiet, clio's coordination with self-running second wind, so nothing planned stays unwired (W250, W179–W181, dima 2026-11-04) — set 2026-11-05
