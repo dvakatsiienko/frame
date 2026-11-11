@@ -16,6 +16,8 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
+- [ ] #20 now (dima 17:10, «do now»): shape-idea for memory by surface, clio and fleet memory mirrored, the env detected; then the herdr interview, then the tilde grill
+- [ ] #21 a small skill for his «sync your flyway: clear done, reorder, tell the wings» after a second wind (dima 16:52, again 17:10): seven names + ⚖️ worth it first
 - [ ] #1 PK-363 herdr move: the wish behind the herdr lane and tomorrow's boot, its state in .scratch/herdr/plan.md
 - [ ] #2 📎 the for-you row on fleet-board (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
 - [ ] #3 grill 5 round 2: the setup's name (seven), then wing 1's zoo pairs for his keep-or-go-back, his own sounds, a tick for every refusal
