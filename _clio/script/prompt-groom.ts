@@ -16,7 +16,6 @@ import {
     mkdirSync,
     readFileSync,
     readdirSync,
-    statSync,
     writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
@@ -460,20 +459,10 @@ export function newBare(text: string, head: string, home: string) {
     );
 }
 
-// every steer in clio's transcript (the given one, else the newest under her project dir), with the local day it landed
+// every steer in this thread's transcript (the given one, else the one CLAUDE_CODE_SESSION_ID names), with the local day it landed;
+// the newest clio transcript may be a wing's or a probe's, so with neither no steer is read
 function transcriptSteers(transcript?: string) {
-    // read-both: the live dir since the 10-29 move, and the old one for history
-    const file =
-        transcript ??
-        ['-Users-dima-frame--clio', '-Users-dima-frame-cclio']
-            .map((d) => path.join(home, '.claude/projects', d))
-            .filter((dir) => existsSync(dir))
-            .flatMap((dir) =>
-                readdirSync(dir)
-                    .filter((name) => name.endsWith('.jsonl'))
-                    .map((name) => path.join(dir, name)),
-            )
-            .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
+    const file = transcript ?? ownTranscript();
     if (!file || !existsSync(file)) return [];
     return readFileSync(file, 'utf8')
         .split('\n')
@@ -487,15 +476,20 @@ function transcriptSteers(transcript?: string) {
         });
 }
 
-// the prompt hook names its own transcript; with none, the newest clio transcript may be another seat's, so no steer is owed
+function ownTranscript() {
+    const id = process.env.CLAUDE_CODE_SESSION_ID;
+    const projects = path.join(home, '.claude/projects');
+    if (!id || !existsSync(projects)) return undefined;
+    return readdirSync(projects)
+        .map((dir) => path.join(projects, dir, `${id}.jsonl`))
+        .find((file) => existsSync(file));
+}
+
 export const ungroomedSteersToday = (
     day: string,
     noWishText: string,
     transcript?: string,
-) =>
-    transcript === undefined
-        ? []
-        : ungroomedSteers(transcriptSteers(transcript), day, noWishText);
+) => ungroomedSteers(transcriptSteers(transcript), day, noWishText);
 
 // every steer of that id on that day: one ask can take several, and an id can return on a later day
 const steerText = (id: string, day: string, transcript?: string) =>
