@@ -1,11 +1,13 @@
 // a reply cut into blocks: prose stays markdown, a fenced block becomes a code block with a copy button, and a fence
-// under a 📋 ribbon that names a session or an agent becomes a prompt card that fills his box; a «copy → terminal»
-// ribbon keeps its fence a code block. the ribbons and the ✂️ end line are the fleet's own copy-block frame
+// under a «📋 copy → this thread» ribbon becomes a prompt card that fills the box of the thread he reads; a ribbon
+// naming anywhere else (a terminal, another thread, the next session) keeps its fence a copy block, since the card's
+// click can only fill this box (dima, 2026-11-12 01:37). the ribbons and the ✂️ end line are the fleet's own frame
 
 /** @typedef {{ kind: 'text', text: string } | { kind: 'code', lang: string, text: string, isClosed: boolean, full?: string } | { kind: 'prompt', to: string, text: string }} Block */
 
 const RIBBON = /^📋\s*\*\*copy\s*→\s*(.+?)\*\*\s*📋\s*$/;
 const END = /^✂️\s*\*\*end\*\*\s*✂️\s*$/;
+const THIS_THREAD = /^this (thread|session)$/i;
 const FENCE = /^\s*(```|~~~)\s*([\w+-]*)\s*$/;
 
 /**
@@ -53,7 +55,7 @@ export function splitBlocks(text) {
         const code = body.join('\n');
         const to = ribbon;
         ribbon = null;
-        if (to && !/^terminal$/i.test(to) && isClosed)
+        if (to && THIS_THREAD.test(to) && isClosed)
             blocks.push({ kind: 'prompt', text: code, to });
         else blocks.push({ isClosed, kind: 'code', lang: open[2], text: code });
     }

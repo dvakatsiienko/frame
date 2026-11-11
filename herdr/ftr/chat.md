@@ -192,9 +192,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a reply holds a closed fence
   - when dima clicks ⧉ copy at the code block's top right
   - then the label reads ✓ copied for a moment and a paste gives the command (his hand, 16:04)
-  - and a fence still streaming draws no copy button; a fence under a «copy → terminal» ribbon stays a code block
+  - and a fence still streaming draws no copy button; only a fence under «📋 copy → this thread» (or «this session») makes a prompt card, since its click fills the box he reads; under any other ribbon («copy → herdr terminal», another thread, «next session») it stays a copy block
 - ⬜ a prompt card fills the box
-  - given a reply holds a fence under a 📋 ribbon that names a session or an agent
+  - given a reply holds a fence under a «📋 copy → this thread» ribbon
   - when dima clicks the card
   - then the prompt lands in his box after what he typed, one blank line between, unsent, and the box takes the keyboard
   - decision: in-message cards on our own column, his pick a (15:50): herdr's lazy list drops any row with its own handler (herdr-app#894)

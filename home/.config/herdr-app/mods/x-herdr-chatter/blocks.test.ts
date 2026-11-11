@@ -20,19 +20,30 @@ describe('a reply cut into blocks', () => {
         expect(blocks[1]).toMatchObject({ isClosed: false, kind: 'code' });
     });
 
-    test('a fence under a ribbon naming a session is a prompt card', () => {
-        const blocks = splitBlocks(
-            'next:\n\n📋 **copy → next session** 📋\n\n```\ningest herdr-lane-7\n```\n\n✂️ **end** ✂️',
-        );
-        expect(blocks).toEqual([
-            { kind: 'text', text: 'next:' },
-            { kind: 'prompt', text: 'ingest herdr-lane-7', to: 'next session' },
-        ]);
-    });
+    test.each(['this thread', 'this session', 'This Thread'])(
+        'a fence under a «copy → %s» ribbon is a prompt card for the box he reads',
+        (to) => {
+            const blocks = splitBlocks(
+                `next:\n\n📋 **copy → ${to}** 📋\n\n\`\`\`\nhi\n\`\`\`\n\n✂️ **end** ✂️`,
+            );
+            expect(blocks).toEqual([
+                { kind: 'text', text: 'next:' },
+                { kind: 'prompt', text: 'hi', to },
+            ]);
+        },
+    );
 
-    test('a fence under a terminal ribbon stays a code block', () => {
+    test.each([
+        'terminal',
+        'herdr terminal',
+        'next session',
+        'codie',
+        'clio',
+        'wing 1',
+        'this thread later',
+    ])('a fence under a «copy → %s» ribbon stays a copy block', (to) => {
         const blocks = splitBlocks(
-            '📋 **copy → terminal** 📋\n\n```\nx lane push\n```\n\n✂️ **end** ✂️',
+            `📋 **copy → ${to}** 📋\n\n\`\`\`\nx lane push\n\`\`\`\n\n✂️ **end** ✂️`,
         );
         expect(blocks).toEqual([
             { isClosed: true, kind: 'code', lang: '', text: 'x lane push' },
