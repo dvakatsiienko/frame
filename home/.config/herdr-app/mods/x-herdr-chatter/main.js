@@ -1786,7 +1786,12 @@ export default class ClaudeChat extends View {
                 // re-read on your next message", "❯ 1. Yes, switch to low"): the pick was the answer.
                 for (let i = 0; i < 8; i++) {
                     await cx.sleep(200);
-                    if (/^\s*❯\s*1\.\s+Yes, switch/m.test(await screen())) {
+                    const s = await screen();
+                    // Claude's own model prompt reads «Switch model?» over a first row «❯ 1. Yes…»
+                    if (
+                        /^\s*❯\s*1\.\s+Yes, switch/m.test(s) ||
+                        (/Switch model\?/.test(s) && /❯\s*1\.\s*Yes/.test(s))
+                    ) {
                         await hc(['keys', address, 'enter']);
                         break;
                     }
@@ -1872,7 +1877,13 @@ export default class ClaudeChat extends View {
                         .hover((s) => s.bg(t.hover).text_color(t.foreground))
                         .on_click((_e, cx) => {
                             this.drop = null;
-                            this.pick(kind, value, agent.address, cx);
+                            // a model switch mid-conversation drops the hot cache: it asks first
+                            if (kind === 'model' && this.flat?.length)
+                                this.askModel = {
+                                    address: agent.address,
+                                    value,
+                                };
+                            else this.pick(kind, value, agent.address, cx);
                             this.box.focus();
                         }),
                 )
@@ -5326,9 +5337,17 @@ export default class ClaudeChat extends View {
             .shadow_md()
             .on_mouse_down_out((_e, cx) => close(cx))
             .child(
-                row('copy-msg', 'Copy message', (cx) =>
-                    cx.write_to_clipboard(text),
-                ),
+                row('copy-msg', 'Copy message', (cx) => {
+                    cx.write_to_clipboard(text);
+                    // the menu closes at once: the box's note line says it worked
+                    const note = 'Message copied';
+                    this.pickNote = note;
+                    cx.timer.after(1500, (cx) => {
+                        if (this.pickNote !== note) return;
+                        this.pickNote = null;
+                        cx.notify();
+                    });
+                }),
             )
             .child(
                 row('reply', 'Reply', () => {
@@ -5630,6 +5649,63 @@ export default class ClaudeChat extends View {
                     ),
                 )
         );
+    }
+
+    // a model switch mid-conversation, asked first: the next message re-reads the whole history uncached
+    modelConfirm(t, address) {
+        const { value } = this.askModel;
+        const close = (cx) => {
+            this.askModel = null;
+            cx.notify();
+        };
+        return v_flex()
+            .gap(8)
+            .mx(14)
+            .p(10)
+            .rounded(RADIUS.card)
+            .border(1)
+            .border_color(t.border)
+            .bg(t.raised)
+            .text_size(px(TEXT.sm))
+            .child(
+                div()
+                    .text_color(t.foreground)
+                    .font_weight(600)
+                    .child(`Switch this thread to ${value}?`),
+            )
+            .child(
+                div()
+                    .text_color(t.muted)
+                    .child(
+                        'Its cache is lost: the next message re-reads the whole conversation, slower and pricier.',
+                    ),
+            )
+            .child(
+                h_flex()
+                    .gap(6)
+                    .child(
+                        button(
+                            t,
+                            px,
+                            'model-switch',
+                            `Switch to ${value}`,
+                            (_e, cx) => {
+                                close(cx);
+                                this.pick('model', value, address, cx);
+                            },
+                            true,
+                        ),
+                    )
+                    .child(
+                        button(
+                            t,
+                            px,
+                            'model-keep',
+                            'Keep the cache',
+                            (_e, cx) => close(cx),
+                        ),
+                    ),
+            );
     }
 
     // the message a reply answers, one line above the box: its first words, × drops it
@@ -6281,6 +6357,9 @@ export default class ClaudeChat extends View {
                                 .text_color(t.accent)
                                 .child(this.pickNote),
                         ),
+                    )
+                    .when(this.askModel?.address === agent.address, (el) =>
+                        el.child(this.modelConfirm(t, agent.address)),
                     )
                     .when(this.replies.has(agent.address), (el) =>
                         el.child(this.replyStrip(t, agent.address)),

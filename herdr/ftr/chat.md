@@ -73,6 +73,14 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given its pure helpers (`drafts.js`, the turn fold, the `hc send` reading)
   - then each has a vitest file beside it, run by the commit gate
 
+- ⬜ a model switch mid-conversation asks first
+  - given a thread whose chat holds messages
+  - when dima picks another model in the box's model menu
+  - then a card above the box says the cache is lost and the next message re-reads the whole conversation, with «Switch to <model>» and «Keep the cache»
+  - and Switch runs the pick, answering Claude Code's own «Switch model?» with its Yes; a new thread switches at once
+- ⬜ Copy message says it copied
+  - when dima right-clicks a message and picks Copy message
+  - then the whole message as written is on the clipboard and «Message copied» shows above the box for 1.5 s
 - ⬜ the effort shows the thread's live value
   - given a thread's last reply ran at an effort
   - then the chat box's effort reads that value, past the default in settings
