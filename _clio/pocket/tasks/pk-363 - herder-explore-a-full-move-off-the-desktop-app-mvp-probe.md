@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T13:10:00Z'
+updated_date: '2026-11-11T14:24:00Z'
 labels:
   - m
   - clio-main
@@ -1934,4 +1934,39 @@ PK-363:W954 (2026-11-11 15:10, dima): when i ask questions like this, i expect y
 PK-363:W955 (2026-11-11 15:10, dima): standing rule, from today until halt, for you, herdr, codie and your wing: everyone answers "verified" or "not", and whenever i ask, i expect verified answers.
 PK-363:W956 (2026-11-11 15:10, dima): stacked text box: now it looks much better, but the buttons do not quite fit (style). i will iterate on style later, when we decide whether to use a designer. for now, ask codie to do cheap wins: make it prettier overall (model and effort pickers).
 PK-363:W957 (2026-11-11 15:10, dima): blue send button: can it move into the main text box area, positioned absolutely in the bottom-right corner, so it does not eat layout? ❓
+
+PK-363:W958 (2026-11-11 15:29, dima): o12: how to probe the chat block? ❓
+PK-363:W959 (2026-11-11 15:29, dima): FRM-368: can you solve this? ❓
+PK-363:W960 (2026-11-11 15:29, dima): wisp (or wish): someone just summoned the Sixth Sense EG verifier for mods lane 6. i suppose it was you? when you summoned it, once it appeared, the focus switched from your window to the Sixth Sense window. whenever you summon anyone in herdr, the focus switches. can it be undone? ❓
+PK-363:W961 (2026-11-11 15:29, dima): for example, when you summon anyone, i don't want an auto focus switch to that thread.
+PK-363:W962 (2026-11-11 15:29, dima): so, were all retros processed, or only planned? let's solve it. ❓
+PK-363:W963 (2026-11-11 15:29, dima): all retros are trials. exactly what to do now? ❓
+PK-363:W964 (2026-11-11 15:29, dima): plus 8 ideas for tilde, each tied to the weak spot it removes, none decided yet. among them: tilde routes all member messages; one ask queue for you across all seats; a reply budget per turn; and a relay that carries its proof. what was folded? tell me. ❓
+
+PK-363:W965 (2026-11-11 16:09, dima): hc ls --json: proven. copy-paste blocks work in herdr! great.
+PK-363:W966 (2026-11-11 16:09, dima): how do i now properly update your habits, so you know that you can print me code blocks with copy-paste in herdr? ❓
+PK-363:W967 (2026-11-11 16:09, dima): i recently asked wenquan to revamp your memories. now habits specific to each surface, like the claude desktop app and the herdr desktop app, are separate in your memories, so they are not messy or mixed up. is it done already? ❓
+PK-363:W968 (2026-11-11 16:09, dima): do you see the question mark? if yes, propose how to update your herdr desktop app habit area with the new possibility. ❓
+PK-363:W969 (2026-11-11 16:09, dima): now you can print me these code blocks. links work too. the draft about the upstream issue for herdr had a link; i read it, it opened in macvim, which is good. i am fine with macvim.
+PK-363:W970 (2026-11-11 16:09, dima): codie also implemented another part of the chatter: clicking a part goes into the text box, a thread text box or another thread box, or something like that. how do i test it? ❓
+PK-363:W971 (2026-11-11 16:09, dima): (context, not dima's words: "a block under a 📋 ribbon addressed to a session or agent is a prompt card: clicking it puts the prompt in your box, unsent, after what you'd typed")
+PK-363:W972 (2026-11-11 16:09, dima): upstream issue for herdr: i approve. send.
+PK-363:W973 (2026-11-11 16:09, dima): /boot is still not autocompleting.
+PK-363:W974 (2026-11-11 16:09, dima): tell everything done in FRM-573 so i can verify that all works, and tell me how to test it.
+PK-363:W975 (2026-11-11 16:09, dima): herdr codie: tell it to remove the tooltips for the text box steers in the deck. and where should i tell codie to remember ux style guides for herdr only? in herdr's AGENTS.md? its PRODUCT.md? or FTR.md? ❓
+PK-363:W976 (2026-11-11 16:09, dima): and btw: is FTR.md for herdr valid and synced? ❓
+PK-363:W977 (2026-11-11 16:09, dima): FRM-573: what did i not test so far? ❓
+
+PK-363:W978 (2026-11-11 16:22, dima): but they only cover how to start, find and stop a seat on each surface, not how a reply looks. do you think such a shape of your memories is good to fold into herdr desktop? ❓
+PK-363:W979 (2026-11-11 16:22, dima): the habits specific to herdr (for example copy-pasted blocks and other things) we will have quite a lot of them. i would even want some herdr-specific habits applied to the whole fleet, but that is for later. let's first have all habits in your memory leaves, then think how to move them to the fleet too.
+PK-363:W980 (2026-11-11 16:22, dima): the fence-and-ribbon rule already exists in rules/fleet-output-format.md. does it work everywhere, or does it need a herdr-specific steer? ❓ (context, not dima's words: the new part is how herdr draws it, a fence gets a copy button and a ribbon addressed to a session or agent becomes a prompt card.)
+PK-363:W981 (2026-11-11 16:22, dima): i agree with one herdr line in that same section, but a single line does not scale, because not all threads run in herdr.
+PK-363:W982 (2026-11-11 16:22, dima): sometimes i spawn someone in the claude desktop app or a cc native thread in a plain terminal. how do we split rules by area (cc-specific, herdr-desktop-specific, claude-desktop-specific), so a memory is used only in the matching environment? does this apply to euclio, your wings and the whole fleet? ❓
+PK-363:W983 (2026-11-11 16:22, dima): prompt card: works! clicking a 📋 card in a reply puts its prompt in my box after what i typed, unsent. it appends to the end of the text and does not overwrite it. correct, good.
+PK-363:W984 (2026-11-11 16:22, dima): /boot: typing /boot shows clio:boot. confirmed, works.
+PK-363:W985 (2026-11-11 16:22, dima): the chip: typing `ls` in the box turns it into one chip, and a single delete removes it. i did not get which box this meant. (context, not dima's words: maybe a wisp.) ❓
+PK-363:W986 (2026-11-11 16:22, dima): bug: when i copy a line from your reply and paste it into my text box, the caret lands after `ls`, not at the end of the line as it should.
+PK-363:W987 (2026-11-11 16:22, dima): ftr.md was out of sync. verified by grep: none of today's 10 herdr builds added a line there. the commit check reads only an app's own ftr file, and herdr's lives in a separate folder. codie writes the lines now; fixing the commit check goes to the cli lane. why? habit drift? a cli wisp? how do we make sure ftr is always in sync? ❓
+PK-363:W988 (2026-11-11 16:22, dima): ftr.md is now 327 lines, more than twice the size where the ftr skill says to split it into an index plus one file per area. that is a call for later, not now. but codie was just in ftr.md, so he can do the split now. propose how to split it gracefully, or say why later is better. is it already visible how to split by areas? ❓
+PK-363:W989 (2026-11-11 16:22, dima): merge mods lane and move to next chunk. (read as "merge"; flagged to clio)
 <!-- SECTION:NOTES:END -->

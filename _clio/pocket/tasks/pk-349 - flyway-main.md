@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-11T12:34:00Z'
+updated_date: '2026-11-11T14:16:00Z'
 labels:
   - s
   - clio-main
@@ -48,22 +48,25 @@ ordinal: 1000
 - [ ] #30 siesta, then the looks lane
 - [ ] #31 quiet comms gate: a second [done] from one member within minutes is held; propose to dima after the mods lane runs
 - [ ] #32 prompt box as a stacked nested card (his 14:33 shot): herdr codie checks feasibility, it joins the looks lane
-- [ ] #33 shepherdr as a probe (dima 00:16: «i want only probe, explore and see what to borrow. also, having it installed makes it easier to pull into our setup»): clone, `./install.sh --dry-run`, the clash list to him; an install only with every thread stopped and `--no-hooks`; born as a test drive (`clio:shape-test-drive`) — on: 2026-11-11
-- [ ] #34 FRM-574 re-sign, his steer on the halt stop ask (00:19): «I want you to stop asking me for requests like 0116 for halt summoning and stopping everyone. You must be able to do it yourself»: at a halt main ends every thread it coordinates (a wing, helga, crow, a lane member) and summons without an ask; its decision 1 now excludes clios and sidecars — on: 2026-11-11
-- [ ] #35 the siesta trigger batched: a [done] from a lane dima steers himself opens one siesta an hour or per 3 commits, never one each (flush tick o115) — on: 2026-11-11
-- [ ] #36 herdr bug to file upstream, on his word: a layout file write and a layout switch kill the focused thread on 0.1.15 (results ~/frame/.scratch/herdr-lane/probe-kills-results.md); then FRM-574 re-signed with its layout rule — on: 2026-11-11
-- [ ] #37 the zoo-leave kill: retest on an untouched shipped zoo (a throwaway tab focused, a second tab open) to tell herdr’s bug from our mods, then report on herdr-app#861 — on: 2026-11-11
-- [ ] #38 the siesta trigger reshaped, his words (00:56): «one siesta per hour is too rare. Wishkeeper is useful but not when I ask you some plain questions … When I just chat there is no need for Wishkeeper … it should run when something important is worth checking. For example when you do batches and make a lot of changes that are important to catch». so: the trigger is the size and weight of a batch (a lane’s done with commits, a ticket close or sign, a many-file batch), never a chat turn or a one-line edit; no time cap; 7 runs in 2 h on 11-10 night, 4 from small rule edits — on: 2026-11-11
-- [ ] #39 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #40 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #41 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
-- [ ] #42 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
-- [ ] #43 📅 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line — on: 2026-11-10
-- [ ] #44 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
-- [ ] #45 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #46 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #47 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #48 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #33 FRM-519: add the unparseable-writer sign refusals (sd, cat >>, loop vars; 13 samples in retro-2) as a body line, re-sign at its turn
+- [ ] #34 x lane gate maps herdr-app/mods/ → herdr/FTR.md (the cli lane, a ticket line): today 10 herdr builds passed with no FTR line
+- [ ] #35 guard: awk -f, rg --pre, sort --compress-program can run a program inside ~/.local/state/x (sixth sense, FRM-574 round 3): a ticket in safer, quieter mods
+- [ ] #36 shepherdr as a probe (dima 00:16: «i want only probe, explore and see what to borrow. also, having it installed makes it easier to pull into our setup»): clone, `./install.sh --dry-run`, the clash list to him; an install only with every thread stopped and `--no-hooks`; born as a test drive (`clio:shape-test-drive`) — on: 2026-11-11
+- [ ] #37 FRM-574 re-sign, his steer on the halt stop ask (00:19): «I want you to stop asking me for requests like 0116 for halt summoning and stopping everyone. You must be able to do it yourself»: at a halt main ends every thread it coordinates (a wing, helga, crow, a lane member) and summons without an ask; its decision 1 now excludes clios and sidecars — on: 2026-11-11
+- [ ] #38 the siesta trigger batched: a [done] from a lane dima steers himself opens one siesta an hour or per 3 commits, never one each (flush tick o115) — on: 2026-11-11
+- [ ] #39 herdr bug to file upstream, on his word: a layout file write and a layout switch kill the focused thread on 0.1.15 (results ~/frame/.scratch/herdr-lane/probe-kills-results.md); then FRM-574 re-signed with its layout rule — on: 2026-11-11
+- [ ] #40 the zoo-leave kill: retest on an untouched shipped zoo (a throwaway tab focused, a second tab open) to tell herdr’s bug from our mods, then report on herdr-app#861 — on: 2026-11-11
+- [ ] #41 the siesta trigger reshaped, his words (00:56): «one siesta per hour is too rare. Wishkeeper is useful but not when I ask you some plain questions … When I just chat there is no need for Wishkeeper … it should run when something important is worth checking. For example when you do batches and make a lot of changes that are important to catch». so: the trigger is the size and weight of a batch (a lane’s done with commits, a ticket close or sign, a many-file batch), never a chat turn or a one-line edit; no time cap; 7 runs in 2 h on 11-10 night, 4 from small rule edits — on: 2026-11-11
+- [ ] #42 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #43 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #44 📅 mods scope audit against herdr: keep, park or drop, it sorts tickets between the mods and herdr lanes — on: 2026-11-10
+- [ ] #45 📅 herdr lane chunk 1, shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping) — on: 2026-11-10
+- [ ] #46 📅 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line — on: 2026-11-10
+- [ ] #47 📅 FRM-550: judge it against herdr after the boot, then dima's sign — on: 2026-11-11
+- [ ] #48 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #49 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #50 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #51 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes

@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T12:25:00Z'
+updated_date: '2026-11-11T14:28:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,22 +16,23 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 evergreen turn, delegated from main — waits for: dima's word after the flyway is ordered (o2)
-- [ ] #2 crow weekly grade, due today: 5 notes from crow/notes.jsonl, dima grades with me, round logged in docs/test-drive/crow-receipts.md (FRM-502)
-- [ ] #3 herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
-- [ ] #4 usage today: weekly to 100 %, everyone stops, dima presses the full weekly reset, we continue (dima 14:04)
-- [ ] #5 cli walk after the usage reset (Mon 11-16 06:00): FRM-560 with FRM-414 riding, then FRM-570, FRM-424, FRM-436; the parked codie and sixth sense reused; the spec dir copied back from .scratch/_archive/cli-lane-7-frm-384 — on: 2026-11-16
-- [ ] #6 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #7 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
-- [ ] #8 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11
-- [ ] #9 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #10 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #11 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
-- [ ] #12 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #13 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #14 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #15 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
-- [ ] #16 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 533 → 539, then FRM-537 on his word; the dated reads ride it; resume by reading the milestone — later: dima, after herdr and speak v2 (00:17)
+- [ ] #1 herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
+- [ ] #2 evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
+- [ ] #3 cli lane now, on dima's o15 tick: the parked tests codie walks FRM-560 (FRM-414 riding) → FRM-570 → FRM-424 → FRM-436, x/go's one writer (main's yes 16:27); spec dir from .scratch/_archive/cli-lane-7-frm-384
+- [ ] #4 FRM-557: measured 80 min a day on 11-10 against the ~60 accepted (o91), the push twin 61 of it; dima decides close or reopen — waits for: dima's word
+- [ ] #5 FRM-529 merge into FRM-544's rest — waits for: dima's o16 tick
+- [ ] #6 FRM-551 vm: the halt half read (the halt stops vm-go-test, its ram comes back), then close; the vm has run since 11-09 22:02 and was never stopped — on: 2026-11-11
+- [ ] #7 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #8 BYT-94: its exit 5 and 8 on a real pr, and dima's look at its card — on: 2026-11-14
+- [ ] #9 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #10 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
+- [ ] #11 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #12 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #13 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
+- [ ] #14 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #15 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #16 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #17 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -150,4 +151,20 @@ done 2026-11-11 14:18: summon skills, three wording fixes from wishkeeper (00:15
 correction 2026-11-11 14:26 (wishkeeper siesta): the 14:06 «done» on the crow weekly grade was a re-add to drop an emoji, not the grade; the 14:17 «done» on herdr-first summons covered only the FRM-572 help-text line, its pwd proof stays open as a waits-for line; the crew-lead quote was not whole, fixed 14:26; codeberg reds ran 11-10..11-11, not since 11-09
 
 done 2026-11-11 14:25: usage: weekly reset at 100 % today; from monday all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+
+done 2026-11-11 15:46: usage today: weekly to 100 %, everyone stops, dima presses the full weekly reset, we continue (dima 14:04)
+
+done 2026-11-11 15:47: crow weekly grade, due today: 5 notes from crow/notes.jsonl, dima grades with me, round logged in docs/test-drive/crow-receipts.md (FRM-502) (FRM-502 Done)
+
+done 2026-11-11 15:47: evergreen turn, delegated from main — waits for: dima's word after the flyway is ordered (o2)
+
+done 2026-11-11 16:27: 💤 perf → linear milestone «🐉 the mac runs tests cheaper» (fleet), wing 1 owns it: the order is its blocks chain FRM-551 → 557 → 533 → 539, then FRM-537 on his word; the dated reads ride it; resume by reading the milestone — later: dima, after herdr and speak v2 (00:17) (FRM-551 Todo, FRM-537 Backlog)
+
+done 2026-11-11 16:27: 📅 FRM-557 measured day read on the replay's rows (against 118 and 155), then close; FRM-551 boot read — on: 2026-11-11 (FRM-557 In Progress, FRM-551 Todo)
+
+done 2026-11-11 16:27: cli walk after the usage reset (Mon 11-16 06:00): FRM-560 with FRM-414 riding, then FRM-570, FRM-424, FRM-436; the parked codie and sixth sense reused; the spec dir copied back from .scratch/_archive/cli-lane-7-frm-384 — on: 2026-11-16 (FRM-560 Todo, FRM-414 Todo, FRM-570 Todo, FRM-424 Todo, FRM-436 Todo)
+
+done 2026-11-11 16:27: ci made boring: BYT-132 close after its two trees decamp (o13); BYT-94 waits on its exit 5 and 8 events and dima's look at the card by 11-14 (BYT-132 In Progress, BYT-94 Todo)
+
+done 2026-11-11 16:27: tests-cheaper lane: FRM-533 one codie after the re-sign; FRM-539 built by wing 1 beside it; the seal of perf lessons into the guides after (FRM-533 Canceled, FRM-539 Done)
 <!-- SECTION:NOTES:END -->
