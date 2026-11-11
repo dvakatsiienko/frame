@@ -566,6 +566,10 @@
   - given a body with a `## signed` block, when the file's block lost or changed an old line, or gained none, then it refuses and names `ticket-sign.ts changed`; with one new line it passes
   - given two sessions that pulled the same ticket, when one sets and the other then sets its older file, then the second refuses: each session's pull has its own record and its own file
   - decision: a signed ticket is read from the body's `## signed` block, not the `signed` label, which leaves at dispatch (FRM-384)
+- ⬜ `x linear sign-check <id> --body-file <file>` judges a body set for dima's word, x-mod-guard's one sign judge (FRM-570)
+  - given a file with a sign line the ticket's current body lacks word for word (a new line, an old one redated), or a merge grant the current body does not hold the same way (a pre-approval added, a cancel deleted, a grant moved to another sign, a grant with no sign line), then exit 1 naming which
+  - given a file with no sign line and no grant, then exit 0 with no read of linear; a linear that does not read counts the file as new, exit 1
+  - decision: the grant is readSign's own (`signGrant`), so the merge door and the guard's judge never disagree
   - decision: a pull made before this change has no record under its session, so its set refuses once and names the pull
 - ✅ `x linear set` updates a ticket by names, in one write
   - given `--estimate XS|S|M` (1 · 2 · 3) or a number, then that estimate goes out; any other word is refused naming XS · S · M (FRM-399)

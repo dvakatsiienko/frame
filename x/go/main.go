@@ -85,6 +85,7 @@ var impls = map[string]Impl{
 	"linear read":                 {Run: linearRead},
 	"linear list":                 {Run: linearList},
 	"linear body":                 {Run: linearBody, Undone: "nothing was written"},
+	"linear sign-check":           {Run: linearSignCheck},
 	"linear set":                  {Run: linearSet, Undone: "nothing was changed"},
 	"linear link":                 {Run: linearLink, Undone: "no relation was made"},
 	"linear unlink":               {Run: linearUnlink, Undone: "no relation was removed"},

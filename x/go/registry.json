@@ -833,6 +833,32 @@
                 }
             ],
             "flags": {
+                "as": {
+                    "description": "the member to read as; clio's session defaults to clio, any other agent to codie, dima's terminal to dima",
+                    "type": "string",
+                    "value": "member"
+                },
+                "body-file": {
+                    "description": "the body a set would send, read once; /dev/stdin for bytes held in a shell; required",
+                    "type": "string",
+                    "value": "file"
+                }
+            },
+            "name": "linear sign-check",
+            "needsApply": false,
+            "purpose": "refuse a body file that adds a sign line or moves a merge grant against the ticket's current body",
+            "touches": [
+                "linear's graphql api ($X_LINEAR_URL in tests), as the acting member, only when the file holds a sign line or a grant"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the ticket id, FRM-N or BYT-N",
+                    "name": "id"
+                }
+            ],
+            "flags": {
                 "add-label": {
                     "description": "label names to add, comma-separated or the flag repeated; every other label stays",
                     "repeats": true,
