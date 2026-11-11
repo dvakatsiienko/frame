@@ -481,7 +481,6 @@ export default class FleetBoard extends View {
             .tooltip(hot.tip)
             .cursor_pointer()
             .hover((st) => st.opacity(0.85))
-            .focus((st) => st.border_color(t.accent).border_2())
             .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
             .on_click((_e, cx) => {
                 cx.stop_propagation();
@@ -626,7 +625,7 @@ export default class FleetBoard extends View {
         const done = state !== 'open';
         const canUntick = state === 'ticked';
         const sentText = sentSteer(state, keptSteer(key));
-        // tick is the main act, so it is the one filled button; Button brings focus, and the ring shows where it is
+        // tick is the main act, so it is the one filled button
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
         const button = (id, label, tip, onClick, isPrimary = false) =>
             Button.new(`${id}-${key}`)
@@ -644,7 +643,6 @@ export default class FleetBoard extends View {
                 .when(isPrimary, (el) => el.font_semibold())
                 .cursor_pointer()
                 .hover((st) => (isPrimary ? st.opacity(0.85) : st.bg(t.hover)))
-                .focus((st) => st.border_color(t.accent).border_2())
                 .tooltip(tip)
                 .on_click((_e, cx) => onClick(cx))
                 .child(label);

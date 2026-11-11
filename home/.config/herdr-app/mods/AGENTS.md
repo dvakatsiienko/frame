@@ -19,7 +19,8 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - cheap to change stays cheap: one mod per feature, plain JS, colours from `theme()`, no layer a newcomer must learn first
 - his word wins over every guard: none locks him out of any action, a merge and a delete just work; his tick and his override switch work from a guard's first commit
 - hot reload is smooth or not done: at once, no flicker, no shifted tabs, no lost text
-- he lives in the Chat view: a thing he must see or click is drawn there, never only in a seat's Terminal view
+- no ring on a pressed or focused button: hover is its feedback
+- he lives in the Chat view: a thing he must see or click is drawn there, never only in Terminal view
 
 ## for a sixth sense
 
@@ -38,13 +39,13 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 - change a layout while a thread holds focus: it dies (herdr-app#861)
 - read a cc mod's private store: draw from its file in `~/.claude/shelf/`
-- give an unlocking button (a sign, a merge, a delete) a keyed command: any shell reaches a key
-- restart or kill a live seat for a proof: a throwaway seat, killed after
+- key an unlocking button (sign, merge, delete): any shell reaches a key
+- restart or kill a live seat for a proof: a throwaway one, killed after
 - close with a bare close: it kills dima's focused seat
-- cut or trim a cc mod's band, board or orbit for a herdr twin: they are his fallback (dima, 20:09)
+- trim a cc mod's band, board or orbit for a herdr twin: they are his fallback
 
 ## hazards
 
 - a `hc run --no-parent` seat has no tab until `skills/herdr/scripts/seat-tab.ts` gives it one
 - `hc ls --json` is an object, `.terminals[]`
-- a helper green in vitest can lack a global in herdr (`TextEncoder`), and `check` renders one frame: after a landing, shoot a view that ran it
+- a helper green in vitest can lack a herdr global (`TextEncoder`); `check` renders one frame: after a landing, shoot a view that ran it
