@@ -2199,3 +2199,16 @@ test('exit 13: a pull-set with no copy of an unsigned ticket body still needs hi
     await hisNext($, 'go on');
     expect([signFlagged(await bash($, line)), ran]).toEqual([true, []]);
 });
+
+// sixth sense round 2: an inline program running the body write is a sign, spent once on success
+test('exit 3: a python heredoc that runs the sign write itself needs his word and spends it once', async ($, on) => {
+    const { ran } = signWorld(on);
+    await hisNext($, 'go on');
+    const before = await bash($, PY_INNER);
+    await dimaSays($, 'sign FRM-1');
+    const first = await bash($, PY_INNER);
+    const second = await bash($, PY_INNER);
+    expect([signFlagged(before), first.deny, signFlagged(second), ran]).toEqual(
+        [true, undefined, true, [PY_INNER]],
+    );
+});

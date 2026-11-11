@@ -823,6 +823,8 @@ const quoted = (w: string) => `'${w.replaceAll("'", "'\\''")}'`;
 // env -S's string; `find -exec` and `fd -x` commands; a function's body
 export function nestedScripts(c: Command): string[] {
     const texts = c.args.map((w) => w.text);
+    const herdr = herdrStarted(c);
+    if (herdr) return [herdr];
     const isSource = c.name === 'source' || c.name === '.';
     if (SHELLS.has(c.name) || isSource) {
         const dashC = texts.findIndex((t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t));
@@ -1281,6 +1283,31 @@ export function tickedRest(command: string, quoted: string) {
     return undefined;
 }
 
+// the command `hc exec` runs, or the program an `hc run` starts that is no claude (claudeSpawn reads that one): judged as
+// the line it is, so `hc run -- hc kill <t>` meets herdr-close (sixth sense round 2 on a3cfd939); one word holding a space
+// reads as the line it spells, the cautious side of a program name no shell splits
+const HC_EXEC_VALUED = new Set(['--cwd', '--env', '--on']);
+const shellQuote = (w: string) => `'${w.replaceAll("'", `'\\''`)}'`;
+function herdrStarted(c: Command) {
+    if (c.name !== 'hc') return undefined;
+    const words = c.args.map((w) => w.text);
+    const verb = words.findIndex((w) => !w.startsWith('-'));
+    if (words[verb] !== 'exec' && words[verb] !== 'run') return undefined;
+    const valued = words[verb] === 'exec' ? HC_EXEC_VALUED : HC_RUN_VALUED;
+    let i = verb + 1;
+    for (; i < words.length; i++) {
+        const w = words[i] ?? '';
+        if (w === '--') {
+            i++;
+            break;
+        }
+        if (!w.startsWith('-')) break;
+        if (valued.has(w)) i++;
+    }
+    const argv = words.slice(i);
+    if (!argv.length || basename(argv[0] ?? '') === 'claude') return undefined;
+    return argv.length === 1 ? argv[0] : argv.map(shellQuote).join(' ');
+}
 // a claude this command starts as a thread of its own: `claude --bg …`, or the claude an `hc run … -- claude …` starts in a
 // herdr terminal, read as that call, `--cwd` its dir (FRM-574 decided 5)
 const HC_RUN_VALUED = new Set([
