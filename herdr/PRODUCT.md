@@ -51,6 +51,7 @@ dima's words:
 - **slipstream first** wherever he talks to a seat: a send that joins the next turn before a send that starts one, each with visible feedback
 - **cheap to modify stays cheap**: one mod per feature, plain JS, no clever layers
 - **no ring on a pressed or focused button**: hover is its only feedback; a text field keeps its focus ring
+- **a tooltip only on an action with no text** (an emoji or icon button), a few words naming what it does; never one that repeats the text in view
 
 ## theming
 

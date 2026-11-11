@@ -196,6 +196,15 @@ const line = (color, size) =>
 
 // TextView is the one element whose text can be selected, so anything worth reading aloud goes through it.
 /** @param {string} id @param {string} markdown @param {Color} color @param {number} size */
+// blank room at a line's start, `width` px wide at `size` px text: em spaces, then sixth-of-an-em spaces for the rest;
+// both are unicode spaces markdown keeps, where it drops leading ascii ones
+/** @param {number} width @param {number} size */
+const leadingRoom = (width, size) => {
+    const ems = Math.floor(width / size);
+    const sixths = Math.ceil(((width - ems * size) * 6) / size);
+    return ' '.repeat(ems) + ' '.repeat(sixths);
+};
+
 const prose = (id, markdown, color, size) =>
     TextView.markdown(id, literalAngles(markdown))
         .selectable()
@@ -208,6 +217,8 @@ export default class FleetBoard extends View {
     init(_props, cx) {
         // the seat strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
         // alive draws nothing and reads nothing, so it never runs a second deck
+        /** @type {Map<string, number>} each ask id label's drawn width */
+        this.labelW = new Map();
         this.isSeat = props()?.view === 'seat';
         if (this.isSeat) return;
         /** @type {Row[]} */
@@ -376,9 +387,7 @@ export default class FleetBoard extends View {
                         line(
                             state === 'idle' ? t.muted : t.foreground,
                             SIZE.main,
-                        )
-                            .tooltip(s.name)
-                            .child(s.name),
+                        ).child(s.name),
                     )
                     // 🔥 before the model, one aligned column down the rows, as the old desktop list had it (dima,
                     // 23:22): the model and the meter keep their width on a row that has neither
@@ -655,36 +664,9 @@ export default class FleetBoard extends View {
                 .rounded(8)
                 .bg(t.raised)
                 // the id sits outside the selectable text, so a double-click or a drag takes the ask alone (his F4 reads
-                // the selection aloud, dima 16:33)
-                .child(
-                    h_flex()
-                        .w_full()
-                        .gap(6)
-                        .items_start()
-                        .when(Boolean(ask.id), (el) =>
-                            el.child(
-                                div()
-                                    .flex_none()
-                                    .font_semibold()
-                                    .text_size(SIZE.main)
-                                    .text_color(t.foreground)
-                                    .child(askLabel(s.name, ask.id ?? '')),
-                            ),
-                        )
-                        .child(
-                            div()
-                                .flex_1()
-                                .min_w(0)
-                                .child(
-                                    prose(
-                                        `ask-${i}-${j}`,
-                                        ask.text,
-                                        t.foreground,
-                                        SIZE.main,
-                                    ),
-                                ),
-                        ),
-                )
+                // the selection aloud, dima 16:33); it lies over the text's first line, held free by leading em spaces,
+                // so the next lines run the full width (16:35: no hanging gap under the id)
+                .child(this.askLine(t, s, ask, `ask-${i}-${j}`))
                 .when(Boolean(ask.pick), (el) =>
                     el.child(
                         prose(
@@ -800,6 +782,46 @@ export default class FleetBoard extends View {
         );
     }
 
+    /** @param {Theme} t @param {Row} s @param {Ask} ask @param {string} id */
+    askLine(t, s, ask, id) {
+        if (!ask.id) return prose(id, ask.text, t.foreground, SIZE.main);
+        const label = askLabel(s.name, ask.id);
+        const width =
+            (this.labelW.get(label) ?? label.length * 0.62 * SIZE.main) + 6;
+        return div()
+            .relative()
+            .w_full()
+            .child(
+                prose(
+                    id,
+                    `${leadingRoom(width, SIZE.main)}${ask.text}`,
+                    t.foreground,
+                    SIZE.main,
+                ),
+            )
+            .child(
+                div()
+                    .id(`${id}-label`)
+                    .absolute()
+                    .top(0)
+                    .left(0)
+                    .font_semibold()
+                    .text_size(SIZE.main)
+                    .text_color(t.foreground)
+                    .on_size_change((size, cx) => {
+                        if (
+                            Math.abs(
+                                (this.labelW.get(label) ?? 0) - size.width,
+                            ) < 0.5
+                        )
+                            return;
+                        this.labelW.set(label, size.width);
+                        cx.notify();
+                    })
+                    .child(label),
+            );
+    }
+
     /** @param {Theme} t @param {Row[]} rows */
     orbit(t, rows) {
         const owners = rows.filter((s) => s.asks.length > 0);
@@ -809,10 +831,7 @@ export default class FleetBoard extends View {
                 .py(4)
                 .gap(8)
                 .child(
-                    line(t.foreground, SIZE.main)
-                        .font_semibold()
-                        .tooltip(s.name)
-                        .child(s.name),
+                    line(t.foreground, SIZE.main).font_semibold().child(s.name),
                 )
                 .children(s.asks.map((ask, j) => this.ask(t, s, ask, i, j))),
         );
@@ -840,7 +859,6 @@ export default class FleetBoard extends View {
                 .child(
                     line(i === current ? t.foreground : t.muted, SIZE.secondary)
                         .when(i === current, (el) => el.font_semibold())
-                        .tooltip(text)
                         .child(text),
                 );
         return v_flex()
@@ -863,11 +881,7 @@ export default class FleetBoard extends View {
                 h_flex()
                     .gap(8)
                     .items_center()
-                    .child(
-                        line(t.foreground, SIZE.main)
-                            .tooltip(l.title)
-                            .child(`🛼 ${l.title}`),
-                    )
+                    .child(line(t.foreground, SIZE.main).child(`🛼 ${l.title}`))
                     .child(
                         div()
                             .flex_none()

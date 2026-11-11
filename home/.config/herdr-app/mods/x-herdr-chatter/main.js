@@ -4355,7 +4355,6 @@ export default class ClaudeChat extends View {
                                 .hover((s) =>
                                     s.bg(t.hover).text_color(t.foreground),
                                 )
-                                .tooltip('Copy the command')
                                 .on_click((_e, cx) => {
                                     cx.write_to_clipboard(b.text);
                                     this.copied = { at: Date.now(), key };
@@ -4394,7 +4393,6 @@ export default class ClaudeChat extends View {
             .border_color(t.accent)
             .cursor_pointer()
             .hover((s) => s.bg(t.hover))
-            .tooltip('Put this prompt in your box, unsent')
             .on_click((_e, cx) => {
                 this.box.set_value(withPrompt(this.box.value(), b.text));
                 this.box.focus();
