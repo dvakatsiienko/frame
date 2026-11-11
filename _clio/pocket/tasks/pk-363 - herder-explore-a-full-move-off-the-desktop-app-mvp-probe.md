@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T12:33:00Z'
+updated_date: '2026-11-11T12:34:00Z'
 labels:
   - m
   - clio-main
@@ -1907,4 +1907,8 @@ PK-363:W932 (2026-11-11 14:32, dima): proceed, what would be the next step? ❓
 PK-363:W933 (2026-11-11 14:32, dima): orbit ticks: they do not work correctly. i just ticked o5, then unticked. now i cannot tick at all.
 PK-363:W934 (2026-11-11 14:32, dima): instead: when i tick, then untick, it just returns to the unticked state and i can tick again. (fix now)
 PK-363:W935 (2026-11-11 14:32, dima): i allow you to do your o5.
+
+PK-363:W936 (2026-11-11 14:33, dima): can my chatter box be pretty and stacked like in this screenshot? ❓
+PK-363:W937 (2026-11-11 14:33, dima): i want a pretty chatter box.
+PK-363 note (clio, 14:34): his 14:33 shot shows the box as a raised rounded card (pickers and send in its bottom row) with a thinner card tucked under it (folder, branch); his arrow: «i like nested card like this»
 <!-- SECTION:NOTES:END -->
