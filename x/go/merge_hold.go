@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -39,6 +40,33 @@ func readHolds(repo string) ([]string, error) {
 		return nil, errors.New("no prs list")
 	}
 	return note.PRs, nil
+}
+
+// every repo's held prs in one sorted list, x-mod-guard's read before a raw merge: a pr number counts as held in each repo,
+// the safe side; no dir is no hold, and one record that does not read fails the whole read
+func readAllHolds() ([]string, error) {
+	dir := filepath.Dir(holdRecord("_"))
+	files, err := os.ReadDir(dir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return []string{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	held := []string{}
+	for _, f := range files {
+		name, ok := strings.CutSuffix(f.Name(), ".json")
+		if !ok {
+			continue
+		}
+		prs, err := readHolds(strings.Replace(name, "_", "/", 1))
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", f.Name(), err)
+		}
+		held = append(held, prs...)
+	}
+	slices.Sort(held)
+	return slices.Compact(held), nil
 }
 
 func writeHolds(repo string, prs []string) error {

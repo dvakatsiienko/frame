@@ -219,9 +219,16 @@ func overrideClones() [][2]string {
 	}
 }
 
-// x-mod-guard's read of the brake before a raw merge under the override: one reader, brakeOn, and a failed read exits non-zero
+// x-mod-guard's read before a raw merge: the brake through brakeOn, a failed read exits non-zero; dima's holds through
+// readAllHolds, a hold record that does not read named in holdsUnread, so the guard reads every merge as held
 func brakeCheckPlan(r *Run) (any, error) {
 	r.Open("frame and bytes")
+	answer := map[string]any{"brake": "", "holds": []string{}, "holdsUnread": ""}
+	if held, err := readAllHolds(); err != nil {
+		answer["holdsUnread"] = err.Error()
+	} else {
+		answer["holds"] = held
+	}
 	clones := overrideClones()
 	if len(clones) == 0 {
 		return nil, brakeReadFail(errors.New("no clone to read it from"))
@@ -236,11 +243,12 @@ func brakeCheckPlan(r *Run) (any, error) {
 		}
 		if brake != "" {
 			r.Done("on: "+clone[0]+" "+brake, "")
-			return map[string]string{"brake": clone[0] + " " + brake}, nil
+			answer["brake"] = clone[0] + " " + brake
+			return answer, nil
 		}
 	}
 	r.Done("off", "")
-	return map[string]string{"brake": ""}, nil
+	return answer, nil
 }
 
 // merge-auto's own plan per pr, so the answer can't drift from the door; a ref fetch is the only thing it writes

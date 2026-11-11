@@ -418,7 +418,7 @@
             ],
             "flags": {
                 "brake-check": {
-                    "description": "read the brake of frame and bytes, its label, record and reverts, as x-mod-guard does before a raw merge under operator-override; a failed read exits non-zero; takes no pr",
+                    "description": "read the brake of frame and bytes, its label, record and reverts, as x-mod-guard does before a raw merge, and every repo's held prs beside it; a failed brake read exits non-zero; takes no pr",
                     "type": "boolean"
                 },
                 "dima-ok": {
