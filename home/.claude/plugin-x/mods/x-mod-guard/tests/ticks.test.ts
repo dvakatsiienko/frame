@@ -52,6 +52,7 @@ function world(
     on('env.get', () => ({ value: '/home' }));
     on('fs.exists', () => ({ value: false }));
     on('ui.log', () => ({ value: undefined }));
+    on('turn.complete', () => ({ text: '' }));
     // the cwd's origin, which merge-auto reads its repo from when no --repo names one
     on('process.run', (_$, e) => ({
         value: {
@@ -2063,14 +2064,26 @@ type OpenAsk = {
 };
 const OPEN_MIRROR: OpenAsk[] = [{ id: 'o7', text: MIRROR_ASK }];
 // dima's prompt, then the seat's turn adds the asks, then his next prompt: what a real round looks like (o19)
+// r7 (his o27): the seat's reply ends its turn before his yes, and a yes counts only for an ask that reply named
+const replied = ($: Engine, answer: string, agentId?: string) =>
+    $.turn.complete({
+        answer,
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+        ...(agentId ? { agentId } : {}),
+    });
 async function askedThenSays(
     $: Engine,
     orbit: OpenAsk[],
     added: OpenAsk[],
     word: string,
+    reply = 'the mirror push waits on your tick',
 ) {
     await dimaSays($, 'go on');
     orbit.push(...added);
+    await replied($, reply);
     await $.prompt.submit({
         origin: { kind: 'composer' },
         text: word,
@@ -2182,6 +2195,7 @@ test('a bare yes answers an ask followed since his last prompt', async ($, on) =
     const { ran } = world(on, [], undefined, undefined, orbit);
     await dimaSays($, 'go on');
     orbit[0] = { id: 'o7', text: MIRROR_ASK };
+    await replied($, 'the mirror push, followed, waits on your tick');
     await $.prompt.submit({
         origin: { kind: 'composer' },
         text: 'yes',
@@ -2396,4 +2410,45 @@ test('r2: his typed sign runs the body set as written, no check in front', async
     await hisNext($, 'sign FRM-1');
     const r = await bash($, line);
     expect([r.deny, ran]).toEqual([undefined, [line]]);
+});
+
+// r7, dima's o27: a bare yes ticks the new guarded ask only when the seat's last reply named it, by its id, a command it
+// quotes, or its subject words; a reply asking something else leaves his yes to that question
+for (const [why, reply, isRun] of [
+    [
+        'the reply asks something else',
+        'should I rename the deck to x-cc-deck?',
+        false,
+    ],
+    ['the reply names the ask by its id', 'o7 waits on your tick', true],
+    ['the reply quotes its command', `run \`${MIRROR}\` now?`, true],
+    ['the reply names its subject', 'the Mirror push is ready, ok?', true],
+] as const)
+    test(`r7: a bare yes ${isRun ? 'runs' : 'runs nothing'} when ${why}`, async ($, on) => {
+        const orbit: OpenAsk[] = [];
+        const { ran } = world(on, [], undefined, undefined, orbit);
+        await askedThenSays($, orbit, OPEN_MIRROR, 'yes', reply);
+        const r = await bash($, MIRROR);
+        expect([r.deny === undefined, ran]).toEqual([
+            isRun,
+            isRun ? [MIRROR] : [],
+        ]);
+    });
+
+test("r7: a subagent's report naming the ask is no reply of the seat's", async ($, on) => {
+    const orbit: OpenAsk[] = [];
+    const { ran } = world(on, [], undefined, undefined, orbit);
+    await dimaSays($, 'go on');
+    orbit.push(...OPEN_MIRROR);
+    await replied($, 'should I rename the deck?');
+    await replied($, 'the mirror push is ready', 'a1');
+    await $.prompt.submit({
+        origin: { kind: 'composer' },
+        text: 'yes',
+        wait: false,
+    });
+    expect([(await bash($, MIRROR)).deny !== undefined, ran]).toEqual([
+        true,
+        [],
+    ]);
 });

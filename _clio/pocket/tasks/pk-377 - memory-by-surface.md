@@ -4,7 +4,7 @@ title: memory by surface
 status: open
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
-updated_date: '2026-11-11T15:20:00Z'
+updated_date: '2026-11-11T15:54:00Z'
 labels:
   - s
 dependencies: []
@@ -28,4 +28,20 @@ PK-377:W9 (2026-11-11 17:10, dima): clio should have granularized habits by area
 PK-377:W10 (2026-11-11 17:10, dima): the whole idea is scalability. as you spotted, maybe even yourself, after we moved from claude desktop app to herdr, your habits turned into a salad of habits describing all doors at once. what we are solving now: when clio is called, we remove the salad and structure your memories gracefully. (read "calling colon" as "calling clio"; flagged to clio)
 PK-377:W11 (2026-11-11 17:10, dima): propose how to solve it in a good way. perform the analysis. gather all the information you are still missing, and propose a solid solution.
 PK-377:W12 (2026-11-11 17:10, dima): use the author-memory skill for all memory and skill edits.
+
+PK-377:W13 (2026-11-11 17:48, dima): do you think it is a global split, or is it only for clio memories? ❓
+PK-377:W14 (2026-11-11 17:48, dima): so you are able to tell which environment you run in? if yes, that is good. but can memories be lazy loaded depending on the environment, or must they always be loaded even when not relevant? ❓
+PK-377:W15 (2026-11-11 17:48, dima): example: you run in herdr now. can you load only the herdr-specific memories, and not the claude desktop app-specific ones, while you run in herdr? ❓
+PK-377:W16 (2026-11-11 17:49, dima): surface-herdr-desktop.md (context, not dima's words: the raw holds only this file name, with no sentence around it.)
+PK-377:W17 (2026-11-11 17:49, dima): let's try gradual, but do not forget to measure and lift after 1 week! (read "1w" as "1 week")
+
+PK-377:W18 (2026-11-11 17:48, dima): do you think it is a global split, or is it only for clio memories? ❓
+PK-377:W19 (2026-11-11 17:48, dima): so you are able to tell which environment you run in? if yes, that is good. but can memories be lazy loaded depending on the environment, or must they always be loaded even when not relevant? ❓
+PK-377:W20 (2026-11-11 17:48, dima): example: you run in herdr now. can you load only the herdr-specific memories, and not the claude desktop app-specific ones, while you run in herdr? ❓
+PK-377:W21 (2026-11-11 17:49, dima): surface-herdr-desktop.md (context, not dima's words: the raw holds only this file name, with no sentence around it.)
+PK-377:W22 (2026-11-11 17:49, dima): let's try gradual, but do not forget to measure and lift after 1 week! (read "1w" as "1 week")
+
+superseded: the five lines stamped «oN» above, the stamp format only
+
+note: the re-stamped lines numbered 18–21 repeat lines 13–17; cite 13–17 (stamps fixed in place 17:54, clio)
 <!-- SECTION:NOTES:END -->
