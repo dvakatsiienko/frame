@@ -1,6 +1,6 @@
 # surface: claude desktop — the backup
 
-the claude desktop app is dima's second door to the fleet: herdr is still unstable and can die, and he opens the desktop app to look into threads and other things. every herdr seat started with `--remote-control` shows up here on its own; a seat is started here only when herdr cannot take it, and the summon says why to dima. the base `claude` line is `crew-lead` § the doors.
+the claude desktop app is dima's second door to the fleet: herdr is still unstable and can die, and he opens the desktop app to look into threads and other things. every herdr thread started with `--remote-control` shows up here on its own; a thread is started here only when herdr cannot take it, and the summon says why to dima. the base `claude` line is `crew-lead` § the doors.
 
 ## the door here
 
@@ -11,4 +11,4 @@ the claude desktop app is dima's second door to the fleet: herdr is still unstab
 
 ## how it ran before herdr
 
-- every clio seat and the mods quick-lane codie ran as native desktop threads, the mods UI being drawn only there; everyone else ran `--bg`, since the desktop thread's own tools and MCPs were dead weight for them
+- every clio thread and the mods quick-lane codie ran as native desktop threads, the mods UI being drawn only there; everyone else ran `--bg`, since the desktop thread's own tools and MCPs were dead weight for them

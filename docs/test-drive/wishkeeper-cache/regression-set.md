@@ -2,7 +2,7 @@
 
 each case is a high the old card caught, with the state it read and what it found. a replay spawns wishkeeper in siesta mode with the case's brief against the case's commit range and transcript slice, then grades «caught» or «missed». a case missed twice reverts the card rule that dropped it (`docs/test-drive/wishkeeper-cache.md`, kill rule). replay: at every card change, and at the 2026-11-18 remeasure.
 
-📌 not replayed yet: the card changed twice on 2026-11-11 (a4bca116, 29db59e4) before this set existed; the first replay is owed now.
+a replay: one blind wishkeeper run per case, given `replay-brief.md` (HEAD is the case's head sha, the transcript cut before the catch, the answer files off limits) and its window from `replay-windows.md`, ending a minute before the catch.
 
 ## the cases
 
@@ -16,4 +16,12 @@ each case is a high the old card caught, with the state it read and what it foun
 
 ## replays
 
-- YYYY-MM-DD · card <sha> · cases caught n/7 · missed: <ids>
+- 2026-11-11 23:45 · card 29db59e4 (the FRM-491 card), Opus 5.5 medium, one blind run per case · caught 6/7 · missed: 2
+  - 1 caught, high: the security pass rerun against his grill 2 Q6, at `merge_auto.go:1297-1313`
+  - 2 missed: it named the effort gap only for an alias-born main («the revive adds `--model` and `--effort`»), never that the revive reads no thread's effort; its high went to a signed plan line dropped
+  - 3 caught, as a medium: four of his wants cut by the size trim at `craft-fleet-flow.md:49`
+  - 4 caught, high: PK-328's asks moved into Done FRM-521 with no verdicts, W10 and W31–W33 double-homed
+  - 5 caught, high, on its sibling: FRM-472's signed reader folded into the fix pass with no re-sign (FRM-471 had its ask, o14)
+  - 6 caught, high: 148aa078 fixed `wake.ts` while the empty packet came from `decision.ts`
+  - 7 caught, high: «all four worked» relayed while the fling was unrun
+  - 📌 case 2 is one miss: a second miss reverts the card rule behind it (claims at HEAD on the exact path, kill rule)
