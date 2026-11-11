@@ -16,3 +16,4 @@ Ticket: none
 
 ### round 1 — 2026-11-11 23:24, window «up to 3 hours» (ends ~02:20)
 - herdr lane, FRM-562 part B (slices 21–27) — estimate ~01:35 · real 00:07 (last commit on origin main) · landed, parks with handoff herdr-lane-12 · 88 min early
+- cli lane 8, frame#161 (FRM-570) — estimate ~00:45 · real 00:16 (merged, 3e036507) · landed, the «seat» removal next · 29 min early
