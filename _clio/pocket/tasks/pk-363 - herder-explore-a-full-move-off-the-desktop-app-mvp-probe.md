@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T21:37:00Z'
+updated_date: '2026-11-11T21:52:00Z'
 labels:
   - m
   - clio-main
@@ -2127,4 +2127,10 @@ PK-363:W1127 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): 2. 
 PK-363:W1128 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): The most important part in the window is your estimate. It must be precise but I know that you are off with it. It is hard for you to provide a precise estimate from inference because it's off. That's why I asked you to verify your estimation based on the cadence.
 PK-363:W1129 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): Also another point about wind-down: each wind-down is dynamic and I have to tell you the number for each wind-down. If I don't tell you the number, you should clarify it each time. For example how much time do I tell you to allocate for wind-down? Today I told you up to 3 hours.
 PK-363:W1130 (2026-11-11 23:36, dima, wind-down skill, home PK-363 for now): This is my take on this skill. Propose your own ideas and let's do a quick shape idea over this skill. After this skill is fully completed and sealed, let's run it over today's lanes and then you take a second wind and do the 5 tails you proposed.
+
+PK-363:W1132 (2026-11-11 23:39, dima, o121 steer): stop it and its glide. (context, not dima's words: "it" is the tails codie; the raw is the text of orbit ask o121, not a close-space popup line.)
+PK-363:W1134 (2026-11-11 23:51, dima, o130 steer): yes, and print estimates as short, clear messages in your thread. (context, not dima's words: answers a question that is not in this raw.)
+PK-363:W1133 (2026-11-11 23:51, dima, o127 steer): if the day was short like ~5hrs or less - you peek into prev day cadance and estimate median
+PK-363:W1131 (2026-11-11 23:38, dima): what just opened «close space» popup? not a good surprise ❓ (context, not dima's words: the raw holds an image, #70.)
+PK-363:W1135 (2026-11-11 23:51, dima, o131 steer): yes, halt with me only. usually we have some tails and a little prep work (planning next day before halting)
 <!-- SECTION:NOTES:END -->
