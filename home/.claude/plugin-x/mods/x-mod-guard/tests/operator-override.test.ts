@@ -328,6 +328,9 @@ for (const line of [
     `sed -i '' s/a/b/ ${REAL}`,
     `python3 -c "open('${REAL}','w')"`,
     `mv ${REAL.replace('.json', '.log')} /tmp/gone`,
+    // sixth sense round 1 on 23037434: a reader that writes through a flag or a second operand
+    'sort -o /real-home/.local/state/x/operator-override.json /tmp/f',
+    'uniq /tmp/f /real-home/.local/state/x/operator-override.json',
     // exit 14: an awk that writes is no read
     `cd /real-home/.local/state/x && awk '{print > "operator-override.json"}' gate-steps.log`,
     `cd /real-home/.local/state/x && awk 'BEGIN{system("cp /tmp/p operator-override.json")}'`,

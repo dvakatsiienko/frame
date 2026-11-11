@@ -327,6 +327,11 @@ for (const line of [
     'hc label t44 seat=codie',
     'hc label t43 lead=x',
     "hc label t43 'seat=clio-wing-3'",
+    // sixth sense round 1 on 23037434: a relabel the guard cannot read
+    'echo seat=clio | xargs hc label t43',
+    'KV=seat=clio; hc label t43 $KV',
+    `echo '{"method":"terminal.label","params":{"terminal":"t43","labels":{"seat":"clio"}}}' | hc connect`,
+    'hc connect < /tmp/rpc.jsonl',
 ])
     test(`a seat's proof label is set by no tool call but a clio's spawn: ${line}`, async ($, on) => {
         const { ran } = world(on);

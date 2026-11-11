@@ -1783,10 +1783,11 @@ async function isSignFree(
 const PULL_COPY_SET = new Set(['', 'cp', 'jq', 'x']);
 async function isUnsignedWrite(
     $: EngineInterface,
-    id: string,
+    { file, id }: { file?: string; id: string },
     command: string,
     cwd: string,
 ) {
+    if (file === undefined) return false;
     const line = commandsDeep(command, cwd);
     if (
         SIGN_WORD.test(command) ||
@@ -1795,6 +1796,15 @@ async function isUnsignedWrite(
                 PULL_COPY_SET.has(c.name) &&
                 !c.writes.length &&
                 !c.appends.length,
+        )
+    )
+        return false;
+    // the body set is the file a sign-free copy lands on, so an edit made to the pulled file before the line never rides it
+    if (
+        !line.some(
+            (c) =>
+                c.name === 'cp' &&
+                resolve(c.args.at(-1)?.text ?? '', c.dir, {}) === file,
         )
     )
         return false;
@@ -2275,22 +2285,24 @@ export const register: Register = (on) => {
                 sign.file === undefined ||
                 (signText === undefined
                     ? !(await isSignFree($, sign.file, typed, cwd, ctx)) &&
-                      !(await isUnsignedWrite($, sign.id, typed, cwd))
+                      !(await isUnsignedWrite($, sign, typed, cwd))
                     : await hasNewSignLine($, sign.id, signText));
             // ahead of every other door: a tick, a stash word or a marker on the line's other targets never carries a sign (R3)
-            // one approval of a sign covers that ticket's sign writes, label and body, in either order and on a retry, for
-            // its 2 h, so nothing is spent: a body write that ran and failed once spent his typed word (wing 1, 19:14,
-            // dima: «i am angry because my ticks don't work»)
-            const scope = `sign:${sign.id}`;
+            // one approval of a sign covers that ticket's sign writes, the label and the body, in either order; the body write
+            // spends it once, on its exit 0, a failed or refused one handing it back for the retry (FRM-574 decided 7, exit 3:
+            // the old «never spent» kept wing 1's failed body write from spending his word at 19:14, which the refund now
+            // does); the label, the same `signed` each time, is never spent
+            const scope = `sign:${sign.id}${sign.file === undefined ? '' : ':body'}`;
+            const signSpends = sign.file === undefined ? [] : spends;
             if (
                 isNewSign &&
                 !(await tickFor(
                     $,
                     scope,
                     (t) => isSignAsk(t.text, sign.id),
-                    [],
+                    signSpends,
                 )) &&
-                !(await typedSignFor($, scope, sign.id, []))
+                !(await typedSignFor($, scope, sign.id, signSpends))
             ) {
                 const r = {
                     door: `ask dima to tick an orbit ask «✍️ sign ${sign.id}: <title>», or to type «sign ${sign.id}» himself, then sign`,

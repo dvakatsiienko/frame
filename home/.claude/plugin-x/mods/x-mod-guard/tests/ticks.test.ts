@@ -1399,14 +1399,6 @@ for (const [why, writes] of [
         'the body first',
         [`x linear body FRM-1 --set ${BODY_1}`, labelOf('FRM-1')],
     ],
-    [
-        'a failed body write retried',
-        [
-            labelOf('FRM-1'),
-            `x linear body FRM-1 --set ${BODY_1}`,
-            `x linear body FRM-1 --set ${BODY_1}`,
-        ],
-    ],
 ] as const)
     test(`his typed «sign FRM-1» covers both sign writes, ${why}`, async ($, on) => {
         const { ran } = signWorld(on);
@@ -2164,3 +2156,46 @@ for (const [why, body, cat] of [
             [],
         ]);
     });
+
+// sixth sense round 1 on 23037434: exit 3's «spent only after the exit 0» — each sign write, label and body, spends his
+// word once on success, and a failed one hands it back
+test('exit 3: a heredoc sign write that succeeds spends his typed sign, a second run is refused', async ($, on) => {
+    const { ran } = signWorld(on);
+    await hisNext($, 'sign FRM-1');
+    const first = await bash($, PY_SIGN);
+    const second = await bash($, PY_SIGN);
+    expect([first.deny, signFlagged(second), ran]).toEqual([
+        undefined,
+        true,
+        [PY_SIGN],
+    ]);
+});
+
+test('his typed sign carries the body write once, a failed one retried, and the label each time', async ($, on) => {
+    const { fail, ran } = signWorld(on);
+    await hisNext($, 'sign FRM-1');
+    const body = 'x linear body FRM-1 --set /tmp/FRM-1.md';
+    fail.push(true);
+    const failed = await bash($, body);
+    const retry = await bash($, body);
+    const again = await bash($, body);
+    const labels = [
+        await bash($, labelOf('FRM-1')),
+        await bash($, labelOf('FRM-1')),
+    ];
+    expect([
+        failed.deny,
+        retry.deny,
+        signFlagged(again),
+        labels.map((r) => r.deny),
+        ran.length,
+    ]).toEqual([undefined, undefined, true, [undefined, undefined], 4]);
+});
+
+// sixth sense round 1: a pull and a set with no copy between them set the pulled file, which an Edit may have signed
+test('exit 13: a pull-set with no copy of an unsigned ticket body still needs his word', async ($, on) => {
+    const line = `P=$(x linear body FRM-575 | jq -r '.data.file // .data.path'); x linear body FRM-575 --set "$P"`;
+    const { ran } = world(on, [], UNSIGNED, UNSIGNED);
+    await hisNext($, 'go on');
+    expect([signFlagged(await bash($, line)), ran]).toEqual([true, []]);
+});

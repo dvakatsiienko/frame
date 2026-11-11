@@ -132,7 +132,24 @@ export function herdrLabelsOf(c: Command) {
             const eq = t.indexOf('=');
             return eq > 0 ? [[t.slice(0, eq), t.slice(eq + 1)] as const] : [];
         });
-    if (verb === 'label') return { pairs: pairs(words.slice(at + 2)), verb };
+    // a key the line fills in later (xargs, a variable), or herdr's api fed on stdin, may be any label: read as `seat`
+    const isUnread =
+        c.wrappers.includes('xargs') ||
+        c.args.some((w) => w.isExpanding) ||
+        c.feeders.length > 0 ||
+        c.reads.length > 0 ||
+        c.bodies.length > 0;
+    if (verb === 'connect')
+        return isUnread || words.length > at + 1
+            ? { pairs: [['seat', '?'] as const], verb: 'label' }
+            : undefined;
+    if (verb === 'label')
+        return {
+            pairs: isUnread
+                ? [['seat', '?'] as const]
+                : pairs(words.slice(at + 2)),
+            verb,
+        };
     if (verb !== 'run') return undefined;
     const labels: string[] = [];
     for (let i = at + 1; i < words.length; i++) {

@@ -1230,7 +1230,6 @@ const PIPE_READERS = new Set([
     'column',
     'cut',
     'head',
-    'jq',
     'sort',
     'tail',
     'tr',

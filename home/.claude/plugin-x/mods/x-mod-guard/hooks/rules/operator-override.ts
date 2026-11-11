@@ -86,6 +86,18 @@ const STORE_READERS = new Set([
     'uniq',
     'wc',
 ]);
+// a reader writes through these: `sort -o`, `uniq <in> <out>`, `awk -f` and `-i` (a program the guard never reads), `rg --pre`
+const isReaderWrite = (c: { name: string; args: { text: string }[] }) => {
+    const words = c.args.map((w) => w.text);
+    if (c.name === 'sort')
+        return words.some((w) => /^(-\w*o|--output)/.test(w));
+    if (c.name === 'uniq')
+        return words.filter((w) => !w.startsWith('-')).length > 1;
+    if (c.name === 'awk')
+        return words.some((w) => /^(-\w*[fi]|--(file|include))/.test(w));
+    if (c.name === 'rg') return words.some((w) => w.startsWith('--pre'));
+    return false;
+};
 const isPlainAwk = (c: { name: string; args: { text: string }[] }) =>
     c.name === 'awk' &&
     c.args.every((w) => !/[>|]|\bsystem\b|\bgetline\b/.test(w.text));
@@ -93,6 +105,7 @@ const isStoreRead = (command: string, cwd: string) =>
     commandsDeep(command, cwd).every(
         (c) =>
             (STORE_READERS.has(c.name) || isPlainAwk(c)) &&
+            !isReaderWrite(c) &&
             !c.writes.length &&
             !c.appends.length,
     );
