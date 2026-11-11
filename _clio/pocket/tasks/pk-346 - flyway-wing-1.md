@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T16:33:00Z'
+updated_date: '2026-11-11T16:34:00Z'
 labels:
   - s
   - clio-wing-1
@@ -22,18 +22,18 @@ ordinal: 1001
 - [ ] #4 cli lane 8 running (#159): FRM-560 with FRM-414 riding, then FRM-570 → FRM-424 → FRM-436, x/go one writer; spec in the wing 1 tree .scratch/cli-lane-8/
 - [ ] #5 tails lane 1 running: 🌗 🔧 codie: tails lane 1 solves FRM-465 evergreen v2 alone (dima 17:41: FRM-402 not urgent, the speak pair rides speak v2); spec in the wing 1 tree .scratch/tails-lane-1/
 - [ ] #6 BYT-94 exit 8: read it on bytes#156 (a plain bytes pr, merged 11-11 16:14), then its card for dima's look
-- [ ] #7 FRM-516 crow advises every wing: read its state (crow reads wing 1 today), close or date it
-- [ ] #8 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
-- [ ] #9 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
-- [ ] #10 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
-- [ ] #11 ⏳ FRM-414 re-sign: the two verb names (o25) written into its body, the guard wants a «✍️ sign FRM-414» tick — waits for: dima's return
-- [ ] #12 ⏳ renovate merge round: frame#158, bytes#152–#155 (bytes#155 its minors), prConcurrentLimit 10 kept unless he says — waits for: dima's evergreen word
-- [ ] #13 ⏳ decamp ~/projects/bytes/.claude/worktrees/FRM-465-renovate-comment: merged (bytes#156), but decamp refuses on 2 seed copies (apps/design-loupe/.runtime/, apps/trophy-sys/.env.local), codie checked both are copies — waits for: dima's word to trash them
-- [ ] #14 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
-- [ ] #15 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
-- [ ] #16 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #17 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #18 📅 BYT-94: its exit 5 and 8 on a real pr, and dima's look at its card — on: 2026-11-14
+- [ ] #7 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
+- [ ] #8 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
+- [ ] #9 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
+- [ ] #10 ⏳ FRM-414 re-sign: the two verb names (o25) written into its body, the guard wants a «✍️ sign FRM-414» tick — waits for: dima's return
+- [ ] #11 ⏳ renovate merge round: frame#158, bytes#152–#155 (bytes#155 its minors), prConcurrentLimit 10 kept unless he says — waits for: dima's evergreen word
+- [ ] #12 ⏳ decamp ~/projects/bytes/.claude/worktrees/FRM-465-renovate-comment: merged (bytes#156), but decamp refuses on 2 seed copies (apps/design-loupe/.runtime/, apps/trophy-sys/.env.local), codie checked both are copies — waits for: dima's word to trash them
+- [ ] #13 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr, 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-11
+- [ ] #14 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
+- [ ] #15 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #16 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #17 📅 BYT-94: its exit 5 and 8 on a real pr, and dima's look at its card — on: 2026-11-14
+- [ ] #18 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
 - [ ] #19 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
 - [ ] #20 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
 - [ ] #21 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
@@ -225,4 +225,6 @@ done 2026-11-11 17:54: 💤 clio:wing:28 desktop start steps point at surface-cl
 hoist 11-11: proposing, wing 1 (dima 18:22: strays for the tails lane, tails for wing 1)
 
 hoist 11-11: done, wing 1 (dima o34): the tails lane parks, no buildable stray; three reads seeded; PK-362 one at a time later (o35)
+
+done 2026-11-11 18:34: FRM-516 crow advises every wing: read its state (crow reads wing 1 today), close or date it (FRM-516 Todo)
 <!-- SECTION:NOTES:END -->
