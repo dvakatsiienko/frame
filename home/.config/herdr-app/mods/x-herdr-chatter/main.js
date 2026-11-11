@@ -70,6 +70,7 @@ import {
     farRows,
     keptFirst,
 } from './scroll.js';
+import { loadableSkills } from './skills.js';
 import { wholeLines } from './slice.js';
 import {
     SYSTEM_MODES,
@@ -874,6 +875,12 @@ function keepDraft(address, text) {
                 : localStorage.removeItem(draftKey(address));
     } catch {}
 }
+/** @type {import('./skills.js').SkillFs} */
+const skillFs = {
+    list: (dir) => readdir(dir).catch(() => []),
+    read: (path) => readFile(path, 'utf8').catch(() => null),
+};
+
 /** @param {string} url */
 const openLink = (url) => {
     exec('open', [openTarget(url)]).catch(() => {});
@@ -1996,6 +2003,18 @@ export default class ClaudeChat extends View {
                         this.firstShown = null;
                         this.session = session;
                         this.file = file;
+                        // the plugin skills enabled for its folder join the / menu (skills.js); its listing misses them
+                        this.pluginSkills = new Map();
+                        if (!where.container)
+                            loadableSkills(skillFs, {
+                                cwd: session.cwd,
+                                home: home(),
+                            })
+                                .then((found) => {
+                                    if (this.session === session)
+                                        this.pluginSkills = found;
+                                })
+                                .catch(() => {});
                         this.problem = file
                             ? null
                             : 'No transcript yet: say something.';
@@ -2462,6 +2481,9 @@ export default class ClaudeChat extends View {
         const all = [
             ...COMMANDS,
             ...[...this.skills].filter(([name]) => !known.has(name)),
+            ...[...(this.pluginSkills ?? [])].filter(
+                ([name]) => !known.has(name) && !this.skills.has(name),
+            ),
         ];
         return [
             ...all.filter(([n]) => n.startsWith(q)),
