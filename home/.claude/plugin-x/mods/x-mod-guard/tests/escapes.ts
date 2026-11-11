@@ -570,6 +570,19 @@ EOF`,
         'a single quote in a double-quoted ${…} hides nothing after it',
         `echo "\${x:-'"'}"; rm -rf ~`,
     ],
+    // round 2 on f808cbe1: zsh keeps the `'` literal and runs what follows
+    [
+        'refused',
+        'reader',
+        'a lone single quote in a double-quoted ${…} hides nothing in zsh',
+        `echo "\${x:-'a'b'}"; rm -rf ~`,
+    ],
+    [
+        'refused',
+        'reader',
+        'a quoted double quote in a double-quoted ${…} hides nothing in zsh',
+        `echo "\${x:-'"'"'}"; rm -rf ~`,
+    ],
     ['refused', 'reader', 'a head from an echo substitution', '$(echo rm) x'],
     [
         'refused',
