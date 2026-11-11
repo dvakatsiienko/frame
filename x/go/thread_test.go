@@ -209,3 +209,32 @@ func TestThreadRecordsWrittenAtOnceAllLand(t *testing.T) {
 		t.Fatalf("%d records (%v), want all 24: each writer reads and rewrites the whole store", len(written.Threads), err)
 	}
 }
+
+// exit 11b, sixth sense round 1: a thread once seen live drops at the next call when its pid dies (kill -9) or its
+// registry file goes (archived); only a torn read of its own file keeps it through the launch wait
+func TestThreadListDropsASeenThreadOnceItsPidOrFileGoes(t *testing.T) {
+	t.Parallel()
+	_, _, live, dead := threadWorld(t)
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	start, now := ownProcStart(t), time.Now().UnixMilli()
+	write(t, filepath.Join(sessions, strconv.Itoa(dead)+".json"), fmt.Sprintf(`{"sessionId":"sid-killed","pid":%d,"procStart":%q}`, dead, start))
+	write(t, filepath.Join(sessions, strconv.Itoa(live)+".json"), `{"sessionId":"sid-torn","pi`)
+	records, _ := json.Marshal(threadStore{V: 1, Threads: []thread{
+		{SessionID: "sid-killed", Pid: dead, ProcStart: start, Role: "codie", At: now},
+		{SessionID: "sid-archived", Pid: os.Getppid(), ProcStart: start, Role: "sixth-sense", At: now},
+		{SessionID: "sid-torn", Pid: live, ProcStart: start, Role: "sixth-sense", At: now},
+	}})
+	write(t, store, string(records))
+
+	if got := xIn(t, t.TempDir(), []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}, "thread", "list"); got.code != 0 {
+		t.Fatalf("exit %d:\n%s", got.code, got.stdout)
+	}
+	written, _ := readThreadStore(store)
+	kept := []string{}
+	for _, th := range written.Threads {
+		kept = append(kept, th.SessionID)
+	}
+	if fmt.Sprint(kept) != "[sid-torn]" {
+		t.Fatalf("store keeps %v, want only sid-torn: a dead pid and a gone file drop a thread seen live", kept)
+	}
+}

@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -406,5 +408,41 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 	}
 	if shown["s1"] != "🌗 🔧 cli-3 | FRM-1" || shown["s2"] != "🌗 🔎 cli-3 | FRM-1" || len(shown) != 2 {
 		t.Errorf("records %v, want s1 as codie and s2 as sixth sense on cli-3 | FRM-1", shown)
+	}
+}
+
+// sixth sense round 1, P1: a running session never names itself a sixth sense, and a record's role never changes, so a
+// codie cannot stamp its own clean; the refusal comes before any linear write
+func TestDispatchRefusesARoleForARunningThreadOrAnotherRole(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, records, want string
+	}{
+		{name: "a running session with no record", want: "already runs with no role from x"},
+		{name: "a codie's record", records: `{"v":1,"threads":[{"sessionId":"s2","role":"codie"}]}`, want: "is already a codie"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := dispatchServer(t, undispatched)
+			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "s2.json"), fmt.Sprintf(`{"sessionId":"s2","pid":%d}`, os.Getpid()))
+			if c.records != "" {
+				write(t, store, c.records)
+			}
+
+			_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions},
+				"lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
+
+			written, _ := readThreadStore(store)
+			mutations := 0
+			for _, call := range server.requests() {
+				if strings.Contains(call.Query, "mutation") {
+					mutations++
+				}
+			}
+			if got.code != 1 || !strings.Contains(got.stdout, c.want) || mutations != 0 || slices.ContainsFunc(written.Threads, func(th thread) bool { return th.SessionID == "s2" && th.Role == "sixth-sense" }) {
+				t.Fatalf("exit %d, %d linear writes, records %+v, want exit 1 naming %q before any write:\n%s", got.code, mutations, written.Threads, c.want, got.stdout)
+			}
+		})
 	}
 }

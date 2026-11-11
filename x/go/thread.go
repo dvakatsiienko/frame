@@ -163,7 +163,7 @@ func refreshThreads(now time.Time) ([]thread, error) {
 
 // the live registry, each entry joined to its record by session id, or by its pid and start when /clear or /resume
 // minted a new id for the same process; a joined record's time moves to now, a dead pid or a gone file drops out, and
-// a record not seen stays only through its launch wait
+// a record not seen stays only through its launch wait, once seen live only while its registry file reads torn
 func joinThreads(now time.Time, stored []thread) []thread {
 	records, byProcess := map[string]thread{}, map[string]string{}
 	for _, t := range stored {
@@ -175,11 +175,16 @@ func joinThreads(now time.Time, stored []thread) []thread {
 		}
 	}
 	threads, starts, from := []thread{}, []string{}, []string{}
+	// a registry file named by its pid that did not read whole: a torn write, never a gone session
+	torn := map[int]bool{}
 	if dir := sessionsDir(); dir != "" {
 		files, _ := filepath.Glob(filepath.Join(dir, "*.json"))
 		for _, file := range files {
 			raw, err := os.ReadFile(file)
-			if err != nil {
+			if err != nil || !json.Valid(raw) {
+				if pid, err := strconv.Atoi(strings.TrimSuffix(filepath.Base(file), ".json")); err == nil {
+					torn[pid] = true
+				}
 				continue
 			}
 			var entry struct {
@@ -217,9 +222,10 @@ func joinThreads(now time.Time, stored []thread) []thread {
 		}
 	}
 	threads = kept
+	// a record never seen live waits out its launch; one seen live (its start known) stays only through a torn read
 	for sid, t := range records {
-		if !seen[sid] && now.Sub(time.UnixMilli(t.At)) < threadLaunchWait {
-			t.Pid = 0
+		isWaiting := now.Sub(time.UnixMilli(t.At)) < threadLaunchWait
+		if !seen[sid] && isWaiting && (t.ProcStart == "" || torn[t.Pid]) {
 			threads = append(threads, t)
 		}
 	}
@@ -247,6 +253,41 @@ func newSessionID() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 }
 
+// a role is given to a thread before it runs, at its summon or dispatch: a live session with no role from x, or a thread
+// of another role, keeps what it has, so no session can name itself a sixth sense and stamp its own clean
+func threadRoleRefusal(stored []thread, sid, role string) error {
+	for _, t := range stored {
+		if t.SessionID == sid && t.Role != "" {
+			if t.Role == role {
+				return nil
+			}
+			return &Fail{Refused: true, Msg: sid + " is already a " + t.Role + ": x keeps a thread's role once it is given", Next: "x thread show " + sid}
+		}
+	}
+	if sessionLive(sid) {
+		return &Fail{Refused: true, Msg: sid + " already runs with no role from x: a role is given at the summon that starts a thread, so no running session names itself one", Next: "x brief summon <the summon command>"}
+	}
+	return nil
+}
+
+func sessionLive(sid string) bool {
+	dir := sessionsDir()
+	if dir == "" {
+		return false
+	}
+	files, _ := filepath.Glob(filepath.Join(dir, "*.json"))
+	for _, file := range files {
+		var entry struct {
+			SessionID string `json:"sessionId"`
+			Pid       int    `json:"pid"`
+		}
+		if raw, err := os.ReadFile(file); err == nil && json.Unmarshal(raw, &entry) == nil && entry.SessionID == sid && pidAlive(entry.Pid) {
+			return true
+		}
+	}
+	return false
+}
+
 // brief summon and lane dispatch write a thread's role, lane and ticket under its session id, before it runs
 func writeThreadRecord(record thread, now time.Time) error {
 	path := threadStorePath()
@@ -260,6 +301,9 @@ func writeThreadRecord(record thread, now time.Time) error {
 	defer unlock()
 	store, err := readThreadStore(path)
 	if err != nil {
+		return err
+	}
+	if err := threadRoleRefusal(store.Threads, record.SessionID, record.Role); err != nil {
 		return err
 	}
 	// a record for a live thread keeps what the registry gave it, and a dispatch naming no lane keeps the summon's

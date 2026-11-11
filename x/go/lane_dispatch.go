@@ -3,6 +3,7 @@ package main
 import (
 	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -280,6 +281,20 @@ func askDispatch(plan any) string {
 
 func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 	plan := planned.(dispatchPlan)
+	if path := threadStorePath(); path != "" {
+		store, err := readThreadStore(path)
+		if err != nil {
+			return nil, &Fail{Msg: "the thread store did not read: " + err.Error(), Next: "x thread list"}
+		}
+		for role, sid := range map[string]string{"codie": flagString(flags, "session"), "sixth-sense": flagString(flags, "sixth-sense")} {
+			if sid == "" {
+				continue
+			}
+			if err := threadRoleRefusal(store.Threads, sid, role); err != nil {
+				return nil, err
+			}
+		}
+	}
 	actor, err := actorOf(flags)
 	if err != nil {
 		return nil, err
@@ -316,6 +331,9 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		}
 		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: kind, Ticket: plan.Tickets[0].ID}
 		if err := writeThreadRecord(record, time.Now()); err != nil {
+			if fail, isFail := errors.AsType[*Fail](err); isFail {
+				return nil, fail
+			}
 			return nil, &Fail{Msg: "the thread record of " + sid + " was not written: " + err.Error(), Next: "x thread list"}
 		}
 	}

@@ -907,6 +907,16 @@ test("clio cd'd out of ~/frame/_clio still holds a [progress] ping", async ($, o
     expect(w.queued).toEqual([]);
 });
 
+// FRM-570 exit 15: the gate holds by the ping's tag, never its sender's name, so a member renamed with no member word or
+// no emoji at all is held as on its old name
+for (const from of ['⚡ 🔧 mods 6 | FRM-574', 'mods six'])
+    test(`clio holds a [progress] ping from «${from}» as from its old name`, async ($, on) => {
+        const w = world(on);
+        await start($);
+        await ping($, '[progress] step 2 landed', from);
+        expect(w.queued).toEqual([]);
+    });
+
 test('a session the registry names other than clio passes a [progress] ping, even in her dir', async ($, on) => {
     const w = world(on, { name: '☕️ 🔧 codie: mods' });
     await start($);

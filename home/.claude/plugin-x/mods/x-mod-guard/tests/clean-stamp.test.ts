@@ -7,18 +7,18 @@ const SID = 'c1c1c1c1-0000';
 
 // a registry row as the desktop app writes one, 2026-11-06: its sessionId is the transcript's; role: the session's thread
 // record as x thread list answers it (FRM-570 rule 9), whatever the name says
-function world(on: On, name: string | null, role?: string) {
+function world(on: On, name: string | null, role?: string, isXMissing = false) {
     mock.clock(on, { now: 1_000_000 });
     liveStore(on);
     const ran: string[] = [];
     on('process.run', (_$, e) => ({
         value: {
-            exitCode: 0,
+            exitCode: isXMissing && e.argv[0] === 'x' ? 127 : 0,
             isStderrTruncated: false,
             isStdoutTruncated: false,
             stderr: '',
             stdout:
-                e.argv.join(' ') === 'x thread list --json'
+                !isXMissing && e.argv.join(' ') === 'x thread list --json'
                     ? JSON.stringify({
                           data: { threads: [{ role, sessionId: SID }] },
                       })
@@ -250,3 +250,15 @@ for (const line of [
         expect(r.deny ?? '').not.toContain('threads.json');
         expect(ran.length).toBe(1);
     });
+
+// sixth sense round 1, exit 10: an x that is missing names no sixth sense, so the stamp stays refused
+test('a sixth sense stamping while x is missing is refused', async ($, on) => {
+    const { ran } = world(
+        on,
+        '🌗 🔎 sixth sense: cli lane 5 | #129',
+        'sixth-sense',
+        true,
+    );
+    const r = await bash($, WRITES[0] ?? '');
+    expect([r.deny, ran]).toEqual([expect.stringContaining('clean-stamp'), []]);
+});

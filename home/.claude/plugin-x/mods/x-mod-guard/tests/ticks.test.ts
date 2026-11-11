@@ -33,6 +33,7 @@ function world(
         isPrompted?: boolean;
         isSlugDown?: boolean;
         isXDown?: boolean;
+        isXMissing?: boolean;
     } = {},
 ) {
     const clock = mock.clock(on, { now: NOW });
@@ -72,63 +73,69 @@ function world(
                 (e.argv[0] === 'cat' && cat === undefined) ||
                 (e.argv.includes('sign-check') &&
                     !signVerdict(e.init?.stdin ?? '')) ||
-                (opts.isXDown && e.argv[0] === 'x') ||
-                (opts.isSlugDown && e.argv.includes('repo-slug'))
-                    ? 1
-                    : 0,
+                (opts.isXMissing && e.argv[0] === 'x')
+                    ? 127
+                    : (opts.isXDown && e.argv[0] === 'x') ||
+                        (opts.isSlugDown && e.argv.includes('repo-slug'))
+                      ? 1
+                      : 0,
             isStderrTruncated: false,
             isStdoutTruncated: false,
             stderr: '',
             // herdr's word on a terminal: `shell1` runs a plain shell, every other one Claude Code
             stdout:
-                opts.isXDown && e.argv[0] === 'x'
-                    ? JSON.stringify({
-                          error: 'the ticket did not read',
-                          ok: false,
-                          status: 'external',
-                      })
-                    : opts.isSlugDown && e.argv.includes('repo-slug')
-                      ? ''
-                      : e.argv[0] === 'hc' && e.argv[1] === 'get'
-                        ? JSON.stringify({
-                              status: {
-                                  app:
-                                      e.argv[2] === 'shell1'
-                                          ? null
-                                          : 'claude-code',
-                              },
-                          })
-                        : e.argv[0] === 'gh' && e.argv.includes('headRefOid')
-                          ? `${head.sha}\n`
-                          : e.argv[0] === 'cat'
-                            ? (cat ?? '')
-                            : e.argv.includes('--brake-check')
-                              ? JSON.stringify({
-                                    data: {
-                                        brake: '',
-                                        holds: [],
-                                        holdsUnread: '',
-                                    },
-                                })
-                              : e.argv.includes('sign-check')
+                opts.isXMissing && e.argv[0] === 'x'
+                    ? ''
+                    : opts.isXDown && e.argv[0] === 'x'
+                      ? JSON.stringify({
+                            error: 'the ticket did not read',
+                            ok: false,
+                            status: 'external',
+                        })
+                      : opts.isSlugDown && e.argv.includes('repo-slug')
+                        ? ''
+                        : e.argv[0] === 'hc' && e.argv[1] === 'get'
+                          ? JSON.stringify({
+                                status: {
+                                    app:
+                                        e.argv[2] === 'shell1'
+                                            ? null
+                                            : 'claude-code',
+                                },
+                            })
+                          : e.argv[0] === 'gh' && e.argv.includes('headRefOid')
+                            ? `${head.sha}\n`
+                            : e.argv[0] === 'cat'
+                              ? (cat ?? '')
+                              : e.argv.includes('--brake-check')
                                 ? JSON.stringify({
-                                      data: { newSign: false },
-                                      ok: signVerdict(e.init?.stdin ?? ''),
-                                      status: signVerdict(e.init?.stdin ?? '')
-                                          ? 'ok'
-                                          : 'refused',
+                                      data: {
+                                          brake: '',
+                                          holds: [],
+                                          holdsUnread: '',
+                                      },
                                   })
-                                : e.argv.includes('repo-slug')
+                                : e.argv.includes('sign-check')
                                   ? JSON.stringify({
-                                        data: { repo: 'dvakatsiienko/bytes' },
+                                        data: { newSign: false },
+                                        ok: signVerdict(e.init?.stdin ?? ''),
+                                        status: signVerdict(e.init?.stdin ?? '')
+                                            ? 'ok'
+                                            : 'refused',
                                     })
-                                  : e.argv.includes('read')
+                                  : e.argv.includes('repo-slug')
                                     ? JSON.stringify({
-                                          data: {
-                                              tickets: [{ description: body }],
-                                          },
+                                          data: { repo: 'dvakatsiienko/bytes' },
                                       })
-                                    : '',
+                                    : e.argv.includes('read')
+                                      ? JSON.stringify({
+                                            data: {
+                                                tickets: [
+                                                    { description: body },
+                                                ],
+                                            },
+                                        })
+                                      : '',
         },
     }));
     const refuse: string[] = [];
@@ -655,6 +662,19 @@ test('a body set x cannot judge is refused naming x linear sign-check', async ($
         expect.stringContaining(
             'x linear sign-check FRM-1 --body-file /repo/b.md',
         ),
+        [],
+    ]);
+});
+
+test('a body set while x is missing is refused naming x linear sign-check', async ($, on) => {
+    const { ran } = world(on, [], SIGNED_TODAY(), undefined, [], {
+        isXMissing: true,
+    });
+    on('fs.read', () => ({ value: SIGNED_TODAY() }));
+    const r = await bash($, 'x linear body FRM-1 --set /repo/b.md');
+    expect([signFlagged(r), r.deny, ran]).toEqual([
+        true,
+        expect.stringContaining('x linear sign-check FRM-1'),
         [],
     ]);
 });
