@@ -5089,7 +5089,15 @@ export default class ClaudeChat extends View {
                       gap:
                           GAPS[/** @type {keyof typeof GAPS} */ (look.space)] ??
                           10,
-                      up: Math.max(0, this.up ?? 0),
+                      // the same clamped place the log draws at: an unclamped `up` past the top marked the rows on
+                      // screen far, their boxes and real heights traded places each frame, and the chat flickered
+                      up: Math.max(
+                          0,
+                          Math.min(
+                              this.up ?? 0,
+                              (this.contentH ?? 0) - (this.viewH ?? 0),
+                          ),
+                      ),
                       viewH: this.viewH ?? 0,
                   },
               );
