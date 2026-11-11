@@ -172,6 +172,7 @@
   - given a listed contract path the index no longer holds, then it exits 1 naming the path and the map
   - given a `crew-*` or `guide-*` skill file whose non-blank additions exceed its non-blank removals by 3 or more, or a new file under such a skill dir, then it exits 1; «groom: read whole — <what was cut>» passes it; a file renamed inside its own skill counts only its line change, a move in from anywhere else is a new file
   - given an app's code (the nearest dir holding `FTR.md`, or an ftr whose `claims:` names the path) staged without that `FTR.md`, then it exits 1 naming it; a bare line «ftr: none» passes it
+  - given an `FTR.md` split into area files, then a staged `ftr/*.md` beside it answers for it: herdr's `FTR.md` claims `home/.config/herdr-app/mods/`, so a herdr mod change lands with a line in `herdr/FTR.md` or `herdr/ftr/*.md` (FRM-436)
   - given a merge in progress, then it passes untouched
   - then a pass line takes an em dash or an ascii `-`/`--` before its why
   - then a refusal a message line passes ends with that line's exact pattern, «the line must match <regex>», and the glossary refusal says a leading `- ` does not pass

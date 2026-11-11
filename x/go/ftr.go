@@ -47,11 +47,19 @@ func ftrMissing(tree string, paths []string) []string {
 				}
 			}
 		}
-		if ftr != "" && !slices.Contains(staged, ftr) && !slices.Contains(missing, ftr) {
+		if ftr != "" && !ftrStaged(staged, ftr) && !slices.Contains(missing, ftr) {
 			missing = append(missing, ftr)
 		}
 	}
 	return missing
+}
+
+// an FTR.md split into area files (herdr's `ftr/*.md`) is answered by a line in any of them
+func ftrStaged(staged []string, ftr string) bool {
+	areas := filepath.Join(filepath.Dir(ftr), "ftr") + "/"
+	return slices.ContainsFunc(staged, func(file string) bool {
+		return file == ftr || (strings.HasPrefix(file, areas) && filepath.Ext(file) == ".md")
+	})
 }
 
 func nearestFtr(tree, file string) string {

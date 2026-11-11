@@ -1,6 +1,7 @@
 # herdr — features
 
 wish: PK-363
+claims: `home/.config/herdr-app/mods/`
 
 - 🧭 asked, not built yet (a new ask, an experiment) · ⬜ built, not checked yet · 🐞 built, its check fails · ✅ passes in the app's verify recipe · 🔎 dima used it and it holds
 - given/when/then lines are sixth sense's exit lines
