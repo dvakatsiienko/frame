@@ -51,6 +51,13 @@ pre-commit:
       exclude:
         - "**/*.md"
       run: script/index-run.sh pnpm mods:test --skip-tested
+    mods-vitest:
+      # the vitest files beside the mods read the mods' files by path (twins.test.ts holds every twin copy equal), so no import
+      # ties a hook to them and the related run never picks them; they run on any mod change, about 3 s, and in `x mods edit test`
+      glob: "home/.claude/plugin-x/mods/**"
+      exclude:
+        - "**/*.md"
+      run: script/index-run.sh pnpm exec vitest run home/.claude/plugin-x/mods/
     fleet-hazards:
       # a stumble becomes a guard, never a note (FRM-314): a hazard line added or reworded names its guard
       glob: "home/.claude/rules/fleet-hazards*.md"
