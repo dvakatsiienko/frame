@@ -624,7 +624,7 @@ export function markedBy(command: string) {
     return (r: Refusal) => r.targets.every((t) => ok.has(t));
 }
 export function message(r: Refusal) {
-    return `nothing in this command ran — x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. only after dima's word, end the command with # dima-ok: ${r.targets.join(' ')}`;
+    return `nothing in this command ran — x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. only after dima's word, end the command with # dima-ok: ${r.targets.join(' ')}, or his tick on an orbit ask quoting this whole command in one backtick span runs it once (your coordinator brings the ask to him)`;
 }
 
 // the dirs a `CI=1 pnpm install` in this command runs in, for the caller to check for a changed manifest

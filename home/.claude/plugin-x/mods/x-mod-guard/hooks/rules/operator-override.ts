@@ -31,17 +31,6 @@ export function overrideAsked(text: string): OverrideAsk | undefined {
     return undefined;
 }
 
-// the store after an ask. a shift's start leaves his own word standing, so its end can't take it
-export function overrideAfter(
-    grants: OverrideGrants,
-    ask: OverrideAsk,
-    at: string,
-): OverrideGrants {
-    if (ask.scope === 'off') return {};
-    if (ask.by === 'shift' && grants.prs) return grants;
-    return { ...grants, prs: { at, by: ask.by } };
-}
-
 const normalized = (path: string) => {
     let was = '';
     let now = path.replaceAll(/\/+/g, '/').replaceAll('/./', '/');
