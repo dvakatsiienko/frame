@@ -928,6 +928,15 @@ describe('the next wish id of a home (PK-312)', () => {
         ).toBe('PK-3:W13');
     });
 
+    test('a groom not yet appended to its home counts', async () => {
+        const { nextWishId } = await import('./prompt-groom.ts');
+        expect(
+            nextWishId('PK-3:W12 a\n', 'PK-3', [
+                'PK-3:W18 (2026-11-11 19:21, dima): b\nPK-4:W40 (x): c\n',
+            ]),
+        ).toBe('PK-3:W19');
+    });
+
     test('a home with no W-lines starts at one', async () => {
         const { nextWishId } = await import('./prompt-groom.ts');
         expect(nextWishId('## notes\nnothing yet', 'PK-3')).toBe('PK-3:W1');

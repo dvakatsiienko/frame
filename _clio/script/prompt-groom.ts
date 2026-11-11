@@ -614,8 +614,26 @@ const highestWish = (homeText: string) =>
         ].map((m) => Number(m[1])),
     );
 
-export const nextWishId = (homeText: string, home: string): string =>
-    `${home.toUpperCase()}:W${highestWish(homeText) + 1}`;
+// a groom not yet appended holds ids too, so a second groom never reuses them
+export const nextWishId = (
+    homeText: string,
+    home: string,
+    groomTexts: string[] = [],
+): string => {
+    const head = `${home.toUpperCase()}:W`;
+    const pending = groomTexts
+        .flatMap((text) => text.split('\n'))
+        .filter((line) => line.startsWith(head))
+        .join('\n');
+    return `${head}${highestWish(`${homeText}\n${pending}`) + 1}`;
+};
+
+const groomedTexts = () =>
+    groomDirs().flatMap((dir) =>
+        readdirSync(dir)
+            .filter((name) => name.endsWith('.groomed.md'))
+            .map((name) => readFileSync(path.join(dir, name), 'utf8')),
+    );
 
 // a pocket wish moving to a ticket takes the ticket's next ids, text and stamp whole; the pocket keeps a moved line (o98)
 export function moveWishes(
@@ -677,7 +695,9 @@ if (import.meta.main) {
     const args = process.argv.slice(2);
     const today = new Date().toLocaleDateString('sv');
     if (args[0] === '--next') {
-        console.log(nextWishId(homeText(args[1] ?? ''), args[1] ?? ''));
+        console.log(
+            nextWishId(homeText(args[1] ?? ''), args[1] ?? '', groomedTexts()),
+        );
         process.exit(0);
     }
     if (args[0] === '--move') {
