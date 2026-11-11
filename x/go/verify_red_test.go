@@ -626,6 +626,22 @@ func TestVerifyRedMutatesARootFileAGoModuleBelowReads(t *testing.T) {
 	}
 }
 
+// the package manager guard covers a pnpm command alone: a go test whose own fixture runs pnpm reads its clean run green
+func TestVerifyRedLeavesAGoTestsOwnPnpmCallAlone(t *testing.T) {
+	t.Parallel()
+	dir := repo(t)
+	write(t, filepath.Join(dir, "hook.yaml"), "count: 1\n")
+	write(t, filepath.Join(dir, "sub/go.mod"), "module p\n\ngo 1.24\n")
+	write(t, filepath.Join(dir, "sub/hook_test.go"), "package p\n\nimport (\n\t\"os\"\n\t\"os/exec\"\n\t\"testing\"\n)\n\nfunc TestHook(t *testing.T) {\n\tif out, err := exec.Command(\"pnpm\", \"--version\").CombinedOutput(); err != nil {\n\t\tt.Fatalf(\"pnpm: %v %s\", err, out)\n\t}\n\tif body, _ := os.ReadFile(\"../hook.yaml\"); string(body) != \"count: 1\\n\" {\n\t\tt.Fatalf(\"read %q\", body)\n\t}\n}\n")
+	commitAll(t, dir)
+
+	got, _ := verifyRedIn(t, redFixture{dir: dir}, nil, "hook.yaml", "count: 1", "count: 2", "sub/hook_test.go")
+
+	if got.code != 0 || got.data["verdict"] != verdictRed {
+		t.Fatalf("exit %d, data %v, want red from a clean run whose test ran pnpm itself:\n%s", got.code, got.data, got.stdout)
+	}
+}
+
 // review round: a timeout proves nothing, a load can cause it; a vitest name that matches nothing refuses
 func TestVerifyRedReadsATimeoutBrokenAndANoMatchRefused(t *testing.T) {
 	t.Parallel()

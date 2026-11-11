@@ -679,8 +679,14 @@ func (h *copyHarness) runCommand() redRun {
 	const noInstall = "pnpm_config_verify_deps_before_run"
 	c.Env = append(slices.DeleteFunc(os.Environ(), func(pair string) bool {
 		key, _, _ := strings.Cut(pair, "=")
-		return strings.EqualFold(key, noInstall) || key == "PATH"
-	}), noInstall+"=false", "PATH="+h.guard+string(os.PathListSeparator)+os.Getenv("PATH"))
+		return strings.EqualFold(key, noInstall)
+	}), noInstall+"=false")
+	// a pnpm run is the one command past the argv check that may still reach a package manager, through a script it runs;
+	// any other runner keeps the real PATH, so a test that calls one on purpose still runs it
+	if strings.EqualFold(filepath.Base(h.command[0]), "pnpm") {
+		c.Env = append(slices.DeleteFunc(c.Env, func(pair string) bool { return strings.HasPrefix(pair, "PATH=") }),
+			"PATH="+h.guard+string(os.PathListSeparator)+os.Getenv("PATH"))
+	}
 	got := runTestCmd(c)
 	if _, refused, found := strings.Cut(got.log, guardRefused); found {
 		line, _, _ := strings.Cut(refused, "\n")

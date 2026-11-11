@@ -28,7 +28,7 @@ type reviewThread struct {
 const threadsQuery = `query($owner: String!, $name: String!, $pr: Int!, $after: String) {
   repository(owner: $owner, name: $name) { pullRequest(number: $pr) { reviewThreads(first: 100, after: $after) {
     pageInfo { hasNextPage endCursor }
-    nodes { id isResolved path line originalLine comments(first: 1) { nodes { body author { login } } } }
+    nodes { id isResolved path line originalLine subjectType comments(first: 1) { nodes { body author { login } } } }
   } } }
 }`
 
@@ -123,6 +123,7 @@ func openThreads(repo, n string) ([]reviewThread, error) {
 						Nodes []struct {
 							ID           string `json:"id"`
 							IsResolved   bool   `json:"isResolved"`
+							SubjectType  string `json:"subjectType"`
 							Path         string `json:"path"`
 							Line         *int   `json:"line"`
 							OriginalLine *int   `json:"originalLine"`
@@ -150,7 +151,8 @@ func openThreads(repo, n string) ([]reviewThread, error) {
 			if node.IsResolved {
 				continue
 			}
-			t := reviewThread{ID: node.ID, File: node.Path, Outdated: node.Line == nil}
+			// a file-level thread has no line at all, so only a line thread can be outdated
+			t := reviewThread{ID: node.ID, File: node.Path, Outdated: node.SubjectType == "LINE" && node.Line == nil}
 			if line := cmp.Or(node.Line, node.OriginalLine); line != nil {
 				t.Line = *line
 			}

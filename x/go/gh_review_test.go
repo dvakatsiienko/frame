@@ -11,11 +11,12 @@ import (
 	"testing"
 )
 
-// a pr's review threads as github's graphql answers them: two open inline threads and one resolved
+// a pr's review threads as github's graphql answers them: two open line threads, one resolved, one open on a whole file
 const reviewThreads = `{"data":{"repository":{"pullRequest":{"reviewThreads":{"pageInfo":{"hasNextPage":false,"endCursor":null},"nodes":[
-	{"id":"PRRT_open1","isResolved":false,"path":"x/go/gh.go","line":42,"originalLine":40,"comments":{"nodes":[{"body":"off by one in the page loop, the last page is read twice","author":{"login":"claude"}}]}},
-	{"id":"PRRT_done","isResolved":true,"path":"x/go/gh.go","line":7,"originalLine":7,"comments":{"nodes":[{"body":"settled","author":{"login":"claude"}}]}},
-	{"id":"PRRT_open2","isResolved":false,"path":"x/FTR.md","line":null,"originalLine":12,"comments":{"nodes":[{"body":"why?","author":{"login":"dvakatsiienko"}}]}}]}}}}}`
+	{"id":"PRRT_open1","isResolved":false,"subjectType":"LINE","path":"x/go/gh.go","line":42,"originalLine":40,"comments":{"nodes":[{"body":"off by one in the page loop, the last page is read twice","author":{"login":"claude"}}]}},
+	{"id":"PRRT_done","isResolved":true,"subjectType":"LINE","path":"x/go/gh.go","line":7,"originalLine":7,"comments":{"nodes":[{"body":"settled","author":{"login":"claude"}}]}},
+	{"id":"PRRT_open2","isResolved":false,"subjectType":"LINE","path":"x/FTR.md","line":null,"originalLine":12,"comments":{"nodes":[{"body":"why?","author":{"login":"dvakatsiienko"}}]}},
+	{"id":"PRRT_file","isResolved":false,"subjectType":"FILE","path":"x/AGENTS.md","line":null,"originalLine":null,"comments":{"nodes":[{"body":"the whole file reads stale","author":{"login":"claude"}}]}}]}}}}}`
 
 // a github graphql endpoint that answers the threads query and records each reply mutation's variables;
 // a pending review is the one thing a reply must never open, so the fake counts any review mutation apart
@@ -78,12 +79,13 @@ func TestGhReviewCommentsListPrintsOnlyTheOpenThreads(t *testing.T) {
 	}
 	_ = json.Unmarshal([]byte(got.stdout), &envelope)
 	threads := envelope.Data.Threads
-	if got.code != 0 || len(threads) != 2 {
-		t.Fatalf("exit %d, %d threads, want the two open ones:\n%s%s", got.code, len(threads), got.stdout, got.stderr)
+	if got.code != 0 || len(threads) != 3 {
+		t.Fatalf("exit %d, %d threads, want the three open ones:\n%s%s", got.code, len(threads), got.stdout, got.stderr)
 	}
 	want := []reviewThread{
 		{ID: "PRRT_open1", File: "x/go/gh.go", Line: 42, Words: "off by one in the page loop, the last page is read twice", Author: "claude"},
 		{ID: "PRRT_open2", File: "x/FTR.md", Line: 12, Words: "why?", Author: "dvakatsiienko", Outdated: true},
+		{ID: "PRRT_file", File: "x/AGENTS.md", Words: "the whole file reads stale", Author: "claude"},
 	}
 	for i, w := range want {
 		if threads[i] != w {

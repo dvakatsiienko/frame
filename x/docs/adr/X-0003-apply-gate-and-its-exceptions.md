@@ -10,4 +10,6 @@ a verb marked `needsApply` prints its plan and exits 4 with the exact confirm co
 
 - `lane decamp --list-stale`: a mode of a verb that destroys, which removes nothing; it returns from its plan, and nothing past the plan runs. it does fetch origin's main, and its squash read writes loose objects through `merge-tree` (FRM-509)
 
+- `gh pr-review-comments-reply`: the same shape as `linear comment`, one reply its caller wrote from a file, posted under one thread id the list printed; the id check and the non-blank body refuse before any request, the envelope names the reply's url, and github keeps the comment editable and deletable ([FRM-414](https://linear.app/x-com/issue/FRM-414))
+
 a new exception needs the same shape: a guard that already holds, named here.
