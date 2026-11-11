@@ -43,8 +43,15 @@ type statsData struct {
 	Failures map[string]int `json:"failures"`
 	Families []familyCount  `json:"families"`
 	Verbs    []*verbCount   `json:"verbs"`
-	Unused   []string       `json:"unused"`
-	Trashed  []string       `json:"trashed"`
+	// a verb with no real call: dev only when a dev build called it, unused when nothing did; a cut reads unused alone
+	Unused  []string  `json:"unused"`
+	DevOnly []devOnly `json:"devOnly"`
+	Trashed []string  `json:"trashed"`
+}
+
+type devOnly struct {
+	Name  string `json:"name"`
+	Calls int    `json:"calls"`
 }
 
 const keepDays = 90
@@ -135,7 +142,7 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 	lines := read.lines
 	data := statsData{Days: read.span(), First: read.first, Last: read.last, Dev: read.dev, Calls: len(lines),
 		Callers: map[string]int{}, Failures: map[string]int{},
-		Families: []familyCount{}, Verbs: []*verbCount{}, Unused: []string{}, Trashed: trashed}
+		Families: []familyCount{}, Verbs: []*verbCount{}, Unused: []string{}, DevOnly: []devOnly{}, Trashed: trashed}
 	byFamily := map[string]int{}
 	shapes := map[string]map[string]int{}
 	byVerb := map[string]*verbCount{}
@@ -166,7 +173,11 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 		data.Families = append(data.Families, familyCount{Name: name, Calls: calls, Raw: topShapes(shapes[name])})
 	}
 	for _, verb := range verbsUnder("") {
-		if byVerb[verb.Name] == nil {
+		switch {
+		case read.real[verb.Name]:
+		case read.devCalls[verb.Name] > 0:
+			data.DevOnly = append(data.DevOnly, devOnly{verb.Name, read.devCalls[verb.Name]})
+		default:
 			data.Unused = append(data.Unused, verb.Name)
 		}
 	}
@@ -175,6 +186,7 @@ func stats(r *Run, _ []string, flags Flags) (any, error) {
 		verb.P50, verb.P95 = percentile(verb.took, 50), percentile(verb.took, 95)
 	}
 	slices.SortFunc(data.Families, byCalls(func(f familyCount) int { return f.Calls }, func(f familyCount) string { return f.Name }))
+	slices.SortFunc(data.DevOnly, byCalls(func(v devOnly) int { return v.Calls }, func(v devOnly) string { return v.Name }))
 	slices.SortFunc(data.Verbs, byCalls(func(v *verbCount) int { return v.Calls }, func(v *verbCount) string { return v.Name }))
 	if r.human {
 		r.Board(statsBoard(data, dev))
@@ -225,6 +237,11 @@ func statsBoard(data statsData, dev bool) string {
 	section("failures", failures)
 	section("callers", callers)
 	section("unused", []string{ui.dim.Render(strings.Join(data.Unused, ", "))})
+	var devOnlyCells []string
+	for _, v := range data.DevOnly {
+		devOnlyCells = append(devOnlyCells, ui.fg.Render(v.Name)+" "+ui.bold.Render(strconv.Itoa(v.Calls)))
+	}
+	section("dev only", devOnlyCells)
 	devNote := " left out, x stats --dev counts them"
 	if dev {
 		devNote = " counted"
@@ -246,6 +263,9 @@ type window struct {
 	lines       []span
 	first, last string
 	dev         int
+	// the verbs a build that is not dev called, and each verb's dev-build calls, whatever --dev says
+	real     map[string]bool
+	devCalls map[string]int
 }
 
 func (t window) span() int {
@@ -260,7 +280,7 @@ func (t window) span() int {
 // the trace lines of the last `days` local days, today included; a line that does not parse is skipped,
 // a dev build's line only counts with dev
 func readTraces(days int, dev bool) window {
-	var read window
+	read := window{real: map[string]bool{}, devCalls: map[string]int{}}
 	for _, file := range dayFiles(1-days, false) {
 		f, err := os.Open(file)
 		if err != nil {
@@ -275,9 +295,12 @@ func readTraces(days int, dev bool) window {
 			}
 			if line.Dev {
 				read.dev++
+				read.devCalls[line.Name]++
 				if !dev {
 					continue
 				}
+			} else {
+				read.real[line.Name] = true
 			}
 			read.lines = append(read.lines, line)
 			read.first = cmp.Or(read.first, day)

@@ -13,7 +13,7 @@ classes, each named in a brief by its word:
 - `bulk-replace` — an anchor and its replacement across named files, when it rides a batch with a commit; a pairs file runs
   `node ~/frame/_clio/script/bulk-replace.ts <pairs.json> ~/frame`, all or none, a miss is a consult
 - `pocket-write` — a create runs `node ~/frame/_clio/script/pocket-add.ts "<title>" -d … --size …`
-  (it sets the gate's fields and runs pocket-check); an edit goes through `backlog task edit`, a note always `--append-notes`, never `--notes` (it replaces dima's quoted steers)
+  (it sets the gate's fields and runs pocket-check); an edit goes through `backlog task edit`, a note always `--append-notes`, never `--notes` (it replaces dima's quoted steers); a note's clock is `$(date +%H:%M)` in the command itself, read at the write
 - `gate-retry` — commit named paths through `x lane commit <msg file> -- <paths>`, whose own
   formatter fixes format reds; a red that needs an edit is a consult, never your own fix
 - `inbox-prep` — dima's obsidian inbox, groomed and sorted into its sibling `inbox-helga.md`; the

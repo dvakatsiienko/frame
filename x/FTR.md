@@ -96,6 +96,12 @@
   - when `x lane commit --hold-unstaged <msg-file> -- <paths>` runs
   - then the hooks see only the index version of the tree, the commit lands, and every held file is back byte for byte — also when a hook refuses
   - decision: the files move into the git dir, never the shared stash stack another session could pop
+- ⬜ `x lane commit --bump <plugin>` lands a change and its plugin bump in one commit (FRM-436)
+  - given a changed plugin, when `x lane commit --bump <plugin> <msg-file> -- <paths>` runs, then one commit holds the change and the patch step of its `plugin.json`, and `plugin.json` is clean after; the flag alone makes a bump-only commit
+  - given a red gate, then `plugin.json` is byte for byte as before and unstaged, so a green re-run steps the version once
+  - given main and a marketplace that reads this tree, then the install is refreshed after the commit and read back at the new version; a worktree's bump rides its branch
+  - given a commit of a plugin's files without `--bump` and without its `plugin.json`, when the plugin is one a marketplace lists, then the commit lands and its result carries one `reminder` line naming `x plugin bump <plugin>`; never a refusal
+  - decision: one gate run for both; a bump before a commit left `plugin.json` dirty, a commit before a bump took two gate runs (34 bump-only commits since 11-03, 20 right after a plugin commit)
 - ✅ `x lane commit` on main runs the ci jobs for the touched paths first
   - given a commit on main whose paths sit in a go module, or name a `.ts`/`.tsx` file
   - when `x lane commit` runs
@@ -167,6 +173,7 @@
   - given a listed contract path the index no longer holds, then it exits 1 naming the path and the map
   - given a `crew-*` or `guide-*` skill file whose non-blank additions exceed its non-blank removals by 3 or more, or a new file under such a skill dir, then it exits 1; «groom: read whole — <what was cut>» passes it; a file renamed inside its own skill counts only its line change, a move in from anywhere else is a new file
   - given an app's code (the nearest dir holding `FTR.md`, or an ftr whose `claims:` names the path) staged without that `FTR.md`, then it exits 1 naming it; a bare line «ftr: none» passes it
+  - given an `FTR.md` split into area files, then a staged `ftr/*.md` beside it answers for it: herdr's `FTR.md` claims `home/.config/herdr-app/mods/`, so a herdr mod change lands with a line in `herdr/FTR.md` or `herdr/ftr/*.md` (FRM-436)
   - given a merge in progress, then it passes untouched
   - then a pass line takes an em dash or an ascii `-`/`--` before its why
   - then a refusal a message line passes ends with that line's exact pattern, «the line must match <regex>», and the glossary refusal says a leading `- ` does not pass
@@ -541,6 +548,8 @@
   - given any call, then `~/.claude/shelf/threads.json` is rewritten, so a display reads it with no spawn; x-mod-stash's hooks call `x thread list` at session start, turn end and exit
   - given `show` with a session id or a pid no live session holds, then exit 1
   - given a summon that passes `x brief summon`, then its printed argv carries a fresh `--session-id <uuid>` and the store holds that id's role, ticket, lane (the spec's dir) and lane kind (the brief's `lane:` line) before the thread runs; `x lane dispatch --apply` writes the same for its `--session` codie and `--sixth-sense`
+  - and its `-n` is the display drawn from that record, the one `x thread show <sid>` prints, never the name the command typed; the envelope's `display` holds it (FRM-436 rider, dima o72)
+  - given `x lane dispatch --apply` moves a live thread's record, then its herdr terminal (the one whose pid the registry holds) gets `/rename <display>` when it sits idle, through `env -u HC_TERMINAL_ID hc send`, since a slash command typed from inside a herdr thread arrives tag-wrapped and never runs; a busy one is renamed by nothing and `renames` carries that exact command (FRM-436 rider, dima o74)
   - decision: the store sits beside x-mod-stash's `herdr-state/`, a registry mirror kept separate (wing 1, 2026-11-11)
 
 ## linear — tickets
@@ -646,12 +655,16 @@
   - makes: the patch version moved by one in the plugin's `.claude-plugin/plugin.json`, a line edit
   - given a tracked plugin dir at a.b.c that a tracked marketplace lists by source
   - when it runs, then the manifest reads a.b.(c+1), `claude plugin marketplace update` and `claude plugin update` run, `claude plugin list` reports the install at the new version with its cache dir on disk, and the board ends on `next /reload-plugins`
-  - given a linked worktree, then the plan refuses before anything is written, whatever its marketplace reads, and names the main checkout
+  - given a linked worktree (a wing's tree), then the bump commits on its branch, whatever its marketplace reads: main's `plugin.json` stays clean and the live install is never refreshed; the release is main's at the merge (FRM-436, from FRM-519 item 8)
   - given a tree its marketplace does not read, then the plan refuses: nothing is written and nothing refreshed
   - decision: `pnpm plugin:release` retired into this verb (FRM-359); its moved-since status and the cloud chat symlink audit did not move
   - given an install that stays at the old version, then it exits 1 naming the version claude reports — also when a dir for the new version is already in the cache
   - given a plugin not installed from a marketplace (the mods load `@inline`, `x-cloud-chat`'s marketplace is never added), then it bumps only and runs nothing
   - given a name no plugin carries, then exit 2 lists the names that exist
+- ⬜ `x plugin bump` and `x lane commit --bump` name the live sessions on an older copy (FRM-436)
+  - given live sessions in the registry, when the install is read back, then the envelope's `older` lists each one whose copy is not the new version, and the reload line names them
+  - a session's copy is the newest version in the cache dir installed by its start or its last `/reload-plugins`; one with no such copy reads «unknown», never dropped; a dead pid is skipped
+  - decision: cc records no plugin version per session, so the cache dir's install times beside the registry's `startedAt` and the transcript's reload rows are the reading (an inference, said here)
 - ✅ `x schema plugin` lists the verb
 
 ## mods — a live mod edited safely
@@ -757,6 +770,10 @@
   - when `x stats` runs, then they are left out of every count, the span included, and `dev` says how many there were
   - when `x stats --dev` runs, then they are counted too
   - decision: dev means x/go differs from its merge base with origin/main, in a worktree or the main checkout — never the `-dirty` version, which main's x carries whenever the frame tree holds any uncommitted file and which hid 73 % of real calls; never «built in a worktree», which would hide codie's real `x lane` calls; never origin/main itself, which would mark a checkout merely behind main; lines from before the stamp count as real (dima, 2026-10-08)
+- ⬜ `x stats` tells a verb only a dev build called apart from an unused one (FRM-424)
+  - given a verb whose only trace lines are a dev build's, when `x stats` runs, with or without `--dev`, then it is in `devOnly` with its dev-call count and not in `unused`; a verb no build called is in `unused`
+  - given the copied traces of 2026-10-23 and 2026-11-05, then no `mods edit` verb reads unused and `probe bare` reads dev only, 1 call
+  - decision: `unused` is the one list a cut reads; `--dev` still only moves the totals (FRM-424:W6)
 - ✅ `x stats --outside` ranks what cc runs by hand
   - given cc session transcripts under `~/.claude/projects/`, subagents included
   - when `x stats --outside --days 7` runs

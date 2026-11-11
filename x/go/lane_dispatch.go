@@ -39,6 +39,12 @@ type dispatchPlan struct {
 	Window  string           `json:"window"`
 }
 
+// an applied dispatch: its plan, and what became of each named thread's live name
+type dispatchDone struct {
+	dispatchPlan
+	Renames []ordered `json:"renames"`
+}
+
 type dispatchLookup struct {
 	Issue struct {
 		ID          string                      `json:"id"`
@@ -330,7 +336,9 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 	if flags["quick"] == true {
 		kind = "quick"
 	}
-	for role, sid := range map[string]string{"codie": flagString(flags, "session"), "sixth-sense": flagString(flags, "sixth-sense")} {
+	renames := []ordered{}
+	for _, named := range [][2]string{{"codie", flagString(flags, "session")}, {"sixth-sense", flagString(flags, "sixth-sense")}} {
+		role, sid := named[0], named[1]
 		if sid == "" {
 			continue
 		}
@@ -341,7 +349,12 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 			}
 			return nil, &Fail{Msg: "the thread record of " + sid + " was not written: " + err.Error(), Next: "x thread list"}
 		}
+		// the live name follows the record, so the registry and x's display stay one string
+		renames = append(renames, renameThread(sid, threadDisplay(record)))
 	}
 	r.Done("dispatched; left by hand: the glide link", plan.Window)
-	return plan, nil
+	if len(renames) == 0 {
+		return plan, nil
+	}
+	return dispatchDone{plan, renames}, nil
 }
