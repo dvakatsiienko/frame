@@ -33,7 +33,7 @@
             "schedule": ["* 0-5 * * *"]
         },
         {
-            "description": "minors: one grouped pr on wednesday from 07:00, merged by hand. the window runs to midnight because github delivers about 4 of the 24 hourly crons a day: 07:00–11:59 caught 1 wake a week, 07:00–23:59 catches 2–3 (14 days of runs, 2026-11-11)",
+            "description": "minors: one grouped pr on wednesday from 07:00, merged by hand. the window runs to midnight because github delivers about 4 of the 24 hourly crons a day: 07:00–11:59 expects 0.7 wakes a week, 07:00–23:59 expects 2.5 (14 days of runs, 2026-11-11)",
             "groupName": "minors",
             "matchUpdateTypes": ["minor"],
             "schedule": ["* 7-23 * * 3"]
