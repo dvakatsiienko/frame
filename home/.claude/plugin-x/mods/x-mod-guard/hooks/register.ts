@@ -2292,8 +2292,9 @@ export const register: Register = (on) => {
             // spends it once, on its exit 0, a failed or refused one handing it back for the retry (FRM-574 decided 7, exit 3:
             // the old «never spent» kept wing 1's failed body write from spending his word at 19:14, which the refund now
             // does); the label, the same `signed` each time, is never spent
-            const scope = `sign:${sign.id}${sign.file === undefined ? '' : ':body'}`;
-            const signSpends = sign.file === undefined ? [] : spends;
+            const scope = `sign:${sign.id}${sign.file === undefined && !sign.isOpaque ? '' : ':body'}`;
+            const isLabel = sign.file === undefined && !sign.isOpaque;
+            const signSpends = isLabel ? [] : spends;
             if (
                 isNewSign &&
                 !(await tickFor(

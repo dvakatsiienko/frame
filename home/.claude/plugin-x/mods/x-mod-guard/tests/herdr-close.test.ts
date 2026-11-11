@@ -462,3 +462,24 @@ for (const [line, overlays] of [
         const { ran } = world(on, [], 't9', [...overlays]);
         expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
     });
+
+// sixth sense round 2 on a3cfd939: what hc exec and a non-claude hc run start is judged as the line it is (exit 11, W4)
+for (const [line, word] of [
+    ["hc exec 'hc kill t40'", 'herdr'],
+    ['hc exec hc kill t40', 'herdr'],
+    ['hc run -- hc kill t40', 'herdr'],
+    ['hc run --bg --name k -- hc kill t44', 'herdr'],
+    ["hc exec 'hc label t9 seat=clio'", 'label'],
+    ['hc run -- hc label t40 seat=x', 'label'],
+] as const)
+    test(`a herdr close or relabel hc starts is judged as typed: ${line}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([expect.stringContaining(word), []]);
+    });
+
+test('hc run starting a plain program runs', async ($, on) => {
+    const line = 'hc run --bg --name srv -- pnpm dev';
+    const { ran } = world(on);
+    expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
+});

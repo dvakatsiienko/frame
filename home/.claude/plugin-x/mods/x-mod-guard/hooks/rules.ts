@@ -764,9 +764,22 @@ export function signWords(
     command: string,
     cwd: string,
     ctx: Context = {},
-): { id: string; file?: string }[] {
-    const out: { id: string; file?: string }[] = [];
+): { id: string; file?: string; isOpaque?: boolean }[] {
+    const out: { id: string; file?: string; isOpaque?: boolean }[] = [];
     for (const c of commandsDeep(command, cwd)) {
+        // a program the guard cannot parse that runs a linear set or body write signs each id its text names (sixth sense
+        // round 2 on a3cfd939: python's subprocess ran `x linear body … --set` past every word of his)
+        if (OPAQUE_RUNNER.test(c.name)) {
+            const text = [...c.args.map((w) => w.text), ...c.bodies].join('\n');
+            if (/\blinear\b/.test(text) && /--set\b|--add-label\b/.test(text))
+                out.push(
+                    ...[...new Set(text.match(TICKET_ANY) ?? [])].map((id) => ({
+                        id,
+                        isOpaque: true,
+                    })),
+                );
+            continue;
+        }
         const words = c.args.map((w) => w.text);
         const bare = words.filter((w) => !w.startsWith('-'));
         const at = bare.findIndex(
@@ -820,6 +833,7 @@ export function signWords(
     return out;
 }
 const TICKET = new RegExp(`^(${TICKET_KEY})-\\d+$`);
+const TICKET_ANY = new RegExp(`\\b(?:${TICKET_KEY})-\\d+\\b`, 'g');
 // a sign ask, `✍️ sign <id>: <title>` or `✍️ sign <id>, <id>: <title>` for a batch (FRM-459 o49): each id named is matched whole,
 // and an id the ask does not list is not signed by it
 // twin sign-ask — a copy lives in x-mod-stash, whose orbit refuses a sign pick without this shape; twins.test.ts holds them equal
