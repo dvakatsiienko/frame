@@ -42,18 +42,17 @@ ordinal: 1000
 - [ ] #24 FRM-519 P1 from 12b exit 6: any thread's hc send naming a pr number opens --dima-ok there; pane-proof must refuse text not from his keyboard — the body line and the spec section, then the mods codie's red row
 - [ ] #25 glide l71 (memory lane) and l72 (mods lane 6): step or end each from its lane plan
 - [ ] #26 name a desktop-only Claude thread to dima once, for FRM-576 exit 8 and PK-349 #29 probe 4b
-- [ ] #27 helga's earlier PK-363 and FRM-566 groom appends: check each W-line has its home, run the missing appends
-- [ ] #28 crow wake hook fix (relative proposal path, redirect read as a pr): staged, 204 tests green; the commit waits on the lane gate groom — read crew-adviser scripts whole, groom, then commit with its groom line
-- [ ] #29 autopilot: rounds 1–3 settled (grill-borrow-2/3-proposal.md § answers); shape it into one ticket through clio:shape-idea (prior art: shepherdr assistant.md + automations.py, our clio:shift), born in Triage, then the test-drive night
-- [ ] #30 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
-- [ ] #31 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #32 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #33 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
-- [ ] #34 📅 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order — on: 2026-11-12
-- [ ] #35 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #36 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #37 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #38 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #27 crow wake hook fix (relative proposal path, redirect read as a pr): staged, 204 tests green; the commit waits on the lane gate groom — read crew-adviser scripts whole, groom, then commit with its groom line
+- [ ] #28 autopilot: rounds 1–3 settled (grill-borrow-2/3-proposal.md § answers); shape it into one ticket through clio:shape-idea (prior art: shepherdr assistant.md + automations.py, our clio:shift), born in Triage, then the test-drive night
+- [ ] #29 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+- [ ] #30 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #31 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #32 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
+- [ ] #33 📅 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order — on: 2026-11-12
+- [ ] #34 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #35 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #36 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #37 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -291,4 +290,8 @@ done 2026-11-11 23:24: his siesta question, after the memory grill (PK-377:W30):
 23:25 wing 1 flyway sync (dima PK-346:W19, yank allowed W6): #39 FRM-516 week read yanked, wing 1's PK-346 holds it (same 11-14 read); #34 done, FRM-436 body carries the herdr FTR gate map (re-signed o21); #33 done, the red twin rider landed in frame#159 (FRM-560 Done); #17 done, answered and built as FRM-491 (census, re-sign o60, landed ee5d08f9)
 
 done 2026-11-11 23:26: groom homes blocked: the guard refuses the body write for the hotkeys and chat tickets; their new W-lines wait in grooms/ — find the guard rule, fix or ask
+
+done 2026-11-11 23:26: helga's earlier PK-363 and FRM-566 groom appends: check each W-line has its home, run the missing appends (PK-363 open, FRM-566 Todo)
+
+23:27: helga's PK-363/FRM-566 groom appends line yanked to wing 1's PK-346 (main's split 23:26)
 <!-- SECTION:NOTES:END -->
