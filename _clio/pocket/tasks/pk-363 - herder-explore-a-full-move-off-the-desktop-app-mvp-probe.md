@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T17:12:00Z'
+updated_date: '2026-11-11T17:47:00Z'
 labels:
   - m
   - clio-main
@@ -1995,4 +1995,18 @@ PK-363:W995 (2026-11-11 18:46, dima): 2: the chat re-grill, once the perf number
 PK-363:W996 (2026-11-11 18:46, dima): 3: tilde FRM-368 (https://linear.app/x-com/issue/FRM-368). not today.
 PK-363:W997 (2026-11-11 18:46, dima): helga had issues with editing. why? guard again?? ❓
 PK-363:W998 (2026-11-11 18:46, dima): so herdr codie is free for chatter, and tails lane solves the memory chunk? good. ❓ (context, not dima's words: "herder" read as "herdr", "tails la ne" read as "tails lane", per the split in the raw.)
+
+PK-363:W1023 (2026-11-11 19:45, dima, o54 steer): will i be able to switch to shepherdr layout and test it out? i want to see how it works ❓ (context, not dima's words: "Shepherder" read as "shepherdr", as in earlier grooms; the time is the chore time, the raw has none.)
+PK-363:W1020 (2026-11-11 19:38, dima): (context, not dima's words: he quotes a codie message from tests-cheaper, FRM-533, asking about a plan-steps verb for FRM-570 rule 7: x lane plan-steps <plan> lists a lane plan's steps.)
+PK-363:W1021 (2026-11-11 19:38, dima): why does he ask me? who owns him? i think he should ask its coordinator, and if needed the coordinator asks with me. ❓
+PK-363:W1022 (2026-11-11 19:38, dima): proceed. where are you and what is next for you? when can you SW? you're at 64%. ❓
+PK-363:W1019 (2026-11-11 19:25, dima): go now o60. (home unclear: the raw has no herdr or memory words; filed under PK-363 for clio to check.)
+PK-363:W1013 (2026-11-11 19:21, dima): q2, shepherdr: researcher only after we install it. maybe we can do this:
+PK-363:W1014 (2026-11-11 19:21, dima): 1. install.
+PK-363:W1015 (2026-11-11 19:21, dima): 2. temporarily pause everyone.
+PK-363:W1016 (2026-11-11 19:21, dima): 3. switch: i probe, see, explore and mark what i like; you run the researcher and do your inspections yourself. herdr codie does his inspections too. wing 1 can help too. (context, not dima's words: "herder" read as "herdr".)
+PK-363:W1017 (2026-11-11 19:21, dima): 4. then, once everything is inspected by everyone, we switch back to our layout, resume everyone and proceed? ❓
+PK-363:W1018 (2026-11-11 19:21, dima): (context, not dima's words: he quotes clio's line «so a herdr restart now and then is a real fix, worth doing at a quiet moment whenever the window feels heavy».) it is only because of hot-reloading? or does herdr have a memory leak? ❓
+PK-363:W1024 (2026-11-11 19:45, dima, o55 steer): looks good. after we install and take a closer look, maybe we can find even more stuff to borrow. this is for you and for everyone to propose: after the research over shepherdr and herdr. (context, not dima's words: "Shepherd Herdr" read as "shepherdr and herdr"; the time is the chore time, the raw has none.)
+PK-363:W1025 (2026-11-11 19:38, dima, o59 steer): why keep dead weight? delete it. (context, not dima's words: clio names this as the my-tabs delete word; the raw itself names no tab.)
 <!-- SECTION:NOTES:END -->
