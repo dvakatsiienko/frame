@@ -317,5 +317,7 @@ done 2026-11-11 23:29: - [ ] helga's earlier PK-363 and FRM-566 groom appends: c
 
 23:30: helga's PK-363/FRM-566 groom appends verified: every W-id in ~/.local/state/clio/grooms/**/*.groomed.md has its home (PK-363 953/953 in pocket pk-363, FRM-566 2/2 in its linear body), scratchpad wcover.py
 
-PK-346:W8 corrected 23:43 (wishkeeper replay case 6): the fold above bent his words; his raw reads «do all mechanical yourself first, what does not wants me». the folded line: «do all mechanical yourself first, what does not want me.» (only the «wants» typo fixed; «wants me» is his term)
+23:43 correction to PK-346:W8 (wishkeeper replay case 6): the fold above bent his words; his raw reads «do all mechanical yourself first, what does not wants me». the folded line: «do all mechanical yourself first, what does not want me.» (only the «wants» typo fixed; «wants me» is his term)
+
+23:44: wishkeeper regression replay, first round: 6 of 7 caught, case 2 missed (docs/test-drive/wishkeeper-cache/regression-set.md § replays)
 <!-- SECTION:NOTES:END -->
