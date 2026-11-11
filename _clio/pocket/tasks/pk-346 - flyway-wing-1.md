@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T23:22:00Z'
+updated_date: '2026-11-11T23:23:00Z'
 labels:
   - s
   - clio-wing-1
@@ -398,4 +398,6 @@ PK-346:W44 (2026-11-12 01:19, dima): the herdr session name is still old in the 
 01:22: W43 answered (herdr side live by dispatch, cc side by a live /rename; o74 makes it a guard), W44 answered (two busy threads wait for idle, the loop renames them)
 
 done 2026-11-12 01:22: PK-346:W8's folded line still reads «whatever doesn't need me»; the right fold («do all mechanical yourself first, what does not want me.») sits only in the 23:43 note: a note line can't be edited in place (pocket-check), so ask dima to approve the in-place fix (PK-346 open)
+
+PK-346:W45 (2026-11-12 01:10, dima): so you can refresh a thread name live? like when its ticket changes (a lane finishes a chunk and moves to the next one)? ❓ (context, not dima's words: the same line as W43, which carries a wrong 01:08 stamp; this one is its home)
 <!-- SECTION:NOTES:END -->
