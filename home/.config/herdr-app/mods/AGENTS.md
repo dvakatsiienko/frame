@@ -41,6 +41,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - read a cc mod's private store: draw from its file in `~/.claude/shelf/`
 - key an unlocking button (sign, merge, delete): any shell reaches a key
 - restart or kill a live seat for a proof: a throwaway one, killed after
+- start a second Herdr window while dima works, even on a throwaway home: his window reloads and loses his typed draft (2026-11-11, 8 probe starts)
 - close with a bare close: it kills dima's focused seat
 - trim a cc mod's band, board or orbit for a herdr twin: they are his fallback
 
