@@ -5497,9 +5497,10 @@ export default class ClaudeChat extends View {
                                             .border_color(t.border)
                                             .shadow_md()
                                             .relative()
-                                            // send sits in the text card's bottom-right corner; the text keeps
-                                            // clear of it by the right padding
-                                            .pr(48)
+                                            // send sits in the text card's bottom-right corner; the text takes the
+                                            // full width and keeps clear of it by one button-high bottom padding
+                                            // (Textarea has no per-line inset to wrap around it)
+                                            .pb(40)
                                             .child(Textarea.new(this.box))
                                             .child(
                                                 div()
