@@ -204,6 +204,15 @@ export function parse(command: string): Parsed {
             else if (w?.text === 'esac') n--;
         return n;
     };
+    // a pattern may open with `(`: right after a case head's `in`, or after `;;` (sixth sense: bash and zsh run the `rm` in
+    // `"$(case $a in (x) rm -rf ~;; esac)"`)
+    let caseNextAt = -1;
+    const isPatternSpot = () => {
+        if (isWord || openCases() <= 0) return false;
+        if (!words.length && segments.length === caseNextAt) return true;
+        const head = words.length ? words : segments.at(-1)?.words;
+        return head?.[0]?.text === 'case' && head.at(-1)?.text === 'in';
+    };
     // a quote around a substitution is a marker frame: closing the substitution resumes the quote
     const quoted = (kind: Frame['kind']) => {
         if (isQuoted)
@@ -355,6 +364,12 @@ export function parse(command: string): Parsed {
                 add('${');
                 isExpanding = true;
                 i += 2;
+            } else if (c === "'" && braces.length && !braces.at(-1)) {
+                // bash quotes with `'` inside a double-quoted `${…}`: `"${x:-'"'}"` ends at its last `"`
+                const end = command.indexOf("'", i + 1);
+                add(command.slice(i + 1, end < 0 ? undefined : end));
+                hasQuote = true;
+                i = end < 0 ? command.length : end + 1;
             } else if (c === '}' && braces.length && !braces.at(-1)) {
                 braces.pop();
                 add('}');
@@ -404,6 +419,8 @@ export function parse(command: string): Parsed {
                 close();
                 resume();
             } else open('tick');
+        } else if (c === '(' && isPatternSpot()) {
+            i++;
         } else if (c === '(') {
             i++;
             open('group');
@@ -417,6 +434,7 @@ export function parse(command: string): Parsed {
         } else if (c === ';') {
             i += next === ';' ? 2 : 1;
             endSegment(';');
+            if (next === ';') caseNextAt = segments.length;
         } else if (c === '&') {
             if (next === '&') {
                 i += 2;
