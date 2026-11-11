@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T21:57:00Z'
+updated_date: '2026-11-11T22:00:00Z'
 labels:
   - s
   - clio-wing-1
@@ -336,4 +336,8 @@ PK-346:W29 (2026-11-11 23:53, dima): e.g. what cli lane can take after 570? ❓ 
 
 PK-346:W30 (2026-11-11 23:56, dima): possible to merge then and switch cli lane to quick lane? ❓ (context, not dima's words: answers clio's 23:55 report lines on FRM-436, the commit bump verb, and FRM-424, unused-verb counts in x stats.)
 PK-346:W31 (2026-11-11 23:56, dima): and after 570 you will be able to rename threads to pretty shape? ❓ (context, not dima's words: 570 is FRM-570 per clio.)
+
+PK-346:W32 (2026-11-11 23:47, dima): are you sure your cli lane is not stuck, verifier did not go over 3 rounds? when will it finish? ❓
+PK-346:W33 (2026-11-11 23:48, dima): after it some important fix was planned? ❓
+PK-346:W34 (2026-11-11 23:59, dima): right, i forgot about this. then let cli lane work in the work tree, but still merge the chunks and remove the CI review. (context, not dima's words: answers clio's 23:57 line on the quick lane risk: x builds from main's own files, so a non-compiling save breaks every thread until fixed.)
 <!-- SECTION:NOTES:END -->

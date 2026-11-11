@@ -4,7 +4,7 @@ title: rex settings walkthrough, two items at a time, shown live
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-09T17:06:00Z'
+updated_date: '2026-11-11T22:00:00Z'
 labels:
   - s
   - clio-main
@@ -96,4 +96,6 @@ PK-358:W12 (2026-11-09 inbox, dima): the asks in W2, W4 and W7 are questions to 
 note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-09», the second «2026-11-09» for the groom check; notes are append-only, so both stay
 
 19:02 reassigned wing 1 → main clio on dima's 19:01 word
+
+kept: 2026-11-12 — 💤 his own choice, the walkthrough when he is free (flyway 💤 line)
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-09T22:15:00Z'
+updated_date: '2026-11-11T22:00:00Z'
 labels:
   - m
 dependencies: []
@@ -37,4 +37,6 @@ kept: 2026-11-07 — his 17:26 word: it is bigger, not now. round 1 printed 17:0
 kept: 2026-11-09 — parked on dima's 17:26 word (11-07), wing 1 flyway line #1; revisits after the cpu plan
 
 kept: 2026-11-09 — dima 14:42: touch it again in two days, 2026-11-11
+
+kept: 2026-11-12 — still dima's prio 1 measuring item, waits for a free main-lane slot after the herdr shapes
 <!-- SECTION:NOTES:END -->
