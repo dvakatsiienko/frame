@@ -716,8 +716,13 @@ describe('surface leaves', () => {
         'keeps the herdr leaf on a %s after the cwd moved',
         (source) => {
             const s = session();
-            start(herdr, { s });
-            const text = start(herdr, { cwd: '/Users/dima/frame', s, source });
+            const project = { ...herdr, CLAUDE_PROJECT_DIR: clio };
+            start(project, { s });
+            const text = start(project, {
+                cwd: '/Users/dima/frame',
+                s,
+                source,
+            });
             expect(text).toContain(herdrLeaf);
         },
     );
@@ -1010,6 +1015,7 @@ function surfaceFree() {
             ([key]) =>
                 !key.startsWith('HC_') &&
                 key !== 'CLAUDE_CODE_ENTRYPOINT' &&
+                key !== 'CLAUDE_PROJECT_DIR' &&
                 key !== 'CLAUDE_CODE_BG',
         ),
     );
