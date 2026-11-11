@@ -272,34 +272,50 @@ async function wakeCrow({
         Math.min(state.offsets[transcriptPath] ?? 0, lines.length),
     );
     const clio = thread ?? { id: MAIN_THREAD, name: '' };
-    const wake: Wake = {
-        id: `${wakeIdOf(now)}d${String(now.getSeconds()).padStart(2, '0')}${wakeSuffixOf(clio.id)}`,
-        mode: 'decision',
-        phase: 'live',
-        thread,
-    };
-    const packed = packWake({
-        delta,
-        lines,
-        now,
-        proposal,
-        state,
-        thread: clio.id,
-        transcriptPath,
-        wakeId: wake.id,
-    });
-    const note = withNote ? ` · note ${notePath(wake.id)}` : '';
-    const line = `${wakeLine(wake)} · ${fields}${note}`;
-    if (socket?.jobId) await sendLine(socket.messagingSocketPath, line);
-    writeWakeState({
-        packed: packed.state,
-        thread: clio.id,
-        transcriptPath,
-        wakeAt:
-            proposal && BOOT_BOARD.test(proposal) ? now.getTime() : undefined,
-    });
-    spawnHarvest(wake);
-    return { ...wake, line };
+    try {
+        return await packAndSend();
+    } catch (error) {
+        // a decision wake that broke leaves its line beside the Stop wake's, or the empty packet dir is the only trace
+        writeFileSync(
+            join(STATE_DIR, 'harvest.log'),
+            `${now.toISOString()} ${clio.id} failed: decision wake: ${error instanceof Error ? error.message : String(error)}\n`,
+            { flag: 'a' },
+        );
+        throw error;
+    }
+
+    async function packAndSend() {
+        const wake: Wake = {
+            id: `${wakeIdOf(now)}d${String(now.getSeconds()).padStart(2, '0')}${wakeSuffixOf(clio.id)}`,
+            mode: 'decision',
+            phase: 'live',
+            thread,
+        };
+        const packed = packWake({
+            delta,
+            lines,
+            now,
+            proposal,
+            state,
+            thread: clio.id,
+            transcriptPath,
+            wakeId: wake.id,
+        });
+        const note = withNote ? ` · note ${notePath(wake.id)}` : '';
+        const line = `${wakeLine(wake)} · ${fields}${note}`;
+        if (socket?.jobId) await sendLine(socket.messagingSocketPath, line);
+        writeWakeState({
+            packed: packed.state,
+            thread: clio.id,
+            transcriptPath,
+            wakeAt:
+                proposal && BOOT_BOARD.test(proposal)
+                    ? now.getTime()
+                    : undefined,
+        });
+        spawnHarvest(wake);
+        return { ...wake, line };
+    }
 }
 
 function notePath(wakeId: string) {

@@ -252,6 +252,17 @@ describe('a proposal clio writes', () => {
         );
     });
 
+    test('a wake that cannot reach crow leaves a failed line in harvest.log', async () => {
+        const fixture = home();
+        await hook(fixture, { path: proposal(fixture), tool: 'Write' });
+        expect(
+            readFileSync(
+                join(fixture.dir, '.local/state/crow/harvest.log'),
+                'utf8',
+            ),
+        ).toMatch(/ main failed: decision wake: /);
+    });
+
     test('puts the proposal file whole into the packet', async () => {
         const fixture = home();
         const path = proposal(fixture);
