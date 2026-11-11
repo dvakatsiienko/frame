@@ -28,8 +28,8 @@ one `pk-N` task per item (born green by `node script/pocket-add.ts`, moved betwe
 ## the flyway — a clio lane's live plan
 
 - one pocket item per seat, never closed, always live: `flyway: main` + `clio-main`, `flyway: wing 2` + `clio-wing-2`; none yet: `node script/pocket-add.ts "flyway: wing 2" --wing 2`
-- order: open lines (no marker, most important first), then ⏳ near (`— waits for: <one thing>`), then 📅 dated (`— on: YYYY-MM-DD`, by date), then 💤 (`— later: dima <time>`); a cleared wait moves up
-- a finished line leaves the turn it ticks: `node script/flyway-done.ts <PK> <n>`; a line joins by `--add '<line>'`, a stray order by `--sort`
+- order: open lines (most important first), then ⏳ near (`— waits for: <one thing>`), then 📅 dated (`— on: YYYY-MM-DD`, by date), then 💤 (`— later: dima <time>`); a cleared wait moves up
+- a finished line leaves the turn it ticks: `node script/flyway-done.ts <PK> <n>`; a line joins by `--add '<line>'`, a stray order by `--sort`; the pass: `clio:flyway-sync`
 - a parked wing's flyway waits for the next wing of its number; dima may flip its number
 - an action that folds an item into another area reads every flyway for its id and yanks the line that turn (dima, 2026-11-07: «sanity check across flyways, yank it out of flyway plan so no confusions»); `pocket-check` reds a PK id left behind
 - **main delegates operational work to a wing by slipstream**: the wing puts main's ask in its flyway right after the line it is solving, finishes that line, then takes it; unless it is urgent, or dima says otherwise
