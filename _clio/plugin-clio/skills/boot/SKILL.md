@@ -120,7 +120,7 @@ the board, one message, short lines, **no queries here — pure assembly**:
 - 📋 the proposed processing order — a numbered session plan, one line per item, with a
   `🌤️ siesta` line placed where a topic boundary earns one (only when it helps; dima,
   2026-09-11: «keep this habit») — the pocket's order (`backlog task list --plain --sort ordinal`), then the main lane's open linear tickets, top milestone first, lanes marked, sub-batches labeled;
-  **the board ends here and waits for dima's word.** he corrects the parse before any work runs
+  **the board ends here and waits for dima's word.** he corrects the parse first; his word puts it in `flyway: main` (`flyway-done.ts --add`)
 - 🥊 self-grill, last line (omit if nothing real)
 ---
 
