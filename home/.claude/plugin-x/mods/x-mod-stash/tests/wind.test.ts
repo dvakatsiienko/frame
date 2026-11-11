@@ -744,3 +744,17 @@ test('each held message tells its own sender at its own 10 min', async ($, on) =
         ['uds:/tmp/cc-socks/1.sock', 'uds:/tmp/cc-socks/2.sock'],
     ]);
 });
+
+// wisphunter on 990334f5: the tell wrote back its first read after the sends, so a delivery meanwhile came back
+test('a hold delivered while its sender is told stays delivered', async ($, on) => {
+    const w = receiveWorld(on);
+    on('session.send', () => {
+        w.store.delete(HELD);
+        return { isDelivered: true };
+    });
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    await w.clock.advance(10 * 60_000);
+    expect(w.store.has(HELD)).toBe(false);
+});

@@ -136,3 +136,16 @@ test('the rule ships warn-only: the start runs with a would-refuse note', async 
         expect.stringContaining('herdr-start'),
     ]);
 });
+
+// wisphunter on 63d5fa57: a Herdr start hid every rule after it in the chain, so his Herdr tick let `sudo` through
+for (const line of [
+    'sudo open -na Herdr',
+    'sudo /Applications/Herdr.app/Contents/MacOS/Herdr',
+])
+    test(`his tick on the ⚠️ ask passes no other rule on the line: ${line}`, async ($, on) => {
+        const { ran } = world(on, {
+            ticks: [{ at: NOW - 1, id: 'o9', targets: [], text: ASK }],
+        });
+        const r = await bash($, line);
+        expect([r.deny === undefined, ran]).toEqual([false, []]);
+    });

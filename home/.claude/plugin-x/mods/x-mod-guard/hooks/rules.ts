@@ -456,7 +456,6 @@ export function refusals(
             floor(cmd, ctx) ??
             herdrClose(cmd, ctx) ??
             herdrLabel(cmd, ctx) ??
-            herdrStart(cmd, ctx) ??
             hazard(cmd, ctx) ??
             lockfile(cmd, ctx) ??
             overwrite(cmd, ctx) ??
@@ -489,6 +488,9 @@ export function refusals(
         }
         if (found && !isScratchGit(c, found, ctx) && !isCleanup(c, found, ctx))
             out.push(found);
+        // judged beside the chain, never in it: a Herdr start hid `sudo` and an overwrite behind it (wisphunter on 63d5fa57)
+        const start = herdrStart(c, ctx);
+        if (start) out.push(start);
         // a door flag speaks where no rule stopped the command or dima's marker lets that rule through, and never hides one
         const door =
             found && !markedBy(command)(found) ? undefined : gitDoor(c, ctx);

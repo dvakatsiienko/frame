@@ -5603,6 +5603,7 @@ test('a refused second Herdr start puts its ⚠️ ask on his board at that call
     const ui = await board($);
     kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
     await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    await w.clock.advance(1);
     await ui.redraw();
     expect(await herdrRowsShown(ui)).toBe(1);
 });
@@ -5614,11 +5615,14 @@ test('a start refused before this call adds no ask, and a second refusal keeps o
     const ui = await board($);
     kept.value = { at: w.clock.now() - 1, command: 'open -na Herdr' };
     await $.tool.call({ command: 'ls', tool: 'Bash' });
+    await w.clock.advance(1);
     await ui.redraw();
     const stale = await herdrRowsShown(ui);
     kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
     await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    await w.clock.advance(1);
     await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    await w.clock.advance(1);
     await ui.redraw();
     expect([stale, await herdrRowsShown(ui)]).toEqual([0, 1]);
 });
@@ -5630,7 +5634,24 @@ test('orbit switched off adds no Herdr start ask', async ($, on) => {
     await start($);
     kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
     await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    await w.clock.advance(1);
     expect([...w.store.keys()].filter((k) => k.startsWith('asks:'))).toEqual(
         [],
     );
+});
+
+test('a start after his tick on the ⚠️ ask asks afresh', async ($, on) => {
+    const w = world(on);
+    const kept = herdrStart(on);
+    await start($);
+    const ui = await board($);
+    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
+    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    await w.clock.advance(1);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
+    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
+    await w.clock.advance(1);
+    await ui.redraw();
+    expect(await asksShown(ui)).toEqual(['o1', 'o2']);
 });
