@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T21:42:00Z'
+updated_date: '2026-11-11T21:48:00Z'
 labels:
   - s
   - clio-wing-1
@@ -320,4 +320,8 @@ done 2026-11-11 23:29: - [ ] helga's earlier PK-363 and FRM-566 groom appends: c
 23:43 correction to PK-346:W8 (wishkeeper replay case 6): the fold above bent his words; his raw reads «do all mechanical yourself first, what does not wants me». the folded line: «do all mechanical yourself first, what does not want me.» (only the «wants» typo fixed; «wants me» is his term)
 
 23:44: wishkeeper regression replay, first round: 6 of 7 caught, case 2 missed (docs/test-drive/wishkeeper-cache/regression-set.md § replays)
+
+PK-346:W23 (2026-11-11 23:15, dima): when you will SW? ❓
+PK-346:W24 (2026-11-11 23:15, dima): pick a good spot (do not break your current turns, after you land meaningful part). (context, not dima's words: the raw ends with the note "you are 61% ctx"; «prick» in the raw read as «pick».)
+23:49: W23 and W24 answered: the second wind ran at 23:20, after the FRM-491 land and the siesta card
 <!-- SECTION:NOTES:END -->
