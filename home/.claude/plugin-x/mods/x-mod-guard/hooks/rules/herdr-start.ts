@@ -23,6 +23,15 @@ const OPEN_VALUED = new Set([
     '--stdout',
 ]);
 
+// a path as the kernel walks it: `//` and `.` drop, `..` steps back, a trailing `/` goes (sixth sense round 2 on 59ac53d0)
+function walked(path: string) {
+    const out: string[] = [];
+    for (const seg of path.split('/'))
+        if (seg === '..') out.pop();
+        else if (seg !== '' && seg !== '.') out.push(seg);
+    return `${path.startsWith('/') ? '/' : ''}${out.join('/')}`;
+}
+
 // what this command starts of Herdr's app, or undefined: the app's own binary, `herdr-app` with no word (it opens the
 // window), or `open -n` naming the app
 export function herdrStartOf(c: Command) {
@@ -42,13 +51,17 @@ export function herdrStartOf(c: Command) {
             const valued = w.at(-1);
             if (valued === 'a' || valued === 'b') {
                 const v = words[++i] ?? '';
-                if (valued === 'a' ? HERDR_APP.test(v) : v === HERDR_BUNDLE)
+                if (
+                    valued === 'a'
+                        ? HERDR_APP.test(walked(v))
+                        : v === HERDR_BUNDLE
+                )
                     isHerdr = true;
             } else if (OPEN_VALUED.has(`-${valued}`)) i++;
         } else if (OPEN_VALUED.has(w)) i++;
         else if (
             !w.startsWith('-') &&
-            /Herdr\.app(?:\/Contents\/MacOS\/Herdr)?\/?$/i.test(w)
+            /Herdr\.app(?:\/Contents\/MacOS\/Herdr)?$/i.test(walked(w))
         )
             isHerdr = true;
     }

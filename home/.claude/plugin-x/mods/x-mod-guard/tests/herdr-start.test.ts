@@ -65,6 +65,12 @@ for (const line of [
     // sixth sense round 1 on 86f77267: the app's binary path, opened as a bare word
     'open -n /Applications/Herdr.app/Contents/MacOS/Herdr',
     'open -n /Applications/Herdr.app/Contents/MacOS/Herdr/',
+    // round 2 on 59ac53d0: spellings the kernel walks to the same file
+    'open -n /Applications/Herdr.app/Contents/MacOS//Herdr',
+    'open -n /Applications/Herdr.app/Contents/MacOS/./Herdr',
+    'open -n /Applications/Herdr.app/Contents/../Contents/MacOS/Herdr',
+    'open -n /Applications//Herdr.app',
+    'open -n -a /Applications/./Herdr.app',
     'env HERDR_APP_HOME=/tmp/h /Applications/Herdr.app/Contents/MacOS/Herdr &',
     "bash -c 'open -na Herdr'",
     'hc run -- /Applications/Herdr.app/Contents/MacOS/Herdr',
