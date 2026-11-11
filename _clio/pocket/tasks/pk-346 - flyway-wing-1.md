@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T22:04:00Z'
+updated_date: '2026-11-11T22:14:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,36 +17,34 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 cli lane 8 running (#161): FRM-570 one reader per rule, rule 9 a thread's identity by session id (re-signed 19:36), names x lane plan-steps, x thread, x linear sign-check; then FRM-424 → FRM-436 → FRM-572; spec ~/frame/.scratch/cli-lane-8/
-- [ ] #2 «seat» saved names, renamed only with every reader in the same change: the ~/.local/state/clio/seats/ dir (siesta-gate, live files to migrate), the seat key in ctx-init trace rows (a read-both fallback), the seat=clio / seat=crow herdr labels (x-mod-guard, prompt-groom read them), CLIO_SEAT, seatOf (prompt-groom imports it)
-- [ ] #3 - [ ] the wishkeeper regression set first replay: 7 cases against the landed card (29db59e4+), graded caught/missed into docs/test-drive/wishkeeper-cache/regression-set.md § replays (owed since the 22:57 siesta)
-- [ ] #4 - [ ] 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18
+- [ ] #2 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close
+- [ ] #3 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142)
+- [ ] #4 «seat» removed from every file, no retired line (dima o65): 63 non-herdr files left (wing 1 .scratch/seat-removal/files.txt); the saved names renamed with every reader in the same change (the ~/.local/state/clio/seats/ dir, ctx-init trace key, the seat=clio / seat=crow / seat=helga herdr labels, CLIO_SEAT, seatOf); prose done 99e091aa; herdr paths tomorrow after the herdr codie; done when rg --hidden -i for the word over frame prints only outside meanings
 - [ ] #5 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
 - [ ] #6 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
 - [ ] #7 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
 - [ ] #8 ⏳ renovate merge round: frame#158, bytes#152–#155 (bytes#155 its minors), prConcurrentLimit 10 kept unless he says — waits for: dima's evergreen word
 - [ ] #9 ⏳ decamp ~/projects/bytes/.claude/worktrees/FRM-465-renovate-comment: merged (bytes#156), but decamp refuses on 2 seed copies (apps/design-loupe/.runtime/, apps/trophy-sys/.env.local), codie checked both are copies — waits for: dima's word to trash them
 - [ ] #10 ⏳ right after FRM-570 merges (FRM-570:W5 «make all currently running thread names pretty. don't forget.»): the naming rule rewritten to the PK-378 shape (memory and skills first), a thread record seeded for each running thread (they read «unknown» otherwise, codie 20:58), each one renamed and its herdr tab retitled — waits for: #161 merge
-- [ ] #11 ⏳ x linear sign-check prints the body hash it judged (merge_sign.go shortHash is the reader), a rider on cli lane 8 after #161 for FRM-519 slice 19; ping the mods codie when it lands (main 21:33) — waits for: #161 merge
-- [ ] #12 ⏳ seat sweep wave B: mods (x-mod-guard, x-mod-stash, set.test) and herdr mods (deck, chatter, tabs, agents-list), ~310 hits, riders main hands to the mods and herdr codies at their next chunk boundary, rename only (main agreed 21:37) — waits for: main's lanes
-- [ ] #13 ⏳ seat sweep wave C: x/go/stacks_test.go (1 hit), a rider on cli lane 8 after #161 — waits for: #161 merge
-- [ ] #14 ⏳ x brief check offline stamp check (the summon's ~8 s networked check, codie 21:25): a FRM-572 line with seven names (x:top-seven) and a ⚖️ worth it (removes 8 s per summon; cheaper door: cache the last stamp), to dima — waits for: FRM-570 merge
-- [ ] #15 ⏳ FRM-570:W4 follow-up chunk (dima o61): clio, wings, crow and helga get a thread record from their own starts (clio-start, the wing summon, crow:start, helga boot), so the guard and stash stop matching them by name (register.ts:160-163, register.tsx:5886-5903); shape and his sign after #161 merges — waits for: #161 merge
-- [ ] #16 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
-- [ ] #17 📅 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close — on: 2026-11-12
-- [ ] #18 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
-- [ ] #19 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #20 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #21 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
-- [ ] #22 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #23 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #24 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
-- [ ] #25 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
-- [ ] #26 📅 FRM-491 remeasure: only runs after ee5d08f9, against docs/research/wishkeeper-cadence.md, then keep, partly revert or revert, and close; the wishkeeper-cache trial switches to its 1 h arm the same day — on: 2026-11-18
-- [ ] #27 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #28 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #29 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #30 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
-- [ ] #31 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-570 body sync (seven rules, out, rule 7 a verb, his 3 names, done test + exit 14–16), spec.md:87/:89 stale, exit 16 fingerprint widened to emojis; FRM-414 → Todo; PK-378 fold into FRM-570:W5 + close; FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request; tell dima FRM-568 was Done, untouched — later: dima, his details first (PK-346:W11)
+- [ ] #11 ⏳ x brief check offline stamp check (the summon's ~8 s networked check, codie 21:25): a FRM-572 line with seven names (x:top-seven) and a ⚖️ worth it (removes 8 s per summon; cheaper door: cache the last stamp), to dima — waits for: FRM-570 merge
+- [ ] #12 ⏳ FRM-570:W4 follow-up chunk (dima o61): clio, wings, crow and helga get a thread record from their own starts (clio-start, the wing summon, crow:start, helga boot), so the guard and stash stop matching them by name (register.ts:160-163, register.tsx:5886-5903); shape and his sign after #161 merges — waits for: #161 merge
+- [ ] #13 ⏳ seat sweep wave C: x/go/stacks_test.go (1 hit), rides the FRM-436 + FRM-424 chunk (spec § exit lines, rename only) — waits for: that chunk's pr
+- [ ] #14 ⏳ x linear sign-check prints the body hash it judged (merge_sign.go shortHash is the reader), FRM-519 slice 19, the mods lane (not in the FRM-436 chunk); ping the mods codie when it lands (main 21:33) — waits for: the mods lane's FRM-519 slice 19
+- [ ] #15 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
+- [ ] #16 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #17 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #18 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
+- [ ] #19 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #20 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #21 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
+- [ ] #22 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
+- [ ] #23 📅 FRM-491 remeasure: only runs after ee5d08f9, against docs/research/wishkeeper-cadence.md, then keep, partly revert or revert, and close; the wishkeeper-cache trial switches to its 1 h arm the same day — on: 2026-11-18
+- [ ] #24 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18
+- [ ] #25 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #26 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #27 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #28 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #29 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-570 body sync (seven rules, out, rule 7 a verb, his 3 names, done test + exit 14–16), spec.md:87/:89 stale, exit 16 fingerprint widened to emojis; FRM-414 → Todo; PK-378 fold into FRM-570:W5 + close; FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request; tell dima FRM-568 was Done, untouched — later: dima, his details first (PK-346:W11)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -342,4 +340,36 @@ PK-346:W33 (2026-11-11 23:48, dima): after it some important fix was planned? �
 PK-346:W34 (2026-11-11 23:59, dima): right, i forgot about this. then let cli lane work in the work tree, but still merge the chunks and remove the CI review. (context, not dima's words: answers clio's 23:57 line on the quick lane risk: x builds from main's own files, so a non-compiling save breaks every thread until fixed.)
 
 PK-346:W35 (2026-11-12 00:00, dima, o67 steer): i mean code review on ci, ci build should pass. (context, not dima's words: answers which «CI review» to drop on the FRM-436 + FRM-424 pr; the ci reviewer round goes, the ci build stays)
+
+done 2026-11-12 00:14: 📅 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close — on: 2026-11-12 (FRM-575 Todo)
+
+done 2026-11-12 00:14: 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12 (FRM-551 Todo)
+
+done 2026-11-12 00:14: ⏳ seat sweep wave C: x/go/stacks_test.go (1 hit), a rider on cli lane 8 after #161 — waits for: #161 merge
+
+done 2026-11-12 00:14: ⏳ x linear sign-check prints the body hash it judged (merge_sign.go shortHash is the reader), a rider on cli lane 8 after #161 for FRM-519 slice 19; ping the mods codie when it lands (main 21:33) — waits for: #161 merge (FRM-519 In Progress)
+
+done 2026-11-12 00:14: - [ ] 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18 (FRM-465 Todo)
+
+done 2026-11-12 00:14: - [ ] the wishkeeper regression set first replay: 7 cases against the landed card (29db59e4+), graded caught/missed into docs/test-drive/wishkeeper-cache/regression-set.md § replays (owed since the 22:57 siesta)
+
+done 2026-11-12 00:14: «seat» saved names, renamed only with every reader in the same change: the ~/.local/state/clio/seats/ dir (siesta-gate, live files to migrate), the seat key in ctx-init trace rows (a read-both fallback), the seat=clio / seat=crow herdr labels (x-mod-guard, prompt-groom read them), CLIO_SEAT, seatOf (prompt-groom imports it)
+
+00:16 flyway sync (main's ask): replay line done (4d9240a8 on origin/main); 11-12 lines #16 #17 moved up, dates reached; wave C rides the FRM-436 chunk; sign-check hash line points at FRM-519 slice 19; the «seat» line widened to full removal (o65); FRM-465 line's double marker fixed
+
+done 2026-11-12 00:14: - [ ] 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18 (FRM-465 Todo)
+
+done 2026-11-12 00:14: - [ ] «seat» removed from every file, no retired line (dima o65): 63 non-herdr files left (wing 1 .scratch/seat-removal/files.txt); the saved names renamed with every reader in the same change (the ~/.local/state/clio/seats/ dir, ctx-init trace key, the seat=clio / seat=crow / seat=helga herdr labels, CLIO_SEAT, seatOf); prose done 99e091aa; herdr paths tomorrow after the herdr codie; done when rg --hidden -i for the word over frame prints only outside meanings
+
+done 2026-11-12 00:14: - [ ] ⏳ x linear sign-check prints the body hash it judged (merge_sign.go shortHash is the reader), FRM-519 slice 19, the mods lane (not in the FRM-436 chunk); ping the mods codie when it lands (main 21:33) — waits for: the mods lane's FRM-519 slice 19 (FRM-519 In Progress, FRM-436 Todo)
+
+done 2026-11-12 00:14: - [ ] ⏳ seat sweep wave C: x/go/stacks_test.go (1 hit), rides the FRM-436 + FRM-424 chunk (spec § exit lines, rename only) — waits for: that chunk's pr (FRM-436 Todo, FRM-424 Todo)
+
+done 2026-11-12 00:14: - [ ] FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) (FRM-551 Todo)
+
+done 2026-11-12 00:14: - [ ] FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close (FRM-575 Todo)
+
+done 2026-11-12 00:14: ⏳ seat sweep wave B: mods (x-mod-guard, x-mod-stash, set.test) and herdr mods (deck, chatter, tabs, agents-list), ~310 hits, riders main hands to the mods and herdr codies at their next chunk boundary, rename only (main agreed 21:37) — waits for: main's lanes
+
+00:17: wave B line folded into the «seat» full-removal line (mods paths tonight after the mods park, herdr paths tomorrow)
 <!-- SECTION:NOTES:END -->
