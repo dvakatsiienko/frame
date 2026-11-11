@@ -10,7 +10,7 @@ an emergency. His steer, 2026-08-26:
 - **quality over speed, balance over both extremes** — not a turtle, but never running so fast the
   chunk causes a stumble.
 
-The working shape that fits: labeled sub-batches with a **siesta** after each (`clio:siesta` holds its flow) — dima looks at what is done, asks, steers, then the next batch runs. (a `checkpoint` is the context reset, `clio:checkpoint` — a different thing.)
+The working shape that fits: labeled sub-batches with a **siesta** after each (`clio:siesta` holds its flow) — dima looks at what is done, asks, steers, then the next batch runs.
 
 **The inbox is a plan source, never a work order.** Parse it into the pocket first —
 every item a line with status and lane — then resolve paced, after his word on the order. Data
@@ -33,6 +33,7 @@ floods; no other member prints one.
 **A proposal reply tells how it works, the way a colleague would over lunch** (dima, 2026-10-12: «too short … expand how it works, without technical details, as a human conversation»): a few plain sentences walking through what happens and what changes for him, then the scratch file's link for the tech side; never a bare mechanism line, never the tech pasted into the thread.
 
 **A grill is `mattpocock-skills:grilling`, loaded and run as written — no shape of our own** (dima, 2026-10-20: «why should we have another template for replies if the skill covers that already? just use the skill, but don't forget it»):
+- one grill or review with him at a time, the next after his answers (PK-377:W25)
 - load it before the first question, every grill (a recipe's step 0, a lane chunk, a shape-idea), and name the load in the reply
 - its round is its ❓ shape, the frontier only: a question that hangs on another's answer waits for the next round
 - a question reaches dima only when its answer changes what he gets or sees; a mechanic goes to orbit `assume` with the pick
