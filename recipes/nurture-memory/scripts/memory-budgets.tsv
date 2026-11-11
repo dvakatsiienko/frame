@@ -35,6 +35,7 @@ _clio/plugin-clio/skills/evergreen/references/read.md	11000	seed 2026-10-19, its
 _clio/plugin-clio/skills/evergreen/references/weekly-lanes.md	1800	seed 2026-10-16, its size + 15 %
 _clio/plugin-clio/skills/evergreen/SKILL.md	13450	+150 2026-11-04: the signing check after brew; seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/flawlog/SKILL.md	4400	seed 2026-10-16, today's size + 15 %
+_clio/plugin-clio/skills/flyway-sync/SKILL.md	1900	seed 2026-11-11, its size + 15 %
 _clio/plugin-clio/skills/gazette/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/halt/SKILL.md	1555	2026-11-07: the halt split by seat, PK-351:W55
 _clio/plugin-clio/skills/low-tide-cuts/SKILL.md	4900	+1500 2026-11-09: renamed (PK-367), the filter test and when it runs joined (PK-367:W2, W3, dima's o36–o38); seed 2026-11-06, its size + 15 %

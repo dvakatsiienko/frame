@@ -61,7 +61,7 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
 
 ## 4. the second-wind op
 
-no fence: the `second-wind` op with the CST slug, and the reply says the reset runs at this turn's end; the mod compacts, then ingests the CST on top of what the compact kept. **then the back line to the notice's roster**: «second wind — <me> is back: send what you held.», with `notify_when_idle: true` to each member i coordinate (a compact drops every idle subscription, silently), and on main `trash ~/.local/state/crow/paused` — then read whatever they held. **after the ingest, before anything else: re-read `inbox.md` and
+no fence: the `second-wind` op with the CST slug, and the reply says the reset runs at this turn's end; the mod compacts, then ingests the CST on top of what the compact kept. **then the back line to the notice's roster**: «second wind — <me> is back: send what you held.», with `notify_when_idle: true` to each member i coordinate (a compact drops every idle subscription, silently), and on main `trash ~/.local/state/crow/paused` — then read whatever they held, then `clio:flyway-sync`. **after the ingest, before anything else: re-read `inbox.md` and
 diff it against the pocket** — every inbox item must carry the `✅` mark AND a pocket item with
 its details; an unmarked or detail-less one is restored from the inbox on the spot, out loud. the prefetch hook re-runs on compact by itself (queue, roadmap,
 handoffs, reminders).
