@@ -324,4 +324,7 @@ done 2026-11-11 23:29: - [ ] helga's earlier PK-363 and FRM-566 groom appends: c
 PK-346:W23 (2026-11-11 23:15, dima): when you will SW? ❓
 PK-346:W24 (2026-11-11 23:15, dima): pick a good spot (do not break your current turns, after you land meaningful part). (context, not dima's words: the raw ends with the note "you are 61% ctx"; «prick» in the raw read as «pick».)
 23:49: W23 and W24 answered: the second wind ran at 23:20, after the FRM-491 land and the siesta card
+
+PK-346:W25 (2026-11-11 23:47, dima): why do you want to add a retired line? just eradicate the term «seat» and leave no references. (context, not dima's words: his steer on o65, the «seat» retired-term line in fleet-vibe; it replaces that line with a full removal)
+23:49: o65 answered: no retired line; flyway #2 («seat» saved names) widens to every reference, waves B and C with it, done when rg --hidden -i for the word seat over frame prints nothing (today 371 hits in 70 files)
 <!-- SECTION:NOTES:END -->
