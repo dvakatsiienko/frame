@@ -14,7 +14,7 @@ import path from 'node:path';
 
 // the siesta check blocks the epoch's first stop and again each hour it is ignored (dima's o78, after sixth sense's clean); false makes it a warn
 export const gate = { isBlocking: true };
-const MAIN: Seat = { dir: '', role: 'clio' };
+const MAIN: Thread = { dir: '', role: 'clio' };
 const FILES_DUE = 15;
 const MISSED_AFTER_MS = 30 * 60_000;
 // an ignored nudge comes back, and a card nobody closed stops pausing the count
@@ -44,9 +44,9 @@ const LIVE_PINGS_DUE = 3;
 const LIVE_PINGS_WAIT_MS = 60 * 60_000;
 
 export function stop(home: string, input: StopInput) {
-    const seat = seatOf(home, input.session_id);
-    if (!seat) return undefined;
-    const state = readSiesta(home, seat);
+    const thread = threadOf(home, input.session_id);
+    if (!thread) return undefined;
+    const state = readSiesta(home, thread);
     if (state.open && state.card_printed && isAfk(home) && isSettled(state))
         close(state);
     // an open siesta pauses the count only once its card printed: one opened and dropped is nudged by its next batch
@@ -60,13 +60,13 @@ export function stop(home: string, input: StopInput) {
         !state.card_printed &&
         Date.now() - new Date(state.opened_at ?? 0).getTime() < OPEN_GRACE_MS;
     const reasons =
-        isCardWaiting || isReadInFlight ? [] : dueReasons(home, state, seat);
+        isCardWaiting || isReadInFlight ? [] : dueReasons(home, state, thread);
     const isDue = reasons.length > 0;
     if (isDue && !state.due) state.epoch++;
     state.due = isDue;
     // a Stop note wakes a turn of its own: each check speaks once, never inside a turn a hook woke
     if (input.stop_hook_active) {
-        writeSiesta(home, state, seat);
+        writeSiesta(home, state, thread);
         return undefined;
     }
     const checks: string[] = [];
@@ -100,7 +100,7 @@ export function stop(home: string, input: StopInput) {
         );
     // FRM-495: his `?` lines left unanswered · FRM-494: a member-woken turn that printed
     const isBlock = gate.isBlocking && isSiestaNudged;
-    writeSiesta(home, state, seat);
+    writeSiesta(home, state, thread);
     if (!checks.length) return undefined;
     const line = checks.join('; ');
     return isBlock
@@ -117,14 +117,14 @@ export function prompt(
     home: string,
     input: { prompt?: string; session_id?: string },
 ) {
-    const seat = seatOf(home, input.session_id);
-    if (!seat) return undefined;
+    const thread = threadOf(home, input.session_id);
+    if (!thread) return undefined;
     const text = (input.prompt ?? '')
         .replace(REMINDER, '')
         .trim()
         .replace(PEER_PREFIX, '');
     const isDima = text !== '' && !NOT_DIMA.some((m) => text.startsWith(m));
-    const state = readSiesta(home, seat);
+    const state = readSiesta(home, thread);
     const head = text.slice(0, text.indexOf('>') + 1);
     const body = text.slice(text.indexOf('>') + 1);
     if (
@@ -143,7 +143,7 @@ export function prompt(
         (!isAfk(home) || isSettled(state))
     )
         close(state);
-    writeSiesta(home, state, seat);
+    writeSiesta(home, state, thread);
     // between Stop blocks his own prompts carry it, and a prompt hook wakes no extra turn
     return isDima && state.due ? '🌤️ siesta due — load clio:siesta' : undefined;
 }
@@ -187,7 +187,7 @@ export function sent(home: string, input: SentInput) {
 export function cardLines(home: string, transcriptPath?: string) {
     const since = siestaLast(
         home,
-        seatOf(home, process.env.CLAUDE_CODE_SESSION_ID) ?? MAIN,
+        threadOf(home, process.env.CLAUDE_CODE_SESSION_ID) ?? MAIN,
     ).getTime();
     const sends = tabbed(path.join(groomsDir(home), 'sent.log')).filter(
         ([at = '']) => new Date(at).getTime() > since,
@@ -277,13 +277,13 @@ function isLiveLane(home: string, head: string) {
     );
 }
 
-function dueReasons(home: string, state: Siesta, seat: Seat) {
-    const since = siestaLast(home, seat);
+function dueReasons(home: string, state: Siesta, thread: Thread) {
+    const since = siestaLast(home, thread);
     const after = (at: string | number) =>
         new Date(at).getTime() > since.getTime();
     // a card's own fixes land before its close, so they join that card; wishkeeper's next range still reads them
     const closedAt = new Date(state.closed_at ?? 0);
-    const files = clioFiles(home, closedAt > since ? closedAt : since, seat);
+    const files = clioFiles(home, closedAt > since ? closedAt : since, thread);
     const isMemory = files.some((f) => /(^|\/)(memory|rules|skills)\//.test(f));
     const live = state.live_pings.filter(after);
     const isLiveDue =
@@ -299,8 +299,8 @@ function dueReasons(home: string, state: Siesta, seat: Seat) {
     ].filter(Boolean);
 }
 
-// a path counts once across this seat's commits since the stamp, its `Agent:` role naming the seat, so a wing's unlanded branch counts for it; another agent's and the pocket's auto commits stay out
-function clioFiles(home: string, since: Date, seat: Seat) {
+// a path counts once across this thread's commits since the stamp, its `Agent:` role naming the thread, so a wing's unlanded branch counts for it; another agent's and the pocket's auto commits stay out
+function clioFiles(home: string, since: Date, thread: Thread) {
     const env = Object.fromEntries(
         Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')),
     );
@@ -324,7 +324,7 @@ function clioFiles(home: string, since: Date, seat: Seat) {
             .filter(([head = '']) => {
                 const [subject = '', agent = ''] = head.split('\x01');
                 return (
-                    agent.split(' · ')[0]?.trim() === seat.role &&
+                    agent.split(' · ')[0]?.trim() === thread.role &&
                     !subject.endsWith('(auto)')
                 );
             })
@@ -446,7 +446,7 @@ function stateDir(home: string) {
 }
 
 // each clio keeps its own stamp and card, so a wing's siesta never moves main's (PK-351:W78); a parked sidecar has none, and neither has a session that is not the recorded main
-function seatOf(home: string, sessionId?: string): Seat | undefined {
+function threadOf(home: string, sessionId?: string): Thread | undefined {
     if (!sessionId) return MAIN;
     const dir = path.join(home, '.claude/sessions');
     for (const file of existsSync(dir) ? readdirSync(dir) : []) {
@@ -468,7 +468,7 @@ function seatOf(home: string, sessionId?: string): Seat | undefined {
     return recordedMain(home, sessionId);
 }
 
-// fork-guard records the seat at each start; no record yet leaves nobody to protect it from
+// fork-guard records the thread at each start; no record yet leaves nobody to protect it from
 function recordedMain(home: string, sessionId: string) {
     const recorded = readLines(path.join(stateDir(home), 'main-session'))
         .find((line) => line.startsWith('session='))
@@ -476,12 +476,12 @@ function recordedMain(home: string, sessionId: string) {
     return !recorded || recorded === sessionId ? MAIN : undefined;
 }
 
-function seatDir(home: string, seat: Seat) {
-    return path.join(stateDir(home), seat.dir);
+function threadDir(home: string, thread: Thread) {
+    return path.join(stateDir(home), thread.dir);
 }
 
-function siestaLast(home: string, seat: Seat) {
-    const file = path.join(seatDir(home, seat), 'siesta-last');
+function siestaLast(home: string, thread: Thread) {
+    const file = path.join(threadDir(home, thread), 'siesta-last');
     const kept = existsSync(file)
         ? new Date(readFileSync(file, 'utf8').trim())
         : undefined;
@@ -506,8 +506,8 @@ function readLines(file?: string) {
         : [];
 }
 
-function readSiesta(home: string, seat: Seat): Siesta {
-    const file = path.join(seatDir(home, seat), 'siesta.json');
+function readSiesta(home: string, thread: Thread): Siesta {
+    const file = path.join(threadDir(home, thread), 'siesta.json');
     const kept = existsSync(file)
         ? (parsed<Partial<Siesta>>(readFileSync(file, 'utf8')) ?? {})
         : {};
@@ -529,23 +529,25 @@ function readSiesta(home: string, seat: Seat): Siesta {
     };
 }
 
-function writeSiesta(home: string, state: Siesta, seat: Seat) {
-    mkdirSync(seatDir(home, seat), { recursive: true });
+function writeSiesta(home: string, state: Siesta, thread: Thread) {
+    mkdirSync(threadDir(home, thread), { recursive: true });
     writeFileSync(
-        path.join(seatDir(home, seat), 'siesta.json'),
+        path.join(threadDir(home, thread), 'siesta.json'),
         `${JSON.stringify(state, null, 2)}\n`,
     );
 }
 
 function door(home: string, [verb, ...args]: string[]) {
-    const seat = seatOf(home, process.env.CLAUDE_CODE_SESSION_ID);
-    if (!seat)
-        throw new Error('this session holds no clio seat, so it has no siesta');
-    const state = readSiesta(home, seat);
+    const thread = threadOf(home, process.env.CLAUDE_CODE_SESSION_ID);
+    if (!thread)
+        throw new Error(
+            'this session holds no clio thread, so it has no siesta',
+        );
+    const state = readSiesta(home, thread);
     switch (verb) {
         case 'open': {
             const now = new Date().toLocaleString('sv').replace(' ', 'T');
-            const last = path.join(seatDir(home, seat), 'siesta-last');
+            const last = path.join(threadDir(home, thread), 'siesta-last');
             console.log(
                 `last siesta: ${readLines(last)[0] ?? 'none, count from today'}`,
             );
@@ -555,7 +557,7 @@ function door(home: string, [verb, ...args]: string[]) {
                         `unsettled high of the last card: ${high.text}`,
                     );
             }
-            mkdirSync(seatDir(home, seat), { recursive: true });
+            mkdirSync(threadDir(home, thread), { recursive: true });
             writeFileSync(last, `${now}\n`);
             Object.assign(state, {
                 card_printed: false,
@@ -585,7 +587,7 @@ function door(home: string, [verb, ...args]: string[]) {
                 'usage: siesta-gate.ts stop|prompt|compact (hook json on stdin) | open | card [high…] | high <n> fixed|parked [why]',
             );
     }
-    writeSiesta(home, state, seat);
+    writeSiesta(home, state, thread);
 }
 
 if (import.meta.main) {
@@ -618,7 +620,7 @@ type StopInput = {
     transcript_path?: string;
 };
 
-type Seat = { dir: string; role: string };
+type Thread = { dir: string; role: string };
 
 type High = { state: 'fixed' | 'open' | 'parked'; text: string; why?: string };
 

@@ -1,4 +1,4 @@
-// every seat's starting context, traced over time (FRM-408): a session's init number is its first main-thread
+// every thread's starting context, traced over time (FRM-408): a session's init number is its first main-thread
 // assistant entry's input + cache read + cache creation tokens; the history is already on disk, so the trace starts with its back data
 import { execFileSync } from 'node:child_process';
 import {
@@ -70,7 +70,7 @@ async function initRowOf(file: string, sid: string, dir: string) {
             if (!usage || !model || model === '<synthetic>') continue;
             // a fork's file opens with its parent's entries, which carry the parent's session id
             if (entry.sessionId !== sid) return undefined;
-            const seat = seatOf(dir, firstText);
+            const thread = threadOf(dir, firstText);
             return {
                 at: entry.timestamp ?? '',
                 chars: firstChars ?? 0,
@@ -80,7 +80,7 @@ async function initRowOf(file: string, sid: string, dir: string) {
                     (usage.cache_read_input_tokens ?? 0) +
                     (usage.cache_creation_input_tokens ?? 0),
                 model,
-                seat,
+                seat: thread,
                 sid,
                 version: entry.version ?? '',
             } satisfies TraceRow;
@@ -92,7 +92,7 @@ async function initRowOf(file: string, sid: string, dir: string) {
     return undefined;
 }
 
-export function seatOf(dir: string, firstMessage: string): Seat {
+export function threadOf(dir: string, firstMessage: string): Thread {
     if (/\/x:crew-(verifier|sixth-sense)\b/.test(firstMessage))
         return 'sixth-sense'; // read-both
     if (/crew-(coder|codie)\b/.test(firstMessage)) return 'codie'; // read-both
@@ -105,15 +105,16 @@ export function seatOf(dir: string, firstMessage: string): Seat {
     return 'other';
 }
 
-// read-both: rows and baseline keys stored before the 10-29 rename carry the old seat names
-const PAST_SEATS: Record<string, Seat> = {
+// read-both: rows and baseline keys stored before the 10-29 rename carry the old thread names
+const PAST_THREADS: Record<string, Thread> = {
     cclio: 'clio', // read-both
     ccrow: 'crow', // read-both
     coder: 'codie', // read-both
     composer: 'helga', // read-both
     verifier: 'sixth-sense', // read-both
 };
-const seatNow = (seat: string) => PAST_SEATS[seat] ?? (seat as Seat);
+const threadNow = (thread: string) =>
+    PAST_THREADS[thread] ?? (thread as Thread);
 
 export function readTrace(file = TRACE_FILE) {
     if (!existsSync(file)) return [];
@@ -121,7 +122,7 @@ export function readTrace(file = TRACE_FILE) {
         .split('\n')
         .filter(Boolean)
         .map((l) => JSON.parse(l) as TraceRow)
-        .map((r) => ({ ...r, seat: seatNow(r.seat) }));
+        .map((r) => ({ ...r, seat: threadNow(r.seat) }));
 }
 
 function appendRows(rows: TraceRow[], file = TRACE_FILE) {
@@ -160,7 +161,7 @@ const GROWTH_CREEP = 0.2;
 const CEILING_MARGIN = 0.15;
 const MIN_SESSIONS = 3;
 
-// the baseline and the ceilings are written once per seat+model, from the back data the first run finds
+// the baseline and the ceilings are written once per thread+model, from the back data the first run finds
 export function baselineOf(rows: TraceRow[], kept: Baseline = {}) {
     const next: Baseline = { ...kept };
     const groups = Map.groupBy(
@@ -186,7 +187,7 @@ export function alarmsOf(rows: TraceRow[], baseline: Baseline, now: number) {
         keyOf,
     );
     for (const [key, group] of groups) {
-        const [seat, model] = key.split('|') as [Seat, string];
+        const [thread, model] = key.split('|') as [Thread, string];
         const at = (r: TraceRow) => Date.parse(r.at);
         const last = group.filter((r) => now - at(r) < week).map(net);
         const before = group
@@ -203,7 +204,7 @@ export function alarmsOf(rows: TraceRow[], baseline: Baseline, now: number) {
                 model,
                 now: nowMedian,
                 ref: median(before),
-                seat,
+                thread,
             });
         const kept = baseline[key];
         if (!kept) continue;
@@ -213,7 +214,7 @@ export function alarmsOf(rows: TraceRow[], baseline: Baseline, now: number) {
                 model,
                 now: nowMedian,
                 ref: kept.median,
-                seat,
+                thread,
             });
         if (nowMedian > kept.ceiling)
             alarms.push({
@@ -221,13 +222,13 @@ export function alarmsOf(rows: TraceRow[], baseline: Baseline, now: number) {
                 model,
                 now: nowMedian,
                 ref: kept.ceiling,
-                seat,
+                thread,
             });
     }
     return alarms;
 }
 
-// the memory a seat loads at boot: the files whose growth explains a rising starting context
+// the memory a thread loads at boot: the files whose growth explains a rising starting context
 const MEMORY_PATHS = [
     'home/.claude/rules',
     'home/.claude/CLAUDE.md',
@@ -275,7 +276,7 @@ export function causeOf(
 ): Cause {
     const week = 7 * DAY;
     const own = rows
-        .filter((r) => r.seat === alarm.seat && r.model === alarm.model)
+        .filter((r) => r.seat === alarm.thread && r.model === alarm.model)
         .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
     const recent = own.filter((r) => now - Date.parse(r.at) < week);
     const older = own.filter(
@@ -294,7 +295,7 @@ const kilo = (n: number) => `${Math.round(n / 1000)}k`;
 
 export function lineOf(alarm: Alarm, cause: Cause) {
     const growth = Math.round((alarm.now / alarm.ref - 1) * 100);
-    const head = `${alarm.seat} (${alarm.model}): starting ctx ${kilo(alarm.now)}`;
+    const head = `${alarm.thread} (${alarm.model}): starting ctx ${kilo(alarm.now)}`;
     const against = {
         ceiling: `over its ceiling of ${kilo(alarm.ref)}`,
         creep: `${growth} % over its baseline of ${kilo(alarm.ref)}`,
@@ -314,7 +315,7 @@ export function lineOf(alarm: Alarm, cause: Cause) {
     return `⚠ ${head}, ${against} — ${why}`;
 }
 
-const SEAT_ORDER: Seat[] = [
+const THREAD_ORDER: Thread[] = [
     'clio',
     'crow',
     'helga',
@@ -325,7 +326,7 @@ const SEAT_ORDER: Seat[] = [
 const DIGEST_DAYS = 14;
 const DIGEST_SESSIONS = 5;
 
-// each seat+model's starting number (the median of its newest sessions) on one line, then an alarm line apiece
+// each thread+model's starting number (the median of its newest sessions) on one line, then an alarm line apiece
 export function digestOf(
     rows: TraceRow[],
     baseline: Baseline,
@@ -334,20 +335,21 @@ export function digestOf(
 ) {
     const recent = rows.filter(
         (r) =>
-            SEAT_ORDER.includes(r.seat) &&
+            THREAD_ORDER.includes(r.seat) &&
             now - Date.parse(r.at) < DIGEST_DAYS * DAY,
     );
     const groups = Map.groupBy(recent, keyOf);
     const medians = [...groups.entries()]
         .map(([key, group]) => {
-            const [seat, model = ''] = key.split('|') as [Seat, string];
+            const [thread, model = ''] = key.split('|') as [Thread, string];
             const newest = [...group]
                 .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
                 .slice(0, DIGEST_SESSIONS);
-            return { model, seat, value: median(newest.map(net)) };
+            return { model, thread, value: median(newest.map(net)) };
         })
         .sort(
-            (a, b) => SEAT_ORDER.indexOf(a.seat) - SEAT_ORDER.indexOf(b.seat),
+            (a, b) =>
+                THREAD_ORDER.indexOf(a.thread) - THREAD_ORDER.indexOf(b.thread),
         );
     const alarms = alarmsOf(rows, baseline, now);
     const files = alarms.length ? grown() : [];
@@ -356,13 +358,14 @@ export function digestOf(
             ? `starting ctx (net, newest ${DIGEST_SESSIONS} sessions): ${medians
                   .map(
                       (m) =>
-                          `${m.seat} ${kilo(m.value)} ${m.model.replace('claude-', '')}`,
+                          `${m.thread} ${kilo(m.value)} ${m.model.replace('claude-', '')}`,
                   )
                   .concat(
-                      SEAT_ORDER.filter(
-                          (seat) => !medians.some((m) => m.seat === seat),
+                      THREAD_ORDER.filter(
+                          (thread) => !medians.some((m) => m.thread === thread),
                       ).map(
-                          (seat) => `${seat} no session in ${DIGEST_DAYS} days`,
+                          (thread) =>
+                              `${thread} no session in ${DIGEST_DAYS} days`,
                       ),
                   )
                   .join(' · ')}`
@@ -376,8 +379,8 @@ function readBaseline() {
     const stored = JSON.parse(readFileSync(BASELINE_FILE, 'utf8')) as Baseline;
     return Object.fromEntries(
         Object.entries(stored).map(([key, value]) => {
-            const [seat, model] = key.split('|');
-            return [`${seatNow(seat ?? '')}|${model}`, value];
+            const [thread, model] = key.split('|');
+            return [`${threadNow(thread ?? '')}|${model}`, value];
         }),
     ) as Baseline;
 }
@@ -471,7 +474,7 @@ export type Cause =
     | { files: GrownFile[]; kind: 'files' }
     | { from: string; kind: 'version'; to: string };
 
-export type Seat =
+export type Thread =
     | 'clio'
     | 'crow'
     | 'cc'
@@ -487,7 +490,7 @@ export type Alarm = {
     model: string;
     now: number;
     ref: number;
-    seat: Seat;
+    thread: Thread;
 };
 
 export type TraceRow = {
@@ -496,7 +499,7 @@ export type TraceRow = {
     date: string;
     init: number;
     model: string;
-    seat: Seat;
+    seat: Thread;
     sid: string;
     version: string;
 };

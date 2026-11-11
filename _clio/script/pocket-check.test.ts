@@ -251,7 +251,7 @@ describe('checkPocket', () => {
             today,
         ).join('\n');
 
-    test('a flyway off its seat slot is red, naming the edit', () => {
+    test('a flyway off its thread slot is red, naming the edit', () => {
         expect(flyway({ ordinal: '10000', priority: 'next' })).toContain(
             '--priority now --ordinal 1001',
         );
@@ -318,7 +318,7 @@ describe('checkPocket', () => {
         expect(flyway({ status: 'done' })).toContain('never closes');
     });
 
-    test('a flyway carries its seat label, main and wing alike', () => {
+    test('a flyway carries its thread label, main and wing alike', () => {
         expect(flyway({ labels: ['m'] })).toContain('clio-wing-1');
         expect(flyway({ labels: ['m'], title: 'flyway: main' })).toContain(
             'clio-main',
@@ -332,28 +332,28 @@ describe('checkPocket', () => {
         ).toBe('');
     });
 
-    test('a flyway title names a seat', () => {
+    test('a flyway title names a thread', () => {
         expect(flyway({ title: 'flyway: 11-07' })).toContain('titled');
     });
 
-    test('one flyway per seat', () => {
+    test('one flyway per thread', () => {
         const one = task({ labels: ['m', 'clio-main'], title: 'flyway: main' });
         expect(checkPocket(config, [one, one], today).join('\n')).toContain(
-            'one flyway per seat',
+            'one flyway per thread',
         );
     });
 
     test('a flyway stays out of the now cap', () => {
-        const ones = ['main', 'wing 1', 'wing 2', 'wing 3'].map((seat) =>
+        const ones = ['main', 'wing 1', 'wing 2', 'wing 3'].map((thread) =>
             task({
                 labels: [
                     'm',
-                    seat === 'main'
+                    thread === 'main'
                         ? 'clio-main'
-                        : `clio-wing-${seat.slice(5)}`,
+                        : `clio-wing-${thread.slice(5)}`,
                 ],
                 priority: 'now',
-                title: `flyway: ${seat}`,
+                title: `flyway: ${thread}`,
             }),
         );
         expect(checkPocket(config, ones, today).join('\n')).not.toContain(

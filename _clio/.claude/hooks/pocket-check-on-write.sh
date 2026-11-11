@@ -14,14 +14,14 @@ Bash)
 Edit | Write) jq -r '.tool_input.file_path // ""' <<<"$event" | grep -q '/pocket/' || exit 0 ;;
 *) exit 0 ;;
 esac
-# the seat decides whose reds block: a wing answers for its own label, main for every other item, a parked sidecar for nothing
+# the thread decides whose reds block: a wing answers for its own label, main for every other item, a parked sidecar for nothing
 sid="$(jq -r '.session_id // ""' <<<"$event")"
 registry="$(grep -lE "\"sessionId\": *\"$sid\"" "${HOME:-/nonexistent}"/.claude/sessions/*.json 2>/dev/null | head -1)"
 [ -n "$registry" ] && [ "$(jq -r '.kind // ""' "$registry" 2>/dev/null)" = bg ] && exit 0
-seat_label=""
-[ -n "$registry" ] && [[ "$(jq -r '.name // ""' "$registry" 2>/dev/null)" =~ wing\ ([0-9]+) ]] && seat_label="clio-wing-${BASH_REMATCH[1]}"
+thread_label=""
+[ -n "$registry" ] && [[ "$(jq -r '.name // ""' "$registry" 2>/dev/null)" =~ wing\ ([0-9]+) ]] && thread_label="clio-wing-${BASH_REMATCH[1]}"
 main_session="$(sed -n 's/^session=//p' "${HOME:-/nonexistent}/.local/state/clio/main-session" 2>/dev/null)"
-[ -z "$seat_label" ] && [ -n "$main_session" ] && [ "$main_session" != "$sid" ] && exit 0
+[ -z "$thread_label" ] && [ -n "$main_session" ] && [ "$main_session" != "$sid" ] && exit 0
 
 check="${POCKET_CHECK_CMD:-node $(dirname "$0")/../../script/pocket-check.ts}"
 out="$($check 2>&1)"
@@ -69,7 +69,7 @@ seen="${HOME:+$HOME/.local/state/clio/pocket-reds-seen}"
 for id in $(grep -oE '^🔴 [A-Za-z]+-[0-9]+' <<<"$reds" | cut -d' ' -f2 | sort -u); do
 	lines="$(grep -F "🔴 $id:" <<<"$reds")"
 	file="$(ls "$(dirname "$0")"/../../pocket/{,archive/}tasks/"$(tr 'A-Z' 'a-z' <<<"$id") "*.md 2>/dev/null | head -1)"
-	if [ -n "$file" ] && [ "$(awk 'NR > 1 && /^---$/ {exit} /^[ ]*- clio-wing-[0-9]+$/ {print $2; exit}' "$file")" != "$seat_label" ]; then
+	if [ -n "$file" ] && [ "$(awk 'NR > 1 && /^---$/ {exit} /^[ ]*- clio-wing-[0-9]+$/ {print $2; exit}' "$file")" != "$thread_label" ]; then
 		reds="$(grep -vF "🔴 $id:" <<<"$reds")"
 		continue
 	fi

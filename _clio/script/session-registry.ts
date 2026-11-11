@@ -26,7 +26,7 @@ export function liveSessions(): Session[] {
         .filter((session) => isAlive(session.pid));
 }
 
-// a clio seat's own folder under a shared state dir: '' for main, `wing-<N>` for a wing, undefined for any other session
+// a clio thread's own folder under a shared state dir: '' for main, `wing-<N>` for a wing, undefined for any other session
 export function seatOf(home = homedir(), ccPid = nearestClaude()) {
     if (process.env.CLIO_SEAT !== undefined) return process.env.CLIO_SEAT;
     if (ccPid === undefined) return undefined;
@@ -35,7 +35,7 @@ export function seatOf(home = homedir(), ccPid = nearestClaude()) {
     )?.[1];
     if (mainPid === String(ccPid)) return '';
     const wing = readOr(join(home, '.claude/sessions', `${ccPid}.json`)).match(
-        // the desktop titles a wing «🦉🪽 clio: wing 3», a herdr seat starts as `--name wing-3`
+        // the desktop titles a wing «🦉🪽 clio: wing 3», a herdr thread starts as `--name wing-3`
         /"name"\s*:\s*"[^"]*\bwing[ -](\d+)\b/,
     )?.[1];
     return wing === undefined ? undefined : `wing-${wing}`;

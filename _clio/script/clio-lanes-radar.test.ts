@@ -89,7 +89,7 @@ function world() {
 }
 
 describe('clio-lanes-radar', () => {
-    test('a live seat shows its status, phases and wait from the board store', () => {
+    test('a live thread shows its status, phases and wait from the board store', () => {
         const w = world();
         w.session('🦉🪽 clio: wing 2', 'sid-2', { status: 'busy' });
         writeFileSync(
@@ -107,7 +107,7 @@ describe('clio-lanes-radar', () => {
         expect(out).toContain('waits: 🔭 waiting on crow');
     });
 
-    test('a dead seat keeps its flyway as parked and drops its old phases', () => {
+    test('a dead thread keeps its flyway as parked and drops its old phases', () => {
         const w = world();
         w.session('🦉🪽 clio: wing 1', 'sid-1', { pid: DEAD_PID });
         w.flyway('wing 1', ['- [ ] #1 the cpu chore']);
@@ -196,7 +196,7 @@ describe('clio-lanes-radar', () => {
         expect(out).not.toContain('cc games');
     });
 
-    test('a tree reads against main, under its seat, a fork by session id, a stray apart', () => {
+    test('a tree reads against main, under its thread, a fork by session id, a stray apart', () => {
         const w = world();
         w.gitRepo();
         w.session('🦉🪽 clio: wing 1', 'abcd1234-rest');
@@ -216,7 +216,9 @@ describe('clio-lanes-radar', () => {
         expect(out).toContain(
             'alive, idle 0 min\ntree fork-abcd1234: 1 behind main',
         );
-        expect(out).toContain('trees outside a seat:\n  - tree fork-00000000');
+        expect(out).toContain(
+            'trees outside a thread:\n  - tree fork-00000000',
+        );
         expect(out).toContain('fork-11111111: 1 behind main, 🦉 clio (fork)');
         expect(out).not.toContain('verify-1');
     });

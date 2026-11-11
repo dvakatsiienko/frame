@@ -10,7 +10,7 @@ if (!query) fail('usage: node idle-check.ts <registry name or a part of it>');
 
 const matches = liveSessions().filter((s) => s.name?.includes(query));
 
-// a missed trust key holds a fresh seat on Claude Code's folder-trust dialog, before any status or turn;
+// a missed trust key holds a fresh thread on Claude Code's folder-trust dialog, before any status or turn;
 // the phrases are shepherdr's (mods/tasks/bin/herdr_task/agents.py TRUST)
 const TRUST =
     /Quick safety check|Do you trust the files in this folder|Yes, I trust this folder/i;

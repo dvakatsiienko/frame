@@ -21,15 +21,15 @@ if (process.argv.includes('--hook') && isSidecar(readFileSync(0, 'utf8'))) {
 }
 
 const store = readStore();
-const seats = new Map<string, Seat>();
+const threads = new Map<string, Thread>();
 placeSessions();
 placeFlyways();
 placeCards();
 const orphanTrees = placeTrees();
 
-const blocks = sortedSeats().map(renderSeat);
+const blocks = sortedThreads().map(renderThread);
 if (orphanTrees.length > 0) {
-    blocks.push(`trees outside a seat:\n${bullets(orphanTrees)}`);
+    blocks.push(`trees outside a thread:\n${bullets(orphanTrees)}`);
 }
 if (unread.length > 0) {
     blocks.push(
@@ -37,7 +37,7 @@ if (unread.length > 0) {
     );
 }
 console.log(
-    `🛫 every clio lane, read live by \`node ~/frame/_clio/script/clio-lanes-radar.ts\`; a seat's tickets, which this skips: \`x linear list --team FRM --label clio-wing-<N>\`\n\n${blocks.join('\n\n')}`,
+    `🛫 every clio lane, read live by \`node ~/frame/_clio/script/clio-lanes-radar.ts\`; a thread's tickets, which this skips: \`x linear list --team FRM --label clio-wing-<N>\`\n\n${blocks.join('\n\n')}`,
 );
 
 function readJson(path: string): unknown {
@@ -97,16 +97,16 @@ function readStore() {
     return merged;
 }
 
-function seatKey(name: string | null | undefined) {
+function threadKey(name: string | null | undefined) {
     const match = /^🦉🪽? clio(?:: (wing \d+))?$/u.exec(name ?? '');
     return match && (match[1] ?? 'main');
 }
 
-function seat(key: string) {
-    let found = seats.get(key);
+function thread(key: string) {
+    let found = threads.get(key);
     if (!found) {
         found = { cards: [], flyway: [], key, trees: [] };
-        seats.set(key, found);
+        threads.set(key, found);
     }
     return found;
 }
@@ -130,11 +130,11 @@ function isAlive(session: Session) {
 
 function placeSessions() {
     for (const session of sessions) {
-        const key = seatKey(session.name);
+        const key = threadKey(session.name);
         if (!key || session.kind === 'bg') {
             continue;
         }
-        const held = seat(key);
+        const held = thread(key);
         const isLive = isAlive(session);
         const isNewer =
             session.statusUpdatedAt > (held.session?.statusUpdatedAt ?? 0);
@@ -165,7 +165,7 @@ function placeFlyways() {
             },
         );
         // the flyway's own order is the reading order: open, then ⏳, then 💤 (pocket-check holds it)
-        seat(key).flyway = open;
+        thread(key).flyway = open;
     }
 }
 
@@ -175,9 +175,9 @@ function placeCards() {
         | undefined;
     for (const card of board?.lanes ?? []) {
         // a card with no runner is main's, from before cards named one
-        const key = card.runner ? seatKey(card.runner) : 'main';
+        const key = card.runner ? threadKey(card.runner) : 'main';
         if (key && !card.endedAt) {
-            seat(key).cards.push(card);
+            thread(key).cards.push(card);
         }
     }
 }
@@ -196,8 +196,8 @@ function placeTrees() {
         }
         const line = renderTree(name, join(dir, name));
         const holder = wing
-            ? seat(`wing ${wing}`)
-            : [...seats.values()].find((held) => {
+            ? thread(`wing ${wing}`)
+            : [...threads.values()].find((held) => {
                   return held.session?.sessionId.startsWith(fork ?? '');
               });
         const other = sessions.find((session) => {
@@ -217,7 +217,7 @@ function git(tree: string, ...args: string[]) {
     if (timeout <= 0) {
         return undefined;
     }
-    // a read must never take the index lock from the seat working in that tree
+    // a read must never take the index lock from the thread working in that tree
     const run = spawnSync('git', ['--no-optional-locks', '-C', tree, ...args], {
         encoding: 'utf8',
         timeout,
@@ -247,18 +247,18 @@ function renderTree(name: string, tree: string) {
     return `tree ${name}: ${parts.join(', ') || 'level with main, clean'}`;
 }
 
-function sortedSeats() {
+function sortedThreads() {
     const rank = (key: string) => {
         return key === 'main' ? 0 : Number(key.replace('wing ', ''));
     };
-    return [...seats.values()].sort((a, b) => rank(a.key) - rank(b.key));
+    return [...threads.values()].sort((a, b) => rank(a.key) - rank(b.key));
 }
 
 function bullets(lines: string[]) {
     return lines.map((line) => `  - ${line}`).join('\n');
 }
 
-function renderHead(held: Seat) {
+function renderHead(held: Thread) {
     const name = held.key === 'main' ? '🦉 clio' : `🦉🪽 clio: ${held.key}`;
     if (!held.session || !held.isAlive) {
         return `${name}: dead`;
@@ -278,7 +278,7 @@ function renderCard(card: Card) {
     return `${card.title}: ${step}${members && `; ${members}`}`;
 }
 
-function renderSeat(held: Seat) {
+function renderThread(held: Thread) {
     const sid = held.session?.sessionId;
     const phases = held.isAlive
         ? store[`kept:${sid}`]?.orbit?.plan?.lines
@@ -321,7 +321,7 @@ interface Card {
     runner?: string | null;
     title: string;
 }
-interface Seat {
+interface Thread {
     cards: Card[];
     flyway: string[];
     isAlive?: boolean;

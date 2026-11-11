@@ -1080,7 +1080,7 @@ describe('every clio on its own stamp', () => {
     const WING = 'w-2';
     const wingDir = (home: string) =>
         join(home, '.local/state/clio/seats/wing-2');
-    const seated = (home: string) => {
+    const threaded = (home: string) => {
         const dir = join(home, '.claude/sessions');
         mkdirSync(dir, { recursive: true });
         const add = (sessionId: string, name: string, kind = 'interactive') =>
@@ -1099,7 +1099,7 @@ describe('every clio on its own stamp', () => {
 
     test("a wing's commits make the wing due, never main", () => {
         const home = fixtureHome();
-        seated(home);
+        threaded(home);
         commit(home, 15, 'clio-wing-2');
         expect(said(stop(home, stopInput(home)))).toBeUndefined();
         expect(said(stop(home, asWing(home)))).toContain('siesta due');
@@ -1107,7 +1107,7 @@ describe('every clio on its own stamp', () => {
 
     test("main's commits make main due, never a wing", () => {
         const home = fixtureHome();
-        seated(home);
+        threaded(home);
         commit(home, 15, 'clio');
         expect(said(stop(home, asWing(home)))).toBeUndefined();
         expect(said(stop(home, stopInput(home)))).toContain('siesta due');
@@ -1115,7 +1115,7 @@ describe('every clio on its own stamp', () => {
 
     test("a wing's unlanded branch counts for it", () => {
         const home = fixtureHome();
-        seated(home);
+        threaded(home);
         commit(home, 1, 'dima');
         const repo = join(home, 'frame');
         const git = (...args: string[]) =>
@@ -1132,7 +1132,7 @@ describe('every clio on its own stamp', () => {
 
     test("a wing's state and stamp live apart from main's", () => {
         const home = fixtureHome();
-        seated(home);
+        threaded(home);
         const before = siesta;
         commit(home, 15, 'clio-wing-2');
         stop(home, stopInput(home));
@@ -1161,9 +1161,9 @@ describe('every clio on its own stamp', () => {
         ).toMatchObject({ open: true });
     });
 
-    test('a session that is not the recorded main holds no seat, even unnamed', () => {
+    test('a session that is not the recorded main holds no thread, even unnamed', () => {
         const home = fixtureHome();
-        seated(home);
+        threaded(home);
         writeFileSync(
             join(home, '.local/state/clio/main-session'),
             `pid=1\nsession=${SID}\n`,
@@ -1189,9 +1189,9 @@ describe('every clio on its own stamp', () => {
         expect(siesta(home).open).toBeFalsy();
     });
 
-    test('a parked sidecar has no seat: no nudge, no state', () => {
+    test('a parked sidecar has no thread: no nudge, no state', () => {
         const home = fixtureHome();
-        seated(home);
+        threaded(home);
         commit(home, 15, 'clio');
         expect(
             stop(home, { ...stopInput(home), session_id: 's-helga' }),

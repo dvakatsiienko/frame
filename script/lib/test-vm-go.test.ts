@@ -368,7 +368,7 @@ describe('the vm leg', () => {
 
     test('two runs at once each test their own commit and leave nothing behind', async () => {
         const { calls, code, guestRefs, guestRuns, runAsync } = fixture();
-        // two seats' commits: each its own index, as each hook's GIT_INDEX_FILE names it
+        // two threads' commits: each its own index, as each hook's GIT_INDEX_FILE names it
         const staged = (body: string) => {
             const index = join(code, `.git/index-${body}`);
             writeFileSync(join(code, 'm/v.txt'), body);

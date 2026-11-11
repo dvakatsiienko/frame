@@ -206,7 +206,7 @@ const bareName = (name: string) => name.replaceAll(/[\s‍]/g, '');
 export function clioThreadOf(
     transcriptPath: string,
     sessionsDir = SESSIONS_DIR,
-    mainSeatFile = MAIN_SEAT_FILE,
+    mainThreadFile = MAIN_THREAD_FILE,
 ): ClioThread | undefined {
     const sessionId = basename(transcriptPath, '.jsonl');
     for (const file of readdirSync(sessionsDir)) {
@@ -225,8 +225,8 @@ export function clioThreadOf(
             const name = entry.name ?? '';
             const wing = /\bwing\s*(\d+)\b/.exec(name)?.[1];
             if (wing) return { id: `wing-${wing}`, name };
-            // a fork carries main's name until it renames itself, so a nameless wing is main only in main's seat
-            return isMainSeat(sessionId, mainSeatFile)
+            // a fork carries main's name until it renames itself, so a nameless wing is main only in main's thread
+            return isMainThread(sessionId, mainThreadFile)
                 ? { id: MAIN_THREAD, name }
                 : undefined;
         } catch {}
@@ -235,16 +235,18 @@ export function clioThreadOf(
 }
 
 // fork-guard's record of the main session; with no record yet, the clio-named session is main
-function isMainSeat(sessionId: string, path: string) {
+function isMainThread(sessionId: string, path: string) {
     try {
-        const seated = /^session=(.*)$/m.exec(readFileSync(path, 'utf8'))?.[1];
-        return !seated || seated === sessionId;
+        const threaded = /^session=(.*)$/m.exec(
+            readFileSync(path, 'utf8'),
+        )?.[1];
+        return !threaded || threaded === sessionId;
     } catch {
         return true;
     }
 }
 
-const MAIN_SEAT_FILE = join(
+const MAIN_THREAD_FILE = join(
     process.env.FORK_GUARD_STATE || join(homedir(), '.local/state/clio'),
     'main-session',
 );
@@ -403,7 +405,7 @@ export async function startCrow(arm: Arm, isPane = false) {
             `${isPane ? 'hc run' : 'claude --bg'} failed: ${(result.stderr || result.stdout).trim()}`,
         );
     }
-    // a --no-parent seat starts paneless: herdr's agents list shows it only once it has a tab
+    // a --no-parent thread starts paneless: herdr's agents list shows it only once it has a tab
     if (isPane) keepThreadInTab(JSON.parse(result.stdout).address, 'crow');
     writeState({
         ...readState(),
@@ -1394,7 +1396,7 @@ export function packetCarriedHeld(wakeId: string) {
     }
 }
 
-// heldFor was one transcript before the seats split, and only main had a thread then
+// heldFor was one transcript before the threads split, and only main had a thread then
 export const heldMapOf = (state: State): Record<string, string> =>
     typeof state.heldFor === 'string'
         ? { [MAIN_THREAD]: state.heldFor }
@@ -1733,7 +1735,7 @@ export interface State {
     // per clio thread, each on its own 30 min clock; an older state's single number reads as no clock
     lastWakeAt?: Record<string, number>;
     offsets: Record<string, number>;
-    // per thread; a string is the state before the seats split
+    // per thread; a string is the state before the threads split
     heldFor?: Record<string, string> | string;
     leafHashes?: Record<string, string>;
     leavesFor?: string;

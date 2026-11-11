@@ -739,7 +739,7 @@ describe('clioThreadOf', () => {
         writeFileSync(join(sessions, `${pid}.json`), JSON.stringify(entry));
 
     test('the session named clio is the main thread', () => {
-        expect(clioThreadOf('/p/aaa.jsonl', sessions, '/no/seat')).toEqual({
+        expect(clioThreadOf('/p/aaa.jsonl', sessions, '/no/thread')).toEqual({
             id: 'main',
             name: '🦉 clio',
         });
@@ -754,11 +754,11 @@ describe('clioThreadOf', () => {
     });
 
     test("a fork still carrying main's name is no thread until it takes a wing number", () => {
-        const seat = join(sessions, 'main-session');
-        writeFileSync(seat, 'pid=1\nsession=aaa\n');
+        const thread = join(sessions, 'main-session');
+        writeFileSync(thread, 'pid=1\nsession=aaa\n');
         expect([
-            clioThreadOf('/p/aaa.jsonl', sessions, seat)?.id,
-            clioThreadOf('/p/ddd.jsonl', sessions, seat),
+            clioThreadOf('/p/aaa.jsonl', sessions, thread)?.id,
+            clioThreadOf('/p/ddd.jsonl', sessions, thread),
         ]).toEqual(['main', undefined]);
     });
 });
