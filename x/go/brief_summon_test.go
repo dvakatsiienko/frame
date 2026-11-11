@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -199,9 +200,34 @@ func TestBriefSummonFromAHerdrThreadWantsTheHcRunLine(t *testing.T) {
 }
 
 // the argv a passing summon prints: the command with its minted --session-id right after claude
+// the summon x prints: the session id after the claude it runs, and -n the display it drew from the record
 func withSessionID(command string, got ran) string {
 	sid, _ := got.data["sessionId"].(string)
-	return strings.Replace(command, "claude ", "claude --session-id "+sid+" ", 1)
+	display, _ := got.data["display"].(string)
+	named := regexp.MustCompile(`-n '[^']*'`).ReplaceAllLiteralString(command, "-n '"+display+"'")
+	return strings.Replace(named, "claude ", "claude --session-id "+sid+" ", 1)
+}
+
+// exit 27: the registry name a summon starts with is the display x thread show draws from the same record
+func TestBriefSummonNamesTheThreadByItsRecord(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	env := []string{"X_THREADS=" + store, "X_SESSIONS=" + t.TempDir()}
+	brief := w.brief(t, goodBrief+"\nthe spec: /f/.scratch/cli-lane-8/spec.md\n", true)
+
+	got := w.summon(t, codieArgv(w.repo, brief), env...)
+	sid, _ := got.data["sessionId"].(string)
+	show := xIn(t, t.TempDir(), env, "thread", "show", sid)
+
+	argv, _ := got.data["argv"].(string)
+	display, _ := show.data["display"].(string)
+	if got.code != 0 || show.code != 0 || display != "🌗 🔧 cli | FRM-1" || !strings.Contains(argv, " -n '"+display+"' ") {
+		t.Fatalf("exit %d/%d, x thread show draws %q, argv %q", got.code, show.code, display, argv)
+	}
+	if strings.Contains(argv, "codie: FRM-1") {
+		t.Errorf("the argv keeps the name the command typed: %q", argv)
+	}
 }
 
 // a quoted name holding the word claude comes before the call: the id goes after the claude x runs, never into the name
@@ -214,7 +240,8 @@ func TestBriefSummonAddsTheSessionIDAfterTheClaudeItRuns(t *testing.T) {
 	got := w.summon(t, command, "HC_TERMINAL_ID=t9")
 
 	sid, _ := got.data["sessionId"].(string)
-	want := strings.Replace(command, "-- claude ", "-- claude --session-id "+sid+" ", 1)
+	display, _ := got.data["display"].(string)
+	want := strings.Replace(strings.Replace(command, "-n '🌗 🔧 codie: FRM-1'", "-n '"+display+"'", 1), "-- claude ", "-- claude --session-id "+sid+" ", 1)
 	if got.code != 0 || got.data["argv"] != want {
 		t.Fatalf("exit %d argv %v, want %q:\n%s", got.code, got.data["argv"], want, got.stdout)
 	}
