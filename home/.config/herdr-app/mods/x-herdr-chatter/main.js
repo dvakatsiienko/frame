@@ -22,7 +22,7 @@ import {
     v_flex,
     v_virtual_list,
 } from 'gpui-base';
-import { View, div, svg } from 'gpui-kit';
+import { View, div, image, svg } from 'gpui-kit';
 import {
     appHome,
     exec,
@@ -75,6 +75,13 @@ import {
     prevMineIndex,
     rowSizes,
 } from './rows.js';
+import {
+    loadShots,
+    saveClipboardShot,
+    saveShots,
+    shotsWith,
+    shotsWithout,
+} from './shots.js';
 import { loadableSkills, menuMatches } from './skills.js';
 import { wholeLines } from './slice.js';
 import {
@@ -1262,6 +1269,12 @@ export default class ClaudeChat extends View {
         // Images pasted for a dev container's Claude: their paths in the container, by agent address,
         // sent with the next message (see pasteIntoContainer).
         this.pasted = new Map();
+        // previews of the screenshots waiting in each thread's Claude prompt (see shots.js)
+        this.shots = {};
+        cx.spawn(async (cx) => {
+            this.shots = await loadShots();
+            cx.notify();
+        });
         // what he sent while the seat worked, by agent address, until its row reaches the transcript (see queued.js)
         this.queued = new Map();
         this.idleSince = new Map();
@@ -2635,6 +2648,7 @@ export default class ClaudeChat extends View {
             return cx.notify();
         }
         this.images = 0;
+        this.forgetShots(address, cx);
         // A dev container's pasted images go as their paths in the container, after the text.
         const files = this.where?.container
             ? (this.pasted.get(address) ?? [])
@@ -2787,12 +2801,17 @@ export default class ClaudeChat extends View {
         if (this.where?.container)
             return this.pasteIntoContainer(address, this.where, cx);
         this.images = (this.images ?? 0) + 1;
-        cx.spawn(async () => {
+        cx.spawn(async (cx) => {
             await hc([
                 'keys',
                 address,
                 /^win/.test(os.platform()) ? 'alt+v' : 'ctrl+v',
             ]);
+            const rel = await saveClipboardShot();
+            if (!rel) return;
+            this.shots = shotsWith(this.shots, address, rel);
+            await saveShots(this.shots);
+            cx.notify();
         });
         cx.notify();
     }
@@ -2849,7 +2868,7 @@ export default class ClaudeChat extends View {
     imageCount(address) {
         return this.where?.container
             ? (this.pasted.get(address)?.length ?? 0)
-            : (this.images ?? 0);
+            : Math.max(this.images ?? 0, this.shots[address]?.length ?? 0);
     }
 
     // A prompt Claude Code put back into its own box (a Stop on a sent message does it) is hidden from this view, and the
@@ -2911,10 +2930,18 @@ export default class ClaudeChat extends View {
             return cx.notify();
         }
         this.images = 0;
+        this.forgetShots(address, cx);
         cx.spawn(async () => {
             await hc(['keys', address, 'esc', 'esc']);
         });
         cx.notify();
+    }
+
+    /** a send or a Remove takes the screenshots out of Claude's prompt: their previews go too */
+    forgetShots(address, cx) {
+        if (!this.shots[address]) return;
+        this.shots = shotsWithout(this.shots, address);
+        cx.spawn(async () => saveShots(this.shots));
     }
 
     // A copy of this conversation in a new tab of the same space: `claude --resume <id> --fork-session`
@@ -6119,17 +6146,38 @@ export default class ClaudeChat extends View {
                                 .px(4)
                                 .text_size(px(TEXT.sm))
                                 .text_color(t.muted)
-                                .child(
-                                    div()
-                                        .px(8)
-                                        .py(2)
-                                        .rounded(RADIUS.control)
-                                        .bg(t.raised)
-                                        .text_color(t.foreground)
-                                        .child(
-                                            images === 1
-                                                ? '🖼 1 image'
-                                                : `🖼 ${images} images`,
+                                // a 56 px preview per screenshot this chat saved; the count stands in for the rest
+                                .children(
+                                    (this.shots[agent.address] ?? []).map(
+                                        (rel) =>
+                                            div()
+                                                .size(px(56))
+                                                .flex_none()
+                                                .rounded(RADIUS.card)
+                                                .overflow_hidden()
+                                                .bg(t.raised)
+                                                .border(1)
+                                                .border_color(t.border)
+                                                .child(image(rel).size_full()),
+                                    ),
+                                )
+                                .when(
+                                    images >
+                                        (this.shots[agent.address]?.length ??
+                                            0),
+                                    (el) =>
+                                        el.child(
+                                            div()
+                                                .px(8)
+                                                .py(2)
+                                                .rounded(RADIUS.control)
+                                                .bg(t.raised)
+                                                .text_color(t.foreground)
+                                                .child(
+                                                    images === 1
+                                                        ? '🖼 1 image'
+                                                        : `🖼 ${images} images`,
+                                                ),
                                         ),
                                 )
                                 .child(

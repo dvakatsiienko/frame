@@ -59,8 +59,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a pasted image survives a chat reload
   - given dima pasted a screenshot into a thread's box and has not sent it
   - when the chat reloads
-  - then the image is still waiting with the next message, shown by its chip
-  - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355)
+  - then the image is still waiting with the next message, shown by its 56 px preview above the box
+  - and a send or Remove takes the preview away with the image
+  - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355); FRM-562 part B saves a preview copy beside Claude's own paste
 - ⬜ the shared keys carry the x-herdr name
   - given the chat, the status bar and the agents list share `chat.look`, `chat.subs`, `chat.containers`
   - then each key is `x-herdr-chatter.*`, read by every mod under its new name, and «zoo» appears nowhere
