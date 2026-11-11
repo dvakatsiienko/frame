@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { codeSpans } from './chips.js';
+import { applyChips, codeSpans } from './chips.js';
 
 describe('inline code in the box becomes a chip', () => {
     test('the closing backtick makes one span', () => {
@@ -24,5 +24,30 @@ describe('inline code in the box becomes a chip', () => {
         expect(codeSpans('```\nx\n```\nrun `ls`', [])).toEqual([
             { end: 18, start: 14 },
         ]);
+    });
+});
+
+describe('a paste holding inline code keeps the caret at its end', () => {
+    // a box that moves its caret to the end of each token it puts in, as herdr's Textarea does
+    const fakeBox = (text: string) => {
+        const box = {
+            caret: text.length,
+            replace_range_with_token(range: { start: number; end: number }) {
+                box.tokens.push({ range });
+                box.caret = range.end;
+            },
+            set_selected_range(range: { start: number; end: number }) {
+                box.caret = range.end;
+            },
+            tokens: [] as { range: { start: number; end: number } }[],
+        };
+        return box;
+    };
+
+    test('after a paste of «type `ls` in the box», the caret sits after «box»', () => {
+        const text = 'type `ls` in the box';
+        const box = fakeBox(text);
+        applyChips(box, text, codeSpans(text, []), text.length);
+        expect(box.caret).toBe(text.length);
     });
 });

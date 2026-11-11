@@ -59,7 +59,7 @@ import {
     withPress,
 } from './band.js';
 import { splitBlocks, withPrompt } from './blocks.js';
-import { codeSpans } from './chips.js';
+import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import { openTarget } from './links.js';
@@ -1280,12 +1280,7 @@ export default class ClaudeChat extends View {
                 this.box.tokens().map((s) => s.range),
             );
             if (spans.length) {
-                for (const r of [...spans].reverse())
-                    this.box.replace_range_with_token(r, {
-                        id: `code-${r.start}-${Date.now()}`,
-                        label: now.slice(r.start + 1, r.end - 1),
-                        text: now.slice(r.start, r.end),
-                    });
+                applyChips(this.box, now, spans, caretAfter(was, now));
                 return;
             }
             const hadText = Boolean(this.typed?.trim());
