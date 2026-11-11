@@ -2421,7 +2421,10 @@ async function absorbMarks($: EngineInterface) {
                         ? a.steer
                         : m.isSteerEdit
                           ? m.steer
-                          : (a.steer ?? m.steer),
+                          : // his untick from herdr takes back the steer his tick brought
+                            h === m && !m.mark
+                            ? undefined
+                            : (a.steer ?? m.steer),
                 };
             }),
         });

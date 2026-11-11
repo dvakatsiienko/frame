@@ -2140,3 +2140,27 @@ test('exit 10: a warn-only line ahead of a floor one in a sign script still refu
     const r = await bash($, 'bash /repo/sign.sh');
     expect([r.deny, ran]).toEqual([expect.stringContaining('rm'), []]);
 });
+
+// FRM-574 rider: wing 1's 14:59 replay, a pull-copy-set of unsigned FRM-575's body, was refused as a sign
+const PULL_COPY_SET = `P=$(x linear body FRM-575 | jq -r '.data.file // .data.path'); cp /tmp/scratch-body.md "$P"; x linear body FRM-575 --set "$P"`;
+const SIGNED_BODY = `## signed\n\n✍️ signed ${today()} · body 11aa22bb\n`;
+test('exit 13: a pull-copy-set of an unsigned ticket body runs with no word of his', async ($, on) => {
+    const { ran } = world(on, [], UNSIGNED, UNSIGNED);
+    await hisNext($, 'go on');
+    expect([(await bash($, PULL_COPY_SET)).deny, ran]).toEqual([
+        undefined,
+        [PULL_COPY_SET],
+    ]);
+});
+for (const [why, body, cat] of [
+    ['the ticket is signed', SIGNED_BODY, undefined],
+    ['the copied file holds a sign line', UNSIGNED, SIGNED_BODY],
+] as const)
+    test(`exit 13: the same pull-copy-set needs his word when ${why}`, async ($, on) => {
+        const { ran } = world(on, [], body, cat);
+        await hisNext($, 'go on');
+        expect([signFlagged(await bash($, PULL_COPY_SET)), ran]).toEqual([
+            true,
+            [],
+        ]);
+    });

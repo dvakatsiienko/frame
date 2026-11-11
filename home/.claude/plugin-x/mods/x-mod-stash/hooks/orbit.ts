@@ -63,8 +63,13 @@ export const allAsksTicks = (
 // herdr's board writes one press per line of `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, each `at` above the line before:
 // the presses past `after`, the newest per ask, as the marks a glide card would leave (a steer typed there replaces the
 // ask's own), each with the ask text he pressed on, since a follow keeps the id; a line that is no press is skipped. the
-// newest wins, as at x-mod-guard: his ↩️ then 🛎 is a tick (sixth sense round 1 on FRM-544, his 16:26 no-lockout rule)
-const HERDR_MARK = { replay: 'rejected', tick: 'accepted' } as const;
+// newest wins, as at x-mod-guard: his ↩️ then 🛎 is a tick (sixth sense round 1 on FRM-544, his 16:26 no-lockout rule); his
+// untick there takes the mark and its steer back, so the ask is open again and a later tick marks it (FRM-574, PK-363:W934)
+const HERDR_MARK = {
+    replay: 'rejected',
+    tick: 'accepted',
+    untick: undefined,
+} as const;
 export function herdrTicks(text: string, after: number) {
     const marks: Record<string, RemoteMark & { text?: string }> = {};
     let last = after;
@@ -87,7 +92,7 @@ export function herdrTicks(text: string, after: number) {
             typeof id !== 'string' ||
             typeof at !== 'number' ||
             at <= after ||
-            (verdict !== 'tick' && verdict !== 'replay')
+            (verdict !== 'tick' && verdict !== 'replay' && verdict !== 'untick')
         )
             continue;
         last = Math.max(last, at);
@@ -95,7 +100,9 @@ export function herdrTicks(text: string, after: number) {
         marks[id] = {
             at,
             mark: HERDR_MARK[verdict],
-            ...(typeof steer === 'string' && steer.trim()
+            ...(verdict !== 'untick' &&
+            typeof steer === 'string' &&
+            steer.trim()
                 ? { isSteerEdit: true, steer }
                 : {}),
             ...(typeof asked === 'string' ? { text: asked } : {}),

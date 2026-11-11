@@ -204,6 +204,10 @@
   - and only on a flat line (no loop, branch, group or function), fed by no pipe or heredoc, the ticked command last on it or piped on into readers that never fail on their own (`tail`, `head`, `jq`, `cat`, `wc`, `cut`, `sort`, `uniq`, `tr`, `column`) with `set -o pipefail` first, so the line's exit is its own; anything else asks again (wisphunter on 4f7da87c)
   - and a tick, ticked command or typed sign is spent only by a run that exits 0: a failed run keeps it for the retry
   - proof: tests/herdr-close.test.ts::a tick quoting the command passes it inside a longer line: …; a tick quoting one command passes nothing else on the line: …; a ticked command that fails keeps the tick for the retry; exit 2: …; exit 7: …
+- ✅ a plain body write to an unsigned ticket is no sign (FRM-574 rider, wing 1's 14:59 replay)
+  - given a ticket with no `signed` label and no `## signed` block, when a line only pulls, copies and sets its body (`P=$(x linear body …); cp <file> "$P"; x linear body <id> --set "$P"`: x, jq and a `cp` from files that read with no sign line, no redirect, no sign word), then it runs with no word of his
+  - and a signed ticket, a copied file holding a sign line, or any other writer on the line still needs his word
+  - proof: tests/ticks.test.ts::exit 13: a pull-copy-set of an unsigned ticket body runs with no word of his; exit 13: the same pull-copy-set needs his word when …
 - ✅ his bare yes is his tick on the one guarded ask open (FRM-574 decided 3)
   - given this seat's orbit holds exactly one open ⚠️ or ✍️ ask (no mark, not resolved), when dima types «yes», «go», «approve», «i approve», «merge» or «do it» as a whole prompt at the composer or the bridge, past a session's first, then it counts as his tick on that ask for 2 h, spent once like a press
   - and none open, two open, a plain ask, «ok», «stop it», a yes inside a sentence, a peer's message or a session's first prompt opens nothing

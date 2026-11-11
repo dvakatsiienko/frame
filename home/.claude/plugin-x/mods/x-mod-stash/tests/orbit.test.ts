@@ -5533,3 +5533,46 @@ test('orbit switched off adds no first-prompt sign ask', async ($, on) => {
         [],
     );
 });
+
+// FRM-574 rider, PK-363:W934: his untick on fleet-board takes back a tick the stash already read, and a tick after it
+// marks the ask again
+test('exit 12: a herdr untick after a read tick leaves the next turn no mark, and a tick after it marks again', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    const writes = tickLog(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const at = w.clock.now();
+    files[HERDR_FILE] = press({ at, id: 'o1', steer: 'go', verdict: 'tick' });
+    await say($, 'go on');
+    await endTurn($);
+    const ticked = joined(w.contexts).join('\n');
+    w.contexts.length = 0;
+    files[HERDR_FILE] += press({ at: at + 1, id: 'o1', verdict: 'untick' });
+    await say($, 'go on');
+    await endTurn($);
+    const unticked = joined(w.contexts).join('\n');
+    const record = (writes.at(-1) as unknown[] | undefined)?.length;
+    w.contexts.length = 0;
+    files[HERDR_FILE] += press({ at: at + 2, id: 'o1', verdict: 'tick' });
+    await say($, 'go on');
+    expect([
+        /o1 🛎️ accepted/.test(ticked),
+        /o1 🛎️/.test(unticked),
+        record,
+        /o1 🛎️ accepted/.test(joined(w.contexts).join('\n')),
+    ]).toEqual([true, false, 0, true]);
+});
+
+test('of a herdr tick and his untick read together, the untick wins', async ($, on) => {
+    const files: Record<string, string> = {};
+    const w = world(on, files);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const at = w.clock.now();
+    files[HERDR_FILE] =
+        press({ at, id: 'o1', verdict: 'tick' }) +
+        press({ at: at + 1, id: 'o1', verdict: 'untick' });
+    await say($, 'go on');
+    expect(joined(w.contexts).join('\n')).not.toMatch(/o1 🛎️/);
+});

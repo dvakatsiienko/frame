@@ -1294,7 +1294,9 @@ export function pressTicks(text: string) {
             verdict,
         } = press as Record<string, unknown>;
         if (typeof id !== 'string' || typeof at !== 'number') continue;
-        if (verdict !== 'tick' && verdict !== 'replay') continue;
+        // an untick takes a tick back like a ↩️ (FRM-574, PK-363:W934)
+        if (verdict !== 'tick' && verdict !== 'replay' && verdict !== 'untick')
+            continue;
         if ((newest.get(id)?.at ?? -1) > at) continue;
         newest.set(id, {
             at,

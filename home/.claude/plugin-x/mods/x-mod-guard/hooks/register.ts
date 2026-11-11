@@ -1775,6 +1775,59 @@ async function isSignFree(
     }
     return true;
 }
+// a body the guard cannot read written to a ticket that holds no sign yet (no `signed` label, no `## signed` block) is
+// a plain edit when the line only pulls, copies and sets: x, jq and a `cp` from files that read with no sign line, no
+// redirect, no sign word anywhere (FRM-574 rider: wing 1's 14:59 pull-copy-set of unsigned FRM-575 was refused as a
+// sign); a ticket linear cannot read stays a sign
+// an empty name is a bare assignment, `P=$(…)`, its substitution judged on its own
+const PULL_COPY_SET = new Set(['', 'cp', 'jq', 'x']);
+async function isUnsignedWrite(
+    $: EngineInterface,
+    id: string,
+    command: string,
+    cwd: string,
+) {
+    const line = commandsDeep(command, cwd);
+    if (
+        SIGN_WORD.test(command) ||
+        !line.every(
+            (c) =>
+                PULL_COPY_SET.has(c.name) &&
+                !c.writes.length &&
+                !c.appends.length,
+        )
+    )
+        return false;
+    for (const c of line)
+        if (c.name === 'cp')
+            for (const w of c.args.slice(0, -1)) {
+                if (w.text.startsWith('-')) continue;
+                if (w.text.includes('$')) return false;
+                const text = await signFile($, resolve(w.text, c.dir, {}));
+                if (text === undefined || SIGN_WORD.test(text)) return false;
+            }
+    const run = await $.process
+        .run(['x', 'linear', 'read', id], { timeoutMs: 3000 })
+        .catch(() => undefined);
+    if (run?.exitCode !== 0) return false;
+    try {
+        const t = (
+            JSON.parse(run.stdout) as {
+                data?: {
+                    tickets?: { description?: unknown; labels?: unknown }[];
+                };
+            }
+        ).data?.tickets?.[0];
+        const labels = Array.isArray(t?.labels) ? t.labels : [];
+        return (
+            typeof t?.description === 'string' &&
+            !/^##\s*signed\b/im.test(t.description) &&
+            !labels.some((l) => typeof l === 'string' && /^signed$/i.test(l))
+        );
+    } catch {
+        return false;
+    }
+}
 async function signFile($: EngineInterface, file: string) {
     const read = await $.fs.read(file).catch(() => undefined);
     if (read !== undefined) return read;
@@ -2221,7 +2274,8 @@ export const register: Register = (on) => {
             const isNewSign =
                 sign.file === undefined ||
                 (signText === undefined
-                    ? !(await isSignFree($, sign.file, typed, cwd, ctx))
+                    ? !(await isSignFree($, sign.file, typed, cwd, ctx)) &&
+                      !(await isUnsignedWrite($, sign.id, typed, cwd))
                     : await hasNewSignLine($, sign.id, signText));
             // ahead of every other door: a tick, a stash word or a marker on the line's other targets never carries a sign (R3)
             // one approval of a sign covers that ticket's sign writes, label and body, in either order and on a retry, for
