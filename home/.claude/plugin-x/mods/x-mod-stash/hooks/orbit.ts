@@ -507,7 +507,7 @@ export const planTaken = (p: StashPlan): StashPlan => ({
 // herdr's band appends dima's presses (🐦‍🔥 🔥 ⏰ 💨) to `~/.claude/shelf/band-presses/band.jsonl` (dima's name, 21:36)
 export const PRESS_DIR = 'band-presses';
 // twin end
-const BAND_BUTTONS = ['afk', 'hot', 'waker', 'wind'] as const;
+const BAND_BUTTONS = ['afk', 'hot', 'override', 'waker', 'wind'] as const;
 type BandPress = {
     at: number;
     button: (typeof BAND_BUTTONS)[number];

@@ -50,7 +50,6 @@ import {
     type OverrideAsk,
     type OverrideGrants,
     isOverrideStore,
-    overrideAfter,
     overrideAsked,
     overrideStoreRefusal,
     overrideStoreWrite,
@@ -450,6 +449,16 @@ async function overrideGrantAt(
     } catch {
         return undefined;
     }
+}
+// the store after an ask. a shift's start leaves his own word standing, so its end can't take it
+function overrideAfter(
+    grants: Record<string, { at: string; by: string; until?: string }>,
+    ask: { by: string; scope: 'off' | 'prs' },
+    at: string,
+) {
+    if (ask.scope === 'off') return {};
+    if (ask.by === 'shift' && grants.prs) return grants;
+    return { ...grants, prs: { at, by: ask.by } };
 }
 // twin end
 
@@ -1009,7 +1018,15 @@ const guardedOf = (command: string) =>
     spaced(command.replace(/\s#\s*dima-ok:.*$/, ''));
 const quotesCommand = (command: string) => (t: Tick) =>
     t.targets.some((q) => spaced(q) === guardedOf(command));
-type Tick = { id: string; text: string; targets: string[]; at: number };
+// markAt: the time x-mod-stash marked the press's ask, so spending the press spends the mark that stands for it once
+// x-herdr-deck prunes the press (12b's live click: his one press ran the brake twice)
+type Tick = {
+    id: string;
+    text: string;
+    targets: string[];
+    at: number;
+    markAt?: number;
+};
 // his presses on x-herdr-deck for this session (FRM-544 slice 1, reversing FRM-552's decision 4 on his word): the ticks-write
 // rule keeps every seat's tool call out of that folder, so only x-herdr-deck writes it; a file that cannot be read is no tick
 async function herdrTicks($: EngineInterface): Promise<Tick[]> {
@@ -1025,14 +1042,18 @@ async function herdrTicks($: EngineInterface): Promise<Tick[]> {
     const { value: orbit } = await $.state
         .get(STASH_ORBIT)
         .catch(() => ({ value: undefined }));
-    const pressed = pressTicks(text).filter((t) =>
-        orbit?.asks.some(
+    const pressed = pressTicks(text).flatMap((t) => {
+        const a = orbit?.asks.find(
             (a) =>
                 `herdr:${a.id}` === t.id &&
                 a.text === t.text &&
                 a.mark === 'accepted',
-        ),
-    );
+        );
+        if (!a) return [];
+        return typeof a.markedAt === 'number'
+            ? [{ ...t, markAt: a.markedAt }]
+            : [t];
+    });
     // x-herdr-deck prunes a press from the file once x-mod-stash has taken it, so his next press there drops it: the
     // accepted mark x-mod-stash kept from it stands for the press, at the time it was marked (wing 1's o13, 19:08)
     const marked = (orbit?.asks ?? []).flatMap((a) =>
@@ -1081,6 +1102,10 @@ async function tickFor(
     const ticks = [...seatTicks, ...yes, ...(await herdrTicks($))];
     const { value: spent = [] } = await $.state.get(SPENT);
     const now = await $.clock.now();
+    const keys = (t: Tick) =>
+        [t.at, t.markAt]
+            .filter((at) => at !== undefined)
+            .map((at) => `${t.id}@${at}:${scope(t)}`);
     const tick = [...ticks]
         .reverse()
         .find(
@@ -1088,10 +1113,9 @@ async function tickFor(
                 now - t.at <= TICK_MS &&
                 t.at <= now &&
                 covers(t) &&
-                !spent.includes(`${t.id}@${t.at}:${scope(t)}`) &&
-                !spends.includes(`${t.id}@${t.at}:${scope(t)}`),
+                !keys(t).some((k) => spent.includes(k) || spends.includes(k)),
         );
-    if (tick) spends.push(`${tick.id}@${tick.at}:${scope(tick)}`);
+    if (tick) spends.push(...keys(tick));
     return tick;
 }
 // his bare yes under the one guarded ask his seat's orbit added since his last typed prompt is his tick on it (FRM-574
@@ -1334,7 +1358,7 @@ const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
 // so in a bg session only the bridge is his
 const TYPED_BY_DIMA_IN_BG = new Set(['bridge']);
 const UNPROVEN_DOOR =
-    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»). a bg session counts only what dima types into it himself; ask clio to get him there';
+    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»), or his tick on an orbit ask quoting this whole command in one backtick span runs it once (your coordinator brings the ask to him). a bg session counts only what dima types into it himself; ask clio to get him there';
 const UNPROVEN_WHY =
     "a # dima-ok marker counts only when dima's last typed prompt names its target";
 // a live mod's hooks reload into every session on save, so while its own tests are red a half-done edit there breaks the fleet

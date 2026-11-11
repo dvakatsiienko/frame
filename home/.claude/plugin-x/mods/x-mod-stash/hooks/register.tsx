@@ -3847,7 +3847,53 @@ async function overrideGrantAt(
         return undefined;
     }
 }
+// the store after an ask. a shift's start leaves his own word standing, so its end can't take it
+function overrideAfter(
+    grants: Record<string, { at: string; by: string; until?: string }>,
+    ask: { by: string; scope: 'off' | 'prs' },
+    at: string,
+) {
+    if (ask.scope === 'off') return {};
+    if (ask.by === 'shift' && grants.prs) return grants;
+    return { ...grants, prs: { at, by: ask.by } };
+}
 // twin end
+
+type OverrideGrants = Parameters<typeof overrideAfter>[0];
+
+// herdr's 🔓 press, fleet-wide: «on» is the state he asked, held until he presses off (o95, o103); the newest press
+// counts only when the store has not been written since, so his typed word or x after it wins
+const BAND_SETTINGS = 'band-settings.json';
+const OVERRIDE_WINDOW_MS = 2 * 60 * 60 * 1000;
+async function takeOverridePress(
+    $: EngineInterface,
+    home: string,
+    press: { at: number; on: boolean },
+) {
+    overrideStore ??= (await overrideStorePath($)) ?? '';
+    if (!overrideStore) return;
+    const stat = await $.fs.stat(overrideStore).catch(() => undefined);
+    if (stat && stat.mtimeMs >= press.at) return;
+    const raw = stat ? await $.fs.read(overrideStore).catch(() => '{}') : '{}';
+    let grants: OverrideGrants = {};
+    try {
+        grants = JSON.parse(raw) as OverrideGrants;
+    } catch {}
+    const next: OverrideGrants = overrideAfter(
+        grants,
+        press.on ? { by: 'band', scope: 'prs' } : { by: 'band', scope: 'off' },
+        new Date(press.at).toISOString(),
+    );
+    // on until off unless his band setting asks for a 2 h window (dima 23:10, o111)
+    const settings = await $.fs
+        .read(`${home}/.claude/shelf/${BAND_SETTINGS}`)
+        .then((t) => JSON.parse(t) as { overrideWindow?: unknown })
+        .catch(() => undefined);
+    if (press.on && next.prs && settings?.overrideWindow === '2h')
+        next.prs.until = new Date(press.at + OVERRIDE_WINDOW_MS).toISOString();
+    const after = JSON.stringify(next);
+    if (after !== raw) await $.fs.write(overrideStore, after);
+}
 
 // the path comes once a process, the id spawn being the cost; every poll after it is one file read
 async function readOverrideOn($: EngineInterface) {
@@ -4115,6 +4161,8 @@ async function takeBandPresses($: EngineInterface) {
         if (p.button === 'waker') await setWaker($, p.on, p.at);
         else await setAfk($, p.on, p.at);
     }
+    const override = presses.findLast((p) => p.button === 'override');
+    if (override) await takeOverridePress($, home, override);
     const last = Math.max(after, ...presses.map((p) => p.at));
     if (last !== read) await $.store.set(BAND_READ + sid, last);
     if (presses.length) await load($);

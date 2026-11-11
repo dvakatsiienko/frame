@@ -193,7 +193,7 @@ for (const command of ['git push --mirror origin', 'git push origin --mirror'])
         const r = await bash($, command);
         expect([w.ran, r.deny]).toEqual([
             [],
-            expect.stringMatching(/# dima-ok: origin$/),
+            expect.stringMatching(/# dima-ok: origin, or his tick/),
         ]);
     });
 

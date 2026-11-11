@@ -14,6 +14,7 @@ async function session($: Engine, on: On) {
     const clock = mock.clock(on);
     const store = new Map<string, unknown>();
     const files = new Map<string, string>();
+    const mtimes = new Map<string, number>();
     const alive = new Set([100]);
     const midway: string[] = [];
     const state = new Map<string, unknown>();
@@ -40,8 +41,21 @@ async function session($: Engine, on: On) {
         const seen = files.get(`${DIR}/${A}.json`);
         if (seen !== undefined) midway.push(seen);
         files.set(e.path, e.text);
+        mtimes.set(e.path, clock.now());
         return { value: undefined };
     });
+    on('fs.stat', (_$, e) =>
+        files.has(e.path)
+            ? {
+                  value: {
+                      isLink: false,
+                      kind: 'file' as const,
+                      mtimeMs: mtimes.get(e.path) ?? 0,
+                      size: 1,
+                  },
+              }
+            : { deny: 'ENOENT' },
+    );
     on('fs.read', (_$, e) =>
         files.has(e.path)
             ? { value: files.get(e.path) ?? '' }
@@ -70,6 +84,8 @@ async function session($: Engine, on: On) {
             },
         });
         if (cmd === 'sh') return out(`100\n${START}\n`);
+        if (cmd === 'id')
+            return out('dima:*:501:20::0:0:Dima:/home:/bin/zsh\n');
         if (cmd === 'mv') {
             const [from, to] = args.slice(1);
             const text = files.get(String(from));
@@ -106,6 +122,7 @@ async function session($: Engine, on: On) {
         clock,
         files,
         midway,
+        mtimes,
         read: (id: string) => {
             const text = files.get(`${DIR}/${id}.json`);
             return text === undefined ? undefined : JSON.parse(text);
@@ -348,4 +365,111 @@ test('a line dated ahead of now is never taken once its time passes', async ($, 
     ]);
     for (let i = 0; i < 15; i++) await s.clock.advance(4_000);
     expect(s.store.get(`wind:${A}`)).toBeUndefined();
+});
+
+// o95: herdr's 🔓 press flips the merge override fleet-wide; «on» is the state asked, held until he presses off (o103)
+const OVERRIDE = '/home/.local/state/x/operator-override.json';
+async function overridePressed(
+    $: Engine,
+    on: On,
+    lines: (now: number) => Record<string, unknown>[],
+    store?: { mtime: number; text: string },
+    settings?: string,
+) {
+    const s = await pressed($, on, () => []);
+    const now = s.clock.now();
+    if (settings) s.files.set(BAND_SETTINGS, settings);
+    if (store) {
+        s.files.set(OVERRIDE, store.text);
+        s.mtimes.set(OVERRIDE, now + store.mtime);
+    }
+    s.files.set(
+        PRESSES,
+        lines(now)
+            .map((l) => JSON.stringify(l))
+            .join('\n'),
+    );
+    await s.clock.advance(4_000);
+    return s;
+}
+
+test('an override on press turns the prs grant on by band, with no end', async ($, on) => {
+    const s = await overridePressed($, on, (now) => [
+        { at: now - 1_000, button: 'override', on: true },
+    ]);
+    expect(JSON.parse(s.files.get(OVERRIDE) ?? '{}')).toEqual({
+        prs: { at: expect.any(String), by: 'band' },
+    });
+});
+
+// dima 23:10 on o111: on until off by default, a 2 h window if his band setting asks for one
+const BAND_SETTINGS = '/home/.claude/shelf/band-settings.json';
+for (const [window, until] of [
+    ['off', undefined],
+    ['2h', 2 * 60 * 60 * 1000],
+] as const)
+    test(`an override on press with the window ${window} ${until ? 'ends 2 h after the press' : 'holds until he presses off'}`, async ($, on) => {
+        let at = 0;
+        const s = await overridePressed(
+            $,
+            on,
+            (now) => {
+                at = now - 1_000;
+                return [{ at, button: 'override', on: true }];
+            },
+            undefined,
+            JSON.stringify({ overrideWindow: window }),
+        );
+        expect(JSON.parse(s.files.get(OVERRIDE) ?? '{}').prs).toEqual({
+            at: new Date(at).toISOString(),
+            by: 'band',
+            ...(until ? { until: new Date(at + until).toISOString() } : {}),
+        });
+    });
+
+test('an override off press clears every grant', async ($, on) => {
+    const s = await overridePressed(
+        $,
+        on,
+        (now) => [{ at: now - 1_000, button: 'override', on: false }],
+        {
+            mtime: -9_000,
+            text: JSON.stringify({ prs: { at: 'x', by: 'word' } }),
+        },
+    );
+    expect(s.files.get(OVERRIDE)).toBe('{}');
+});
+
+test('an override on then off in one poll ends off', async ($, on) => {
+    const s = await overridePressed(
+        $,
+        on,
+        (now) => [
+            { at: now - 2_000, button: 'override', on: true },
+            { at: now - 1_000, button: 'override', on: false },
+        ],
+        {
+            mtime: -9_000,
+            text: JSON.stringify({ prs: { at: 'x', by: 'word' } }),
+        },
+    );
+    expect(s.files.get(OVERRIDE)).toBe('{}');
+});
+
+test("an override press older than the store's last write is not taken", async ($, on) => {
+    const s = await overridePressed(
+        $,
+        on,
+        (now) => [{ at: now - 1_000, button: 'override', on: true }],
+        { mtime: -500, text: '{}' },
+    );
+    expect(s.files.get(OVERRIDE)).toBe('{}');
+});
+
+test('an override press dated ahead of now is never taken', async ($, on) => {
+    const s = await overridePressed($, on, (now) => [
+        { at: now + 30_000, button: 'override', on: true },
+    ]);
+    for (let i = 0; i < 15; i++) await s.clock.advance(4_000);
+    expect(s.files.get(OVERRIDE)).toBeUndefined();
 });

@@ -63,7 +63,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // file at the stash's third 4 s poll, about 16 s at worst
 export const PENDING_MS = 20 * 1000;
 
-/** @typedef {'wind' | 'hot' | 'waker' | 'afk'} PressKey */
+/** @typedef {'wind' | 'hot' | 'waker' | 'afk' | 'override'} PressKey */
 /** @typedef {{ at: number, button: PressKey, on: boolean, sid?: string }} PressLine */
 /** @typedef {{ hot: { since: number } | null, wind: string | null }} ThreadState */
 /** @typedef {Partial<Record<PressKey, { at: number, on: boolean }>>} Pending */
@@ -156,6 +156,12 @@ export function bandButtons({
                     ? `keep hot: on since ${hotSince}`
                     : 'keep hot',
         },
+        // his operator override for prs: the store x-mod-guard writes, flipped by his press through the stash (o95)
+        override: {
+            isLive: true,
+            isOn: override.isOn,
+            tip: 'operator override',
+        },
         waker: {
             isLive: Boolean(fleet),
             isOn: fleet?.waker?.on === true,
@@ -188,13 +194,7 @@ export function bandButtons({
         pressable('hot', '🔥', 'hot'),
         pressable('waker', '⏰', 'waker'),
         pressable('afk', '💨', 'AFK'),
-        {
-            emoji: '🔓',
-            isOn: override.isOn,
-            key: 'override',
-            tip: 'operator override',
-            word: 'override',
-        },
+        pressable('override', '🔓', 'override'),
         {
             emoji: '🎛️',
             key: 'settings',

@@ -1,0 +1,81 @@
+// Screenshots pasted into the box, shown above it until sent. Claude Code reads the clipboard
+// itself on its paste key; a copy saved here is only the preview, kept per thread in shots.json
+// so a chat reload still shows what waits in Claude's prompt.
+import { mkdir, readFile, writeFile } from 'fs/promises';
+import { appHome, exec } from 'herdr';
+
+// image() loads from the app's own directory, so the previews live under it
+export const SHOTS_DIR = 'data/x-herdr-chatter/shots';
+const storePath = () => `${appHome()}/data/x-herdr-chatter/shots.json`;
+
+// the clipboard's image (a screenshot is PNG or TIFF) written as a PNG to argv[0]; prints «image» when
+// it wrote one. JXA from shepherdr's mods/chat/attach.js (MIT), cut to the image case.
+const MAC_CLIPBOARD_IMAGE = `ObjC.import("AppKit");
+function run(argv) {
+  const pb = $.NSPasteboard.generalPasteboard;
+  let png = pb.dataForType($.NSPasteboardTypePNG);
+  if (!png || png.isNil()) {
+    const tiff = pb.dataForType($.NSPasteboardTypeTIFF);
+    if (tiff && !tiff.isNil()) png = $.NSBitmapImageRep.imageRepWithData(tiff).representationUsingTypeProperties($.NSBitmapImageFileTypePNG, $({}));
+  }
+  if (png && !png.isNil() && png.writeToFileAtomically(argv[0], true)) return "image";
+  return "";
+}`;
+
+/** @typedef {Record<string, string[]>} ShotStore thread address → preview paths under the app dir */
+
+/** @param {string | null} text @returns {ShotStore} */
+export function parseShots(text) {
+    try {
+        const parsed = JSON.parse(text ?? '{}');
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+            ? Object.fromEntries(
+                  Object.entries(parsed).filter(
+                      ([, list]) =>
+                          Array.isArray(list) &&
+                          list.every((p) => typeof p === 'string'),
+                  ),
+              )
+            : {};
+    } catch {
+        return {};
+    }
+}
+
+/** @param {ShotStore} store @param {string} address @param {string} rel @returns {ShotStore} */
+export const shotsWith = (store, address, rel) => ({
+    ...store,
+    [address]: [...(store[address] ?? []), rel],
+});
+
+/** @param {ShotStore} store @param {string} address @returns {ShotStore} */
+export function shotsWithout(store, address) {
+    const { [address]: _gone, ...rest } = store;
+    return rest;
+}
+
+/** @returns {Promise<ShotStore>} */
+export async function loadShots() {
+    return parseShots(await readFile(storePath(), 'utf8').catch(() => null));
+}
+
+/** @param {ShotStore} store */
+export async function saveShots(store) {
+    await mkdir(`${appHome()}/${SHOTS_DIR}`, { recursive: true });
+    await writeFile(storePath(), `${JSON.stringify(store, null, 2)}\n`);
+}
+
+// the clipboard's image saved as a preview: its path under the app dir, or null when it holds none
+/** @returns {Promise<string | null>} */
+export async function saveClipboardShot() {
+    const rel = `${SHOTS_DIR}/shot-${Date.now()}.png`;
+    await mkdir(`${appHome()}/${SHOTS_DIR}`, { recursive: true });
+    const r = await exec('osascript', [
+        '-l',
+        'JavaScript',
+        '-e',
+        MAC_CLIPBOARD_IMAGE,
+        `${appHome()}/${rel}`,
+    ]).catch(() => null);
+    return r?.code === 0 && r.stdout.trim() === 'image' ? rel : null;
+}

@@ -42,6 +42,12 @@ const LANE_MEMBER = /from-name="[^"]*\b(codie|sixth sense|designer)\b/;
 const FINAL_SHA = /^(?=.*\bfinal\b).*\b[0-9a-f]{7,40}\b/m;
 const LIVE_PINGS_DUE = 3;
 const LIVE_PINGS_WAIT_MS = 60 * 60_000;
+// memory, rule and skill text weighs by count; a skill's code file is code, and counts only toward the 15 (FRM-491 re-sign, 11-11)
+const MEMORY_TEXT = /(^|\/)(memory|rules|skills)\/.*\.md$/;
+const MEMORY_TEXT_DUE = 3;
+// a ticket closed or signed by clio is a batch of its own, read off her transcript
+const TICKET_MOVE =
+    /\bx linear set\b[^\n]*--state[ =]['"]?(Done|Canceled)\b|\bticket-sign\.ts\s+\S+\s+(signed|re-signed)\b|\bx lane landed\b[^\n]*--apply\b/;
 
 export function stop(home: string, input: StopInput) {
     const thread = threadOf(home, input.session_id);
@@ -60,7 +66,9 @@ export function stop(home: string, input: StopInput) {
         !state.card_printed &&
         Date.now() - new Date(state.opened_at ?? 0).getTime() < OPEN_GRACE_MS;
     const reasons =
-        isCardWaiting || isReadInFlight ? [] : dueReasons(home, state, thread);
+        isCardWaiting || isReadInFlight
+            ? []
+            : dueReasons(home, state, thread, input.transcript_path);
     const isDue = reasons.length > 0;
     if (isDue && !state.due) state.epoch++;
     state.due = isDue;
@@ -277,14 +285,27 @@ function isLiveLane(home: string, head: string) {
     );
 }
 
-function dueReasons(home: string, state: Siesta, thread: Thread) {
+function dueReasons(
+    home: string,
+    state: Siesta,
+    thread: Thread,
+    transcriptPath?: string,
+) {
     const since = siestaLast(home, thread);
     const after = (at: string | number) =>
         new Date(at).getTime() > since.getTime();
     // a card's own fixes land before its close, so they join that card; wishkeeper's next range still reads them
     const closedAt = new Date(state.closed_at ?? 0);
-    const files = clioFiles(home, closedAt > since ? closedAt : since, thread);
-    const isMemory = files.some((f) => /(^|\/)(memory|rules|skills)\//.test(f));
+    const from = closedAt > since ? closedAt : since;
+    const files = clioFiles(home, from, thread);
+    const memoryText = files.filter((f) => MEMORY_TEXT.test(f)).length;
+    const ticketMoves = transcriptRows(transcriptPath)
+        .filter((r) => new Date(r.timestamp ?? 0).getTime() > from.getTime())
+        .flatMap((r) => toolUses([r]))
+        .filter(
+            (u) =>
+                u.name === 'Bash' && TICKET_MOVE.test(u.input?.command ?? ''),
+        ).length;
     const live = state.live_pings.filter(after);
     const isLiveDue =
         live.length >= LIVE_PINGS_DUE ||
@@ -294,7 +315,10 @@ function dueReasons(home: string, state: Siesta, thread: Thread) {
     const pings = [...state.pings.filter(after), ...(isLiveDue ? live : [])];
     return [
         files.length >= FILES_DUE ? `${files.length} files of clio's` : '',
-        isMemory ? "a memory, rule or skill file of clio's" : '',
+        memoryText >= MEMORY_TEXT_DUE
+            ? `${memoryText} memory, rule or skill text files of clio's`
+            : '',
+        ticketMoves ? `${ticketMoves} ticket close(s) or sign(s)` : '',
         pings.length ? `${pings.length} member done ping(s)` : '',
     ].filter(Boolean);
 }
@@ -526,7 +550,27 @@ function readSiesta(home: string, thread: Thread): Siesta {
         ...(kept.opened_at ? { opened_at: kept.opened_at } : {}),
         live_pings: kept.live_pings ?? [],
         pings: kept.pings ?? [],
+        ...(kept.skip ? { skip: kept.skip } : {}),
     };
+}
+
+// the door runs from clio's own shell, so its session's transcript is found by the session id cc exports
+function spawnedWishkeeper(home: string, since: Date) {
+    const sid = process.env.CLAUDE_CODE_SESSION_ID;
+    const projects = path.join(home, '.claude/projects');
+    const file =
+        sid && existsSync(projects)
+            ? readdirSync(projects)
+                  .map((d) => path.join(projects, d, `${sid}.jsonl`))
+                  .find((f) => existsSync(f))
+            : undefined;
+    return transcriptRows(file)
+        .filter((r) => new Date(r.timestamp ?? 0).getTime() >= since.getTime())
+        .flatMap((r) => toolUses([r]))
+        .some(
+            (u) =>
+                u.name === 'Agent' && u.input?.subagent_type === 'wishkeeper',
+        );
 }
 
 function writeSiesta(home: string, state: Siesta, thread: Thread) {
@@ -566,9 +610,30 @@ function door(home: string, [verb, ...args]: string[]) {
                 open: true,
                 opened_at: new Date().toISOString(),
             });
+            delete state.skip;
+            break;
+        }
+        // a siesta that runs no wishkeeper says why, once, in a log the remeasure reads
+        case 'skip': {
+            const why = args.join(' ').trim();
+            if (!why)
+                throw new Error('usage: skip <why wishkeeper is not run>');
+            state.skip = why;
+            mkdirSync(threadDir(home, thread), { recursive: true });
+            appendFileSync(
+                path.join(threadDir(home, thread), 'wishkeeper-skips.log'),
+                `${new Date().toISOString()}\t${thread.role}\t${why}\n`,
+            );
             break;
         }
         case 'card':
+            if (
+                !state.skip &&
+                !spawnedWishkeeper(home, new Date(state.opened_at ?? 0))
+            )
+                throw new Error(
+                    'no wishkeeper ran since this siesta opened: spawn it, or `skip <why>` first',
+                );
             state.card_printed = true;
             state.card_at = new Date().toISOString();
             state.highs = args.map((text) => ({ state: 'open', text }));
@@ -584,7 +649,7 @@ function door(home: string, [verb, ...args]: string[]) {
         }
         default:
             throw new Error(
-                'usage: siesta-gate.ts stop|prompt|compact (hook json on stdin) | open | card [high…] | high <n> fixed|parked [why]',
+                'usage: siesta-gate.ts stop|prompt|compact (hook json on stdin) | open | skip <why> | card [high…] | high <n> fixed|parked [why]',
             );
     }
     writeSiesta(home, state, thread);
@@ -639,6 +704,7 @@ type Siesta = {
     opened_at?: string;
     live_pings: string[];
     pings: string[];
+    skip?: string;
 };
 
 type TranscriptRow = {
@@ -653,6 +719,7 @@ type TranscriptRow = {
                       file_path?: string;
                       message?: string;
                       skill?: string;
+                      subagent_type?: string;
                       to?: string;
                   };
                   name?: string;

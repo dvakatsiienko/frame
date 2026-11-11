@@ -1402,6 +1402,30 @@ for (const [why, ask, line, other] of [
         ]).toEqual([undefined, !isSign, true, isSign ? 2 : 1]);
     });
 
+    // 12b's live click, 21:51: his one press ran the brake twice: x-herdr-deck pruned the spent press, and x-mod-stash's
+    // mark of it, at its own time, counted as a second press
+    test(`a x-herdr-deck press on ${why} pruned after its run counts no second time as its mark${isSign ? ', a retry too' : ''}`, async ($, on) => {
+        const lines = [press(ask, NOW - 1000)];
+        const p = JSON.parse(press(ask)) as { id: string; text: string };
+        const { ran } = pressWorld(on, lines, [
+            {
+                id: p.id,
+                isHerdrMark: true,
+                mark: 'accepted',
+                markedAt: NOW - 1,
+                text: p.text,
+            },
+        ]);
+        const first = await bash($, line);
+        lines.splice(0);
+        const second = await bash($, line);
+        expect([first.deny, second.deny !== undefined, ran.length]).toEqual([
+            undefined,
+            !isSign,
+            isSign ? 2 : 1,
+        ]);
+    });
+
     test(`a x-herdr-deck press on ${why} older than 2 h proves nothing`, async ($, on) => {
         const { clock, ran } = pressWorld(on, [press(ask)]);
         await clock.advance(2 * 60 * 60 * 1000 + 1);
@@ -2443,6 +2467,11 @@ for (const [why, line] of [
         'a set -- pair loop names the id in a variable',
         'set -- a.md FRM-1 b.md FRM-2; while [ $# -gt 0 ]; do f=$1; id=$2; shift 2; x linear body $id --set /repo/$f; done',
     ],
+    // clio's o98 (dima's tick 22:27): an awk merge of groomed lines into FRM-577's pulled body, refused as a sign
+    [
+        'an awk writes the body file and the set is read by jq',
+        `S=/repo; awk 'NR==FNR{a[++n]="* "$0; next} {print} FNR==8{for(i=1;i<=n;i++) print a[i]}' /repo/g.md $S/b.md > $S/b.new; sed -n 7,12p $S/b.new | cut -c1-70; x linear body FRM-1 --set $S/b.new | jq -r .status`,
+    ],
 ] as const)
     test(`r2: ${why} on a signed ticket runs with no tick, its set judged when it runs`, async ($, on) => {
         const { ran } = world(on, [], SIGNED_TODAY());
@@ -2500,8 +2529,41 @@ for (const [why, line] of [
         'a command off the allow-list',
         `${PY_SIGNS}pnpm build; x linear body FRM-1 --set /repo/b.md`,
     ],
+    // sixth sense round 5 on e9d68294: an awk that can run a command runs it out of the check's sight
+    [
+        'an awk program that runs a command',
+        `${PY_SIGNS}awk 'BEGIN{system("cp /repo/c.md /repo/b.md")}'; x linear body FRM-1 --set /repo/b.md`,
+    ],
 ] as const)
     test(`r2: ${why} stays refused with no tick`, async ($, on) => {
+        const { ran } = world(on, [], SIGNED_TODAY());
+        on('fs.read', () => ({ value: SIGNED_TODAY() }));
+        expect([signFlagged(await bash($, line)), ran]).toEqual([true, []]);
+    });
+
+// clio's o98: a script's argument that names a body set is its data, never its code: the script's own text is read as a
+// script the line runs; inline code (`node -e`, `python3 -c`, a heredoc on stdin) still signs every id it names
+const FLYWAY =
+    "cd /repo && node script/flyway-done.ts PK-349 --add 'groom homes blocked: x linear body --set on FRM-1 (unsigned) is refused as a sign' >/dev/null && echo added";
+test('a script argument naming a body set signs nothing', async ($, on) => {
+    const { ran } = world(on, [], SIGNED_TODAY());
+    on('fs.read', () => ({ value: "console.log('a flyway line');\n" }));
+    const r = await bash($, FLYWAY);
+    expect([r.deny, ran]).toEqual([undefined, [FLYWAY]]);
+});
+for (const line of [
+    `node -e "const c = 'x linear body FRM-1 --set /repo/b.md'; require('child_process').execSync(c)"`,
+    `python3 -c "import os; os.system('x linear body FRM-1 --set /repo/b.md')"`,
+    "python3 - <<'EOF'\nimport os; os.system('x linear body FRM-1 --set /repo/b.md')\nEOF",
+    // sixth sense round 5 on e9d68294: a flag's value before the inline-code flag is no script file
+    `python3 -W ignore -c "import subprocess; subprocess.run(['x','linear','body','FRM-1','--set','/repo/b.md'])"`,
+    `python3 -X dev -c "import os; os.system('x linear body FRM-1 --set /repo/b.md')"`,
+    `node -r ./x.js -e "const c = 'x linear body FRM-1 --set /repo/b.md'; require('child_process').execSync(c)"`,
+    `ruby -I lib -e "system('x linear body FRM-1 --set /repo/b.md')"`,
+    `perl -I lib -e "system('x linear body FRM-1 --set /repo/b.md')"`,
+    `awk 'BEGIN{system("x linear body FRM-1 --set /repo/b.md")}'`,
+])
+    test(`inline code naming a body set still signs: ${line.split(' ')[0]} ${line.split(' ')[1]}`, async ($, on) => {
         const { ran } = world(on, [], SIGNED_TODAY());
         on('fs.read', () => ({ value: SIGNED_TODAY() }));
         expect([signFlagged(await bash($, line)), ran]).toEqual([true, []]);

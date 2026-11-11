@@ -106,6 +106,24 @@ for (const [family, command, door] of FAMILIES)
         expect(w.ran).toEqual([]);
     });
 
+// dima's o101: a refusal his tick can open says so, since a quoted command ticked runs once
+for (const [family, command] of FAMILIES)
+    test(`${family}'s refusal names the tick door`, async ($, on) => {
+        mock.store(on);
+        world(on);
+        expect((await bash($, command)).deny).toContain(
+            'or his tick on an orbit ask quoting this whole command',
+        );
+    });
+
+test('a dima-ok marker his prompt never named names the tick door', async ($, on) => {
+    mock.store(on);
+    world(on);
+    expect((await bash($, 'rm -rf build # dima-ok: build')).deny).toContain(
+        'or his tick on an orbit ask quoting this whole command',
+    );
+});
+
 for (const [family, command, , target] of FAMILIES)
     test(`${family} runs with a dima-ok naming its target`, async ($, on) => {
         mock.store(on);

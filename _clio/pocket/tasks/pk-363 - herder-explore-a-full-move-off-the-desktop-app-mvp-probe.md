@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T19:57:00Z'
+updated_date: '2026-11-11T21:15:00Z'
 labels:
   - m
   - clio-main
@@ -2071,4 +2071,40 @@ PK-363:W1075 (2026-11-11 21:39, dima): how do you think about it? should an arch
 PK-363:W1076 (2026-11-11 21:43, dima): yes, drift. the 🔧 codie's question was already in my orbit, and my 🔔 line repeated it. from now on, only the orbit ask. (context, not dima's words: "yes, drift" answers clio's question on the 🔔 lines; the 🔧 line is codie's question; the steer time is the 2143 chore time, since the raw has no time for it.)
 PK-363:W1077 (2026-11-11 21:43, dima): why did it drift? how to solve? did the silent message system stop working? i thought we finished it. ❓ (context, not dima's words: a question that follows W1076.)
 PK-363:W1078 (2026-11-11 21:43, dima): design and architecture. maybe parked tails lane codie can help? ❓ (context, not dima's words: "design and architecture" is a topic on its own line in the raw; "tails" as written, meaning the parked lanes.)
+
+PK-363:W1085 (2026-11-11 22:19, dima): (context, not dima's words: a fleet line pasted into the raw: "merge: gh pr merge 162 --squash (held, awaiting codie go)".) pick: run it once. who starts it? mods lane or herdr codie? when does the clicking probing finish? ❓
+PK-363:W1086 (2026-11-11 22:19, dima): I keep ticking non stop and it feels like an infinite ticking loop.
+PK-363:W1087 (2026-11-11 22:19, dima): (context, not dima's words: a fleet line pasted into the raw: the red lock on the band means the PR override is on, since yesterday at 16:37, with no end time; until it's off, a plain merge in frame or bytes gets past every guard except the brake.) when will I have the ability to pick myself when I allow PRs? ❓
+PK-363:W1088 (2026-11-11 22:19, dima): I actually like PR override to be on. do you need it off? ❓
+PK-363:W1079 (2026-11-11 22:11, dima): I was busy across everything and only now got back to you. what interesting things happened so far since my last message? print a compact brief, not too much information please. ❓
+PK-363:W1080 (2026-11-11 22:11, dima): I have a lot of clicks. I clicked everything. is clicking stopped and does it already work? ❓
+PK-363:W1081 (2026-11-11 22:11, dima): what about measures? I did `Rex terminal scroll sample` twice and on the second attempt herdr codie seemed to tell me that it worked. did it work? ❓ (context, not dima's words: "herdr codie" is the herdr lane member, as written in the raw.)
+PK-363:W1082 (2026-11-11 22:11, dima): what about architecture review? is it settled? I briefly read it and I think we can start with it. it's fine. ❓
+PK-363:W1083 (2026-11-11 22:11, dima): any other interesting info for me? ❓
+PK-363:W1084 (2026-11-11 22:11, dima): also tell what's next. you told you want to grill, to interview me on assistant, or what? what's the next step? ❓ (context, not dima's words: "assistant" as written in the raw.)
+
+PK-363:W1096 (2026-11-11 22:56, dima, o106 steer): member goes quiet: maybe 15 min? or 20m? I think if someone is parked for longer, it is not a good sign. (context, not dima's words: the steer's own time is not in its raw; stamped with the 22:56 chore time because no orbit-log time was found for it.)
+PK-363:W1097 (2026-11-11 22:56, dima): but there should be an exception for «officially parked members», like the currently parked «tails lane»; it should not wake you. how? ❓
+PK-363:W1089 (2026-11-11 22:56, dima, o104 steer): yes, Shift reshaped. I don't want us to draw away Shift, at least until we can cook out an autopilot to work. (context, not dima's words: the steer's own time is not in its raw; stamped with the 22:56 chore time because no orbit-log time was found for it.)
+PK-363:W1090 (2026-11-11 22:56, dima): additionally, if we move the autopilot into Herdr and Shift also moves into Herdr fully, we will kind of lock ourselves out in Herdr (probably not too bad if it works well). let's be mindful.
+PK-363:W1091 (2026-11-11 22:56, dima): maybe let's move in the autopilot direction, but instead of deleting Shift, fully archive it or put it onto a long shelf somewhere disconnected from memory but not forgotten, at least until the autopilot test drive proves we cooked something truly useful.
+PK-363:W1098 (2026-11-11 22:56, dima, o108 steer): I think my operator override should work in autopilot mode, because usually I carefully plan the scopes of what we do, so I am aware of what is about to be built. (context, not dima's words: the steer's own time is not in its raw; stamped with the 22:56 chore time because no orbit-log time was found for it.)
+PK-363:W1099 (2026-11-11 22:56, dima): in such cases, when I enable operator override, I want it to work in autopilot.
+PK-363:W1100 (2026-11-11 22:56, dima): if I allow you to do merges yourself, then you should be able to merge and never be blocked by this move.
+PK-363:W1092 (2026-11-11 22:56, dima, o105 steer): I'm not sure it will work, but let's try. (context, not dima's words: the steer's own time is not in its raw; stamped with the 22:56 chore time because no orbit-log time was found for it.)
+PK-363:W1093 (2026-11-11 22:56, dima): and why, what are the standing orders? do you mean the instructions for autopilot? ❓
+PK-363:W1094 (2026-11-11 22:56, dima): currently the instructions are shaped as a skill (the shift), and the autopilot way will be to move them into the settings, right? ❓
+PK-363:W1095 (2026-11-11 22:56, dima): okay, but let's also have an ability for settings to make them editable by you, just in case it's the settings scope.
+PK-363:W1101 (2026-11-11 22:56, dima): what is 20m clock? ❓ (context, not dima's words: the raw first quotes crow: a 20-minute clock costs about 72 extra turns a day, so Q3 now uses events only.)
+PK-363:W1102 (2026-11-11 22:56, dima): proceed. are you sure autopilot shape is good? ❓
+
+PK-363:W1103 (2026-11-11 23:00, dima): find some tails you could solve without me.
+PK-363:W1104 (2026-11-11 23:02, dima): lets do if another round left. (context, not dima's words: the line before the arrow is a quoted reply saying there is one autopilot round and nothing else tonight.)
+PK-363:W1105 (2026-11-11 23:14, dima, o112 steer): Maybe let's just have a dedicated switch for autopilot, the same or similar as «shepardr» have? ❓
+PK-363:W1106 (2026-11-11 23:14, dima, o112 steer): the real «switch» element not a button - i saw it was shaped as real switch like in html, and do not tie afk btn to it let it be separate
+PK-363:W1107 (2026-11-11 23:14, dima, o112 steer): toggle yes, not a button. and if i like the toggle (switch) i may move other buttons in my band to toggle (switch) shape (another element type)
+PK-363:W1108 (2026-11-11 23:14, dima, o114 steer): yes, no artifacts, plain, clean, well readable report.
+PK-363:W1109 (2026-11-11 23:13, dima): is settings worth architecture and plan? ❓
+PK-363:W1110 (2026-11-11 23:13, dima): when we will have a designer decision? ❓
+PK-363:W1111 (2026-11-11 23:13, dima): i want pretty look in herdr.
 <!-- SECTION:NOTES:END -->

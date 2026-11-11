@@ -137,6 +137,7 @@ before writing, whether the work continues here or in a fresh thread — a CST f
 work in the same thread is wasted tokens and a stale file. slug `<runid-topic>-halt`. a previous
 CST marked FROZEN is never superseded — save alongside and say which is which.
 the CST lists dima's chat lines since the last report, each with its answer or «open», read with `node ~/frame/_clio/script/chat-lines.ts --since-stamp` — orbit and the pocket hold only what reached a tool, so a chat-only ask falls through without this.
+the draft gets wishkeeper's checkpoint read before it is saved, the day's backstop (`clio:checkpoint` § 3.5, FRM-491); each finding folds in first.
 🐦‍⬛ crow lives one clio session; its notes and verdicts stay on disk for the trial board (phase 3b reads `~/.local/state/crow/notes.jsonl` + `verdicts.jsonl` into `docs/test-drive/crow.md`).
 - **her own background first**: every background shell and agent stopped, and each live `Monitor` stopped by its id with `TaskStop`, a live watch makes a clio wait instead of halt; a lane watch still needed goes into the CST as a first-act, what it waited for
 - **stop order: before the CST is written, `pnpm -C ~/frame crow:stop` (a tab: 🔥 off, the tab stays) and helga's stop (`claude stop <id>`; a pane helga: `hc kill <its terminal>`), then `limactl stop vm-go-test` once no lane runs go tests (FRM-551: its ram back each night); the CST roster copies their output, never a guess**

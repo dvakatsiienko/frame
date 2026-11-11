@@ -20,6 +20,7 @@ import {
     gitParts,
     hasFlag,
     hidingScript,
+    isAwkRunner,
     isFlag,
     isJobTmp,
     isThrowaway,
@@ -623,7 +624,7 @@ export function markedBy(command: string) {
     return (r: Refusal) => r.targets.every((t) => ok.has(t));
 }
 export function message(r: Refusal) {
-    return `nothing in this command ran — x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. only after dima's word, end the command with # dima-ok: ${r.targets.join(' ')}`;
+    return `nothing in this command ran — x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. only after dima's word, end the command with # dima-ok: ${r.targets.join(' ')}, or his tick on an orbit ask quoting this whole command in one backtick span runs it once (your coordinator brings the ask to him)`;
 }
 
 // the dirs a `CI=1 pnpm install` in this command runs in, for the caller to check for a changed manifest
@@ -762,6 +763,9 @@ export function bodyWritersRead(
     });
 }
 const OPAQUE_RUNNER = /^(python[\d.]*|node|bun|deno|ruby|perl)$/;
+// what may stand before a script file: python's flags that take no value; any other runner's flag may take one
+// (`-W ignore`, `node -r ./x.js`, `ruby -I lib`), so its value would read as the file (sixth sense round 5 on e9d68294)
+const PY_BARE_FLAGS = /^-[BEIOSbdqsuv]+$/;
 // every sign on a line: `x linear set <id> --add-label signed`, or `x linear body <id> --set <file>` whose file the caller
 // reads for a sign line (FRM-427, o197)
 export function signWords(
@@ -773,8 +777,25 @@ export function signWords(
     for (const c of commandsDeep(command, cwd)) {
         // a program the guard cannot parse that runs a linear set or body write signs each id its text names (sixth sense
         // round 2 on a3cfd939: python's subprocess ran `x linear body … --set` past every word of his)
-        if (OPAQUE_RUNNER.test(c.name)) {
-            const text = [...c.args.map((w) => w.text), ...c.bodies].join('\n');
+        if (OPAQUE_RUNNER.test(c.name) || isAwkRunner(c)) {
+            // a script file's own text is read as a script the line runs, so the words after it are its data (clio's o98:
+            // a flyway line naming a body set on FRM-577 was read as a sign); inline code, stdin and a module stay code
+            const words = c.args.map((w) => w.text);
+            const script = words.findIndex((w) => !w.startsWith('-'));
+            const isScriptFile =
+                OPAQUE_RUNNER.test(c.name) &&
+                script >= 0 &&
+                words[script] !== '-' &&
+                words
+                    .slice(0, script)
+                    .every(
+                        (w) =>
+                            c.name.startsWith('python') &&
+                            PY_BARE_FLAGS.test(w),
+                    );
+            const text = [...(isScriptFile ? [] : words), ...c.bodies].join(
+                '\n',
+            );
             if (/\blinear\b/.test(text) && /--set\b|--add-label\b/.test(text))
                 out.push(
                     ...[...new Set(text.match(TICKET_ANY) ?? [])].map((id) => ({

@@ -45,7 +45,7 @@ describe('the measurer draws few rows a pass, the ones that matter first', () =>
     const keys = Array.from({ length: 200 }, (_, i) => `k${i}`);
 
     test('new rows go nearest the view first, at most MEASURE_NEW', () => {
-        const order = measureOrder(keys, new Map(), new Map(), 199, 0);
+        const order = measureOrder(keys, new Map(), new Map(), 199);
         expect(order).toHaveLength(MEASURE_NEW);
         expect(order[0]).toBe(199);
         expect(order.at(-1)).toBe(199 - MEASURE_NEW + 1);
@@ -53,32 +53,29 @@ describe('the measurer draws few rows a pass, the ones that matter first', () =>
 
     test('a settled chat draws nothing out of sight: every frame lays out what the measurer holds', () => {
         const heights = new Map(keys.map((k) => [k, 50]));
-        expect(measureOrder(keys, heights, new Map(), 12, 1e9)).toEqual([]);
+        expect(
+            measureOrder(keys, heights, new Map(keys.map((k) => [k, 2])), 12),
+        ).toEqual([]);
     });
 
-    test('a height measured a moment ago is measured again, an old one is not', () => {
+    test('a height not yet read the same twice is measured again, a settled one is not', () => {
         const heights = new Map([
             ['k3', 50],
             ['k4', 50],
         ]);
-        const measuredAt = new Map([
-            ['k3', 9000],
-            ['k4', 1000],
+        const sameReads = new Map([
+            ['k3', 1],
+            ['k4', 2],
         ]);
-        const order = measureOrder(
-            keys.slice(0, 5),
-            heights,
-            measuredAt,
-            0,
-            10000,
-        );
-        expect(order).toEqual([0, 1, 2, 3]);
+        expect(measureOrder(keys.slice(0, 5), heights, sameReads, 0)).toEqual([
+            0, 1, 2, 3,
+        ]);
     });
 
     test('a pass never draws more than MEASURE_MAX rows', () => {
         const heights = new Map(keys.slice(0, 150).map((k) => [k, 50]));
-        const measuredAt = new Map(keys.slice(0, 150).map((k) => [k, 1e9]));
-        const order = measureOrder(keys, heights, measuredAt, 0, 1e9);
+        const sameReads = new Map(keys.slice(0, 150).map((k) => [k, 0]));
+        const order = measureOrder(keys, heights, sameReads, 0);
         expect(order.length).toBe(MEASURE_MAX);
         expect(order.slice(0, MEASURE_NEW)).toEqual(
             Array.from({ length: MEASURE_NEW }, (_, i) => 150 + i),

@@ -72,7 +72,7 @@
       // herdr mods import `herdr`, `gpui-kit` and `gpui-base`, modules the Herdr app provides at load, and herdr loads a
       // mod through its default export. its runtime names `fs/promises`, `os`, `buffer` bare: `node:fs/promises` fails
       // `herdr-app check` with «cannot resolve module» (herdr-app 0.1.14, 2026-11-10).
-      "includes": ["home/.config/herdr-app/mods/**"],
+      "includes": ["home/.config/herdr-app/mods/**", "herdr/kit/**"],
       "linter": {
         "rules": {
           "correctness": { "noUndeclaredDependencies": "off" },

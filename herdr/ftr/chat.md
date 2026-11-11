@@ -59,8 +59,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a pasted image survives a chat reload
   - given dima pasted a screenshot into a thread's box and has not sent it
   - when the chat reloads
-  - then the image is still waiting with the next message, shown by its chip
-  - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355)
+  - then the image is still waiting with the next message, shown by its 56 px preview above the box
+  - and a send or Remove takes the preview away with the image
+  - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355); FRM-562 part B saves a preview copy beside Claude's own paste
 - ⬜ the shared keys carry the x-herdr name
   - given the chat, the status bar and the agents list share `chat.look`, `chat.subs`, `chat.containers`
   - then each key is `x-herdr-chatter.*`, read by every mod under its new name, and «zoo» appears nowhere
@@ -177,6 +178,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given the chat shows its box
   - then the text card, rounder and with a soft shadow, rests on a narrower card holding the model and effort pickers; a round ↑ send sits in the text card's bottom right, lit once text is typed, and the text uses the full width above one button-high bottom row
   - and the box shows no placeholder; Enter still sends
+  - and a hover on the lit ↑ turns it ink, and it spins from the press until the thread has the message (FRM-562 part B)
   - decision: his word, 15:15: «still eats space» on a right gutter; the bottom row is the one herdr allows (Textarea has no per-line inset)
 - ✅ the chat holds still at the bottom
   - given a long chat scrolled to its newest message
