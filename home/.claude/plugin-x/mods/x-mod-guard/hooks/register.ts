@@ -708,6 +708,7 @@ async function realPath($: EngineInterface, file: string) {
 // 1024: a loop over five pocket lines read 275 words, and the cap refused it (wing 1's flyway adds, 20:57)
 const FENCE_TEXTS = 1024;
 const FENCE_FANOUT = 1024;
+const FENCE_NAMES = new RegExp(`^(orbit-ticks|${PRESS_DIR}|shelf|store)$`, 'i');
 async function fenceLanding($: EngineInterface, command: string, cwd: string) {
     const home = (await $.env.get('HOME')) ?? '';
     const ticks = (await realPath($, `${home}/.claude/shelf/orbit-ticks`)).key;
@@ -776,10 +777,21 @@ async function onDisk($: EngineInterface, text: string, home: string) {
                     // the kernel steps back from where a link lands, never from its spelling
                     next.push(dirname((await realPath($, dir)).file));
                 else if (!isGlob(pattern)) next.push(joinPath(dir, seg));
-                else
-                    for (const entry of await $.fs.list(dir).catch(() => []))
-                        if (globMatches(pattern, entry.name))
-                            next.push(joinPath(dir, entry.name));
+                else {
+                    // a plain file lands where its siblings do, so one stands for them all in the fan-out (g4: helga's
+                    // `$(cat …)` word in clio's folder of 1,364 grooms landed past the cap); a fence's own name stays
+                    let isFileKept = false;
+                    for (const entry of await $.fs.list(dir).catch(() => [])) {
+                        if (!globMatches(pattern, entry.name)) continue;
+                        const isPlain =
+                            entry.kind === 'file' &&
+                            !entry.isLink &&
+                            !FENCE_NAMES.test(entry.name);
+                        if (isPlain && isFileKept) continue;
+                        isFileKept ||= isPlain;
+                        next.push(joinPath(dir, entry.name));
+                    }
+                }
             }
             if (next.length > FENCE_FANOUT) return undefined;
             at = next;

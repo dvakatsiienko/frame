@@ -38,6 +38,8 @@ type Frame = {
     hasQuote: boolean;
     at: number;
     from: number;
+    // a dq marker's open `${` levels, each true while a quote nested in it is open
+    braces?: boolean[];
 };
 
 // a `$` the shell expands: a name, a digit, `{`, `(` or a special parameter
@@ -102,6 +104,9 @@ export function parse(command: string): Parsed {
     let isWord = false;
     let isExpanding = false;
     let isQuoted = false;
+    // the `${` levels open inside double quotes: there a `"` opens a quote of its own, and a `}` closes the level only
+    // outside it (g2: `"${x:-"$'"}"; rm -rf ~`, the `rm` read as text)
+    let braces: boolean[] = [];
     let isBare = false;
     let hasQuote = false;
     let at = 0;
@@ -161,6 +166,7 @@ export function parse(command: string): Parsed {
         isWord = false;
         isExpanding = false;
         isQuoted = false;
+        braces = [];
     };
     // the inner commands end; the outer one goes on where it stopped, the substitution standing in its word
     const close = () => {
@@ -182,8 +188,21 @@ export function parse(command: string): Parsed {
     // a substitution that sat inside double quotes resumes them
     const resume = () => {
         if (stack.at(-1)?.kind !== 'dq') return;
-        stack.pop();
+        braces = stack.pop()?.braces ?? [];
         isQuoted = true;
+    };
+    // the `case` heads the frame holds past their `esac`: a `)` there ends a pattern, never the frame (g2: zsh runs the
+    // `rm` in `"$(case x in x) rm -rf ~;; esac)"`)
+    const openCases = () => {
+        let n = 0;
+        const heads = [
+            ...segments.slice(stack.at(-1)?.from ?? 0).map((s) => s.words[0]),
+            words[0] ?? (isWord ? { text } : undefined),
+        ];
+        for (const w of heads)
+            if (w?.text === 'case') n++;
+            else if (w?.text === 'esac') n--;
+        return n;
     };
     // a quote around a substitution is a marker frame: closing the substitution resumes the quote
     const quoted = (kind: Frame['kind']) => {
@@ -191,6 +210,7 @@ export function parse(command: string): Parsed {
             stack.push({
                 at: 0,
                 bodies: [],
+                braces,
                 from: segments.length,
                 hasQuote: false,
                 isBare: false,
@@ -323,8 +343,21 @@ export function parse(command: string): Parsed {
         const c = command[i] ?? '';
         const next = command[i + 1] ?? '';
         if (isQuoted) {
-            if (c === '"') {
+            if (c === '"' && braces.length) {
+                braces[braces.length - 1] = !braces.at(-1);
+                hasQuote = true;
+                i++;
+            } else if (c === '"') {
                 isQuoted = false;
+                i++;
+            } else if (c === '$' && next === '{') {
+                braces.push(false);
+                add('${');
+                isExpanding = true;
+                i += 2;
+            } else if (c === '}' && braces.length && !braces.at(-1)) {
+                braces.pop();
+                add('}');
                 i++;
             } else if (c === '\\') {
                 add(next);
@@ -376,8 +409,11 @@ export function parse(command: string): Parsed {
             open('group');
         } else if (c === ')') {
             i++;
-            close();
-            resume();
+            if (stack.length && openCases() > 0) endSegment(';');
+            else {
+                close();
+                resume();
+            }
         } else if (c === ';') {
             i += next === ';' ? 2 : 1;
             endSegment(';');

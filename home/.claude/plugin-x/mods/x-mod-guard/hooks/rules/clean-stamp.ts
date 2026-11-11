@@ -25,6 +25,8 @@ const READERS = new Set([
     'bat',
     'cat',
     'cd',
+    // g4: clio's `grep … | tail -2 | cut -c1-400` in the ticks folder, refused as a write
+    'cut',
     'diff',
     'dirname',
     'du',
@@ -37,6 +39,7 @@ const READERS = new Set([
     'ls',
     'md5',
     'more',
+    'nl',
     'printf',
     'pushd',
     'readlink',
@@ -46,6 +49,7 @@ const READERS = new Set([
     'stat',
     'tail',
     'test',
+    'tr',
     'wc',
 ]);
 // these run text the parser cannot read, so a line that names the store beside one counts as touching it
@@ -61,7 +65,9 @@ function operandsOf(words: string[]) {
     ];
 }
 
-function onlyReads(c: Command, named: (text: string) => boolean) {
+function onlyReads(c: Command, isNamed: (text: string) => boolean) {
+    // a relative operand lands where the line's `cd` left it (g4: `cd <dir> && cp f "$(…)"` through a link there)
+    const named = (t: string) => isNamed(t) || isNamed(`${c.dir}/${t}`);
     const words = c.args.map((w) => w.text);
     const operands = operandsOf(words);
     // sed writes from inside its script too (`w <file>`), so the store may stand only as the file it reads
