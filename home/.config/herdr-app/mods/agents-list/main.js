@@ -28,7 +28,7 @@ import {
 } from 'herdr';
 
 import { SOUNDS_ON, isSoundOn, startJobs } from './jobs.js';
-import { inOrder, moved, nextOrder } from './order.js';
+import { heirs, inOrder, moved, nextOrder } from './order.js';
 
 function find(node, id) {
     if (node?.id === id) return node;
@@ -287,6 +287,10 @@ export default class Agents extends View {
         this.changed = JSON.parse(localStorage.getItem('changed') ?? '{}');
         this.pins = JSON.parse(localStorage.getItem('pins') ?? '[]');
         this.order = JSON.parse(localStorage.getItem('order') ?? '[]');
+        // each ordered address's thread name, kept after its terminal goes, so a restarted thread finds its place
+        this.orderNames = JSON.parse(
+            localStorage.getItem('orderNames') ?? '{}',
+        );
         cx.timer.every(30000, (cx) => cx.notify());
         // New agents' characters and the ♪ sounds (the Zoo view used to do this; jobs.js).
         startJobs(cx);
@@ -326,6 +330,27 @@ export default class Agents extends View {
     setOrder(order) {
         this.order = order;
         localStorage.setItem('order', JSON.stringify(order));
+    }
+
+    /**
+     * the listed threads' names joined to the kept ones; a name for an address no longer ordered leaves
+     * @param {{ address: string }[]} list
+     * @returns {Record<string, string>}
+     */
+    keepNames(list) {
+        /** @type {Record<string, string>} */
+        const next = { ...this.orderNames };
+        for (const a of list) {
+            const name = sessionName(a.address);
+            if (name) next[a.address] = name;
+        }
+        const ordered = new Set([...this.order, ...list.map((a) => a.address)]);
+        for (const k of Object.keys(next)) if (!ordered.has(k)) delete next[k];
+        if (JSON.stringify(next) !== JSON.stringify(this.orderNames)) {
+            this.orderNames = next;
+            localStorage.setItem('orderNames', JSON.stringify(next));
+        }
+        return next;
     }
 
     setPins(pins) {
@@ -607,12 +632,17 @@ export default class Agents extends View {
         trackTurns(list, all);
         const isYours = sort.id === 'yours';
         if (isYours) {
-            const order = nextOrder(
-                this.order,
-                list.map((a) => a.address),
-                new Set(
-                    all.filter((k) => k.state === 'live').map((k) => k.address),
+            const live = new Set(
+                all.filter((k) => k.state === 'live').map((k) => k.address),
+            );
+            const order = heirs(
+                nextOrder(
+                    this.order,
+                    list.map((a) => a.address),
+                    live,
                 ),
+                this.keepNames(list),
+                live,
             );
             if (order.join() !== this.order.join()) this.setOrder(order);
             list = inOrder(list, this.order);
@@ -786,6 +816,8 @@ export default class Agents extends View {
             // short), the space after it, dim and always whole.
             const full = isYours || isPinned;
             const both = full && Boolean(more) && Boolean(a.space_name);
+            // one space: its name on every row says nothing (dima, 19:59: «it is redundant currently»)
+            const withSpace = both && spaces().length > 1;
             const name =
                 sessionName(a.address) ??
                 (both
@@ -892,7 +924,7 @@ export default class Agents extends View {
                                 .child(name),
                         )
                         // Right-click the space name: rename the space (Herdr asks for the name).
-                        .when(both, (el) =>
+                        .when(withSpace, (el) =>
                             el.child(
                                 div()
                                     .id(`ag-space-${a.address}`)

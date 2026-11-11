@@ -6,7 +6,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given threads come, go and change state
   - then no Unread or Working section shows, a new thread joins at the end, and a row never moves when its state changes; the dot, the tick and the spinner stay (shot 1932)
   - and dima drags a row to set its place, the order kept across restarts
-  - not checked: the drag itself, by his hand
+  - and nothing but his drag changes it: a herdr start that reads no agents yet, a thread that goes, or one restarted in a new terminal (it takes its old place by name)
+  - and with one space, no row names it: the «· frame» suffix shows only once a second space exists (shot `looks/PK-363/2001-agents-list-no-space.png`)
+  - decision: the order is never trimmed on a read; past 200 addresses the oldest gone ones leave (dima, 19:59: «do not break or change under any circumstances»)
+  - not checked: the drag itself, by his hand; a herdr restart with the new code
 - ⬜ each tab shows its thread's emoji and session name, with no zoo creature (x-herdr-tabs, FRM-567)
   - given x-herdr-tabs is placed in the layout
   - then every agent tab reads as that thread's row in the agents list and on the deck, a long name cut with an ellipsis and whole on hover; the dot, the tick and the spinner match the agents list's
