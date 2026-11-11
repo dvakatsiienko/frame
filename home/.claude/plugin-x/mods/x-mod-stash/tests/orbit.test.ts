@@ -4089,6 +4089,14 @@ for (const [text, pick] of [
     ['sign FRM-1 please', 'sign off'],
     ['sign FRM-1 please', 'yep, sign'],
     ['sign FRM-1 please', 'Sign it.'],
+    // sixth sense round 8 on 2093f838: a sign verb anywhere wants the shape, whatever opens the pick
+    ['sign FRM-1 please', 'absolutely, sign it'],
+    ['sign FRM-1 please', 'go ahead and sign'],
+    ['sign FRM-1 please', 'please sign'],
+    ['sign FRM-1 please', 'yes please, sign it'],
+    ['sign FRM-1 please', 'yes!! sign it'],
+    ['sign FRM-1 please', 'y, sign it'],
+    ['sign FRM-1 please', 'lgtm, sign it'],
 ] as const)
     test(`add refuses the pick «${pick}» on a mis-shaped sign ask`, async ($, on) => {
         world(on);
@@ -4176,6 +4184,16 @@ for (const pick of [
     'yes. merge it',
     'ok merge',
     'approve the merge',
+    // sixth sense round 8 on 2093f838: a merge verb anywhere wants the shape
+    'please merge',
+    'go ahead, merge it',
+    'yes!! merge',
+    'lgtm, merge',
+    'absolutely merge',
+    'approve merging',
+    'yes please merge',
+    // was a pass row («a merge word mid pick»); a shape check cannot tell an order from a want
+    'one merged before the next opens',
 ])
     test(`add refuses the pick «${pick}» on a text naming no pr`, async ($, on) => {
         world(on);
@@ -4203,11 +4221,6 @@ for (const [what, text, pick] of [
         'a merge word that names no pr',
         'FRM-360 into FRM-387',
         'merge: you made 0 rows',
-    ],
-    [
-        'a merge word mid pick',
-        'one row each',
-        'one merged before the next opens',
     ],
     ['no merge word in the pick', 'merge frame#7 please', 'yes'],
     // FRM-519 item 12: recorded false refusals, a merge of text and a merge-auto pick
