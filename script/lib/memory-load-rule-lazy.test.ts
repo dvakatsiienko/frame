@@ -707,6 +707,11 @@ describe('surface leaves', () => {
         },
     );
 
+    it('loads the herdr leaf in a wing on its own worktree', () => {
+        const cwd = '/Users/dima/frame/.claude/worktrees/clio-wing-2/_clio';
+        expect(start(herdr, { cwd })).toContain(herdrLeaf);
+    });
+
     it('loads neither leaf outside the clio dir', () => {
         const text = start(herdr, { cwd: '/Users/dima/frame' });
         expect(text).not.toContain(herdrLeaf);

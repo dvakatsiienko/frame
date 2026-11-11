@@ -14,20 +14,39 @@ const headings = [
     'traps',
 ];
 
-function check(herdr: string[], desktop: string[] | null) {
+function git(cwd: string, ...args: string[]) {
+    spawnSync('git', args, { cwd, timeout: 10_000 });
+}
+
+function check(
+    herdr: string[] | null,
+    desktop: string[] | null,
+    { staged = true, desktopInTree = null as string[] | null } = {},
+) {
     const root = mkdtempSync(join(tmpdir(), 'surface-mirror-'));
+    git(root, 'init', '-q');
     const memory = join(root, '_clio/memory');
     mkdirSync(memory, { recursive: true });
     const leaf = (title: string, list: string[]) =>
         [`# ${title}`, ...list.map((h) => `\n## ${h}\n\nsome line`)].join('\n');
-    writeFileSync(
-        join(memory, 'surface-herdr-desktop.md'),
-        leaf('herdr', herdr),
-    );
+    if (herdr) {
+        writeFileSync(
+            join(memory, 'surface-herdr-desktop.md'),
+            leaf('herdr', herdr),
+        );
+    }
     if (desktop) {
         writeFileSync(
             join(memory, 'surface-claude-desktop.md'),
             leaf('desktop', desktop),
+        );
+    }
+    writeFileSync(join(root, 'other.md'), 'x');
+    if (staged) git(root, 'add', '.');
+    if (desktopInTree) {
+        writeFileSync(
+            join(memory, 'surface-claude-desktop.md'),
+            leaf('desktop', desktopInTree),
         );
     }
     return spawnSync('node', [script], {
@@ -64,6 +83,22 @@ describe('surface-mirror-check', () => {
         const result = check([...headings, 'extra'], headings);
         expect(result.status).toBe(1);
         expect(result.stderr).toContain('extra');
+    });
+
+    it('passes at once when no leaf is staged', () => {
+        const swapped = headings.toSpliced(
+            0,
+            2,
+            'the screen he reads',
+            'threads',
+        );
+        expect(check(headings, swapped, { staged: false }).status).toBe(0);
+    });
+
+    it('reads the staged leaf, not the working tree', () => {
+        const renamed = headings.with(2, 'presses');
+        const result = check(headings, renamed, { desktopInTree: headings });
+        expect(result.status).toBe(1);
     });
 
     it('refuses a missing leaf', () => {
