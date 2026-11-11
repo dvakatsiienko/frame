@@ -191,6 +191,9 @@
   - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
   - given a pr that added a rule to x-mod-guard's `WARN_ONLY`, when `x lane landed <ticket> --pr <n>` runs, then 🔴 warn-only names the rule while the land still lists it, ✅ once it left; a pr that added none prints no such line, the older rules among them; a set that does not read reds (FRM-511)
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
+- ⬜ `x lane plan-steps <plan>` lists a lane plan's steps, the one parse of a step line, x-mod-stash's glide card its caller (FRM-570)
+  - given numbered column-0 `- [ ]`/`- [x]` lines, then each prints done or open, its text past a leading id and its separator, and its ticket; a nested, unnumbered or other-marked line prints nothing, `UTF-8` is no ticket
+  - given no plan at the path, then exit 1 naming it; no network either way, so the card never waits on one
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so; an empty `.scratch/` is clean, one holding a file stays, named
   - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session (a pid in `~/.claude/sessions/`) whose process cwd or transcript's last `cwd` is inside it, named, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why

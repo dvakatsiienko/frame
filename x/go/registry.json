@@ -357,6 +357,17 @@
         {
             "args": [
                 {
+                    "description": "a lane-plan.md",
+                    "name": "plan"
+                }
+            ],
+            "name": "lane plan-steps",
+            "needsApply": false,
+            "purpose": "list a lane plan's numbered steps, each done or open, its text and its ticket, as the glide card draws them; no network"
+        },
+        {
+            "args": [
+                {
                     "description": "the pr number",
                     "name": "pr"
                 }
