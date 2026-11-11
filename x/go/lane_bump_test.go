@@ -68,6 +68,9 @@ func TestCommitBumpNamesTheLiveSessionsOnAnOlderCopy(t *testing.T) {
 	if want := `[{"session":"on the old copy","version":"1.2.3"}]`; got.code != 0 || marshal(got.data["older"]) != want {
 		t.Fatalf("exit %d, older %s, want %s\n%s", got.code, marshal(got.data["older"]), want, got.stdout)
 	}
+	if message, _ := got.data["message"].(string); !strings.HasSuffix(message, "; still on an older copy: on the old copy (1.2.3)") {
+		t.Errorf("the reload message %q does not name who holds the old copy", message)
+	}
 }
 
 func TestCommitOfAPluginWithoutBumpRemindsOnce(t *testing.T) {

@@ -150,8 +150,9 @@ func pluginBump(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		return nil, err
 	}
 	older := olderCopies(filepath.Dir(cache), to)
-	r.Done(reloadLine(name, to, older), "/reload-plugins")
-	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}, kv{"older", older}), nil
+	message := reloadLine(name, to, older)
+	r.Done(message, "/reload-plugins")
+	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}, kv{"older", older}, kv{"message", message}), nil
 }
 
 // the reload message: the new version, and every live session still on an older copy

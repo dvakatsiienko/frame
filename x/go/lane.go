@@ -422,8 +422,9 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 		return nil, err
 	}
 	older := olderCopies(filepath.Dir(cache), bumped.to)
-	r.Done(short(sha)+" on "+branch.out+", "+reloadLine(bumped.name, bumped.to, older), "/reload-plugins")
-	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}, kv{"older", older}), nil
+	reload := reloadLine(bumped.name, bumped.to, older)
+	r.Done(short(sha)+" on "+branch.out+", "+reload, "/reload-plugins")
+	return append(data, kv{"cache", cache}, kv{"reload", "/reload-plugins"}, kv{"older", older}, kv{"message", reload}), nil
 }
 
 // takeGateTurn waits for the machine-wide gate turn through frame's script, so one script keeps the queue's rules; the

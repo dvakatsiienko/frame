@@ -116,6 +116,10 @@ func TestPluginBumpNamesTheLiveSessionsOnAnOlderCopy(t *testing.T) {
 	if older, _ := json.Marshal(got.data["older"]); string(older) != want {
 		t.Errorf("older %s, want %s", older, want)
 	}
+	wantMessage := "demo 1.2.4 in the cache; binds after a reload; still on an older copy: before any copy (unknown), older (1.2.3), quoted the tag (1.2.3)"
+	if message, _ := got.data["message"].(string); message != wantMessage {
+		t.Errorf("message %q, want %q", message, wantMessage)
+	}
 }
 
 func TestPluginBumpInAWorktreeCommitsOnItsBranch(t *testing.T) {
