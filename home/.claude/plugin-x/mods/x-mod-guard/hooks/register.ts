@@ -1097,30 +1097,43 @@ async function tickFor(
 // it counts as new
 const YES = { key: 'yes', plugin: 'x-mod-guard' } as const;
 const YES_SEEN = { key: 'yesSeen', plugin: 'x-mod-guard' } as const;
-// r7 (his o27): the seat's last reply, which a bare yes answers only where it named the ask: by its id, a command the ask
-// quotes, or the first three subject words of its text; a reply asking him something else leaves his yes to that
+// r7 (his o27): the seat's last reply, which a bare yes answers only where it named the ask: by its id, a command the
+// ask quotes, or its subject words (before its `:` or `—`, at least two, the first three counted), each matched as a whole
+// token; a one-word subject (`⚠️ mirror: …`) names nothing, since a reply about any push would; a reply asking him
+// something else leaves his yes to that
 const REPLY = { key: 'reply', plugin: 'x-mod-guard' } as const;
 const REPLY_MAX = 8000;
 const SUBJECT_WORDS = 3;
+const TOKEN = /[\p{L}\p{N}_-]/u;
+function hasToken(said: string, phrase: string) {
+    for (
+        let at = said.indexOf(phrase);
+        at >= 0;
+        at = said.indexOf(phrase, at + 1)
+    )
+        if (
+            !TOKEN.test(said[at - 1] ?? ' ') &&
+            !TOKEN.test(said[at + phrase.length] ?? ' ')
+        )
+            return true;
+    return false;
+}
 function namesAsk(reply: string, ask: { id: string; text: string }) {
     const said = reply.toLowerCase();
-    if (new RegExp(`(^|[^\\w])${ask.id}($|[^\\w])`, 'u').test(said))
-        return true;
     const quoted = [...ask.text.matchAll(/`([^`]+)`/g)].flatMap((m) =>
         m[1] ? [m[1].toLowerCase()] : [],
     );
-    if (quoted.some((q) => said.includes(q))) return true;
+    if ([ask.id.toLowerCase(), ...quoted].some((q) => hasToken(said, q)))
+        return true;
     const subject = ask.text
         .replace(/^\s*(⚠️|✍️)\s*/u, '')
         .split(/:|—/u)[0]
         ?.toLowerCase()
-        .match(/\p{L}[\p{L}\d-]{3,}/gu)
+        .match(/\p{L}[\p{L}\p{N}-]{3,}|\p{L}+-\d+/gu)
         ?.slice(0, SUBJECT_WORDS);
     return (
-        !!subject?.length &&
-        subject.every((w) =>
-            new RegExp(`(^|[^\\p{L}])${w}($|[^\\p{L}])`, 'u').test(said),
-        )
+        (subject?.length ?? 0) >= 2 &&
+        (subject ?? []).every((w) => hasToken(said, w))
     );
 }
 async function keepYes($: EngineInterface, text: string, isFirst: boolean) {
@@ -2354,7 +2367,8 @@ export const register: Register = (on) => {
         };
         // a sign lands only on dima's tick on its sign ask (FRM-427, o197) or his typed «sign <id>» (FRM-544); a body's sign line is a new sign
         // unless the ticket's current body already holds it word for word (FRM-478: a tiny write keeps the line). the file is read
-        // before the command runs, so one this command writes, one behind a variable and one that cannot be read count as new
+        // before the command runs; one this command writes, one behind a variable and one that cannot be read are judged again
+        // as the set runs (`withSignCheck`), or count as new where that check cannot stand on the line
         // every sign on the line is judged on its own (R2: a second sign behind an old one)
         const written = writtenPaths(typed, cwd, ctx);
         // a sign write in a script the line runs is a sign like one typed on the line, and on his word every other line of

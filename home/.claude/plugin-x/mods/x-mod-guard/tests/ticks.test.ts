@@ -703,14 +703,12 @@ for (const [why, command] of [
         "bash -c 'cat /repo/s.md > /repo/b.md' && x linear body FRM-1 --set /repo/b.md",
     ],
 ] as const)
-    test(`a sign the line hides is ${why.startsWith('a label') ? 'refused' : 'judged as it runs'}: ${why}`, async ($, on) => {
+    test(`a sign the line hides is ${/label|bash/.test(why) ? 'refused' : 'judged as it runs'}: ${why}`, async ($, on) => {
         const { ran } = world(on, [], SIGNED_TODAY());
         on('fs.read', () => ({ value: SIGNED_TODAY() }));
         const r = await bash($, command);
-        expect(
-            why.startsWith('a label') ? signFlagged(r) : [r.deny, ran],
-        ).toEqual(
-            why.startsWith('a label') ? true : [undefined, [checked(command)]],
+        expect(/label|bash/.test(why) ? signFlagged(r) : [r.deny, ran]).toEqual(
+            /label|bash/.test(why) ? true : [undefined, [checked(command)]],
         );
     });
 
@@ -2079,7 +2077,7 @@ async function askedThenSays(
     orbit: OpenAsk[],
     added: OpenAsk[],
     word: string,
-    reply = 'the mirror push waits on your tick',
+    reply = `run \`${MIRROR}\` now?`,
 ) {
     await dimaSays($, 'go on');
     orbit.push(...added);
@@ -2195,7 +2193,7 @@ test('a bare yes answers an ask followed since his last prompt', async ($, on) =
     const { ran } = world(on, [], undefined, undefined, orbit);
     await dimaSays($, 'go on');
     orbit[0] = { id: 'o7', text: MIRROR_ASK };
-    await replied($, 'the mirror push, followed, waits on your tick');
+    await replied($, `the followed \`${MIRROR}\` waits on your tick`);
     await $.prompt.submit({
         origin: { kind: 'composer' },
         text: 'yes',
@@ -2386,6 +2384,8 @@ for (const [why, line] of [
         ]).toEqual([undefined, 1, true]);
     });
 
+const PY_SIGNS =
+    "python3 - <<'EOF'\nopen('/repo/b.md', 'a').write('✍️ signed today')\nEOF\n";
 for (const [why, line] of [
     [
         'a label sign beside a body write',
@@ -2394,6 +2394,40 @@ for (const [why, line] of [
     [
         'a wrapper the check cannot sit inside',
         "sd 'a' 'b' /repo/b.md && timeout 60 x linear body FRM-1 --set /repo/b.md",
+    ],
+    // wisphunter and security on 6c6c57cf: the seat writes the rest of the line, so a line that could reach the check, or
+    // hold a set of the id the check never sees, is judged before it runs
+    [
+        'a wrapped set beside a checked one',
+        `${PY_SIGNS}x linear body FRM-1 --set /repo/c.md; timeout 60 x linear body FRM-1 --set /repo/b.md`,
+    ],
+    [
+        'a path-form x beside a checked one',
+        `${PY_SIGNS}~/.local/bin/x linear body FRM-1 --set /repo/b.md; x linear body FRM-1 --set /repo/c.md`,
+    ],
+    [
+        'a set inside bash -c beside a checked one',
+        `${PY_SIGNS}bash -c 'x linear body FRM-1 --set /repo/b.md'; x linear body FRM-1 --set /repo/c.md`,
+    ],
+    [
+        'a function the check calls, defined on the line',
+        `${PY_SIGNS}awk() { return 0; }; x linear body FRM-1 --set /repo/b.md`,
+    ],
+    [
+        'the check itself, redefined on the line',
+        `${PY_SIGNS}__x_mod_guard_sign_set() { command x "$@"; }; x linear body FRM-1 --set /repo/b.md`,
+    ],
+    [
+        'a PATH set for the set',
+        `${PY_SIGNS}PATH=/repo/fake:$PATH x linear body FRM-1 --set /repo/b.md`,
+    ],
+    [
+        'an exported PATH',
+        `${PY_SIGNS}export PATH=/repo/fake; x linear body FRM-1 --set /repo/b.md`,
+    ],
+    [
+        'a command off the allow-list',
+        `${PY_SIGNS}pnpm build; x linear body FRM-1 --set /repo/b.md`,
     ],
 ] as const)
     test(`r2: ${why} stays refused with no tick`, async ($, on) => {
@@ -2412,6 +2446,32 @@ test('r2: his typed sign runs the body set as written, no check in front', async
     expect([r.deny, ran]).toEqual([undefined, [line]]);
 });
 
+// wisphunter on 0de792b0: a subject names the ask with two words or more, each a whole token
+for (const [why, text, reply, isRun] of [
+    [
+        'a two-word subject is named',
+        `⚠️ mirror push: \`${MIRROR}\``,
+        'the mirror push is ready, ok?',
+        true,
+    ],
+    [
+        'another ticket holds the subject id',
+        `⚠️ mirror FRM-1: \`${MIRROR}\``,
+        'mirror FRM-14 next?',
+        false,
+    ],
+] as const)
+    test(`r7: a bare yes ${isRun ? 'runs' : 'runs nothing'} when ${why}`, async ($, on) => {
+        const orbit: OpenAsk[] = [];
+        const { ran } = world(on, [], undefined, undefined, orbit);
+        await askedThenSays($, orbit, [{ id: 'o7', text }], 'yes', reply);
+        const r = await bash($, MIRROR);
+        expect([r.deny === undefined, ran]).toEqual([
+            isRun,
+            isRun ? [MIRROR] : [],
+        ]);
+    });
+
 // r7, dima's o27: a bare yes ticks the new guarded ask only when the seat's last reply named it, by its id, a command it
 // quotes, or its subject words; a reply asking something else leaves his yes to that question
 for (const [why, reply, isRun] of [
@@ -2422,7 +2482,12 @@ for (const [why, reply, isRun] of [
     ],
     ['the reply names the ask by its id', 'o7 waits on your tick', true],
     ['the reply quotes its command', `run \`${MIRROR}\` now?`, true],
-    ['the reply names its subject', 'the Mirror push is ready, ok?', true],
+    [
+        'the reply names only its one-word subject',
+        'the Mirror is ready, ok?',
+        false,
+    ],
+    ['another id holds the ask id', 'o71 waits on your tick', false],
 ] as const)
     test(`r7: a bare yes ${isRun ? 'runs' : 'runs nothing'} when ${why}`, async ($, on) => {
         const orbit: OpenAsk[] = [];

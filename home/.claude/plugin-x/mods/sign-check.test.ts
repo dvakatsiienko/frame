@@ -4,6 +4,7 @@ import {
     existsSync,
     mkdirSync,
     mkdtempSync,
+    readFileSync,
     rmSync,
     writeFileSync,
 } from 'node:fs';
@@ -19,14 +20,19 @@ const dir = mkdtempSync(join(process.env.TMPDIR ?? tmpdir(), 'sign-check-'));
 afterAll(() => rmSync(dir, { force: true, recursive: true }));
 const bin = join(dir, 'bin');
 mkdirSync(bin);
-// `x linear read <id>` answers the ticket's current body from current-<id>.md (no file: exit 1); a body set says `set <id>`
+// `x linear read <id>` answers the ticket's current body from current-<id>.md (current-<id>.null: a null body; neither: exit
+// 1); a body set says `set <id>` and keeps what it was sent in sent.md
 writeFileSync(
     join(bin, 'x'),
     `#!/bin/sh
 if [ "$2" = read ]; then
+  [ -f "${dir}/current-$3.null" ] && { jq -n '{data: {tickets: [{description: null}]}}'; exit 0; }
   [ -f "${dir}/current-$3.md" ] || exit 1
   jq -n --rawfile d "${dir}/current-$3.md" '{data: {tickets: [{description: $d}]}}'
 else
+  f=; p=
+  for a in "$@"; do [ "$p" = --set ] && f=$a; case $a in --set=*) f=\${a#--set=};; esac; p=$a; done
+  cat "$f" > "${dir}/sent.md"
   echo "set $3"
 fi
 `,
@@ -44,15 +50,18 @@ const SHELLS = [
 ];
 function run(
     line: string,
-    current: string | undefined,
+    current: string | null | undefined,
     file: string,
     shell: string,
+    name = 'b.md',
 ) {
     const id = 'FRM-1';
-    rmSync(join(dir, `current-${id}.md`), { force: true });
-    if (current !== undefined)
+    for (const f of [`current-${id}.md`, `current-${id}.null`, 'sent.md'])
+        rmSync(join(dir, f), { force: true });
+    if (current === null) writeFileSync(join(dir, `current-${id}.null`), '');
+    else if (current !== undefined)
         writeFileSync(join(dir, `current-${id}.md`), current);
-    writeFileSync(join(dir, 'b.md'), file);
+    writeFileSync(join(dir, name), file);
     const wrapped = withSignCheck(line, new Set([id]));
     if (!wrapped) throw new Error(`no check put in front of: ${line}`);
     // no startup file: ~/.zshenv puts ~/.local/bin ahead of the stub, and the real x would read and write real tickets
@@ -71,7 +80,13 @@ function run(
             timeout: 10_000,
         },
     );
-    return { code: r.status, err: r.stderr, out: r.stdout.trim() };
+    const sent = join(dir, 'sent.md');
+    return {
+        code: r.status,
+        err: r.stderr,
+        out: r.stdout.trim(),
+        sent: existsSync(sent) ? readFileSync(sent, 'utf8') : undefined,
+    };
 }
 
 const SET = `x linear body FRM-1 --set ${join('$PWD', 'b.md')}`;
@@ -84,6 +99,7 @@ describe.each(SHELLS)('the run-time sign check under %s', (shell) => {
             `${SIGNED}✏️ changed 2026-11-11 — no re-sign: tiny\n`,
         ],
         ['an unsigned ticket with an empty body', '', '## wish\n\n* W1 x\n'],
+        ['a ticket linear gives a null body', null, '## wish\n\n* W1 x\n'],
         [
             'a «re-sign pending» line, which is no sign',
             SIGNED,
@@ -130,5 +146,38 @@ describe.each(SHELLS)('the run-time sign check under %s', (shell) => {
             run(loop, SIGNED, `${SIGNED}✍️ signed 2026-11-12 · body 2\n`, shell)
                 .code,
         ]).toEqual(['set FRM-1', 1]);
+    });
+
+    // wisphunter and security on 6c6c57cf: the set sends the copy the check judged, whatever its name or source
+    it('judges a file named like an awk assignment, and refuses its new sign', () => {
+        const set = 'x linear body FRM-1 --set b=1.md';
+        const signed = `${SIGNED}✍️ signed 2026-11-12 · body 2\n`;
+        expect([
+            run(set, SIGNED, SIGNED, shell, 'b=1.md').code,
+            run(set, SIGNED, signed, shell, 'b=1.md').code,
+        ]).toEqual([0, 1]);
+    });
+
+    it('sends what it judged when the body comes on stdin', () => {
+        const piped = 'cat $PWD/b.md | x linear body FRM-1 --set /dev/stdin';
+        const r = run(piped, SIGNED, `${SIGNED}✏️ tiny\n`, shell);
+        expect([r.code, r.sent]).toEqual([0, `${SIGNED}✏️ tiny\n`]);
+    });
+
+    it.each([
+        [
+            'a second --set',
+            'x linear body FRM-1 --set $PWD/b.md --set $PWD/c.md',
+        ],
+        [
+            'an id that is not the first word',
+            'x linear body --set=$PWD/b.md FRM-1',
+        ],
+    ])('refuses %s', (_why, line) => {
+        writeFileSync(join(dir, 'c.md'), SIGNED);
+        expect(run(line, SIGNED, SIGNED, shell)).toMatchObject({
+            code: 1,
+            out: '',
+        });
     });
 });
