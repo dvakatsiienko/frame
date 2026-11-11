@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T15:52:00Z'
+updated_date: '2026-11-11T15:54:00Z'
 labels:
   - s
   - clio-wing-1
@@ -37,7 +37,6 @@ ordinal: 1001
 - [ ] #19 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #20 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 - [ ] #21 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
-- [ ] #22 💤 clio:wing:28 desktop start steps point at surface-claude-desktop.md: skipped, the wing skill sits at its 4400 B budget and the pointer costs 45 B — later: dima, at the next wing skill groom
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -216,4 +215,6 @@ done 2026-11-11 17:44: 📅 FRM-551 vm: the halt half read (the halt stops vm-go
 done 2026-11-11 17:44: tails lane 1 running: 🌗 🔧 codie: tails lane 1 walks FRM-465 evergreen v2 → FRM-402 chords bind → (11-12) FRM-497 + FRM-406; spec in the wing 1 tree .scratch/tails-lane-1/ (FRM-465 In Progress, FRM-402 Todo, FRM-497 Todo, FRM-406 Todo)
 
 done 2026-11-11 17:44: wishkeeper batch-3 lows: crew-lead SKILL.md:63 «a real session in a herdr pane» moves to the surface file; clio:wing:28 desktop steps point at surface-claude-desktop.md
+
+done 2026-11-11 17:54: 💤 clio:wing:28 desktop start steps point at surface-claude-desktop.md: skipped, the wing skill sits at its 4400 B budget and the pointer costs 45 B — later: dima, at the next wing skill groom
 <!-- SECTION:NOTES:END -->
