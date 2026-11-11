@@ -60,6 +60,7 @@ import {
 } from './band.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
+import { openTarget } from './links.js';
 import { listLines, withMarkers } from './lists.js';
 import * as ask from './question.js';
 import {
@@ -873,6 +874,11 @@ function keepDraft(address, text) {
                 : localStorage.removeItem(draftKey(address));
     } catch {}
 }
+/** @param {string} url */
+const openLink = (url) => {
+    exec('open', [openTarget(url)]).catch(() => {});
+};
+
 // where he was reading each seat, kept across a reload of this mod, written only by his own scroll or click
 /** @param {string} address */
 const scrollKey = (address) => `scroll:${address}`;
@@ -1732,17 +1738,15 @@ export default class ClaudeChat extends View {
             .id(`drop-${kind}-trigger`)
             .flex_none()
             .gap(4)
-            .px(8)
-            .h(28)
+            .px(6)
+            .h(24)
             .items_center()
-            .rounded(7)
-            .border(1)
-            .border_color(open ? t.accent : t.border)
-            .bg(t.background)
+            .rounded(6)
+            .when(open, (el) => el.bg(t.hover))
             .cursor_pointer()
             .text_size(px(12))
             .text_color(p ? t.accent : t.muted)
-            .hover((s) => s.text_color(t.foreground).border_color(t.input))
+            .hover((s) => s.bg(t.hover).text_color(t.foreground))
             .tooltip(
                 kind === 'model'
                     ? 'Model (this session only)'
@@ -2934,7 +2938,9 @@ export default class ClaudeChat extends View {
                                                       this.markIn(i),
                                                   )
                                                 : typedOf(item),
-                                        ).selectable(true),
+                                        )
+                                            .selectable(true)
+                                            .on_link_click(openLink),
                                     ),
                             )
                             .when(Boolean(item.before && this.agentNow), (el) =>
@@ -2996,7 +3002,9 @@ export default class ClaudeChat extends View {
                                           this.markIn(i),
                                       )
                                     : item.text,
-                            ).selectable(true),
+                            )
+                                .selectable(true)
+                                .on_link_click(openLink),
                         ),
                 );
         }
@@ -5475,16 +5483,35 @@ export default class ClaudeChat extends View {
                                                     agent,
                                                     'effort',
                                                 ),
-                                            )
-                                            .child(div().flex_1())
+                                            ),
+                                    )
+                                    .child(
+                                        div()
+                                            .w_full()
+                                            .mb(-10)
+                                            .px(14)
+                                            .py(12)
+                                            .rounded(16)
+                                            .bg(t.background)
+                                            .border(1)
+                                            .border_color(t.border)
+                                            .shadow_md()
+                                            .relative()
+                                            // send sits in the text card's bottom-right corner; the text keeps
+                                            // clear of it by the right padding
+                                            .pr(48)
+                                            .child(Textarea.new(this.box))
                                             .child(
                                                 div()
                                                     .id('send')
+                                                    .absolute()
+                                                    .right(8)
+                                                    .bottom(8)
                                                     .size(28)
                                                     .flex()
                                                     .items_center()
                                                     .justify_center()
-                                                    .rounded(8)
+                                                    .rounded_full()
                                                     .bg(
                                                         this.typed?.trim()
                                                             ? t.accent
@@ -5506,19 +5533,6 @@ export default class ClaudeChat extends View {
                                                     )
                                                     .child('↑'),
                                             ),
-                                    )
-                                    .child(
-                                        div()
-                                            .w_full()
-                                            .mb(-10)
-                                            .px(14)
-                                            .py(12)
-                                            .rounded(16)
-                                            .bg(t.background)
-                                            .border(1)
-                                            .border_color(t.border)
-                                            .shadow_md()
-                                            .child(Textarea.new(this.box)),
                                     ),
                             ),
                     ),
