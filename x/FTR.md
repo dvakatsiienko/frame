@@ -294,13 +294,16 @@
   - given a `pnpm` command, `-- pnpm exec vitest run <test>`, then it runs with pnpm's install before a run off (`pnpm_config_verify_deps_before_run=false`, never `CI=1`), so pnpm installs nothing and the store's own shims under `.pnpm`, which the copy shares, are never relinked
   - given a `pnpm` command whose first word is not `exec`, `run` or `test`, so one that may write the store: `-- pnpm install`, `add`, `remove`, `update`, `dedupe`, one behind a flag or a prefix, `pnpm m install`, a bare `pnpm`, then it refuses before any run, exit 2, naming the store, `node_modules/.pnpm`, which the copy shares with the real tree
   - decision: the refusal lists what may pass, so pnpm's flags go behind the subcommand and a bin runs as `pnpm exec <bin>`, never `pnpm <bin>`: a list of the writes leaked one per review round (FRM-554)
-  - limit: every other entry of `node_modules` stays a link to the real one, the store and a scoped dir among them, so a command that writes inside one by another door, `-- sh -c 'pnpm install'`, writes the real tree
+  - given a package manager anywhere past that leading pnpm run, or as a word of a shell line, a word ending at any operator or quote (`true;pnpm i`, `"pnpm" i`): `-- pnpm exec pnpm install`, `-- pnpm exec npm i`, `-- env X=1 pnpm install`, `-- corepack pnpm install`, `-- npx pnpm install`, `-- sh -c 'pnpm install'`, then it refuses the same way, before the copy is built (FRM-560)
+  - given a script that calls a package manager, `-- pnpm run <script>` whose body runs `pnpm i`, then a shim first on the command's PATH refuses that call as it runs, and the clean run reads broken naming it; pnpm's own plain run passes on to the real pnpm; every command after `--` runs with the shims, a shell line no word read takes apart (`pn""pm i`) included, while a runner x picks for a test file keeps the real PATH, so a test that runs pnpm itself still runs it
+  - limit: every other entry of `node_modules` stays a link to the real one, the store and a scoped dir among them, so a package manager called by its absolute path from inside a command writes the real tree, `"$npm_execpath" install` from a pnpm script included, since pnpm hands every script its own path, and so does one found after a `PATH=` reset inside a shell line (`sh -c 'PATH=/opt/homebrew/bin:$PATH; pn""pm i'`), which puts the real dir ahead of the shims; both are known limits, kept (dima, 2026-11-11)
+  - limit: the argv check reads words, so a package manager's name as a plain argument, `-- pnpm exec vitest run -t npm`, refuses too, the safe side of a word read
   - given `X_VERIFY=1`, then `script/research-lanes.sh` makes no exa or parallel call and says it skipped, so a test whose code runs it is proved for free, and a typo beside it reads broken
   - given a go mutant in code only a `TestMain`'s child build runs, then it reads red through `GOFLAGS=-overlay`, where an `-overlay` flag on `go test` alone reads still green; a run stops at its first failure, go `-failfast`, vitest `--bail=1`
   - given `--pairs`, then the round takes the gate queue's long slot itself, one turn for every pair
-  - given a mod's test, then only that test file runs on the mod's overlay, each pair's seconds in its row (about 10 s a pair on `x-mod-guard`, against red-proof's inferred 64 s), and the runner's own load error reads broken whatever it reddened; an assertion whose message quotes a load word, a go `t.Fatalf` line included, reads red
+  - given a mod's test, then only that test file runs on the mod's overlay, each pair's seconds in its row; the clean run and the first mutant run side by side, since a mod's runs share no file, so a one-pair proof costs about one run's wall time (FRM-560), and the runner's own load error reads broken whatever it reddened; an assertion whose message quotes a load word, a go `t.Fatalf` line included, reads red
   - decision: a throw from the mutated code reads red, since the mutant is the run's only change (dima, o82); `--revert` keeps any throw broken
-  - given a file a go test opens at runtime, not one go builds, then its mutant runs in the copy, a `-- go …` command included, since an overlay never reaches it
+  - given a file a go test opens at runtime, not one go builds, then its mutant runs in the copy, a `-- go …` command included, since an overlay never reaches it; the test runs from its own dir, so a root file a module below reads, `lefthook.yaml` for `x/go`, reads its clean run green (FRM-560)
   - given a `.ts` file no tsconfig above it includes, then no type check runs and a still green row says so; type errors count, so a second one worded like a clean one reads broken
   - given a link in the repo, an absolute one or a workspace package's in `node_modules`, then the copy's link points at the copy; a file that resolves outside the repo, or a cwd outside it, refuses before any run
   - given a picked runner whose clean run names no test that ran, `--run` matching nothing included, then it refuses; `--run` beside a mod's test exits 2, its run being the one file
@@ -510,7 +513,13 @@
   - then its `read` field, github's own clock before the feeds were read, is the next poll's `--since`: a poll loop misses no comment and repeats at most one second's
   - given an agent env, then json; `--board` draws the human view
   - given a pr number that is not digits, a `--since` that is not RFC 3339 or a repo that is not owner/name, then exit 2 before any request
-  - decision: reads go over the rest api as the x-codie-cc app, never through the `gh` binary — the tests run against a local fixture server; writes keep `x as codie -- gh` (FRM-364)
+  - decision: reads go over the rest api as the x-codie-cc app, never through the `gh` binary — the tests run against a local fixture server; writes keep `x as codie -- gh` (FRM-364), bar the thread reply below
+- ⬜ `x gh pr-review-comments-list [n]` and `x gh pr-review-comments-reply <id>` answer a reviewer's inline thread by its id (FRM-414)
+  - given a pr with open and resolved review threads, when the list runs, then only the open ones print, each with its id, file, line and first words, in github's order; a thread whose line left the diff is marked `outdated` at its old line
+  - given no pr number, then it reads the open pr of the cwd's branch
+  - given a thread id and `--body-file <file>`, when the reply runs, then the body posts byte for byte under that thread, outright, never as a pending review, and the envelope holds its url
+  - given a pr that is not digits, an id that is not a `PRRT_` thread, or a body file missing or blank, then exit 2 before any request
+  - decision: both go over github's graphql review threads as the x-codie-cc app, since the rest comments feed carries no resolved state, so the list and the reply share one id kind
 
 ## linear — tickets
 
