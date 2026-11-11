@@ -1012,7 +1012,8 @@ const isProofText = (text: string) => {
     return (
         signsTyped(trimmed).length > 0 ||
         /^\s*(?:#\s*)?dima-ok:/im.test(text) ||
-        overrideAsked(text) !== undefined
+        overrideAsked(text) !== undefined ||
+        saysMergeOf(text, String.raw`\d+`)
     );
 };
 // his bare yes under the one open guarded ask is his tick (FRM-574 decided 3); «ok» and «stop it» never count
@@ -1416,6 +1417,10 @@ export function withDimaOk(command: string, pr: string) {
 const QUOTED = /«[^»]*»|"[^"]*"|“[^”]*”|`[^`]*`/g;
 export function saysMerge(prompt: string, pr: string) {
     if (!/^\d+$/.test(pr)) return false;
+    return saysMergeOf(prompt, pr);
+}
+// `pr` a number, or `\d+` for any: pane-proof fences a seat typing any of them (FRM-519 exit 8)
+function saysMergeOf(prompt: string, pr: string) {
     const said = new RegExp(
         String.raw`(?<!(?:n['’]t|\bnot|\bnever|\bno)\s)\b(?:merge|land|ship)\s+(?:#?\d+\s*(?:,|and|&)\s*)*#?${pr}\b`,
         'i',
