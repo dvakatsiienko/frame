@@ -5,7 +5,9 @@ this leaf loaded means this thread runs in herdr (`HC_TERMINAL_ID` set); the Cla
 ## threads
 
 - every seat is a herdr pane; mine is the tab «🦉 clio»; a summon is `hc run`, its tab given by `x:herdr`'s `seat-tab.ts`
-- a wing: the live ones numbered by their `-n` names in `ListAgents`; started by `crew-lead`'s herdr surface file with `-n '🦉🪽 clio: wing <N>'`, `--cwd ~/frame/_clio`, the fresh prompt as its first task (`clio:wing` § open one)
+- a wing: the live ones read off their names in `ListAgents`; started by `crew-lead`'s herdr surface file (`hc run … --name <short>`, `--cwd ~/frame/_clio`), its `🦉🪽 clio: wing <N>` tab named by `seat-tab.ts`, the prompt and the background together as its first task; his typed lines read from its transcript (`clio:wing`)
+- a seat at the halt: no card to archive; its tab stays until he closes it (`clio:halt`)
+- context and the 5h window: the shelf file and the band; there is no other door (`habit-ctx-load-balancing`, `clio:shift`)
 - a herdr thread opened in the desktop app through remote control stays a herdr thread: where it runs decides, never where he reads (inference from the env detection, not probed)
 
 ## the screen he reads
@@ -17,12 +19,12 @@ this leaf loaded means this thread runs in herdr (`HC_TERMINAL_ID` set); the Cla
 
 ## files and links to him
 
-- a `file://` markdown link opens in his chat
+- a `file://` markdown link opens in his chat; a seat is named by its tab name, there is no session link
 - a fenced copy block gets herdr's copy button; a block whose ribbon names a session or an agent becomes a prompt card he clicks
 
 ## browser
 
-- no browser pane here: the web clicking is still mine (`habit-capability-tips`), done in `agent-browser` (`x:browser-headless`); claude-in-chrome only when he agrees (root `CLAUDE.md` § blast radius)
+- no browser pane here: the web clicking is still mine (`habit-capability-tips`), done in `agent-browser` (`x:browser-headless`); claude-in-chrome only when he agrees (root `CLAUDE.md` § blast radius); his hand: his Chrome
 
 ## traps
 
