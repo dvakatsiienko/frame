@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T22:25:00Z'
+updated_date: '2026-11-11T23:06:00Z'
 labels:
   - m
   - clio-main
@@ -2156,4 +2156,10 @@ correction 00:25: W1148 and W1149 came from his typed 00:20 prompt, not an o141 
 PK-363:W1150 (2026-11-12 00:21, dima): another thing i asked you today is to reply "verified" and omit unverified answers. i like the new approach. when we help, remind me to revisit this topic and suggest how to properly integrate it. (topic: verified habit.)
 PK-363:W1151 (2026-11-12 00:22, dima): okay, i go cook. finish all tails if there are still unfinished ones, and stay parked. observe your wind-down and put orbit asks if anything comes up. (topic: wind-down night.)
 PK-363:W1152 (2026-11-12 00:22, dima): merge everything automatically (i've enabled it) and override. (topic: wind-down night.)
+
+PK-363:W1153 (2026-11-12 00:48, dima): ok. let herdr codie do something. if other lanes still do something, tell herdr codie to move on too, in slice mode. for example, if herdr codie finishes some slice but other lanes are still running, you can send herdr codie another slice, so he is not parked for free. (topic: wind-down night.)
+PK-363:W1154 (2026-11-12 --:--, dima, o142 steer): how big is it? mods lane rider (current)? ❓ (topic: override scopes. time left blank: the raw has no time, and the steer's time is in the orbit log, not checked.)
+PK-363:W1155 (2026-11-12 01:04, dima): chatter wisp, unintended strange scrolling. when i click and hold LMB in the place shown in the screenshot (i usually select text that way), and slightly move the mouse up while holding, the chatter scrolls to the top. i want to select text instead, but i move the mouse in a messy way and the scroll happens. tell codie to find out what causes the scrolls and remove them. i do not want any similar behaviour; i scroll with the mouse wheel or with the trackpad. (topic: chatter wisp. context, not dima's words: the raw opens with a screenshot, image #74.)
+
+correction 01:06: W1154's time is 00:59 (his o142 steer)
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T22:40:00Z'
+updated_date: '2026-11-11T23:09:00Z'
 labels:
   - s
   - clio-wing-1
@@ -382,4 +382,10 @@ done 2026-11-12 00:25: cli lane 8 running (#161): FRM-570 one reader per rule, r
 done 2026-11-12 00:28: ⏳ seat sweep wave C: x/go/stacks_test.go (1 hit), rides the FRM-436 + FRM-424 chunk (spec § exit lines, rename only) — waits for: that chunk's pr (FRM-436 In Progress, FRM-424 In Progress)
 
 00:29: wave C needed nothing: stacks_test.go held no «seat» at FRM-436's base (codie, frame#169)
+
+PK-346:W36 (2026-11-12 00:12, dima): whenever you can make thread names pretty, rename all the threads that exist now in a pretty way, and make sure each has the correct name and the correct tickets.
+PK-346:W37 (2026-11-12 01:00, dima): pretty names possible now? ❓
+
+PK-346:W38 (2026-11-12 01:06, dima): so there are two names for threads now, the native cc thread name and the herdr one? i want thread names to be the same in the underlying cc native thread names and herdr thread names; drift will create issues. how to keep them in sync? ❓
+PK-346:W39 (2026-11-12 01:07, dima): yes. (context, not dima's words: answers wing 1's 01:08 pick, the summon builds cc's -n from the thread record so both names are one string)
 <!-- SECTION:NOTES:END -->
