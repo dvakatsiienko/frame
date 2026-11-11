@@ -1,5 +1,10 @@
 import { touchesStore } from './clean-stamp.ts';
-import { type Command, type Refusal, commandsDeep } from './command.ts';
+import {
+    type Command,
+    type Refusal,
+    TICK_DOOR,
+    commandsDeep,
+} from './command.ts';
 
 export type MergeHolds = { prs: Set<string>; isUnreadable: boolean };
 
@@ -141,7 +146,7 @@ function rawMerge(c: Command) {
 export const rawMerges = (command: string, cwd: string) =>
     commandsDeep(command, cwd).flatMap((c) => rawMerge(c) ?? []);
 
-const DOOR = "x lane merge-auto <pr> --apply --dima-ok <pr>, on dima's word";
+const DOOR = `x lane merge-auto <pr> --apply --dima-ok <pr>, on dima's word, or ${TICK_DOOR}`;
 
 // after the required check went, nothing on github stops a raw merge reaching production (dima's o48, BYT-94): it refuses from
 // its first head, the one named exception to warn-only. merge-auto lands a linked stack itself, through github's api; where
@@ -159,8 +164,8 @@ export function rawMergeRefused(
     const isAllUnread = raw.every((m) => m.isUnread);
     return {
         door: isAllUnread
-            ? 'write the query or the endpoint inline in the call, if it merges nothing; a merge goes through x lane merge-auto <pr>'
-            : 'x lane merge-auto <pr>',
+            ? `write the query or the endpoint inline in the call, if it merges nothing; a merge goes through x lane merge-auto <pr>, or ${TICK_DOOR}`
+            : `x lane merge-auto <pr>, or ${TICK_DOOR}`,
         rule: 'raw-merge',
         targets: raw.map((m) => m.pr ?? 'gh merge'),
         why: isAllUnread

@@ -143,6 +143,17 @@ for (const line of [
         expect(ran).toEqual([]);
     });
 
+// door 5 found it (23:47): a tick quoting the merge runs it past the hold and the raw-merge rule (slice 2c), so both say so
+const TICK_DOOR = 'or his tick on an orbit ask quoting this whole command';
+for (const [why, holds, line] of [
+    ['a raw merge', null, 'gh pr merge 12 --squash'],
+    ['a held pr', HELD_7, 'gh pr merge 7'],
+] as const)
+    test(`${why}'s refusal names the tick door`, async ($, on) => {
+        world(on, holds);
+        expect((await bash($, line)).deny).toContain(TICK_DOOR);
+    });
+
 // BYT-94's rider, o48: every raw merge is refused from birth, held or not, naming the door
 for (const line of [
     'gh pr merge 12',

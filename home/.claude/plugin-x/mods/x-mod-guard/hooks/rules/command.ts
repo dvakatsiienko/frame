@@ -201,6 +201,9 @@ const REDIRECT = /^\d*(>>?|<>?|&>>?|>[|!])&?$/;
 const REDIRECT_JOINED = /^\d*(>>?|<(?!<)|&>>?|>[|!])&?\S/;
 export const basename = (p: string) => p.split('/').filter(Boolean).pop() ?? p;
 export const isFlag = (w: string) => w.startsWith('-') && w !== '-';
+// dima's o101: every refusal his tick can open says so
+export const TICK_DOOR =
+    'his tick on an orbit ask quoting this whole command in one backtick span runs it once (your coordinator brings the ask to him)';
 // an awk whose program can run a command (`system`, a pipe, `getline` from one) or that reads a program file the guard never sees
 export const isAwkRunner = (c: { name: string; args: { text: string }[] }) =>
     /^[gmn]?awk$/.test(basename(c.name)) &&

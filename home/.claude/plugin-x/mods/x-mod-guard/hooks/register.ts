@@ -5,6 +5,7 @@ import { cleanStampWrite } from './rules/clean-stamp.ts';
 import type { Brief, Context, Refusal, Written } from './rules/command.ts';
 import {
     TICKET_KEY,
+    TICK_DOOR,
     UNREAD,
     commandsDeep,
     laidOver,
@@ -1357,8 +1358,7 @@ const TYPED_BY_DIMA = new Set(['composer', 'bridge']);
 // a --bg session's spawn prompt arrives as `composer` and dima's typing there as `bridge` (measured 2026-10-09, FRM-358),
 // so in a bg session only the bridge is his
 const TYPED_BY_DIMA_IN_BG = new Set(['bridge']);
-const UNPROVEN_DOOR =
-    'ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»), or his tick on an orbit ask quoting this whole command in one backtick span runs it once (your coordinator brings the ask to him). a bg session counts only what dima types into it himself; ask clio to get him there';
+const UNPROVEN_DOOR = `ask dima; his own next prompt naming each target as a word lets the # dima-ok marker through (a bare symbol like . or & only as «dima-ok: <target>»), or ${TICK_DOOR}. a bg session counts only what dima types into it himself; ask clio to get him there`;
 const UNPROVEN_WHY =
     "a # dima-ok marker counts only when dima's last typed prompt names its target";
 // a live mod's hooks reload into every session on save, so while its own tests are red a half-done edit there breaks the fleet
