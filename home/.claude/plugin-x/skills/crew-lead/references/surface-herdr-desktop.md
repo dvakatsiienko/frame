@@ -8,6 +8,7 @@ herdr is where every seat runs today: clio main and its wings, codie, sixth sens
 - `--remote-control` is a must on every herdr seat: it is what puts the seat in the claude desktop app too, dima's backup door ([surface-claude-desktop.md](surface-claude-desktop.md))
 - the tab, the same turn: a `--no-parent` seat has none and herdr's agents list skips it; `x:herdr` § start a member holds the two `do` calls, `skills/herdr/scripts/seat-tab.ts` runs both
 - a quick lane: a pane has no bg isolation, so no `--settings`
+- `--cwd` is the target repo; a side-lane codie's first reply names its `pwd` (inference until a pane codie's reply shows it)
 - done when `herdr-app ls` shows the tab by the seat's registry name
 
 ## find and talk
