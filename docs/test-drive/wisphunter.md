@@ -89,4 +89,8 @@ group by 1 order by 2 desc;
 - the trim reading, one run of three so an inference: matt's standards axis added no known slip the other two missed, so the plain card plus the spec axis catch the same known set as all three; its own finds were real but off the set (the milestone rule refusing from day one, which the spec axis also found; an un-gated note; untested parser branches)
 - beyond the set, both the plain card and the spec axis found a nested `bash -c` linear move skipping the milestone check, and the plain card a railway delete behind `-s <service>`: candidates for a live check, not slips of record
 
+### round 7 — a live lane's final read, 2026-11-11 (herdr codie, FRM-562 part A, clio's log)
+- one plain-card read on part A's last diff before its close: 6 findings, all 6 fixed and landed (bbc33ffc, per the codie's done report on FRM-562); the findings' own text not opened by clio, so «real» is the codie's word, not checked
+- context: the same chunk's scroll regression (58.9 % of herdr's main thread on a fling) was caught by dima's hand and a sample, never by a review, since a diff read can't see frame cost
+
 ## verdict
