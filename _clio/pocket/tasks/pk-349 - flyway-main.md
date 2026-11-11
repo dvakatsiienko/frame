@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-11T19:56:00Z'
+updated_date: '2026-11-11T20:23:00Z'
 labels:
   - s
   - clio-main
@@ -44,17 +44,18 @@ ordinal: 1000
 - [ ] #26 glide l71 (memory lane) and l72 (mods lane 6): step or end each from its lane plan
 - [ ] #27 name a desktop-only Claude thread to dima once, for FRM-576 exit 8 and PK-349 #29 probe 4b
 - [ ] #28 helga's earlier PK-363 and FRM-566 groom appends: check each W-line has its home, run the missing appends
-- [ ] #29 the siesta trigger reshaped, his words (00:56): «one siesta per hour is too rare. Wishkeeper is useful but not when I ask you some plain questions … When I just chat there is no need for Wishkeeper … it should run when something important is worth checking. For example when you do batches and make a lot of changes that are important to catch». so: the trigger is the size and weight of a batch (a lane’s done with commits, a ticket close or sign, a many-file batch), never a chat turn or a one-line edit; no time cap; 7 runs in 2 h on 11-10 night, 4 from small rule edits — on: 2026-11-11
-- [ ] #30 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
-- [ ] #31 ⏳ the red twin past `x mods edit test` (a red twins.test.ts reached main, 45e64cc0): its home is a rider on FRM-560, wing 1's PK-346 #4 — waits for: dima's sign tick on FRM-560's re-sign
-- [ ] #32 ⏳ the herdr FTR gate map (dima 16:32, «ensure not forgotten»): x lane gate maps herdr-app/mods/ → herdr/FTR.md + herdr/ftr/*.md; stays open until FRM-436's body carries it (wing 1's PK-346 #4) — waits for: dima's sign tick on FRM-436
-- [ ] #33 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #34 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
-- [ ] #35 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #36 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
-- [ ] #37 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #38 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #39 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #29 groom homes blocked: the guard refuses the body write for the hotkeys and chat tickets; their new W-lines wait in grooms/ — find the guard rule, fix or ask
+- [ ] #30 the siesta trigger reshaped, his words (00:56): «one siesta per hour is too rare. Wishkeeper is useful but not when I ask you some plain questions … When I just chat there is no need for Wishkeeper … it should run when something important is worth checking. For example when you do batches and make a lot of changes that are important to catch». so: the trigger is the size and weight of a batch (a lane’s done with commits, a ticket close or sign, a many-file batch), never a chat turn or a one-line edit; no time cap; 7 runs in 2 h on 11-10 night, 4 from small rule edits — on: 2026-11-11
+- [ ] #31 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+- [ ] #32 ⏳ the red twin past `x mods edit test` (a red twins.test.ts reached main, 45e64cc0): its home is a rider on FRM-560, wing 1's PK-346 #4 — waits for: dima's sign tick on FRM-560's re-sign
+- [ ] #33 ⏳ the herdr FTR gate map (dima 16:32, «ensure not forgotten»): x lane gate maps herdr-app/mods/ → herdr/FTR.md + herdr/ftr/*.md; stays open until FRM-436's body carries it (wing 1's PK-346 #4) — waits for: dima's sign tick on FRM-436
+- [ ] #34 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #35 ⏳ FRM-555 x-mod-stash test timeouts: weigh it in the herdr mods revisit pass (wing 1's take: keep) — waits for: the herdr mods revisit pass
+- [ ] #36 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #37 📅 FRM-516 crow on every wing: the week's read (W15, W21) — on: 2026-11-14
+- [ ] #38 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #39 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #40 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes

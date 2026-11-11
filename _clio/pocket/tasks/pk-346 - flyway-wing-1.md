@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-11T20:08:00Z'
+updated_date: '2026-11-11T20:26:00Z'
 labels:
   - s
   - clio-wing-1
@@ -30,21 +30,22 @@ ordinal: 1001
 - [ ] #12 ⏳ seat sweep wave B: mods (x-mod-guard, x-mod-stash, set.test) and herdr mods (deck, chatter, tabs, agents-list), ~310 hits, riders main hands to the mods and herdr codies at their next chunk boundary, rename only (main agreed 21:37) — waits for: main's lanes
 - [ ] #13 ⏳ seat sweep wave C: x/go/stacks_test.go (1 hit), a rider on cli lane 8 after #161 — waits for: #161 merge
 - [ ] #14 ⏳ x brief check offline stamp check (the summon's ~8 s networked check, codie 21:25): a FRM-572 line with seven names (x:top-seven) and a ⚖️ worth it (removes 8 s per summon; cheaper door: cache the last stamp), to dima — waits for: FRM-570 merge
-- [ ] #15 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
-- [ ] #16 📅 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close — on: 2026-11-12
-- [ ] #17 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
-- [ ] #18 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #19 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #20 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
-- [ ] #21 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #22 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #23 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
-- [ ] #24 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
-- [ ] #25 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #26 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #27 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #28 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
-- [ ] #29 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-570 body sync (seven rules, out, rule 7 a verb, his 3 names, done test + exit 14–16), spec.md:87/:89 stale, exit 16 fingerprint widened to emojis; FRM-414 → Todo; PK-378 fold into FRM-570:W5 + close; FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request; tell dima FRM-568 was Done, untouched — later: dima, his details first (PK-346:W11)
+- [ ] #15 ⏳ FRM-570:W4 follow-up chunk (dima o61): clio, wings, crow and helga get a thread record from their own starts (clio-start, the wing summon, crow:start, helga boot), so the guard and stash stop matching them by name (register.ts:160-163, register.tsx:5886-5903); shape and his sign after #161 merges — waits for: #161 merge
+- [ ] #16 📅 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) — on: 2026-11-12
+- [ ] #17 📅 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close — on: 2026-11-12
+- [ ] #18 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
+- [ ] #19 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #20 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #21 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
+- [ ] #22 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #23 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #24 📅 FRM-384's after-merge read: the guard's quiet-gate refusals per 100 gate runs against the 3 days before the merge, and x gate run calls against them (the spec's after-merge block) — on: 2026-11-18
+- [ ] #25 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
+- [ ] #26 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #27 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #28 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #29 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #30 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-570 body sync (seven rules, out, rule 7 a verb, his 3 names, done test + exit 14–16), spec.md:87/:89 stale, exit 16 fingerprint widened to emojis; FRM-414 → Todo; PK-378 fold into FRM-570:W5 + close; FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request; tell dima FRM-568 was Done, untouched — later: dima, his details first (PK-346:W11)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -288,4 +289,7 @@ PK-346:W14 (2026-11-11 21:32, dima): do not forget to clear all completed items 
 done 2026-11-11 21:56: siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-570 body sync (seven rules, out, rule 7 a verb, his 3 names, done test + exit 14–16), spec.md:87/:89 stale, exit 16 fingerprint widened to emojis; FRM-414 → Todo; PK-378 fold into FRM-570:W5 + close; FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request; tell dima FRM-568 was Done, untouched (FRM-570 In Progress, FRM-414 Todo, PK-378 open, FRM-465 Todo, FRM-575 Todo, FRM-560 Done, FRM-568 Done)
 
 21:56: the siesta-tails line moved to 💤 (his W11), not done; earlier «done» notes for agent-desktop (21:15, 21:34), FRM-570:W5 (21:15) and PK-349's crow row (21:34) mean moved or yanked, not finished (wishkeeper 21:50)
+
+PK-346:W15 (2026-11-11 22:02, dima): crow is at 60% ctx. its second wind not fixed yet? sw him properly. ❓ (context, not dima's words: "crow" is clio's sidecar; "sw" is second wind.)
+PK-346:W16 (2026-11-11 22:03, dima): or tell copypaste, I do it manually. (context, not dima's words: continues the 22:02 line, which asks about crow's second wind.)
 <!-- SECTION:NOTES:END -->
