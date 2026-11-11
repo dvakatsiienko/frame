@@ -4,7 +4,7 @@ title: memory by surface
 status: open
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
-updated_date: '2026-11-11T15:54:00Z'
+updated_date: '2026-11-11T16:10:00Z'
 labels:
   - s
 dependencies: []
@@ -44,4 +44,16 @@ PK-377:W22 (2026-11-11 17:49, dima): let's try gradual, but do not forget to mea
 superseded: the five lines stamped «oN» above, the stamp format only
 
 note: the re-stamped lines numbered 18–21 repeat lines 13–17; cite 13–17 (stamps fixed in place 17:54, clio)
+
+PK-377:W23 (2026-11-11 17:51, dima): o27, the bare yes. i don't understand. is it related to the yeses i write in the main prompt text box, or to yeses in orbit ticks? ❓
+PK-377:W24 (2026-11-11 17:51, dima): the better rule: a "yes" ticks an ask only when my last reply named that ask. the new pick is in orbit. let's do like this, i approve.
+PK-377:W25 (2026-11-11 17:51, dima): do not start multiple grills or reviews at once.
+PK-377:W26 (2026-11-11 17:51, dima): i did not answer the tiny skill yet, and you already printed a grill. i approve flyway-sync.
+PK-377:W27 (2026-11-11 17:51, dima): i was busy with wing 1, so i did not answer the grill.
+PK-377:W28 (2026-11-11 17:51, dima): the drawing part is mostly representation, right? it is not very related to habits, because it only shows how i see what is happening under the hood. this part does not need to be folded into habits, right? what must be remembered in habits is things like orbit phases and everything else. this is the boundary, right? ❓ (context, not dima's words: the line dima answers reads "the engine half runs everywhere vs the drawing half doesn't".)
+PK-377:W29 (2026-11-11 17:51, dima): file name fix: surface-herdr-desktop.md, not rules-lazy/surface-herdr.md. (context, not dima's words: the raw shows the old name, then an arrow to the new one.)
+PK-377:W30 (2026-11-11 17:51, dima): are there too many siestas, or not? is my siesta now over-tuned? before, you all kept forgetting siesta; now it runs pretty often. wishkeeper finds a lot of issues each time, so it is good, but it is not free. is it okay to have it like this? ❓ (after we finish the grill, do not solve two at once)
+PK-377:W31 (2026-11-11 18:09, dima, o38 steer): yes, but the band is very similar between the cc desktop app and the herdr desktop app. overall they are shaped the same, so this part should be fine. when the layout is different and drift is present, then it is worth putting into memories. (context, not dima's words: the line dima answers is "the phoenix icon is on herdr's band in herdr and on cc's band in the desktop app; only those 'where to press' lines go in each app's leaf; that's Q1 of round 2." the band is kept as read; flagged to clio.)
+PK-377:W32 (2026-11-11 18:09, dima, o39 steer): let's start from this, but i actually wanted to inspect your full memory and remove the memory salad entirely. propose where we can have it.
+PK-377:W33 (2026-11-11 18:09, dima, o41 steer): yes, these are stale, because if we make this conditional, the environment will be decided by the actual environment. it's live and different depending on the environment i start everyone in.
 <!-- SECTION:NOTES:END -->
