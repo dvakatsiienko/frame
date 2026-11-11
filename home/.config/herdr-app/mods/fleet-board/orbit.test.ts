@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
     type Ask,
     SEATS_BEAT_MS,
+    askLabel,
     asksOf,
     byName,
     hasSteerBox,
@@ -405,6 +406,22 @@ describe('a tick after an untick (dima, 14:51: «the very next tick lands»)', (
             1,
         );
         expect(pendingPresses(next, 1).get('o5')).toBe('tick');
+    });
+});
+
+describe('an ask id names its seat (crow, 15:03: o8 lived in main and in wing 1)', () => {
+    test('main clio keeps the bare id', () => {
+        expect(askLabel('🦉 clio', 'o8')).toBe('o8');
+    });
+
+    test('a wing prefixes its number', () => {
+        expect(askLabel('🦉🪽 clio: wing 1', 'o8')).toBe('w1·o8');
+    });
+
+    test('any other seat prefixes its name', () => {
+        expect(askLabel('⚡ 🔧 codie: herdr lane | FRM-573', 'o1')).toBe(
+            'codie·o1',
+        );
     });
 });
 

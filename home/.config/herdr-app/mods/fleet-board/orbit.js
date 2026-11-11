@@ -301,6 +301,19 @@ export const untickDoor = (pending, mark) =>
     pending === 'tick' && !mark ? 'drop' : 'untick';
 
 /**
+ * an ask's id as the board draws it: every seat numbers its asks on its own, so a wing's reads `w1·o8`, another
+ * seat's `codie·o1`, and only main clio's stays bare
+ * @param {string} seat the session's name
+ * @param {string} id
+ */
+export function askLabel(seat, id) {
+    const wing = /\bwing (\d+)/.exec(seat);
+    if (wing) return `w${wing[1]}·${id}`;
+    const word = /[a-z][\w-]*/i.exec(seat)?.[0];
+    return !word || word === 'clio' ? id : `${word}·${id}`;
+}
+
+/**
  * an ask takes a steer while it draws open: never marked, or unticked though the stash still holds its tick mark
  * @param {Ask} ask
  * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file, or just sent

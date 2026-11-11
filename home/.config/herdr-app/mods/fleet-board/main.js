@@ -23,6 +23,7 @@ import {
     PRESS_FILE,
     SEATS_BEAT_MS,
     SEATS_KEY,
+    askLabel,
     asksOf,
     byName,
     dropPress,
@@ -655,7 +656,9 @@ export default class FleetBoard extends View {
             .child(
                 prose(
                     `ask-${i}-${j}`,
-                    ask.id ? `**${ask.id}**: ${ask.text}` : ask.text,
+                    ask.id
+                        ? `**${askLabel(s.name, ask.id)}**: ${ask.text}`
+                        : ask.text,
                     t.foreground,
                     SIZE.main,
                 ),
