@@ -258,6 +258,10 @@ const fade = (color, alpha) =>
 // A text size from the 13 px design, scaled to the chosen size.
 const px = (n) => Math.round(((n * chatLook().size) / 13) * 2) / 2;
 const NARROW = 820;
+// a fling keeps the measurer still: no hold on a row and no measuring pass this soon after a wheel step
+const WHEEL_QUIET_MS = 400;
+// the measurer's heights land as one render
+const MEASURE_BATCH_MS = 32;
 // his message's last px, where its fork icon sits: a press there forks (rows take no handlers, clickRow)
 const FORK_W = 28;
 /** a message between threads: one another thread sent, or this one's SendMessage @param {any} item */
@@ -4390,10 +4394,11 @@ export default class ClaudeChat extends View {
                     const isFloat =
                         !this.follow &&
                         Math.abs(this.pressX - (this.viewW ?? 0) / 2) < 90 &&
-                        (y < 40 || y > (this.viewH ?? 0) - 40);
+                        ((prev >= 0 && y < 40) || y > (this.viewH ?? 0) - 40);
                     this.pressFloat = isFloat || Boolean(this.ctx);
                 })
                 .on_scroll_wheel((e, cx) => {
+                    this.wheelAt = Date.now();
                     const isAtEnd = (this.range?.end ?? 0) >= rows.length;
                     const follow = followAfterWheel(
                         this.follow,
@@ -4405,10 +4410,11 @@ export default class ClaudeChat extends View {
                         this.keptAt = now;
                         keepScroll(this.address, this.place());
                     }
-                    if (follow === this.follow && !this.ctx && !this.anchor)
-                        return;
-                    this.follow = follow;
+                    // his own scroll ends any hold on a row, with no render for it
                     this.anchor = null;
+                    this.reanchor = false;
+                    if (follow === this.follow && !this.ctx) return;
+                    this.follow = follow;
                     this.ctx = null;
                     keepScroll(this.address, this.place());
                     cx.notify();
@@ -4595,6 +4601,18 @@ export default class ClaudeChat extends View {
             );
     }
 
+    // one render for a pass's heights, never one per row, and none while he scrolls: it waits out the fling
+    /** @param {any} cx */
+    measuredSoon(cx) {
+        if (this.measureDue) return;
+        this.measureDue = true;
+        const quiet = WHEEL_QUIET_MS - (Date.now() - (this.wheelAt ?? 0));
+        cx.timer.after(Math.max(MEASURE_BATCH_MS, quiet), (cx) => {
+            this.measureDue = false;
+            cx.notify();
+        });
+    }
+
     // the room around a row: the gap below it, and the side padding (a readable column when narrow)
     rowSpace() {
         const look = chatLook();
@@ -4766,7 +4784,27 @@ export default class ClaudeChat extends View {
                 : this.range
                   ? this.range.start
                   : rows.length - 1;
-        const order = measureOrder(keys, this.rowH, this.measuredAt, near, now);
+        const order = measureOrder(keys, this.rowH, this.measuredAt, near);
+        // a measured row counts a pass; two passes with no change in its height and it is settled (a size observer
+        // reports only a change, so a steady height never calls back)
+        for (const i of order)
+            if (this.rowH.has(keys[i]))
+                this.measuredAt.set(
+                    keys[i],
+                    (this.measuredAt.get(keys[i]) ?? 0) + 1,
+                );
+        // another pass only while the last one moved something: a row that never reports a size, or a height that
+        // flips between two values, would otherwise redraw the chat 30 times a second for good
+        const moved =
+            this.rowH.size !== this.heightsSeen ||
+            this.heightChanges !== this.changesSeen;
+        this.heightsSeen = this.rowH.size;
+        this.changesSeen = this.heightChanges;
+        if (moved && order.some((i) => this.rowH.has(keys[i])))
+            this.measuredSoon(this.renderCx);
+        // rows left unmeasured are measured ahead while he isn't scrolling, so a fling never reaches one
+        if (moved && keys.some((k) => !this.rowH.has(k)))
+            this.measuredSoon(this.renderCx);
         const gen = this.measureGen;
         return div()
             .absolute()
@@ -4788,15 +4826,20 @@ export default class ClaudeChat extends View {
                                 .on_size_change((s, cx) => {
                                     if (gen !== this.measureGen) return;
                                     const k = keys[i];
-                                    if (!this.measuredAt.has(k))
-                                        this.measuredAt.set(k, Date.now());
                                     const h =
                                         s.height /
                                         (Number(settings().zoom) || 1);
                                     if (this.rowH.get(k) === h) return;
+                                    this.heightChanges =
+                                        (this.heightChanges ?? 0) + 1;
+                                    this.measuredAt.set(k, 0);
                                     this.rowH.set(k, h);
+                                    const isWheeling =
+                                        Date.now() - (this.wheelAt ?? 0) <
+                                        WHEEL_QUIET_MS;
                                     if (this.follow) this.stick = true;
                                     else if (
+                                        !isWheeling &&
                                         !this.anchor &&
                                         this.firstKey &&
                                         i < (this.range?.start ?? 0)
@@ -4814,7 +4857,7 @@ export default class ClaudeChat extends View {
                                         Date.now() < this.anchor.until
                                     )
                                         this.reanchor = true;
-                                    cx.notify();
+                                    this.measuredSoon(cx);
                                 })
                                 .child(
                                     this.rowView(
@@ -5638,6 +5681,7 @@ export default class ClaudeChat extends View {
     }
 
     render(cx) {
+        this.renderCx = cx;
         return inRender(() => this.renderView(cx));
     }
 

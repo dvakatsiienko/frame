@@ -7,9 +7,9 @@ export const MAX_ROW_PX = 40000;
 // the rows measured in one pass, new ones first, nearest the view first
 export const MEASURE_NEW = 30;
 export const MEASURE_MAX = 60;
-// markdown can lay out a moment after its first frame (a long reply first measures as one line): a height measured
-// this recently is measured again
-export const REMEASURE_MS = 4000;
+// markdown can lay out a moment after its first frame (a long reply first measures as one line): a height is
+// measured until it reads the same this many times running
+export const SETTLED_READS = 2;
 
 /**
  * every row's height for the list: its measured one, else its guess, each a finite number in (0, MAX_ROW_PX]
@@ -26,17 +26,16 @@ export function rowSizes(keys, heights, guess) {
 }
 
 /**
- * which rows the measurer draws this pass: never-measured ones nearest `near` first, then the ones measured in the last
- * REMEASURE_MS; a settled chat draws none, since every frame lays out whatever the measurer holds (60 rows a frame cost
- * his fling 4× the drawing, 21:57)
+ * which rows the measurer draws this pass: never-measured ones nearest `near` first, then ones not yet read the same
+ * twice (markdown can lay out a moment after its first frame); a settled chat draws none, since every frame lays out
+ * whatever the measurer holds (60 rows a frame cost his fling 4× the drawing, 21:57)
  * @param {string[]} keys
  * @param {Map<string, number>} heights
- * @param {Map<string, number>} measuredAt
+ * @param {Map<string, number>} sameReads how many times running each height read the same
  * @param {number} near
- * @param {number} now
  * @returns {number[]}
  */
-export function measureOrder(keys, heights, measuredAt, near, now) {
+export function measureOrder(keys, heights, sameReads, near) {
     const all = keys.map((_, i) => i);
     const fresh = all
         .filter((i) => !heights.has(keys[i]))
@@ -45,7 +44,7 @@ export function measureOrder(keys, heights, measuredAt, near, now) {
     const again = all.filter(
         (i) =>
             heights.has(keys[i]) &&
-            now - (measuredAt.get(keys[i]) ?? 0) < REMEASURE_MS,
+            (sameReads.get(keys[i]) ?? 0) < SETTLED_READS,
     );
     return [...new Set([...fresh, ...again])].slice(0, MEASURE_MAX);
 }
