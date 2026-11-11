@@ -16,7 +16,7 @@
   - a new session seeds them the turn it starts, from its brief, spec or tickets; nothing to do yet → empty is right
   - a `--bg` session writes no phases: no board draws them (PK-364: 95 % of `--bg` orbit calls, ~165k tokens in the wing days); its asks still go to orbit, where glide shows them
   - a line leads with its subject; the mod's «no phases yet» nudge after 3 tool calls is the guard
-- **🛼 glide — a lane's progress, fleet-wide.** one card per running lane on every board, its steps in order with «← we are here»; only the coordinator and a wing, on a lane it runs, write it; any other session's call is refused. the card is drawn, never read into a session's context; a member's asks sit in its subcard, and a tick there joins that member's next turn (FRM-385)
+- **🛼 glide — a lane's progress, fleet-wide.** one card per running lane on every board, its steps in order with «← we are here»; only the coordinator and a wing, on a lane it runs, write it; any other session's call is refused. the card is drawn, never read into a session's context; its subcard shows a member's asks as a read-only view, the asks themselves going to its coordinator (dima's o67 tick, 2026-11-11)
 
 <!-- why: subject-first asks, dima 2026-10-10: the board's long lines got cut. -->
 <!-- why: replies named asks by oN id; dima's o112 counted 65 unglossed-id reminders on 10-14. -->
