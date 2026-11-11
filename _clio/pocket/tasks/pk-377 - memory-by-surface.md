@@ -13,6 +13,9 @@ type: task
 ordinal: 9999
 ---
 
+held: 2026-11-11 — FRM-576 sign; the item stays open for its leftover lines (W23–W27, W30), each homed on the main flyway, closed once those land
+note: the re-stamped lines numbered 18–21 repeat lines 13–17; cite 13–17 (stamps fixed in place 17:54, clio)
+superseded: the five lines stamped «oN» above, the stamp format only
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
@@ -41,9 +44,7 @@ PK-377:W20 (2026-11-11 17:48, dima): example: you run in herdr now. can you load
 PK-377:W21 (2026-11-11 17:49, dima): surface-herdr-desktop.md (context, not dima's words: the raw holds only this file name, with no sentence around it.)
 PK-377:W22 (2026-11-11 17:49, dima): let's try gradual, but do not forget to measure and lift after 1 week! (read "1w" as "1 week")
 
-superseded: the five lines stamped «oN» above, the stamp format only
 
-note: the re-stamped lines numbered 18–21 repeat lines 13–17; cite 13–17 (stamps fixed in place 17:54, clio)
 
 PK-377:W23 (2026-11-11 17:51, dima): o27, the bare yes. i don't understand. is it related to the yeses i write in the main prompt text box, or to yeses in orbit ticks? ❓
 PK-377:W24 (2026-11-11 17:51, dima): the better rule: a "yes" ticks an ask only when my last reply named that ask. the new pick is in orbit. let's do like this, i approve.
@@ -60,5 +61,4 @@ PK-377:W33 (2026-11-11 18:09, dima, o41 steer): yes, these are stale, because if
 ticket: FRM-576
 close: 2026-11-11 18:20 — W2–W17, W28, W29, W31–W33 → FRM-576's wish block (renumbered W1–W21); W23–W24 → mods lane 6 rider r7 (built, b0f7c758); W25 and W30 → main flyway PK-349; W26, W27 answered in the thread; W1, W11, W12 settled by the shape; W18–W22 repeat W13–W17
 
-held: 2026-11-11 — FRM-576 sign; the item stays open for its leftover lines (W23–W27, W30), each homed on the main flyway, closed once those land
 <!-- SECTION:NOTES:END -->
