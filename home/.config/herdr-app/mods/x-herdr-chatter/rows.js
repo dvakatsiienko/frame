@@ -26,6 +26,19 @@ export function rowSizes(keys, heights, guess) {
 }
 
 /**
+ * whether a row is drawn inside a clip: only while the list's size for it is not its own measured height, so it never
+ * spills over the next row. a clip around his text is the viewport herdr's text drag scrolls from 16 px inside
+ * (gpui-component#3928, fixed upstream after herdr 0.1.15): a press dragged a hair up ran the chat to its top
+ * (dima, 2026-11-12 01:04)
+ * @param {string} key
+ * @param {Map<string, number>} heights
+ */
+export function isRowClipped(key, heights) {
+    const h = heights.get(key);
+    return !(Number.isFinite(h) && h > 0 && h <= MAX_ROW_PX);
+}
+
+/**
  * which rows the measurer draws this pass: never-measured ones nearest `near` first, then ones not yet read the same
  * twice (markdown can lay out a moment after its first frame); a settled chat draws none, since every frame lays out
  * whatever the measurer holds (60 rows a frame cost his fling 4× the drawing, 21:57)

@@ -6,6 +6,7 @@ import {
     MEASURE_NEW,
     fileLinks,
     followAfterWheel,
+    isRowClipped,
     measureOrder,
     prevMineIndex,
     rowSizes,
@@ -171,5 +172,17 @@ describe("a reply's file:// links each get a row to press", () => {
         expect(fileLinks('[](file:///tmp/dir/e.txt)')).toEqual([
             { label: 'e.txt', path: '/tmp/dir/e.txt' },
         ]);
+    });
+});
+
+describe('a row clips only while its size is not its own height', () => {
+    test('a measured row draws unclipped, so a text drag in it never scrolls the chat', () => {
+        expect(isRowClipped('a', new Map([['a', 120]]))).toBe(false);
+    });
+    test('a row still on its guess clips', () => {
+        expect(isRowClipped('a', new Map())).toBe(true);
+    });
+    test('a runaway height cut to the cap clips', () => {
+        expect(isRowClipped('a', new Map([['a', MAX_ROW_PX + 1]]))).toBe(true);
     });
 });

@@ -73,6 +73,7 @@ import {
     SETTLED_READS,
     fileLinks,
     followAfterWheel,
+    isRowClipped,
     measureOrder,
     prevMineIndex,
     rowSizes,
@@ -4621,7 +4622,9 @@ export default class ClaudeChat extends View {
                     out.push(
                         this.rowView(t, rows[i], `v${gen}-`, gap, pad)
                             .h(sizes[i])
-                            .overflow_hidden(),
+                            .when(isRowClipped(shapes[i], this.rowH), (el) =>
+                                el.overflow_hidden(),
+                            ),
                     );
                 return out;
             },
