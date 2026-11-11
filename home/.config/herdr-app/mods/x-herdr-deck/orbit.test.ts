@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
     type Ask,
-    SEATS_BEAT_MS,
+    THREADS_BEAT_MS,
     askLabel,
     asksOf,
     byName,
@@ -12,14 +12,14 @@ import {
     hotPresses,
     inListOrder,
     literalAngles,
-    nextSeats,
+    nextThreads,
     pendingPresses,
     phasesOf,
     runningThreads,
     savePress,
-    seatFacts,
     sentSteer,
     stateOfPid,
+    threadFacts,
     tickState,
     unbold,
     untickDoor,
@@ -209,7 +209,7 @@ describe('a plain one-line label', () => {
     });
 });
 
-describe('seats sort by the words of their name', () => {
+describe('threads sort by the words of their name', () => {
     test('a leading badge never decides the order', () => {
         const names = [
             '🎀 helga',
@@ -232,7 +232,7 @@ describe('seats sort by the words of their name', () => {
     });
 });
 
-describe('the deck publishes each seat its three facts', () => {
+describe('the deck publishes each thread its three facts', () => {
     const row = (pid: number, status: string, wait: string | null) => ({
         context: 40,
         pid,
@@ -240,35 +240,39 @@ describe('the deck publishes each seat its three facts', () => {
         wait,
     });
 
-    test('an idle seat keeps its waiting-on line', () => {
+    test('an idle thread keeps its waiting-on line', () => {
         expect(waitOf('idle', 'waiting on 🦉 clio')).toBe('waiting on 🦉 clio');
     });
 
-    test('each live seat gets its context, its waiting-on line and the week, keyed by pid', () => {
-        expect(seatFacts([row(7, 'idle', 'waiting on 🦉 clio')], 57)).toEqual({
-            '7': { context: 40, wait: 'waiting on 🦉 clio', week: 57 },
-        });
+    test('each live thread gets its context, its waiting-on line and the week, keyed by pid', () => {
+        expect(threadFacts([row(7, 'idle', 'waiting on 🦉 clio')], 57)).toEqual(
+            {
+                '7': { context: 40, wait: 'waiting on 🦉 clio', week: 57 },
+            },
+        );
     });
 
     test('a bold name in the waiting-on line arrives plain', () => {
         expect(
-            seatFacts([row(7, 'idle', 'waiting on **🦉 clio**')], 57)['7']
+            threadFacts([row(7, 'idle', 'waiting on **🦉 clio**')], 57)['7']
                 ?.wait,
         ).toBe('waiting on 🦉 clio');
     });
 
-    test('a seat blocked on a prompt or in an unknown state shows no waiting-on line', () => {
+    test('a thread blocked on a prompt or in an unknown state shows no waiting-on line', () => {
         expect(waitOf('blocked', 'waiting on 🦉 clio')).toBeNull();
         expect(waitOf('shell', 'waiting on 🦉 clio')).toBeNull();
     });
 
-    test('a seat mid-turn shows no waiting-on line, its last one is old', () => {
+    test('a thread mid-turn shows no waiting-on line, its last one is old', () => {
         expect(waitOf('busy', 'waiting on 🦉 clio')).toBeNull();
     });
 
-    test('a seat with no context read yet carries none, never a guess', () => {
+    test('a thread with no context read yet carries none, never a guess', () => {
         expect(
-            seatFacts([{ ...row(7, 'idle', null), context: null }], null)['7'],
+            threadFacts([{ ...row(7, 'idle', null), context: null }], null)[
+                '7'
+            ],
         ).toEqual({
             context: null,
             wait: null,
@@ -277,33 +281,39 @@ describe('the deck publishes each seat its three facts', () => {
     });
 
     test('unchanged facts are not written again before the beat', () => {
-        const seats = seatFacts([row(7, 'idle', null)], 57);
+        const threads = threadFacts([row(7, 'idle', null)], 57);
         expect(
-            nextSeats({ at: 1000, seats }, seats, 1000 + SEATS_BEAT_MS - 1),
+            nextThreads(
+                { at: 1000, threads },
+                threads,
+                1000 + THREADS_BEAT_MS - 1,
+            ),
         ).toBeNull();
     });
 
     test('unchanged facts are written again at the beat, with a new time', () => {
-        const seats = seatFacts([row(7, 'idle', null)], 57);
+        const threads = threadFacts([row(7, 'idle', null)], 57);
         expect(
-            nextSeats({ at: 1000, seats }, seats, 1000 + SEATS_BEAT_MS),
+            nextThreads({ at: 1000, threads }, threads, 1000 + THREADS_BEAT_MS),
         ).toEqual({
-            at: 1000 + SEATS_BEAT_MS,
-            seats,
+            at: 1000 + THREADS_BEAT_MS,
+            threads,
         });
     });
 
     test('a changed fact is written at once', () => {
-        const before = seatFacts([row(7, 'idle', null)], 57);
-        const after = seatFacts([row(7, 'idle', 'waiting on 🙋‍♂️ dima')], 57);
-        expect(nextSeats({ at: 1000, seats: before }, after, 1001)).toEqual({
-            at: 1001,
-            seats: after,
-        });
+        const before = threadFacts([row(7, 'idle', null)], 57);
+        const after = threadFacts([row(7, 'idle', 'waiting on 🙋‍♂️ dima')], 57);
+        expect(nextThreads({ at: 1000, threads: before }, after, 1001)).toEqual(
+            {
+                at: 1001,
+                threads: after,
+            },
+        );
     });
 
     test('the first read is always written', () => {
-        expect(nextSeats(null, {}, 5)).toEqual({ at: 5, seats: {} });
+        expect(nextThreads(null, {}, 5)).toEqual({ at: 5, threads: {} });
     });
 });
 
@@ -368,7 +378,7 @@ describe('a tick locks only when a turn takes it', () => {
     });
 });
 
-describe('his second click writes the door that still reaches the seat', () => {
+describe('his second click writes the door that still reaches the thread', () => {
     test('a press the stash has not read leaves the file', () => {
         expect(untickDoor('tick')).toBe('drop');
     });
@@ -405,7 +415,7 @@ describe('a tick after an untick (dima, 14:51: «the very next tick lands»)', (
     });
 });
 
-describe('an ask id names its seat (crow, 15:03: o8 lived in main and in wing 1)', () => {
+describe('an ask id names its thread (crow, 15:03: o8 lived in main and in wing 1)', () => {
     test('main clio keeps the bare id', () => {
         expect(askLabel('🦉 clio', 'o8')).toBe('o8');
     });
@@ -414,7 +424,7 @@ describe('an ask id names its seat (crow, 15:03: o8 lived in main and in wing 1)
         expect(askLabel('🦉🪽 clio: wing 1', 'o8')).toBe('w1·o8');
     });
 
-    test('any other seat prefixes its name', () => {
+    test('any other thread prefixes its name', () => {
         expect(askLabel('⚡ 🔧 codie: herdr lane | FRM-573', 'o1')).toBe(
             'codie·o1',
         );

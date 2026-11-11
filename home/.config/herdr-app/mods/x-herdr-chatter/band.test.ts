@@ -13,11 +13,11 @@ import {
 
 const deck = {
     at: 1000,
-    seats: { '7': { context: 40, wait: 'waiting on 🦉 clio', week: 57 } },
+    threads: { '7': { context: 40, wait: 'waiting on 🦉 clio', week: 57 } },
 };
 
-describe('the band reads its own seat from the deck', () => {
-    test("the chat's seat gets its three facts, fresh", () => {
+describe('the band reads its own thread from the deck', () => {
+    test("the chat's thread gets its three facts, fresh", () => {
         expect(bandOf(deck, 7, 1000)).toEqual({
             context: 40,
             isStale: false,
@@ -26,11 +26,11 @@ describe('the band reads its own seat from the deck', () => {
         });
     });
 
-    test('another seat in the deck never shows here', () => {
+    test('another thread in the deck never shows here', () => {
         expect(bandOf(deck, 8, 1000).wait).toBeNull();
     });
 
-    test('nothing published yet, or no seat pid known, draws empty rows', () => {
+    test('nothing published yet, or no thread pid known, draws empty rows', () => {
         const empty = { context: null, isStale: false, wait: null, week: null };
         expect(bandOf(undefined, 7, 1000)).toEqual(empty);
         expect(bandOf(deck, null, 1000)).toEqual(empty);
@@ -43,11 +43,11 @@ describe('the band reads its own seat from the deck', () => {
 
     test('a malformed value draws empty, never a guess', () => {
         expect(
-            bandOf({ at: 'x', seats: { '7': { context: 'big' } } }, 7, 1000)
+            bandOf({ at: 'x', threads: { '7': { context: 'big' } } }, 7, 1000)
                 .context,
         ).toBeNull();
         expect(
-            bandOf({ at: 1000, seats: { '7': { context: 'big' } } }, 7, 1000)
+            bandOf({ at: 1000, threads: { '7': { context: 'big' } } }, 7, 1000)
                 .context,
         ).toBeNull();
     });

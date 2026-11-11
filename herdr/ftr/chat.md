@@ -113,7 +113,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a thread mid-turn or waiting on nothing shows an empty waiting-on row, a long one is cut with … and whole in its tooltip, and the rows keep one height so nothing moves
   - and facts the deck has not published for over 2 min 15 s draw dimmed
   - and the 5h line is off for now, back if he moves to the $100 plan (on $200 it is not shown)
-  - decision: the deck's mod reads the facts once and publishes them to herdr's shared state `x-herdr-deck.seats`, at once on a change and every 60 s; the chat reads only that key for its own thread
+  - decision: the deck's mod reads the facts once and publishes them to herdr's shared state `x-herdr-deck.threads`, at once on a change and every 60 s; the chat reads only that key for its own thread
 - ⬜ the band's buttons, slice 2 (FRM-565)
   - given a thread's tab in the Chat view
   - then right of «wait» sit 🐦‍🔥 🔥 ⏰ 💨 🔓 🎛️ 🚦, emoji only, each word leading its tooltip (dima, 21:02); filled when on, 🔓 red when on

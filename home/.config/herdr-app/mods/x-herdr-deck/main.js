@@ -21,8 +21,8 @@ import {
     PENDING_MS,
     PRESS_DIR,
     PRESS_FILE,
-    SEATS_BEAT_MS,
-    SEATS_KEY,
+    THREADS_BEAT_MS,
+    THREADS_KEY,
     askLabel,
     asksOf,
     byName,
@@ -33,14 +33,14 @@ import {
     hotPresses,
     inListOrder,
     literalAngles,
-    nextSeats,
+    nextThreads,
     pendingPresses,
     phasesOf,
     runningThreads,
     savePress,
-    seatFacts,
     sentSteer,
     stateOfPid,
+    threadFacts,
     tickState,
     untickDoor,
     waitOf,
@@ -222,12 +222,13 @@ const prose = (id, markdown, color, size) =>
 export default class FleetBoard extends View {
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
-        // the seat strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
-        // alive draws nothing and reads nothing, so it never runs a second deck
+        // the thread strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
+        // alive draws nothing and reads nothing, so it never runs a second deck. «seat» is the layout's own value in
+        // layouts/zoo.json: renaming it means a layout edit, never done while a thread holds focus
         /** @type {Map<string, number>} each ask id label's drawn width */
         this.labelW = new Map();
-        this.isSeat = props()?.view === 'seat';
-        if (this.isSeat) return;
+        this.isThread = props()?.view === 'seat';
+        if (this.isThread) return;
         /** @type {Row[]} */
         this.rows = [];
         /** @type {Lane[]} */
@@ -252,7 +253,7 @@ export default class FleetBoard extends View {
         this.loadedAt = null;
         /** @type {number | null} */
         this.week = null;
-        cx.timer.every(SEATS_BEAT_MS, (cx) => this.reload(cx));
+        cx.timer.every(THREADS_BEAT_MS, (cx) => this.reload(cx));
         this.reload(cx);
         // the press folder too: a 🔥 pressed on the band above a chat draws on its row at once
         for (const folder of [
@@ -299,12 +300,12 @@ export default class FleetBoard extends View {
                             (RANK[STATE[b.status]] ?? 2) ||
                         byName(a.name, b.name),
                 );
-            const next = nextSeats(
-                /** @type {any} */ (shared(SEATS_KEY)),
-                seatFacts(this.rows, this.week),
+            const next = nextThreads(
+                /** @type {any} */ (shared(THREADS_KEY)),
+                threadFacts(this.rows, this.week),
                 Date.now(),
             );
-            if (next) setShared(SEATS_KEY, next);
+            if (next) setShared(THREADS_KEY, next);
             for (const row of this.rows)
                 if (row.asks.length)
                     row.pending = pendingPresses(
@@ -923,9 +924,9 @@ export default class FleetBoard extends View {
 
     render() {
         const t = /** @type {Theme} */ (theme());
-        if (this.isSeat) return div();
+        if (this.isThread) return div();
         // his order from the agents list, read at every draw, so a drag there moves the deck at once; the read's own
-        // order (blocked, working, then by name) stays for a seat the list does not show
+        // order (blocked, working, then by name) stays for a thread the list does not show
         const rows = inListOrder(
             this.rows,
             /** @type {number[] | null} */ (shared(ORDER_KEY)),

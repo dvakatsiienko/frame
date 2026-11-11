@@ -170,7 +170,7 @@ const NAMES = new Map();
 function sessionName(address) {
     return NAMES.get(address)?.name ?? null;
 }
-// a `claude --bg` seat shows in herdr as `claude attach <job id>`: the terminal's pid is the attach client's, so its
+// a `claude --bg` thread shows in herdr as `claude attach <job id>`: the terminal's pid is the attach client's, so its
 // session is the registry file carrying that job id
 async function sessionOf(term) {
     const dir = `${home()}/.claude/sessions`;
@@ -183,7 +183,7 @@ async function sessionOf(term) {
         }
     };
     // one rule, one reader (FRM-570 rule 8): a thread's name by its pid is x's thread store's; cc's registry stays the
-    // door only for a bg seat's job id, which the store does not carry
+    // door only for a bg thread's job id, which the store does not carry
     const store = term.pid
         ? await read(`${home()}/.claude/shelf/threads.json`)
         : null;

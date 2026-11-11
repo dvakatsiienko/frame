@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 
-// a transcript read a slice at a time: herdr's fs reads a whole file and refuses one past 64 MB (a 93 MB seat drew
+// a transcript read a slice at a time: herdr's fs reads a whole file and refuses one past 64 MB (a 93 MB thread drew
 // an empty chat, 2026-11-10 21:02), so the slice comes from `tail | head`, and only its whole lines are kept
 
 /**

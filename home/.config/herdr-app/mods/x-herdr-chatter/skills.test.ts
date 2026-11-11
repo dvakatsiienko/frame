@@ -64,7 +64,7 @@ beforeAll(async () => {
     );
 });
 
-describe('every skill the seat can load autocompletes', () => {
+describe('every skill the thread can load autocompletes', () => {
     test('a plugin enabled by the project layer lists its skills', async () => {
         const skills = await loadableSkills(fs, { cwd, home });
         expect(skills.get('alpha:boot')).toBe('start a coordinator');
