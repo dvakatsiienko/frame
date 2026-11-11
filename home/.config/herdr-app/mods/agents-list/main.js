@@ -810,14 +810,10 @@ export default class Agents extends View {
                         `mods/workspace-chrome/${isPinned ? 'pin-off' : 'pin'}.svg`,
                     ).size(13),
                 );
-            // Under a space header the space goes without saying; an automatic tab number says nothing.
-            // Without a space header above (his order, pinned) the row names its space.
-            // It reads "agent · space": the agent's name first (it shortens when the row is
-            // short), the space after it, dim and always whole.
+            // An automatic tab number says nothing. No row names its space: the name repeats on every row and
+            // wastes the line (dima, 19:59 and 00:13: «redundant … not needed»).
             const full = isYours || isPinned;
             const both = full && Boolean(more) && Boolean(a.space_name);
-            // one space: its name on every row says nothing (dima, 19:59: «it is redundant currently»)
-            const withSpace = both && spaces().length > 1;
             const name =
                 sessionName(a.address) ??
                 (both
@@ -922,24 +918,6 @@ export default class Agents extends View {
                                 .tooltip(String(name))
                                 .text_color(idle ? t.muted : t.foreground)
                                 .child(name),
-                        )
-                        // Right-click the space name: rename the space (Herdr asks for the name).
-                        .when(withSpace, (el) =>
-                            el.child(
-                                div()
-                                    .id(`ag-space-${a.address}`)
-                                    .flex_none()
-                                    .max_w(110)
-                                    .truncate()
-                                    .text_color(t.dim)
-                                    .on_mouse_down('right', (_e, cx) => {
-                                        cx.stop_propagation();
-                                        run('space.rename', {
-                                            id: a.space,
-                                        });
-                                    })
-                                    .child(`\u00b7 ${a.space_name}`),
-                            ),
                         ),
                 )
                 .when(Boolean(machine), (el) =>
