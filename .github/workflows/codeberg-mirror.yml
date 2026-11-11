@@ -29,5 +29,7 @@ jobs:
           cd src
           dest="https://dvakatsiienko:${CODEBERG_TOKEN}@codeberg.org/dvakatsiienko/${REPO}.git"
           # a backup never mirrors destruction: no prune, and main + tags only fast-forward, so a rewrite turns this run red
-          git push "$dest" '+refs/heads/*:refs/heads/*' '^refs/heads/main'
-          git push "$dest" 'refs/heads/main:refs/heads/main' 'refs/tags/*:refs/tags/*'
+          # codeberg answers 504 now and then (6 red runs 11-09..11-11, all 504); a rejected push stays red after the retries
+          retry() { for wait in 30 60 120; do "$@" && return 0; echo "retrying in ${wait}s"; sleep "$wait"; done; "$@"; }
+          retry git push "$dest" '+refs/heads/*:refs/heads/*' '^refs/heads/main'
+          retry git push "$dest" 'refs/heads/main:refs/heads/main' 'refs/tags/*:refs/tags/*'
