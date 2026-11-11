@@ -68,6 +68,7 @@ import * as ask from './question.js';
 import { QUEUED_IDLE_MS, queuedAfterIdle, queuedAfterRow } from './queued.js';
 import { relayIn, relayLine } from './relay.js';
 import {
+    SETTLED_READS,
     fileLinks,
     followAfterWheel,
     measureOrder,
@@ -260,6 +261,8 @@ const px = (n) => Math.round(((n * chatLook().size) / 13) * 2) / 2;
 const NARROW = 820;
 // a fling keeps the measurer still: no hold on a row and no measuring pass this soon after a wheel step
 const WHEEL_QUIET_MS = 400;
+// a row whose height changed this often is held at its tallest: a flip between two heights never redraws for good
+const FLIP_LIMIT = 4;
 // the measurer's heights land as one render
 const MEASURE_BATCH_MS = 32;
 // his message's last px, where its fork icon sits: a press there forks (rows take no handlers, clickRow)
@@ -1445,6 +1448,7 @@ export default class ClaudeChat extends View {
                 looked: this.looked,
                 model: this.model,
                 pos: this.pos,
+                relayIds: this.relayIds,
                 session: this.session,
                 skills: this.skills,
                 subs: this.subs,
@@ -1499,10 +1503,12 @@ export default class ClaudeChat extends View {
         this.screen = null;
         this.rowH = new Map();
         this.measuredAt = new Map();
+        this.flips = new Map();
         /** @type {string} */
         this.rowFit = '';
         this.seek = null;
-        this.relayIds = new Set();
+        this.relayIds = kept.relayIds ?? new Set();
+        this.leftUuid = undefined;
     }
 
     // The other Claude agents' sessions, found ahead of time (one process walk for all), so
@@ -2048,6 +2054,7 @@ export default class ClaudeChat extends View {
                         this.pos = 0;
                         this.head = null;
                         this.base = 0;
+                        this.relayIds = new Set();
                         // another conversation in this seat (a /clear, a resume): it starts at its newest
                         this.follow = true;
                         this.stick = true;
@@ -2217,6 +2224,7 @@ export default class ClaudeChat extends View {
                     this.pos = 0;
                     this.head = null;
                     this.base = 0;
+                    this.relayIds = new Set();
                     this.again = true;
                 } else if (text) {
                     this.ingest(text);
@@ -4266,8 +4274,9 @@ export default class ClaudeChat extends View {
         const z = Number(settings().zoom) || 1;
         const { gap, pad } = this.rowSpace();
         const keys = rows.map((r) => r.key);
+        const shapes = rows.map((r) => this.shapeOf(r));
         const sizes = rowSizes(
-            keys,
+            shapes,
             this.rowH,
             (i) => guessHeight(rows[i]) + gap,
         );
@@ -4435,7 +4444,7 @@ export default class ClaudeChat extends View {
                         .child(list)
                         .child(Scrollbar.vertical(listId).absolute().inset_0()),
                 )
-                .child(this.measurer(t, rows, keys, gap, pad))
+                .child(this.measurer(t, rows, keys, shapes, gap, pad))
                 .when(Boolean(this.ctx), (el) => el.child(this.ctxMenu(t)))
                 .when(!this.follow, (el) =>
                     el
@@ -4613,6 +4622,18 @@ export default class ClaudeChat extends View {
         });
     }
 
+    // what a row's height depends on: its key, and what can change inside it under the same key (a fold opened, a
+    // tool's output arriving, a streaming reply growing, a search hit's outline), so a change is measured again
+    /** @param {Row} row */
+    shapeOf(row) {
+        const text = row.b?.text ?? row.item?.text ?? '';
+        const open = row.item && this.open.has(row.item.id) ? 1 : 0;
+        const hit = row.id !== undefined && this.hits.found.has(row.id) ? 1 : 0;
+        const result =
+            row.kind === 'detail' ? (row.item?.result?.length ?? -1) : 0;
+        return `${row.key}|${text.length}|${open}|${hit}|${result}`;
+    }
+
     // the room around a row: the gap below it, and the side padding (a readable column when narrow)
     rowSpace() {
         const look = chatLook();
@@ -4651,6 +4672,7 @@ export default class ClaudeChat extends View {
                             /** @type {number} */ k,
                         ) => ({
                             id,
+                            item,
                             key: `${key}:f${k}`,
                             kind: /** @type {'file'} */ ('file'),
                             ...f,
@@ -4772,7 +4794,7 @@ export default class ClaudeChat extends View {
 
     // Rows not measured yet, drawn once out of sight at the list's width; their heights go to the list, which then
     // places every row exactly. Those near what is shown go first (after shepherdr's chat, MIT).
-    measurer(t, rows, keys, gap, pad) {
+    measurer(t, rows, keys, shapes, gap, pad) {
         const now = Date.now();
         const anchored =
             this.anchor && now < this.anchor.until
@@ -4784,15 +4806,16 @@ export default class ClaudeChat extends View {
                 : this.range
                   ? this.range.start
                   : rows.length - 1;
-        const order = measureOrder(keys, this.rowH, this.measuredAt, near);
+        const order = measureOrder(shapes, this.rowH, this.measuredAt, near);
         // a measured row counts a pass; two passes with no change in its height and it is settled (a size observer
         // reports only a change, so a steady height never calls back)
+        let settledNow = false;
         for (const i of order)
-            if (this.rowH.has(keys[i]))
-                this.measuredAt.set(
-                    keys[i],
-                    (this.measuredAt.get(keys[i]) ?? 0) + 1,
-                );
+            if (this.rowH.has(shapes[i])) {
+                const reads = (this.measuredAt.get(shapes[i]) ?? 0) + 1;
+                this.measuredAt.set(shapes[i], reads);
+                if (reads >= SETTLED_READS) settledNow = true;
+            }
         // another pass only while the last one moved something: a row that never reports a size, or a height that
         // flips between two values, would otherwise redraw the chat 30 times a second for good
         const moved =
@@ -4800,10 +4823,14 @@ export default class ClaudeChat extends View {
             this.heightChanges !== this.changesSeen;
         this.heightsSeen = this.rowH.size;
         this.changesSeen = this.heightChanges;
-        if (moved && order.some((i) => this.rowH.has(keys[i])))
+        // 1: a row that settles in this pass leaves the measurer at the next render, never at some later one
+        if (
+            (moved && order.some((i) => this.rowH.has(shapes[i]))) ||
+            settledNow
+        )
             this.measuredSoon(this.renderCx);
         // rows left unmeasured are measured ahead while he isn't scrolling, so a fling never reaches one
-        if (moved && keys.some((k) => !this.rowH.has(k)))
+        if (moved && shapes.some((k) => !this.rowH.has(k)))
             this.measuredSoon(this.renderCx);
         const gen = this.measureGen;
         return div()
@@ -4825,11 +4852,21 @@ export default class ClaudeChat extends View {
                                 .w_full()
                                 .on_size_change((s, cx) => {
                                     if (gen !== this.measureGen) return;
-                                    const k = keys[i];
+                                    const k = shapes[i];
                                     const h =
                                         s.height /
                                         (Number(settings().zoom) || 1);
                                     if (this.rowH.get(k) === h) return;
+                                    const flips = (this.flips.get(k) ?? 0) + 1;
+                                    this.flips.set(k, flips);
+                                    if (flips > FLIP_LIMIT) {
+                                        this.rowH.set(
+                                            k,
+                                            Math.max(this.rowH.get(k) ?? 0, h),
+                                        );
+                                        this.measuredAt.set(k, SETTLED_READS);
+                                        return;
+                                    }
                                     this.heightChanges =
                                         (this.heightChanges ?? 0) + 1;
                                     this.measuredAt.set(k, 0);
@@ -5780,6 +5817,7 @@ export default class ClaudeChat extends View {
             this.rowFit = fit;
             this.rowH = new Map();
             this.measuredAt = new Map();
+            this.flips = new Map();
             this.measureGen++;
         }
         const { pad } = this.rowSpace();
