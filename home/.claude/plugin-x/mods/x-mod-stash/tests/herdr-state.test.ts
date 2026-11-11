@@ -141,6 +141,35 @@ test("a session's state file holds its asks, plan, wait, taken, ctx and model", 
     });
 });
 
+// cc measures only at a turn's end, and a wind's ingest runs as one long turn: the fill from before the compact
+// stayed on the row for 17 min (2026-11-11)
+for (const trigger of ['manual', 'auto'] as const)
+    test(`a ${trigger} compact drops the stored ctx, so no row shows the fill from before it`, async ($, on) => {
+        on('session.compact', (_$, e) => ({ messages: e.messages }));
+        const s = await session($, on);
+        s.store.set(`context:${A}`, 63);
+        await orbit($, { lines: ['now: a'], op: 'plan' });
+        await $.session.compact({
+            messages: [{ role: 'user', text: 'hi', toolUses: [] }],
+            trigger,
+        } as never);
+        expect([s.store.has(`context:${A}`), s.read(A)?.ctx]).toEqual([
+            false,
+            null,
+        ]);
+    });
+
+test('a precompute compact keeps the stored ctx', async ($, on) => {
+    on('session.compact', (_$, e) => ({ messages: e.messages }));
+    const s = await session($, on);
+    s.store.set(`context:${A}`, 63);
+    await $.session.compact({
+        messages: [{ role: 'user', text: 'hi', toolUses: [] }],
+        trigger: 'precompute',
+    } as never);
+    expect(s.store.get(`context:${A}`)).toBe(63);
+});
+
 test('a reader beside a tight write loop never meets half a file', async ($, on) => {
     const s = await session($, on);
     await orbit($, { asks: [{ pick: 'yes', text: 'ship it' }], op: 'add' });

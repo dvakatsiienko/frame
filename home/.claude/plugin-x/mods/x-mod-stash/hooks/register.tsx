@@ -6403,6 +6403,11 @@ export const register: Register = (on) => {
         // skipped changed nothing
         if (!e.agentId && e.trigger !== 'precompute' && !('skip' in r)) {
             await windOnCompact($).catch(() => undefined);
+            // the next measure comes only at this turn's end, and a wind's ingest is one long turn: until then the
+            // fill from before the compact would stand on every board
+            const sid = await currentId($);
+            if (sid) await $.store.delete(CONTEXT + sid).catch(() => undefined);
+            await keepShelf($);
             await load($);
         }
         return r;
