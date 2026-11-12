@@ -1464,18 +1464,19 @@ function saysMergeOf(prompt: string, pr: string) {
         String.raw`^\s*(?:(?:yes|yeah|ok|okay|please|sure)\b[\s,!]*)*(?:merge|land|ship)\s+(?:#?\d+\s*(?:,|and|&)\s*)*#?${pr}\b`,
         'i',
     );
-    // a hedge reads as a negation: a trailing «…», a wait or hold, a condition (round 11)
-    // a hedge anywhere in his prompt refuses, since its own sentence still hedges the merge (local review)
+    // a hedge reads as a negation: a trailing «…», a wait or hold, a condition (round 11), in his merge sentence or any
+    // after it, since a sentence of its own still hedges the merge (local review); three dots inside a word are no «…»
     const hedged =
-        /…|\b(?:later|wait|hold|if|unless|once|when|after|assuming|provided|maybe)\b/i;
+        /…(?=\s|$)|\b(?:later|wait|hold|if|unless|once|when|after|assuming|provided|maybe)\b/i;
     const negated = /n['’]t\b|\b(?:not|never|no|nope)\b/i;
-    const text = prompt.replaceAll(QUOTED, ' ').replaceAll(/\.{3,}/g, '…');
-    if (hedged.test(text)) return false;
-    return text
-        .split(/(?<=[.!?\n])/)
-        .some(
-            (s) => !s.trim().endsWith('?') && !negated.test(s) && said.test(s),
-        );
+    const sentences = prompt
+        .replaceAll(QUOTED, ' ')
+        .replaceAll(/\.{3,}(?=\s|$)/g, '…')
+        .split(/(?<=[.!?\n](?=\s|$))/);
+    const at = sentences.findIndex(
+        (s) => !s.trim().endsWith('?') && !negated.test(s) && said.test(s),
+    );
+    return at >= 0 && !sentences.slice(at).some((s) => hedged.test(s));
 }
 export function mergeWord(command: string, cwd: string): Refusal | undefined {
     const words = mergeAutoCalls(command, cwd).flatMap((c) => c.words);

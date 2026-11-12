@@ -319,6 +319,12 @@ for (const line of [
     `sed -n 'w ${LAYOUT}' /tmp/z.json`,
     "echo '{}' > /home/.config/herdr-app//layouts/zoo.json",
     "echo '{}' > /home/.config/herdr-app/./layouts/zoo.json",
+    // the second review: sed's w after an address, its script the only operand
+    `echo x | sed -n '1w ${LAYOUT}'`,
+    `bash <<'EOF'\necho '{}' > ${LAYOUT}\nEOF`,
+    `git mv /tmp/zoo.json ${LAYOUT}`,
+    `echo x | sed 's/a/b/w ${LAYOUT}'`,
+    "cd ~/.config/herdr-app/layouts && sed -n 'w zoo.json' /tmp/z.json",
 ])
     test(`a herdr layout change is refused: ${line}`, async ($, on) => {
         const { ran } = world(on);
@@ -340,6 +346,11 @@ for (const line of [
     `cp ${LAYOUT} /tmp/zoo.json`,
     'cd ~/.config/herdr-app/layouts && cat zoo.json',
     `sed -n 1,5p ${LAYOUT}`,
+    'cd ~/.config/herdr-app/layouts && sed -n 1,5p zoo.json',
+    "git commit -F - -- a.ts <<'EOF'\nfix ~/.config/herdr-app/layouts/zoo.json\nEOF",
+    'git commit -m "fix ~/.config/herdr-app/layouts/zoo.json" -- a.ts',
+    `git diff -- ${LAYOUT}`,
+    "tee /tmp/notes.md <<'EOF'\nthe tabs live in ~/.config/herdr-app/layouts/zoo.json\nEOF",
 ])
     test(`a layout click or read runs: ${line}`, async ($, on) => {
         const { ran } = world(on);

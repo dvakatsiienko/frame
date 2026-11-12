@@ -258,6 +258,16 @@ for (const line of [
         "import sys\nsys.stdout.write('(')\np = '/home/.claude/shelf/pr-verified.json'\nopen(p, 'w').write('{}')",
     ),
     `node - <<'EOF'\nconst o = { write: (t) => require('fs').writeFileSync(t, '{}') };\no.write('/home/.claude/shelf/pr-verified.json');\nEOF`,
+    // the second review: a comment that reads like a write's open paren, and exec or spawn under a longer name
+    SCRIPT(
+        "from pathlib import Path\np = Path(  # .write(\n'/home/.claude/shelf/pr-verified.json')\np.write_text('{}')",
+    ),
+    SCRIPT(
+        "import os\nr, w = os.pipe()\nos.execvp('sh', ['sh'])\nos.fdopen(w, 'w').write('echo x > /home/.claude/shelf/pr-verified.json')",
+    ),
+    SCRIPT(
+        "import os\nos.posix_spawnp(0, 'sh', [])\nos.fdopen(1, 'w').write('echo x > /home/.claude/shelf/pr-verified.json')",
+    ),
     // codie's own review: code inside a written literal, and a quote or a paren the scan could pair unlike python
     SCRIPT(
         `import sys\nsys.stdout.write(f'{open("/home/.claude/shelf/pr-verified.json", "w")}')`,

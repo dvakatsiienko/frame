@@ -45,6 +45,9 @@ for (const said of [
     'merge #104 please',
     'land 104!',
     'the ci is green. merge 104',
+    // the second review: a hedge in an earlier sentence, or three dots inside a word, hedges nothing
+    'if the bot is happy, fine. merge 104',
+    'merge 104, main...HEAD looked fine',
 ])
     test(`merge-auto's --dima-ok runs when dima's last prompt says «${said}»`, async ($, on) => {
         const { ran } = world(on);

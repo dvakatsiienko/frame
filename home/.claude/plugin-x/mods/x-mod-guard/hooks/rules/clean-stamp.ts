@@ -163,14 +163,14 @@ const WRITE_SINKS = new Set(['write', 'write_text']);
 // a script that defines its own code could give a write's name a body that reads the text on
 // or run its written text as code (a shell's stdin), or bind a literal inside the call (a walrus); the review's forges
 const DEFINES_CODE =
-    /\b(def|class|lambda|setattr|getattr|function|popen|Popen|subprocess|system|exec|eval|spawn|pty|stdin|compile)\b|__|:=|=>|\bwrite\w*\s*=[^=]/;
+    /\b(def|class|lambda|function)\b|setattr|getattr|popen|subprocess|system|exec|eval|spawn|fork|fdopen|pty|stdin|compile|__|:=|=>|\bwrite\w*\s*=[^=]/i;
 function withoutWrittenText(command: string) {
     if (DEFINES_CODE.test(command)) return command;
-    // parens inside a literal are text: the call scan reads a copy with every literal's inside blanked
-    const code = command.replace(
-        LITERAL,
-        (l) => `${l[0]}${' '.repeat(l.length - 2)}${l[0]}`,
-    );
+    // parens inside a literal or a comment are text: the call scan reads a copy with every literal's inside and every
+    // comment blanked
+    const code = command
+        .replace(LITERAL, (l) => `${l[0]}${' '.repeat(l.length - 2)}${l[0]}`)
+        .replaceAll(/(#|\/\/)[^\n]*/g, (c) => ' '.repeat(c.length));
     // the literal is the call's whole argument: right after `.write(`, or after `.replace(<literal>,`, and right before `)`;
     // an f-string's prefix stands between, so its code always stays
     const isWholeArgument = (at: number, length: number) =>

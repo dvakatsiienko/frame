@@ -360,7 +360,8 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
     if (
         sub === 'worktree' &&
         subOps[0] === 'prune' &&
-        !hasFlag(subArgs, ['--dry-run'], 'n')
+        (!hasFlag(subArgs, ['--dry-run'], 'n') ||
+            hasFlag(subArgs, ['--no-dry-run']))
     )
         return rewrite(['prune'], 'git worktree prune');
     if (sub === 'worktree' && subOps[0] === 'remove')

@@ -109,6 +109,10 @@ const LAYOUT_READERS = new Set([
     'tail',
     'wc',
 ]);
+const GIT_WRITES = new Set(['apply', 'checkout', 'mv', 'restore', 'rm']);
+// the programs that run a heredoc's text as code
+const LAYOUT_PROGRAMS =
+    /^(python[\d.]*|node|bun|deno|ruby|perl|php|lua|osascript|sh|bash|zsh|dash)$/;
 function layoutChangeOf(c: Command) {
     const words = c.args.map((w) => w.text);
     if (c.name === 'herdr-app' && words[0] === 'do') {
@@ -131,10 +135,16 @@ function layoutChangeOf(c: Command) {
               c.name === 'sed'
               ? (words.some((w) => /^(-\w*i|--in-place)/.test(w)) &&
                     operands.some(named)) ||
-                words.some((w) => named(w) && w !== operands.at(-1)) ||
-                words.some((w) => /(^|;|\s)w\s/.test(w) && isLayoutPath(w))
-              : (!LAYOUT_READERS.has(c.name) && operands.some(named)) ||
-                c.bodies.some(isLayoutPath);
+                words.some((w) =>
+                    [...w.matchAll(/(?:^|[;}/\d$\s])[wW]\s+(\S+)/g)].some((m) =>
+                        named(m[1] ?? ''),
+                    ),
+                )
+              : // git names a path in a message or a read; only these verbs change the file
+                c.name === 'git'
+                ? GIT_WRITES.has(operands[0] ?? '') && operands.some(named)
+                : (!LAYOUT_READERS.has(c.name) && operands.some(named)) ||
+                  (LAYOUT_PROGRAMS.test(c.name) && c.bodies.some(isLayoutPath));
     return isWriter ? 'a layout file write' : undefined;
 }
 

@@ -194,6 +194,11 @@ const SLIPS = [
     ],
     ['git worktree prune', 'git worktree prune', 'ask clio'],
     ['git worktree prune -v', 'git worktree prune -v', 'ask clio'],
+    [
+        'a dry run turned off again',
+        'git worktree prune -n --no-dry-run',
+        'ask clio',
+    ],
     ['npm --location=global', 'npm install --location=global x', 'pnpm add -g'],
     ['git config user.name', 'git config user.name bot', 'without the flag'],
     ['a command after arithmetic', 'echo $((1<<2))\nrm x', 'trash'],
