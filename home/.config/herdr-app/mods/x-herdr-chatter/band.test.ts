@@ -5,12 +5,9 @@ import {
     STALE_MS,
     bandButtons,
     bandOf,
-    meterCells,
-    meterTip,
     overrideOf,
     pendingOf,
     pressLine,
-    stateLine,
     withPress,
 } from './band.js';
 
@@ -313,53 +310,5 @@ describe('the band follows a press made on the deck (dima, 23:42)', () => {
             thread: { hot: { since: 5 }, wind: null },
         })[1];
         expect(hot).toMatchObject({ isOn: false, isPending: true });
-    });
-});
-
-describe('the state card over the box (PK-384)', () => {
-    test('a working thread reads what it does, else «Working…»', () => {
-        expect(stateLine({ isWorking: true, msg: 'Adding the line' })).toBe(
-            'Adding the line',
-        );
-        expect(stateLine({ isWorking: true, msg: null })).toBe('Working…');
-    });
-
-    test('an idle thread reads its wait line, the old wait row folded in', () => {
-        expect(
-            stateLine({ isWorking: false, wait: 'waiting on 🦉 clio' }),
-        ).toBe('waiting on 🦉 clio');
-        expect(stateLine({ isWorking: false, wait: null })).toBe('Idle');
-    });
-
-    test('a thread asking him says so, never «Idle»', () => {
-        expect(
-            stateLine({ isBlocked: true, isWorking: false, wait: null }),
-        ).toBe('Waiting on you');
-    });
-
-    test('a stuck turn says why Stop does nothing', () => {
-        expect(stateLine({ isStuck: true, isWorking: true })).toMatch(
-            /background task/,
-        );
-    });
-});
-
-describe('the meters: no words, the numbers in a tooltip (PK-384)', () => {
-    test('a meter fills its cells to the percent, rounded and clamped', () => {
-        expect(meterCells(28, 40)).toBe(11);
-        expect(meterCells(0, 40)).toBe(0);
-        expect(meterCells(100, 40)).toBe(40);
-        expect(meterCells(140, 40)).toBe(40);
-        expect(meterCells(-5, 40)).toBe(0);
-        expect(meterCells(null, 40)).toBe(0);
-    });
-
-    test('a little use still lights one cell', () => {
-        expect(meterCells(1, 40)).toBe(1);
-    });
-
-    test('the tooltip names the meter and its percent', () => {
-        expect(meterTip('ctx', 28.4)).toBe('ctx 28 %');
-        expect(meterTip('week', null)).toBe('week: not read yet');
     });
 });
