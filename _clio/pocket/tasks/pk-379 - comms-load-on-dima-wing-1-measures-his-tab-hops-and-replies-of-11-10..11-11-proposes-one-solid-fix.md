@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T12:56:00Z'
+updated_date: '2026-11-12T13:16:00Z'
 labels:
   - m
   - clio-wing-1
@@ -44,4 +44,6 @@ raw drop (2026-11-12 inbox, dima): 4. prooose solid solution to reduce our comms
 14:51 wing 1: measured (wing 1 .scratch/comms-load/measures.md): 271k and 324k reply chars in main + wing 1, 38–42 % from turns he did not start; hops 32 % and 46 % of inputs, main ↔ wing 1; no focus log exists (W4). proposal.md beside it: herdr chat folds machine-woken turns; asked in orbit, shape-idea on his yes
 
 14:56 wing 1: dima 14:56 steer: fix it via habits, not herdr (a herdr fold kills the symptom, not the reason); reshaped: machine-woken turns end silent, held by clio's Stop gate (reply-check), re-measure after a day; asked in orbit
+
+15:16 wing 1: measured: 0 turns woken by members' messages, 338 by clio's own background jobs (235k chars); dima 15:15: fold wishkeeper and crow traffic as a styled system row, pretty when unfolded; asked whether it works or is clunky; my answer: chatter already folds cross-thread rows (main.js:325), a journal row reuses it; paired with silent job wakes
 <!-- SECTION:NOTES:END -->

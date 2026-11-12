@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T12:54:00Z'
+updated_date: '2026-11-12T13:03:00Z'
 labels:
   - m
 dependencies: []
@@ -121,4 +121,8 @@ PK-384:W24 (2026-11-12, dima): yes, but do not inject taste.md into the designer
 raw drop (2026-11-12, dima): can i have AB?
 
 raw drop (2026-11-12, dima): yes but maybe do not inject it into the memory of the designer via agents.md directly. just leave a pointer so the designer can pick it in because if the UG designer injects those memories, it will steer the designer out to a different style (e.g., my saved prefs). in for cases when i will want to cook something different and something new experiment
+
+PK-384:W25 (2026-11-12 15:03, dima): i like it, but make the parts on top and below the chatter box as «nested» cards. the cards are slightly smaller than the main chatter box. the main chatter (textbox) is on top, and both nested cards are a «below layer». their width is slightly narrower than the textbox (a pretty look, a twist).
+
+raw drop (2026-11-12 15:03, dima): chatterbox: i like but make parts on top and below chatter box as «nested» cards. those cards slightly smaller than main chatter box. main chatter (texbox) is on top, both nested cards are «below layer». and their width is slightly narrower than textbox (pretty look, a twist)
 <!-- SECTION:NOTES:END -->
