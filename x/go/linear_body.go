@@ -150,10 +150,31 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 	if damage := bodyDamage(id, source, held, string(text), largest, shrink); damage != nil {
 		return nil, damage
 	}
+	input := map[string]any{"description": string(text)}
+	// a clio writing the body claims the ticket, so it carries her owner label (FRM-572:W1)
+	if owner := callerOwnerLabel(); owner != "" {
+		var labels struct {
+			Issue struct {
+				Labels connection[idName] `json:"labels"`
+				Team   struct {
+					ID string `json:"id"`
+				} `json:"team"`
+			} `json:"issue"`
+			OwnerLabels connection[ownerLabelNode] `json:"ownerLabels"`
+		}
+		found, _, lookupErr := gql(actor, `query($id: String!, $owner: String!) { issue(id: $id) { labels(first: 100) { nodes { id name } } team { id } }
+			ownerLabels: issueLabels(first: 20, filter: { name: { eqIgnoreCase: $owner } }) { nodes { id name team { id } } } }`, map[string]any{"id": id, "owner": owner})
+		if lookupErr == nil {
+			raw, _ := json.Marshal(found)
+			_ = json.Unmarshal(raw, &labels)
+			adds, removes := ownerDelta(owner, labels.Issue.Labels.Nodes, labels.OwnerLabels.Nodes, labels.Issue.Team.ID)
+			mergeOwner(input, adds, removes)
+		}
+	}
 	var data map[string]json.RawMessage
 	r.Wait("writing "+id+" as "+actor, func() {
-		data, _, err = gql(actor, `mutation($id: String!, $description: String!) { issueUpdate(id: $id, input: { description: $description }) { success issue { updatedAt } } }`,
-			map[string]any{"id": current.ID, "description": string(text)})
+		data, _, err = gql(actor, `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success issue { updatedAt } } }`,
+			map[string]any{"id": current.ID, "input": input})
 	})
 	if err != nil {
 		return nil, err

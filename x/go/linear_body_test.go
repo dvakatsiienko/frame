@@ -120,7 +120,8 @@ func liveBodyServer(t *testing.T, body string) *fakeLinear {
 	current.Store(body)
 	return newFakeLinear(t, func(call gqlCall) string {
 		if strings.Contains(call.Query, "issueUpdate") {
-			current.Store(call.Variables["description"])
+			input, _ := call.Variables["input"].(map[string]any)
+			current.Store(input["description"])
 			at := fmt.Sprintf("2026-10-07T10:%02d:00.000Z", writes.Add(1))
 			return fmt.Sprintf(`{"data":{"issueUpdate":{"success":true,"issue":{"updatedAt":%q}}}}`, at)
 		}
