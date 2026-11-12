@@ -118,16 +118,18 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread's tab is open in the Chat view
   - then the chat starts right under the tab bar, with no strip of asks above it (shot 2021-strip-hidden)
   - decision: the strip is gone (dima, 20:12: «can i have this dupe orbit killed? it eats UI»), lifting his 18:11 «keep for now»; its block is hidden by one `layout.hide` click, zoo.json untouched, and x-herdr-deck's `view: seat` copy draws and reads nothing
-- ⬜ the band sits right above the chat's text box, slice 1 ([FRM-565](https://linear.app/x-com/issue/FRM-565))
+- ⬜ the state card sits right above the chat's text box (PK-384; was the band, slice 1 of [FRM-565](https://linear.app/x-com/issue/FRM-565))
   - given a thread's tab is open in the Chat view
-  - then three rows above his box read its «waiting on» line, the weekly usage and its context, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
-  - and a thread mid-turn or waiting on nothing shows an empty waiting-on row, a long one is cut with … and whole in its tooltip, and the rows keep one height so nothing moves
+  - then the module's top card reads one line: mid-turn its activity, the turn's clock and Stop; idle its «waiting on» line, or «Idle»; a thread asking him «Waiting on you»; a long line is cut with … and whole in its tooltip
+  - and under it two wordless meters, context over the weekly usage, each 48 matte cells set in a grooved rail (his AB pick, 14:52); a hover reads «ctx 28 %» or «week 38 %»; context past 60 % and the week past 80 % turn the warn colour
+  - and the card keeps one height working or idle, so nothing moves
+  - decision: one module of three layers, the wait row folded into the card's line, the meters' words moved to a tooltip (dima, 14:27 and 14:38)
   - and facts the deck has not published for over 2 min 15 s draw dimmed
   - and the 5h line is off for now, back if he moves to the $100 plan (on $200 it is not shown)
   - decision: the deck's mod reads the facts once and publishes them to herdr's shared state `x-herdr-deck.threads`, at once on a change and every 60 s; the chat reads only that key for its own thread
 - ⬜ the band's buttons, slice 2 (FRM-565)
   - given a thread's tab in the Chat view
-  - then right of «wait» sit 🐦‍🔥 🔥 ⏰ 💨 🔓 🎛️ 🚦, emoji only, each word leading its tooltip (dima, 21:02); filled when on, 🔓 red when on
+  - then on the right of the control card under the box sit 🐦‍🔥 🔥 ⏰ 💨 🔓 🎛️ 🚦, emoji only, each word leading its tooltip (dima, 21:02); one chip style, plain when off, the accent's edge and tint when on, 🔓 red when on (PK-384)
   - and 🚦 shows and hides the deck by herdr's `layout.toggle` on its block, no layout file write (proof 2102: 9 threads before, hidden and after; his click «board confirmed to work»)
   - and 🔓 reads the override store `x` reads; its click waits on the mods codie's proof row; 🎛️ waits on the settings view: greyed, the reason on hover
 - ⬜ wind, hot, waker and AFK pressed from the band (FRM-568)
@@ -216,8 +218,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a message that lands both queued mid-turn and at a turn start draws once
   - decision: read from Claude Code's own record of the sender (`origin.kind: peer`), never from the message's text
 - ⬜ a file a reply links opens from a row under it
-  - given a reply links a file with a `file://` url
+  - given a reply links a file with a `file://` url, or names a bare path to a file (`/Users/…/a.png`, `~/…/b.md`, in prose or a code span)
   - then a «📂 <name>» row sits under the reply, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder); a web link in the text opens in the browser as before
+  - and a picture (png, jpg, gif, webp) reads «🖼️ <name>», then a small square of the picture in place of the emoji once it is made
+  - and the link inside the text reads as plain text, never a dead blue link (FRM-562:W60)
   - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
 - ⬜ a reply answers one message
   - given a message in the chat
@@ -230,12 +234,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima presses + at the left of the lower card and picks files, or drops files on the box
   - then each shows as a «📎 name» chip above the box, its path on hover, × takes it off
   - and a picture (png, jpg, gif, webp) shows in the pasted images' preview row instead, read «sent with your message», Remove takes it off
+  - and each preview, pasted or dropped, carries its own × that takes that image alone; the pasted ones he keeps then go as their saved copies' paths, since Esc Esc takes every image out of Claude's prompt (FRM-562, dima 14:52)
   - and Send puts each path on its own line after the text, spaces escaped the way a terminal drop types them
   - decision: a drop looks like a paste, one preview row (dima, 14:09: «dnd does not shows preview»)
   - decision: a dev container's box shows no + (its Claude cannot read a mac path)
-- ⬜ the box is a stacked card with send in its corner
+- ⬜ the box is the middle of one module, send in its corner
   - given the chat shows its box
-  - then the text card, rounder and with a soft shadow, rests on a narrower card holding the model and effort pickers; a round ↑ send sits in the text card's bottom right, lit once text is typed, and the text uses the full width above one button-high bottom row
+  - then the state card above, the text card, and the control card below (+, the model and effort pickers, the band's buttons) read as one module: the text card in front, both cards one layer under it, a little narrower, their inner edge tucked under it, twins in surface, edge and radius (PK-384, dima 15:02: «nested» cards); a round ↑ send sits in the text card's bottom right, lit once text is typed, and the text uses the full width above one button-high bottom row
   - and the box shows no placeholder; Enter still sends
   - and a hover on the lit ↑ turns it ink, and it spins from the press until the thread has the message (FRM-562 part B)
   - decision: his word, 15:15: «still eats space» on a right gutter; the bottom row is the one herdr allows (Textarea has no per-line inset)
