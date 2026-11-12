@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T15:13:00Z'
+updated_date: '2026-11-12T15:18:00Z'
 labels:
   - s
   - clio-main
@@ -33,15 +33,16 @@ ordinal: 1000
 - [ ] #15 cli lane (from wing 1, 16:52): FRM-579 / #170 to merge: codie reorder + final, sixth sense clean, wishkeeper base..head, herdr layout + clio-revive unset HC_TERMINAL_ID, backfill from dima's terminal, merge-auto 170 --apply + landed; then rename both members, ping the mods codie, cloud chat --as clio
 - [ ] #16 cli lane queue after FRM-579: FRM-572 chunk 1, and the x brief check offline stamp line (seven names + worth it, to dima)
 - [ ] #17 before the halt (his o42, «do not forget!»): the guard story whole into docs/knowledge/fleet-stories/guard-lockout/story.md — when it was born, every decision and who made it (clio initiated, dima agreed silently, his read), the days, hours and commits spent on the wrong guard; read git log of x-mod-guard, the flawlogs, pocket and linear
-- [ ] #18 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
-- [ ] #19 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #20 ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
-- [ ] #21 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
-- [ ] #22 📅 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order — on: 2026-11-12
-- [ ] #23 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #24 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #25 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #26 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #18 right after #170 merges: `x brief summon --role wing:1 --session 028a696e-a9dd-4eb7-84f0-f378e9e5efaf` with main's rebuilt x (wing 1 lost its number to main's old thread list), then sixth sense rechecks exit 8
+- [ ] #19 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» (its 📅 11-12 came, moved up 17:19)
+- [ ] #20 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order (its 📅 11-12 came, moved up 17:19)
+- [ ] #21 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+- [ ] #22 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #23 ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
+- [ ] #24 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #25 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #26 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #27 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -325,4 +326,10 @@ done 2026-11-12 17:13: from wing 1 sweep (21:56): FRM-538 needs «✍️ sign FR
 done 2026-11-12 17:13: the halt's milestone refresh, from wing 1's sweep (dima 20:31: «all milestone ticket execution order is properly groomed and saved in Linear … next boot … you don't forget the order»): drop or flip the two blocks links that contradict his ticked mods order (FRM-504 blocks FRM-519, FRM-505 blocks FRM-504); point the initiative's two queues and the halt handoff at .scratch/herdr/scopes-audit.md § the whole execution order; give tonight's four ticketless herdr builds (deck beautify, strip removal, orbit in the agents list's order, tab short labels) and the watcher's «main.js lands last» a ticket line and an FTR line (FRM-504 Todo, FRM-519 In Progress, FRM-505 Todo)
 
 17:13 wing 1 took 7 chore lines into PK-346 on main's go (dima 17:11): milestone refresh, FRM-538 sign + hash reader, summon leftovers, the 11-10 halt carry, --no-wish want marker, PK-378 close, lane size alarm
+
+done 2026-11-12 17:18: 📅 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order — on: 2026-11-12
+
+done 2026-11-12 17:18: 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
+
+17:18 wing 1 flyway-sync: the two 📅 2026-11-12 herdr looks with dima moved up as open lines (their date came); no other line done by its home (FRM-576, the herdr lane, cli lane, guard lines all open, read 17:18)
 <!-- SECTION:NOTES:END -->
