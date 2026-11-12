@@ -27,6 +27,8 @@ jobs:
         run: |
           git clone --bare "https://github.com/${GITHUB_REPOSITORY}.git" src
           cd src
+          # codeberg's http/2 drops pushes mid-stream («HTTP/2 stream 3 was not closed cleanly: CANCEL», every run 11-12 from 12:03Z); http/1.1 sidesteps it
+          git config http.version HTTP/1.1
           dest="https://dvakatsiienko:${CODEBERG_TOKEN}@codeberg.org/dvakatsiienko/${REPO}.git"
           # a backup never mirrors destruction: no prune, and main + tags only fast-forward, so a rewrite turns this run red
           # codeberg answers 504 now and then (6 red runs 11-10..11-11, all 504); any failed push is retried, so a rejected one goes red after ~3.5 min
