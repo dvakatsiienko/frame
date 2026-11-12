@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T16:32:00Z'
+updated_date: '2026-11-12T16:36:00Z'
 labels:
   - s
   - clio-wing-1
@@ -33,18 +33,19 @@ ordinal: 1001
 - [ ] #15 FRM-537 perf probes: a menu to run when usage is spare
 - [ ] #16 PK-385 a standing stray lane for chores: shape it with dima
 - [ ] #17 PK-362 steamac vm disk: shrink 256gb to 192gb
-- [ ] #18 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
-- [ ] #19 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
-- [ ] #20 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
-- [ ] #21 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
-- [ ] #22 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
-- [ ] #23 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
-- [ ] #24 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #25 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
-- [ ] #26 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #27 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #28 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #29 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #18 ⏳ FRM-576 exit 8: read dima's next desktop-app thread, then close with PK-377's account — waits for: dima o76
+- [ ] #19 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
+- [ ] #20 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
+- [ ] #21 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
+- [ ] #22 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
+- [ ] #23 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
+- [ ] #24 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
+- [ ] #25 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #26 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
+- [ ] #27 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #28 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #29 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #30 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -549,4 +550,6 @@ hoist 11-12: proposing, wing 1
 hoist 11-12: done, wing 1 (dima 18:26, main agreed 18:19)
 
 done 2026-11-12 18:32: PK-377 memory by surface: shape it with dima (PK-377 done)
+
+18:36 FRM-576: the clio-wing-1 label refused twice by linear («did not take the update»); main looks after the merges
 <!-- SECTION:NOTES:END -->
