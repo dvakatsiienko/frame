@@ -95,14 +95,13 @@ pending decisions — in META; a reply names the slug once and nothing else.
 
 ## Trigger C — `/handoff spawn [focus]`
 
-Produce the CST, seed a background successor directly:
+Produce the CST, prefixed with «You are a continuation of a prior session. Ingest this CST silently per its own rules (run META's first-acts first, persist C→memory lines, honor R/D as user-said), then proceed from S.», into a scratch file, and seed the successor directly:
 
-```bash
-claude --bg --name "<short descriptive name>" "<CST, prefixed with: You are a continuation of a prior session. Ingest this CST silently per its own rules (run META's first-acts first, persist C→memory lines, honor R/D as user-said), then proceed from S.>"
-```
+- in herdr (`HC_TERMINAL_ID` set), the default: a pane by `x:herdr`'s «start a member in a pane» recipe, `-n '<short descriptive name>'`, its first task `"$(cat <the file>)"`, then its tab by `thread-tab.ts`; manage via `hc ls --json`
+- anywhere else: `claude --bg --name "<short descriptive name>" "$(cat <the file>)"`; manage via `claude agents`
 
-Always pass `--name`. No file is written (the CST rides the prompt), so the spec's REDACT rule
-applies in full. One line: summoned `<name>`; manage via `claude agents`.
+Always pass the name. No handoff is written to the store (the CST rides the prompt), so the spec's REDACT rule
+applies in full. One line: summoned `<name>`.
 
 ## Trigger D — `/handoff <session> [focus]` (push to a live peer)
 
