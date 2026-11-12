@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T15:18:00Z'
+updated_date: '2026-11-12T15:42:00Z'
 labels:
   - s
   - clio-main
@@ -38,11 +38,10 @@ ordinal: 1000
 - [ ] #20 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order (its 📅 11-12 came, moved up 17:19)
 - [ ] #21 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
 - [ ] #22 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #23 ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
-- [ ] #24 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #25 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #26 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #27 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #23 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #24 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #25 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #26 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -332,4 +331,6 @@ done 2026-11-12 17:18: 📅 tomorrow with dima, herdr: 1) shape the settings win
 done 2026-11-12 17:18: 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
 
 17:18 wing 1 flyway-sync: the two 📅 2026-11-12 herdr looks with dima moved up as open lines (their date came); no other line done by its home (FRM-576, the herdr lane, cli lane, guard lines all open, read 17:18)
+
+done 2026-11-12 17:42: ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
 <!-- SECTION:NOTES:END -->

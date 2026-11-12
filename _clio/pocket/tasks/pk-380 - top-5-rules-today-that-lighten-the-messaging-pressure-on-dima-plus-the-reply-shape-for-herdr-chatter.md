@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T15:36:00Z'
+updated_date: '2026-11-12T15:43:00Z'
 labels:
   - s
 dependencies: []
@@ -115,4 +115,7 @@ PK-380:W41 (2026-11-12 17:35, dima): print short lines about each chunk.
 PK-380:W42 (2026-11-12 17:35, dima): the message i just wrote: i want a skill out of it. i often ask stuff like this, e.g. «checkup where we are at», over a selected set of lanes.
 
 PK-380:W43 (2026-11-12 17:35, dima): let's have this skill first, then do the inventory using the new skill.
+
+PK-380:W44 (2026-11-12 17:44, dima, o53 steer): auto second wind (FRM-505): shape and sign it today, not tomorrow.
+PK-380:W45 (2026-11-12 17:44, dima, o54 steer): speak v2: i will tell when; first the habit gaps are fixed.
 <!-- SECTION:NOTES:END -->
