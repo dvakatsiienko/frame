@@ -167,7 +167,12 @@ var (
 	// linear links an id only to that id's own issue page in our workspace; any other target is an edit
 	issueURL = regexp.MustCompile(`^https://linear\.app/x-com/issue/((?:FRM|BYT|PK)-\d+)(?:/[^\s)]*)?$`)
 	angleURL = regexp.MustCompile(`<(https?://[^>\s]+)>`)
+	// linear backslash-escapes markdown punctuation on save; ticket-sign.ts's LINEAR_ESCAPE is the same pattern
+	linearEscape = regexp.MustCompile("\\\\([!-/:-@\\[-`{-~])")
 )
+
+// unescaped takes linear's save-time escapes out, the form ticket-sign.ts hashes
+func unescaped(text string) string { return linearEscape.ReplaceAllString(text, "$1") }
 
 // signedBlock splits a body at the ## signed block that closes it: an earlier heading sits in a quote or a fence
 func signedBlock(body string) (above, block string, ok bool) {
@@ -183,7 +188,7 @@ func signedBlock(body string) (above, block string, ok bool) {
 	return body[:at[0]], block, true
 }
 
-// asSigned folds linear's link rewrite back to the bare text and trims trailing blank lines to the one blank
+// asSigned folds linear's link rewrite and escapes back to the bare text and trims trailing blank lines to the one blank
 // line every live sign hashed over (measured 2026-10-30: 12 of 12 stored hashes end in "\n\n")
 func asSigned(above string) string {
 	folded := linkRewrite.ReplaceAllStringFunc(above, func(link string) string {
@@ -193,7 +198,7 @@ func asSigned(above string) string {
 		}
 		return link
 	})
-	folded = angleURL.ReplaceAllString(folded, "$1")
+	folded = unescaped(angleURL.ReplaceAllString(folded, "$1"))
 	if trimmed := strings.TrimRight(folded, "\n"); trimmed != "" {
 		return trimmed + "\n\n"
 	}

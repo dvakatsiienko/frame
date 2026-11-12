@@ -29,6 +29,21 @@ describe('stampBody', () => {
         );
     });
 
+    test("the hash reads past linear's escapes, so the body linear saves back hashes the same", () => {
+        const pulled =
+            'read \\~/.config and \\_clio/\n- \\[x\\] done\n- [x] new in ~/frame\n\n';
+        const plain =
+            'read ~/.config and _clio/\n- [x] done\n- [x] new in ~/frame\n\n';
+        expect(
+            stampBody(
+                `${pulled}## signed\n`,
+                'changed',
+                'a line',
+                '2026-11-12',
+            ),
+        ).toContain(`· body ${hashOf(plain)}`);
+    });
+
     test('a tiny change names itself no re-sign', () => {
         expect(
             stampBody('b\n\n## signed\n', 'changed', 'a typo', '2026-11-06'),

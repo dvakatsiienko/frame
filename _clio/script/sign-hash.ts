@@ -6,6 +6,8 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { unescaped } from './ticket-sign.ts';
+
 const id = process.argv[2];
 if (!id) {
     console.error('usage: node script/sign-hash.ts <FRM-N>');
@@ -23,7 +25,11 @@ if (last?.index === undefined) {
 const above = body.slice(0, last.index);
 const block = body.slice(last.index + last[0].length).split(/^## /m)[0] ?? '';
 const stored = [...block.matchAll(/· body ([0-9a-f]{8})\s*$/gm)].at(-1)?.[1];
-const now = createHash('sha256').update(above).digest('hex').slice(0, 8);
+const hashOf = (text: string) =>
+    createHash('sha256').update(text).digest('hex').slice(0, 8);
+const now = hashOf(above);
+// a sign holds on the raw body or on it with linear's escapes taken out, as bodySign reads it
+const isMatch = stored === now || stored === hashOf(unescaped(above));
 console.log(
-    `${id} now ${now} stored ${stored ?? 'none'} ${now === stored ? 'match' : 'drifted'}`,
+    `${id} now ${now} stored ${stored ?? 'none'} ${isMatch ? 'match' : 'drifted'}`,
 );

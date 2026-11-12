@@ -8,6 +8,9 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 const HEADING = '## signed';
+// linear backslash-escapes markdown punctuation on save; x/go/merge_sign.go's linearEscape is the same pattern
+export const LINEAR_ESCAPE = /\\([!-/:-@[-`{-~])/g;
+export const unescaped = (text: string) => text.replace(LINEAR_ESCAPE, '$1');
 
 export function stampBody(
     body: string,
@@ -18,7 +21,10 @@ export function stampBody(
     const split = body.indexOf(`\n${HEADING}`);
     const above =
         split === -1 ? `${body.trimEnd()}\n\n` : body.slice(0, split + 1);
-    const hash = createHash('sha256').update(above).digest('hex').slice(0, 8);
+    const hash = createHash('sha256')
+        .update(unescaped(above))
+        .digest('hex')
+        .slice(0, 8);
     const line =
         kind === 'signed'
             ? `✍️ signed ${today} · body ${hash}`

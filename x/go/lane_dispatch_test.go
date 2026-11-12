@@ -355,6 +355,21 @@ func TestDispatchReadsAProseArrowAsNoTakeBack(t *testing.T) {
 	}
 }
 
+// linear escapes markdown on save (`~` → `\~`, `[x]` → `\[x\]`, `_clio/` → `\_clio/`); ticket-sign.ts hashes the body
+// with those escapes taken out, so a sign over a pull's escaped lines plus a fresh unescaped edit holds once linear re-escapes it
+func TestDispatchHoldsASignWhoseOnlyDriftIsLinearsEscapes(t *testing.T) {
+	t.Parallel()
+	signedAs := dispatchAbove + "- [x] read ~/.config and _clio/ #1\n- [x] the new line in ~/frame\n\n"
+	saved := dispatchAbove + "- \\[x\\] read \\~/.config and \\_clio/ \\#1\n- \\[x\\] the new line in \\~/frame\n\n"
+	server := dispatchServer(t, dispatchState{body: signedBody(saved, "", signedAs), state: "Todo", labels: []string{"agent", "signed"}})
+
+	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3")
+
+	if got.code != 4 || strings.Contains(got.stdout, "drifted") {
+		t.Errorf("exit %d, want the dry run's confirm, a sign linear only escaped never drifted:\n%s", got.code, got.stdout)
+	}
+}
+
 func TestDispatchRefusesATicketWithNoSign(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
