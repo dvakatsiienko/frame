@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T13:59:00Z'
+updated_date: '2026-11-12T14:12:00Z'
 labels:
   - s
 dependencies: []
@@ -67,4 +67,7 @@ raw drop (2026-11-12 15:58, dima): 5. why my operator override does not override
 raw drop (2026-11-12 15:58, dima): 6. is guard overcomplicated? architecture flaw?
 
 raw drop (2026-11-12 15:58, dima): 7. can all of this be simpler? consult with wing 1 and crow before proposing
+
+16:12 PK-380:W14 (2026-11-12 16:03, dima): i want a simple, solid, good working solution.
+PK-380:W15 (2026-11-12 16:05, dima): ❓ will it work? is it a true solution? how long to probe whether it is the right shape?
 <!-- SECTION:NOTES:END -->
