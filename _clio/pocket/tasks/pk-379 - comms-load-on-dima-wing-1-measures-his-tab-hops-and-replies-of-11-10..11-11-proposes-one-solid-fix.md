@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T12:48:00Z'
+updated_date: '2026-11-12T12:51:00Z'
 labels:
   - m
   - clio-wing-1
@@ -40,4 +40,6 @@ raw drop (2026-11-12 inbox, dima): 3. btw: can you measure my activity per tab i
 raw drop (2026-11-12 inbox, dima): 4. prooose solid solution to reduce our comms load on me. operator comms recipe can be rerun optionally.
 
 14:48 wing 1: started. a helper card measures 11-10/11-11 from the prompt logs and transcripts (per-thread prompts, ticks, reply chars, hops per hour, gaps) into wing 1 .scratch/comms-load/measures.md; W4 answer so far: no focus log exists, herdr's focused() could feed a logger from now on
+
+14:51 wing 1: measured (wing 1 .scratch/comms-load/measures.md): 271k and 324k reply chars in main + wing 1, 38–42 % from turns he did not start; hops 32 % and 46 % of inputs, main ↔ wing 1; no focus log exists (W4). proposal.md beside it: herdr chat folds machine-woken turns; asked in orbit, shape-idea on his yes
 <!-- SECTION:NOTES:END -->
