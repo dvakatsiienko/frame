@@ -1426,9 +1426,12 @@ function saysMergeOf(prompt: string, pr: string) {
         String.raw`^\s*(?:(?:yes|yeah|ok|okay|please|sure)\b[\s,!]*)*(?:merge|land|ship)\s+(?:#?\d+\s*(?:,|and|&)\s*)*#?${pr}\b`,
         'i',
     );
-    const negated = /n['’]t\b|\b(?:not|never|no|nope|later)\b/i;
+    // a hedge reads as a negation: a trailing «…», a wait or hold, a condition (round 11)
+    const negated =
+        /n['’]t\b|…|\b(?:not|never|no|nope|later|wait|hold|if|unless)\b/i;
     return prompt
         .replaceAll(QUOTED, ' ')
+        .replaceAll(/\.{3,}/g, '…')
         .split(/(?<=[.!?\n])/)
         .some(
             (s) => !s.trim().endsWith('?') && !negated.test(s) && said.test(s),

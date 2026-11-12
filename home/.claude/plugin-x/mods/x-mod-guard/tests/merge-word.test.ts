@@ -74,6 +74,16 @@ for (const said of [
     'no way, merge 104 is wrong',
     'I wonder if we should merge 104',
     'merge 104 later, not now',
+    // round 11: a hedge in his sentence refuses; «…» never ends one
+    'MERGE 104… or wait',
+    'merge 104... or wait',
+    'merge 104 if ci passes, otherwise hold',
+    'merge 104…',
+    'merge 104...',
+    'merge 104, wait for ci',
+    'merge 104 if ci passes',
+    'merge 104 on hold',
+    'merge 104 unless the bot objects',
 ])
     test(`merge-auto's --dima-ok stays refused when dima's prompt says «${said}»`, async ($, on) => {
         const { ran } = world(on);
