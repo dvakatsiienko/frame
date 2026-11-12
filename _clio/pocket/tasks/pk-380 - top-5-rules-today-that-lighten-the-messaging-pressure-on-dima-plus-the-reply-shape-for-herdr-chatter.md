@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T14:40:00Z'
+updated_date: '2026-11-12T15:00:00Z'
 labels:
   - s
 dependencies: []
@@ -86,4 +86,10 @@ PK-380:W19 (2026-11-12 16:20, dima): ❓ why did you skip two shaping steps, pri
 PK-380:W20 (2026-11-12 16:23, dima): maybe guard drifted because i delegated the cli lane to wing 1 and to you. while you were running the mods lane and wing 1 was running the cli lane, guard drifted because of that as well. ❓ maybe reassign the cli lane to you from wing 1?
 
 PK-380:W21 (2026-11-12, dima, o34 steer): floor, and keep other functionality like slipstreamed messages.
+
+PK-380:W22 (2026-11-12 16:29, dima): coordinate guard fixes properly. i want: 1. it to work. 2. all architecture problems fixed, ideally with a simpler solution.
+PK-380:W23 (2026-11-12 16:29, dima): in the first place i didn't ask for a guard like this at all. it was all your ideas, and at some point you drifted towards protecting this guard, continued developing it, and locked yourself out with all these guards. essentially i want a guard to be much simpler.
+PK-380:W24 (2026-11-12 16:29, dima): if you won't be able to fix it yourself while preserving a balance (having a truly useful guard, but a guard that doesn't lock you out), i will ask you to delete this guard entirely.
+PK-380:W25 (2026-11-12 16:29, dima): ❓ (on «only 29 had a live word behind them; the other 113 just need the ask to reach you») so you build a dead weight that hurts and locks me out (and yourself)?
+PK-380:W26 (2026-11-12 16:58, dima, o39 steer): maybe knowledge? and a well structured dir, plus your habits.
 <!-- SECTION:NOTES:END -->
