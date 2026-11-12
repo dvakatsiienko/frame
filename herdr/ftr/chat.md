@@ -229,7 +229,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread's box in the Chat view
   - when dima presses + at the left of the lower card and picks files, or drops files on the box
   - then each shows as a «📎 name» chip above the box, its path on hover, × takes it off
+  - and a picture (png, jpg, gif, webp) shows in the pasted images' preview row instead, read «sent with your message», Remove takes it off
   - and Send puts each path on its own line after the text, spaces escaped the way a terminal drop types them
+  - decision: a drop looks like a paste, one preview row (dima, 14:09: «dnd does not shows preview»)
   - decision: a dev container's box shows no + (its Claude cannot read a mac path)
 - ⬜ the box is a stacked card with send in its corner
   - given the chat shows its box

@@ -1,9 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('herdr', () => ({ appHome: () => '/app', exec: vi.fn() }));
-const { parseShots, shotsAfter, shotsWith, shotsWithout } = await import(
-    './shots.js'
-);
+const fs = vi.hoisted(() => ({
+    readdir: vi.fn(),
+    unlink: vi.fn(async () => {}),
+}));
+vi.mock('fs/promises', () => ({
+    mkdir: vi.fn(),
+    readFile: vi.fn(),
+    readdir: fs.readdir,
+    unlink: fs.unlink,
+    writeFile: vi.fn(),
+}));
+const { parseShots, shotsAfter, shotsWith, shotsWithout, sweepShots } =
+    await import('./shots.js');
 
 describe('parseShots', () => {
     it('reads a store of thread addresses to preview paths', () => {
@@ -58,5 +68,31 @@ describe('shotsAfter', () => {
     it('keeps the same store when nothing is older', () => {
         const store = { t1: [b] };
         expect(shotsAfter(store, 't1', 2000).store).toBe(store);
+    });
+});
+
+describe('sweepShots, previews no thread claims', () => {
+    it('deletes an unclaimed preview and keeps every claimed one', async () => {
+        fs.readdir.mockResolvedValueOnce([
+            'shot-1.png',
+            'shot-2.png',
+            'shot-3.png',
+            'notes.txt',
+        ]);
+        fs.unlink.mockClear();
+        await sweepShots({
+            t1: ['data/x-herdr-chatter/shots/shot-1.png'],
+            t2: ['data/x-herdr-chatter/shots/shot-3.png'],
+        });
+        expect(fs.unlink.mock.calls).toEqual([
+            ['/app/data/x-herdr-chatter/shots/shot-2.png'],
+        ]);
+    });
+
+    it('deletes nothing when the folder is missing', async () => {
+        fs.readdir.mockRejectedValueOnce(new Error('ENOENT'));
+        fs.unlink.mockClear();
+        await sweepShots({});
+        expect(fs.unlink).not.toHaveBeenCalled();
     });
 });

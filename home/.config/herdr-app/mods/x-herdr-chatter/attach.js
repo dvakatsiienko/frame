@@ -42,6 +42,10 @@ export const withFiles = (list, added) => [
     ...added.filter((p, i) => !list.includes(p) && added.indexOf(p) === i),
 ];
 
+// the picture types Claude Code reads from a path in a prompt: a dropped one shows its preview, like a paste
+/** @param {string} path */
+export const isImagePath = (path) => /[^/]\.(png|jpe?g|gif|webp)$/i.test(path);
+
 /** @param {string} path */
 export const fileName = (path) => path.split('/').filter(Boolean).pop() ?? path;
 

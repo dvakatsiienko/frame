@@ -1,7 +1,7 @@
 // Screenshots pasted into the box, shown above it until sent. Claude Code reads the clipboard
 // itself on its paste key; a copy saved here is only the preview, kept per thread in shots.json
 // so a chat reload still shows what waits in Claude's prompt.
-import { mkdir, readFile, unlink, writeFile } from 'fs/promises';
+import { mkdir, readFile, readdir, unlink, writeFile } from 'fs/promises';
 import { appHome, exec } from 'herdr';
 
 // image() loads from the app's own directory, so the previews live under it
@@ -76,6 +76,24 @@ export function shotsAfter(store, address, at) {
     };
 }
 
+// a dropped picture's preview, scaled down under the app dir (image() reads only there): its path, or null
+/** @param {string} path @param {number} at a stamp no other preview has @returns {Promise<string | null>} */
+export async function saveFileShot(path, at) {
+    const rel = `${SHOTS_DIR}/shot-${at}.png`;
+    await mkdir(`${appHome()}/${SHOTS_DIR}`, { recursive: true });
+    const r = await exec('sips', [
+        '-Z',
+        '224',
+        '-s',
+        'format',
+        'png',
+        path,
+        '--out',
+        `${appHome()}/${rel}`,
+    ]).catch(/** @returns {null} */ () => null);
+    return r?.code === 0 ? rel : null;
+}
+
 // the preview files this chat saved: never anything outside SHOTS_DIR
 /** @param {string[]} rels */
 export async function deleteShots(rels) {
@@ -83,6 +101,18 @@ export async function deleteShots(rels) {
         rels
             .filter((rel) => rel.startsWith(`${SHOTS_DIR}/shot-`))
             .map((rel) => unlink(`${appHome()}/${rel}`).catch(() => {})),
+    );
+}
+
+// previews no thread claims: a dropped picture's preview left by a reload
+/** @param {ShotStore} store */
+export async function sweepShots(store) {
+    const kept = new Set(Object.values(store).flat());
+    const names = await readdir(`${appHome()}/${SHOTS_DIR}`).catch(
+        /** @returns {string[]} */ () => [],
+    );
+    await deleteShots(
+        names.map((n) => `${SHOTS_DIR}/${n}`).filter((rel) => !kept.has(rel)),
     );
 }
 
