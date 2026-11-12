@@ -223,7 +223,7 @@ export default class Deck extends View {
     init(_props, cx) {
         // the thread strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
         // alive draws nothing and reads nothing, so it never runs a second deck. «seat» is the layout's own value in
-        // layouts/zoo.json: renaming it means a layout edit, never done while a thread holds focus
+        // layouts/x-herdr-layout.json: renaming it means a layout edit, never done while a thread holds focus
         /** @type {Map<string, number>} each ask id label's drawn width */
         this.labelW = new Map();
         this.isThread = props()?.view === 'seat';

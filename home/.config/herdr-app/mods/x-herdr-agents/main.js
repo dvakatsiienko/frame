@@ -1,6 +1,5 @@
-// Agents in dima's own order (one flat list, a row moves only by his drag) or grouped by space. Taken over from zoo's
-// zoo-agents (2026-11-10): each agent reads by its Claude Code session name, with no creature beside it.
-// Unread = Herdr's done; done = finished and seen (zoo.turns).
+// x-herdr-agents: agents in dima's own order (one flat list, a row moves only by his drag) or grouped by space, each by
+// its Claude Code session name. Unread = Herdr's done; done = finished and seen (x-herdr.turns).
 
 import { readdir } from 'fs/promises';
 import { h_flex, v_flex } from 'gpui-base';
@@ -94,13 +93,13 @@ function title(tab, l) {
 // Unread vs done. Herdr's "done" = finished while you weren't looking, and it turns "idle" once
 // you look, so a finished agent you've read looked like one that never did anything. Worse, Herdr
 // only counts looking at the terminal: with the Chat view in front an agent stays "done" while you
-// read it. So shared "zoo.turns" = { address: "run" | "seen" }: "run" once it works (a turn is on
+// read it. So shared "x-herdr.turns" = { address: "run" | "seen" }: "run" once it works (a turn is on
 // or its result is unread), "seen" when it's done and the agent shown (focused().agent) with the
 // window active. Shown: done + seen, or idle after any turn = "done"; Herdr's done otherwise =
 // "unread"; idle with no turn yet = "idle". Copied in x-herdr-tabs: keep them in step.
 const machineOf = (addr) => (addr.includes('/') ? addr.split('/')[0] : '');
 function trackTurns(list, all) {
-    const was = shared('zoo.turns') ?? {};
+    const was = shared('x-herdr.turns') ?? {};
     let next = null;
     const set = (k, v) => {
         if (was[k] === v) return;
@@ -124,11 +123,11 @@ function trackTurns(list, all) {
             next ??= { ...was };
             delete next[k];
         }
-    if (next) setShared('zoo.turns', next);
+    if (next) setShared('x-herdr.turns', next);
 }
 // The status shown: unread / done (seen) / Herdr's other words.
 function shownStatus(a) {
-    const v = shared('zoo.turns')?.[a.address];
+    const v = shared('x-herdr.turns')?.[a.address];
     if (a.status === 'done') return v === 'seen' ? 'done' : 'unread';
     if (a.status === 'idle') return v ? 'done' : 'idle';
     return a.status;
@@ -246,40 +245,6 @@ function publishOrder(addresses) {
         setShared(ORDER_KEY, pids);
 }
 
-// props {stack, other}: a sidebar stack this list shares with the zoo (or the zoo with the list);
-// the header's "Agents  Zoo" flips it. Without them, just the label.
-function viewSwitch(t, here) {
-    const p = props();
-    const tab = (id, label) =>
-        div()
-            .id(`view-${id}`)
-            .text_size(11.5)
-            .font_medium()
-            .text_color(id === here ? t.foreground : t.dim)
-            .when(id !== here, (el) =>
-                el
-                    .cursor_pointer()
-                    .hover((s) => s.text_color(t.foreground))
-                    .on_click(() =>
-                        run('layout.select', {
-                            child: p.other,
-                            stack: p.stack,
-                        }),
-                    ),
-            )
-            .child(label);
-    if (!p?.stack)
-        return div()
-            .text_size(11.5)
-            .font_medium()
-            .text_color(t.dim)
-            .child(here === 'zoo' ? 'Zoo' : 'Agents');
-    return h_flex()
-        .gap(10)
-        .child(tab('list', 'Agents'))
-        .child(tab('zoo', 'Zoo'));
-}
-
 export default class Agents extends View {
     init(_props, cx) {
         if (props()?.sortMenu) return;
@@ -294,7 +259,7 @@ export default class Agents extends View {
             localStorage.getItem('orderNames') ?? '{}',
         );
         cx.timer.every(30000, (cx) => cx.notify());
-        // New agents' characters and the ♪ sounds (the Zoo view used to do this; jobs.js).
+        // the ♪ sounds when an agent needs him or finishes (jobs.js)
         startJobs(cx);
         const names = (cx) =>
             cx.spawn(async (cx) => {
@@ -1059,7 +1024,13 @@ export default class Agents extends View {
                         .flex_none()
                         .items_center()
                         .justify_between()
-                        .child(viewSwitch(t, 'list'))
+                        .child(
+                            div()
+                                .text_size(11.5)
+                                .font_medium()
+                                .text_color(t.dim)
+                                .child('Agents'),
+                        )
                         .child(
                             h_flex()
                                 .gap(4)

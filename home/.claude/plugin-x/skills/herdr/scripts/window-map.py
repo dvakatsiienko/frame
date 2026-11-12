@@ -11,7 +11,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).resolve().parent
-ORDER = ["ours", "zoo", "herdr"]
+ORDER = ["ours", "herdr"]
 
 
 def herdr(*args):
