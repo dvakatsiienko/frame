@@ -2,6 +2,12 @@ import type { FsEntry, On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { PALETTE, ctxBar, huesOf, isSeated } from '../hooks/register.tsx';
+import {
+    THREADS_FILE,
+    type ThreadRow,
+    recordOf,
+    threadsFile,
+} from './threads.ts';
 
 const NOW = 10_000_000;
 const MIN = 60 * 1000;
@@ -42,7 +48,7 @@ function fleet(
         files = undefined as string[] | undefined,
         reads = {} as Record<string, string>,
         // x's thread records, as the store file carries them
-        threads = [] as Record<string, string>[],
+        threads = [] as ThreadRow[],
         dirs = {} as Record<string, FsEntry[]>,
         isOwner = false,
         sends = {} as Record<string, string[]>,
@@ -89,8 +95,19 @@ function fleet(
             })),
     }));
     on('fs.read', (_$, e) => {
-        if (e.path === '/home/.claude/shelf/threads.json')
-            return { value: JSON.stringify({ at: 0, threads, v: 1 }) };
+        if (e.path === THREADS_FILE) {
+            // a record per registry session as x would have written it, a test's own row for a session winning
+            const own = new Set(threads.map((t) => t.sessionId));
+            const rows = Object.values(REGISTRY)
+                .map((entry) => ({ ...entry, ...patch[entry.pid as number] }))
+                .filter((entry) => !own.has(String(entry.sessionId)))
+                .map((entry) => ({
+                    pid: entry.pid as number,
+                    sessionId: String(entry.sessionId),
+                    ...recordOf(String(entry.name)),
+                }));
+            return { value: threadsFile([...rows, ...threads]) };
+        }
         const extra = reads[e.path];
         if (extra !== undefined) return { value: extra };
         const entry = REGISTRY[e.path];
@@ -1223,7 +1240,14 @@ test('a dev-mods folder holding only a file draws no warning', async ($, on) => 
 });
 
 test("a stale probe stays off any board but clio's", async ($, on) => {
-    fleet(on, {}, { dirs: probes(GONE, [dir('qc-view', NOW - MIN)]) });
+    fleet(
+        on,
+        {},
+        {
+            dirs: probes(GONE, [dir('qc-view', NOW - MIN)]),
+            threads: [{ sessionId: HERE }],
+        },
+    );
     expect(await probeRow($)).toBeUndefined();
 });
 
@@ -1395,7 +1419,10 @@ test("the ledger's gap stays off any board but clio's", async ($, on) => {
     const { clock, store } = fleet(
         on,
         { [`quiet-log:${DAY}`]: [logged(PEER_NAME, NOW - 30 * MIN)] },
-        { sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] } },
+        {
+            sends: { [PEER]: [at(NOW - 30 * MIN), at(NOW - 20 * MIN)] },
+            threads: [{ sessionId: HERE }],
+        },
     );
     expect(await gapRow($, clock, store)).toBeUndefined();
 });
@@ -1411,23 +1438,13 @@ test('a held ping past the wait + 2 min turns the 🤫 n red', async ($, on) => 
     expect(badge?.props.color).toBe('error');
 });
 
-test('a numbered wing has a chair on the board', () => {
-    expect(isSeated('🦉🪽 clio: wing 1')).toBe(true);
-});
-
-// FRM-570 exit 16: a role word as a name carries no chair, only x's record of the role does
-test('a session named only by a role word has no chair without its record', () => {
-    expect([
-        isSeated('codie'),
-        isSeated('🔎 sixth sense'),
-        isSeated('codie', 'codie'),
-        isSeated('🐦 ⬛ crow'),
-        isSeated('🎀 helga'),
-    ]).toEqual([false, false, true, true, true]);
-});
-
-test('a wing title with no number has no chair', () => {
-    expect(isSeated('🦉🪽 clio: wing')).toBe(false);
+// FRM-570 exit 16, FRM-579: a chair is a record's role, a claim for clio, a wing, crow and helga; a name alone carries none
+test('a chair comes from a role, never a name', () => {
+    expect([isSeated(undefined), isSeated('wing'), isSeated('codie')]).toEqual([
+        false,
+        true,
+        true,
+    ]);
 });
 
 test('a held ping inside the wait + 2 min keeps the 🤫 n plain', async ($, on) => {
@@ -1613,7 +1630,7 @@ test('a second press on the 🔥 chip writes off and draws off', async ($, on) =
 });
 
 test("a session's own row chip and its band's 🔥 show one state, whichever is flipped", async ($, on) => {
-    fleet(on);
+    fleet(on, {}, { threads: [{ sessionId: HERE }] });
     const view = await board($);
     const strip = await band($);
     const bandHot = async () =>

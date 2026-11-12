@@ -2,6 +2,7 @@ import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { clioAddress, peerPing } from '../hooks/register.tsx';
+import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // quiet comms (PK-93): a member's [progress] ping is held in clio's thread, everything else passes
 
@@ -44,6 +45,15 @@ function world(
 ) {
     for (const p of peers)
         files[`/home/.claude/sessions/${p.pid}.json`] = JSON.stringify(p);
+    // x's thread record per session: a power read takes the role from it, never from the name
+    files[THREADS_FILE] ??= threadsFile([
+        { pid: PID, sessionId: SID, ...recordOf(name) },
+        ...peers.map((p) => ({
+            pid: Number(p.pid),
+            sessionId: String(p.sessionId),
+            ...recordOf(String(p.name)),
+        })),
+    ]);
     const contexts: string[][] = [];
     const submitted: string[] = [];
     const appended: string[] = [];
@@ -733,7 +743,6 @@ const member = (on: On, sent?: Record<string, unknown>) =>
 for (const to of [
     '🦉 clio',
     '🦉 clio [498790]',
-    'clio',
     'local_clio',
     'uds:/tmp/cc-socks/70.sock',
     'clio-sid',
@@ -3122,10 +3131,9 @@ test('a waiting note with the event keeps its wake', async ($, on) => {
 
 const ROUND_CODIE = '⚡ 🔧 codie: mods lane 5 | FRM-9';
 const LANE_KEY = 'lane-rounds:mods-lane-5 | FRM-9';
-const THREADS = '/home/.claude/shelf/threads.json';
 // x's thread record for this session (`x thread list` writes it): role, lane and ticket by session id
 const thread = (role: string, over: Record<string, unknown> = {}) => ({
-    [THREADS]: JSON.stringify({
+    [THREADS_FILE]: JSON.stringify({
         threads: [
             {
                 lane: 'mods-lane-5',
@@ -3133,6 +3141,11 @@ const thread = (role: string, over: Record<string, unknown> = {}) => ({
                 sessionId: SID,
                 ticket: 'FRM-9',
                 ...over,
+            },
+            {
+                pid: CLIO.pid,
+                sessionId: CLIO.sessionId,
+                ...recordOf(CLIO.name),
             },
         ],
         v: 1,
@@ -3222,6 +3235,7 @@ for (const [name, sender, to] of [
                       ? thread('sixth-sense')
                       : {},
             name: sender,
+            peers: [CLIO],
         });
         await start($);
         await send($, to, 'round 1 on abc12345');

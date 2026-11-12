@@ -8,7 +8,7 @@
 //        node prompt-groom.ts --lift <W-id|all>            turn today's ` #standing` W-line(s) ` #lifted`; exit 1 when none matched
 //        node prompt-groom.ts --check <file…>              red each W-line stamped from the rules start through today with no groom (the halt: linear bodies updated in the last 2 days)
 //        node prompt-groom.ts --day [YYYY-MM-DD] [--now HH:MM] [--transcript <jsonl>]   red each prompt of that day (default today; a past day's now is its 23:59) older than 10 minutes with no groom and no `HH:MM — <why>` line in grooms/<day>.no-wish.md (slash-command-only and harness-event-only prompts skipped), each orbit steer of that day with no groom and no `oN — <why>` line, and each W-line of that day's groomed files whose id and text share no line of a pocket task file, no .scratch spec.md and no linear ticket body updated yesterday or today (linear unreachable: a 🟡 line, the no-home check skipped)
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import {
     appendFileSync,
     existsSync,
@@ -19,6 +19,7 @@ import {
     writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 
 import { steersOf } from './chat-lines.ts';
 import { seatOf } from './session-registry.ts';
@@ -501,18 +502,22 @@ const steerText = (id: string, day: string, transcript?: string) =>
         ),
     ].join('\n') || undefined;
 
+// helga is up when a live thread's record holds the copyist role (FRM-579), never by a name
+export const isCopyistLive = (threads: { name?: string; role?: string }[]) =>
+    threads.some((t) => t.role === 'copyist');
+
 function helgaUp() {
-    const agents = JSON.parse(
-        execFileSync('claude', ['agents', '--json'], { encoding: 'utf8' }),
-    ) as {
-        name?: string;
-        status?: string;
-    }[];
-    return (
-        agents.some(
-            (a) => a.name?.includes('helga') && a.status !== 'exited',
-        ) || helgaPaneUp()
-    );
+    try {
+        const { data } = JSON.parse(
+            execFileSync('x', ['thread', 'list', '--json'], {
+                encoding: 'utf8',
+                stdio: ['ignore', 'pipe', 'ignore'],
+            }),
+        ) as { data?: { threads?: { name?: string; role?: string }[] } };
+        return isCopyistLive(data?.threads ?? []) || helgaPaneUp();
+    } catch {
+        return helgaPaneUp();
+    }
 }
 
 // a pane helga is no --bg agent: hc ls lists only live terminals, so a labelled one is up (no hc or no core: not up)
@@ -549,9 +554,16 @@ async function startHelga() {
         env: { CLAUDE_CODE_DISABLE_CLAUDE_MDS: '1' },
         worktree: { bgIsolation: 'none' },
     });
+    const isPane = process.env.CLIO_SIDECAR_PANE === '1';
+    // her role is the record x brief summon writes (FRM-579): a pane start takes the id x mints, a --bg one is recorded
+    // by the session its job started, since cc ignores --session-id there
+    const minted = isPane
+        ? summonCopyist(cwd, [`cd ${cwd} && claude -n helga 'start'`])
+        : undefined;
     const claudeArgs = [
+        ...(minted ? ['--session-id', minted.sessionId] : []),
         '-n',
-        '🎀 helga',
+        minted?.display ?? '🎀 helga',
         '--model',
         'haiku',
         '--effort',
@@ -560,7 +572,7 @@ async function startHelga() {
         settings,
     ];
     // a herdr seat sets CLIO_SIDECAR_PANE=1: the prompt rides inside hc run, no job id
-    if (process.env.CLIO_SIDECAR_PANE === '1') {
+    if (isPane) {
         const started = execFileSync(
             'hc',
             [
@@ -591,10 +603,63 @@ async function startHelga() {
         keepThreadInTab(JSON.parse(started).address, 'helga');
         return;
     }
-    execFileSync('claude', ['--bg', ...claudeArgs, skill, '--remote-control'], {
-        cwd,
-        stdio: 'inherit',
-    });
+    const started = execFileSync(
+        'claude',
+        ['--bg', ...claudeArgs, skill, '--remote-control'],
+        { cwd, encoding: 'utf8' },
+    );
+    process.stdout.write(started);
+    const jobId = /backgrounded · (\S+)/.exec(
+        stripVTControlCharacters(started),
+    )?.[1];
+    for (let i = 0; jobId && i < 30; i++) {
+        const sid = sessionOfJob(jobId);
+        if (sid) {
+            summonCopyist(cwd, ['--session', sid]);
+            return;
+        }
+        await new Promise((done) => setTimeout(done, 1000));
+    }
+    console.error(
+        `helga's job ${jobId ?? '(none printed)'} not in the registry after 30 s, so she has no record`,
+    );
+}
+
+function summonCopyist(cwd: string, args: string[]) {
+    const run = spawnSync(
+        'x',
+        ['brief', 'summon', '--role', 'copyist', ...args, '--json'],
+        { cwd, encoding: 'utf8' },
+    );
+    const envelope = JSON.parse(run.stdout || '{}') as {
+        data?: { display: string; sessionId: string };
+        error?: string;
+        ok?: boolean;
+    };
+    if (!envelope.ok || !envelope.data)
+        throw new Error(
+            `x brief summon refused helga's record: ${envelope.error ?? run.stderr}`,
+        );
+    return envelope.data;
+}
+
+// the session id the registry holds for a --bg job, matched by its job id, never the newest file
+export function sessionOfJob(
+    jobId: string,
+    dir = path.join(home, '.claude/sessions'),
+): string | undefined {
+    for (const file of readdirSync(dir).filter((f) => /^\d+\.json$/.test(f))) {
+        try {
+            const entry = JSON.parse(
+                readFileSync(path.join(dir, file), 'utf8'),
+            ) as {
+                jobId?: string;
+                sessionId?: string;
+            };
+            if (entry.jobId === jobId && entry.sessionId)
+                return entry.sessionId;
+        } catch {}
+    }
 }
 
 // a wish id numbers on inside its home, never from a global counter (PK-312, dima o94, o96, o98)

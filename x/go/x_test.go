@@ -54,6 +54,7 @@ func fixtures(t *testing.T) []call {
 var xbin string
 
 func TestMain(m *testing.M) {
+	isInProcessTest = true
 	dir, err := os.MkdirTemp("", "x-test-")
 	if err != nil {
 		panic(err)

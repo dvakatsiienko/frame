@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"cmp"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -31,7 +33,20 @@ type summonCheck struct{ step, why, next string }
 
 // briefSummon checks a summon command the way x:crew-lead § preflight would by hand, and never launches it:
 // the judgment steps (reuse or summon, the model pick) stay the coordinator's
-func briefSummon(r *Run, args []string, _ Flags) (any, error) {
+func briefSummon(r *Run, args []string, flags Flags) (any, error) {
+	standing, err := standingRoleFlag(flags)
+	if err != nil {
+		return nil, err
+	}
+	if sid := flagString(flags, "session"); sid != "" {
+		if len(args) > 0 || standing.Role == "" {
+			return nil, usageFail("--session records a running thread: --role and no command", "x brief summon --role <role> --session "+sid)
+		}
+		return recordRunning(r, standing, sid)
+	}
+	if len(args) == 0 {
+		return nil, usageFail("no summon command", "x brief summon <the summon command>")
+	}
 	command := args[0]
 	words := shellWords(command)
 	r.Open("summon")
@@ -52,6 +67,9 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 	}
 	if home == "" {
 		home, _ = os.Getwd()
+	}
+	if standing.Role != "" {
+		return summonStanding(r, command, words[claude:], home, standing)
 	}
 	argv := words[claude:]
 	prompt := slices.IndexFunc(argv, func(w string) bool { return briefOfCat.MatchString(w) || roleSkill.MatchString(w) })
@@ -184,6 +202,9 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 	record := thread{SessionID: newSessionID(), Role: role}
 	if words := strings.Fields(first); len(words) > 1 && ticketArg.MatchString(words[1]) {
 		record.Ticket = words[1]
+		if actor, err := actorOf(flags); err == nil {
+			record.Area = ticketArea(actor, record.Ticket)
+		}
 	}
 	if m := laneSpecDir.FindStringSubmatch(text); m != nil {
 		record.Lane = m[1]
@@ -191,24 +212,150 @@ func briefSummon(r *Run, args []string, _ Flags) (any, error) {
 	if m := laneKindLine.FindStringSubmatch(text); m != nil {
 		record.LaneKind = m[1]
 	}
+	// a sixth sense's inline argv names no lane kind: it takes its lane's, from the codie record of the same lane
+	if record.LaneKind == "" && record.Lane != "" {
+		if store, err := readThreadStore(threadStorePath()); err == nil {
+			for _, t := range store.Threads {
+				if t.Lane == record.Lane && t.LaneKind != "" {
+					record.LaneKind = t.LaneKind
+				}
+			}
+		}
+	}
+	out, err := summonArgv(r, command, record)
+	if err != nil {
+		return nil, err
+	}
+	return ordered{{"argv", out}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, nil
+}
+
+// the four standing roles start by a door of their own, never a lane brief, so their summon checks only what a start
+// needs: a claude call and the trusted home; a --bg start records after cc prints its job, through --session
+func summonStanding(r *Run, command string, words []string, home string, record thread) (any, error) {
+	var failed []summonCheck
+	step := func(name, detail string, check func() string) {
+		_ = r.Step(name, detail, func() (string, error) {
+			if why := check(); why != "" {
+				failed = append(failed, summonCheck{name, why, ""})
+				return "1 finding", nil
+			}
+			return "ok", nil
+		})
+	}
+	step("argv", "a pane start, whose session id x picks", func() string {
+		if slices.Contains(words, "--bg") {
+			return "claude --bg ignores --session-id: start it, then record its session: x brief summon --role " + standingRoleWord(record) + " --session <sid>"
+		}
+		return ""
+	})
+	step("trust", "the summon home's trust key", func() string {
+		if !trusted(home) {
+			return home + " has no hasTrustDialogAccepted in ~/.claude.json"
+		}
+		return ""
+	})
+	if len(failed) > 0 {
+		return nil, summonRefused(failed, command)
+	}
+	if err := standingGate("x brief summon", record); err != nil {
+		return nil, err
+	}
+	record.SessionID = newSessionID()
+	out, err := summonArgv(r, command, record)
+	if err != nil {
+		return nil, err
+	}
+	return ordered{{"argv", out}, {"home", home}, {"role", record.Role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, nil
+}
+
+// a thread already running gets its standing role: a --bg start once cc printed its job, or the cutover's backfill;
+// the session must be live and hold no other role (threadRoleRefusal)
+func recordRunning(r *Run, record thread, sid string) (any, error) {
+	r.Open("summon")
+	if err := standingGate("x brief summon --session", record); err != nil {
+		return nil, err
+	}
+	record.SessionID = sid
+	if err := writeThreadRecord(record, time.Now(), false); err != nil {
+		if fail, isFail := errors.AsType[*Fail](err); isFail {
+			return nil, fail
+		}
+		return nil, &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
+	}
+	display := threadDisplay(record)
+	r.Done("ok: "+sid+" is "+display, "")
+	return ordered{{"sessionId", sid}, {"role", record.Role}, {"display", display}}, nil
+}
+
+// the caller gate, plus round 2's pane rule: a coordinator or wing record is never written for a caller in a herdr
+// terminal with no registered claude above it, since a member's `hc run` pane looks like dima's own; dima's herdr
+// layout starts clio with HC_TERMINAL_ID unset (a known gap: `env -u` strips it as easily, FTR)
+func standingGate(verb string, record thread) error {
+	if err := coordinatorOnly(verb); err != nil {
+		return err
+	}
+	if !roleOf(record.Role).IsCoordinator || os.Getenv("HC_TERMINAL_ID") == "" {
+		return nil
+	}
+	if table, err := readProcessTable(); err == nil && len(callerChain(table, powerSessionsDir())) > 0 {
+		return nil
+	}
+	// dima, 15:47: while no coordinator record is live, his herdr layout still starts clio, warned
+	if store, err := readThreadStore(powerThreadStorePath()); err == nil && !slices.ContainsFunc(store.Threads, func(t thread) bool {
+		return t.Role == "coordinator" && !t.Fallback
+	}) {
+		fmt.Fprintln(os.Stderr, "x: a herdr terminal gets a coordinator's record while no live thread holds one (the pane fallback)")
+		return nil
+	}
+	return &Fail{Refused: true, Msg: verb + " gives a coordinator's role, never to a herdr terminal with no claude above it", Next: roleRefusalNext}
+}
+
+// --role's word: coordinator, wing:<n>, adviser or copyist, the ids roles.json gives a display of their own
+func standingRoleFlag(flags Flags) (thread, error) {
+	word := flagString(flags, "role")
+	if word == "" {
+		return thread{}, nil
+	}
+	id, number, hasNumber := strings.Cut(word, ":")
+	r := roleOf(id)
+	if r.Display == "" {
+		return thread{}, usageFail("no standing role "+word, "x brief summon --role coordinator|wing:<n>|adviser|copyist …")
+	}
+	n, err := strconv.Atoi(number)
+	needsNumber := strings.Contains(r.Display, "{n}")
+	if needsNumber != hasNumber || (needsNumber && (err != nil || n < 1)) {
+		return thread{}, usageFail(word+": a wing takes its number, wing:<n>, and no other role takes one", "x brief summon --role wing:<n> …")
+	}
+	return thread{Role: id, Wing: n}, nil
+}
+
+func standingRoleWord(t thread) string {
+	if t.Wing > 0 {
+		return t.Role + ":" + strconv.Itoa(t.Wing)
+	}
+	return t.Role
+}
+
+// the argv a summon prints: the registry name the record draws, the minted session id after the claude call, and the
+// record written before the thread runs
+func summonArgv(r *Run, command string, record thread) (string, error) {
 	at := claudeCallAt(command)
 	if at == nil {
-		return nil, usageFail("the claude call is quoted, so x cannot add its --session-id", "x brief summon "+quote(herdrClaude(command)))
+		return "", usageFail("the claude call is quoted, so x cannot add its --session-id", "x brief summon "+quote(herdrClaude(command)))
 	}
 	// the registry name is the display x draws from the record, one string, never the one the command typed
-	display := threadDisplay(record)
 	if from, to := nameValueAt(command, at[1]); from >= 0 {
-		command = command[:from] + "'" + display + "'" + command[to:]
+		command = command[:from] + quote(threadDisplay(record)) + command[to:]
 	}
 	command = command[:at[1]] + "--session-id " + record.SessionID + " " + command[at[1]:]
 	if err := writeThreadRecord(record, time.Now(), true); err != nil {
-		return nil, &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
+		return "", &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
 	}
 	if r.human {
 		fmt.Println(command)
 	}
 	r.Done("ok: every mechanical step holds, the argv is the summon", "")
-	return ordered{{"argv", command}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}, {"display", display}}, nil
+	return command, nil
 }
 
 // nameValueAt is the byte span of the word after the claude call's first -n, quotes included; -1 when it has none

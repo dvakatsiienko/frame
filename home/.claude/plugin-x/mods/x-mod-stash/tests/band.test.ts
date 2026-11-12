@@ -10,6 +10,7 @@ function world(on: On, hasStore = true) {
     const clock = mock.clock(on);
     if (hasStore) mock.store(on);
     on('session.id', () => ({ value: SID }));
+    on('env.get', () => ({ value: '/home' }));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     on('session.repo', () => ({ value: null }));
     on('classic.Stop', () => ({}));

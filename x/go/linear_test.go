@@ -68,7 +68,7 @@ func runLinear(t *testing.T, server *fakeLinear, env []string, argv ...string) (
 	if !slices.ContainsFunc(env, func(kv string) bool {
 		return strings.HasPrefix(kv, "X_SESSIONS=") && strings.Contains(kv, "caller-set")
 	}) {
-		env = asCaller(t, env, "🦉 clio")
+		env = asCaller(t, env, "coordinator")
 	}
 	got := runAs(t, append([]string{"X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + server.URL}, env...), argv...)
 	var envelope map[string]any

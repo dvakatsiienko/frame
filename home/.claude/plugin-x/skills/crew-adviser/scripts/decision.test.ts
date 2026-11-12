@@ -14,6 +14,8 @@ import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { afterEach, describe, expect, test } from 'vitest';
 
+import { CROW_RECORD, plantThreads } from './fixtures/threads.ts';
+
 // a fixture home with a crow socket this test owns, so the live crow is never touched
 const HOOK = join(import.meta.dirname, 'decision.ts');
 const servers: Server[] = [];
@@ -33,6 +35,10 @@ function home({ tab = false } = {}) {
         join(sessions, '1.json'),
         JSON.stringify({ name: '🦉 clio', sessionId: 'clio-1' }),
     );
+    plantThreads(dir, [
+        { display: '🦉 clio', role: 'coordinator', sessionId: 'clio-1' },
+        CROW_RECORD,
+    ]);
     writeFileSync(
         join(sessions, `${process.pid}.json`),
         JSON.stringify({
@@ -425,10 +431,10 @@ describe('a push to main', () => {
 test('a session other than clio wakes nothing', async () => {
     const fixture = home();
     crow(fixture.socket, 'x');
-    writeFileSync(
-        join(fixture.dir, '.claude/sessions/1.json'),
-        JSON.stringify({ name: '☕️ 🔧 coder', sessionId: 'clio-1' }),
-    );
+    plantThreads(fixture.dir, [
+        { display: '☕️ 🔧 coder', role: 'codie', sessionId: 'clio-1' },
+        CROW_RECORD,
+    ]);
     await hook(fixture, 'gh pr merge 82');
     expect(existsSync(stateOf(fixture))).toBe(false);
 });
@@ -450,10 +456,15 @@ test('a decision wake leaves the Stop wake’s 30-min clock alone', async () => 
 describe('a wing', () => {
     function wing() {
         const fixture = home();
-        writeFileSync(
-            join(fixture.dir, '.claude/sessions/1.json'),
-            JSON.stringify({ name: '🦉🪽 clio: wing 3', sessionId: 'clio-1' }),
-        );
+        plantThreads(fixture.dir, [
+            {
+                display: '🦉🪽 clio: wing 3',
+                role: 'wing',
+                sessionId: 'clio-1',
+                wing: 3,
+            },
+            CROW_RECORD,
+        ]);
         return fixture;
     }
 
@@ -712,7 +723,13 @@ describe('a cadence wake at park', () => {
             const child = spawn(
                 process.execPath,
                 [WAKE, '--transcript', fixture.transcript],
-                { env: { ...process.env, HOME: fixture.dir } },
+                {
+                    env: {
+                        ...process.env,
+                        HOME: fixture.dir,
+                        PATH: `${join(fixture.dir, 'bin')}:${process.env.PATH}`,
+                    },
+                },
             );
             let out = '';
             child.stdout.on('data', (chunk) => {

@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
+
 // 🐦‍🔥 second wind, the asked session's side (todo 16): the note rides its next turn, a cancel takes it back, and the
 // op it calls with its handoff compacts and ingests at that turn's end
 
@@ -12,6 +14,27 @@ const SLUG = 'mods-l14-2';
 
 // what lands while the engine compacts: one `on` per event, so a test sets this flag before its first `$` call
 let inCompact: (() => Promise<unknown>) | undefined;
+
+// the live peers a test's messages come from, as cc's registry names them and x's records give their roles
+const SENSE_NAMES = [
+    '⚡ 🔎 sixth sense: mods',
+    '⚡ 🔎 sixth sense: mods lane 6 | main',
+];
+const PEERS = [
+    { name: '🦉 clio', pid: 1, record: recordOf('🦉 clio') },
+    {
+        name: '🦉🪽 clio: wing 1',
+        pid: 2,
+        record: recordOf('🦉🪽 clio: wing 1'),
+    },
+    ...SENSE_NAMES.map((name, i) => ({
+        name,
+        pid: 3 + i,
+        record: { display: name, role: 'sixth-sense' },
+    })),
+    // the 01:28 fork: clio's name, no record
+    { name: '🦉 clio', pid: 90, record: {} },
+];
 // `name` is the session's registry name; `handoffs` the slugs `x handoff peek` finds
 // `during` runs inside the compact, as a turn end that lands while it works would
 // `role` is the role x's thread record gives the session, `null` for none
@@ -47,7 +70,11 @@ function world(
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
                 stderr: '',
-                stdout: isPeek ? '' : `${PID}\nMon Oct 13 17:00:00 2026\n`,
+                stdout: isPeek
+                    ? ''
+                    : e.argv[0] === 'ps'
+                      ? [PID, ...PEERS.map((p) => p.pid)].join('\n')
+                      : `${PID}\nMon Oct 13 17:00:00 2026\n`,
             },
         };
     });
@@ -56,18 +83,42 @@ function world(
             name,
             pid: PID,
         }),
-        '/home/.claude/shelf/threads.json': JSON.stringify({
-            at: 0,
-            threads: role ? [{ name, role, sessionId: SID }] : [],
-            v: 1,
-        }),
+        [THREADS_FILE]: threadsFile([
+            {
+                pid: PID,
+                sessionId: SID,
+                ...(role ? { display: name, role } : recordOf(name)),
+            },
+            ...PEERS.map((p) => ({
+                pid: p.pid,
+                sessionId: `peer-${p.pid}`,
+                ...p.record,
+            })),
+        ]),
     };
+    for (const p of PEERS)
+        files[`/home/.claude/sessions/${p.pid}.json`] = JSON.stringify({
+            name: p.name,
+            pid: p.pid,
+            sessionId: `peer-${p.pid}`,
+        });
     on('fs.read', (_$, e) =>
         e.path in files
             ? { value: files[e.path] ?? '' }
             : { deny: 'no such file' },
     );
-    on('fs.list', () => ({ value: [] }));
+    on('fs.list', (_$, e) => ({
+        value:
+            e.path === '/home/.claude/sessions'
+                ? PEERS.map((p) => ({
+                      isLink: false,
+                      kind: 'file' as const,
+                      mtimeMs: 0,
+                      name: `${p.pid}.json`,
+                      size: 1,
+                  }))
+                : [],
+    }));
     on('ui.log', () => ({ value: undefined }));
     on('ui.toast', () => ({ value: undefined }));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
@@ -491,13 +542,28 @@ const receiveWorld = (on: On, name?: string, role = 'codie') => {
     });
     return { ...w, queued };
 };
-const fromPeer = ($: Engine, body: string, from = CLIO) =>
+// the socket is the sender's own, as cc writes it; the name is only what it signs with
+const fromPeer = (
+    $: Engine,
+    body: string,
+    from = CLIO,
+    pid = PEERS.find((p) => p.name === from)?.pid ?? 1,
+) =>
     $.session.receive({
         origin: { kind: 'peer' },
-        text: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${from}" from-mode="bypass">\n${body}\n</cross-session-message>`,
+        text: `<cross-session-message from="uds:/tmp/cc-socks/${pid}.sock" from-name="${from}" from-mode="bypass">\n${body}\n</cross-session-message>`,
     }) as Promise<{ consumed?: string; text?: string }>;
 const delivered = (lines: string[]) =>
     lines.filter((l) => l.startsWith('🐦‍🔥 held for your second wind'));
+
+// FRM-579 exit 6, sixth sense round 3: a record-less fork that signs as «🦉 clio» holds no wind note, its socket names it
+test('a fork named «🦉 clio» with no record gets no wind note held', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    const r = await fromPeer($, 'next: r6', CLIO, 90);
+    expect(r.text?.includes('held for your second wind')).toBe(false);
+});
 
 test("clio's message to a codie past 55 % becomes the wind note, and joins the first turn after the compact", async ($, on) => {
     const w = receiveWorld(on);

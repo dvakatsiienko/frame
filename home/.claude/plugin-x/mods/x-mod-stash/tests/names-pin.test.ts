@@ -1,25 +1,19 @@
 import { expect, test } from 'claude-code/testing';
 
 import { ticketOf } from '../hooks/parse.ts';
-import { isCoordinator, pinOf } from '../hooks/register.tsx';
+import { pinOf } from '../hooks/register.tsx';
 
-// S5: who a name is reads through bare(): spaces and zero-width joiners never change it
-for (const [name, pin] of [
-    ['🦉 clio', 0],
-    ['🦉‍clio', 0],
-    ['cclio', 0], // read-both: a clio tab under its old title
-    ['🐦‍⬛ crow', 1],
-    ['🐦‍⬛crow', 1],
-    ['scarecrow', 2],
-    ['⚡ 🔧 codie: mods lane 4', 2],
+// FRM-579: the pin reads a thread's role from its record, so a name, an old title or a joiner never moves it
+for (const [role, pin] of [
+    ['coordinator', 0],
+    ['adviser', 1],
+    ['wing', 2],
+    ['codie', 2],
+    [undefined, 2],
 ] as const)
-    test(`${JSON.stringify(name)} pins as ${pin}`, () => {
-        expect(pinOf(name)).toBe(pin);
+    test(`the role ${role} pins as ${pin}`, () => {
+        expect(pinOf(role)).toBe(pin);
     });
-
-test('a title that only mentions clio is not the coordinator', () => {
-    expect(isCoordinator('🔧 codie for clio')).toBe(false);
-});
 
 // a session's ticket is a team key's id, never another dashed number in its title
 for (const [name, ticket] of [
