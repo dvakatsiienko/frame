@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T18:13:00Z'
+updated_date: '2026-11-12T19:09:00Z'
 labels:
   - s
   - clio-main
@@ -21,17 +21,18 @@ ordinal: 1000
 - [ ] #3 fork-guard r6: a wing may edit a handoff file carrying its own token; fixture-HOME proof
 - [ ] #4 x brief check's offline stamp line: seven names and ⚖️ worth it, to dima
 - [ ] #5 herdr grills, his order: FRM-564 → 582 → 580 → 567 → 563 → 562, 569, each signed
-- [ ] #6 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
-- [ ] #7 ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505
-- [ ] #8 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
-- [ ] #9 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
-- [ ] #10 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
-- [ ] #11 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
-- [ ] #12 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
-- [ ] #13 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
-- [ ] #14 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #15 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
-- [ ] #16 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #6 at dispatch: FRM-538 needs its sign, FRM-555 its changed line (from wing 1)
+- [ ] #7 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
+- [ ] #8 ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505
+- [ ] #9 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
+- [ ] #10 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
+- [ ] #11 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
+- [ ] #12 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
+- [ ] #13 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
+- [ ] #14 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
+- [ ] #15 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #16 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
+- [ ] #17 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
