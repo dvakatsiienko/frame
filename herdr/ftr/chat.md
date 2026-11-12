@@ -78,7 +78,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ the shared keys carry the x-herdr name
   - given the chat, the status bar and the agents list share `chat.look`, `chat.subs`, `chat.containers`
   - then each key is `x-herdr-chatter.*`, read by every mod under its new name, and «zoo» appears nowhere
-  - decision: left for after zoo's other mods are ours (my-status reads them), FRM-556
+  - decision: left for after zoo's other mods are ours (x-herdr-status reads them), FRM-556
 - ⬜ the chat mod passes its own type check
   - given `pnpm exec tsc -p home/.config/herdr-app/mods/x-herdr-chatter/jsconfig.json`
   - then it exits 0; today 468 errors carried from zoo's copy, and `pnpm typecheck` does not cover the mod

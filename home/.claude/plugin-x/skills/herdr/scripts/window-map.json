@@ -109,10 +109,10 @@
         },
         {
             "boxes": [[226, 851, 1092, 874]],
-            "kind": "zoo",
+            "kind": "ours",
             "n": 12,
             "name": "x-herdr-status",
-            "today": "my-status",
+            "today": "x-herdr-status",
             "what": "status bar: branch, folder, commands"
         },
         {

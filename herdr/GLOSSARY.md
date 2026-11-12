@@ -14,6 +14,7 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr-chatter-header** — the whole top row of a thread's pane, in the Chat view and the Terminal view alike: the thread's name and the switch; one row to the eye, drawn by x-herdr-chatter in the Chat view and by the x-herdr-chatter-header mod in the Terminal view, both from one `chatter-header.js`
 - **x-herdr-chatter-header-tabs** — the Chat | Terminal switch inside that row
 - **x-herdr-terminal-header** — the head row of the tray (the bottom quick terminal), part of x-herdr-terminal
+- **x-herdr-status** — the status bar along the window's bottom: branch, folder, the open-in commands
 - **x-herdr-deck** — our board mod, the deck: every thread's row, their asks and the lanes' cards
 - **agents-list** — our agents list in the sidebar, each agent by its session name
 - **x-herdr-tabs** — our tab bar above a space's panes, each agent tab by its session name; copied from zoo's `my-tabs` (FRM-567)
