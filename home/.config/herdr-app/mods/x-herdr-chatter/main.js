@@ -6330,11 +6330,11 @@ export default class ClaudeChat extends View {
                 .tooltip(meterTip(name, pct))
                 .child(
                     div()
-                        .w(px(52))
+                        .w(px(20))
                         .flex_none()
                         .text_size(px(TEXT.sm))
                         .text_color(t.dim)
-                        .child(name === 'ctx' ? '🧠 ctx' : '🗓 week'),
+                        .child(name === 'ctx' ? '🧠' : '🗓'),
                 )
                 .child(
                     div()
@@ -7128,9 +7128,8 @@ export default class ClaudeChat extends View {
                     .flex_none()
                     .p(10)
                     .gap(8)
-                    .border_t(1)
-                    .border_color(t.border)
-                    .bg(t.chrome)
+                    // the module floats on the log's own white, no edge between them (his 17:19 shot)
+                    .bg(t.background)
                     .relative()
                     // over the log's bottom edge, so the transcript never moves when it comes or goes
                     .when(queued.length > 0 && !isLeftShown, (el) =>

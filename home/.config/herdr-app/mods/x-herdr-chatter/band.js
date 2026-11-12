@@ -50,8 +50,12 @@ export const meterCells = (pct, cells) =>
         : Math.min(cells, Math.max(1, Math.round((pct / 100) * cells)));
 
 /** @param {string} name @param {number | null} pct */
+// the row shows the number; the tooltip names what the bar measures (his 17:18 shot: «remove % in tool tip»)
+const METER_WHAT = { ctx: 'context', week: 'weekly usage' };
 export const meterTip = (name, pct) =>
-    pct == null ? `${name}: not read yet` : `${name} ${Math.round(pct)} %`;
+    pct == null
+        ? `${METER_WHAT[name] ?? name}: not read yet`
+        : (METER_WHAT[name] ?? name);
 
 // the deck's block in his layout: 🚦 shows and hides it with herdr's own click command, never a layout file write
 export const DECK_BLOCK = 'b582b696a6329c1b15cd453c0c01c3204';
