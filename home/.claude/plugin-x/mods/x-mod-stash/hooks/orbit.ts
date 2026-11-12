@@ -253,8 +253,6 @@ export function orbitOp(
     isTurn: boolean,
     planMax: number = PLAN_MAX,
     isAmended = false,
-    // unread since a pick no longer needs a clean; register.tsx still passes it
-    _cleans?: Cleans,
 ): { orbit: StashOrbit; result: string } | { deny: string } {
     switch (input.op) {
         case 'add': {
@@ -501,6 +499,3 @@ export function bandPressLines(text: string, after: number, now: number) {
     }
     return out.sort((a, b) => a.at - b.at);
 }
-
-// the clean store x lane merge-auto reads: `<owner>/<repo>#<n>` → the head sha sixth sense cleaned
-export type Cleans = Record<string, string>;

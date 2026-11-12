@@ -28,7 +28,6 @@ import type {
 import {
     ASSUMED_MAX,
     CHANGED_MARK,
-    type Cleans,
     ORBIT_TEXT_MAX,
     ORBIT_TOOL,
     PLAN_MAX,
@@ -2470,73 +2469,6 @@ async function absorbMarks($: EngineInterface) {
         if (stored?.at === m.at)
             await $.store.delete(markKey(sid, id)).catch(() => undefined);
     }
-}
-
-// a session's first prompt «sign FRM-N» signs nothing at x-mod-guard, since a seat's spawn prompt reads the same; it keeps
-// that prompt's ids, and their ✍️ sign ask joins this orbit the same turn, so his one tick signs (FRM-544 slice 2f)
-const GUARD_FIRST_SIGN = { key: 'firstSign', plugin: 'x-mod-guard' } as const;
-async function askFirstSign($: EngineInterface) {
-    const { value: first } = await $.state.get(GUARD_FIRST_SIGN);
-    if (!first?.ids.length) return;
-    const ids = first.ids.join(', ');
-    const text = `✍️ sign ${ids}: typed as this session's first prompt`;
-    await inMarking(async () => {
-        const o = await currentOrbit($);
-        if (o.asks.some((a) => !a.isResolved && a.text === text)) return;
-        const made = orbitOp(
-            o,
-            {
-                asks: [
-                    {
-                        hiddenNote:
-                            "a session's first prompt reads the same as a seat's spawn brief, so it signed nothing; tick only if you typed it",
-                        pick: `sign ${ids}`,
-                        text,
-                    },
-                ],
-                op: 'add',
-            },
-            true,
-        );
-        if (!('deny' in made)) await saveOrbit($, made.orbit);
-    });
-}
-
-// x-mod-guard keeps the second Herdr app start a call of this seat met; at that call his ⚠️ ask joins this orbit, so he saves
-// his typed draft before his tick lets one start run (dima's o47 and 19:09 «warn me»)
-// twin herdr-start-ask — a copy lives in x-mod-guard, which lets one start run on his tick on this ask; twins.test.ts holds them equal
-export const HERDR_START_ASK =
-    '⚠️ a seat wants a second Herdr window: save your typed text first';
-// twin end
-const GUARD_HERDR_START = { key: 'herdrStart', plugin: 'x-mod-guard' } as const;
-async function askHerdrStart($: EngineInterface, since: number) {
-    const { value: start } = await $.state.get(GUARD_HERDR_START);
-    if (!start || start.at < since) return;
-    await inMarking(async () => {
-        const o = await currentOrbit($);
-        // an ask he already ticked is spent at the guard, so a later start asks afresh (wisphunter on 63d5fa57)
-        if (
-            o.asks.some(
-                (a) => !a.isResolved && !a.mark && a.text === HERDR_START_ASK,
-            )
-        )
-            return;
-        const made = orbitOp(
-            o,
-            {
-                asks: [
-                    {
-                        hiddenNote: `x-mod-guard refused \`${start.command.slice(0, 200)}\`: a second Herdr app reloads your window and drops the text you were typing. save it, then tick: one start runs`,
-                        pick: 'let one second Herdr start run',
-                        text: HERDR_START_ASK,
-                    },
-                ],
-                op: 'add',
-            },
-            true,
-        );
-        if (!('deny' in made)) await saveOrbit($, made.orbit);
-    });
 }
 
 // an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
@@ -6247,25 +6179,6 @@ async function settleTask($: EngineInterface, text: string) {
     await load($);
 }
 
-// the clean store x lane merge-auto reads; one that does not read holds no clean, so a merge ask waits for one
-async function readCleans($: EngineInterface): Promise<Cleans> {
-    const home = await $.env.get('HOME').catch(() => undefined);
-    if (!home) return {};
-    try {
-        const v: unknown = JSON.parse(
-            await $.fs.read(`${home}/.claude/shelf/pr-verified.json`),
-        );
-        if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
-        return Object.fromEntries(
-            Object.entries(v).filter(
-                (e): e is [string, string] => typeof e[1] === 'string',
-            ),
-        );
-    } catch {
-        return {};
-    }
-}
-
 // one orbit op, as the tool takes it alone or as one item of `ops`
 async function orbitCall(
     $: EngineInterface,
@@ -6390,10 +6303,6 @@ async function orbitCall(
             deny: 'orbit plan: step is your lane step now, a whole number from 0, as your brief numbers it',
         };
     const lines = await readNumber($, 'lines');
-    const cleans =
-        input.op === 'add' || input.op === 'follow'
-            ? await readCleans($)
-            : undefined;
     const op = await inMarking(async () => {
         const made = orbitOp(
             await currentOrbit($),
@@ -6401,7 +6310,6 @@ async function orbitCall(
             isTurn,
             lines,
             isAmended,
-            cleans,
         );
         if ('deny' in made) return made;
         await saveOrbit($, made.orbit);
@@ -6706,13 +6614,6 @@ export const register: Register = (on) => {
             ],
             text: hold?.text ?? e.text,
         });
-        // after next: x-mod-guard has read this prompt by now, on whichever side of this hook it runs
-        if (isOn('stash.orbit'))
-            await askFirstSign($).catch(() =>
-                $.ui.log(
-                    "x-mod-stash: the first prompt's sign ask was not added",
-                ),
-            );
         return sent;
     });
 
@@ -9207,21 +9108,7 @@ export const register: Register = (on) => {
                       () => undefined,
                   )
                 : undefined;
-        const before = await $.clock.now();
         const r = await next(e);
-        if (
-            e.tool === 'Bash' &&
-            !e.agentId &&
-            (await partsShown($))('stash.orbit')
-        )
-            // a fresh dispatch reads the guard's write: every get of this one reads one moment, maybe the one before it
-            $.clock.after(0, () =>
-                askHerdrStart($, before).catch(() =>
-                    $.ui.log(
-                        "x-mod-stash: the Herdr start's ⚠️ ask was not added",
-                    ),
-                ),
-            );
         if (r.deny !== undefined || e.agentId) return r;
         if (
             (e.tool as string) === WRAP_UP_TOOL &&

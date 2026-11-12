@@ -2338,7 +2338,7 @@ test('the link rides the ask a glide card draws from the store', async ($, on) =
 
 // FRM-544 slice 1: x-herdr-deck draws the gated mark the stash publishes, never its own copy of the pattern
 test('a gated ask carries isGated in the store, a plain ask none', async ($, on) => {
-    const w = world(on, cleansOf({ 'x/y#7': HEAD }));
+    const w = world(on);
     await start($);
     const asks = [
         { pick: 'run it', text: '⚠️ mirror: `git push --mirror origin`' },
@@ -4067,11 +4067,6 @@ test('a save kept with no base, by a module before the base was kept, lands as i
 
 const denied = (r: unknown) => String((r as { deny?: string }).deny ?? '');
 const URL = 'https://github.com/o/n/pull/7';
-const CLEANS = '/home/.claude/shelf/pr-verified.json';
-const HEAD = 'abc1234def5678abc1234def5678abc1234def56';
-const cleansOf = (cleans: Record<string, string>) => ({
-    [CLEANS]: JSON.stringify(cleans),
-});
 
 for (const [what, text, pick] of [
     [
@@ -4377,7 +4372,7 @@ test('✅ leaves a ⚠️ ask unmarked, with no record', async ($, on) => {
 });
 
 test('✅ leaves a bare merge ask for its own 🛎️', async ($, on) => {
-    world(on, cleansOf({ 'o/r#7': HEAD }));
+    world(on);
     const writes = tickLog(on);
     await start($);
     const ui = await board($);
@@ -4393,7 +4388,7 @@ test('✅ leaves a bare merge ask for its own 🛎️', async ($, on) => {
 });
 
 test('✅ names every ask it left unticked', async ($, on) => {
-    world(on, cleansOf({ 'o/bytes#104': HEAD }));
+    world(on);
     const toasts: string[] = [];
     on('ui.toast', (_$, e) => {
         toasts.push(e.text);
@@ -5405,86 +5400,6 @@ test('a herdr ↩️ after a herdr tick a turn took drops its tick record', asyn
     expect(last.map((t) => t.id)).toEqual([]);
 });
 
-// FRM-544 slice 2f: a first prompt «sign FRM-N» signs nothing at x-mod-guard, which keeps its ids for that prompt; the
-// ✍️ sign ask joins orbit the same turn, so his one tick signs
-function firstSign(on: On) {
-    const kept = { value: null as { ids: string[]; at: number } | null };
-    on('state.get', (_$, e, next) =>
-        e.plugin === 'x-mod-guard' && e.key === 'firstSign'
-            ? { value: { value: kept.value, version: 1 } }
-            : next(e),
-    );
-    return kept;
-}
-// the board draws each id as its linear link, so the row reads «✍️ sign <url>FRM-544: …»
-async function signRowShown(ui: Board, ...ids: string[]) {
-    return (await ui.findAll({ type: 'Text' })).some(
-        (t) =>
-            /^o\d+: ✍️ sign .*: typed as this session's first prompt$/u.test(
-                t.text ?? '',
-            ) && ids.every((id) => t.text?.includes(id)),
-    );
-}
-
-test("a first prompt's sign puts its ✍️ sign ask on his board", async ($, on) => {
-    world(on);
-    const first = firstSign(on);
-    await start($);
-    const ui = await board($);
-    first.value = { at: 1, ids: ['FRM-544'] };
-    await say($, 'sign FRM-544');
-    await ui.redraw();
-    expect([await asksShown(ui), await signRowShown(ui, 'FRM-544')]).toEqual([
-        ['o1'],
-        true,
-    ]);
-});
-
-test('a batch first-prompt sign is one ask naming every id', async ($, on) => {
-    world(on);
-    const first = firstSign(on);
-    await start($);
-    const ui = await board($);
-    first.value = { at: 1, ids: ['FRM-544', 'FRM-519'] };
-    await say($, 'sign FRM-544 FRM-519');
-    await ui.redraw();
-    expect(await signRowShown(ui, 'FRM-544, ', 'FRM-519')).toBe(true);
-});
-
-test('a prompt with no first-prompt sign adds no ask', async ($, on) => {
-    world(on);
-    firstSign(on);
-    await start($);
-    const ui = await board($);
-    await say($, 'sign FRM-544');
-    await ui.redraw();
-    expect(await asksShown(ui)).toEqual([]);
-});
-
-test('the same first-prompt sign read twice keeps one open ask', async ($, on) => {
-    world(on);
-    const first = firstSign(on);
-    await start($);
-    const ui = await board($);
-    first.value = { at: 1, ids: ['FRM-544'] };
-    await say($, 'sign FRM-544');
-    await say($, 'go on');
-    await ui.redraw();
-    expect(await asksShown(ui)).toEqual(['o1']);
-});
-
-test('orbit switched off adds no first-prompt sign ask', async ($, on) => {
-    const w = world(on);
-    const first = firstSign(on);
-    w.store.set('shown', { 'stash.orbit': false });
-    await start($);
-    first.value = { at: 1, ids: ['FRM-544'] };
-    await say($, 'sign FRM-544');
-    expect([...w.store.keys()].filter((k) => k.startsWith('asks:'))).toEqual(
-        [],
-    );
-});
-
 // FRM-574 rider, PK-363:W934: his untick on x-herdr-deck takes back a tick the stash already read, and a tick after it
 // marks the ask again
 test('exit 12: a herdr untick after a read tick leaves the next turn no mark, and a tick after it marks again', async ($, on) => {
@@ -5526,83 +5441,4 @@ test('of a herdr tick and his untick read together, the untick wins', async ($, 
         press({ at: at + 1, id: 'o1', verdict: 'untick' });
     await say($, 'go on');
     expect(joined(w.contexts).join('\n')).not.toMatch(/o1 🛎️/);
-});
-
-// r9, dima's 19:09 «warn me»: x-mod-guard keeps the second Herdr app start it refused; the ⚠️ ask joins his board at that
-// call, so he saves his typed draft before his tick lets one start run
-function herdrStart(on: On) {
-    const kept = { value: null as { at: number; command: string } | null };
-    on('state.get', (_$, e, next) =>
-        e.plugin === 'x-mod-guard' && e.key === 'herdrStart'
-            ? { value: { value: kept.value, version: 1 } }
-            : next(e),
-    );
-    return kept;
-}
-async function herdrRowsShown(ui: Board) {
-    return (await ui.findAll({ type: 'Text' })).filter((t) =>
-        /^o\d+: ⚠️ a seat wants a second Herdr window: save your typed text first$/u.test(
-            t.text ?? '',
-        ),
-    ).length;
-}
-
-test('a refused second Herdr start puts its ⚠️ ask on his board at that call', async ($, on) => {
-    const w = world(on);
-    const kept = herdrStart(on);
-    await start($);
-    const ui = await board($);
-    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
-    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
-    await w.clock.advance(1);
-    await ui.redraw();
-    expect(await herdrRowsShown(ui)).toBe(1);
-});
-
-test('a start refused before this call adds no ask, and a second refusal keeps one open ask', async ($, on) => {
-    const w = world(on);
-    const kept = herdrStart(on);
-    await start($);
-    const ui = await board($);
-    kept.value = { at: w.clock.now() - 1, command: 'open -na Herdr' };
-    await $.tool.call({ command: 'ls', tool: 'Bash' });
-    await w.clock.advance(1);
-    await ui.redraw();
-    const stale = await herdrRowsShown(ui);
-    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
-    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
-    await w.clock.advance(1);
-    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
-    await w.clock.advance(1);
-    await ui.redraw();
-    expect([stale, await herdrRowsShown(ui)]).toEqual([0, 1]);
-});
-
-test('orbit switched off adds no Herdr start ask', async ($, on) => {
-    const w = world(on);
-    const kept = herdrStart(on);
-    w.store.set('shown', { 'stash.orbit': false });
-    await start($);
-    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
-    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
-    await w.clock.advance(1);
-    expect([...w.store.keys()].filter((k) => k.startsWith('asks:'))).toEqual(
-        [],
-    );
-});
-
-test('a start after his tick on the ⚠️ ask asks afresh', async ($, on) => {
-    const w = world(on);
-    const kept = herdrStart(on);
-    await start($);
-    const ui = await board($);
-    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
-    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
-    await w.clock.advance(1);
-    await ui.press({ key: 'orbit:accepted:o1' });
-    kept.value = { at: w.clock.now(), command: 'open -na Herdr' };
-    await $.tool.call({ command: 'open -na Herdr', tool: 'Bash' });
-    await w.clock.advance(1);
-    await ui.redraw();
-    expect(await asksShown(ui)).toEqual(['o1', 'o2']);
 });

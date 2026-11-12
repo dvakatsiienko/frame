@@ -31,7 +31,6 @@ for (const mod of readdirSync(HERE).filter((n) => n.startsWith('x-mod-')))
 describe('twin blocks across mods', () => {
     it('finds the twins', () => {
         expect([...twins.keys()].sort()).toEqual([
-            'herdr-start-ask',
             'holder-gone',
             'operator-override-store',
             'proc-of',
