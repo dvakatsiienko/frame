@@ -13,6 +13,7 @@ import {
     measureOrder,
     prevMineIndex,
     rowSizes,
+    unlinkFiles,
 } from './rows.js';
 
 describe('every size the list gets is a real number of pixels', () => {
@@ -202,5 +203,60 @@ describe('a press under a strip over the log is the strip’s, never the row’s
     });
     test('with no strip every press reaches the row', () => {
         expect(isPressUnderStrip(600, 600, 0)).toBe(false);
+    });
+});
+
+describe('a file link in a reply reads as plain text, its 📂 row the one door (FRM-562:W60)', () => {
+    test('the link keeps its label and loses its link look', () => {
+        expect(
+            unlinkFiles('📐 [mock-1.png](file:///Users/dima/a%20b.png) here'),
+        ).toBe('📐 mock-1.png here');
+    });
+
+    test('an autolink keeps its file name', () => {
+        expect(unlinkFiles('see <file:///tmp/x.md>')).toBe('see x.md');
+    });
+
+    test('web links and code stay as they are', () => {
+        const text =
+            '[site](https://x.dev) `[a](file:///tmp/a)`\n```\n[b](file:///tmp/b)\n```\n[c](file:///tmp/c)';
+        expect(unlinkFiles(text)).toBe(
+            '[site](https://x.dev) `[a](file:///tmp/a)`\n```\n[b](file:///tmp/b)\n```\nc',
+        );
+    });
+});
+
+describe("a reply's bare file paths get the same 📂 row (FRM-562, his 15:02 «a dead line»)", () => {
+    test('an absolute path in prose or in backticks', () => {
+        expect(
+            fileLinks(
+                'Shot: /Users/dima/looks/a.png. and `~/.local/state/b.md` here',
+            ),
+        ).toEqual([
+            { label: 'a.png', path: '/Users/dima/looks/a.png' },
+            { label: 'b.md', path: '~/.local/state/b.md' },
+        ]);
+    });
+
+    test('a path a link already names is listed once', () => {
+        expect(fileLinks('[a](file:///tmp/a.png) and /tmp/a.png')).toEqual([
+            { label: 'a', path: '/tmp/a.png' },
+        ]);
+    });
+
+    test('never a code block, a folder, a url, or a bare word', () => {
+        expect(
+            fileLinks(
+                '```\n/tmp/x.png\n```\n/Users/dima/frame and https://x.dev/tmp/y.png and tmp/z.png',
+            ),
+        ).toEqual([]);
+    });
+});
+
+describe('a home path and its full form are one file', () => {
+    test('~ expands before the dedupe', () => {
+        expect(
+            fileLinks('see ~/a/x.png and /Users/dima/a/x.png', '/Users/dima'),
+        ).toEqual([{ label: 'x.png', path: '/Users/dima/a/x.png' }]);
     });
 });

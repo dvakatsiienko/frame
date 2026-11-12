@@ -76,6 +76,43 @@ export function shotsAfter(store, address, at) {
     };
 }
 
+// a picture a reply links, as a small square in its file chip (FRM-562): one file per path, remade on each load
+export const THUMBS_DIR = 'data/x-herdr-chatter/thumbs';
+/** @param {string} path */
+export const thumbName = (path) => {
+    let h = 0;
+    for (const c of path) h = (h * 31 + (c.codePointAt(0) ?? 0)) >>> 0;
+    return `${THUMBS_DIR}/${h.toString(36)}.png`;
+};
+
+/** @param {string} path @returns {Promise<{ rel: string, w: number, h: number } | null>} */
+export async function saveLinkThumb(path) {
+    const rel = thumbName(path);
+    const out = `${appHome()}/${rel}`;
+    await mkdir(`${appHome()}/${THUMBS_DIR}`, { recursive: true });
+    const made = await exec('sips', [
+        '-Z',
+        '96',
+        '-s',
+        'format',
+        'png',
+        path,
+        '--out',
+        out,
+    ]).catch(/** @returns {null} */ () => null);
+    if (made?.code !== 0) return null;
+    const got = await exec('sips', [
+        '-g',
+        'pixelWidth',
+        '-g',
+        'pixelHeight',
+        out,
+    ]).catch(/** @returns {null} */ () => null);
+    const w = Number(/pixelWidth: (\d+)/.exec(got?.stdout ?? '')?.[1]);
+    const h = Number(/pixelHeight: (\d+)/.exec(got?.stdout ?? '')?.[1]);
+    return w && h ? { h, rel, w } : null;
+}
+
 // a dropped picture's preview, scaled down under the app dir (image() reads only there): its path, or null
 /** @param {string} path @param {number} at a stamp no other preview has @returns {Promise<string | null>} */
 export async function saveFileShot(path, at) {
@@ -111,8 +148,12 @@ export async function sweepShots(store) {
     const names = await readdir(`${appHome()}/${SHOTS_DIR}`).catch(
         /** @returns {string[]} */ () => [],
     );
+    // a fresh one is spared: a send queued in Claude Code reads its paths later
+    const fresh = Date.now() - 60 * 60 * 1000;
     await deleteShots(
-        names.map((n) => `${SHOTS_DIR}/${n}`).filter((rel) => !kept.has(rel)),
+        names
+            .map((n) => `${SHOTS_DIR}/${n}`)
+            .filter((rel) => !kept.has(rel) && shotTime(rel) < fresh),
     );
 }
 
