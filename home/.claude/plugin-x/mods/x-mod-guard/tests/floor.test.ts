@@ -193,6 +193,7 @@ const SLIPS = [
         'git stash push -u -- <your paths>',
     ],
     ['git worktree prune', 'git worktree prune', 'ask clio'],
+    ['git worktree prune -v', 'git worktree prune -v', 'ask clio'],
     ['npm --location=global', 'npm install --location=global x', 'pnpm add -g'],
     ['git config user.name', 'git config user.name bot', 'without the flag'],
     ['a command after arithmetic', 'echo $((1<<2))\nrm x', 'trash'],
@@ -219,6 +220,10 @@ const NEAR = [
     ['a host and a port', 'curl http://$HOST:8080/'],
     ['arithmetic with a shift', 'echo $((1<<2))'],
     ['a pip that only lists', 'python3 -m pip list'],
+    // FRM-519 item 17: a dry run only prints what a prune would remove
+    ['a worktree prune dry run', 'git worktree prune -n'],
+    ['a verbose worktree prune dry run', 'git worktree prune --dry-run -v'],
+    ['a joined worktree prune dry run', 'git worktree prune -nv'],
     [
         'a heredoc commit message in a substitution',
         'git commit -F "$(cat <<\'EOF\'\nfix $PATH:x and rm -rf docs\nEOF\n)" -- a.ts',
