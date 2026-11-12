@@ -4,7 +4,7 @@ title: memory by surface
 status: done
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
-updated_date: '2026-11-12T17:00:00Z'
+updated_date: '2026-11-12T17:01:00Z'
 labels:
   - s
 dependencies: []
@@ -88,4 +88,6 @@ close: 18:31 2026-11-12 — W34–W50 ride FRM-576 (main's lane, chunk 2 in prog
 18:32 reopened: closing reds 3+ W-lines the close line does not account for in FRM-576's block; the accounting is FRM-576's (main's lane), handed to main
 
 close: 19:00 2026-11-12 — every W-line moved to FRM-576 (W2–W17, W28, W29, W31–W33 as its W1–W21 on 11-11; W1, W23, W24, W34–W50 as its W22–W41 today); FRM-576 closed Done
+
+close: 19:01 W25, W26, W27, W30 moved to FRM-576 as W42–W45
 <!-- SECTION:NOTES:END -->
