@@ -1,12 +1,12 @@
 // Volume for playSound, which has none. An MP3 keeps each granule's loudness in a "global gain"
 // field (1.5 dB a step), so a quieter copy is the same file with that number lowered in every
-// frame: no decoding, no re-encoding (what mp3gain does). The copies go in data/agents-list/volume/,
+// frame: no decoding, no re-encoding (what mp3gain does). The copies go in data/x-herdr-agents/volume/,
 // made once per file, size and level.
 import { exists, mkdir, readFile, unlink, writeFile } from 'fs/promises';
 import os from 'os';
 import { appHome, exec, playSound } from 'herdr';
 
-const DIR = () => `${appHome()}/data/agents-list/volume`;
+const DIR = () => `${appHome()}/data/x-herdr-agents/volume`;
 
 const KBPS = {
     mpeg1: [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320],

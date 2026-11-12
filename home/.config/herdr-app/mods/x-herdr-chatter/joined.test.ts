@@ -33,7 +33,7 @@ describe('one joiner rule in every mod that draws a name', () => {
     test('the copies are the same file', () => {
         const here = dirname(fileURLToPath(import.meta.url));
         const mine = readFileSync(join(here, 'joined.js'), 'utf8');
-        for (const mod of ['agents-list', 'x-herdr-deck'])
+        for (const mod of ['x-herdr-agents', 'x-herdr-deck'])
             expect(
                 readFileSync(join(here, '..', mod, 'joined.js'), 'utf8'),
             ).toBe(mine);

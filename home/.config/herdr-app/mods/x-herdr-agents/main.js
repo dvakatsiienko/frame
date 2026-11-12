@@ -1077,7 +1077,7 @@ export default class Agents extends View {
                                             openOverlay({
                                                 height: 140,
                                                 kind: 'popup',
-                                                mod: 'agents-list',
+                                                mod: 'x-herdr-agents',
                                                 props: { sortMenu: true },
                                                 width: 200,
                                             }),

@@ -15,11 +15,11 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr-chatter-header-tabs** — the Chat | Terminal switch inside that row
 - **x-herdr-terminal-header** — the head row of the tray (the bottom quick terminal), part of x-herdr-terminal
 - **x-herdr-status** — the status bar along the window's bottom: branch, folder, the open-in commands
-- **x-herdr-deck** — our board mod, the deck: every thread's row, their asks and the lanes' cards
-- **agents-list** — our agents list in the sidebar, each agent by its session name
+- **x-herdr-deck** — our deck mod: every thread's row, their asks and the lanes' cards
+- **x-herdr-agents** — our agents list in the sidebar, each agent by its session name
 - **x-herdr-tabs** — our tab bar above a space's panes, each agent tab by its session name; copied from zoo's `my-tabs` (FRM-567)
 - **draft** — what dima has typed in a box and not yet sent; kept per thread across a reload
-- **ask** — an orbit ask a thread put on his board; a **tick** (🛎️) accepts it, a **replay** (🔁) sends it back with his steer
+- **ask** — an orbit ask a thread put on his deck (and on cc's own board); a **tick** (🛎️) accepts it, a **replay** (🔁) sends it back with his steer
 - **code block** — a fenced block in a reply, drawn with a ⧉ copy button that copies its text
 - **prompt card** — a fenced block under a 📋 ribbon naming a session or an agent; a click puts its prompt in dima's box, unsent
 - **chip** — inline code in the box drawn as one monospace token; the caret skips it, one delete removes it

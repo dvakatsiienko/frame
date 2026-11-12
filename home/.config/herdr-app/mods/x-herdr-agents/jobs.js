@@ -1,6 +1,6 @@
 // The sounds when an agent starts needing dima or finishes, taken over from zoo's jobs (2026-11-10). Off by default:
 // dima turns them on with the header's ♪; his own sound files go in this mod's `sounds/` folder, picked by name in
-// shared `agents-list.sounds` ({ blocked, done }: "chime" or "file:<name>"). Herdr ignores settings.json's sounds (0.1.9),
+// shared `x-herdr-agents.sounds` ({ blocked, done }: "chime" or "file:<name>"). Herdr ignores settings.json's sounds (0.1.9),
 // so they play here; quieter copies are made ahead (volume.js), so a sound plays the moment a status changes.
 
 import { agents, playSound, shared } from 'herdr';
@@ -17,11 +17,11 @@ export function isSoundOn() {
 }
 
 const EVENTS = ['blocked', 'done'];
-const choiceOf = (id) => shared('agents-list.sounds')?.[id] ?? 'chime';
-const volumeOf = (id) => shared('agents-list.volume')?.[id] ?? 100;
+const choiceOf = (id) => shared('x-herdr-agents.sounds')?.[id] ?? 'chime';
+const volumeOf = (id) => shared('x-herdr-agents.volume')?.[id] ?? 100;
 const fileOf = (choice) =>
     choice.startsWith('file:')
-        ? `mods/agents-list/sounds/${choice.slice(5)}`
+        ? `mods/x-herdr-agents/sounds/${choice.slice(5)}`
         : null;
 
 export function startJobs(cx) {

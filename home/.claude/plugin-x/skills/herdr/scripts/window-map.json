@@ -40,7 +40,7 @@
             "kind": "ours",
             "n": 3,
             "name": "x-herdr-agents",
-            "today": "agents-list",
+            "today": "x-herdr-agents",
             "what": "every agent, grouped by state"
         },
         {
