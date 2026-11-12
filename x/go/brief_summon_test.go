@@ -4,11 +4,17 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
+	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/creack/pty"
 )
 
 // summonWorld is a frame root holding the trial script and one live codie trial, a home whose ~/.claude.json
@@ -46,9 +52,12 @@ func (w summonWorld) brief(t *testing.T, text string, stamped bool) string {
 	return path
 }
 
+// the summon reads its ticket's project from linear for the display's area word: a fake answers `cli`
 func (w summonWorld) summon(t *testing.T, command string, env ...string) ran {
 	t.Helper()
-	return xIn(t, w.repo, asCaller(t, append([]string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}, env...), "🦉 clio"), "brief", "summon", command)
+	server := newFakeLinear(t, func(gqlCall) string { return `{"data":{"issue":{"project":{"name":"cli"}}}}` })
+	base := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + server.URL}
+	return xIn(t, w.repo, asCaller(t, append(base, env...), "coordinator"), "brief", "summon", command)
 }
 
 // a bytes checkout is known by its essentials script; this one fails every app
@@ -208,13 +217,14 @@ func withSessionID(command string, got ran) string {
 	return strings.Replace(named, "claude ", "claude --session-id "+sid+" ", 1)
 }
 
-// exit 27: the registry name a summon starts with is the display x thread show draws from the same record
+// exit 27: the registry name a summon starts with is the display x thread show draws from the same record; FRM-579
+// exit 5: its area is the ticket's project (cli), never the lane name's first word (thread)
 func TestBriefSummonNamesTheThreadByItsRecord(t *testing.T) {
 	t.Parallel()
 	w := newSummonWorld(t)
 	store := filepath.Join(t.TempDir(), "threads.json")
 	env := []string{"X_THREADS=" + store, "X_SESSIONS=" + t.TempDir()}
-	brief := w.brief(t, goodBrief+"\nthe spec: /f/.scratch/cli-lane-8/spec.md\n", true)
+	brief := w.brief(t, goodBrief+"\nthe spec: /f/.scratch/thread-records/spec.md\n", true)
 
 	got := w.summon(t, codieArgv(w.repo, brief), env...)
 	sid, _ := got.data["sessionId"].(string)
@@ -287,7 +297,7 @@ func TestBriefSummonWritesTheThreadRecordUnderItsSessionID(t *testing.T) {
 	if ids[0] == ids[1] {
 		t.Errorf("a second summon of the same line reused %s", ids[0])
 	}
-	want := map[string]string{ids[0]: "🌗 🔧 cli | FRM-1", ids[1]: "🌗 🔧 cli | FRM-1", ids[2]: "🔎 cli | FRM-1"}
+	want := map[string]string{ids[0]: "🌗 🔧 cli | FRM-1", ids[1]: "🌗 🔧 cli | FRM-1", ids[2]: "🌗 🔎 cli | FRM-1"}
 	shown := map[string]string{}
 	threads, _ := list.data["threads"].([]any)
 	for _, th := range threads {
@@ -297,5 +307,387 @@ func TestBriefSummonWritesTheThreadRecordUnderItsSessionID(t *testing.T) {
 	}
 	if list.code != 0 || len(shown) != 3 || shown[ids[0]] != want[ids[0]] || shown[ids[1]] != want[ids[1]] || shown[ids[2]] != want[ids[2]] {
 		t.Errorf("thread list shows %v, want %v:\n%s", shown, want, list.stdout)
+	}
+}
+
+// FRM-579 exit 1: a standing role starts through summon, its record drawing the pretty name from roles.json
+func (w summonWorld) summonStanding(t *testing.T, caller string, env []string, args ...string) ran {
+	t.Helper()
+	base := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}
+	return xIn(t, w.repo, asCaller(t, append(base, env...), caller), append([]string{"brief", "summon"}, args...)...)
+}
+
+func paneArgv(w summonWorld) string {
+	return "hc run --bg --no-parent --no-notify --name boot --cwd " + w.repo + " -- claude -n 'any name' --model opus 'boot'"
+}
+
+func TestBriefSummonStartsEachStandingRoleUnderItsPrettyName(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ role, want string }{
+		{"coordinator", "🦉 clio"},
+		{"wing:3", "🦉🪽 clio: wing 3"},
+		{"adviser", "🐦‍⬛ crow"},
+		{"copyist", "🎀 helga"},
+	} {
+		t.Run(c.role, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			env := []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + t.TempDir()}
+
+			got := w.summonStanding(t, "coordinator", env, "--role", c.role, paneArgv(w))
+			sid, _ := got.data["sessionId"].(string)
+			show := xIn(t, t.TempDir(), env, "thread", "show", sid)
+
+			argv, _ := got.data["argv"].(string)
+			if got.code != 0 || show.code != 0 || show.data["display"] != c.want {
+				t.Fatalf("exit %d/%d, x thread show draws %v, want %q:\n%s", got.code, show.code, show.data["display"], c.want, got.stdout)
+			}
+			if !strings.Contains(argv, "-- claude --session-id "+sid+" -n '"+c.want+"' ") {
+				t.Errorf("argv %q, want the minted id and the pretty name", argv)
+			}
+		})
+	}
+}
+
+// cc's --bg ignores --session-id: the door starts it, reads its job's session id back, and records it through --session
+func TestBriefSummonRecordsABgThreadByItsSessionID(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	sessions := t.TempDir()
+	write(t, filepath.Join(sessions, "crow.json"), fmt.Sprintf(`{"sessionId":"sid-crow","pid":%d,"kind":"bg","jobId":"sid"}`, os.Getpid()))
+	env := []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + sessions}
+
+	bg := w.summonStanding(t, "coordinator", env, "--role", "adviser", "cd "+w.repo+" && claude --bg -n 'any name' 'boot'")
+	got := w.summonStanding(t, "coordinator", env, "--role", "adviser", "--session", "sid-crow")
+	show := xIn(t, t.TempDir(), env, "thread", "show", "sid-crow")
+
+	if bg.code != 1 || !strings.Contains(bg.stdout, "--session <sid>") {
+		t.Errorf("a --bg argv: exit %d, want a refusal naming the --session form:\n%s", bg.code, bg.stdout)
+	}
+	if got.code != 0 || show.code != 0 || show.data["display"] != "🐦‍⬛ crow" || show.data["role"] != "adviser" {
+		t.Fatalf("exit %d/%d, x thread show %v:\n%s", got.code, show.code, show.data, got.stdout)
+	}
+}
+
+// the caller gate: only dima's terminal or a coordinator's record gives a standing role; a record-less session (a fork)
+// or a member gets none, by either form
+func TestBriefSummonGivesAStandingRoleOnlyFromTheCoordinator(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ name, caller string }{{"a session with no record", ""}, {"a codie", "codie"}, {"a sixth sense", "sixth-sense"}} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d}`, os.Getpid()))
+			// the real clio's record sits in the store: another session's role is never the caller's
+			write(t, store, `{"v":1,"threads":[{"sessionId":"sid-real-clio","role":"coordinator"}]}`)
+			env := []string{"X_THREADS=" + store, "X_SESSIONS=" + sessions}
+
+			pane := w.summonStanding(t, c.caller, env, "--role", "coordinator", paneArgv(w))
+			record := w.summonStanding(t, c.caller, env, "--role", "wing:1", "--session", "sid-fork")
+
+			written, _ := readThreadStore(store)
+			for _, got := range []ran{pane, record} {
+				if got.code != 1 || !strings.Contains(got.stdout, "only the coordinator or dima") {
+					t.Errorf("exit %d, want the coordinator's refusal:\n%s", got.code, got.stdout)
+				}
+			}
+			if len(written.Threads) != 1 {
+				t.Errorf("records %+v, want only the real clio's", written.Threads)
+			}
+		})
+	}
+}
+
+// forks (dima's tick, 14:56): on his word the coordinator records a fork as a wing; the fork's own call gets nothing
+func TestBriefSummonRecordsAForkAsAWingOnlyFromTheCoordinator(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	env := []string{"X_THREADS=" + store, "X_SESSIONS=" + sessions}
+	// the fork is x's caller, its registry file on the test's pid; no record, so the gate reads no role
+	write(t, filepath.Join(sessions, strconv.Itoa(os.Getpid())+".json"), `{"sessionId":"sid-fork"}`)
+	self := xIn(t, w.repo, append(env, "HOME="+w.home), "brief", "summon", "--role", "wing:2", "--session", "sid-fork")
+	write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d}`, os.Getpid()))
+
+	byClio := w.summonStanding(t, "coordinator", env, "--role", "wing:2", "--session", "sid-fork")
+	show := xIn(t, t.TempDir(), env, "thread", "show", "sid-fork")
+
+	if self.code != 1 || !strings.Contains(self.stdout, "only the coordinator or dima") {
+		t.Errorf("the fork's own call: exit %d, want the coordinator's refusal:\n%s", self.code, self.stdout)
+	}
+	if byClio.code != 0 || show.data["display"] != "🦉🪽 clio: wing 2" {
+		t.Fatalf("exit %d, x thread show %v, want wing 2:\n%s", byClio.code, show.data, byClio.stdout)
+	}
+}
+
+// a /clear mints a new id in the same process: the coordinator's record still names her by her pid and start
+func TestBriefSummonReadsTheCoordinatorAcrossAClear(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	sessions, callers := t.TempDir(), filepath.Join(t.TempDir(), "caller-threads.json")
+	write(t, filepath.Join(sessions, strconv.Itoa(os.Getpid())+".json"), `{"sessionId":"sid-after-clear"}`)
+	write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d}`, os.Getpid()))
+	write(t, callers, fmt.Sprintf(`{"v":1,"threads":[{"sessionId":"sid-before-clear","pid":%d,"procStart":%q,"role":"coordinator"}]}`, os.Getpid(), ownProcStart(t)))
+	env := []string{"HOME=" + w.home, "X_SESSIONS=" + sessions, "X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_CALLER_THREADS=" + callers}
+
+	got := xIn(t, w.repo, env, "brief", "summon", "--role", "wing:1", "--session", "sid-fork")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d, want the coordinator found by her pid and start:\n%s", got.code, got.stdout)
+	}
+}
+
+// a torn registry file on x's nearest claude stands as a session with no record: the walk never reaches clio above it
+func TestBriefSummonReadsATornRegistryFileAsNoCoordinator(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	sessions, callers := t.TempDir(), filepath.Join(t.TempDir(), "caller-threads.json")
+	write(t, filepath.Join(sessions, strconv.Itoa(os.Getpid())+".json"), `{"sessionId":"sid-mem`)
+	write(t, filepath.Join(sessions, strconv.Itoa(os.Getppid())+".json"), `{"sessionId":"sid-clio"}`)
+	write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d}`, os.Getpid()))
+	write(t, callers, `{"v":1,"threads":[{"sessionId":"sid-clio","role":"coordinator"}]}`)
+	env := []string{"HOME=" + w.home, "X_SESSIONS=" + sessions, "X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_CALLER_THREADS=" + callers}
+
+	got := xIn(t, w.repo, env, "brief", "summon", "--role", "wing:1", "--session", "sid-fork")
+
+	if got.code != 1 || !strings.Contains(got.stdout, "only the coordinator or dima") {
+		t.Fatalf("exit %d, want the coordinator's refusal:\n%s", got.code, got.stdout)
+	}
+}
+
+// round 1 P0: a line's X_SESSIONS or X_THREADS never aims a real build's refresh at another registry or store; under
+// X_TEST a real build reads none at all
+func TestAFixtureEnvNeverMovesARealBuildsStore(t *testing.T) {
+	t.Parallel()
+	real := storePathOf(false, "/tmp/forged", false, ".claude/sessions")
+	underTest := storePathOf(false, "/tmp/forged", true, ".claude/sessions")
+	if real == "/tmp/forged" || !strings.HasSuffix(real, "/.claude/sessions") || underTest != "" {
+		t.Errorf("a real build reads %q, under X_TEST %q: want the real registry, then none", real, underTest)
+	}
+}
+
+// exit 4's tty row on x's actor: a member under a pty with its agent env stripped still signs as codie, never as dima
+func TestLinearUnderScriptActsAsTheMemberAboveIt(t *testing.T) {
+	t.Parallel()
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"commentCreate":{"success":true,"comment":{"url":"https://linear.app/x-com/issue/FRM-1#comment-1"}}}}`
+	})
+	file := filepath.Join(t.TempDir(), "c.md")
+	write(t, file, "done\n")
+	env := append(asCaller(t, nil, "codie"), "X_KEYS="+linearKeys(t), "X_LINEAR_URL="+server.URL)
+
+	got := scriptX(t, env, "linear", "comment", "FRM-1", "--body-file", file)
+
+	if got.code != 0 || !strings.Contains(got.out, `"actor":"codie"`) {
+		t.Fatalf("exit %d, want the codie actor:\n%s", got.code, got.out)
+	}
+}
+
+// the backfill: dima's own terminal, no claude above x, records a live thread by the session id he read
+func TestBriefSummonFromDimasTerminalRecordsALiveSession(t *testing.T) {
+	t.Parallel()
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
+	env := []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}
+
+	got := scriptX(t, env, "brief", "summon", "--role", "coordinator", "--session", "sid-other")
+
+	written, _ := readThreadStore(store)
+	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Role != "coordinator" {
+		t.Fatalf("exit %d, records %+v, want sid-other recorded as the coordinator:\n%s", got.code, written.Threads, got.out)
+	}
+}
+
+// exit 4's tty row: a member that strips its agent env and wraps x in a pty still runs under its own registered thread
+func TestBriefSummonUnderScriptReadsTheMemberAboveIt(t *testing.T) {
+	t.Parallel()
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
+	env := asCaller(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}, "codie")
+
+	got := scriptX(t, env, "brief", "summon", "--role", "coordinator", "--session", "sid-other")
+
+	written, _ := readThreadStore(store)
+	if got.code != 1 || !strings.Contains(got.out, "only the coordinator or dima") || len(written.Threads) != 0 {
+		t.Fatalf("exit %d, records %+v, want the coordinator's refusal and no record:\n%s", got.code, written.Threads, got.out)
+	}
+}
+
+// exit 7, the cutover: a clio started before the merge has no record, so her coordinator-only call refuses until dima's
+// terminal backfills her by the session id he read; then it passes
+func TestTheBackfillLetsAClioStartedBeforeTheMergeSummonAgain(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	brief := w.brief(t, goodBrief, true)
+	// her registry as her own process sees it (x's parent is her), and as dima's terminal sees it (no claude above x)
+	hers, dimas, store := t.TempDir(), t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	live := fmt.Sprintf(`{"sessionId":"sid-clio","pid":%d}`, os.Getpid())
+	write(t, filepath.Join(hers, strconv.Itoa(os.Getpid())+".json"), live)
+	write(t, filepath.Join(dimas, "clio.json"), live)
+	env := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store}
+	asClio := func() ran {
+		return xIn(t, w.repo, append(env, "X_SESSIONS="+hers), "brief", "summon", codieArgv(w.repo, brief))
+	}
+
+	before := asClio()
+	backfill := scriptX(t, append(env, "X_SESSIONS="+dimas), "brief", "summon", "--role", "coordinator", "--session", "sid-clio")
+	after := asClio()
+
+	if before.code != 1 || backfill.code != 0 || after.code != 0 {
+		t.Fatalf("before %d, backfill %d, after %d: want 1, 0, 0:\n%s\n%s", before.code, backfill.code, after.code, backfill.out, after.stdout)
+	}
+}
+
+// exit 5: a rename on dima's word lands in the record, x thread show draws it, and a later refresh keeps it; a member
+// renames nothing
+func TestThreadRenameSticksAcrossARefresh(t *testing.T) {
+	t.Parallel()
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	write(t, filepath.Join(sessions, "w.json"), fmt.Sprintf(`{"sessionId":"sid-wing","pid":%d}`, os.Getpid()))
+	write(t, store, `{"v":1,"threads":[{"sessionId":"sid-wing","role":"wing","wing":2}]}`)
+	env := []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}
+
+	byCodie := xIn(t, t.TempDir(), asCaller(t, env, "codie"), "thread", "rename", "sid-wing", "🌌 nova")
+	twoLines := xIn(t, t.TempDir(), asCaller(t, env, "coordinator"), "thread", "rename", "sid-wing", "🌌 nova\nship it")
+	byClio := xIn(t, t.TempDir(), asCaller(t, env, "coordinator"), "thread", "rename", "sid-wing", "🌌 nova")
+	_ = xIn(t, t.TempDir(), env, "thread", "list")
+	show := xIn(t, t.TempDir(), env, "thread", "show", "sid-wing")
+
+	if twoLines.code != 2 {
+		t.Errorf("a name with a newline: exit %d, want a usage refusal:\n%s", twoLines.code, twoLines.stdout)
+	}
+	if byCodie.code != 1 || !strings.Contains(byCodie.stdout, "only the coordinator or dima") {
+		t.Errorf("a codie's rename: exit %d, want the coordinator's refusal:\n%s", byCodie.code, byCodie.stdout)
+	}
+	if byClio.code != 0 || show.data["display"] != "🌌 nova" || show.data["role"] != "wing" || show.data["roleName"] != "🦉🪽 clio: wing 2" {
+		t.Fatalf("exit %d, after a refresh x thread show %v, want «🌌 nova», still a wing, its role's name kept:\n%s", byClio.code, show.data, byClio.stdout)
+	}
+}
+
+// exit 5: a role table line changed, every display follows, no reader's power moves
+func TestARoleTableRenameMovesTheDisplayNotThePower(t *testing.T) {
+	t.Parallel()
+	table := slices.Clone(roles)
+	i := slices.IndexFunc(table, func(r role) bool { return r.ID == "coordinator" })
+	table[i].Display = "🦊 fox"
+	if got := displayFrom(table, thread{SessionID: "s", Role: "coordinator"}); got != "🦊 fox" {
+		t.Errorf("display %q, want the table's new line", got)
+	}
+	if !roleIn(table, "coordinator").IsCoordinator || roleIn(table, "codie").IsCoordinator {
+		t.Error("a display rename moved who coordinates")
+	}
+}
+
+// round 2: a herdr terminal with no claude above x looks like dima's own, a member's `hc run` pane too; it gets no
+// coordinator or wing record, while a sidecar's still lands
+func TestBriefSummonGivesNoCoordinatorRecordToABareHerdrPane(t *testing.T) {
+	t.Parallel()
+	// dima, 15:47: the pane fallback lets his layout start clio only while no coordinator record is live; a name-seated
+	// clio is no record, and a wing's record is no coordinator's, so main's start still passes beside a live wing
+	const (
+		clio     = `{"sessionId":"sid-clio","role":"coordinator"}`
+		fallback = `{"sessionId":"sid-clio","role":"coordinator","fallback":true}`
+		wing     = `{"sessionId":"sid-wing","role":"wing","wing":1}`
+	)
+	for _, c := range []struct {
+		role, record string
+		code         int
+	}{{"coordinator", clio, 1}, {"wing:2", clio, 1}, {"adviser", clio, 0}, {"coordinator", fallback, 0}, {"coordinator", wing, 0}} {
+		t.Run(fmt.Sprint(c.role, c.record), func(t *testing.T) {
+			t.Parallel()
+			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
+			write(t, store, `{"v":1,"threads":[`+c.record+`]}`)
+
+			got := scriptX(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store, "HC_TERMINAL_ID=t9"}, "brief", "summon", "--role", c.role, "--session", "sid-other")
+
+			if got.code != c.code {
+				t.Fatalf("exit %d, want %d:\n%s", got.code, c.code, got.out)
+			}
+		})
+	}
+}
+
+// dima, 15:47: with no live coordinator record, today's name check still seats clio, marked fallback; one record
+// anywhere and the name seats nothing
+func TestTheNameFallbackSeatsClioOnlyWhileNoCoordinatorRecordLives(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, records string
+		want          any
+	}{
+		{"no record anywhere", `{"v":1,"threads":[]}`, "coordinator"},
+		{"a real clio's record lives", fmt.Sprintf(`{"v":1,"threads":[{"sessionId":"sid-real","pid":%d,"role":"coordinator"}]}`, os.Getpid()), nil},
+		{"an earlier refresh's fallback row beside a real record", fmt.Sprintf(`{"v":1,"threads":[{"sessionId":"sid-fork","pid":%d,"role":"coordinator","fallback":true},{"sessionId":"sid-real","pid":%d,"role":"coordinator"}]}`, os.Getpid(), os.Getpid()), nil},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d,"name":"🦉 clio"}`, os.Getpid()))
+			write(t, filepath.Join(sessions, "real.json"), fmt.Sprintf(`{"sessionId":"sid-real","pid":%d,"name":"any"}`, os.Getpid()))
+			write(t, store, c.records)
+			env := []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}
+
+			show := xIn(t, t.TempDir(), env, "thread", "show", "sid-fork")
+
+			if show.data["role"] != c.want {
+				t.Fatalf("role %v, want %v:\n%s", show.data["role"], c.want, show.stdout)
+			}
+		})
+	}
+}
+
+type scripted struct {
+	code int
+	out  string
+}
+
+// x on a pty, the agent env stripped: what a member's `env -u CLAUDECODE -u AI_AGENT script -q /dev/null x …` runs
+// (script(1) itself takes other flags on linux, so the test opens the pty)
+func scriptX(t *testing.T, env []string, args ...string) scripted {
+	t.Helper()
+	c := exec.Command(xbin, append(args, "--json")...)
+	c.Env = append(append(cleanEnv(), "X_TEST=1", "HC_TERMINAL_ID="), env...)
+	ptmx, err := pty.Start(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ptmx.Close()
+	out, _ := io.ReadAll(ptmx)
+	return scripted{exitOf(c.Wait()), string(out)}
+}
+
+func TestBriefSummonRoleFlagTakesOnlyAStandingRole(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	for _, args := range [][]string{
+		{"--role", "bogus", paneArgv(w)},
+		{"--role", "codie", paneArgv(w)},
+		{"--role", "wing", paneArgv(w)},
+		{"--role", "wing:0", paneArgv(w)},
+		{"--role", "adviser:2", paneArgv(w)},
+		{"--session", "sid-1"},
+		{"--role", "adviser", "--session", "sid-1", paneArgv(w)},
+	} {
+		if got := w.summonStanding(t, "coordinator", nil, args...); got.code != 2 {
+			t.Errorf("%v: exit %d, want a usage refusal:\n%s", args, got.code, got.stdout)
+		}
+	}
+}
+
+// FRM-579 security review: a linear project name reaches the printed argv, so a shell word in it draws no area
+func TestAProjectNameWithShellWordsDrawsNoArea(t *testing.T) {
+	t.Parallel()
+	for name, want := range map[string]string{
+		"cli lane":               "cli",
+		"Mods":                   "mods",
+		"x';touch${IFS}pwned;'#": "",
+		"Dima's Lab":             "",
+		"$(id)":                  "",
+	} {
+		if got := projectArea(name); got != want {
+			t.Errorf("projectArea(%q) = %q, want %q", name, got, want)
+		}
 	}
 }

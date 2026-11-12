@@ -693,10 +693,23 @@
         {
             "args": [
                 {
-                    "description": "the summon command as it would run: cd <home> && claude --bg -n '<name>' … \"$(cat <brief>)\" --remote-control",
+                    "description": "the summon command as it would run: cd <home> && claude --bg -n '<name>' … \"$(cat <brief>)\" --remote-control; none with --session",
+                    "isOptional": true,
                     "name": "command"
                 }
             ],
+            "flags": {
+                "role": {
+                    "description": "a standing role, for a thread no lane brief starts: coordinator, wing:<n>, adviser or copyist",
+                    "type": "string",
+                    "value": "role"
+                },
+                "session": {
+                    "description": "record a thread already running under this session id, with --role: a --bg start after cc printed its job, or the cutover's backfill",
+                    "type": "string",
+                    "value": "sid"
+                }
+            },
             "name": "brief summon",
             "purpose": "check a summon command against the mechanical preflight steps and print its argv; never launches a session",
             "steps": [
@@ -716,7 +729,8 @@
                 "script/test-drive-list.ts --spawn-hook — the live trials that fit, run",
                 "ps — the age of each claude bg-spare, read",
                 "a bytes home's script/apps-essentials.ts --app <app> — the app's essentials, run",
-                "~/.claude/shelf/threads.json — the thread record under the minted session id, written"
+                "~/.claude/sessions/ — the registry, read for --session and the caller's session",
+                "~/.claude/shelf/threads.json — the thread record under the minted or --session id, written"
             ]
         },
         {
@@ -1185,6 +1199,25 @@
             "touches": [
                 "~/.claude/sessions/ — the registry, read",
                 "~/.claude/shelf/threads.json — the store, rewritten ($X_THREADS in tests)"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the session id of a thread with a record",
+                    "name": "id"
+                },
+                {
+                    "description": "the name it draws from now on, quoted",
+                    "name": "name"
+                }
+            ],
+            "name": "thread rename",
+            "needsApply": false,
+            "purpose": "rename a recorded thread on dima's word: its record keeps the name, and its herdr terminal gets the /rename",
+            "touches": [
+                "~/.claude/shelf/threads.json — the record's title, written ($X_THREADS in tests)",
+                "hc — the thread's herdr terminal, sent /rename when idle"
             ]
         },
         {

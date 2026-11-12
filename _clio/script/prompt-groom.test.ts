@@ -678,10 +678,10 @@ describe('prompt-groom oN (FRM-451)', () => {
         try {
             const grooms = join(root, 'grooms');
             mkdirSync(join(root, 'bin'));
-            // helga is stubbed up, so nothing is spawned
+            // helga is stubbed up by her record, so nothing is spawned
             writeFileSync(
-                join(root, 'bin', 'claude'),
-                `#!/bin/sh\necho '[{"name":"helga","status":"idle"}]'\n`,
+                join(root, 'bin', 'x'),
+                `#!/bin/sh\necho '{"data":{"threads":[{"role":"copyist"}]}}'\n`,
                 { mode: 0o755 },
             );
             const transcript = join(root, 't.jsonl');
@@ -1077,4 +1077,32 @@ describe('a groom from another seat', () => {
         vi.unstubAllEnvs();
         expect(groom.groomedOnDisk('2026-11-09', '14:12', '')).toBe(true);
     });
+});
+
+describe('helga is up by her record (FRM-579)', () => {
+    test('a thread named «🎀 helga» with no record is not helga', async () => {
+        const { isCopyistLive } = await import('./prompt-groom.ts');
+        expect([
+            isCopyistLive([{ name: '🎀 helga' }]),
+            isCopyistLive([{ name: 'any name', role: 'copyist' }]),
+        ]).toEqual([false, true]);
+    });
+});
+
+test('a --bg helga job maps to its own session id, never the newest file (FRM-579)', async () => {
+    const { sessionOfJob } = await import('./prompt-groom.ts');
+    const dir = mkdtempSync(join(tmpdir(), 'helga-jobs-'));
+    writeFileSync(
+        join(dir, '11.json'),
+        JSON.stringify({ jobId: 'aaaa1111', sessionId: 'sid-helga' }),
+    );
+    writeFileSync(
+        join(dir, '22.json'),
+        JSON.stringify({ jobId: 'bbbb2222', sessionId: 'sid-other' }),
+    );
+    expect([
+        sessionOfJob('aaaa1111', dir),
+        sessionOfJob('cccc3333', dir),
+    ]).toEqual(['sid-helga', undefined]);
+    rmSync(dir, { recursive: true });
 });

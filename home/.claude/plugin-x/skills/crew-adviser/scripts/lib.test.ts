@@ -42,6 +42,7 @@ import {
     readTurn,
     receiptsOf,
     resolveLeaves,
+    sessionOfJob,
     setHot,
     stashModOf,
     takesSocketLines,
@@ -746,39 +747,38 @@ describe('planNotes', () => {
     });
 });
 
+// FRM-579: x's records, as `x thread list` answers them, name the thread; a name with no record names none
 describe('clioThreadOf', () => {
-    const sessions = mkdtempSync(join(tmpdir(), 'crow-sessions-'));
-    const entries = {
-        '3356': { name: '☕️ 🔧 coder: mods', sessionId: 'bbb' },
-        '6020': { name: '🦉 clio', sessionId: 'aaa' },
-        '7001': { name: '🦉🪽 clio: wing 12', sessionId: 'ccc' },
-        '7002': { name: '🦉 clio (fork)', sessionId: 'ddd' },
-    };
-    for (const [pid, entry] of Object.entries(entries))
-        writeFileSync(join(sessions, `${pid}.json`), JSON.stringify(entry));
+    const threads = [
+        { display: '🌗 🔧 mods | FRM-1', role: 'codie', sessionId: 'bbb' },
+        { display: '🦉 clio', role: 'coordinator', sessionId: 'aaa' },
+        {
+            display: '🦉🪽 clio: wing 12',
+            role: 'wing',
+            sessionId: 'ccc',
+            wing: 12,
+        },
+        // a record-less thread whose drawn name reads as clio's
+        { display: '🦉 clio', sessionId: 'ddd' },
+    ];
 
-    test('the session named clio is the main thread', () => {
-        expect(clioThreadOf('/p/aaa.jsonl', sessions, '/no/thread')).toEqual({
+    test("the coordinator's record is the main thread", () => {
+        expect(clioThreadOf('/p/aaa.jsonl', threads)).toEqual({
             id: 'main',
             name: '🦉 clio',
         });
     });
 
     test('any wing is its own thread, read from its number', () => {
-        expect(clioThreadOf('/p/ccc.jsonl', sessions)?.id).toBe('wing-12');
+        expect(clioThreadOf('/p/ccc.jsonl', threads)?.id).toBe('wing-12');
     });
 
     test('a coder transcript under the clio dir is no thread', () => {
-        expect(clioThreadOf('/p/bbb.jsonl', sessions)).toBeUndefined();
+        expect(clioThreadOf('/p/bbb.jsonl', threads)).toBeUndefined();
     });
 
-    test("a fork still carrying main's name is no thread until it takes a wing number", () => {
-        const thread = join(sessions, 'main-session');
-        writeFileSync(thread, 'pid=1\nsession=aaa\n');
-        expect([
-            clioThreadOf('/p/aaa.jsonl', sessions, thread)?.id,
-            clioThreadOf('/p/ddd.jsonl', sessions, thread),
-        ]).toEqual(['main', undefined]);
+    test("a fork carrying main's name holds no record, so it is no thread", () => {
+        expect(clioThreadOf('/p/ddd.jsonl', threads)).toBeUndefined();
     });
 });
 
@@ -1297,4 +1297,21 @@ describe('takesSocketLines', () => {
     test('a desktop tab does not', () => {
         expect(takesSocketLines({ entrypoint: 'claude-desktop' })).toBe(false);
     });
+});
+
+// FRM-579: a --bg crow is recorded by the session its own job started, never the newest registry file
+test('a --bg job maps to its own session id, two starts at once never swap', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'crow-jobs-'));
+    writeFileSync(
+        join(dir, '11.json'),
+        JSON.stringify({ jobId: 'aaaa1111', sessionId: 'sid-crow' }),
+    );
+    writeFileSync(
+        join(dir, '22.json'),
+        JSON.stringify({ jobId: 'bbbb2222', sessionId: 'sid-other' }),
+    );
+    expect([
+        sessionOfJob('aaaa1111', dir),
+        sessionOfJob('cccc3333', dir),
+    ]).toEqual(['sid-crow', undefined]);
 });

@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
+
 // FRM-426 exit 9: while a clio boot is open, start_session's result carries «the boot continues; the board ends the
 // turn»; after the board printed, or in any other session, nothing lands
 const SID = 'b0b0b0b0-boot';
@@ -36,7 +38,13 @@ function world(on: On, name = '🦉 clio') {
     on('fs.read', (_$, e) =>
         e.path === `/home/.claude/sessions/${PID}.json`
             ? { value: JSON.stringify({ name, pid: PID }) }
-            : { deny: 'no such file' },
+            : e.path === THREADS_FILE
+              ? {
+                    value: threadsFile([
+                        { pid: PID, sessionId: SID, ...recordOf(name) },
+                    ]),
+                }
+              : { deny: 'no such file' },
     );
     on('fs.list', () => ({ value: [] }));
     on('ui.log', () => ({ value: undefined }));
