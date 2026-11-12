@@ -255,7 +255,19 @@ describe('test-commit', () => {
             const [first, second] = got.calls.split('\n');
             expect(first).toBe(`${related}|a.ts`);
             expect(second).toMatch(/vitest\|run\|.*skill-size\.test\.ts/);
-            expect(got.fields[1]).toBe('related+memory');
+            expect(got.fields[1]).toBe('related');
+        });
+
+        test('a memory file renamed into the pocket beside code still runs the memory tests', () => {
+            const context = staged({}, { [skill]: 'a skill\n', 'a.ts': 'a\n' });
+            write(context.repo, '_clio/pocket/archive/skill.md', 'a skill\n');
+            context.git('rm', '-q', skill);
+            write(context.repo, 'a.ts', 'b\n');
+            context.git('add', '-A');
+            const got = runGate(context, 'main');
+            expect(got.calls.split('\n')[1]).toMatch(
+                /vitest\|run\|.*skill-size\.test\.ts/,
+            );
         });
 
         test('a script under skills is code, never memory', () => {

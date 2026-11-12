@@ -51,6 +51,8 @@ const pullKept = 14 * 24 * time.Hour
 
 func savePull(id string, p pull) error {
 	pulls := readPulls()
+	// the pull being saved is live, however old its file's bytes
+	delete(pulls, pullKey(id))
 	prunePulls(pulls, time.Now())
 	pulls[pullKey(id)] = p
 	raw, _ := json.MarshalIndent(pulls, "", "  ")
@@ -75,9 +77,10 @@ func prunePulls(pulls map[string]pull, now time.Time) {
 			continue
 		}
 		delete(pulls, key)
-		if err == nil && strings.HasPrefix(p.File, bodies) {
-			_ = os.Remove(p.File)
-			_ = os.Remove(filepath.Dir(p.File))
+		// a `..` never walks out of the bodies dir
+		if file := filepath.Clean(p.File); err == nil && strings.HasPrefix(file, bodies) {
+			_ = os.Remove(file)
+			_ = os.Remove(filepath.Dir(file))
 		}
 	}
 }
@@ -216,7 +219,11 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 	if cache := pullFile(id); cache != source {
 		_ = os.WriteFile(cache, text, 0o644)
 	}
-	_ = savePull(id, pull{source, result.Issue.UpdatedAt, max(largest, len(text))})
+	kept := source
+	if cache := pullFile(id); cache != source && exists(cache) {
+		kept = cache
+	}
+	_ = savePull(id, pull{kept, result.Issue.UpdatedAt, max(largest, len(text))})
 	r.Board(ui.ok.Render("✓ ") + ui.fg.Render("wrote "+id+"'s body as "+actor))
 	return ordered{{"actor", actor}, {"id", id}, {"updatedAt", result.Issue.UpdatedAt}}, nil
 }

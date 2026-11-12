@@ -219,6 +219,12 @@ func TestBodySetRefreshesThePulledFile(t *testing.T) {
 			t.Errorf("the pull's file holds %q after the set, want %q", held, body)
 		}
 	}
+	// the record names the pull's own file, so the prune can reach it
+	var records map[string]pull
+	_ = json.Unmarshal([]byte(read(t, filepath.Join(state, "linear", "pulls.json"))), &records)
+	if records["FRM-1"].File != file {
+		t.Errorf("the record names %q, want the pull's own file %q", records["FRM-1"].File, file)
+	}
 }
 
 // FRM-572: a key and a dir per session piled up in pulls.json with nothing pruning them
@@ -254,6 +260,28 @@ func TestBodyPullPrunesStaleRecords(t *testing.T) {
 	}
 	if exists(stale) || !exists(outside) || !exists(fresh) {
 		t.Errorf("stale body kept %v, the caller's own file kept %v, the fresh body kept %v", exists(stale), exists(outside), exists(fresh))
+	}
+}
+
+// coderabbit on #171: a save of a record whose old file is past the prune age keeps that file
+func TestSavePullNeverPrunesTheRecordItSaves(t *testing.T) {
+	// serial: t.Setenv moves the state dir for this process
+	state := t.TempDir()
+	t.Setenv("X_STATE", state)
+	file := filepath.Join(state, "linear", "bodies", "s-1", "FRM-1.md")
+	write(t, file, "x")
+	if err := savePull("FRM-1", pull{File: file}); err != nil {
+		t.Fatal(err)
+	}
+	old := time.Now().Add(-20 * 24 * time.Hour)
+	if err := os.Chtimes(file, old, old); err != nil {
+		t.Fatal(err)
+	}
+	if err := savePull("FRM-1", pull{File: file}); err != nil {
+		t.Fatal(err)
+	}
+	if !exists(file) {
+		t.Error("a save pruned the file of the record it saved")
 	}
 }
 

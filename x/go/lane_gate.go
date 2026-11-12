@@ -57,20 +57,9 @@ func laneGate(r *Run, args []string, flags Flags) (any, error) {
 	if !root.ok {
 		return nil, usageFail("not inside a git repo", "git rev-parse --show-toplevel")
 	}
-	refusals, nudges := messageRefusals(root.out, msg)
-	for _, line := range append(nudges, refusals...) {
-		fmt.Println("lane gate: " + line)
-	}
-	if len(refusals) > 0 {
-		// a passthrough verb exits by code, so the refusal kind is set on the trace by hand
-		r.code, traced.Kind = 1, "refused"
-	}
-	return nil, nil
-}
-
-// messageRefusals is the commit-msg gate's whole read of a staged tree and its message
-func messageRefusals(tree string, msg []byte) (refusals, nudges []string) {
+	tree := root.out
 	staged := gateStaged(tree)
+	var refusals, nudges []string
 	if !glossaryUnchanged.Match(msg) {
 		refusals = append(refusals, contractRefusals(tree, staged)...)
 	}
@@ -84,7 +73,14 @@ func messageRefusals(tree string, msg []byte) (refusals, nudges []string) {
 			refusals = append(refusals, fmt.Sprintf("%s's code is staged without %s — stage its ftr line, or add a bare line «ftr: none» to the commit body when no feature changed — no bullet, no indent%s", path.Dir(ftr), ftr, matchedBy(ftrNone)))
 		}
 	}
-	return refusals, nudges
+	for _, line := range append(nudges, refusals...) {
+		fmt.Println("lane gate: " + line)
+	}
+	if len(refusals) > 0 {
+		// a passthrough verb exits by code, so the refusal kind is set on the trace by hand
+		r.code, traced.Kind = 1, "refused"
+	}
+	return nil, nil
 }
 
 // a rename keeps its old name, so its growth is read against the file it was
