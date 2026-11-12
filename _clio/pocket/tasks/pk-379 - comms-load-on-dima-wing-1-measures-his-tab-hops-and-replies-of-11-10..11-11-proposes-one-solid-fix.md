@@ -6,14 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:42:00Z'
+updated_date: '2026-11-12T12:48:00Z'
 labels:
   - m
   - clio-wing-1
 dependencies: []
-priority: next
+priority: now
 type: task
-ordinal: 58000
+ordinal: 9999
 ---
 
 ## Implementation Notes
@@ -38,4 +38,6 @@ raw drop (2026-11-12 inbox, dima): 2. wing: learn how my comms were doing yester
 raw drop (2026-11-12 inbox, dima): 3. btw: can you measure my activity per tab including idle?
 
 raw drop (2026-11-12 inbox, dima): 4. prooose solid solution to reduce our comms load on me. operator comms recipe can be rerun optionally.
+
+14:48 wing 1: started. a helper card measures 11-10/11-11 from the prompt logs and transcripts (per-thread prompts, ticks, reply chars, hops per hour, gaps) into wing 1 .scratch/comms-load/measures.md; W4 answer so far: no focus log exists, herdr's focused() could feed a logger from now on
 <!-- SECTION:NOTES:END -->
