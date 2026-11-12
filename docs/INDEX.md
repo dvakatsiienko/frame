@@ -14,6 +14,8 @@ three rules keep it honest:
 
 ## knowledge/ — read on demand, the lookups behind the rules
 
+- [fleet stories](knowledge/fleet-stories/AGENTS.md) — one dir per problem's arc over days (the cpu overload, the guard lockout), searchable by tag
+
 - [claude fleet capabilities](knowledge/fleet-claude-capabilities.md) — what each surface can reach, what memory it keeps, who can operate whom; core coordinator knowledge behind `rules/fleet-identity.md`
 - [authoring — memory and skills](../home/.claude/plugin-x/skills/author-memory/SKILL.md) — the `x:author-memory` skill: where a line goes, the cc mechanics, skill writing, the project `AGENTS.md` skeleton (its references hold the full docs)
 - [writing for humans](../home/.claude/plugin-x/skills/writing-for-humans/references/sources.md) — the distilled knowledge behind the `x:writing-for-humans` skill, now in the skill

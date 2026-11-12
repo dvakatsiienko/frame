@@ -1,4 +1,14 @@
+---
+status: sealed
+dates: 2026-08-26 → 2026-11-11
+tickets: [FRM-525, FRM-537, FRM-532, FRM-528]
+tags: [cpu, perf, git, go-suite]
+fed-by: incidents
+---
+
 # cpu overload — the story, oldest day first
+
+the facts it left: [cpu-overload.md](../../cpu-overload.md), the shelf file `x knowledge read cpu-overload` prints.
 
 Append a day when a round ends. Labels: seen, checked, assumed, verdict, tried, cost. `[read]` means the source was opened, `[recalled]` that a later document tells it. Line numbers in sources date from 2026-11-07, before the files moved here.
 

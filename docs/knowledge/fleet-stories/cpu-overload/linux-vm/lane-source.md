@@ -5,7 +5,7 @@ Lane: primary sources (Lima source at sha `76f8cc2b`, Lima docs, Apple docs, Ubu
 Local facts first:
 - `frm536` keeps the template defaults: vz, 10 cpus, 8 GiB, a 100 GiB raw disk (5.4 GiB used), `~` mounted with `mountType: null`, so virtiofs, read-only by default. The first aarch64 image is the **server** variant, and `containerd.user: null` means rootless containerd gets installed. Sources: `/Users/dima/.lima/frm536/lima.yaml:12,113,117,131,185,268`; `/opt/homebrew/share/lima/templates/default.yaml:41-58,110,193` (Lima 2.2.1).
 - First boot, from `/Users/dima/.lima/frm536/ha.stderr.log`, 2026-11-09: VZ running at 15:11:56, ssh up at 15:12:03, containerd installed by 15:12:19 (15 s), boot scripts done at 15:12:31. That is **36 s, measured**, and 15 s of it is containerd.
-- Door 3: go 74–85 cpu-s against 235–242, sys 30 against 147, `git --version` 0.5 ms against 5.2 ms, vitest no win. **Measured**, 2026-11-09 (`/Users/dima/frame/docs/knowledge/cpu-overload/doors-left.md:25-29`).
+- Door 3: go 74–85 cpu-s against 235–242, sys 30 against 147, `git --version` 0.5 ms against 5.2 ms, vitest no win. **Measured**, 2026-11-09 (`/Users/dima/frame/docs/knowledge/fleet-stories/cpu-overload/doors-left.md:25-29`).
 
 ## 1. Prior art
 

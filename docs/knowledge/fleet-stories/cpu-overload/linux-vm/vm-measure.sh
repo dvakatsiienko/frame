@@ -2,7 +2,7 @@
 # FRM-536: the 2,000-spawn program and one go suite, in the lima vm (checkout on its own disk) and on macos
 set -u
 S=${S:-${TMPDIR:-/tmp}/linux-vm}; mkdir -p "$S"
-B=~/frame/docs/knowledge/cpu-overload/git-process-cost/spawn-bench
+B=~/frame/docs/knowledge/fleet-stories/cpu-overload/git-process-cost/spawn-bench
 out=$S/vm-measure.tsv
 : >"$out"
 

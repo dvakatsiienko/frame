@@ -26,7 +26,7 @@ fleet sees whether the page earns its place.
 
 ## a test's cost on the mac
 
-go test runs fill the mac's kernel with spawned git, about 377 git/s beside any other work (`docs/knowledge/cpu-overload/cases.md`); a process is the unit of cost here, so count spawns before adding a fixture. the numbers are one suite run, full list `go-test-cost.md` in FRM-521's lane state.
+go test runs fill the mac's kernel with spawned git, about 377 git/s beside any other work (`docs/knowledge/fleet-stories/cpu-overload/cases.md`); a process is the unit of cost here, so count spawns before adding a fixture. the numbers are one suite run, full list `go-test-cost.md` in FRM-521's lane state.
 
 - a whole run's line is `script/test-cpu-budget.tsv`: `pnpm x-go:gate` and `pnpm x-go:test` red past it by hand, ci and `x lane commit` only log; a raise is its one row, dated, with its reason. read a head beside a base run of the same hour: 386 → 308 cpu-s (FRM-528)
 - build a repo fixture once and copy it with `copyFixture` (`fixture_template_test.go`): no spawn per test. `repo`, `world`, `modsFixture`, `layers`, `newRebaseWorld`, `newMergeWorld`, `verifyWorld` and `revertWorld` already do; each other builder is under 3 cpu-s
