@@ -1205,6 +1205,7 @@ export const WIND_EMOJI = {
     idle: '🐦‍🔥',
     refreshing: '🌀',
     refused: '🛑',
+    stopped: '⚠️',
     writing: '✍️',
 } as const;
 const WIND_SAY = {
@@ -1212,6 +1213,7 @@ const WIND_SAY = {
     cancelled: 'cancelled, tells it at its next turn',
     refreshing: 'compacting onto its handoff',
     refused: 'refused, work started after pending: none',
+    stopped: 'stopped, its handoff is still in the store',
     writing: 'finishing its step, then its handoff',
 } as const;
 const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (codie: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods codie; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a background job, a task not parked), which refuses the compact until it is resolved: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
@@ -1224,6 +1226,13 @@ const windRefused = (what: string) =>
     `🐦‍🔥 second wind refused: ${what} started after you said pending: none, so nothing compacted. resolve it, then call ${ORBIT_TOOL} op second-wind again.`;
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
+const ingestBy = (slug: string) =>
+    `run \`x handoff ingest ${slug} --for <your own role token> --json\`, read the printed CST whole (never silence it), run its META first-acts, then go on from its S`;
+// a session with no plugin x skills has no /x:handoff-ingest to queue (crow's pane, FRM-505)
+const windIngest = (slug: string) =>
+    `🐦‍🔥 second wind: this conversation was just compacted onto your handoff «${slug}». before anything else, ${ingestBy(slug)}.`;
+const windStopped = (slug: string) =>
+    `🐦‍🔥 second wind stopped before its ingest, so your handoff «${slug}» is still in the store. ${ingestBy(slug)}.`;
 // a coordinator's message to a codie whose context reads past this waits for the codie's second wind (dima's o23: «~50–60%
 // is fine»); it joins the first turn after the compact, so a steer never lands in a full context
 const STEER_HOLD_AT = 55;
@@ -4208,6 +4217,10 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
         await $.store.delete(WIND + sid);
         return windRefused(was.blocked ?? 'work');
     }
+    if (was.state === 'stopped' && was.slug) {
+        await $.store.delete(WIND + sid);
+        return windStopped(was.slug);
+    }
     if (was.state !== 'cancelled') return undefined;
     await $.store.delete(WIND + sid);
     return WIND_CANCELLED;
@@ -4255,6 +4268,34 @@ async function windReady(
 
 // a compact the wind did not run (the threshold, a typed /compact) already refreshed the session: an ask or a handoff
 // still being written dies with it, or the board keeps «finishing its step» forever (clio's 10-14 auto-compact, o96)
+// a compact's fill, read once the engine has swapped in the compacted messages: its own measure inside the compact,
+// and a breakdown read inside this hook, still count the messages from before it (probed on 2.1.322, FRM-505)
+const COMPACT_SETTLE_MS = 1000;
+
+// the fill the band and every board draw, undefined drawing none
+async function drawFill($: EngineInterface, fill: number | undefined) {
+    const sid = await currentId($);
+    if (sid)
+        await (fill === undefined
+            ? $.store.delete(CONTEXT + sid)
+            : $.store.set(CONTEXT + sid, fill));
+    const was = (await $.state.get(METER)).value;
+    if (was) await $.state.set(METER, { ...was, context: fill });
+}
+
+// estimated locally from what the window holds now, no request
+async function drawFillAfterCompact($: EngineInterface) {
+    const usage = await $.session
+        .usage({ breakdown: 'summary' })
+        .catch(() => undefined);
+    const tokens = usage?.context.breakdown?.totalTokens;
+    const window = usage?.context.window;
+    await drawFill(
+        $,
+        tokens && window ? Math.round((tokens / window) * 100) : undefined,
+    );
+}
+
 async function windOnCompact($: EngineInterface) {
     const sid = await currentId($);
     const was = sid ? await windOf($, sid) : undefined;
@@ -4542,6 +4583,11 @@ async function runWind($: EngineInterface, sid: string, slug: string) {
             at: await $.clock.now(),
             state: 'refreshing',
         } satisfies StashWind);
+        // a failed list keeps the command, the door every session had before
+        const hasIngestCommand =
+            (await $.command.list().catch(() => undefined))?.some(
+                (c) => c.name === 'x:handoff-ingest',
+            ) ?? true;
         // both queue at once: an awaited compact let a prompt dima typed during it queue ahead of the ingest (clio's
         // 19:17 press: compact 19:17, his prompt 19:19, the ingest 19:20)
         await Promise.all([
@@ -4549,15 +4595,39 @@ async function runWind($: EngineInterface, sid: string, slug: string) {
                 args: `keep nothing past the handoff ${slug}; it carries the state`,
                 command: 'compact',
             }),
-            $.command.run({ args: slug, command: 'x:handoff-ingest' }),
+            hasIngestCommand
+                ? $.command.run({ args: slug, command: 'x:handoff-ingest' })
+                : $.prompt.submit({ text: windIngest(slug) }),
         ]);
         await $.store.delete(WIND + sid);
     } catch (err) {
-        await $.store.delete(WIND + sid).catch(() => undefined);
-        $.ui.toast(
-            `🐦‍🔥 second wind stopped: ${errorText(err)}; the handoff ${slug} is still in the store`,
+        await windStoppedFor($, sid, slug, errorText(err)).catch(
+            () => undefined,
         );
     }
+}
+
+// a toast reaches no one in a pane nobody watches: the board shows the stop, the coordinator hears it, and the
+// session's next turn says how to ingest by hand
+async function windStoppedFor(
+    $: EngineInterface,
+    sid: string,
+    slug: string,
+    why: string,
+) {
+    await $.store.set(WIND + sid, {
+        at: await $.clock.now(),
+        slug,
+        state: 'stopped',
+    } satisfies StashWind);
+    const line = `🐦‍🔥 second wind stopped for ${(await sessionName($)) ?? sid}: ${why}; its handoff ${slug} is still in the store`;
+    $.ui.toast(line);
+    const lead = (await threadRecords($)).find(
+        (t) =>
+            t.role === MAIN_ROLE && t.pid !== undefined && t.sessionId !== sid,
+    );
+    if (lead?.sessionId)
+        await $.session.send({ text: line, to: { sessionId: lead.sessionId } });
 }
 
 async function keepCapSeen(
@@ -6798,9 +6868,11 @@ export const register: Register = (on) => {
             await windOnCompact($).catch(() => undefined);
             await steersOnCompact($).catch(() => undefined);
             // the next measure comes only at this turn's end, and a wind's ingest is one long turn: until then the
-            // fill from before the compact would stand on every board
-            const sid = await currentId($);
-            if (sid) await $.store.delete(CONTEXT + sid).catch(() => undefined);
+            // fill from before the compact would stand on the band and every board
+            await drawFill($, undefined).catch(() => undefined);
+            $.clock.after(COMPACT_SETTLE_MS, () =>
+                drawFillAfterCompact($).catch(() => undefined),
+            );
             await keepShelf($);
             await load($);
         }

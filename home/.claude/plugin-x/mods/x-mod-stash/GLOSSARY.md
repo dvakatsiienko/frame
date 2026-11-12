@@ -123,7 +123,7 @@ A word of the fleet's own vocabulary that prints bold, its badge glued on: **✨
 _Avoid_: keyword, vibe word
 
 **Second wind**:
-A refresh asked of one session from a board's 🐦‍🔥 button: the session finishes its step, writes its handoff, names it through orbit's `op second-wind`, and the mod compacts onto that handoff and ingests it; its states are asked 🥚, writing ✍️, refreshing 🌀, cancelled.
+A refresh asked of one session from a board's 🐦‍🔥 button: the session finishes its step, writes its handoff, names it through orbit's `op second-wind`, and the mod compacts onto that handoff and ingests it; its states are asked 🥚, writing ✍️, refreshing 🌀, cancelled, refused 🛑 (work started after «pending: none»), and stopped ⚠️ (the compact or its ingest was refused, the handoff still in the store).
 _Avoid_: refresh, graceful refresh, checkpoint request, molt
 
 **Operator-override**: x's word, defined in `x/GLOSSARY.md`; the band's 🔓 shows it and its one press turns it off.
