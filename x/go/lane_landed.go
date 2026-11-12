@@ -573,6 +573,8 @@ func ticketRepo(id, body string) (string, error) {
 		name = m[1]
 	} else if strings.HasPrefix(id, "BYT-") {
 		name = "bytes"
+	} else if strings.HasPrefix(id, "FRM-") {
+		name = "frame"
 	}
 	switch name {
 	case "":
@@ -724,12 +726,14 @@ type laneRefs struct {
 }
 
 // the ticket ids a lane spec names as its chunks, in order, each once
-func specChunks(spec string) []string {
+// the spec's chunks, each the ids its heading names: a joint `## FRM-436 + FRM-424` heading is one chunk of two
+func specChunks(spec string) [][]string {
 	raw, _ := os.ReadFile(spec)
-	var chunks []string
+	var chunks [][]string
 	for _, m := range chunkHeading.FindAllStringSubmatch(string(raw), -1) {
-		if !slices.Contains(chunks, m[1]) {
-			chunks = append(chunks, m[1])
+		ids := strings.Split(m[1], " + ")
+		if !slices.ContainsFunc(chunks, func(c []string) bool { return slices.Equal(c, ids) }) {
+			chunks = append(chunks, ids)
 		}
 	}
 	return chunks
@@ -742,16 +746,17 @@ func mainCheckout(dir string) string {
 	return dir
 }
 
-var chunkHeading = regexp.MustCompile(`(?m)^## ((?:FRM|BYT|PK)-\d+)\b`)
+var chunkHeading = regexp.MustCompile(`(?m)^## ((?:FRM|BYT|PK)-\d+(?: \+ (?:FRM|BYT|PK)-\d+)*)\b`)
 
 // unmergedChunks names the spec's other chunks with no commit on origin/main; a squash merge carries the pr
-// body's «- ticket:» lines, so a chunk merged in the same pr reads merged
+// body's «- ticket:» lines, so a chunk merged in the same pr reads merged, and a joint chunk merged by any of its ids
 func unmergedChunks(repo, spec, id string) []string {
 	var waiting []string
 	for _, chunk := range specChunks(spec) {
-		if chunk != id && len(ticketCommits(repo, chunk)) == 0 {
-			waiting = append(waiting, chunk)
+		if slices.Contains(chunk, id) || slices.ContainsFunc(chunk, func(other string) bool { return len(ticketCommits(repo, other)) > 0 }) {
+			continue
 		}
+		waiting = append(waiting, strings.Join(chunk, " + "))
 	}
 	return waiting
 }

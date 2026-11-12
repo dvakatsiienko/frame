@@ -695,9 +695,10 @@ func (h *copyHarness) runCommand() redRun {
 	// would relink the store's own shims, which the copy shares. pnpm takes the setting in either case and the upper one
 	// wins, so the caller's own spelling goes first; never CI=1, which reaches vitest and refuses a new snapshot
 	const noInstall = "pnpm_config_verify_deps_before_run"
+	// a hook's GIT_DIR or GIT_INDEX_FILE would point git in the copy back at the real repo
 	c.Env = append(slices.DeleteFunc(os.Environ(), func(pair string) bool {
 		key, _, _ := strings.Cut(pair, "=")
-		return strings.EqualFold(key, noInstall)
+		return strings.EqualFold(key, noInstall) || strings.HasPrefix(key, "GIT_")
 	}), noInstall+"=false")
 	// a script or a shell line can still reach a package manager past the argv check; a runner x picked keeps the real
 	// PATH, so a test that calls one on purpose still runs it
@@ -839,7 +840,7 @@ func seedGit(root, to string) error {
 	if err != nil {
 		return err
 	}
-	head, err := git(root, "rev-parse", "HEAD")
+	index, err := git(root, "rev-parse", "--path-format=absolute", "--git-path", "index")
 	if err != nil {
 		return err
 	}
@@ -850,15 +851,20 @@ func seedGit(root, to string) error {
 	if err := os.WriteFile(filepath.Join(to, ".git/objects/info/alternates"), []byte(objects+"\n"), 0o644); err != nil {
 		return err
 	}
-	if branch == "" {
-		_, err = git(to, "update-ref", "--no-deref", "HEAD", head)
-	} else {
-		_, err = git(to, "update-ref", "refs/heads/"+branch, head)
+	// an unborn HEAD keeps the empty init; a staged file stays staged, since the index is the tree's own
+	if head, err := git(root, "rev-parse", "--verify", "-q", "HEAD"); err == nil {
+		ref := "HEAD"
+		if branch != "" {
+			ref = "refs/heads/" + branch
+		}
+		if _, err := git(to, "update-ref", "--no-deref", ref, head); err != nil {
+			return err
+		}
 	}
-	if err == nil {
-		_, err = git(to, "read-tree", "HEAD")
+	if raw, err := os.ReadFile(index); err == nil {
+		return os.WriteFile(filepath.Join(to, ".git/index"), raw, 0o644)
 	}
-	return err
+	return nil
 }
 
 func skipIfDir(entry fs.DirEntry) error {

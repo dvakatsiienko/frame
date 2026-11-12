@@ -188,8 +188,23 @@ func TestLandedReadsAJointSpecSection(t *testing.T) {
 	w := newLandedWorld(t)
 	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-2 + FRM-1 — the joint chunk\n\n### exit lines\n\n1. a line\n")
 	envelope, _ := w.landed(t)
-	if out := linesOf(envelope); strings.Contains(out, "no lane spec holds") || !strings.Contains(out, "waits on FRM-2") {
+	if out := linesOf(envelope); !strings.Contains(out, "lane-1 is not archived") {
 		t.Errorf("want the joint section read as FRM-1's spec:\n%s", out)
+	}
+}
+
+// a sibling joint chunk merged under one of its ids is merged: its pr names one ticket
+func TestLandedReadsASiblingJointChunkMergedByOneId(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-2 + FRM-3 — the joint chunk\n\n## FRM-1 — the chunk\n")
+	write(t, filepath.Join(w.repo, "y.txt"), "the joint change\n")
+	gitT(t, w.repo, "add", "y.txt")
+	gitT(t, w.repo, "commit", "-q", "-m", "the joint change", "-m", "- ticket: FRM-3")
+	gitT(t, w.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+	envelope, _ := w.landed(t)
+	if out := linesOf(envelope); !strings.Contains(out, "lane-1 is not archived") {
+		t.Errorf("want the joint sibling read as merged:\n%s", out)
 	}
 }
 

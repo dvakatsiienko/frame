@@ -107,7 +107,6 @@ func sessionPid(sid string) int {
 	return 0
 }
 
-// the herdr terminal whose program is that pid, and whether its claude is between turns; "" when herdr holds none
 // cc's input box on a terminal's screen: the lines between its last two rules, the first led by ❯; true only when that
 // box reads and holds nothing past the ❯
 func isInputBoxEmpty(terminal string) bool {
@@ -130,6 +129,7 @@ func isInputBoxEmpty(terminal string) bool {
 	return isPrompt && strings.TrimSpace(first) == ""
 }
 
+// the herdr terminal whose program is that pid, and whether its claude is between turns; "" when herdr holds none
 func herdrTerminalOf(pid int) (string, bool) {
 	bin := hcBin()
 	if pid == 0 || bin == "" {

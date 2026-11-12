@@ -1243,15 +1243,37 @@ func TestVerifyRedReadsAnUnreadLineStillGreen(t *testing.T) {
 // reads its clean run green and its swap red
 func TestVerifyRedRunsATestThatRunsGitOnTheCopy(t *testing.T) {
 	t.Parallel()
-	dir := repo(t)
-	write(t, filepath.Join(dir, "hook.yaml"), "count: 1\n")
-	write(t, filepath.Join(dir, "sub/go.mod"), "module p\n\ngo 1.24\n")
-	write(t, filepath.Join(dir, "sub/hook_test.go"), "package p\n\nimport (\n\t\"os\"\n\t\"os/exec\"\n\t\"testing\"\n)\n\nfunc TestHook(t *testing.T) {\n\tif out, err := exec.Command(\"git\", \"ls-files\", \"--error-unmatch\", \"../hook.yaml\").CombinedOutput(); err != nil {\n\t\tt.Fatalf(\"git: %v %s\", err, out)\n\t}\n\tif body, _ := os.ReadFile(\"../hook.yaml\"); string(body) != \"count: 1\\n\" {\n\t\tt.Fatalf(\"read %q\", body)\n\t}\n}\n")
-	commitAll(t, dir)
+	for _, c := range []struct {
+		name               string
+		isStaged, hasDecoy bool
+	}{
+		{"a committed file", false, false},
+		{"a file only staged", true, false},
+		{"a hook's GIT_INDEX_FILE in the caller's env", false, true},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir := repo(t)
+			write(t, filepath.Join(dir, "sub/go.mod"), "module p\n\ngo 1.24\n")
+			write(t, filepath.Join(dir, "sub/hook_test.go"), "package p\n\nimport (\n\t\"os\"\n\t\"os/exec\"\n\t\"testing\"\n)\n\nfunc TestHook(t *testing.T) {\n\tif out, err := exec.Command(\"git\", \"ls-files\", \"--error-unmatch\", \"../hook.yaml\").CombinedOutput(); err != nil {\n\t\tt.Fatalf(\"git: %v %s\", err, out)\n\t}\n\tif body, _ := os.ReadFile(\"../hook.yaml\"); string(body) != \"count: 1\\n\" {\n\t\tt.Fatalf(\"read %q\", body)\n\t}\n}\n")
+			commitAll(t, dir)
+			write(t, filepath.Join(dir, "hook.yaml"), "count: 1\n")
+			if c.isStaged {
+				gitT(t, dir, "add", "hook.yaml")
+			} else {
+				commitAll(t, dir)
+			}
+			var env []string
+			if c.hasDecoy {
+				// as a pre-commit hook's temp index: git in the copy must read the copy's own
+				env = []string{"GIT_INDEX_FILE=" + filepath.Join(t.TempDir(), "hook-index")}
+			}
 
-	got, _ := verifyRedIn(t, redFixture{dir: dir}, nil, "hook.yaml", "count: 1", "count: 2", "sub/hook_test.go")
+			got, _ := verifyRedIn(t, redFixture{dir: dir}, env, "hook.yaml", "count: 1", "count: 2", "sub/hook_test.go")
 
-	if rows := pairRows(t, got); got.code != 0 || got.data["verdict"] != verdictRed || len(rows) != 1 {
-		t.Fatalf("exit %d, data %v, want a green clean run and a red swap:\n%s", got.code, got.data, got.stdout)
+			if rows := pairRows(t, got); got.code != 0 || got.data["verdict"] != verdictRed || len(rows) != 1 {
+				t.Fatalf("exit %d, data %v, want a green clean run and a red swap:\n%s", got.code, got.data, got.stdout)
+			}
+		})
 	}
 }
