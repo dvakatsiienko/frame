@@ -549,15 +549,19 @@ func TestThreadRenameSticksAcrossARefresh(t *testing.T) {
 	env := []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}
 
 	byCodie := xIn(t, t.TempDir(), asCaller(t, env, "codie"), "thread", "rename", "sid-wing", "🌌 nova")
+	twoLines := xIn(t, t.TempDir(), asCaller(t, env, "coordinator"), "thread", "rename", "sid-wing", "🌌 nova\nship it")
 	byClio := xIn(t, t.TempDir(), asCaller(t, env, "coordinator"), "thread", "rename", "sid-wing", "🌌 nova")
 	_ = xIn(t, t.TempDir(), env, "thread", "list")
 	show := xIn(t, t.TempDir(), env, "thread", "show", "sid-wing")
 
+	if twoLines.code != 2 {
+		t.Errorf("a name with a newline: exit %d, want a usage refusal:\n%s", twoLines.code, twoLines.stdout)
+	}
 	if byCodie.code != 1 || !strings.Contains(byCodie.stdout, "only the coordinator or dima") {
 		t.Errorf("a codie's rename: exit %d, want the coordinator's refusal:\n%s", byCodie.code, byCodie.stdout)
 	}
-	if byClio.code != 0 || show.data["display"] != "🌌 nova" || show.data["role"] != "wing" {
-		t.Fatalf("exit %d, after a refresh x thread show %v, want «🌌 nova», still a wing:\n%s", byClio.code, show.data, byClio.stdout)
+	if byClio.code != 0 || show.data["display"] != "🌌 nova" || show.data["role"] != "wing" || show.data["roleName"] != "🦉🪽 clio: wing 2" {
+		t.Fatalf("exit %d, after a refresh x thread show %v, want «🌌 nova», still a wing, its role's name kept:\n%s", byClio.code, show.data, byClio.stdout)
 	}
 }
 

@@ -1714,11 +1714,11 @@ async function wakeForParkedLanes($: EngineInterface) {
         const isRunnerLive = threads.some(
             (t) =>
                 t.pid !== undefined &&
-                bare(t.display ?? '') === bare(lane.runner ?? ''),
+                bare(runnerOf(t)) === bare(lane.runner ?? ''),
         );
         const isMine =
             lane.runner && (isRunnerLive || !isMain)
-                ? bare(lane.runner) === bare(self.display ?? '')
+                ? bare(lane.runner) === bare(runnerOf(self))
                 : isMain;
         if (!isMine) continue;
         const members = [];
@@ -3649,6 +3649,7 @@ async function sessionName($: EngineInterface) {
 type ThreadRecord = {
     sessionId: string;
     display?: string;
+    roleName?: string;
     name?: string;
     pid?: number;
     role?: string;
@@ -3657,6 +3658,8 @@ type ThreadRecord = {
 };
 // the standing role ids x's roles.json names (FRM-579): one place here, so a rename of the fleet's roles is a table edit
 const MAIN_ROLE = 'coordinator';
+// a wing owns its lanes by its role's display, which a rename (a title) leaves alone
+const runnerOf = (t: ThreadRecord) => t.roleName ?? t.display ?? '';
 const WING_ROLE = 'wing';
 const ADVISER_ROLE = 'adviser';
 
@@ -6279,7 +6282,7 @@ async function orbitCall(
         // main clio or a wing by its record; a wing's cards carry its display, drawn from that record
         const self = await selfLive($);
         const isOwner = self?.role === MAIN_ROLE;
-        const side = self?.role === WING_ROLE ? self.display : undefined;
+        const side = self?.role === WING_ROLE ? runnerOf(self) : undefined;
         if (!isOwner && !side)
             return {
                 deny: `orbit glide: only ${LANE_OWNER} writes the lanes; every board shows them`,

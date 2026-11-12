@@ -38,7 +38,7 @@ function revive(which: string[]) {
     );
     fake(
         'x',
-        `print -r -- "x $*" >> "$HOME/calls"\n[[ "$1 $2" == "thread list" ]] && print -r -- '{"data":{"threads":[]}}'\nexit 0`,
+        `print -r -- "x $* hc=\${HC_TERMINAL_ID:-none}" >> "$HOME/calls"\n[[ "$1 $2" == "thread list" ]] && print -r -- '{"data":{"threads":[]}}'\nexit 0`,
     );
     fake('node', 'exit 0');
     const run = spawnSync(
@@ -46,7 +46,12 @@ function revive(which: string[]) {
         [join(import.meta.dirname, 'clio-revive.sh'), ...which],
         {
             encoding: 'utf8',
-            env: { HOME: home, PATH: `${bin}:/usr/bin:/bin:/opt/homebrew/bin` },
+            // run from dima's herdr pane
+            env: {
+                HC_TERMINAL_ID: 't9',
+                HOME: home,
+                PATH: `${bin}:/usr/bin:/bin:/opt/homebrew/bin`,
+            },
             timeout: 10_000,
         },
     );
@@ -64,7 +69,7 @@ for (const [which, role] of [
         expect([run.status, calls]).toEqual([
             0,
             expect.stringContaining(
-                `x brief summon --role ${role} --session ${sid}`,
+                `x brief summon --role ${role} --session ${sid} hc=none`,
             ),
         ]);
         expect(calls).toContain(`claude --resume ${sid}`);

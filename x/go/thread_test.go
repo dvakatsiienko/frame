@@ -284,3 +284,22 @@ func TestBriefSummonFromACodieIsRefused(t *testing.T) {
 		t.Fatalf("exit %d, records %+v, want a refusal naming the coordinator and no record:\n%s", got.code, written.Threads, got.stdout)
 	}
 }
+
+// FRM-579 round 4, the P0: a session seated coordinator only by the name fallback never writes a record, so a fork
+// named «🦉 clio» cannot record itself and turn the fallback off for the real clio
+func TestAFallbackSeatWritesNoRecord(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	env := asCaller(t, []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store}, "")
+	seat := filepath.Join(t.TempDir(), "caller-threads.json")
+	write(t, seat, `{"v":1,"threads":[{"sessionId":"sid-caller","role":"coordinator","fallback":true}]}`)
+	env = append(env, "X_CALLER_THREADS="+seat)
+
+	got := xIn(t, w.repo, env, "brief", "summon", "--role", "coordinator", "--session", "sid-caller")
+
+	written, _ := readThreadStore(store)
+	if got.code != 1 || !strings.Contains(got.stdout, "only the coordinator or dima") || len(written.Threads) != 0 {
+		t.Fatalf("exit %d, records %+v, want a refusal and no record:\n%s", got.code, written.Threads, got.stdout)
+	}
+}

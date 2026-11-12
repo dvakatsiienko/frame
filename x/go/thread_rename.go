@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode"
 )
 
 // hcBin is the herdr cli a rename speaks through; X_HC points a test at a fake, and under X_TEST without it there is none,
@@ -50,6 +51,10 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 	if title == "" {
 		return nil, usageFail("an empty name draws nothing", "x thread rename <sid> '<name>'")
 	}
+	// a newline would end the /rename typed into the thread and send the rest as a prompt
+	if strings.ContainsFunc(title, unicode.IsControl) {
+		return nil, usageFail("a name holds no newline or control character", "x thread rename <sid> '<name>'")
+	}
 	if err := coordinatorOnly("x thread rename"); err != nil {
 		return nil, err
 	}
@@ -73,7 +78,7 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 		return nil, &Fail{Refused: true, Msg: sid + " has no record to rename: x brief summon gives one", Next: "x thread list"}
 	}
 	store.Threads[i].Title = title
-	store.Threads[i].Display = threadDisplay(store.Threads[i])
+	drawNames(&store.Threads[i])
 	err = writeThreadStore(path, time.Now(), store.Threads)
 	unlock()
 	if err != nil {

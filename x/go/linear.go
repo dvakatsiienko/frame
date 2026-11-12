@@ -45,7 +45,7 @@ func actorOf(flags Flags) (string, error) {
 	if len(chain) == 0 {
 		return "codie", nil
 	}
-	switch r := callerRole(chain[0]); {
+	switch r := callerRole(chain[0], true); {
 	case r.IsCoordinator:
 		return "clio", nil
 	case r.ID == "sixth-sense":

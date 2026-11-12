@@ -5,6 +5,7 @@ export type ThreadRow = {
     sessionId: string;
     role?: string;
     display?: string;
+    roleName?: string;
     pid?: number;
     wing?: number;
 };

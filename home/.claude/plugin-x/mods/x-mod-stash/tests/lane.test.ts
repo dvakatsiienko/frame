@@ -399,6 +399,34 @@ for (const name of [
         expect(kept(w)[0]?.runner).toBe(name);
     });
 
+// FRM-579 exit 5: a rename moves a wing's display, never the lane it runs
+test('a renamed wing still steps the card it runs', async ($, on) => {
+    const wing = '🦉🪽 clio: wing 2';
+    const w = world(on, {
+        name: 'night shift',
+        record: { ...wingRecord('night shift', 2), roleName: wing },
+    });
+    w.files[FILE] = JSON.stringify({
+        lanes: [
+            {
+                current: 0,
+                history: [],
+                id: 'l1',
+                items: [{ isDone: false, text: 'a' }],
+                members: {},
+                movedAt: 0,
+                runner: wing,
+                title: 'mods x',
+            },
+        ],
+    });
+    await start($);
+    expect(
+        await denied($, { act: 'step', current: 1, id: 'l1' }),
+    ).toBeUndefined();
+    expect(kept(w)[0]?.current).toBe(1);
+});
+
 test('a wing is refused on a card it does not run, naming the card', async ($, on) => {
     const w = world(on, { name: SIDE, record: wingRecord(SIDE, 1) });
     w.files[FILE] = JSON.stringify({

@@ -134,15 +134,16 @@ func isOwnTerminal(chain []callerSession) bool {
 }
 
 // the role the store's record gives the caller's session: by its session id, or by its pid and start once /clear
-// minted a new id for the same process; a session with no record holds none, whatever its name
-func callerRole(s callerSession) role {
+// minted a new id for the same process; a session with no record holds none, whatever its name. a name-fallback seat
+// counts only for a reader (withFallback): a name alone never writes a record
+func callerRole(s callerSession, withFallback bool) role {
 	store, err := readThreadStore(powerThreadStorePath())
 	if err != nil {
 		return role{}
 	}
 	for _, t := range store.Threads {
 		isSame := (s.SessionID != "" && t.SessionID == s.SessionID) || (t.Pid == s.Pid && t.ProcStart != "" && t.ProcStart == s.ProcStart)
-		if isSame && t.Role != "" {
+		if isSame && t.Role != "" && (withFallback || !t.Fallback) {
 			return roleOf(t.Role)
 		}
 	}

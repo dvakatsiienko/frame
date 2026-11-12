@@ -33,6 +33,7 @@ type thread struct {
 	Title     string `json:"title,omitempty"`
 	Fallback  bool   `json:"fallback,omitempty"`
 	Display   string `json:"display"`
+	RoleName  string `json:"roleName,omitempty"`
 	At        int64  `json:"at,omitempty"`
 }
 
@@ -80,6 +81,17 @@ func storePathOf(isFixtureOn bool, fixture string, isXTest bool, real string) st
 // the ticket's linear project (dima, FRM-579's rider: never the lane name's first word); a standing role draws its whole
 // display from roles.json; no record reads as unknown
 func threadDisplay(t thread) string { return displayFrom(roles, t) }
+
+// a renamed thread keeps its role's own display beside the title dima gave, so a reader that owns by name (a wing's
+// lane) still finds it after the rename
+func drawNames(t *thread) {
+	t.Display, t.RoleName = threadDisplay(*t), ""
+	if t.Title != "" {
+		untitled := *t
+		untitled.Title = ""
+		t.RoleName = threadDisplay(untitled)
+	}
+}
 
 // the display under a role table: a rename dima gave (x thread rename) wins, then the table's own
 func displayFrom(table []role, t thread) string {
@@ -291,7 +303,7 @@ func joinThreads(now time.Time, stored []thread) []thread {
 	}
 	nameFallback(threads)
 	for i := range threads {
-		threads[i].Display = threadDisplay(threads[i])
+		drawNames(&threads[i])
 	}
 	slices.SortFunc(threads, func(a, b thread) int { return strings.Compare(a.SessionID, b.SessionID) })
 	return threads
@@ -351,7 +363,7 @@ func callerIsCoordinator() bool {
 	if len(chain) == 0 {
 		return isOwnTerminal(chain)
 	}
-	return callerRole(chain[0]).IsCoordinator
+	return callerRole(chain[0], false).IsCoordinator
 }
 
 var roleRefusalNext = "ask the coordinator: x lane dispatch --apply gives a role, x brief summon starts a thread with one"
@@ -430,7 +442,7 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		store.Threads = slices.Delete(store.Threads, i, i+1)
 	}
 	record.At = now.UnixMilli()
-	record.Display = threadDisplay(record)
+	drawNames(&record)
 	store.Threads = append(store.Threads, record)
 	return writeThreadStore(path, now, store.Threads)
 }
