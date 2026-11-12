@@ -482,8 +482,22 @@ async function overrideGrant($: EngineInterface, scope: string) {
     const path = await overrideStorePath($);
     return path ? overrideGrantAt($, path, scope) : undefined;
 }
+async function overrideGuards($: EngineInterface) {
+    const path = await overrideStorePath($);
+    return path
+        ? overrideGrantAt($, path, 'guards', await $.session.id())
+        : undefined;
+}
 
 // the store after his typed ask, and the note the model reads; a write that fails is told, never silent
+// the rm type of refusal his per-session guards grant opens (dima, FRM-524:W49)
+const GUARDS_RULES: ReadonlySet<string> = new Set([
+    'git-discard',
+    'git-rewrite',
+    'kill',
+    'rm',
+    'stash-sweep',
+]);
 async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
     const path = await overrideStorePath($);
     if (!path)
@@ -494,8 +508,18 @@ async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
         grants = JSON.parse(raw) as OverrideGrants;
     } catch {}
     const at = new Date(await $.clock.now()).toISOString();
-    const after = JSON.stringify(overrideAfter(grants, ask, at));
+    // guards is per session, keyed `guards:<session>` as x reads a session scope; prs stays global (FRM-524:W49)
+    const after = JSON.stringify(
+        ask.scope === 'guards'
+            ? {
+                  ...grants,
+                  [`guards:${await $.session.id()}`]: { at, by: ask.by },
+              }
+            : overrideAfter(grants, ask, at),
+    );
     if (after !== raw) await $.fs.write(path, after);
+    if (ask.scope === 'guards')
+        return `operator-override guards is on for this session, by ${ask.by}: ${[...GUARDS_RULES].join(', ')} refusals run here; every other rule, the forgery fences and the merge doors still hold`;
     return ask.scope === 'off'
         ? "operator-override is off, by dima's typed words"
         : `operator-override prs is on, by ${ask.by}: x lane merge-auto <pr> --apply lands every pr; his hold and the brake still stop it`;
@@ -627,6 +651,9 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     // warn-only until sixth sense's clean and a 2-day replay with 0 fires on real calls (clio, 17:04)
     'pane-keys',
     'herdr-start',
+    // a layout change kills the focused thread (herdr-app#861), but the herdr lane writes layouts as its own work: a warn
+    // week first (clio, 14:32)
+    'herdr-layout',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
@@ -2900,6 +2927,25 @@ export const register: Register = (on) => {
         if (verdict.kind === 'refused') {
             const found = refusals(command, cwd, { ...ctx, ...facts });
             const targets = [...new Set(found.flatMap((r) => r.targets))];
+            // his guards grant for this session opens the rm type of refusal, and only when every refusal is one
+            const guards =
+                found.length > 0 && found.every((r) => GUARDS_RULES.has(r.rule))
+                    ? await overrideGuards($).catch(() => undefined)
+                    : undefined;
+            if (guards) {
+                await record($, {
+                    command,
+                    door: `operator-override guards, by ${guards.by} at ${guards.at}`,
+                    kind: 'escaped',
+                    rule: found[0]?.rule ?? 'rm',
+                    target: targets.join(', '),
+                    why: "dima's per-session guards grant",
+                });
+                $.ui.log(
+                    `x-mod-guard: ran on operator-override guards: ${targets.join(', ')}`,
+                );
+                return go();
+            }
             const asked = await stashAllowed($, command, cwd, ctx, found);
             if (asked) {
                 await record($, {

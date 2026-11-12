@@ -140,6 +140,8 @@ function world(
 ) {
     mock.clock(on, { now: NOW });
     const store = liveStore(on);
+    // the layout rule warns until its clean; these rows read it as it will refuse
+    store.set('rule-mode:herdr-layout', 'enforce');
     answerPrompts(on);
     const ran: string[] = [];
     const fail = new Set<string>();
@@ -357,6 +359,18 @@ for (const line of [
         const r = await bash($, line);
         expect([r.deny, ran]).toEqual([undefined, [line]]);
     });
+
+test('the layout rule ships warn-only: the switch runs with a would-refuse note', async ($, on) => {
+    const { ran, store } = world(on);
+    store.delete('rule-mode:herdr-layout');
+    const line = 'herdr-app do layout.switch --name zoo';
+    const r = await bash($, line);
+    expect([r.deny, ran, JSON.stringify(r)]).toEqual([
+        undefined,
+        [line],
+        expect.stringContaining('herdr-layout'),
+    ]);
+});
 
 test('his tick on an ask quoting a layout switch runs it once', async ($, on) => {
     const line = 'herdr-app do layout.switch --name zoo';
