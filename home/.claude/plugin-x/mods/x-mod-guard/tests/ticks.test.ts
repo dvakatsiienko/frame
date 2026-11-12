@@ -1181,6 +1181,32 @@ for (const line of [
         expect([PANE_PROOF(await bash($, line)), ran]).toEqual([false, [line]]);
     });
 
+// wing 1's cli codie, 2026-11-12: a flag's value is no prompt, so a program filling it types nothing (other rules judge it)
+for (const line of [
+    'SID=$(uuidgen | tr A-Z a-z); echo "minted $SID"; claude -p "say ok" --model haiku --session-id "$SID" --output-format json --strict-mcp-config 2>&1 | jq -r \'.session_id\' ; claude -p "say ok again" --model haiku --resume "$SID" --output-format json --strict-mcp-config 2>&1 | jq -r \'.session_id\'',
+    'SID=$(uuidgen); claude -p "say hi" --session-id "$SID"',
+    'M=$(jq -r .model cfg.json); claude -p "say hi" --model "$M"',
+    'claude -p "say hi" --settings "$(mktemp)"',
+])
+    test(`a program filling a claude flag's value is no typed text: ${line.slice(0, 44)}`, async ($, on) => {
+        signWorld(on);
+        const r = await $.tool.call({
+            command: line,
+            run_in_background: true,
+            tool: 'Bash',
+        });
+        expect(PANE_PROOF(r)).toBe(false);
+    });
+test("a program filling claude's prompt is still typed text", async ($, on) => {
+    const { ran } = signWorld(on);
+    const r = await $.tool.call({
+        command: 'P=$(uuidgen | tr A-Z a-z); claude -p "$P" --model haiku',
+        run_in_background: true,
+        tool: 'Bash',
+    });
+    expect([PANE_PROOF(r), ran]).toEqual([true, []]);
+});
+
 test('a seat that types «sign FRM-544» into a pane cannot sign it, and his own typed line still does', async ($, on) => {
     const { ran } = signWorld(on);
     const typed = await bash($, "hc send t20 'sign FRM-544'");

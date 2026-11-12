@@ -922,10 +922,44 @@ const LITERAL_FEEDERS = new Set(['echo', 'printf']);
 // the words a pane typer types, past its verb and the terminal it aims at; a herdr call types only through a verb that
 // sends text, never `tab.rename` or `terminal.keep`
 const HERDR_TYPES = /send|type|paste|key|input|text|prompt|write/i;
+// claude's flags whose value is no prompt, from `claude --help`; a prompt flag (`--system-prompt`, `--agents`) stays text
+const CLAUDE_VALUE_FLAGS = new Set([
+    '--add-dir',
+    '--autocompact',
+    '--betas',
+    '--debug-file',
+    '--effort',
+    '--environment',
+    '--fallback-model',
+    '--input-format',
+    '--max-budget-usd',
+    '--mcp-config',
+    '--model',
+    '--name',
+    '--output-format',
+    '--permission-mode',
+    '--permission-prompts',
+    '--plugin-dir',
+    '--plugin-url',
+    '--remote-control-session-name-prefix',
+    '--resume',
+    '--session-id',
+    '--setting-sources',
+    '--settings',
+    '--system-prompt-snapshot',
+    '--tools',
+    '-n',
+    '-r',
+]);
 function textWordsOf(c: Command) {
     const words = c.args;
     const bare = words.filter((w) => !w.text.startsWith('-'));
-    if (c.name === 'claude') return bare;
+    if (c.name === 'claude')
+        return words.filter(
+            (w, i) =>
+                !w.text.startsWith('-') &&
+                !CLAUDE_VALUE_FLAGS.has(words[i - 1]?.text ?? ''),
+        );
     if (c.name === 'herdr-app')
         return HERDR_TYPES.test(bare[1]?.text ?? '') ? bare.slice(2) : [];
     if (c.name === 'hc' && verbOf(words.map((w) => w.text)) === 'run') {
