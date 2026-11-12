@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { keysWithOurs } from './hotkeys.js';
+import { keysWithOurs, rebind } from './hotkeys.js';
 
 const ours = [
     { action: 'x-herdr-chatter.focus', key: 'cmd-k', title: 'Focus the quill' },
@@ -53,7 +53,7 @@ describe('keysWithOurs', () => {
         ]);
     });
 
-    test('a key of ours no longer registered leaves his file, one moved to a new key moves', () => {
+    test('a key of ours no longer registered leaves his file, one he moved stays where he put it', () => {
         const { keys } = keysWithOurs(
             {
                 global: {
@@ -66,7 +66,7 @@ describe('keysWithOurs', () => {
         );
         expect(keys.global).toEqual({
             'cmd-e': 'x-herdr-deck.toggle',
-            'cmd-k': 'x-herdr-chatter.focus',
+            'cmd-j': 'x-herdr-chatter.focus',
             'cmd-t': 'tab.new',
         });
     });
@@ -96,5 +96,68 @@ describe('keysWithOurs', () => {
         expect(keysWithOurs({}, ours).keys.global['cmd-k']).toBe(
             'x-herdr-chatter.focus',
         );
+    });
+});
+
+describe('a rebind kept in his keys.json', () => {
+    test('an action of ours already on another key stays there, its default unused', () => {
+        const { keys } = keysWithOurs(
+            { global: { 'cmd-j': 'x-herdr-deck.toggle' } },
+            ours,
+        );
+        expect(keys.global).toEqual({
+            'cmd-j': 'x-herdr-deck.toggle',
+            'cmd-k': 'x-herdr-chatter.focus',
+        });
+    });
+});
+
+describe('rebind', () => {
+    const his = {
+        global: {
+            'cmd-e': 'x-herdr-chatter.deck',
+            'cmd-k': 'x-herdr-chatter.focus',
+            'cmd-t': 'tab.new',
+        },
+    };
+
+    test('our key moves to a free key, the old one leaves', () => {
+        expect(rebind(his, 'cmd-e', 'cmd-j')).toEqual({
+            keys: {
+                global: {
+                    'cmd-j': 'x-herdr-chatter.deck',
+                    'cmd-k': 'x-herdr-chatter.focus',
+                    'cmd-t': 'tab.new',
+                },
+            },
+        });
+    });
+
+    test('a herdr key moves the same way, in its place', () => {
+        // biome sorts the fixture's keys, so its order is cmd-e, cmd-k, cmd-t: the moved key keeps cmd-e's place
+        expect(
+            Object.entries(rebind(his, 'cmd-e', 'cmd-j').keys?.global ?? {}),
+        ).toEqual([
+            ['cmd-j', 'x-herdr-chatter.deck'],
+            ['cmd-k', 'x-herdr-chatter.focus'],
+            ['cmd-t', 'tab.new'],
+        ]);
+        expect(rebind(his, 'cmd-t', 'cmd-y').keys?.global['cmd-y']).toBe(
+            'tab.new',
+        );
+    });
+
+    test('a key already held is refused by the name of what holds it', () => {
+        expect(rebind(his, 'cmd-e', 'cmd-t')).toEqual({ refused: 'tab.new' });
+    });
+
+    test('a key that is not bound, or the same key, changes nothing', () => {
+        expect(rebind(his, 'cmd-x', 'cmd-y')).toEqual({ refused: null });
+        expect(rebind(his, 'cmd-e', 'cmd-e')).toEqual({ keys: his });
+    });
+
+    test('a key herdr reads its own way is refused: plain letters and bare ctrl-letters go to the program', () => {
+        expect(rebind(his, 'cmd-e', 'd')).toEqual({ refused: 'typing' });
+        expect(rebind(his, 'cmd-e', 'ctrl-c')).toEqual({ refused: 'typing' });
     });
 });

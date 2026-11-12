@@ -12,7 +12,8 @@ export const SETTINGS_WINDOW = { height: 500, width: 760 };
 /** @typedef {import('./settings-model.js').Page} Page */
 /**
  * @typedef {{ page: string, values: Record<string, unknown>, overlay: string | undefined,
- *   keys?: { ours: { key: string, title: string, action: string, takenBy: string | null }[], herdr: [string, string][] },
+ *   keys?: { ours: { key: string, title: string, action: string, takenBy: string | null }[], herdr: [string, string][],
+ *     capture: any, note: string, recording: string | null, onRecord: (key: string) => void, onKey: (keystroke: string) => void },
  *   notes?: Record<string, string>, onPage: (id: string) => void, onChange: (key: string, value: unknown) => void }} WindowState
  */
 
@@ -387,48 +388,101 @@ function keysPage(t, keys) {
             .gap(12)
             .items_center()
             .when(i > 0, (s) => s.border_t_1().border_color(t.border));
+    // a key's cap is its button: a press records the next chord for it, Esc gives up
+    /** @param {string} key @param {string} what */
+    const cap = (key, what) => {
+        const isRecording = keys.recording === key;
+        return div()
+            .id(`settings-key-${key}`)
+            .flex_none()
+            .cursor_pointer()
+            .rounded(6)
+            .border_1()
+            .border_color(isRecording ? t.accent : '#00000000')
+            .hover((s) => s.border_color(t.muted))
+            .tooltip(
+                isRecording
+                    ? 'Press the new keys · Esc to cancel'
+                    : `Change the key for ${what}`,
+            )
+            .on_click(() => keys.onRecord(key))
+            .child(isRecording ? keyCapText(t, 'Press keys…') : keyCap(t, key));
+    };
     return [
-        group(
-            'ours',
-            keys.ours.map((k, i) =>
-                line(i)
-                    .child(keyCap(t, k.key))
-                    .child(
-                        v_flex()
-                            .flex_1()
-                            .min_w(0)
+        v_flex()
+            .id('settings-keys')
+            .track_focus(keys.capture)
+            .on_key_down((e, cx) => {
+                if (!keys.recording) return;
+                keys.onKey(e.keystroke);
+                cx.stop_propagation();
+            })
+            .gap(18)
+            .when(Boolean(keys.note), (s) =>
+                s.child(
+                    div().text_size(12).text_color(t.muted).child(keys.note),
+                ),
+            )
+            .child(
+                group(
+                    'ours',
+                    keys.ours.map((k, i) =>
+                        line(i)
+                            .child(cap(k.key, k.title))
                             .child(
-                                div()
-                                    .text_size(13)
-                                    .text_color(t.foreground)
-                                    .child(k.title),
-                            )
-                            .when(Boolean(k.takenBy), (s) =>
-                                s.child(
-                                    div()
-                                        .text_size(12)
-                                        .text_color(t.blocked)
-                                        .child(
-                                            `refused: herdr’s «${k.takenBy}» holds this key`,
+                                v_flex()
+                                    .flex_1()
+                                    .min_w(0)
+                                    .child(
+                                        div()
+                                            .text_size(13)
+                                            .text_color(t.foreground)
+                                            .child(k.title),
+                                    )
+                                    .when(Boolean(k.takenBy), (s) =>
+                                        s.child(
+                                            div()
+                                                .text_size(12)
+                                                .text_color(t.blocked)
+                                                .child(
+                                                    `refused: herdr’s «${k.takenBy}» holds this key`,
+                                                ),
                                         ),
-                                ),
+                                    ),
                             ),
                     ),
-            ),
-        ),
-        group(
-            'herdr’s own',
-            keys.herdr.map(([key, action], i) =>
-                line(i)
-                    .child(keyCap(t, key))
-                    .child(
-                        div()
-                            .flex_1()
-                            .text_size(12)
-                            .text_color(t.muted)
-                            .child(action),
+                ),
+            )
+            .child(
+                group(
+                    'herdr’s own',
+                    keys.herdr.map(([key, action], i) =>
+                        line(i)
+                            .child(cap(key, action))
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .text_size(12)
+                                    .text_color(t.muted)
+                                    .child(action),
+                            ),
                     ),
+                ),
             ),
-        ),
     ];
 }
+
+/** @param {any} t @param {string} text */
+const keyCapText = (t, text) =>
+    div()
+        .min_w(44)
+        .px(6)
+        .h(22)
+        .flex()
+        .items_center()
+        .justify_center()
+        .rounded(5)
+        .bg(t.selected)
+        .text_size(12)
+        .text_color(t.foreground)
+        .child(text);
