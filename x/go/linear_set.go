@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -180,6 +181,15 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 		return nil, &Fail{Msg: id + ": not found", Next: "x linear list --search " + id}
 	}
 
+	// a close past a red landed warns first, never refuses (FRM-572 exit 7)
+	var reds []string
+	if strings.EqualFold(given["state"], "Done") {
+		reds = landedReds(r, issue.Identifier)
+		for _, red := range reds {
+			fmt.Fprintln(os.Stderr, "⚠ x lane landed "+issue.Identifier+": "+red)
+		}
+	}
+
 	input := map[string]any{}
 	var changes []string
 	change := func(field, old, new string) { changes = append(changes, field+": "+orDash(old)+" → "+new) }
@@ -325,7 +335,11 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 		}
 		r.Board(strings.Join(lines, "\n"))
 	}
-	return ordered{{"actor", actor}, {"changes", changes}, {"id", id}}, nil
+	out := ordered{{"actor", actor}, {"changes", changes}, {"id", id}}
+	if len(reds) > 0 {
+		out = append(out, kv{"landedReds", reds})
+	}
+	return out, nil
 }
 
 func orDash(value string) string {

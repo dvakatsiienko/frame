@@ -222,7 +222,7 @@ func laneSpecSection(repo, id string) (paths []string, section string) {
 		main, _ := filepath.Glob(filepath.Join(filepath.Dir(common), ".scratch", "*", "spec.md"))
 		specs = append(specs, main...)
 	}
-	head := regexp.MustCompile(`(?m)^## ` + regexp.QuoteMeta(id) + `\b.*$`)
+	head := specHead(id)
 	for _, spec := range specs {
 		raw, err := os.ReadFile(spec)
 		if err != nil {
@@ -244,6 +244,11 @@ func laneSpecSection(repo, id string) (paths []string, section string) {
 		section = strings.Repeat("\n", strings.Count(text[:at[0]], "\n")) + text[at[0]:at[1]] + rest
 	}
 	return paths, section
+}
+
+// a spec heading of id, a joint one included: `## FRM-436 + FRM-424 — …` heads both tickets' section
+func specHead(id string) *regexp.Regexp {
+	return regexp.MustCompile(`(?m)^## (?:(?:FRM|BYT)-\d+ \+ )*` + regexp.QuoteMeta(id) + `\b.*$`)
 }
 
 // xCommandFindings checks every `x …` command the exit lines name against the registry, statically:

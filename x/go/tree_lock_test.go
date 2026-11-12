@@ -87,14 +87,17 @@ func TestLandedReadsATreeLockAgainstItsHolder(t *testing.T) {
 			tree := w.laneTree(t, "locked")
 			lockTree(t, w.repo, tree, c.reason)
 
-			envelope, _ := runLinear(t, w.server, []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)}, "lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
+			env := []string{"X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)}
+			planned, _ := runLinear(t, w.server, env, "lane", "landed", "FRM-1", "--repo", w.repo)
+			_, got := runLinear(t, w.server, env, "lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
 
-			said := linesOf(envelope)
-			if !exists(tree) {
-				t.Fatalf("a locked tree was taken:\n%s", said)
+			said := linesOf(planned)
+			// FRM-572 exit 6: a stale lock alone holds no clean tree, landed unlocks it, named; a live holder keeps it
+			if exists(tree) == c.stale {
+				t.Fatalf("tree there %v, want %v:\n%s\n%s%s", exists(tree), !c.stale, said, got.stdout, got.stderr)
 			}
-			if stale := strings.Contains(said, "stale") && strings.Contains(said, "git worktree unlock"); stale != c.stale {
-				t.Errorf("stale and naming the unlock: %v, want %v:\n%s", stale, c.stale, said)
+			if stale := strings.Contains(said, "its stale lock (pid"); stale != c.stale {
+				t.Errorf("names the stale lock: %v, want %v:\n%s", stale, c.stale, said)
 			}
 			if held := strings.Contains(said, "a live session holds it"); held == c.stale {
 				t.Errorf("reads as held: %v, want %v:\n%s", held, !c.stale, said)

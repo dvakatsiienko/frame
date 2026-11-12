@@ -42,6 +42,8 @@ type landedPlan struct {
 	archive string
 	main    string
 	clean   []string
+	// the clean trees a stale lock alone held, unlocked before their decamp
+	unlocks []string
 	// the lane plan whose closing slice for this ticket is still open, ticked on --apply
 	openClosing string
 	// the merged pr's branch, when one stands; --apply takes it
@@ -95,6 +97,24 @@ func landedPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		plan.Lines = append(plan.Lines, line.String())
 	}
 	return plan, nil
+}
+
+// the red lines `x lane landed id` would print, read silently; none for a ticket no lane spec holds, or a read that fails
+func landedReds(r *Run, id string) []string {
+	planned, err := landedPlanOf(&Run{verb: r.verb}, []string{id}, Flags{})
+	if err != nil {
+		return nil
+	}
+	var reds []string
+	for _, line := range planned.(landedPlan).lines {
+		if line.name == "spec" && strings.HasPrefix(line.detail, "no lane spec holds") {
+			return nil
+		}
+		if !line.ok {
+			reds = append(reds, line.String())
+		}
+	}
+	return reds
 }
 
 func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error) (lines []landedLine, err error) {
@@ -182,12 +202,16 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 	lines = append(lines, rounds)
 
 	trees := landedLine{name: "trees", ok: true, detail: "no lane tree under .claude/worktrees/"}
-	plan.clean = nil
+	plan.clean, plan.unlocks = nil, nil
 	var notes []string
 	found, terr := laneTrees(main, repo, id, laneRefs{pr, headRef, headSha, mergedHead, commits, underReview})
 	var swept []string
 	for _, tree := range found {
 		switch {
+		case tree.reason == "" && tree.staleLock != "":
+			plan.clean, plan.unlocks = append(plan.clean, tree.path), append(plan.unlocks, tree.path)
+			notes = append(notes, home(tree.path)+" is clean, its stale lock ("+tree.staleLock+") unlocked and the tree decamped on --apply")
+			continue
 		case tree.reason == "":
 			plan.clean = append(plan.clean, tree.path)
 			notes = append(notes, home(tree.path)+" is clean, decamped on --apply")
@@ -250,6 +274,9 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		}
 	}
 	lines = append(lines, look, wish)
+	if line := habitsLine(issue.Description, id); issueErr == nil && line != nil {
+		lines = append(lines, *line)
+	}
 	if merged.ok {
 		if freed := freedTickets(issue, id); len(freed) > 0 {
 			lines = append(lines, landedLine{name: "freed", ok: true, detail: strings.Join(freed, ", ")})
@@ -272,6 +299,38 @@ func landedLines(repo string, plan *landedPlan, issue landedRead, issueErr error
 		lines = append(lines, landedLine{name: "wired", detail: name + " names no x verb", fix: "fix that new verb: line in " + id + "'s ⚖️ worth it"})
 	}
 	return lines, nil
+}
+
+var (
+	habitsHead = regexp.MustCompile(`(?m)^## 🪢 habits[ \t]*$`)
+	habitItem  = regexp.MustCompile(`(?m)^[-*] \[([ xX])\] (.+?)[ \t\r]*$`)
+)
+
+// a ticket's `## 🪢 habits` lines, each a habit the lane must leave in place, red while one is unticked; nil when the body
+// holds none (FRM-505's exit 6)
+func habitsLine(body, id string) *landedLine {
+	at := habitsHead.FindStringIndex(body)
+	if at == nil {
+		return nil
+	}
+	section := body[at[1]:]
+	if next := nextHeading.FindStringIndex(section); next != nil {
+		section = section[:next[0]]
+	}
+	var open []string
+	items := habitItem.FindAllStringSubmatch(section, -1)
+	for _, item := range items {
+		if item[1] == " " {
+			open = append(open, "«"+item[2]+"»")
+		}
+	}
+	switch {
+	case len(items) == 0:
+		return nil
+	case len(open) > 0:
+		return &landedLine{name: "habits", detail: "unticked: " + strings.Join(open, ", "), fix: "tick each habit line in " + id + "'s body once it holds"}
+	}
+	return &landedLine{name: "habits", ok: true, detail: plural(len(items), "habit line") + " ticked"}
 }
 
 const warnOnlyFile = "home/.claude/plugin-x/mods/x-mod-guard/hooks/register.ts"
@@ -653,6 +712,8 @@ func landedIssue(flags Flags, id string) (landedRead, error) {
 type laneTree struct {
 	path, reason string
 	swept        bool
+	// why the tree's lock is stale, when that lock alone held it: unlocked on --apply
+	staleLock string
 }
 
 // what names a lane's trees beyond its codie/<ticket>-* branches: the pr, its head, its head once merged
@@ -759,14 +820,23 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		if !strings.HasPrefix(resolved(path), under) || !(ours || verify || swept) {
 			continue
 		}
+		// a stale lock alone keeps no tree: landed unlocks it, named, on --apply
+		stale := staleLock(entry)
+		if stale != "" {
+			entry.locked = false
+		}
 		reason := treeStay(entry, main, selves, sha)
 		if !swept {
 			reason = treeStay(entry, main, selves, mergedHead)
 		}
+		if stale != "" && reason != "" {
+			reason += ", its lock is stale, " + stale + ": git worktree unlock " + path
+			stale = ""
+		}
 		if verify && refs.underReview {
 			reason = strings.TrimSuffix("its lane is still under review, "+reason, ", ")
 		}
-		trees = append(trees, laneTree{path, reason, swept})
+		trees = append(trees, laneTree{path, reason, swept, stale})
 	}
 	return trees, nil
 }
@@ -820,19 +890,26 @@ func treeStay(e worktreeEntry, main string, selves []string, mergedHead string) 
 // a lock outlives a session that was stopped; its pid and start time, read together, say whether the holder is still that
 // process. a lock that names no pid cannot be read, so it holds
 func lockSays(e worktreeEntry) string {
+	if gone := staleLock(e); gone != "" {
+		return "its lock is stale, " + gone + ": git worktree unlock " + e.path
+	}
+	return "a live session holds it"
+}
+
+// why a tree's lock no longer holds, "" while its holder lives or the lock names none
+func staleLock(e worktreeEntry) string {
 	holder := lockHolder.FindStringSubmatch(e.lockReason)
-	if holder == nil {
-		return "a live session holds it"
+	if !e.locked || holder == nil {
+		return ""
 	}
 	pid, _ := strconv.Atoi(holder[1])
-	gone := "pid " + holder[1] + " is gone"
 	switch started := processStarted(pid); {
 	case started == strings.Join(strings.Fields(holder[2]), " "):
-		return "a live session holds it"
+		return ""
 	case started != "":
-		gone = "pid " + holder[1] + " is another process now"
+		return "pid " + holder[1] + " is another process now"
 	}
-	return "its lock is stale, " + gone + ": git worktree unlock " + e.path
+	return "pid " + holder[1] + " is gone"
 }
 
 // the session registry names each session's pid; a file left by a dead pid says nothing, and the registry's cwd may be
@@ -1028,7 +1105,8 @@ const closingWords = "reviewed and closed"
 var (
 	planStepLine = regexp.MustCompile(`^- \[([ xX])\] \d+ · (.+?)[ \t\r]*$`)
 	stepTicket   = regexp.MustCompile(`\b(?:FRM|BYT)-\d+\b`)
-	closingStep  = regexp.MustCompile(`\b(?:reviewed and closed|closes)$`)
+	// a trailing note in parens still reads as the closer: «reviewed and closed (round 2)»
+	closingStep = regexp.MustCompile(`\b(?:reviewed and closed|closes)(?:\s+\(.*\))?$`)
 )
 
 var stepTextPast = regexp.MustCompile(`^\s*[:·—–-]?\s+(\S.*)$`)
@@ -1177,7 +1255,7 @@ func tickClosing(path, id string) error {
 // the archived spec that holds § id, beside the main checkout's other specs
 func archivedSpec(main, id string) string {
 	specs, _ := filepath.Glob(filepath.Join(main, ".scratch", archived, "*", "spec.md"))
-	head := regexp.MustCompile(`(?m)^## ` + regexp.QuoteMeta(id) + `\b`)
+	head := specHead(id)
 	for _, spec := range specs {
 		if raw, err := os.ReadFile(spec); err == nil && head.Match(raw) {
 			return spec
@@ -1217,6 +1295,14 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 		}
 	}
 	for _, tree := range plan.clean {
+		if slices.Contains(plan.unlocks, tree) {
+			if err := r.Step("unlock", home(tree)+"'s stale lock", func() (string, error) {
+				_, err := mustGitIn(plan.main, "worktree unlock", "worktree", "unlock", tree)
+				return "unlocked", err
+			}); err != nil {
+				return nil, err
+			}
+		}
 		if err := r.Step("decamp", home(tree), func() (string, error) {
 			if err := removeTree(plan.main, tree); err != nil {
 				return "", err

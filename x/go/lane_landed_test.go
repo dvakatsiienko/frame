@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -178,6 +179,78 @@ func TestLandedApplyTakesATreeOnceItsSessionEnded(t *testing.T) {
 	envelope, _ = runLinear(t, w.server, env, "lane", "landed", "FRM-1", "--repo", w.repo, "--apply")
 	if exists(tree) {
 		t.Fatalf("the clean tree stayed:\n%s", linesOf(envelope))
+	}
+}
+
+// FRM-572 exit 6: a joint section heads each of its tickets
+func TestLandedReadsAJointSpecSection(t *testing.T) {
+	t.Parallel()
+	w := newLandedWorld(t)
+	write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-2 + FRM-1 — the joint chunk\n\n### exit lines\n\n1. a line\n")
+	envelope, _ := w.landed(t)
+	if out := linesOf(envelope); strings.Contains(out, "no lane spec holds") || !strings.Contains(out, "waits on FRM-2") {
+		t.Errorf("want the joint section read as FRM-1's spec:\n%s", out)
+	}
+}
+
+// FRM-572 exit 6 (FRM-505's rider): an unticked habit line reds, named; every line ticked is met; no section prints none
+func TestLandedReadsTheHabitLines(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ name, habits, want string }{
+		{"an unticked line reds, named", "## 🪢 habits\n\n- [x] a kept habit\n- [ ] the open habit\n", "🔴 habits — unticked: «the open habit»"},
+		{"every line ticked is met", "## 🪢 habits\n\n- [x] a kept habit\n", "✅ habits"},
+		{"no section prints no line", "", ""},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newLandedWorld(t)
+			*w.body = landedBody + "\n" + c.habits + "\n## after\n\n- [ ] not a habit\n"
+			out := linesOf(func() map[string]any { e, _ := w.landed(t); return e }())
+			if c.want == "" && strings.Contains(out, "habits") || c.want != "" && !strings.Contains(out, c.want) {
+				t.Errorf("want %q in:\n%s", c.want, out)
+			}
+		})
+	}
+}
+
+// FRM-572 exit 7: a close past a red landed prints the reds and still moves; a ticket no lane spec holds prints none
+func TestASetToDoneWarnsALanesLandedReds(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name     string
+		hasSpec  bool
+		wantReds bool
+	}{
+		{"a lane ticket with reds", true, true},
+		{"a ticket no lane spec holds", false, false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newLandedWorld(t)
+			if !c.hasSpec {
+				write(t, filepath.Join(w.repo, ".scratch/lane-1/spec.md"), "# lane 1\n\n## FRM-9 — another chunk\n")
+			}
+			body, _ := json.Marshal(landedBody)
+			server := newFakeLinear(t, func(call gqlCall) string {
+				if strings.Contains(call.Query, "mutation") {
+					return `{"data":{"issueUpdate":{"success":true}}}`
+				}
+				return `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","title":"t","priority":3,"state":{"name":"In Progress"},"labels":{"nodes":[]},
+					"team":{"id":"t-frm","states":{"nodes":[{"id":"s-done","name":"Done"}]}},"projectMilestone":null,"description":` + string(body) + `,
+					"updatedAt":"2026-10-30T00:00:00.000Z","comments":{"nodes":[]},"relations":{"nodes":[]}}}}`
+			})
+			env := asCaller(t, []string{"X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + server.URL, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.repo, stubPnpm(t)}, "coordinator")
+
+			got := xIn(t, w.repo, env, "linear", "set", "FRM-1", "--state", "Done")
+
+			reds, _ := got.data["landedReds"].([]any)
+			if got.code != 0 || len(mutations(server)) != 1 {
+				t.Fatalf("exit %d, %d mutations: the move must land:\n%s", got.code, len(mutations(server)), got.stdout)
+			}
+			if hasReds := len(reds) > 0 && strings.Contains(fmt.Sprint(reds), "🔴 review-rounds"); hasReds != c.wantReds {
+				t.Errorf("landed reds %v, want them: %v", reds, c.wantReds)
+			}
+		})
 	}
 }
 
@@ -738,6 +811,8 @@ func TestLandedReadsAChunksClosingSlice(t *testing.T) {
 		{"a chunk named mid-line still needs its closing slice", "- [x] 01 · quiet reads FRM-1\n",
 			[]string{"🔴 closing", "holds no closing slice"}, ""},
 		{"a line that leads with another ticket is that ticket's", "- [ ] 01 · FRM-2 fixes FRM-1\n", nil, "closing"},
+		{"a closing slice with a trailing note reads", "- [x] 01 · FRM-1 the build\n- [x] 02 · FRM-1 reviewed and closed (round 2, merged 18:37)\n",
+			[]string{"✅ closing"}, ""},
 		{"a crlf plan reads its closing slice", "- [x] 01 · FRM-1 the build\r\n- [x] 02 · FRM-1 reviewed and closed\r\n",
 			[]string{"✅ closing"}, ""},
 	}
