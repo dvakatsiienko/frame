@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T18:22:00Z'
+updated_date: '2026-11-12T18:42:00Z'
 labels:
   - s
   - clio-wing-1
@@ -611,4 +611,6 @@ done 2026-11-12 20:10: «seat» code half: seatOf, CLIO_SEAT and the seats dir r
 20:17 wing 1: sign hash reader landed on main (cc03fa1d, stray codie): x asSigned and ticket-sign.ts strip linear's escapes; dry dispatch FRM-566 confirm, no drift; its gap named by the codie: links linear rewrote
 
 20:22 wing 1: the pre-push red is fixed on origin (73e95c29); cc03fa1d and 3df401fa rode the push
+
+20:42 wing 1: want-marker count (o43): 992 no-wish lines 11-06..11-12, 546 with a marker, 2 true, 542 false refuses, 2 unclear, 167 not judged; report .scratch/no-wish-markers.md in the wing tree; drop asked
 <!-- SECTION:NOTES:END -->
