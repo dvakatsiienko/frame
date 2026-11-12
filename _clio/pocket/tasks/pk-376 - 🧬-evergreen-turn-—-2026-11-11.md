@@ -1,10 +1,10 @@
 ---
 id: PK-376
 title: 🧬 evergreen turn — 2026-11-11
-status: open
+status: done
 assignee: []
 created_date: '2026-11-10T22:53:00Z'
-updated_date: '2026-11-12T11:37:00Z'
+updated_date: '2026-11-12T15:45:00Z'
 due_date: '2026-11-18'
 labels:
   - xs
@@ -24,4 +24,6 @@ seeded by the boot digest: apps lane due or 0 security PR(s). run clio:evergreen
 
 <!-- SECTION:NOTES:BEGIN -->
 re-dated 2026-11-12 — the evergreen turn didn't run on 11-11 (herdr day); it runs at tomorrow's boot
+
+17:45 close: twin of wing 1's flyway line PK-346 #21 (📅 evergreen, two weeks in one, on 2026-11-18, dima 16:26); that line carries it
 <!-- SECTION:NOTES:END -->
