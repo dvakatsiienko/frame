@@ -167,7 +167,12 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 	if json.Unmarshal(data["issueUpdate"], &result) != nil || !result.Success {
 		return nil, &Fail{Msg: "linear did not take the write to " + id, Next: "x linear read " + id}
 	}
-	// the write is the new baseline: a second edit of the same file needs no second pull; its size stays the largest
+	// the write is the new baseline: a second edit of the same file needs no second pull; its size stays the largest.
+	// the pull's own file takes the written text too, since ticket-sign.ts stamps that file and a stale one would pass
+	// the next set's moved check
+	if cache := pullFile(id); cache != source {
+		_ = os.WriteFile(cache, text, 0o644)
+	}
 	_ = savePull(id, pull{source, result.Issue.UpdatedAt, max(largest, len(text))})
 	r.Board(ui.ok.Render("✓ ") + ui.fg.Render("wrote "+id+"'s body as "+actor))
 	return ordered{{"actor", actor}, {"id", id}, {"updatedAt", result.Issue.UpdatedAt}}, nil

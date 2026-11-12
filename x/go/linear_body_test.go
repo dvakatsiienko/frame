@@ -192,6 +192,30 @@ func TestBodySetMeasuresALaterSetAgainstThePull(t *testing.T) {
 	}
 }
 
+// a set from any file leaves the pull's own file holding what linear now holds, so ticket-sign.ts, which stamps that
+// file, never stamps a stale body
+func TestBodySetRefreshesThePulledFile(t *testing.T) {
+	t.Parallel()
+	server := liveBodyServer(t, "the old body")
+	state, other := t.TempDir(), filepath.Join(t.TempDir(), "edit.md")
+	pulled, got := runBody(t, server, state, "FRM-1")
+	if got.code != 0 {
+		t.Fatalf("the pull: exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+	data, _ := pulled["data"].(map[string]any)
+	file, _ := data["file"].(string)
+	// twice: the second set's record already names the other file
+	for _, body := range []string{"the new body", "the newer body"} {
+		write(t, other, body)
+		if _, got := runBody(t, server, state, "FRM-1", "--set", other); got.code != 0 {
+			t.Fatalf("the set: exit %d\n%s", got.code, got.stdout)
+		}
+		if held := read(t, file); held != body {
+			t.Errorf("the pull's file holds %q after the set, want %q", held, body)
+		}
+	}
+}
+
 func TestBodySetRefusesAnEmptyFile(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {
