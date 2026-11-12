@@ -8,6 +8,8 @@ import {
     closeOverlay,
     exec,
     focused,
+    layout,
+    nextCommand,
     notify,
     openOverlay,
     panes,
@@ -624,6 +626,21 @@ const resetText = (w) =>
           ? `Resets at ${clock(w.resets)}`
           : '';
 
+/** the first block of the shown layout whose content passes `test` @param {(content: any) => unknown} test */
+function blockOf(test) {
+    /** @param {any} node @returns {any} */
+    const walk = (node) => {
+        if (!node || typeof node !== 'object') return null;
+        if (test(node.content)) return node;
+        for (const child of node.children ?? []) {
+            const found = walk(child);
+            if (found) return found;
+        }
+        return null;
+    };
+    return walk(/** @type {any} */ (layout())?.root ?? layout());
+}
+
 export default class WorkspaceStatus extends View {
     init(_props, cx) {
         this.prs = {}; // "<folder>|<branch>" → { pr, error?, at }
@@ -643,6 +660,29 @@ export default class WorkspaceStatus extends View {
         if (p.repos) return this.initRepos(p.repos, cx);
         if (p.usage) return this.initUsage(cx, false);
         this.initUsage(cx, true);
+        // x-herdr keys (FRM-577) land here: the status bar is always placed, while the chat sits behind the Terminal
+        // view half the time, and herdr calls a command of a mod that is not drawn «unknown»
+        cx.spawn(async () => {
+            for (;;) {
+                const command = await nextCommand();
+                if (command === 'quill') {
+                    const chat = blockOf(
+                        (c) => c?.mod === 'x-herdr-chatter' && c.props?.stack,
+                    );
+                    if (chat)
+                        run('layout.select', {
+                            child: chat.content.props.self,
+                            stack: chat.content.props.stack,
+                        });
+                    setShared('chat.quill', Date.now());
+                } else if (command === 'deck') {
+                    const deck = blockOf(
+                        (c) => c?.mod === 'x-herdr-deck' && !c.props?.view,
+                    );
+                    if (deck) run('layout.toggle', { id: deck.id });
+                }
+            }
+        });
         this.git = {}; // folder -> { branch, upstream, ahead, behind, dirty } | null (not a repo)
         this.boxes = []; // devContainers()
         this.dirs = {}; // workspace root → its repos

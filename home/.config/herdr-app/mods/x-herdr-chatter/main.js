@@ -76,7 +76,7 @@ import COMMANDS from './commands.js';
 import { readableBackground } from './contrast.js';
 import { importOldDrafts } from './drafts.js';
 import { foldBlocks } from './fold.js';
-import { OUR_KEYS, keysWithOurs } from './hotkeys.js';
+import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 import { rejoin } from './joined.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
@@ -240,57 +240,86 @@ async function setMetalHud(isOn) {
     if (r.code !== 0)
         throw new Error(r.stderr.trim() || 'defaults write failed');
 }
-// the keys herdr refused ours for, by name: shown once as a toast, and on the settings window's Keys page
-let refusedKeys = /** @type {import('./hotkeys.js').Refused[]} */ ([]);
-// herdr's own global keys as his keys.json holds them, for the Keys page
-let herdrKeys = /** @type {[string, string][]} */ ([]);
 // his keys.json gets our entries; a write that changes it sets the old file aside first, so his own keys never go
+const KEYS_PATH = () => `${appHome()}/keys.json`;
+/**
+ * his keys.json rewritten as `keys`, the file as it was kept in data/x-herdr-chatter/keys-before first; false when
+ * nothing changes. writeTextFile refuses a file changed since `text` was read, and the caller reads again
+ * @param {string | null} text @param {Record<string, Record<string, unknown>>} keys
+ */
+async function saveKeys(text, keys) {
+    if (
+        text !== null &&
+        JSON.stringify(JSON.parse(text)) === JSON.stringify(keys)
+    )
+        return false;
+    if (text !== null) {
+        const dir = `${appHome()}/data/x-herdr-chatter/keys-before`;
+        const made = await exec('mkdir', ['-p', dir]);
+        if (made.code !== 0)
+            throw new Error(made.stderr.trim() || 'mkdir failed');
+        await writeFile(
+            `${dir}/keys.json-${new Date().toISOString().replace(/[:.]/g, '-')}`,
+            text,
+        );
+    }
+    await writeTextFile(
+        KEYS_PATH(),
+        `${JSON.stringify(keys, null, 2)}\n`,
+        text,
+    );
+    return true;
+}
+async function readKeys() {
+    const text = await readTextFile(KEYS_PATH()).catch(
+        () => /** @type {string | null} */ (null),
+    );
+    return { keys: JSON.parse(text ?? '{}'), text };
+}
 async function writeOurKeys() {
-    const path = `${appHome()}/keys.json`;
     for (let tries = 2; ; tries--) {
-        const text = await readTextFile(path).catch(
-            () => /** @type {string | null} */ (null),
-        );
-        const { keys, refused } = keysWithOurs(
-            JSON.parse(text ?? '{}'),
-            OUR_KEYS,
-        );
-        refusedKeys = refused;
-        herdrKeys = Object.entries(keys.global)
-            .filter(([, a]) => !String(a).startsWith('x-herdr-'))
-            .map(([k, a]) => [
-                k,
-                typeof a === 'string' ? a : JSON.stringify(a),
-            ]);
+        const { keys: his, text } = await readKeys();
+        const { keys, refused } = keysWithOurs(his, OUR_KEYS);
         for (const r of refused)
             notify({
                 body: `${r.key} is herdr's «${r.takenBy}»: «${r.title}» has no key`,
                 level: 'warning',
                 title: 'An x-herdr key clashes',
             });
-        const next = `${JSON.stringify(keys, null, 2)}\n`;
-        if (
-            text !== null &&
-            JSON.stringify(JSON.parse(text)) === JSON.stringify(keys)
-        )
-            return;
-        if (text !== null) {
-            const dir = `${appHome()}/data/x-herdr-chatter/keys-before`;
-            const made = await exec('mkdir', ['-p', dir]);
-            if (made.code !== 0)
-                throw new Error(made.stderr.trim() || 'mkdir failed');
-            await writeFile(
-                `${dir}/keys.json-${new Date().toISOString().replace(/[:.]/g, '-')}`,
-                text,
-            );
-        }
         try {
-            await writeTextFile(path, next, text);
+            await saveKeys(text, keys);
             return;
         } catch (err) {
             if (tries <= 1) throw err;
         }
     }
+}
+/**
+ * what the Keys page draws, read from his keys.json: ours where they sit now (a refused one keyless), then herdr's own
+ * @param {Record<string, Record<string, unknown>>} his
+ */
+function keysView(his) {
+    const global = his.global ?? {};
+    const at = new Map(Object.entries(global).map(([k, a]) => [a, k]));
+    const { refused } = keysWithOurs(his, OUR_KEYS);
+    return {
+        herdr: Object.entries(global)
+            .filter(([, a]) => !String(a).startsWith('x-herdr-'))
+            .map(
+                ([k, a]) =>
+                    /** @type {[string, string]} */ ([
+                        k,
+                        typeof a === 'string' ? a : JSON.stringify(a),
+                    ]),
+            ),
+        ours: OUR_KEYS.map((k) => ({
+            ...k,
+            key: /** @type {string} */ (at.get(k.action) ?? k.key),
+            takenBy: at.has(k.action)
+                ? null
+                : (refused.find((r) => r.action === k.action)?.takenBy ?? null),
+        })),
+    };
 }
 async function loadSettings() {
     const hud = await metalHudNow().catch(() => null);
@@ -1415,6 +1444,16 @@ export default class ClaudeChat extends View {
     init(_props, cx) {
         if (props()?.settingsWindow) {
             this.settingsPage = String(props().settingsWindow);
+            // the Keys page: his keys.json as read, the chord being recorded, what the last press said
+            this.keysFile =
+                /** @type {Record<string, Record<string, unknown>>} */ ({});
+            this.recording = /** @type {string | null} */ (null);
+            this.keysNote = '';
+            this.keyCapture = cx.focus_handle();
+            cx.spawn(async (cx) => {
+                this.keysFile = (await readKeys()).keys;
+                cx.notify();
+            });
             return;
         }
         if (props()?.settings) {
@@ -1449,7 +1488,7 @@ export default class ClaudeChat extends View {
             });
             return;
         }
-        // x-herdr's keys (FRM-577): ours written into his keys.json, then each command herdr hands this mod
+        // x-herdr's keys (FRM-577): ours written into his keys.json; the status bar takes them, being always placed
         cx.spawn(async () => {
             await writeOurKeys().catch((e) =>
                 notify({
@@ -1458,12 +1497,6 @@ export default class ClaudeChat extends View {
                     title: 'x-herdr keys were not written',
                 }),
             );
-            for (;;) {
-                const command = await nextCommand();
-                if (command === 'focus') this.focusQuill();
-                else if (command === 'deck')
-                    run('layout.toggle', { id: DECK_BLOCK });
-            }
         });
         cx.spawn(async (cx) => {
             for (;;) {
@@ -2200,10 +2233,45 @@ export default class ClaudeChat extends View {
     }
 
     // ⌘K: the Chat view comes forward and the caret goes into the quill
-    focusQuill() {
-        const { stack, self } = props() ?? {};
-        if (stack && self) run('layout.select', { child: self, stack });
-        this.renderCx?.timer.after(30, () => this.box.focus());
+    // the Keys page took a chord for the key being recorded: Esc gives up, a lone modifier waits for the rest
+    /** @param {string} keystroke @param {any} cx */
+    recordKey(keystroke, cx) {
+        const from = this.recording;
+        if (!from) return;
+        if (keystroke === 'escape') {
+            this.recording = null;
+            cx.notify();
+            return;
+        }
+        if (
+            /^(cmd|ctrl|alt|shift|fn|function|capslock|platform)(-(cmd|ctrl|alt|shift))*$/.test(
+                keystroke,
+            )
+        )
+            return;
+        this.recording = null;
+        cx.spawn(async (cx) => {
+            try {
+                const { keys: his, text } = await readKeys();
+                const r = rebind(his, from, keystroke);
+                if ('refused' in r)
+                    this.keysNote =
+                        r.refused === 'typing'
+                            ? `${keystroke} types into a terminal; pick a chord with ⌘ or ⌥`
+                            : r.refused
+                              ? `${keystroke} is taken by «${r.refused}»`
+                              : `${from} is no longer bound`;
+                else {
+                    await saveKeys(text, r.keys);
+                    this.keysNote = `${from} → ${keystroke}`;
+                }
+                this.keysFile = (await readKeys()).keys;
+            } catch (e) {
+                this.keysNote = `not saved: ${e?.message ?? e}`;
+            }
+            cx.notify();
+        });
+        cx.notify();
     }
 
     toTerminal(address) {
@@ -7002,13 +7070,17 @@ export default class ClaudeChat extends View {
         if (props()?.settingsWindow)
             return settingsWindow(theme(), {
                 keys: {
-                    herdr: herdrKeys,
-                    ours: OUR_KEYS.map((k) => ({
-                        ...k,
-                        takenBy:
-                            refusedKeys.find((r) => r.action === k.action)
-                                ?.takenBy ?? null,
-                    })),
+                    ...keysView(this.keysFile),
+                    capture: this.keyCapture,
+                    note: this.keysNote,
+                    onKey: (keystroke) => this.recordKey(keystroke, cx),
+                    onRecord: (key) => {
+                        this.recording = key;
+                        this.keysNote = '';
+                        this.keyCapture.focus();
+                        cx.notify();
+                    },
+                    recording: this.recording,
                 },
                 onChange: (key, value) => {
                     (key === 'chatter.metalHud'
@@ -7039,9 +7111,15 @@ export default class ClaudeChat extends View {
         // Clicking a character or a tab gives the keyboard to that (hidden) terminal: take it back
         // whenever the chat comes on screen or changes agent, so typing lands in the quill.
         const seen = this.showing() ? (agent?.address ?? '') : null;
-        if (seen && seen !== this.seen)
+        // ⌘K asks for the quill through shared state (the status bar takes the key): a new ask focuses it once shown
+        const quillAsk = shared('chat.quill') ?? null;
+        if (
+            (seen && seen !== this.seen) ||
+            (seen != null && quillAsk !== this.quillAsk)
+        )
             cx.timer.after(50, () => this.box.focus());
         this.seen = seen;
+        if (seen != null) this.quillAsk = quillAsk;
         const look = chatLook();
         const root = v_flex()
             .size_full()
