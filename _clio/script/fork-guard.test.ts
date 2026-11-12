@@ -421,6 +421,46 @@ describe('fork-guard fork-edit', () => {
         ).toBe('');
     });
 
+    test('a wing edits only the handoff whose name carries its own token', () => {
+        const sessions = mkdtempSync(join(tmpdir(), 'fg-s-'));
+        const handoffs = join(repo, 'home/.claude/shelf/handoffs');
+        const wingEdit = (name: string, file: string) => {
+            writeFileSync(
+                join(sessions, `${process.ppid}.json`),
+                JSON.stringify({ kind: 'interactive', name }),
+            );
+            return spawnSync('bash', [GUARD, 'fork-edit'], {
+                encoding: 'utf8',
+                env: {
+                    ...process.env,
+                    FORK_GUARD_CC_PID: String(process.ppid),
+                    FORK_GUARD_SESSIONS: sessions,
+                    FORK_GUARD_STATE: state,
+                },
+                input: JSON.stringify({ tool_input: { file_path: file } }),
+                timeout: 10_000,
+            }).stdout;
+        };
+        const own = join(
+            handoffs,
+            'clio--pm--wing1-sw-3--by-clio--20261112T1930Z.md',
+        );
+        expect(wingEdit('🦉🪽 clio: wing 1', own)).toBe('');
+        for (const file of [
+            join(handoffs, 'clio--pm--wing12-sw-1--by-clio--20261112T1930Z.md'),
+            join(handoffs, 'clio--pm--wing2-sw-1--by-clio--20261112T1930Z.md'),
+            join(handoffs, 'sub/clio--pm--wing1-sw-3--by-clio--1.md'),
+            join(handoffs, '../wing1-a.md'),
+        ]) {
+            expect(wingEdit('🦉🪽 clio: wing 1', file)).toContain(
+                'edits only inside',
+            );
+        }
+        expect(wingEdit('⚡ 🔧 strays | chores', own)).toContain(
+            'edits only inside',
+        );
+    });
+
     test("main's .scratch takes a wing's spec, by Bash and by Edit", () => {
         expect(bashIn(tree, `echo x > ${repo}/.scratch/lane/spec.md`)).toBe('');
         expect(edit(String(process.ppid), join(repo, '.scratch/spec.md'))).toBe(

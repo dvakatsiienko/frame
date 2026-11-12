@@ -111,6 +111,12 @@ fork-edit | fork-bash)
 		file=$(jq -r '.tool_input.file_path // .tool_input.notebook_path // ""' <<<"$input")
 		# main's gitignored .scratch holds a lane's spec, whichever clio runs the lane; a wing logs its own flaws on the shared shelf
 		case "$file" in */.scratch/* | */shelf/flawlog/*) exit 0 ;; esac
+		# a wing fixes its own handoff, the one whose name carries its token: wing1 for «wing 1»
+		case "$file" in */shelf/handoffs/*/*) ;; */shelf/handoffs/*)
+			name=$(jq -r '.name // ""' "${FORK_GUARD_SESSIONS:-$HOME/.claude/sessions}/$me.json" 2>/dev/null)
+			[[ $name =~ wing\ ([0-9]+)$ ]] && [[ ${file##*/} =~ (^|-)wing${BASH_REMATCH[1]}(-|\.|$) ]] && exit 0
+			;;
+		esac
 		in_main_checkout "$(dirname "$file")" || exit 0
 	else
 		cmd=$(jq -r '.tool_input.command // ""' <<<"$input")
