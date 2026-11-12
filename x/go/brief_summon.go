@@ -212,6 +212,16 @@ func briefSummon(r *Run, args []string, flags Flags) (any, error) {
 	if m := laneKindLine.FindStringSubmatch(text); m != nil {
 		record.LaneKind = m[1]
 	}
+	// a sixth sense's inline argv names no lane kind: it takes its lane's, from the codie record of the same lane
+	if record.LaneKind == "" && record.Lane != "" {
+		if store, err := readThreadStore(threadStorePath()); err == nil {
+			for _, t := range store.Threads {
+				if t.Lane == record.Lane && t.LaneKind != "" {
+					record.LaneKind = t.LaneKind
+				}
+			}
+		}
+	}
 	out, err := summonArgv(r, command, record)
 	if err != nil {
 		return nil, err
@@ -247,7 +257,7 @@ func summonStanding(r *Run, command string, words []string, home string, record 
 	if len(failed) > 0 {
 		return nil, summonRefused(failed, command)
 	}
-	if err := coordinatorOnly("x brief summon"); err != nil {
+	if err := standingGate("x brief summon", record); err != nil {
 		return nil, err
 	}
 	record.SessionID = newSessionID()
@@ -262,7 +272,7 @@ func summonStanding(r *Run, command string, words []string, home string, record 
 // the session must be live and hold no other role (threadRoleRefusal)
 func recordRunning(r *Run, record thread, sid string) (any, error) {
 	r.Open("summon")
-	if err := coordinatorOnly("x brief summon --session"); err != nil {
+	if err := standingGate("x brief summon --session", record); err != nil {
 		return nil, err
 	}
 	record.SessionID = sid
@@ -275,6 +285,22 @@ func recordRunning(r *Run, record thread, sid string) (any, error) {
 	display := threadDisplay(record)
 	r.Done("ok: "+sid+" is "+display, "")
 	return ordered{{"sessionId", sid}, {"role", record.Role}, {"display", display}}, nil
+}
+
+// the caller gate, plus round 2's pane rule: a coordinator or wing record is never written for a caller in a herdr
+// terminal with no registered claude above it, since a member's `hc run` pane looks like dima's own; dima's herdr
+// layout starts clio with HC_TERMINAL_ID unset (a known gap: `env -u` strips it as easily, FTR)
+func standingGate(verb string, record thread) error {
+	if err := coordinatorOnly(verb); err != nil {
+		return err
+	}
+	if !roleOf(record.Role).IsCoordinator || os.Getenv("HC_TERMINAL_ID") == "" {
+		return nil
+	}
+	if table, err := readProcessTable(); err == nil && len(callerChain(table, powerSessionsDir())) > 0 {
+		return nil
+	}
+	return &Fail{Refused: true, Msg: verb + " gives a coordinator's role, never to a herdr terminal with no claude above it", Next: roleRefusalNext}
 }
 
 // --role's word: coordinator, wing:<n>, adviser or copyist, the ids roles.json gives a display of their own

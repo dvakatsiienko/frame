@@ -169,8 +169,8 @@ const KEEP = 50;
 const DAY = 'day:';
 const DAYS = 30;
 const SHOWN = 160;
-// a coordinator by its thread record, the signed claim of clio or a wing that x thread list answers, never by its name
-// (FRM-579): a fork or a renamed thread under «🦉 clio» holds no claim
+// a coordinator by its thread record's role id, the one x brief summon wrote behind its caller gate, never by its name
+// (FRM-579): a fork or a renamed thread under «🦉 clio» holds no record
 const isCoordinatorRole = (role: string | undefined) =>
     role === 'coordinator' || role === 'wing';
 // whole code points, and no half pair left from an older cut: a lone surrogate leaves the store file unreadable to jq
@@ -365,7 +365,7 @@ async function threadList($: EngineInterface): Promise<Thread[]> {
     }
 }
 
-// a session's role as x thread list answers it: its record, or its signed claim; undefined with no session or no x
+// a session's role as x thread list answers it, from its record; undefined with no session or no x
 async function roleOf($: EngineInterface, sid: string | undefined) {
     return sid
         ? (await threadList($)).find((t) => t.sessionId === sid)?.role

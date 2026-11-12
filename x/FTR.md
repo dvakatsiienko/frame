@@ -556,7 +556,10 @@
   - given a `claude --bg` argv, then it refuses (exit 1) naming the `--session` form: cc ignores `--session-id` there, so the door starts the job and records the session id the registry holds for its `jobId`
   - given `--session <sid>` with `--role`, when the sid is a live thread holding no other role, then its record takes the role: a `--bg` start, the cutover's backfill by the sids dima reads
   - given a caller that is no coordinator, a session with no record (a fork) included, then both forms refuse (exit 1) and no record is written
+  - given a coordinator or wing role asked from a herdr terminal (`HC_TERMINAL_ID` set) with no registered claude above x, then it refuses (exit 1): a member's `hc run` pane looks like dima's own; a sidecar's record still lands there; dima's herdr layout runs its clio start with `HC_TERMINAL_ID` unset
+  - given a sixth sense's summon, whose inline argv names no lane kind, then its record takes the kind of its lane's codie record, so it reads `🌗 🔎 cli | #170` from its first record
   - decision: no signed store; x alone writes `threads.json` and x-mod-guard refuses every session's write to it, so a power read takes its fixture env only in a test build (FRM-579)
+  - known gaps, labelled (wing 1, 2026-11-12, after sixth sense round 2): a node or python script that writes `threads.json` straight; a member's `hc run -- env -u HC_TERMINAL_ID zsh …` pane, which reads as dima's terminal; `hc run`, rex, osascript and launchctl stay open to members, and the guard refuses only a line that names a start door
 
 ## linear — tickets
 

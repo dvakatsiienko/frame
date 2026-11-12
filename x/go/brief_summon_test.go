@@ -295,7 +295,7 @@ func TestBriefSummonWritesTheThreadRecordUnderItsSessionID(t *testing.T) {
 	if ids[0] == ids[1] {
 		t.Errorf("a second summon of the same line reused %s", ids[0])
 	}
-	want := map[string]string{ids[0]: "🌗 🔧 cli | FRM-1", ids[1]: "🌗 🔧 cli | FRM-1", ids[2]: "🔎 cli | FRM-1"}
+	want := map[string]string{ids[0]: "🌗 🔧 cli | FRM-1", ids[1]: "🌗 🔧 cli | FRM-1", ids[2]: "🌗 🔎 cli | FRM-1"}
 	shown := map[string]string{}
 	threads, _ := list.data["threads"].([]any)
 	for _, th := range threads {
@@ -512,6 +512,28 @@ func TestBriefSummonUnderScriptReadsTheMemberAboveIt(t *testing.T) {
 	}
 }
 
+// round 2: a herdr terminal with no claude above x looks like dima's own, a member's `hc run` pane too; it gets no
+// coordinator or wing record, while a sidecar's still lands
+func TestBriefSummonGivesNoCoordinatorRecordToABareHerdrPane(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		role string
+		code int
+	}{{"coordinator", 1}, {"wing:2", 1}, {"adviser", 0}} {
+		t.Run(c.role, func(t *testing.T) {
+			t.Parallel()
+			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
+
+			got := scriptX(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store, "HC_TERMINAL_ID=t9"}, "brief", "summon", "--role", c.role, "--session", "sid-other")
+
+			if got.code != c.code {
+				t.Fatalf("exit %d, want %d:\n%s", got.code, c.code, got.out)
+			}
+		})
+	}
+}
+
 type scripted struct {
 	code int
 	out  string
@@ -522,7 +544,7 @@ type scripted struct {
 func scriptX(t *testing.T, env []string, args ...string) scripted {
 	t.Helper()
 	c := exec.Command(xbin, append(args, "--json")...)
-	c.Env = append(append(cleanEnv(), "X_TEST=1"), env...)
+	c.Env = append(append(cleanEnv(), "X_TEST=1", "HC_TERMINAL_ID="), env...)
 	ptmx, err := pty.Start(c)
 	if err != nil {
 		t.Fatal(err)
