@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T13:35:00Z'
+updated_date: '2026-11-12T13:58:00Z'
 labels:
   - m
   - clio-wing-1
@@ -54,4 +54,8 @@ PK-379:W9 (2026-11-12 15:15, dima): why do you print your system messages at all
 PK-379:W10 (2026-11-12 15:15, dima): i still think it's a trick that kills a symptom, not the problem, and i have no smarter idea right now. either propose something better, or let's try it this way and tell me if it will work at all; if you tell me it will probably be clunky, i discard my proposal.
 
 PK-379:W11 (2026-11-12 15:34, dima): i think this temporary habit is worth an mvp test: let's have it for half a day, but i want it easy to undo, because it hides your activity completely and that's not always good. i'd like to know what's under the hood, so i want that folded option. let's shape it.
+
+PK-379:W12 (2026-11-12 15:42, dima): let's shape it as a slightly wider, more generic folded message type, one that works for any thread, lanes included, not only clio: a system message, your plain messages that aren't too important for me. you'd fold wishkeeper and crow not because the feature is built for them, but because we agreed they are system-type.
+PK-379:W13 (2026-11-12 15:42, dima): can i have a toggle button for it on my band? enabled, everyone uses the system fold; unticked, you stop and print normally. the toggle doesn't change already folded messages, they stay as they are in history.
+PK-379:W14 (2026-11-12 15:47, dima): if it stops working or gets clunky on any surface, i'll just disable it.
 <!-- SECTION:NOTES:END -->
