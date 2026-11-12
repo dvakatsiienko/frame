@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T15:04:00Z'
+updated_date: '2026-11-12T15:33:00Z'
 labels:
   - s
 dependencies: []
@@ -94,4 +94,11 @@ PK-380:W25 (2026-11-12 16:29, dima): ❓ (on «only 29 had a live word behind th
 PK-380:W26 (2026-11-12 16:58, dima, o39 steer): maybe knowledge? and a well structured dir, plus your habits.
 
 PK-380:W27 (2026-11-12 17:02, dima, o42 steer): yes. plus, before the halt, analyze the whole story of our guard: when it was born, how decisions were made (and who made them; i think you are the initiator and i was silently agreeing because i thought it was a good idea), and how many days, time and effort were spent on a wrong guard. place that into a story too. do not forget!
+
+PK-380:W28 (2026-11-12 16:51, dima): note: wing 1 keeps making decisions about permissions in the cli. you are responsible: watch it, and take over the cli topic from wing 1 as soon as possible. wing 1 and crow keep consulting you on how to solve guard issues.
+PK-380:W29 (2026-11-12 16:51, dima): also, important: log today's guard discovery flaw somewhere in a very visible place. ❓ do we have a place to log stories like this? maybe let's have «fleet stories» somewhere. wing 1 started its own cpu-roasting perf story in the knowledge folder. propose good structures where to store all stories like this, in an efficient shape.
+PK-380:W30 (2026-11-12 16:58, dima): ok, maybe knowledge? it is intended to be useful knowledge, to store there flaws like our guard's critically wrong arch decision. the cpu story is similar, but no one is guilty. and stories can grow, so maybe fleet-stories/<story dir>/files? and they should be easily searchable.
+PK-380:W31 (2026-11-12 16:58, dima): plus, habits: incidents should be placed in stories always. propose how to update the habits.
+PK-380:W32 (2026-11-12 16:58, dima): cpu story: update all pointers.
+17:33 moved: W5, W11–W18 and W21–W24 live in FRM-581 (guard); this item keeps W1–W4 and the comms lines
 <!-- SECTION:NOTES:END -->
