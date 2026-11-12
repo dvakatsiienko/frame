@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 // a pull is remembered per ticket and session: where its body went, the updatedAt it was read at and its size
@@ -45,8 +46,12 @@ func readPulls() map[string]pull {
 	return pulls
 }
 
+// a pull older than this is no session's live edit: its record goes, and its file when x pulled it to its own dir
+const pullKept = 14 * 24 * time.Hour
+
 func savePull(id string, p pull) error {
 	pulls := readPulls()
+	prunePulls(pulls, time.Now())
 	pulls[pullKey(id)] = p
 	raw, _ := json.MarshalIndent(pulls, "", "  ")
 	if err := os.MkdirAll(filepath.Dir(pullsPath()), 0o755); err != nil {
@@ -58,6 +63,23 @@ func savePull(id string, p pull) error {
 		return err
 	}
 	return os.Rename(whole, pullsPath())
+}
+
+// prunePulls drops each record whose file is gone or untouched for pullKept, so a key and a dir per session never pile up;
+// a file outside x's own bodies dir (a --to path) is the caller's and stays
+func prunePulls(pulls map[string]pull, now time.Time) {
+	bodies := filepath.Join(stateDir(), "linear", "bodies") + string(filepath.Separator)
+	for key, p := range pulls {
+		info, err := os.Stat(p.File)
+		if err == nil && now.Sub(info.ModTime()) < pullKept {
+			continue
+		}
+		delete(pulls, key)
+		if err == nil && strings.HasPrefix(p.File, bodies) {
+			_ = os.Remove(p.File)
+			_ = os.Remove(filepath.Dir(p.File))
+		}
+	}
 }
 
 type bodyIssue struct {

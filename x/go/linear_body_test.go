@@ -3,10 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
+	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 // a ticket whose updatedAt the test can move, the way a peer's edit would
@@ -214,6 +218,42 @@ func TestBodySetRefreshesThePulledFile(t *testing.T) {
 		if held := read(t, file); held != body {
 			t.Errorf("the pull's file holds %q after the set, want %q", held, body)
 		}
+	}
+}
+
+// FRM-572: a key and a dir per session piled up in pulls.json with nothing pruning them
+func TestBodyPullPrunesStaleRecords(t *testing.T) {
+	t.Parallel()
+	server := liveBodyServer(t, "a body")
+	state, outside := t.TempDir(), filepath.Join(t.TempDir(), "mine.md")
+	bodies := filepath.Join(state, "linear", "bodies")
+	fresh, stale := filepath.Join(bodies, "s-fresh", "FRM-2.md"), filepath.Join(bodies, "s-old", "FRM-3.md")
+	for _, file := range []string{fresh, stale, outside} {
+		write(t, file, "x")
+	}
+	old := time.Now().Add(-20 * 24 * time.Hour)
+	for _, file := range []string{stale, outside} {
+		if err := os.Chtimes(file, old, old); err != nil {
+			t.Fatal(err)
+		}
+	}
+	records, _ := json.Marshal(map[string]pull{
+		"FRM-2@s-fresh": {File: fresh}, "FRM-3@s-old": {File: stale}, "FRM-4@s-mine": {File: outside},
+		"FRM-5@s-gone": {File: filepath.Join(bodies, "s-gone", "FRM-5.md")},
+	})
+	write(t, filepath.Join(state, "linear", "pulls.json"), string(records))
+
+	if _, got := runBody(t, server, state, "FRM-1", "--to", filepath.Join(t.TempDir(), "body.md")); got.code != 0 {
+		t.Fatalf("the pull: exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+
+	var kept map[string]pull
+	_ = json.Unmarshal([]byte(read(t, filepath.Join(state, "linear", "pulls.json"))), &kept)
+	if _, has := kept["FRM-2@s-fresh"]; !has || len(kept) != 2 {
+		t.Errorf("records %v, want the fresh one and the new pull", slices.Collect(maps.Keys(kept)))
+	}
+	if exists(stale) || !exists(outside) || !exists(fresh) {
+		t.Errorf("stale body kept %v, the caller's own file kept %v, the fresh body kept %v", exists(stale), exists(outside), exists(fresh))
 	}
 }
 
