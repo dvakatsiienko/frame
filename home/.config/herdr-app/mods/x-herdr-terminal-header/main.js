@@ -58,7 +58,7 @@ const labelledTerm = (want) =>
     terminals().find((t) => t.state === 'live' && t.labels?.[LABEL] === want) ??
     null;
 
-// The dev container terminal's command: my-new-menu's, from the Claude entry, but `devcontainer up`
+// The dev container terminal's command, from the + menu's Claude (dev container) entry, but `devcontainer up`
 // is quiet unless it fails (then it runs again to show why, and waits for a key), and the screen is
 // cleared before bash. The terminal starts at Herdr's default width (~200 columns) while the tray
 // isn't sized yet; bash through `docker exec` redraws its prompt on the resize, which left a doubled

@@ -203,7 +203,7 @@ async function syncForeground() {
     }
 }
 syncForeground();
-// "Claude (dev container)" in the + menu (`my-new-menu`), switched in the ⚙ popup: on = this
+// "Claude (dev container)" in the + menu (herdr's `new-menu`), switched in the ⚙ popup: on = this
 // computer's programs.json has the entry, so that file is the setting. On by default (the user's
 // choice 2026-11-02; the space's folder must hold the .devcontainer, the standard VS Code layout): the first run
 // on Windows (the command is cmd.exe) adds it, once; shared `chat.devContainer` remembers that a
@@ -449,9 +449,9 @@ const sameSlash = (a, b) =>
 // The tool that starts a sub-agent ("Task" in older Claude Codes). Its rows are cards that open
 // the sub-agent's own conversation, read from <session>/subagents/agent-<id>.jsonl.
 const AGENT_TOOLS = new Set(['Agent', 'Task']);
-// Shared: how many sub-agents each Claude agent has at work, { "<address>": n }, for my-status.
+// Shared: how many sub-agents each Claude agent has at work, { "<address>": n }, for x-herdr-status.
 const SUBS = 'chat.subs';
-const CONTAINERS = 'chat.containers'; // { "<address>": "<container>" }, for my-status
+const CONTAINERS = 'chat.containers'; // { "<address>": "<container>" }, for x-herdr-status
 // A sub-agent still at work: its meta doesn't say finished, and a foreground one's call isn't
 // answered yet (an interrupted one's meta may never say finished).
 const subRunning = (sub, tool) =>
@@ -1721,7 +1721,7 @@ export default class ClaudeChat extends View {
         const key = (o) => JSON.stringify(Object.entries(o ?? {}).sort());
         if (key(counts) !== key(shared(SUBS))) setShared(SUBS, counts);
         // Which dev container each Claude runs in (its id or name, as `docker exec` got it), for
-        // my-status: the container's /workspace holds the repos that agent works on.
+        // x-herdr-status: the container's /workspace holds the repos that agent works on.
         const boxes = {};
         for (const [address, kept] of this.cache)
             if (address !== this.address && kept.where?.container)

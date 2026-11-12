@@ -5,25 +5,23 @@ sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on 
 ## the layout
 
 - `layouts/zoo.json` is the shown layout (`herdr-app status` → `layout: zoo`); not in `installed.json`, so herdr never replaces it
-- it places: `x-herdr-chatter` (was zoo's `claude-chat`, FRM-556), `x-herdr-chatter-header` (was zoo's `my-pane`), `my-status`, `my-tabs`, `x-herdr-terminal-header` (twice, was zoo's `quick-term`), `zoo-agents`, `x-herdr-deck`, plus herdr's own `changes`, `files`, `spaces`, `workspace-chrome` (twice)
+- it places: `x-herdr-chatter` (was zoo's `claude-chat`, FRM-556), `x-herdr-chatter-header` (was zoo's `my-pane`), `x-herdr-status` (was zoo's `my-status`), `x-herdr-tabs` (was zoo's `my-tabs`), `x-herdr-terminal-header` (twice, was zoo's `quick-term`), `agents-list`, `x-herdr-deck`, plus herdr's own `changes`, `files`, `spaces`, `workspace-chrome` (twice)
 - themes on disk: `atom-one-dark.json`, `win98.json`; the zoo layout names no theme of its own
 
 ## mods — zoo's (not shipped, no update path: nothing reinstalls them)
 
 - `claude-chat` — the Chat view; patched by us twice (ps fix 11-09, the draft and Claude's-box fixes 11-10); writes shared `chat.look`, `chat.subs`, `chat.containers`
 - `zoo` — agents drawn as creatures, with `packs/`, `sounds/`, `sprites.js`, `tiles/`; reads shared `zoo.packs`, `zoo.sounds`; not placed in the zoo layout
-- `zoo-agents` — the agents list in the layout; a clone of herdr's `agents` 0.1.9; 55 «zoo» words
+- `zoo-agents` — an agents list, a clone of herdr's `agents` 0.1.9; not placed since `agents-list` took its block
 - `zoo-spaces` — a spaces bar for sidebar-less layouts; not placed in the zoo layout
 - `agent-board` — agents as cards; not placed in the zoo layout
-- `my-status` — the status bar; a clone of `workspace-status` 0.1.10; reads `chat.*`
-- `my-tabs` — the tab bar; a clone of `tabs` 0.1.9; 29 «zoo» words
-- `my-new-menu` — the + menu; a clone of `new-menu` 0.1.9
 
 ## mods — ours
 
 - `x-herdr-deck` — in frame, landed by `pnpm herdr-mods:land`; one «zoo» word (the views stack name in 🚦)
 - `x-herdr-chatter-header` — the pane header in the Terminal view (was zoo's `my-pane`, a clone of herdr's `pane` 0.1.10); its look is `chatter-header.js`, shared with `x-herdr-chatter`
 - `x-herdr-terminal-header` — the tray's quick terminal header, placed twice (was zoo's `quick-term`); its kept terminals carry the label `x-herdr-terminal`
+- `x-herdr-status` — the status bar (was zoo's `my-status`, a clone of `workspace-status` 0.1.10); reads `chat.*`
 
 ## mods — herdr's own (shipped, replaced on every start, never edited)
 
@@ -36,5 +34,5 @@ sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on 
 
 ## in use vs idle (what a move must carry)
 
-- in his window: `x-herdr-chatter`, `agents-list`, `x-herdr-chatter-header`, `my-status`, `my-tabs`, `x-herdr-terminal-header`, `x-herdr-deck`
-- on disk, unused by the zoo layout: `zoo`, `zoo-spaces`, `agent-board`, `my-new-menu` (my-tabs opens it, so it is reached)
+- in his window: `x-herdr-chatter`, `agents-list`, `x-herdr-chatter-header`, `x-herdr-status`, `x-herdr-tabs`, `x-herdr-terminal-header`, `x-herdr-deck`
+- on disk, unused by the zoo layout: `zoo`, `zoo-spaces`, `agent-board`
