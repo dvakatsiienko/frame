@@ -173,6 +173,38 @@ describe('groomedOrUnlogged', () => {
     });
 });
 
+describe('groomedOrUnloggedAnywhere', () => {
+    const day = '2020-01-02';
+    const load = async () => {
+        const dir = mkdtempSync(join(tmpdir(), 'prompt-log-'));
+        writeFileSync(join(dir, `${day}.md`), '## 09:12\n\na main prompt\n');
+        mkdirSync(join(dir, 'wing-1'));
+        writeFileSync(
+            join(dir, 'wing-1', `${day}.md`),
+            '## 17:47\n\na wing prompt\n',
+        );
+        vi.stubEnv('PROMPT_RAW_DIR', dir);
+        vi.stubEnv('PROMPT_GROOM_DIR', join(dir, 'no-grooms'));
+        vi.stubEnv('CLIO_SEAT', '');
+        vi.resetModules();
+        const { groomedOrUnloggedAnywhere } = await import('./prompt-groom.ts');
+        vi.unstubAllEnvs();
+        return groomedOrUnloggedAnywhere;
+    };
+
+    test("a minute in a wing's log still owes a groom", async () => {
+        expect((await load())(day, '17:47', '')).toBe(false);
+    });
+
+    test("a minute in main's log still owes a groom", async () => {
+        expect((await load())(day, '09:12', '')).toBe(false);
+    });
+
+    test('a minute no thread logged owes none', async () => {
+        expect((await load())(day, '11:30', '')).toBe(true);
+    });
+});
+
 describe('ungroomedStamps', () => {
     const text = [
         'W301 (2026-10-26 09:12, dima): fold this',
@@ -331,12 +363,12 @@ describe('--check on an inbox stamp', () => {
         'raw drop (2026-10-26 inbox, dima): 1. finish the round, if not finished',
     ].join('\n');
 
-    function check(prep: string | undefined) {
+    function check(prep: string | undefined, text = body) {
         const root = mkdtempSync(join(tmpdir(), 'prompt-groom-'));
         try {
             if (prep !== undefined)
                 writeFileSync(join(root, '2026-10-26-inbox.groomed.md'), prep);
-            writeFileSync(join(root, 'body.md'), body);
+            writeFileSync(join(root, 'body.md'), text);
             return spawnSync(
                 process.execPath,
                 [
@@ -374,6 +406,25 @@ describe('--check on an inbox stamp', () => {
 
     test('a prep copy without the item’s raw drop reds, though the file exists', () => {
         expect(check('> 1. some other ask\n').status).toBe(1);
+    });
+
+    const ticket =
+        '* FRM-1:W1 (2026-10-26 inbox, dima, PK-9:W4): finish the round\n';
+
+    test('a ticket with no raw drop passes when the prep holds its moved W-line', () => {
+        expect(
+            check(
+                'PK-9:W4 (2026-10-26 inbox, dima): finish the round\n',
+                ticket,
+            ).status,
+        ).toBe(0);
+    });
+
+    test('a ticket with no raw drop reds when the prep lacks its W-line', () => {
+        expect(
+            check('PK-9:W4 (2026-10-26 inbox, dima): some other ask\n', ticket)
+                .status,
+        ).toBe(1);
     });
 });
 
@@ -591,7 +642,8 @@ describe('--day', () => {
             seatTranscripts: otherSeat,
             steers: null,
         });
-        expect(out.stdout).not.toContain('o4');
+        // a word match: the random temp dir in the green line can spell «o4»
+        expect(out.stdout).not.toMatch(/\bo4\b/);
         expect(out.status).toBe(0);
     });
 

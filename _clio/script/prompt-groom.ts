@@ -28,10 +28,9 @@ import { normalize, prefixWish, repeatedIds, unwrapIds } from './wish-cover.ts';
 const home = process.env.HOME ?? '';
 // each clio seat keeps its own prompts and grooms: main at the root, a wing in `wing-<N>/` (FRM-542)
 const seat = seatOf() ?? '';
-const promptDir = path.join(
-    process.env.PROMPT_RAW_DIR ?? path.join(home, '.local/state/clio/prompts'),
-    seat,
-);
+const promptRoot =
+    process.env.PROMPT_RAW_DIR ?? path.join(home, '.local/state/clio/prompts');
+const promptDir = path.join(promptRoot, seat);
 const groomRoot =
     process.env.PROMPT_GROOM_DIR ?? path.join(home, '.local/state/clio/grooms');
 const groomDir = path.join(groomRoot, seat);
@@ -86,7 +85,14 @@ function groomedIn(dir: string, day: string, hhmm: string, item: string) {
             ),
         ].map(([, drop]) => bare(drop ?? ''));
         const prep = groomed.split('\n').map(bare).join('\n');
-        return drops.length > 0 && drops.every((drop) => prep.includes(drop));
+        if (drops.length > 0) return drops.every((drop) => prep.includes(drop));
+        // a ticket keeps no raw drop: its moved W-lines, renumbered, are found by their text in the day's prep
+        const folded = [
+            ...item.matchAll(
+                new RegExp(`\\(${day} inbox, dima[^)]*\\): (.+)$`, 'gm'),
+            ),
+        ].map(([, text]) => bare(text ?? ''));
+        return folded.length > 0 && folded.every((text) => prep.includes(text));
     }
     return groomed
         .matchAll(STAMP)
@@ -102,6 +108,22 @@ export const groomedOrUnlogged: Groomed = (day, key, item) => {
         !existsSync(log) ||
         rawPromptAt(readFileSync(log, 'utf8'), key) === undefined
     );
+};
+
+// a ticket's W-line stamped at a minute no thread's log holds (typed before the logs, or not in a clio thread) has no raw to groom
+export const groomedOrUnloggedAnywhere: Groomed = (day, key, item) => {
+    if (groomedOnDisk(day, key, item)) return true;
+    if (!/^\d{2}:\d{2}$/.test(key)) return false;
+    const wings = existsSync(promptRoot)
+        ? readdirSync(promptRoot).filter((name) => /^wing-\d+$/.test(name))
+        : [];
+    return ['', ...wings].every((dir) => {
+        const log = path.join(promptRoot, dir, `${day}.md`);
+        return (
+            !existsSync(log) ||
+            rawPromptAt(readFileSync(log, 'utf8'), key) === undefined
+        );
+    });
 };
 
 // the step that turns an ungroomed stamp green: a prompt is groomed by the chore, an inbox day by the boot's copy of helga's prep
@@ -885,7 +907,14 @@ if (import.meta.main) {
                       .map((f) => [f, unwrapIds(readFileSync(f, 'utf8'))]);
         let red = 0;
         for (const [name, text] of sources) {
-            for (const hhmm of ungroomedStamps(text, day)) {
+            // a ticket's minute no thread logged has no raw to groom; --check reads files, so it keeps the strict test
+            for (const hhmm of ungroomedStamps(
+                text,
+                day,
+                args[0] === '--linear'
+                    ? groomedOrUnloggedAnywhere
+                    : groomedOnDisk,
+            )) {
                 red++;
                 console.log(
                     `🔴 ${name}: W-lines of the ${hhmm} prompt folded with no groom — ${groomStep(hhmm)}, then refold from the groomed file`,
