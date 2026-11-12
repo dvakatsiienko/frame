@@ -59,3 +59,7 @@ From `quiet-log:2026-11-11` and `quiet-log:2026-11-12` (store keys are UTC days)
 
 ## verdict, 2026-11-12 15:55 (dima's o21 tick)
 - the quiet hold does its job: over 11-11 12:00 to 11-12 04:00, main took 87 machine wakes, all its own job notices, 0 member wakes, 1 that did nothing; of member messages that started a turn, all but 3 were tagged done, ask or escalate. the re-count reminder is dropped; no further round is planned.
+
+## correction, 2026-11-12 16:35 — the 15:55 verdict is withdrawn
+- the 11-12 round's classifier skipped every cross-session message: main's transcript holds 122 «Another Claude session sent a message» rows in that window (wishkeeper's count), and wing 1's siesta recount found 166 untagged or progress pings; «0 member wakes, 1 did nothing» was the instrument's blind spot, not the fleet
+- the re-count reminder is back (`_clio/memory/_reminders.md`), due 2026-11-14, with a classifier that reads cross-session rows

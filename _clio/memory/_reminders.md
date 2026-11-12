@@ -73,6 +73,8 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 
 
 
+⏰ 🦉 the empty-wakes re-count, a day after FRM-501 round 3 lands (his o78): `docs/test-drive/gate-speed/empty-wakes.md` holds the reads; one line to dima, read by class; FRM-512 is cancelled (his o58: «ok but do not forget!», the idea in its closing word); restored 11-12: the 15:55 verdict's classifier skipped cross-session rows, re-count with one that reads them — due: 2026-11-14
+
 ⏰ 🦉 flip the raw `gh pr merge` refusal from warn-only to enforcing, a mods lane slice before FRM-505 and before BYT-94's required-check flip (his o48, moving his o10); its count reads through `pnpm mods:replay`, since the hint records no warned event — set 2026-11-06
 ⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514): read the guide-before-first-edit share, `pnpm memory-load:guide-share`, against 47 % and the 90 % bar; under the bar the chunk reopens; and `pnpm memory-load:replay` for the rows' false fires (his «ok and measure», o43) — set 2026-11-06 · due: 2026-11-20
 ⏰ 🦉 re-login to claude before 2026-12-01, the login ends then (FRM-508's read, his o4) — set 2026-11-07 · due: 2026-11-24
