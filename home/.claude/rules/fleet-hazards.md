@@ -5,7 +5,7 @@ that bites 2+ repos or every session — a hazard that bites one repo goes to th
 every hazard names its guard — `guard: <hook | x verb>` or `guard: none`; a line dies when its guard
 makes the failure impossible, a partial guard is named beside the line, so the file shrinks as the `x` cli grows. cc-only, deliberately not mirrored; the vault hazards
 live in `x:notes`, copied by hand into the cloud chat leaf `/topics/obsidian.md`.
-📌 **a Bash-shaped hazard becomes an `x-mod-guard` rule first** (the cc mod, `plugin-x/mods/x-mod-guard`; a ticket under FRM-304); a line lands here only for what a Bash check cannot see — a judgment call, a non-Bash tool, a browser-only look (dima, 2026-10-05).
+📌 **a hazard stays a line here, or a hint; `x-mod-guard` refuses only destroyed work, the floor** (dima's o163, 2026-11-12, after the guard grew from this line into a lockout: `docs/knowledge/fleet-stories/guard-lockout/story.md`).
 
 📌 hazards that bite one subject live beside it: frame `AGENTS.md` (git-crypt), `schedule/AGENTS.md` (launchd + tcc), frame
 `.claude/rules/scripts.md` (lefthook, the toolchain), bytes `AGENTS.md` (vercel), `import/raycast/extensions/AGENTS.md`, `x:github-contrib`
