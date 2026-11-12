@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:44:00Z'
+updated_date: '2026-11-12T11:47:00Z'
 labels:
   - m
 dependencies: []
@@ -69,4 +69,6 @@ raw drop (2026-11-12 inbox, dima): - save my interests i just printed and prefer
 raw drop (2026-11-12 inbox, dima): - find and fold our previous speakapp v2 designer session (i printed my design wishes/likes there too), if it is still alive. it spanned across at least 2 days if i recall.
 
 sent 13:44: W1–W7 to ⚡ 🔧 herdr | FRM-563 as its next job after FRM-563, step 1 a read-only design sanity review with shots; W8–W10 (prefs in the designer home, the speak v2 designer session) stay main's
+
+fix 13:47: W6 reads «matte coloured cars and displays», as he wrote it; the «cards» in the line above was helga's guess, never his (wishkeeper boot read); the herdr codie told
 <!-- SECTION:NOTES:END -->
