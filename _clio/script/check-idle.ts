@@ -1,12 +1,12 @@
 // on an idle notice: is the member stalled or fine? its last assistant text, its tree, its last commit, one verdict
-// usage: node idle-check.ts <registry name or a part of it>
+// usage: node check-idle.ts <registry name or a part of it>
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 import { liveSessions, transcriptOf } from './session-registry.ts';
 
 const query = process.argv[2] ?? '';
-if (!query) fail('usage: node idle-check.ts <registry name or a part of it>');
+if (!query) fail('usage: node check-idle.ts <registry name or a part of it>');
 
 const matches = liveSessions().filter((s) => s.name?.includes(query));
 

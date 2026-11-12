@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import { gitEnv } from '../../script/lib/git-fixture.ts';
 
-const script = join(import.meta.dirname, 'surface-mirror-check.ts');
+const script = join(import.meta.dirname, 'check-surface-mirror.ts');
 const headings = [
     'threads',
     'the screen he reads',
@@ -59,7 +59,7 @@ function check(
     });
 }
 
-describe('surface-mirror-check', () => {
+describe('check-surface-mirror', () => {
     it('passes two leaves with one heading list', () => {
         expect(check(headings, headings).status).toBe(0);
     });

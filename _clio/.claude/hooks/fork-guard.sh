@@ -125,7 +125,7 @@ fork-edit | fork-bash)
 			grep -qE "^ *(cd $home && )?(timeout [0-9]+ )?x lane commit [^- ;&|][^ ;&|]* -- *($pocket *)+$" <<<"$cmd" && exit 0 ;;
 		esac
 		# the guard's own parser, so a quoted `>` or a prose word stays text; a crash here passes the call, as no guard stands
-		hit=$(node "$(dirname "$0")/../../script/fork-bash-check.ts" <<<"$input" 2>/dev/null)
+		hit=$(node "$(dirname "$0")/../../script/check-fork-bash.ts" <<<"$input" 2>/dev/null)
 		[ -n "$hit" ] || exit 0
 	fi
 	jq -n --arg why "a wing edits only inside its own worktree: make «clio-wing-<N>» by the banner's line, edit it by absolute path, commit there (x lane commit), and land it with tree-sync.sh land, the banner's landing line" \

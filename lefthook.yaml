@@ -70,7 +70,7 @@ pre-commit:
     surface-mirror:
       # the herdr and desktop leaves keep one heading list in one order. no glob: lefthook's staged list drops a deleted
       # file, so the script reads the index itself and passes at once when neither leaf nor it is staged
-      run: node _clio/script/surface-mirror-check.ts
+      run: node _clio/script/check-surface-mirror.ts
     git-crypt-rename:
       # a git-crypt file moved to a path no filter line covers ships plaintext — d1bddfb5 put one on
       # public main (2026-10-07). no glob: the moved file can live anywhere

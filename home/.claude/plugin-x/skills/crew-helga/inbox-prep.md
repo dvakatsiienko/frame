@@ -7,7 +7,7 @@ board instead of a raw drop. his file stays untouched; yours is its sibling.
 - read: the pocket, `BACKLOG_CWD=~/frame/_clio backlog task list --plain`, to name homes
 - write: `<_hq>/inbox-helga.md`, whole-file; nothing else in the vault, no commit (the vault is not a repo)
 - `<_hq>` = `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Dima's Vault/_hq`
-- done: `node ~/frame/_clio/script/inbox-prep-check.ts` exits 0 (every content line of his sits verbatim in yours)
+- done: `node ~/frame/_clio/script/check-inbox-prep.ts` exits 0 (every content line of his sits verbatim in yours)
 
 ## an item
 

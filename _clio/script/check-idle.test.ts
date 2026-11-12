@@ -4,13 +4,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-const script = join(import.meta.dirname, 'idle-check.ts');
+const script = join(import.meta.dirname, 'check-idle.ts');
 const trustScreen =
     ' Quick safety check: Is this a project you created or one you trust?\n ❯ 1. Yes, I trust this folder\n   2. No, exit\n';
 
 // a summoned pane that never took a turn, its screen served by a stub hc
 function check(screen: string, turn = 0) {
-    const root = mkdtempSync(join(tmpdir(), 'idle-check-'));
+    const root = mkdtempSync(join(tmpdir(), 'check-idle-'));
     mkdirSync(join(root, '.claude/sessions'), { recursive: true });
     mkdirSync(join(root, 'bin'));
     writeFileSync(join(root, 'screen.txt'), screen);
@@ -48,7 +48,7 @@ function check(screen: string, turn = 0) {
     });
 }
 
-describe('idle-check on a freshly summoned pane', () => {
+describe('check-idle on a freshly summoned pane', () => {
     test('a folder-trust dialog is named, never read as a stall', () => {
         const out = check(trustScreen);
         expect(out.stdout).toContain('trust dialog');

@@ -95,7 +95,7 @@ already in the ticket: W421–W425, the 2026-10-07 and 10-16 lines.
 
 - `clio:*` skills do not resolve outside `_clio` (`clio:shape-idea` came back «Unknown skill» from this worktree, 2026-11-04)
 - `_clio/memory/craft-fleet-flow.md` holds the lane stages; cap must not boot in `_clio`, its memory rebrands the session
-- `node ~/frame/_clio/script/idle-check.ts`, named in `crew-lead/watching.md`, is a plain script and reachable
+- `node ~/frame/_clio/script/check-idle.ts`, named in `crew-lead/watching.md`, is a plain script and reachable
 
 ### code gates keyed to the exact name 🦉 clio
 

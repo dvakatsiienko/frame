@@ -131,7 +131,7 @@ the numbers go to dima beside the right-if lines (≤5 wakes a chunk, half the c
   - Read, Edit, Write on a `_clio/` path; Edit and Write on code, skills, memory and spec paths (a spec's exit lines live there); a path matcher.
   - Bash: `cd` or a path argument under `_clio/`, `x linear` verbs other than read and comment, merge verbs, `x lane dispatch`; a text matcher in x-mod-guard's shape, so a script that hides a path can pass. the residual is named, not claimed closed.
 - words only, no tool can see them, with the reason: the want, folding wishes (their stores are refused above, the meaning is not), starting an unhanded chunk beyond `x lane dispatch`, carrying a word from one lane to another (counted as blur at the test drive).
-- what tilde needs from `_clio/` moves out in chunk 1: the lane stages of `craft-fleet-flow` go into `x:crew-tilde`; `_clio/script/idle-check.ts` (`crew-lead/watching.md`), `_clio/.claude/hooks/pr-watch.sh` and `ci-watch.sh` (`crew-lead/briefing.md`, `crew-sixth-sense/SKILL.md:147`) move to the shared hooks, every caller repointed in the same commit.
+- what tilde needs from `_clio/` moves out in chunk 1: the lane stages of `craft-fleet-flow` go into `x:crew-tilde`; `_clio/script/check-idle.ts` (`crew-lead/watching.md`), `_clio/.claude/hooks/pr-watch.sh` and `ci-watch.sh` (`crew-lead/briefing.md`, `crew-sixth-sense/SKILL.md:147`) move to the shared hooks, every caller repointed in the same commit.
 - clio keeps every linear write, the merge, `x lane landed`, the look card, the fleet-wide 5h ladder.
 
 ### what clio hears

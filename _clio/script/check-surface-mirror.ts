@@ -9,7 +9,7 @@ const leaves = [
 ] as const;
 const watched: readonly string[] = [
     ...leaves,
-    '_clio/script/surface-mirror-check.ts',
+    '_clio/script/check-surface-mirror.ts',
 ];
 
 const staged = git('diff', '--cached', '--name-only', '--no-renames').split(
@@ -62,6 +62,6 @@ function quote(heading: string | undefined) {
 }
 
 function fail(message: string): never {
-    console.error(`surface-mirror-check: ${message}`);
+    console.error(`check-surface-mirror: ${message}`);
     process.exit(1);
 }

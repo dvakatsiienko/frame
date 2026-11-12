@@ -786,7 +786,7 @@
             "id": "6:427",
             "parent": "6:404",
             "style": "rhombus;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=12.0;fillColor=#CDF4D3;strokeColor=#66D575;strokeWidth=3;fontFamily=Helvetica Neue;fontColor=#1E1E1E;spacingLeft=20;spacingRight=20;spacing=8;",
-            "value": "<b style=\"font-size:26px\">🩺 idle-check.ts</b><br><span style=\"font-size:20px\">stall or fine?</span>",
+            "value": "<b style=\"font-size:26px\">🩺 check-idle.ts</b><br><span style=\"font-size:20px\">stall or fine?</span>",
             "vertex": "1"
         },
         "geometry": {

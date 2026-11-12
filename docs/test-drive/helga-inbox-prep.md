@@ -10,7 +10,7 @@ Ticket: none
 
 born 2026-10-15 on dima's boot ask (a freebie, a mini test drive). the chore: `x:crew-helga` § inbox-prep, its
 shape in `home/.claude/plugin-x/skills/crew-helga/inbox-prep.md`; the done command
-`node ~/frame/_clio/script/inbox-prep-check.ts` (every content line of `inbox.md` sits verbatim in
+`node ~/frame/_clio/script/check-inbox-prep.ts` (every content line of `inbox.md` sits verbatim in
 `inbox-helga.md`). the boot runs it at step 3, the halt trashes the sibling.
 
 **test card:** we believe a prepped inbox gets clio to a correct parse with less reading and fewer missed asks ·
