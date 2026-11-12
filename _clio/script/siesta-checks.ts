@@ -23,6 +23,8 @@ function main(home: string, since: string) {
     const scripts = path.join(home, 'frame/_clio/script');
     const sections: Section[] = [
         script(scripts, 'pocket-check', 'pocket-check', []),
+        // pocket-check runs offline and stays green beside a line whose ticket closed
+        script(scripts, 'flyway homes', 'flyway-done', ['PK-349', '--check']),
         wishCover(home, scripts, since),
         orbitDrift(home),
         script(scripts, 'close net', 'close-net', []),

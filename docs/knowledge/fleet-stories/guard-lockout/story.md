@@ -59,6 +59,27 @@ fed-by: incidents
 
 a new refusal needs a real incident and a kill date; a guard that guards us from ourselves is the smell.
 
+## his word on it (11-12, 22:47 and 22:56)
+
+- «I consider the guard story a disaster»: about 26k lines of code, built with clio for a month (26 days), «and now just deleted»; «it's hard even to describe how bad it is»
+- the result was a locked-out state for everyone
+- the ⚖️ worth it check existed and every chunk should have passed it, yet the building went on, «we would go even farther if I didn't stop you today»
+
+## why worth it did not stop it (round 2, 11-12 22:58, crow and wing 1 consulted)
+
+- worth it gates a birth; the guard was born once (FRM-321, 1,506 lines) and grew for 38 days through fixes, riders and re-signs, none of them new surface, so the check never ran again
+- each step looked approved: his tick on clio's pick read as his want (57 of 289 commits cite a tick on an ask clio wrote)
+- nothing printed its size, its fix churn or his turns spent on it, and a deletion counted for nothing in a clio day
+
+## what landed against it (11-12 23:0x)
+
+- a lasting part is born a trial: a kill date and a signed size, his adopt, shrink or delete (`clio:shape-lane`)
+- every re-sign prints the part's first want in his typed words beside the change, and whose words the change rests on (`clio:shape-lane`): «non-blocking» beside «prove dima's word» would have stopped it on day 1 (crow)
+- the shared core is main's alone, a wing slipstreams to her (`habit-cto`)
+- a cut or a deleted part counts as done in the halt board (`clio:halt`)
+- one counter, asked of him: a part past 2× its signed size, or at 3 fixes in 7 days, raises one board re-weigh with its first want, lines now vs signed, his turns spent on it; today's sizes seed the baseline ([FRM-590](https://linear.app/x-com/issue/FRM-590) widened, his re-sign asked)
+- dropped: a commit-body rule (a gate in disguise, crow) and a separate worth-it line on every re-sign (paper: its author fills it «yes»)
+
 ## the stops (proposed 11-12 21:34, his word on each)
 
 - **a mod's size is read at the halt** (his tick o160): a mod whose hook lines doubled in 14 days gets one line to dima; the guard went 932 → 2,617 lines in its first 6 days and nobody looked

@@ -115,7 +115,7 @@ one message, folding in whatever the sweep and the park list surfaced, every lin
 
 📊 **run** `<run id>` — **elapsed** `<time>`
 
-🟢 **done** `N / ~M` — the 2–4 biggest, one line each, artifacts backticked
+🟢 **done** `N / ~M` — the 2–4 biggest, one line each, artifacts backticked; a cut, a drop or a deleted part counts as done, its lines removed named (the guard story: stopping a thing is progress)
 
 🚧 **in flight** · ⏸️ **left** (next 2–3, in order) · ❓ **on dima** («nothing blocked» if none)
 

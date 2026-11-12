@@ -48,5 +48,6 @@ an exit line whose check reads shared state (a live session, `~/.local/state`, t
 - **a re-sign after 🚀** never puts the `signed` label back (the chunk is running), unless a ↩️ follows the 🚀 (the line above): that turn `to-spec` runs over its section alone, the spec's top following, its `wish:` line records `body <hash>`, § 3–4 re-run, codie is steered to the changed lines
 - **a re-seal** lands on disk before its ping and re-reads its sibling lines
 - **a park** — his weekly window out, the 5h pace, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it; the next siesta back on pace resumes a pace park
+- **a member that parks after its chunk gets the next signed chunk the same turn**, or a wait with its date; late evening it goes to orbit first, and a wind-down takes none (his o181 steer, 2026-11-12)
 
 **done** = each picked chunk, a joiner included, has its spec section with sealed exit lines, its `🚀 dispatched` line, a summoned codie (a sixth sense unless his pick said no), and a greenlit lane plan.
