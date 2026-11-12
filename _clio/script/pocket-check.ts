@@ -43,6 +43,7 @@ const POCKET_ID = /\bPK-\d+\b/g;
 const WISH_RULES_FROM = '2026-10-22';
 const CLOSE_LINE = /^close:/;
 // a dropped clause's proof: an orbit ask id, or «dima» with a date or a time
+const INNER_DROP = /\([^()]*\bW\d+\b[^()]*\bdropped\b[^()]*\)/gi;
 const DIMA_VERDICT = /\bo\d+\b|\bdima\s+(?:\d{4}-\d{2}-\d{2}|\d{1,2}:\d{2})\b/i;
 // the one ticket-line shape, shared with wish-cover
 export const TICKET_LINE =
@@ -223,6 +224,14 @@ export function checkPocket(
                 .filter((line) => CLOSE_LINE.test(line))
                 // a verdict in parentheses stays with its clause: «W5 dropped (no area emoji, dima o58)»
                 .flatMap((line) => line.split(/[,;·](?![^(]*\))/))
+                // «W1 done (W2 dropped, a twin)»: the inner drop is its own clause, so only W2 needs the verdict
+                .flatMap((clause) => {
+                    const inner = clause.match(INNER_DROP) ?? [];
+                    return [
+                        clause.replace(INNER_DROP, ''),
+                        ...inner.map((group) => group.slice(1, -1)),
+                    ];
+                })
                 // «W2 done (member word dropped)» is a done clause, «W3 (dropped)» a drop: the word counts outside parentheses or opening them
                 .filter(
                     (clause) =>

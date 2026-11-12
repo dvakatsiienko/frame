@@ -935,6 +935,16 @@ describe('wish accounting', () => {
             ).toEqual([red]);
         });
 
+        test('a W-id dropped inside a done clause’s parentheses still needs a verdict', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [closed('close: W1 done (W2 dropped, a twin)')],
+                    wishToday,
+                ),
+            ).toEqual([red]);
+        });
+
         test('nested parentheses in a done clause drop nothing', () => {
             expect(
                 checkPocket(
