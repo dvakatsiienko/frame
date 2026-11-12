@@ -1,15 +1,15 @@
 ---
-name: low-tide-cuts
-description: load before weighing whether planned or built work stays, and before printing dima any cut, trim, merge, move, park or close proposal — «what can we cut?», «dead weight», «is it worth it», «cut it», a low tide's cut pass, a milestone close's kill side, a reorg of planned work, a batch of close asks.
+name: lowtide-cuts
+description: lowtide, what stays — load before weighing whether planned or built work stays, and before printing dima any cut, trim, merge, move, park or close proposal — «what can we cut?», «dead weight», «is it worth it», «cut it», a low tide's cut pass, a milestone close's kill side, a reorg of planned work, a batch of close asks.
 ---
 
-# low-tide-cuts — what stays, what goes, and a print he can judge alone
+# lowtide-cuts — what stays, what goes, and a print he can judge alone
 
 dima, PK-367:W2 (2026-11-09 inbox, dima): why: we started a practice of cuts, since we spotted that we plan redundant stuff; i don't want us to build dead weight, so a cut process should be established. measure first: the filter test makes the verdict, the print shapes it.
 
 ## when it runs
 
-- **every low tide** (`clio:low-tide`), over the planned tickets of the next big step, before its first chunk is signed
+- **every lowtide** (`clio:lowtide`), over the planned tickets of the next big step, before its first chunk is signed
 - **every milestone close**, over what the milestone built: the kill side of `craft-pm` § the freebie rule
 - **his «what can we cut?»**, any time, over the set he names
 
@@ -30,7 +30,7 @@ dima, PK-367:W2 (2026-11-09 inbox, dima): why: we started a practice of cuts, si
 
 dima, 2026-11-06: «if you just print me a cut proposal with ticks in orbit, I do not understand what to cut and why you think like that.» the print is the proposal; orbit only carries his tick on it.
 
-a bold verdict line with the counts, then one block per item, in build order:
+a bold verdict line with the counts, then one block per item, in build order; a block's head is the chunk line of [shapes.md](../lowtide/references/shapes.md) led by its verdict:
 
 ```
 **12 chunks: 7 stay, 3 trimmed, 1 merged, 1 cut**

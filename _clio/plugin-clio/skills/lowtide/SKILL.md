@@ -1,16 +1,18 @@
 ---
-name: low-tide
-description: load when dima says «low tide», «solve chores», «tails», «chores and tails», «piled up stuff» — this clio lane solves its seeded chores, main or any wing, batches first, before the next big step.
+name: lowtide
+description: lowtide, the hunt — load when dima says «lowtide», «low tide», «solve chores», «tails», «chores and tails», «piled up stuff» — this clio lane solves its seeded chores, main or any wing, batches first, before the next big step.
 ---
 
-# 🌘 low tide — the chores cleared before a big step
+# 🦪 lowtide — the chores cleared before a big step
+
+lowtide is the family that hunts and fixes gaps and inefficiencies in our plans (PK-387:W18–W22): `lowtide` the hunt, `lowtide-triage` the flyway prep, `lowtide-lanes-checkup` the chunk plan, `lowtide-cuts` what stays, `lowtide-flyway-sync` a flyway matched to the live state; their shared shapes: [shapes.md](references/shapes.md).
 
 dima, 2026-10-20, folded: «before we move to something bigger, like the speak v2 revival, close every chore that would otherwise stay parked forever if i didn't ask — small, medium or big. i often find myself explaining this to you: during the memory sweep the pocket grew while we kept folding other useful stuff.»
 
 ## the start
 
 read the flyways' notes for today's `hoist MM-DD` line:
-- none → `clio:low-tide-triage` runs first; offer it in one line
+- none → `clio:lowtide-triage` runs first; offer it in one line
 - `proposing` → wait for dima's yes on that split
 - `done` → work your own flyway in its order
 - a wing opened after the hoist, its flyway empty → take only items no plan holds, your label on at the pick
@@ -31,6 +33,6 @@ an item moves between flyways on his want, or when another lane fits it better: 
 
 - a siesta at its usual triggers (`clio:siesta`), never one giant turn
 - an item that turns out blocked or lane-bound gets its `**waiting for:**` line or lane note the same turn, and leaves the hunt
-- the next big step starts only when this lane has nothing left, and after its cut pass: `clio:low-tide-cuts` weighs the step's planned tickets, its print goes to dima, his ticks land before the first chunk is signed
+- the next big step starts only when this lane has nothing left, and after its cut pass: `clio:lowtide-cuts` weighs the step's planned tickets, its print goes to dima, his ticks land before the first chunk is signed
 
 **done**: reread the whole pile, not only your flyway. an unclaimed item or a parked wing's unticked line is taken or named. then a «nothing left» line naming every store searched (pocket, linear FRM, linear BYT, inbox), with the counts before and after.
