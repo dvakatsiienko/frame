@@ -17,6 +17,7 @@
   - a `--bg` session writes no phases: no board draws them (PK-364: 95 % of `--bg` orbit calls, ~165k tokens in the wing days); its asks still go to orbit, where glide shows them
   - a line leads with its subject; the mod's «no phases yet» nudge after 3 tool calls is the guard
 - **🛼 glide — a lane's progress, fleet-wide.** one card per running lane on every board, its steps in order with «← we are here»; only the coordinator and a wing, on a lane it runs, write it; any other session's call is refused. the card is drawn, never read into a session's context; its subcard shows a member's asks as a read-only view, the asks themselves going to its coordinator (dima's o67 tick, 2026-11-11)
+- **🐦‍🔥 second wind runs itself** (FRM-505, dima's o175): at 55 % context the mod sends the notice, at 65 % it is a must; finish the step, write the handoff, and the mod compacts and ingests at the turn's end; the thresholds live in 🎛️ settings
 
 <!-- why: subject-first asks, dima 2026-10-10: the board's long lines got cut. -->
 <!-- why: replies named asks by oN id; dima's o112 counted 65 unglossed-id reminders on 10-14. -->

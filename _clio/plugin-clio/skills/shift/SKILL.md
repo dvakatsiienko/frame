@@ -45,8 +45,8 @@ the current step, the decisions and the open asks. the `SessionStart:compact` ho
 re-reads a plan whose header says `status: running` after a compaction, and `pnpm shift:checkup` proves the hook.
 
 - **second winds are mine to plan, for everyone** (dima, 2026-11-03: «since you observe and you can plan, pick good times for everyone … and you should second wind everyone»; 2026-10-21: «during the shift, when I am AFK, it is fully up to you, so be careful with this»):
-  - the line: about 55 % context, never past 60 %, at a step's end, never mid-chunk — mine through `clio:checkpoint`, a shift or his «afk» without one (o73); the surface leaf's door reads my context and the 5h window after every step
-  - context grows slowly on a shift, so each wind is planned a step ahead, never rushed: after every step i read my own % through the leaf's door and each member's on the band, and a member near the line gets «second wind after this step» from me
+  - the mod runs them now (`rules/fleet-mods.md` § x-mod-stash, FRM-505): every session gets its notice at 55 % and must wind by 65 %, at a step's end; mine still goes through `clio:checkpoint`, a shift or his «afk» without one (o73)
+  - my part is the watch: after every step i read each member's % on the band, and a wind that did not land by 65 % is an x-mod-stash bug, ticketed, never a hand wind in its place
   - everyone means everyone live: codie, sixth sense, crow, helga, and a parked wing
 
 ## hot caches — no member goes cold

@@ -89,3 +89,5 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ re-run the lane size measure, decide the sizing (dima 19:11): `docs/research/lane-size-measure.md` — set 2026-11-12 · due: 2026-12-12
 
 ⏰ 🦉🔬 my next second wind sends no notice and no back line (dima's o171 tick): after the pickup, read back that every message sent mid-wind arrived whole and in order; a pass drops both lines from `clio:checkpoint` § 0 and § 4, a miss puts the pings back — set 2026-11-12
+
+⏰📌 next boot order (dima 22:21): 1. the mods lane starts at once: FRM-583 held-while-busy → FRM-584 join queue → FRM-504 verifier rounds warn, slipstream working is the goal; 2. the herdr lane starts on its non-slipstream chunks (588 → 589 → 587 → 569 → 567), its slipstream chunks (564 → 585 → 582 → 580 → 563) only after mods lands FRM-584, no switching; 3. my dated stuff first (FRM-483 compact read), every tail cleared, none all day, strays hunted by me, stray lane helps; 4. wing 1 starts at once and parks, dima solves his own stuff with it, then unwraps speak v2 — set 2026-11-12 · due: 2026-11-13
