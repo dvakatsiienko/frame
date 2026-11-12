@@ -170,7 +170,7 @@ Read 2026-11-04. Tilde = the per-lane coordinator in `focus.md`.
 
 ---
 
-## 5. The seat
+## 5. The role
 
 **Findings**
 - **Mechanical patrol decisions show no tier gap.** [gt-model-eval](https://github.com/gastownhall/gastown/tree/466aa41c83ee73b1fa0eb79eb9d172fb1eca9476/gt-model-eval), [run of 2026-02-16](https://github.com/gastownhall/gastown/discussions/1542) (91 tests, one reporter, `verified`):
@@ -182,7 +182,7 @@ Read 2026-11-04. Tilde = the per-lane coordinator in `focus.md`.
   - Edge misses: Haiku and Sonnet on «Nudge-worthy: idle 20min». Haiku on «mass death». Sonnet and Haiku on a branch deleted before merge.
 - **Community mix, not measured**: opus for polecats and crew, sonnet for witness, refinery and mayor, haiku for deacon. ([issue #1545](https://github.com/gastownhall/gastown/issues/1545), 2026-02-16, `verified`)
 - **Vendor default**: «Use Sonnet for teammates. It balances capability and cost for coordination tasks.» ([costs](https://code.claude.com/docs/en/costs.md), 2026-11-04, `verified`)
-- **Vendor's cheap seats in the product**:
+- **Vendor's cheap roles in the product**:
   - Agent-view row summaries use a Haiku-class model. ([agent-view](https://code.claude.com/docs/en/agent-view.md), 2026-11-04)
   - `/goal` sends each check to your «small fast model» as a separate evaluator. ([goal](https://code.claude.com/docs/en/goal.md), 2026-11-04)
   - The auto-mode classifier runs on Sonnet 4.6. (2026-03-25)
@@ -197,7 +197,7 @@ Read 2026-11-04. Tilde = the per-lane coordinator in `focus.md`.
 
 **Which rounds need a model** (all inference; the sources above support the split in general, not row by row)
 
-| Round | Seat |
+| Round | Role |
 |---|---|
 | Spawn coder and verifier from a template | script |
 | Wait, notice worker done or failed, stall timer | script |

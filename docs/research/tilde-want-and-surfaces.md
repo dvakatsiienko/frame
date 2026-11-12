@@ -62,7 +62,7 @@ working notes of the side channel, grill round 1. goes into the ticket once dima
 
 - N46 ❓ maybe one dedicated tilde handles all side lanes at once, instead of one tilde per crew; it just offloads coordination out of clio. a single --bg tilde stays in mind
 - N47 split the plan in two: first apply the best practices from everything we planned to the current clio, where applicable; then implement tilde on top of what is already done
-- N48 the seat is opus 5.5, medium or high, dima votes medium. a weak coordinator is a no, a strong one a yes
+- N48 the role is opus 5.5, medium or high, dima votes medium. a weak coordinator is a no, a strong one a yes
 - N49 ❓ tilde should reach wishkeeper: before sending a result to clio, before each chunk is ready to merge, tilde runs wishkeeper first. both clio and tilde have wishkeeper, is it doable
 - N50 there is a window to test FRM-501; we are not forced to test tilde at once
 - N51 a hierarchy costs turns, but spamming clio's thread costs too: tokens, dima's attention, clio's attention blur

@@ -27,8 +27,8 @@ Short names, all under `/Users/dima/frame` unless noted:
 - PLAN and RETRO line numbers are as read today. RETRO's own `plan:N` citations run about one line behind PLAN's current numbering.
 
 Where each failure sits (locus):
-- **L** lane traffic, the seat tilde would take
-- **M** main seat: clio ↔ dima, tickets, boards, grills
+- **L** lane traffic, the role tilde would take
+- **M** main thread: clio ↔ dima, tickets, boards, grills
 - **S** a sidecar or side session: crow, helga, wishkeeper, side channel
 - **X** fleet-wide: 5h window, caches
 
@@ -324,9 +324,9 @@ Against:
 - **The earlier hop was bad.** LEAD:78, DOT-254 (2026-09-20): «report to me only» sent rounds to clio, «a hop plus a page per round». Pre-window.
 
 For, so the list stands fair:
-- **It is dima's own wish.** PK-12:23 (2026-10-07): «only reports to you with positive results, issues and disputes … your thread will be filtered out of the noise». PK-12:29 (10-09): «the squad lead waits for capacity». Parked for capacity, not rejected. LEAD:8 keeps the seat open (FRM-368).
+- **It is dima's own wish.** PK-12:23 (2026-10-07): «only reports to you with positive results, issues and disputes … your thread will be filtered out of the noise». PK-12:29 (10-09): «the squad lead waits for capacity». Parked for capacity, not rejected. LEAD:8 keeps the role open (FRM-368).
 - **The load is real.** 65 of 91 turns member-woken, 2 second winds in under 5 h, and lane calls fill the log (19 lines carry `decided`, PLAN `rg -c`).
-- **Spec against code has a real target.** 7 defects in 2 days looked readable from code. A cheaper test of that alone: a one-shot read at seal, no long-lived seat (inference). [vector 5]
+- **Spec against code has a real target.** 7 defects in 2 days looked readable from code. A cheaper test of that alone: a one-shot read at seal, no long-lived thread (inference). [vector 5]
 
 Flow numbers, `x fleet flow --days 14`, run 2026-11-04:
 - guard refused 34, escaped 0, over 3 sessions: `brief` 11, `gate-pipe` 8, `set-unsplit` 5, the rest ≤ 3. Mechanisms hold where they exist (inference from the 0).

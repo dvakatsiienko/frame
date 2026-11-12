@@ -24,7 +24,7 @@ dima's words, folded; N-numbers point into the want file.
 - N29: keep-hot always on for coordinators, at least to catch one parked with no actions.
 - N46 (ticked): one dedicated `--bg` tilde for all side lanes, stopped when no lane runs.
 - N47 (ticked): split the plan: first apply the best practices to the current clio, where applicable, then implement tilde on what is already done.
-- N48: the seat is Opus 5.5 medium. a weak coordinator is a no.
+- N48: the role is Opus 5.5 medium. a weak coordinator is a no.
 - N49 (ticked, with his steer): wishkeeper runs before ready to merge, for both clio and tilde, «via symlink if it works; lifting to global is not a good idea, it's unique to coordinators».
 - N50: there is a window to test FRM-501; tilde need not be tested at once.
 - N51, N52: a hierarchy costs turns, spamming clio costs tokens and attention; tilde talks to clio only when needed.
@@ -48,7 +48,7 @@ dima's words, folded; N-numbers point into the want file.
 
 ## the evidence that shapes the cut
 
-- 129 coordination failures in 14 days: 48 in lane traffic, 60 on the main seat, 21 elsewhere; lane retros only exist from 11-02, and on 11-02/03 the lane share is 41 of 72. so tilde reaches 37–57 % of them.
+- 129 coordination failures in 14 days: 48 in lane traffic, 60 on the main thread, 21 elsewhere; lane retros only exist from 11-02, and on 11-02/03 the lane share is 41 of 72. so tilde reaches 37–57 % of them.
 - lane wakes: 65 of 91 turns on 11-03 (14:33–19:17) were member-woken; lane wakes took 66.5 % of her reads over the 118-turn shift count. FRM-501 went after those wakes and has no number yet.
 - sixth sense's clean left a real high in FRM-472 and FRM-492 (`pre-merge-siesta.md`, shift log :132); FRM-491's order of clean and read is unclear «?».
 - 7 of 14 spec defects looked readable from code at seal. crow's critique of FRM-494 still let two false premises through, so this read is a code read, not a plan read.
@@ -65,7 +65,7 @@ his o32 tick said «clio gets the 7 first», and N47 says «where applicable».
 4. ping never consent, ready carries proof → P1a.
 5. spec read against code at seal, greenlight check → P1a.
 6. watcher → moved to phase 2, open question 4.
-7. the seat → settled, Opus 5.5 medium.
+7. the role → settled, Opus 5.5 medium.
 
 ## phase 1 — clio's lane loop gets better, no tilde
 
@@ -204,7 +204,7 @@ phase 2, as a test drive card:
 - right if: ≤5 wakes a chunk, half the compactions, burn up ≤15 %, against the re-run baseline.
 - kill on: one lost ask, two false ready, burn up 30 %.
 - given tilde is killed mid-lane with one open ask and one held message, then clio reads the state and adopts the lane, and pings and pr wakes move to her, with nothing lost.
-- given two lanes on one tilde, then no word of one reaches the other's crew; one cross-lane word counts as blur, and two split the seat.
+- given two lanes on one tilde, then no word of one reaches the other's crew; one cross-lane word counts as blur, and two split the role.
 
 ## out
 
