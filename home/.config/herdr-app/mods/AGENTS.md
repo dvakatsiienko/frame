@@ -34,7 +34,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - a landing restarts the mod and stalls his chats: one per finished job, none for a probe while he types, «landing now» in the ping
 - a herdr restart is his hand alone: it can lose his typed prompt
 - commit through `x lane commit` in the background; a new mod's `landedByCopy` line (`script/lib/manifest.ts`) rides its first commit
-- a speed change (scrolling, a redraw) is measured on herdr's FPS meter: `"chatter.fps": true` in `~/.claude/shelf/herdr-settings/settings.json` shows it (the chatter watches the file), `false` hides it
+- herdr's FPS meter (`gpui-fps`' `show_fps_monitor()`) is out of a mod's reach: his window refuses it, «needs a ShellRoot as the window's first view» (2026-11-12)
 
 ## never
 

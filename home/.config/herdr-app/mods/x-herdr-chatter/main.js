@@ -22,11 +22,6 @@ import {
     v_flex,
     v_virtual_list,
 } from 'gpui-base';
-import {
-    fps_monitor_visible,
-    hide_fps_monitor,
-    show_fps_monitor,
-} from 'gpui-fps';
 import { View, div, image, svg } from 'gpui-kit';
 import {
     appHome,
@@ -228,20 +223,7 @@ async function loadSettings() {
     const values = resolvedRows(settingRows, storedRows(await writeSettings()));
     if (JSON.stringify(values) !== JSON.stringify(shared(SETTINGS)))
         setShared(SETTINGS, values);
-    syncFps();
 }
-// herdr's own performance meter (FPS and frame time), over the whole window; herdr has no key for it.
-// a window opened without herdr's shell root (`herdr-app check`'s) throws: its row then says why
-let fpsError = '';
-const syncFps = () => {
-    try {
-        if (settingValue('chatter.fps') === true) show_fps_monitor();
-        else if (fps_monitor_visible()) hide_fps_monitor();
-        fpsError = '';
-    } catch (e) {
-        fpsError = String(e?.message ?? e);
-    }
-};
 // Message text is Herdr's TextView, which only ever takes the theme's foreground, so a chosen
 // text color goes into settings.json's colors.foreground: the whole app's text (the user's choice,
 // 2026-10-31). "theme" removes it. writeTextFile refuses if the file changed since it was read.
@@ -4975,7 +4957,7 @@ export default class ClaudeChat extends View {
             )
             .child(
                 row(
-                    'Meters, FPS, the 🔓 override',
+                    'Meters and the 🔓 override',
                     pills(
                         div()
                             .id('look-all-settings')
@@ -6937,7 +6919,6 @@ export default class ClaudeChat extends View {
     renderView(cx) {
         if (props()?.settingsWindow)
             return settingsWindow(theme(), {
-                notes: fpsError ? { 'chatter.fps': fpsError } : {},
                 onChange: (key, value) => {
                     writeSettings({ [key]: value })
                         .then(loadSettings)

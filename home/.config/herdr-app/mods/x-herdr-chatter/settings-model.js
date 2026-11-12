@@ -69,18 +69,6 @@ export const pages = [
                     },
                 ],
             },
-            {
-                heading: 'window',
-                rows: [
-                    {
-                        control: { kind: 'toggle' },
-                        default: false,
-                        key: 'chatter.fps',
-                        title: 'FPS meter',
-                        why: 'herdr’s own frame-rate meter over the whole window; herdr has no key for it',
-                    },
-                ],
-            },
         ],
         icon: '💬',
         id: 'chatter',
