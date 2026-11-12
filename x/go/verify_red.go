@@ -328,7 +328,13 @@ func cleanHolds(file string, got redRun, picked bool) error {
 		if len(names) == 0 {
 			msg = "the clean run is red, nothing mutated: no failed test named"
 		}
-		return &Fail{Refused: true, Msg: msg, Next: "run the test until it passes on " + file + " as it is", Log: nonBlank(got.log)}
+		next := "run the test until it passes on " + file + " as it is"
+		// the copy leaves .git out, so a test that runs git in the tree is red here and green there (FRM-572)
+		if strings.Contains(got.log, "not a git repository") {
+			msg += "; the test runs git, and the off-tree copy holds no .git"
+			next = "prove this line by a hand revert in the tree, or with a test that plants its own repo"
+		}
+		return &Fail{Refused: true, Msg: msg, Next: next, Log: nonBlank(got.log)}
 	// a runner x picked prints its tally, so a run with none ran nothing, a name that matched no test included
 	case read.none && !read.ran, picked && !read.ran:
 		return &Fail{Refused: true, Msg: "the clean run ran no test, nothing mutated", Next: "name a test that runs: its file, or --run with a name it holds", Log: nonBlank(got.log)}

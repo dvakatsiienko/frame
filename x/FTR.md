@@ -518,6 +518,7 @@
   - given a pr number, and `--repo <owner/name>` or a cwd whose origin is on github
   - when it runs
   - then one envelope holds the head, every check by its latest state, and the three feeds (`comments`, `reviews`, `reviewComments`), each newest first, each comment as author, `path:line` when it has one, and body; a line comment whose line left the diff is marked `outdated`
+  - then its `mergeState` is github's mergeable state; a `dirty` pr (a conflict with its base) draws a 🔴 line naming `x lane merge-main` on the board (FRM-572, #161 sat conflicted two hours)
   - then `vercel[bot]` and `linear-code[bot]` comments never print, nor a review with no words and no verdict
   - given `--since <RFC 3339 time>`, then only comments from that second on print; a comment's time is its last edit, so a verdict edited into an old comment counts
   - then its `read` field, github's own clock before the feeds were read, is the next poll's `--since`: a poll loop misses no comment and repeats at most one second's
@@ -618,6 +619,7 @@
   - given `--add-label` or `--remove-label`, then only those labels move — the write carries the delta (`addedLabelIds`, `removedLabelIds`), so a label another writer adds in between survives
   - decision: deltas over the spec's full set, for that race (dima, 2026-10-07)
   - given a name the ticket's team or the workspace lacks, then exit 1 listing the valid names, and nothing is written; given no field at all, exit 2
+  - given a clio thread by its record (`coordinator` → `clio-main`, `wing` N → `clio-wing-N`), when it moves a ticket to In Progress, sets its delegate or writes its body (`x linear body --set`), then the same write adds its owner label and drops any other clio's, so a handover swaps it; a member's write, or a label linear lacks, changes no owner label; the words live once, in `linear_set.go` (FRM-572)
 - ✅ `x linear link <id> blocks|related|duplicate <targets…>` relates tickets in one request
   - given a ticket, a kind and one or more targets, all by `FRM-N`
   - when it runs, then one request creates a relation per target, and the envelope names the actor

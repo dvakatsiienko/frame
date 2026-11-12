@@ -1238,3 +1238,13 @@ func TestVerifyRedReadsAnUnreadLineStillGreen(t *testing.T) {
 		t.Fatalf("next %q, want a way forward", got.next)
 	}
 }
+
+// FRM-572: the off-tree copy holds no .git, so a test that runs git there is red before any swap; the refusal says why,
+// never only «the clean run is red» for a test green in the tree
+func TestVerifyRedNamesACleanRedFromTheMissingGit(t *testing.T) {
+	t.Parallel()
+	got := cleanHolds("lefthook.yaml", redRun{log: "AssertionError: fatal: not a git repository (or any of the parent directories): .git"}, false)
+	if refused, _ := got.(*Fail); refused == nil || !strings.Contains(refused.Msg, "holds no .git") {
+		t.Fatalf("got %v, want the refusal to name the copy's missing .git", got)
+	}
+}

@@ -30,6 +30,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 
 - **caller** — who ran a verb, one value per trace: `dima`, `cc`, `cloud-chat`, `hook`, `ssh` or `other`
 - **actor** — the fleet member a call acts as on an outside service (`clio`, `codie`, `dima`); `x as` picks it. the caller runs the verb, the actor signs the write. avoid: user, identity
+- **owner label** — the linear label naming which clio holds a ticket, `clio-main` or `clio-wing-<N>`, read from the caller's thread record and set by its claim (In Progress, a delegate, a body write); a handover swaps it. avoid: seat label, clio label
 - **order** — a team's manual order of tickets in linear: one sort-order number a ticket, ascending from the top; `x linear set --after|--before` moves one ticket in it. avoid: rank, position
 - **pull** — one session's read of a ticket body to a file through `x linear body`: its record holds the file, the `updatedAt` and the size a later `--set` is checked against; a peer's pull of the same ticket is another pull. avoid: fetch, checkout
 

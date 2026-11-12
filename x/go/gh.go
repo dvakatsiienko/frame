@@ -52,13 +52,13 @@ type prComment struct {
 }
 
 type prRead struct {
-	repo, pr, title, state, branch, head, read, since string
-	checks                                            []prCheck
-	feeds                                             [][]prComment
+	repo, pr, title, state, mergeState, branch, head, read, since string
+	checks                                                        []prCheck
+	feeds                                                         [][]prComment
 }
 
 func (p prRead) envelope() ordered {
-	data := ordered{{"repo", p.repo}, {"pr", p.pr}, {"title", p.title}, {"state", p.state}, {"branch", p.branch},
+	data := ordered{{"repo", p.repo}, {"pr", p.pr}, {"title", p.title}, {"state", p.state}, {"mergeState", p.mergeState}, {"branch", p.branch},
 		{"head", p.head}, {"read", p.read}}
 	if p.since != "" {
 		data = append(data, kv{"since", p.since})
@@ -113,7 +113,9 @@ func ghPr(r *Run, args []string, flags Flags) (any, error) {
 			Title  string `json:"title"`
 			State  string `json:"state"`
 			Merged bool   `json:"merged"`
-			Head   struct {
+			// github's mergeable_state: dirty is a conflict with the base, the alarm a lane's watch reads
+			MergeState string `json:"mergeable_state"`
+			Head       struct {
 				Sha string `json:"sha"`
 				Ref string `json:"ref"`
 			} `json:"head"`
@@ -128,7 +130,7 @@ func ghPr(r *Run, args []string, flags Flags) (any, error) {
 			at = time.Now()
 		}
 		read.read = at.UTC().Format(time.RFC3339)
-		read.title, read.state, read.branch, read.head = pr.Title, pr.State, pr.Head.Ref, pr.Head.Sha
+		read.title, read.state, read.mergeState, read.branch, read.head = pr.Title, pr.State, pr.MergeState, pr.Head.Ref, pr.Head.Sha
 		if pr.Merged {
 			read.state = "merged"
 		}
@@ -390,6 +392,9 @@ func prBoard(p prRead, next string) frame {
 	head := ui.bold.Render("#"+p.pr) + "  " + ui.fg.Render(p.title)
 	b.rows = append(b.rows, clip(head, w-lipgloss.Width(stateText)-1)+strings.Repeat(" ", max(w-lipgloss.Width(head)-lipgloss.Width(stateText), 1))+stateText)
 	b.rows = append(b.rows, ui.dim.Render(clip(p.branch+" at "+short(p.head), w)))
+	if p.mergeState == "dirty" {
+		b.rows = append(b.rows, ui.er.Render("🔴 conflicts with its base: x lane merge-main"))
+	}
 
 	b.rows = append(b.rows, "", ui.label.Render(fmt.Sprintf("checks (%d)", len(p.checks))))
 	if len(p.checks) == 0 {

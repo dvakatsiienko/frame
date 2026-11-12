@@ -50,7 +50,7 @@ var sgr = regexp.MustCompile("\x1b\\[[0-9;]*m")
 
 func prPages() map[string]string {
 	return map[string]string{
-		repoPath + "/pulls/7": `{"title":"a pr","state":"open","merged":false,"head":{"sha":"` + headSha + `","ref":"codie/x"}}`,
+		repoPath + "/pulls/7": `{"title":"a pr","state":"open","merged":false,"mergeable_state":"dirty","head":{"sha":"` + headSha + `","ref":"codie/x"}}`,
 		repoPath + "/commits/" + headSha + "/check-runs": `{"total_count":2,"check_runs":[
 			{"name":"test","status":"completed","conclusion":"failure","html_url":"https://ci/1"},
 			{"name":"review","status":"in_progress","conclusion":null,"html_url":"https://ci/2"}]}`,
@@ -79,6 +79,7 @@ type prRun struct {
 	output string
 	data   struct {
 		Repo           string      `json:"repo"`
+		MergeState     string      `json:"mergeState"`
 		Head           string      `json:"head"`
 		Read           string      `json:"read"`
 		Checks         []prCheck   `json:"checks"`
@@ -118,6 +119,16 @@ func TestGhPrListsEachFeedNewestFirst(t *testing.T) {
 	feeds := bodies(got.data.Comments) + "|" + bodies(got.data.Reviews) + "|" + bodies(got.data.ReviewComments)
 	if got.code != 0 || feeds != "verdict: clean,later,first|fix it|why?,off by one" {
 		t.Fatalf("exit %d, feeds %q, want every page newest first, the wordless review dropped:\n%s", got.code, feeds, got.output)
+	}
+}
+
+// FRM-572 exit 4 (o78): #161 sat conflicted two hours; a dirty pr says so in the read a lane's watch makes
+func TestGhPrNamesADirtyMergeState(t *testing.T) {
+	t.Parallel()
+	got, _ := runGhPr(t, prPages(), nil, "7", "--repo", "o/r")
+
+	if got.code != 0 || got.data.MergeState != "dirty" {
+		t.Fatalf("exit %d, mergeState %q, want dirty:\n%s", got.code, got.data.MergeState, got.output)
 	}
 }
 
