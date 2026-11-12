@@ -3,10 +3,10 @@ id: PK-379
 title: >-
   comms load on dima: wing 1 measures his tab hops and replies of 11-10..11-11,
   proposes one solid fix
-status: open
+status: done
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T14:03:00Z'
+updated_date: '2026-11-12T14:20:00Z'
 labels:
   - m
   - clio-wing-1
@@ -60,4 +60,7 @@ PK-379:W13 (2026-11-12 15:42, dima): can i have a toggle button for it on my ban
 PK-379:W14 (2026-11-12 15:47, dima): if it stops working or gets clunky on any surface, i'll just disable it.
 
 16:03 wing 1: shaped into FRM-580 (system notes, Triage, fleet · 🫟 x-herdr looks sharp); its sign via clio:shape-lane next, then it joins main's herdr lane
+
+ticket: FRM-580
+close: 16:20 W1–W5 met (measured in wing 1 .scratch/comms-load/measures.md, the fix proposed and reshaped on his steers); W6–W14 live in FRM-580's wish block, signed 16:14; the silent job-wake trial (W11) runs to 21:00 in habit-dima-comms
 <!-- SECTION:NOTES:END -->
