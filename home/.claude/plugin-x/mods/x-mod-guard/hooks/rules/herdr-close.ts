@@ -87,10 +87,14 @@ const LAYOUT_CHANGES = new Set([
     'layout.set',
     'layout.switch',
 ]);
-const isLayoutPath = (text: string) => /herdr-app\/layouts(\/|$)/.test(text);
+const isLayoutPath = (text: string) =>
+    /herdr-app\/layouts(\/|$)/.test(
+        text.replaceAll(/\/+/g, '/').replaceAll(/\/(\.\/)+/g, '/'),
+    );
 const LAYOUT_READERS = new Set([
     'bat',
     'cat',
+    'cd',
     'diff',
     'echo',
     'file',
@@ -123,10 +127,14 @@ function layoutChangeOf(c: Command) {
     const isWriter =
         c.name === 'cp'
             ? named(operands.at(-1) ?? '')
-            : c.name === 'sed'
-              ? words.some((w) => /^(-\w*i|--in-place)/.test(w)) &&
-                operands.some(named)
-              : !LAYOUT_READERS.has(c.name) && operands.some(named);
+            : // sed writes from inside its script too (`w <file>`), so the path may stand only as the file it reads
+              c.name === 'sed'
+              ? (words.some((w) => /^(-\w*i|--in-place)/.test(w)) &&
+                    operands.some(named)) ||
+                words.some((w) => named(w) && w !== operands.at(-1)) ||
+                words.some((w) => /(^|;|\s)w\s/.test(w) && isLayoutPath(w))
+              : (!LAYOUT_READERS.has(c.name) && operands.some(named)) ||
+                c.bodies.some(isLayoutPath);
     return isWriter ? 'a layout file write' : undefined;
 }
 
@@ -137,7 +145,7 @@ export function herdrClose(c: Command, ctx: Context): Refusal | undefined {
     if (layout)
         return {
             door: 'a layout change only on dima’s word, with a throwaway tab focused: put the whole command in an orbit ask for his tick',
-            rule: 'herdr-close',
+            rule: 'herdr-layout',
             targets: [layout],
             why: `${layout} kills the thread in the focused tab (herdr-app#861)`,
         };

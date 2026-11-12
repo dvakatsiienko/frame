@@ -157,15 +157,30 @@ function writesNamed(command: string, named: (text: string) => boolean) {
 
 // a literal a script hands straight to a write is the text it writes into a doc, never the file it opens (FRM-519 14h);
 // a split, an index, a regex or a variable can still pull a path out of a literal (round 11), so any other literal stays
-const LITERAL = /'[^'\n]*'|"[^"\n]*"/g;
+// a backslash escapes the next character, as python reads `'\''`
+const LITERAL = /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g;
 const WRITE_SINKS = new Set(['write', 'write_text']);
 // a script that defines its own code could give a write's name a body that reads the text on
+// or run its written text as code (a shell's stdin), or bind a literal inside the call (a walrus); the review's forges
 const DEFINES_CODE =
-    /\b(def|class|lambda|setattr|function)\b|__|\bwrite\w*\s*=[^=]/;
+    /\b(def|class|lambda|setattr|getattr|function|popen|Popen|subprocess|system|exec|eval|spawn|pty|stdin|compile)\b|__|:=|=>|\bwrite\w*\s*=[^=]/;
 function withoutWrittenText(command: string) {
     if (DEFINES_CODE.test(command)) return command;
+    // parens inside a literal are text: the call scan reads a copy with every literal's inside blanked
+    const code = command.replace(
+        LITERAL,
+        (l) => `${l[0]}${' '.repeat(l.length - 2)}${l[0]}`,
+    );
+    // the literal is the call's whole argument: right after `.write(`, or after `.replace(<literal>,`, and right before `)`;
+    // an f-string's prefix stands between, so its code always stays
+    const isWholeArgument = (at: number, length: number) =>
+        /(\.(write|write_text)\(|\.replace\(\s*(['"])\s*\3\s*,)\s*$/.test(
+            code.slice(0, at),
+        ) && /^\s*\)/.test(code.slice(at + length));
     return command.replace(LITERAL, (literal, at: number) =>
-        feedsWrite(command, at) ? "''" : literal,
+        isWholeArgument(at, literal.length) && feedsWrite(code, at)
+            ? "''"
+            : literal,
     );
 }
 // the call whose open paren last stands unclosed before `at`, its callee name and that paren's index

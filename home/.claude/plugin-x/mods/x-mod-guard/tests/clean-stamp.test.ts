@@ -244,6 +244,33 @@ for (const line of [
         "f = open('x', 'w')\nf.write(str(open(*'a merge reads /home/.claude/shelf/pr-verified.json first'.split()[3:], 'w')))",
     ),
     `python3 - <<'EOF' | xargs -n1 | sed -n 2p | xargs touch\nimport sys\nsys.stdout.write('see /home/.claude/shelf/pr-verified.json now')\nEOF`,
+    // the local reviews: a literal bound by a walrus, text written into a shell, a paren inside a quote
+    SCRIPT(
+        "import sys\nsys.stdout.write(p := '/home/.claude/shelf/pr-verified.json')\nopen(p, 'w').write('{}')",
+    ),
+    SCRIPT(
+        "import os\nos.popen('sh', 'w').write('echo x > /home/.claude/shelf/pr-verified.json')",
+    ),
+    SCRIPT(
+        "import subprocess\nsubprocess.Popen(['sh'], stdin=-1).stdin.write(b'echo x > /home/.claude/shelf/pr-verified.json')",
+    ),
+    SCRIPT(
+        "import sys\nsys.stdout.write('(')\np = '/home/.claude/shelf/pr-verified.json'\nopen(p, 'w').write('{}')",
+    ),
+    `node - <<'EOF'\nconst o = { write: (t) => require('fs').writeFileSync(t, '{}') };\no.write('/home/.claude/shelf/pr-verified.json');\nEOF`,
+    // codie's own review: code inside a written literal, and a quote or a paren the scan could pair unlike python
+    SCRIPT(
+        `import sys\nsys.stdout.write(f'{open("/home/.claude/shelf/pr-verified.json", "w")}')`,
+    ),
+    SCRIPT(
+        `import sys\nsys.stdout.write('\\''); open("/home/.claude/shelf/pr-verified.json", 'w')`,
+    ),
+    SCRIPT(
+        `import sys\nsys.stdout.write('''a\nb'''); open("/home/.claude/shelf/pr-verified.json", 'w')`,
+    ),
+    SCRIPT(
+        "import sys\nsys.stdout.write(sys.stdout.write(open(')' and '/home/.claude/shelf/pr-verified.json', 'w')))",
+    ),
     SCRIPT(
         "p = 'at ~/.claude/sessions/4242.json'.split()[1]\nopen(p, 'w').write('{}')",
     ),

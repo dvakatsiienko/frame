@@ -314,6 +314,11 @@ for (const line of [
     `sed -i '' 's/a/b/' ${LAYOUT}`,
     `python3 -c "open('${LAYOUT}', 'w').write('{}')"`,
     'cd ~/.config/herdr-app/layouts && echo x > zoo.json',
+    // the local review: a heredoc program, sed's own w command, a path with // or /./
+    `python3 - <<'EOF'\nopen('${LAYOUT}', 'w').write('{}')\nEOF`,
+    `sed -n 'w ${LAYOUT}' /tmp/z.json`,
+    "echo '{}' > /home/.config/herdr-app//layouts/zoo.json",
+    "echo '{}' > /home/.config/herdr-app/./layouts/zoo.json",
 ])
     test(`a herdr layout change is refused: ${line}`, async ($, on) => {
         const { ran } = world(on);
@@ -333,6 +338,8 @@ for (const line of [
     `jq . ${LAYOUT}`,
     'ls ~/.config/herdr-app/layouts',
     `cp ${LAYOUT} /tmp/zoo.json`,
+    'cd ~/.config/herdr-app/layouts && cat zoo.json',
+    `sed -n 1,5p ${LAYOUT}`,
 ])
     test(`a layout click or read runs: ${line}`, async ($, on) => {
         const { ran } = world(on);

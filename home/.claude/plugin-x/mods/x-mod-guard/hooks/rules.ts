@@ -954,12 +954,16 @@ const CLAUDE_VALUE_FLAGS = new Set([
 function textWordsOf(c: Command) {
     const words = c.args;
     const bare = words.filter((w) => !w.text.startsWith('-'));
-    if (c.name === 'claude')
-        return words.filter(
-            (w, i) =>
-                !w.text.startsWith('-') &&
-                !CLAUDE_VALUE_FLAGS.has(words[i - 1]?.text ?? ''),
-        );
+    // a value flag takes the next word whatever it is, so the walk skips exactly the words a flag took (local review)
+    if (c.name === 'claude') {
+        const text: typeof words = [];
+        for (let i = 0; i < words.length; i++) {
+            const w = words[i] as (typeof words)[number];
+            if (CLAUDE_VALUE_FLAGS.has(w.text)) i++;
+            else if (!w.text.startsWith('-')) text.push(w);
+        }
+        return text;
+    }
     if (c.name === 'herdr-app')
         return HERDR_TYPES.test(bare[1]?.text ?? '') ? bare.slice(2) : [];
     if (c.name === 'hc' && verbOf(words.map((w) => w.text)) === 'run') {
@@ -1461,11 +1465,13 @@ function saysMergeOf(prompt: string, pr: string) {
         'i',
     );
     // a hedge reads as a negation: a trailing «…», a wait or hold, a condition (round 11)
-    const negated =
-        /n['’]t\b|…|\b(?:not|never|no|nope|later|wait|hold|if|unless)\b/i;
-    return prompt
-        .replaceAll(QUOTED, ' ')
-        .replaceAll(/\.{3,}/g, '…')
+    // a hedge anywhere in his prompt refuses, since its own sentence still hedges the merge (local review)
+    const hedged =
+        /…|\b(?:later|wait|hold|if|unless|once|when|after|assuming|provided|maybe)\b/i;
+    const negated = /n['’]t\b|\b(?:not|never|no|nope)\b/i;
+    const text = prompt.replaceAll(QUOTED, ' ').replaceAll(/\.{3,}/g, '…');
+    if (hedged.test(text)) return false;
+    return text
         .split(/(?<=[.!?\n])/)
         .some(
             (s) => !s.trim().endsWith('?') && !negated.test(s) && said.test(s),

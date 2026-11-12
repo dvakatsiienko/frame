@@ -84,6 +84,13 @@ for (const said of [
     'merge 104 if ci passes',
     'merge 104 on hold',
     'merge 104 unless the bot objects',
+    // the local review: a hedge in its own sentence, and the conditions past «if»
+    'merge 104. or wait',
+    'merge 104!\nunless ci is red',
+    'merge 104 once ci passes',
+    'merge 104 when green',
+    'merge 104 after the deploy',
+    'maybe merge 104',
 ])
     test(`merge-auto's --dima-ok stays refused when dima's prompt says «${said}»`, async ($, on) => {
         const { ran } = world(on);

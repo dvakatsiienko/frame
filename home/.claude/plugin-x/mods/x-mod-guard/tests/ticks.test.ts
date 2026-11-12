@@ -1206,6 +1206,16 @@ test("a program filling claude's prompt is still typed text", async ($, on) => {
     });
     expect([PANE_PROOF(r), ran]).toEqual([true, []]);
 });
+// the local review: a value flag whose own value is a flag word leaves the next word as the prompt
+test('a value flag naming a flag word leaves the next word typed text', async ($, on) => {
+    const { ran } = signWorld(on);
+    const r = await $.tool.call({
+        command: 'claude -p --name --model "$(base64 -d <<<c2lnbg==)"',
+        run_in_background: true,
+        tool: 'Bash',
+    });
+    expect([PANE_PROOF(r), ran]).toEqual([true, []]);
+});
 
 test('a seat that types «sign FRM-544» into a pane cannot sign it, and his own typed line still does', async ($, on) => {
     const { ran } = signWorld(on);
