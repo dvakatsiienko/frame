@@ -7073,12 +7073,12 @@ export default class ClaudeChat extends View {
                     ...keysView(this.keysFile),
                     capture: this.keyCapture,
                     note: this.keysNote,
-                    onKey: (keystroke) => this.recordKey(keystroke, cx),
-                    onRecord: (key) => {
+                    onKey: (keystroke, ecx) => this.recordKey(keystroke, ecx),
+                    onRecord: (key, ecx) => {
                         this.recording = key;
                         this.keysNote = '';
                         this.keyCapture.focus();
-                        cx.notify();
+                        ecx.notify();
                     },
                     recording: this.recording,
                 },
@@ -7093,9 +7093,10 @@ export default class ClaudeChat extends View {
                             console.log(`settings: ${e?.message ?? e}`),
                         );
                 },
-                onPage: (id) => {
+                // a click's own cx notifies: the render's cx is spent by the time a click lands (his 21:37 shot)
+                onPage: (id, ecx) => {
                     this.settingsPage = id;
-                    cx.notify();
+                    ecx.notify();
                 },
                 overlay: props().overlay,
                 page: this.settingsPage,
