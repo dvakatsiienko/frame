@@ -1,4 +1,4 @@
-// the thread's band in the text box, as pure steps: the facts the deck's mod publishes to herdr's shared state, one thread's
+// the thread's band in the quill, as pure steps: the facts the deck's mod publishes to herdr's shared state, one thread's
 // share of them, and whether they are too old to show as live
 
 export const THREADS_KEY = 'x-herdr-deck.threads';

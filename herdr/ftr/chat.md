@@ -118,7 +118,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread's tab is open in the Chat view
   - then the chat starts right under the tab bar, with no strip of asks above it (shot 2021-strip-hidden)
   - decision: the strip is gone (dima, 20:12: «can i have this dupe orbit killed? it eats UI»), lifting his 18:11 «keep for now»; its block is hidden by one `layout.hide` click, zoo.json untouched, and x-herdr-deck's `view: seat` copy draws and reads nothing
-- ⬜ the band sits right above the chat's text box, slice 1 ([FRM-565](https://linear.app/x-com/issue/FRM-565))
+- ⬜ the band sits right above the quill, slice 1 ([FRM-565](https://linear.app/x-com/issue/FRM-565))
   - given a thread's tab is open in the Chat view
   - then three rows above his box read its «waiting on» line, the weekly usage and its context, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
   - and a thread mid-turn or waiting on nothing shows an empty waiting-on row, a long one is cut with … and whole in its tooltip, and the rows keep one height so nothing moves

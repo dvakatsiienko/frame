@@ -1028,7 +1028,7 @@ function boxText(screen) {
 }
 const flat = (s) => s.replace(/\s+/g, ' ').trim();
 
-// the module's two cards are nested one layer under the text box (PK-384, his 15:02 pick: «both nested cards are below
+// the module's two cards are nested one layer under the quill (PK-384, his 15:02 pick: «both nested cards are below
 // layer … slightly narrower than textbox»): twins in surface, edge and radius, each a little narrower, its inner edge
 // set flush against the box, never under it: an overlap hid the newest reply and the meters (his 17:09 shot)
 /** @param {any} t @param {'top' | 'bottom'} side */
@@ -1562,8 +1562,8 @@ export default class ClaudeChat extends View {
         this.box.on('paste_other', (_e, cx) => this.pasteImage(cx));
         // The / menu's keys. The box binds ↑ ↓ Tab Esc ← → Home End itself (input::MoveUp,
         // IndentInline, …): those actions run before any key handler around it and stop the key,
-        // so an on_key_down on the composer never saw them. Bindings of our own under a deeper
-        // context come first (the win98 mod's trick for Escape): the composer is "ChatSlash" while
+        // so an on_key_down on the quill never saw them. Bindings of our own under a deeper
+        // context come first (the win98 mod's trick for Escape): the quill is "ChatSlash" while
         // the menu is open, and the box inside it is gpui-component's "Input".
         try {
             cx.bind_keys(
@@ -1584,7 +1584,7 @@ export default class ClaudeChat extends View {
                     })),
                 ),
             );
-            // Esc while Claude works = Stop (the composer is "ChatStop" then, with the menu closed).
+            // Esc while Claude works = Stop (the quill is "ChatStop" then, with the menu closed).
             cx.bind_keys(
                 ['Input', 'Textarea', 'TextArea'].map((box) => ({
                     action: 'x_herdr_chatter_stop',
@@ -1592,7 +1592,7 @@ export default class ClaudeChat extends View {
                     keystroke: 'escape',
                 })),
             );
-            // Tab in an empty box takes Claude Code's suggestion (the composer is "ChatGhost" then).
+            // Tab in an empty box takes Claude Code's suggestion (the quill is "ChatGhost" then).
             cx.bind_keys(
                 ['Input', 'Textarea', 'TextArea'].map((box) => ({
                     action: 'x_herdr_chatter_ghost_take',
@@ -3421,7 +3421,7 @@ export default class ClaudeChat extends View {
                               .hover((s) =>
                                   s.bg(t.hover).text_color(t.foreground),
                               )
-                              .tooltip('Take it back into the box')
+                              .tooltip('Take it back into the quill')
                               .on_click((_e, cx) => this.pullQueued(q.text, cx))
                               .child('×')
                         : div().size(px(18)).flex_none(),
@@ -7059,7 +7059,7 @@ export default class ClaudeChat extends View {
         const menu = this.menu(t);
         this.settlePick();
         // what changes the module's height under the log: a change, or the first frame after a load, keeps the newest
-        // reply in view while following (his 15:24: the composer «covers the last reply»)
+        // reply in view while following (his 15:24: the quill «covers the last reply»)
         const boxShape = [
             agent.status === 'blocked',
             images > 0,
@@ -7470,7 +7470,7 @@ export default class ClaudeChat extends View {
                                 .child(this.controlCard(t, agent))
                                 .child(
                                     h_flex()
-                                        .id('composer')
+                                        .id('quill')
                                         .track_focus(this.keyboard)
                                         .when(!this.where?.container, (el) =>
                                             el.on_drop((e, cx) =>
