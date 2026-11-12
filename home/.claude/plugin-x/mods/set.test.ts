@@ -74,15 +74,14 @@ test('a number takes only a known key inside its range', () => {
     ]).toEqual([7, undefined, undefined, undefined, undefined, undefined]);
 });
 
-test('the coordinator is the live row named 🦉 clio', () => {
+// FRM-579: the coordinator is the live thread whose claim is clio; a record still launching has no pid, a wing is no main
+test('the coordinator is the live thread x answers as clio', () => {
     expect(
-        clioIdOf(
-            [
-                { name: '🦉 clio', pid: 1, sessionId: 'dead' },
-                { name: '🦉 clio (side)', pid: 2, sessionId: 'side' },
-                { name: '🦉 clio', pid: 3, sessionId: 'main' },
-            ],
-            (pid) => pid !== 1,
-        ),
+        clioIdOf([
+            { role: 'coordinator', sessionId: 'launching' },
+            { pid: 2, role: 'wing', sessionId: 'wing' },
+            { pid: 3, sessionId: 'named-clio-no-claim' },
+            { pid: 4, role: 'coordinator', sessionId: 'main' },
+        ]),
     ).toBe('main');
 });

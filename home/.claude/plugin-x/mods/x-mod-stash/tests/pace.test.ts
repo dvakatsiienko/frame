@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
+
 // the pace watch (FRM-500): a line to the session that keeps `pace:<id>`, only when the 5h window changes its rung
 
 const SID = 'p4c3p4c3-clio';
@@ -21,6 +23,9 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
             pid: PID,
             sessionId: SID,
         }),
+        [THREADS_FILE]: threadsFile([
+            { pid: PID, sessionId: SID, ...recordOf('🦉 clio') },
+        ]),
     };
     const turns: string[] = [];
     const state = {
@@ -126,11 +131,13 @@ const seat = (w: ReturnType<typeof world>, name: string, role?: string) => {
         pid: PID,
         sessionId: SID,
     });
-    w.files['/home/.claude/shelf/threads.json'] = JSON.stringify({
-        at: 0,
-        threads: role ? [{ name, role, sessionId: SID }] : [],
-        v: 1,
-    });
+    w.files[THREADS_FILE] = threadsFile([
+        {
+            pid: PID,
+            sessionId: SID,
+            ...(role ? { display: name, role } : recordOf(name)),
+        },
+    ]);
 };
 const MEMBER = '⚡ 🔧 codie: mods lane 4';
 
@@ -977,7 +984,7 @@ test('🎛️ shows a pace number', async ($, on) => {
 
 for (const [name, isOn, role] of [
     ['🦉 clio', true],
-    ['🦉 clio (side)', true],
+    ['🦉 clio (side)', true, 'wing'],
     ['🐦‍⬛ crow', true],
     ['🎀 helga', true],
     ['⚡ 🔧 codie: mods lane 4 | FRM-500', true, 'codie'],
@@ -1001,7 +1008,7 @@ test('a member keeps its 🔥 chair through a thread store that does not parse',
     seat(w, MEMBER, 'codie');
     await start($);
     w.store.delete(`hot:${SID}`);
-    w.files['/home/.claude/shelf/threads.json'] = '{"threads":[{"sessionId"';
+    w.files[THREADS_FILE] = '{"threads":[{"sessionId"';
     await start($);
     expect(w.store.get(`hot:${SID}`)).toBeDefined();
 });

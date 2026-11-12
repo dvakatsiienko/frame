@@ -1,6 +1,8 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
+
 // 🐦‍🔥 second wind, the asked session's side (todo 16): the note rides its next turn, a cancel takes it back, and the
 // op it calls with its handoff compacts and ingests at that turn's end
 
@@ -12,6 +14,25 @@ const SLUG = 'mods-l14-2';
 
 // what lands while the engine compacts: one `on` per event, so a test sets this flag before its first `$` call
 let inCompact: (() => Promise<unknown>) | undefined;
+
+// the live peers a test's messages come from, as cc's registry names them and x's records give their roles
+const SENSE_NAMES = [
+    '⚡ 🔎 sixth sense: mods',
+    '⚡ 🔎 sixth sense: mods lane 6 | main',
+];
+const PEERS = [
+    { name: '🦉 clio', pid: 1, record: recordOf('🦉 clio') },
+    {
+        name: '🦉🪽 clio: wing 1',
+        pid: 2,
+        record: recordOf('🦉🪽 clio: wing 1'),
+    },
+    ...SENSE_NAMES.map((name, i) => ({
+        name,
+        pid: 3 + i,
+        record: { display: name, role: 'sixth-sense' },
+    })),
+];
 // `name` is the session's registry name; `handoffs` the slugs `x handoff peek` finds
 // `during` runs inside the compact, as a turn end that lands while it works would
 // `role` is the role x's thread record gives the session, `null` for none
@@ -47,7 +68,11 @@ function world(
                 isStderrTruncated: false,
                 isStdoutTruncated: false,
                 stderr: '',
-                stdout: isPeek ? '' : `${PID}\nMon Oct 13 17:00:00 2026\n`,
+                stdout: isPeek
+                    ? ''
+                    : e.argv[0] === 'ps'
+                      ? [PID, ...PEERS.map((p) => p.pid)].join('\n')
+                      : `${PID}\nMon Oct 13 17:00:00 2026\n`,
             },
         };
     });
@@ -56,18 +81,42 @@ function world(
             name,
             pid: PID,
         }),
-        '/home/.claude/shelf/threads.json': JSON.stringify({
-            at: 0,
-            threads: role ? [{ name, role, sessionId: SID }] : [],
-            v: 1,
-        }),
+        [THREADS_FILE]: threadsFile([
+            {
+                pid: PID,
+                sessionId: SID,
+                ...(role ? { display: name, role } : recordOf(name)),
+            },
+            ...PEERS.map((p) => ({
+                pid: p.pid,
+                sessionId: `peer-${p.pid}`,
+                ...p.record,
+            })),
+        ]),
     };
+    for (const p of PEERS)
+        files[`/home/.claude/sessions/${p.pid}.json`] = JSON.stringify({
+            name: p.name,
+            pid: p.pid,
+            sessionId: `peer-${p.pid}`,
+        });
     on('fs.read', (_$, e) =>
         e.path in files
             ? { value: files[e.path] ?? '' }
             : { deny: 'no such file' },
     );
-    on('fs.list', () => ({ value: [] }));
+    on('fs.list', (_$, e) => ({
+        value:
+            e.path === '/home/.claude/sessions'
+                ? PEERS.map((p) => ({
+                      isLink: false,
+                      kind: 'file' as const,
+                      mtimeMs: 0,
+                      name: `${p.pid}.json`,
+                      size: 1,
+                  }))
+                : [],
+    }));
     on('ui.log', () => ({ value: undefined }));
     on('ui.toast', () => ({ value: undefined }));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));

@@ -118,6 +118,7 @@ async function started(
     const pings: string[] = [];
     on('session.id', () => ({ value: SID }));
     on('env.get', () => ({ value: '/home' }));
+    on('ui.log', () => ({ value: undefined }));
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
@@ -319,6 +320,8 @@ test("a keep-hot ping's one-character reply keeps the 🔭 wait the last real re
         return { value: undefined };
     });
     on('session.id', () => ({ value: SID }));
+    on('env.get', () => ({ value: '/home' }));
+    on('ui.log', () => ({ value: undefined }));
     on('classic.Stop', () => ({}));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
     on('turn.complete', () => ({ text: '' }));

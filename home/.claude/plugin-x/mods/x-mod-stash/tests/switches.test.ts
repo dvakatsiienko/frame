@@ -2,6 +2,7 @@ import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { PARTS } from '../hooks/register.tsx';
+import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // a 🎛️ switch is the whole feature (mods/AGENTS.md § the rules): every registered part either runs its scenario here —
 // switched on it reaches the model or spends a turn, switched off nothing does and its op is refused — or names why it
@@ -25,6 +26,9 @@ function world(on: On, name = '🦉 clio') {
             name,
             pid: PID,
         }),
+        [THREADS_FILE]: threadsFile([
+            { pid: PID, sessionId: SID, ...recordOf(name) },
+        ]),
     };
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
@@ -271,7 +275,7 @@ const SCENARIOS: Record<string, Scenario> = {
     'stash.rounds': {
         arm: async ($, w) => {
             // x's thread record names the lane a round counts under
-            w.files['/home/.claude/shelf/threads.json'] = JSON.stringify({
+            w.files[THREADS_FILE] = JSON.stringify({
                 at: 0,
                 threads: [
                     {

@@ -1517,10 +1517,13 @@ async function relayCrowWake($: EngineInterface) {
         return;
     }
     if (!parked || parked.isSent || typeof parked.line !== 'string') return;
-    const crow = memberOf(await registry($), `${CROW} crow`);
+    // crow by her record, so a session that only names itself crow never takes clio's wake line
+    const crow = (await threadRecords($)).find(
+        (t) => t.role === ADVISER_ROLE && t.pid !== undefined,
+    );
     if (!crow) return;
     const r = await $.session
-        .send({ text: parked.line, to: { sessionId: crow.base.sid } })
+        .send({ text: parked.line, to: { sessionId: crow.sessionId } })
         .catch(() => undefined);
     if (!r?.isDelivered) return;
     // a newer wake parked while this one went out stays as it is
@@ -1696,24 +1699,27 @@ async function wakeForParkedLanes($: EngineInterface) {
     const now = await $.clock.now();
     if (now - parkedReadAt < LEDGER_EVERY_MS) return;
     parkedReadAt = now;
-    const me = await sessionName($);
-    if (!me || (!isCoordinator(me) && !isWing(me))) return;
+    const threads = await threadRecords($);
+    const myId = await currentId($);
+    const self = threads.find((t) => t.sessionId === myId);
+    const isMain = self?.role === MAIN_ROLE;
+    if (!self || (!isMain && self.role !== WING_ROLE)) return;
     if (!(await partsShown($))('stash.glide') || (await isWindowSpent($)))
         return;
     const home = (await $.env.get('HOME')) ?? '';
     const rows = await registry($);
-    const myId = await currentId($);
     for (const lane of await readLanes($)) {
         if (lane.endedAt || lane.current >= lane.items.length) continue;
-        // a dead wing's lane falls to main
-        const isRunnerLive = rows.some(
-            (row) =>
-                row.isAlive && bare(row.base.name) === bare(lane.runner ?? ''),
+        // a dead wing's lane falls to main; a runner is the wing's display, drawn from its record
+        const isRunnerLive = threads.some(
+            (t) =>
+                t.pid !== undefined &&
+                bare(t.display ?? '') === bare(lane.runner ?? ''),
         );
         const isMine =
-            lane.runner && (isRunnerLive || !isCoordinator(me))
-                ? bare(lane.runner) === bare(me)
-                : isCoordinator(me);
+            lane.runner && (isRunnerLive || !isMain)
+                ? bare(lane.runner) === bare(self.display ?? '')
+                : isMain;
         if (!isMine) continue;
         const members = [];
         for (const name of Object.values(lane.members)) {
@@ -2050,11 +2056,13 @@ async function quietSendEnd(
         : { line };
 }
 
+// main clio by the record of the session the `to` names, never by the name it says
 async function isToCoordinator($: EngineInterface, to: string) {
-    const row = rowOfTo(await registry($), to);
+    const sid = rowOfTo(await registry($), to)?.base.sid;
     return (
-        isCoordinator(bareTo(to)) ||
-        (row !== undefined && isCoordinator(row.base.name))
+        sid !== undefined &&
+        (await threadRecords($)).find((t) => t.sessionId === sid)?.role ===
+            MAIN_ROLE
     );
 }
 
@@ -3538,10 +3546,9 @@ async function takeLaneSteers($: EngineInterface, lanes: StashLane[]) {
     });
 }
 
-// the registry names the coordinator, so a handoff's new 🦉 clio keeps the lanes
+// main clio by her record, so a handoff's new clio keeps the lanes once summon records her, and no name grants them
 async function isLaneOwner($: EngineInterface) {
-    const name = await sessionName($);
-    return name !== undefined && isCoordinator(name);
+    return (await selfLive($))?.role === MAIN_ROLE;
 }
 
 // a clio boot whose board has not printed: the skill loaded in the last hours, no board-length reply since
@@ -3641,11 +3648,26 @@ async function sessionName($: EngineInterface) {
 // that does not parse (a torn or hand-broken write) reads as the last list that did, so no role drops for one bad read
 type ThreadRecord = {
     sessionId: string;
+    display?: string;
     name?: string;
+    pid?: number;
     role?: string;
     lane?: string;
     ticket?: string;
 };
+// the standing role ids x's roles.json names (FRM-579): one place here, so a rename of the fleet's roles is a table edit
+const MAIN_ROLE = 'coordinator';
+const WING_ROLE = 'wing';
+const ADVISER_ROLE = 'adviser';
+
+// a power read (a lane's owner, the glide door, a coordinator's message) reads the record x wrote, never a name; x alone
+// writes the store and x-mod-guard refuses every session's write to it
+async function selfLive($: EngineInterface) {
+    const sid = await currentId($);
+    return sid
+        ? (await threadRecords($)).find((t) => t.sessionId === sid)
+        : undefined;
+}
 const THREADS_KEPT = 'threads-kept';
 async function threadRecords($: EngineInterface): Promise<ThreadRecord[]> {
     const raw = await $.fs
@@ -4404,7 +4426,12 @@ async function holdForWind(
     body: string,
     from: string,
 ): Promise<{ consumed: string } | { text: string } | undefined> {
-    if (!(isCoordinator(from) || isWing(from))) return undefined;
+    // the sender is a coordinator by the record of the session it names, never by the name it signs with
+    const fromSid = rowOfTo(await registry($), from)?.base.sid;
+    const fromRole = (await threadRecords($)).find(
+        (t) => t.sessionId === fromSid,
+    )?.role;
+    if (fromRole !== MAIN_ROLE && fromRole !== WING_ROLE) return undefined;
     if ((await selfRecord($))?.role !== 'codie') return undefined;
     const key = await steerKey($);
     const sid = await currentId($);
@@ -4936,18 +4963,15 @@ async function pressPace($: EngineInterface) {
 // a seat starts on: 🔋 the coordinator's, 🔥 every seated member's; a written key, off included, stands
 async function seatDefaults($: EngineInterface) {
     const sid = await currentId($);
-    const name = await sessionName($);
-    if (!sid || !name) return;
+    if (!sid) return;
     const now = await $.clock.now();
-    if (isCoordinator(name) && (await $.store.get(PACE + sid)) === undefined) {
+    const role = (await selfLive($))?.role;
+    if (role === MAIN_ROLE && (await $.store.get(PACE + sid)) === undefined) {
         if ((await partsShown($))('stash.pace-watch'))
             await $.store.set(PACE + sid, { on: true });
         else isPaceSeatHeld = true;
     }
-    if (
-        isSeated(name, (await selfRecord($))?.role) &&
-        (await $.store.get(HOT + sid)) === undefined
-    ) {
+    if (isSeated(role) && (await $.store.get(HOT + sid)) === undefined) {
         await $.store.set(HOT + sid, { since: now });
         await followHot($);
     }
@@ -5913,6 +5937,9 @@ async function members($: EngineInterface): Promise<Member[]> {
         shown.push(r);
     }
     const records = await threadRecords($);
+    // a row's seat and pin are display: they read the store x wrote, with no spawn per row
+    const roleOfRow = (sid: string) =>
+        records.find((t) => t.sessionId === sid)?.role;
     for (const { bg, cwd, base: r } of shown) {
         if (await isUnstarted($, home, cwd, r.sid)) continue;
         const reply = (await $.store.get(REPLY + r.sid)) as
@@ -5931,19 +5958,17 @@ async function members($: EngineInterface): Promise<Member[]> {
                     (await heldStuckMs($)),
             isHot: Boolean(hotOf(await $.store.get(HOT + r.sid))),
             model: text(await $.store.get(MODEL + r.sid)),
-            offPattern:
-                bg &&
-                !isSeated(
-                    r.name,
-                    records.find((t) => t.sessionId === r.sid)?.role,
-                ),
+            offPattern: bg && !isSeated(roleOfRow(r.sid)),
             // an idle row counts from the session's last reply, or a later keep-hot ping: cc restamps the registry
             // whenever a thread is opened, which read «idle 55m» on a thread quiet for 9 h (PK-77)
             statusSince:
                 !statusOf(r.status).isWorking && reply?.at !== undefined
                     ? Math.max(reply.at, reply.pingedAt ?? reply.at)
                     : r.statusSince,
-            tip: pinOf(r.name) === 1 ? await crowTip($, home, now) : undefined,
+            tip:
+                pinOf(roleOfRow(r.sid)) === 1
+                    ? await crowTip($, home, now)
+                    : undefined,
             // the band says «first +n»; the board has the room to name every wait (dima's o75)
             wait:
                 reply?.waits && reply.waits.length > 1
@@ -5954,7 +5979,9 @@ async function members($: EngineInterface): Promise<Member[]> {
     }
     // the coordinator first, her adviser second, the rest by name
     return out.sort(
-        (a, b) => pinOf(a.name) - pinOf(b.name) || a.name.localeCompare(b.name),
+        (a, b) =>
+            pinOf(roleOfRow(a.sid)) - pinOf(roleOfRow(b.sid)) ||
+            a.name.localeCompare(b.name),
     );
 }
 
@@ -5998,27 +6025,12 @@ const COLUMNS = {
     ticket: 9,
 } as const;
 
-// the fleet's coordinator, pinned to the board's top in bold (dima, 2026-10-05)
-// a member is the name's last word: a codie named «… + crow at decisions» is not crow (2026-10-10)
-// the whole name, so a member named «… notes for clio» is not her
-// a name read through bare(), so a space or a zero-width joiner never changes who it is (S5)
-export const isCoordinator = (name: string) =>
-    /^(?:🦉)?c?clio$/u.test(bare(name)); // read-both: a clio tab under its old title
-// a coordinator's second seat, only glide's door opens to it: the rest of what a coordinator is stays on isCoordinator
-export const isWing = (name: string) =>
-    /^(?:🦉c?clio\(side\)|🦉🪽c?clio:wing\d+)$/u.test(bare(name));
-// clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10)
-// a member with a chair in the fleet: x's thread record names its role, a standing member keeps its own name (crow,
-// helga), and clio and her wings by theirs; a fork or a plain session has none
-const STANDING_MEMBERS = new Set(['crow', 'helga']);
-export const isSeated = (name: string, role?: string) =>
-    !/\(fork\)/u.test(name) &&
-    (Boolean(role) ||
-        STANDING_MEMBERS.has(name.replace(/[^\w\s-]/gu, '').trim()) ||
-        /^🦉\s*c?clio\b/u.test(name) ||
-        isWing(name));
-export const pinOf = (name: string) =>
-    isCoordinator(name) ? 0 : /(?:^|\P{L})c?crow$/u.test(bare(name)) ? 1 : 2; // read-both: a crow tab under its old title
+// a member with a chair in the fleet: x's thread record names its role, clio, a wing, crow and helga included
+// (FRM-579); a fork or a plain session has none, whatever its name
+export const isSeated = (role?: string) => Boolean(role);
+// clio, then crow, then everyone else, the two pinned ones bold (dima, 2026-10-10), read by role, never by name
+export const pinOf = (role?: string) =>
+    role === MAIN_ROLE ? 0 : role === ADVISER_ROLE ? 1 : 2;
 
 // undefined when the read fails: a failed read says nothing about the board (FRM-492)
 async function isOpen($: EngineInterface) {
@@ -6259,9 +6271,10 @@ async function orbitCall(
         return 'deny' in r ? r : { result: r.result };
     }
     if (input.op === 'glide') {
-        const isOwner = await isLaneOwner($);
-        const writer = await sessionName($);
-        const side = writer && isWing(writer) ? writer : undefined;
+        // main clio or a wing by its record; a wing's cards carry its display, drawn from that record
+        const self = await selfLive($);
+        const isOwner = self?.role === MAIN_ROLE;
+        const side = self?.role === WING_ROLE ? self.display : undefined;
         if (!isOwner && !side)
             return {
                 deny: `orbit glide: only ${LANE_OWNER} writes the lanes; every board shows them`,

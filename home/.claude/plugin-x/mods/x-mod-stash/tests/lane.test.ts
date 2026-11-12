@@ -1,6 +1,13 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import {
+    THREADS_FILE,
+    type ThreadRow,
+    recordOf,
+    threadsFile,
+} from './threads.ts';
+
 // 🛼 glide (FRM-385): the fleet's lanes in one shelf file, written only by 🦉 clio, drawn on every board
 const SID = 'l1l1l1l1-lane';
 const TOOL = 'mcp__x-mod-stash__orbit';
@@ -13,10 +20,13 @@ function world(
     {
         files = {},
         name = CLIO,
+        record = recordOf(name),
         peers = [],
     }: {
         files?: Record<string, string>;
         name?: string;
+        // x's record for this session: its role and display, none for a session x never recorded
+        record?: Omit<ThreadRow, 'sessionId'>;
         // other live sessions in the registry, as cc writes their files
         peers?: Record<string, unknown>[];
     } = {},
@@ -33,6 +43,9 @@ function world(
     });
     for (const p of peers)
         files[`/home/.claude/sessions/${p.pid}.json`] = JSON.stringify(p);
+    files[THREADS_FILE] ??= threadsFile([
+        { pid: PID, sessionId: SID, ...record },
+    ]);
     const clock = mock.clock(on, {
         now: new Date(2026, 9, 11, 18, 30).getTime(),
     });
@@ -336,7 +349,7 @@ test("a title whose topic ends at « | » is the live lane's topic", async ($, o
     expect(kept(w).map((l) => l.id)).toEqual(['l1']);
 });
 
-const CLIO_TITLES = ['🦉 cclio', '🦉clio', '🦉 clio']; // read-both: a tab resumed under the old title
+const CLIO_TITLES = ['🦉 cclio', '🦉 clio']; // read-both: a tab resumed under the old title
 for (const title of CLIO_TITLES)
     test(`a session named ${title} writes the lanes`, async ($, on) => {
         const w = world(on, { name: title });
@@ -347,12 +360,25 @@ for (const title of CLIO_TITLES)
         expect(kept(w).map((l) => l.id)).toEqual(['l1']);
     });
 
+test('a session named 🦉clio with no record writes nothing', async ($, on) => {
+    world(on, { name: '🦉clio' });
+    await start($);
+    expect(
+        await denied($, { act: 'create', items: ITEMS, title: 'mods x' }),
+    ).toContain('writes the lanes');
+});
+
 /* a wing writes the card of a lane it runs */
 
 const SIDE = '🦉 clio (side)';
+const wingRecord = (name: string, wing: number) => ({
+    display: name,
+    role: 'wing',
+    wing,
+});
 
 test('a wing writes a card it created', async ($, on) => {
-    const w = world(on, { name: SIDE });
+    const w = world(on, { name: SIDE, record: wingRecord(SIDE, 1) });
     await start($);
     expect((await create($)).deny).toBeUndefined();
     expect(
@@ -367,14 +393,14 @@ for (const name of [
     '🦉 🪽 clio: wing 3',
 ])
     test(`a numbered wing writes a card it created: ${name}`, async ($, on) => {
-        const w = world(on, { name });
+        const w = world(on, { name, record: wingRecord(name, 3) });
         await start($);
         expect((await create($)).deny).toBeUndefined();
         expect(kept(w)[0]?.runner).toBe(name);
     });
 
 test('a wing is refused on a card it does not run, naming the card', async ($, on) => {
-    const w = world(on, { name: SIDE });
+    const w = world(on, { name: SIDE, record: wingRecord(SIDE, 1) });
     w.files[FILE] = JSON.stringify({
         lanes: [
             {
@@ -413,7 +439,10 @@ for (const name of [
     });
 
 test('a wing retitled with other spacing still writes its card', async ($, on) => {
-    const w = world(on, { name: '🦉clio (side)' });
+    const w = world(on, {
+        name: '🦉clio (side)',
+        record: wingRecord('🦉clio (side)', 1),
+    });
     w.files[FILE] = JSON.stringify({
         lanes: [keptLane({ current: 0, id: 'l1', runner: SIDE })],
     });

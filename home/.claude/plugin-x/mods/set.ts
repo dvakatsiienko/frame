@@ -1,5 +1,6 @@
 // pnpm mods:set <key> <value> [session id] — writes one x-mod-stash setting into its store, no reload: the next poll reads it.
 // `pace on|end` is the pace watch and ⏰ waker for a shift, `pace off` a written off, clio's registry row by default; a number key is a 🎛️ row; `part <key> on|off` a 🎛️ switch, global, bare `part` lists them
+import { execFileSync } from 'node:child_process';
 import { globSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -44,18 +45,12 @@ export function numberSetting(key: string, value: string) {
     return n;
 }
 
-const bare = (name: unknown) => String(name).replaceAll(/[\s‍]/g, '');
-
-// the live coordinator as the registry names her
+// the live coordinator by her signed claim, as x thread list answers it (FRM-579), never by the name she wears
 export function clioIdOf(
-    sessions: { name?: unknown; pid?: unknown; sessionId?: unknown }[],
-    isAlive: (pid: number) => boolean,
+    threads: { pid?: unknown; role?: unknown; sessionId?: unknown }[],
 ) {
-    const id = sessions.find(
-        (s) =>
-            bare(s.name) === bare('🦉 clio') &&
-            typeof s.pid === 'number' &&
-            isAlive(s.pid),
+    const id = threads.find(
+        (t) => t.role === 'coordinator' && typeof t.pid === 'number',
     )?.sessionId;
     return typeof id === 'string' ? id : undefined;
 }
@@ -73,21 +68,21 @@ export function withPart(
     return { ...store, shown: { ...shown, [key]: isOn } };
 }
 
-function isPidAlive(pid: number) {
+// x's live threads, run from home so the shim runs main's x; no answer reads as none
+function liveThreads(home: string) {
     try {
-        process.kill(pid, 0);
-        return true;
+        const out = execFileSync('x', ['thread', 'list', '--json'], {
+            cwd: home,
+            encoding: 'utf8',
+            timeout: 4000,
+        });
+        return (JSON.parse(out).data?.threads ?? []) as {
+            pid?: unknown;
+            role?: unknown;
+            sessionId?: unknown;
+        }[];
     } catch {
-        return false;
-    }
-}
-
-// a registry file mid-write reads as no session
-function sessionOf(path: string) {
-    try {
-        return JSON.parse(readFileSync(path, 'utf8'));
-    } catch {
-        return {};
+        return [];
     }
 }
 
@@ -145,13 +140,7 @@ function main([key, value, id]: string[]) {
         );
         return 2;
     }
-    const sessionId = !isPace
-        ? undefined
-        : (id ??
-          clioIdOf(
-              newest('*.json', join(home, '.claude/sessions')).map(sessionOf),
-              isPidAlive,
-          ));
+    const sessionId = !isPace ? undefined : (id ?? clioIdOf(liveThreads(home)));
     if (!path || (isPace && !sessionId)) {
         console.error(`no ${path ? 'live 🦉 clio' : 'x-mod-stash store'}`);
         return 1;

@@ -199,57 +199,42 @@ export function writeWakeState({
     });
 }
 
-// the registry stores the name with its zero-width joiner turned into a space: «🐦 ⬛ crow»
-const bareName = (name: string) => name.replaceAll(/[\s‍]/g, '');
+// x's live threads, each with its record's role (FRM-579): run from home so the shim runs main's x; no answer reads as none
+export type LiveThread = {
+    display?: string;
+    pid?: number;
+    role?: string;
+    sessionId?: string;
+    wing?: number;
+};
+export function liveThreads(): LiveThread[] {
+    const run = spawnSync('x', ['thread', 'list', '--json'], {
+        cwd: homedir(),
+        encoding: 'utf8',
+        timeout: 4000,
+    });
+    try {
+        return JSON.parse(run.stdout).data?.threads ?? [];
+    } catch {
+        return [];
+    }
+}
 
-// codie whose cwd is ~/frame/_clio fires clio's Stop hook too; only a clio's own thread wakes crow, main or any wing
+// a codie whose cwd is ~/frame/_clio fires clio's Stop hook too; only a clio's own thread wakes crow, main or any wing,
+// read from its thread record: a fork carrying main's name holds none
 export function clioThreadOf(
     transcriptPath: string,
-    sessionsDir = SESSIONS_DIR,
-    mainThreadFile = MAIN_THREAD_FILE,
+    threads: LiveThread[] = liveThreads(),
 ): ClioThread | undefined {
     const sessionId = basename(transcriptPath, '.jsonl');
-    for (const file of readdirSync(sessionsDir)) {
-        if (!file.endsWith('.json')) continue;
-        try {
-            const entry: { name?: string; sessionId?: string } = JSON.parse(
-                readFileSync(join(sessionsDir, file), 'utf8'),
-            );
-            if (entry.sessionId !== sessionId) continue;
-            const bare = bareName(entry.name ?? '').replace(
-                /^\p{Extended_Pictographic}+/u,
-                '',
-            );
-            // read-both: a clio tab resumed under its old title
-            if (!/^c?clio/.test(bare)) return undefined;
-            const name = entry.name ?? '';
-            const wing = /\bwing\s*(\d+)\b/.exec(name)?.[1];
-            if (wing) return { id: `wing-${wing}`, name };
-            // a fork carries main's name until it renames itself, so a nameless wing is main only in main's thread
-            return isMainThread(sessionId, mainThreadFile)
-                ? { id: MAIN_THREAD, name }
-                : undefined;
-        } catch {}
-    }
-    return undefined;
+    const thread = threads.find((t) => t.sessionId === sessionId);
+    const name = thread?.display ?? '';
+    if (thread?.role === 'wing' && thread.wing)
+        return { id: `wing-${thread.wing}`, name };
+    return thread?.role === 'coordinator'
+        ? { id: MAIN_THREAD, name }
+        : undefined;
 }
-
-// fork-guard's record of the main session; with no record yet, the clio-named session is main
-function isMainThread(sessionId: string, path: string) {
-    try {
-        const threaded = /^session=(.*)$/m.exec(
-            readFileSync(path, 'utf8'),
-        )?.[1];
-        return !threaded || threaded === sessionId;
-    } catch {
-        return true;
-    }
-}
-
-const MAIN_THREAD_FILE = join(
-    process.env.FORK_GUARD_STATE || join(homedir(), '.local/state/clio'),
-    'main-session',
-);
 
 export const MAIN_THREAD = 'main';
 
@@ -292,15 +277,19 @@ export function oneCrow(): LiveSession | undefined {
 
 export function findSessions(): LiveSession[] {
     const found: LiveSession[] = [];
+    const crows = new Set(
+        liveThreads()
+            .filter((t) => t.role === 'adviser')
+            .map((t) => t.sessionId),
+    );
     for (const file of readdirSync(SESSIONS_DIR)) {
         if (!/^\d+\.json$/.test(file)) continue;
         try {
             const entry: Partial<LiveSession> = JSON.parse(
                 readFileSync(join(SESSIONS_DIR, file), 'utf8'),
             );
-            // by name: a desktop tab has no job id, and a stored one outlives its session
-            const isOurs =
-                bareName(entry.name ?? '') === bareName(SESSION_NAME);
+            // by its record: a desktop tab has no job id, a stored one outlives its session, and a name grants nothing
+            const isOurs = crows.has(entry.sessionId ?? '');
             if (
                 isOurs &&
                 entry.pid &&
@@ -356,13 +345,53 @@ export function findPaneTerminal(cwd: string): string | undefined {
     } catch {}
 }
 
+// crow's record goes through x brief summon's caller gate (FRM-579): a pane start takes the session id x mints up front,
+// a --bg start, whose --session-id cc ignores, is recorded by the session id the registry holds for its job
+export function summonAdviser(args: string[]): {
+    display: string;
+    sessionId: string;
+} {
+    const run = spawnSync(
+        'x',
+        ['brief', 'summon', '--role', 'adviser', ...args, '--json'],
+        { cwd: STATE_DIR, encoding: 'utf8' },
+    );
+    try {
+        const envelope = JSON.parse(run.stdout);
+        if (envelope.ok) return envelope.data;
+        fail(`x brief summon refused crow's record: ${envelope.error}`);
+    } catch {
+        fail(`x brief summon answered no envelope: ${run.stderr.trim()}`);
+    }
+}
+
+export function sessionOfJob(
+    jobId: string,
+    dir = SESSIONS_DIR,
+): string | undefined {
+    for (const file of readdirSync(dir)) {
+        if (!/^\d+\.json$/.test(file)) continue;
+        try {
+            const entry: Partial<LiveSession> = JSON.parse(
+                readFileSync(join(dir, file), 'utf8'),
+            );
+            if (entry.jobId === jobId && entry.sessionId)
+                return entry.sessionId;
+        } catch {}
+    }
+}
+
 export async function startCrow(arm: Arm, isPane = false) {
     mkdirSync(STATE_DIR, { recursive: true });
     copyRules();
     const stash = stashModOf(userPluginDirs());
+    const minted = isPane
+        ? summonAdviser([`cd ${STATE_DIR} && claude -n crow 'start'`])
+        : undefined;
     const claudeArgv = [
+        ...(minted ? ['--session-id', minted.sessionId] : []),
         '-n',
-        SESSION_NAME,
+        minted?.display ?? SESSION_NAME,
         ...claudeArgs(arm, stash?.dir),
         '--remote-control',
         SESSION_NAME,
@@ -418,7 +447,21 @@ export async function startCrow(arm: Arm, isPane = false) {
         `crow started on ${arm} (${armModels[arm]}, effort medium), ${isPane ? 'in a herdr pane' : `job ${jobId}`}`,
     );
 
-    // --bg ignores --session-id, so the id is known only once the registry lists crow
+    // --bg ignores --session-id, so the id is known only once the registry lists crow's job, matched by its job id
+    if (jobId) {
+        let sid = sessionOfJob(jobId);
+        for (let i = 0; i < 30 && !sid; i++) {
+            await sleep(1000);
+            sid = sessionOfJob(jobId);
+        }
+        if (!sid) {
+            console.log(
+                `🔥 off: job ${jobId} not in the registry after 30 s, so crow has no record`,
+            );
+            return;
+        }
+        summonAdviser(['--session', sid]);
+    }
     let live = findSession();
     for (let i = 0; i < 30 && !live; i++) {
         await sleep(1000);
