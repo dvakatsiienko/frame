@@ -122,9 +122,12 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	// a clio's claim (In Progress or a delegate) carries her owner label (FRM-572:W1)
+	// a clio's claim (In Progress or a delegate) carries her owner label (FRM-572:W1); an owner label named in
+	// --add-label is the claim out loud, so it wins and drops every other clio's (o77)
 	owner := ""
-	if strings.EqualFold(given["state"], "In Progress") || given["delegate"] != "" {
+	if named := slices.IndexFunc(splitNames(given["add-label"]), isOwnerLabel); named >= 0 {
+		owner = splitNames(given["add-label"])[named]
+	} else if strings.EqualFold(given["state"], "In Progress") || given["delegate"] != "" {
 		owner = callerOwnerLabel()
 	}
 
