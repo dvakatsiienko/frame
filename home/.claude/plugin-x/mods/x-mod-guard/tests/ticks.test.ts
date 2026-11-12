@@ -130,3 +130,20 @@ test('his tick on a release of the brake takes it off', async ($, on) => {
     expect((await bash($, command)).deny).toBeUndefined();
     expect(ran).toEqual([command]);
 });
+
+// wisphunter on fc3197ae: a tick on one part of a line never carries a brake release or a stash sweep beside it
+test('a tick on one command of a line never takes the brake off beside it', async ($, on) => {
+    const { ran } = world(on, [tickOn('git branch -D foo')]);
+    const line =
+        'x lane merge-auto 5 --release-brake --dima-ok 5; git branch -D foo';
+    expect([(await bash($, line)).deny !== undefined, ran]).toEqual([true, []]);
+});
+
+test("a brake release behind x's own flags is still read", async ($, on) => {
+    const { ran } = world(on);
+    const r = await bash(
+        $,
+        'x --json lane merge-auto 5 --release-brake --dima-ok 5',
+    );
+    expect([r.deny?.includes('brake'), ran]).toEqual([true, []]);
+});

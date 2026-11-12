@@ -782,8 +782,9 @@ async function masterOverride($: EngineInterface) {
     const all = await overrideGrantAt($, path, 'all');
     if (all) {
         const grants = JSON.parse(await $.fs.read(path)) as OverrideGrants;
-        const sid = grants.all?.sid;
-        if (grants.all?.until || (sid && (await isLive($, sid)))) return all;
+        const { pid, start, until } = grants.all ?? {};
+        if (until || (pid && start && (await isRunning($, pid, start))))
+            return all;
     }
     const press = await overrideGrantAt($, path, 'prs');
     if (press?.by !== 'band') return undefined;
@@ -793,19 +794,25 @@ async function masterOverride($: EngineInterface) {
         ? press
         : undefined;
 }
-// a session ends when its registry row goes or its pid no longer runs
-async function isLive($: EngineInterface, sid: string) {
-    const entry = await registryEntry($, sid);
-    if (!entry) return false;
-    if (!entry.pid) return true;
+// a session is its process, never its id, which `/clear` changes: the pid, and its start time so a reused pid reads gone
+async function startOf($: EngineInterface, pid: number) {
     const ps = await $.process
-        .run(['ps', '-p', String(entry.pid)])
+        .run(['ps', '-o', 'lstart=', '-p', String(pid)])
         .catch(() => undefined);
-    return ps?.exitCode !== 1;
+    const start = ps?.exitCode === 0 ? ps.stdout.trim() : '';
+    return start || undefined;
+}
+async function isRunning($: EngineInterface, pid: number, start: string) {
+    return (await startOf($, pid)) === start;
 }
 
-// the store after his typed ask, and the note the model reads; a write that fails is told, never silent
-async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
+// the store after his typed ask, and the note the model reads; a write that fails is told, never silent. every flip is one
+// log line naming where the words came from, so a seat's typing into a pane shows beside his own
+async function overrideFlip(
+    $: EngineInterface,
+    ask: OverrideAsk,
+    session: { origin: string; pid?: number; sid: string },
+) {
     const path = await overrideStorePath($);
     if (!path)
         return 'operator-override: the system user record did not read, so the switch did not move';
@@ -816,8 +823,16 @@ async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
     } catch {}
     const now = await $.clock.now();
     const at = new Date(now).toISOString();
+    const start = session.pid ? await startOf($, session.pid) : undefined;
+    // a session whose process does not read gets a clock instead, so the switch still ends
     const until =
-        ask.scope === 'all' && ask.until ? untilAt(now, ask.until) : undefined;
+        ask.scope === 'all'
+            ? ask.until
+                ? untilAt(now, ask.until)
+                : start
+                  ? undefined
+                  : new Date(now + PRESS_MS).toISOString()
+            : undefined;
     const after = JSON.stringify(
         ask.scope === 'all'
             ? {
@@ -825,12 +840,17 @@ async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
                   all: {
                       at,
                       by: ask.by,
-                      ...(until ? { until } : { sid: await $.session.id() }),
+                      ...(until ? { until } : { pid: session.pid, start }),
                   },
               }
             : overrideAfter(grants, ask, at),
     );
     if (after !== raw) await $.fs.write(path, after);
+    await overrideLogPass(
+        $,
+        { at, by: ask.by, scope: ask.scope },
+        `flipped ${ask.scope} from ${session.origin} in session ${session.sid}`,
+    ).catch(() => undefined);
     if (ask.scope === 'all')
         return `operator-override all is on, by ${ask.by}, ${until ? `until ${until}` : 'until this session ends'}: every floor refusal warns and runs, plain rm and the brake aside; «operator-override off» ends it`;
     return ask.scope === 'off'
@@ -921,8 +941,29 @@ async function judge($: EngineInterface, typed: string) {
 
 const isRm = (r: Refusal) => r.rule === 'rm';
 const isBrake = (r: Refusal) => r.targets.includes('merge-brake');
-// a line the judge never finished: plain rm in it stays refused, whatever the switch says
-const RM_WORD = /(^|[\s;&|(`$])(rm|unlink)(\s|$)/;
+// a line the judge never finished is read again with no disk fact: plain rm, a raw merge and a brake release in it stay
+// refused, whatever the switch says; a line even that read throws on is matched by its words alone
+const RM_WORD =
+    /(^|[\s;&|(`$/\\'"])(rm|unlink)(['"]?)(\s|$)|\s-delete\b|-exec\s+\S*rm\b/;
+const MERGE_WORD = /\bmerge\b|--release-brake|graphql/;
+function unjudgedStop(typed: string): Refusal | undefined {
+    try {
+        const rm = refusals(typed, '/', {}).find(isRm);
+        if (rm) return rm;
+        const merged = rawMergeRefused(rawMerges(typed, '/'));
+        if (merged) return merged;
+        return releasesBrake(typed, '/') ? RELEASE_BRAKE : undefined;
+    } catch {
+        if (RM_WORD.test(typed))
+            return {
+                door: TRASH,
+                rule: 'rm',
+                targets: ['rm'],
+                why: 'rm deletes for good',
+            };
+        return MERGE_WORD.test(typed) ? RELEASE_BRAKE : undefined;
+    }
+}
 const JUDGE_MS = 2000;
 
 export const register: Register = (on) => {
@@ -944,9 +985,10 @@ export const register: Register = (on) => {
             : await judged;
         if (!verdict) {
             if (!master) return { deny: FAILED };
-            if (RM_WORD.test(typed))
+            const stop = unjudgedStop(typed);
+            if (stop)
                 return {
-                    deny: `nothing in this command ran — x-mod-guard stopped this one command. instead: ${TRASH}. why: the guard's check failed, and plain rm stays refused under operator-override`,
+                    deny: `nothing in this command ran — x-mod-guard stopped this one command. instead: ${stop.door}. why: the guard's check failed, and ${stop.rule === 'rm' ? 'plain rm' : 'a merge, which the brake may hold,'} stays refused under operator-override`,
                 };
             await overrideLogPass(
                 $,
@@ -994,8 +1036,11 @@ export const register: Register = (on) => {
             // pipe it feeds runs with pipefail, so a failed run reads as failed and keeps his tick (FRM-574 decided 2 and 7)
             const spanOf = (t: Tick) =>
                 t.targets.find((q) => tickedRest(command, q.trim()));
+            // a stash sweep or a brake release on the line is judged whole, never past a tick on another part of it
             const inLine =
-                master || whole
+                master ||
+                whole ||
+                stops.some((r) => r.rule === 'stash-sweep' || isBrake(r))
                     ? undefined
                     : await tickFor(
                           $,
@@ -1141,7 +1186,11 @@ export const register: Register = (on) => {
             note = !entry
                 ? "operator-override: this session's registry row did not read, so the switch did not move; type it in a session that reads"
                 : isHis
-                  ? await overrideFlip($, ask).catch(
+                  ? await overrideFlip($, ask, {
+                        origin: e.origin.kind,
+                        pid: entry.pid,
+                        sid: sid ?? '',
+                    }).catch(
                         (err: unknown) =>
                             `operator-override: the switch did not move: ${String(err)}`,
                     )

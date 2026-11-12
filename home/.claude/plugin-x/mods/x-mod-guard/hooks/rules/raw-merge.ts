@@ -167,11 +167,20 @@ export const RELEASE_BRAKE: Refusal = {
     targets: ['merge-brake'],
     why: 'the brake stops every merge until dima takes it off',
 };
+// x takes its own flags before the family (`x --json lane merge-auto …`), so the words are found past them
 export const releasesBrake = (command: string, cwd: string) =>
-    commandsDeep(command, cwd).some(
-        (c) =>
-            /(^|\/)x$/.test(c.name) &&
-            c.args[0]?.text === 'lane' &&
-            c.args[1]?.text === 'merge-auto' &&
-            c.args.some((w) => w.text === '--release-brake'),
-    );
+    commandsDeep(command, cwd).some((c) => {
+        if (!/(^|\/)x$/.test(c.name)) return false;
+        const words = c.args.map((w) => w.text);
+        const lane = words.indexOf('lane');
+        return (
+            lane >= 0 &&
+            words.slice(0, lane).every((w) => w.startsWith('-')) &&
+            words.slice(lane + 1).find((w) => !w.startsWith('-')) ===
+                'merge-auto' &&
+            words.some(
+                (w) =>
+                    w === '--release-brake' || w.startsWith('--release-brake='),
+            )
+        );
+    });

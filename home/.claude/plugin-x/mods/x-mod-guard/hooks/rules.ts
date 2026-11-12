@@ -12,7 +12,6 @@ import {
     gitDir,
     gitParts,
     hasFlag,
-    hidingScript,
     isFlag,
     isJobTmp,
     isThrowaway,
@@ -290,7 +289,6 @@ export function refusals(
     cwd: string,
     ctx: Context = {},
     isPlain = isPlainScript(command, cwd, ctx),
-    hiddenBy?: string,
 ): Refusal[] {
     const list = commands(parse(command), cwd);
     const out: Refusal[] = [];
@@ -302,13 +300,7 @@ export function refusals(
             c.name === 'git' ? aliases.get(sub.toLowerCase()) : undefined;
         if (alias !== undefined)
             out.push(
-                ...refusals(
-                    aliasRun(alias, subArgs),
-                    c.dir,
-                    ctx,
-                    isPlain,
-                    hiddenBy ?? 'a git alias',
-                ),
+                ...refusals(aliasRun(alias, subArgs), c.dir, ctx, isPlain),
             );
         const persisted = persistedAlias(c);
         if (persisted) aliases.set(...persisted);
@@ -329,15 +321,7 @@ export function refusals(
         if (hooks) out.push(hooks);
         // a nested script is commands too: a shell's, an eval's, env -S's, find -exec's, a function body (command.ts)
         for (const script of nestedScripts(c))
-            out.push(
-                ...refusals(
-                    script,
-                    c.dir,
-                    ctx,
-                    isPlain,
-                    hiddenBy ?? hidingScript(c),
-                ),
-            );
+            out.push(...refusals(script, c.dir, ctx, isPlain));
     }
     // one line per rule and target: a rule seen on every command of a pipeline is one finding
     return out.filter(

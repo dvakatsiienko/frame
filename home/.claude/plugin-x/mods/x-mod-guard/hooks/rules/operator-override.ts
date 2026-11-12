@@ -55,5 +55,5 @@ export type OverrideAsk =
 
 export type OverrideGrants = Record<
     string,
-    { at: string; by: string; until?: string; sid?: string }
+    { at: string; by: string; until?: string; pid?: number; start?: string }
 >;
