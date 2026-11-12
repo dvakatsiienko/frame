@@ -12,6 +12,8 @@ import { TextView, h_flex, v_flex } from 'gpui-base';
 import { div, svg } from 'gpui-kit';
 import { hc } from 'herdr';
 
+import { sendArgs } from './queued.js';
+
 const flat = (s) =>
     String(s ?? '')
         .replace(/[│┃]/g, ' ')
@@ -123,7 +125,7 @@ export function typeAnswer(view, text, cx) {
     cx.spawn(async () => {
         if (keys.length) await hc(['keys', address, ...keys]);
         // Claude is blocked, so hc refuses to type unless forced.
-        await hc(['send', '--force', address, text]);
+        await hc(sendArgs(address, text, ['--force']));
     });
     return true;
 }

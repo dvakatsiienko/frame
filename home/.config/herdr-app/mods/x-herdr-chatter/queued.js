@@ -98,6 +98,16 @@ export const queuedWords = (text) =>
         )
         .trim();
 
+// hc reads a text that opens with `-` as its own flag and refuses the send (exit 2, a «- item» lost 2026-11-12): `--` ends its flags
+/** @param {string} address @param {string} text @param {string[]} [flags] */
+export const sendArgs = (address, text, flags = []) => [
+    'send',
+    ...flags,
+    address,
+    '--',
+    text,
+];
+
 // vim's insert mode names itself at the foot of Claude Code's screen; its normal mode shows nothing, the same as vim off
 /** @param {string} screen @param {unknown} editorMode Claude's `editorMode` setting */
 export const isVimNormal = (screen, editorMode) =>

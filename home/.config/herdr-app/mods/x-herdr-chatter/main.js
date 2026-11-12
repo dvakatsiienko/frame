@@ -90,6 +90,7 @@ import {
     queuedAfterRow,
     queuedStripCover,
     queuedWords,
+    sendArgs,
 } from './queued.js';
 import { relayIn, relayLine } from './relay.js';
 import {
@@ -2864,11 +2865,22 @@ export default class ClaudeChat extends View {
                 // a × that emptied Claude's prompt finishes first, or its Esc would wipe or stop this send
                 await this.escaping;
                 if (idle) await this.leaveMenu(address, cx);
-                await hc(
+                const r = await hc(
                     message
-                        ? ['send', address, message]
+                        ? sendArgs(address, message)
                         : ['keys', address, 'enter'],
                 );
+                // a refused send keeps nothing in Claude: its card goes and his words come back to an empty box
+                if (r.code !== 0) {
+                    this.queued.set(
+                        address,
+                        (this.queued.get(address) ?? []).filter(
+                            (q) => q.text !== text,
+                        ),
+                    );
+                    if (text && this.address === address && !this.box.value())
+                        this.box.set_value(text);
+                }
             } finally {
                 if (this.sendingTo === address) this.sendingTo = null;
                 cx.notify();
@@ -3486,7 +3498,7 @@ export default class ClaudeChat extends View {
                 ...(this.queued.get(address) ?? []),
                 mine,
             ]);
-            failure = await hc(['send', address, words]).then(
+            failure = await hc(sendArgs(address, words)).then(
                 (r) =>
                     r.code === 0 ? '' : (r.stderr || `exit ${r.code}`).trim(),
                 (e) => String(e),

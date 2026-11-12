@@ -10,6 +10,7 @@ import {
     queuedAfterRow,
     queuedStripCover,
     queuedWords,
+    sendArgs,
 } from './queued.js';
 
 const SENT = Date.parse('2026-11-11T15:01:50.84Z');
@@ -209,6 +210,27 @@ describe("emptying Claude Code's prompt", () => {
             'd',
             'shift+g',
             'i',
+        ]);
+    });
+});
+
+describe('sendArgs', () => {
+    test('a message that opens with a dash still reaches hc as its text, not a flag', () => {
+        expect(sendArgs('t1', '- a list item')).toEqual([
+            'send',
+            't1',
+            '--',
+            '- a list item',
+        ]);
+    });
+
+    test('flags go before the address, the text stays last', () => {
+        expect(sendArgs('t1', '--help', ['--force'])).toEqual([
+            'send',
+            '--force',
+            't1',
+            '--',
+            '--help',
         ]);
     });
 });
