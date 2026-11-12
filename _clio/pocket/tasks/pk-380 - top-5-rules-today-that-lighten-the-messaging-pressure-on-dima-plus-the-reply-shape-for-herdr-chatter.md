@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T14:18:00Z'
+updated_date: '2026-11-12T14:26:00Z'
 labels:
   - s
 dependencies: []
@@ -78,4 +78,6 @@ PK-380:W16 (2026-11-12, dima, o29 steer): yes, all ticks must work from orbit, a
 PK-380:W17 (2026-11-12 16:17, dima): wing 1 had another inability to sing case after my tick
 
 PK-380:W18 (2026-11-12 16:17, dima): proceed. i want guard fixed. tomorrow i plan to start speak app v2 and want guard to work properly until then. (lanes should still work optimized no one drops nothing)
+
+16:26 moved: W5, W11–W15 → FRM-581:W1–W6 (the guard redesign ticket); W6–W10 answered in _clio/.scratch/guard/revisit-1.md
 <!-- SECTION:NOTES:END -->
