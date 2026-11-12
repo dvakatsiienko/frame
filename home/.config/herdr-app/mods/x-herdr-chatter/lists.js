@@ -2,22 +2,17 @@
 // each message's source, so a paste into its box puts back the marker of every line that is a list item's text
 // (dima, 23:38, the probe's variant E)
 
+import { plainText } from './paste.js';
+
 const ITEM = /^(\s*)([-*+]|\d+[.)])\s+(.+)$/;
 const FENCE = /^\s*(```|~~~)/;
 
-/**
- * a source line's text as its drawn row copies: links keep their text, emphasis, code and strike marks go
- * @param {string} text
- */
-const drawn = (text) =>
-    text
-        .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-        .replace(/(\*\*|__|~~|`)/g, '')
-        .replace(/(^|\W)[*_](\S(?:.*?\S)?)[*_](?=\W|$)/g, '$1$2')
-        .trim();
+/** a source line's text as its drawn row copies @param {string} text */
+const drawn = (text) => plainText(text).trim();
 
 /**
- * every list item of the messages, keyed by its drawn text, its source line the value; a later message wins
+ * every list item of the messages, keyed by its drawn text; the value is that text behind its marker, plain, since
+ * a paste keeps only the list's form (his 18:09 shot); a later message wins
  * @param {string[]} markdowns
  * @returns {Map<string, string>}
  */
@@ -29,7 +24,7 @@ export function listLines(markdowns) {
         for (const line of md.split('\n')) {
             if (FENCE.test(line)) isFenced = !isFenced;
             const m = isFenced ? null : ITEM.exec(line);
-            if (m) lines.set(drawn(m[3]), line);
+            if (m) lines.set(drawn(m[3]), `${m[1]}${m[2]} ${drawn(m[3])}`);
         }
     }
     return lines;

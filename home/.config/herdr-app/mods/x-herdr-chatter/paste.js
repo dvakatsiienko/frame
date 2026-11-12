@@ -1,23 +1,24 @@
-// text copied from the chat carries its markdown source; pasted into the box, a link reads as its label and inline code
-// as its words (his 17:54 shot: «undo rich text formatting … for links and backticks, keep the lists»). a fence stays
+// text copied from the chat carries its markdown source; pasted into the box it reads plain, its lists alone keep their
+// markers (his 17:54 and 18:09 shots: «i want only lists rich format pasted»). a fence stays as pasted
 
 /**
- * a link's label, code's words; list markers, fences and everything else as pasted
+ * one stretch of markdown as its drawn text reads: a link its label, emphasis, strike and code marks gone
+ * @param {string} text
+ */
+export const plainText = (text) =>
+    text
+        .replace(/!?\[([^\]\n]*)\]\((?:[^()\s]|\([^()\s]*\))*\)/g, '$1')
+        .replace(/(\*\*|__|~~|`)/g, '')
+        .replace(/(^|\W)[*_](\S(?:.*?\S)?)[*_](?=\W|$)/gm, '$1$2');
+
+/**
+ * pasted text made plain outside its fences; list markers stay, since they are no inline mark
  * @param {string} text
  */
 export function plainPaste(text) {
     return text
         .split(/(```[\s\S]*?(?:```|$))/)
-        .map((part, i) =>
-            i % 2
-                ? part
-                : part
-                      .replace(
-                          /\[([^\]\n]+)\]\((?:[^()\s]|\([^()\s]*\))+\)/g,
-                          '$1',
-                      )
-                      .replace(/(?<!`)`([^`\n]+)`(?!`)/g, '$1'),
-        )
+        .map((part, i) => (i % 2 ? part : plainText(part)))
         .join('');
 }
 

@@ -12,7 +12,7 @@ describe('a list pasted from the chat gets its markers back (dima, 23:38)', () =
     test('each item is keyed by the text a copy of its drawn row holds', () => {
         expect(lines.get('a short bullet')).toBe('- a short bullet');
         expect(lines.get('bold and code and a link')).toBe(
-            '- **bold** and `code` and [a link](https://x.y)',
+            '- bold and code and a link',
         );
         expect(lines.get('a nested one')).toBe('   - a nested one');
         expect(lines.get('a numbered step')).toBe('1. a numbered step');
@@ -27,7 +27,7 @@ describe('a list pasted from the chat gets its markers back (dima, 23:38)', () =
         const pasted =
             'a short bullet\nbold and code and a link\na nested one\nnot a list line';
         expect(withMarkers('say: ', `say: ${pasted}`, lines)).toBe(
-            'say: - a short bullet\n- **bold** and `code` and [a link](https://x.y)\n   - a nested one\nnot a list line',
+            'say: - a short bullet\n- bold and code and a link\n   - a nested one\nnot a list line',
         );
     });
 
