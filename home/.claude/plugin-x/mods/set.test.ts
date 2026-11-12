@@ -5,9 +5,11 @@ import {
     clioIdOf,
     numberSetting,
     partKeysOf,
+    withHot,
     withPace,
     withPart,
 } from './set.ts';
+import { windPairRefusal } from './x-mod-stash/hooks/pace.ts';
 
 test('a switch flips one key and keeps the rest of the store', () => {
     expect(
@@ -84,4 +86,40 @@ test('the coordinator is the live thread x answers as clio', () => {
             { pid: 4, role: 'coordinator', sessionId: 'main' },
         ]),
     ).toBe('main');
+});
+
+// FRM-505: the two second wind lines, 40–90, the notice below the wind
+test('a wind line outside 40–90 is refused', () => {
+    expect(
+        [
+            ['wind-at', '30'],
+            ['wind-at', '91'],
+            ['wind-notice', '39'],
+            ['wind-at', '65'],
+        ].map(([k, v]) => numberSetting(k as string, v as string)),
+    ).toEqual([undefined, undefined, undefined, 65]);
+});
+
+test('a notice at or above the wind line is refused, either way round', () => {
+    expect([
+        windPairRefusal({ 'wind-at': 65 }, 'wind-notice', 65),
+        windPairRefusal({ 'wind-notice': 55 }, 'wind-at', 50),
+        windPairRefusal({}, 'wind-notice', 70),
+        windPairRefusal({}, 'wind-at', 60),
+        windPairRefusal({}, 'pace-park', 99),
+    ]).toEqual([
+        expect.stringContaining('below'),
+        expect.stringContaining('below'),
+        expect.stringContaining('below'),
+        undefined,
+        undefined,
+    ]);
+});
+
+test("the hot door writes any session's 🔥 the way its chip does", () => {
+    const on = withHot({ other: 1 }, 's1', 'on', 5);
+    expect([on, withHot(on, 's1', 'off', 6)]).toEqual([
+        { 'hot:s1': { since: 5 }, other: 1 },
+        { 'hot:s1': { off: true }, other: 1 },
+    ]);
 });

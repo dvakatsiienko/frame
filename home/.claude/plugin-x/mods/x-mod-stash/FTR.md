@@ -448,6 +448,13 @@
   - and one step crossing both lines gives the line first and the ask a turn later; a session first seen past 65 % gets one line, then one ask
   - and dima's ↩️ on the mod's ask holds until the fill drops under 65 %, and the next crossing asks again
   - given `🐦‍🔥 second wind` switched off, then no line and no ask
+  - given a turn after the ask past the wind line + 5, then the coordinator hears one overrun line naming the session and its fill; the coordinator's own thread sends none
+  - given `wind-notice` and `wind-at` in 🎛️ (`🐦‍🔥 notice at` and `🐦‍🔥 wind at`, shown with 🍃) or through `pnpm mods:set`, then every thread reads the new value at its next poll; each takes 40–90, the notice stays below the wind, a bad value is refused
+  - and a lowered value only moves crossings after it: the wind lowered to 45 with a session at 60 % writes no ask and no overrun line
+  - proof (+): tests/wind.test.ts::a wind line lowered in 🎛️ asks at the next poll / the wind lowered to 45 … / past the wind line + 5 … / the overrun line follows the wind knob + set.test.ts::a wind line outside 40–90 is refused / a notice at or above the wind line is refused
+- ✅ `pnpm mods:set hot` reads and flips any session's 🔥 (FRM-505, W1892–W1899)
+  - given `pnpm mods:set hot`, then it lists every session's 🔥 on or off; `hot <session id>` prints one; `hot <session id> on|off` writes it the way its chip does, and that session's next poll arms or cancels its ping
+  - proof: set.test.ts::the hot door writes any session's 🔥 the way its chip does
 - ✅ the band's 🍃 turns this session's second wind auto on or off (FRM-505, W1909–W1918, his ticks o38, o40)
   - makes: a `second-wind-auto:<session id>` key in the store, `{ on, at }` from the last press
   - given a session's band, then 🍃 sits beside 🐦‍🔥, its hover names `second wind auto` and no state, lit while on

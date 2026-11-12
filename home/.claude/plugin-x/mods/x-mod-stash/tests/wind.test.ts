@@ -675,6 +675,76 @@ test('🍃 flipped on past both lines still gives the notice first and the ask a
     expect([first, w.store.has(`wind:${SID}`)]).toEqual([[1, false], true]);
 });
 
+// the 🎛️ knobs: a moved line reads at the next poll, and only moves crossings after it; past the wind line + 5 the
+// coordinator hears one overrun line
+function sendsOf(on: On) {
+    const sent: { text: string; to: unknown }[] = [];
+    on('session.send', (_$, e) => {
+        sent.push({ text: e.text, to: e.to });
+        return { isDelivered: true };
+    });
+    return sent;
+}
+const askedByMod = (w: ReturnType<typeof world>) =>
+    notes(w.lines).some((l) => l.startsWith('🐦‍🔥 second wind: the mod asks'));
+
+test('a wind line lowered in 🎛️ asks at the next poll', async ($, on) => {
+    const w = world(on);
+    w.store.set('wind-notice', 45);
+    w.store.set('wind-at', 50);
+    await start($);
+    for (const fill of [46, 51]) await turnAt($, w, fill);
+    expect(askedByMod(w)).toBe(true);
+});
+
+test('the wind lowered to 45 with a session at 60 % writes no ask and no overrun line', async ($, on) => {
+    const w = world(on);
+    const sent = sendsOf(on);
+    await start($);
+    await turnAt($, w, 56);
+    w.store.set('wind-notice', 40);
+    w.store.set('wind-at', 45);
+    for (const fill of [60, 60]) await turnAt($, w, fill);
+    expect([w.store.has(`wind:${SID}`), sent]).toEqual([false, []]);
+});
+
+test('past the wind line + 5, the coordinator hears one overrun line, after the ask', async ($, on) => {
+    const w = world(on);
+    const sent = sendsOf(on);
+    await start($);
+    for (const fill of [66, 70]) await turnAt($, w, fill);
+    const beforeAsk = sent.length;
+    for (const fill of [71, 72]) await turnAt($, w, fill);
+    expect([beforeAsk, sent]).toEqual([
+        0,
+        [
+            {
+                text: expect.stringMatching(/overrun.*71 %/),
+                to: 'peer-1',
+            },
+        ],
+    ]);
+});
+
+test("the overrun line never lands in the ask's own turn", async ($, on) => {
+    const w = world(on);
+    const sent = sendsOf(on);
+    await start($);
+    for (const fill of [66, 70]) await turnAt($, w, fill);
+    fillNow = 76;
+    await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
+    expect(sent).toEqual([]);
+});
+
+test('the overrun line follows the wind knob', async ($, on) => {
+    const w = world(on);
+    const sent = sendsOf(on);
+    w.store.set('wind-at', 60);
+    await start($);
+    for (const fill of [56, 61, 66]) await turnAt($, w, fill);
+    expect(sent).toHaveLength(1);
+});
+
 test('with second wind switched off, no notice and no ask', async ($, on) => {
     const w = world(on);
     w.store.set('shown', { 'stash.second-wind': false });

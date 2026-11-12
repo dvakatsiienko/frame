@@ -64,6 +64,7 @@ import {
     paceLine,
     paceOf,
     paceRung,
+    windPairRefusal,
 } from './pace.ts';
 import {
     type BackgroundTask,
@@ -235,6 +236,8 @@ const NUMBERS = {
     'pace-under': settingOf('pace-under'),
     quietWait: { key: QUIET_WAIT, of: 10, range: WAIT },
     speed: { key: BREATH_SPEED, of: SPEED.of, range: SPEED },
+    'wind-at': settingOf('wind-at'),
+    'wind-notice': settingOf('wind-notice'),
 } as const;
 type SwitchName = keyof typeof SWITCHES;
 type NumberName = keyof typeof NUMBERS;
@@ -1230,20 +1233,28 @@ const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your conte
 const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
 const windRefused = (what: string) =>
     `🐦‍🔥 second wind refused: ${what} still runs after you said pending: none, so nothing compacted. stop it with TaskStop or name it in pending, then call ${ORBIT_TOOL} op second-wind again.`;
-// FRM-505: past NOTICE_AT a session hears its wind is coming, past WIND_AT the mod asks for it (W1, W2, W1947, W1948);
-// a fill NOTICE_REARM under the notice re-arms it, a fill under WIND_AT the ask, so dima's ↩️ holds until the fill drops
-const NOTICE_AT = 55;
-const WIND_AT = 65;
+// FRM-505: past the 🎛️ `wind-notice` line a session hears its wind is coming, past `wind-at` the mod asks for it (W1,
+// W2, W1947, W1948); a fill NOTICE_REARM under the notice re-arms it, a fill under the wind line the ask, so dima's ↩️
+// holds until the fill drops; OVERRUN past the wind line the coordinator hears it (W1862)
 const NOTICE_REARM = 10;
+const OVERRUN = 5;
 const FILL = 'fill:';
 const AUTO_WIND = 'second-wind-auto:';
 type AutoWind = { on: boolean; at: number };
-type FillMark = { noticed?: number; asked?: true };
-const fillNotice = (fill: number) =>
-    `🐦‍🔥 context at ${fill} %: a second wind is coming. ${WIND_AT} % is the upper boundary, where the mod asks for it; nothing is urgent. do not compact now: plan your nearest steps so you finish the meaningful part you are in, commit it, solve its tails, write your handoff with x:handoff, then take the wind through ${ORBIT_TOOL} op second-wind. never mid-build or mid-step.`;
-const fillPropose = (fill: number) =>
-    `🐦‍🔥 second wind due at ${fill} %: past the ${WIND_AT} % boundary, and this thread's 🍃 second wind auto is off: propose the wind to dima in orbit at your next good stop, never take it yourself.`;
-const WIND_NOTE_AUTO = `🐦‍🔥 second wind: the mod asks you for it, your context is past ${WIND_AT} %: a must, never a rush. finish the step you are on and commit it, nothing interrupts it; never wind mid-build. then ${WIND_HOW}`;
+// noticed and asked hold the turn they landed in; windAt the wind line the notice saw, so a lowered knob never asks
+// a thread already past it
+type FillMark = {
+    noticed?: number;
+    asked?: number;
+    windAt?: number;
+    overrun?: true;
+};
+const fillNotice = (fill: number, windAt: number) =>
+    `🐦‍🔥 context at ${fill} %: a second wind is coming. ${windAt} % is the upper boundary, where the mod asks for it; nothing is urgent. do not compact now: plan your nearest steps so you finish the meaningful part you are in, commit it, solve its tails, write your handoff with x:handoff, then take the wind through ${ORBIT_TOOL} op second-wind. never mid-build or mid-step.`;
+const fillPropose = (fill: number, windAt: number) =>
+    `🐦‍🔥 second wind due at ${fill} %: past the ${windAt} % boundary, and this thread's 🍃 second wind auto is off: propose the wind to dima in orbit at your next good stop, never take it yourself.`;
+const windNoteAuto = (windAt: number) =>
+    `🐦‍🔥 second wind: the mod asks you for it, your context is past ${windAt} %: a must, never a rush. finish the step you are on and commit it, nothing interrupts it; never wind mid-build. then ${WIND_HOW}`;
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
 const ingestBy = (slug: string) =>
@@ -4273,45 +4284,76 @@ async function setAutoWind($: EngineInterface, isOn: boolean) {
 // the prompts this session has started, so the mod's ask lands a turn after its notice, never in the same one
 let turnNo = 0;
 
-// the fill crossing NOTICE_AT returns its notice once; a later turn past WIND_AT writes the session's own ask, only
-// where no wind key stands, so a press of dima's is never written over
+// the fill crossing the notice line returns its notice once; a later turn past the wind line writes the session's own
+// ask, only where no wind key stands, so a press of dima's is never written over; a turn after the ask, past the wind
+// line + OVERRUN, the coordinator hears one line
 async function takeFill($: EngineInterface, fill: number | undefined) {
     const sid = await currentId($);
     if (!sid || fill === undefined) return undefined;
     const isAuto = await isAutoWind($);
     const isLead = (await selfRecord($))?.role === MAIN_ROLE;
     if (!isAuto && !isLead) return undefined;
+    const noticeAt = await readNumber($, 'wind-notice');
     const was = ((await $.store.get(FILL + sid)) as FillMark | undefined) ?? {};
     const mark: FillMark = { ...was };
-    if (fill <= NOTICE_AT - NOTICE_REARM) delete mark.noticed;
-    if (fill < WIND_AT) delete mark.asked;
+    const windAt = Math.max(await readNumber($, 'wind-at'), mark.windAt ?? 0);
+    if (fill <= noticeAt - NOTICE_REARM) {
+        delete mark.noticed;
+        delete mark.windAt;
+    }
+    if (fill < windAt) {
+        delete mark.asked;
+        delete mark.overrun;
+    }
     let line: string | undefined;
     // the coordinator's 🍃 off at the keyboard: she proposes the wind to dima, never takes it (W5)
     if (!isAuto) {
-        if (fill >= WIND_AT && !mark.asked) {
-            mark.asked = true;
-            line = fillPropose(fill);
+        if (fill >= windAt && mark.asked === undefined) {
+            mark.asked = turnNo;
+            line = fillPropose(fill, windAt);
         }
-    } else if (fill >= NOTICE_AT && mark.noticed === undefined) {
+    } else if (fill >= noticeAt && mark.noticed === undefined) {
         mark.noticed = turnNo;
-        line = fillNotice(fill);
+        mark.windAt = windAt;
+        line = fillNotice(fill, windAt);
     } else if (
-        fill >= WIND_AT &&
-        !mark.asked &&
+        fill >= windAt &&
+        mark.asked === undefined &&
         mark.noticed !== undefined &&
         mark.noticed !== turnNo
     ) {
-        mark.asked = true;
+        mark.asked = turnNo;
         if (!(await windOf($, sid)))
             await $.store.set(WIND + sid, {
                 at: await $.clock.now(),
                 by: 'mod',
                 state: 'asked',
             } satisfies StashWind);
+    } else if (
+        fill >= windAt + OVERRUN &&
+        mark.asked !== undefined &&
+        mark.asked !== turnNo &&
+        !mark.overrun
+    ) {
+        mark.overrun = true;
+        await overrunTold($, sid, fill).catch(() => undefined);
     }
     if (JSON.stringify(mark) !== JSON.stringify(was))
         await $.store.set(FILL + sid, mark);
     return line;
+}
+
+// a member that ignores its ask: one line to the coordinator, never from the coordinator's own thread
+async function overrunTold($: EngineInterface, sid: string, fill: number) {
+    const lead = (await threadRecords($)).find(
+        (t) =>
+            t.role === MAIN_ROLE && t.pid !== undefined && t.sessionId !== sid,
+    );
+    if (!lead?.sessionId) return;
+    await $.session.send({
+        text: `🐦‍🔥 second wind overrun: ${(await sessionName($)) ?? sid} reads ${fill} %, past its ask; nudge it to wind at its next good stop`,
+        to: { sessionId: lead.sessionId },
+    });
 }
 
 // at a turn's start: the ask joins once and becomes writing; a cancel joins once and leaves
@@ -4324,7 +4366,8 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
             at: await $.clock.now(),
             state: 'writing',
         } satisfies StashWind);
-        if (was.by === 'mod') return WIND_NOTE_AUTO;
+        if (was.by === 'mod')
+            return windNoteAuto(await readNumber($, 'wind-at'));
         return isOwner ? WIND_NOTE_OWNER : WIND_NOTE;
     }
     if (was.state === 'refused') {
@@ -6229,6 +6272,12 @@ async function setKnobNumber(
 ) {
     const n = numberOf(text, NUMBERS[name].range);
     if (n === undefined) return;
+    // the notice stays below the wind line, the rule mods:set holds too
+    const lines = {
+        'wind-at': await readNumber($, 'wind-at'),
+        'wind-notice': await readNumber($, 'wind-notice'),
+    };
+    if (windPairRefusal(lines, name, n)) return;
     await $.store.set(NUMBERS[name].key, n);
     $.ui.invalidate('ui.render');
 }
@@ -7270,6 +7319,9 @@ export const register: Register = (on) => {
                             ),
                         );
                         const isHotShown = (await partsShown($))('stash.hot');
+                        const isAutoWindShown = (await partsShown($))(
+                            'stash.second-wind-auto',
+                        );
                         const isPaceShown = (await partsShown($))(
                             'stash.pace-watch',
                         );
@@ -7546,7 +7598,9 @@ export const register: Register = (on) => {
                                     .filter(([name]) =>
                                         name.startsWith('hot-')
                                             ? isHotShown
-                                            : isPaceShown,
+                                            : name.startsWith('wind-')
+                                              ? isAutoWindShown
+                                              : isPaceShown,
                                     )
                                     .map(([name, value]) =>
                                         numberJSX(

@@ -27,7 +27,32 @@ export const PACE_SETTINGS = {
         min: 0,
         of: 2,
     },
+    'wind-at': { label: '🐦‍🔥 wind at, % context', max: 90, min: 40, of: 65 },
+    'wind-notice': {
+        label: '🐦‍🔥 notice at, % context',
+        max: 90,
+        min: 40,
+        of: 55,
+    },
 } as const;
+
+// the second wind's two lines: the notice stays below the wind (FRM-505); a store missing one reads its default
+export function windPairRefusal(
+    store: Record<string, unknown>,
+    key: string,
+    n: number,
+) {
+    if (key !== 'wind-at' && key !== 'wind-notice') return undefined;
+    const read = (k: 'wind-at' | 'wind-notice') =>
+        typeof store[k] === 'number'
+            ? (store[k] as number)
+            : PACE_SETTINGS[k].of;
+    const notice = key === 'wind-notice' ? n : read('wind-notice');
+    const wind = key === 'wind-at' ? n : read('wind-at');
+    return notice < wind
+        ? undefined
+        : `the notice line (${notice}) must sit below the wind line (${wind})`;
+}
 
 export const PACE_KEYS = Object.keys(
     PACE_SETTINGS,

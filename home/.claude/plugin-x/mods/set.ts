@@ -1,11 +1,16 @@
 // pnpm mods:set <key> <value> [session id] — writes one x-mod-stash setting into its store, no reload: the next poll reads it.
+// `hot [<session id> [on|off]]` reads or writes any session's 🔥, the door its chip uses (FRM-505)
 // `pace on|end` is the pace watch and ⏰ waker for a shift, `pace off` a written off, clio's registry row by default; a number key is a 🎛️ row; `part <key> on|off` a 🎛️ switch, global, bare `part` lists them
 import { execFileSync } from 'node:child_process';
 import { globSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-import { PACE_KEYS, PACE_SETTINGS } from './x-mod-stash/hooks/pace.ts';
+import {
+    PACE_KEYS,
+    PACE_SETTINGS,
+    windPairRefusal,
+} from './x-mod-stash/hooks/pace.ts';
 
 const PACE = 'pace:';
 
@@ -35,6 +40,25 @@ export function withPace(
         },
     };
 }
+
+const HOT = 'hot:';
+
+// a row's 🔥 chip writes `{ since }` on and `{ off: true }` off; an off is a written value, so a seat's default never
+// fills it back
+export function withHot(
+    store: Record<string, unknown>,
+    sessionId: string,
+    verb: 'off' | 'on',
+    now: number,
+) {
+    return {
+        ...store,
+        [HOT + sessionId]: verb === 'on' ? { since: now } : { off: true },
+    };
+}
+
+const isHotOn = (v: unknown) =>
+    typeof v === 'object' && v !== null && !('off' in v);
 
 export function numberSetting(key: string, value: string) {
     if (!Object.hasOwn(PACE_SETTINGS, key)) return undefined;
@@ -130,13 +154,43 @@ function main([key, value, id]: string[]) {
         console.log(`${value} ${id}, every session's next poll takes it`);
         return 0;
     }
+    if (key === 'hot') {
+        if (!path) {
+            console.error('no x-mod-stash store');
+            return 1;
+        }
+        const store = JSON.parse(readFileSync(path, 'utf8'));
+        if (value === undefined) {
+            for (const k of Object.keys(store).filter((k) => k.startsWith(HOT)))
+                console.log(
+                    `${k.slice(HOT.length)} ${isHotOn(store[k]) ? 'on' : 'off'}`,
+                );
+            return 0;
+        }
+        if (id === undefined) {
+            console.log(
+                `${value} ${isHotOn(store[HOT + value]) ? 'on' : 'off'}`,
+            );
+            return 0;
+        }
+        if (id !== 'on' && id !== 'off') {
+            console.error('usage: pnpm mods:set hot [<session id> [on|off]]');
+            return 2;
+        }
+        writeFileSync(
+            path,
+            JSON.stringify(withHot(store, value, id, Date.now())),
+        );
+        console.log(`🔥 ${value} ${id}, its next poll takes it`);
+        return 0;
+    }
     const isPace =
         key === 'pace' &&
         (value === 'on' || value === 'off' || value === 'end');
     const n = key && value ? numberSetting(key, value) : undefined;
     if (!isPace && n === undefined) {
         console.error(
-            `usage: pnpm mods:set pace on|off|end [session id] | pnpm mods:set part [<key> on|off] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
+            `usage: pnpm mods:set pace on|off|end [session id] | pnpm mods:set part [<key> on|off] | pnpm mods:set hot [<session id> [on|off]] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
         );
         return 2;
     }
@@ -146,6 +200,12 @@ function main([key, value, id]: string[]) {
         return 1;
     }
     const store = JSON.parse(readFileSync(path, 'utf8'));
+    const pair =
+        n === undefined ? undefined : windPairRefusal(store, key ?? '', n);
+    if (pair) {
+        console.error(`refused: ${pair}`);
+        return 2;
+    }
     writeFileSync(
         path,
         JSON.stringify(
