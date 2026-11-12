@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T19:09:00Z'
+updated_date: '2026-11-12T19:19:00Z'
 labels:
   - s
   - clio-wing-1
@@ -627,4 +627,6 @@ done 2026-11-12 21:08: sign hash gap: a body with linear-rewritten links still r
 done 2026-11-12 21:09: ⏳ FRM-538 «✍️ sign» and FRM-555 «changed» lines — waits for: each one's dispatch (FRM-538 Todo, FRM-555 Todo)
 
 21:09 that #2 clear is a hand-over: FRM-538's sign and FRM-555's changed line go to main, who dispatches both (asked 21:09)
+
+21:19 wing 1 siesta high: the FRM-538 close orphaned three retro findings its comments parked (F6, F9, the read-refusal door); closing word now names them, handed to main 21:19. lesson: a close reads the comments, not only the body (closing.md's close test)
 <!-- SECTION:NOTES:END -->
