@@ -691,3 +691,12 @@ func TestAProjectNameWithShellWordsDrawsNoArea(t *testing.T) {
 		}
 	}
 }
+
+// FRM-572 exit 8: a member starts in a herdr pane, so summon's schema never shows the retired `claude --bg` line
+func TestBriefSummonSchemaShowsThePaneShape(t *testing.T) {
+	t.Parallel()
+	got := xIn(t, t.TempDir(), nil, "schema", "brief summon")
+	if strings.Contains(got.stdout, "claude --bg") || !strings.Contains(got.stdout, "hc run --bg --no-parent") {
+		t.Fatalf("summon's schema, want the hc run shape and no claude --bg:\n%s", got.stdout)
+	}
+}
