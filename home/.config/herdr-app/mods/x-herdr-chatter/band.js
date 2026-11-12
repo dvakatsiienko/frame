@@ -32,27 +32,6 @@ export function bandOf(value, pid, now) {
     };
 }
 
-// the state card's line over the box (PK-384): what the turn does, or, idle, the wait row it replaced
-/** @param {{ isWorking: boolean, isBlocked?: boolean, isStuck?: boolean, msg?: string | null, wait?: string | null }} at @returns {string} */
-export function stateLine({ isWorking, isBlocked, isStuck, msg, wait }) {
-    if (isBlocked) return 'Waiting on you';
-    if (isStuck)
-        return "Still working: Esc only stops Claude's own turn, not a background task (like /code-review). Stop that in the terminal.";
-    if (isWorking) return msg || 'Working…';
-    return wait || 'Idle';
-}
-
-// a meter's lit cells: any use lights one, so 1 % never reads as empty
-/** @param {number | null} pct @param {number} cells @returns {number} */
-export const meterCells = (pct, cells) =>
-    pct == null || pct <= 0
-        ? 0
-        : Math.min(cells, Math.max(1, Math.round((pct / 100) * cells)));
-
-/** @param {string} name @param {number | null} pct */
-export const meterTip = (name, pct) =>
-    pct == null ? `${name}: not read yet` : `${name} ${Math.round(pct)} %`;
-
 // the deck's block in his layout: 🚦 shows and hides it with herdr's own click command, never a layout file write
 export const DECK_BLOCK = 'b582b696a6329c1b15cd453c0c01c3204';
 // the operator override's store, the one x-mod-guard, the stash and `x` read

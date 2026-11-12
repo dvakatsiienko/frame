@@ -60,12 +60,9 @@ import {
     THREADS_KEY,
     bandButtons,
     bandOf,
-    meterCells,
-    meterTip,
     overrideOf,
     pendingOf,
     pressLine,
-    stateLine,
     withPress,
 } from './band.js';
 import { splitBlocks, withPrompt } from './blocks.js';
@@ -99,14 +96,12 @@ import {
     measureOrder,
     prevMineIndex,
     rowSizes,
-    unlinkFiles,
 } from './rows.js';
 import {
     deleteShots,
     loadShots,
     saveClipboardShot,
     saveFileShot,
-    saveLinkThumb,
     saveShots,
     shotsAfter,
     shotsWith,
@@ -952,59 +947,6 @@ function boxText(screen) {
     return box.join(' ').replace(/\s+/g, ' ').trim();
 }
 const flat = (s) => s.replace(/\s+/g, ' ').trim();
-
-// the module's two cards are nested one layer under the text box (PK-384, his 15:02 pick: «both nested cards are below
-// layer … slightly narrower than textbox»): twins in surface, edge and radius, each a little narrower, its inner edge
-// tucked under the box by TUCK
-const TUCK = 12;
-/** @param {any} t @param {'top' | 'bottom'} side */
-const nestedCard = (t, side) => {
-    const card = v_flex()
-        .flex_none()
-        .mx(14)
-        .px(12)
-        .bg(t.raised)
-        .border_color(t.border)
-        .border_l(1)
-        .border_r(1);
-    return side === 'top'
-        ? card
-              .pt(8)
-              .pb(8 + TUCK)
-              .mb(-TUCK)
-              .rounded_t(RADIUS.bubble)
-              .border_t(1)
-        : card
-              .pt(6 + TUCK)
-              .pb(6)
-              .rounded_b(RADIUS.bubble)
-              .border_b(1);
-};
-
-// a meter as a suit readout set in a ceramic groove (PK-384, his AB pick): matte cells, the lit ones in one colour,
-// inside a recessed rail
-const METER_CELLS = 48;
-/** @param {any} t @param {number | null} pct @param {any} fill */
-const meterBar = (t, pct, fill) => {
-    const lit = meterCells(pct, METER_CELLS);
-    return h_flex()
-        .h(px(8))
-        .p(px(2))
-        .gap(2)
-        .rounded(4)
-        .bg(t.border)
-        .border_t(1)
-        .border_color(t.dim)
-        .children(
-            Array.from({ length: METER_CELLS }, (_, i) =>
-                div()
-                    .flex_1()
-                    .h_full()
-                    .rounded(1)
-                    .bg(i < lit ? fill : t.raised),
-            ),
-        );
-};
 // The chat box's draft per thread, kept across a reload of this mod (localStorage outlives a copy).
 const draftKey = (address) => `draft:${address}`;
 function keptDraft(address) {
@@ -1377,7 +1319,6 @@ export default class ClaudeChat extends View {
         // sent with the next message (see pasteIntoContainer).
         this.pasted = new Map();
         // previews of the screenshots waiting in each thread's Claude prompt (see shots.js)
-        /** @type {import('./shots.js').ShotStore} */
         this.shots = {};
         // when each thread last sent, so a preview saved after the send it rode never shows
         this.sentAt = new Map();
@@ -1387,26 +1328,10 @@ export default class ClaudeChat extends View {
         // a dropped picture's preview by its path, drawn with the pasted ones; it lives as long as the file waits
         /** @type {Map<string, string>} */
         this.previews = new Map();
-        // a linked picture's square for its file chip, by path: null while it is made or when it can't be
-        /** @type {Map<string, { rel: string, w: number, h: number } | null>} */
-        this.linkThumbs = new Map();
-        /** @type {string[]} */
-        this.thumbsWanted = [];
         // the message a reply answers, by agent address: shown above the box, sent quoted before the text
         this.replies = new Map();
         cx.spawn(async (cx) => {
             this.shots = await loadShots();
-            for (const [key, rels] of Object.entries(this.shots)) {
-                if (!key.endsWith(' files')) continue;
-                const address = key.slice(0, -' files'.length);
-                const paths = rels.map((r) => `${appHome()}/${r}`);
-                this.files.set(
-                    address,
-                    withFiles(this.files.get(address) ?? [], paths),
-                );
-                for (const [i, r] of rels.entries())
-                    this.previews.set(`${address} ${paths[i]}`, r);
-            }
             // a dropped picture's preview is kept only while its file waits, in memory: a reload leaves it unclaimed
             await sweepShots(this.shots);
             cx.notify();
@@ -2093,18 +2018,6 @@ export default class ClaudeChat extends View {
     // Every 2 s: which session the agent is on now (/clear and /resume change it), and while
     // it's asking something, the bottom of its screen.
     tick(cx) {
-        const wanted = this.thumbsWanted;
-        if (wanted.length) {
-            this.thumbsWanted = [];
-            cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
-                for (const path of wanted) {
-                    const thumb = await saveLinkThumb(path);
-                    if (thumb) this.linkThumbs.set(path, thumb);
-                }
-                this.version = (this.version ?? 0) + 1;
-                cx.notify();
-            });
-        }
         // the band's facts age without a redraw: a deck that stopped publishing changes nothing, so the flip is drawn here
         const isStale = bandOf(
             shared(THREADS_KEY),
@@ -2877,9 +2790,8 @@ export default class ClaudeChat extends View {
             ? (this.pasted.get(address) ?? [])
             : [];
         this.pasted.delete(address);
-        this.forgetPreviews(address, true);
+        this.forgetPreviews(address);
         this.files.delete(address);
-        this.keepFiles(address);
         const replyTo = this.replies.get(address);
         this.replies.delete(address);
         const message = [
@@ -2901,8 +2813,6 @@ export default class ClaudeChat extends View {
         this.sendingTo = address;
         cx.spawn(async (cx) => {
             try {
-                // a × that emptied Claude's prompt finishes first, or its Esc would wipe or stop this send
-                await this.escaping;
                 if (idle) await this.leaveMenu(address, cx);
                 await hc(
                     message
@@ -3198,75 +3108,6 @@ export default class ClaudeChat extends View {
                 .map((p) => this.previews.get(`${address} ${p}`))
                 .filter(Boolean),
         ];
-    }
-
-    // a × on one preview takes that image alone (FRM-562): a dropped picture leaves the files; a pasted one sits in
-    // Claude's prompt, where only Esc Esc takes images out, all of them, so the pasted ones he keeps go along as their
-    // saved copies' paths instead, which Claude reads the same
-    /** @param {string} address @param {string} rel @param {import('gpui-kit').Context} cx */
-    removeImage(address, rel, cx) {
-        const pasted = this.shots[address] ?? [];
-        if (pasted.includes(rel)) {
-            // Esc stops a turn and declines a question: never while Claude works or asks
-            const status = this.target()?.status;
-            if (status === 'working' || status === 'blocked') return;
-            const kept = pasted.filter((r) => r !== rel);
-            this.shots = shotsWithout(this.shots, address);
-            this.images = 0;
-            this.sentAt.set(address, Date.now());
-            const paths = kept.map((r) => `${appHome()}/${r}`);
-            this.files.set(
-                address,
-                withFiles(this.files.get(address) ?? [], paths),
-            );
-            for (const [i, r] of kept.entries())
-                this.previews.set(`${address} ${paths[i]}`, r);
-            this.keepFiles(address);
-            this.escaping = hc(['keys', address, 'esc', 'esc']);
-            cx.spawn(async () => {
-                await this.escaping;
-                await deleteShots([rel]);
-            });
-            return cx.notify();
-        }
-        const path = this.droppedImages(address).find(
-            (p) => this.previews.get(`${address} ${p}`) === rel,
-        );
-        if (!path) return;
-        this.previews.delete(`${address} ${path}`);
-        this.files.set(
-            address,
-            (this.files.get(address) ?? []).filter((p) => p !== path),
-        );
-        this.keepFiles(address);
-        deleteShots([rel]);
-        cx.notify();
-    }
-
-    // the pasted images a × turned into files, kept in the store under `<address> files`, so a reload brings them back
-    // and the sweep spares them
-    /** @param {string} address */
-    keepFiles(address) {
-        const own = `${appHome()}/`;
-        const kept = (this.files.get(address) ?? [])
-            .filter((p) => p.startsWith(own))
-            .map((p) => p.slice(own.length));
-        const key = `${address} files`;
-        const { [key]: _old, ...rest } = this.shots;
-        this.shots = kept.length ? { ...rest, [key]: kept } : rest;
-        saveShots(this.shots).catch(() => {});
-    }
-
-    // a pasted image can be taken alone only while every one has its preview and Esc can't stop a turn
-    /** @param {any} agent */
-    canRemoveOne(agent) {
-        return (
-            !this.where?.container &&
-            agent.status !== 'working' &&
-            agent.status !== 'blocked' &&
-            this.pastedCount(agent.address) <=
-                (this.shots[agent.address]?.length ?? 0)
-        );
     }
 
     // A prompt Claude Code put back into its own box (a Stop on a sent message does it) is hidden from this view, and the
@@ -3631,15 +3472,12 @@ export default class ClaudeChat extends View {
 
     // previews of pictures that no longer wait in this thread's box
     /** @param {string} address */
-    // a pasted image turned into a file is its own preview: once sent, Claude still has to read it, so it stays until
-    // the next load's sweep
-    /** @param {string} address @param {boolean} [isSent] */
-    forgetPreviews(address, isSent = false) {
+    forgetPreviews(address) {
         const gone = this.droppedImages(address)
             .map((p) => {
                 const rel = this.previews.get(`${address} ${p}`);
                 this.previews.delete(`${address} ${p}`);
-                return isSent && p === `${appHome()}/${rel}` ? null : rel;
+                return rel;
             })
             .filter(Boolean);
         if (gone.length) deleteShots(gone);
@@ -4712,7 +4550,49 @@ export default class ClaudeChat extends View {
                         ),
                 );
         }
-        return null;
+        if (agent.status !== 'working') return null;
+        const report = terminals().find(
+            (x) => x.address === agent.address,
+        )?.report;
+        const msg = typeof report === 'object' ? report?.msg : null;
+        return h_flex()
+            .gap(8)
+            .items_center()
+            .px(4)
+            .text_size(px(12))
+            .text_color(t.muted)
+            .child(
+                svg('mods/workspace-chrome/spinner.svg')
+                    .size(12)
+                    .flex_none()
+                    .text_color(t.working)
+                    .spin(900),
+            )
+            .child(
+                div()
+                    .flex_1()
+                    .min_w(0)
+                    .truncate()
+                    .child(
+                        this.stuck
+                            ? "Still working: Esc only stops Claude's own turn, not a background task (like /code-review). Stop that in the terminal."
+                            : msg || 'Working…',
+                    ),
+            )
+            .when(Boolean(this.turnAt), (el) =>
+                el.child(
+                    div()
+                        .flex_none()
+                        .text_color(t.dim)
+                        .font_family(this.mono())
+                        .child(turnClock(Date.now() - this.turnAt)),
+                ),
+            )
+            .when(!this.stuck, (el) =>
+                el.child(
+                    button(t, px, 'stop', 'Stop', (_e, cx) => this.stop(cx)),
+                ),
+            );
     }
 
     // The Stop button, and Esc in the chat while Claude works (bound in init; the find bar and the
@@ -5322,27 +5202,12 @@ export default class ClaudeChat extends View {
     // A file the reply links: its name with a folder glyph, the whole path on hover; a press opens it the way Finder
     // would (a png in Preview, a dir in Finder)
     /** @param {any} t @param {Row} row */
-    // a linked picture's square, made once per path by the next tick; the chip draws its emoji until it lands
-    /** @param {string} path */
-    linkThumb(path) {
-        if (!this.linkThumbs.has(path)) {
-            this.linkThumbs.set(path, null);
-            this.thumbsWanted.push(path);
-        }
-        return this.linkThumbs.get(path);
-    }
-
-    /** @param {any} t @param {any} row */
     fileRow(t, row) {
-        const thumb = row.thumb;
-        const side = 28;
-        // a square cut from the middle of the picture: the short side fills it
-        const scale = thumb ? side / Math.min(thumb.w, thumb.h) : 1;
         return h_flex()
             .id(`file-${row.key}`)
             .gap(6)
             .items_center()
-            .px(thumb ? 3 : 8)
+            .px(8)
             .py(3)
             .rounded(6)
             .border(1)
@@ -5352,32 +5217,8 @@ export default class ClaudeChat extends View {
             .text_color(t.muted)
             .hover((s) => s.bg(t.hover).text_color(t.foreground))
             .tooltip(row.path)
-            .child(
-                thumb
-                    ? div()
-                          .size(px(side))
-                          .flex_none()
-                          .relative()
-                          .rounded(4)
-                          .overflow_hidden()
-                          .child(
-                              image(thumb.rel)
-                                  .absolute()
-                                  .w(px(thumb.w * scale))
-                                  .h(px(thumb.h * scale))
-                                  .left(px((side - thumb.w * scale) / 2))
-                                  .top(px((side - thumb.h * scale) / 2)),
-                          )
-                    : isImagePath(row.path)
-                      ? '🖼️'
-                      : '📂',
-            )
-            .child(
-                div()
-                    .truncate()
-                    .pr(thumb ? 5 : 0)
-                    .child(row.label),
-            );
+            .child('📂')
+            .child(div().truncate().child(row.label));
     }
 
     // Under a long reply's first lines: «Show more · N more lines», and «Show less» once open; a press toggles it
@@ -5544,7 +5385,7 @@ export default class ClaudeChat extends View {
             const files = () => {
                 if (item.kind !== 'claude') return;
                 if (item.filesOf !== item.text) {
-                    item.files = fileLinks(item.text, home());
+                    item.files = fileLinks(item.text);
                     item.filesOf = item.text;
                 }
                 rows.push(
@@ -5552,22 +5393,13 @@ export default class ClaudeChat extends View {
                         (
                             /** @type {{ label: string, path: string }} */ f,
                             /** @type {number} */ k,
-                        ) => {
-                            const path = f.path;
-                            const thumb = isImagePath(path)
-                                ? this.linkThumb(path)
-                                : null;
-                            return {
-                                id,
-                                item,
-                                // a square that arrives later is a new row, so the measurer draws its height
-                                key: `${key}:f${k}${thumb ? ':t' : ''}`,
-                                kind: /** @type {'file'} */ ('file'),
-                                label: f.label,
-                                path,
-                                thumb,
-                            };
-                        },
+                        ) => ({
+                            id,
+                            item,
+                            key: `${key}:f${k}`,
+                            kind: /** @type {'file'} */ ('file'),
+                            ...f,
+                        }),
                     ),
                 );
             };
@@ -5924,10 +5756,7 @@ export default class ClaudeChat extends View {
         const text = this.markIn(i)
             ? markMarkdown(item.text, this.marks.re, this.markIn(i))
             : item.text;
-        return TextView.markdown(
-            `${this.pre}md-${i}`,
-            unlinkFiles(text),
-        ).selectable(true);
+        return TextView.markdown(`${this.pre}md-${i}`, text).selectable(true);
     }
 
     /** @param {{ text: string, blocks?: any[], blocksOf?: string }} item @returns {import('./blocks.js').Block[]} */
@@ -5947,7 +5776,7 @@ export default class ClaudeChat extends View {
                 t,
                 TextView.markdown(
                     `${this.pre}md-${row.key}`,
-                    unlinkFiles(b.text),
+                    b.text,
                 ).selectable(true),
                 row.isFirst,
             );
@@ -6159,38 +5988,40 @@ export default class ClaudeChat extends View {
     // never a key (a keyed command is any shell's)
     /** @param {any} t @param {import('./band.js').BandButton} btn */
     bandButton(t, btn) {
-        const on = btn.isOn
-            ? btn.key === 'override'
-                ? t.blocked
-                : t.accent
-            : null;
         return (
             Button.new(`band-${btn.key}`)
-                .size(px(26))
+                .size(px(24))
                 .flex_none()
                 .justify_center()
                 .flex()
                 .items_center()
-                .rounded(RADIUS.card)
+                .rounded(11)
                 .border_1()
-                // one chip for all seven (PK-384): plain off, the accent's edge and tint on, 🔓 on loud red
-                .border_color(on ?? t.border)
+                // his shape (22:30: «i liked previous shape … remove dimming»): on is filled, off is plain, and
+                // nothing fades but 🎛️, which does nothing yet; an override on is loud, it lifts every guard
+                .border_color(
+                    btn.isOn
+                        ? btn.key === 'override'
+                            ? t.blocked
+                            : t.solid
+                        : t.border,
+                )
                 .bg(
                     btn.isOn
                         ? btn.key === 'override'
                             ? t.blocked
-                            : t.selected
+                            : t.solid
                         : t.background,
                 )
-                .text_size(px(13))
-                .text_color(t.foreground)
+                .text_size(px(12))
+                .text_color(btn.isOn ? t.solid_foreground : t.foreground)
                 .tooltip(btn.tip)
                 .when(btn.key === 'settings', (el) => el.opacity(0.5))
                 .when(!btn.isLive, (el) => el.cursor_not_allowed())
                 .when(btn.isLive, (el) =>
                     el
                         .cursor_pointer()
-                        .hover((s) => s.border_color(on ?? t.muted))
+                        .hover((s) => s.opacity(0.85))
                         .on_click((_e, cx) => {
                             if (btn.key === 'board')
                                 run('layout.toggle', { id: DECK_BLOCK });
@@ -6306,134 +6137,128 @@ export default class ClaudeChat extends View {
         return isChanged;
     }
 
-    // the module's top card (PK-384): what the turn does, its clock and Stop, or, idle, the wait line; under it the
-    // context and week meters, wordless, their numbers in a tooltip
-    /** @param {any} t @param {any} agent */
-    stateCard(t, agent) {
+    band(t) {
         const pid = this.where?.container ? null : this.where?.pid;
         const b = bandOf(shared(THREADS_KEY), pid, Date.now());
-        const isWorking = agent.status === 'working';
-        const report = isWorking
-            ? terminals().find((x) => x.address === agent.address)?.report
-            : null;
-        const line = stateLine({
-            isBlocked: agent.status === 'blocked',
-            isStuck: isWorking && this.stuck,
-            isWorking,
-            msg: typeof report === 'object' ? report?.msg : null,
-            wait: b.wait,
-        });
-        /** @param {string} id @param {string} name @param {number | null} pct @param {number} warnAt */
-        const meter = (id, name, pct, warnAt) => {
-            const fill = b.isStale
-                ? t.dim
-                : pct != null && pct >= warnAt
-                  ? t.blocked
-                  : t.accent;
-            return div()
-                .id(id)
-                .tooltip(meterTip(name, pct))
-                .py(1)
-                .child(meterBar(t, pct, fill));
-        };
-        return nestedCard(t, 'top')
-            .id('state-card')
-            .gap(6)
-            .when(b.isStale, (el) =>
-                el.tooltip(
-                    'the deck has not read this thread for over 2 minutes',
-                ),
-            )
-            .child(
-                h_flex()
-                    .h(px(22))
-                    .gap(8)
-                    .items_center()
-                    .min_w(0)
-                    .text_size(px(TEXT.sm))
-                    .text_color(t.muted)
-                    .child(
-                        isWorking
-                            ? svg('mods/workspace-chrome/spinner.svg')
-                                  .size(12)
-                                  .flex_none()
-                                  .text_color(t.working)
-                                  .spin(900)
-                            : div()
-                                  .size(px(10))
-                                  .flex_none()
-                                  .rounded_full()
-                                  .border(1)
-                                  .border_color(t.dim),
-                    )
-                    .child(
-                        div()
-                            .id('state-line')
-                            .flex_1()
-                            .min_w(0)
-                            .truncate()
-                            .text_color(isWorking ? t.foreground : t.muted)
-                            .tooltip(line)
-                            .child(line),
-                    )
-                    .when(isWorking && Boolean(this.turnAt), (el) =>
-                        el.child(
+        const ink = b.isStale ? t.dim : t.muted;
+        const row = (id) =>
+            h_flex().id(id).h(px(18)).gap(8).items_center().min_w(0);
+        const label = (text) =>
+            div()
+                .w(px(52))
+                .flex_none()
+                .text_size(px(12))
+                .text_color(t.dim)
+                .child(text);
+        const meter = (id, name, tip, pct, warnAt) => {
+            const warn = pct != null && pct >= warnAt && !b.isStale;
+            return row(id)
+                .tooltip(
+                    pct == null
+                        ? `${tip}: not read yet`
+                        : `${tip}: ${Math.round(pct)}%`,
+                )
+                .child(label(name))
+                .child(
+                    div()
+                        .flex_1()
+                        .h(4)
+                        .rounded(2)
+                        .bg(t.border)
+                        .child(
                             div()
-                                .flex_none()
-                                .text_color(t.dim)
-                                .font_family(this.mono())
-                                .child(turnClock(Date.now() - this.turnAt)),
+                                .w(
+                                    `${Math.max(0, Math.min(100, Math.round(pct ?? 0)))}%`,
+                                )
+                                .h(4)
+                                .rounded(2)
+                                .bg(
+                                    b.isStale
+                                        ? t.dim
+                                        : warn
+                                          ? t.blocked
+                                          : t.accent,
+                                ),
                         ),
-                    )
-                    .when(isWorking && !this.stuck, (el) =>
-                        el.child(
-                            button(t, px, 'stop', 'Stop', (_e, cx) =>
-                                this.stop(cx),
-                            ),
-                        ),
+                )
+                .child(
+                    div()
+                        .w(px(36))
+                        .flex_none()
+                        .flex()
+                        .justify_end()
+                        .text_size(px(12))
+                        .text_color(warn ? t.blocked : ink)
+                        .child(pct == null ? '—' : `${Math.round(pct)}%`),
+                );
+        };
+        return (
+            v_flex()
+                .id('thread-band')
+                .flex_none()
+                .px(10)
+                .py(4)
+                .rounded(8)
+                .bg(t.raised)
+                .when(b.isStale, (el) =>
+                    el.tooltip(
+                        'the deck has not read this thread for over 2 minutes',
                     ),
-            )
-            .child(
-                v_flex()
-                    .gap(3)
-                    // ctx above week (dima, 21:00: «move ctx meter over the week»)
-                    .child(meter('meter-ctx', 'ctx', b.context, 60))
-                    .child(meter('meter-week', 'week', b.week, 80)),
-            );
-    }
-
-    // the module's lower card: + and the pickers on the left, the band's buttons on the right
-    /** @param {any} t @param {any} agent */
-    controlCard(t, agent) {
-        return nestedCard(t, 'bottom')
-            .flex_row()
-            .items_center()
-            .gap(6)
-            .px(8)
-            .when(!this.where?.container, (el) =>
-                el.child(this.attachButton(t)),
-            )
-            .child(this.dropdown(t, agent, 'model'))
-            .child(this.dropdown(t, agent, 'effort'))
-            .child(div().flex_1())
-            .child(this.bandChips(t));
-    }
-
-    // the band's 7 buttons, on the right of the control card
-    /** @param {any} t */
-    bandChips(t) {
-        return h_flex()
-            .flex_none()
-            .gap(4)
-            .children(
-                bandButtons({
-                    fleet: this.states?.fleet,
-                    isDeckShown: this.deckShown(),
-                    override: this.override ?? { isOn: false },
-                    pending: this.pendingNow(),
-                    thread: this.states?.thread,
-                }).map((btn) => this.bandButton(t, btn)),
-            );
+                )
+                .child(
+                    row('band-wait')
+                        .h(px(26))
+                        .child(label('🔭 wait'))
+                        .child(
+                            div()
+                                .id('band-wait-text')
+                                .flex_1()
+                                .min_w(0)
+                                .truncate()
+                                .text_size(px(12))
+                                .text_color(ink)
+                                .when(Boolean(b.wait), (el) =>
+                                    el.tooltip(b.wait),
+                                )
+                                .child(b.wait ?? ''),
+                        )
+                        .child(
+                            h_flex()
+                                .flex_none()
+                                .gap(4)
+                                .children(
+                                    bandButtons({
+                                        fleet: this.states?.fleet,
+                                        isDeckShown: this.deckShown(),
+                                        override: this.override ?? {
+                                            isOn: false,
+                                        },
+                                        pending: this.pendingNow(),
+                                        thread: this.states?.thread,
+                                    }).map((btn) => this.bandButton(t, btn)),
+                                ),
+                        ),
+                )
+                // ctx above week (dima, 21:00: «move ctx meter over the week»)
+                .child(
+                    meter(
+                        'band-ctx',
+                        '🧠 ctx',
+                        'how full its context is',
+                        b.context,
+                        60,
+                    ),
+                )
+                .child(
+                    meter(
+                        'band-week',
+                        '🗓 week',
+                        'the weekly usage spent',
+                        b.week,
+                        80,
+                    ),
+                )
+        );
     }
 
     // Claude Code's suggestion for this thread, while his box is empty
@@ -7205,65 +7030,16 @@ export default class ClaudeChat extends View {
                                 .text_color(t.muted)
                                 // a 56 px preview per screenshot this chat saved; the count stands in for the rest
                                 .children(
-                                    this.thumbs(agent.address).map((rel, i) =>
+                                    this.thumbs(agent.address).map((rel) =>
                                         div()
-                                            .id(`thumb-${i}`)
                                             .size(px(56))
                                             .flex_none()
-                                            .relative()
                                             .rounded(RADIUS.card)
                                             .overflow_hidden()
                                             .bg(t.raised)
                                             .border(1)
                                             .border_color(t.border)
-                                            .child(image(rel).size_full())
-                                            .when(
-                                                !(
-                                                    this.shots[agent.address] ??
-                                                    []
-                                                ).includes(rel) ||
-                                                    this.canRemoveOne(agent),
-                                                (el) =>
-                                                    el.child(
-                                                        div()
-                                                            .id(`thumb-x-${i}`)
-                                                            .absolute()
-                                                            .top(3)
-                                                            .right(3)
-                                                            .size(px(18))
-                                                            .flex()
-                                                            .items_center()
-                                                            .justify_center()
-                                                            .rounded_full()
-                                                            .bg(t.background)
-                                                            .border(1)
-                                                            .border_color(
-                                                                t.border,
-                                                            )
-                                                            .text_size(
-                                                                px(TEXT.sm),
-                                                            )
-                                                            .text_color(t.muted)
-                                                            .cursor_pointer()
-                                                            .hover((s) =>
-                                                                s.text_color(
-                                                                    t.foreground,
-                                                                ),
-                                                            )
-                                                            .tooltip(
-                                                                'Remove this image',
-                                                            )
-                                                            .on_click(
-                                                                (_e, cx) =>
-                                                                    this.removeImage(
-                                                                        agent.address,
-                                                                        rel,
-                                                                        cx,
-                                                                    ),
-                                                            )
-                                                            .child('×'),
-                                                    ),
-                                            ),
+                                            .child(image(rel).size_full()),
                                     ),
                                 )
                                 .when(
@@ -7300,8 +7076,7 @@ export default class ClaudeChat extends View {
                                 )
                                 .when(
                                     Boolean(this.where?.container) ||
-                                        (agent.status !== 'working' &&
-                                            agent.status !== 'blocked') ||
+                                        agent.status !== 'working' ||
                                         !this.pastedCount(agent.address),
                                     (el) =>
                                         el.child(
@@ -7317,6 +7092,7 @@ export default class ClaudeChat extends View {
                         ),
                     )
                     .when(Boolean(menu), (el) => el.child(menu))
+                    .child(this.band(t))
                     // While the menu is open, ↑ ↓ Tab Esc are its keys (bound in init); ← → Home End close
                     // it (the caret would leave the word with no change event), and the next press moves.
                     .child(
@@ -7369,132 +7145,144 @@ export default class ClaudeChat extends View {
                                 this.menuKey('leave', cx),
                             )
                             .items_end()
-                            // one module, three layers (PK-384): the state card, the text box, the control card; the box is
-                            // the front layer, both cards tucked under it. column-reverse paints the box after the control
-                            // card, so its edge and shadow land on both
+                            // a stacked card (dima, 14:33 and 15:02 shots): the rounder text card in front casts a
+                            // soft shadow onto a narrower card tucked under it, which holds the pickers and send.
+                            // column-reverse paints the front card last, so its shadow lands on the back one
                             .child(
                                 v_flex()
                                     .flex_1()
                                     .min_w(0)
-                                    .child(this.stateCard(t, agent))
+                                    .flex_col_reverse()
                                     .child(
-                                        v_flex()
-                                            .flex_col_reverse()
-                                            .child(this.controlCard(t, agent))
+                                        h_flex()
+                                            .mx(14)
+                                            .pt(16)
+                                            .pb(6)
+                                            .px(8)
+                                            .items_center()
+                                            .rounded_b(RADIUS.bubble)
+                                            .border_l(1)
+                                            .border_r(1)
+                                            .border_b(1)
+                                            .border_color(t.border)
+                                            .bg(t.raised)
+                                            .gap(6)
+                                            .when(
+                                                !this.where?.container,
+                                                (el) =>
+                                                    el.child(
+                                                        this.attachButton(t),
+                                                    ),
+                                            )
                                             .child(
-                                                div()
-                                                    .w_full()
-                                                    .mb(-TUCK)
-                                                    .px(14)
-                                                    .py(12)
-                                                    .rounded(RADIUS.bubble)
-                                                    .bg(t.background)
-                                                    .border(1)
-                                                    .border_color(t.border)
-                                                    .shadow_sm()
-                                                    .relative()
-                                                    // send sits in the text card's bottom-right corner; the text takes the
-                                                    // full width and keeps clear of it by one button-high bottom padding
-                                                    // (Textarea has no per-line inset to wrap around it)
-                                                    .pb(40)
-                                                    .child(
-                                                        Textarea.new(
-                                                            this.box,
-                                                        ).token((tok) =>
-                                                            div()
-                                                                .px(4)
-                                                                .rounded(4)
-                                                                .bg(t.raised)
-                                                                .font_family(
-                                                                    this.mono(),
-                                                                )
-                                                                .text_color(
-                                                                    t.foreground,
-                                                                )
-                                                                .child(
-                                                                    tok.token
-                                                                        .label ??
-                                                                        tok
-                                                                            .token
-                                                                            .text,
-                                                                ),
-                                                        ),
-                                                    )
-                                                    .child(
+                                                this.dropdown(
+                                                    t,
+                                                    agent,
+                                                    'model',
+                                                ),
+                                            )
+                                            .child(
+                                                this.dropdown(
+                                                    t,
+                                                    agent,
+                                                    'effort',
+                                                ),
+                                            ),
+                                    )
+                                    .child(
+                                        div()
+                                            .w_full()
+                                            .mb(-10)
+                                            .px(14)
+                                            .py(12)
+                                            .rounded(16)
+                                            .bg(t.background)
+                                            .border(1)
+                                            .border_color(t.border)
+                                            .shadow_md()
+                                            .relative()
+                                            // send sits in the text card's bottom-right corner; the text takes the
+                                            // full width and keeps clear of it by one button-high bottom padding
+                                            // (Textarea has no per-line inset to wrap around it)
+                                            .pb(40)
+                                            .child(
+                                                Textarea.new(this.box).token(
+                                                    (tok) =>
                                                         div()
-                                                            .id('send')
-                                                            .absolute()
-                                                            .right(8)
-                                                            .bottom(8)
-                                                            .size(28)
-                                                            .flex()
-                                                            .items_center()
-                                                            .justify_center()
-                                                            .rounded_full()
-                                                            .bg(
-                                                                this.typed?.trim()
-                                                                    ? t.accent
-                                                                    : t.raised,
+                                                            .px(4)
+                                                            .rounded(4)
+                                                            .bg(t.raised)
+                                                            .font_family(
+                                                                this.mono(),
                                                             )
                                                             .text_color(
-                                                                this.typed?.trim()
-                                                                    ? t.background
-                                                                    : t.dim,
-                                                            )
-                                                            .text_size(
-                                                                px(TEXT.lg),
-                                                            )
-                                                            .font_weight(700)
-                                                            // a surface shift, never opacity: an opacity hover keeps the view's spinners rebuilding it
-                                                            .when(
-                                                                Boolean(
-                                                                    this.typed?.trim(),
-                                                                ),
-                                                                (el) =>
-                                                                    el
-                                                                        .cursor_pointer()
-                                                                        .hover(
-                                                                            (
-                                                                                s,
-                                                                            ) =>
-                                                                                s
-                                                                                    .bg(
-                                                                                        t.solid,
-                                                                                    )
-                                                                                    .text_color(
-                                                                                        t.solid_foreground,
-                                                                                    ),
-                                                                        ),
-                                                            )
-                                                            .tooltip(
-                                                                'Send (Enter)',
-                                                            )
-                                                            .on_click(
-                                                                (_e, cx) =>
-                                                                    this.send(
-                                                                        cx,
-                                                                    ),
+                                                                t.foreground,
                                                             )
                                                             .child(
-                                                                this
-                                                                    .sendingTo ===
-                                                                    this.address
-                                                                    ? svg(
-                                                                          'mods/workspace-chrome/spinner.svg',
-                                                                      )
-                                                                          .size(
-                                                                              px(
-                                                                                  14,
-                                                                              ),
-                                                                          )
-                                                                          .text_color(
-                                                                              t.dim,
-                                                                          )
-                                                                          .spin(
-                                                                              900,
-                                                                          )
-                                                                    : '↑',
+                                                                tok.token
+                                                                    .label ??
+                                                                    tok.token
+                                                                        .text,
                                                             ),
+                                                ),
+                                            )
+                                            .child(
+                                                div()
+                                                    .id('send')
+                                                    .absolute()
+                                                    .right(8)
+                                                    .bottom(8)
+                                                    .size(28)
+                                                    .flex()
+                                                    .items_center()
+                                                    .justify_center()
+                                                    .rounded_full()
+                                                    .bg(
+                                                        this.typed?.trim()
+                                                            ? t.accent
+                                                            : t.raised,
+                                                    )
+                                                    .text_color(
+                                                        this.typed?.trim()
+                                                            ? t.background
+                                                            : t.dim,
+                                                    )
+                                                    .text_size(px(TEXT.lg))
+                                                    .font_weight(700)
+                                                    // a surface shift, never opacity: an opacity hover keeps the view's spinners rebuilding it
+                                                    .when(
+                                                        Boolean(
+                                                            this.typed?.trim(),
+                                                        ),
+                                                        (el) =>
+                                                            el
+                                                                .cursor_pointer()
+                                                                .hover((s) =>
+                                                                    s
+                                                                        .bg(
+                                                                            t.solid,
+                                                                        )
+                                                                        .text_color(
+                                                                            t.solid_foreground,
+                                                                        ),
+                                                                ),
+                                                    )
+                                                    .tooltip('Send (Enter)')
+                                                    .on_click((_e, cx) =>
+                                                        this.send(cx),
+                                                    )
+                                                    .child(
+                                                        this.sendingTo ===
+                                                            this.address
+                                                            ? svg(
+                                                                  'mods/workspace-chrome/spinner.svg',
+                                                              )
+                                                                  .size(px(14))
+                                                                  .text_color(
+                                                                      t.dim,
+                                                                  )
+                                                                  .spin(900)
+                                                            : '↑',
                                                     ),
                                             ),
                                     ),

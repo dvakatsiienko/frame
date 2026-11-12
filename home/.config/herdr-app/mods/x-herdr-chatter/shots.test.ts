@@ -72,12 +72,11 @@ describe('shotsAfter', () => {
 });
 
 describe('sweepShots, previews no thread claims', () => {
-    it('deletes an old unclaimed preview, keeps every claimed and every fresh one', async () => {
+    it('deletes an unclaimed preview and keeps every claimed one', async () => {
         fs.readdir.mockResolvedValueOnce([
             'shot-1.png',
             'shot-2.png',
             'shot-3.png',
-            `shot-${Date.now()}.png`,
             'notes.txt',
         ]);
         fs.unlink.mockClear();
