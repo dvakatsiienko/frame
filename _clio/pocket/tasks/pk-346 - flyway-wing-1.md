@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T19:08:00Z'
+updated_date: '2026-11-12T19:09:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,24 +17,23 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 ⏳ FRM-551 vm: both reads — waits for: the first halt with no go lane
-- [ ] #2 ⏳ FRM-538 «✍️ sign» and FRM-555 «changed» lines — waits for: each one's dispatch
-- [ ] #3 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
-- [ ] #4 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
-- [ ] #5 📅 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict — on: 2026-11-13
-- [ ] #6 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
-- [ ] #7 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
-- [ ] #8 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
-- [ ] #9 📅 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop — on: 2026-11-14
-- [ ] #10 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
-- [ ] #11 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #12 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
-- [ ] #13 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #14 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #15 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #16 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #17 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #18 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #19 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #2 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
+- [ ] #3 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
+- [ ] #4 📅 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict — on: 2026-11-13
+- [ ] #5 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
+- [ ] #6 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
+- [ ] #7 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
+- [ ] #8 📅 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop — on: 2026-11-14
+- [ ] #9 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
+- [ ] #10 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #11 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
+- [ ] #12 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #13 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #14 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #15 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #16 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #17 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #18 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -624,4 +623,8 @@ done 2026-11-12 21:05: 💤 PK-385 the standing stray lane: shape it with dima (
 done 2026-11-12 21:08: sign hash gap: a body with linear-rewritten links still reads drifted; an x-printed hash would close it
 
 21:08 that clear is a drop on his o59 tick: reopen on a real false drift
+
+done 2026-11-12 21:09: ⏳ FRM-538 «✍️ sign» and FRM-555 «changed» lines — waits for: each one's dispatch (FRM-538 Todo, FRM-555 Todo)
+
+21:09 that #2 clear is a hand-over: FRM-538's sign and FRM-555's changed line go to main, who dispatches both (asked 21:09)
 <!-- SECTION:NOTES:END -->
