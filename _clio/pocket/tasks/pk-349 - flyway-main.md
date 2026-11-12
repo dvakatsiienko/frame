@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T19:54:00Z'
+updated_date: '2026-11-12T20:34:00Z'
 labels:
   - s
   - clio-main
@@ -379,4 +379,8 @@ done 2026-11-12 21:50: guard story into fleet-stories/guard-lockout before the h
 done 2026-11-12 21:54: 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
 
 done 2026-11-12 21:54: 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
+
+done 2026-11-12 22:05: ⏳ next second wind sends no notice and no back line, the hold’s live test (o171) — waits for: my next wind
+
+done 2026-11-12 22:34: 📅 FRM-588 dispatch to the herdr codie (effort hotkey + mid-turn model), at dima’s morning word — on: 2026-11-13 (FRM-588 Todo)
 <!-- SECTION:NOTES:END -->
