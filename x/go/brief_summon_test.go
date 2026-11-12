@@ -675,3 +675,19 @@ func TestBriefSummonRoleFlagTakesOnlyAStandingRole(t *testing.T) {
 		}
 	}
 }
+
+// FRM-579 security review: a linear project name reaches the printed argv, so a shell word in it draws no area
+func TestAProjectNameWithShellWordsDrawsNoArea(t *testing.T) {
+	t.Parallel()
+	for name, want := range map[string]string{
+		"cli lane":               "cli",
+		"Mods":                   "mods",
+		"x';touch${IFS}pwned;'#": "",
+		"Dima's Lab":             "",
+		"$(id)":                  "",
+	} {
+		if got := projectArea(name); got != want {
+			t.Errorf("projectArea(%q) = %q, want %q", name, got, want)
+		}
+	}
+}

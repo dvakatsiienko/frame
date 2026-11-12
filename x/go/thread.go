@@ -139,8 +139,11 @@ func ticketArea(actor, id string) string {
 	return projectArea(found.Issue.Project.Name)
 }
 
+// a project name is linear's data, typed into a printed argv and a display: only a plain word passes
+var areaWord = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
+
 func projectArea(project string) string {
-	if words := strings.Fields(strings.ToLower(project)); len(words) > 0 {
+	if words := strings.Fields(strings.ToLower(project)); len(words) > 0 && areaWord.MatchString(words[0]) {
 		return words[0]
 	}
 	return ""

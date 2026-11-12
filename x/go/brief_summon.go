@@ -345,7 +345,7 @@ func summonArgv(r *Run, command string, record thread) (string, error) {
 	}
 	// the registry name is the display x draws from the record, one string, never the one the command typed
 	if from, to := nameValueAt(command, at[1]); from >= 0 {
-		command = command[:from] + "'" + threadDisplay(record) + "'" + command[to:]
+		command = command[:from] + quote(threadDisplay(record)) + command[to:]
 	}
 	command = command[:at[1]] + "--session-id " + record.SessionID + " " + command[at[1]:]
 	if err := writeThreadRecord(record, time.Now(), true); err != nil {
