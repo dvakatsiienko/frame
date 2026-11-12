@@ -429,6 +429,15 @@ describe('--check on an inbox stamp', () => {
         ).toBe(0);
     });
 
+    test('a moved W-line linear stored with a markdown escape passes against its prep line', () => {
+        expect(
+            check(
+                'PK-9:W4 (2026-10-26 inbox, dima): joins after ~10s\n',
+                '* FRM-1:W1 (2026-10-26 inbox, dima, PK-9:W4): joins after \\~10s\n',
+            ).status,
+        ).toBe(0);
+    });
+
     test('a ticket with no raw drop reds when the prep lacks its W-line', () => {
         expect(
             check('PK-9:W4 (2026-10-26 inbox, dima): some other ask\n', ticket)
