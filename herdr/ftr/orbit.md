@@ -25,6 +25,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread has an open ask
   - when dima types in its steer field and clicks 🔁 replay
   - then the thread's next turn reads another round with his steer
+  - and the button reads «🔁 replayed», and his second click takes it back until a turn takes it, the ask open again with its steer box, the same door as a tick's; once a turn took it, «🔒 replayed, the session took it» (PK-386, dima 14:54: «it locks and i cannot undo»)
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
   - then the board draws it as written, never dropped as html
