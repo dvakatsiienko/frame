@@ -416,7 +416,8 @@
   - given the note, when the session calls orbit's `op second-wind` with the slug of the handoff it wrote, then the button reads 🌀 (`compacting onto its handoff`); at that turn's end the mod runs `/compact` with a keep line naming the slug, then `/x:handoff-ingest <slug>`, once, and the button goes back to 🐦‍🔥
   - and the ingest is queued with the compact, while it still runs, so a prompt dima types meanwhile never lands between them (clio's 19:17 press: her ingest ran after his 19:19 prompt); the op's answer tells the session to end its turn with no «waiting on» line, the refresh runs on its own
   - and a session with no `/x:handoff-ingest` to run (started with no plugin x skills, as crow's pane is) gets the ingest as one plain prompt naming `x handoff ingest <slug> --for <its role token> --json`, queued the same way (FRM-505)
-  - given the compact or the ingest is refused, then the button reads ⚠️ (`stopped, its handoff is still in the store`), the coordinator hears one line naming the session and the handoff, and the session's next turn says once how to ingest it by hand (FRM-505)
+  - given the compact refused while the ingest runs, then the coordinator hears one line that its handoff was ingested on the full context, and nothing reads stopped
+  - given the ingest is refused, then the button reads ⚠️ (`stopped, its handoff is still in the store`), the coordinator hears one line naming the session and the handoff, and the session's next turn says once how to ingest it by hand (FRM-505)
   - given no slug, or a slug `x handoff peek` cannot find, then the op is refused in one line and nothing compacts
   - decision: name and emoji are dima's, 10-13 17:31 (o1, over «graceful-ctx-refresh»); the session's state is drawn in the line under its row, since a pane holds no hover card (`engine.md`)
   - decision: compact, never clear: the session id keeps its orbit, phases, kept state and glide link (`.scratch/mods-l13/refresh-proposal.md`)
@@ -448,7 +449,9 @@
   - and one step crossing both lines gives the line first and the ask a turn later; a session first seen past 65 % gets one line, then one ask
   - and dima's ↩️ on the mod's ask holds until the fill drops under 65 %, and the next crossing asks again
   - given `🐦‍🔥 second wind` switched off, then no line and no ask
-  - given a turn after the ask past the wind line + 5, then the coordinator hears one overrun line naming the session and its fill; the coordinator's own thread sends none
+  - and the coordinator's mod ask carries her own steps: finish the topic, clio:checkpoint, tell the fleet, the pickup ask in orbit
+  - and a hot reload after the notice turn still asks at the next turn
+  - given a turn after the ask past the wind line + 5, with the mod's ask still standing, then the coordinator hears one overrun line naming the session and its fill; the coordinator's own thread sends none, nor does a wind dima pressed or took back
   - given `wind-notice` and `wind-at` in 🎛️ (`🐦‍🔥 notice at` and `🐦‍🔥 wind at`, shown with 🍃) or through `pnpm mods:set`, then every thread reads the new value at its next poll; each takes 40–90, the notice stays below the wind, a bad value is refused
   - and a lowered value only moves crossings after it: the wind lowered to 45 with a session at 60 % writes no ask and no overrun line
   - proof (+): tests/wind.test.ts::a wind line lowered in 🎛️ asks at the next poll / the wind lowered to 45 … / past the wind line + 5 … / the overrun line follows the wind knob + set.test.ts::a wind line outside 40–90 is refused / a notice at or above the wind line is refused
@@ -459,7 +462,9 @@
   - makes: a `second-wind-auto:<session id>` key in the store, `{ on, at }` from the last press
   - given a session's band, then 🍃 sits beside 🐦‍🔥, its hover names `second wind auto` and no state, lit while on
   - given no press, then every thread is on and the coordinator's thread off; a press flips only that session
-  - given 🍃 off, then no 55 % line, no ask; the coordinator's thread at the keyboard hears one line at 65 %, telling it to propose the wind to dima
+  - given 🍃 off, then no 55 % line, no ask; the coordinator's thread at the keyboard hears one line at 65 %, telling it to propose the wind to dima, and afk on past it still gives her the line, then the ask a turn later
+  - given `stash.second-wind-auto` switched off in 🎛️, then nothing: no line, no ask, no propose line
+  - given the session quits, then its press stays for a resume
   - given 💨 afk on or a shift (`pnpm mods:set pace on|end`), then the coordinator's 🍃 reads on at read time, never by a write, so afk off or the shift's end shows the stored value again; a press after the override's start wins until the next afk on or shift start
   - given 🍃 flipped off with the mod's ask pending, then the ask goes; an ask dima pressed stays
   - given 🍃 flipped on past both lines, then the line still comes first and the ask a turn later
@@ -481,6 +486,7 @@
   - given any thread — a codie, a sixth sense, clio's main or a wing — from its 🌀 (op `second-wind` accepted) or the engine's compact start (a typed `/compact`, an auto-compact) until that compact ends
   - when any session sends it a message, `[ask]`, `[done]`, `[escalate]` and «for dima» pushes included, then the thread reads nothing yet, and the sender gets one line: «held: <thread> is compacting; your message joins its next turn»
   - then every held message joins the thread's first turn after the compact, once and in the order sent, each as «🌀 held while this thread compacted, delivered now — <sender>: <text>»
+  - and after a second wind's ingest, the held messages follow it as a prompt of their own, so a thread idle after its wind still reads them
   - and r5 runs first: a coordinator's message to a codie that r5 holds keeps its 🐦‍🔥 line; a wind refused holds nothing, since nothing compacts; `🐦‍🔥 second wind` switched off holds nothing
   - and a compact key a dead process left counts only 10 min from its start (sixth sense round 9; proof: tests/wind.test.ts::a compact key left by a dead process holds nothing past its bound)
   - 📌 the limit: a second wind's held messages join its ingest turn, the first after the compact, not the turn after the ingest; clio's ok, 00:53

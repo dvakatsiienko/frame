@@ -18,6 +18,7 @@ let inCompact: (() => Promise<unknown>) | undefined;
 let hasIngestCommand = true;
 // the engine refuses the compact, as it refuses an unknown command
 let compactRefusal: string | undefined;
+let ingestRefusal: string | undefined;
 // the context % a step reads live, through $.session.usage
 let fillNow: number | undefined;
 
@@ -54,6 +55,7 @@ function world(
     inCompact = undefined;
     hasIngestCommand = true;
     compactRefusal = undefined;
+    ingestRefusal = undefined;
     fillNow = undefined;
     const prompts: string[] = [];
     const lines: string[] = [];
@@ -172,6 +174,8 @@ function world(
     on('command.run', async (_$, e) => {
         if (e.command === 'compact' && compactRefusal)
             throw new Error(compactRefusal);
+        if (e.command === 'x:handoff-ingest' && ingestRefusal)
+            throw new Error(ingestRefusal);
         commands.push(`/${e.command} ${e.args}`);
         if (e.command === 'compact') await during?.();
         return { text: '' };
@@ -675,6 +679,94 @@ test('🍃 flipped on past both lines still gives the notice first and the ask a
     expect([first, w.store.has(`wind:${SID}`)]).toEqual([[1, false], true]);
 });
 
+test('💨 afk on past the line the coordinator was proposed at still gives her the notice, then the ask a turn later', async ($, on) => {
+    const w = coordinator(on);
+    await start($);
+    await turnAt($, w, 70);
+    w.store.set('afk', { at: NOW + 1, on: true });
+    await turnAt($, w, 70);
+    const first = [noticesOf(w.lines).length, w.store.has(`wind:${SID}`)];
+    await turnAt($, w, 70);
+    expect([first, w.store.has(`wind:${SID}`)]).toEqual([[1, false], true]);
+});
+
+test("the coordinator's mod-asked wind note carries her checkpoint", async ($, on) => {
+    const w = coordinator(on);
+    w.store.set('afk', { at: NOW, on: true });
+    await start($);
+    for (const fill of [56, 70, 70]) await turnAt($, w, fill);
+    const ask = notes(w.lines).find((l) =>
+        l.startsWith('🐦‍🔥 second wind: the mod asks'),
+    );
+    expect([
+        ask?.includes('clio:checkpoint'),
+        ask?.includes('tell the fleet'),
+    ]).toEqual([true, true]);
+});
+
+test('a reload after the notice turn still asks at the next turn', async ($, on) => {
+    const w = world(on);
+    w.store.set(`fill:${SID}`, { noticed: 1, windAt: 65 });
+    await start($);
+    await turnAt($, w, 70);
+    expect(w.store.has(`wind:${SID}`)).toBe(true);
+});
+
+test('🍃 switched off in 🎛️ gives the coordinator no propose line', async ($, on) => {
+    const w = coordinator(on);
+    w.store.set('shown', { 'stash.second-wind-auto': false });
+    await start($);
+    for (const fill of [70, 70]) await turnAt($, w, fill);
+    expect(proposals(w.lines)).toEqual([]);
+});
+
+test("a shift, then afk on, then afk off keeps the coordinator's 🍃 on while the shift lasts", async ($, on) => {
+    const w = coordinator(on);
+    w.store.set(`pace:${SID}`, { since: NOW });
+    await start($);
+    await turnAt($, w, 56);
+    w.store.set('afk', { at: NOW + 1, on: true });
+    await turnAt($, w, 40);
+    w.store.set('afk', { at: NOW + 2, on: false });
+    await turnAt($, w, 56);
+    expect(noticesOf(w.lines)).toHaveLength(2);
+});
+
+test('afk on, then a press off, then afk off keeps the press', async ($, on) => {
+    const w = coordinator(on);
+    w.store.set('afk', { at: NOW, on: true });
+    await start($);
+    await turnAt($, w, 56);
+    w.store.set(AUTO, { at: NOW + 1, on: false });
+    await turnAt($, w, 40);
+    w.store.set('afk', { at: NOW + 2, on: false });
+    await turnAt($, w, 56);
+    expect(noticesOf(w.lines)).toHaveLength(1);
+});
+
+test("a session first read past the wind line gets the notice first and the ask a turn later, whatever another session's mark holds", async ($, on) => {
+    const w = world(on);
+    w.store.set('fill:other-sid', { asked: 1, noticed: 1, windAt: 65 });
+    await start($);
+    await turnAt($, w, 72);
+    const first = [noticesOf(w.lines).length, w.store.has(`wind:${SID}`)];
+    await turnAt($, w, 72);
+    expect([
+        first,
+        w.store.has(`wind:${SID}`),
+        w.store.get('fill:other-sid'),
+    ]).toEqual([[1, false], true, { asked: 1, noticed: 1, windAt: 65 }]);
+});
+
+test('a session that quits keeps its 🍃 press for a resume', async ($, on) => {
+    const w = world(on);
+    on('session.end', (_$, e) => ({ sessionId: e.sessionId }));
+    w.store.set(AUTO, { at: NOW, on: false });
+    await start($);
+    await $.session.end({ reason: 'other', sessionId: SID } as never);
+    expect(w.store.get(AUTO)).toEqual({ at: NOW, on: false });
+});
+
 // the 🎛️ knobs: a moved line reads at the next poll, and only moves crossings after it; past the wind line + 5 the
 // coordinator hears one overrun line
 function sendsOf(on: On) {
@@ -736,6 +828,26 @@ test("the overrun line never lands in the ask's own turn", async ($, on) => {
     expect(sent).toEqual([]);
 });
 
+test("dima's take-back of the mod's ask sends no overrun line", async ($, on) => {
+    const w = world(on);
+    const sent = sendsOf(on);
+    await start($);
+    for (const fill of [66, 70]) await turnAt($, w, fill);
+    w.store.delete(`wind:${SID}`);
+    for (const fill of [71, 72]) await turnAt($, w, fill);
+    expect(sent).toEqual([]);
+});
+
+test('a wind dima pressed sends no overrun line, since the mod asked nothing', async ($, on) => {
+    const w = world(on);
+    const sent = sendsOf(on);
+    await start($);
+    await turnAt($, w, 60);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+    for (const fill of [66, 71, 72]) await turnAt($, w, fill);
+    expect(sent).toEqual([]);
+});
+
 test('the overrun line follows the wind knob', async ($, on) => {
     const w = world(on);
     const sent = sendsOf(on);
@@ -771,9 +883,9 @@ test('a session with no ingest command ingests its handoff through a plain promp
     ]).toEqual([['/compact'], 1, false]);
 });
 
-// the compact refused: the toast reaches no one in a pane nobody watches
+// the ingest refused: the toast reaches no one in a pane nobody watches
 function refusedWind(on: On) {
-    compactRefusal = 'no compact here';
+    ingestRefusal = 'no ingest here';
     const sent: { text: string; to: unknown }[] = [];
     on('session.send', (_$, e) => {
         sent.push({ text: e.text, to: e.to });
@@ -798,6 +910,27 @@ test('a stopped wind tells the coordinator in one line, naming the handoff kept 
             ),
             to: 'peer-1',
         },
+    ]);
+});
+
+test('a compact that fails while its ingest runs tells the coordinator the handoff was ingested, and stops nothing', async ($, on) => {
+    const w = world(on);
+    const sent = sendsOf(on);
+    compactRefusal = 'no compact here';
+    await start($);
+    await ready($, SLUG);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect([sent, w.store.has(`wind:${SID}`)]).toEqual([
+        [
+            {
+                text: expect.stringMatching(
+                    new RegExp(`compact failed.*${SLUG} was ingested`),
+                ),
+                to: 'peer-1',
+            },
+        ],
+        false,
     ]);
 });
 
@@ -1318,6 +1451,36 @@ for (const trigger of ['manual', 'auto'] as const)
             ],
         ]);
     });
+
+test('a message held during a wind follows the ingest as a prompt of its own, so an idle session reads it', async ($, on) => {
+    const w = sentWorld(on);
+    await start($);
+    await ready($, SLUG);
+    w.store.set(HELD, {
+        isCompacted: true,
+        steers: [
+            {
+                at: NOW,
+                from: SIXTH,
+                isCompact: true,
+                text: 'round 9 on abc1234',
+            },
+        ],
+    });
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect([
+        w.prompts.filter((p) =>
+            p.startsWith('🌀 held while this thread compacted, delivered now'),
+        ),
+        w.store.has(HELD),
+    ]).toEqual([
+        [
+            `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
+        ],
+        false,
+    ]);
+});
 
 test("a coordinator's push to a codie under 55 % mid-compact is held too", async ($, on) => {
     const w = sentWorld(on);

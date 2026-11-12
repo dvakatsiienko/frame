@@ -1241,11 +1241,12 @@ const OVERRUN = 5;
 const FILL = 'fill:';
 const AUTO_WIND = 'second-wind-auto:';
 type AutoWind = { on: boolean; at: number };
-// noticed and asked hold the turn they landed in; windAt the wind line the notice saw, so a lowered knob never asks
-// a thread already past it
+// noticed, asked and proposed hold the turn they landed in; windAt the wind line the notice saw, so a lowered knob never
+// asks a thread already past it; proposed is the 🍃-off coordinator's line, so afk turning on past it still asks
 type FillMark = {
     noticed?: number;
     asked?: number;
+    proposed?: number;
     windAt?: number;
     overrun?: true;
 };
@@ -1255,6 +1256,8 @@ const fillPropose = (fill: number, windAt: number) =>
     `🐦‍🔥 second wind due at ${fill} %: past the ${windAt} % boundary, and this thread's 🍃 second wind auto is off: propose the wind to dima in orbit at your next good stop, never take it yourself.`;
 const windNoteAuto = (windAt: number) =>
     `🐦‍🔥 second wind: the mod asks you for it, your context is past ${windAt} %: a must, never a rush. finish the step you are on and commit it, nothing interrupts it; never wind mid-build. then ${WIND_HOW}`;
+const windNoteAutoOwner = (windAt: number) =>
+    `🐦‍🔥 second wind: the mod asks you to checkpoint, your context is past ${windAt} %: a must, never a rush. finish the topic you are on whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
 const ingestBy = (slug: string) =>
@@ -3722,7 +3725,9 @@ async function forget($: EngineInterface, sid: string) {
 async function retire($: EngineInterface, sid: string) {
     const reply = (await $.store.get(REPLY + sid)) as Reply | undefined;
     const heat = await $.store.get(HOT + sid);
+    const autoWind = await $.store.get(AUTO_WIND + sid);
     await forget($, sid);
+    if (autoWind) await $.store.set(AUTO_WIND + sid, autoWind);
     // a resume of this id keeps dima's off: a seat's default fills only a key never written
     if (heat && !hotOf(heat)) await $.store.set(HOT + sid, heat);
     if (reply)
@@ -4284,12 +4289,21 @@ async function setAutoWind($: EngineInterface, isOn: boolean) {
 // the prompts this session has started, so the mod's ask lands a turn after its notice, never in the same one
 let turnNo = 0;
 
+// a hot reload restarts turnNo at 0 while the store keeps the marks: the count starts past them, so the turn after a
+// reload is a later turn than any mark
+async function seedTurnNo($: EngineInterface, sid: string | undefined) {
+    if (!sid) return;
+    const m = (await $.store.get(FILL + sid)) as FillMark | undefined;
+    turnNo = Math.max(turnNo, m?.noticed ?? 0, m?.asked ?? 0, m?.proposed ?? 0);
+}
+
 // the fill crossing the notice line returns its notice once; a later turn past the wind line writes the session's own
 // ask, only where no wind key stands, so a press of dima's is never written over; a turn after the ask, past the wind
 // line + OVERRUN, the coordinator hears one line
 async function takeFill($: EngineInterface, fill: number | undefined) {
     const sid = await currentId($);
     if (!sid || fill === undefined) return undefined;
+    if (!(await partsShown($))('stash.second-wind-auto')) return undefined;
     const isAuto = await isAutoWind($);
     const isLead = (await selfRecord($))?.role === MAIN_ROLE;
     if (!isAuto && !isLead) return undefined;
@@ -4303,13 +4317,14 @@ async function takeFill($: EngineInterface, fill: number | undefined) {
     }
     if (fill < windAt) {
         delete mark.asked;
+        delete mark.proposed;
         delete mark.overrun;
     }
     let line: string | undefined;
     // the coordinator's 🍃 off at the keyboard: she proposes the wind to dima, never takes it (W5)
     if (!isAuto) {
-        if (fill >= windAt && mark.asked === undefined) {
-            mark.asked = turnNo;
+        if (fill >= windAt && mark.proposed === undefined) {
+            mark.proposed = turnNo;
             line = fillPropose(fill, windAt);
         }
     } else if (fill >= noticeAt && mark.noticed === undefined) {
@@ -4322,18 +4337,20 @@ async function takeFill($: EngineInterface, fill: number | undefined) {
         mark.noticed !== undefined &&
         mark.noticed !== turnNo
     ) {
-        mark.asked = turnNo;
-        if (!(await windOf($, sid)))
+        if (!(await windOf($, sid))) {
+            mark.asked = turnNo;
             await $.store.set(WIND + sid, {
                 at: await $.clock.now(),
                 by: 'mod',
                 state: 'asked',
             } satisfies StashWind);
+        }
     } else if (
         fill >= windAt + OVERRUN &&
         mark.asked !== undefined &&
         mark.asked !== turnNo &&
-        !mark.overrun
+        !mark.overrun &&
+        isWindOpen(await windOf($, sid))
     ) {
         mark.overrun = true;
         await overrunTold($, sid, fill).catch(() => undefined);
@@ -4342,6 +4359,10 @@ async function takeFill($: EngineInterface, fill: number | undefined) {
         await $.store.set(FILL + sid, mark);
     return line;
 }
+
+// an ask still standing: dima's take-back deletes the key, a running or stopped wind needs no nudge
+const isWindOpen = (w: StashWind | undefined) =>
+    w?.state === 'asked' || w?.state === 'writing';
 
 // a member that ignores its ask: one line to the coordinator, never from the coordinator's own thread
 async function overrunTold($: EngineInterface, sid: string, fill: number) {
@@ -4367,7 +4388,9 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
             state: 'writing',
         } satisfies StashWind);
         if (was.by === 'mod')
-            return windNoteAuto(await readNumber($, 'wind-at'));
+            return (isOwner ? windNoteAutoOwner : windNoteAuto)(
+                await readNumber($, 'wind-at'),
+            );
         return isOwner ? WIND_NOTE_OWNER : WIND_NOTE;
     }
     if (was.state === 'refused') {
@@ -4676,6 +4699,17 @@ async function tellHeldSenders($: EngineInterface) {
     if (next) armSteerTell($, next.at, now);
 }
 
+// the ingest is the mod's own prompt, which its hooks never see: what the wind held follows it as a turn of its own, so an
+// idle session still reads it (crow's wind, 11-12)
+async function releaseHeldSteers($: EngineInterface) {
+    const key = await steerKey($);
+    if (!key) return;
+    const kept = await steersOf($, key);
+    if (!kept.steers.length) return;
+    await $.store.delete(key);
+    await $.prompt.submit({ text: kept.steers.map(steerLine).join('\n') });
+}
+
 async function steersOnCompact($: EngineInterface) {
     const key = await steerKey($);
     if (!key) return;
@@ -4755,7 +4789,7 @@ async function runWind($: EngineInterface, sid: string, slug: string) {
             ) ?? true;
         // both queue at once: an awaited compact let a prompt dima typed during it queue ahead of the ingest (clio's
         // 19:17 press: compact 19:17, his prompt 19:19, the ingest 19:20)
-        await Promise.all([
+        const [compacted, ingested] = await Promise.allSettled([
             $.command.run({
                 args: `keep nothing past the handoff ${slug}; it carries the state`,
                 command: 'compact',
@@ -4764,12 +4798,30 @@ async function runWind($: EngineInterface, sid: string, slug: string) {
                 ? $.command.run({ args: slug, command: 'x:handoff-ingest' })
                 : $.prompt.submit({ text: windIngest(slug) }),
         ]);
+        if (ingested.status === 'rejected') throw ingested.reason;
         await $.store.delete(WIND + sid);
+        await releaseHeldSteers($).catch(() => undefined);
+        // the ingest still ran: the handoff left the store, only the context stayed full
+        if (compacted.status === 'rejected')
+            await compactFailedFor($, sid, slug, errorText(compacted.reason));
     } catch (err) {
         await windStoppedFor($, sid, slug, errorText(err)).catch(
             () => undefined,
         );
     }
+}
+
+async function compactFailedFor(
+    $: EngineInterface,
+    sid: string,
+    slug: string,
+    why: string,
+) {
+    await toldLead(
+        $,
+        sid,
+        `🐦‍🔥 second wind's compact failed for ${(await sessionName($)) ?? sid}: ${why}; its handoff ${slug} was ingested on the full context`,
+    );
 }
 
 // a toast reaches no one in a pane nobody watches: the board shows the stop, the coordinator hears it, and the
@@ -4785,7 +4837,14 @@ async function windStoppedFor(
         slug,
         state: 'stopped',
     } satisfies StashWind);
-    const line = `🐦‍🔥 second wind stopped for ${(await sessionName($)) ?? sid}: ${why}; its handoff ${slug} is still in the store`;
+    await toldLead(
+        $,
+        sid,
+        `🐦‍🔥 second wind stopped for ${(await sessionName($)) ?? sid}: ${why}; its handoff ${slug} is still in the store`,
+    );
+}
+
+async function toldLead($: EngineInterface, sid: string, line: string) {
     $.ui.toast(line);
     const lead = (await threadRecords($)).find(
         (t) =>
@@ -6584,6 +6643,7 @@ export const register: Register = (on) => {
     on('session.start', async ($, e, next) => {
         // the repo root, not the cwd: a cd in the shell must not rename the thread
         selfId = await $.session.id();
+        await seedTurnNo($, selfId).catch(() => undefined);
         await refreshThreads($);
         // a hot reload's start carries the shell's cwd, which follows a `cd`: the root stays the project's
         projectDir = await $.session.root().catch(() => e.cwd);
