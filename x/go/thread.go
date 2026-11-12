@@ -495,11 +495,11 @@ func threadRows(threads []thread, width int) []string {
 	}
 	rows := make([]string, len(cells))
 	for i, cell := range cells {
-		row := ""
+		var row strings.Builder
 		for c := range widths {
-			row += cell[c] + strings.Repeat(" ", widths[c]-lipgloss.Width(cell[c])+2)
+			row.WriteString(cell[c] + strings.Repeat(" ", widths[c]-lipgloss.Width(cell[c])+2))
 		}
-		rows[i] = clip(row+cell[3], width)
+		rows[i] = clip(row.String()+cell[3], width)
 	}
 	return rows
 }
