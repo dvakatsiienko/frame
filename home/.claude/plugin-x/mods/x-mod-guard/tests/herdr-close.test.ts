@@ -297,95 +297,6 @@ for (const line of [
         expect((await bash($, line)).deny).toContain('every herdr seat');
     });
 
-// FRM-569: a layout change kills the thread in the focused tab (herdr-app#861, probed on 0.1.15): a switch, a save of
-// `layouts/*.json`, a set, a clone or a reset
-const LAYOUT = '/home/.config/herdr-app/layouts/zoo.json';
-for (const line of [
-    'herdr-app do layout.switch',
-    'herdr-app do layout.switch --name zoo',
-    `herdr-app do '{"name":"layout.switch","layout":"zoo"}'`,
-    'herdr-app do layout.clone --name zoo',
-    `herdr-app do layout.set '{"layout":"zoo","tree":{}}'`,
-    'herdr-app do layout.reset --name zoo',
-    'herdr-app do app.reset',
-    `echo '{}' > ${LAYOUT}`,
-    `cp /tmp/zoo.json ${LAYOUT}`,
-    'cp /tmp/zoo.json ~/.config/herdr-app/layouts/',
-    'mv /tmp/zoo.json "$HOME/.config/herdr-app/layouts/zoo.json"',
-    `jq '.a = 1' ${LAYOUT} | tee ${LAYOUT}`,
-    `sed -i '' 's/a/b/' ${LAYOUT}`,
-    `python3 -c "open('${LAYOUT}', 'w').write('{}')"`,
-    'cd ~/.config/herdr-app/layouts && echo x > zoo.json',
-    // the local review: a heredoc program, sed's own w command, a path with // or /./
-    `python3 - <<'EOF'\nopen('${LAYOUT}', 'w').write('{}')\nEOF`,
-    `sed -n 'w ${LAYOUT}' /tmp/z.json`,
-    "echo '{}' > /home/.config/herdr-app//layouts/zoo.json",
-    "echo '{}' > /home/.config/herdr-app/./layouts/zoo.json",
-    // the second review: sed's w after an address, its script the only operand
-    `echo x | sed -n '1w ${LAYOUT}'`,
-    `bash <<'EOF'\necho '{}' > ${LAYOUT}\nEOF`,
-    `git mv /tmp/zoo.json ${LAYOUT}`,
-    `echo x | sed 's/a/b/w ${LAYOUT}'`,
-    "cd ~/.config/herdr-app/layouts && sed -n 'w zoo.json' /tmp/z.json",
-])
-    test(`a herdr layout change is refused: ${line}`, async ($, on) => {
-        const { ran } = world(on);
-        const r = await bash($, line);
-        expect([r.deny, ran]).toEqual([
-            expect.stringContaining('herdr-app#861'),
-            [],
-        ]);
-    });
-
-for (const line of [
-    'herdr-app do layout.hide --node n1',
-    'herdr-app do layout.show --node n1',
-    'herdr-app do layout.toggle --node n1',
-    'herdr-app do layout.resize --node n1 --size 30',
-    `cat ${LAYOUT}`,
-    `jq . ${LAYOUT}`,
-    'ls ~/.config/herdr-app/layouts',
-    `cp ${LAYOUT} /tmp/zoo.json`,
-    'cd ~/.config/herdr-app/layouts && cat zoo.json',
-    `sed -n 1,5p ${LAYOUT}`,
-    'cd ~/.config/herdr-app/layouts && sed -n 1,5p zoo.json',
-    "git commit -F - -- a.ts <<'EOF'\nfix ~/.config/herdr-app/layouts/zoo.json\nEOF",
-    'git commit -m "fix ~/.config/herdr-app/layouts/zoo.json" -- a.ts',
-    `git diff -- ${LAYOUT}`,
-    "tee /tmp/notes.md <<'EOF'\nthe tabs live in ~/.config/herdr-app/layouts/zoo.json\nEOF",
-])
-    test(`a layout click or read runs: ${line}`, async ($, on) => {
-        const { ran } = world(on);
-        const r = await bash($, line);
-        expect([r.deny, ran]).toEqual([undefined, [line]]);
-    });
-
-test('the layout rule ships warn-only: the switch runs with a would-refuse note', async ($, on) => {
-    const { ran, store } = world(on);
-    store.delete('rule-mode:herdr-layout');
-    const line = 'herdr-app do layout.switch --name zoo';
-    const r = await bash($, line);
-    expect([r.deny, ran, JSON.stringify(r)]).toEqual([
-        undefined,
-        [line],
-        expect.stringContaining('herdr-layout'),
-    ]);
-});
-
-test('his tick on an ask quoting a layout switch runs it once', async ($, on) => {
-    const line = 'herdr-app do layout.switch --name zoo';
-    const { ran } = world(on, [
-        {
-            at: NOW - 1,
-            id: 'o5',
-            targets: [line],
-            text: `⚠️ switch the layout: \`${line}\``,
-        },
-    ]);
-    const r = await bash($, line);
-    expect([r.deny, ran]).toEqual([undefined, [line]]);
-});
-
 test('his tick on an ask quoting the close runs it once', async ($, on) => {
     const line = 'hc kill t20';
     const { ran } = world(on, [
@@ -436,39 +347,6 @@ test('a lead ends the seat it labelled with its own registry name', async ($, on
     const r = await bash($, 'hc kill t47');
     expect([r.deny, ran]).toEqual([undefined, ['hc kill t47']]);
 });
-
-for (const line of [
-    'hc run --label seat=clio-wing-9 -- hc kill t43',
-    'hc run --bg --label=seat=clio -- claude',
-    'hc run --name x --label seat=clio-wing-1 claude',
-    'hc label t43 seat=clio',
-    'hc label t44 seat=codie',
-    'hc label t43 lead=x',
-    "hc label t43 'seat=clio-wing-3'",
-    // sixth sense round 1 on 23037434: a relabel the guard cannot read
-    'echo seat=clio | xargs hc label t43',
-    'xargs -a /tmp/kv hc label t43',
-    'KV=seat=clio; hc label t43 $KV',
-    `echo '{"method":"terminal.label","params":{"terminal":"t43","labels":{"seat":"clio"}}}' | hc connect`,
-    'hc connect < /tmp/rpc.jsonl',
-])
-    test(`a seat's proof label is set by no tool call but a clio's spawn: ${line}`, async ($, on) => {
-        const { ran } = world(on);
-        const r = await bash($, line);
-        expect([r.deny, ran]).toEqual([expect.stringContaining('label'), []]);
-    });
-
-for (const line of [
-    'hc run --label seat=crow -- claude',
-    'hc run --bg -- claude --label seat=clio',
-    'hc label t43 note=x',
-    'hc ls --json --label seat=helga',
-])
-    test(`a label that proves no clio passes: ${line}`, async ($, on) => {
-        const { ran } = world(on);
-        const r = await bash($, line);
-        expect([r.deny, ran]).toEqual([undefined, [line]]);
-    });
 
 test('a clio seat spawns a wing with its clio label', async ($, on) => {
     const line = 'hc run --bg --label seat=clio-wing-3 -- claude';
@@ -593,10 +471,8 @@ for (const [line, word] of [
     ['hc run --timeout 30 --parent t9 --label k=v -- hc kill t40', 'herdr'],
     ['hc run -- hc kill t40', 'herdr'],
     ['hc run --bg --name k -- hc kill t44', 'herdr'],
-    ["hc exec 'hc label t9 seat=clio'", 'label'],
-    ['hc run -- hc label t40 seat=x', 'label'],
 ] as const)
-    test(`a herdr close or relabel hc starts is judged as typed: ${line}`, async ($, on) => {
+    test(`a herdr close hc starts is judged as typed: ${line}`, async ($, on) => {
         const { ran } = world(on);
         const r = await bash($, line);
         expect([r.deny, ran]).toEqual([expect.stringContaining(word), []]);

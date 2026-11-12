@@ -4063,49 +4063,48 @@ test('a save kept with no base, by a module before the base was kept, lands as i
     ).toBe('cards first');
 });
 
-/* a sign ask's shape, refused at the press */
+/* a pick that signs or merges is taken as written: the guard reads no ask's shape (FRM-581) */
 
-const SIGN_DENY = 'the shape x-mod-guard reads';
 const denied = (r: unknown) => String((r as { deny?: string }).deny ?? '');
+const URL = 'https://github.com/o/n/pull/7';
+const CLEANS = '/home/.claude/shelf/pr-verified.json';
+const HEAD = 'abc1234def5678abc1234def5678abc1234def56';
+const cleansOf = (cleans: Record<string, string>) => ({
+    [CLEANS]: JSON.stringify(cleans),
+});
 
-for (const pick of ['signed', 're-signed', 'signed as drafted'])
-    test(`add refuses the pick «${pick}» on a text without the sign shape`, async ($, on) => {
-        world(on);
-        await start($);
-        expect(denied(await add($, ['sign FRM-1 please', pick]))).toContain(
-            SIGN_DENY,
-        );
-    });
-
-for (const [text, pick] of [
-    ['✍️ re-sign FRM-472: the rows', 're-sign: FRM-472 takes 22 rows'],
-    ['FRM-491 siesta gate: re-sign the gate', 'yes: re-sign as built'],
-    ['FRM-471 re-sign: the rows', 're-sign it'],
-    ['sign FRM-1 please', 'sign: as drafted'],
-    ['sign FRM-1 please', 'yes, sign it'],
-    ['sign FRM-1 please', 'yes. sign it'],
-    ['sign FRM-1 please', 'ok to sign'],
-    ['sign FRM-1 please', 'signed-off'],
-    // FRM-519 item 12: shapes that signed past the check, 0 recorded uses
-    ['sign FRM-1 please', 'yes — sign it'],
-    ['sign FRM-1 please', 'sure, sign it'],
-    ['sign FRM-1 please', 'sign off'],
-    ['sign FRM-1 please', 'yep, sign'],
-    ['sign FRM-1 please', 'Sign it.'],
-    // sixth sense round 8 on 2093f838: a sign verb anywhere wants the shape, whatever opens the pick
-    ['sign FRM-1 please', 'absolutely, sign it'],
-    ['sign FRM-1 please', 'go ahead and sign'],
-    ['sign FRM-1 please', 'please sign'],
-    ['sign FRM-1 please', 'yes please, sign it'],
-    ['sign FRM-1 please', 'yes!! sign it'],
-    ['sign FRM-1 please', 'y, sign it'],
-    ['sign FRM-1 please', 'lgtm, sign it'],
+for (const [what, text, pick] of [
+    [
+        'a sign pick on a text without the sign shape',
+        'sign FRM-1 please',
+        'signed',
+    ],
+    ['a merge pick on a text naming no pr', 'merge frame#7 please', 'merge'],
+    ['a merge ask naming no head', '⚠️ merge frame#7: the title', 'merge'],
+    [
+        'a merge ask with no clean for its pr',
+        `⚠️ merge ${URL} at abc1234`,
+        'merge',
+    ],
 ] as const)
-    test(`add refuses the pick «${pick}» on a mis-shaped sign ask`, async ($, on) => {
+    test(`add takes ${what}`, async ($, on) => {
         world(on);
         await start($);
-        expect(denied(await add($, [text, pick]))).toContain(SIGN_DENY);
+        expect(denied(await add($, [text, pick]))).toBe('');
     });
+
+test('follow takes a sign pick on a text without the shape', async ($, on) => {
+    world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    const r = await orbit($, {
+        id: 'o1',
+        op: 'follow',
+        pick: 'signed',
+        text: 'sign it',
+    });
+    expect(denied(r)).toBe('');
+});
 
 for (const [what, text, pick] of [
     ['a pick holding sign-in', 'push FRM-1', 'sign-in flow first'],
@@ -4131,131 +4130,6 @@ for (const [what, text, pick] of [
         world(on);
         await start($);
         expect(denied(await add($, [text, pick]))).toBe('');
-    });
-
-test('follow refuses a sign pick on a text without the shape', async ($, on) => {
-    world(on);
-    await start($);
-    await add($, ['push FRM-1', 'yes']);
-    const r = await orbit($, {
-        id: 'o1',
-        op: 'follow',
-        pick: 'signed',
-        text: 'sign it',
-    });
-    expect(denied(r)).toContain(SIGN_DENY);
-});
-
-test('follow refuses a text losing the shape under a kept sign pick', async ($, on) => {
-    world(on);
-    await start($);
-    await add($, ['✍️ sign FRM-1: the title', 'signed']);
-    const r = await orbit($, {
-        id: 'o1',
-        op: 'follow',
-        text: 'sign it after all',
-    });
-    expect(denied(r)).toContain(SIGN_DENY);
-});
-
-test('follow passes the sign shape', async ($, on) => {
-    world(on);
-    await start($);
-    await add($, ['push FRM-1', 'yes']);
-    const r = await orbit($, {
-        id: 'o1',
-        op: 'follow',
-        pick: 'signed',
-        text: '✍️ sign FRM-1: the title',
-    });
-    expect(denied(r)).toBe('');
-});
-
-/* a merge ask's shape, refused at the press */
-
-const MERGE_DENY = 'the shape x-mod-guard reads for --dima-ok';
-const URL = 'https://github.com/o/n/pull/7';
-
-for (const pick of [
-    'merge',
-    'merge it',
-    'Merge when green',
-    'merged, as ticked',
-    'yes, merge #7',
-    'yes, merge the pr',
-    'yes, merge it',
-    'squash and merge',
-    'ok to merge when green',
-    // FRM-519 item 12: shapes that merged past the check
-    'yes. merge it',
-    'ok merge',
-    'approve the merge',
-    // sixth sense round 8 on 2093f838: a merge verb anywhere wants the shape
-    'please merge',
-    'go ahead, merge it',
-    'yes!! merge',
-    'lgtm, merge',
-    'absolutely merge',
-    'approve merging',
-    'yes please merge',
-    // was a pass row («a merge word mid pick»); a shape check cannot tell an order from a want
-    'one merged before the next opens',
-])
-    test(`add refuses the pick «${pick}» on a text naming no pr`, async ($, on) => {
-        world(on);
-        await start($);
-        expect(denied(await add($, ['merge frame#7 please', pick]))).toContain(
-            MERGE_DENY,
-        );
-    });
-
-// FRM-519 exit 2 (clio's pick a, 00:54): a merge ask names its head, and lands only on the clean the store holds for it;
-// x lane merge-auto still reads the pr's real head again
-const CLEANS = '/home/.claude/shelf/pr-verified.json';
-const HEAD = 'abc1234def5678abc1234def5678abc1234def56';
-const OLD = '9999999def5678abc1234def5678abc1234def56';
-const cleansOf = (cleans: Record<string, string>) => ({
-    [CLEANS]: JSON.stringify(cleans),
-});
-const cleanOn = (head: string) =>
-    cleansOf({ 'o/frame#7': head, 'o/n#7': head });
-for (const [what, text, files] of [
-    ['a url at its clean head', `⚠️ merge ${URL} at abc1234`, cleanOn(HEAD)],
-    [
-        'the ⚠️ shape at its clean head',
-        '⚠️ merge frame#7 at abc1234: the title',
-        cleanOn(HEAD),
-    ],
-] as const)
-    test(`add passes a merge ask: ${what}`, async ($, on) => {
-        world(on, files);
-        await start($);
-        expect(denied(await add($, [text, 'merge']))).toBe('');
-    });
-for (const [what, text, files, deny] of [
-    [
-        'naming no head',
-        '⚠️ merge frame#7: the title',
-        cleanOn(HEAD),
-        'names the head it merges',
-    ],
-    [
-        'with no clean for its pr',
-        '⚠️ merge frame#7 at abc1234: the title',
-        {},
-        'no clean for frame#7',
-    ],
-    [
-        'whose clean is on an older head',
-        '⚠️ merge frame#7 at abc1234: the title',
-        cleanOn(OLD),
-        'the clean on frame#7 is on 9999999',
-    ],
-] as const)
-    test(`add refuses a merge ask ${what}`, async ($, on) => {
-        world(on, files);
-        await start($);
-        expect(denied(await add($, [text, 'merge']))).toContain(deny);
     });
 
 for (const [what, text, pick] of [
@@ -4293,19 +4167,6 @@ for (const [what, text, pick] of [
         await start($);
         expect(denied(await add($, [text, pick]))).toBe('');
     });
-
-test('follow refuses a merge pick on a text naming no pr', async ($, on) => {
-    world(on);
-    await start($);
-    await add($, ['push FRM-1', 'yes']);
-    const r = await orbit($, {
-        id: 'o1',
-        op: 'follow',
-        pick: 'merge',
-        text: 'merge it',
-    });
-    expect(denied(r)).toContain(MERGE_DENY);
-});
 
 /* FRM-510: his press is never lost. every get of one dispatch reads one moment (engine.md), so a hook running while he
    presses reads the orbit from before the press; `frozen` serves that old copy, and writes keeps what landed */

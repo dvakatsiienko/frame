@@ -2,21 +2,18 @@ import type { Word } from '../shell.ts';
 import {
     type Command,
     type Context,
-    type Refusal,
     SD_VALUE,
     basename,
-    commandsDeep,
     gitDir,
     gitParts,
     hasFlag,
     isFlag,
-    isJobTmp,
     operands,
     resolve,
 } from './command.ts';
 
 // an mv or cp's dest, then the file each source lands on when that dest is a dir
-export function landings(c: Command, ctx: Context) {
+function landings(c: Command, ctx: Context) {
     // `cp -t <dir> <src…>` names its dest first; rsync's and ditto's -t is another flag
     const t = ['cp', 'mv', 'ln', 'install'].includes(c.name)
         ? c.args.findIndex((w) => w.text === '-t')
@@ -38,21 +35,6 @@ export function landings(c: Command, ctx: Context) {
     ];
 }
 // the paths a command may write over, for the caller to look up on disk
-export function overwrittenPaths(
-    command: string,
-    cwd: string,
-    ctx: Context = {},
-) {
-    return commandsDeep(command, cwd).flatMap((c) => {
-        const dir = resolve(c.dir, '/', ctx);
-        const moved =
-            c.name === 'mv' || c.name === 'cp'
-                ? landings(c, ctx).map((l) => l.path)
-                : [];
-        return [...c.writes.map((w) => resolve(w, dir, ctx)), ...moved];
-    });
-}
-// python's `open('<file>', 'w'|'a'|'x')`, read off the raw text since its script is no shell
 export const pythonWrites = (command: string, cwd: string, ctx: Context) =>
     [...command.matchAll(/open\(\s*['"]([^'"]+)['"]\s*,\s*['"][wax]/g)].flatMap(
         (m) => (m[1] ? [resolve(m[1], cwd, ctx)] : []),
@@ -83,15 +65,6 @@ export function commandWrites(c: Command, ctx: Context) {
     return out;
 }
 // every file a line writes, a nested shell's included
-export function writtenPaths(command: string, cwd: string, ctx: Context = {}) {
-    return [
-        ...new Set([
-            ...pythonWrites(command, cwd, ctx),
-            ...commandsDeep(command, cwd).flatMap((c) => commandWrites(c, ctx)),
-        ]),
-    ];
-}
-// curl's -o / --output file
 function curlOutputs(args: Word[]) {
     return args.flatMap((w, i) =>
         w.text === '--output' || /^-[A-Za-z]*o$/.test(w.text)
@@ -148,62 +121,4 @@ function sedFiles(args: Word[]) {
         else if (!isFlag(t)) files.push(t);
     }
     return isScripted ? files : files.slice(1);
-}
-// the file a `>`, an mv, a cp -f or a cp /dev/null would empty or replace; the job's own tmp is its scratch to write over
-// a claude session's own scratchpad holds only what that session wrote (PK-138: 8 refusals in 14 days, and the >>
-// workaround glued two commit messages)
-const SCRATCHPAD =
-    /^(\/private)?\/tmp\/claude-\d+\/[^/]+\/[0-9a-f-]{36}\/scratchpad\/[^/]/;
-export function overwrite(c: Command, ctx: Context): Refusal | undefined {
-    const dir = resolve(c.dir, '/', ctx);
-    const isFile = (p: string) =>
-        ctx.kinds?.get(p) === 'file' &&
-        !isJobTmp(p, ctx) &&
-        !SCRATCHPAD.test(p);
-    const written = c.writes.filter((w) => isFile(resolve(w, dir, ctx)));
-    if (written.length)
-        return {
-            door: '>> to append, a new path, or the Write tool after reading the file',
-            rule: 'overwrite',
-            targets: written,
-            why: 'a > redirect empties the file before the command runs',
-        };
-    const isNull = c.name === 'cp' && operands(c.args)[0] === '/dev/null';
-    const isForced =
-        c.name === 'mv' ||
-        (c.name === 'cp' && hasFlag(c.args, ['--force'], 'f'));
-    // the last of -n, -i and -f wins: `mv -nf` overwrites
-    const last = c.args
-        .flatMap((w) =>
-            w.text === '--no-clobber' || w.text === '--interactive'
-                ? ['n']
-                : w.text === '--force'
-                  ? ['f']
-                  : /^-[A-Za-z]+$/.test(w.text)
-                    ? [...w.text.slice(1)].filter((ch) => 'nif'.includes(ch))
-                    : [],
-        )
-        .at(-1);
-    const isKept = last === 'n' || last === 'i';
-    if (!(isNull || isForced) || isKept) return undefined;
-    const [to, ...into] = landings(c, ctx);
-    if (!to) return undefined;
-    if (
-        !isFile(to.path) &&
-        !(ctx.kinds?.get(to.path) === 'dir' && into.some((l) => isFile(l.path)))
-    )
-        return undefined;
-    if (isNull)
-        return {
-            door: 'the Write tool after reading the file',
-            rule: 'overwrite',
-            targets: [to.text],
-            why: 'cp /dev/null empties the file',
-        };
-    return {
-        door: `${c.name} -n, or trash the old file first`,
-        rule: 'overwrite',
-        targets: [to.text],
-        why: `${c.name} replaces the file already there, silently`,
-    };
 }

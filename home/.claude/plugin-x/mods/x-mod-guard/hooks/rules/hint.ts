@@ -13,7 +13,7 @@ import {
     resolve,
 } from './command.ts';
 import { isOwnRepo } from './hazard.ts';
-import { commandWrites, pythonWrites } from './overwrite.ts';
+import { commandWrites, pythonWrites } from './writes.ts';
 
 export const PR_HINT =
     'x-mod-guard hint: `x gh pr <n>` reads a pr — its checks and all three comment feeds, newest first — in one call';

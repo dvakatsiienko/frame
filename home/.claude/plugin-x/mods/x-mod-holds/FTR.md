@@ -87,5 +87,5 @@ two sessions, A and B, in one checkout.
   - when B edits
   - then the edit goes through and the error is logged
   - proof: tests/holds.test.ts::a broken store never blocks an edit
-- ✅ a Bash write to a held file is refused — by x-mod-guard, which reads this store; its `FTR.md`, «held files» (FRM-350)
-  - proof: x-mod-guard/tests/held.test.ts::a Bash write to another session's held file is refused with the holder named
+- ✅ a whole-tree `git stash` over a held file is refused — by x-mod-guard, which reads this store; its `FTR.md`, «held files»; a Bash write to a held file runs since FRM-581
+  - proof: x-mod-guard/tests/stash.test.ts

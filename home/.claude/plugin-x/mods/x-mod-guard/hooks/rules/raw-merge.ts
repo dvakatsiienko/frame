@@ -1,12 +1,9 @@
-import { touchesStore } from './clean-stamp.ts';
 import {
     type Command,
     type Refusal,
     TICK_DOOR,
     commandsDeep,
 } from './command.ts';
-
-export type MergeHolds = { prs: Set<string>; isUnreadable: boolean };
 
 // gh's own flags that take the next word, on `pr merge`, `stack merge`, `api` and the root
 const VALUE_FLAGS = new Set([
@@ -112,9 +109,7 @@ function rawMerge(c: Command) {
                 : a.isExpanding && !/^\w+=/.test(field);
         });
         if (isUnread) return { isUnread: true, pr: undefined };
-        return c.args.some((a) => a.isExpanding || /=@/.test(a.text))
-            ? { isHoldOnly: true, pr: undefined }
-            : undefined;
+        return undefined;
     }
     if (family !== 'api') return undefined;
     // a method or an endpoint in a variable can be a merge this rule cannot read
@@ -146,81 +141,37 @@ function rawMerge(c: Command) {
 export const rawMerges = (command: string, cwd: string) =>
     commandsDeep(command, cwd).flatMap((c) => rawMerge(c) ?? []);
 
-const DOOR = `x lane merge-auto <pr> --apply --dima-ok <pr>, on dima's word, or ${TICK_DOOR}`;
-
-// after the required check went, nothing on github stops a raw merge reaching production (dima's o48, BYT-94): it refuses from
-// its first head, the one named exception to warn-only. merge-auto lands a linked stack itself, through github's api; where
-// a repo has no async merge it names `gh stack merge <n>` (x/go/stacks.go), so his tick on an ask quoting that keeps it open
+// after the required check went, nothing on github stops a raw merge reaching production (dima's o48, BYT-94); merge-auto
+// lands a linked stack itself, so his tick on an ask quoting `gh stack merge <n>` is that door
 export function rawMergeRefused(
-    merges: {
-        isHoldOnly?: boolean;
-        isStack?: boolean;
-        isUnread?: boolean;
-        pr: string | undefined;
-    }[],
+    merges: { isStack?: boolean; isUnread?: boolean; pr: string | undefined }[],
 ): Refusal | undefined {
-    const raw = merges.filter((m) => !m.isHoldOnly);
-    if (!raw.length) return undefined;
-    const isAllUnread = raw.every((m) => m.isUnread);
+    if (!merges.length) return undefined;
+    const isAllUnread = merges.every((m) => m.isUnread);
     return {
         door: isAllUnread
             ? `write the query or the endpoint inline in the call, if it merges nothing; a merge goes through x lane merge-auto <pr>, or ${TICK_DOOR}`
             : `x lane merge-auto <pr>, or ${TICK_DOOR}`,
         rule: 'raw-merge',
-        targets: raw.map((m) => m.pr ?? 'gh merge'),
+        targets: merges.map((m) => m.pr ?? 'gh merge'),
         why: isAllUnread
             ? 'this rule cannot read a query or an endpoint held in a file or a variable, and a merge there would reach production unseen'
             : 'a raw merge skips its gates, and nothing on github stops it reaching production',
     };
 }
 
-// a hold reads as held when its record does not read, and a target it cannot name counts as held while any hold stands
-export function mergeHold(
-    merges: { pr: string | undefined }[],
-    holds: MergeHolds,
-): Refusal | undefined {
-    if (holds.isUnreadable)
-        return {
-            door: DOOR,
-            rule: 'merge-hold',
-            targets: merges.flatMap((m) => m.pr ?? []),
-            why: "x lane merge-auto --brake-check did not read dima's holds, so every merge reads as held",
-        };
-    const held = merges.flatMap((m) =>
-        m.pr !== undefined && holds.prs.has(m.pr) ? [`#${m.pr}`] : [],
+// the brake is dima's: only his tick on an ask quoting the whole release, never the override, lets a seat take it off
+export const RELEASE_BRAKE: Refusal = {
+    door: "dima's look, then his tick on an orbit ask quoting this whole command",
+    rule: 'raw-merge',
+    targets: ['merge-brake'],
+    why: 'the brake stops every merge until dima takes it off',
+};
+export const releasesBrake = (command: string, cwd: string) =>
+    commandsDeep(command, cwd).some(
+        (c) =>
+            /(^|\/)x$/.test(c.name) &&
+            c.args[0]?.text === 'lane' &&
+            c.args[1]?.text === 'merge-auto' &&
+            c.args.some((w) => w.text === '--release-brake'),
     );
-    if (held.length)
-        return {
-            door: DOOR,
-            rule: 'merge-hold',
-            targets: held,
-            why: `${held.join(', ')} is held by dima, and a raw merge skips the hold`,
-        };
-    if (holds.prs.size && merges.some((m) => m.pr === undefined))
-        return {
-            door: DOOR,
-            rule: 'merge-hold',
-            targets: [...holds.prs].map((pr) => `#${pr}`),
-            why: `dima holds ${[...holds.prs].map((pr) => `#${pr}`).join(', ')}, and this merge names no pr number to tell it from a held one, or lands layers this guard cannot list; a hold on a dead pr comes off through x lane merge-auto <pr> --release-hold --dima-ok <pr> --apply`,
-        };
-    return undefined;
-}
-
-const isHoldRecord = (text: string) =>
-    /\.local\/state\/x\/merge-hold|\$\{?\w+\}?\/merge-hold\//i.test(text);
-const isHoldRecordDir = (text: string) => /\.local\/state\/x\/?$/i.test(text);
-
-// x is the record's one writer: a hand edit would drop a hold with no word
-export function holdRecordWrite(
-    command: string,
-    cwd: string,
-): Refusal | undefined {
-    if (!touchesStore(command, cwd, isHoldRecord, isHoldRecordDir))
-        return undefined;
-    return {
-        door: "x lane merge-auto <pr> --hold --apply, and x lane merge-auto <pr> --release-hold --dima-ok <pr> --apply on dima's word; a read goes through cat or jq",
-        rule: 'merge-hold',
-        targets: ['merge-hold'],
-        why: "a hold in ~/.local/state/x/merge-hold is dima's, and a hand edit would drop it with no word",
-    };
-}

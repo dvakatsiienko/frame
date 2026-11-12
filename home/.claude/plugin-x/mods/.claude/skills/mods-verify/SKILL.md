@@ -17,7 +17,6 @@ prove a mod change with evidence the engine produced. the gates, `mods:live`, `m
 - `mods:live` cannot show bold, the desktop layout or a real 5h reset; those stay dima's eye each round, said in the report (FRM-382 codie)
 - `grep -i skipped` over every `--extra` probe log: a skipped hook reads green (FRM-499 sixth sense)
 - a probe needing a quiet window past `FIELD_QUIET_MS` sleeps real time, `test(name, { timeout }, body)` (FRM-492 sixth sense)
-- a new warn-only rule sits inside the run's one exit, after `next`, so every enforced rule reads first (FRM-486 sixth sense, FRM-513 codie)
 - `mods:live click` misses a wide emoji chip: it reads found, no press lands, exit 0; time a press by another door until `live.ts` counts cell width (FRM-513 codie)
 - a gate's row carries one real plant through the real hook before a clean (FRM-473 sixth sense)
 - a change to a list other hooks grow gets a `Promise.all` row with a prompt in it (FRM-501 sixth sense)

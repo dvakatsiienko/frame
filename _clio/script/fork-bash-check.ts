@@ -15,7 +15,7 @@ import {
 import {
     commandWrites,
     pythonWrites,
-} from '../../home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/overwrite.ts';
+} from '../../home/.claude/plugin-x/mods/x-mod-guard/hooks/rules/writes.ts';
 
 const OPERAND_WRITERS = new Set([
     'chmod',

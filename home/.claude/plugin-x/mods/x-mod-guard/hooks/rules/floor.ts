@@ -3,12 +3,9 @@ import {
     type Command,
     type Context,
     NEVER,
-    PIPE_READ,
     type Refusal,
     STASH,
     TRASH,
-    VAULT,
-    asMember,
     commandsDeep,
     gitDir,
     gitParts,
@@ -16,10 +13,7 @@ import {
     operands,
     or,
     peel,
-    resolve,
 } from './command.ts';
-import { isOwnRepo } from './hazard.ts';
-import { linearWords } from './milestone.ts';
 
 // a whole-tree stash sets aside every uncommitted file in the tree, a peer session's too (the FRM-427 sixth sense, the
 // 10-25 flawlog); the git dirs where one runs, for the caller to check against x-mod-holds
@@ -73,71 +67,9 @@ export const stashSweep = (dir: string, file: string): Refusal => ({
     why: `a whole-tree git stash also sets aside ${file}, which another session holds`,
 });
 
-// one class, judged after every other rule: a command whose name the line never typed as it runs — a `$` it cannot fill, a
-// brace list, a name a variable takes several values for or `$(echo …)` prints, or a script printed into a shell, sourced
-// or held in a git alias; the door names the literal spelling (dima's o1 and o35)
-export function opaque(c: Command, hiddenBy?: string): Refusal | undefined {
-    if (!c.name || c.name === '[' || c.name === '[[') return undefined;
-    const spell = (
-        why: string,
-        door = `spell it as it runs: \`${c.name}\``,
-    ): Refusal => ({
-        door,
-        rule: 'opaque-head',
-        targets: [c.name],
-        why,
-    });
-    // `"$@"` and `$1` are a function's own arguments; `$(( $(date +%s) - t ))` reads as a group headed by its substitution
-    const isArithmetic =
-        c.name === '$(…)' && c.args.some((w) => /^[-+*/%]$/.test(w.text));
-    const head = c.head;
-    if (
-        /[$`]/.test(c.name) &&
-        !/^\$\{?[@*0-9]\}?$/.test(c.name) &&
-        !isArithmetic
-    )
-        return spell(
-            'a command named by a variable the line never fills runs what the guard cannot read',
-            'spell the command out, or run the script it names by path',
-        );
-    // a brace list widens to every name in it: `r{m,}` is rm, and the door names each
-    const brace = head?.hasQuote
-        ? undefined
-        : (head?.text ?? '').match(/^(.*?)\{([^{}]*(?:,|\.\.)[^{}]*)\}(.*)$/s);
-    if (brace) {
-        const [, before = '', list = '', after = ''] = brace;
-        const words = list.includes(',')
-            ? list.split(',').map((w) => `\`${before}${w}${after}\``)
-            : [];
-        return spell(
-            'a brace in a command name runs whatever it widens to',
-            words.length
-                ? `spell it as it runs: ${words.join(' or ')}`
-                : 'spell the command out',
-        );
-    }
-    if (head?.isFilled)
-        return spell(
-            'a command name a variable takes several values for, or a substitution prints, hides what runs',
-        );
-    if (hiddenBy)
-        return spell(
-            `a command inside ${hiddenBy} never shows as typed`,
-            `run it as its own command: \`${c.name} …\``,
-        );
-    return undefined;
-}
-// the builtins that set a variable from their operands (`declare -x HOME=…`)
-const DECLARERS = new Set([
-    'export',
-    'declare',
-    'typeset',
-    'local',
-    'readonly',
-]);
 // what reads process ids by name
 const FINDERS = new Set(['pgrep', 'ps', 'pidof', 'lsof', 'grep', 'rg', 'awk']);
-export function floor(c: Command, ctx: Context): Refusal | undefined {
+export function floor(c: Command): Refusal | undefined {
     const ops = operands(c.args);
     if (c.name === 'rm' || c.name === 'unlink')
         return {
@@ -178,61 +110,6 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
                 c.name,
             ),
             why: 'a kill by pattern hits your own process too',
-        };
-    if (
-        c.name === 'mv' &&
-        (c.dir.includes(VAULT) || ops.some((o) => o.includes(VAULT)))
-    )
-        return {
-            door: 'obsidian rename / obsidian move — they rewrite the wikilinks',
-            rule: 'vault-mv',
-            targets: ops,
-            why: 'a plain mv in the vault breaks every wikilink to the note',
-        };
-    if (
-        c.assigns.some((a) => /^HOME\+?=/.test(a)) ||
-        (DECLARERS.has(c.name) && ops.some((o) => /^HOME\+?=/.test(o)))
-    )
-        return {
-            door: 'run it without the HOME override',
-            rule: 'home',
-            targets: ['HOME'],
-            why: 'a HOME override points every tool at the wrong config',
-        };
-    if (
-        c.name === 'npm' &&
-        (hasFlag(c.args, ['--global', '--location=global'], 'g') ||
-            c.args.some(
-                (w, i) =>
-                    w.text === '--location' && c.args[i + 1]?.text === 'global',
-            ))
-    )
-        return {
-            door: 'brew first, else pnpm add -g',
-            rule: 'npm-global',
-            targets: ['npm'],
-            why: 'npm -g is not used here',
-        };
-    const isPip = /^pip\d*(\.\d+)?$/.test(c.name) && ops[0] === 'install';
-    // `-m pip` or glued `-mpip`: the words after it are pip's
-    const pipAt = c.args.findIndex(
-        (w, i) =>
-            w.text === '-mpip' ||
-            (w.text === '-m' && c.args[i + 1]?.text === 'pip'),
-    );
-    const pipArgs = c.args.slice(
-        pipAt + (c.args[pipAt]?.text === '-mpip' ? 1 : 2),
-    );
-    const isPyPip =
-        /^python\d*(\.\d+)?$/.test(c.name) &&
-        pipAt >= 0 &&
-        operands(pipArgs)[0] === 'install';
-    if (isPip || isPyPip)
-        return {
-            door: 'uv pip install',
-            rule: 'pip',
-            targets: ['pip'],
-            why: 'pip is not used here; uv is',
         };
     const bypass = c.args.find(
         (w) => w.text === '--no-verify' || w.text === '--no-gpg-sign',
@@ -366,84 +243,12 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
         return rewrite(['prune'], 'git worktree prune');
     if (sub === 'worktree' && subOps[0] === 'remove')
         return rewrite(or(subOps.slice(1), 'remove'), 'git worktree remove');
-    const toMain = subOps
-        .slice(1)
-        .find((o) => /^[^+:][^:]*:(refs\/heads\/)?main$/.test(o));
-    if (sub === 'push' && toMain && isOwnRepo(gitDir(c, ctx), ctx))
-        return {
-            door: "x lane push — it pushes HEAD's sha and reads the remote back",
-            rule: 'push-lane',
-            targets: [toMain],
-            why: 'a hand-typed sha or ref pushed to main skips the read-back',
-        };
     return undefined;
 }
-const LINEAR_READS = ['help', 'list', 'read'];
-// x linear's root flags that take the next word as their value, so it is never the verb
-const LINEAR_ROOT_VALUES = ['--as', '--team', '--vars'];
-const LINEAR_MEMBER_WRITES = ['comment', 'create', 'delete', 'update'];
 
-// any `x linear` verb but a known read writes, so a new verb warns by default
-function isLinearWrite(c: Command) {
-    const linear = linearWords(c);
-    if (!linear) return false;
-    const { isX, words } = linear;
-    const hasFlag = (flag: string) =>
-        words.some((w) => w === flag || w.startsWith(`${flag}=`));
-    // `x as <member> --` is a wrapper: the command the walker reads is the raw `linear` under it
-    if (!isX)
-        return (
-            asMember(c) !== undefined &&
-            words[0] === 'issue' &&
-            LINEAR_MEMBER_WRITES.includes(words[1] ?? '') &&
-            words[2] !== 'list'
-        );
-    const verb = words.find(
-        (w, i) =>
-            w &&
-            !w.startsWith('-') &&
-            !LINEAR_ROOT_VALUES.includes(words[i - 1] ?? ''),
-    );
-    // no verb, or only a flag: it prints its help
-    if (!verb || hasFlag('--help') || words.includes('-h')) return false;
-    if (LINEAR_READS.includes(verb)) return false;
-    if (verb === 'body') return hasFlag('--set');
-    if (verb === 'archive') return hasFlag('--apply');
-    if (verb !== 'api') return true;
-    // a query counts as a read only when its text is on the line to read; --vars holds its values, never the query
-    const queries = c.args.filter(
-        (w, i) =>
-            c.args[i - 1]?.text !== '--vars' &&
-            /^\s*(?:query\b|mutation\b|\{)/.test(w.text),
-    );
-    return (
-        !queries.length ||
-        queries.some((w) => w.isExpanding || /\bmutation\b/.test(w.text))
-    );
-}
-
-// the pipe's exit is the reader's, so a failed write reads as a success; the call has already run by the time this speaks
-export function linearWritePiped(
-    command: string,
-    cwd: string,
-): Refusal | undefined {
-    if (PIPE_READ.test(command)) return undefined;
-    if (
-        !commandsDeep(command, cwd).some(
-            (c) => c.sep === '|' && isLinearWrite(c),
-        )
-    )
-        return undefined;
-    return {
-        door: 'the call already ran: read the ticket back with x linear read before repeating it, a comment is not idempotent; run the next write unpiped, its exit is the receipt',
-        rule: 'linear-write-piped',
-        targets: ['x linear'],
-        why: "a pipe after an x linear write reports the reader's exit, so a failed write reads as a success",
-    };
-}
-
-// a git call past a door's gate, judged beside the rule chain: a plain push from frame's main checkout, a `-c core.hooksPath`
-export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
+// a `-c` or `--config-env` key, one `git config` persists, or one the environment hands git (`GIT_CONFIG_KEY_<n>`): each
+// swaps out the hooks a commit or push runs
+export function hooksBypass(c: Command): Refusal | undefined {
     // the environment git reads its config from: a prefix, or an export that lasts for the calls after it
     const env = [
         ...c.assigns,
@@ -471,47 +276,16 @@ export function gitDoor(c: Command, ctx: Context): Refusal | undefined {
     const isSet =
         value !== undefined &&
         !subArgs.some((w) => /^(--get|--unset|--list$|-l$)/.test(w.text));
-    // a `-c` or `--config-env` key, one `git config` persists, or one the environment hands git (`GIT_CONFIG_KEY_<n>`)
     const hooks = [
         ...configs,
         ...(sub === 'config' && key && isSet ? [key] : []),
         ...fromEnv,
     ].find((k) => /^core\.hookspath(?:=|$)/i.test(k));
-    if (hooks)
-        return {
-            door: 'fix what the hook refused, then run it without the override',
-            rule: 'hooks-bypass',
-            targets: [hooks.split('=')[0] ?? hooks],
-            why: '-c core.hooksPath swaps out the hooks a commit or push runs',
-        };
-    // the repo a push leaves from: where it runs, or the tree a `--git-dir` or `GIT_DIR` names
-    if (c.name !== 'git') return undefined;
-    const named =
-        c.args.flatMap((w, i) =>
-            w.text.startsWith('--git-dir=')
-                ? [w.text.slice('--git-dir='.length)]
-                : w.text === '--git-dir'
-                  ? [c.args[i + 1]?.text ?? '']
-                  : [],
-        )[0] ??
-        c.assigns.flatMap((a) => a.match(/^GIT_DIR=(.+)$/)?.[1] ?? [])[0];
-    const dir =
-        named === undefined
-            ? gitDir(c, ctx)
-            : resolve(named, gitDir(c, ctx), ctx).replace(/\/\.git\/?$/, '');
-    const frame = `${ctx.home}/frame`;
-    if (
-        sub === 'push' &&
-        ctx.home &&
-        (dir === frame || dir.startsWith(`${frame}/`)) &&
-        !dir.startsWith(`${frame}/.claude/worktrees/`) &&
-        !hasFlag(subArgs, ['--dry-run'], 'n')
-    )
-        return {
-            door: "x lane push — it pushes HEAD's sha and reads the remote back",
-            rule: 'bare-push',
-            targets: ['push'],
-            why: 'a plain git push from frame skips the read-back and the push gates x lane push runs',
-        };
-    return undefined;
+    if (!hooks) return undefined;
+    return {
+        door: 'fix what the hook refused, then run it without the override',
+        rule: 'hooks-bypass',
+        targets: [hooks.split('=')[0] ?? hooks],
+        why: '-c core.hooksPath swaps out the hooks a commit or push runs',
+    };
 }

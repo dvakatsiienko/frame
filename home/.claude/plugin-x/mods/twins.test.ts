@@ -31,14 +31,10 @@ for (const mod of readdirSync(HERE).filter((n) => n.startsWith('x-mod-')))
 describe('twin blocks across mods', () => {
     it('finds the twins', () => {
         expect([...twins.keys()].sort()).toEqual([
-            'dirname',
             'herdr-start-ask',
             'holder-gone',
             'operator-override-store',
-            'press-dir',
             'proc-of',
-            'real-path',
-            'sign-ask',
         ]);
     });
     for (const [name, copies] of twins)

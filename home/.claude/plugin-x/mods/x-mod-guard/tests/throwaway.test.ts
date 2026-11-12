@@ -91,13 +91,8 @@ for (const [shape, command] of LIFTED)
         expect(w.ran).toEqual([command]);
     });
 
-// the same four, one step outside: each is refused
-const FOUR = [
-    ['-c user.name', 'git -c user.name=t commit -m x'],
-    ['git add -A', 'git add -A'],
-    ['a pathless commit', 'git commit -m x'],
-    ['a gate piped to tail', 'pnpm test | tail -3'],
-] as const;
+// the identity, one step outside: refused
+const FOUR = [['-c user.name', 'git -c user.name=t commit -m x']] as const;
 
 for (const [shape, command] of FOUR) {
     test(`${shape} in frame's checkout is refused`, async ($, on) => {

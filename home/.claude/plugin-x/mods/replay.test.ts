@@ -71,22 +71,20 @@ test('counts a hint once per command that fires it, and leaves quiet commands ou
 });
 
 // slice 2a: the 2-day replay counted 0 fires while the store fences refused real lines, since it never ran them
-test('counts the store and pane fences beside the hints', () => {
+test('counts the floor beside the hints', () => {
     const fired = tally(
         [
-            'echo x > ~/.claude/shelf/orbit-ticks/t1.jsonl',
-            'cp f ~/.claude/plugins/store/x.json',
-            "hc send clio 'sign FRM-1'",
-            'hc keys t2 s i g n',
+            'rm -rf x',
+            'git push --force origin main',
+            'gh pr merge 5 --squash',
             'ls ~/.claude/shelf',
         ].map((command) => ({ command, cwd: '/a', isForeground: true })),
         '/home',
     );
     expect([...fired.keys()].sort()).toEqual([
-        'pane-keys (any terminal)',
-        'pane-proof',
-        'store-write',
-        'ticks-write',
+        'git-rewrite',
+        'raw-merge',
+        'rm',
     ]);
 });
 

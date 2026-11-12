@@ -686,18 +686,9 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the session gets a short model-only note: the open asks, the tool to answer with, the plan's age
   - decision: the contract is mechanical — the reminder and the tool's own text, no new skill (dima, 2026-10-10: «we have too many of them … yagni»)
 
-- ⬜ a mis-shaped sign or merge ask fails at its press
-  - given orbit's `add` or `follow`, a pick holding a sign verb anywhere (`sign`, `signs`, `signed`, `signing`, `re-sign`; a `sign off` too, whatever opens the pick), not behind a `not`, `not yet`, `never`, `no`, `don't`, `doesn't`, `no need to`, `doesn't need a` or `without`, `sign in` and `signed-in` apart, and a text without `✍️ sign <id>:`, then it is refused naming the shape; x-mod-guard's copy of that shape is a twin, and `mods/sign-ask.test.ts` runs both over one table
-  - and a pick holding a merge verb anywhere (`merge`, `merges`, `merged`, `merging`), not behind those negations, `merge:`, `merge-auto` and a merge of text «into» another apart, on a text that is no sign ask and has neither the pr's url nor `⚠️ merge <repo>#<n>`, the two shapes `--dima-ok` reads
-  - and a negation a few words off or trailing passes: «no need for a re-sign», «re-sign not needed» (sixth sense round 9)
-  - and a merge ask (the pr's url, or «⚠️ merge <repo>#<n>») names the head it merges, «… at <sha>», and lands only when `~/.claude/shelf/pr-verified.json` holds a clean for that pr starting with that sha; no head, no clean, or a clean on another head is refused naming what is missing; no network call, `x lane merge-auto` still reads the pr's real head (FRM-519 exit 2, clio's pick a, 00:54; proof: tests/orbit.test.ts::add passes a merge ask: …; add refuses a merge ask …)
-  - decision: a verb anywhere, never a list of openers: «please sign», «lgtm, merge» and «go ahead and sign» slipped every opener list (FRM-519 exit 3, sixth sense round 8 on 2093f838); the cost is a pick naming a merge as an order, «one merged before the next opens», which now asks for the shape too
-  - proof: tests/orbit.test.ts::add refuses the pick …; ::add passes …; ::follow refuses a sign pick on a text without the shape; ::follow refuses a text losing the shape under a kept sign pick; ::follow passes the sign shape; ::follow refuses a merge pick on a text naming no pr; sign-ask.test.ts::both copies read …; ::orbit and the guard read …
-
-## the shelf — what herdr draws (FRM-568)
-
-herdr reads no private store (frame `AGENTS.md` § the boundary), so every thread writes what herdr's deck and band draw to the shelf, in `~/.claude/shelf/herdr-state/` (dima's name, 21:36); the cc band, board and deck read as before (FRM-568:W2).
-
+- ✅ a pick that signs or merges is taken as written (FRM-581)
+  - given orbit's `add` or `follow` with a sign or merge verb in its pick, on any text, then it lands: the guard reads no ask's shape any more, so his tick needs none
+  - proof: tests/orbit.test.ts::add takes …; ::follow takes a sign pick on a text without the shape; ::add passes …
 - ✅ every thread keeps its own state file on the shelf
   - makes: `~/.claude/shelf/herdr-state/<sid>.json`: `v`, `sid`, `pid` (the `claude` process the registry file is named for), `at`, `name`, `label`, the open asks as `asks:<sid>` holds them (mark, lock, gated), the plan lines, the wait, taken (the herdr-read watermark), `succ` (the id a /clear continued from), ctx, model, hot, wind, assumed, `rounds` (null for now)
   - given a running thread with an open ask and a plan, then its file holds them, written whole through a temp file and a rename, so a reader beside a tight write loop never meets half a file; it is rewritten when its asks change and every third poll, and an unchanged state costs no write
@@ -1044,7 +1035,7 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - proof: tests/lane.test.ts::a session the registry does not name 🦉 clio is refused; ::a new clio after a handoff steps and ends a lane it did not create; ::a second open lane of one topic is refused, naming the open one and its fix; …
 - ✅ a glide card linked to its lane plan moves on its own (FRM-429, FRM-410)
   - given 🦉 clio calls `glide` act `create` with `plan: <path>` to a lane-plan file, then the card's steps are what `x lane plan-steps <path>` reads from it: the file's numbered lines at column 0, `- [ ] NN · text` or `- [x] NN · text` (text cut to 60 chars, a ticket id in it drawn as its link); a nested, unnumbered or other checklist line is ignored
-  - decision: this refusal ships refusing, the one exception to warn-only besides the sign shape: its exit says refused, and a warning would still draw a card with no id (W41, clio's read 2026-11-06)
+  - decision: this refusal ships refusing, the one exception to warn-only: its exit says refused, and a warning would still draw a card with no id (W41, clio's read 2026-11-06)
   - and a plan with a step line holding no `FRM-N` or `BYT-N` is refused at `create` or `edit`, naming the line; a line added later draws with no id, since a poll refuses nothing (FRM-504); proof: tests/lane.test.ts::a plan with a step line holding no ticket id is refused, naming that line; ::a plan whose every line carries its ticket draws the ids
   - given a chunk's build slices ticked and its closing slice `- [ ] NN · FRM-N reviewed and closed` open, then the card reads that chunk, never the next one, while its reviews run; `x lane landed --apply` ticks it (FRM-504); proof: tests/lane.test.ts::a chunk with its build ticked stays on the card until its closing slice ticks
   - when codie ticks a step in that file, then on the next board poll the card's step moves to the first unticked line with no `glide` call; all ticked shows the lane done

@@ -1,7 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { answerPrompts, dimaSays } from './said.ts';
+import { answerPrompts } from './said.ts';
 import { liveStore } from './store.ts';
 
 const SID = 'a1a1a1a1-0000';
@@ -82,20 +82,6 @@ const FAMILIES = [
         'without the flag',
         'user.email',
     ],
-    [
-        'mv in the vault',
-        'mv "/v/iCloud~md~obsidian/a.md" "/v/iCloud~md~obsidian/b.md"',
-        'obsidian rename',
-        '/v/iCloud~md~obsidian/a.md /v/iCloud~md~obsidian/b.md',
-    ],
-    [
-        'HOME override',
-        'HOME=/tmp/h git status',
-        'without the HOME override',
-        'HOME',
-    ],
-    ['npm -g', 'npm i -g vercel', 'pnpm add -g', 'npm'],
-    ['pip install', 'pip3 install requests', 'uv pip install', 'pip'],
 ] as const;
 
 for (const [family, command, door] of FAMILIES)
@@ -106,59 +92,18 @@ for (const [family, command, door] of FAMILIES)
         expect(w.ran).toEqual([]);
     });
 
-// dima's o101: a refusal his tick can open says so, since a quoted command ticked runs once
-for (const [family, command] of FAMILIES)
-    test(`${family}'s refusal names the tick door`, async ($, on) => {
+// a refusal his tick can open says so, since a quoted command ticked runs once; plain rm never opens
+for (const [family, command, door] of FAMILIES)
+    test(`${family}'s refusal ${door === 'trash' ? 'names no tick door' : 'names the tick door'}`, async ($, on) => {
         mock.store(on);
         world(on);
-        expect((await bash($, command)).deny).toContain(
-            'or his tick on an orbit ask quoting this whole command',
-        );
+        const said = (await bash($, command)).deny ?? '';
+        expect(
+            said.includes(
+                'his tick on an orbit ask quoting this whole command',
+            ),
+        ).toBe(door !== 'trash');
     });
-
-test('a dima-ok marker his prompt never named names the tick door', async ($, on) => {
-    mock.store(on);
-    world(on);
-    expect((await bash($, 'rm -rf build # dima-ok: build')).deny).toContain(
-        'or his tick on an orbit ask quoting this whole command',
-    );
-});
-
-for (const [family, command, , target] of FAMILIES)
-    test(`${family} runs with a dima-ok naming its target`, async ($, on) => {
-        mock.store(on);
-        const w = world(on);
-        await dimaSays($, `yes, go ahead. dima-ok: ${target}`);
-        const r = await bash($, `${command} # dima-ok: ${target}`);
-        expect(r.deny).toBeUndefined();
-        expect(w.logs).toContainEqual(`x-mod-guard: ran on dima-ok: ${target}`);
-    });
-
-test('a dima-ok command runs when its store write fails', async ($, on) => {
-    const w = world(on);
-    on('store.set', () => ({ deny: 'store unwritable' }));
-    on('store.keys', () => ({ value: [] }));
-    await dimaSays($, 'trash is fine, rm build');
-    await bash($, 'rm -rf build # dima-ok: build');
-    expect(w.ran).toEqual(['rm -rf build # dima-ok: build']);
-});
-
-test('a dima-ok naming another target is refused', async ($, on) => {
-    mock.store(on);
-    const w = world(on);
-    expect((await bash($, 'rm -rf build # dima-ok: dist')).deny).toContain(
-        'trash',
-    );
-    expect(w.ran).toEqual([]);
-});
-
-test('a dima-ok naming one of two targets is refused', async ($, on) => {
-    mock.store(on);
-    world(on);
-    expect(
-        (await bash($, 'rm -rf ~/keep tmp.txt # dima-ok: tmp.txt')).deny,
-    ).toContain('trash');
-});
 
 // shapes the first review found slipping past the reader
 const SLIPS = [
@@ -199,14 +144,8 @@ const SLIPS = [
         'git worktree prune -n --no-dry-run',
         'ask clio',
     ],
-    ['npm --location=global', 'npm install --location=global x', 'pnpm add -g'],
     ['git config user.name', 'git config user.name bot', 'without the flag'],
     ['a command after arithmetic', 'echo $((1<<2))\nrm x', 'trash'],
-    [
-        'python -m pip install',
-        'python3 -m pip install requests',
-        'uv pip install',
-    ],
 ] as const;
 
 for (const [shape, command, door] of SLIPS)
@@ -305,7 +244,7 @@ test('a guard that fails refuses the command', async ($, on) => {
         ran.push('command' in e ? String(e.command) : '');
         return { result: {}, text: 'ran' };
     });
-    const r = await bash($, 'rm -rf build # dima-ok: build');
+    const r = await bash($, 'git status');
     expect(r.deny).toContain('fail closed');
     expect(ran).toEqual([]);
 });

@@ -37,9 +37,7 @@ const STASH_TICKS = { key: 'ticks', plugin: 'x-mod-stash' } as const;
 const holdKey = (sid: string, path: string) => `${HOLD}${sid}:${path}`;
 const passKey = (sid: string, path: string) => `${PASS}${sid}:${path}`;
 const short = (sid: string) => sid.slice(0, 8);
-// twin dirname — a copy lives in x-mod-guard; the twins lint keeps them equal
 const dirname = (file: string) => file.slice(0, file.lastIndexOf('/')) || '/';
-// twin end
 
 // a session id carries no ':', so the first one after the prefix ends it
 function parseHoldKey(key: string) {
@@ -50,7 +48,6 @@ function parseHoldKey(key: string) {
         : { path: key.slice(cut + 1), sid: key.slice(HOLD.length, cut) };
 }
 
-// twin real-path — a copy lives in x-mod-guard; the twins lint keeps them equal
 // the key is lowercased on every platform: APFS is case-insensitive and the mod cannot ask which os it runs on
 async function realPath($: EngineInterface, file: string) {
     const resolve = (p: string) =>
@@ -70,7 +67,6 @@ async function realPath($: EngineInterface, file: string) {
     const full = `${real ?? dir}${file.slice(dir.length)}`;
     return { file: full, key: full.toLowerCase() };
 }
-// twin end
 
 // twin proc-of — a copy lives in x-mod-stash; the twins lint keeps them equal
 async function procOf($: EngineInterface): Promise<Proc | undefined> {

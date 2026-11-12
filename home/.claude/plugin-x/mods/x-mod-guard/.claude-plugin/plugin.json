@@ -1,6 +1,6 @@
 {
     "name": "x-mod-guard",
     "version": "0.5.0",
-    "description": "reads every Bash call, fork spawn and Write before it runs: a Write over a tracked file the session never read, a floor command, a system, overwrite, prune or remote-delete command, a known hazard shape, a coder spawn whose brief has no x brief check stamp, or a fork with no why-fork line is refused with its safe door, never a dialog; each refusal and escape is kept in its own store as an event and a per-day count, which x-mod-stash's band reads as its 🛡️ counter row",
+    "description": "reads every Bash call before it runs and refuses only the destructive floor — rm, a kill by pattern, a git discard or rewrite, a skipped gate, a live seat's close, a raw merge, a stash over a held file, a machine change, a remote delete — each with its safe door and his one tick as the way through; operator-override all turns the floor to warnings, plain rm and the brake aside; every other call runs, with its rewrite or hint; each refusal and pass is kept in its own store as an event and a per-day count",
     "types": "./types/guard.d.ts"
 }

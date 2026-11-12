@@ -1,10 +1,9 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
-import { answerPrompts, dimaSays } from './said.ts';
+import { answerPrompts } from './said.ts';
 
-// FRM-472 07a: a plain push from frame's main checkout and a hooksPath override are flagged naming their door, warn-only
-// until their sixth sense says clean; a rule that refuses today still refuses beside them
+// a hooksPath override swaps out the hooks a commit or push runs, so it is refused naming its door; a plain push runs
 function world(on: On, cwd = '/home/frame') {
     mock.clock(on, { now: 1_000_000 });
     mock.store(on);
@@ -45,19 +44,8 @@ function world(on: On, cwd = '/home/frame') {
 }
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, run_in_background: true, tool: 'Bash' });
-const warned = (r: unknown, rule: string) =>
-    JSON.stringify(r).includes(`would refuse this (rule ${rule},`);
 
 const FLAGGED = [
-    ['bare-push', 'a plain git push', 'git push'],
-    ['bare-push', 'a push of main to origin', 'git push origin main'],
-    ['bare-push', 'a push after a cd into frame', 'cd ~/frame && git push'],
-    [
-        'bare-push',
-        'a push pointed at frame by -C',
-        'git -C ~/frame push -u origin x',
-    ],
-    ['bare-push', 'a push inside $(( ))', 'echo $(( $(git push) ))'],
     [
         'hooks-bypass',
         'a commit with hooksPath emptied',
@@ -102,21 +90,14 @@ const FLAGGED = [
     ],
 ] as const;
 for (const [rule, shape, command] of FLAGGED)
-    test(`${shape} runs flagged with its rule and door`, async ($, on) => {
+    test(`${shape} is refused with its rule and door`, async ($, on) => {
         const { ran } = world(on);
         const r = await bash($, command);
         expect([
-            r.deny,
-            warned(r, rule),
-            JSON.stringify(r).includes(
-                rule === 'bare-push' ? 'x lane push' : 'without the override',
-            ),
-            // a warn that says the call did not run, while it ran, is a lie (helga's pocket append, 17:27)
-            /nothing in this command ran|stopped this one command/.test(
-                JSON.stringify(r),
-            ),
+            String(r.deny).includes('without the override'),
+            rule,
             ran,
-        ]).toEqual([undefined, true, true, false, [command]]);
+        ]).toEqual([true, 'hooks-bypass', []]);
     });
 
 const PLAIN = [
@@ -153,80 +134,3 @@ for (const [shape, cwd, command] of PLAIN)
             ran,
         ]).toEqual([undefined, false, [command]]);
     });
-
-// sixth sense round 1: a push pointed at frame by its git dir is the same push, from any cwd
-for (const command of [
-    'git --git-dir=/home/frame/.git push',
-    'git --git-dir /home/frame/.git push',
-    'GIT_DIR=/home/frame/.git git push',
-])
-    test(`a push pointed at frame's git dir is flagged from another repo: ${command}`, async ($, on) => {
-        world(on, '/home/projects/bytes');
-        expect(warned(await bash($, command), 'bare-push')).toBe(true);
-    });
-
-// exit 7: sudo drops CLAUDECODE, so what the guard refuses bare it refuses under sudo; a warn-only rule never lets it through
-const STILL_REFUSED = [
-    ['sudo ahead of a push', 'sudo git push'],
-    ['sudo ahead of an rm', 'sudo rm -rf x'],
-    ['sudo ahead of a bash -c', "sudo bash -c 'rm -rf x'"],
-    [
-        'a hooksPath commit that sweeps',
-        'git -c core.hooksPath=/dev/null commit -m x',
-    ],
-] as const;
-for (const [shape, command] of STILL_REFUSED)
-    test(`${shape} stays refused beside a warn-only flag`, async ($, on) => {
-        const { ran } = world(on);
-        expect([(await bash($, command)).deny !== undefined, ran]).toEqual([
-            true,
-            [],
-        ]);
-    });
-
-// exit 9: raw linear has `issue update`, no `edit` alias; the door names x linear, never a verb raw linear lacks — a
-// regression guard only: the `edit` branch was dead, so base passes it too
-test('a raw linear body write is pointed at x linear body, never at an edit alias', async ($, on) => {
-    world(on);
-    const text = String(
-        (await bash($, 'linear issue update FRM-1 --description x')).deny,
-    );
-    expect([text.includes('x linear body'), /\bedit\b/.test(text)]).toEqual([
-        true,
-        false,
-    ]);
-});
-
-// R3 row 18: a dima-ok marker his prompt proves still lets its refusal through beside a warn-only flag it does not name
-test('a proven dima-ok runs beside a warn-only flag, the flag still said', async ($, on) => {
-    const { ran } = world(on);
-    await dimaSays($, 'go ahead and rm -rf build');
-    const command = 'git push; rm -rf build # dima-ok: build';
-    const r = await bash($, command);
-    expect([r.deny, warned(r, 'bare-push'), ran]).toEqual([
-        undefined,
-        true,
-        [command],
-    ]);
-});
-
-// FRM-472 review: a door flag is said on a command whose own refusal a proven marker lets through
-test('a hooksPath commit his marker lets through still says hooks-bypass', async ($, on) => {
-    const { ran } = world(on);
-    await dimaSays($, 'commit everything staged');
-    const command =
-        'git -c core.hooksPath=/dev/null commit -m x # dima-ok: commit';
-    const r = await bash($, command);
-    expect([r.deny, warned(r, 'hooks-bypass'), ran]).toEqual([
-        undefined,
-        true,
-        [command],
-    ]);
-});
-
-test('an unproven dima-ok beside a warn-only flag stays refused', async ($, on) => {
-    const { ran } = world(on);
-    await dimaSays($, 'push it');
-    const r = await bash($, 'git push; rm -rf build # dima-ok: build');
-    expect([r.deny !== undefined, ran]).toEqual([true, []]);
-});

@@ -4,19 +4,12 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
-import { cleanStampWrite } from './x-mod-guard/hooks/rules/clean-stamp.ts';
 import { hints } from './x-mod-guard/hooks/rules/hint.ts';
 import {
-    holdRecordWrite,
     rawMergeRefused,
     rawMerges,
-} from './x-mod-guard/hooks/rules/merge-hold.ts';
-import {
-    keysTargets,
-    paneProof,
-    storeWrite,
-    ticksWrite,
-} from './x-mod-guard/hooks/rules.ts';
+} from './x-mod-guard/hooks/rules/raw-merge.ts';
+import { refusals } from './x-mod-guard/hooks/rules.ts';
 
 export function bashCalls(jsonl: string) {
     const calls: Call[] = [];
@@ -46,26 +39,14 @@ export function bashCalls(jsonl: string) {
 export function tally(calls: Call[], home: string) {
     const fired = new Map<string, string[]>();
     for (const { command, cwd, isForeground } of calls) {
-        const stamp = cleanStampWrite(command, cwd)?.rule;
-        const handEdit = holdRecordWrite(command, cwd)?.rule;
         const rawMerge = rawMergeRefused(rawMerges(command, cwd))?.rule;
-        // the fences the hook runs with no disk or herdr read: the spelled half of each, so a fire here is a fire live
-        const fences = [
-            ticksWrite(command, cwd)?.rule,
-            storeWrite(command, cwd)?.rule,
-            paneProof(command, cwd)?.rule,
-            // pane-keys asks herdr which terminal runs an agent; every `hc keys` call is counted as one it could flag
-            keysTargets(command, cwd).length
-                ? 'pane-keys (any terminal)'
-                : undefined,
-        ].filter((r) => r !== undefined);
-        for (const hint of [
+        // the floor as the hook reads it with no disk or herdr fact: a fire here is a fire live
+        const floor = refusals(command, cwd, { home }).map((r) => r.rule);
+        for (const hint of new Set([
             ...hints(command, cwd, { home, isForeground }),
-            ...(stamp ? [stamp] : []),
-            ...(handEdit ? [handEdit] : []),
             ...(rawMerge ? [rawMerge] : []),
-            ...fences,
-        ]) {
+            ...floor,
+        ])) {
             const seen = fired.get(hint) ?? [];
             seen.push(command.split('\n')[0]?.slice(0, 120) ?? '');
             fired.set(hint, seen);

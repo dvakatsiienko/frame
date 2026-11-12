@@ -1,6 +1,6 @@
 # x-mod-guard
 
-reads every Bash call and every fork spawn before it runs, and stops the one call that matches the floor or a known hazard shape, naming the safe way instead.
+reads every Bash call before it runs, and stops the one call that matches the floor, naming the safe way instead; everything else runs, a rewrite or a hint beside it.
 
 ## Language
 
@@ -21,64 +21,28 @@ The safe way to do what the refused command meant — `trash`, `git stash push -
 _Avoid_: fix, alternative, suggestion
 
 **Floor command**:
-A command the fleet floor (invariant 8 and the tooling rules) never runs unasked: `rm`, a kill by pattern, a git discard or rewrite, a gate bypass, a `mv` in the vault, a `HOME` override, `npm -g`, `pip install`.
+A command the fleet floor (invariant 8) never runs unasked, and the only kind x-mod-guard refuses: `rm`, a kill by pattern, a git discard or rewrite, a gate or hooks bypass, a herdr close of a live seat, a raw merge, a whole-tree stash over a held file, a machine change, a remote delete.
 _Avoid_: dangerous command, destructive op
-
-**Opaque head**:
-A command whose name the line never types as it runs: a `$` the walker cannot fill (`${X:-rm}`, `read R; $R`), a brace list, a value a variable takes several of, an `$(echo …)`, or a command inside a script printed into a shell, sourced or held in a git alias.
-_Avoid_: dynamic command, unknown command
-
-**Hazard lint**:
-A command shape that runs but goes wrong quietly, taken from `rules/fleet-hazards.md`: a `$` the shell eats, a gate piped into `head`, a trailing `&`.
-_Avoid_: warning, smell
 
 **Target**:
 What a refused command acts on — its paths, its pattern, its branch; the rule's own word when it names none (`HEAD`, `&`, `-s`).
 _Avoid_: argument, operand
 
-**Escape**:
-A `# dima-ok: <targets>` comment that lets one refused command run, written only after dima's word; it must name every target the refusal named, and it is logged.
-_Avoid_: override, bypass, allow
-
-**Why-fork line**:
-A `why-fork: <what parent context it needs>` line in a fork's prompt; a fork without one is refused.
-_Avoid_: fork reason, justification
-
 **Guard event**:
-One refusal or escape kept in x-mod-guard's store, the newest 50.
+One refusal, tick pass or override pass kept in x-mod-guard's store, the newest 50.
 _Avoid_: log entry, alert
 
 **Job scratch**:
-The session's own `$CLAUDE_JOB_DIR/tmp`: a throwaway clone's local git and any write over its own files run unrefused, a push or a gate bypass from it does not.
+The session's own `$CLAUDE_JOB_DIR/tmp`: a throwaway clone's local git runs unrefused, a push or a gate bypass from it does not.
 _Avoid_: sandbox, temp repo
 
 **Day count**:
 One `day:<yyyy-mm-dd>:<session>` key in x-mod-guard's store holding that session's refusals and escapes for the local day; a halt sums a day's keys.
 _Avoid_: tally, stats
 
-**Silent overwrite**:
-A command that empties or replaces a file already on disk with no prompt: a `>` redirect, `cp /dev/null`, an `mv` or a `cp -f` onto it.
-_Avoid_: clobber, truncation
-
-**Top dir**:
-`/`, `~`, a dir above it, a dir right under it, or the obsidian vault root; a `trash` of one takes everything under it at once.
-_Avoid_: root folder, home folder
-
 **Remote delete**:
 A delete on a service past any trash: `gh repo|release delete`, `vercel rm`, `op item delete`, `security delete-*`, a linear issue delete.
 _Avoid_: cloud delete
-
-**Brief stamp**:
-The file `x brief check` writes on a clean pass, keyed by the sha256 of the brief's bytes; a codie summon runs only when its brief file has one.
-_Avoid_: brief approval, check mark
-
-**Worth section**:
-A ticket body's `## ⚖️ worth it` heading with at least one non-blank line under it before the next heading: what the work removes against today's door and a `🔌 fleet wired: <caller>` line naming who calls the new surface, or `none — fix` / `none — chore` for plain work; a cli or mods ticket is planned only with one.
-_Avoid_: value line, worth line
-
-**Lane scope**:
-The `lane` field of a thread's record in x's thread store, under the session id `x brief summon` minted into its argv; the thread's name is never parsed. two sixth senses with one lane scope are twins, and only one may be live; a summon with no id, or no record of a lane, is never judged.
-_Avoid_: lane id, lane name
 
 **Clio thread**:
 A herdr terminal labelled `seat=clio` (main) or `seat=clio-wing-<n>` (a wing), read through `hc get`; the label its spawner set, never a cc name the session gives itself. a clio thread ends any thread that is not one, and no thread ends a clio thread without his tick.
@@ -87,6 +51,10 @@ _Avoid_: coordinator terminal, clio pane
 **Lead label**:
 A terminal's `lead=<terminal id>` label, set at its spawn: the thread in that herdr terminal (its `HC_TERMINAL_ID`) may end it.
 
-**Operator-override**: x's word, defined in `x/GLOSSARY.md`; only dima's whole typed prompt flips it here, and the `raw-merge` rule asks it.
+**Operator-override**: x's word, defined in `x/GLOSSARY.md`; here its `all` scope, or his band press, is the off switch: the floor warns and runs, plain rm and the brake aside, until its end.
 
-**Hold**, **Holder**, **Release**: x-mod-holds' words, defined in its `GLOSSARY.md`; guard refuses a Bash write to a held file.
+**Tick**:
+Dima's 🛎️ on an orbit ask quoting a whole floor command: it runs that command once within 2 h, plain rm never.
+_Avoid_: approval, yes
+
+**Hold**, **Holder**, **Release**: x-mod-holds' words, defined in its `GLOSSARY.md`; guard refuses a whole-tree stash over a held file.

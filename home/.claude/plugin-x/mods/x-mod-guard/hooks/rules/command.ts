@@ -8,16 +8,10 @@ export type Refusal = {
     door: string;
     targets: string[];
 };
-// what the rules read off the machine: the job's own dir, home, and the added paths found missing
-// kinds: what each written-over or trashed path found on disk is
+// what the rules read off the machine: the job's own dir, home, and the facts the hook looked up before the call
 export type Context = {
     jobDir?: string;
     home?: string;
-    missing?: Set<string>;
-    kinds?: Map<string, 'file' | 'dir' | 'other'>;
-    briefs?: Map<string, Brief>;
-    // the files earlier calls of the running turn wrote, by resolved path: a run of one reads its text
-    written?: ReadonlyMap<string, string>;
     // the session is clio's: it cleans its fleet's scratch trees and branches on its own
     isClio?: boolean;
     // the call holds this session until it ends: no run_in_background
@@ -26,48 +20,13 @@ export type Context = {
     cleanTrees?: Set<string>;
     // the job-tmp dirs where a symlink or a repo whose git dir sits outside the job tmp (a worktree of frame) reaches out
     unsafeTmp?: Set<string>;
-    // the dirs whose working tree changed a package.json or pnpm-workspace.yaml since HEAD (FRM-393)
-    manifestDirs?: Set<string>;
-    // the backlog tasks a `--notes` edit names whose file already holds notes, keyed by notes.ts's notedKey
-    notedTasks?: Set<string>;
-    // the linear projects that hold milestones, each by id, name and slug, lowercased (milestone.ts)
-    milestoneProjects?: Set<string>;
-    // the projects a linear call moves tickets into while linear could not be read: the milestone check skipped them
-    milestoneUnread?: string[];
     // the frame and clio scripts a `--help` run names whose source parses no help flag, so `--help` runs them
     helpless?: Set<string>;
     // the clis whose bare `--help` already ran this session
     helped?: Set<string>;
-    // x's thread records (`x thread list`), read only when the command summons under a session id (FRM-479, FRM-570)
-    threads?: Thread[];
-    // the body files a ticket create hands linear, as read before the call; undefined when the hook cannot read one (FRM-486)
-    worthFiles?: Map<string, string | undefined>;
-    // a create's milestone id, resolved to its name through linear
-    milestoneNames?: Map<string, string>;
     // the herdr closes (herdr-close.ts's herdrCloseKey) whose terminals herdr named, none of them a live seat
     herdrSafe?: Set<string>;
-    // this seat's own terminal is labelled a clio seat (herdr-close.ts's isClioSeat), read only when the command spawns one
-    isClioSeat?: boolean;
-    // a Herdr app runs on this mac (herdr-start.ts), read only when the command starts one
-    isHerdrOpen?: boolean;
 };
-// a spawn's brief file as found on disk: whether it names codie's skill, and whether x brief check passed its bytes
-export type Brief = { isCodie: boolean; isStamped: boolean };
-// one thread as x thread list answers it: a pid only while its session runs
-export type Thread = {
-    display?: string;
-    lane?: string;
-    name?: string;
-    pid?: number;
-    role?: string;
-    sessionId: string;
-};
-// a file a command writes: its resolved path, the text, and whether the text is appended
-export type Written = [path: string, text: string, isAppend?: boolean];
-export type Verdict =
-    | { kind: 'run' }
-    | { kind: 'refused'; refusal: Refusal }
-    | { kind: 'escaped'; refusals: Refusal[] };
 // wrappers: the peeled heads (`sudo`, `env`); writes: the targets of its `>` redirects; reads: of its `<`
 // envArgs: the words env and exec took for themselves (`-i`, `-u NAME`, `-c`); envSplit: env -S's string; bodies: its heredocs
 // head: the word the name came from
@@ -88,9 +47,6 @@ type Peeled = {
 };
 // feeders: the commands whose output reaches this one, through `$( … )` or a pipe
 export type Command = Peeled & { sep: Sep; dir: string; feeders: Peeled[] };
-export const VAULT = 'iCloud~md~obsidian';
-// the linear teams whose ticket ids the rules read: `x schema linear` lists the workspace's, and a new team joins here, in the `sign-ask` twin and in x-mod-stash's `ticketOf`
-export const TICKET_KEY = ['FRM', 'BYT'].join('|');
 // a line that reads its pipe's real exit: a pipe into jq hides nothing there
 export const PIPE_READ = /\bpipefail\b|\bpipestatus\b/i;
 // each wrapper, and its options that take the next word as their value
@@ -144,7 +100,7 @@ const WRAPPERS = new Map<string, string[]>([
     ],
 ]);
 // the wrapper `x as <member>` leaves on the command it runs, the member after it
-export const X_AS = 'x as ';
+const X_AS = 'x as ';
 export const asMember = (c: { wrappers: string[] }) =>
     c.wrappers.find((w) => w.startsWith(X_AS))?.slice(X_AS.length);
 // a runner whose verb runs the next word as a command: `pnpm exec rm`, `npm exec`, `pnpm dlx`; the verb may sit past the
@@ -213,14 +169,6 @@ export const isFlag = (w: string) => w.startsWith('-') && w !== '-';
 // dima's o101: every refusal his tick can open says so
 export const TICK_DOOR =
     'his tick on an orbit ask quoting this whole command in one backtick span runs it once (your coordinator brings the ask to him)';
-// an awk whose program can run a command (`system`, a pipe, `getline` from one) or that reads a program file the guard never sees
-export const isAwkRunner = (c: { name: string; args: { text: string }[] }) =>
-    /^[gmn]?awk$/.test(basename(c.name)) &&
-    c.args.some(
-        (w) =>
-            /\||\bsystem\b|\bgetline\b/.test(w.text) ||
-            /^(-\w*f|--(file|include))/.test(w.text),
-    );
 // `-rf` holds f; a long flag is matched whole
 export function hasFlag(args: Word[], long: string[], short = '') {
     return args.some(
@@ -788,7 +736,7 @@ function printed(f: Peeled): string[] {
 }
 // what printf prints: its format with each conversion filled from the operands in turn, the format reused while operands
 // last, and `\n`, `\t`, `\0` read as bash does (a NUL, xargs -0's split, as a line end)
-export function printfText([format = '', ...rest]: string[]) {
+function printfText([format = '', ...rest]: string[]) {
     const conversion = /%[-+ #0-9.]*([sbdiqcxX%])/g;
     const isFilling = [...format.matchAll(conversion)].some(
         (m) => m[1] !== '%',
@@ -979,35 +927,6 @@ export function commandsDeep(
             : []),
     ]);
 }
-// the files a command writes with the text it writes them: a heredoc into cat or tee, an echo or a printf format, each to its
-// `>`, `>>` and tee targets, resolved where the command runs; an append is marked so it adds to the text written before
-export function writtenScripts(c: Command, ctx: Context): Written[] {
-    const text =
-        c.name === 'echo' || c.name === 'printf'
-            ? printed(c)[0]
-            : (c.name === 'cat' || c.name === 'tee') && c.bodies.length
-              ? c.bodies.join('\n')
-              : undefined;
-    if (text === undefined) return [];
-    const tees = c.name === 'tee' ? operands(c.args) : [];
-    const isTeeAppend = hasFlag(c.args, ['--append'], 'a');
-    return [
-        ...c.writes.map((p) => [p, false] as const),
-        ...c.appends.map((p) => [p, true] as const),
-        ...tees.map((p) => [p, isTeeAppend] as const),
-    ].map(([p, isAppend]) => [resolve(p, c.dir, ctx), text, isAppend]);
-}
-// stands for text the turn wrote that the guard could not keep: past its size cap, or edited in a way the kept text misses
-export const UNREAD = '\u0000x-mod-guard: unread';
-// the writes laid over the files written so far, in order: `>` replaces a file's text, `>>` adds to it; newest last
-export function laidOver(files: Map<string, string>, writes: Written[]) {
-    for (const [path, text, isAppend] of writes) {
-        const before = isAppend ? files.get(path) : undefined;
-        files.delete(path);
-        files.set(path, before === undefined ? text : `${before}\n${text}`);
-    }
-    return files;
-}
 // the alias a `git config [--global] [set] alias.<name> <body>` persists, its name lowercased as git reads it
 export function persistedAlias(c: Command): [string, string] | undefined {
     if (c.name !== 'git') return undefined;
@@ -1026,7 +945,7 @@ export function aliasRun(body: string, args: Word[]) {
         : `git ${body}${tail}`;
 }
 // a shell's operands: past its flags and the option names `-o`/`+o`/`-O`/`+O` take
-export function shellOperands(args: Word[]) {
+function shellOperands(args: Word[]) {
     return args
         .filter((_, i) => !/^[-+][A-Za-z]*[oO]$/.test(args[i - 1]?.text ?? ''))
         .filter((w) => !/^[-+]/.test(w.text) || w.text === '-')
@@ -1034,7 +953,7 @@ export function shellOperands(args: Word[]) {
 }
 // a shell given no script, `-s` or a lone `-` reads its script on stdin, its operands only positional args; an `-s`
 // past the script is the script's own arg
-export function readsStdin(args: Word[]) {
+function readsStdin(args: Word[]) {
     const [first] = shellOperands(args);
     const at = args.findIndex(
         (w, i) =>
@@ -1046,33 +965,6 @@ export function readsStdin(args: Word[]) {
         first === '-' ||
         args.slice(0, at).some((w) => /^-[A-Za-z]*s[A-Za-z]*$/.test(w.text))
     );
-}
-// the file a command runs as a script: a shell's or `source`'s first operand, what a shell reads on stdin from a `< file`
-// or a `cat file |`, or a head typed as a path (`./x.sh`)
-export function scriptRun(c: Command, ctx: Context) {
-    const isSource = c.name === 'source' || c.name === '.';
-    const texts = c.args.map((w) => w.text);
-    const isDashC = texts.some((t) => /^-[A-Za-z]*c[A-Za-z]*$/.test(t));
-    const [feeder] = c.feeders;
-    const catted =
-        c.feeders.length === 1 && feeder?.name === 'cat'
-            ? operands(feeder.args)
-            : [];
-    const stdin =
-        c.reads.at(-1) ?? (catted.length === 1 ? catted[0] : undefined);
-    const [first] = shellOperands(c.args);
-    const isOnStdin = SHELLS.has(c.name) && readsStdin(c.args);
-    const path =
-        (SHELLS.has(c.name) || isSource) && !isDashC
-            ? isOnStdin
-                ? stdin
-                : first
-            : c.head?.text.includes('/')
-              ? c.head.text
-              : undefined;
-    return path === undefined || STDIN_PATHS.has(path)
-        ? undefined
-        : resolve(path, c.dir, ctx);
 }
 // a script the line never shows as typed: printed into a shell or `source`, a `<( … )` sourced, a git alias's body
 export function hidingScript(c: Command) {
@@ -1305,11 +1197,20 @@ export function tickedRest(command: string, quoted: string) {
     return undefined;
 }
 
-// the command `hc exec` runs, or the program an `hc run` starts that is no claude (claudeSpawn reads that one): judged as
+// the command `hc exec` runs, or the program an `hc run` starts that is no claude: judged as
 // the line it is, so `hc run -- hc kill <t>` meets herdr-close (sixth sense round 2 on a3cfd939); one word holding a space
 // reads as the line it spells, the cautious side of a program name no shell splits
 // as `hc exec --help` lists them; a missed one reads its value as the program (sixth sense round 3: `--timeout 30`)
 const HC_EXEC_VALUED = new Set(['--cwd', '--env', '--on', '--timeout']);
+// `hc run`'s own options that take the next word as their value
+const HC_RUN_VALUED = new Set([
+    '--cwd',
+    '--label',
+    '--name',
+    '--on',
+    '--parent',
+    '--timeout',
+]);
 const shellQuote = (w: string) => `'${w.replaceAll("'", `'\\''`)}'`;
 function herdrStarted(c: Command) {
     if (c.name !== 'hc') return undefined;
@@ -1330,36 +1231,4 @@ function herdrStarted(c: Command) {
     const argv = words.slice(i);
     if (!argv.length || basename(argv[0] ?? '') === 'claude') return undefined;
     return argv.length === 1 ? argv[0] : argv.map(shellQuote).join(' ');
-}
-// a claude this command starts as a thread of its own: `claude --bg …`, or the claude an `hc run … -- claude …` starts in a
-// herdr terminal, read as that call, `--cwd` its dir (FRM-574 decided 5)
-const HC_RUN_VALUED = new Set([
-    '--cwd',
-    '--label',
-    '--name',
-    '--on',
-    '--parent',
-    '--timeout',
-]);
-export function claudeSpawn(c: Command): Command | undefined {
-    if (c.name === 'claude')
-        return c.args.some((w) => w.text === '--bg') ? c : undefined;
-    if (c.name !== 'hc') return undefined;
-    const words = c.args.map((w) => w.text);
-    const verb = words.findIndex((w) => !w.startsWith('-'));
-    if (words[verb] !== 'run') return undefined;
-    let dir = c.dir;
-    for (let i = verb + 1; i < words.length; i++) {
-        const w = words[i] ?? '';
-        if (w === '--') continue;
-        if (w.startsWith('--cwd=')) dir = w.slice('--cwd='.length);
-        else if (HC_RUN_VALUED.has(w)) {
-            if (w === '--cwd') dir = words[i + 1] ?? dir;
-            i++;
-        } else if (!w.startsWith('-'))
-            return basename(w) === 'claude'
-                ? { ...c, args: c.args.slice(i + 1), dir, name: 'claude' }
-                : undefined;
-    }
-    return undefined;
 }

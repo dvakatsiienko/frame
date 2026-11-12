@@ -3,8 +3,6 @@ import {
     type Command,
     type Context,
     type Refusal,
-    VAULT,
-    commandsDeep,
     hasFlag,
     operands,
     or,
@@ -19,7 +17,6 @@ export function isOwnRepo(dir: string, ctx: Context) {
     );
 }
 const ROOT_STEP = 'hand dima the step — these are his, in System Settings';
-const PRUNE = 'leave the prune to dima — name it in your report';
 const LINEAR = 'linear closes, never deletes — cancel it (state Canceled)';
 const DELETE = new Set(['delete', 'rm', 'remove']);
 // op's global flags that take a value: `op --account a item delete` deletes
@@ -31,9 +28,6 @@ const OP_VALUED = new Set([
     '--format',
     '--session',
 ]);
-// a leading `$HOME` names home: `trash "$HOME"` is a top dir
-const homed = (o: string, ctx: Context) =>
-    ctx.home ? o.replace(/^\$\{?HOME\}?(?=\/|$)/, ctx.home) : o;
 // railway's flags that take a value (`railway <cmd> --help`, 5.71.0, 2026-11-09): `railway -e prod environment delete x`
 // deletes, and `railway -e delete logs` reads logs
 const RAILWAY_VALUED = new Set([
@@ -79,28 +73,7 @@ const RAILWAY_PARTS = new Set([
     'volume',
     'volumes',
 ]);
-// `~`, a dir above it, a dir right under it, or the obsidian vault root and above
-function isTopDir(path: string, ctx: Context) {
-    const home = ctx.home;
-    if (path === '/' || !home) return path === '/';
-    if (path === home || home.startsWith(`${path}/`)) return true;
-    if (path.slice(0, path.lastIndexOf('/')) === home) return true;
-    const parts = path.split('/');
-    const at = parts.indexOf(VAULT);
-    return at >= 0 && parts.length - at <= 3;
-}
-// what a `trash` would take, so lookUp can stat each: a regular file is never a top dir
-export function trashedPaths(command: string, cwd: string, ctx: Context = {}) {
-    return commandsDeep(command, cwd).flatMap((c) =>
-        c.name === 'trash'
-            ? operands(c.args)
-                  .map((o) => homed(o, ctx))
-                  .filter((o) => !o.includes('$'))
-                  .map((o) => resolve(o, resolve(c.dir, '/', ctx), ctx))
-            : [],
-    );
-}
-// past the floor: system state, prunes, remote deletes, a top dir or a whole defaults domain, and sudo
+// the floor's remote half: system state past undoing, and a delete on a remote, past any trash
 export function hazard(c: Command, ctx: Context): Refusal | undefined {
     const ops = operands(c.args);
     const dir = resolve(c.dir, '/', ctx);
@@ -148,21 +121,6 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
         return system('spctl', [gatekeeper.text], ROOT_STEP);
     if (c.name === 'tccutil' && ops[0] === 'reset')
         return system('tccutil reset', or(ops.slice(1), 'reset'), ROOT_STEP);
-
-    const prune = (what: string, target: string): Refusal => ({
-        door: PRUNE,
-        rule: 'prune',
-        targets: [target],
-        why: `${what} drops what dima may still want`,
-    });
-    if (c.name === 'brew' && ops[0] === 'cleanup')
-        return prune('brew cleanup', 'cleanup');
-    if (c.name === 'pnpm' && ops[0] === 'store' && ops[1] === 'prune')
-        return prune('pnpm store prune', 'prune');
-    if (c.name === 'docker' && ops[0] === 'system' && ops[1] === 'prune')
-        return prune('docker system prune', 'prune');
-    if (c.name === 'crontab' && hasFlag(c.args, [], 'r'))
-        return prune('crontab -r', '-r');
 
     const remote = (what: string, targets: string[], door = ASK): Refusal => ({
         door,
@@ -224,44 +182,5 @@ export function hazard(c: Command, ctx: Context): Refusal | undefined {
     )
         return remote('an issueDelete mutation', ['issueDelete'], LINEAR);
 
-    const top =
-        c.name === 'trash'
-            ? ops
-                  .map((o) => homed(o, ctx))
-                  .filter((o) => {
-                      if (o.includes('$')) return false;
-                      const path = resolve(o, dir, ctx);
-                      return (
-                          ctx.kinds?.get(path) !== 'file' && isTopDir(path, ctx)
-                      );
-                  })
-            : [];
-    if (top.length)
-        return {
-            door: 'trash the files inside it, by name',
-            rule: 'top-dir',
-            targets: top,
-            why: 'trash of a top dir takes everything under it at once',
-        };
-    const isGlobal = hasFlag(c.args, ['-g', '-globalDomain']);
-    if (
-        c.name === 'defaults' &&
-        ops[0] === 'delete' &&
-        ops.length - 1 < (isGlobal ? 1 : 2)
-    )
-        return {
-            door: 'defaults delete <domain> <key> — one key, never the whole domain',
-            rule: 'top-dir',
-            targets: or(ops.slice(1), isGlobal ? '-g' : 'delete'),
-            why: 'defaults delete of a domain drops every preference the app has',
-        };
-    const root = c.wrappers.find((w) => w === 'sudo' || w === 'doas');
-    if (root)
-        return {
-            door: 'run it without sudo, or hand dima the command in a copy fence',
-            rule: 'sudo',
-            targets: [root],
-            why: `${root} changes system state as root`,
-        };
     return undefined;
 }

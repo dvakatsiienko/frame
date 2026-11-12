@@ -213,86 +213,12 @@ export function joinText(asks: OrbitAsk[]) {
     ].join('\n');
 }
 
-// twin sign-ask — a copy lives in x-mod-guard, which reads this shape when it signs; twins.test.ts holds them equal
-export const SIGN_ASK =
-    /(?:^|\s)✍️ sign ((?:FRM|BYT)-\d+(?:(?:,\s*|\s+and\s+|\s+)(?:FRM|BYT)-\d+)*):/u;
-// twin end
 // an ask whose tick x-mod-guard reads as dima's word — a sign, a ⚠️ or merge ask, one quoting a command; published as
 // `isGated` beside the ask, so x-herdr-deck draws the mark instead of keeping its own copy of the pattern (FRM-544 slice 1)
 export const isGuardGated = (text: string) =>
     /(?:^|\s)✍️ sign (?:FRM|BYT)-\d+|⚠️|^\s*(?:merge|land)\b|`[^`]+`/iu.test(
         text,
     );
-// a sign or merge verb anywhere in a pick wants its ask's shape, whatever opens the pick: only a negation leading it
-// lets it pass, never a list of openers (FRM-519 exit 3, sixth sense round 8 on 2093f838)
-const NOT = String.raw`not|not yet|never|no|don['’]t|doesn['’]t|no need to|no need for a|doesn['’]t need a|does not need a|without`;
-// a negation trailing the verb: «re-sign not needed», «merge isn't needed»
-const NOT_AFTER = String.raw`(?!\s+(?:is\s+)?(?:not|isn['’]t)\s+(?:needed|wanted)\b)`;
-// sign-in and its kin are no sign; a sign-off signs
-const SIGN_PICK = new RegExp(
-    String.raw`(?<!\b(?:${NOT})\s(?:re-)?)\b(?:re-)?sign(?:s|ed|ing)?\b(?![\s-]+(?:in|up|out)\b)${NOT_AFTER}`,
-    'iu',
-);
-// its label form `merge: …`, `merge-auto` and a merge of text «into» something are no merge of a pr
-const MERGE_PICK = new RegExp(
-    String.raw`(?<!\b(?:${NOT})\s)\bmerg(?:e|es|ed|ing)\b(?![:-])(?![^.;]*\binto\b)${NOT_AFTER}`,
-    'iu',
-);
-// the two shapes x-mod-guard's quotesPr accepts as naming a pr
-export const MERGE_ASK =
-    /github\.com\/[\w.-]+\/[\w.-]+\/pull\/\d+|(?:^|\s)⚠️ merge [\w.-]+#\d+/u;
-
-// a merge ask names the head it merges, and lands only on the clean the store holds for that head, so he never ticks a
-// merge that cannot run; x lane merge-auto still reads the pr's real head (FRM-519 exit 2, clio's pick a: no network)
-function uncleanMerge(op: string, text: string, cleans: Cleans) {
-    const url = text.match(/github\.com\/([\w.-]+)\/([\w.-]+)\/pull\/(\d+)/);
-    const short = text.match(/(?:^|\s)⚠️ merge ([\w.-]+)#(\d+)/u);
-    const repo = url?.[2] ?? short?.[1];
-    const n = url?.[3] ?? short?.[2];
-    if (!repo || !n) return undefined;
-    const pr = `${repo}#${n}`;
-    const head = text.match(/\bat ([0-9a-f]{7,40})\b/)?.[1];
-    if (!head)
-        return {
-            deny: `orbit ${op}: a merge ask names the head it merges, «⚠️ merge ${pr} at <sha>: <title>», so his tick lands on the head sixth sense cleaned`,
-        };
-    const clean = Object.entries(cleans).find(([k]) =>
-        url ? k === `${url[1]}/${pr}` : k.endsWith(`/${pr}`),
-    )?.[1];
-    if (!clean)
-        return {
-            deny: `orbit ${op}: no clean for ${pr} in ~/.claude/shelf/pr-verified.json; ask once sixth sense's clean lands on ${head}`,
-        };
-    if (!clean.startsWith(head))
-        return {
-            deny: `orbit ${op}: the clean on ${pr} is on ${clean.slice(0, 7)}, not ${head.slice(0, 7)}; ask at the head it cleaned, or after its clean on ${head.slice(0, 7)}`,
-        };
-    return undefined;
-}
-
-// a press whose text the guard cannot read fails here, before his tick spends itself on it
-function misShapedAsk(
-    op: string,
-    text: string,
-    pick: string,
-    cleans: Cleans | undefined,
-) {
-    if (cleans) {
-        const unclean = uncleanMerge(op, text, cleans);
-        if (unclean) return unclean;
-    }
-    if (SIGN_PICK.test(pick) && !SIGN_ASK.test(text))
-        return {
-            deny: `orbit ${op}: a pick that signs needs the text to read «✍️ sign <id>: <title>», the shape x-mod-guard reads when it signs`,
-        };
-    if (SIGN_ASK.test(text)) return undefined;
-    return MERGE_PICK.test(pick) && !MERGE_ASK.test(text)
-        ? {
-              deny: `orbit ${op}: a pick that merges needs the pr's url in the text, or «⚠️ merge <repo>#<n>», the shape x-mod-guard reads for --dima-ok`,
-          }
-        : undefined;
-}
-
 // the first text over the cap, named with its length, so the session can shorten that one
 function overCap(op: string, texts: string[]) {
     const long = texts.find((x) => [...x].length > ORBIT_TEXT_MAX);
@@ -327,7 +253,8 @@ export function orbitOp(
     isTurn: boolean,
     planMax: number = PLAN_MAX,
     isAmended = false,
-    cleans?: Cleans,
+    // unread since a pick no longer needs a clean; register.tsx still passes it
+    _cleans?: Cleans,
 ): { orbit: StashOrbit; result: string } | { deny: string } {
     switch (input.op) {
         case 'add': {
@@ -338,13 +265,6 @@ export function orbitOp(
                 const v = (item ?? {}) as Record<string, unknown>;
                 const text = oneLine(v.text);
                 if (!text) continue;
-                const refused = misShapedAsk(
-                    'add',
-                    text,
-                    oneLine(v.pick),
-                    cleans,
-                );
-                if (refused) return refused;
                 const hiddenNote = oneLine(v.hiddenNote);
                 const link = oneLine(v.link);
                 if (link && !ASK_LINK.test(link))
@@ -448,14 +368,6 @@ export function orbitOp(
                 };
             const tooLong = overCap('follow', [text]);
             if (tooLong) return tooLong;
-            const refused = misShapedAsk(
-                'follow',
-                text,
-                oneLine(input.pick) ||
-                    (o.asks.find((a) => a.id === id)?.pick ?? ''),
-                cleans,
-            );
-            if (refused) return refused;
             return {
                 orbit: {
                     ...o,
@@ -551,10 +463,8 @@ export const planTaken = (p: StashPlan): StashPlan => ({
     lines: p.lines,
 });
 
-// twin press-dir — a copy lives in x-mod-guard, which fences the folder; the twins lint keeps them equal
 // herdr's band appends dima's presses (🐦‍🔥 🔥 ⏰ 💨) to `~/.claude/shelf/band-presses/band.jsonl` (dima's name, 21:36)
 export const PRESS_DIR = 'band-presses';
-// twin end
 const BAND_BUTTONS = ['afk', 'hot', 'override', 'waker', 'wind'] as const;
 type BandPress = {
     at: number;
