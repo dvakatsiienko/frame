@@ -11,6 +11,7 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **Chat view** — a thread drawn as a conversation by x-herdr-chatter; the view dima lives in
 - **Terminal view** — the same thread as its raw terminal, where cc's own band and board draw
 - **quill** — the chatter's main text box, where dima writes to a thread
+- **x-herdr key** — a key of ours in herdr's `keys.json`, its action naming an x-herdr mod (`x-herdr-chatter.focus`); listed in `hotkeys.js`, shown on the settings window's Keys page
 - **settings window** — the one dialog for x-herdr's choices, a page per mod, drawn by x-herdr-chatter from its rows; its values live in `~/.claude/shelf/herdr-settings/settings.json`
 - **settings row** — one choice in the settings window: a key, a title, a one-line why, one control (toggle, checks or stepper) and a default
 - **x-herdr-chatter** — our chat mod, the Chat view itself; copied from zoo's `claude-chat` (FRM-556)

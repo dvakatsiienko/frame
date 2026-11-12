@@ -12,6 +12,7 @@ export const SETTINGS_WINDOW = { height: 500, width: 760 };
 /** @typedef {import('./settings-model.js').Page} Page */
 /**
  * @typedef {{ page: string, values: Record<string, unknown>, overlay: string | undefined,
+ *   keys?: { ours: { key: string, title: string, action: string, takenBy: string | null }[], herdr: [string, string][] },
  *   notes?: Record<string, string>, onPage: (id: string) => void, onChange: (key: string, value: unknown) => void }} WindowState
  */
 
@@ -121,42 +122,52 @@ function content(t, w, page) {
                     .child('✕'),
             ),
         );
-    const body = page.groups.length
-        ? page.groups.map((g) =>
-              v_flex()
-                  .gap(6)
-                  .child(div().text_size(11).text_color(t.dim).child(g.heading))
-                  .child(
-                      v_flex()
-                          .rounded(8)
-                          .border_1()
-                          .border_color(t.border)
-                          .bg(t.surface)
-                          .children(g.rows.map((r, i) => row(t, w, r, i))),
-                  ),
-          )
-        : [
-              v_flex()
-                  .flex_1()
-                  .items_center()
-                  .justify_center()
-                  .gap(4)
-                  .py(60)
-                  .child(
-                      div()
-                          .text_size(13)
-                          .text_color(t.muted)
-                          .child('No knobs yet'),
-                  )
-                  .child(
-                      div()
-                          .text_size(12)
-                          .text_color(t.dim)
-                          .child(
-                              'a row joins here the day this mod has a choice to make',
-                          ),
-                  ),
-          ];
+    const body =
+        page.id === 'keys' && w.keys
+            ? keysPage(t, w.keys)
+            : page.groups.length
+              ? page.groups.map((g) =>
+                    v_flex()
+                        .gap(6)
+                        .child(
+                            div()
+                                .text_size(11)
+                                .text_color(t.dim)
+                                .child(g.heading),
+                        )
+                        .child(
+                            v_flex()
+                                .rounded(8)
+                                .border_1()
+                                .border_color(t.border)
+                                .bg(t.surface)
+                                .children(
+                                    g.rows.map((r, i) => row(t, w, r, i)),
+                                ),
+                        ),
+                )
+              : [
+                    v_flex()
+                        .flex_1()
+                        .items_center()
+                        .justify_center()
+                        .gap(4)
+                        .py(60)
+                        .child(
+                            div()
+                                .text_size(13)
+                                .text_color(t.muted)
+                                .child('No knobs yet'),
+                        )
+                        .child(
+                            div()
+                                .text_size(12)
+                                .text_color(t.dim)
+                                .child(
+                                    'a row joins here the day this mod has a choice to make',
+                                ),
+                        ),
+                ];
     return v_flex()
         .id('settings-content')
         .flex_1()
@@ -321,4 +332,103 @@ function control(t, w, r) {
                 .child(`${n}${c.unit}`),
         )
         .child(step(1, `settings-${r.key}-up`, '+'));
+}
+
+// a key as macOS prints it: cmd-shift-k → ⌘⇧K
+/** @param {string} key */
+const keyLabel = (key) =>
+    key
+        .split('-')
+        .map(
+            (p) =>
+                ({ alt: '⌥', cmd: '⌘', ctrl: '⌃', shift: '⇧' })[p] ??
+                (p.length === 1 ? p.toUpperCase() : p),
+        )
+        .join('');
+
+/** @param {any} t @param {string} key */
+const keyCap = (t, key) =>
+    div()
+        .flex_none()
+        .min_w(44)
+        .px(6)
+        .h(22)
+        .flex()
+        .items_center()
+        .justify_center()
+        .rounded(5)
+        .border_1()
+        .border_color(t.border)
+        .bg(t.background)
+        .text_size(12)
+        .text_color(t.foreground)
+        .child(keyLabel(key));
+
+/** @param {any} t @param {NonNullable<WindowState['keys']>} keys */
+function keysPage(t, keys) {
+    /** @param {string} heading @param {any[]} rows */
+    const group = (heading, rows) =>
+        v_flex()
+            .gap(6)
+            .child(div().text_size(11).text_color(t.dim).child(heading))
+            .child(
+                v_flex()
+                    .rounded(8)
+                    .border_1()
+                    .border_color(t.border)
+                    .bg(t.surface)
+                    .children(rows),
+            );
+    /** @param {number} i */
+    const line = (i) =>
+        h_flex()
+            .px(14)
+            .py(8)
+            .gap(12)
+            .items_center()
+            .when(i > 0, (s) => s.border_t_1().border_color(t.border));
+    return [
+        group(
+            'ours',
+            keys.ours.map((k, i) =>
+                line(i)
+                    .child(keyCap(t, k.key))
+                    .child(
+                        v_flex()
+                            .flex_1()
+                            .min_w(0)
+                            .child(
+                                div()
+                                    .text_size(13)
+                                    .text_color(t.foreground)
+                                    .child(k.title),
+                            )
+                            .when(Boolean(k.takenBy), (s) =>
+                                s.child(
+                                    div()
+                                        .text_size(12)
+                                        .text_color(t.blocked)
+                                        .child(
+                                            `refused: herdr’s «${k.takenBy}» holds this key`,
+                                        ),
+                                ),
+                            ),
+                    ),
+            ),
+        ),
+        group(
+            'herdr’s own',
+            keys.herdr.map(([key, action], i) =>
+                line(i)
+                    .child(keyCap(t, key))
+                    .child(
+                        div()
+                            .flex_1()
+                            .text_size(12)
+                            .text_color(t.muted)
+                            .child(action),
+                    ),
+            ),
+        ),
+    ];
 }

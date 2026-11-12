@@ -81,6 +81,13 @@ export const pages = [
         id: 'cc',
         title: 'Claude Code mods',
     },
+    {
+        about: 'every x-herdr key, written into herdr’s keys.json beside herdr’s own',
+        groups: [],
+        icon: '⌨️',
+        id: 'keys',
+        title: 'Keys',
+    },
 ];
 
 /** @type {Row[]} */

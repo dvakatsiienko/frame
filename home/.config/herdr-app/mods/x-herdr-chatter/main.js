@@ -30,6 +30,7 @@ import {
     hc,
     home,
     layout,
+    nextCommand,
     notify,
     openOverlay,
     props,
@@ -75,6 +76,7 @@ import COMMANDS from './commands.js';
 import { readableBackground } from './contrast.js';
 import { importOldDrafts } from './drafts.js';
 import { foldBlocks } from './fold.js';
+import { OUR_KEYS, keysWithOurs } from './hotkeys.js';
 import { rejoin } from './joined.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
@@ -237,6 +239,58 @@ async function setMetalHud(isOn) {
     ]);
     if (r.code !== 0)
         throw new Error(r.stderr.trim() || 'defaults write failed');
+}
+// the keys herdr refused ours for, by name: shown once as a toast, and on the settings window's Keys page
+let refusedKeys = /** @type {import('./hotkeys.js').Refused[]} */ ([]);
+// herdr's own global keys as his keys.json holds them, for the Keys page
+let herdrKeys = /** @type {[string, string][]} */ ([]);
+// his keys.json gets our entries; a write that changes it sets the old file aside first, so his own keys never go
+async function writeOurKeys() {
+    const path = `${appHome()}/keys.json`;
+    for (let tries = 2; ; tries--) {
+        const text = await readTextFile(path).catch(
+            () => /** @type {string | null} */ (null),
+        );
+        const { keys, refused } = keysWithOurs(
+            JSON.parse(text ?? '{}'),
+            OUR_KEYS,
+        );
+        refusedKeys = refused;
+        herdrKeys = Object.entries(keys.global)
+            .filter(([, a]) => !String(a).startsWith('x-herdr-'))
+            .map(([k, a]) => [
+                k,
+                typeof a === 'string' ? a : JSON.stringify(a),
+            ]);
+        for (const r of refused)
+            notify({
+                body: `${r.key} is herdr's «${r.takenBy}»: «${r.title}» has no key`,
+                level: 'warning',
+                title: 'An x-herdr key clashes',
+            });
+        const next = `${JSON.stringify(keys, null, 2)}\n`;
+        if (
+            text !== null &&
+            JSON.stringify(JSON.parse(text)) === JSON.stringify(keys)
+        )
+            return;
+        if (text !== null) {
+            const dir = `${appHome()}/data/x-herdr-chatter/keys-before`;
+            const made = await exec('mkdir', ['-p', dir]);
+            if (made.code !== 0)
+                throw new Error(made.stderr.trim() || 'mkdir failed');
+            await writeFile(
+                `${dir}/keys.json-${new Date().toISOString().replace(/[:.]/g, '-')}`,
+                text,
+            );
+        }
+        try {
+            await writeTextFile(path, next, text);
+            return;
+        } catch (err) {
+            if (tries <= 1) throw err;
+        }
+    }
 }
 async function loadSettings() {
     const hud = await metalHudNow().catch(() => null);
@@ -1395,6 +1449,22 @@ export default class ClaudeChat extends View {
             });
             return;
         }
+        // x-herdr's keys (FRM-577): ours written into his keys.json, then each command herdr hands this mod
+        cx.spawn(async () => {
+            await writeOurKeys().catch((e) =>
+                notify({
+                    body: String(e?.message ?? e),
+                    level: 'error',
+                    title: 'x-herdr keys were not written',
+                }),
+            );
+            for (;;) {
+                const command = await nextCommand();
+                if (command === 'focus') this.focusQuill();
+                else if (command === 'deck')
+                    run('layout.toggle', { id: DECK_BLOCK });
+            }
+        });
         cx.spawn(async (cx) => {
             for (;;) {
                 await loadSettings().catch((e) =>
@@ -2127,6 +2197,13 @@ export default class ClaudeChat extends View {
                             ),
                     ),
             );
+    }
+
+    // ⌘K: the Chat view comes forward and the caret goes into the quill
+    focusQuill() {
+        const { stack, self } = props() ?? {};
+        if (stack && self) run('layout.select', { child: self, stack });
+        this.renderCx?.timer.after(30, () => this.box.focus());
     }
 
     toTerminal(address) {
@@ -6924,6 +7001,15 @@ export default class ClaudeChat extends View {
     renderView(cx) {
         if (props()?.settingsWindow)
             return settingsWindow(theme(), {
+                keys: {
+                    herdr: herdrKeys,
+                    ours: OUR_KEYS.map((k) => ({
+                        ...k,
+                        takenBy:
+                            refusedKeys.find((r) => r.action === k.action)
+                                ?.takenBy ?? null,
+                    })),
+                },
                 onChange: (key, value) => {
                     (key === 'chatter.metalHud'
                         ? setMetalHud(value === true)

@@ -172,6 +172,14 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a change lands in the file at once, and a value off its row's range or options reads as the row's default
   - and only rows that act are drawn: a Claude Code mods row joins once its mod reads it, added by the mods lane with its wiring (dima, o101)
   - decision: the window lives in the chatter: a herdr mod cannot import a sibling mod's file, and only a mod placed at start can write every default (clio, 19:28)
+- ⬜ x-herdr's keys (FRM-577)
+  - makes: our entries in herdr's `keys.json` `global`, told apart by an `x-herdr-*` action; the file before each change kept in `data/x-herdr-chatter/keys-before/`
+  - given herdr focused, when dima presses ⌘K, then the Chat view comes forward and the caret sits in the quill
+  - given herdr focused, when he presses ⌘E, then the deck shows or hides
+  - given a terminal pane focused, when he types «d» or «/», then the letter lands in the pane
+  - given a key of ours that herdr already binds, when the chatter starts, then a toast names herdr's action, herdr's key keeps working, and the Keys page marks ours refused
+  - and the settings window's Keys page lists ours, then herdr's own
+  - decision: our list is the source and the chatter writes it into his keys.json, since a key reaches a mod only through that file (herdr's guide § Keys); the keys moved off ⌘/ and ⌘D, which herdr holds (o104)
 - ⬜ Apple's Metal HUD from the settings window
   - when he turns «Metal HUD» on, on the Chatter page
   - then herdr's bundle default `MetalForceHudEnabled` turns on and macOS draws its frame-rate meter over herdr; off turns it off
