@@ -11,6 +11,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, expect, test } from 'vitest';
 
+import { CROW_RECORD, plantThreads } from './fixtures/threads.ts';
+
 // a fixture home: two clio threads, a --bg crow on a socket this test owns, so the live crow is never touched
 const WAKE = join(import.meta.dirname, 'wake.ts');
 const servers: Server[] = [];
@@ -41,6 +43,16 @@ function home() {
         writeFileSync(join(sessions, `${key}.json`), JSON.stringify(entry));
         writeFileSync(join(dir, `${entry.sessionId}.jsonl`), `${steps}\n`);
     }
+    plantThreads(dir, [
+        { display: '🦉 clio', role: 'coordinator', sessionId: 'clio-main' },
+        {
+            display: '🦉🪽 clio: wing 2',
+            role: 'wing',
+            sessionId: 'clio-wing',
+            wing: 2,
+        },
+        CROW_RECORD,
+    ]);
     writeFileSync(
         join(sessions, `${process.pid}.json`),
         JSON.stringify({
@@ -72,7 +84,12 @@ function home() {
                     join(dir, `${threads[thread].sessionId}.jsonl`),
                 ],
                 {
-                    env: { ...process.env, CROW_STATE_DIR: state, HOME: dir },
+                    env: {
+                        ...process.env,
+                        CROW_STATE_DIR: state,
+                        HOME: dir,
+                        PATH: `${join(dir, 'bin')}:${process.env.PATH}`,
+                    },
                 },
             );
             let out = '';

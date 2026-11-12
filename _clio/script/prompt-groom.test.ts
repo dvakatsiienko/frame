@@ -678,10 +678,10 @@ describe('prompt-groom oN (FRM-451)', () => {
         try {
             const grooms = join(root, 'grooms');
             mkdirSync(join(root, 'bin'));
-            // helga is stubbed up, so nothing is spawned
+            // helga is stubbed up by her record, so nothing is spawned
             writeFileSync(
-                join(root, 'bin', 'claude'),
-                `#!/bin/sh\necho '[{"name":"helga","status":"idle"}]'\n`,
+                join(root, 'bin', 'x'),
+                `#!/bin/sh\necho '{"data":{"threads":[{"role":"copyist"}]}}'\n`,
                 { mode: 0o755 },
             );
             const transcript = join(root, 't.jsonl');

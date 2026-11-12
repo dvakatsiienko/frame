@@ -47,6 +47,7 @@ function revive(which: string[]) {
         {
             encoding: 'utf8',
             env: { HOME: home, PATH: `${bin}:/usr/bin:/bin:/opt/homebrew/bin` },
+            timeout: 10_000,
         },
     );
     const calls = readFileSync(join(home, 'calls'), 'utf8');
