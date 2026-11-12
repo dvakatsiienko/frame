@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T17:33:00Z'
+updated_date: '2026-11-12T17:56:00Z'
 labels:
   - s
   - clio-wing-1
@@ -20,15 +20,15 @@ ordinal: 1001
 - [ ] #2 groom backlog, last 14 reds: 9 inbox lines reworded at the fold, 5 orbit steers (o23 o25 o62 o90)
 - [ ] #3 «seat» code half: seatOf, CLIO_SEAT and the seats dir renamed with every reader
 - [ ] #4 milestone order: flip the FRM-504 and FRM-505 blocks links, queues point at scopes-audit.md
-- [ ] #5 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-489 «changed» at dispatch
-- [ ] #6 summon leftovers: the mods codie's first door, /handoff spawn still --bg, a pane wing's background
-- [ ] #7 FRM-525 cpu overload: name what burns kernel time under many sessions
-- [ ] #8 FRM-537 perf probes: a menu to run when usage is spare
-- [ ] #9 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
-- [ ] #10 FRM-407 fresh-eyes card: close it if the live card already covers the ticket
-- [ ] #11 FRM-551 vm: both reads at the first halt with no go lane
-- [ ] #12 PK-385 a standing stray lane for chores: shape it with dima, when he says
-- [ ] #13 flyway habit: the second-wind pickup checks each line against its home by command, then a guard
+- [ ] #5 summon leftovers: the mods codie's first door, /handoff spawn still --bg, a pane wing's background
+- [ ] #6 FRM-525 cpu overload: name what burns kernel time under many sessions
+- [ ] #7 FRM-537 perf probes: a menu to run when usage is spare
+- [ ] #8 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
+- [ ] #9 FRM-407 fresh-eyes card: close it if the live card already covers the ticket
+- [ ] #10 FRM-551 vm: both reads at the first halt with no go lane
+- [ ] #11 PK-385 a standing stray lane for chores: shape it with dima, when he says
+- [ ] #12 flyway habit: the second-wind pickup checks each line against its home by command, then a guard
+- [ ] #13 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-555 «changed» at dispatch
 - [ ] #14 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
 - [ ] #15 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
 - [ ] #16 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
@@ -579,4 +579,6 @@ done 2026-11-12 19:30: PK-362 steamac vm disk: shrink 256gb to 192gb (PK-362 ope
 
 PK-346:W79 (2026-11-12 19:21, dima): did you fix the flyway habits? you finished your flyway's #1 seat cleanup an hour ago or more, and it is still in the flyway; i want the flyway to reflect the current state of your activity
 PK-346:W80 (2026-11-12 19:21, dima): board redraws not now, drop them from the plan
+
+19:56 wing 1: #5 reworded, FRM-489 → FRM-555 (489 closed as its duplicate; flyway-done --check red)
 <!-- SECTION:NOTES:END -->
