@@ -24,4 +24,4 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **prompt card** — a fenced block under a 📋 ribbon naming a session or an agent; a click puts its prompt in dima's box, unsent
 - **chip** — inline code in the box drawn as one monospace token; the caret skips it, one delete removes it
 - **land** — copy a mod from frame into herdr's real mods folder (`pnpm herdr-mods:land`); the **watcher** lands each save that passes `herdr-app check`
-- **zoo** — the third-party setup our chat and layout were borrowed from; being taken over until its name appears nowhere
+- **zoo** — the third-party setup our chat, layout and clones began from; taken over on 2026-11-12, its agent tab menu the last part in use

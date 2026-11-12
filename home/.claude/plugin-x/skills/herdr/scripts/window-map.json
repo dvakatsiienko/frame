@@ -1,20 +1,18 @@
 {
-    "// why": "the parts of dima's herdr window, boxed on the window map; boxes are px in a 1600-wide copy of a shot of the zoo layout at his window size, with the tray and the Files panel open. a moved block means new boxes.",
+    "// why": "the parts of dima's herdr window, boxed on the window map; boxes are px in a 1600-wide copy of a shot of his layout at his window size, with the tray and the Files panel open. a moved block means new boxes.",
     "kindLabels": {
         "herdr": "herdr's own",
-        "ours": "ours",
-        "zoo": "zoo's copy, being taken over"
+        "ours": "ours"
     },
     "kinds": {
         "herdr": [37, 99, 235],
-        "ours": [22, 163, 74],
-        "zoo": [234, 88, 12]
+        "ours": [22, 163, 74]
     },
     "notShown": [
         {
-            "kind": "zoo",
+            "kind": "ours",
             "name": "x-herdr-layout.json",
-            "today": "zoo.json",
+            "today": "x-herdr-layout.json",
             "what": "layout file: what sits where, and the look"
         }
     ],

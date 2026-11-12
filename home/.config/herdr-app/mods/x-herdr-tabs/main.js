@@ -1,6 +1,6 @@
-// x-herdr-tabs: herdr's `tabs` (0.1.9, by way of zoo's my-tabs), each agent tab named by its Claude Code session name,
+// x-herdr-tabs: herdr's `tabs` (0.1.9), each agent tab named by its Claude Code session name,
 // emoji and all, as the agents list and the deck name it. kept from my-tabs: + opens herdr's `new-menu`, props
-// { buttons: false } leaves out the window buttons, a right-click on an agent tab opens the zoo's agent menu, and the ×
+// { buttons: false } leaves out the window buttons, a right-click opens herdr's own tab menu, and the ×
 // on an agent tab asks first.
 
 import { h_flex } from 'gpui-base';
@@ -30,7 +30,7 @@ import { firstTab } from './strip.js';
 const NAMES_KEY = 'x-herdr-agents.names';
 
 // A tab Herdr named after its program ("Claude Code", or an automatic "tbN") shows the agent's
-// own title instead, as the agents list does (`title` in zoo-agents): unless that title is
+// own title instead, as the agents list does (`title` in x-herdr-agents): unless that title is
 // only a path, a user@host, or the program's name again. A tab someone renamed keeps its name.
 // "Named after its program" = the pane's program name, or any + menu entry's (`LAUNCHERS`): a
 // "Claude (dev container)" tab runs a pane whose program reports "Claude Code" (seen 2026-11-05).
@@ -56,12 +56,12 @@ function tabName(c, lead) {
     return auto ? (prog ?? 'Terminal') : c.name;
 }
 
-// Unread vs done: shared "zoo.turns" = { address: "run" | "seen" }; Herdr's done = unread until
+// Unread vs done: shared "x-herdr.turns" = { address: "run" | "seen" }; Herdr's done = unread until
 // the agent is shown with the window active (the Chat view hides the terminal, so Herdr never
-// sees you read it), idle after a turn = done. Copied from zoo-agents (the why is there): keep them in step.
+// sees you read it), idle after a turn = done. Copied from x-herdr-agents (the why is there): keep them in step.
 const machineOf = (addr) => (addr.includes('/') ? addr.split('/')[0] : '');
 function trackTurns(list, all) {
-    const was = shared('zoo.turns') ?? {};
+    const was = shared('x-herdr.turns') ?? {};
     let next = null;
     const set = (k, v) => {
         if (was[k] === v) return;
@@ -84,10 +84,10 @@ function trackTurns(list, all) {
             next ??= { ...was };
             delete next[k];
         }
-    if (next) setShared('zoo.turns', next);
+    if (next) setShared('x-herdr.turns', next);
 }
 function shownStatus(a) {
-    const v = shared('zoo.turns')?.[a.address];
+    const v = shared('x-herdr.turns')?.[a.address];
     if (a.status === 'done') return v === 'seen' ? 'done' : 'unread';
     if (a.status === 'idle') return v ? 'done' : 'idle';
     return a.status;
@@ -300,31 +300,18 @@ export default class Tabs extends View {
                             });
                         else run('tab.select', { id: c.id });
                     })
-                    .on_mouse_down('right', () => {
-                        const mine = agents().filter((a) => a.tab === c.id);
-                        const a = mine.find((a) => a.focused) ?? mine[0];
-                        if (a)
-                            openOverlay({
-                                height: 205,
-                                kind: 'popup',
-                                mod: 'zoo',
-                                props: {
-                                    menu: a.address,
-                                    title: `${space.name} · ${name}`,
-                                },
-                                width: 220,
-                            });
-                        else
-                            openOverlay({
-                                kind: 'popup',
-                                mod: 'menu',
-                                props: {
-                                    tab: 'tab',
-                                    target: { id: c.id, space: space.id },
-                                },
-                                width: 200,
-                            });
-                    })
+                    // herdr's own tab menu on every tab (dima, o80)
+                    .on_mouse_down('right', () =>
+                        openOverlay({
+                            kind: 'popup',
+                            mod: 'menu',
+                            props: {
+                                tab: 'tab',
+                                target: { id: c.id, space: space.id },
+                            },
+                            width: 200,
+                        }),
+                    )
                     .when(!agent && Boolean(program?.icon), (el) =>
                         el.child(
                             program.tint

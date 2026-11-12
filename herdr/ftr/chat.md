@@ -59,7 +59,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: inline code keeps its chips, and the fix waits on gpui-kit (his tick, 18:35): [gpui-kit#3933](https://github.com/longbridge/gpui-kit/issues/3933)
 - ✅ the chat is ours by name: `x-herdr-chatter`
   - makes: `home/.config/herdr-app/mods/x-herdr-chatter`, landed into `~/.config/herdr-app/mods/x-herdr-chatter` by `herdr-mods:land`
-  - given `layouts/zoo.json` places `x-herdr-chatter`
+  - given `layouts/x-herdr-layout.json` places `x-herdr-chatter`
   - then herdr opens no file of zoo's `claude-chat`, and every name dima sees reads x-herdr-chatter
   - proof: the layout's mods read with jq name `x-herdr-chatter` and no `claude-chat` (17:35:34, status errors [])
   - decision: copied from zoo's `claude-chat` (FRM-556, 11-10), whose folder stays on disk unplaced; the shared keys `chat.look/subs/containers` keep their names until zoo's other mods are ours
