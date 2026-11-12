@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T15:41:00Z'
+updated_date: '2026-11-12T16:10:00Z'
 labels:
   - s
   - clio-wing-1
@@ -513,4 +513,10 @@ PK-346:W55 (2026-11-12 17:11, dima): ❓ who solves main, or can you? main clio 
   #24 💤 PK-300 one complete measuring solution — later: dima 11-11
   #25 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
   #26 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+
+PK-346:W56 (2026-11-12 16:19, dima): can you raise the quiet comms bar slightly? replies are too short now. for main clio too.
+PK-346:W57 (2026-11-12 16:19, dima): ❓ what next can you solve?
+PK-346:W58 (2026-11-12 16:19, dima): /clio:low-tide-triage
+PK-346:W59 (2026-11-12 16:19, dima): my main complaint right now: both flyways, yours and min's, have 29 items each. a pile! propose a gradual way to solve it. and do /clio:flyway-sync.
+PK-346:W60 (2026-11-12 16:19, dima): make flyways pretty.
 <!-- SECTION:NOTES:END -->
