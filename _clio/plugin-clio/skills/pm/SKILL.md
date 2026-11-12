@@ -44,7 +44,7 @@ traps:
 - **a `clio-wing-<N>` ticket is that wing's** while the label is on: leave it alone until it comes off; a claim, not a lock (dima, 2026-11-06)
 - **priority** p3; p1 only for a real interrupt, its reason and expiry in the body; p2 or p4 only when
   its importance truly differs; **size** XS · S · M naming its closest done ticket (`size: S, like FRM-372`);
-  XS (minutes, under ~80 codie turns) · S (one session, under ~400) · M (allowed, on trial: `craft-fleet-flow` § lane init),
+  XS (minutes) · S (one session; measured 2026-11-12: median ~110 prompts, ~1,400 steps, one in ten past ~5,900) · M (median ~140 prompts, ~1,500 steps; allowed, on trial: `craft-fleet-flow` § lane init),
   set as the word (`x linear set --estimate S`); L and XL are never set, an old 4 or 5 is resized when touched;
   **project**, unless it is a one-off or an idea pool; **parent** by the test «which story does it
   die with?», none → flat; **milestone** inherited from the parent
