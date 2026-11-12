@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T18:02:00Z'
+updated_date: '2026-11-12T18:06:00Z'
 labels:
   - s
   - clio-wing-1
@@ -586,4 +586,8 @@ done 2026-11-12 20:02: 11-10 halt leftovers: one checkup slice (board redraws dr
 20:02 wing 1: groom backlog cleared (prompt-groom --linear: 22 → 8, the 8 left are main's today: FRM-582 580 572 564 504 490); halt leftovers' checkup slice done (naming-family-first, o43 rename landed)
 
 done 2026-11-12 20:02: flyway habit: the second-wind pickup checks each line against its home by command, then a guard
+
+PK-346:W81 (2026-11-12 19:51, dima): o45: let's try it, to see if it makes you keep the flyway clean; i want the flyway in sync, no stray lines
+PK-346:W82 (2026-11-12 19:51, dima): the state of main clio's flyway is unacceptable
+homes: the --check flag (landed 19:57), PK-349 cleaned 19:54
 <!-- SECTION:NOTES:END -->
