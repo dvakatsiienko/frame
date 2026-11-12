@@ -1,8 +1,9 @@
 ---
-description: load when dima says «sync your flyway», «flyway sync», «clear done, reorder», and right after a second-wind pickup (`clio:checkpoint` § 4) — every clio thread, main or a wing.
+name: lowtide-flyway-sync
+description: lowtide, a flyway matched to the live state — load when dima says «sync your flyway», «flyway sync», «clear done, reorder», and right after a second-wind pickup (`clio:checkpoint` § 4) — every clio thread, main or a wing.
 ---
 
-# /clio:flyway-sync — the flyway matches the live state
+# /clio:lowtide-flyway-sync — the flyway matches the live state
 
 the pass that applies `habit-shared-files` § the flyway; every command runs from `~/frame/_clio`.
 

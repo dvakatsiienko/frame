@@ -67,6 +67,8 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **A phases line is one chunk with an outcome he would notice, never a micro-step; it leaves only as done or dropped with a why** (dima, 2026-11-03, o38).
 
+**An order of steps he gives runs in his order** (dima, PK-387:W7, 2026-11-12: «you ran ahead of me; stop it»; his o82): pulling a step ahead is an orbit ask first, never a «while you read».
+
 **A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 
 **A running trial lives as a phases line with its count** («assumed rows: turn 4/10»): a compact can't drop it.
@@ -77,7 +79,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **Routine asks stay out of orbit** (dima's yes, 2026-10-10: he pasted 58 of 136 fences back unchanged). a close and a trash stay asked per target, as an orbit ask that leads with ⚠️ and names the target (invariant 8, craft-pm's «silence closes nothing»); they join the line only on his word.
 
-**A candidate to cancel, park or close a build gets its reason in the thread, the turn its ask goes up** (dima, 2026-11-05: «canceling planned stuff is useful, because we actually often don't know, ourselves, if a piece of stuff to build is worth it»; unused stuff gets planned even past ⚖️ worth it; widened on his tick, 11-06): what it would have done, what was measured, the door that stays, what he loses; the ask's few words never carry it alone. a plan, reorg or cut list: `clio:low-tide-cuts` first.
+**A candidate to cancel, park or close a build gets its reason in the thread, the turn its ask goes up** (dima, 2026-11-05: «canceling planned stuff is useful, because we actually often don't know, ourselves, if a piece of stuff to build is worth it»; unused stuff gets planned even past ⚖️ worth it; widened on his tick, 11-06): what it would have done, what was measured, the door that stays, what he loses; the ask's few words never carry it alone. a plan, reorg or cut list: `clio:lowtide-cuts` first.
 
 **A spotted fix becomes an orbit ask** (dima, 2026-10-10, after a ⚠️ biome cpu line went out as info: «whenever you spot things worth fixing, leave them as options in waiting for your word»): a hazard, a slip or a stray found in passing gets an ask with its fix and a pick, never a bare report line.
 
