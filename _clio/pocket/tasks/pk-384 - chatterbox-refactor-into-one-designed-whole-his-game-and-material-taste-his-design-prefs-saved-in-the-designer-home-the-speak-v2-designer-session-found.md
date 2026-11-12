@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T13:03:00Z'
+updated_date: '2026-11-12T13:24:00Z'
 labels:
   - m
 dependencies: []
@@ -125,4 +125,6 @@ raw drop (2026-11-12, dima): yes but maybe do not inject it into the memory of t
 PK-384:W25 (2026-11-12 15:03, dima): i like it, but make the parts on top and below the chatter box as «nested» cards. the cards are slightly smaller than the main chatter box. the main chatter (textbox) is on top, and both nested cards are a «below layer». their width is slightly narrower than the textbox (a pretty look, a twist).
 
 raw drop (2026-11-12 15:03, dima): chatterbox: i like but make parts on top and below chatter box as «nested» cards. those cards slightly smaller than main chatter box. main chatter (texbox) is on top, both nested cards are «below layer». and their width is slightly narrower than textbox (pretty look, a twist)
+
+15:24: his o14 answer: cars, matte-coated cars as a material reference («The material is just a way to describe what look I like»); taste.md carries it. the pass landed (f5b0940d, 88f9c4d2 on origin), his look next
 <!-- SECTION:NOTES:END -->
