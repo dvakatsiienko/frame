@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T17:56:00Z'
+updated_date: '2026-11-12T18:02:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,32 +16,29 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 11-10 halt leftovers: one checkup slice (board redraws dropped, dima 19:21)
-- [ ] #2 groom backlog, last 14 reds: 9 inbox lines reworded at the fold, 5 orbit steers (o23 o25 o62 o90)
-- [ ] #3 «seat» code half: seatOf, CLIO_SEAT and the seats dir renamed with every reader
-- [ ] #4 milestone order: flip the FRM-504 and FRM-505 blocks links, queues point at scopes-audit.md
-- [ ] #5 summon leftovers: the mods codie's first door, /handoff spawn still --bg, a pane wing's background
-- [ ] #6 FRM-525 cpu overload: name what burns kernel time under many sessions
-- [ ] #7 FRM-537 perf probes: a menu to run when usage is spare
-- [ ] #8 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
-- [ ] #9 FRM-407 fresh-eyes card: close it if the live card already covers the ticket
-- [ ] #10 FRM-551 vm: both reads at the first halt with no go lane
-- [ ] #11 PK-385 a standing stray lane for chores: shape it with dima, when he says
-- [ ] #12 flyway habit: the second-wind pickup checks each line against its home by command, then a guard
-- [ ] #13 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-555 «changed» at dispatch
-- [ ] #14 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
-- [ ] #15 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
-- [ ] #16 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
-- [ ] #17 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
-- [ ] #18 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
-- [ ] #19 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
-- [ ] #20 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #21 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
-- [ ] #22 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #23 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #24 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #25 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #26 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #1 «seat» code half: seatOf, CLIO_SEAT and the seats dir renamed with every reader
+- [ ] #2 milestone order: flip the FRM-504 and FRM-505 blocks links, queues point at scopes-audit.md
+- [ ] #3 summon leftovers: the mods codie's first door, /handoff spawn still --bg, a pane wing's background
+- [ ] #4 FRM-525 cpu overload: name what burns kernel time under many sessions
+- [ ] #5 FRM-537 perf probes: a menu to run when usage is spare
+- [ ] #6 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
+- [ ] #7 FRM-407 fresh-eyes card: close it if the live card already covers the ticket
+- [ ] #8 FRM-551 vm: both reads at the first halt with no go lane
+- [ ] #9 PK-385 a standing stray lane for chores: shape it with dima, when he says
+- [ ] #10 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-555 «changed» at dispatch
+- [ ] #11 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
+- [ ] #12 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
+- [ ] #13 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
+- [ ] #14 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
+- [ ] #15 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
+- [ ] #16 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
+- [ ] #17 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #18 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
+- [ ] #19 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #20 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #21 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #22 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #23 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -581,4 +578,12 @@ PK-346:W79 (2026-11-12 19:21, dima): did you fix the flyway habits? you finished
 PK-346:W80 (2026-11-12 19:21, dima): board redraws not now, drop them from the plan
 
 19:56 wing 1: #5 reworded, FRM-489 → FRM-555 (489 closed as its duplicate; flyway-done --check red)
+
+done 2026-11-12 20:02: groom backlog, last 14 reds: 9 inbox lines reworded at the fold, 5 orbit steers (o23 o25 o62 o90)
+
+done 2026-11-12 20:02: 11-10 halt leftovers: one checkup slice (board redraws dropped, dima 19:21)
+
+20:02 wing 1: groom backlog cleared (prompt-groom --linear: 22 → 8, the 8 left are main's today: FRM-582 580 572 564 504 490); halt leftovers' checkup slice done (naming-family-first, o43 rename landed)
+
+done 2026-11-12 20:02: flyway habit: the second-wind pickup checks each line against its home by command, then a guard
 <!-- SECTION:NOTES:END -->
