@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T19:25:00Z'
+updated_date: '2026-11-12T19:27:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,7 +16,7 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ⏳ FRM-551 vm: both reads — waits for: the first halt with no go lane
+- [ ] #1 ⏳ FRM-551 vm: both reads — waits for: tonight's halt, the first with no go lane
 - [ ] #2 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
 - [ ] #3 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
 - [ ] #4 📅 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict — on: 2026-11-13
