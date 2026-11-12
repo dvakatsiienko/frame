@@ -370,6 +370,9 @@ for (const line of [
     SUMMONED,
     'claude --session-id=1f0c2e1d-0000-4000-8000-000000000001 -p hi',
     "hc run --bg --no-parent --name x --cwd /repo -- claude --session-id 1f0c -n n 'hi'",
+    // a warn-only start door on the same line never downgrades the --session-id refusal
+    "true clio-start.sh; claude --session-id 1f0c2e1d-0000-4000-8000-000000000001 -p 'see clio-start.sh'",
+    'hc run --bg -- claude --session-id 1f0c -n clio-start.sh',
     `echo '{"name":"🦉 clio"}' > /home/.claude/sessions/4242.json`,
     'cp /tmp/forged.json ~/.claude/sessions/',
     'cp /tmp/forged.json /home/.claude/shelf/thread?.json',

@@ -411,20 +411,15 @@ const isRoleVerb = (c: Command) => {
     );
 };
 export function roleSpawn(command: string, cwd: string): Refusal | undefined {
-    for (const c of commandsDeep(command, cwd)) {
+    const commands = commandsDeep(command, cwd);
+    // the enforcing refusals read every command first: a warn-only start door anywhere on the line never downgrades them
+    for (const c of commands) {
         if (isRoleVerb(c))
             return {
                 door: 'ask the coordinator: x brief summon and x lane dispatch --apply are hers',
                 rule: 'clean-stamp',
                 targets: ['x'],
                 why: "both verbs give a thread its role, and a sixth sense's role opens the clean stamp",
-            };
-        if (isStartDoor(c))
-            return {
-                door: 'ask the coordinator: clio, a wing, crow and helga start from dima, his herdr layout or clio',
-                rule: 'start-door',
-                targets: [c.name],
-                why: 'a start door hands its thread the role of clio, a wing, crow or helga through x brief summon',
             };
         const call = c.name === 'claude' ? c : claudeSpawn(c);
         if (call?.name !== 'claude') continue;
@@ -440,6 +435,14 @@ export function roleSpawn(command: string, cwd: string): Refusal | undefined {
                 why: 'a --session-id carries the role x gave it at a summon, so only the coordinator runs one',
             };
     }
+    const door = commands.find(isStartDoor);
+    if (door)
+        return {
+            door: 'ask the coordinator: clio, a wing, crow and helga start from dima, his herdr layout or clio',
+            rule: 'start-door',
+            targets: [door.name],
+            why: 'a start door hands its thread the role of clio, a wing, crow or helga through x brief summon',
+        };
     return undefined;
 }
 
