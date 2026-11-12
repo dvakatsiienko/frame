@@ -93,10 +93,10 @@
         },
         {
             "boxes": [[226, 603, 1090, 627]],
-            "kind": "zoo",
+            "kind": "ours",
             "n": 10,
             "name": "x-herdr-terminal-header (in x-herdr-terminal)",
-            "today": "quick-term",
+            "today": "x-herdr-terminal-header",
             "what": "the tray head row (ctrl-j)"
         },
         {
