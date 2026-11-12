@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T15:33:00Z'
+updated_date: '2026-11-12T15:36:00Z'
 labels:
   - s
 dependencies: []
@@ -101,4 +101,18 @@ PK-380:W30 (2026-11-12 16:58, dima): ok, maybe knowledge? it is intended to be u
 PK-380:W31 (2026-11-12 16:58, dima): plus, habits: incidents should be placed in stories always. propose how to update the habits.
 PK-380:W32 (2026-11-12 16:58, dima): cpu story: update all pointers.
 17:33 moved: W5, W11–W18 and W21–W24 live in FRM-581 (guard); this item keeps W1–W4 and the comms lines
+
+PK-380:W33 (2026-11-12 17:34, dima): drop (the sign-check hash wisp). and use orbit for drop asks.
+PK-380:W34 (2026-11-12 17:34, dima): proceed. after the second wind: 1. print a clear and easy-to-read map for cli, mods and herdr: what's left? 2. propose how to coordinate the lanes further. from what i saw we solved nearly every chunk we planned. ❓ what's left for mods?
+PK-380:W35 (2026-11-12 17:34, dima): i want the guard issue solved, then analyzed historically as i asked (before the halt), explained to me in a clear way, with a proposal for how to prevent major flaws like this in the future; and story it.
+PK-380:W36 (2026-11-12 17:34, dima): i want a similar done or nearly done state for the planned mods (auto second wind is desirable).
+PK-380:W37 (2026-11-12 17:34, dima): i want to revive the speak app v2 soon.
+PK-380:W38 (2026-11-12 17:34, dima): i want all your flyway and wing 1's flyway in pristine shape, with no clutter, and easy to read. wing 1 solves it.
+PK-380:W39 (2026-11-12 17:34, dima): and herdr: let's review where we are and propose an efficient execution order.
+PK-380:W40 (2026-11-12 17:34, dima): for all lanes (cli, mods and herdr): an efficient execution plan. you will lead all these lanes.
+
+PK-380:W41 (2026-11-12 17:35, dima): print short lines about each chunk.
+PK-380:W42 (2026-11-12 17:35, dima): the message i just wrote: i want a skill out of it. i often ask stuff like this, e.g. «checkup where we are at», over a selected set of lanes.
+
+PK-380:W43 (2026-11-12 17:35, dima): let's have this skill first, then do the inventory using the new skill.
 <!-- SECTION:NOTES:END -->
