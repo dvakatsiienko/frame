@@ -16,9 +16,9 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
-- [ ] #2 ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505
-- [ ] #3 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
+- [ ] #1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
+- [ ] #2 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, FRM-505 landed
+- [ ] #3 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
 - [ ] #4 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
 - [ ] #5 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
 - [ ] #6 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
@@ -383,4 +383,8 @@ done 2026-11-12 21:54: 💤 grill 5 leftovers: his own sounds, wing 1's zoo pair
 done 2026-11-12 22:05: ⏳ next second wind sends no notice and no back line, the hold’s live test (o171) — waits for: my next wind
 
 done 2026-11-12 22:34: 📅 FRM-588 dispatch to the herdr codie (effort hotkey + mid-turn model), at dima’s morning word — on: 2026-11-13 (FRM-588 Todo)
+
+done 2026-11-12 22:34: ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed (FRM-505 Done)
+
+done 2026-11-12 22:34: ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505 (FRM-505 Done)
 <!-- SECTION:NOTES:END -->
