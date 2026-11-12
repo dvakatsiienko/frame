@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T19:14:00Z'
+updated_date: '2026-11-12T19:50:00Z'
 labels:
   - s
   - clio-main
@@ -16,23 +16,17 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 guard story into fleet-stories/guard-lockout before the halt (his o42); facts in .scratch/guard/
-- [ ] #2 quiet comms gate: a second [done] from one member within minutes is held; propose it
-- [ ] #3 fork-guard r6: a wing may edit a handoff file carrying its own token; fixture-HOME proof
-- [ ] #4 x brief check's offline stamp line: seven names and ⚖️ worth it, to dima
-- [ ] #5 herdr grills, his order: FRM-564 → 582 → 580 → 567 → 563 → 562, 569, each signed
-- [ ] #6 at dispatch: FRM-555 needs its changed line (from wing 1)
-- [ ] #7 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
-- [ ] #8 ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505
-- [ ] #9 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
-- [ ] #10 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
-- [ ] #11 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
-- [ ] #12 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
-- [ ] #13 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
-- [ ] #14 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
-- [ ] #15 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #16 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
-- [ ] #17 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #1 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
+- [ ] #2 ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505
+- [ ] #3 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
+- [ ] #4 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
+- [ ] #5 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
+- [ ] #6 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
+- [ ] #7 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
+- [ ] #8 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
+- [ ] #9 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #10 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
+- [ ] #11 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -366,4 +360,20 @@ done 2026-11-12 20:13: FRM-505 auto second wind: grill and sign with dima, then 
 done 2026-11-12 20:13: lowtide family (PK-387): run the checkup, now the reshape landed (PK-387 open)
 
 done 2026-11-12 21:14: at dispatch: FRM-538 needs its sign, FRM-555 its changed line (from wing 1) (FRM-538 Todo, FRM-555 Todo)
+
+done 2026-11-12 21:42: fork-guard r6: a wing may edit a handoff file carrying its own token; fixture-HOME proof
+
+done 2026-11-12 21:47: x brief check's offline stamp line: seven names and ⚖️ worth it, to dima
+
+done 2026-11-12 21:47: quiet comms gate: a second [done] from one member within minutes is held; propose it
+
+done 2026-11-12 21:50: ticket: a mod whose hook lines doubled in 14 days gets one halt line (his o160)
+
+done 2026-11-12 21:50: at dispatch: FRM-555 needs its changed line (from wing 1) (FRM-555 Todo)
+
+done 2026-11-12 21:50: herdr grills, his order: FRM-564 → 582 → 580 → 567 → 563 → 562, 569, each signed (FRM-564 Todo)
+
+done 2026-11-12 21:50: guard story into fleet-stories/guard-lockout before the halt (his o42); facts in .scratch/guard/
+
+21:50 designer day 11-13: one designer reused for speak v2 and the herdr look (FRM-591), synced (dima 21:49)
 <!-- SECTION:NOTES:END -->
