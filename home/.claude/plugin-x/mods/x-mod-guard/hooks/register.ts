@@ -632,6 +632,9 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     // warn-only until sixth sense's clean and a 2-day replay with 0 fires on real calls (clio, 17:04)
     'pane-keys',
     'herdr-start',
+    // FRM-579: a start door a non-coordinator names warns, logged, until dima promotes it after a quiet day (15:47,
+    // «stop locking yourself out»)
+    'start-door',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)

@@ -353,7 +353,7 @@ export function roleSpawn(command: string, cwd: string): Refusal | undefined {
         if (isStartDoor(c))
             return {
                 door: 'ask the coordinator: clio, a wing, crow and helga start from dima, his herdr layout or clio',
-                rule: 'clean-stamp',
+                rule: 'start-door',
                 targets: [c.name],
                 why: 'a start door hands its thread the role of clio, a wing, crow or helga through x brief summon',
             };

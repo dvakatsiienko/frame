@@ -67,7 +67,7 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 		unlock()
 		return nil, &Fail{Msg: err.Error(), Next: "jq . " + quote(path)}
 	}
-	i := slices.IndexFunc(store.Threads, func(t thread) bool { return t.SessionID == sid && t.Role != "" })
+	i := slices.IndexFunc(store.Threads, func(t thread) bool { return t.SessionID == sid && t.Role != "" && !t.Fallback })
 	if i < 0 {
 		unlock()
 		return nil, &Fail{Refused: true, Msg: sid + " has no record to rename: x brief summon gives one", Next: "x thread list"}

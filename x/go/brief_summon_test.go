@@ -580,18 +580,55 @@ func TestARoleTableRenameMovesTheDisplayNotThePower(t *testing.T) {
 func TestBriefSummonGivesNoCoordinatorRecordToABareHerdrPane(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {
-		role string
-		code int
-	}{{"coordinator", 1}, {"wing:2", 1}, {"adviser", 0}} {
-		t.Run(c.role, func(t *testing.T) {
+		role          string
+		isClioRecords bool
+		code          int
+	}{{"coordinator", true, 1}, {"wing:2", true, 1}, {"adviser", true, 0}, {"coordinator", false, 0}} {
+		t.Run(fmt.Sprint(c.role, c.isClioRecords), func(t *testing.T) {
 			t.Parallel()
 			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
 			write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
+			// dima, 15:47: the pane fallback lets his layout start clio only while no coordinator record is live
+			if c.isClioRecords {
+				write(t, store, `{"v":1,"threads":[{"sessionId":"sid-clio","role":"coordinator"}]}`)
+			} else {
+				// a name-seated clio is no record, so the layout's start still passes
+				write(t, store, `{"v":1,"threads":[{"sessionId":"sid-clio","role":"coordinator","fallback":true}]}`)
+			}
 
 			got := scriptX(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store, "HC_TERMINAL_ID=t9"}, "brief", "summon", "--role", c.role, "--session", "sid-other")
 
 			if got.code != c.code {
 				t.Fatalf("exit %d, want %d:\n%s", got.code, c.code, got.out)
+			}
+		})
+	}
+}
+
+// dima, 15:47: with no live coordinator record, today's name check still seats clio, marked fallback; one record
+// anywhere and the name seats nothing
+func TestTheNameFallbackSeatsClioOnlyWhileNoCoordinatorRecordLives(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, records string
+		want          any
+	}{
+		{"no record anywhere", `{"v":1,"threads":[]}`, "coordinator"},
+		{"a real clio's record lives", fmt.Sprintf(`{"v":1,"threads":[{"sessionId":"sid-real","pid":%d,"role":"coordinator"}]}`, os.Getpid()), nil},
+		{"an earlier refresh's fallback row beside a real record", fmt.Sprintf(`{"v":1,"threads":[{"sessionId":"sid-fork","pid":%d,"role":"coordinator","fallback":true},{"sessionId":"sid-real","pid":%d,"role":"coordinator"}]}`, os.Getpid(), os.Getpid()), nil},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d,"name":"🦉 clio"}`, os.Getpid()))
+			write(t, filepath.Join(sessions, "real.json"), fmt.Sprintf(`{"sessionId":"sid-real","pid":%d,"name":"any"}`, os.Getpid()))
+			write(t, store, c.records)
+			env := []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}
+
+			show := xIn(t, t.TempDir(), env, "thread", "show", "sid-fork")
+
+			if show.data["role"] != c.want {
+				t.Fatalf("role %v, want %v:\n%s", show.data["role"], c.want, show.stdout)
 			}
 		})
 	}

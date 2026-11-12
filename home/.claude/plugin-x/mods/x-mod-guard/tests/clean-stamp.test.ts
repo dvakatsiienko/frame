@@ -316,23 +316,21 @@ const START_DOORS = [
     'launchctl submit -l x.clio -- /bin/zsh /home/frame/_clio/script/clio-revive.sh main',
 ];
 for (const line of START_DOORS)
-    test(`a codie cannot start a role's thread: ${line}`, async ($, on) => {
+    test(`a codie's start door is warned, warn-only on dima's word: ${line}`, async ($, on) => {
         const { ran } = world(on, CODIE, 'codie');
         const r = await bash($, line);
-        expect([r.deny, ran]).toEqual([
-            expect.stringContaining('a start door hands its thread the role'),
-            [],
-        ]);
+        expect([
+            r.deny,
+            ran.length,
+            JSON.stringify(r).includes('would refuse this (rule start-door,'),
+        ]).toEqual([undefined, 1, true]);
     });
 
 // FRM-579 exit 6: the 01:28 fork, named «🦉 clio» with no record, is no coordinator at the door either
-test('a «🦉 clio» with no record cannot run clio-start.sh', async ($, on) => {
-    const { ran } = world(on, '🦉 clio');
+test('a «🦉 clio» with no record is warned at clio-start.sh', async ($, on) => {
+    world(on, '🦉 clio');
     const r = await bash($, START_DOORS[0] ?? '');
-    expect([r.deny, ran]).toEqual([
-        expect.stringContaining('a start door hands its thread the role'),
-        [],
-    ]);
+    expect(JSON.stringify(r)).toContain('would refuse this (rule start-door,');
 });
 
 for (const [line, role] of [

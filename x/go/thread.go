@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ type thread struct {
 	Wing      int    `json:"wing,omitempty"`
 	Area      string `json:"area,omitempty"`
 	Title     string `json:"title,omitempty"`
+	Fallback  bool   `json:"fallback,omitempty"`
 	Display   string `json:"display"`
 	At        int64  `json:"at,omitempty"`
 }
@@ -225,7 +227,7 @@ func refreshThreads(now time.Time) ([]thread, error) {
 func joinThreads(now time.Time, stored []thread) []thread {
 	records, byProcess := map[string]thread{}, map[string]string{}
 	for _, t := range stored {
-		if t.Role != "" {
+		if t.Role != "" && !t.Fallback {
 			records[t.SessionID] = t
 			if t.Pid > 0 && t.ProcStart != "" {
 				byProcess[strconv.Itoa(t.Pid)+" "+t.ProcStart] = t.SessionID
@@ -287,11 +289,38 @@ func joinThreads(now time.Time, stored []thread) []thread {
 			threads = append(threads, t)
 		}
 	}
+	nameFallback(threads)
 	for i := range threads {
 		threads[i].Display = threadDisplay(threads[i])
 	}
 	slices.SortFunc(threads, func(a, b thread) int { return strings.Compare(a.SessionID, b.SessionID) })
 	return threads
+}
+
+var wingName = regexp.MustCompile(`^🦉🪽c?clio:wing(\d+)$`)
+
+// dima, 15:47 («stop locking yourself out»): while no live thread holds a coordinator record — a missed backfill, a
+// restart — today's name check still seats clio and her wings, the row marked fallback so every reader can say so, and
+// a refresh never keeps it as a record
+func nameFallback(threads []thread) {
+	if slices.ContainsFunc(threads, func(t thread) bool { return roleOf(t.Role).IsCoordinator }) {
+		return
+	}
+	for i, t := range threads {
+		if t.Role != "" {
+			continue
+		}
+		bare := strings.NewReplacer(" ", "", "\u200d", "").Replace(t.Name)
+		if bare == "🦉clio" || bare == "🦉cclio" {
+			threads[i].Role, threads[i].Fallback = "coordinator", true
+		} else if m := wingName.FindStringSubmatch(bare); m != nil {
+			n, _ := strconv.Atoi(m[1])
+			threads[i].Role, threads[i].Wing, threads[i].Fallback = "wing", n, true
+		}
+		if threads[i].Fallback {
+			fmt.Fprintf(os.Stderr, "x: %s holds no coordinator record, so its name %q seats it (the name fallback); run the backfill\n", t.SessionID, t.Name)
+		}
+	}
 }
 
 func writeThreadStore(path string, now time.Time, threads []thread) error {
@@ -338,7 +367,7 @@ func coordinatorOnly(verb string) error {
 // one started before x wrote records); never another role, and never an id no thread holds, so a dispatch cannot mint one
 func threadRoleRefusal(stored []thread, sid, role string) error {
 	for _, t := range stored {
-		if t.SessionID == sid && t.Role != "" {
+		if t.SessionID == sid && t.Role != "" && !t.Fallback {
 			if t.Role == role {
 				return nil
 			}
