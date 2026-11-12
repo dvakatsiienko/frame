@@ -13,7 +13,8 @@ import (
 func ownerServer(t *testing.T, carried string) *fakeLinear {
 	issue := `"issue":{"id":"uuid-1","identifier":"FRM-1","description":"the body","updatedAt":"2026-10-07T10:00:00.000Z","priority":3,"state":{"name":"Todo"},
 		"team":{"id":"t-frm","states":{"nodes":[{"id":"s-ip","name":"In Progress"}]}},"labels":{"nodes":[` + carried + `]}}`
-	owners := `"ownerLabels":{"nodes":[{"id":"l-main","name":"clio-main","team":null},{"id":"l-wing-2","name":"clio-wing-2","team":null}]}`
+	workspace := `{"nodes":[{"id":"l-main","name":"clio-main","team":null},{"id":"l-wing-2","name":"clio-wing-2","team":null}]}`
+	owners := `"ownerLabels":` + workspace + `,"labels":` + workspace
 	return newFakeLinear(t, func(call gqlCall) string {
 		if strings.Contains(call.Query, "mutation") {
 			return `{"data":{"issueUpdate":{"success":true,"issue":{"updatedAt":"2026-10-07T12:00:00.000Z"}}}}`
@@ -69,21 +70,67 @@ func TestAClaimCarriesItsOwnerLabel(t *testing.T) {
 	}
 }
 
-func TestABodyWriteCarriesItsOwnerLabel(t *testing.T) {
+// FRM-572 exit 12: a clio the name fallback seated still signs as clio, but labels nothing
+func TestANameFallbackSeatSetsNoOwnerLabel(t *testing.T) {
 	t.Parallel()
-	server := ownerServer(t, `{"id":"l-main","name":"clio-main"}`)
-	env := append(sessionsFixture(t, "any name", "wing"), "X_STATE="+t.TempDir())
-	file := filepath.Join(t.TempDir(), "body.md")
-	if _, got := runLinear(t, server, env, "linear", "body", "FRM-1", "--to", file); got.code != 0 {
-		t.Fatalf("the pull: exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	server := ownerServer(t, "")
+	dir := filepath.Join(t.TempDir(), "caller-set")
+	store := filepath.Join(t.TempDir(), "threads.json")
+	write(t, filepath.Join(dir, fmt.Sprint(os.Getpid())+".json"), `{"sessionId":"s-1","name":"🦉 clio"}`)
+	write(t, store, `{"v":1,"threads":[{"sessionId":"s-1","role":"coordinator","fallback":true}]}`)
+	envelope, got := runLinear(t, server, []string{"X_SESSIONS=" + dir, "X_THREADS=" + store}, "linear", "set", "FRM-1", "--state", "In Progress")
+	if got.code != 0 {
+		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
 	}
-	write(t, file, "the body, edited")
-	if _, got := runLinear(t, server, env, "linear", "body", "FRM-1", "--set", file); got.code != 0 {
-		t.Fatalf("the set: exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	if data, _ := envelope["data"].(map[string]any); data["actor"] != "clio" {
+		t.Errorf("actor %v, want clio: a reader keeps the fallback", data["actor"])
 	}
+	if sent := ownerSent(t, server); sent != "<nil> <nil>" {
+		t.Errorf("labels added and removed %s, want none", sent)
+	}
+}
 
-	if sent := ownerSent(t, server); sent != "[l-wing-2] [l-main]" {
-		t.Errorf("labels added and removed %s, want the wing's owner in and main's out", sent)
+// FRM-572 exit 13: a body write labels only a ticket no clio holds, so it never takes a wing's ticket
+func TestABodyWriteLabelsOnlyAnUnheldTicket(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ name, carried, want string }{
+		{"an unheld ticket takes the writer's owner", "", "[l-wing-2] <nil>"},
+		{"main's ticket stays main's", `{"id":"l-main","name":"clio-main"}`, "<nil> <nil>"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := ownerServer(t, c.carried)
+			env := append(sessionsFixture(t, "any name", "wing"), "X_STATE="+t.TempDir())
+			file := filepath.Join(t.TempDir(), "body.md")
+			if _, got := runLinear(t, server, env, "linear", "body", "FRM-1", "--to", file); got.code != 0 {
+				t.Fatalf("the pull: exit %d\n%s%s", got.code, got.stdout, got.stderr)
+			}
+			write(t, file, "the body, edited")
+			if _, got := runLinear(t, server, env, "linear", "body", "FRM-1", "--set", file); got.code != 0 {
+				t.Fatalf("the set: exit %d\n%s%s", got.code, got.stdout, got.stderr)
+			}
+			if sent := ownerSent(t, server); sent != c.want {
+				t.Errorf("labels added and removed %s, want %s", sent, c.want)
+			}
+		})
+	}
+}
+
+// FRM-572 exit 13: an explicit owner label is the claim out loud, so it drops every other clio's
+func TestAnExplicitOwnerLabelSwapsTheHolder(t *testing.T) {
+	t.Parallel()
+	for _, role := range []string{"coordinator", "codie"} {
+		t.Run(role, func(t *testing.T) {
+			t.Parallel()
+			server := ownerServer(t, `{"id":"l-wing-2","name":"clio-wing-2"}`)
+			argv := []string{"linear", "set", "FRM-1", "--add-label", "clio-main"}
+			if _, got := runLinear(t, server, sessionsFixture(t, "any name", role), argv...); got.code != 0 {
+				t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
+			}
+			if sent := ownerSent(t, server); sent != "[l-main] [l-wing-2]" {
+				t.Errorf("labels added and removed %s, want clio-main in and clio-wing-2 out", sent)
+			}
+		})
 	}
 }
 

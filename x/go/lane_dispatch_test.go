@@ -413,15 +413,20 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 	}
 }
 
-// exit 28: a dispatch renames an idle thread to the display its record now draws, and hands a busy one the exact command
+// exit 28: a dispatch renames an idle thread to the display its record now draws, and hands a busy one the exact command;
+// FRM-572 exit 5: an idle thread whose input box holds a draft, or whose box does not read, gets the command too
 func TestDispatchRenamesAThreadByItsNewRecord(t *testing.T) {
 	t.Parallel()
+	const rule = "────────────────────────────────────────"
 	for _, c := range []struct {
-		name, state string
-		isRenamed   bool
+		name, state, box string
+		isRenamed        bool
 	}{
-		{"idle", "done", true},
-		{"busy", "working", false},
+		{"idle", "done", "❯ ", true},
+		{"busy", "working", "❯ ", false},
+		{"idle with a draft", "done", "❯ half a prompt", false},
+		{"idle with a draft on its second line", "done", "❯ \n  more of it", false},
+		{"idle with no box on screen", "done", "", false},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -429,13 +434,19 @@ func TestDispatchRenamesAThreadByItsNewRecord(t *testing.T) {
 			sessions, store, bin := t.TempDir(), filepath.Join(t.TempDir(), "threads.json"), t.TempDir()
 			log := filepath.Join(bin, "hc.log")
 			write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
+			screen := filepath.Join(bin, "screen.txt")
+			write(t, screen, "❯ an old prompt\n\n● an answer\n")
+			if c.box != "" {
+				write(t, screen, "❯ an old prompt\n\n● an answer\n\n"+rule+"\n"+c.box+"\n"+rule+"\n  the status line\n")
+			}
 			write(t, filepath.Join(bin, "hc"), fmt.Sprintf(`#!/bin/sh
 case "$1" in
 ls) echo '{"terminals":[{"address":"t1","agent":"zsh"},{"address":"t9","agent":"claude-code"}]}' ;;
 get) echo '{"pid":%d,"status":{"state":"%s"}}' ;;
+read) cat %s 2>/dev/null ;;
 send) echo "send $2 $3 term=${HC_TERMINAL_ID:-unset}" >> %s ;;
 esac
-`, os.Getpid(), c.state, log))
+`, os.Getpid(), c.state, screen, log))
 			if err := os.Chmod(filepath.Join(bin, "hc"), 0o755); err != nil {
 				t.Fatal(err)
 			}

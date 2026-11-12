@@ -1020,7 +1020,7 @@ func shimsFixture(t *testing.T) (redFixture, []string) {
 			t.Fatal(err)
 		}
 	}
-	// a tripwire: the copy holds no .git, so only a command that reaches out of the copy could write a hook
+	// a tripwire: the copy's repo starts with no hooks, so only a command that reaches out of the copy could write one
 	hooks := filepath.Join(dir, ".git", "hooks")
 	write(t, filepath.Join(hooks, "pre-commit"), "#!/bin/sh\nexec node_modules/.bin/tool\n")
 	write(t, filepath.Join(dir, "relink.sh"), `[ -e node_modules/.bin/added ] || [ -L node_modules/.bin/linked ] || echo "the link shim reached the copy as a file" >> "$VERIFY_LOG"
@@ -1239,12 +1239,41 @@ func TestVerifyRedReadsAnUnreadLineStillGreen(t *testing.T) {
 	}
 }
 
-// FRM-572: the off-tree copy holds no .git, so a test that runs git there is red before any swap; the refusal says why,
-// never only «the clean run is red» for a test green in the tree
-func TestVerifyRedNamesACleanRedFromTheMissingGit(t *testing.T) {
+// FRM-572 exit 11: the copy carries a repo at the tree's HEAD, so a test that runs git, as x/go's lefthook.yaml readers do,
+// reads its clean run green and its swap red
+func TestVerifyRedRunsATestThatRunsGitOnTheCopy(t *testing.T) {
 	t.Parallel()
-	got := cleanHolds("lefthook.yaml", redRun{log: "AssertionError: fatal: not a git repository (or any of the parent directories): .git"}, false)
-	if refused, _ := got.(*Fail); refused == nil || !strings.Contains(refused.Msg, "holds no .git") {
-		t.Fatalf("got %v, want the refusal to name the copy's missing .git", got)
+	for _, c := range []struct {
+		name               string
+		isStaged, hasDecoy bool
+	}{
+		{"a committed file", false, false},
+		{"a file only staged", true, false},
+		{"a hook's GIT_INDEX_FILE in the caller's env", false, true},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir := repo(t)
+			write(t, filepath.Join(dir, "sub/go.mod"), "module p\n\ngo 1.24\n")
+			write(t, filepath.Join(dir, "sub/hook_test.go"), "package p\n\nimport (\n\t\"os\"\n\t\"os/exec\"\n\t\"testing\"\n)\n\nfunc TestHook(t *testing.T) {\n\tif out, err := exec.Command(\"git\", \"ls-files\", \"--error-unmatch\", \"../hook.yaml\").CombinedOutput(); err != nil {\n\t\tt.Fatalf(\"git: %v %s\", err, out)\n\t}\n\tif body, _ := os.ReadFile(\"../hook.yaml\"); string(body) != \"count: 1\\n\" {\n\t\tt.Fatalf(\"read %q\", body)\n\t}\n}\n")
+			commitAll(t, dir)
+			write(t, filepath.Join(dir, "hook.yaml"), "count: 1\n")
+			if c.isStaged {
+				gitT(t, dir, "add", "hook.yaml")
+			} else {
+				commitAll(t, dir)
+			}
+			var env []string
+			if c.hasDecoy {
+				// as a pre-commit hook's temp index: git in the copy must read the copy's own
+				env = []string{"GIT_INDEX_FILE=" + filepath.Join(t.TempDir(), "hook-index")}
+			}
+
+			got, _ := verifyRedIn(t, redFixture{dir: dir}, env, "hook.yaml", "count: 1", "count: 2", "sub/hook_test.go")
+
+			if rows := pairRows(t, got); got.code != 0 || got.data["verdict"] != verdictRed || len(rows) != 1 {
+				t.Fatalf("exit %d, data %v, want a green clean run and a red swap:\n%s", got.code, got.data, got.stdout)
+			}
+		})
 	}
 }

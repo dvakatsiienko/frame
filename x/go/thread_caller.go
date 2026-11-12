@@ -154,8 +154,8 @@ func callerThread(s callerSession, withFallback bool) thread {
 	return thread{}
 }
 
-// the clio owner label the caller's record names, "" for a session that is no clio thread; a clio the name fallback found counts, so
-// a missed backfill still labels her claims
+// the clio owner label the caller's record names, "" for a session that is no clio thread; a label is a write, so a seat the
+// name fallback found sets none
 func callerOwnerLabel() string {
 	table, err := readProcessTable()
 	if err != nil {
@@ -165,5 +165,5 @@ func callerOwnerLabel() string {
 	if len(chain) == 0 {
 		return ""
 	}
-	return ownerLabel(callerThread(chain[0], true))
+	return ownerLabel(callerThread(chain[0], false))
 }

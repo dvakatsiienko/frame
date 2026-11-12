@@ -36,6 +36,10 @@ func renameThread(sid, display string) ordered {
 	if !idle {
 		return append(row, kv{"renamed", false}, kv{"command", command})
 	}
+	// a send waits out a typing pause, then lands in the box after the draft: dima's half-typed prompt would carry it
+	if !isInputBoxEmpty(terminal) {
+		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"why", "its input box holds text, or did not read"})
+	}
 	send := exec.Command(hcBin(), "send", terminal, "/rename "+display)
 	send.Env = slices.DeleteFunc(os.Environ(), func(pair string) bool { return len(pair) > 15 && pair[:15] == "HC_TERMINAL_ID=" })
 	if out, err := send.CombinedOutput(); err != nil {
@@ -101,6 +105,28 @@ func sessionPid(sid string) int {
 		}
 	}
 	return 0
+}
+
+// cc's input box on a terminal's screen: the lines between its last two rules, the first led by ❯; true only when that
+// box reads and holds nothing past the ❯
+func isInputBoxEmpty(terminal string) bool {
+	screen, err := exec.Command(hcBin(), "read", terminal, "--lines", "0").Output()
+	if err != nil {
+		return false
+	}
+	var rules []int
+	lines := strings.Split(string(screen), "\n")
+	for i, line := range lines {
+		if strings.HasPrefix(strings.TrimSpace(line), strings.Repeat("─", 10)) {
+			rules = append(rules, i)
+		}
+	}
+	if len(rules) < 2 {
+		return false
+	}
+	box := lines[rules[len(rules)-2]+1 : rules[len(rules)-1]]
+	first, isPrompt := strings.CutPrefix(strings.TrimSpace(strings.Join(box, "\n")), "❯")
+	return isPrompt && strings.TrimSpace(first) == ""
 }
 
 // the herdr terminal whose program is that pid, and whether its claude is between turns; "" when herdr holds none

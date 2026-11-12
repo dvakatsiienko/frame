@@ -194,7 +194,9 @@
   - given only codie's look card, then 🔴 look until a `👀 look sent` line sits in the body; the wish line reads «close in this turn» once the look card's proof exists on a merged chunk
   - given a quick lane mid-verify, then `--apply` refuses; `merged` counts, from the 🚀 line's base to the verified sha, that sha and the commits whose `step N of <ticket>` line names this ticket, and says how many it left out; a ticket's `repo:` line picks the repo, a BYT ticket with none reads bytes; a quick lane with no sixth sense decamps no verify tree
   - given a line a ↩️ leads below the 🚀 line, then the dispatch is taken back; a ↩️ inside a sentence takes nothing back
-  - given a lane plan naming the chunk, then 🔴 closing while its `- [ ] NN · <ticket> reviewed and closed` slice is open or missing, and `--apply` on a merged lane ticks an open one, no other line touched, so the glide card holds the chunk until it closes; a lane with no plan, or a plan without the chunk, prints no closing line (FRM-504)
+  - given a lane plan naming the chunk, then 🔴 closing while its `- [ ] NN · <ticket> reviewed and closed` slice is open or missing, and `--apply` on a merged lane ticks an open one, no other line touched, so the glide card holds the chunk until it closes; a lane with no plan, or a plan without the chunk, prints no closing line (FRM-504); a closer with a trailing note in parens reads as the closer (FRM-572)
+  - given a joint spec section, `## FRM-436 + FRM-424 — …`, then it is each named ticket's spec, for `x lane landed` and `x brief preflight` alike (FRM-572)
+  - given a ticket body with a `## 🪢 habits` section, then 🔴 habits names each unticked line, ✅ once every line is ticked; a body with no such section prints no habits line (FRM-505's exit 6, FRM-572)
   - given a `## ⚖️ worth it` carrying a `new verb: <name>` line, and no guess from prose, then it reads «wired: unmeasured yet» until every other ticket of its milestone closed, then 🔴 wired at 0 calls in 30 days; a name no verb answers to reads 🔴 wired at once
   - given a pr that added a rule to x-mod-guard's `WARN_ONLY`, when `x lane landed <ticket> --pr <n>` runs, then 🔴 warn-only names the rule while the land still lists it, ✅ once it left; a pr that added none prints no such line, the older rules among them; a set that does not read reds (FRM-511)
 - ⬜ `x lane landed --apply` takes a tree the merge left, once it is clean (FRM-480)
@@ -383,9 +385,11 @@
   - decision: dima's `decamp` alias stays `git worktree remove` until he says otherwise (clio, 2026-10-08)
 - ⬜ `x lane decamp` and `x lane landed` read a tree's lock against its holder
   - given a tree whose `git worktree lock` reason names a pid and a start time, as cc writes it
-  - when the pid is dead, or alive with another start time, then the tree stays, the line says the lock is stale and names `git worktree unlock <path>`
+  - when the pid is dead, or alive with another start time, then `x lane decamp` keeps the tree, the line says the lock is stale and names `git worktree unlock <path>`
+  - when the pid is dead and the tree is otherwise clean, then `x lane landed` names the stale lock, and `--apply` unlocks it and decamps the tree; with other dirt, or a pid alive with another start time, it stays, the unlock named (FRM-572)
+  - the lock's start is cc's UTC stamp and `ps` prints local time: the two are compared as one instant, so a live holder never reads stale (wishkeeper on #172)
   - when the pid is alive with that start time, or the lock names no pid, then it reads «a live session holds it» as before
-  - decision: x names the unlock and never runs it: a stale read is one `ps` away from a live session's tree (FRM-384)
+  - decision: `x lane decamp` names the unlock and never runs it (FRM-384); `x lane landed` runs it, since a landed lane's tree has no work left and a live session sitting in it still keeps it (FRM-572 chunk 2, signed)
 
 ## gate — a heavy check in its turn
 
@@ -547,10 +551,11 @@
   - the display name reads `<mode> <role> <area> | <ticket>`, the area the ticket's linear project (`🌗 🔧 cli | FRM-579` for a lane named `thread-records`), never the lane name; a standing role draws its whole display from `x/go/roles.json`: `🦉 clio`, `🦉🪽 clio: wing N`, `🐦‍⬛ crow`, `🎀 helga`, so a rename of clio is one table line and moves no reader's power
   - given a pid that died (`kill -9`), a registry file gone (an archived session), or a row whose `procStart` is not its pid's start time as `ps` reads it (a crashed session's pid another process took), then it drops out of the store at the next call; a record whose session never started stays 10 minutes, then drops; a thread once seen live stays past its pid or file only while its registry file reads torn
   - given any call, then `~/.claude/shelf/threads.json` is rewritten, so a display reads it with no spawn; x-mod-stash's hooks call `x thread list` at session start, turn end and exit
+  - given `x thread list` in a terminal (or `--board`), then the board draws a row a thread: its name (cc's own for a thread with no record), its role (a wing with its number, a fallback seat «by name»), alive or still starting, and its cwd, the path last so a long one clips; `--json` is unchanged (FRM-572, dima 19:02)
   - given `show` with a session id or a pid no live session holds, then exit 1
   - given a summon that passes `x brief summon`, then its printed argv carries a fresh `--session-id <uuid>` and the store holds that id's role, ticket, lane (the spec's dir) and lane kind (the brief's `lane:` line) before the thread runs; `x lane dispatch --apply` writes the same for its `--session` codie and `--sixth-sense`
   - and its `-n` is the display drawn from that record, the one `x thread show <sid>` prints, never the name the command typed; the envelope's `display` holds it (FRM-436 rider, dima o72)
-  - given `x lane dispatch --apply` moves a live thread's record, then its herdr terminal (the one whose pid the registry holds) gets `/rename <display>` when it sits idle, through `env -u HC_TERMINAL_ID hc send`, since a slash command typed from inside a herdr thread arrives tag-wrapped and never runs; a busy one is renamed by nothing and `renames` carries that exact command (FRM-436 rider, dima o74)
+  - given `x lane dispatch --apply` moves a live thread's record, then its herdr terminal (the one whose pid the registry holds) gets `/rename <display>` when it sits idle, through `env -u HC_TERMINAL_ID hc send`, since a slash command typed from inside a herdr thread arrives tag-wrapped and never runs; a busy one is renamed by nothing and `renames` carries that exact command (FRM-436 rider, dima o74); so is an idle one whose cc input box holds text, or whose box does not read off `hc read`, since herdr's send lands after a draft (FRM-572 exit 5, dima o76)
   - decision: the store sits beside x-mod-stash's `herdr-state/`, a registry mirror kept separate (wing 1, 2026-11-11)
 - ⬜ `x brief summon --role <coordinator|wing:<n>|adviser|copyist>` starts clio, a wing, crow or helga with a record of its standing role (FRM-579)
   - given a pane start (`hc run … -- claude …`), then the argv carries a fresh `--session-id` and the pretty name as `-n`, and `x thread show <sid>` prints the role and its display before the thread runs
@@ -619,7 +624,9 @@
   - given `--add-label` or `--remove-label`, then only those labels move — the write carries the delta (`addedLabelIds`, `removedLabelIds`), so a label another writer adds in between survives
   - decision: deltas over the spec's full set, for that race (dima, 2026-10-07)
   - given a name the ticket's team or the workspace lacks, then exit 1 listing the valid names, and nothing is written; given no field at all, exit 2
-  - given a clio thread by its record (`coordinator` → `clio-main`, `wing` N → `clio-wing-N`), when it moves a ticket to In Progress, sets its delegate or writes its body (`x linear body --set`), then the same write adds its owner label and drops any other clio's, so a handover swaps it; a member's write, or a label linear lacks, changes no owner label; the words live once, in `linear_set.go` (FRM-572)
+  - given a clio thread by its record (`coordinator` → `clio-main`, `wing` N → `clio-wing-N`), when it moves a ticket to In Progress or sets its delegate, then the same write adds its owner label and drops any other clio's, so a handover swaps it; a member's write, a seat only the name fallback found, or a label linear lacks, changes no owner label; the words live once, in `linear_set.go` (FRM-572)
+  - given a body write (`x linear body --set`) by a clio, then it adds her owner label only to a ticket no `clio-*` label holds, so it never takes another clio's; `x linear set <id> --add-label <owner label>` is the claim out loud: that label in, every other clio's out (FRM-572, dima's o77)
+  - given `x linear set <id> --state Done` on a ticket a lane spec holds, then the reds `x lane landed <id>` would print go to stderr and the envelope's `landedReds` before the move, which still lands: a warning, never a refusal (FRM-572 exit 7)
 - ✅ `x linear link <id> blocks|related|duplicate <targets…>` relates tickets in one request
   - given a ticket, a kind and one or more targets, all by `FRM-N`
   - when it runs, then one request creates a relation per target, and the envelope names the actor

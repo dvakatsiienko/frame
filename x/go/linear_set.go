@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -122,9 +123,12 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
-	// a clio's claim (In Progress or a delegate) carries her owner label (FRM-572:W1)
+	// a clio's claim (In Progress or a delegate) carries her owner label (FRM-572:W1); an owner label named in
+	// --add-label is the claim out loud, so it wins and drops every other clio's (o77)
 	owner := ""
-	if strings.EqualFold(given["state"], "In Progress") || given["delegate"] != "" {
+	if named := slices.IndexFunc(splitNames(given["add-label"]), isOwnerLabel); named >= 0 {
+		owner = splitNames(given["add-label"])[named]
+	} else if strings.EqualFold(given["state"], "In Progress") || given["delegate"] != "" {
 		owner = callerOwnerLabel()
 	}
 
@@ -175,6 +179,15 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 	issue := found.Issue
 	if issue.ID == "" {
 		return nil, &Fail{Msg: id + ": not found", Next: "x linear list --search " + id}
+	}
+
+	// a close past a red landed warns first, never refuses (FRM-572 exit 7)
+	var reds []string
+	if strings.EqualFold(given["state"], "Done") {
+		reds = landedReds(r, issue.Identifier)
+		for _, red := range reds {
+			fmt.Fprintln(os.Stderr, "⚠ x lane landed "+issue.Identifier+": "+red)
+		}
 	}
 
 	input := map[string]any{}
@@ -322,7 +335,11 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 		}
 		r.Board(strings.Join(lines, "\n"))
 	}
-	return ordered{{"actor", actor}, {"changes", changes}, {"id", id}}, nil
+	out := ordered{{"actor", actor}, {"changes", changes}, {"id", id}}
+	if len(reds) > 0 {
+		out = append(out, kv{"landedReds", reds})
+	}
+	return out, nil
 }
 
 func orDash(value string) string {

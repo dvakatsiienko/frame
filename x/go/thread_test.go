@@ -46,6 +46,20 @@ func threadWorld(t *testing.T) (env []string, store string, live, dead int) {
 	return []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}, store, live, dead
 }
 
+// FRM-572 rider (dima 19:02): the human view draws a row a thread, not only the count
+func TestThreadListDrawsARowAThread(t *testing.T) {
+	t.Parallel()
+	env, _, _, _ := threadWorld(t)
+
+	got := xIn(t, t.TempDir(), env, "thread", "list", "--board")
+
+	for _, want := range []string{"🌗 🔧 cli | FRM-570", "codie", "/w", "alive", "⚡ 🔎 mods | FRM-574", "starting", "old name sid-plain", "no role", "3 threads"} {
+		if !strings.Contains(got.stdout, want) {
+			t.Errorf("want %q on the board:\n%s", want, got.stdout)
+		}
+	}
+}
+
 func TestThreadListJoinsTheRegistryToItsRecords(t *testing.T) {
 	t.Parallel()
 	env, store, live, _ := threadWorld(t)

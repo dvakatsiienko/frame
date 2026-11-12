@@ -176,7 +176,7 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 		return nil, damage
 	}
 	input := map[string]any{"description": string(text)}
-	// a clio writing the body claims the ticket, so it carries her owner label (FRM-572:W1)
+	// a clio writing the body of a ticket no clio holds claims it; one another clio holds stays hers (FRM-572:W1, o77)
 	if owner := callerOwnerLabel(); owner != "" {
 		var labels struct {
 			Issue struct {
@@ -192,8 +192,11 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 		if lookupErr == nil {
 			raw, _ := json.Marshal(found)
 			_ = json.Unmarshal(raw, &labels)
-			adds, removes := ownerDelta(owner, labels.Issue.Labels.Nodes, labels.OwnerLabels.Nodes, labels.Issue.Team.ID)
-			mergeOwner(input, adds, removes)
+			isHeld := slices.ContainsFunc(labels.Issue.Labels.Nodes, func(label idName) bool { return isOwnerLabel(label.Name) })
+			if !isHeld {
+				adds, removes := ownerDelta(owner, labels.Issue.Labels.Nodes, labels.OwnerLabels.Nodes, labels.Issue.Team.ID)
+				mergeOwner(input, adds, removes)
+			}
 		}
 	}
 	var data map[string]json.RawMessage
