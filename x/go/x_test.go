@@ -293,6 +293,28 @@ func TestRefusedCommitHandsTheHookOutputToAnAgent(t *testing.T) {
 	}
 }
 
+// FRM-572: a red pre-commit stops the commit before its commit-msg gate runs, so the message's own reds print beside
+// the hook's in the same run, never one try later (wing 1 took six tries for one commit)
+func TestARefusedCommitAlsoNamesItsMessagesReds(t *testing.T) {
+	t.Parallel()
+	bin, dir := xbin, world(t)
+	hook := filepath.Join(dir, "repo/.git/hooks/pre-commit")
+	if err := os.WriteFile(hook, []byte("#!/bin/sh\necho 'hook says: line 131 is too wide'\nexit 1\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(dir, "repo/skills/crew-x/notes.md"), "a new note\n")
+	cmd := exec.Command(bin, "lane", "commit", filepath.Join(dir, "msg.txt"), "--", "skills/crew-x/notes.md")
+	cmd.Dir = filepath.Join(dir, "repo")
+	cmd.Env = cleanEnv()
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	_ = cmd.Run()
+	both := stdout.String() + stderr.String()
+	if !strings.Contains(both, "hook says: line 131 is too wide") || !strings.Contains(both, "skills/crew-x/notes.md is a new file in a crew-/guide- skill") {
+		t.Fatalf("want the hook's red and the message's red in one run:\n%s\n%s", stdout.String(), stderr.String())
+	}
+}
+
 func TestEveryVerbBelongsToAListedFamily(t *testing.T) {
 	t.Parallel()
 	for _, verb := range verbs {

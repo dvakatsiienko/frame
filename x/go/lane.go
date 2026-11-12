@@ -361,7 +361,15 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 				}
 			}
 			if !committed.ok {
-				return "", hookFail(committed.log, again)
+				refused := hookFail(committed.log, again)
+				// a pre-commit red stops git before the commit-msg gate: its reds join this try, not the next
+				if raw, readErr := os.ReadFile(message); readErr == nil && !strings.Contains(committed.log, "lane gate: ") {
+					pending, _ := messageRefusals(tree, raw)
+					for _, line := range pending {
+						refused.Log = append(refused.Log, "lane gate: "+line)
+					}
+				}
+				return "", refused
 			}
 			sha, err = head()
 			return withWait(took, short(sha)+"  "+firstLine(message)+proven+retried), err
