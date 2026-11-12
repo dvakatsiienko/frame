@@ -165,12 +165,22 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: the fold waits for his next message, so a reply never collapses while he reads it (review, 00:54)
   - proof: a probe thread's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
   - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
-- ⬜ herdr's FPS meter turns on from the chat's settings
+- ⬜ one settings window, a page per mod (FRM-566)
+  - makes: `~/.claude/shelf/herdr-settings/settings.json`, `{v, rows}`: every row's value, defaults included, written at the chatter's start and on each change
   - given dima opens ⚙ in the Chat view
-  - when he picks «FPS meter: Show»
-  - then herdr's performance meter draws over the whole window, and «Hide» takes it away; his pick holds across a herdr restart
-  - and in a window where herdr cannot draw it, the row reads «FPS meter (unavailable)» with the reason on hover
-  - decision: a settings row now, its hotkey waits for FRM-577's one hotkey store (clio, 19:09)
+  - when he presses «All settings…»
+  - then the settings window opens as a dialog on its Chatter page: a nav of Chatter, Deck, Tabs and Claude Code mods, each row a title, a one-line why and one control
+  - and a change lands in the file at once, and a value off its row's range or options reads as the row's default
+  - and a row whose reader does not read the file yet carries «not wired yet»: the 🔓 override's scopes and the five Claude Code mods rows, until x-mod-stash reads them
+  - decision: the window lives in the chatter: a herdr mod cannot import a sibling mod's file, and only a mod placed at start can write every default (clio, 19:28)
+- ⬜ the meters warn at his levels
+  - given «🧠 ctx turns amber at» and «🗓 week turns amber at» in the settings window, 60 % and 80 % by default
+  - then each bar turns amber once its share reaches its level
+- ⬜ herdr's FPS meter turns on from the settings window
+  - when he turns «FPS meter» on, on the Chatter page
+  - then herdr's performance meter draws over the whole window, and off takes it away; his pick holds across a herdr restart
+  - and where herdr cannot draw it, the row's line says why in place of its why
+  - decision: its hotkey waits for FRM-577's one hotkey store (clio, 19:09)
 - ⬜ once he scrolls up, nothing but his own hand moves his view (FRM-562:W18, W19)
   - given he scrolled up in a thread's chat
   - when a reply, a tool line, a peer or plugin line, a turn end, a store change, a resize or a reload of the mod arrives

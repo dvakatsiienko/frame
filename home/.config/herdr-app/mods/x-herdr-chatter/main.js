@@ -110,6 +110,15 @@ import {
     rowSizes,
     unlinkFiles,
 } from './rows.js';
+import { settingRows } from './settings-model.js';
+import {
+    SETTINGS_DIR,
+    SETTINGS_FILE,
+    resolvedRows,
+    settingsText,
+    storedRows,
+} from './settings-store.js';
+import { SETTINGS_WINDOW, settingsWindow } from './settings-window.js';
 import {
     deleteShots,
     loadShots,
@@ -150,7 +159,6 @@ const LOOK_DEFAULT = {
     bg: 'background',
     fg: 'theme',
     font: 'ui',
-    fps: 'hide',
     mine: 'bubble',
     replies: 'open',
     size: 13,
@@ -186,21 +194,54 @@ const chatLook = () => ({ ...LOOK_DEFAULT, ...(shared(LOOK) ?? {}) });
 const setLook = (change) => {
     setShared(LOOK, { ...chatLook(), ...change });
     if ('fg' in change) syncForeground();
-    if ('fps' in change) syncFps();
 };
+// the settings window's values (FRM-566), shared so every copy of this mod draws the same; the file under
+// SETTINGS_FILE is the store, read at start and on every change to its folder
+const SETTINGS = 'chat.settings';
+/** @returns {Record<string, unknown>} */
+const settingValues = () =>
+    /** @type {Record<string, unknown>} */ (shared(SETTINGS)) ??
+    resolvedRows(settingRows, {});
+/** @param {string} key */
+const settingValue = (key) => settingValues()[key];
+// every value lands in the file, defaults included, so no other reader keeps defaults of its own; writeTextFile
+// refuses a file changed since its read, so a change made meanwhile is read again, never lost
+/** @param {Record<string, unknown>} [change] */
+async function writeSettings(change) {
+    const made = await exec('mkdir', ['-p', `${home()}/${SETTINGS_DIR}`]);
+    if (made.code !== 0) throw new Error(made.stderr.trim() || 'mkdir failed');
+    const path = `${home()}/${SETTINGS_FILE}`;
+    for (let tries = 2; ; tries--) {
+        const text = await readTextFile(path).catch(
+            () => /** @type {string | null} */ (null),
+        );
+        const next = settingsText(settingRows, text, change);
+        try {
+            if (next !== text) await writeTextFile(path, next, text);
+            return next;
+        } catch (err) {
+            if (tries <= 1) throw err;
+        }
+    }
+}
+async function loadSettings() {
+    const values = resolvedRows(settingRows, storedRows(await writeSettings()));
+    if (JSON.stringify(values) !== JSON.stringify(shared(SETTINGS)))
+        setShared(SETTINGS, values);
+    syncFps();
+}
 // herdr's own performance meter (FPS and frame time), over the whole window; herdr has no key for it.
-// a window opened without herdr's shell root (`herdr-app check`'s) throws: the row then says why
+// a window opened without herdr's shell root (`herdr-app check`'s) throws: its row then says why
 let fpsError = '';
 const syncFps = () => {
     try {
-        if (chatLook().fps === 'show') show_fps_monitor();
+        if (settingValue('chatter.fps') === true) show_fps_monitor();
         else if (fps_monitor_visible()) hide_fps_monitor();
         fpsError = '';
     } catch (e) {
         fpsError = String(e?.message ?? e);
     }
 };
-syncFps();
 // Message text is Herdr's TextView, which only ever takes the theme's foreground, so a chosen
 // text color goes into settings.json's colors.foreground: the whole app's text (the user's choice,
 // 2026-10-31). "theme" removes it. writeTextFile refuses if the file changed since it was read.
@@ -1308,6 +1349,10 @@ function starting(tab) {
 
 export default class ClaudeChat extends View {
     init(_props, cx) {
+        if (props()?.settingsWindow) {
+            this.settingsPage = String(props().settingsWindow);
+            return;
+        }
         if (props()?.settings) {
             // Hex boxes for any background or text color; a full #rrggbb takes effect as it's typed.
             const look = chatLook();
@@ -1340,6 +1385,15 @@ export default class ClaudeChat extends View {
             });
             return;
         }
+        cx.spawn(async (cx) => {
+            for (;;) {
+                await loadSettings().catch((e) =>
+                    console.log(`settings: ${e?.message ?? e}`),
+                );
+                cx.notify();
+                await watchFolder(`${home()}/${SETTINGS_DIR}`);
+            }
+        });
         this.cache = new Map();
         this.scroll = VirtualListScrollHandle.new();
         this.measureGen = 0;
@@ -4853,7 +4907,6 @@ export default class ClaudeChat extends View {
                             .hover((s) => s.text_color(t.foreground))
                             .on_click(() => {
                                 setShared(LOOK, null);
-                                syncFps();
                                 for (const s of Object.values(this.hex))
                                     s.set_value('');
                             })
@@ -4922,15 +4975,31 @@ export default class ClaudeChat extends View {
             )
             .child(
                 row(
-                    fpsError
-                        ? div()
-                              .id('look-fps-error')
-                              .tooltip(fpsError)
-                              .child('FPS meter (unavailable)')
-                        : 'FPS meter',
+                    'Meters, FPS, the 🔓 override',
                     pills(
-                        seg('fps', 'show', 'Show'),
-                        seg('fps', 'hide', 'Hide'),
+                        div()
+                            .id('look-all-settings')
+                            .px(8)
+                            .h(22)
+                            .flex()
+                            .items_center()
+                            .rounded(5)
+                            .text_size(12)
+                            .cursor_pointer()
+                            .text_color(t.foreground)
+                            .hover((s) => s.bg(t.hover))
+                            .tooltip(
+                                'Open the settings window on its Chatter page',
+                            )
+                            .on_click(() =>
+                                openOverlay({
+                                    ...SETTINGS_WINDOW,
+                                    kind: 'dialog',
+                                    mod: 'x-herdr-chatter',
+                                    props: { settingsWindow: 'chatter' },
+                                }),
+                            )
+                            .child('All settings…'),
                     ),
                 ),
             )
@@ -6430,8 +6499,22 @@ export default class ClaudeChat extends View {
                 v_flex()
                     .gap(3)
                     // ctx above week (dima, 21:00: «move ctx meter over the week»)
-                    .child(meter('meter-ctx', 'ctx', b.context, 60))
-                    .child(meter('meter-week', 'week', b.week, 80)),
+                    .child(
+                        meter(
+                            'meter-ctx',
+                            'ctx',
+                            b.context,
+                            Number(settingValue('chatter.meter.ctx.warn')),
+                        ),
+                    )
+                    .child(
+                        meter(
+                            'meter-week',
+                            'week',
+                            b.week,
+                            Number(settingValue('chatter.meter.week.warn')),
+                        ),
+                    ),
             );
     }
 
@@ -6852,6 +6935,24 @@ export default class ClaudeChat extends View {
 
     /** @param {any} cx */
     renderView(cx) {
+        if (props()?.settingsWindow)
+            return settingsWindow(theme(), {
+                notes: fpsError ? { 'chatter.fps': fpsError } : {},
+                onChange: (key, value) => {
+                    writeSettings({ [key]: value })
+                        .then(loadSettings)
+                        .catch((e) =>
+                            console.log(`settings: ${e?.message ?? e}`),
+                        );
+                },
+                onPage: (id) => {
+                    this.settingsPage = id;
+                    cx.notify();
+                },
+                overlay: props().overlay,
+                page: this.settingsPage,
+                values: settingValues(),
+            });
         if (props()?.settings) return this.settingsMenu(theme());
         const t = chatTheme();
         const agent = this.target();
