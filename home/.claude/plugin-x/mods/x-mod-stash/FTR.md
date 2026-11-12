@@ -444,10 +444,19 @@
   - makes: a `fill:<session id>` key in the store, the crossings this session has heard
   - given a session's context crosses 55 %, read at its next prompt from the fill the board shows, or at its next tool step from the live fill, then it reads one line, once per crossing: 65 % is the upper boundary, do not compact now, finish the meaningful part, commit, write the handoff, then wind, never mid-build or mid-step
   - and a fill 10 under the line, or a compact, re-arms it, so 54, 56, 54, 56 draws one line
-  - given a later turn past 65 %, then the mod writes the session's own 🐦‍🔥 ask, only where no wind key stands, and its note says the mod asked, a must that lets the step on hand finish; the coordinator's thread hears none of it until its 🍃 switch lands
+  - given a later turn past 65 %, then the mod writes the session's own 🐦‍🔥 ask, only where no wind key stands, and its note says the mod asked, a must that lets the step on hand finish
   - and one step crossing both lines gives the line first and the ask a turn later; a session first seen past 65 % gets one line, then one ask
   - and dima's ↩️ on the mod's ask holds until the fill drops under 65 %, and the next crossing asks again
   - given `🐦‍🔥 second wind` switched off, then no line and no ask
+- ✅ the band's 🍃 turns this session's second wind auto on or off (FRM-505, W1909–W1918, his ticks o38, o40)
+  - makes: a `second-wind-auto:<session id>` key in the store, `{ on, at }` from the last press
+  - given a session's band, then 🍃 sits beside 🐦‍🔥, its hover names `second wind auto` and no state, lit while on
+  - given no press, then every thread is on and the coordinator's thread off; a press flips only that session
+  - given 🍃 off, then no 55 % line, no ask; the coordinator's thread at the keyboard hears one line at 65 %, telling it to propose the wind to dima
+  - given 💨 afk on or a shift (`pnpm mods:set pace on|end`), then the coordinator's 🍃 reads on at read time, never by a write, so afk off or the shift's end shows the stored value again; a press after the override's start wins until the next afk on or shift start
+  - given 🍃 flipped off with the mod's ask pending, then the ask goes; an ask dima pressed stays
+  - given 🍃 flipped on past both lines, then the line still comes first and the ask a turn later
+  - proof: tests/wind.test.ts::🍃 off draws no notice and no ask (+ the coordinator's default and her 65 % line, afk, a shift, a press during afk, a band press, an off taking back the mod's ask, on past both lines) + tests/band.test.ts::every control in the row carries a hover card that names it + tests/switches.test.ts::stash.second-wind-auto on / off
   - proof: tests/wind.test.ts::past 55 % a session hears once that 65 % is the upper boundary (+ the notice's words, the step path, 54/56, re-arm, compact, both lines in one step, first seen past 65 %, the mod's ask, the coordinator's thread left out, dima's press kept, take-back, switched off)
 - ✅ a coordinator's message to a codie past 55 % context waits for its second wind (r5, dima's o23: «~50–60% is fine»)
   - makes: a `steer-held:<session id>` key in the store, the held messages in order

@@ -95,6 +95,8 @@ export type StashView = {
     isOverrideOn: boolean;
     isPaced: boolean;
     isWaker: boolean;
+    // this session's 🍃 second wind auto, as it reads after the coordinator's overrides
+    isAutoWind?: boolean;
     isBoardOpen: boolean;
     // this session's own second wind, for the band's button
     wind?: StashWind['state'];

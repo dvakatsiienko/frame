@@ -147,6 +147,7 @@ test('every control in the row carries a hover card that names it', async ($, on
         .map((n) => n.text);
     expect(cards).toEqual([
         'second wind',
+        'second wind auto',
         'keep cache hot',
         'fleet wake',
         'afk',

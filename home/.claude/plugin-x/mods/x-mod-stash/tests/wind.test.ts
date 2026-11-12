@@ -550,7 +550,7 @@ test("dima's take-back holds until the fill drops under 65 %, then the next cros
     ).toHaveLength(2);
 });
 
-test("the coordinator's thread hears no notice and gets no ask", async ($, on) => {
+test("the coordinator's thread is 🍃 off by default: no notice and no ask", async ($, on) => {
     const w = world(on, '🦉 clio', undefined, undefined, 'coordinator');
     await start($);
     for (const fill of [70, 70]) await turnAt($, w, fill);
@@ -558,6 +558,121 @@ test("the coordinator's thread hears no notice and gets no ask", async ($, on) =
         [],
         false,
     ]);
+});
+
+// 🍃 second-wind-auto (W1909–W1918): on for every thread, off for the coordinator's; 💨 afk or a shift turn hers on
+const AUTO = `second-wind-auto:${SID}`;
+const proposals = (lines: string[]) =>
+    lines.filter((l) => l.includes('propose the wind to dima'));
+const coordinator = (on: On) =>
+    world(on, '🦉 clio', undefined, undefined, 'coordinator');
+const band = ($: Engine) =>
+    $.ui.mount({
+        component: 'AbovePrompt',
+        plugin: 'x-mod-stash',
+        props: {
+            bodyColumns: 120,
+            hasSurvey: false,
+            isCollapsed: false,
+            isWorking: false,
+            maxRows: 12,
+            scroll: { bodyRows: 40, offset: 0 },
+            view: {},
+        },
+        surface: 'desktop',
+    });
+
+test('🍃 off draws no notice and no ask', async ($, on) => {
+    const w = world(on);
+    w.store.set(AUTO, { at: NOW, on: false });
+    await start($);
+    for (const fill of [70, 70]) await turnAt($, w, fill);
+    expect([noticesOf(w.lines), w.store.has(`wind:${SID}`)]).toEqual([
+        [],
+        false,
+    ]);
+});
+
+test("the coordinator's thread with 🍃 off hears one line at 65 %, proposing the wind to dima", async ($, on) => {
+    const w = coordinator(on);
+    await start($);
+    for (const fill of [56, 70, 71]) await turnAt($, w, fill);
+    expect([proposals(w.lines).length, w.store.has(`wind:${SID}`)]).toEqual([
+        1,
+        false,
+    ]);
+});
+
+test("💨 afk on turns the coordinator's 🍃 on at read time, and afk off shows the stored value again", async ($, on) => {
+    const w = coordinator(on);
+    w.store.set('afk', { at: NOW, on: true });
+    await start($);
+    await turnAt($, w, 56);
+    w.store.set('afk', { at: NOW + 1, on: false });
+    await turnAt($, w, 40);
+    await turnAt($, w, 56);
+    expect([noticesOf(w.lines).length, w.store.has(AUTO)]).toEqual([1, false]);
+});
+
+test("a shift turns the coordinator's 🍃 on, and its end turns it back", async ($, on) => {
+    const w = coordinator(on);
+    w.store.set(`pace:${SID}`, { since: NOW });
+    await start($);
+    await turnAt($, w, 56);
+    w.store.delete(`pace:${SID}`);
+    await turnAt($, w, 40);
+    await turnAt($, w, 56);
+    expect(noticesOf(w.lines)).toHaveLength(1);
+});
+
+test('a press during afk wins until the next afk on', async ($, on) => {
+    const w = coordinator(on);
+    w.store.set('afk', { at: NOW, on: true });
+    w.store.set(AUTO, { at: NOW + 1, on: false });
+    await start($);
+    await turnAt($, w, 56);
+    w.store.set('afk', { at: NOW + 2, on: true });
+    await turnAt($, w, 40);
+    await turnAt($, w, 56);
+    expect(noticesOf(w.lines)).toHaveLength(1);
+});
+
+test('a press on the band 🍃 flips only this session', async ($, on) => {
+    const w = world(on);
+    w.store.set('second-wind-auto:other-sid', { at: NOW, on: true });
+    await start($);
+    const ui = await band($);
+    await ui.press({ key: 'auto-wind' });
+    expect([
+        (w.store.get(AUTO) as { on?: boolean } | undefined)?.on,
+        (w.store.get('second-wind-auto:other-sid') as { on?: boolean }).on,
+    ]).toEqual([false, true]);
+});
+
+test("🍃 flipped off takes back the mod's pending ask, and keeps one dima pressed", async ($, on) => {
+    const w = world(on);
+    await start($);
+    for (const fill of [70, 70]) await turnAt($, w, fill);
+    w.store.set(`wind:${SID}`, { at: NOW, by: 'mod', state: 'asked' });
+    const ui = await band($);
+    await ui.press({ key: 'auto-wind' });
+    const modGone = w.store.has(`wind:${SID}`);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+    await ui.press({ key: 'auto-wind' });
+    await ui.press({ key: 'auto-wind' });
+    expect([modGone, w.store.has(`wind:${SID}`)]).toEqual([false, true]);
+});
+
+test('🍃 flipped on past both lines still gives the notice first and the ask a turn later', async ($, on) => {
+    const w = world(on);
+    w.store.set(AUTO, { at: NOW, on: false });
+    await start($);
+    await turnAt($, w, 70);
+    w.store.set(AUTO, { at: NOW + 1, on: true });
+    await turnAt($, w, 70);
+    const first = [noticesOf(w.lines).length, w.store.has(`wind:${SID}`)];
+    await turnAt($, w, 70);
+    expect([first, w.store.has(`wind:${SID}`)]).toEqual([[1, false], true]);
 });
 
 test('with second wind switched off, no notice and no ask', async ($, on) => {

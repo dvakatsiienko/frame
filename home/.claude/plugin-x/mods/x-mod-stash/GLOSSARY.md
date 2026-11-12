@@ -124,6 +124,9 @@ _Avoid_: keyword, vibe word
 
 **Second wind**:
 A refresh asked of one session from a board's 🐦‍🔥 button: the session finishes its step, writes its handoff, names it through orbit's `op second-wind`, and the mod compacts onto that handoff and ingests it; its states are asked 🥚, writing ✍️, refreshing 🌀, cancelled, refused 🛑 (work started after «pending: none»), and stopped ⚠️ (the compact or its ingest was refused, the handoff still in the store).
+
+**Second wind auto**:
+A session's 🍃 switch on the band: on, the session hears at 55 % that its wind is coming and the mod asks for the wind at 65 %; on for every thread, off for the coordinator's, which 💨 afk or a shift turns on while they last.
 _Avoid_: refresh, graceful refresh, checkpoint request, molt
 
 **Operator-override**: x's word, defined in `x/GLOSSARY.md`; the band's 🔓 shows it and its one press turns it off.

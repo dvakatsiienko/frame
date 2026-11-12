@@ -291,6 +291,11 @@ export const PARTS = [
         label: '🐦‍🔥 second wind',
     },
     {
+        group: 'stash · band',
+        key: 'stash.second-wind-auto',
+        label: '🍃 second wind auto',
+    },
+    {
         group: 'stash · replies',
         key: 'stash.bullets',
         label: '·-lists drawn as bullets',
@@ -525,6 +530,7 @@ let selfId: string | undefined;
 let clearedFrom: string | undefined;
 // this session's own second wind as the store holds it, read at each load for the band's button
 let selfWind: StashWind['state'] | undefined;
+let isAutoWindOn = true;
 let label = 'session';
 let isUserTurn = false;
 // what this session's last reply waits on, its 🔭 line
@@ -1230,9 +1236,13 @@ const NOTICE_AT = 55;
 const WIND_AT = 65;
 const NOTICE_REARM = 10;
 const FILL = 'fill:';
+const AUTO_WIND = 'second-wind-auto:';
+type AutoWind = { on: boolean; at: number };
 type FillMark = { noticed?: number; asked?: true };
 const fillNotice = (fill: number) =>
     `🐦‍🔥 context at ${fill} %: a second wind is coming. ${WIND_AT} % is the upper boundary, where the mod asks for it; nothing is urgent. do not compact now: plan your nearest steps so you finish the meaningful part you are in, commit it, solve its tails, write your handoff with x:handoff, then take the wind through ${ORBIT_TOOL} op second-wind. never mid-build or mid-step.`;
+const fillPropose = (fill: number) =>
+    `🐦‍🔥 second wind due at ${fill} %: past the ${WIND_AT} % boundary, and this thread's 🍃 second wind auto is off: propose the wind to dima in orbit at your next good stop, never take it yourself.`;
 const WIND_NOTE_AUTO = `🐦‍🔥 second wind: the mod asks you for it, your context is past ${WIND_AT} %: a must, never a rush. finish the step you are on and commit it, nothing interrupts it; never wind mid-build. then ${WIND_HOW}`;
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
@@ -3677,7 +3687,16 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
 
 // everything this mod keeps for one conversation: one store key per prefix, the session id after it, plus its pending
 // lane marks; a new per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
-const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL, WIND, FILL] as const;
+const SESSION_KEYS = [
+    PREFIX,
+    HOT,
+    REPLY,
+    CONTEXT,
+    MODEL,
+    WIND,
+    FILL,
+    AUTO_WIND,
+] as const;
 
 async function forget($: EngineInterface, sid: string) {
     await dropState($, sid).catch(() => undefined);
@@ -3904,6 +3923,7 @@ async function load($: EngineInterface) {
     selfId = await $.session.id().catch(() => selfId);
     isPaced = isPaceOn(await $.store.get(PACE + (selfId ?? '')));
     selfWind = selfId ? (await windOf($, selfId))?.state : undefined;
+    isAutoWindOn = await isAutoWind($).catch(() => isAutoWindOn);
     if (clearedFrom && selfId && selfId !== clearedFrom) {
         await $.store
             .set(SUCC + clearedFrom, { at: await $.clock.now(), sid: selfId })
@@ -3924,6 +3944,7 @@ async function load($: EngineInterface) {
 function viewOf(isBoardOpen: boolean): StashView {
     return {
         afk,
+        isAutoWind: isAutoWindOn,
         isBoardOpen,
         isHot: Boolean(hot),
         isOverrideOn: overrideIsOn,
@@ -4211,6 +4232,44 @@ async function pressWind($: EngineInterface, sid: string) {
     await load($);
 }
 
+// 🍃 second-wind-auto, per session (W1909–W1918, his ticks o38, o40): a press writes `{ on, at }`; unpressed, every
+// thread is on and the coordinator's off; 💨 afk on or a shift turn hers on at read time, never by a write, and a press
+// after the override's start wins until the next one
+async function isAutoWind($: EngineInterface) {
+    if (!(await partsShown($))('stash.second-wind-auto')) return false;
+    const sid = await currentId($);
+    if (!sid) return false;
+    const pressed = (await $.store.get(AUTO_WIND + sid)) as
+        | AutoWind
+        | undefined;
+    if ((await selfRecord($))?.role !== MAIN_ROLE) return pressed?.on ?? true;
+    const away = (await $.store.get(AFK_KEY)) as
+        | { on?: boolean; at?: number }
+        | undefined;
+    const shift = (await $.store.get(PACE + sid)) as
+        | { since?: number }
+        | undefined;
+    const starts = [away?.on ? (away.at ?? 0) : undefined, shift?.since].filter(
+        (t): t is number => typeof t === 'number',
+    );
+    const since = starts.length ? Math.max(...starts) : undefined;
+    if (since !== undefined && (!pressed || pressed.at < since)) return true;
+    return pressed?.on ?? false;
+}
+
+// a band press: the session's own key, and an off takes back the mod's pending ask, never one dima pressed
+async function setAutoWind($: EngineInterface, isOn: boolean) {
+    const sid = await currentId($);
+    if (!sid) return;
+    await $.store.set(AUTO_WIND + sid, {
+        at: await $.clock.now(),
+        on: isOn,
+    } satisfies AutoWind);
+    const wind = await windOf($, sid);
+    if (!isOn && wind?.by === 'mod' && wind.state === 'asked')
+        await $.store.delete(WIND + sid);
+}
+
 // the prompts this session has started, so the mod's ask lands a turn after its notice, never in the same one
 let turnNo = 0;
 
@@ -4219,14 +4278,21 @@ let turnNo = 0;
 async function takeFill($: EngineInterface, fill: number | undefined) {
     const sid = await currentId($);
     if (!sid || fill === undefined) return undefined;
-    // the coordinator's thread is off by default (W1915): its 🍃 switch lands with FRM-505's chip
-    if ((await selfRecord($))?.role === MAIN_ROLE) return undefined;
+    const isAuto = await isAutoWind($);
+    const isLead = (await selfRecord($))?.role === MAIN_ROLE;
+    if (!isAuto && !isLead) return undefined;
     const was = ((await $.store.get(FILL + sid)) as FillMark | undefined) ?? {};
     const mark: FillMark = { ...was };
     if (fill <= NOTICE_AT - NOTICE_REARM) delete mark.noticed;
     if (fill < WIND_AT) delete mark.asked;
     let line: string | undefined;
-    if (fill >= NOTICE_AT && mark.noticed === undefined) {
+    // the coordinator's 🍃 off at the keyboard: she proposes the wind to dima, never takes it (W5)
+    if (!isAuto) {
+        if (fill >= WIND_AT && !mark.asked) {
+            mark.asked = true;
+            line = fillPropose(fill);
+        }
+    } else if (fill >= NOTICE_AT && mark.noticed === undefined) {
         mark.noticed = turnNo;
         line = fillNotice(fill);
     } else if (
@@ -9445,6 +9511,19 @@ export const register: Register = (on) => {
                             },
                         );
                     };
+                    const handleAutoWindFlip = async () => {
+                        const wasOn = isAutoWindOn;
+                        isAutoWindOn = !view.isAutoWind;
+                        await pressSwitch(
+                            $,
+                            '🍃',
+                            { isAutoWind: isAutoWindOn },
+                            () => setAutoWind($, isAutoWindOn),
+                            async () => {
+                                isAutoWindOn = wasOn;
+                            },
+                        );
+                    };
                     const handleHotFlip = async () => {
                         const hotWas = hot;
                         const isWanted = !hot;
@@ -9674,6 +9753,26 @@ export const register: Register = (on) => {
                                           WIND_EMOJI[view.wind ?? 'idle'],
                                           !!view.wind,
                                       ),
+                                  )}
+                            {!isShown('stash.second-wind-auto') || !view.selfId
+                                ? null
+                                : tip(
+                                      'auto-wind',
+                                      'second wind auto',
+                                      <Button
+                                          key='auto-wind'
+                                          onPress={() =>
+                                              void handleAutoWindFlip()
+                                          }
+                                          {...(view.isAutoWind
+                                              ? {
+                                                    variant:
+                                                        'secondary' as const,
+                                                }
+                                              : { plain: true as const })}>
+                                          🍃
+                                      </Button>,
+                                      leftOf('🍃', !!view.isAutoWind),
                                   )}
                             {!isShown('stash.hot')
                                 ? null

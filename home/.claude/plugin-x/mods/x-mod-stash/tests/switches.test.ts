@@ -314,6 +314,15 @@ const SCENARIOS: Record<string, Scenario> = {
         op: { op: 'second-wind', pending: 'none', slug: 'mods-l14-2' },
         trace: /second wind/,
     },
+    'stash.second-wind-auto': {
+        // a fill past 55 % at the next prompt
+        arm: async (_$, w) => {
+            w.store.set(`context:${SID}`, 56);
+        },
+        fire: ($) => say($, 'go'),
+        name: '⚡ 🔧 codie: x',
+        trace: /^🐦‍🔥 context at \d+ %/,
+    },
     'stash.waker': {
         arm: async ($, w, ui) => {
             w.store.set(`pace:${SID}`, { off: true });
