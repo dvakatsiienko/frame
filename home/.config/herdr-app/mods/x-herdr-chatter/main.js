@@ -77,6 +77,7 @@ import { foldBlocks } from './fold.js';
 import { rejoin } from './joined.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
+import { withPlainPaste } from './paste.js';
 import * as ask from './question.js';
 import {
     QUEUED_IDLE_MS,
@@ -1407,6 +1408,11 @@ export default class ClaudeChat extends View {
             const was = this.typed,
                 had = this.slash;
             const now = this.box.value();
+            // a paste (more than one typed character): a link reads as its label, code as its words (paste.js)
+            if (now.length > was.length + 1) {
+                const plain = withPlainPaste(was, now);
+                if (plain !== now) return this.box.set_value(plain);
+            }
             // a paste of several lines (more than Enter's one character): its list lines get their markers back
             if (now.length > was.length + 1 && now.includes('\n')) {
                 const fixed = withMarkers(
