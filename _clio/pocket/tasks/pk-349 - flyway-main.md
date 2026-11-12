@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T00:50:00Z'
+updated_date: '2026-11-12T01:09:00Z'
 labels:
   - s
   - clio-main
@@ -33,15 +33,17 @@ ordinal: 1000
 - [ ] #15 mods row (his o67 tick): the glide subcard becomes a read-only view of a member's asks, its tick no longer joins the member's turn; x-mod-stash FTR.md:1061 exit 3 changes with it; for the next mods lane
 - [ ] #16 name a desktop-only Claude thread to dima once, for FRM-576 exit 8 and PK-349 #29 probe 4b
 - [ ] #17 autopilot: rounds 1–3 settled (grill-borrow-2/3-proposal.md § answers); shape it into one ticket through clio:shape-idea (prior art: shepherdr assistant.md + automations.py, our clio:shift), born in Triage, then the test-drive night
-- [ ] #18 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
-- [ ] #19 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #20 ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
-- [ ] #21 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
-- [ ] #22 📅 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order — on: 2026-11-12
-- [ ] #23 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #24 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #25 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #26 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #18 PK-378 close (wing 1 hand-off 03:08): every W-line met, but pocket-check reads «dropped» inside W2's done note and the comma in W5's verdict; append one clean close line and close it
+- [ ] #19 the lane size alarm (wing 1's slow-lane fix 1, his 02:00): at 1.5× a chunk's size its coordinator gets one alarm, a pick with dima; its home: a FRM-572 line or the shape-lane sign
+- [ ] #20 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+- [ ] #21 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #22 ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
+- [ ] #23 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
+- [ ] #24 📅 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order — on: 2026-11-12
+- [ ] #25 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #26 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #27 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #28 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
