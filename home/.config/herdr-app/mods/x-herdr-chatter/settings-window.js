@@ -13,8 +13,8 @@ export const SETTINGS_WINDOW = { height: 500, width: 760 };
 /**
  * @typedef {{ page: string, values: Record<string, unknown>, overlay: string | undefined,
  *   keys?: { ours: { key: string, title: string, action: string, takenBy: string | null }[], herdr: [string, string][],
- *     capture: any, note: string, recording: string | null, onRecord: (key: string) => void, onKey: (keystroke: string) => void },
- *   notes?: Record<string, string>, onPage: (id: string) => void, onChange: (key: string, value: unknown) => void }} WindowState
+ *     capture: any, note: string, recording: string | null, onRecord: (key: string, cx: any) => void, onKey: (keystroke: string, cx: any) => void },
+ *   notes?: Record<string, string>, onPage: (id: string, cx: any) => void, onChange: (key: string, value: unknown) => void }} WindowState
  */
 
 /** @param {any} t @param {WindowState} w */
@@ -60,7 +60,7 @@ function nav(t, w, at) {
                     .cursor_pointer()
                     .when(isOn, (s) => s.bg(t.selected))
                     .hover((s) => s.bg(isOn ? t.selected : t.hover))
-                    .on_click(() => w.onPage(p.id))
+                    .on_click((_e, cx) => w.onPage(p.id, cx))
                     .child(div().w(18).flex_none().child(p.icon))
                     .child(
                         div()
@@ -405,7 +405,7 @@ function keysPage(t, keys) {
                     ? 'Press the new keys · Esc to cancel'
                     : `Change the key for ${what}`,
             )
-            .on_click(() => keys.onRecord(key))
+            .on_click((_e, cx) => keys.onRecord(key, cx))
             .child(isRecording ? keyCapText(t, 'Press keys…') : keyCap(t, key));
     };
     return [
@@ -414,7 +414,7 @@ function keysPage(t, keys) {
             .track_focus(keys.capture)
             .on_key_down((e, cx) => {
                 if (!keys.recording) return;
-                keys.onKey(e.keystroke);
+                keys.onKey(e.keystroke, cx);
                 cx.stop_propagation();
             })
             .gap(18)
