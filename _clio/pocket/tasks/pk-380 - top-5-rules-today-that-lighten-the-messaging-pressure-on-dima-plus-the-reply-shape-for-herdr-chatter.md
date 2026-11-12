@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T14:13:00Z'
+updated_date: '2026-11-12T14:18:00Z'
 labels:
   - s
 dependencies: []
@@ -72,4 +72,10 @@ raw drop (2026-11-12 15:58, dima): 7. can all of this be simpler? consult with w
 PK-380:W15 (2026-11-12 16:05, dima): ❓ will it work? is it a true solution? how long to probe whether it is the right shape?
 
 PK-380:W14 (2026-11-12 16:03, dima): i want a simple, solid, good working solution.
+
+PK-380:W16 (2026-11-12, dima, o29 steer): yes, all ticks must work from orbit, and my master override is another layer on top. override is for the case where something under the hood in guard doesn't work or stops working. when i enable override it just must tell that everything is allowed, and it should kill the inability to do anything for you in place.
+
+PK-380:W17 (2026-11-12 16:17, dima): wing 1 had another inability to sing case after my tick
+
+PK-380:W18 (2026-11-12 16:17, dima): proceed. i want guard fixed. tomorrow i plan to start speak app v2 and want guard to work properly until then. (lanes should still work optimized no one drops nothing)
 <!-- SECTION:NOTES:END -->
