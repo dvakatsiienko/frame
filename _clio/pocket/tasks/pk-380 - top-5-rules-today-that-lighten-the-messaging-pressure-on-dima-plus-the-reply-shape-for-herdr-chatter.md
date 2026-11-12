@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T15:00:00Z'
+updated_date: '2026-11-12T15:04:00Z'
 labels:
   - s
 dependencies: []
@@ -92,4 +92,6 @@ PK-380:W23 (2026-11-12 16:29, dima): in the first place i didn't ask for a guard
 PK-380:W24 (2026-11-12 16:29, dima): if you won't be able to fix it yourself while preserving a balance (having a truly useful guard, but a guard that doesn't lock you out), i will ask you to delete this guard entirely.
 PK-380:W25 (2026-11-12 16:29, dima): ❓ (on «only 29 had a live word behind them; the other 113 just need the ask to reach you») so you build a dead weight that hurts and locks me out (and yourself)?
 PK-380:W26 (2026-11-12 16:58, dima, o39 steer): maybe knowledge? and a well structured dir, plus your habits.
+
+PK-380:W27 (2026-11-12 17:02, dima, o42 steer): yes. plus, before the halt, analyze the whole story of our guard: when it was born, how decisions were made (and who made them; i think you are the initiator and i was silently agreeing because i thought it was a good idea), and how many days, time and effort were spent on a wrong guard. place that into a story too. do not forget!
 <!-- SECTION:NOTES:END -->
