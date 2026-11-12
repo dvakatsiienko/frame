@@ -98,32 +98,63 @@ export function prevMineIndex(rows, start) {
     return -1;
 }
 
+// a file:// url's local path, decoded, or null: only an absolute path on this mac (an empty host or localhost)
+/** @param {string} url @returns {string | null} */
+function filePath(url) {
+    const m = /^file:\/\/(?:localhost)?(\/.*)$/.exec(url);
+    if (!m) return null;
+    try {
+        return decodeURIComponent(m[1]);
+    } catch {
+        return null;
+    }
+}
+
+// a file:// link in a reply drawn as plain text: a press on it does nothing in a lazy-list row (herdr-app#894), so it
+// never looks pressable; the 📂 row under the reply opens it (FRM-562:W60)
+const FILE_LINK =
+    /\[([^\]\n]*)\]\(<?file:\/\/[^\s)>]+>?(?:\s+"[^"]*")?\)|<file:\/\/([^\s>]+)>/g;
+/** @param {string} text the reply's markdown */
+export const unlinkFiles = (text) =>
+    text
+        .split(/(^(?:```|~~~)[\s\S]*?^(?:```|~~~)|`[^`\n]*`)/m)
+        .map((part, i) =>
+            i % 2
+                ? part
+                : part.replace(
+                      FILE_LINK,
+                      (_, label, auto) =>
+                          label ?? auto.split('/').filter(Boolean).pop(),
+                  ),
+        )
+        .join('');
+
+const BARE_PATH =
+    /(?:^|[\s`(«"'])((?:~|\/(?:Users|private|tmp|Volumes|opt))\/[^\s`'"<>()[\]«»]*[^\s`'"<>()[\]«».,;:!?])/g;
+
 /**
  * the files a reply links with file:// urls, each once, in order, outside code: a link inside a list row can't be
  * pressed (a handler there blanks the list, and TextView opens no file:// itself), so each gets a row of its own
  * @param {string} text the reply's markdown
  * @returns {{ label: string, path: string }[]}
  */
-export function fileLinks(text) {
-    const prose = text
-        .replace(/^(```|~~~)[\s\S]*?^\1/gm, '')
-        .replace(/`[^`\n]*`/g, '');
+export function fileLinks(text, home = '') {
+    const unfenced = text.replace(/^(```|~~~)[\s\S]*?^\1/gm, '');
+    const prose = unfenced.replace(/`[^`\n]*`/g, '');
     /** @type {Map<string, string>} */
     const found = new Map();
     const link =
         /\[([^\]\n]*)\]\(<?(file:\/\/[^\s)>]+)>?(?:\s+"[^"]*")?\)|<(file:\/\/[^\s>]+)>/g;
     for (const m of prose.matchAll(link)) {
-        const url = m[2] ?? m[3];
-        let path;
-        try {
-            path = decodeURIComponent(
-                url.slice('file://'.length).replace(/^localhost/, ''),
-            );
-        } catch {
-            continue;
-        }
-        if (!path.startsWith('/') || found.has(path)) continue;
+        const path = filePath(m[2] ?? m[3]);
+        if (!path || found.has(path)) continue;
         found.set(path, m[1]?.trim() || path.split('/').pop() || path);
+    }
+    // a bare path to a file, in prose or a code span (FRM-562: «a dead line»), never in a fenced block or a url
+    for (const m of unfenced.matchAll(BARE_PATH)) {
+        const path = home ? m[1].replace(/^~(?=\/)/, home) : m[1];
+        if (!/\.[A-Za-z0-9]{1,10}$/.test(path) || found.has(path)) continue;
+        found.set(path, path.split('/').pop() ?? path);
     }
     return [...found].map(([path, label]) => ({ label, path }));
 }
