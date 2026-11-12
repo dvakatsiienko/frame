@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T12:25:00Z'
+updated_date: '2026-11-12T13:59:00Z'
 labels:
   - s
 dependencies: []
@@ -31,4 +31,40 @@ PK-380:W3 (2026-11-12 03:03, dima): i saw yesterday and today that the herdr cod
 PK-380:W4 (2026-11-12 03:03, dima): i also want to know how our silent comms works ❓
 
 14:25: five session rules for today proposed in main's reply, dima ticked o5; sent to wing 1, the mods and herdr codies; the halt retro judges which stay
+
+PK-380:W5 (2026-11-12 15:58, dima): also, before your compact, a ticket from orbit did not work for you to sign a ticket. can operator override also include this miss? when operator override works, i want my asks in orbit to sign stuff to work too (or you already dispatched it to a mods codie). rethink the approach to all these permissions. is the whole system with all these permissions immense? the guard protection layers are getting messy, because you cannot solve it after about 4 days already.
+
+PK-380:W6 (2026-11-12 15:58, dima): the guard and permission problems now span across your thread, clio wing 1 thread. let's move it here and revisit this topic completely. ask wing 1 about everything it has about guard and perms: everything running in the lane, decided and planned.
+
+PK-380:W7 (2026-11-12 15:58, dima): ❓ 1. why does guard stop blocking your actions?
+
+PK-380:W8 (2026-11-12 15:58, dima): ❓ 2. is the guard system turned into a mess?
+
+PK-380:W9 (2026-11-12 15:58, dima): ❓ 3. is it overtuned, by not allowing you to do anything?
+
+PK-380:W10 (2026-11-12 15:58, dima): ❓ 4. are permissions now scattered across cli and cc mods?
+
+PK-380:W11 (2026-11-12 15:58, dima): ❓ 5. why does my operator override not override the «sign ticket» orbit ask? (you just were not able to sign via my tick). i want override to override anything.
+
+PK-380:W12 (2026-11-12 15:58, dima): ❓ 6. is guard overcomplicated? is it an architecture flaw?
+
+PK-380:W13 (2026-11-12 15:58, dima): ❓ 7. can all of this be simpler? consult with wing 1 and crow before proposing.
+
+raw drop (2026-11-12 15:58, dima): before your compact, we met another case when a ticket from orbit didn't work for you to sign a ticket. can operator override also include this miss? when operator override works i want your asks in orbit to sign stuff to work too or you already dispatched it to a mods codie. can you rethink your approach to all these permissions and think about whether the whole system with all these permissions is not immense? i feel that the guard protection layers start to go messy because you can't solve it after about 4 days already.
+
+raw drop (2026-11-12 15:58, dima): let's move it here and revisit this topic completely. ask wing 1 about everything it has guard and perms related - everything running in lane, decided and planned.
+
+raw drop (2026-11-12 15:58, dima): 1. why guard stops blocking your from actions?
+
+raw drop (2026-11-12 15:58, dima): 2. is guard system turned into a mess?
+
+raw drop (2026-11-12 15:58, dima): 3. is it overtuned by not allowing you to do anything?
+
+raw drop (2026-11-12 15:58, dima): 4. are permissions now scattered across cli and cc mods?
+
+raw drop (2026-11-12 15:58, dima): 5. why my operator override does not overrides «sign ticket» orbit ask? (you just was not able to sign via my tick)? i want override to override anything
+
+raw drop (2026-11-12 15:58, dima): 6. is guard overcomplicated? architecture flaw?
+
+raw drop (2026-11-12 15:58, dima): 7. can all of this be simpler? consult with wing 1 and crow before proposing
 <!-- SECTION:NOTES:END -->
