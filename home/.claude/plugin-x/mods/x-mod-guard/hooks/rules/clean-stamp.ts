@@ -155,6 +155,58 @@ function writesNamed(command: string, named: (text: string) => boolean) {
         );
 }
 
+// a literal a script hands straight to a write is the text it writes into a doc, never the file it opens (FRM-519 14h);
+// a split, an index, a regex or a variable can still pull a path out of a literal (round 11), so any other literal stays
+const LITERAL = /'[^'\n]*'|"[^"\n]*"/g;
+const WRITE_SINKS = new Set(['write', 'write_text']);
+// a script that defines its own code could give a write's name a body that reads the text on
+const DEFINES_CODE =
+    /\b(def|class|lambda|setattr|function)\b|__|\bwrite\w*\s*=[^=]/;
+function withoutWrittenText(command: string) {
+    if (DEFINES_CODE.test(command)) return command;
+    return command.replace(LITERAL, (literal, at: number) =>
+        feedsWrite(command, at) ? "''" : literal,
+    );
+}
+// the call whose open paren last stands unclosed before `at`, its callee name and that paren's index
+function enclosingCall(code: string, at: number) {
+    let depth = 0;
+    for (let i = at - 1; i >= 0; i--) {
+        const ch = code[i];
+        if (ch === ')') depth++;
+        else if (ch === '(') {
+            if (depth === 0)
+                return {
+                    callee: code.slice(0, i).match(/\.(\w+)\s*$/)?.[1],
+                    open: i,
+                };
+            depth--;
+        }
+    }
+    return undefined;
+}
+function closeOf(code: string, open: number) {
+    let depth = 0;
+    for (let i = open; i < code.length; i++) {
+        if (code[i] === '(') depth++;
+        else if (code[i] === ')' && --depth === 0) return i;
+    }
+    return -1;
+}
+// a literal reaches a write only as its direct argument, or through `.replace(…)` calls whose result is that argument
+function feedsWrite(code: string, at: number): boolean {
+    const call = enclosingCall(code, at);
+    if (call?.callee === undefined) return false;
+    if (WRITE_SINKS.has(call.callee)) return true;
+    if (call.callee !== 'replace') return false;
+    const close = closeOf(code, call.open);
+    if (close < 0) return false;
+    const after = code.slice(close + 1);
+    const next = after.trimStart();
+    if (!next.startsWith(')')) return false;
+    return feedsWrite(code, close + 1 + after.length - next.length);
+}
+
 // writers are too many to list, and each one missed is a hole: past the few commands that only read, naming a store is touching it
 export function touchesStore(
     command: string,
@@ -168,9 +220,11 @@ export function touchesStore(
     const parsed = commandsDeep(command, cwd);
     const runsOpaque = (c: Command) =>
         OPAQUE.test(c.name) || c.wrappers.some((w) => OPAQUE.test(w));
+    // the written text drops only from a script alone on its line: a pipe or a substitution could read its stdout back
+    const code = parsed.length === 1 ? withoutWrittenText(command) : command;
     if (
         parsed.some(runsOpaque) &&
-        (isWritesOnly ? writesNamed(command, named) : named(command))
+        (isWritesOnly ? writesNamed(code, named) : named(code))
     )
         return true;
     // a loop over the folder's names hands each name to its body, so it reads only when every command on the line is a

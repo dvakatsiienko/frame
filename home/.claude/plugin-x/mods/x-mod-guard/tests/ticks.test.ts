@@ -2063,6 +2063,30 @@ for (const [why, line, files] of [
         ]);
     });
 
+// FRM-519 14h, the sign half (clio 21:33, her heredoc and codie's): a file write with no linear call on the line is never
+// a sign, however many sign lines or ids it writes
+for (const line of [
+    `python3 - <<'EOF'\nopen('${T}/notes.md', 'a').write('\\n## signed\\n\\n✍️ signed 2026-11-12 FRM-567\\n')\nEOF`,
+    `cat >> ${T}/notes.md <<'EOF'\n## signed\n\nFRM-567 ✍️ signed 2026-11-12, x linear set FRM-567 --add-label signed\nEOF`,
+    `printf '## signed\\n✍️ signed FRM-567\\n' > ${T}/notes.md`,
+])
+    test(`a file write with no linear call is no sign: ${line}`, async ($, on) => {
+        const { ran } = bodyWorld(on, { [`${T}/notes.md`]: PLAIN });
+        const r = await bash($, line);
+        expect([signFlagged(r), ran]).toEqual([false, [line]]);
+    });
+// wing 1's 23:24: the same plain body set beside a python heredoc that writes another file
+test('a plain body set beside a heredoc writing another file is no sign', async ($, on) => {
+    const { ran } = bodyWorld(on, {
+        [`${T}/notes.md`]: PLAIN,
+        [`${T}/tabs-body.md`]: PLAIN,
+    });
+    const line = `python3 - <<'EOF'\nopen('${T}/notes.md', 'a').write('\\n- decided: tabs stay\\n')\nEOF\nx linear body FRM-567 --set ${T}/tabs-body.md`;
+    const r = await bash($, line);
+    expect([signFlagged(r), r.deny]).toEqual([false, undefined]);
+    expect(ran.length).toBe(1);
+});
+
 // FRM-544 slice 2f: the first prompt's sign ids are kept for that prompt only, for x-mod-stash to put the ✍️ sign ask up
 test("a first prompt's sign ids are kept for that prompt, and the next prompt clears them", async ($, on) => {
     signWorld(on);
