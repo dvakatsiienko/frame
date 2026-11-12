@@ -302,15 +302,17 @@ func TestARefusedCommitAlsoNamesItsMessagesReds(t *testing.T) {
 	if err := os.WriteFile(hook, []byte("#!/bin/sh\necho 'hook says: line 131 is too wide'\nexit 1\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	write(t, filepath.Join(dir, "repo/skills/crew-x/notes.md"), "a new note\n")
-	cmd := exec.Command(bin, "lane", "commit", filepath.Join(dir, "msg.txt"), "--", "skills/crew-x/notes.md")
+	if err := os.WriteFile(filepath.Join(dir, "repo/.git/hooks/commit-msg"), []byte("#!/bin/sh\necho 'lint says: the subject has no emoji'\nexit 1\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command(bin, "lane", "commit", filepath.Join(dir, "msg.txt"), "--", "notes.txt")
 	cmd.Dir = filepath.Join(dir, "repo")
 	cmd.Env = cleanEnv()
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &stdout, &stderr
 	_ = cmd.Run()
 	both := stdout.String() + stderr.String()
-	if !strings.Contains(both, "hook says: line 131 is too wide") || !strings.Contains(both, "skills/crew-x/notes.md is a new file in a crew-/guide- skill") {
+	if !strings.Contains(both, "hook says: line 131 is too wide") || !strings.Contains(both, "lint says: the subject has no emoji") {
 		t.Fatalf("want the hook's red and the message's red in one run:\n%s\n%s", stdout.String(), stderr.String())
 	}
 }

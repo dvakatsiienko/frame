@@ -68,8 +68,7 @@ func laneGate(r *Run, args []string, flags Flags) (any, error) {
 	return nil, nil
 }
 
-// messageRefusals is the commit-msg gate's whole read of a staged tree and its message; `x lane commit` reads it too, so
-// a red pre-commit, which stops git before this gate runs, still prints the message's reds in the same try
+// messageRefusals is the commit-msg gate's whole read of a staged tree and its message
 func messageRefusals(tree string, msg []byte) (refusals, nudges []string) {
 	staged := gateStaged(tree)
 	if !glossaryUnchanged.Match(msg) {
