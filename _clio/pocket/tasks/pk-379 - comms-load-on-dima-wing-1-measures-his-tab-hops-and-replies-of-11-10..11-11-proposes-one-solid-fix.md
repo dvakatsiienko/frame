@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T13:16:00Z'
+updated_date: '2026-11-12T13:26:00Z'
 labels:
   - m
   - clio-wing-1
@@ -46,4 +46,10 @@ raw drop (2026-11-12 inbox, dima): 4. prooose solid solution to reduce our comms
 14:56 wing 1: dima 14:56 steer: fix it via habits, not herdr (a herdr fold kills the symptom, not the reason); reshaped: machine-woken turns end silent, held by clio's Stop gate (reply-check), re-measure after a day; asked in orbit
 
 15:16 wing 1: measured: 0 turns woken by members' messages, 338 by clio's own background jobs (235k chars); dima 15:15: fold wishkeeper and crow traffic as a styled system row, pretty when unfolded; asked whether it works or is clunky; my answer: chatter already folds cross-thread rows (main.js:325), a journal row reuses it; paired with silent job wakes
+
+PK-379:W6 (2026-11-12 15:15, dima): two things spam your thread and i rarely read them: wishkeeper reports and crow-related messages. they're actually interesting, and back when there was less activity i read them sometimes, but now with so much activity i simply don't have the capacity, so they're just trash in your thread.
+PK-379:W7 (2026-11-12 15:15, dima): can they be folded, but colored or styled differently? i don't want it clunky: since they're your own replies in your own thread, how do we do it gracefully? you'd have your own system-type messages folded, and they must still be pretty when i unfold them.
+PK-379:W8 (2026-11-12 15:15, dima): then you could have an api to separate your system messages from replies and messages meant for me: messages to me go as plain messages, system messages are hidden (folded). i want cross-thread messages to stay as they are.
+PK-379:W9 (2026-11-12 15:15, dima): why do you print your system messages at all? should they be in your replies or not? in my mind yes, because it's your activity and i'd like to see it; there's just too much of it now, so i propose folding. ❓
+PK-379:W10 (2026-11-12 15:15, dima): i still think it's a trick that kills a symptom, not the problem, and i have no smarter idea right now. either propose something better, or let's try it this way and tell me if it will work at all; if you tell me it will probably be clunky, i discard my proposal.
 <!-- SECTION:NOTES:END -->
