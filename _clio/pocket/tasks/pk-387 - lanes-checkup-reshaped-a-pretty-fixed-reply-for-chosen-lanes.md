@@ -4,7 +4,7 @@ title: 'lanes-checkup reshaped: a pretty fixed reply for chosen lanes'
 status: open
 assignee: []
 created_date: '2026-11-12T16:01:00Z'
-updated_date: '2026-11-12T16:17:00Z'
+updated_date: '2026-11-12T16:25:00Z'
 labels:
   - s
 dependencies: []
@@ -47,4 +47,13 @@ PK-387:W23 (2026-11-12 18:16, dima) q2 filter: ok, the checkup points to triage'
 PK-387:W24 (2026-11-12 18:16, dima) idea: rename flyway-sync to low-tide-flyway-sync.
 PK-387:W25 (2026-11-12 18:16, dima) q2 chunk line: can we have one unified shape that satisfies all cases? i do not like a lot of stuff pointing at each other in both directions.
 PK-387:W26 (2026-11-12 18:16, dima) q2 lane list: ok, clio-lanes-radar.ts stays shared.
+
+18:25 dima 18:24 (raw: ~/.local/state/clio/prompts/2026-11-12.md:804), folded:
+PK-387:W27 (2026-11-12 18:24, dima) q1: i propose low-tide-* → lowtide-* (less typing, and lowtide becomes a vibe word), with an emoji?
+PK-387:W28 (2026-11-12 18:24, dima) q3: first print the order as it is; reordering on demand.
+PK-387:W29 (2026-11-12 18:24, dima) a reorder happens simply when i ask and want to prioritise something, or when i ask something like «analyze tickets closely and propose an efficiently optimized order».
+PK-387:W30 (2026-11-12 18:24, dima) for an efficient, optimized flow (sanity): the planned chunks build in a logical, natural and efficient order and way.
+PK-387:W31 (2026-11-12 18:24, dima) the most-wanted and most-useful chunks go first, in any area.
+PK-387:W32 (2026-11-12 18:24, dima) always weigh the correction: tiny chunks can still go first; ideally tiny chunks are found and merged into other tiny or smaller ones, which saves ci rounds.
+PK-387:W33 (2026-11-12 18:24, dima) overall i want a chunk sequence ordering strategy in general. propose how to have it: another skill leaf with these rules? whenever i ask to review what we planned for chunks, we have a way to optimize the order and see how to get the chunks faster (for example by merging smaller ones).
 <!-- SECTION:NOTES:END -->
