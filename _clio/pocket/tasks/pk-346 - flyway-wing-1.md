@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T17:27:00Z'
+updated_date: '2026-11-12T17:30:00Z'
 labels:
   - s
   - clio-wing-1
@@ -27,8 +27,8 @@ ordinal: 1001
 - [ ] #9 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
 - [ ] #10 FRM-407 fresh-eyes card: close it if the live card already covers the ticket
 - [ ] #11 FRM-551 vm: both reads at the first halt with no go lane
-- [ ] #12 PK-362 steamac vm disk: shrink 256gb to 192gb
-- [ ] #13 PK-385 a standing stray lane for chores: shape it with dima, when he says
+- [ ] #12 PK-385 a standing stray lane for chores: shape it with dima, when he says
+- [ ] #13 flyway habit: the second-wind pickup checks each line against its home by command, then a guard
 - [ ] #14 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
 - [ ] #15 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
 - [ ] #16 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
@@ -41,6 +41,7 @@ ordinal: 1001
 - [ ] #23 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
 - [ ] #24 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #25 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #26 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -569,4 +570,8 @@ done 2026-11-12 19:23: land the sizes commit once main's lowtide set is committe
 19:23 2026-11-12 wing 1: sizes + budget-rows landed (origin/main 20c03f2b); the board redraws dropped from the halt leftovers (dima 19:21); flyway reordered to his 19:11 order. «seat»: only the prose half landed (f31341c5, 5f5d9cd4); seatOf, CLIO_SEAT and ~/.local/state/clio/seats remain (rg 19:22), so its line stays
 
 19:27 2026-11-12 wing 1, crow's siesta note: my 19:09 «agree with all eight verdicts» on main's mods cuts missed that one cut FRM-504's round-3 stop against his W47; main reworked it, his o86 settled it. lesson: a consult reads each verdict against its ticket's wish lines, never the facts alone. freebie: ts-lsp round logged (3 LSP calls since 11-04), its verdict asked in orbit
+
+done 2026-11-12 19:30: PK-362 steamac vm disk: shrink 256gb to 192gb (PK-362 open)
+
+19:30 2026-11-12 wing 1 siesta: PK-362 yanked from this flyway (wing 2's 💤 line is its one home, his W7/W8; wishkeeper high); the refresh-crew-coordinator redraw kept as a 💤 line (his «not now» defers it); a flyway-habit line added
 <!-- SECTION:NOTES:END -->
