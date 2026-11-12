@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T15:19:00Z'
+updated_date: '2026-11-12T15:31:00Z'
 labels:
   - s
   - clio-wing-1
@@ -476,4 +476,15 @@ done 2026-11-12 17:19: ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/
 done 2026-11-12 17:19: FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close (FRM-575 Done)
 
 17:19 cleared: FRM-575 closed on dima's o33 (wing 1's 11-11 run as the done test); BYT-132 kept .env.local trashed on his o32; the 20:19 siesta tails: FRM-465 exit 5 due comment and FRM-575 seat→thread + probe comment were already done (read 17:10), review-rounds.md's three round lines moved above ## verdict (a3e91a9b), clio-revive's newest-by-mtime pick kept (mtime is its last write; inference)
+
+PK-346:W46 (2026-11-12 17:07, dima): ❓ so you're parked?
+PK-346:W47 (2026-11-12 17:07, dima): ❓ cli went to main fully?
+PK-346:W48 (2026-11-12 17:07, dima): ❓ what is your plan?
+PK-346:W49 (2026-11-12 17:07, dima): ❓ what can you do?
+PK-346:W50 (2026-11-12 17:07, dima): what i want now: all tails must be solved, all solvable flyways items, solve.
+PK-346:W51 (2026-11-12 17:07, dima): flyways clean of done items.
+PK-346:W52 (2026-11-12 17:07, dima): then analyze why flyways got cluttered, and fix the habit so no cluttering again.
+PK-346:W53 (2026-11-12 17:11, dima): i want clio flyway clean too. (context, not dima's words: «flio» in the raw read as «clio», wispr)
+PK-346:W54 (2026-11-12 17:11, dima): ❓ propose how to have it clean.
+PK-346:W55 (2026-11-12 17:11, dima): ❓ who solves main, or can you? main clio is busy with lanes and tests.
 <!-- SECTION:NOTES:END -->
