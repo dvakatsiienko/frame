@@ -583,22 +583,22 @@ func TestARoleTableRenameMovesTheDisplayNotThePower(t *testing.T) {
 // coordinator or wing record, while a sidecar's still lands
 func TestBriefSummonGivesNoCoordinatorRecordToABareHerdrPane(t *testing.T) {
 	t.Parallel()
+	// dima, 15:47: the pane fallback lets his layout start clio only while no coordinator record is live; a name-seated
+	// clio is no record, and a wing's record is no coordinator's, so main's start still passes beside a live wing
+	const (
+		clio     = `{"sessionId":"sid-clio","role":"coordinator"}`
+		fallback = `{"sessionId":"sid-clio","role":"coordinator","fallback":true}`
+		wing     = `{"sessionId":"sid-wing","role":"wing","wing":1}`
+	)
 	for _, c := range []struct {
-		role          string
-		isClioRecords bool
-		code          int
-	}{{"coordinator", true, 1}, {"wing:2", true, 1}, {"adviser", true, 0}, {"coordinator", false, 0}} {
-		t.Run(fmt.Sprint(c.role, c.isClioRecords), func(t *testing.T) {
+		role, record string
+		code         int
+	}{{"coordinator", clio, 1}, {"wing:2", clio, 1}, {"adviser", clio, 0}, {"coordinator", fallback, 0}, {"coordinator", wing, 0}} {
+		t.Run(fmt.Sprint(c.role, c.record), func(t *testing.T) {
 			t.Parallel()
 			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
 			write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
-			// dima, 15:47: the pane fallback lets his layout start clio only while no coordinator record is live
-			if c.isClioRecords {
-				write(t, store, `{"v":1,"threads":[{"sessionId":"sid-clio","role":"coordinator"}]}`)
-			} else {
-				// a name-seated clio is no record, so the layout's start still passes
-				write(t, store, `{"v":1,"threads":[{"sessionId":"sid-clio","role":"coordinator","fallback":true}]}`)
-			}
+			write(t, store, `{"v":1,"threads":[`+c.record+`]}`)
 
 			got := scriptX(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store, "HC_TERMINAL_ID=t9"}, "brief", "summon", "--role", c.role, "--session", "sid-other")
 

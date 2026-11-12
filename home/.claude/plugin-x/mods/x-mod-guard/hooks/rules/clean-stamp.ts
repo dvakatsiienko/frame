@@ -400,6 +400,7 @@ const isStartDoor = (c: Command) => {
 };
 // x gates the same two verbs by its caller's registry entry, which an env prefix could aim elsewhere; here the session is
 // read from the engine, whatever the line sets
+const COORDINATOR_NAME = /^\s*🦉/u;
 const isRoleVerb = (c: Command) => {
     const words = c.args.map((w) => w.text);
     return (
@@ -411,7 +412,9 @@ const isRoleVerb = (c: Command) => {
     );
 };
 export function roleSpawn(command: string, cwd: string): Refusal | undefined {
-    for (const c of commandsDeep(command, cwd)) {
+    const commands = commandsDeep(command, cwd);
+    // the enforcing refusals read every command first: a warn-only start door anywhere on the line never downgrades them
+    for (const c of commands) {
         if (isRoleVerb(c))
             return {
                 door: 'ask the coordinator: x brief summon and x lane dispatch --apply are hers',
@@ -419,27 +422,38 @@ export function roleSpawn(command: string, cwd: string): Refusal | undefined {
                 targets: ['x'],
                 why: "both verbs give a thread its role, and a sixth sense's role opens the clean stamp",
             };
-        if (isStartDoor(c))
-            return {
-                door: 'ask the coordinator: clio, a wing, crow and helga start from dima, his herdr layout or clio',
-                rule: 'start-door',
-                targets: [c.name],
-                why: 'a start door hands its thread the role of clio, a wing, crow or helga through x brief summon',
-            };
         const call = c.name === 'claude' ? c : claudeSpawn(c);
         if (call?.name !== 'claude') continue;
-        const isSessionId = call.args.some(
-            (w) =>
-                w.text === '--session-id' || w.text.startsWith('--session-id='),
+        const words = call.args.map((w) => w.text);
+        const isSessionId = words.some(
+            (w) => w === '--session-id' || w.startsWith('--session-id='),
         );
-        if (isSessionId)
+        // x's name fallback seats a 🦉 name while no coordinator record lives, so a member never starts one
+        const names = words.flatMap((w, i) =>
+            w === '-n' || w === '--name'
+                ? [words[i + 1] ?? '']
+                : w.startsWith('--name=')
+                  ? [w.slice('--name='.length)]
+                  : [],
+        );
+        if (isSessionId || names.some((n) => COORDINATOR_NAME.test(n)))
             return {
                 door: 'ask the coordinator to summon it: x brief summon prints the argv, and clio runs it',
                 rule: 'clean-stamp',
                 targets: ['claude'],
-                why: 'a --session-id carries the role x gave it at a summon, so only the coordinator runs one',
+                why: isSessionId
+                    ? 'a --session-id carries the role x gave it at a summon, so only the coordinator runs one'
+                    : "a 🦉 name is seated as the coordinator by x's name fallback while no coordinator record lives",
             };
     }
+    const door = commands.find(isStartDoor);
+    if (door)
+        return {
+            door: 'ask the coordinator: clio, a wing, crow and helga start from dima, his herdr layout or clio',
+            rule: 'start-door',
+            targets: [door.name],
+            why: 'a start door hands its thread the role of clio, a wing, crow or helga through x brief summon',
+        };
     return undefined;
 }
 

@@ -302,7 +302,7 @@ func standingGate(verb string, record thread) error {
 	}
 	// dima, 15:47: while no coordinator record is live, his herdr layout still starts clio, warned
 	if store, err := readThreadStore(powerThreadStorePath()); err == nil && !slices.ContainsFunc(store.Threads, func(t thread) bool {
-		return roleOf(t.Role).IsCoordinator && !t.Fallback
+		return t.Role == "coordinator" && !t.Fallback
 	}) {
 		fmt.Fprintln(os.Stderr, "x: a herdr terminal gets a coordinator's record while no live thread holds one (the pane fallback)")
 		return nil
