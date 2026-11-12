@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T12:44:00Z'
+updated_date: '2026-11-12T12:54:00Z'
 labels:
   - m
 dependencies: []
@@ -113,4 +113,12 @@ raw drop (2026-11-12 14:38, dima): q2. lets try but ask codie to draw something 
 raw drop (2026-11-12 14:38, dima): q3 ✓
 
 14:44: W8–W9 done: ~/projects/studio/taste.md (studio c28e412, pushed), his likes in his words; W10: the speak v2 designer sessions (5, 2026-10-01) are dead and held no words of his (they reached the designer through clio relays), his verdicts came from jobs/speak/ files into taste.md
+
+PK-384:W23 (2026-11-12, dima): can i have AB? (on the meter pick)
+
+PK-384:W24 (2026-11-12, dima): yes, but do not inject taste.md into the designer's memory via AGENTS.md directly. leave a pointer the designer may read. if the designer injects those memories, it steers the designer toward a different style (e.g. my saved prefs), and i want room to cook something different and new, as an experiment.
+
+raw drop (2026-11-12, dima): can i have AB?
+
+raw drop (2026-11-12, dima): yes but maybe do not inject it into the memory of the designer via agents.md directly. just leave a pointer so the designer can pick it in because if the UG designer injects those memories, it will steer the designer out to a different style (e.g., my saved prefs). in for cases when i will want to cook something different and something new experiment
 <!-- SECTION:NOTES:END -->
