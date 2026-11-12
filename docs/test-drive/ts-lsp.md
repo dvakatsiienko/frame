@@ -56,6 +56,7 @@ beat grep or lost to it.
 - 2026-10-25 · FRM-411 coder: the `LSP` tool used once on a jotai 3 + @types/react lift; the edit hook's diagnostics did the job and no type error needed chasing — the coder's read: drop it for dependency bumps
 - 2026-11-06 · frm-517 codie · not used, a new module had no callers to chase
 - 2026-11-06 · frm-514 codie · not used, no shared symbol to rename in a test file; said so rather than counted
+- 2026-11-12 · wing 1, a real ask for FRM-579 (every reader of x-mod-stash's `isWing`): `findReferences` 5 sites in 1 call, `rg -n '\bisWing\b'` the same 5 · tie on a single-file symbol; the touch also printed 5 false TS5097 errors (`.ts` import extensions) because the server misses the mod's own tsconfig, so its diagnostics on mod files are noise
 
 ## the reminder, moved here (2026-10-11, o139)
 
