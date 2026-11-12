@@ -91,3 +91,5 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ remeasure wishkeeper, its FRM-491 change one week on: «measure only the delta … only the part that goes after the cadence for Wishkeeper is changed», against `docs/research/wishkeeper-cadence.md`; keep, partly revert or revert — set 2026-11-11 · due: 2026-11-18
 
 ⏰ at the halt: the «verified» habit (PK-363:W955), my proposal to land it — dima: «remind me to revisit» — set 2026-11-12
+
+⏰📌 next boot order (dima 02:50): before the first boot message, main starts the mods lane (handoff mods-lane-6-frm519-4, after FRM-579 merges) and the herdr lane (handoff herdr-lane-15), and wing 1 starts; then the boot, his first chores; main's targets with him: the herdr settings shape, then the look (designer or not). wing 1: its cli lane at once (FRM-579 first), its first job the vm probe plan for mods tests in a vm, run as its own ask without him, the plan shaped after it; wing 1 is the chore solver, nothing piles up — set 2026-11-12 · due: 2026-11-12
