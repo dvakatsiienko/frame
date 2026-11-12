@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T15:13:00Z'
+updated_date: '2026-11-12T15:14:00Z'
 labels:
   - s
   - clio-wing-1
@@ -28,24 +28,23 @@ ordinal: 1001
 - [ ] #10 wing 1's summon leftovers: the mods codie's first door (does a pane draw mods for him), /handoff spawn still starts claude --bg, a pane wing's first task has no background field, the crew-pm board redraw (from main's flyway 17:13)
 - [ ] #11 carried from the 11-10 halt, not run: the trial board (pnpm test-drive:check, ts-lsp due), one checkup slice, two stale board redraws (crew-pm, refresh-crew-coordinator), crow note-vet and the crow-receipts round, the milestone order refresh, x linear archive, the kill side, the four budget rows groomed back, x plugin bump --apply clio (from main's flyway 17:13)
 - [ ] #12 prompt-groom.ts --no-wish refuses a prompt holding a want marker («i want», «always», «should», ❓, ← on a line of ours) and sends it to helga's groom (his o43 tick via wing 1, 19:29): measure the false refuses on this week's grooms first, warn before it enforces if the count is high (from main's flyway 17:13)
-- [ ] #13 PK-378 close (wing 1 hand-off 03:08): every W-line met, but pocket-check reads «dropped» inside W2's done note and the comma in W5's verdict; append one clean close line and close it (from main's flyway 17:13)
-- [ ] #14 the lane size alarm (wing 1's slow-lane fix 1, his 02:00): at 1.5× a chunk's size its coordinator gets one alarm, a pick with dima; its home: a FRM-572 line or the shape-lane sign (from main's flyway 17:13)
-- [ ] #15 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
-- [ ] #16 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
-- [ ] #17 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #18 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #19 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
-- [ ] #20 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #21 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #22 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
-- [ ] #23 📅 FRM-491 remeasure: only runs after ee5d08f9, against docs/research/wishkeeper-cadence.md, then keep, partly revert or revert, and close; the wishkeeper-cache trial switches to its 1 h arm the same day — on: 2026-11-18
-- [ ] #24 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18
-- [ ] #25 📅 evergreen, two weeks in one turn (dima 16:26: skipped this week entirely): the renovate prs frame#158 and bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #26 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #27 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #28 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #29 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
-- [ ] #30 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request — later: dima, his details first (PK-346:W11)
+- [ ] #13 the lane size alarm (wing 1's slow-lane fix 1, his 02:00): at 1.5× a chunk's size its coordinator gets one alarm, a pick with dima; its home: a FRM-572 line or the shape-lane sign (from main's flyway 17:13)
+- [ ] #14 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
+- [ ] #15 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
+- [ ] #16 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #17 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #18 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
+- [ ] #19 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #20 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #21 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
+- [ ] #22 📅 FRM-491 remeasure: only runs after ee5d08f9, against docs/research/wishkeeper-cadence.md, then keep, partly revert or revert, and close; the wishkeeper-cache trial switches to its 1 h arm the same day — on: 2026-11-18
+- [ ] #23 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18
+- [ ] #24 📅 evergreen, two weeks in one turn (dima 16:26: skipped this week entirely): the renovate prs frame#158 and bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #25 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #26 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #27 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #28 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #29 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request — later: dima, his details first (PK-346:W11)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -470,4 +469,6 @@ done 2026-11-12 17:07: seat sweep (o28): 63 files in wing 1 .scratch/seat-remova
 17:07 #10 decamp FRM-465-renovate-comment cleared: the tree is gone (ls 17:08, decamped o24); #6 seat sweep cleared as a twin of #2, its FRM-581 check moved into #2
 
 17:13 took 7 chore lines from main's PK-349 on her go
+
+done 2026-11-12 17:14: PK-378 close (wing 1 hand-off 03:08): every W-line met, but pocket-check reads «dropped» inside W2's done note and the comma in W5's verdict; append one clean close line and close it (from main's flyway 17:13) (PK-378 done)
 <!-- SECTION:NOTES:END -->
