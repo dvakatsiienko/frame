@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T18:12:00Z'
+updated_date: '2026-11-12T18:15:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,27 +16,27 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 FRM-525 cpu overload: name what burns kernel time under many sessions
-- [ ] #2 FRM-537 perf probes: a menu to run when usage is spare
-- [ ] #3 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
-- [ ] #4 FRM-407 fresh-eyes card: close it if the live card already covers the ticket
-- [ ] #5 FRM-551 vm: both reads at the first halt with no go lane
-- [ ] #6 PK-385 a standing stray lane for chores: shape it with dima, when he says
-- [ ] #7 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-555 «changed» at dispatch
-- [ ] #8 mods codie in a herdr pane: does dima see each mod change live there, the mods lane's reason
-- [ ] #9 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
-- [ ] #10 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
-- [ ] #11 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
-- [ ] #12 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
-- [ ] #13 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
-- [ ] #14 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
-- [ ] #15 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #16 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
-- [ ] #17 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #18 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #19 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #20 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #21 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #1 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
+- [ ] #2 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-555 «changed» at dispatch
+- [ ] #3 mods codie in a herdr pane: does dima see each mod change live there, the mods lane's reason
+- [ ] #4 ⏳ FRM-551 vm: both reads — waits for: the first halt with no go lane
+- [ ] #5 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
+- [ ] #6 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
+- [ ] #7 📅 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict — on: 2026-11-13
+- [ ] #8 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
+- [ ] #9 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
+- [ ] #10 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
+- [ ] #11 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
+- [ ] #12 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #13 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
+- [ ] #14 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #15 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #16 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #17 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #18 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #19 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #20 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #21 💤 PK-385 the standing stray lane: shape it with dima (the strays codie runs since 20:06) — later: dima says
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -600,4 +600,8 @@ done 2026-11-12 20:10: «seat» code half: seatOf, CLIO_SEAT and the seats dir r
 20:10 wing 1: «seat» code half landed (e1eb8051, stray codie): seatOf, CLIO_SEAT, seats dir; the guard, the pane labels and x-mod-stash names asked of main
 
 20:12 wing 1: summon leftovers: /handoff spawn now summons in a herdr pane (landing); a pane wing's background rides its first task (surface-herdr-desktop.md:8), so done; left: the mods codie's first door
+
+20:14 wing 1: FRM-525 and FRM-537 moved to 💤: their milestone «🐉 the mac runs tests cheaper» is parked on his 11-10 00:17 word (after herdr and speak v2), and FRM-525's next step is a sudo read by his hand (cases.md § next)
+
+20:14 wing 1: FRM-407 not closable: the card is live, its open part is the trial round on speak v2's first screen pr (W1 ✓, decided), so it rides speak v2 tomorrow
 <!-- SECTION:NOTES:END -->

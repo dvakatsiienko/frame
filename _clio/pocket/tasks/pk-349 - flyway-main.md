@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T17:54:00Z'
+updated_date: '2026-11-12T18:13:00Z'
 labels:
   - s
   - clio-main
@@ -17,25 +17,21 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 guard story into fleet-stories/guard-lockout before the halt (his o42); facts in .scratch/guard/
-- [ ] #2 lowtide family (PK-387): run the checkup, now the reshape landed
-- [ ] #3 FRM-505 auto second wind: grill and sign with dima, then the mods codie builds it
-- [ ] #4 FRM-504 read: does its round count live in both the stash and x, before anyone builds it
-- [ ] #5 herdr rename steps 2–7, then zoo.json → x-herdr-layout.json, by the herdr codie
-- [ ] #6 quiet comms gate: a second [done] from one member within minutes is held; propose it
-- [ ] #7 fork-guard r6: a wing may edit a handoff file carrying its own token; fixture-HOME proof
-- [ ] #8 x brief check's offline stamp line: seven names and ⚖️ worth it, to dima
-- [ ] #9 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
-- [ ] #10 ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505
-- [ ] #11 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
-- [ ] #12 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
-- [ ] #13 📅 herdr with dima: the settings window shape, then the look grill, designer or not — on: 2026-11-13
-- [ ] #14 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
-- [ ] #15 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
-- [ ] #16 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
-- [ ] #17 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
-- [ ] #18 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #19 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
-- [ ] #20 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #2 quiet comms gate: a second [done] from one member within minutes is held; propose it
+- [ ] #3 fork-guard r6: a wing may edit a handoff file carrying its own token; fixture-HOME proof
+- [ ] #4 x brief check's offline stamp line: seven names and ⚖️ worth it, to dima
+- [ ] #5 herdr grills, his order: FRM-564 → 582 → 580 → 567 → 563 → 562, 569, each signed
+- [ ] #6 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
+- [ ] #7 ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505
+- [ ] #8 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
+- [ ] #9 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
+- [ ] #10 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
+- [ ] #11 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
+- [ ] #12 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
+- [ ] #13 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
+- [ ] #14 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #15 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
+- [ ] #16 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -357,4 +353,14 @@ done 2026-11-12 17:42: ⏳ clio:checkpoint step 0 and § 4 drop the hold notice 
   #26 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 
 19:54 wing 1: out with their homes: FRM-576 #1 #11 (closed, main's word), #6 guard (dropped, FRM-581 W23–W24), #7 band (FRM-565, FRM-561), #13 chatter (done 17:23), #14 cache (FRM-572 chunk 1, #171), #15 FRM-579 (Done), #16 FRM-572 (running #171), #18 summon (done 17:38), #19+#20 merged into the 11-13 herdr line; designer day's full text (main 19:52, his o36 steer 19:48): refresh the designer recipe, designer → Fable 5.2 medium, speak v2 from stashed designs, herdr look round synced
+
+done 2026-11-12 20:13: 📅 herdr with dima: the settings window shape, then the look grill, designer or not — on: 2026-11-13
+
+done 2026-11-12 20:13: herdr rename steps 2–7, then zoo.json → x-herdr-layout.json, by the herdr codie
+
+done 2026-11-12 20:13: FRM-504 read: does its round count live in both the stash and x, before anyone builds it (FRM-504 Todo)
+
+done 2026-11-12 20:13: FRM-505 auto second wind: grill and sign with dima, then the mods codie builds it (FRM-505 Todo)
+
+done 2026-11-12 20:13: lowtide family (PK-387): run the checkup, now the reshape landed (PK-387 open)
 <!-- SECTION:NOTES:END -->
