@@ -45,6 +45,7 @@ ordinal: 1001
 - [ ] #27 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #28 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 - [ ] #29 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #30 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request — later: dima, his details first (PK-346:W11)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -409,4 +410,6 @@ done 2026-11-12 02:51: cli lane 8 running: FRM-436 + FRM-424 one chunk, one work
 done 2026-11-12 02:51: the coordinator gate trusts its env: a script run by path with `env -u CLAUDECODE -u AI_AGENT script -q /dev/null x lane dispatch --apply …` passes callerIsCoordinator as dima (sixth sense on #161, named in its fail-open list); a fix or a keep is dima's call, raise it with a proposal
 
 done 2026-11-12 03:04: 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-570 body sync (seven rules, out, rule 7 a verb, his 3 names, done test + exit 14–16), spec.md:87/:89 stale, exit 16 fingerprint widened to emojis; FRM-414 → Todo; PK-378 fold into FRM-570:W5 + close; FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request; tell dima FRM-568 was Done, untouched — later: dima, his details first (PK-346:W11) (FRM-570 Done, FRM-414 Done, PK-378 done, FRM-465 Todo, FRM-575 Todo, FRM-560 Done, FRM-568 Done, PK-346 open)
+
+reopened 03:04 2026-11-12: the 20:19 siesta tails line, cleared too early at the halt (its FRM-465 and FRM-575 parts still open); PK-378 and the FRM-570 parts were done
 <!-- SECTION:NOTES:END -->
