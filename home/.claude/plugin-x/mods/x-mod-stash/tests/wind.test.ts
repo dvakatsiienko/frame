@@ -18,6 +18,8 @@ let inCompact: (() => Promise<unknown>) | undefined;
 let hasIngestCommand = true;
 // the engine refuses the compact, as it refuses an unknown command
 let compactRefusal: string | undefined;
+// the context % a step reads live, through $.session.usage
+let fillNow: number | undefined;
 
 // the live peers a test's messages come from, as cc's registry names them and x's records give their roles
 const SENSE_NAMES = [
@@ -52,6 +54,7 @@ function world(
     inCompact = undefined;
     hasIngestCommand = true;
     compactRefusal = undefined;
+    fillNow = undefined;
     const prompts: string[] = [];
     const lines: string[] = [];
     const commands: string[] = [];
@@ -141,6 +144,17 @@ function world(
         if (e.origin?.kind === 'plugin') prompts.push(e.text);
         return { text: e.text };
     });
+    on('session.usage', () => ({
+        value: {
+            context: {
+                percent: fillNow,
+                tokens: (fillNow ?? 0) * 10_000,
+                window: 1_000_000,
+            },
+            rateLimits: [],
+            startedAt: 0,
+        },
+    }));
     on('command.list', () => ({
         value: [
             { description: '', name: 'compact', source: 'builtin' as const },
@@ -385,6 +399,175 @@ test('the ingest is queued while the compact still runs, so no prompt slips betw
     expect(queued.map((c) => c.split(' ')[0])).toEqual([
         '/compact',
         '/x:handoff-ingest',
+    ]);
+});
+
+// FRM-505: past 55 % a session hears the wind is coming; past 65 % the mod asks for it, a turn after the notice
+const NOTICE = /^🐦‍🔥 context at \d+ %/;
+const noticesOf = (lines: string[]) => lines.filter((l) => NOTICE.test(l));
+// the prompt path reads the fill the board shows; each prompt is one turn
+async function turnAt($: Engine, w: ReturnType<typeof world>, fill: number) {
+    w.store.set(`context:${SID}`, fill);
+    await say($);
+}
+
+test('past 55 % a session hears once that 65 % is the upper boundary', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await turnAt($, w, 56);
+    await turnAt($, w, 57);
+    expect(noticesOf(w.lines)).toEqual([
+        expect.stringMatching(/context at 56 %.*65 % is the upper boundary/),
+    ]);
+});
+
+test('the notice says to finish the meaningful part, commit and hand off before the wind, never mid-build', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await turnAt($, w, 56);
+    const said = noticesOf(w.lines).join('');
+    expect(
+        [
+            'do not compact now',
+            'finish the meaningful part',
+            'commit',
+            'handoff',
+            'never mid-build or mid-step',
+        ].map((t) => said.includes(t)),
+    ).toEqual([true, true, true, true, true]);
+});
+
+test('a long turn hears the notice at its next tool step, from the live fill', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await turnAt($, w, 40);
+    fillNow = 57;
+    const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
+    expect(noticesOf([...(r.context ?? [])])).toHaveLength(1);
+});
+
+test('54, 56, 54, 56 draws one notice', async ($, on) => {
+    const w = world(on);
+    await start($);
+    for (const fill of [54, 56, 54, 56]) await turnAt($, w, fill);
+    expect(noticesOf(w.lines)).toHaveLength(1);
+});
+
+test('a fill 10 under the notice re-arms it', async ($, on) => {
+    const w = world(on);
+    await start($);
+    for (const fill of [56, 44, 56]) await turnAt($, w, fill);
+    expect(noticesOf(w.lines)).toHaveLength(2);
+});
+
+test('a compact re-arms the notice', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await turnAt($, w, 56);
+    await compact($, 'auto');
+    await turnAt($, w, 56);
+    expect(noticesOf(w.lines)).toHaveLength(2);
+});
+
+test('one step crossing both lines gives the notice first and the ask a turn later', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await turnAt($, w, 52);
+    await turnAt($, w, 68);
+    const after68 = [
+        noticesOf(w.lines).length,
+        notes(w.lines).filter((l) => l.includes('second wind:')).length,
+    ];
+    await turnAt($, w, 68);
+    expect([
+        after68,
+        notes(w.lines).filter((l) =>
+            l.startsWith('🐦‍🔥 second wind: the mod asks'),
+        ),
+        (w.store.get(`wind:${SID}`) as { state?: string }).state,
+    ]).toEqual([[1, 0], [expect.any(String)], 'writing']);
+});
+
+test("the ask never lands in the notice's own turn, even at a later tool step", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await turnAt($, w, 68);
+    fillNow = 68;
+    await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
+    expect(w.store.has(`wind:${SID}`)).toBe(false);
+});
+
+test('a session first seen past 65 % gets one notice, then one ask', async ($, on) => {
+    const w = world(on);
+    await start($);
+    for (const fill of [70, 71, 72]) await turnAt($, w, fill);
+    expect([
+        noticesOf(w.lines).length,
+        notes(w.lines).filter((l) =>
+            l.startsWith('🐦‍🔥 second wind: the mod asks'),
+        ).length,
+    ]).toEqual([1, 1]);
+});
+
+test("the mod's ask names the mod, a must that still lets the step on hand finish", async ($, on) => {
+    const w = world(on);
+    await start($);
+    for (const fill of [70, 70]) await turnAt($, w, fill);
+    const ask =
+        notes(w.lines).find((l) =>
+            l.startsWith('🐦‍🔥 second wind: the mod asks'),
+        ) ?? '';
+    expect([
+        ask.includes('dima asked'),
+        ask.includes('a must'),
+        ask.includes('finish the step'),
+    ]).toEqual([false, true, true]);
+});
+
+test('an ask pressed by dima is never written over', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await turnAt($, w, 70);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+    await turnAt($, w, 70);
+    expect(
+        notes(w.lines).filter((l) =>
+            l.startsWith('🐦‍🔥 second wind: dima asked'),
+        ),
+    ).toHaveLength(1);
+});
+
+test("dima's take-back holds until the fill drops under 65 %, then the next crossing asks again", async ($, on) => {
+    const w = world(on);
+    await start($);
+    for (const fill of [70, 70]) await turnAt($, w, fill);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'cancelled' });
+    for (const fill of [70, 70, 60, 70]) await turnAt($, w, fill);
+    expect(
+        notes(w.lines).filter((l) =>
+            l.startsWith('🐦‍🔥 second wind: the mod asks'),
+        ),
+    ).toHaveLength(2);
+});
+
+test("the coordinator's thread hears no notice and gets no ask", async ($, on) => {
+    const w = world(on, '🦉 clio', undefined, undefined, 'coordinator');
+    await start($);
+    for (const fill of [70, 70]) await turnAt($, w, fill);
+    expect([noticesOf(w.lines), w.store.has(`wind:${SID}`)]).toEqual([
+        [],
+        false,
+    ]);
+});
+
+test('with second wind switched off, no notice and no ask', async ($, on) => {
+    const w = world(on);
+    w.store.set('shown', { 'stash.second-wind': false });
+    await start($);
+    for (const fill of [70, 70]) await turnAt($, w, fill);
+    expect([noticesOf(w.lines), w.store.has(`wind:${SID}`)]).toEqual([
+        [],
+        false,
     ]);
 });
 

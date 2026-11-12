@@ -67,6 +67,8 @@ export type StashWind = {
         | 'stopped';
     at: number;
     slug?: string;
+    // the mod asked it, past the wind line, where dima's press leaves this out
+    by?: 'mod';
     // work started after «pending: none» and before the compact: the wind refuses, and says what
     blocked?: string;
 };

@@ -1224,6 +1224,16 @@ const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your conte
 const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
 const windRefused = (what: string) =>
     `🐦‍🔥 second wind refused: ${what} still runs after you said pending: none, so nothing compacted. stop it with TaskStop or name it in pending, then call ${ORBIT_TOOL} op second-wind again.`;
+// FRM-505: past NOTICE_AT a session hears its wind is coming, past WIND_AT the mod asks for it (W1, W2, W1947, W1948);
+// a fill NOTICE_REARM under the notice re-arms it, a fill under WIND_AT the ask, so dima's ↩️ holds until the fill drops
+const NOTICE_AT = 55;
+const WIND_AT = 65;
+const NOTICE_REARM = 10;
+const FILL = 'fill:';
+type FillMark = { noticed?: number; asked?: true };
+const fillNotice = (fill: number) =>
+    `🐦‍🔥 context at ${fill} %: a second wind is coming. ${WIND_AT} % is the upper boundary, where the mod asks for it; nothing is urgent. do not compact now: plan your nearest steps so you finish the meaningful part you are in, commit it, solve its tails, write your handoff with x:handoff, then take the wind through ${ORBIT_TOOL} op second-wind. never mid-build or mid-step.`;
+const WIND_NOTE_AUTO = `🐦‍🔥 second wind: the mod asks you for it, your context is past ${WIND_AT} %: a must, never a rush. finish the step you are on and commit it, nothing interrupts it; never wind mid-build. then ${WIND_HOW}`;
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
 const ingestBy = (slug: string) =>
@@ -3667,7 +3677,7 @@ async function procOf($: EngineInterface): Promise<Proc | undefined> {
 
 // everything this mod keeps for one conversation: one store key per prefix, the session id after it, plus its pending
 // lane marks; a new per-session key joins this list, or a /clear leaves it behind for good (marks did, FRM-400)
-const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL, WIND] as const;
+const SESSION_KEYS = [PREFIX, HOT, REPLY, CONTEXT, MODEL, WIND, FILL] as const;
 
 async function forget($: EngineInterface, sid: string) {
     await dropState($, sid).catch(() => undefined);
@@ -4201,6 +4211,43 @@ async function pressWind($: EngineInterface, sid: string) {
     await load($);
 }
 
+// the prompts this session has started, so the mod's ask lands a turn after its notice, never in the same one
+let turnNo = 0;
+
+// the fill crossing NOTICE_AT returns its notice once; a later turn past WIND_AT writes the session's own ask, only
+// where no wind key stands, so a press of dima's is never written over
+async function takeFill($: EngineInterface, fill: number | undefined) {
+    const sid = await currentId($);
+    if (!sid || fill === undefined) return undefined;
+    // the coordinator's thread is off by default (W1915): its 🍃 switch lands with FRM-505's chip
+    if ((await selfRecord($))?.role === MAIN_ROLE) return undefined;
+    const was = ((await $.store.get(FILL + sid)) as FillMark | undefined) ?? {};
+    const mark: FillMark = { ...was };
+    if (fill <= NOTICE_AT - NOTICE_REARM) delete mark.noticed;
+    if (fill < WIND_AT) delete mark.asked;
+    let line: string | undefined;
+    if (fill >= NOTICE_AT && mark.noticed === undefined) {
+        mark.noticed = turnNo;
+        line = fillNotice(fill);
+    } else if (
+        fill >= WIND_AT &&
+        !mark.asked &&
+        mark.noticed !== undefined &&
+        mark.noticed !== turnNo
+    ) {
+        mark.asked = true;
+        if (!(await windOf($, sid)))
+            await $.store.set(WIND + sid, {
+                at: await $.clock.now(),
+                by: 'mod',
+                state: 'asked',
+            } satisfies StashWind);
+    }
+    if (JSON.stringify(mark) !== JSON.stringify(was))
+        await $.store.set(FILL + sid, mark);
+    return line;
+}
+
 // at a turn's start: the ask joins once and becomes writing; a cancel joins once and leaves
 async function takeWind($: EngineInterface, isOwner: boolean) {
     const sid = await currentId($);
@@ -4211,6 +4258,7 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
             at: await $.clock.now(),
             state: 'writing',
         } satisfies StashWind);
+        if (was.by === 'mod') return WIND_NOTE_AUTO;
         return isOwner ? WIND_NOTE_OWNER : WIND_NOTE;
     }
     if (was.state === 'refused') {
@@ -6667,6 +6715,15 @@ export const register: Register = (on) => {
                 ? COST_HINT
                 : undefined;
         const steers = await takeSteers($, isOn).catch(() => []);
+        turnNo += 1;
+        const fillLine = isOn('stash.second-wind')
+            ? await takeFill(
+                  $,
+                  (await $.store
+                      .get(CONTEXT + (await currentId($)))
+                      .catch(() => undefined)) as number | undefined,
+              ).catch(() => undefined)
+            : undefined;
         const wind = isOn('stash.second-wind')
             ? await takeWind($, isOwner).catch(() => undefined)
             : undefined;
@@ -6687,6 +6744,7 @@ export const register: Register = (on) => {
                 ...(quiet.held.length ? [quietNote(quiet.held)] : []),
                 ...gapNotes,
                 ...(tickets ? [tickets] : []),
+                ...(fillLine ? [fillLine] : []),
                 ...(wind ? [wind] : []),
                 ...steers,
                 ...(costHint ? [costHint] : []),
@@ -6879,6 +6937,9 @@ export const register: Register = (on) => {
             // the next measure comes only at this turn's end, and a wind's ingest is one long turn: until then the
             // fill from before the compact would stand on the band and every board
             await drawFill($, undefined).catch(() => undefined);
+            const compacted = await currentId($);
+            if (compacted)
+                await $.store.delete(FILL + compacted).catch(() => undefined);
             $.clock.after(COMPACT_SETTLE_MS, () =>
                 drawFillAfterCompact($).catch(() => undefined),
             );
@@ -9247,6 +9308,13 @@ export const register: Register = (on) => {
         // 🐦‍🔥 a press while this session works slipstreams into its next tool step, as a tick does; an idle one waits
         // for its next turn, never woken (dima, 19:14)
         if (isOn('stash.second-wind')) {
+            // a long turn crosses the lines with no prompt: the step reads its fill live (probed, 2.1.322)
+            const fill = await $.session
+                .usage()
+                .then((u) => u.context.percent)
+                .catch(() => undefined);
+            const fillLine = await takeFill($, fill).catch(() => undefined);
+            if (fillLine) notes.push(fillLine);
             const wind = await takeWind($, await isLaneOwner($)).catch(
                 () => undefined,
             );

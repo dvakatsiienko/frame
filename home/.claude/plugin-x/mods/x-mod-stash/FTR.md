@@ -440,6 +440,15 @@
   - then the note the session reads carries dima's words whole (W4, FRM-431), for codie and for clio alike
   - decision: a watch holds the wind, a background command does not (clio's pick, 2026-11-12, reconciling the 11-07 «a background run survives a wind» with «the gate refuses or stops a live watch»)
   - proof: tests/wind.test.ts::the op refuses with no pending field / refuses a pending that names work / an agent or a watch started after pending: none makes the wind refuse / both notes carry dima's words (+ a background command does not hold it, a watch the turn's Stop lists holds it, a named pending's line)
+- ✅ a session hears its second wind coming at 55 %, and the mod asks for it at 65 % (FRM-505, W1, W2, W1947, W1948)
+  - makes: a `fill:<session id>` key in the store, the crossings this session has heard
+  - given a session's context crosses 55 %, read at its next prompt from the fill the board shows, or at its next tool step from the live fill, then it reads one line, once per crossing: 65 % is the upper boundary, do not compact now, finish the meaningful part, commit, write the handoff, then wind, never mid-build or mid-step
+  - and a fill 10 under the line, or a compact, re-arms it, so 54, 56, 54, 56 draws one line
+  - given a later turn past 65 %, then the mod writes the session's own 🐦‍🔥 ask, only where no wind key stands, and its note says the mod asked, a must that lets the step on hand finish; the coordinator's thread hears none of it until its 🍃 switch lands
+  - and one step crossing both lines gives the line first and the ask a turn later; a session first seen past 65 % gets one line, then one ask
+  - and dima's ↩️ on the mod's ask holds until the fill drops under 65 %, and the next crossing asks again
+  - given `🐦‍🔥 second wind` switched off, then no line and no ask
+  - proof: tests/wind.test.ts::past 55 % a session hears once that 65 % is the upper boundary (+ the notice's words, the step path, 54/56, re-arm, compact, both lines in one step, first seen past 65 %, the mod's ask, the coordinator's thread left out, dima's press kept, take-back, switched off)
 - ✅ a coordinator's message to a codie past 55 % context waits for its second wind (r5, dima's o23: «~50–60% is fine»)
   - makes: a `steer-held:<session id>` key in the store, the held messages in order
   - given a codie whose ctx meter reads 55 % or more, when 🦉 clio or a wing sends it a message, then the codie reads a second wind note naming the sender and its fill instead of the message, and its 🐦‍🔥 reads ✍️
