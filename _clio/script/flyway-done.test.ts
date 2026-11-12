@@ -161,3 +161,12 @@ describe('flyway-done --check', () => {
         );
     });
 });
+
+test('a dated read naming a closed ticket shows yellow and is not counted', () => {
+    const { closed, report } = checkReport(
+        flywayLines('- [ ] #1 📅 FRM-9 the week read — on: 2026-11-16\n'),
+        [{ id: 'FRM-9', state: 'Done' }],
+    );
+    expect(closed).toBe(0);
+    expect(report[0]).toMatch(/^🟡 #1 /);
+});

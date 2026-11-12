@@ -183,8 +183,16 @@ export function checkReport(lines: FlywayLine[], states: NamedState[]) {
             const isClosed = ids.some((i) =>
                 CLOSED_STATES.has(stateOf.get(i) ?? ''),
             );
-            if (isClosed) closed++;
-            const mark = isClosed ? '🔴' : ids.length ? '🟢' : '⚪';
+            // a dated read after a ticket's close is its live step, shown but never counted
+            const isDatedRead = isClosed && flywayKind(l.text) === 'dated';
+            if (isClosed && !isDatedRead) closed++;
+            const mark = isDatedRead
+                ? '🟡'
+                : isClosed
+                  ? '🔴'
+                  : ids.length
+                    ? '🟢'
+                    : '⚪';
             const home = ids.length
                 ? named.join(', ')
                 : 'no id: read its own home';
