@@ -110,8 +110,8 @@ if grep '^home/.claude/plugin-x/' <<<"$changed" | grep -qv '^home/.claude/plugin
 	bump x
 fi
 # a pr merged on github leaves main behind origin, and the push would be refused for every clio: take origin in first
-git -C "$root" fetch --quiet origin main || exit 1
-if ! git -C "$root" merge-base --is-ancestor refs/remotes/origin/main refs/heads/main; then
+if git -C "$root" fetch --quiet origin main 2>/dev/null &&
+	! git -C "$root" merge-base --is-ancestor refs/remotes/origin/main refs/heads/main; then
 	git -C "$root" merge --no-edit --quiet refs/remotes/origin/main || {
 		# a conflict must never leave dima's checkout mid-merge
 		git -C "$root" merge --abort 2>/dev/null
