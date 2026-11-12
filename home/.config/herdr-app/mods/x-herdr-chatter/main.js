@@ -71,7 +71,9 @@ import {
     QUEUED_IDLE_MS,
     QUEUED_SHOWN,
     claudeQueueAfter,
+    clearKeys,
     isHisQueued,
+    isVimNormal,
     queuedAfterIdle,
     queuedAfterRow,
     queuedStripCover,
@@ -3088,7 +3090,10 @@ export default class ClaudeChat extends View {
             text && !this.leftInBox && !/^Try "/.test(text)
                 ? { address: agent.address, text }
                 : null;
-        this.leftNormal = r?.stdout?.includes('-- NORMAL --') ?? false;
+        this.leftNormal = isVimNormal(
+            r?.stdout ?? '',
+            this.settingsNow()?.editorMode,
+        );
     }
 
     // [take it]: the text into the chat box, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
@@ -3231,8 +3236,12 @@ export default class ClaudeChat extends View {
         cx.spawn(async (cx) => {
             try {
                 await this.pullOut(address, chosen.text, cx);
-            } catch {
-                this.steering = null;
+            } catch (e) {
+                const note = `Couldn't take it back: ${e instanceof Error ? e.message : e}`;
+                this.steering = note;
+                cx.notify();
+                await cx.sleep(4000);
+                if (this.steering === note) this.steering = null;
                 cx.notify();
             }
         });
@@ -3250,12 +3259,15 @@ export default class ClaudeChat extends View {
             cx.notify();
         };
         const r = await hc(['read', address, '--lines', '40']).catch(
-            () => null,
+            /** @returns {null} */ () => null,
         );
-        if (!/up to edit queued messages/i.test(r?.stdout ?? ''))
+        const screen = r?.stdout ?? '';
+        if (!/up to edit queued messages/i.test(screen))
             return say('It joined the turn first');
         this.popped.set(address, []);
-        await hc(['keys', address, 'up']);
+        // ↑ from vim's normal mode leaves its cursor on the last character: insert first, the prompt is empty here
+        const isNormal = isVimNormal(screen, this.settingsNow()?.editorMode);
+        await hc(['keys', address, ...(isNormal ? ['i'] : []), 'up']);
         // ↑ pulls every message of his, a send not recorded yet too: the records are in once they stop coming
         let seen = 0;
         for (let i = 0, still = 0; i < 25 && still < 3; i++) {
@@ -3267,14 +3279,22 @@ export default class ClaudeChat extends View {
         const pulled = this.popped.get(address) ?? [];
         // nothing came out: whatever ↑ put in Claude's input stays there, offered by «Still in Claude's box»
         if (!pulled.length) return say('It joined the turn first');
-        const lines = pulled.reduce(
-            (n, q) => n + q.split('\n').length + Math.ceil(q.length / 40) + 2,
-            0,
+        await hc(['keys', address, ...clearKeys(pulled, false)]);
+        await cx.sleep(400);
+        // a send into a prompt that still holds text glues onto it: then every pulled message comes to his box
+        const after = await hc(['read', address, '--lines', '40']).catch(
+            /** @returns {null} */ () => null,
         );
-        await hc(['keys', address, ...Array(lines * 2).fill('ctrl+u')]);
+        const left = boxText(after?.stdout ?? '');
+        const isCleared = after?.code === 0 && (!left || /^Try "/.test(left));
         const isPulled = pulled.includes(text);
-        if (isPulled) {
-            const words = queuedWords(text);
+        const rest = isPulled
+            ? pulled.filter((_, n) => n !== pulled.indexOf(text))
+            : pulled;
+        /** @param {string[]} texts @returns {void} */
+        const toBox = (texts) => {
+            if (!texts.length) return;
+            const words = texts.map(queuedWords).join('\n\n');
             // he may have moved to another thread meanwhile: the words go to this thread's kept draft
             const isShown = this.address === address;
             const had = (
@@ -3288,18 +3308,44 @@ export default class ClaudeChat extends View {
                 this.box.focus();
             }
             cx.notify();
+        };
+        if (!isCleared) {
+            toBox(pulled);
+            return say(
+                left
+                    ? `Claude's box kept «${left.slice(0, 40)}»: all ${pulled.length} are in your box`
+                    : `Couldn't read Claude's box: all ${pulled.length} are in your box`,
+            );
         }
-        const rest = isPulled
-            ? pulled.filter((_, n) => n !== pulled.indexOf(text))
-            : pulled;
-        for (const q of rest) {
+        /** @type {string[]} */
+        let unsent = [];
+        let failure = '';
+        for (const [n, q] of rest.entries()) {
             const words = queuedWords(q);
+            const mine = { at: Date.now(), text: words };
             this.queued.set(address, [
                 ...(this.queued.get(address) ?? []),
-                { at: Date.now(), text: words },
+                mine,
             ]);
-            await hc(['send', address, words]);
+            failure = await hc(['send', address, words]).then(
+                (r) =>
+                    r.code === 0 ? '' : (r.stderr || `exit ${r.code}`).trim(),
+                (e) => String(e),
+            );
+            if (failure) {
+                this.queued.set(
+                    address,
+                    (this.queued.get(address) ?? []).filter((m) => m !== mine),
+                );
+                unsent = rest.slice(n);
+                break;
+            }
         }
+        toBox([...(isPulled ? [text] : []), ...unsent]);
+        if (failure)
+            return say(
+                `Couldn't queue ${unsent.length} again, in your box: ${failure.slice(0, 120)}`,
+            );
         await say(isPulled ? null : 'It joined the turn first');
     }
 
@@ -3312,13 +3358,8 @@ export default class ClaudeChat extends View {
         this.typed = this.box.value();
         keepDraft(address, this.typed);
         this.leftInBox = null;
-        const lines = Math.ceil(text.length / 40) + 2;
-        const keys = [
-            ...(this.leftNormal ? ['i'] : []),
-            ...Array(lines * 2).fill('ctrl+u'),
-        ];
         cx.spawn(async () => {
-            await hc(['keys', address, ...keys]);
+            await hc(['keys', address, ...clearKeys([text], this.leftNormal)]);
         });
         this.box.focus();
         cx.notify();
@@ -6155,12 +6196,8 @@ export default class ClaudeChat extends View {
         this.typed = text;
         keepDraft(address, text);
         this.ghost = null;
-        const keys = [
-            ...(this.leftNormal ? ['i'] : []),
-            ...Array((Math.ceil(text.length / 40) + 2) * 2).fill('ctrl+u'),
-        ];
         cx.spawn(async () => {
-            await hc(['keys', address, ...keys]);
+            await hc(['keys', address, ...clearKeys([text], this.leftNormal)]);
         });
         this.box.focus();
         cx.notify();

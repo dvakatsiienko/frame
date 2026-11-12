@@ -48,4 +48,5 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 ## hazards
 
 - a `hc run --no-parent` thread has no tab until `skills/herdr/scripts/thread-tab.ts` gives it one
+- vim normal mode has no screen marker: empty Claude's prompt via `clearKeys` (chatter `queued.js`)
 - a helper green in vitest can lack a herdr global (`TextEncoder`); `check` renders one frame: after a landing, shoot a view that ran it

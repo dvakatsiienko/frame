@@ -87,6 +87,26 @@ export const queuedWords = (text) =>
         )
         .trim();
 
+// vim's insert mode names itself at the foot of Claude Code's screen; its normal mode shows nothing, the same as vim off
+/** @param {string} screen @param {unknown} editorMode Claude's `editorMode` setting */
+export const isVimNormal = (screen, editorMode) =>
+    editorMode === 'vim' && !screen.includes('-- INSERT --');
+
+// keys that empty Claude Code's prompt holding `texts`: ctrl+u twice a line, a key that neither exits nor stops Claude.
+// vim's normal mode keeps its cursor on the last character, where ctrl+u leaves it and the next send glues onto it
+// (probed 2026-11-12: «plum» pulled and re-sent was queued as «plumm»): there the whole text goes, then back to insert
+/** @param {string[]} texts @param {boolean} isNormal @returns {string[]} */
+export const clearKeys = (texts, isNormal) =>
+    isNormal
+        ? ['g', 'g', 'd', 'shift+g', 'i']
+        : Array(
+              texts.reduce(
+                  (n, q) =>
+                      n + q.split('\n').length + Math.ceil(q.length / 40) + 2,
+                  0,
+              ) * 2,
+          ).fill('ctrl+u');
+
 // the queued messages listed over the box, the rest counted
 export const QUEUED_SHOWN = 3;
 const STRIP_HEAD = 30;

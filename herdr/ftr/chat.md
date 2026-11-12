@@ -22,12 +22,14 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: queued and joined are read from Claude Code's `queue-operation` records (enqueue, remove, dequeue, popAll), never guessed from his text
   - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the box empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
   - and a press on the strip («Send now», «Take it», a ×) is the strip's alone: the message under it never forks
-- 🐞 a queued message comes back to the box with its × (FRM-563)
-  - decision: hidden behind `IS_UNDO_SEND_ON` until the re-send is proven: his second queued «test» was pulled and never came back (01:39)
+- ⬜ a queued message comes back to the box with its × (FRM-563)
+  - decision: hidden behind `IS_UNDO_SEND_ON` since his 01:39 «looks ugly, and half baked»; its look goes to the look grill
+  - decision: the lost re-send was Claude Code's vim normal mode: ↑ there leaves the cursor on the last character, ctrl+u leaves it, and the re-send glued onto it («plum» queued as «plumm»); the chat presses `i` before ↑ (probed 2026-11-12)
   - given a thread mid-turn holds his queued messages
   - when dima clicks × on one before it joins
   - then the thread never receives it and its text is back in his box, before anything he had typed there
   - and the others queued with it are sent again in their order
+  - and when Claude Code's prompt still holds text after the pull, nothing is sent: every pulled message is in his box, the strip naming what was left
   - and a message that joined first stays joined, the strip saying «It joined the turn first» for 4 s
   - decision: a cross per message: ↑ in Claude Code's empty prompt pulls all of them, so the chat puts the one back and re-queues the rest (dima, o145, 2026-11-12)
 - ⬜ his messages sit in bubbles on the right, Claude's on the left (FRM-562)
