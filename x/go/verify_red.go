@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -328,13 +329,7 @@ func cleanHolds(file string, got redRun, picked bool) error {
 		if len(names) == 0 {
 			msg = "the clean run is red, nothing mutated: no failed test named"
 		}
-		next := "run the test until it passes on " + file + " as it is"
-		// the copy leaves .git out, so a test that runs git in the tree is red here and green there (FRM-572)
-		if strings.Contains(got.log, "not a git repository") {
-			msg += "; the test runs git, and the off-tree copy holds no .git"
-			next = "prove this line by a hand revert in the tree, or with a test that plants its own repo"
-		}
-		return &Fail{Refused: true, Msg: msg, Next: next, Log: nonBlank(got.log)}
+		return &Fail{Refused: true, Msg: msg, Next: "run the test until it passes on " + file + " as it is", Log: nonBlank(got.log)}
 	// a runner x picked prints its tally, so a run with none ran nothing, a name that matched no test included
 	case read.none && !read.ran, picked && !read.ran:
 		return &Fail{Refused: true, Msg: "the clean run ran no test, nothing mutated", Next: "name a test that runs: its file, or --run with a name it holds", Log: nonBlank(got.log)}
@@ -598,6 +593,9 @@ func newCopyHarness(file string, command []string, runDir string, guarded bool) 
 	}
 	h := &copyHarness{root: root, copy: filepath.Join(scratch, filepath.Base(root)), file: file, cwd: cwd, command: command}
 	err = copyRepo(root, h.copy)
+	if err == nil {
+		err = seedGit(root, h.copy)
+	}
 	if guarded && err == nil {
 		h.guard = filepath.Join(scratch, "guard")
 		err = writeGuard(h.guard)
@@ -822,6 +820,45 @@ func copyRepo(root, to string) error {
 		}
 		return cloneFile(path, dest)
 	})
+}
+
+// seedGit gives the copy a repo of its own at the real HEAD, its objects borrowed read-only, so a test that runs git reads
+// the copy as it reads the tree (FRM-572) and no git there can write the real .git; no template, so no hook comes along
+func seedGit(root, to string) error {
+	git := func(dir string, args ...string) (string, error) {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		cmd.Env = slices.DeleteFunc(os.Environ(), func(kv string) bool { return strings.HasPrefix(kv, "GIT_") })
+		out, err := cmd.Output()
+		if err != nil {
+			return "", gitFailure(args[0], err)
+		}
+		return strings.TrimSpace(string(out)), nil
+	}
+	objects, err := git(root, "rev-parse", "--path-format=absolute", "--git-path", "objects")
+	if err != nil {
+		return err
+	}
+	head, err := git(root, "rev-parse", "HEAD")
+	if err != nil {
+		return err
+	}
+	branch, _ := git(root, "symbolic-ref", "-q", "--short", "HEAD")
+	if _, err := git(to, "init", "-q", "--template=", "--initial-branch="+cmp.Or(branch, "detached")); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(to, ".git/objects/info/alternates"), []byte(objects+"\n"), 0o644); err != nil {
+		return err
+	}
+	if branch == "" {
+		_, err = git(to, "update-ref", "--no-deref", "HEAD", head)
+	} else {
+		_, err = git(to, "update-ref", "refs/heads/"+branch, head)
+	}
+	if err == nil {
+		_, err = git(to, "read-tree", "HEAD")
+	}
+	return err
 }
 
 func skipIfDir(entry fs.DirEntry) error {
