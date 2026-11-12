@@ -40,6 +40,7 @@ _clio/plugin-clio/skills/flawlog/SKILL.md	4400	seed 2026-10-16, today's size + 1
 _clio/plugin-clio/skills/flyway-sync/SKILL.md	1950	+50 2026-11-11: «seat» → «thread», 2 B a hit (dima 19:43); seed 2026-11-11, its size + 15 %
 _clio/plugin-clio/skills/gazette/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/halt/SKILL.md	1555	2026-11-07: the halt split by thread, PK-351:W55
+_clio/plugin-clio/skills/lanes-checkup/SKILL.md	3800	seed 2026-11-12, its size + 15 %
 _clio/plugin-clio/skills/low-tide-cuts/SKILL.md	4900	+1500 2026-11-09: renamed (PK-367), the filter test and when it runs joined (PK-367:W2, W3, dima's o36–o38); seed 2026-11-06, its size + 15 %
 _clio/plugin-clio/skills/low-tide-triage/SKILL.md	3600	seed 2026-11-07: any clio splits the pile across lanes (dima, PK-352), its size + 8 %; 2026-11-11 +200: the someday and scope filter, the hunt's filter line (dima o32)
 _clio/plugin-clio/skills/low-tide/SKILL.md	2800	2026-11-07: +900 many clio lanes, batches, the proposal card, a handover (dima, PK-352); seed 2026-10-20, its size + 15 %
