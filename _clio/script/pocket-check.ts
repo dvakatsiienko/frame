@@ -223,9 +223,11 @@ export function checkPocket(
                 .filter((line) => CLOSE_LINE.test(line))
                 // a verdict in parentheses stays with its clause: «W5 dropped (no area emoji, dima o58)»
                 .flatMap((line) => line.split(/[,;·](?![^(]*\))/))
-                // «W2 done (member word dropped)» is a done clause: only its own words outside parentheses drop it
-                .filter((clause) =>
-                    /\bdropped\b/i.test(clause.replace(/\([^)]*\)/g, '')),
+                // «W2 done (member word dropped)» is a done clause, «W3 (dropped)» a drop: the word counts outside parentheses or opening them
+                .filter(
+                    (clause) =>
+                        /\bdropped\b/i.test(outsideParentheses(clause)) ||
+                        /\(\s*dropped\b/i.test(clause),
                 );
             const dropped = citedIds(droppedClauses.join('\n'), [home]);
             // a line dima wrote or asked for dies only on his word: the clause cites it
@@ -387,6 +389,13 @@ export function unkeptStale(tasks: Task[], today: string): string[] {
 }
 
 // a UTC stamp (`…Z`) is read on the local calendar, like `today`
+// innermost pairs first, so «(kept (a) then dropped)» goes whole
+function outsideParentheses(text: string): string {
+    let rest = text;
+    while (/\([^()]*\)/.test(rest)) rest = rest.replace(/\([^()]*\)/g, '');
+    return rest;
+}
+
 function localDay(stamp: string): string {
     return ZONED_STAMP.test(stamp)
         ? new Date(stamp).toLocaleDateString('sv')
