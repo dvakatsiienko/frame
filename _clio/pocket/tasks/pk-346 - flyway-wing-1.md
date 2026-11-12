@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T16:11:00Z'
+updated_date: '2026-11-12T16:18:00Z'
 labels:
   - s
   - clio-wing-1
@@ -538,4 +538,6 @@ PK-346:W75 (2026-11-12 18:09, dima): 2. the flyway fix lands, with its habit lin
 PK-346:W76 (2026-11-12 18:09, dima): 3. FRM-579's leftover chores and its look card for main. ← ok, do
 PK-346:W77 (2026-11-12 18:09, dima): 4. the backlog of older messages not yet sorted for wishes. ← ok go
 PK-346:W78 (2026-11-12 18:09, dima): 5. the code fixes I took over from main's flyway.
+
+hoist 11-12: proposing, wing 1
 <!-- SECTION:NOTES:END -->
