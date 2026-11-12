@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T13:58:00Z'
+updated_date: '2026-11-12T14:03:00Z'
 labels:
   - m
   - clio-wing-1
@@ -58,4 +58,6 @@ PK-379:W11 (2026-11-12 15:34, dima): i think this temporary habit is worth an mv
 PK-379:W12 (2026-11-12 15:42, dima): let's shape it as a slightly wider, more generic folded message type, one that works for any thread, lanes included, not only clio: a system message, your plain messages that aren't too important for me. you'd fold wishkeeper and crow not because the feature is built for them, but because we agreed they are system-type.
 PK-379:W13 (2026-11-12 15:42, dima): can i have a toggle button for it on my band? enabled, everyone uses the system fold; unticked, you stop and print normally. the toggle doesn't change already folded messages, they stay as they are in history.
 PK-379:W14 (2026-11-12 15:47, dima): if it stops working or gets clunky on any surface, i'll just disable it.
+
+16:03 wing 1: shaped into FRM-580 (system notes, Triage, fleet · 🫟 x-herdr looks sharp); its sign via clio:shape-lane next, then it joins main's herdr lane
 <!-- SECTION:NOTES:END -->
