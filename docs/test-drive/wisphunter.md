@@ -102,4 +102,9 @@ group by 1 order by 2 desc;
 - the blind critic (crow:plan-critique, $1.09, 107 s) found 5 beside it, 2 high (the cutover, a store write no door sees); no overlap with wisphunter: the two read different axes, code facts vs threat shape
 - grade vs the usual door (a scout plus a hand read): wider and faster, no miss found later yet; the seal held at `x brief preflight` ok
 
+### round 10 — a small fix's diff, 2026-11-12 (wing 1, pocket-check's clause split, two commits)
+- one plain card: 66 s, 39k tokens, 7 tool calls; 3 findings (2 bug, 1 nit), 2 questions, 1 pre-existing
+- all 3 real: «W2 (dropped)» passed with no verdict, a nested paren left a stray «dropped», the tests missed both; fixed in the next commit, each new test proven red with `x verify red`
+- 0 false hits; the suite had gone green on both bugs, so the card caught what the tests could not
+
 ## verdict
