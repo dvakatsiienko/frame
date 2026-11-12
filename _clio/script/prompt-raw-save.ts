@@ -11,7 +11,7 @@ import {
 import path from 'node:path';
 
 import { ungroomedPrompts, ungroomedSteersToday } from './prompt-groom.ts';
-import { seatOf } from './session-registry.ts';
+import { threadOf } from './session-registry.ts';
 
 const rawRoot =
     process.env.PROMPT_RAW_DIR ??
@@ -180,7 +180,7 @@ if (import.meta.main && process.argv[2] === '--stop') {
         stop_hook_active?: boolean;
         transcript_path?: string;
     };
-    const thread = seatOf();
+    const thread = threadOf();
     if (!input.stop_hook_active && thread !== undefined) {
         const d = threadDay(thread, new Date(), input.transcript_path);
         const reason = groomBlock(
@@ -198,7 +198,7 @@ if (import.meta.main && process.argv[2] === '--stop') {
     ) as { prompt?: string; transcript_path?: string };
     const text = dimasText(prompt);
     // a session that is no clio thread (a plain fork, a sidecar) keeps no log
-    const thread = seatOf();
+    const thread = threadOf();
     if (text && thread !== undefined) {
         const now = new Date();
         const { file } = threadDay(thread, now);

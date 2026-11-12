@@ -27,8 +27,8 @@ export function liveSessions(): Session[] {
 }
 
 // a clio thread's own folder under a shared state dir: '' for main, `wing-<N>` for a wing, undefined for any other session
-export function seatOf(home = homedir(), ccPid = nearestClaude()) {
-    if (process.env.CLIO_SEAT !== undefined) return process.env.CLIO_SEAT;
+export function threadOf(home = homedir(), ccPid = nearestClaude()) {
+    if (process.env.CLIO_THREAD !== undefined) return process.env.CLIO_THREAD;
     if (ccPid === undefined) return undefined;
     const mainPid = readOr(join(home, '.local/state/clio/main-session')).match(
         /^pid=(\d+)$/m,

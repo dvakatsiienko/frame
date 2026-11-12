@@ -22,19 +22,19 @@ import path from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 
 import { steersOf } from './chat-lines.ts';
-import { seatOf } from './session-registry.ts';
+import { threadOf } from './session-registry.ts';
 import { normalize, prefixWish, repeatedIds, unwrapIds } from './wish-cover.ts';
 
 const home = process.env.HOME ?? '';
-// each clio seat keeps its own prompts and grooms: main at the root, a wing in `wing-<N>/` (FRM-542)
-const seat = seatOf() ?? '';
+// each clio thread keeps its own prompts and grooms: main at the root, a wing in `wing-<N>/` (FRM-542)
+const thread = threadOf() ?? '';
 const promptRoot =
     process.env.PROMPT_RAW_DIR ?? path.join(home, '.local/state/clio/prompts');
-const promptDir = path.join(promptRoot, seat);
+const promptDir = path.join(promptRoot, thread);
 const groomRoot =
     process.env.PROMPT_GROOM_DIR ?? path.join(home, '.local/state/clio/grooms');
-const groomDir = path.join(groomRoot, seat);
-// a groom is written to its own seat's folder and read from every seat's: one made in main counts in a wing
+const groomDir = path.join(groomRoot, thread);
+// a groom is written to its own thread's folder and read from every thread's: one made in main counts in a wing
 const groomDirs = () => [
     groomRoot,
     ...(existsSync(groomRoot) ? readdirSync(groomRoot) : [])
@@ -102,7 +102,7 @@ function groomedIn(dir: string, day: string, hhmm: string, item: string) {
         .some(([, date, time, id]) => date === day && (id ?? time) === hhmm);
 }
 
-// a minute this seat's log lacks was typed in another seat or before the log existed, so it owes this seat no groom
+// a minute this thread's log lacks was typed in another thread or before the log existed, so it owes this thread no groom
 export const groomedOrUnlogged: Groomed = (day, key, item) => {
     if (groomedOnDisk(day, key, item)) return true;
     if (!/^\d{2}:\d{2}$/.test(key)) return false;

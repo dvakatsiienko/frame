@@ -484,9 +484,12 @@ function threadOf(home: string, sessionId?: string): Thread | undefined {
         const name = session.name ?? '';
         const wing = /wing (\d+)/.exec(name)?.[1];
         if (wing)
-            return { dir: `seats/wing-${wing}`, role: `clio-wing-${wing}` };
+            return { dir: `threads/wing-${wing}`, role: `clio-wing-${wing}` };
         return /\((fork|side)/.test(name)
-            ? { dir: `seats/fork-${sessionId.slice(0, 8)}`, role: 'clio-side' }
+            ? {
+                  dir: `threads/fork-${sessionId.slice(0, 8)}`,
+                  role: 'clio-side',
+              }
             : recordedMain(home, sessionId);
     }
     return recordedMain(home, sessionId);

@@ -38,7 +38,7 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 - this is every member's summon door; a lane member's first task is `"$(cat <brief file>)"`, its argv per role and its preflight (`x brief summon '<the line>'`) in `x:crew-lead`
 - 📌 then its tab, the same turn (a `--no-parent` thread has none, so herdr's agents list skips it): `herdr-app do terminal.keep '{"terminal":"<t>","place":"tab"}'` returns the tab id, then `herdr-app do tab.rename '{"id":"<tab>","name":"<registry name>"}'` (`scripts/thread-tab.ts` runs both, the proof `terminal.keep` returns the tab); dima's standing ask (11-11 00:06, via main): both `do` calls need no new word. done when `herdr-app ls` shows the tab by its registry name
 
-- 📌 the cc `-n` is its name for `ListAgents` and `seatOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live threads
+- 📌 the cc `-n` is its name for `ListAgents` and `threadOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live threads
 - its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends
 - stop it with `hc kill <t>`; a `claude --bg` member runs unchanged from a herdr thread, `claude attach <id>` opens it in a pane, `claude stop <id>` ends it
 - the first task rides in `run`: a send to a booting agent can be dropped (`hc --skill`, «Delegate a task»)

@@ -17,7 +17,7 @@ import {
     groomNudge,
     wingNudge,
 } from './prompt-raw-save.ts';
-import { seatOf } from './session-registry.ts';
+import { threadOf } from './session-registry.ts';
 
 const notice =
     '<system-reminder>\nThe user\'s fork "🦉 clio (fork)" finished a turn.\n</system-reminder>\n';
@@ -153,7 +153,7 @@ describe('wingNudge', () => {
                 encoding: 'utf8',
                 env: {
                     ...process.env,
-                    CLIO_SEAT: '',
+                    CLIO_THREAD: '',
                     HOME: home,
                     PROMPT_GROOM_DIR: join(home, 'grooms'),
                     PROMPT_RAW_DIR: join(home, 'prompts'),
@@ -201,7 +201,7 @@ describe('flywayNudge', () => {
     });
 });
 
-describe('seatOf', () => {
+describe('threadOf', () => {
     function threadHome(mainPid: number, sessions: Record<number, string>) {
         const home = mkdtempSync(join(tmpdir(), 'thread-'));
         mkdirSync(join(home, '.local/state/clio'), { recursive: true });
@@ -219,21 +219,21 @@ describe('seatOf', () => {
     }
 
     test('the main thread writes at the root', () => {
-        expect(seatOf(threadHome(10, { 10: '🦉 clio' }), 10)).toBe('');
+        expect(threadOf(threadHome(10, { 10: '🦉 clio' }), 10)).toBe('');
     });
 
     test.each([
         ['the desktop title', '🦉🪽 clio: wing 3'],
         ['a herdr thread name', 'wing-3'],
     ])('a wing by %s writes in its own folder', (_kind, name) => {
-        expect(seatOf(threadHome(10, { 11: name }), 11)).toBe('wing-3');
+        expect(threadOf(threadHome(10, { 11: name }), 11)).toBe('wing-3');
     });
 
     test.each([
         ['a plain fork', '🦉 clio (fork)'],
         ['a lane member', '🌗 🔧 codie: cli lane | FRM-383'],
     ])('%s keeps no log', (_kind, name) => {
-        expect(seatOf(threadHome(10, { 12: name }), 12)).toBeUndefined();
+        expect(threadOf(threadHome(10, { 12: name }), 12)).toBeUndefined();
     });
 });
 
@@ -247,7 +247,7 @@ describe('the hook in a wing', () => {
                 encoding: 'utf8',
                 env: {
                     ...process.env,
-                    CLIO_SEAT: 'wing-3',
+                    CLIO_THREAD: 'wing-3',
                     HOME: home,
                     PROMPT_GROOM_DIR: join(home, 'grooms'),
                     PROMPT_RAW_DIR: join(home, 'prompts'),

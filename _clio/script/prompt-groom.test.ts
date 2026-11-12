@@ -153,7 +153,7 @@ describe('groomedOrUnlogged', () => {
         const dir = mkdtempSync(join(tmpdir(), 'prompt-log-'));
         writeFileSync(join(dir, `${day}.md`), '## 09:12\n\na prompt\n');
         vi.stubEnv('PROMPT_RAW_DIR', dir);
-        vi.stubEnv('CLIO_SEAT', '');
+        vi.stubEnv('CLIO_THREAD', '');
         vi.resetModules();
         const { groomedOrUnlogged } = await import('./prompt-groom.ts');
         vi.unstubAllEnvs();
@@ -185,7 +185,7 @@ describe('groomedOrUnloggedAnywhere', () => {
         );
         vi.stubEnv('PROMPT_RAW_DIR', dir);
         vi.stubEnv('PROMPT_GROOM_DIR', join(dir, 'no-grooms'));
-        vi.stubEnv('CLIO_SEAT', '');
+        vi.stubEnv('CLIO_THREAD', '');
         vi.resetModules();
         const { groomedOrUnloggedAnywhere } = await import('./prompt-groom.ts');
         vi.unstubAllEnvs();
@@ -329,7 +329,7 @@ describe('--check against a groom file on disk', () => {
                     encoding: 'utf8',
                     env: {
                         ...process.env,
-                        CLIO_SEAT: '',
+                        CLIO_THREAD: '',
                         PROMPT_GROOM_DIR: root,
                     },
                     timeout: 10_000,
@@ -380,7 +380,7 @@ describe('--check on an inbox stamp', () => {
                     encoding: 'utf8',
                     env: {
                         ...process.env,
-                        CLIO_SEAT: '',
+                        CLIO_THREAD: '',
                         PROMPT_GROOM_DIR: root,
                     },
                     timeout: 10_000,
@@ -456,7 +456,7 @@ describe('--day', () => {
         now?: string | null;
         pocket?: Record<string, string>;
         prompts?: string;
-        seatTranscripts?: Record<string, string[]>;
+        threadTranscripts?: Record<string, string[]>;
         sessionId?: string;
         steers?: string[] | null;
     }) {
@@ -474,7 +474,7 @@ describe('--day', () => {
             const transcript = join(root, 't.jsonl');
             writeFileSync(transcript, (opts.steers ?? []).join('\n'));
             for (const [file, rows] of Object.entries(
-                opts.seatTranscripts ?? {},
+                opts.threadTranscripts ?? {},
             )) {
                 const at = join(root, '.claude/projects', file);
                 mkdirSync(join(at, '..'), { recursive: true });
@@ -511,7 +511,7 @@ describe('--day', () => {
                     env: {
                         ...process.env,
                         CLAUDE_CODE_SESSION_ID: opts.sessionId ?? '',
-                        CLIO_SEAT: '',
+                        CLIO_THREAD: '',
                         HOME: root,
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                         POCKET_DIR: join(root, 'pocket'),
@@ -648,17 +648,17 @@ describe('--day', () => {
         ).toBe(0);
     });
 
-    const otherSeat = {
-        '-Users-dima-frame--clio/other-seat.jsonl': [
+    const otherThread = {
+        '-Users-dima-frame--clio/other-thread.jsonl': [
             steer('o4', 'another board steer'),
         ],
     };
 
-    test('with no transcript and no session id, another seat’s steer is owed nothing', () => {
+    test('with no transcript and no session id, another thread’s steer is owed nothing', () => {
         const out = run({
             prompts: '',
-            seatTranscripts: otherSeat,
             steers: null,
+            threadTranscripts: otherThread,
         });
         // a word match: the random temp dir in the green line can spell «o4»
         expect(out.stdout).not.toMatch(/\bo4\b/);
@@ -668,13 +668,13 @@ describe('--day', () => {
     test('with no transcript, the session id names this thread’s own', () => {
         const out = run({
             prompts: '',
-            seatTranscripts: {
-                ...otherSeat,
+            sessionId: 'abc',
+            steers: null,
+            threadTranscripts: {
+                ...otherThread,
                 '-Users-dima-frame--claude-worktrees-clio-wing-1--clio/abc.jsonl':
                     [steer('o5', 'this board steer')],
             },
-            sessionId: 'abc',
-            steers: null,
         });
         expect(out.stdout).toContain('o5 — no groom: this board steer');
         expect(out.stdout).not.toContain('o4');
@@ -778,7 +778,7 @@ describe('prompt-groom oN (FRM-451)', () => {
                     encoding: 'utf8',
                     env: {
                         ...process.env,
-                        CLIO_SEAT: '',
+                        CLIO_THREAD: '',
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                         PROMPT_GROOM_DIR: grooms,
                     },
@@ -833,7 +833,7 @@ describe('--linear, with a stubbed x', () => {
                     encoding: 'utf8',
                     env: {
                         ...process.env,
-                        CLIO_SEAT: '',
+                        CLIO_THREAD: '',
                         PATH: `${join(root, 'bin')}:${process.env.PATH}`,
                         PROMPT_GROOM_DIR: grooms,
                         // UTC+14 keeps the fixture's 2026-10-25 14:50 in the past on any CI clock
@@ -1122,8 +1122,8 @@ describe('ungroomedSteersToday', () => {
         const dir = join(home, '.claude/projects/-Users-dima-frame--clio');
         mkdirSync(dir, { recursive: true });
         writeFileSync(
-            join(dir, 'other-seat.jsonl'),
-            `${steer('o4', 'another seat steer')}\n`,
+            join(dir, 'other-thread.jsonl'),
+            `${steer('o4', 'another thread steer')}\n`,
         );
         vi.stubEnv('HOME', home);
         vi.resetModules();
@@ -1133,7 +1133,7 @@ describe('ungroomedSteersToday', () => {
     });
 });
 
-describe('a groom from another seat', () => {
+describe('a groom from another thread', () => {
     test('a wing finds a groom main made at the root', async () => {
         const root = mkdtempSync(join(tmpdir(), 'grooms-'));
         writeFileSync(
@@ -1141,7 +1141,7 @@ describe('a groom from another seat', () => {
             'PK-1:W1 (2026-11-09 14:12, dima): ship it\n',
         );
         vi.stubEnv('PROMPT_GROOM_DIR', root);
-        vi.stubEnv('CLIO_SEAT', 'wing-1');
+        vi.stubEnv('CLIO_THREAD', 'wing-1');
         vi.resetModules();
         const groom = await import('./prompt-groom.ts');
         vi.unstubAllEnvs();

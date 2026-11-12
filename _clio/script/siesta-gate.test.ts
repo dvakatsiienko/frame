@@ -1204,7 +1204,7 @@ describe('a resume reads the 5h window', () => {
 describe('every clio on its own stamp', () => {
     const WING = 'w-2';
     const wingDir = (home: string) =>
-        join(home, '.local/state/clio/seats/wing-2');
+        join(home, '.local/state/clio/threads/wing-2');
     const threaded = (home: string) => {
         const dir = join(home, '.claude/sessions');
         mkdirSync(dir, { recursive: true });
