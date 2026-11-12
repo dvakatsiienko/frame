@@ -64,8 +64,6 @@ ordinal: 1001
 - [ ] #46 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #47 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 - [ ] #48 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
-- [ ] #49 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #50 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 <!-- AC:END -->
 
 ## Implementation Notes
