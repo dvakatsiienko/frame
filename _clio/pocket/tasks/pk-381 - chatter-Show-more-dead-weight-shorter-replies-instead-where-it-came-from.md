@@ -1,10 +1,10 @@
 ---
 id: PK-381
 title: 'chatter Show more: dead weight? shorter replies instead; where it came from'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:42:00Z'
+updated_date: '2026-11-12T11:47:00Z'
 labels:
   - xs
 dependencies: []
@@ -27,4 +27,6 @@ raw drop (2026-11-12 inbox, dima): we probably build dead weight: «show more» 
 raw drop (2026-11-12 inbox, dima): instead why just not to reply shorter? if longer reply truly needed i can live with them so far as they pretty and pleasant to read.
 
 raw drop (2026-11-12 inbox, dima): also — how «show more» appeared in my chatter box. who invented it? where it was borrowed from? sheparder?
+
+close 13:47: W1 kept, dima o4 «keep, i was just saying that we could solve this from another side (comms fix)»; W2 rides PK-380 (shorter replies) and PK-379; W3 answered on the 11-12 boot board (shepherdr's foldOf, MIT, FRM-562 step 11, ee43788a)
 <!-- SECTION:NOTES:END -->
