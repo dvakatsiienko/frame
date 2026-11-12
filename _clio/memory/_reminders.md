@@ -11,11 +11,9 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
   - 📜 keeping a doc alive
   - 🔬 a probe to run
 
-
 ⏰ 🦉👁️ the `@types/react` override in bytes `pnpm-workspace.yaml` — set 2026-09-21 because `@visx/event` (via `prisma` → `@prisma/studio-core`) still ranges `@types/react` 19.2.x and next's styled-jsx types resolved the hoisted copy, breaking every `React.X` global-namespace use on 19.3. raise when the changedetector watches on `registry.npmjs.org/@visx/event/latest` or `/@prisma/studio-core/latest` fire, or at an evergreen major of `prisma` or `@visx/*`: remove the two override lines, `pnpm install`, `ls node_modules/.pnpm | grep '@types+react@'` — one version → the override is dead, commit the removal — set 2026-09-21
 
 ⏰📌 🦉👁️ the daemon spare that skips AGENTS.md — every `--bg` codie claims a pre-warmed `claude bg-spare`; a day-old spare booted one WITHOUT the repo's root `AGENTS.md` (2026-09-22, ccbee7b0), a minutes-old spare loaded it. the workaround is the summon preflight in `x:crew-lead` (spare age → `claude daemon stop --keep-workers` after the throwaway probe → summon). watch: (a) every codie's first reply names its loaded AGENTS.md paths — a missing root file means the preflight leaked; (b) upstream [#95589](https://github.com/anthropics/claude-code/issues/95589) (our comment carries the spare-age table) — the gh watch (boot digest). dies when the issue closes fixed and one post-fix codie boots complete on a stale spare — then the preflight line goes too. dima's ask 2026-09-22: «keep an eye on this until it's fixed on the claude code side, so we know when to remove this tracking habit» — set 2026-09-22
-
 
 ⏰ 🦉👁️ jotai 3 waits on jotai-devtools — bytes pins jotai 2.20.3 in atelier + x-com-chat (e36e7599): jotai-devtools 0.14.0 imports `INTERNAL_buildStoreRev3`, gone in jotai 3, and x-com-chat's prod build broke on it (c637fbe2) though its peer range says `>=2.20.0`. v3 support is merged (jotaijs/jotai-devtools#222) but ships only as 0.15.0-alpha.0. raise when the changedetector watch on `registry.npmjs.org/jotai-devtools/latest` fires or evergreen shows a jotai 3 card: hold it (close with this reason) until `npm view jotai-devtools version` prints ≥ 0.15.0, then lift jotai + devtools together, proven by a local `pnpm --filter x-com-chat build` — set 2026-09-26
 
@@ -39,12 +37,9 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉🔬 skill router re-measure, 2026-11-08 (pushed 10-27, dima: «+1 week, no capacity») — v2 (FRM-305, #57) merged with the router OFF: on 32 real held-out prompts the best arm read 75 % precision / 15 % wrong, the turn-on bar is 90 % / 5 %. until then every halt adds ≥ 10 real prompts from the day's transcripts to `shelf/jev/fixtures/skill-router.jsonl`, labelled by what should have loaded (the living eval set, `refresh-crew-classifier`). on 10-19: replay on ~100 real prompts beside the haiku baseline arm; turn on, rebuild, or drop the router. dima 2026-10-05: «a + b»; 10-20: «let's take care of jev a little later, postpone to tomorrow»; 10-23: push until tuesday — set 2026-10-05 · due: 2026-11-19 (pushed 11-03 +5, 11-09 +4 «everything jev», 11-12 +7 «move jev to 7+ later», dima)
 
 
-
 ⏰ 🦡 before every halt: dima runs his own retro in this thread, and in crow's window he types «read /Users/dima/.claude/plugins/cache/mattpocock/mattpocock-skills/<version>/skills/engineering/retro/SKILL.md and run it over clio's session from your packets; focus: <his steer>» (`ls ~/.claude/plugins/cache/mattpocock/mattpocock-skills/` names the version). clio reminds him, then runs its own retro beside it, one flush. dima 2026-10-07: «yes remind me» · «i want to gather the retro from ccrow myself next time» — set 2026-10-07, moved from the pocket 2026-10-09
 
 ⏰ 🦉🧠 when the jev router comes back on (credit ~10-18): the two «skills (jev router)» lines parked at the end of `~/frame/docs/knowledge/jev.md` go back into root `CLAUDE.md` § skills, after the skill router re-measure — set 2026-10-11 · due: 2026-11-19 (pushed 10-23, dima: until tuesday; 10-27: with the router re-measure) (pushed 11-03 +5, 11-09 +4 «everything jev», 11-12 +7 «move jev to 7+ later», dima)
-
-
 
 
 
@@ -72,13 +67,11 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 ⏰ 🦉🔬 rename asks recount: did «a name says what the thing does» (landed 2026-11-05) cut dima's renames? baseline 2026-09-07 → 11-05, 60 days: about 45 asks, 13 of them an unclear name, 12 naming something new, 13 other, 6 family order, 1 collision, 11 ambiguous lines left out; a keyword floor, so unclear runs at least 0.22 a day. 📌 sorted from an older 124-hit scan; the script now prints 321 there, so the card re-sorts that window too. how: `/usr/bin/python3 ~/frame/_clio/script/rename-asks-count.py 2026-11-06 <out>`, also grep the pocket's dated W-lines for the same words, then a `helper` card sorts real asks into those five causes. one line to dima: unclear per day against 0.22, and all asks per day against 0.75. a name old enough to predate the rule counts apart. then ask him whether the script stays or goes to `trash` — set 2026-11-05 · due: 2026-12-05
 
 
-
 ⏰ 🦉 the empty-wakes re-count, a day after FRM-501 round 3 lands (his o78): `docs/test-drive/gate-speed/empty-wakes.md` holds the reads; one line to dima, read by class; FRM-512 is cancelled (his o58: «ok but do not forget!», the idea in its closing word); restored 11-12: the 15:55 verdict's classifier skipped cross-session rows, re-count with one that reads them — due: 2026-11-14
 
 ⏰ 🦉 flip the raw `gh pr merge` refusal from warn-only to enforcing, a mods lane slice before FRM-505 and before BYT-94's required-check flip (his o48, moving his o10); its count reads through `pnpm mods:replay`, since the hint records no warned event — set 2026-11-06
 ⏰ 🦉 [FRM-514](https://linear.app/x-com/issue/FRM-514): read the guide-before-first-edit share, `pnpm memory-load:guide-share`, against 47 % and the 90 % bar; under the bar the chunk reopens; and `pnpm memory-load:replay` for the rows' false fires (his «ok and measure», o43) — set 2026-11-06 · due: 2026-11-20
 ⏰ 🦉 re-login to claude before 2026-12-01, the login ends then (FRM-508's read, his o4) — set 2026-11-07 · due: 2026-11-24
-
 
 ⏰ 🔬 fable 5.2 research, a week after its release — dima 2026-11-10 (PK-363:W195): «research about refreshing models in a week (set a reminder)»; W196: what he saw so far, «slightly stronger than opus 5.5, but twice as expensive, and ~20% cheaper than fable 5.1. opus 5.5 medium is still the baseline, imo.» run `recipes/refresh-crew-coordinator/recipe.md` for fable 5.2 once bench data is seeded, then the model cards — set 2026-11-10 · due: 2026-11-17
 
@@ -92,8 +85,7 @@ Store contract: the `clio:remind` skill. Both tiers die only when Dima drops the
 
 ⏰ at the halt: the «verified» habit (PK-363:W955), my proposal to land it — dima: «remind me to revisit» — set 2026-11-12
 
-⏰📌 next boot order (dima 02:50): before the first boot message, main starts the mods lane at once (handoff mods-lane-6-frm519-5: 14k, 14h, the P2 hedges first; register.ts/.tsx only after FRM-579 merges) and the herdr lane (handoff herdr-lane-15), and wing 1 starts; then the boot, his chores; then guide his FRM-562 hand checks; main's targets with him: the herdr settings shape, then the look (designer or not). wing 1: its cli lane at once (FRM-579 first), its first job the vm probe plan for mods tests in a vm, run as its own ask without him, main consulted on its plan, the plan shaped after it; wing 1 is the chore solver, nothing piles up — set 2026-11-12 · due: 2026-11-12
-
-⏰ tomorrow at the halt: a retro over the whole day like 11-12's (biggest flaws, herdr, comms, quiet comms, the verified rule's numbers per role) — dima 03:16 — set 2026-11-12 · due: 2026-11-12
 
 ⏰ re-run the lane size measure, decide the sizing (dima 19:11): `docs/research/lane-size-measure.md` — set 2026-11-12 · due: 2026-12-12
+
+⏰ 🦉🔬 my next second wind sends no notice and no back line (dima's o171 tick): after the pickup, read back that every message sent mid-wind arrived whole and in order; a pass drops both lines from `clio:checkpoint` § 0 and § 4, a miss puts the pings back — set 2026-11-12

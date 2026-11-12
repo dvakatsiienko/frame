@@ -1,5 +1,5 @@
 ---
-status: open
+status: sealed
 dates: 2026-10-05 → 2026-11-12
 tickets: [FRM-321, FRM-427, FRM-524, FRM-544, FRM-574, FRM-581, FRM-566, FRM-580, FRM-519]
 tags: [guard, permissions, x-mod-guard, override, lockout, wrong-call]
