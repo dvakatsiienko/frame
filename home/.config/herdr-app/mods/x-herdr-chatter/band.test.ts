@@ -316,7 +316,7 @@ describe('the band follows a press made on the deck (dima, 23:42)', () => {
     });
 });
 
-describe('the state card over the box (PK-384)', () => {
+describe('the state card over the quill (PK-384)', () => {
     test('a working thread reads what it does, else «Working…»', () => {
         expect(stateLine({ isWorking: true, msg: 'Adding the line' })).toBe(
             'Adding the line',

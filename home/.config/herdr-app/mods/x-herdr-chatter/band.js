@@ -32,7 +32,7 @@ export function bandOf(value, pid, now) {
     };
 }
 
-// the state card's line over the box (PK-384): what the turn does, or, idle, the wait row it replaced
+// the state card's line over the quill (PK-384): what the turn does, or, idle, the wait row it replaced
 /** @param {{ isWorking: boolean, isBlocked?: boolean, isStuck?: boolean, msg?: string | null, wait?: string | null }} at @returns {string} */
 export function stateLine({ isWorking, isBlocked, isStuck, msg, wait }) {
     if (isBlocked) return 'Waiting on you';

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { plainPaste, withPlainPaste } from './paste.js';
 
-describe('a paste from the chat reads plain in the box (his 17:54 and 18:09 shots)', () => {
+describe('a paste from the chat reads plain in the quill (his 17:54 and 18:09 shots)', () => {
     test('bold, italic and strike read as their words', () => {
         expect(plainPaste('4. **lanes-status** and _this_ and ~~that~~')).toBe(
             '4. lanes-status and this and that',

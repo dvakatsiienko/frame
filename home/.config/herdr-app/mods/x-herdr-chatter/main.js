@@ -384,7 +384,7 @@ const FLIP_LIMIT = 4;
 const MEASURE_BATCH_MS = 32;
 // his message's last px, where its fork icon sits: a press there forks (rows take no handlers, clickRow)
 const FORK_W = 28;
-/** a thread done with its turn and asking nothing: its box is his @param {any} agent */
+/** a thread done with its turn and asking nothing: its quill is his @param {any} agent */
 const isWaitingOnHim = (agent) =>
     agent.status === 'idle' || agent.status === 'done';
 /** a running turn's length in whole minutes: «<1 min», «4 min», «1 h 05 min» @param {number} ms */
@@ -488,7 +488,7 @@ const modelLabel = (m) => {
 const modelId = (label) =>
     label ? `claude-${label.toLowerCase().replace(/[ .]/g, '-')}` : null;
 
-// The box can't say where its caret is, so it's taken from the edit: the end of what changed
+// The quill can't say where its caret is, so it's taken from the edit: the end of what changed
 // between the two values (where typing or a paste left it).
 function caretAfter(was, now) {
     let a = 0;
@@ -503,7 +503,7 @@ function caretAfter(was, now) {
     return now.length - b;
 }
 
-// The "/word" the caret is in, if the "/" starts the box or follows a space or line break:
+// The "/word" the caret is in, if the "/" starts the quill or follows a space or line break:
 // { text, start (the "/"), end, q (what's after the "/") }, else null.
 function slashAt(text, caret) {
     let start = caret;
@@ -1030,7 +1030,7 @@ const flat = (s) => s.replace(/\s+/g, ' ').trim();
 
 // the module's two cards are nested one layer under the quill (PK-384, his 15:02 pick: «both nested cards are below
 // layer … slightly narrower than textbox»): twins in surface, edge and radius, each a little narrower, its inner edge
-// set flush against the box, never under it: an overlap hid the newest reply and the meters (his 17:09 shot)
+// set flush against the quill, never under it: an overlap hid the newest reply and the meters (his 17:09 shot)
 /** @param {any} t @param {'top' | 'bottom'} side */
 const nestedCard = (t, side) => {
     const card = v_flex()
@@ -1070,7 +1070,7 @@ const meterBar = (t, pct, fill) => {
             ),
         );
 };
-// The chat box's draft per thread, kept across a reload of this mod (localStorage outlives a copy).
+// the quill's draft per thread, kept across a reload of this mod (localStorage outlives a copy).
 const draftKey = (address) => `draft:${address}`;
 function keptDraft(address) {
     try {
@@ -1421,7 +1421,7 @@ export default class ClaudeChat extends View {
         this.shots = {};
         // when each thread last sent, so a preview saved after the send it rode never shows
         this.sentAt = new Map();
-        // files picked with + or dropped on the box, by agent address, sent as paths with the next message
+        // files picked with + or dropped on the quill, by agent address, sent as paths with the next message
         /** @type {Map<string, string[]>} */
         this.files = new Map();
         // a dropped picture's preview by its path, drawn with the pasted ones; it lives as long as the file waits
@@ -1432,7 +1432,7 @@ export default class ClaudeChat extends View {
         this.linkThumbs = new Map();
         /** @type {string[]} */
         this.thumbsWanted = [];
-        // the message a reply answers, by agent address: shown above the box, sent quoted before the text
+        // the message a reply answers, by agent address: shown above the quill, sent quoted before the text
         this.replies = new Map();
         cx.spawn(async (cx) => {
             this.shots = await loadShots();
@@ -1483,12 +1483,12 @@ export default class ClaudeChat extends View {
         this.typed = '';
         this.menuAt = 0;
         this.menuOff = false;
-        // The "/word" being typed, anywhere in the box (see slashAt), or null.
+        // The "/word" being typed, anywhere in the quill (see slashAt), or null.
         this.slash = null;
         // The right-click menu over the log: { x, y (in the log), text (the message under the pointer) }.
         this.ctx = null;
         // A redraw rebuilds every message, so typing redraws only for the / menu, the one thing
-        // that depends on what's typed (the box draws its own text).
+        // that depends on what's typed (the quill draws its own text).
         this.box.on('change', (_e, cx) => {
             const was = this.typed,
                 had = this.slash;
@@ -1527,7 +1527,7 @@ export default class ClaudeChat extends View {
             const hadText = Boolean(this.typed?.trim());
             this.typed = now;
             keepDraft(this.address, this.typed);
-            // the send button lights up with the first character and dims when the box empties
+            // the send button lights up with the first character and dims when the quill empties
             if (hadText !== Boolean(now.trim())) cx.notify();
             // Enter's newline, typed at the word (it arrives before submit): keep the menu as it was
             // for submit to use; complete() drops the newline.
@@ -1560,11 +1560,11 @@ export default class ClaudeChat extends View {
             this.send(cx);
         });
         this.box.on('paste_other', (_e, cx) => this.pasteImage(cx));
-        // The / menu's keys. The box binds ↑ ↓ Tab Esc ← → Home End itself (input::MoveUp,
+        // The / menu's keys. The quill binds ↑ ↓ Tab Esc ← → Home End itself (input::MoveUp,
         // IndentInline, …): those actions run before any key handler around it and stop the key,
         // so an on_key_down on the quill never saw them. Bindings of our own under a deeper
         // context come first (the win98 mod's trick for Escape): the quill is "ChatSlash" while
-        // the menu is open, and the box inside it is gpui-component's "Input".
+        // the menu is open, and the quill inside it is gpui-component's "Input".
         try {
             cx.bind_keys(
                 ['Input', 'Textarea', 'TextArea'].flatMap((box) =>
@@ -1592,7 +1592,7 @@ export default class ClaudeChat extends View {
                     keystroke: 'escape',
                 })),
             );
-            // Tab in an empty box takes Claude Code's suggestion (the quill is "ChatGhost" then).
+            // Tab in an empty quill takes Claude Code's suggestion (the quill is "ChatGhost" then).
             cx.bind_keys(
                 ['Input', 'Textarea', 'TextArea'].map((box) => ({
                     action: 'x_herdr_chatter_ghost_take',
@@ -1636,8 +1636,8 @@ export default class ClaudeChat extends View {
     }
 
     // Each agent's chat is kept, so going back to one shows it at once; the tick then catches up.
-    // The draft is written only where it changes (typing, a quote, a completion, a send), under the thread the box shows:
-    // a switch never writes, since the box it leaves may not hold that thread's draft, and an empty one would erase it.
+    // The draft is written only where it changes (typing, a quote, a completion, a send), under the thread the quill shows:
+    // a switch never writes, since the quill it leaves may not hold that thread's draft, and an empty one would erase it.
     reset(address) {
         if (this.box) {
             this.box.set_value(keptDraft(address));
@@ -2007,7 +2007,7 @@ export default class ClaudeChat extends View {
         }
     }
 
-    // The model and effort dropdowns at the right of the box: the trigger shows the current one
+    // The model and effort dropdowns at the right of the quill: the trigger shows the current one
     // (or "Opus 5.5…" while a pick lands), the list opens upward with the current one ticked.
     // A model pick waits for Claude to wait for you: mid-turn it would queue behind the turn. Effort
     // switches mid-turn too: Claude Code opens /effort while a reply streams and sets it at once
@@ -2954,7 +2954,7 @@ export default class ClaudeChat extends View {
                         ? sendArgs(address, message)
                         : ['keys', address, 'enter'],
                 );
-                // a refused send keeps nothing in Claude: its card goes and his words come back to an empty box
+                // a refused send keeps nothing in Claude: its card goes and his words come back to an empty quill
                 if (r.code !== 0) {
                     this.queued.set(
                         address,
@@ -3245,7 +3245,7 @@ export default class ClaudeChat extends View {
         return (this.files.get(address) ?? []).filter(isImagePath);
     }
 
-    // the previews over the box: pasted screenshots, then dropped pictures, one row for both
+    // the previews over the quill: pasted screenshots, then dropped pictures, one row for both
     /** @param {string} address @returns {string[]} */
     thumbs(address) {
         return [
@@ -3351,7 +3351,7 @@ export default class ClaudeChat extends View {
         );
     }
 
-    // [take it]: the text into the chat box, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
+    // [take it]: the text into the quill, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
     // stops Claude (proven on a throwaway thread: full, empty and mid-turn). [send as is]: Enter on Claude's own box.
     // Send now on a message waiting in Claude Code's own queue: its Ctrl+Enter takes it at once, mid-turn, pressed only
     // when its screen offers «ctrl+enter to send now» (on an empty prompt the key does something else). After
@@ -3390,7 +3390,7 @@ export default class ClaudeChat extends View {
         const shown = queued.slice(0, QUEUED_SHOWN);
         const more = queued.length - shown.length;
         const lineH = 24;
-        // the gap above the box is the cover's last 6 px
+        // the gap above the quill is the cover's last 6 px
         const height = queuedStripCover(queued.length) - 6;
         const lineJSX = shown.map((q, i) => {
             return h_flex()
@@ -3477,7 +3477,7 @@ export default class ClaudeChat extends View {
 
     // The cross on a queued message: ↑ in Claude Code's empty prompt pulls every queued message of his into its input
     // (its one door, probed 2026-11-12), one popAll record each, so the input is emptied, the one he crossed goes to
-    // his box and the others pulled are sent again in their order. Pressed only while its screen offers «up to edit
+    // his quill and the others pulled are sent again in their order. Pressed only while its screen offers «up to edit
     // queued messages»; a message that joined first is said so, and stays joined.
     /** @param {string} text the crossed message as Claude Code queued it @param {import('gpui-kit').Context} cx */
     pullQueued(text, cx) {
@@ -3536,7 +3536,7 @@ export default class ClaudeChat extends View {
         if (!pulled.length) return say('It joined the turn first');
         await hc(['keys', address, ...clearKeys(pulled, false)]);
         await cx.sleep(400);
-        // a send into a prompt that still holds text glues onto it: then every pulled message comes to his box
+        // a send into a prompt that still holds text glues onto it: then every pulled message comes to his quill
         const after = await hc(['read', address, '--lines', '40']).catch(
             /** @returns {null} */ () => null,
         );
@@ -3701,7 +3701,7 @@ export default class ClaudeChat extends View {
         if (gone.length) deleteShots(gone);
     }
 
-    // + at the left of the box's lower card: the mac's own picker, several files at once
+    // + at the left of the quill's lower card: the mac's own picker, several files at once
     attachButton(t) {
         return div()
             .id('attach')
@@ -4414,7 +4414,7 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // The shown agent's sub-agents at work, over the box; click one to open it.
+    // The shown agent's sub-agents at work, over the quill; click one to open it.
     subChips(t) {
         const list = [...this.subs].filter(([id, s]) =>
             subRunning(s, this.tools.get(id)),
@@ -6127,7 +6127,7 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
-    // Copy message = the whole message as written (markdown); Reply = it waits above the box and goes
+    // Copy message = the whole message as written (markdown); Reply = it waits above the quill and goes
     // quoted before the next send. A press anywhere else closes the menu.
     ctxMenu(t) {
         const W = 200,
@@ -6179,7 +6179,7 @@ export default class ClaudeChat extends View {
             .child(
                 row('copy-msg', 'Copy message', (cx) => {
                     cx.write_to_clipboard(text);
-                    // the menu closes at once: the box's note line says it worked
+                    // the menu closes at once: the quill's note line says it worked
                     const note = 'Message copied';
                     this.pickNote = note;
                     cx.timer.after(1500, (cx) => {
@@ -6539,7 +6539,7 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // Claude Code's suggestion for this thread, while his box is empty
+    // Claude Code's suggestion for this thread, while his quill is empty
     /** @param {string | null} address */
     ghostFor(address) {
         return this.ghost?.address === address && !this.typed?.trim()
@@ -6564,7 +6564,7 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
-    // the suggestion, dim above the box: Tab or a click takes it
+    // the suggestion, dim above the quill: Tab or a click takes it
     ghostLine(t, text) {
         return h_flex()
             .id('ghost')
@@ -6662,7 +6662,7 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // the message a reply answers, one line above the box: its first words, × drops it
+    // the message a reply answers, one line above the quill: its first words, × drops it
     replyStrip(t, address) {
         const text = this.replies.get(address) ?? '';
         return h_flex()
@@ -6946,12 +6946,12 @@ export default class ClaudeChat extends View {
         if (props()?.settings) return this.settingsMenu(theme());
         const t = chatTheme();
         const agent = this.target();
-        // Another agent: the switch runs at once in a task, never here: reset() sets the box's caret, which herdr refuses
-        // during render, and a refused render left the box on the new thread's draft under the old thread's address.
+        // Another agent: the switch runs at once in a task, never here: reset() sets the quill's caret, which herdr refuses
+        // during render, and a refused render left the quill on the new thread's draft under the old thread's address.
         if ((agent?.address ?? null) !== this.address)
             cx.timer.after(0, (cx) => this.tick(cx));
         // Clicking a character or a tab gives the keyboard to that (hidden) terminal: take it back
-        // whenever the chat comes on screen or changes agent, so typing lands in the box.
+        // whenever the chat comes on screen or changes agent, so typing lands in the quill.
         const seen = this.showing() ? (agent?.address ?? '') : null;
         if (seen && seen !== this.seen)
             cx.timer.after(50, () => this.box.focus());
@@ -6962,7 +6962,7 @@ export default class ClaudeChat extends View {
             .min_h(0)
             .bg(t.background)
             .text_size(px(13));
-        // The chosen font goes to the messages and the box, not the header.
+        // The chosen font goes to the messages and the quill, not the header.
         const font = (el) =>
             el.font_family(look.font === 'mono' ? this.mono() : SANS);
         if (!agent) {
@@ -7077,7 +7077,7 @@ export default class ClaudeChat extends View {
             if (this.follow) this.stick = true;
         }
 
-        // Ctrl+F from anywhere in the chat (the box, the search box) opens the search, or goes back to it.
+        // Ctrl+F from anywhere in the chat (the quill, the search box) opens the search, or goes back to it.
         return root
             .id('chat-root')
             .track_focus(this.rootKeys)
@@ -7460,8 +7460,8 @@ export default class ClaudeChat extends View {
                     .when(Boolean(menu), (el) => el.child(menu))
                     // While the menu is open, ↑ ↓ Tab Esc are its keys (bound in init); ← → Home End close
                     // it (the caret would leave the word with no change event), and the next press moves.
-                    // the module: the state card, then the control card painted under the box (column-reverse paints
-                    // the box last). only the text card sits in the box's focus scope; the cards' buttons stay out
+                    // the module: the state card, then the control card painted under the quill (column-reverse paints
+                    // the quill last). only the text card sits in the quill's focus scope; the cards' buttons stay out
                     // of it, so no click or render ever moves his caret (his 15:24: «i cannot type into texbox»)
                     .child(
                         v_flex().child(

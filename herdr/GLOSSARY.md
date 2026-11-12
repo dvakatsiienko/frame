@@ -21,10 +21,10 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr-deck** — our deck mod: every thread's row, their asks and the lanes' cards
 - **x-herdr-agents** — our agents list in the sidebar, each agent by its session name
 - **x-herdr-tabs** — our tab bar above a space's panes, each agent tab by its session name; copied from zoo's `my-tabs` (FRM-567)
-- **draft** — what dima has typed in a box and not yet sent; kept per thread across a reload
+- **draft** — what dima has typed in the quill and not yet sent; kept per thread across a reload
 - **ask** — an orbit ask a thread put on his deck (and on cc's own board); a **tick** (🛎️) accepts it, a **replay** (🔁) sends it back with his steer
 - **code block** — a fenced block in a reply, drawn with a ⧉ copy button that copies its text
 - **prompt card** — a fenced block under a 📋 ribbon naming a session or an agent; a click puts its prompt in dima's box, unsent
-- **chip** — inline code in the box drawn as one monospace token; the caret skips it, one delete removes it
+- **chip** — inline code in the quill drawn as one monospace token; the caret skips it, one delete removes it
 - **land** — copy a mod from frame into herdr's real mods folder (`pnpm herdr-mods:land`); the **watcher** lands each save that passes `herdr-app check`
 - **zoo** — the third-party setup our chat, layout and clones began from; taken over on 2026-11-12, its mods set aside

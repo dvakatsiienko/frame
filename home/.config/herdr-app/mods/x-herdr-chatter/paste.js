@@ -1,4 +1,4 @@
-// text copied from the chat carries its markdown source; pasted into the box it reads plain, its lists alone keep their
+// text copied from the chat carries its markdown source; pasted into the quill it reads plain, its lists alone keep their
 // markers (his 17:54 and 18:09 shots: «i want only lists rich format pasted»). a fence stays as pasted
 
 /**
@@ -23,7 +23,7 @@ export function plainPaste(text) {
 }
 
 /**
- * the box's value with only the pasted stretch made plain: what was typed before stays as it was
+ * the quill's value with only the pasted stretch made plain: what was typed before stays as it was
  * @param {string} was the value before the paste
  * @param {string} now the value after it
  */

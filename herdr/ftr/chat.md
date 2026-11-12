@@ -20,16 +20,16 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a thread that sat idle 5 s with the message never in its transcript drops the line
   - and «Send now» at the strip's top presses Claude Code's own Ctrl+Enter when its screen offers «ctrl+enter to send now», «Sending…» meanwhile; offered nothing, it says «Claude takes it at its next step» for 4 s
   - decision: queued and joined are read from Claude Code's `queue-operation` records (enqueue, remove, dequeue, popAll), never guessed from his text
-  - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the box empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
+  - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the quill empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
   - and a press on the strip («Send now», «Take it», a ×) is the strip's alone: the message under it never forks
-- ⬜ a queued message comes back to the box with its × (FRM-563)
+- ⬜ a queued message comes back to the quill with its × (FRM-563)
   - decision: hidden behind `IS_UNDO_SEND_ON` since his 01:39 «looks ugly, and half baked»; its look goes to the look grill
   - decision: the lost re-send was Claude Code's vim normal mode: ↑ there leaves the cursor on the last character, ctrl+u leaves it, and the re-send glued onto it («plum» queued as «plumm»); the chat presses `i` before ↑ (probed 2026-11-12)
   - given a thread mid-turn holds his queued messages
   - when dima clicks × on one before it joins
-  - then the thread never receives it and its text is back in his box, before anything he had typed there
+  - then the thread never receives it and its text is back in his quill, before anything he had typed there
   - and the others queued with it are sent again in their order
-  - and when Claude Code's prompt still holds text after the pull, nothing is sent: every pulled message is in his box, the strip naming what was left
+  - and when Claude Code's prompt still holds text after the pull, nothing is sent: every pulled message is in his quill, the strip naming what was left
   - and a message that joined first stays joined, the strip saying «It joined the turn first» for 4 s
   - decision: a cross per message: ↑ in Claude Code's empty prompt pulls all of them, so the chat puts the one back and re-queues the rest (dima, o145, 2026-11-12)
 - ⬜ his messages sit in bubbles on the right, Claude's on the left (FRM-562)
@@ -72,7 +72,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a pasted image survives a chat reload
   - given dima pasted a screenshot into a thread's box and has not sent it
   - when the chat reloads
-  - then the image is still waiting with the next message, shown by its 56 px preview above the box
+  - then the image is still waiting with the next message, shown by its 56 px preview above the quill
   - and a send or Remove takes the preview away with the image
   - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355); FRM-562 part B saves a preview copy beside Claude's own paste
 - ⬜ the shared keys carry the x-herdr name
@@ -88,39 +88,39 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
 - ⬜ a model switch mid-conversation asks first
   - given a thread whose chat holds messages
-  - when dima picks another model in the box's model menu
-  - then a card above the box says the cache is lost and the next message re-reads the whole conversation, with «Switch to <model>» and «Keep the cache»
+  - when dima picks another model in the quill's model menu
+  - then a card above the quill says the cache is lost and the next message re-reads the whole conversation, with «Switch to <model>» and «Keep the cache»
   - and Switch runs the pick, answering Claude Code's own «Switch model?» with its Yes; a new thread switches at once
 - ⬜ Copy message says it copied
   - when dima right-clicks a message and picks Copy message
-  - then the whole message as written is on the clipboard and «Message copied» shows above the box for 1.5 s
+  - then the whole message as written is on the clipboard and «Message copied» shows above the quill for 1.5 s
 - ⬜ Claude Code's suggestion shows as ghost text
-  - given a thread done with its turn, Claude Code's own box holding its dim suggestion, his box empty
-  - then a dim «Tab <suggestion>» line sits above the box
-  - when dima presses Tab in the empty box, or clicks the line
-  - then the suggestion fills his box, ready to edit or send, and Claude Code's own box is emptied so a send never glues onto it; typing anything hides the line
+  - given a thread done with its turn, Claude Code's own box holding its dim suggestion, his quill empty
+  - then a dim «Tab <suggestion>» line sits above the quill
+  - when dima presses Tab in the empty quill, or clicks the line
+  - then the suggestion fills his quill, ready to edit or send, and Claude Code's own box is emptied so a send never glues onto it; typing anything hides the line
   - and a new session's «Try "…"» placeholder never shows as a suggestion, nor anything while the thread works or asks
 - ⬜ the working row times the turn
   - given a thread at work
-  - then the row above the box shows the spinner, what Claude Code says it does, and the time since his prompt in whole minutes («<1 min», «4 min», «1 h 05 min»)
+  - then the row above the quill shows the spinner, what Claude Code says it does, and the time since his prompt in whole minutes («<1 min», «4 min», «1 h 05 min»)
   - and it redraws once a minute, only while the shown thread works; a slash command or an interruption never restarts it
   - decision: whole minutes, never seconds: each redraw rebuilds the chat and drops a text selection in progress (review, 00:05)
 - ⬜ effort switches while a turn runs
   - given a thread at work, a reply streaming
-  - when dima picks another effort in the box's effort menu
+  - when dima picks another effort in the quill's effort menu
   - then Claude Code sets it for this session at once, and the menu shows the new level
   - and the model menu still waits for the turn to end; neither opens while the thread asks him something
   - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56)
 - ⬜ the effort shows the thread's live value
   - given a thread's last reply ran at an effort
-  - then the chat box's effort reads that value, past the default in settings
+  - then the quill's effort reads that value, past the default in settings
 - ⬜ no thread strip above the chat: a thread's facts live in the band, its asks on the deck
   - given a thread's tab is open in the Chat view
   - then the chat starts right under the tab bar, with no strip of asks above it (shot 2021-strip-hidden)
   - decision: the strip is gone (dima, 20:12: «can i have this dupe orbit killed? it eats UI»), lifting his 18:11 «keep for now»; its block is hidden by one `layout.hide` click, zoo.json untouched, and x-herdr-deck's `view: seat` copy draws and reads nothing
 - ⬜ the band sits right above the quill, slice 1 ([FRM-565](https://linear.app/x-com/issue/FRM-565))
   - given a thread's tab is open in the Chat view
-  - then three rows above his box read its «waiting on» line, the weekly usage and its context, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
+  - then three rows above his quill read its «waiting on» line, the weekly usage and its context, as in his shot `~/.local/state/looks/PK-363/1811-dima-band-in-desktop-app.jpg`
   - and a thread mid-turn or waiting on nothing shows an empty waiting-on row, a long one is cut with … and whole in its tooltip, and the rows keep one height so nothing moves
   - and facts the deck has not published for over 2 min 15 s draw dimmed
   - and the 5h line is off for now, back if he moves to the $100 plan (on $200 it is not shown)
@@ -141,17 +141,17 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and ctx sits above week (dima, 21:00)
   - decision: his crop (2054) approved at 20:59
 - ✅ a transcript past 64 MB draws: the chat reads it a slice at a time with `tail | head`, since herdr's readFile refuses a bigger file (a 93 MB thread drew empty, 21:02)
-- ✅ the chat box's draft survives a chat reload
-  - given dima has typed into a thread's Chat box
+- ✅ the quill's draft survives a chat reload
+  - given dima has typed into a thread's quill
   - when the chat mod reloads
-  - then the box shows his text again (proven in wing 1's tab, 16:57:57)
-- ✅ the chat box's draft survives a thread switch
-  - given dima has typed into a thread's Chat box
+  - then the quill shows his text again (proven in wing 1's tab, 16:57:57)
+- ✅ the quill's draft survives a thread switch
+  - given dima has typed into a thread's quill
   - when he goes to another thread's tab and comes back
-  - then the box shows his text, the caret at its end
-  - decision: a thread switch never writes a draft; only typing, a quote, a completion and a send write it, under the thread the box shows (live 19:17:58)
-  - cause, proven: the switch ran inside render, and herdr refuses the caret set there, so the render failed midway: the box took the new thread's draft while it kept the old thread's address, and the next switch wrote that under the old thread (the caret line came with FRM-556, the write with zoo's copy). the switch now runs in a task (live 19:21:41)
-  - proof: `herdr-app do tab.next` before the fix drew «This view could not be re-rendered… set_selected_range cannot run during render»; after it, no error, herdr-codie's band and transcript showed, and back on wing 1 its draft «t» was in the box (shots 1921, 1922)
+  - then the quill shows his text, the caret at its end
+  - decision: a thread switch never writes a draft; only typing, a quote, a completion and a send write it, under the thread the quill shows (live 19:17:58)
+  - cause, proven: the switch ran inside render, and herdr refuses the caret set there, so the render failed midway: the quill took the new thread's draft while it kept the old thread's address, and the next switch wrote that under the old thread (the caret line came with FRM-556, the write with zoo's copy). the switch now runs in a task (live 19:21:41)
+  - proof: `herdr-app do tab.next` before the fix drew «This view could not be re-rendered… set_selected_range cannot run during render»; after it, no error, herdr-codie's band and transcript showed, and back on wing 1 its draft «t» was in the quill (shots 1921, 1922)
 - ⬜ every reply of an earlier turn stays open
   - given a thread sent several replies between two of dima's messages (a peer's ping starts no turn)
   - when that turn is no longer the last
@@ -211,17 +211,17 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a reply holds a closed fence
   - when dima clicks ⧉ copy at the code block's top right
   - then the label reads ✓ copied for a moment and a paste gives the command (his hand, 16:04)
-  - and a fence still streaming draws no copy button; only a fence under «📋 copy → this thread» (or «this session») makes a prompt card, since its click fills the box he reads; under any other ribbon («copy → herdr terminal», another thread, «next session») it stays a copy block
-- ⬜ a prompt card fills the box
+  - and a fence still streaming draws no copy button; only a fence under «📋 copy → this thread» (or «this session») makes a prompt card, since its click fills the quill he reads; under any other ribbon («copy → herdr terminal», another thread, «next session») it stays a copy block
+- ⬜ a prompt card fills the quill
   - given a reply holds a fence under a «📋 copy → this thread» ribbon
   - when dima clicks the card
-  - then the prompt lands in his box after what he typed, one blank line between, unsent, and the box takes the keyboard
+  - then the prompt lands in his quill after what he typed, one blank line between, unsent, and the quill takes the keyboard
   - decision: in-message cards on our own column, his pick a (15:50): herdr's lazy list drops any row with its own handler (herdr-app#894)
 - ⬜ the / menu lists every skill the thread can load
   - given the thread's folder enables a plugin through the user, project or local settings
   - when dima types «/» and part of a name
   - then that plugin's skills show (clio's 22 `clio:` skills in main), a match on the part after the colon too («/boot» → `clio:boot`), and a disabled plugin's skills never show
-- ⬜ inline code in the box turns into a chip
+- ⬜ inline code in the quill turns into a chip
   - given dima types «use `ls` here»
   - when the closing backtick lands
   - then `ls` draws as one monospace chip the caret skips and one delete removes, and the sent message reads «use `ls` here»; three backticks open a fence and make no chip
@@ -237,21 +237,21 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a reply answers one message
   - given a message in the chat
   - when dima right-clicks it and picks Reply
-  - then an «↩ Reply» strip above the box shows the message's first words, × drops it
+  - then an «↩ Reply» strip above the quill shows the message's first words, × drops it
   - and the next send goes with the message quoted («> » lines) before his text
-  - decision: Reply replaces «Quote message in chat», which pasted the quote into the box; right-click, since a lazy-list row takes no hover (herdr-app#598)
+  - decision: Reply replaces «Quote message in chat», which pasted the quote into the quill; right-click, since a lazy-list row takes no hover (herdr-app#598)
 - ⬜ files attach to the next message
   - given a thread's box in the Chat view
-  - when dima presses + at the left of the lower card and picks files, or drops files on the box
-  - then each shows as a «📎 name» chip above the box, its path on hover, × takes it off
+  - when dima presses + at the left of the lower card and picks files, or drops files on the quill
+  - then each shows as a «📎 name» chip above the quill, its path on hover, × takes it off
   - and a picture (png, jpg, gif, webp) shows in the pasted images' preview row instead, read «sent with your message», Remove takes it off
   - and Send puts each path on its own line after the text, spaces escaped the way a terminal drop types them
   - decision: a drop looks like a paste, one preview row (dima, 14:09: «dnd does not shows preview»)
   - decision: a dev container's box shows no + (its Claude cannot read a mac path)
-- ⬜ the box is a stacked card with send in its corner
-  - given the chat shows its box
+- ⬜ the quill is a stacked card with send in its corner
+  - given the chat shows its quill
   - then the text card, rounder and with a soft shadow, rests on a narrower card holding the model and effort pickers; a round ↑ send sits in the text card's bottom right, lit once text is typed, and the text uses the full width above one button-high bottom row
-  - and the box shows no placeholder; Enter still sends
+  - and the quill shows no placeholder; Enter still sends
   - and a hover on the lit ↑ turns it ink, and it spins from the press until the thread has the message (FRM-562 part B)
   - decision: his word, 15:15: «still eats space» on a right gutter; the bottom row is the one herdr allows (Textarea has no per-line inset)
 - ✅ the chat holds still at the bottom

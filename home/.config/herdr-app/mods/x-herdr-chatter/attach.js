@@ -1,4 +1,4 @@
-// Files attached to the box: picked with the + button or dropped on it, sent as their paths after
+// Files attached to the quill: picked with the + button or dropped on it, sent as their paths after
 // the text (Claude Code reads a path in a prompt as a file, an image path as an image).
 import { exec } from 'herdr';
 

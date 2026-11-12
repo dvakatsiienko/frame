@@ -1,5 +1,5 @@
 // a message sent while the thread works waits in Claude Code's queue, unseen, until the turn takes it at its next tool
-// round; the box is empty by then, so it read as lost (dima, 17:20: «yes it confused me and i want it fixed»). each
+// round; the quill is empty by then, so it read as lost (dima, 17:20: «yes it confused me and i want it fixed»). each
 // one shows as queued until its row reaches the transcript
 
 /** @typedef {{ at: number, text: string }} Queued */
@@ -128,13 +128,13 @@ export const clearKeys = (texts, isNormal) =>
               ) * 2,
           ).fill('ctrl+u');
 
-// the queued messages listed over the box, the rest counted
+// the queued messages listed over the quill, the rest counted
 export const QUEUED_SHOWN = 3;
 const STRIP_HEAD = 30;
 const STRIP_LINE = 24;
 const STRIP_MORE = 18;
 const STRIP_FOOT = 6;
-// the strip floats this far above the box
+// the strip floats this far above the quill
 const STRIP_GAP = 6;
 
 /** how far up from the log's bottom the queued strip covers it, its gap included @param {number} count */

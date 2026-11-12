@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { applyChips, codeSpans } from './chips.js';
 
-describe('inline code in the box becomes a chip', () => {
+describe('inline code in the quill becomes a chip', () => {
     test('the closing backtick makes one span', () => {
         expect(codeSpans('use `ls` here', [])).toEqual([{ end: 8, start: 4 }]);
     });

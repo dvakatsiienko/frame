@@ -113,7 +113,7 @@ function press(view, keys) {
 }
 
 // What's typed in the chat's box while a question shows: the "Type something" answer.
-// False when no question card is up (then the box sends as usual).
+// False when no question card is up (then the quill sends as usual).
 export function typeAnswer(view, text, cx) {
     const item = pending(view.items);
     const questions = item?.input?.questions ?? [];

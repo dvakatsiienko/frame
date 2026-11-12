@@ -1,4 +1,4 @@
-// Screenshots pasted into the box, shown above it until sent. Claude Code reads the clipboard
+// Screenshots pasted into the quill, shown above it until sent. Claude Code reads the clipboard
 // itself on its paste key; a copy saved here is only the preview, kept per thread in shots.json
 // so a chat reload still shows what waits in Claude's prompt.
 import { mkdir, readFile, readdir, unlink, writeFile } from 'fs/promises';

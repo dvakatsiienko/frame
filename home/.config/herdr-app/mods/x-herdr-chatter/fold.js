@@ -75,7 +75,7 @@ export function foldBlocks(blocks, perLine) {
             shown.push(b);
             used += lines[i];
         }
-        // a prompt card is never cut: it fills his box whole, so it shows whole or waits for Show more
+        // a prompt card is never cut: it fills his quill whole, so it shows whole or waits for Show more
         else if (b.kind !== 'prompt') {
             shown.push(cutBlock(b, left, perLine));
             used += left;

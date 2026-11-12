@@ -1,5 +1,5 @@
 // a list selected in the chat copies without its markers: herdr draws them and offers no copy hook. the chat knows
-// each message's source, so a paste into its box puts back the marker of every line that is a list item's text
+// each message's source, so a paste into its quill puts back the marker of every line that is a list item's text
 // (dima, 23:38, the probe's variant E)
 
 import { plainText } from './paste.js';
@@ -31,7 +31,7 @@ export function listLines(markdowns) {
 }
 
 /**
- * the box after a change, its pasted lines given their markers back: only a change that inserts more than one line
+ * the quill after a change, its pasted lines given their markers back: only a change that inserts more than one line
  * is a paste, so a line he types stays as typed; the text around the insert is never touched
  * @param {string} was
  * @param {string} now
