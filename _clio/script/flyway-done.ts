@@ -14,20 +14,38 @@ const usage =
     "usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' | <PK-N> --sort | <PK-N> --check";
 
 export function flywayKind(text: string): (typeof kinds)[number] {
-    if (text.startsWith('💤')) return 'later';
-    if (text.startsWith('📅')) return 'dated';
-    if (text.startsWith('⏳')) return 'waits';
+    const body = text.replace(LINE_ID, '');
+    if (body.startsWith('💤')) return 'later';
+    if (body.startsWith('📅')) return 'dated';
+    if (body.startsWith('⏳')) return 'waits';
     return 'open';
 }
 
+// a line's id, f1, f2 …, is minted once and never reused, so «f5» names one line for good (dima, PK-346:W83); backlog's #n shifts on every clear
+const LINE_ID = /^f(\d+) /;
+
 export function flywayLines(text: string): FlywayLine[] {
     return [...text.matchAll(/^- \[([ x])\] #(\d+) (.+)$/gm)].map(
-        ([, mark, n, line]) => ({
-            done: mark === 'x',
-            n: Number(n),
-            text: line ?? '',
-        }),
+        ([, mark, n, line = '']) => {
+            const id = line.match(LINE_ID)?.[0].trim();
+            return {
+                done: mark === 'x',
+                n: Number(n),
+                ref: id ?? `#${n}`,
+                text: line,
+            };
+        },
     );
+}
+
+// the next id: one past every id a line or a done note of this item ever carried
+export function nextLineId(item: string): number {
+    const used = [
+        ...item.matchAll(
+            /^- \[[ x]\] #\d+ f(\d+) |^\s*done [^:]+:\d{2}: f(\d+) /gm,
+        ),
+    ].map(([, line, done]) => Number(line ?? done));
+    return Math.max(0, ...used) + 1;
 }
 
 // every flyway sits on the pocket's top in thread order (dima, 2026-11-09): main 1000, wing N 1000 + N; 1000–1099 are theirs
@@ -64,7 +82,7 @@ export function similarLines(
             )
             .map(
                 (l) =>
-                    `similar open line: ${id} #${l.n}: ${l.text.slice(0, 80)}`,
+                    `similar open line: ${id} ${l.ref}: ${l.text.slice(0, 80)}`,
             ),
     );
 }
@@ -113,8 +131,10 @@ if (import.meta.main) {
                 `${closed} line(s) name a closed home: clear each with node flyway-done.ts ${id} <n>, or reword it to its live step`,
             );
     } else {
-        const line = flywayLines(read(id)).find((l) => l.n === Number(mode));
-        if (!line) fail(`${id} has no line #${mode}`);
+        const line = flywayLines(read(id)).find((l) =>
+            /^f\d+$/.test(mode) ? l.ref === mode : l.n === Number(mode),
+        );
+        if (!line) fail(`${id} has no line ${mode}`);
         const states = namedStates(line.text);
         const proof = states.length
             ? ` (${states.map((s) => `${s.id} ${s.state}`).join(', ')})`
@@ -125,7 +145,7 @@ if (import.meta.main) {
             '--append-notes',
             `done ${stamp()}: ${line.text}${proof}`,
         ]);
-        console.log(`${id} #${line.n} → done note${proof}`);
+        console.log(`${id} ${line.ref} → done note${proof}`);
         for (const s of states.filter((s) => !CLOSED_STATES.has(s.state)))
             console.error(
                 `check: ${s.id} is still ${s.state}; the step this line names must have landed`,
@@ -135,14 +155,18 @@ if (import.meta.main) {
 
 // one backlog edit removes every line and adds the sorted set, so a failed call leaves the flyway whole
 function rewrite(id: string, added: string[]) {
-    const lines = flywayLines(read(id));
+    const item = read(id);
+    const lines = flywayLines(item);
     const ticked = lines.find((l) => l.done);
     if (ticked)
         fail(
-            `${id} #${ticked.n} is ticked: move it first, node flyway-done.ts ${id} ${ticked.n}`,
+            `${id} ${ticked.ref} is ticked: move it first, node flyway-done.ts ${id} ${ticked.ref}`,
         );
     const open = lines.map((l) => l.text);
-    const sorted = flywaySorted([...open, ...added]);
+    let next = nextLineId(item);
+    const withId = (line: string) =>
+        LINE_ID.test(line) ? line : `f${next++} ${line}`;
+    const sorted = flywaySorted([...open, ...added].map(withId));
     if (!added.length && sorted.every((line, i) => line === open[i])) return;
     edit(id, [
         ...lines.flatMap((l) => ['--remove-ac', String(l.n)]),
@@ -196,7 +220,7 @@ export function checkReport(lines: FlywayLine[], states: NamedState[]) {
             const home = ids.length
                 ? named.join(', ')
                 : 'no id: read its own home';
-            return `${mark} #${l.n} ${l.text.slice(0, 70)} → ${home}`;
+            return `${mark} ${l.ref} ${l.text.replace(LINE_ID, '').slice(0, 70)} → ${home}`;
         });
     return { closed, report };
 }
@@ -243,6 +267,7 @@ function fail(message: string): never {
 interface FlywayLine {
     done: boolean;
     n: number;
+    ref: string;
     text: string;
 }
 

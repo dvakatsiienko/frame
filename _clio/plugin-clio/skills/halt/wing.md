@@ -5,7 +5,7 @@ it starts on dima's «halt» in this window, or on main's message when she halts
 run in order, each step done before the next:
 
 1. **tails**: finish what is yours, and start no big ticket. a lane you run: land what is ready and stop its members, except one dima said to keep, or name where it stands for step 8; step 8 names each kept member
-2. **flyway** (`flyway: wing <N>`): finished lines into the done note (`node script/flyway-done.ts <PK> <n>`), the rest groomed and sorted (`--sort`) and reorganized to the real state. it stays open, for the next wing of your number
+2. **flyway** (`flyway: wing <N>`): finished lines into the done note (`node script/flyway-done.ts <PK> <fN>`), the rest groomed and sorted (`--sort`) and reorganized to the real state. it stays open, for the next wing of your number
 3. **pocket**: `backlog task list --labels clio-wing-<N> -s open --plain`; each item marked done or handed back, label off; the pocket hook commits each write
 4. **tickets**: `x linear list --team FRM --label clio-wing-<N>`; close the related ones that landed (`clio:pm`), name why the rest stay, label off
 5. **cleanups**: no trash, no stray, no tail: your scratch trashed, every background shell and agent stopped, and each live `Monitor` stopped by its id with `TaskStop`; a live watch makes a wing wait instead of halt

@@ -23,7 +23,7 @@ read the flyways' notes for today's `hoist MM-DD` line:
 - **a batch** (dima, 2026-11-07, folded: «it is good to batch them. one at a time is more for stuff that is quite bigger and wants my decision»): items passing the freebie test (`craft-pm`) run together with no ask, reported after as `PK-N → what happened`; an almost-freebie is one helper card
 - **one at a time**: an unsure item, and anything irreversible or visible outside. print what it is, why it is parked, how to solve it, then wait for his steer or go
 - **big stuff** goes last and is proposed for its own shaping, never started in this run, unless he asks to prioritize it
-- **then**: fully solved, its item closed (a close carrying his asks takes the ask-guard, `craft-pm`), its flyway line moved into the done note (`node script/flyway-done.ts <PK> <n>`), synced with main (a wing lands per its banner)
+- **then**: fully solved, its item closed (a close carrying his asks takes the ask-guard, `craft-pm`), its flyway line moved into the done note (`node script/flyway-done.ts <PK> <fN>`), synced with main (a wing lands per its banner)
 
 ## a handover
 

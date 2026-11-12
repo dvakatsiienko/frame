@@ -135,49 +135,49 @@ export function checkPocket(
             flywayTitles.add(title);
             // dima, 2026-11-09 (o66, o68): open lines, then ⏳ waits, then 📅 dated, then 💤 later; a finished line leaves that turn
             const lines = flywayLines(text);
-            const leave = (n: number) =>
-                `node script/flyway-done.ts ${id} ${n}`;
+            const leave = (ref: string) =>
+                `node script/flyway-done.ts ${id} ${ref.replace(/^#/, '')}`;
             const reword = (n: number) =>
                 `backlog task edit ${id} --remove-ac ${n}, then node script/flyway-done.ts ${id} --add '<line>'`;
             for (const line of lines.filter((l) => !l.done)) {
                 for (const named of line.text.match(POCKET_ID) ?? [])
                     if (!openIds.has(named))
                         report(
-                            `#${line.n} points at ${named}, closed or gone: ${leave(line.n)}`,
+                            `${line.ref} points at ${named}, closed or gone: ${leave(line.ref)}`,
                         );
                 for (const named of line.text.match(/\b(?:FRM|BYT)-\d+\b/g) ??
                     [])
                     if (closedTickets.has(named))
                         report(
-                            `#${line.n} points at ${named}, closed: ${leave(line.n)}`,
+                            `${line.ref} points at ${named}, closed: ${leave(line.ref)}`,
                         );
             }
             for (const line of lines.filter((l) => l.done))
                 report(
-                    `#${line.n} is ticked: move it into the done note, ${leave(line.n)}`,
+                    `${line.ref} is ticked: move it into the done note, ${leave(line.ref)}`,
                 );
             for (const line of lines) {
                 const kind = flywayKind(line.text);
                 if (kind === 'waits' && !line.text.includes(' — waits for: '))
                     report(
-                        `#${line.n} ⏳ ends «— waits for: <one thing>»: ${reword(line.n)}`,
+                        `${line.ref} ⏳ ends «— waits for: <one thing>»: ${reword(line.n)}`,
                     );
                 if (kind === 'later' && !line.text.includes(' — later: '))
                     report(
-                        `#${line.n} 💤 ends «— later: dima <time>»: ${reword(line.n)}`,
+                        `${line.ref} 💤 ends «— later: dima <time>»: ${reword(line.n)}`,
                     );
                 if (kind === 'dated' && !flywayDate(line.text))
                     report(
-                        `#${line.n} 📅 ends «— on: YYYY-MM-DD»: ${reword(line.n)}`,
+                        `${line.ref} 📅 ends «— on: YYYY-MM-DD»: ${reword(line.n)}`,
                     );
                 const day = kind === 'dated' ? flywayDate(line.text) : '';
                 if (day && day <= today)
                     report(
-                        `#${line.n}: its day came (${day}): move it up, drop 📅 and «— on:»`,
+                        `${line.ref}: its day came (${day}): move it up, drop 📅 and «— on:»`,
                     );
                 if (line.text.length > FLYWAY_LINE_MAX)
                     report(
-                        `#${line.n} is ${line.text.length} chars: keep it ≤${FLYWAY_LINE_MAX}, the detail goes to the item's notes`,
+                        `${line.ref} is ${line.text.length} chars: keep it ≤${FLYWAY_LINE_MAX}, the detail goes to the item's notes`,
                     );
                 const waitsFor =
                     kind === 'waits'
@@ -187,11 +187,11 @@ export function checkPocket(
                     const asked = waitsFor.match(ORBIT_ID) ?? [];
                     if (asked.length === 0)
                         report(
-                            `#${line.n} waits on dima with no orbit ask: raise it in orbit, then end the line «— waits for: dima oN»`,
+                            `${line.ref} waits on dima with no orbit ask: raise it in orbit, then end the line «— waits for: dima oN»`,
                         );
                     for (const ask of asked.filter((a) => answered.has(a)))
                         report(
-                            `#${line.n}: dima answered ${ask}: act on it, then clear the line`,
+                            `${line.ref}: dima answered ${ask}: act on it, then clear the line`,
                         );
                 }
             }
@@ -200,7 +200,7 @@ export function checkPocket(
             const misplaced = texts.findIndex((t, i) => t !== sorted[i]);
             if (misplaced >= 0)
                 report(
-                    `#${lines.filter((l) => !l.done)[misplaced]?.n} is out of order: open, then ⏳, then 📅 by date, then 💤 — node script/flyway-done.ts ${id} --sort`,
+                    `${lines.filter((l) => !l.done)[misplaced]?.ref} is out of order: open, then ⏳, then 📅 by date, then 💤 — node script/flyway-done.ts ${id} --sort`,
                 );
         }
         const born = localDay(front.scalars.created_date ?? '');

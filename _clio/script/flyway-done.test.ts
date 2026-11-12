@@ -75,10 +75,10 @@ describe('flyway-done', () => {
         ]);
         run('--sort');
         expect(read()).toEqual([
-            'one',
-            '⏳ a — waits for: x',
-            '📅 d — on: 2026-11-14',
-            '💤 c — later: dima 1',
+            'f3 one',
+            'f2 ⏳ a — waits for: x',
+            'f4 📅 d — on: 2026-11-14',
+            'f1 💤 c — later: dima 1',
         ]);
     });
 
@@ -87,9 +87,31 @@ describe('flyway-done', () => {
         () => {
             const { read, run } = pocketWith(['one', '💤 c — later: dima 1']);
             run('--add', 'two');
-            expect(read()).toEqual(['one', 'two', '💤 c — later: dima 1']);
+            expect(read()).toEqual([
+                'f1 one',
+                'f3 two',
+                'f2 💤 c — later: dima 1',
+            ]);
         },
     );
+
+    test.skipIf(!hasBacklog)(
+        "a cleared line's id is never minted again, and a line clears by its id",
+        () => {
+            const { read, run } = pocketWith(['f1 one', 'f2 two', 'f3 three']);
+            expect(run('f3')).toContain('PK-1 f3 → done note');
+            run('--add', 'four');
+            expect(read()).toEqual(['f1 one', 'f2 two', 'f4 four']);
+        },
+    );
+
+    test('a kind reads past the id', () => {
+        expect(flywayKind('f12 ⏳ a — waits for: x')).toBe('waits');
+        expect(flywaySorted(['f1 💤 c', 'f2 one'])).toEqual([
+            'f2 one',
+            'f1 💤 c',
+        ]);
+    });
 
     describe('similarLines', () => {
         const flyways = [
@@ -120,10 +142,10 @@ describe('flyway-done', () => {
 
     test('lines read with their number and tick', () => {
         expect(
-            flywayLines('- [x] #3 shipped\n- [ ] #4 ⏳ read — waits for: x'),
+            flywayLines('- [x] #3 shipped\n- [ ] #4 f7 ⏳ read — waits for: x'),
         ).toEqual([
-            { done: true, n: 3, text: 'shipped' },
-            { done: false, n: 4, text: '⏳ read — waits for: x' },
+            { done: true, n: 3, ref: '#3', text: 'shipped' },
+            { done: false, n: 4, ref: 'f7', text: 'f7 ⏳ read — waits for: x' },
         ]);
     });
 });
