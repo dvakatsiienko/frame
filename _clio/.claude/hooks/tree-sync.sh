@@ -113,6 +113,8 @@ fi
 git -C "$root" fetch --quiet origin main || exit 1
 if ! git -C "$root" merge-base --is-ancestor refs/remotes/origin/main refs/heads/main; then
 	git -C "$root" merge --no-edit --quiet refs/remotes/origin/main || {
+		# a conflict must never leave dima's checkout mid-merge
+		git -C "$root" merge --abort 2>/dev/null
 		echo "tree-sync land: origin/main would not merge into main, a peer's uncommitted file or a conflict: ask clio" >&2
 		exit 1
 	}
