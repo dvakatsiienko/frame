@@ -18,10 +18,6 @@ sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on 
 - `x-herdr-status` — the status bar, a clone of `workspace-status` 0.1.10; reads `chat.*`
 - `x-herdr-terminal-header` — the tray's quick terminal header, placed twice; its kept terminals carry the label `x-herdr-terminal`
 
-## mods — third-party, kept only while used
-
-- `zoo` — x-herdr-tabs' right-click on an agent tab still opens its agent menu, until dima picks that menu's replacement; nothing else of it is placed
-
 ## mods — herdr's own (shipped, replaced on every start, never edited)
 
 - `agents`, `changes`, `confirm`, `files`, `help`, `machine-add`, `menu`, `new-menu`, `pane`, `peek`, `picker`, `prompt`, `spaces`, `tabs`, `terminals-bar`, `terminals-pane`, `toast`, `win98`, `workspace-chrome`, `workspace-status`, `worktree`; layouts `main`, `terminals`, `win98`
@@ -32,4 +28,4 @@ sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on 
 
 ## set aside, never deleted
 
-- `~/.local/state/herdr-aside/`: the zoo-era mods (`my-pane`, `quick-term`, `my-status`, `my-new-menu`, `agents-list`, `zoo-agents`, `claude-chat`, `zoo-spaces`, `agent-board`) and each layout file as it was before a rename
+- `~/.local/state/herdr-aside/`: the zoo-era mods (`zoo`, `my-pane`, `quick-term`, `my-status`, `my-new-menu`, `agents-list`, `zoo-agents`, `claude-chat`, `zoo-spaces`, `agent-board`) and each layout file as it was before a rename
