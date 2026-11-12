@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 // a pull is remembered per ticket and session: where its body went, the updatedAt it was read at and its size
@@ -45,8 +46,14 @@ func readPulls() map[string]pull {
 	return pulls
 }
 
+// a pull older than this is no session's live edit: its record goes, and its file when x pulled it to its own dir
+const pullKept = 14 * 24 * time.Hour
+
 func savePull(id string, p pull) error {
 	pulls := readPulls()
+	// the pull being saved is live, however old its file's bytes
+	delete(pulls, pullKey(id))
+	prunePulls(pulls, time.Now())
 	pulls[pullKey(id)] = p
 	raw, _ := json.MarshalIndent(pulls, "", "  ")
 	if err := os.MkdirAll(filepath.Dir(pullsPath()), 0o755); err != nil {
@@ -58,6 +65,24 @@ func savePull(id string, p pull) error {
 		return err
 	}
 	return os.Rename(whole, pullsPath())
+}
+
+// prunePulls drops each record whose file is gone or untouched for pullKept, so a key and a dir per session never pile up;
+// a file outside x's own bodies dir (a --to path) is the caller's and stays
+func prunePulls(pulls map[string]pull, now time.Time) {
+	bodies := filepath.Join(stateDir(), "linear", "bodies") + string(filepath.Separator)
+	for key, p := range pulls {
+		info, err := os.Stat(p.File)
+		if err == nil && now.Sub(info.ModTime()) < pullKept {
+			continue
+		}
+		delete(pulls, key)
+		// a `..` never walks out of the bodies dir
+		if file := filepath.Clean(p.File); err == nil && strings.HasPrefix(file, bodies) {
+			_ = os.Remove(file)
+			_ = os.Remove(filepath.Dir(file))
+		}
+	}
 }
 
 type bodyIssue struct {
@@ -150,10 +175,31 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 	if damage := bodyDamage(id, source, held, string(text), largest, shrink); damage != nil {
 		return nil, damage
 	}
+	input := map[string]any{"description": string(text)}
+	// a clio writing the body claims the ticket, so it carries her owner label (FRM-572:W1)
+	if owner := callerOwnerLabel(); owner != "" {
+		var labels struct {
+			Issue struct {
+				Labels connection[idName] `json:"labels"`
+				Team   struct {
+					ID string `json:"id"`
+				} `json:"team"`
+			} `json:"issue"`
+			OwnerLabels connection[ownerLabelNode] `json:"ownerLabels"`
+		}
+		found, _, lookupErr := gql(actor, `query($id: String!, $owner: String!) { issue(id: $id) { labels(first: 100) { nodes { id name } } team { id } }
+			ownerLabels: issueLabels(first: 20, filter: { name: { eqIgnoreCase: $owner } }) { nodes { id name team { id } } } }`, map[string]any{"id": id, "owner": owner})
+		if lookupErr == nil {
+			raw, _ := json.Marshal(found)
+			_ = json.Unmarshal(raw, &labels)
+			adds, removes := ownerDelta(owner, labels.Issue.Labels.Nodes, labels.OwnerLabels.Nodes, labels.Issue.Team.ID)
+			mergeOwner(input, adds, removes)
+		}
+	}
 	var data map[string]json.RawMessage
 	r.Wait("writing "+id+" as "+actor, func() {
-		data, _, err = gql(actor, `mutation($id: String!, $description: String!) { issueUpdate(id: $id, input: { description: $description }) { success issue { updatedAt } } }`,
-			map[string]any{"id": current.ID, "description": string(text)})
+		data, _, err = gql(actor, `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success issue { updatedAt } } }`,
+			map[string]any{"id": current.ID, "input": input})
 	})
 	if err != nil {
 		return nil, err
@@ -167,8 +213,17 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 	if json.Unmarshal(data["issueUpdate"], &result) != nil || !result.Success {
 		return nil, &Fail{Msg: "linear did not take the write to " + id, Next: "x linear read " + id}
 	}
-	// the write is the new baseline: a second edit of the same file needs no second pull; its size stays the largest
-	_ = savePull(id, pull{source, result.Issue.UpdatedAt, max(largest, len(text))})
+	// the write is the new baseline: a second edit of the same file needs no second pull; its size stays the largest.
+	// the pull's own file takes the written text too, since ticket-sign.ts stamps that file and a stale one would pass
+	// the next set's moved check
+	if cache := pullFile(id); cache != source {
+		_ = os.WriteFile(cache, text, 0o644)
+	}
+	kept := source
+	if cache := pullFile(id); cache != source && exists(cache) {
+		kept = cache
+	}
+	_ = savePull(id, pull{kept, result.Issue.UpdatedAt, max(largest, len(text))})
 	r.Board(ui.ok.Render("✓ ") + ui.fg.Render("wrote "+id+"'s body as "+actor))
 	return ordered{{"actor", actor}, {"id", id}, {"updatedAt", result.Issue.UpdatedAt}}, nil
 }

@@ -81,6 +81,10 @@ func briefPreflight(r *Run, args []string, flags Flags) (any, error) {
 		}
 		for _, source := range sources {
 			for i, text := range strings.Split(source.text, "\n") {
+				// a W-line quotes dima's wish, whose words may name a redesign the lane was shaped from
+				if wishItem.MatchString(text) {
+					continue
+				}
 				if grill := grillWord.FindString(quotedText.ReplaceAllString(text, "")); grill != "" {
 					found = append(found, finding{i + 1, "grill", grill + source.where, "a simplify / redesign / rework wants a grill before a lane"})
 				}

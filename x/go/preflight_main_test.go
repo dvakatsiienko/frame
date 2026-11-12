@@ -79,6 +79,17 @@ func TestPreflightLintsTheLaneSpecsExitLines(t *testing.T) {
 	}
 }
 
+// FRM-572 exit 8: a wish-block W-line is dima's words, which may name a redesign; only the plan's own lines want a grill
+func TestPreflightSkipsAWishLinesGrillWord(t *testing.T) {
+	t.Parallel()
+	ticket := "## wish\n\n* FRM-1:W1 (2026-11-11, dima): let's redesign the gate\n- W2 (dima): simplify it\n\n## signed\n\n✍️ signed\n"
+	got := preflightSpecOf(t, "## FRM-1 — this chunk\n\n### exit lines\n\n1. given a tree, when `x lane unlock` runs, then it prints ok\n", ticket)
+
+	if got.code != 0 || strings.Contains(got.stdout, "redesign") || strings.Contains(got.stdout, "simplify") {
+		t.Fatalf("exit %d, want the W-lines' words unread by the grill lint\n%s%s", got.code, got.stdout, got.stderr)
+	}
+}
+
 // .scratch/ is gitignored, so a worktree holds no spec: preflight there reads the main checkout's
 func TestPreflightReadsTheLaneSpecFromAWorktree(t *testing.T) {
 	t.Parallel()

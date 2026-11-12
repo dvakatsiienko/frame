@@ -34,6 +34,8 @@ path_kind() {
 changes=$(git -c core.quotePath=false diff --cached --name-status -M) || read_failed=1
 pocket_only=
 memory_only=
+# a memory path beside code: the import graph never reaches the tests that read memory as text
+any_memory=
 if [ -n "$changes" ]; then
     pocket_only=1
     memory_only=1
@@ -51,6 +53,10 @@ if [ -n "$changes" ]; then
         case $second in '' | _clio/pocket/*) ;; *) pocket_only= ;; esac
         is_memory_path "$first" || memory_only=
         [ -z "$second" ] || is_memory_path "$second" || memory_only=
+        # the pocket is memory to the push twin, yet no test reads it as text
+        for end in "$first" "$second"; do
+            case $end in '' | _clio/pocket/*) ;; *) ! is_memory_path "$end" || any_memory=1 ;; esac
+        done
     done <<<"$changes"
 fi
 case $branch in
@@ -133,6 +139,10 @@ whole)
     ;;
 memory) capped pnpm exec vitest run "${reporters[@]}" "${MEMORY_TESTS[@]}" || code=$? ;;
 esac
+# the row's mode column stays as the replays read it: the memory run rides beside the related or the none
+if [ -n "$any_memory" ] && [ "$code" -eq 0 ] && { [ "$mode" = related ] || [ "$mode" = none ]; }; then
+    capped pnpm exec vitest run "${reporters[@]}" "${MEMORY_TESTS[@]}" || code=$?
+fi
 over_cap "$code" || true
 rm -f "$running"
 by_kind=code=$n_code,config=$n_config,asset=$n_asset,other=$n_other

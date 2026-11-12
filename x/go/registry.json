@@ -693,7 +693,7 @@
         {
             "args": [
                 {
-                    "description": "the summon command as it would run: cd <home> && claude --bg -n '<name>' … \"$(cat <brief>)\" --remote-control; none with --session",
+                    "description": "the summon command as it would run: hc run --bg --no-parent --no-notify --name <short> --cwd <home> -- claude -n '<name>' … \"$(cat <brief>)\" --remote-control; none with --session",
                     "isOptional": true,
                     "name": "command"
                 }

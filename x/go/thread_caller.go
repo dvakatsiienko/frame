@@ -134,18 +134,36 @@ func isOwnTerminal(chain []callerSession) bool {
 }
 
 // the role the store's record gives the caller's session: by its session id, or by its pid and start once /clear
-// minted a new id for the same process; a session with no record holds none, whatever its name. a name-fallback seat
+// minted a new id for the same process; a session with no record holds none, whatever its name. a name-fallback owner
 // counts only for a reader (withFallback): a name alone never writes a record
 func callerRole(s callerSession, withFallback bool) role {
+	return roleOf(callerThread(s, withFallback).Role)
+}
+
+func callerThread(s callerSession, withFallback bool) thread {
 	store, err := readThreadStore(powerThreadStorePath())
 	if err != nil {
-		return role{}
+		return thread{}
 	}
 	for _, t := range store.Threads {
 		isSame := (s.SessionID != "" && t.SessionID == s.SessionID) || (t.Pid == s.Pid && t.ProcStart != "" && t.ProcStart == s.ProcStart)
 		if isSame && t.Role != "" && (withFallback || !t.Fallback) {
-			return roleOf(t.Role)
+			return t
 		}
 	}
-	return role{}
+	return thread{}
+}
+
+// the clio owner label the caller's record names, "" for a session that is no clio thread; a clio the name fallback found counts, so
+// a missed backfill still labels her claims
+func callerOwnerLabel() string {
+	table, err := readProcessTable()
+	if err != nil {
+		return ""
+	}
+	chain := callerChain(table, powerSessionsDir())
+	if len(chain) == 0 {
+		return ""
+	}
+	return ownerLabel(callerThread(chain[0], true))
 }

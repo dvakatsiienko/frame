@@ -45,10 +45,11 @@ type setLookup struct {
 			ID string `json:"id"`
 		} `json:"team"`
 	}] `json:"labels"`
-	Parent   *struct{ ID, Identifier string } `json:"parent"`
-	Place    *placedIssue                     `json:"place"`
-	Projects connection[projectRef]           `json:"projects"`
-	Users    connection[idName]               `json:"users"`
+	OwnerLabels connection[ownerLabelNode]       `json:"ownerLabels"`
+	Parent      *struct{ ID, Identifier string } `json:"parent"`
+	Place       *placedIssue                     `json:"place"`
+	Projects    connection[projectRef]           `json:"projects"`
+	Users       connection[idName]               `json:"users"`
 }
 
 func splitNames(value any) []string {
@@ -121,6 +122,12 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 
+	// a clio's claim (In Progress or a delegate) carries her owner label (FRM-572:W1)
+	owner := ""
+	if strings.EqualFold(given["state"], "In Progress") || given["delegate"] != "" {
+		owner = callerOwnerLabel()
+	}
+
 	params := []string{"$id: String!"}
 	fields := []string{`issue(id: $id) { id identifier title sortOrder priority estimate state { name } parent { identifier title state { name } } delegate { name }
 		project { id name projectMilestones { nodes { id name } } } projectMilestone { name }
@@ -133,6 +140,10 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 		}
 		params, vars["labels"] = append(params, "$labels: IssueLabelFilter"), map[string]any{"or": or}
 		fields = append(fields, "labels: issueLabels(first: 100, filter: $labels) { nodes { id name team { id } } }")
+	}
+	if owner != "" {
+		params, vars["owner"] = append(params, "$owner: String!"), owner
+		fields = append(fields, "ownerLabels: issueLabels(first: 20, filter: { name: { eqIgnoreCase: $owner } }) { nodes { id name team { id } } }")
 	}
 	if given["parent"] != "" {
 		params, vars["parent"] = append(params, "$parent: String!"), given["parent"]
@@ -288,6 +299,8 @@ func linearSet(r *Run, args []string, flags Flags) (any, error) {
 			changes = append(changes, "label: − "+name)
 		}
 	}
+	adds, removes := ownerDelta(owner, issue.Labels.Nodes, found.OwnerLabels.Nodes, issue.Team.ID)
+	changes = append(changes, mergeOwner(input, adds, removes)...)
 
 	r.Wait("writing "+id+" as "+actor, func() {
 		data, _, err = gql(actor, "mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }",
@@ -317,6 +330,86 @@ func orDash(value string) string {
 		return "—"
 	}
 	return value
+}
+
+// FRM-572:W2: the owner label words live here only, so a rename of a linear label is one line
+const (
+	ownerMain       = "clio-main"
+	ownerWingPrefix = "clio-wing-"
+)
+
+func ownerLabel(t thread) string {
+	switch {
+	case t.Role == "coordinator":
+		return ownerMain
+	case t.Role == "wing" && t.Wing > 0:
+		return ownerWingPrefix + strconv.Itoa(t.Wing)
+	}
+	return ""
+}
+
+func isOwnerLabel(name string) bool {
+	return strings.EqualFold(name, ownerMain) || strings.HasPrefix(strings.ToLower(name), ownerWingPrefix)
+}
+
+type ownerLabelNode struct {
+	idName
+	Team *struct {
+		ID string `json:"id"`
+	} `json:"team"`
+}
+
+// ownerDelta is a claim's label change: the caller's owner added, every other clio owner dropped (a handover); a owner
+// linear holds no label for changes nothing, so a missing label never stops the write it rides on
+func ownerDelta(owner string, current []idName, found []ownerLabelNode, teamID string) (adds, removes []idName) {
+	chosen := idName{}
+	for _, label := range found {
+		if !strings.EqualFold(label.Name, owner) {
+			continue
+		}
+		if label.Team != nil && label.Team.ID == teamID {
+			chosen = label.idName
+			break
+		}
+		if label.Team == nil && chosen.ID == "" {
+			chosen = label.idName
+		}
+	}
+	if owner == "" || chosen.ID == "" {
+		return nil, nil
+	}
+	for _, label := range current {
+		if isOwnerLabel(label.Name) && label.ID != chosen.ID {
+			removes = append(removes, label)
+		}
+	}
+	if !slices.ContainsFunc(current, func(label idName) bool { return label.ID == chosen.ID }) {
+		adds = append(adds, chosen)
+	}
+	return adds, removes
+}
+
+// mergeOwner folds a owner delta into an issueUpdate input beside the labels it already changes
+func mergeOwner(input map[string]any, adds, removes []idName) []string {
+	var changes []string
+	for key, labels := range map[string][]idName{"addedLabelIds": adds, "removedLabelIds": removes} {
+		ids, _ := input[key].([]string)
+		for _, label := range labels {
+			if !slices.Contains(ids, label.ID) {
+				ids = append(ids, label.ID)
+			}
+		}
+		if len(ids) > 0 {
+			input[key] = ids
+		}
+	}
+	for _, label := range adds {
+		changes = append(changes, "label: + "+label.Name)
+	}
+	for _, label := range removes {
+		changes = append(changes, "label: − "+label.Name)
+	}
+	return changes
 }
 
 // labelDelta sends linear only what changes (addedLabelIds, removedLabelIds), so a label another writer

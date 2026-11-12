@@ -3,10 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
+	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 // a ticket whose updatedAt the test can move, the way a peer's edit would
@@ -120,7 +124,8 @@ func liveBodyServer(t *testing.T, body string) *fakeLinear {
 	current.Store(body)
 	return newFakeLinear(t, func(call gqlCall) string {
 		if strings.Contains(call.Query, "issueUpdate") {
-			current.Store(call.Variables["description"])
+			input, _ := call.Variables["input"].(map[string]any)
+			current.Store(input["description"])
 			at := fmt.Sprintf("2026-10-07T10:%02d:00.000Z", writes.Add(1))
 			return fmt.Sprintf(`{"data":{"issueUpdate":{"success":true,"issue":{"updatedAt":%q}}}}`, at)
 		}
@@ -189,6 +194,94 @@ func TestBodySetMeasuresALaterSetAgainstThePull(t *testing.T) {
 
 	if said := fmt.Sprint(envelope["error"]); got.code != 1 || len(mutations(server)) != 1 || !strings.Contains(said, "1000") {
 		t.Errorf("exit %d, %d mutations, want the second cut refused against the 1000 pulled: %s", got.code, len(mutations(server)), got.stdout)
+	}
+}
+
+// a set from any file leaves the pull's own file holding what linear now holds, so ticket-sign.ts, which stamps that
+// file, never stamps a stale body
+func TestBodySetRefreshesThePulledFile(t *testing.T) {
+	t.Parallel()
+	server := liveBodyServer(t, "the old body")
+	state, other := t.TempDir(), filepath.Join(t.TempDir(), "edit.md")
+	pulled, got := runBody(t, server, state, "FRM-1")
+	if got.code != 0 {
+		t.Fatalf("the pull: exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+	data, _ := pulled["data"].(map[string]any)
+	file, _ := data["file"].(string)
+	// twice: the second set's record already names the other file
+	for _, body := range []string{"the new body", "the newer body"} {
+		write(t, other, body)
+		if _, got := runBody(t, server, state, "FRM-1", "--set", other); got.code != 0 {
+			t.Fatalf("the set: exit %d\n%s", got.code, got.stdout)
+		}
+		if held := read(t, file); held != body {
+			t.Errorf("the pull's file holds %q after the set, want %q", held, body)
+		}
+	}
+	// the record names the pull's own file, so the prune can reach it
+	var records map[string]pull
+	_ = json.Unmarshal([]byte(read(t, filepath.Join(state, "linear", "pulls.json"))), &records)
+	if records["FRM-1"].File != file {
+		t.Errorf("the record names %q, want the pull's own file %q", records["FRM-1"].File, file)
+	}
+}
+
+// FRM-572: a key and a dir per session piled up in pulls.json with nothing pruning them
+func TestBodyPullPrunesStaleRecords(t *testing.T) {
+	t.Parallel()
+	server := liveBodyServer(t, "a body")
+	state, outside := t.TempDir(), filepath.Join(t.TempDir(), "mine.md")
+	bodies := filepath.Join(state, "linear", "bodies")
+	fresh, stale := filepath.Join(bodies, "s-fresh", "FRM-2.md"), filepath.Join(bodies, "s-old", "FRM-3.md")
+	for _, file := range []string{fresh, stale, outside} {
+		write(t, file, "x")
+	}
+	old := time.Now().Add(-20 * 24 * time.Hour)
+	for _, file := range []string{stale, outside} {
+		if err := os.Chtimes(file, old, old); err != nil {
+			t.Fatal(err)
+		}
+	}
+	records, _ := json.Marshal(map[string]pull{
+		"FRM-2@s-fresh": {File: fresh}, "FRM-3@s-old": {File: stale}, "FRM-4@s-mine": {File: outside},
+		"FRM-5@s-gone": {File: filepath.Join(bodies, "s-gone", "FRM-5.md")},
+	})
+	write(t, filepath.Join(state, "linear", "pulls.json"), string(records))
+
+	if _, got := runBody(t, server, state, "FRM-1", "--to", filepath.Join(t.TempDir(), "body.md")); got.code != 0 {
+		t.Fatalf("the pull: exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+
+	var kept map[string]pull
+	_ = json.Unmarshal([]byte(read(t, filepath.Join(state, "linear", "pulls.json"))), &kept)
+	if _, has := kept["FRM-2@s-fresh"]; !has || len(kept) != 2 {
+		t.Errorf("records %v, want the fresh one and the new pull", slices.Collect(maps.Keys(kept)))
+	}
+	if exists(stale) || !exists(outside) || !exists(fresh) {
+		t.Errorf("stale body kept %v, the caller's own file kept %v, the fresh body kept %v", exists(stale), exists(outside), exists(fresh))
+	}
+}
+
+// coderabbit on #171: a save of a record whose old file is past the prune age keeps that file
+func TestSavePullNeverPrunesTheRecordItSaves(t *testing.T) {
+	// serial: t.Setenv moves the state dir for this process
+	state := t.TempDir()
+	t.Setenv("X_STATE", state)
+	file := filepath.Join(state, "linear", "bodies", "s-1", "FRM-1.md")
+	write(t, file, "x")
+	if err := savePull("FRM-1", pull{File: file}); err != nil {
+		t.Fatal(err)
+	}
+	old := time.Now().Add(-20 * 24 * time.Hour)
+	if err := os.Chtimes(file, old, old); err != nil {
+		t.Fatal(err)
+	}
+	if err := savePull("FRM-1", pull{File: file}); err != nil {
+		t.Fatal(err)
+	}
+	if !exists(file) {
+		t.Error("a save pruned the file of the record it saved")
 	}
 }
 

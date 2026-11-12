@@ -361,7 +361,9 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 				}
 			}
 			if !committed.ok {
-				return "", hookFail(committed.log, again)
+				refused := hookFail(committed.log, again)
+				refused.Log = append(refused.Log, messageReds(tree, message, committed.log)...)
+				return "", refused
 			}
 			sha, err = head()
 			return withWait(took, short(sha)+"  "+firstLine(message)+proven+retried), err
@@ -1349,6 +1351,46 @@ const commitLogsKept = 20
 var commitLogName = regexp.MustCompile(`^x-commit-\d+\.log$`)
 
 // the whole log of a refused commit lives under the state dir, the newest few kept: nothing ever took one out of the temp dir
+// messageReds runs the commit-msg hook on a copy of the message when a pre-commit red stopped git before it, so the
+// message's reds (the lint, the lane gate) join this try instead of the next; a hook that edits edits only the copy
+func messageReds(tree, message, log string) []string {
+	if strings.Contains(log, "commit-msg") {
+		return nil
+	}
+	hook, err := gitIn(tree, "rev-parse", "--path-format=absolute", "--git-path", "hooks/commit-msg")
+	if err != nil || !hook.ok {
+		return nil
+	}
+	if info, statErr := os.Stat(hook.out); statErr != nil || info.Mode()&0o111 == 0 {
+		return nil
+	}
+	raw, err := os.ReadFile(message)
+	if err != nil {
+		return nil
+	}
+	copied, err := os.CreateTemp("", "x-msg-check-*")
+	if err != nil {
+		return nil
+	}
+	defer os.Remove(copied.Name())
+	_, _ = copied.Write(raw)
+	_ = copied.Close()
+	run := exec.Command(hook.out, copied.Name())
+	run.Dir = tree
+	out, runErr := run.CombinedOutput()
+	if runErr == nil {
+		return nil
+	}
+	lines := []string{"the commit message's own reds, read in the same try:"}
+	for _, line := range nonBlank(string(out)) {
+		if len(lines) > 20 {
+			break
+		}
+		lines = append(lines, line)
+	}
+	return lines
+}
+
 func hookFail(log, next string) *Fail {
 	dir := filepath.Join(stateDir(), "commit-logs")
 	_ = os.MkdirAll(dir, 0o755)
