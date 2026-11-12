@@ -221,7 +221,8 @@ export function checkPocket(
             // only the clause that says «dropped» drops its ids: «raw drop kept in the notes» drops nothing
             const droppedClauses = noteLines(text)
                 .filter((line) => CLOSE_LINE.test(line))
-                .flatMap((line) => line.split(/[,;]/))
+                // a verdict in parentheses stays with its clause: «W5 dropped (no area emoji, dima o58)»
+                .flatMap((line) => line.split(/[,;·](?![^(]*\))/))
                 .filter((clause) => /\bdropped\b/i.test(clause));
             const dropped = citedIds(droppedClauses.join('\n'), [home]);
             // a line dima wrote or asked for dies only on his word: the clause cites it

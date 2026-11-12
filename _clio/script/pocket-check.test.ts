@@ -901,6 +901,30 @@ describe('wish accounting', () => {
             ).toEqual([]);
         });
 
+        test('a comma inside the parentheses keeps the verdict in its clause', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [
+                        closed(
+                            'close: W1 done · W2 dropped (no area emoji, dima o58)',
+                        ),
+                    ],
+                    wishToday,
+                ),
+            ).toEqual([]);
+        });
+
+        test('a · splits clauses, so a done clause never borrows a drop', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [closed('close: W1 done (kept) · W2 dropped')],
+                    wishToday,
+                ),
+            ).toEqual([red]);
+        });
+
         test('a dropped clause citing «dima <HH:MM>» passes', () => {
             expect(
                 checkPocket(
