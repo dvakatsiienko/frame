@@ -825,8 +825,11 @@ func laneTrees(main, repo, id string, refs laneRefs) ([]laneTree, error) {
 		if !strings.HasPrefix(resolved(path), under) || !(ours || verify || swept) {
 			continue
 		}
-		// a stale lock alone keeps no tree: landed unlocks it, named, on --apply
-		stale := staleLock(entry)
+		// a lock whose pid is gone keeps no tree: landed unlocks it, named, on --apply; a reused pid only names the unlock
+		stale, isGone := staleLock(entry)
+		if !isGone {
+			stale = ""
+		}
 		if stale != "" {
 			entry.locked = false
 		}
@@ -895,26 +898,41 @@ func treeStay(e worktreeEntry, main string, selves []string, mergedHead string) 
 // a lock outlives a session that was stopped; its pid and start time, read together, say whether the holder is still that
 // process. a lock that names no pid cannot be read, so it holds
 func lockSays(e worktreeEntry) string {
-	if gone := staleLock(e); gone != "" {
-		return "its lock is stale, " + gone + ": git worktree unlock " + e.path
+	if why, _ := staleLock(e); why != "" {
+		return "its lock is stale, " + why + ": git worktree unlock " + e.path
 	}
 	return "a live session holds it"
 }
 
-// why a tree's lock no longer holds, "" while its holder lives or the lock names none
-func staleLock(e worktreeEntry) string {
+// why a tree's lock no longer holds, "" while its holder lives or the lock names none; isGone only when no process holds the
+// pid, the one case landed unlocks by itself
+func staleLock(e worktreeEntry) (why string, isGone bool) {
 	holder := lockHolder.FindStringSubmatch(e.lockReason)
 	if !e.locked || holder == nil {
-		return ""
+		return "", false
 	}
 	pid, _ := strconv.Atoi(holder[1])
 	switch started := processStarted(pid); {
-	case started == strings.Join(strings.Fields(holder[2]), " "):
-		return ""
-	case started != "":
-		return "pid " + holder[1] + " is another process now"
+	case started == "":
+		return "pid " + holder[1] + " is gone", true
+	case sameStart(holder[2], started, time.Local):
+		return "", false
 	}
-	return "pid " + holder[1] + " is gone"
+	return "pid " + holder[1] + " is another process now", false
+}
+
+// cc stamps a lock's start in UTC and ps prints it in local time: the two are one instant or not; a stamp that does not
+// parse reads as the same start, so an unreadable lock holds
+func sameStart(lock, ps string, local *time.Location) bool {
+	const layout = "Mon Jan 2 15:04:05 2006"
+	lock = strings.Join(strings.Fields(lock), " ")
+	at, err := time.ParseInLocation(layout, ps, local)
+	if err != nil || lock == ps {
+		return true
+	}
+	asUTC, utcErr := time.ParseInLocation(layout, lock, time.UTC)
+	asLocal, localErr := time.ParseInLocation(layout, lock, local)
+	return (utcErr != nil && localErr != nil) || asUTC.Equal(at) || asLocal.Equal(at)
 }
 
 // the session registry names each session's pid; a file left by a dead pid says nothing, and the registry's cwd may be

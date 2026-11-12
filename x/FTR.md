@@ -386,7 +386,8 @@
 - ⬜ `x lane decamp` and `x lane landed` read a tree's lock against its holder
   - given a tree whose `git worktree lock` reason names a pid and a start time, as cc writes it
   - when the pid is dead, or alive with another start time, then `x lane decamp` keeps the tree, the line says the lock is stale and names `git worktree unlock <path>`
-  - when the pid is dead, or alive with another start time, and the tree is otherwise clean, then `x lane landed` names the stale lock, and `--apply` unlocks it and decamps the tree; with other dirt it stays, the unlock named (FRM-572)
+  - when the pid is dead and the tree is otherwise clean, then `x lane landed` names the stale lock, and `--apply` unlocks it and decamps the tree; with other dirt, or a pid alive with another start time, it stays, the unlock named (FRM-572)
+  - the lock's start is cc's UTC stamp and `ps` prints local time: the two are compared as one instant, so a live holder never reads stale (wishkeeper on #172)
   - when the pid is alive with that start time, or the lock names no pid, then it reads «a live session holds it» as before
   - decision: `x lane decamp` names the unlock and never runs it (FRM-384); `x lane landed` runs it, since a landed lane's tree has no work left and a live session sitting in it still keeps it (FRM-572 chunk 2, signed)
 
