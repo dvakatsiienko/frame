@@ -18,6 +18,7 @@
   - decision: a refusal stops one command, never the session (dima, FRM-321)
   - decision: quoted text and comments are never read as commands, and a heredoc body only when a shell consumes it — a commit message may name `rm -rf`
   - 📌 not read: a script piped into a shell from a file or the net, a script run by path, a name the shell builds at run time; the guard keeps out mistakes, never a determined script
+  - 📌 known gap: a delete through a script language (`perl -e 'unlink …'`, `python3 -c 'os.remove(…)'`, `node -e 'fs.rmSync(…)'`) runs: the floor reads shell commands, never a program's calls (sixth sense on FRM-581, kept by clio's pick)
   - proof: tests/floor.test.ts, tests/escapes.test.ts, tests/doors.test.ts
 - ✅ a shape with one right spelling is rewritten, never refused
   - given a Bash call holds `pnpm -s` (before the script's name: `pnpm build -s` hands it to the script), an unquoted word led by `=` (`===`, `==q`) outside `[[ … ]]`, or an unquoted option glob (`--include=*.ts`, `--glob=!*.md`) that zsh would abort on
@@ -89,6 +90,7 @@
   - given a git command whose own dir resolves under `$CLAUDE_JOB_DIR/tmp`, through `cd`, `git -C`, or a variable set earlier to a path or a `$(mktemp -d …)` under it, carrying `-c user.name|email` or `git config user.*`
   - then it runs, and the rest of the command is judged without the lifted part, so a force-push or `--no-verify` beside it stays refused
   - given the same command in frame's checkout, under `/tmp` outside the job dir, after a `cd` out, pointed elsewhere by `-C`, `--git-dir` or `GIT_DIR`, through a symlink or a frame worktree in the tmp, or with `CLAUDE_JOB_DIR` unset, then it is refused
+  - decision: the identity stays refused under `/tmp` outside the job dir: a frame worktree a line places there would commit with a made-up author (tests/escapes.ts «a worktree the same command makes»); his tick opens one, and no second allowlist for os temp roots (FRM-581, clio's pick)
   - decision: the lift rests on an allowlist of the whole command as well as a parse of where git acts (clio's pick, 2026-10-30)
   - proof: tests/throwaway.test.ts
 - ✅ clio cleans up its fleet's scratch without dima's word
