@@ -616,4 +616,6 @@ done 2026-11-12 20:10: «seat» code half: seatOf, CLIO_SEAT and the seats dir r
 done 2026-11-12 20:44: prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
 
 20:44 that clear is a drop on his o48 tick: no want-marker refusal, the --day groom check stays the net
+
+20:45 wing 1: crow second wind proven live (his o47): compact, then the plugin's plain-prompt ingest (45aa16f6) ran, crow-wind-probe-2 ingested ok, crow's handoff store empty (x handoff list --for crow, read by wing 1)
 <!-- SECTION:NOTES:END -->
