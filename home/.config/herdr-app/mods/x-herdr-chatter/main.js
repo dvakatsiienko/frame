@@ -22,6 +22,11 @@ import {
     v_flex,
     v_virtual_list,
 } from 'gpui-base';
+import {
+    fps_monitor_visible,
+    hide_fps_monitor,
+    show_fps_monitor,
+} from 'gpui-fps';
 import { View, div, image, svg } from 'gpui-kit';
 import {
     appHome,
@@ -145,6 +150,7 @@ const LOOK_DEFAULT = {
     bg: 'background',
     fg: 'theme',
     font: 'ui',
+    fps: 'hide',
     mine: 'bubble',
     replies: 'open',
     size: 13,
@@ -180,7 +186,21 @@ const chatLook = () => ({ ...LOOK_DEFAULT, ...(shared(LOOK) ?? {}) });
 const setLook = (change) => {
     setShared(LOOK, { ...chatLook(), ...change });
     if ('fg' in change) syncForeground();
+    if ('fps' in change) syncFps();
 };
+// herdr's own performance meter (FPS and frame time), over the whole window; herdr has no key for it.
+// a window opened without herdr's shell root (`herdr-app check`'s) throws: the row then says why
+let fpsError = '';
+const syncFps = () => {
+    try {
+        if (chatLook().fps === 'show') show_fps_monitor();
+        else if (fps_monitor_visible()) hide_fps_monitor();
+        fpsError = '';
+    } catch (e) {
+        fpsError = String(e?.message ?? e);
+    }
+};
+syncFps();
 // Message text is Herdr's TextView, which only ever takes the theme's foreground, so a chosen
 // text color goes into settings.json's colors.foreground: the whole app's text (the user's choice,
 // 2026-10-31). "theme" removes it. writeTextFile refuses if the file changed since it was read.
@@ -4833,6 +4853,7 @@ export default class ClaudeChat extends View {
                             .hover((s) => s.text_color(t.foreground))
                             .on_click(() => {
                                 setShared(LOOK, null);
+                                syncFps();
                                 for (const s of Object.values(this.hex))
                                     s.set_value('');
                             })
@@ -4896,6 +4917,20 @@ export default class ClaudeChat extends View {
                     pills(
                         seg('replies', 'open', 'Open'),
                         seg('replies', 'folded', 'Folded'),
+                    ),
+                ),
+            )
+            .child(
+                row(
+                    fpsError
+                        ? div()
+                              .id('look-fps-error')
+                              .tooltip(fpsError)
+                              .child('FPS meter (unavailable)')
+                        : 'FPS meter',
+                    pills(
+                        seg('fps', 'show', 'Show'),
+                        seg('fps', 'hide', 'Hide'),
                     ),
                 ),
             )

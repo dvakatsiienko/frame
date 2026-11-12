@@ -165,6 +165,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: the fold waits for his next message, so a reply never collapses while he reads it (review, 00:54)
   - proof: a probe thread's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
   - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
+- ⬜ herdr's FPS meter turns on from the chat's settings
+  - given dima opens ⚙ in the Chat view
+  - when he picks «FPS meter: Show»
+  - then herdr's performance meter draws over the whole window, and «Hide» takes it away; his pick holds across a herdr restart
+  - and in a window where herdr cannot draw it, the row reads «FPS meter (unavailable)» with the reason on hover
+  - decision: a settings row now, its hotkey waits for FRM-577's one hotkey store (clio, 19:09)
 - ⬜ once he scrolls up, nothing but his own hand moves his view (FRM-562:W18, W19)
   - given he scrolled up in a thread's chat
   - when a reply, a tool line, a peer or plugin line, a turn end, a store change, a resize or a reload of the mod arrives
