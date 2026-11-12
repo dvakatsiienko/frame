@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:42:00Z'
+updated_date: '2026-11-12T11:46:00Z'
 labels:
   - s
 dependencies: []
@@ -25,4 +25,8 @@ PK-380:W2 (2026-11-12 inbox, dima): let's also adjust the shape and style of you
 raw drop (2026-11-12 inbox, dima): main clio: while wing 1 busy with vm, propose top 5 rules to to buy and stand during today. rules to make messaging pressure on me lighter.
 
 raw drop (2026-11-12 inbox, dima): note: let's also adjust shape and style of your answers with herder chatter. with my screenshots. or you can shot app too.
+
+PK-380:W3 (2026-11-12 03:03, dima): i saw yesterday and today that the herdr codie spams you with messages until i explicitly tell him to stop. it should be automatic already.
+
+PK-380:W4 (2026-11-12 03:03, dima): i also want to know how our silent comms works ❓
 <!-- SECTION:NOTES:END -->
