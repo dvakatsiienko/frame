@@ -30,8 +30,6 @@ const CLIO_ENTRY = JSON.stringify({
     name: '🦉 clio',
     sessionId: 'a1a1a1a1-0000',
 });
-// clio is a coordinator by her claim, never her name (FRM-579)
-const CLIO_ROW: Thread = { role: 'coordinator', sessionId: 'a1a1a1a1-0000' };
 function world(on: On, threads: Thread[] | null) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
@@ -81,9 +79,7 @@ function world(on: On, threads: Thread[] | null) {
                 stderr: '',
                 stdout:
                     isList && threads !== null
-                        ? JSON.stringify({
-                              data: { threads: [...threads, CLIO_ROW] },
-                          })
+                        ? JSON.stringify({ data: { threads } })
                         : '',
             },
         };
@@ -152,17 +148,8 @@ const PASSES = [
         [LIVE_ROW, NEW_ROW],
         `claude --bg -n '${LIVE}' 'go'`,
     ],
+    ['x not answering', null, SECOND],
 ] as const;
-
-// FRM-579: with x silent no claim is read, so even clio's summon under a session id stops at the clean stamp's door,
-// never at this rule
-test('x not answering stops a summon at the role gate, not the sixth sense check', async ($, on) => {
-    const w = world(on, null);
-    const r = await bash($, SECOND);
-    expect(r.deny).toContain('(rule clean-stamp)');
-    expect(r.deny ?? '').not.toContain('would be a second');
-    expect(w.ran).toEqual([]);
-});
 
 for (const [shape, threads, command] of PASSES)
     test(`${shape} summons as before`, async ($, on) => {

@@ -45,7 +45,7 @@ export function numberSetting(key: string, value: string) {
     return n;
 }
 
-// the live coordinator by her signed claim, as x thread list answers it (FRM-579), never by the name she wears
+// the live coordinator by her thread record, as x thread list answers it (FRM-579), never by the name she wears
 export function clioIdOf(
     threads: { pid?: unknown; role?: unknown; sessionId?: unknown }[],
 ) {

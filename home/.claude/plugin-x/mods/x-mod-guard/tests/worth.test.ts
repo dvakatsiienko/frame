@@ -59,18 +59,16 @@ function world(
         const milestoneId = argv.match(
             /projectMilestone\(id: \\?"([^"\\]+)/,
         )?.[1];
-        // a row's thread records ride its files under the command's own line
-        const stdout = files[argv]
-            ? files[argv]
-            : e.argv[0] === 'x' && e.argv.includes('read') && ticket
-              ? JSON.stringify({ data: { tickets: [ticket] }, ok: true })
-              : milestoneId && milestones[milestoneId]
-                ? JSON.stringify({
-                      data: {
-                          projectMilestone: { name: milestones[milestoneId] },
-                      },
-                  })
-                : '';
+        const stdout =
+            e.argv[0] === 'x' && e.argv.includes('read') && ticket
+                ? JSON.stringify({ data: { tickets: [ticket] }, ok: true })
+                : milestoneId && milestones[milestoneId]
+                  ? JSON.stringify({
+                        data: {
+                            projectMilestone: { name: milestones[milestoneId] },
+                        },
+                    })
+                  : '';
         return {
             value: {
                 exitCode: stdout ? 0 : 1,
@@ -98,22 +96,11 @@ const WORTH =
 const CREATE = (flags: string) =>
     `x as clio -- linear issue create --title t ${flags}`;
 
-// FRM-519 item 5, a row only: a wing reads as the coordinator, so its create meets only the worth rule; the wing is its
-// thread record's claim (FRM-579), the codie its record
+// FRM-519 item 5, a row only: a numbered wing reads as the coordinator, so its create meets only the worth rule
 const seat = (name: string) => ({
     '/home/.claude/sessions/1.json': JSON.stringify({
         name,
         sessionId: 'w1w1w1w1-0000',
-    }),
-    'x thread list --json': JSON.stringify({
-        data: {
-            threads: [
-                {
-                    role: name.includes('wing') ? 'wing' : 'codie',
-                    sessionId: 'w1w1w1w1-0000',
-                },
-            ],
-        },
     }),
 });
 for (const [name, body, isRefused] of [

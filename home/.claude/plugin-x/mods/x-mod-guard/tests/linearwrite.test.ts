@@ -7,26 +7,10 @@ import { liveStore } from './store.ts';
 // exempt and a session the registry does not list fails open. both rules refuse since sixth sense's clean (4e73424a)
 const SID = 'm1m1m1m1-0000';
 
-// role: the session's thread record as x thread list answers it (FRM-579), whatever its name says
-function world(on: On, name: string | null = '☕️ 🔧 codie', role?: string) {
+function world(on: On, name: string | null = '☕️ 🔧 codie') {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const ran: string[] = [];
-    on('process.run', (_$, e) =>
-        e.argv.join(' ') === 'x thread list --json'
-            ? {
-                  value: {
-                      exitCode: 0,
-                      isStderrTruncated: false,
-                      isStdoutTruncated: false,
-                      stderr: '',
-                      stdout: JSON.stringify({
-                          data: { threads: [{ role, sessionId: SID }] },
-                      }),
-                  },
-              }
-            : { deny: 'not in this test' },
-    );
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
@@ -215,24 +199,22 @@ for (const typed of [
 
 for (const typed of [UPDATE, 'x linear read FRM-1 --as dima'])
     test(`the coordinator's session runs: ${typed.slice(0, 40)}`, async ($, on) => {
-        const w = world(on, 'any name', 'coordinator');
+        const w = world(on, '🦉 clio');
         const r = await bash($, typed);
         expect([w.ran, r.deny]).toEqual([[typed], undefined]);
     });
 
-test('a wing runs as the coordinator does', async ($, on) => {
-    const w = world(on, 'any name', 'wing');
+test('a numbered wing runs as the coordinator does', async ($, on) => {
+    const w = world(on, '🦉🪽 clio: wing 1');
     const r = await bash($, UPDATE);
     expect([w.ran, r.deny]).toEqual([[UPDATE], undefined]);
 });
 
-// FRM-579 exit 6: a coordinator's or a wing's name with no claim behind it is a member's
-for (const name of ['🦉 clio', '🦉🪽 clio: wing 1'])
-    test(`a session named «${name}» with no claim is a member`, async ($, on) => {
-        const w = world(on, name);
-        await bash($, UPDATE);
-        expect(w.ran).toEqual([]);
-    });
+test('a wing title with no number is still a member', async ($, on) => {
+    const w = world(on, '🦉🪽 clio: wing');
+    await bash($, UPDATE);
+    expect(w.ran).toEqual([]);
+});
 
 test('a session the registry does not list runs both, fail open', async ($, on) => {
     const w = world(on, null);

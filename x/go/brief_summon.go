@@ -230,7 +230,7 @@ func briefSummon(r *Run, args []string, flags Flags) (any, error) {
 }
 
 // the four standing roles start by a door of their own, never a lane brief, so their summon checks only what a start
-// needs: a claude call, the trusted home, no stale spare; a --bg start records after cc prints its job, through --session
+// needs: a claude call and the trusted home; a --bg start records after cc prints its job, through --session
 func summonStanding(r *Run, command string, words []string, home string, record thread) (any, error) {
 	var failed []summonCheck
 	step := func(name, detail string, check func() string) {

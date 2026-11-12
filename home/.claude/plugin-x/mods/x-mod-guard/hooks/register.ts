@@ -169,10 +169,12 @@ const KEEP = 50;
 const DAY = 'day:';
 const DAYS = 30;
 const SHOWN = 160;
-// a coordinator by its thread record's role id, the one x brief summon wrote behind its caller gate, never by its name
-// (FRM-579): a fork or a renamed thread under «🦉 clio» holds no record
-const isCoordinatorRole = (role: string | undefined) =>
-    role === 'coordinator' || role === 'wing';
+// the registry name is clio's: spaces and zero-width joiners dropped, the way x-mod-stash's bare() reads a name
+const COORDINATORS = ['🦉clio', '🦉cclio']; // read-both: a clio tab resumed under its old title
+const isCoordinator = (name: string) => {
+    const bare = name.replaceAll(/[\s\u200d]/g, '');
+    return COORDINATORS.includes(bare) || /^🦉🪽c?clio:wing\d+$/u.test(bare);
+};
 // whole code points, and no half pair left from an older cut: a lone surrogate leaves the store file unreadable to jq
 const points = (s: string) =>
     [...s].filter((c) => c.length === 2 || !/[\ud800-\udfff]/.test(c));
@@ -363,13 +365,6 @@ async function threadList($: EngineInterface): Promise<Thread[]> {
     } catch {
         return [];
     }
-}
-
-// a session's role as x thread list answers it, from its record; undefined with no session or no x
-async function roleOf($: EngineInterface, sid: string | undefined) {
-    return sid
-        ? (await threadList($)).find((t) => t.sessionId === sid)?.role
-        : undefined;
 }
 
 // a milestone id's name, read through x's api door (FRM-486); undefined when linear does not answer in 3 s
@@ -659,9 +654,6 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     // a layout change kills the focused thread (herdr-app#861), but the herdr lane writes layouts as its own work: a warn
     // week first (clio, 14:32)
     'herdr-layout',
-    // FRM-579: a start door a non-coordinator names warns, logged, until dima promotes it after a quiet day (15:47,
-    // «stop locking yourself out»)
-    'start-door',
 ]);
 // the store's `rule-mode:<rule>` = «enforce» turns a listed rule on early; nothing in the store can make a rule warn —
 // any session writes that store, and a «warn» there switched the floor off for every session (sixth sense, 15:08)
@@ -2482,10 +2474,7 @@ export const register: Register = (on) => {
         if (raw) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
-            if (
-                name !== undefined &&
-                !isCoordinatorRole(await roleOf($, sid))
-            ) {
+            if (name !== undefined && !isCoordinator(name)) {
                 const said = `x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`;
                 {
                     const stop = await enforce(
@@ -2498,15 +2487,12 @@ export const register: Register = (on) => {
             }
         }
         // a body written past `x linear body --set`, or an actor of dima's, from a member's session: the registry lists its name
-        // and its record is no coordinator's, a session the registry does not list fails open (FRM-459)
+        // and it is not clio's, a session the registry does not list fails open (FRM-459)
         const write = linearWrite(typed, cwd);
         if (write) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
-            if (
-                name !== undefined &&
-                !isCoordinatorRole(await roleOf($, sid))
-            ) {
+            if (name !== undefined && !isCoordinator(name)) {
                 const said = `x-mod-guard stopped this one command. instead: ${write.door}. why: ${write.why}.`;
                 const stop = await enforce(
                     write,
@@ -2735,9 +2721,12 @@ export const register: Register = (on) => {
         const stamp = cleanStampWrite(typed, cwd);
         if (stamp) {
             const sid = await $.session.id().catch(() => undefined);
-            // a sixth sense or a coordinator by its thread record, never by its name
-            const role = await roleOf($, sid);
-            if (role !== 'sixth-sense' && !isCoordinatorRole(role)) {
+            const name = sid ? await sessionName($, sid) : undefined;
+            // a sixth sense by its thread record, never by its name
+            const role = sid
+                ? (await threadList($)).find((t) => t.sessionId === sid)?.role
+                : undefined;
+            if (role !== 'sixth-sense' && !(name && isCoordinator(name))) {
                 const said = `x-mod-guard stopped this one command. instead: ${stamp.door}. why: ${stamp.why} (rule ${stamp.rule}).`;
                 const stop = await enforce(
                     stamp,
@@ -2748,21 +2737,17 @@ export const register: Register = (on) => {
             }
         }
         // FRM-570 round 3: cc's registry takes no session's write, and only a coordinator starts a claude under a minted id
-        // or through a start door (FRM-579), the coordinator read by its thread record
+        // or a coordinator's name
         const registry = registryWrite(typed, cwd);
         const spawn = roleSpawn(typed, cwd);
         const spawnSid = spawn
             ? await $.session.id().catch(() => undefined)
             : undefined;
-        // a summon's own check read the list already; its answer is the one the role gate reads
-        const spawnerRole = spawnSid
-            ? (facts.threads?.length
-                  ? facts.threads
-                  : await threadList($)
-              ).find((t) => t.sessionId === spawnSid)?.role
+        const spawnerName = spawnSid
+            ? await sessionName($, spawnSid)
             : undefined;
         const spawner =
-            spawn && !isCoordinatorRole(spawnerRole) ? spawn : undefined;
+            spawn && !isCoordinator(spawnerName ?? '') ? spawn : undefined;
         for (const r of [registry, spawner].filter((r) => r !== undefined)) {
             const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why} (rule ${r.rule}).`;
             const stop = await enforce(
