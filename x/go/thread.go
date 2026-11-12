@@ -48,15 +48,29 @@ var (
 
 // the store x-mod-stash's hooks refresh and a live display reads with no spawn; X_THREADS points a test at a fixture,
 // and under X_TEST without it there is no store
-func threadStorePath() string {
-	if path := os.Getenv("X_THREADS"); path != "" {
-		return path
-	}
-	if os.Getenv("X_TEST") != "" {
+func threadStorePath() string { return storePath("X_THREADS", ".claude/shelf/threads.json") }
+
+// a store a refresh rewrites, or the registry it reads: a fixture env only in a test build, so a line's
+// `X_SESSIONS=<dir> x thread list` can never rewrite the real store from a forged registry; under X_TEST in a real build
+// there is none at all, so a ts test meets no live session
+func storePath(fixture, real string) string {
+	return storePathOf(mergeTestEnvOn() || isInProcessTest, os.Getenv(fixture), os.Getenv("X_TEST") != "", real)
+}
+
+// go test's own process: its in-process tests write fixture stores; the x binary any session runs never sets it
+var isInProcessTest = false
+
+func storePathOf(isFixtureOn bool, fixture string, isXTest bool, real string) string {
+	switch {
+	case isFixtureOn:
+		return fixture
+	case isXTest:
 		return ""
 	}
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".claude/shelf/threads.json")
+	if home := systemHome(); home != "" {
+		return filepath.Join(home, real)
+	}
+	return ""
 }
 
 // the display name is drawn from the record, never parsed back out of a name: <mode> <role> <area> | <ticket>, the area
@@ -82,8 +96,8 @@ func threadDisplay(t thread) string {
 	return strings.Join(words, " ")
 }
 
-// a ticket's area word: its linear project's first word, lowercased; "" when linear does not answer, so no summon waits
-// on it
+// a ticket's area word: its linear project's first word, lowercased; "" when linear does not answer, so a summon still
+// runs, after linear's own timeout at worst
 func ticketArea(actor, id string) string {
 	if id == "" {
 		return ""

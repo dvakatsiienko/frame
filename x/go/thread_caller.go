@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -101,7 +102,8 @@ type callerSession struct {
 }
 
 // the registered sessions among x's ancestors, nearest first: each ancestor pid the registry holds a file for, never a
-// name or an id the line could pass
+// name or an id the line could pass; a file that exists but does not read whole stands as a session with no id, so a
+// torn file never lets the walk reach a coordinator farther up
 func callerChain(table processTable, dir string) []callerSession {
 	chain := []callerSession{}
 	if dir == "" {
@@ -109,15 +111,16 @@ func callerChain(table processTable, dir string) []callerSession {
 	}
 	for pid, hops := os.Getppid(), 0; pid > 1 && hops < 64; pid, hops = table.parent[pid], hops+1 {
 		raw, err := os.ReadFile(filepath.Join(dir, strconv.Itoa(pid)+".json"))
-		if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
 			continue
 		}
 		var entry struct {
 			SessionID string `json:"sessionId"`
 		}
-		if json.Unmarshal(raw, &entry) == nil {
-			chain = append(chain, callerSession{SessionID: entry.SessionID, Pid: pid, ProcStart: table.start[pid]})
+		if err != nil || json.Unmarshal(raw, &entry) != nil {
+			entry.SessionID = ""
 		}
+		chain = append(chain, callerSession{SessionID: entry.SessionID, Pid: pid, ProcStart: table.start[pid]})
 	}
 	return chain
 }

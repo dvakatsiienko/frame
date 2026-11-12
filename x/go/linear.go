@@ -54,17 +54,8 @@ func actorOf(flags Flags) (string, error) {
 	return "codie", nil
 }
 
-// the session registry's dir; X_SESSIONS points a test at a fixture registry, and under X_TEST without it nothing is
-// read, so no test meets a live session
-func sessionsDir() string {
-	dir := os.Getenv("X_SESSIONS")
-	if dir == "" && os.Getenv("X_TEST") == "" {
-		if home, err := os.UserHomeDir(); err == nil {
-			dir = filepath.Join(home, ".claude/sessions")
-		}
-	}
-	return dir
-}
+// the session registry's dir; X_SESSIONS points a test build at a fixture registry (storePath)
+func sessionsDir() string { return storePath("X_SESSIONS", ".claude/sessions") }
 
 // a ticket's size: linear stores the number, the fleet says the word (FRM-399)
 var sizes = []string{"XS", "S", "M"}

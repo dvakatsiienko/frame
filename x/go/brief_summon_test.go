@@ -419,6 +419,52 @@ func TestBriefSummonRecordsAForkAsAWingOnlyFromTheCoordinator(t *testing.T) {
 	}
 }
 
+// a /clear mints a new id in the same process: the coordinator's record still names her by her pid and start
+func TestBriefSummonReadsTheCoordinatorAcrossAClear(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	sessions, callers := t.TempDir(), filepath.Join(t.TempDir(), "caller-threads.json")
+	write(t, filepath.Join(sessions, strconv.Itoa(os.Getpid())+".json"), `{"sessionId":"sid-after-clear"}`)
+	write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d}`, os.Getpid()))
+	write(t, callers, fmt.Sprintf(`{"v":1,"threads":[{"sessionId":"sid-before-clear","pid":%d,"procStart":%q,"role":"coordinator"}]}`, os.Getpid(), ownProcStart(t)))
+	env := []string{"HOME=" + w.home, "X_SESSIONS=" + sessions, "X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_CALLER_THREADS=" + callers}
+
+	got := xIn(t, w.repo, env, "brief", "summon", "--role", "wing:1", "--session", "sid-fork")
+
+	if got.code != 0 {
+		t.Fatalf("exit %d, want the coordinator found by her pid and start:\n%s", got.code, got.stdout)
+	}
+}
+
+// a torn registry file on x's nearest claude stands as a session with no record: the walk never reaches clio above it
+func TestBriefSummonReadsATornRegistryFileAsNoCoordinator(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	sessions, callers := t.TempDir(), filepath.Join(t.TempDir(), "caller-threads.json")
+	write(t, filepath.Join(sessions, strconv.Itoa(os.Getpid())+".json"), `{"sessionId":"sid-mem`)
+	write(t, filepath.Join(sessions, strconv.Itoa(os.Getppid())+".json"), `{"sessionId":"sid-clio"}`)
+	write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d}`, os.Getpid()))
+	write(t, callers, `{"v":1,"threads":[{"sessionId":"sid-clio","role":"coordinator"}]}`)
+	env := []string{"HOME=" + w.home, "X_SESSIONS=" + sessions, "X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_CALLER_THREADS=" + callers}
+
+	got := xIn(t, w.repo, env, "brief", "summon", "--role", "wing:1", "--session", "sid-fork")
+
+	if got.code != 1 || !strings.Contains(got.stdout, "only the coordinator or dima") {
+		t.Fatalf("exit %d, want the coordinator's refusal:\n%s", got.code, got.stdout)
+	}
+}
+
+// round 1 P0: a line's X_SESSIONS or X_THREADS never aims a real build's refresh at another registry or store; under
+// X_TEST a real build reads none at all
+func TestAFixtureEnvNeverMovesARealBuildsStore(t *testing.T) {
+	t.Parallel()
+	real := storePathOf(false, "/tmp/forged", false, ".claude/sessions")
+	underTest := storePathOf(false, "/tmp/forged", true, ".claude/sessions")
+	if real == "/tmp/forged" || !strings.HasSuffix(real, "/.claude/sessions") || underTest != "" {
+		t.Errorf("a real build reads %q, under X_TEST %q: want the real registry, then none", real, underTest)
+	}
+}
+
 // exit 4's tty row on x's actor: a member under a pty with its agent env stripped still signs as codie, never as dima
 func TestLinearUnderScriptActsAsTheMemberAboveIt(t *testing.T) {
 	t.Parallel()

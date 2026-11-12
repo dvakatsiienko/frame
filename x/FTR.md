@@ -651,7 +651,7 @@
   - when it runs, then it prints the plan and exits 4; with `--apply`, one request archives them all and a capped page says «run again»
 - ⬜ a ticket's size prints as its word: `x linear read` carries `size` (XS · S · M) beside the estimate (FRM-399)
 - ✅ every `x linear` call acts as someone, and says who
-  - given an agent (`CLAUDECODE` or `AI_AGENT`), a hook, a launchd job or cloud chat — anything without a terminal — then it acts as the clio app — but a session whose registry name does not open with 🦉 clio or 🦉🪽 clio, her wings (by `CLAUDE_CODE_SESSION_ID`), acts as the codie app (FRM-399); given dima's own terminal, as dima; `--as codie|clio|dima` overrides
+  - given a session whose record holds the coordinator or wing role, then it acts as the clio app; a sixth sense's record, as the sixth-sense app; any other caller — a member, a session with no record whatever its name, a hook, a launchd job or cloud chat with no registered claude above x — acts as the codie app, failing closed (FRM-399, FRM-579); given dima's own terminal (a tty, no agent env, no registered claude above x), as dima; `--as codie|clio|dima` overrides
   - given linear rejects a cached app token (401), then x mints it again and retries once
   - decision: dima's own key is read from 1password on every call and never copied into the keychain — only minted app tokens are cached; the read costs ~0.72 s (3 runs, 2026-10-07) (dima, 2026-10-07)
 
