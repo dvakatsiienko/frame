@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T17:23:00Z'
+updated_date: '2026-11-12T17:27:00Z'
 labels:
   - s
   - clio-wing-1
@@ -567,4 +567,6 @@ done 2026-11-12 19:22: 11-10 halt leftovers: a checkup slice, two board redraws,
 done 2026-11-12 19:23: land the sizes commit once main's lowtide set is committed (my ask 19:13)
 
 19:23 2026-11-12 wing 1: sizes + budget-rows landed (origin/main 20c03f2b); the board redraws dropped from the halt leftovers (dima 19:21); flyway reordered to his 19:11 order. «seat»: only the prose half landed (f31341c5, 5f5d9cd4); seatOf, CLIO_SEAT and ~/.local/state/clio/seats remain (rg 19:22), so its line stays
+
+19:27 2026-11-12 wing 1, crow's siesta note: my 19:09 «agree with all eight verdicts» on main's mods cuts missed that one cut FRM-504's round-3 stop against his W47; main reworked it, his o86 settled it. lesson: a consult reads each verdict against its ticket's wish lines, never the facts alone. freebie: ts-lsp round logged (3 LSP calls since 11-04), its verdict asked in orbit
 <!-- SECTION:NOTES:END -->
