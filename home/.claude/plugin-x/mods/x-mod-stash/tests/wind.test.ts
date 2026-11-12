@@ -838,14 +838,42 @@ test("dima's take-back of the mod's ask sends no overrun line", async ($, on) =>
     expect(sent).toEqual([]);
 });
 
-test('a wind dima pressed sends no overrun line, since the mod asked nothing', async ($, on) => {
+test('a wind dima pressed and the session left standing past the line + 5 sends one overrun line', async ($, on) => {
     const w = world(on);
     const sent = sendsOf(on);
     await start($);
     await turnAt($, w, 60);
     w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
     for (const fill of [66, 71, 72]) await turnAt($, w, fill);
-    expect(sent).toEqual([]);
+    expect(sent.map((s) => s.text)).toEqual([
+        expect.stringMatching(/overrun.*71 %/),
+    ]);
+});
+
+test("dima's take-back of his own press holds until the fill drops: the mod writes no ask at the same fill", async ($, on) => {
+    const w = world(on);
+    await start($);
+    await turnAt($, w, 60);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+    await turnAt($, w, 70);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'cancelled' });
+    for (const fill of [70, 70, 70]) await turnAt($, w, fill);
+    expect(
+        notes(w.lines).filter((l) =>
+            l.startsWith('🐦‍🔥 second wind: the mod asks'),
+        ),
+    ).toHaveLength(0);
+});
+
+test('🍃 flipped off takes back the ask the mod wrote, after its note went out', async ($, on) => {
+    const w = world(on);
+    await start($);
+    for (const fill of [70, 70, 70]) await turnAt($, w, fill);
+    const was = (w.store.get(`wind:${SID}`) as { state?: string } | undefined)
+        ?.state;
+    const ui = await band($);
+    await ui.press({ key: 'auto-wind' });
+    expect([was, w.store.has(`wind:${SID}`)]).toEqual(['writing', false]);
 });
 
 test('the overrun line follows the wind knob', async ($, on) => {
@@ -932,6 +960,30 @@ test('a compact that fails while its ingest runs tells the coordinator the hando
         ],
         false,
     ]);
+});
+
+test('a handoff gone from the store before the compact stops the wind: no compact, the coordinator hears it', async ($, on) => {
+    const kept = [SLUG];
+    const w = world(on, undefined, kept);
+    const sent = sendsOf(on);
+    await start($);
+    await ready($, SLUG);
+    kept.length = 0;
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect([
+        w.commands,
+        sent.map((s) => s.text),
+        (w.store.get(`wind:${SID}`) as { state?: string }).state,
+    ]).toEqual([
+        [],
+        [expect.stringMatching(new RegExp(`stopped.*${SLUG} left the store`))],
+        'stopped',
+    ]);
+    await say($);
+    expect(
+        notes(w.lines).filter((l) => l.includes('write the handoff again')),
+    ).toHaveLength(1);
 });
 
 test('a stopped wind keeps the session from reading idle on the board', async ($, on) => {

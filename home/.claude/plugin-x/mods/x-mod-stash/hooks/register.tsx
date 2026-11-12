@@ -1225,7 +1225,7 @@ const WIND_SAY = {
     stopped: 'stopped, its handoff is still in the store',
     writing: 'finishing its step, then its handoff',
 } as const;
-const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (codie: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods codie; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a watch, a task not parked; a background command survives the compact and is no pending), which holds the compact until it resolves, never your work: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
+const WIND_HOW = `write your handoff with x:handoff, or \`x handoff write\` where that skill is missing (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (codie: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods codie; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a watch, a task not parked; a background command survives the compact and is no pending), which holds the compact until it resolves, never your work: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
 export const WIND_WORDS =
     'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
 const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. ${WIND_WORDS} finish the step you are on, nothing interrupts it; a member mid-round (sixth sense's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
@@ -1251,7 +1251,7 @@ type FillMark = {
     overrun?: true;
 };
 const fillNotice = (fill: number, windAt: number) =>
-    `🐦‍🔥 context at ${fill} %: a second wind is coming. ${windAt} % is the upper boundary, where the mod asks for it; nothing is urgent. do not compact now: plan your nearest steps so you finish the meaningful part you are in, commit it, solve its tails, write your handoff with x:handoff, then take the wind through ${ORBIT_TOOL} op second-wind. never mid-build or mid-step.`;
+    `🐦‍🔥 context at ${fill} %: a second wind is coming. ${windAt} % is the upper boundary, where the mod asks for it; nothing is urgent. do not compact now: plan your nearest steps so you finish the meaningful part you are in, commit it, solve its tails, write your handoff with x:handoff (or \`x handoff write\` where that skill is missing), then take the wind through ${ORBIT_TOOL} op second-wind. never mid-build or mid-step.`;
 const fillPropose = (fill: number, windAt: number) =>
     `🐦‍🔥 second wind due at ${fill} %: past the ${windAt} % boundary, and this thread's 🍃 second wind auto is off: propose the wind to dima in orbit at your next good stop, never take it yourself.`;
 const windNoteAuto = (windAt: number) =>
@@ -1265,6 +1265,8 @@ const ingestBy = (slug: string) =>
 // a session with no plugin x skills has no /x:handoff-ingest to queue (crow's pane, FRM-505)
 const windIngest = (slug: string) =>
     `🐦‍🔥 second wind: this conversation was just compacted onto your handoff «${slug}». before anything else, ${ingestBy(slug)}.`;
+const windGone = (slug: string) =>
+    `🐦‍🔥 second wind stopped before its compact: your handoff «${slug}» left the store, so nothing was compacted and your context is whole. write the handoff again and call ${ORBIT_TOOL} op second-wind with its slug.`;
 const windStopped = (slug: string) =>
     `🐦‍🔥 second wind stopped before its ingest, so your handoff «${slug}» is still in the store. ${ingestBy(slug)}.`;
 // a coordinator's message to a codie whose context reads past this waits for the codie's second wind (dima's o23: «~50–60%
@@ -4282,7 +4284,7 @@ async function setAutoWind($: EngineInterface, isOn: boolean) {
         on: isOn,
     } satisfies AutoWind);
     const wind = await windOf($, sid);
-    if (!isOn && wind?.by === 'mod' && wind.state === 'asked')
+    if (!isOn && wind?.by === 'mod' && isWindOpen(wind))
         await $.store.delete(WIND + sid);
 }
 
@@ -4337,14 +4339,13 @@ async function takeFill($: EngineInterface, fill: number | undefined) {
         mark.noticed !== undefined &&
         mark.noticed !== turnNo
     ) {
-        if (!(await windOf($, sid))) {
-            mark.asked = turnNo;
+        mark.asked = turnNo;
+        if (!(await windOf($, sid)))
             await $.store.set(WIND + sid, {
                 at: await $.clock.now(),
                 by: 'mod',
                 state: 'asked',
             } satisfies StashWind);
-        }
     } else if (
         fill >= windAt + OVERRUN &&
         mark.asked !== undefined &&
@@ -4385,6 +4386,7 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
     if (was.state === 'asked') {
         await $.store.set(WIND + sid, {
             at: await $.clock.now(),
+            ...(was.by ? { by: was.by } : {}),
             state: 'writing',
         } satisfies StashWind);
         if (was.by === 'mod')
@@ -4399,7 +4401,7 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
     }
     if (was.state === 'stopped' && was.slug) {
         await $.store.delete(WIND + sid);
-        return windStopped(was.slug);
+        return was.isGone ? windGone(was.slug) : windStopped(was.slug);
     }
     if (was.state !== 'cancelled') return undefined;
     await $.store.delete(WIND + sid);
@@ -4426,11 +4428,7 @@ async function windReady(
         return {
             deny: 'orbit second-wind: name the handoff you just wrote, slug: "<lane or topic>-<n>"',
         };
-    const home = await $.env.get('HOME');
-    const peek = await $.process
-        .run([`${home}/.local/bin/x`, 'handoff', 'peek', name])
-        .catch(() => undefined);
-    if (peek?.exitCode !== 0)
+    if (!(await hasHandoff($, name)))
         return {
             deny: `orbit second-wind: no handoff «${name}» in the store; write it with x:handoff first`,
         };
@@ -4775,6 +4773,14 @@ async function windAfterTurn($: EngineInterface) {
     $.clock.after(WIND_DELAY_MS, () => runWind($, sid, slug));
 }
 
+async function hasHandoff($: EngineInterface, slug: string) {
+    const home = await $.env.get('HOME');
+    const peek = await $.process
+        .run([`${home}/.local/bin/x`, 'handoff', 'peek', slug])
+        .catch(() => undefined);
+    return peek?.exitCode === 0;
+}
+
 async function runWind($: EngineInterface, sid: string, slug: string) {
     try {
         // the slug goes first, so a turn end during the compact finds nothing to run; the board keeps 🌀
@@ -4782,6 +4788,11 @@ async function runWind($: EngineInterface, sid: string, slug: string) {
             at: await $.clock.now(),
             state: 'refreshing',
         } satisfies StashWind);
+        // the handoff can leave the store after the op's peek (another ingest, a delete): the compact never runs on nothing
+        if (!(await hasHandoff($, slug))) {
+            await windGoneFor($, sid, slug);
+            return;
+        }
         // a failed list keeps the command, the door every session had before
         const hasIngestCommand =
             (await $.command.list().catch(() => undefined))?.some(
@@ -4841,6 +4852,20 @@ async function windStoppedFor(
         $,
         sid,
         `🐦‍🔥 second wind stopped for ${(await sessionName($)) ?? sid}: ${why}; its handoff ${slug} is still in the store`,
+    );
+}
+
+async function windGoneFor($: EngineInterface, sid: string, slug: string) {
+    await $.store.set(WIND + sid, {
+        at: await $.clock.now(),
+        isGone: true,
+        slug,
+        state: 'stopped',
+    } satisfies StashWind);
+    await toldLead(
+        $,
+        sid,
+        `🐦‍🔥 second wind stopped for ${(await sessionName($)) ?? sid}: its handoff ${slug} left the store before the compact; nothing was compacted`,
     );
 }
 

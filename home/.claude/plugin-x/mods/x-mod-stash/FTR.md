@@ -417,6 +417,7 @@
   - and the ingest is queued with the compact, while it still runs, so a prompt dima types meanwhile never lands between them (clio's 19:17 press: her ingest ran after his 19:19 prompt); the op's answer tells the session to end its turn with no «waiting on» line, the refresh runs on its own
   - and a session with no `/x:handoff-ingest` to run (started with no plugin x skills, as crow's pane is) gets the ingest as one plain prompt naming `x handoff ingest <slug> --for <its role token> --json`, queued the same way (FRM-505)
   - given the compact refused while the ingest runs, then the coordinator hears one line that its handoff was ingested on the full context, and nothing reads stopped
+  - given the handoff left the store between the op and the compact, then nothing compacts, the button reads ⚠️, the coordinator hears one line, and the session's next turn says to write the handoff again
   - given the ingest is refused, then the button reads ⚠️ (`stopped, its handoff is still in the store`), the coordinator hears one line naming the session and the handoff, and the session's next turn says once how to ingest it by hand (FRM-505)
   - given no slug, or a slug `x handoff peek` cannot find, then the op is refused in one line and nothing compacts
   - decision: name and emoji are dima's, 10-13 17:31 (o1, over «graceful-ctx-refresh»); the session's state is drawn in the line under its row, since a pane holds no hover card (`engine.md`)
@@ -451,8 +452,8 @@
   - given `🐦‍🔥 second wind` switched off, then no line and no ask
   - and the coordinator's mod ask carries her own steps: finish the topic, clio:checkpoint, tell the fleet, the pickup ask in orbit
   - and a hot reload after the notice turn still asks at the next turn
-  - given a turn after the ask past the wind line + 5, with the mod's ask still standing, then the coordinator hears one overrun line naming the session and its fill; the coordinator's own thread sends none, nor does a wind dima pressed or took back
-  - given `wind-notice` and `wind-at` in 🎛️ (`🐦‍🔥 notice at` and `🐦‍🔥 wind at`, shown with 🍃) or through `pnpm mods:set`, then every thread reads the new value at its next poll; each takes 40–90, the notice stays below the wind, a bad value is refused
+  - given a turn after the ask past the wind line + 5, with an ask still standing (the mod's or dima's press), then the coordinator hears one overrun line naming the session and its fill; the coordinator's own thread sends none, nor does a wind dima took back
+  - given `wind-notice` and `wind-at` in 🎛️ (`🐦‍🔥 notice at` and `🐦‍🔥 wind at`, shown with 🍃) or through `pnpm mods:set`, then every thread reads the new value at its next poll; each takes 40–90 and the notice stays below the wind, so the notice reads 40–89 and the wind 41–90; a bad value is refused
   - and a lowered value only moves crossings after it: the wind lowered to 45 with a session at 60 % writes no ask and no overrun line
   - proof (+): tests/wind.test.ts::a wind line lowered in 🎛️ asks at the next poll / the wind lowered to 45 … / past the wind line + 5 … / the overrun line follows the wind knob + set.test.ts::a wind line outside 40–90 is refused / a notice at or above the wind line is refused
 - ✅ `pnpm mods:set hot` reads and flips any session's 🔥 (FRM-505, W1892–W1899)
@@ -466,7 +467,7 @@
   - given `stash.second-wind-auto` switched off in 🎛️, then nothing: no line, no ask, no propose line
   - given the session quits, then its press stays for a resume
   - given 💨 afk on or a shift (`pnpm mods:set pace on|end`), then the coordinator's 🍃 reads on at read time, never by a write, so afk off or the shift's end shows the stored value again; a press after the override's start wins until the next afk on or shift start
-  - given 🍃 flipped off with the mod's ask pending, then the ask goes; an ask dima pressed stays
+  - given 🍃 flipped off with the mod's ask pending, before or after its note went out, then the ask goes; an ask dima pressed stays
   - given 🍃 flipped on past both lines, then the line still comes first and the ask a turn later
   - proof: tests/wind.test.ts::🍃 off draws no notice and no ask (+ the coordinator's default and her 65 % line, afk, a shift, a press during afk, a band press, an off taking back the mod's ask, on past both lines) + tests/band.test.ts::every control in the row carries a hover card that names it + tests/switches.test.ts::stash.second-wind-auto on / off
   - proof: tests/wind.test.ts::past 55 % a session hears once that 65 % is the upper boundary (+ the notice's words, the step path, 54/56, re-arm, compact, both lines in one step, first seen past 65 %, the mod's ask, the coordinator's thread left out, dima's press kept, take-back, switched off)

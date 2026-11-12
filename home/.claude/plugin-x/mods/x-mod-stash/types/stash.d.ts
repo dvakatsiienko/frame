@@ -71,6 +71,8 @@ export type StashWind = {
     by?: 'mod';
     // work started after «pending: none» and before the compact: the wind refuses, and says what
     blocked?: string;
+    // stopped before its compact: the handoff had left the store, so the context is whole and the handoff is gone
+    isGone?: true;
 };
 
 // the band's two meters: this session's context against its compaction point, and the account's 5h window;
