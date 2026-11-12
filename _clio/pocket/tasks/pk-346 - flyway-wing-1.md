@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T14:38:00Z'
+updated_date: '2026-11-12T14:52:00Z'
 labels:
   - s
   - clio-wing-1
@@ -19,31 +19,28 @@ ordinal: 1001
 - [ ] #1 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close
 - [ ] #2 «seat» removed from every file, no retired line (dima o65): 63 non-herdr files left (wing 1 .scratch/seat-removal/files.txt); the saved names renamed with every reader in the same change (the ~/.local/state/clio/seats/ dir, ctx-init trace key, the seat=clio / seat=crow / seat=helga herdr labels, CLIO_SEAT, seatOf); prose done 99e091aa; herdr paths tomorrow after the herdr codie; done when rg --hidden -i for the word over frame prints only outside meanings
 - [ ] #3 FRM-551 vm: both reads at the first halt with no go lane (vm stopped 13:52 by wing 1 for the mods probe, restarted 14:44)
-- [ ] #4 FRM-579 (#170): codie fixes the P0 and the CI fixtures; then the backfill, the herdr layout start line, both members renamed, the mods codie pinged, cloud chat told to add --as clio
-- [ ] #5 wisphunter trial round (gate-speed and ts-lsp logged today)
-- [ ] #6 x brief check offline stamp check (the summon's ~8 s networked check): a FRM-572 line with seven names and a ⚖️ worth it, to dima; its wait on FRM-570 cleared (Done)
-- [ ] #7 FRM-579 hand-off: after its merge, the cli codie and its queue (FRM-572 chunk 1, the offline stamp line) go to main in one message (dima 16:25 via main); wing 1 takes main's chores in return
-- [ ] #8 all tails solved, never folded, both flyways free of dead weight (dima 16:34); then analyze why the flyways piled up and propose how to prevent it
-- [ ] #9 seat sweep (o28): 63 files in wing 1 .scratch/seat-removal/files.txt; check first which FRM-581 deletes on main
-- [ ] #10 groom reds (o30): prompt-groom.ts --linear, 96 older tickets, helga in batches of 20
-- [ ] #11 flyway never stale (dima 16:35: «i want flyway state to be synced — never stale»): the prevention proposal after the tails includes a mechanism that keeps every flyway line matched to its home live, not by a manual sync
-- [ ] #12 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
-- [ ] #13 ⏳ decamp ~/projects/bytes/.claude/worktrees/FRM-465-renovate-comment: merged (bytes#156), but decamp refuses on 2 seed copies (apps/design-loupe/.runtime/, apps/trophy-sys/.env.local), codie checked both are copies — waits for: dima's word to trash them
-- [ ] #14 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
-- [ ] #15 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #16 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #17 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
-- [ ] #18 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #19 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #20 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
-- [ ] #21 📅 FRM-491 remeasure: only runs after ee5d08f9, against docs/research/wishkeeper-cadence.md, then keep, partly revert or revert, and close; the wishkeeper-cache trial switches to its 1 h arm the same day — on: 2026-11-18
-- [ ] #22 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18
-- [ ] #23 📅 evergreen, two weeks in one turn (dima 16:26: skipped this week entirely): the renovate prs frame#158 and bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #24 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #25 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #26 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #27 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
-- [ ] #28 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request — later: dima, his details first (PK-346:W11)
+- [ ] #4 wisphunter trial round (gate-speed and ts-lsp logged today)
+- [ ] #5 all tails solved, never folded, both flyways free of dead weight (dima 16:34); then analyze why the flyways piled up and propose how to prevent it
+- [ ] #6 seat sweep (o28): 63 files in wing 1 .scratch/seat-removal/files.txt; check first which FRM-581 deletes on main
+- [ ] #7 groom reds (o30): prompt-groom.ts --linear, 96 older tickets, helga in batches of 20
+- [ ] #8 flyway never stale (dima 16:35: «i want flyway state to be synced — never stale»): the prevention proposal after the tails includes a mechanism that keeps every flyway line matched to its home live, not by a manual sync
+- [ ] #9 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
+- [ ] #10 ⏳ decamp ~/projects/bytes/.claude/worktrees/FRM-465-renovate-comment: merged (bytes#156), but decamp refuses on 2 seed copies (apps/design-loupe/.runtime/, apps/trophy-sys/.env.local), codie checked both are copies — waits for: dima's word to trash them
+- [ ] #11 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
+- [ ] #12 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
+- [ ] #13 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
+- [ ] #14 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
+- [ ] #15 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
+- [ ] #16 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #17 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
+- [ ] #18 📅 FRM-491 remeasure: only runs after ee5d08f9, against docs/research/wishkeeper-cadence.md, then keep, partly revert or revert, and close; the wishkeeper-cache trial switches to its 1 h arm the same day — on: 2026-11-18
+- [ ] #19 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18
+- [ ] #20 📅 evergreen, two weeks in one turn (dima 16:26: skipped this week entirely): the renovate prs frame#158 and bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #21 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
+- [ ] #22 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #23 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #24 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #25 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in the 20:31 notification): FRM-465 due line verbatim exit 5; FRM-575 title/body seat → thread + 97 % probe comment; review-rounds.md FRM-560 line above ## verdict; clio-revive picks newest by last request — later: dima, his details first (PK-346:W11)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -452,4 +449,12 @@ done 2026-11-12 16:38: compact-hold live probe (o29, main: not run, use a throwa
 done 2026-11-12 16:38: backup 11-12 (dima 02:57 via main): the compact hold live probe, a send into a thread mid-/compact read back after its ingest, if the mods lane cannot
 
 16:38 compact-hold probe passed: a line sent mid-/compact was held by x-mod-stash and arrived whole after the compact (haiku probe t56); hc kill t56 refused by x-mod-guard as a seat, asked in orbit
+
+done 2026-11-12 16:51: FRM-579 hand-off: after its merge, the cli codie and its queue (FRM-572 chunk 1, the offline stamp line) go to main in one message (dima 16:25 via main); wing 1 takes main's chores in return (FRM-579 In Progress, FRM-572 Todo)
+
+done 2026-11-12 16:51: x brief check offline stamp check (the summon's ~8 s networked check): a FRM-572 line with seven names and a ⚖️ worth it, to dima; its wait on FRM-570 cleared (Done) (FRM-572 Todo, FRM-570 Done)
+
+done 2026-11-12 16:51: FRM-579 (#170): codie fixes the P0 and the CI fixtures; then the backfill, the herdr layout start line, both members renamed, the mods codie pinged, cloud chat told to add --as clio (FRM-579 In Progress)
+
+16:52 cli lane (FRM-579 #170, FRM-572 chunk 1, offline stamp line) handed to main on dima's 16:51 word; lines #4 #6 #7 yanked, main asked to add them to her flyway
 <!-- SECTION:NOTES:END -->

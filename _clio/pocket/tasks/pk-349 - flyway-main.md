@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T14:35:00Z'
+updated_date: '2026-11-12T14:52:00Z'
 labels:
   - s
   - clio-main
@@ -37,15 +37,17 @@ ordinal: 1000
 - [ ] #19 the lane size alarm (wing 1's slow-lane fix 1, his 02:00): at 1.5× a chunk's size its coordinator gets one alarm, a pick with dima; its home: a FRM-572 line or the shape-lane sign
 - [ ] #20 now: chatterbox proof door (o18) with dima and the herdr codie, then the rebuilt pass lands from its stash; then zoo → x-herdr (file list in, names asked), then FRM-566 slice 1
 - [ ] #21 cli lane, first after it moves to main: x linear body --set refreshes its pull cache, so ticket-sign.ts never stamps a stale body (wishkeeper siesta high 16:34)
-- [ ] #22 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
-- [ ] #23 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #24 ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
-- [ ] #25 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
-- [ ] #26 📅 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order — on: 2026-11-12
-- [ ] #27 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #28 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #29 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #30 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #22 cli lane (from wing 1, 16:52): FRM-579 / #170 to merge: codie reorder + final, sixth sense clean, wishkeeper base..head, herdr layout + clio-revive unset HC_TERMINAL_ID, backfill from dima's terminal, merge-auto 170 --apply + landed; then rename both members, ping the mods codie, cloud chat --as clio
+- [ ] #23 cli lane queue after FRM-579: FRM-572 chunk 1, and the x brief check offline stamp line (seven names + worth it, to dima)
+- [ ] #24 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+- [ ] #25 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+- [ ] #26 ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
+- [ ] #27 📅 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» — on: 2026-11-12
+- [ ] #28 📅 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order — on: 2026-11-12
+- [ ] #29 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+- [ ] #30 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+- [ ] #31 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+- [ ] #32 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes

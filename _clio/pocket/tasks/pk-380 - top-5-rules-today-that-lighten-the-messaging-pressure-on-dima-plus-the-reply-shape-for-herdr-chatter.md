@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T14:26:00Z'
+updated_date: '2026-11-12T14:40:00Z'
 labels:
   - s
 dependencies: []
@@ -80,4 +80,10 @@ PK-380:W17 (2026-11-12 16:17, dima): wing 1 had another inability to sing case a
 PK-380:W18 (2026-11-12 16:17, dima): proceed. i want guard fixed. tomorrow i plan to start speak app v2 and want guard to work properly until then. (lanes should still work optimized no one drops nothing)
 
 16:26 moved: W5, W11–W15 → FRM-581:W1–W6 (the guard redesign ticket); W6–W10 answered in _clio/.scratch/guard/revisit-1.md
+
+PK-380:W19 (2026-11-12 16:20, dima): ❓ why did you skip two shaping steps, prior art and a sharpen pass, on my «proceed»? maybe the sharpen pass and prior art are exactly what should not be skipped when perms guard has turned into a mess? (the prototype and the three takes were offered in their place)
+
+PK-380:W20 (2026-11-12 16:23, dima): maybe guard drifted because i delegated the cli lane to wing 1 and to you. while you were running the mods lane and wing 1 was running the cli lane, guard drifted because of that as well. ❓ maybe reassign the cli lane to you from wing 1?
+
+PK-380:W21 (2026-11-12, dima, o34 steer): floor, and keep other functionality like slipstreamed messages.
 <!-- SECTION:NOTES:END -->
