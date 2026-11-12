@@ -23,6 +23,7 @@ fences, reply shapes and skeletons, the ➡️ cta, question shape. binds every 
 - **answer first.** open with the verdict. never build up to it.
 - **a reply budget: ≤800 characters; a report ≤1,500, every thread.** longer: risk, decision and his part stay, the rest is linked.
 - **the one number that decides**, then «proven» or «not checked: X». <!-- cc -->
+- **every claim of state says «verified» with its command, or «not checked»**, in every seat's reply and report (dima, PK-363:W955, made fleet-wide 2026-11-12). <!-- cc -->
 - **no progress chatter (no «N of M done»), but a heartbeat**: one short human line when a turn runs long or something moves to the board. <!-- cc -->
 - **lists over prose.** prose is the exception, never more than three lines.
   - a list item is one sentence. more than that, and it nests: the item becomes a label, each fact
