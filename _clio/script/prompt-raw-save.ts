@@ -1,5 +1,6 @@
 // clio's UserPromptSubmit hook: every prompt dima types lands raw in a day file outside every repo (frame is public),
 // so a wish folded from it is groomed from his exact words (pm revamp grill 8, dima's W59, o88, o93)
+import { execFileSync } from 'node:child_process';
 import {
     appendFileSync,
     existsSync,
@@ -50,6 +51,32 @@ export function groomNudge(
         ? `🔴 ${late.length} prompt(s) or steer(s) ungroomed: ${late.join(' ')} — node script/prompt-groom.ts <HH:MM|oN>, or a no-wish line`
         : undefined;
 }
+
+// the flyways' reds on every prompt, five at most; a check that threw or ran long says so, never silence
+export const FLYWAY_SHOWN = 5;
+export function flywayNudge(check: () => string): string[] {
+    try {
+        const reds = check()
+            .split('\n')
+            .filter((line) => line.startsWith('🔴'));
+        return [
+            ...reds.slice(0, FLYWAY_SHOWN),
+            ...(reds.length > FLYWAY_SHOWN
+                ? [`… and ${reds.length - FLYWAY_SHOWN} more`]
+                : []),
+        ];
+    } catch (error) {
+        const why = error instanceof Error ? error.message : String(error);
+        return [`🟡 flyway not checked: ${why.split('\n')[0]}`];
+    }
+}
+
+const checkFlyways = () =>
+    execFileSync(
+        'node',
+        [path.join(import.meta.dirname, 'pocket-check.ts'), '--flyway'],
+        { encoding: 'utf8', timeout: 5000 },
+    );
 
 // measured over his raw prompts 10-30 → 11-03: these hit only personal chores; «order», «card», «subscription»,
 // «anthropic», «plan» and «billing» hit fleet prompts too, so they stay out
@@ -190,6 +217,17 @@ if (import.meta.main && process.argv[2] === '--stop') {
             d.steerIds,
         );
         if (nudge) console.log(nudge);
+        // each thread sees its own flyway's reds: main's are main's to fix, never a wing's noise
+        const own = thread
+            ? `flyway: wing ${thread.replace('wing-', '')}`
+            : 'flyway: main';
+        for (const line of flywayNudge(() =>
+            checkFlyways()
+                .split('\n')
+                .filter((red) => red.includes(own))
+                .join('\n'),
+        ))
+            console.log(line);
         const wing = wingNudge(text, process.env.HOME ?? '');
         if (wing) console.log(wing);
     }

@@ -12,6 +12,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
     dimasText,
+    flywayNudge,
     groomBlock,
     groomNudge,
     wingNudge,
@@ -172,6 +173,31 @@ describe('wingNudge', () => {
         expect(
             wingNudge('what should i buy now', fixture(undefined)),
         ).toBeUndefined();
+    });
+});
+
+describe('flywayNudge', () => {
+    test('the reds print as they came, other lines dropped', () => {
+        expect(
+            flywayNudge(() => '🔴 flyway: wing 1 #3 too long\nnoise\n'),
+        ).toEqual(['🔴 flyway: wing 1 #3 too long']);
+    });
+    test('past five reds, the rest is counted', () => {
+        const reds = Array.from(
+            { length: 7 },
+            (_, i) => `🔴 flyway: main #${i}`,
+        );
+        expect(flywayNudge(() => reds.join('\n'))).toEqual([
+            ...reds.slice(0, 5),
+            '… and 2 more',
+        ]);
+    });
+    test('a check that throws says why', () => {
+        expect(
+            flywayNudge(() => {
+                throw new Error('spawnSync node ETIMEDOUT\nmore');
+            }),
+        ).toEqual(['🟡 flyway not checked: spawnSync node ETIMEDOUT']);
     });
 });
 

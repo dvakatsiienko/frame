@@ -10,7 +10,12 @@ import {
 import path from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { flywayKind, flywayLines, flywaySorted } from './flyway-done.ts';
+import {
+    flywayKind,
+    flywayLines,
+    flywaySorted,
+    similarLines,
+} from './flyway-done.ts';
 
 const script = path.join(import.meta.dirname, 'flyway-done.ts');
 const config = path.join(import.meta.dirname, '..', 'backlog.config.yml');
@@ -84,6 +89,33 @@ describe('flyway-done', () => {
             expect(read()).toEqual(['one', 'two', '💤 c — later: dima 1']);
         },
     );
+
+    describe('similarLines', () => {
+        const flyways = [
+            {
+                id: 'PK-7',
+                text: '- [ ] #1 Refresh the milestone board with the sign hash reader\n- [x] #2 refresh milestone board sign hash reader done\n- [ ] #3 unrelated lunch plan',
+            },
+        ];
+        test('an unticked line sharing 3 long words is named', () => {
+            expect(
+                similarLines(
+                    'milestone board refresh for FRM-12 and PK-3',
+                    flyways,
+                ),
+            ).toEqual([
+                'similar open line: PK-7 #1: Refresh the milestone board with the sign hash reader',
+            ]);
+        });
+        test('two shared words, short words, ids and numbers do not count', () => {
+            expect(
+                similarLines(
+                    'milestone board 2026 FRM-123 PK-7 the and',
+                    flyways,
+                ),
+            ).toEqual([]);
+        });
+    });
 
     test('lines read with their number and tick', () => {
         expect(

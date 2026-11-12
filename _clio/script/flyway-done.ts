@@ -42,6 +42,33 @@ export function flywayDate(text: string): string {
     return text.match(DATED_ON)?.[1] ?? '';
 }
 
+// the unticked lines of these flyways that share 3 or more words of 4+ letters with a line about to be added
+export function similarLines(
+    added: string,
+    flyways: { id: string; text: string }[],
+): string[] {
+    const words = (line: string) =>
+        new Set(
+            line
+                .replace(NAMED_ID, '')
+                .toLowerCase()
+                .match(/\p{L}{4,}/gu),
+        );
+    const mine = words(added);
+    return flyways.flatMap(({ id, text }) =>
+        flywayLines(text)
+            .filter(
+                (l) =>
+                    !l.done &&
+                    [...words(l.text)].filter((w) => mine.has(w)).length >= 3,
+            )
+            .map(
+                (l) =>
+                    `similar open line: ${id} #${l.n}: ${l.text.slice(0, 80)}`,
+            ),
+    );
+}
+
 // a stable sort: open lines keep their own order, then waits, then dated by date, then later
 export function flywaySorted(lines: string[]): string[] {
     const rank = (line: string) => kinds.indexOf(flywayKind(line));
@@ -62,6 +89,15 @@ if (import.meta.main) {
     if (!/^PK-\d+$/.test(id) || !mode) fail(usage);
     if (mode === '--add') {
         if (!value) fail(usage);
+        const dir = path.join(pocket, 'pocket', 'tasks');
+        const flyways = readdirSync(dir)
+            .map((f) => ({
+                id: f.match(/^pk-\d+/i)?.[0].toUpperCase() ?? '',
+                text: readFileSync(path.join(dir, f), 'utf8'),
+            }))
+            .filter(({ text }) => /^title: ['"]?flyway: /m.test(text));
+        for (const similar of similarLines(value, flyways))
+            console.log(similar);
         rewrite(id, [value]);
     } else if (mode === '--sort') {
         rewrite(id, []);

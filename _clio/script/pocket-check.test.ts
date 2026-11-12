@@ -17,6 +17,7 @@ import {
     checkPocket,
     headFromGit,
     lostNoteLines,
+    orbitAnswered,
     unkeptStale,
 } from './pocket-check.ts';
 
@@ -359,6 +360,103 @@ describe('checkPocket', () => {
         expect(checkPocket(config, ones, today).join('\n')).not.toContain(
             'the cap is',
         );
+    });
+
+    const flywayWith = (body: string, answered: string[] = []) =>
+        checkPocket(
+            config,
+            [
+                task(
+                    {
+                        labels: ['m', 'clio-wing-1'],
+                        ordinal: '1001',
+                        priority: 'now',
+                        title: 'flyway: wing 1',
+                    },
+                    body,
+                ),
+            ],
+            today,
+            '',
+            undefined,
+            undefined,
+            undefined,
+            new Set(answered),
+        ).join('\n');
+
+    test('a wait on dima with no orbit id is red', () => {
+        expect(
+            flywayWith('- [ ] #1 ⏳ pick a name — waits for: dima'),
+        ).toContain('#1 waits on dima with no orbit ask');
+    });
+
+    test('a wait on dima citing an orbit id passes', () => {
+        expect(
+            flywayWith('- [ ] #1 ⏳ pick a name — waits for: dima o12'),
+        ).toBe('');
+    });
+
+    test('a wait on a thing other than dima needs no orbit id', () => {
+        expect(flywayWith('- [ ] #1 ⏳ the build — waits for: ci')).toBe('');
+    });
+
+    test('a wait whose orbit ask dima answered is red', () => {
+        expect(
+            flywayWith('- [ ] #1 ⏳ pick a name — waits for: dima o12', [
+                'o12',
+            ]),
+        ).toContain('#1: dima answered o12: act on it, then clear the line');
+    });
+
+    test('an orbit ask still open leaves the wait green', () => {
+        expect(
+            flywayWith('- [ ] #1 ⏳ pick a name — waits for: dima o12', ['o7']),
+        ).toBe('');
+    });
+
+    test('a dated line whose day is today is red', () => {
+        expect(flywayWith(`- [ ] #1 📅 ship it — on: ${today}`)).toContain(
+            `#1: its day came (${today})`,
+        );
+    });
+
+    test('a dated line whose day is tomorrow passes', () => {
+        expect(flywayWith('- [ ] #1 📅 ship it — on: 2026-10-10')).toBe('');
+    });
+
+    test('a line over 120 characters is red, 120 passes', () => {
+        expect(flywayWith(`- [ ] #1 ${'a'.repeat(121)}`)).toContain(
+            '#1 is 121 chars',
+        );
+        expect(flywayWith(`- [ ] #1 ${'a'.repeat(120)}`)).toBe('');
+    });
+
+    test('an orbit store answers the resolved asks no session holds open', () => {
+        const dir = mkdtempSync(join(tmpdir(), 'orbit-'));
+        const file = join(dir, 'store.json');
+        writeFileSync(
+            file,
+            JSON.stringify({
+                'kept:a': {
+                    orbit: {
+                        asks: [
+                            { id: 'o1', isResolved: true },
+                            { id: 'o2', isResolved: true },
+                            { id: 'o3' },
+                        ],
+                    },
+                },
+                'kept:b': { orbit: { asks: [{ id: 'o2' }] } },
+                'state:a': {
+                    orbit: { asks: [{ id: 'o9', isResolved: true }] },
+                },
+            }),
+        );
+        expect([...orbitAnswered(file)]).toEqual(['o1']);
+    });
+
+    test('a missing orbit store answers nothing', () => {
+        expect(orbitAnswered('/nonexistent/store.json').size).toBe(0);
     });
 
     test('a ticked line reds the same day, naming the move', () => {

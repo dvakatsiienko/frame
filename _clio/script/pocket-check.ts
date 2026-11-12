@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import {
     FLYWAY_SLOTS,
@@ -39,6 +39,9 @@ const CAP_FREE_TITLE = /^🧬 evergreen turn|^flyway: /;
 // a thread's live plan: never closed, its finished lines cleaned at each halt or boot (PK-351:W69-W75)
 const FLYWAY_TITLE = /^flyway: (main|wing ([1-9]\d*))$/;
 const POCKET_ID = /\bPK-\d+\b/g;
+const ORBIT_ID = /\bo\d+\b/g;
+// a flyway line is read at a glance: past this the detail belongs in the item's notes
+const FLYWAY_LINE_MAX = 120;
 // the wish-accounting reds apply to items born or touched from this day on
 const WISH_RULES_FROM = '2026-10-22';
 const CLOSE_LINE = /^close:/;
@@ -64,6 +67,7 @@ export function checkPocket(
     isGroomed: Groomed = groomedOnDisk,
     closedTickets: ReadonlySet<string> = new Set(),
     wishBlocks: ReadonlyMap<string, string> = new Map(),
+    answered: ReadonlySet<string> = new Set(),
 ): string[] {
     const config = {
         labels: listOf(configText, 'labels'),
@@ -166,6 +170,30 @@ export function checkPocket(
                     report(
                         `#${line.n} 📅 ends «— on: YYYY-MM-DD»: ${reword(line.n)}`,
                     );
+                const day = kind === 'dated' ? flywayDate(line.text) : '';
+                if (day && day <= today)
+                    report(
+                        `#${line.n}: its day came (${day}): move it up, drop 📅 and «— on:»`,
+                    );
+                if (line.text.length > FLYWAY_LINE_MAX)
+                    report(
+                        `#${line.n} is ${line.text.length} chars: keep it ≤${FLYWAY_LINE_MAX}, the detail goes to the item's notes`,
+                    );
+                const waitsFor =
+                    kind === 'waits'
+                        ? (line.text.split(' — waits for: ')[1] ?? '')
+                        : '';
+                if (/\bdima\b/i.test(waitsFor)) {
+                    const asked = waitsFor.match(ORBIT_ID) ?? [];
+                    if (asked.length === 0)
+                        report(
+                            `#${line.n} waits on dima with no orbit ask: raise it in orbit, then end the line «— waits for: dima oN»`,
+                        );
+                    for (const ask of asked.filter((a) => answered.has(a)))
+                        report(
+                            `#${line.n}: dima answered ${ask}: act on it, then clear the line`,
+                        );
+                }
             }
             const texts = lines.filter((l) => !l.done).map((l) => l.text);
             const sorted = flywaySorted(texts);
@@ -694,8 +722,43 @@ function unquote(value: string): string {
     return value.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1');
 }
 
+// x-mod-stash keeps every session's orbit in one json of the plugin store, ORBIT_STORE overriding its path
+function orbitStoreFile(): string {
+    if (process.env.ORBIT_STORE) return process.env.ORBIT_STORE;
+    const dir = join(process.env.HOME ?? '', '.claude/plugins/store');
+    return join(
+        dir,
+        readdirSync(dir).find((f) => f.startsWith('x-mod-stash_')) ?? '',
+    );
+}
+
+// the ask ids dima answered and no session still holds open; an unreadable store answers nothing, so only that half of the check goes quiet
+export function orbitAnswered(file?: string): ReadonlySet<string> {
+    try {
+        const store = JSON.parse(
+            readFileSync(file ?? orbitStoreFile(), 'utf8'),
+        ) as Record<string, { orbit?: { asks?: OrbitAsk[] } } | undefined>;
+        const asks = Object.entries(store)
+            .filter(([key]) => key.startsWith('kept:'))
+            .flatMap(([, kept]) => kept?.orbit?.asks ?? []);
+        const open = new Set(
+            asks.filter((a) => !a.isResolved).map((a) => a.id),
+        );
+        return new Set(
+            asks
+                .filter((a) => a.isResolved && !open.has(a.id))
+                .map((a) => a.id),
+        );
+    } catch {
+        return new Set();
+    }
+}
+
 if (import.meta.main) {
-    const root = join(import.meta.dirname, '..');
+    // POCKET_DIR names the pocket folder itself, as prompt-groom reads it
+    const root = process.env.POCKET_DIR
+        ? dirname(process.env.POCKET_DIR)
+        : join(import.meta.dirname, '..');
     const dir = join(root, 'pocket', 'tasks');
     const tasks = readDir(dir);
     const today = new Date().toLocaleDateString('sv');
@@ -713,10 +776,14 @@ if (import.meta.main) {
     const lastTriage = existsSync(stamp)
         ? readFileSync(stamp, 'utf8').trim()
         : '';
+    // --flyway is the prompt hook's quick read: no linear call, no head audit, only the flyways' reds under their titles
+    const flywayOnly = process.argv.includes('--flyway');
     // done items are read too: a done item still listed is the only witness of its W-lines' copy
-    const { closed, wishBlocks } = readTickets([
-        ...new Set(tasks.flatMap(({ text }) => ticketsOf(text))),
-    ]);
+    const { closed, wishBlocks } = flywayOnly
+        ? { closed: new Set<string>(), wishBlocks: new Map<string, string>() }
+        : readTickets([
+              ...new Set(tasks.flatMap(({ text }) => ticketsOf(text))),
+          ]);
     const problems = checkPocket(
         readFileSync(join(root, 'backlog.config.yml'), 'utf8'),
         tasks,
@@ -725,7 +792,24 @@ if (import.meta.main) {
         groomedOrUnlogged,
         closed,
         wishBlocks,
+        orbitAnswered(),
     );
+    if (flywayOnly) {
+        const titles = new Map(
+            tasks.flatMap(({ name, text }) => {
+                const { id, title } = frontmatter(text).scalars;
+                return title?.startsWith('flyway:')
+                    ? [[id ?? name, title] as const]
+                    : [];
+            }),
+        );
+        for (const problem of problems) {
+            const [id = '', ...what] = problem.split(': ');
+            const title = titles.get(id);
+            if (title) console.log(`🔴 ${title} ${what.join(': ')}`);
+        }
+        process.exit(0);
+    }
     const head = headFromGit(root);
     problems.push(
         ...auditAgainstHead(
@@ -742,6 +826,11 @@ if (import.meta.main) {
 }
 
 /* Types */
+
+interface OrbitAsk {
+    id: string;
+    isResolved?: boolean;
+}
 
 interface Head {
     archiveNames: string[];
