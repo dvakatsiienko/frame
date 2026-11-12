@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T19:50:00Z'
+updated_date: '2026-11-12T19:54:00Z'
 labels:
   - s
   - clio-main
@@ -21,12 +21,11 @@ ordinal: 1000
 - [ ] #3 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
 - [ ] #4 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
 - [ ] #5 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
-- [ ] #6 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
-- [ ] #7 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
-- [ ] #8 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
-- [ ] #9 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #10 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
-- [ ] #11 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #6 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
+- [ ] #7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #8 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
+- [ ] #9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -376,4 +375,8 @@ done 2026-11-12 21:50: herdr grills, his order: FRM-564 → 582 → 580 → 567 
 done 2026-11-12 21:50: guard story into fleet-stories/guard-lockout before the halt (his o42); facts in .scratch/guard/
 
 21:50 designer day 11-13: one designer reused for speak v2 and the herdr look (FRM-591), synced (dima 21:49)
+
+done 2026-11-12 21:54: 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
+
+done 2026-11-12 21:54: 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
 <!-- SECTION:NOTES:END -->
