@@ -1,4 +1,4 @@
-// The fleet board: the live sessions from Claude Code's registry with what each waits on and its phases, the open
+// x-herdr-deck: the live sessions from Claude Code's registry with what each waits on and its phases, the open
 // orbit asks x-mod-stash keeps on disk, ticked here into each session's ticks file, and each lane's glide card.
 
 import { readdir } from 'fs/promises';
@@ -218,7 +218,7 @@ const prose = (id, markdown, color, size) =>
         .text_size(size)
         .text_color(color);
 
-export default class FleetBoard extends View {
+export default class Deck extends View {
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
         // the thread strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
@@ -351,7 +351,7 @@ export default class FleetBoard extends View {
                         !this.steers.has(key)
                     )
                         // herdr documents InputState.new for init or a handler; a refusal here costs the box, never
-                        // the reload that redraws the whole board
+                        // the reload that redraws the whole deck
                         this.makeSteerBox(key);
                 }
             this.loadedAt = new Date();

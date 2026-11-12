@@ -17,7 +17,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - not checked: a drag by his hand
 - ✅ every live thread on one list
   - given threads run on this mac
-  - when the board draws
+  - when the deck draws
   - then each live thread shows as one row by its session name, in the agents list's order; a thread the list does not show goes last, blocked first, then working, then by name
   - decision: a thread whose process is gone draws no row, so no press goes to a dead thread
   - decision: the name sorts by its words, past a leading badge, so 🦉 and 🎀 never decide the order

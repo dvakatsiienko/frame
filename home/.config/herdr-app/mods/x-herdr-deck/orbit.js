@@ -1,4 +1,4 @@
-// orbit on herdr's board, as pure steps: what a session's state file holds, and the ticks file herdr's board
+// orbit on the deck, as pure steps: what a session's state file holds, and the ticks file the deck
 // alone writes for it (`~/.claude/shelf/orbit-ticks/<sid>.jsonl`, one press per line), which x-mod-stash reads at the
 // session's next turn (FRM-552)
 
@@ -109,7 +109,7 @@ export function withPress(text, press, taken) {
 }
 
 /**
- * the presses in the ticks file the stash has not taken yet, by ask id: the board draws them as pressed from the file
+ * the presses in the ticks file the stash has not taken yet, by ask id: the deck draws them as pressed from the file
  * itself, so a press waiting on an idle thread's next turn stays ✅ however long it waits
  * @param {string | null} text
  * @param {number} taken
@@ -315,7 +315,7 @@ export const lockedLabel = (ask) =>
         : '🔒 ticked, the session took it';
 
 /**
- * an ask's id as the board draws it: every thread numbers its asks on its own, so a wing's reads `w1·o8`, another
+ * an ask's id as the deck draws it: every thread numbers its asks on its own, so a wing's reads `w1·o8`, another
  * thread's `codie·o1`, and only main clio's stays bare
  * @param {string} thread the session's name
  * @param {string} id

@@ -13,12 +13,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - not checked: the click itself, by his hand
 - ✅ each ask leads with its id, so dima can name it
   - given a thread has an open ask with an id
-  - then the board reads «🪐 **o36**: <text>», under a head «🪐 orbit: N asks waiting on you», each asker's name bold at the name size (shot 1929)
-- ⬜ a plain ask ticks from the board
+  - then the deck reads «🪐 **o36**: <text>», under a head «🪐 orbit: N asks waiting on you», each asker's name bold at the name size (shot 1929)
+- ⬜ a plain ask ticks from the deck
   - makes: one press line in `~/.claude/shelf/orbit-ticks/<session id>.jsonl`
   - given a thread has an open ask
   - when dima clicks 🛎️ tick
-  - then the thread's next turn reads it as ticked from herdr, and the ask leaves the board
+  - then the thread's next turn reads it as ticked from herdr, and the ask leaves the deck
   - decision: ⬜, not 🔎: nobody has his own word yet that a plain tick held
 - ⬜ replay with a steer
   - makes: one press line with the steer in the thread's ticks file
@@ -28,7 +28,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and the button reads «🔁 replayed», and his second click takes it back until a turn takes it, the ask open again with its steer box, the same door as a tick's; once a turn took it, «🔒 replayed, the session took it» (PK-386, dima 14:54: «it locks and i cannot undo»)
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
-  - then the board draws it as written, never dropped as html
+  - then the deck draws it as written, never dropped as html
 - ⬜ one-click 🛎️ on a guarded ask
   - makes: one press line in the thread's ticks file, the same as a plain tick
   - given the stash marks the ask `isGated` (a sign, a merge, a ⚠️ or a quoted command)
@@ -36,7 +36,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then the guard reads that press as his tick for that ask's targets, within 2 h, once
   - decision: the 🛎️ is click-only; a keyed mod command is any shell's (FRM-544)
   - decision: the «🚦 tick in its pane» door and x-herdr-deck's own copy of the gated pattern are gone (live 18:51:40), after the guard's fences went clean at a14bca4b; his own click on a real gated ask is the last proof, set up by clio
-- 🧭 a standing override button on the board, behind slice 2 of FRM-544
+- 🧭 a standing override button on the deck, behind slice 2 of FRM-544
   - given the operator override is off
   - when dima clicks its button on x-herdr-deck
   - then the override turns on with `by: press`, and a second click turns it off
@@ -53,7 +53,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: a tick after an untick is a plain new press, never a drop of the old lines; the drop ate his first click
 - ✅ an ask id names its thread
   - given main clio and wing 1 both have an o8 open
-  - then the board reads `o8` for main, `w1·o8` for wing 1, and `codie·o1` for any other thread (shot 1508)
+  - then the deck reads `o8` for main, `w1·o8` for wing 1, and `codie·o1` for any other thread (shot 1508)
 - ⬜ no ring on a pressed button, and no tooltip on a steer box
   - given dima presses 🛎️ tick, 🔁 replay or a 🔥 keep-hot button, or hovers a steer box
   - then no blue border flashes while he holds the click, and no tooltip shows over the steer field

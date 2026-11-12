@@ -181,7 +181,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a draft came back after a reload
   - when dima types on
   - then his text goes after the draft, never in front of it
-- ⬜ a steer being typed survives a board reload
+- ⬜ a steer being typed survives a deck reload
   - given dima has typed into an ask's steer field
   - when x-herdr-deck reloads
   - then the field shows his text again
