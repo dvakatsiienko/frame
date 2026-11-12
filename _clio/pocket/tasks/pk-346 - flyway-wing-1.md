@@ -565,4 +565,6 @@ done 2026-11-12 19:13: flyway fix: the stale-line checks and the 120-char rule, 
 done 2026-11-12 19:22: 11-10 halt leftovers: a checkup slice, two board redraws, the kill side, four budget rows
 
 done 2026-11-12 19:23: land the sizes commit once main's lowtide set is committed (my ask 19:13)
+
+19:23 2026-11-12 wing 1: sizes + budget-rows landed (origin/main 20c03f2b); the board redraws dropped from the halt leftovers (dima 19:21); flyway reordered to his 19:11 order. «seat»: only the prose half landed (f31341c5, 5f5d9cd4); seatOf, CLIO_SEAT and ~/.local/state/clio/seats remain (rg 19:22), so its line stays
 <!-- SECTION:NOTES:END -->
