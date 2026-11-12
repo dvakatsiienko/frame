@@ -36,13 +36,22 @@ function meters(on: On, files: Record<string, string> = {}, override?: string) {
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/proj' },
     }));
+    // the engine measures again inside a compact, with the fill from before it (probed live on 2.1.322, FRM-505)
+    // what the window holds now, as a breakdown counts it
+    const during: { compact?: () => Promise<unknown>; tokens: number } = {
+        tokens: 90_000,
+    };
     on('session.measure', (_$, e) => ({ changed: e.changed }));
-    on('session.compact', (_$, e) => ({ messages: e.messages }));
+    on('session.compact', async (_$, e) => {
+        await during.compact?.();
+        return { messages: e.messages };
+    });
     on('session.usage', () => ({
         value: {
             context: {
                 breakdown: {
                     autoCompactThreshold: 700_000,
+                    totalTokens: during.tokens,
                 } as SessionContextBreakdown,
                 window: 1_000_000,
             },
@@ -60,7 +69,7 @@ function meters(on: On, files: Record<string, string> = {}, override?: string) {
         files[e.path] = e.text;
         return { value: undefined };
     });
-    return { clock, files, store };
+    return { clock, during, files, store };
 }
 
 const measure = (
@@ -229,6 +238,54 @@ test("the ctx row shows the fill and the engine's compaction point", async ($, o
         (await part($, /^35%$/)) !== 'no text',
         input?.props.value,
     ]).toEqual([true, '70']);
+});
+
+// a compact whose own measure repeats the fill it started from
+function compact(
+    $: Engine,
+    during: ReturnType<typeof meters>['during'],
+    fill: number,
+) {
+    during.compact = () => measure($, 39, fill);
+    during.tokens = fill * 10_000;
+    const compacted = $.session.compact({
+        messages: [{ role: 'user', text: 'hi', toolUses: [] }],
+        trigger: 'manual',
+    } as never);
+    // the engine swaps in the compacted messages only once every hook settled
+    return compacted.then((r) => {
+        during.tokens = 90_000;
+        return r;
+    });
+}
+
+test('a compact never draws the old fill its own measure carries', async ($, on) => {
+    const { during, store } = meters(on);
+    await measure($, 39, 63);
+    await compact($, during, 63);
+    expect([await part($, /^63%$/), store[`context:${SID}`]]).toEqual([
+        'no text',
+        undefined,
+    ]);
+});
+
+test('a second after a compact, the band and the board draw its new fill', async ($, on) => {
+    const { clock, during, store } = meters(on);
+    await measure($, 39, 63);
+    await compact($, during, 63);
+    await clock.advance(1000);
+    expect([
+        (await part($, /^9%$/)) !== 'no text',
+        store[`context:${SID}`],
+    ]).toEqual([true, 9]);
+});
+
+test("after a compact, the next turn's measure draws as before", async ($, on) => {
+    const { during } = meters(on);
+    await measure($, 39, 63);
+    await compact($, during, 63);
+    await measure($, 39, 12);
+    expect((await part($, /^12%$/)) !== 'no text').toBe(true);
 });
 
 test("a repo top's compaction point lands in its shared settings.json, other keys kept", async ($, on) => {

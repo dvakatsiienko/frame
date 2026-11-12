@@ -21,7 +21,7 @@ the x marketplace lists x-mod-stash, the one worth sharing; the others stay loca
   - `--plant <file> <anchor> <replacement>` (no mod dir) serves a scratch copy (removed on stop) with that one change, the tree untouched; an anchor matching 0 or 2+ times refuses first
 - `pnpm mods:probe <mod> "<prompt>"` runs one headless session with a dev copy in place of the live mod of the same name, on its own store, and exits 1 unless the engine read the dev copy; the swap rides the child's process env, since a `--settings` env swap loads the live copy; run it in the background
   - `--bash '<line>'` or `--rows <tsv>` (`name<TAB>line`, `\n` a newline, `<scratch>` a dir that must stay empty) run through the real hooks inside `false && { … }` and print each verdict with every hint the hooks added
-- a mod outside `CLAUDE_CODE_PLUGIN_DIRS` is probed live with `claude -p "<prompt>" --plugin-dir <mod> --allowedTools=Bash`, run with `run_in_background` (x-mod-guard refuses a foreground `claude -p`, FRM-395; `# fg-ok: <why>` for a real need); an env var on the command line loses to the one in `settings.json`, and `--allowedTools` without `=` eats the prompt
+- a mod outside `CLAUDE_CODE_PLUGIN_DIRS` is probed live with `claude -p "<prompt>" --plugin-dir <mod> --allowedTools=Bash`, run with `run_in_background` (x-mod-guard hints a foreground `claude -p`; `# fg-ok: <why>` quiets it for a real need); an env var on the command line loses to the one in `settings.json`, and `--allowedTools` without `=` eats the prompt
 
 ## the rules
 

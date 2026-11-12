@@ -14,6 +14,10 @@ const SLUG = 'mods-l14-2';
 
 // what lands while the engine compacts: one `on` per event, so a test sets this flag before its first `$` call
 let inCompact: (() => Promise<unknown>) | undefined;
+// a session started with no plugin x skills (crow's pane, FRM-505) lists no ingest command
+let hasIngestCommand = true;
+// the engine refuses the compact, as it refuses an unknown command
+let compactRefusal: string | undefined;
 
 // the live peers a test's messages come from, as cc's registry names them and x's records give their roles
 const SENSE_NAMES = [
@@ -46,6 +50,9 @@ function world(
     role: string | null = 'codie',
 ) {
     inCompact = undefined;
+    hasIngestCommand = true;
+    compactRefusal = undefined;
+    const prompts: string[] = [];
     const lines: string[] = [];
     const commands: string[] = [];
     const clock = mock.clock(on, { now: NOW });
@@ -131,9 +138,26 @@ function world(
     }));
     on('prompt.submit', (_$, e) => {
         lines.push(...(e.context ?? []));
+        if (e.origin?.kind === 'plugin') prompts.push(e.text);
         return { text: e.text };
     });
+    on('command.list', () => ({
+        value: [
+            { description: '', name: 'compact', source: 'builtin' as const },
+            ...(hasIngestCommand
+                ? [
+                      {
+                          description: '',
+                          name: 'x:handoff-ingest',
+                          source: 'plugin' as const,
+                      },
+                  ]
+                : []),
+        ],
+    }));
     on('command.run', async (_$, e) => {
+        if (e.command === 'compact' && compactRefusal)
+            throw new Error(compactRefusal);
         commands.push(`/${e.command} ${e.args}`);
         if (e.command === 'compact') await during?.();
         return { text: '' };
@@ -147,7 +171,7 @@ function world(
     });
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
-    return { clock, commands, lines, store };
+    return { clock, commands, lines, prompts, store };
 }
 
 const start = ($: Engine) =>
@@ -362,6 +386,75 @@ test('the ingest is queued while the compact still runs, so no prompt slips betw
         '/compact',
         '/x:handoff-ingest',
     ]);
+});
+
+test('a session with no ingest command ingests its handoff through a plain prompt', async ($, on) => {
+    const w = world(on);
+    hasIngestCommand = false;
+    await start($);
+    await ready($, SLUG);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect([
+        w.commands.map((c) => c.split(' ')[0]),
+        w.prompts.filter((p) => p.includes(`x handoff ingest ${SLUG} --for`))
+            .length,
+        w.store.has(`wind:${SID}`),
+    ]).toEqual([['/compact'], 1, false]);
+});
+
+// the compact refused: the toast reaches no one in a pane nobody watches
+function refusedWind(on: On) {
+    compactRefusal = 'no compact here';
+    const sent: { text: string; to: unknown }[] = [];
+    on('session.send', (_$, e) => {
+        sent.push({ text: e.text, to: e.to });
+        return { isDelivered: true };
+    });
+    return sent;
+}
+
+test('a stopped wind tells the coordinator in one line, naming the handoff kept in the store', async ($, on) => {
+    const w = world(on);
+    const sent = refusedWind(on);
+    await start($);
+    await ready($, SLUG);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect(sent).toEqual([
+        {
+            text: expect.stringMatching(
+                new RegExp(
+                    `second wind stopped.*${SLUG} is still in the store`,
+                ),
+            ),
+            to: 'peer-1',
+        },
+    ]);
+});
+
+test('a stopped wind keeps the session from reading idle on the board', async ($, on) => {
+    const w = world(on);
+    refusedWind(on);
+    await start($);
+    await ready($, SLUG);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect((w.store.get(`wind:${SID}`) as { state?: string }).state).toBe(
+        'stopped',
+    );
+});
+
+test('a stopped wind tells the session once, at its next turn, how to ingest by hand', async ($, on) => {
+    const w = world(on);
+    w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'stopped' });
+    await start($);
+    await say($);
+    await say($, 'again');
+    expect([
+        notes(w.lines).map((l) => l.includes(`x handoff ingest ${SLUG} --for`)),
+        w.store.has(`wind:${SID}`),
+    ]).toEqual([[true], false]);
 });
 
 test('the op tells the session to end its turn with no waiting line', async ($, on) => {
