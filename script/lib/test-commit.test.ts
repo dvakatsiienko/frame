@@ -246,12 +246,16 @@ describe('test-commit', () => {
             expect(got.calls).toMatch(/vitest\|run/);
         });
 
-        test('a code file beside it runs its related tests', () => {
+        // FRM-572: a skill edit beside code once skipped skill-size.test.ts, which only ci caught
+        test('a code file beside it runs its related tests and the memory tests', () => {
             const got = runGate(
-                staged({ [memory]: 'a\n', 'a.ts': 'a\n' }),
+                staged({ [skill]: 'a\n', 'a.ts': 'a\n' }),
                 'main',
             );
-            expect(got.calls).toBe(`${related}|a.ts`);
+            const [first, second] = got.calls.split('\n');
+            expect(first).toBe(`${related}|a.ts`);
+            expect(second).toMatch(/vitest\|run\|.*skill-size\.test\.ts/);
+            expect(got.fields[1]).toBe('related+memory');
         });
 
         test('a script under skills is code, never memory', () => {
