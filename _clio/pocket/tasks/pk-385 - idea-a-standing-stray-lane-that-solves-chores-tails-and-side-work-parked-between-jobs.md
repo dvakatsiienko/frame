@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:42:00Z'
+updated_date: '2026-11-12T19:00:00Z'
 labels:
   - s
 dependencies: []
@@ -49,4 +49,12 @@ raw drop (2026-11-12 inbox, dima): + can solve bigger side chores aside main sco
 raw drop (2026-11-12 inbox, dima): + takes second wind before each big spec.
 
 raw drop (2026-11-12 inbox, dima): + test drive it
+
+PK-385:W7 (2026-11-12 20:59, dima, o52 steer): figure out how the threads won't fight over the lane: if main clio asked it to do something and you want to send it something too — the queue
+PK-385:W8 (2026-11-12 20:59, dima, o53 steer): bun migration was just an example; bigger work is probably better for a dedicated quick or side lane
+PK-385:W9 (2026-11-12 20:59, dima, o53 steer): a verifier? maybe. wishkeeper is likely ok, let's keep the wishkeeper check
+PK-385:W10 (2026-11-12 20:59, dima): model? i think opus 5.5 medium will work 100 %, but maybe it is overkill? if we agree to send it only well-scoped work, maybe try sonnet 5.5 medium as the standing chore lane ❓
+PK-385:W11 (2026-11-12 20:59, dima): the cli lane was fully finished and has no chunk pending; that's why the cli codie got reassigned to the stray lane to help you
+PK-385:W12 (2026-11-12 20:59, dima): q6: no, it isn't parked across halts. how do you imagine it parked across halts? its cache goes cold
+PK-385:W13 (2026-11-12 20:59, dima): instead it is never summoned at boot, since why keep it parked for nothing; it is summoned on the first pending chore, solves it, then stays parked and keeps doing the chores that appear during the day, and is stopped with everyone else at the halt
 <!-- SECTION:NOTES:END -->

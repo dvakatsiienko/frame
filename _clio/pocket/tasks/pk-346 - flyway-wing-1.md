@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T18:45:00Z'
+updated_date: '2026-11-12T18:49:00Z'
 labels:
   - s
   - clio-wing-1
@@ -16,16 +16,16 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 mods codie in a herdr pane: does dima see each mod change live there, the mods lane's reason
-- [ ] #2 sign hash gap: a body with linear-rewritten links still reads drifted; an x-printed hash would close it
-- [ ] #3 ⏳ FRM-551 vm: both reads — waits for: the first halt with no go lane
-- [ ] #4 ⏳ FRM-538 «✍️ sign» and FRM-555 «changed» lines — waits for: each one's dispatch
-- [ ] #5 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
-- [ ] #6 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
-- [ ] #7 📅 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict — on: 2026-11-13
-- [ ] #8 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
-- [ ] #9 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
-- [ ] #10 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
+- [ ] #1 sign hash gap: a body with linear-rewritten links still reads drifted; an x-printed hash would close it
+- [ ] #2 ⏳ FRM-551 vm: both reads — waits for: the first halt with no go lane
+- [ ] #3 ⏳ FRM-538 «✍️ sign» and FRM-555 «changed» lines — waits for: each one's dispatch
+- [ ] #4 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
+- [ ] #5 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
+- [ ] #6 📅 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict — on: 2026-11-13
+- [ ] #7 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
+- [ ] #8 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
+- [ ] #9 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
+- [ ] #10 📅 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop — on: 2026-11-14
 - [ ] #11 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
 - [ ] #12 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
 - [ ] #13 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
@@ -618,4 +618,6 @@ done 2026-11-12 20:44: prompt-groom --no-wish on a want marker: count the false 
 20:44 that clear is a drop on his o48 tick: no want-marker refusal, the --day groom check stays the net
 
 20:45 wing 1: crow second wind proven live (his o47): compact, then the plugin's plain-prompt ingest (45aa16f6) ran, crow-wind-probe-2 ingested ok, crow's handoff store empty (x handoff list --for crow, read by wing 1)
+
+done 2026-11-12 20:48: mods codie in a herdr pane: does dima see each mod change live there, the mods lane's reason
 <!-- SECTION:NOTES:END -->
