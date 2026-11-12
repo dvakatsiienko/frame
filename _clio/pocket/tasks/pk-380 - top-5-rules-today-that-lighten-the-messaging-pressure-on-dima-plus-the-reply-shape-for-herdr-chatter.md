@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:46:00Z'
+updated_date: '2026-11-12T12:25:00Z'
 labels:
   - s
 dependencies: []
@@ -29,4 +29,6 @@ raw drop (2026-11-12 inbox, dima): note: let's also adjust shape and style of yo
 PK-380:W3 (2026-11-12 03:03, dima): i saw yesterday and today that the herdr codie spams you with messages until i explicitly tell him to stop. it should be automatic already.
 
 PK-380:W4 (2026-11-12 03:03, dima): i also want to know how our silent comms works ❓
+
+14:25: five session rules for today proposed in main's reply, dima ticked o5; sent to wing 1, the mods and herdr codies; the halt retro judges which stay
 <!-- SECTION:NOTES:END -->
