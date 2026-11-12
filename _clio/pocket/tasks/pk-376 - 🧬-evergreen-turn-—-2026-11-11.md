@@ -5,7 +5,7 @@ status: open
 assignee: []
 created_date: '2026-11-10T22:53:00Z'
 updated_date: '2026-11-12T11:37:00Z'
-due_date: '2026-11-12'
+due_date: '2026-11-18'
 labels:
   - xs
 dependencies: []
