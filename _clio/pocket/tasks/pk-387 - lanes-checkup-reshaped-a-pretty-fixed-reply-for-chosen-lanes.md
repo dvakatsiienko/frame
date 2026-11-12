@@ -4,7 +4,7 @@ title: 'lanes-checkup reshaped: a pretty fixed reply for chosen lanes'
 status: open
 assignee: []
 created_date: '2026-11-12T16:01:00Z'
-updated_date: '2026-11-12T16:01:00Z'
+updated_date: '2026-11-12T16:06:00Z'
 labels:
   - s
 dependencies: []
@@ -31,4 +31,9 @@ PK-387:W11 (2026-11-12 18:00, dima) a ticket running now is visible (an emoji?),
 PK-387:W12 (2026-11-12 18:00, dima) print each chunk's size: M, S, XS and so on.
 PK-387:W13 (2026-11-12 18:00, dima) redo the skill: start shape-idea, then print the list another time.
 PK-387:W14 (2026-11-12 18:01, dima, o59) ❓ what is a map file?
+
+18:06 dima 18:06 (raw: ~/.local/state/clio/prompts/2026-11-12.md:764), folded:
+PK-387:W15 (2026-11-12 18:06, dima) our plan now: 1. shape the checkup skill properly; 2. run the checkup so i cleanly understand the roadmap for the lanes; 3. fix your flyway; 4. then park for some time.
+PK-387:W16 (2026-11-12 18:06, dima) ❓ maybe rename it to low-tide-lanes-checkup, since it is close to what low-tide does?
+PK-387:W17 (2026-11-12 18:06, dima) ❓ what shapes or parts can we reuse across the set of skills?
 <!-- SECTION:NOTES:END -->
