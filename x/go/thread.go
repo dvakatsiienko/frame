@@ -15,6 +15,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"charm.land/lipgloss/v2"
 )
 
 // a thread: claude code's registry entry, plus the role, lane and ticket x wrote when it summoned or dispatched it
@@ -457,8 +459,49 @@ func threadList(r *Run, _ []string, _ Flags) (any, error) {
 	if err != nil {
 		return nil, &Fail{Msg: "the thread store was not written: " + err.Error(), Next: "ls -la " + quote(filepath.Dir(threadStorePath()))}
 	}
+	if r.human && len(threads) > 0 {
+		r.Show(threadRows(threads, r.board.inner()), 0)
+	}
 	r.Done(plural(len(threads), "thread"), "")
 	return map[string]any{"store": threadStorePath(), "threads": threads}, nil
+}
+
+// one board row a thread: its name, its role, where it sits, and whether it runs yet; a refresh already dropped the dead
+func threadRows(threads []thread, width int) []string {
+	cells := make([][4]string, len(threads))
+	widths := [3]int{}
+	for i, t := range threads {
+		role := cmp.Or(t.Role, "no role")
+		if t.Role == "wing" && t.Wing > 0 {
+			role += " " + strconv.Itoa(t.Wing)
+		}
+		if t.Fallback {
+			role += " (by name)"
+		}
+		state := ui.ok.Render("alive")
+		if t.Pid == 0 {
+			state = ui.dim.Render("starting")
+		}
+		// a thread with no record draws «unknown»; its own cc name says more
+		name := cmp.Or(t.Display, t.Name, t.SessionID)
+		if t.Role == "" {
+			name = cmp.Or(t.Name, name)
+		}
+		// the path goes last, since it alone runs long and the clip takes its end
+		cells[i] = [4]string{name, role, state, cmp.Or(home(t.Cwd), "—")}
+		for c := range widths {
+			widths[c] = max(widths[c], lipgloss.Width(cells[i][c]))
+		}
+	}
+	rows := make([]string, len(cells))
+	for i, cell := range cells {
+		row := ""
+		for c := range widths {
+			row += cell[c] + strings.Repeat(" ", widths[c]-lipgloss.Width(cell[c])+2)
+		}
+		rows[i] = clip(row+cell[3], width)
+	}
+	return rows
 }
 
 // one thread by session id or pid: what a reader asks instead of parsing a name
