@@ -244,7 +244,7 @@ export function threadStoreWrite(
         door: 'x thread list rewrites it from the registry, a role comes from x brief summon or x lane dispatch --apply; a read goes through cat or jq',
         rule: 'clean-stamp',
         targets: ['threads.json'],
-        why: 'x-mod-guard reads ~/.claude/shelf/threads.json for who is a sixth sense, whose clean opens x lane merge-auto, so only x writes it',
+        why: "~/.claude/shelf/threads.json holds every thread's role, a coordinator's and a sixth sense's whose clean opens x lane merge-auto, so only x writes it",
     };
 }
 
@@ -263,7 +263,7 @@ export function registryWrite(
         door: 'cc writes its own registry; a read goes through cat or jq',
         rule: 'clean-stamp',
         targets: ['~/.claude/sessions'],
-        why: "x-mod-guard reads a coordinator by its registry name, so a session's write there would crown it clio",
+        why: "x reads which session each process runs from cc's registry, the key to its role, so a session's write there would wear another's role",
     };
 }
 
@@ -274,7 +274,7 @@ export function roleStoreRefusal(path: string): Refusal | undefined {
             door: 'x thread list rewrites it from the registry, a role comes from x brief summon',
             rule: 'clean-stamp',
             targets: ['threads.json'],
-            why: 'x-mod-guard reads ~/.claude/shelf/threads.json for who is a sixth sense, so only x writes it',
+            why: "~/.claude/shelf/threads.json holds every thread's role, a coordinator's and a sixth sense's included, so only x writes it",
         };
     if (isStore(path))
         return {
@@ -288,15 +288,47 @@ export function roleStoreRefusal(path: string): Refusal | undefined {
             door: 'cc writes its own registry',
             rule: 'clean-stamp',
             targets: ['~/.claude/sessions'],
-            why: 'x-mod-guard reads a coordinator by its registry name',
+            why: "x finds each process's session, the key to its role, in cc's registry",
         };
     return undefined;
 }
 
 // items 1 and 5: a claude call wearing another thread's identity, run by a session that is no coordinator: a
-// `--session-id` (x mints one with a role record at a summon, and only clio runs that argv), or a coordinator's
-// `-n`/`--name`, which the guard would read as clio
-const COORDINATOR_NAME = /^\s*🦉/u;
+// `--session-id` (x mints one with a role record at a summon, and only clio runs that argv). a name grants nothing since
+// FRM-579: a role is the record x brief summon writes, so a start door is what hands one out
+// FRM-579 exit 4: the doors that start clio, a wing, crow or helga; an allow-list over the doors, read in every token of
+// every word of any command the line runs, so a door inside a wrapper's quoted script counts too (`pnpm`, `zsh`, `env`,
+// `hc run -- …`, `rex`, `osascript -e '… do shell script "…clio-start.sh"'`, `launchctl submit … --`)
+const START_FILES = new Set([
+    'clio-start.sh',
+    'clio-revive.sh',
+    'keep-cache-hot.ts',
+    'prompt-groom.ts',
+]);
+const START_WORDS = new Set([
+    'clio-herdr',
+    'clio-revive',
+    'clio:start',
+    'crow:keep-cache-hot',
+    'crow:start',
+]);
+const isStartDoor = (c: Command) => {
+    if (READERS.has(c.name.split('/').pop() ?? '')) return false;
+    const tokens = [
+        c.name,
+        ...c.args.map((w) => w.text),
+        ...c.assigns,
+        ...c.envArgs,
+    ].flatMap((w) => w.split(/[\s'"`;&|()=]+/));
+    return tokens.some((w) => {
+        const file = w.split('/').pop() ?? '';
+        return (
+            START_FILES.has(file) ||
+            START_WORDS.has(w) ||
+            (file === 'start.ts' && w.includes('crew-adviser'))
+        );
+    });
+};
 // x gates the same two verbs by its caller's registry entry, which an env prefix could aim elsewhere; here the session is
 // read from the engine, whatever the line sets
 const isRoleVerb = (c: Command) => {
@@ -318,27 +350,25 @@ export function roleSpawn(command: string, cwd: string): Refusal | undefined {
                 targets: ['x'],
                 why: "both verbs give a thread its role, and a sixth sense's role opens the clean stamp",
             };
+        if (isStartDoor(c))
+            return {
+                door: 'ask the coordinator: clio, a wing, crow and helga start from dima, his herdr layout or clio',
+                rule: 'clean-stamp',
+                targets: [c.name],
+                why: 'a start door hands its thread the role of clio, a wing, crow or helga through x brief summon',
+            };
         const call = c.name === 'claude' ? c : claudeSpawn(c);
         if (call?.name !== 'claude') continue;
-        const words = call.args.map((w) => w.text);
-        const names = words.flatMap((w, i) =>
-            w === '-n' || w === '--name'
-                ? [words[i + 1] ?? '']
-                : w.startsWith('--name=')
-                  ? [w.slice('--name='.length)]
-                  : [],
+        const isSessionId = call.args.some(
+            (w) =>
+                w.text === '--session-id' || w.text.startsWith('--session-id='),
         );
-        const isSessionId = words.some(
-            (w) => w === '--session-id' || w.startsWith('--session-id='),
-        );
-        if (isSessionId || names.some((n) => COORDINATOR_NAME.test(n)))
+        if (isSessionId)
             return {
                 door: 'ask the coordinator to summon it: x brief summon prints the argv, and clio runs it',
                 rule: 'clean-stamp',
                 targets: ['claude'],
-                why: isSessionId
-                    ? 'a --session-id carries the role x gave it at a summon, so only the coordinator runs one'
-                    : "a 🦉 name is the coordinator's, which the guard trusts for every role",
+                why: 'a --session-id carries the role x gave it at a summon, so only the coordinator runs one',
             };
     }
     return undefined;

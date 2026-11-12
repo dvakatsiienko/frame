@@ -169,12 +169,10 @@ const KEEP = 50;
 const DAY = 'day:';
 const DAYS = 30;
 const SHOWN = 160;
-// the registry name is clio's: spaces and zero-width joiners dropped, the way x-mod-stash's bare() reads a name
-const COORDINATORS = ['🦉clio', '🦉cclio']; // read-both: a clio tab resumed under its old title
-const isCoordinator = (name: string) => {
-    const bare = name.replaceAll(/[\s\u200d]/g, '');
-    return COORDINATORS.includes(bare) || /^🦉🪽c?clio:wing\d+$/u.test(bare);
-};
+// a coordinator by its thread record, the signed claim of clio or a wing that x thread list answers, never by its name
+// (FRM-579): a fork or a renamed thread under «🦉 clio» holds no claim
+const isCoordinatorRole = (role: string | undefined) =>
+    role === 'coordinator' || role === 'wing';
 // whole code points, and no half pair left from an older cut: a lone surrogate leaves the store file unreadable to jq
 const points = (s: string) =>
     [...s].filter((c) => c.length === 2 || !/[\ud800-\udfff]/.test(c));
@@ -365,6 +363,13 @@ async function threadList($: EngineInterface): Promise<Thread[]> {
     } catch {
         return [];
     }
+}
+
+// a session's role as x thread list answers it: its record, or its signed claim; undefined with no session or no x
+async function roleOf($: EngineInterface, sid: string | undefined) {
+    return sid
+        ? (await threadList($)).find((t) => t.sessionId === sid)?.role
+        : undefined;
 }
 
 // a milestone id's name, read through x's api door (FRM-486); undefined when linear does not answer in 3 s
@@ -2385,7 +2390,10 @@ export const register: Register = (on) => {
         if (raw) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
-            if (name !== undefined && !isCoordinator(name)) {
+            if (
+                name !== undefined &&
+                !isCoordinatorRole(await roleOf($, sid))
+            ) {
                 const said = `x-mod-guard stopped this one command. instead: ${raw.door}. why: ${raw.why}.`;
                 {
                     const stop = await enforce(
@@ -2398,12 +2406,15 @@ export const register: Register = (on) => {
             }
         }
         // a body written past `x linear body --set`, or an actor of dima's, from a member's session: the registry lists its name
-        // and it is not clio's, a session the registry does not list fails open (FRM-459)
+        // and its record is no coordinator's, a session the registry does not list fails open (FRM-459)
         const write = linearWrite(typed, cwd);
         if (write) {
             const sid = await $.session.id().catch(() => undefined);
             const name = sid ? await sessionName($, sid) : undefined;
-            if (name !== undefined && !isCoordinator(name)) {
+            if (
+                name !== undefined &&
+                !isCoordinatorRole(await roleOf($, sid))
+            ) {
                 const said = `x-mod-guard stopped this one command. instead: ${write.door}. why: ${write.why}.`;
                 const stop = await enforce(
                     write,
@@ -2617,12 +2628,9 @@ export const register: Register = (on) => {
         const stamp = cleanStampWrite(typed, cwd);
         if (stamp) {
             const sid = await $.session.id().catch(() => undefined);
-            const name = sid ? await sessionName($, sid) : undefined;
-            // a sixth sense by its thread record, never by its name
-            const role = sid
-                ? (await threadList($)).find((t) => t.sessionId === sid)?.role
-                : undefined;
-            if (role !== 'sixth-sense' && !(name && isCoordinator(name))) {
+            // a sixth sense or a coordinator by its thread record, never by its name
+            const role = await roleOf($, sid);
+            if (role !== 'sixth-sense' && !isCoordinatorRole(role)) {
                 const said = `x-mod-guard stopped this one command. instead: ${stamp.door}. why: ${stamp.why} (rule ${stamp.rule}).`;
                 const stop = await enforce(
                     stamp,
@@ -2633,17 +2641,21 @@ export const register: Register = (on) => {
             }
         }
         // FRM-570 round 3: cc's registry takes no session's write, and only a coordinator starts a claude under a minted id
-        // or a coordinator's name
+        // or through a start door (FRM-579), the coordinator read by its thread record
         const registry = registryWrite(typed, cwd);
         const spawn = roleSpawn(typed, cwd);
         const spawnSid = spawn
             ? await $.session.id().catch(() => undefined)
             : undefined;
-        const spawnerName = spawnSid
-            ? await sessionName($, spawnSid)
+        // a summon's own check read the list already; its answer is the one the role gate reads
+        const spawnerRole = spawnSid
+            ? (facts.threads?.length
+                  ? facts.threads
+                  : await threadList($)
+              ).find((t) => t.sessionId === spawnSid)?.role
             : undefined;
         const spawner =
-            spawn && !isCoordinator(spawnerName ?? '') ? spawn : undefined;
+            spawn && !isCoordinatorRole(spawnerRole) ? spawn : undefined;
         for (const r of [registry, spawner].filter((r) => r !== undefined)) {
             const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why} (rule ${r.rule}).`;
             const stop = await enforce(

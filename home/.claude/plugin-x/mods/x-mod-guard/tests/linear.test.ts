@@ -6,10 +6,12 @@ import { liveStore } from './store.ts';
 // FRM-398: a member reads and comments on tickets through x linear; the raw cli is refused with the door named
 const SID = 'm1m1m1m1-0000';
 
-function world(on: On, name: string | null = '☕️ 🔧 codie') {
+// role: the session's thread record as x thread list answers it (FRM-579), whatever its name says
+function world(on: On, name: string | null = '☕️ 🔧 codie', role?: string) {
     mock.clock(on, { now: 1_000_000 });
     const store = liveStore(on);
     const ran: string[] = [];
+    threadRecord(on, role);
     on('session.id', () => ({ value: SID }));
     on('session.cwd', () => ({ value: '/repo' }));
     on('env.get', () => ({ value: '/home' }));
@@ -40,6 +42,24 @@ function world(on: On, name: string | null = '☕️ 🔧 codie') {
     return { ran, store };
 }
 
+function threadRecord(on: On, role: string | undefined) {
+    on('process.run', (_$, e) =>
+        e.argv.join(' ') === 'x thread list --json'
+            ? {
+                  value: {
+                      exitCode: 0,
+                      isStderrTruncated: false,
+                      isStdoutTruncated: false,
+                      stderr: '',
+                      stdout: JSON.stringify({
+                          data: { threads: [{ role, sessionId: SID }] },
+                      }),
+                  },
+              }
+            : { deny: 'not in this test' },
+    );
+}
+
 const bash = ($: Engine, command: string) =>
     $.tool.call({ command, run_in_background: true, tool: 'Bash' });
 
@@ -63,13 +83,20 @@ for (const [typed, door] of [
 }
 
 test("clio's session runs the raw linear cli", async ($, on) => {
-    const w = world(on, '🦉 clio');
+    const w = world(on, 'any name', 'coordinator');
     await bash($, 'linear issue view FRM-1');
     expect(w.ran).toEqual(['linear issue view FRM-1']);
 });
 
-test("clio's raw linear api still takes the x linear rewrite", async ($, on) => {
+// FRM-579 exit 6: the 01:28 fork's name, with no record, is a member's
+test("a session named «🦉 clio» with no claim is refused clio's raw linear", async ($, on) => {
     const w = world(on, '🦉 clio');
+    await bash($, 'linear issue view FRM-1');
+    expect(w.ran).toEqual([]);
+});
+
+test("clio's raw linear api still takes the x linear rewrite", async ($, on) => {
+    const w = world(on, '🦉 clio', 'coordinator');
     await bash($, "linear api '{ viewer { id } }'");
     expect(w.ran).toEqual(["x linear api '{ viewer { id } }'"]);
 });

@@ -151,7 +151,7 @@ for (const [name, role] of [
     ['🌗 🔎 sixth sense: cli lane 5 | #129', 'sixth-sense'],
     ['cli lane 5 | #129', 'sixth-sense'],
     ['sixth sense: cli lane 5', 'sixth-sense'],
-    ['🦉 clio', undefined],
+    ['🦉 clio', 'coordinator'],
 ] as const)
     for (const line of WRITES)
         test(`${name} writes it: ${line}`, async ($, on) => {
@@ -212,7 +212,7 @@ const THREAD_WRITES = WRITES.filter((l) => !l.includes('watch-pr.sh')).map(
 for (const [name, role] of [
     ['🌗 🔧 codie: cli lane 5 | FRM-511', 'codie'],
     ['🌗 🔎 sixth sense: cli lane 5 | #129', 'sixth-sense'],
-    ['🦉 clio', undefined],
+    ['🦉 clio', 'coordinator'],
 ] as const)
     for (const line of THREAD_WRITES)
         test(`${name} cannot write the thread store: ${line}`, async ($, on) => {
@@ -245,7 +245,7 @@ for (const line of [
     'x lane dispatch FRM-511 --lane cli-lane-5 --session 1f0c --sixth-sense 2e1d --apply',
 ])
     test(`a verb that writes the thread store from x passes the fence: ${line}`, async ($, on) => {
-        const { ran } = world(on, '🦉 clio', undefined);
+        const { ran } = world(on, '🦉 clio', 'coordinator');
         const r = await bash($, line);
         expect(r.deny ?? '').not.toContain('threads.json');
         expect(ran.length).toBe(1);
@@ -270,8 +270,6 @@ const SUMMONED =
 for (const line of [
     SUMMONED,
     'claude --session-id=1f0c2e1d-0000-4000-8000-000000000001 -p hi',
-    "claude -p -n '🦉 clio' hi",
-    'claude -p --name=🦉clio hi',
     "hc run --bg --no-parent --name x --cwd /repo -- claude --session-id 1f0c -n n 'hi'",
     `echo '{"name":"🦉 clio"}' > /home/.claude/sessions/4242.json`,
     'cp /tmp/forged.json ~/.claude/sessions/',
@@ -289,7 +287,7 @@ for (const line of [
     });
 
 for (const [line, name, role] of [
-    [SUMMONED, '🦉 clio', undefined],
+    [SUMMONED, '🦉 clio', 'coordinator'],
     ['cat /home/.claude/sessions/4242.json', CODIE, 'codie'],
     ["claude -p -n 'a probe' hi", CODIE, 'codie'],
 ] as const)
@@ -297,6 +295,66 @@ for (const [line, name, role] of [
         const { ran } = world(on, name, role);
         const r = await bash($, line);
         expect(r.deny ?? '').not.toContain('clean-stamp');
+        expect(ran.length).toBe(1);
+    });
+
+// FRM-579 exit 4: a member runs a start door under any wrapper
+const START_DOORS = [
+    '/home/frame/_clio/script/clio-start.sh',
+    'zsh ~/frame/_clio/script/clio-start.sh',
+    'pnpm -C ~/frame clio:start',
+    'pnpm crow:start opus --pane',
+    'pnpm run crow:keep-cache-hot',
+    'node ./home/.claude/plugin-x/skills/crew-adviser/scripts/start.ts opus',
+    'node ~/frame/_clio/script/prompt-groom.ts',
+    'hc run --bg --no-parent --name c -- zsh /home/frame/_clio/script/clio-start.sh',
+    'env -u CLAUDECODE -u AI_AGENT script -q /dev/null /home/frame/_clio/script/clio-revive.sh wing 2',
+    "bash -c 'clio-herdr'",
+    'zsh -ic clio-revive main',
+    'rex run -- zsh /home/frame/_clio/script/clio-start.sh',
+    `osascript -e 'tell application "Terminal" to do script "zsh ~/frame/_clio/script/clio-start.sh"'`,
+    'launchctl submit -l x.clio -- /bin/zsh /home/frame/_clio/script/clio-revive.sh main',
+];
+for (const line of START_DOORS)
+    test(`a codie cannot start a role's thread: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('a start door hands its thread the role'),
+            [],
+        ]);
+    });
+
+// FRM-579 exit 6: the 01:28 fork, named «🦉 clio» with no record, is no coordinator at the door either
+test('a «🦉 clio» with no record cannot run clio-start.sh', async ($, on) => {
+    const { ran } = world(on, '🦉 clio');
+    const r = await bash($, START_DOORS[0] ?? '');
+    expect([r.deny, ran]).toEqual([
+        expect.stringContaining('a start door hands its thread the role'),
+        [],
+    ]);
+});
+
+for (const [line, role] of [
+    ['/home/frame/_clio/script/clio-revive.sh wing 2', 'coordinator'],
+    ['pnpm crow:start opus --pane', 'wing'],
+] as const)
+    test(`a coordinator by its record runs a start door: ${line}`, async ($, on) => {
+        const { ran } = world(on, 'any name', role);
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('clean-stamp');
+        expect(ran.length).toBe(1);
+    });
+
+for (const line of [
+    'cat ~/frame/_clio/script/clio-start.sh',
+    'rg -n clio-start.sh x/go',
+    'pnpm crow:stop',
+])
+    test(`a codie's read or a plain claude passes the start doors: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('start door');
         expect(ran.length).toBe(1);
     });
 
