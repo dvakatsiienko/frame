@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T17:30:00Z'
+updated_date: '2026-11-12T17:33:00Z'
 labels:
   - s
   - clio-wing-1
@@ -574,4 +574,9 @@ done 2026-11-12 19:23: land the sizes commit once main's lowtide set is committe
 done 2026-11-12 19:30: PK-362 steamac vm disk: shrink 256gb to 192gb (PK-362 open)
 
 19:30 2026-11-12 wing 1 siesta: PK-362 yanked from this flyway (wing 2's 💤 line is its one home, his W7/W8; wishkeeper high); the refresh-crew-coordinator redraw kept as a 💤 line (his «not now» defers it); a flyway-habit line added
+
+19:33 2026-11-12 wing 1: o42 x half homed by main in FRM-572's wisp stash; my sizes commit (20c03f2b push) turned main ci red: a research doc cited from clio:pm counts as memory for merge-auto (TestMergeAutoReadsEveryCitedDocAsMemory); main added it to x/go/risky.json. lesson: a skill citing a new docs/ file runs that test before landing
+
+PK-346:W79 (2026-11-12 19:21, dima): did you fix the flyway habits? you finished your flyway's #1 seat cleanup an hour ago or more, and it is still in the flyway; i want the flyway to reflect the current state of your activity
+PK-346:W80 (2026-11-12 19:21, dima): board redraws not now, drop them from the plan
 <!-- SECTION:NOTES:END -->
