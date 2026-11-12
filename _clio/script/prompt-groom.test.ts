@@ -420,6 +420,15 @@ describe('--check on an inbox stamp', () => {
         ).toBe(0);
     });
 
+    test('a moved W-line the fold marked ❓ passes against its unmarked prep line', () => {
+        expect(
+            check(
+                'PK-9:W4 (2026-10-26 inbox, dima): finish the round\n',
+                `${ticket.trimEnd()} ❓\n`,
+            ).status,
+        ).toBe(0);
+    });
+
     test('a ticket with no raw drop reds when the prep lacks its W-line', () => {
         expect(
             check('PK-9:W4 (2026-10-26 inbox, dima): some other ask\n', ticket)

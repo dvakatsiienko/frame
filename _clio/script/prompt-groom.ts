@@ -61,12 +61,13 @@ export function dayBefore(day: string) {
 export const groomFile = (day: string, hhmm: string, kind: 'raw' | 'groomed') =>
     path.join(groomDir, `${day}-${hhmm.replace(':', '')}.${kind}.md`);
 
-// a line without its quote marker and its list marker: the shape of helga's prep, which quotes the original drop
+// a line without its quote marker, its list marker and the fold's ❓: the shape of helga's prep, which quotes the original drop
 const bare = (line: string) =>
     line
         .trim()
         .replace(/^> ?/, '')
-        .replace(/^(?:\d+\.|[-*])\s+/, '');
+        .replace(/^(?:\d+\.|[-*])\s+/, '')
+        .replace(/\s*❓$/, '');
 
 // a groom file holds at least one W-line stamped with this very minute; a placeholder file fails
 // an inbox day's groomed file is helga's checked prep, copied in at boot: it must exist and carry every
