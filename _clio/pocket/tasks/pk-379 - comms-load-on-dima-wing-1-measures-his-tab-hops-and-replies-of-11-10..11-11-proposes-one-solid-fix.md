@@ -6,13 +6,14 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
+updated_date: '2026-11-12T11:37:00Z'
 labels:
   - m
   - clio-wing-1
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 58000
 ---
 
 
