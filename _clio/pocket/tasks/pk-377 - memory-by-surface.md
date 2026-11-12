@@ -4,7 +4,7 @@ title: memory by surface
 status: open
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
-updated_date: '2026-11-12T11:37:00Z'
+updated_date: '2026-11-12T16:32:00Z'
 labels:
   - s
 dependencies: []
@@ -82,4 +82,8 @@ PK-377:W48 (2026-11-11 19:09, dima): memory by surface: the two clio leaves are 
 PK-377:W49 (2026-11-11 19:09, dima): when do we solve it? we are currently solving two things, grill and memory. propose how to solve them sequentially.
 
 PK-377:W50 (2026-11-11 19:21, dima): memory chunk 2, swept file by file with your look. let's prio it, solve now.
+
+close: 18:31 2026-11-12 — W34–W50 ride FRM-576 (main's lane, chunk 2 in progress, main flyway #1); nothing left to shape (wing 1, dima's 18:31 question)
+
+18:32 reopened: closing reds 3+ W-lines the close line does not account for in FRM-576's block; the accounting is FRM-576's (main's lane), handed to main
 <!-- SECTION:NOTES:END -->
