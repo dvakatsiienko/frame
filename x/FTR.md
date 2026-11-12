@@ -518,6 +518,7 @@
   - given a pr number, and `--repo <owner/name>` or a cwd whose origin is on github
   - when it runs
   - then one envelope holds the head, every check by its latest state, and the three feeds (`comments`, `reviews`, `reviewComments`), each newest first, each comment as author, `path:line` when it has one, and body; a line comment whose line left the diff is marked `outdated`
+  - then its `mergeState` is github's mergeable state; a `dirty` pr (a conflict with its base) draws a 🔴 line naming `x lane merge-main` on the board (FRM-572, #161 sat conflicted two hours)
   - then `vercel[bot]` and `linear-code[bot]` comments never print, nor a review with no words and no verdict
   - given `--since <RFC 3339 time>`, then only comments from that second on print; a comment's time is its last edit, so a verdict edited into an old comment counts
   - then its `read` field, github's own clock before the feeds were read, is the next poll's `--since`: a poll loop misses no comment and repeats at most one second's
