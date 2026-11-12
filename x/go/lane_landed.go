@@ -907,22 +907,28 @@ func lockSays(e worktreeEntry) string {
 // why a tree's lock no longer holds, "" while its holder lives or the lock names none; isGone only when no process holds the
 // pid, the one case landed unlocks by itself
 func staleLock(e worktreeEntry) (why string, isGone bool) {
+	return staleLockBy(e, processStarted)
+}
+
+// gone is the kernel's word alone (kill 0 answers no such process); a ps that did not run, or printed nothing for a
+// live pid, holds, since a spawn failure under this mac's process limit must never read as a dead holder
+func staleLockBy(e worktreeEntry, startOf func(int) string) (why string, isGone bool) {
 	holder := lockHolder.FindStringSubmatch(e.lockReason)
 	if !e.locked || holder == nil {
 		return "", false
 	}
 	pid, _ := strconv.Atoi(holder[1])
-	switch started := processStarted(pid); {
-	case started == "":
+	if err := syscall.Kill(pid, 0); errors.Is(err, syscall.ESRCH) {
 		return "pid " + holder[1] + " is gone", true
-	case sameStart(holder[2], started, time.Local):
+	}
+	if sameStart(holder[2], startOf(pid), time.Local) {
 		return "", false
 	}
 	return "pid " + holder[1] + " is another process now", false
 }
 
-// cc stamps a lock's start in UTC and ps prints it in local time: the two are one instant or not; a stamp that does not
-// parse reads as the same start, so an unreadable lock holds
+// cc stamps a lock's start in UTC and ps prints it in local time: the two are one instant or not; a stamp or a ps answer
+// that does not parse (an empty one included) reads as the same start, so what cannot be read holds
 func sameStart(lock, ps string, local *time.Location) bool {
 	const layout = "Mon Jan 2 15:04:05 2006"
 	lock = strings.Join(strings.Fields(lock), " ")

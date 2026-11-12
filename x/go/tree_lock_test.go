@@ -10,6 +10,25 @@ import (
 	"time"
 )
 
+// a ps that does not run (a spawn refused under the process limit, no ps on PATH) holds a live pid's lock; only the
+// kernel's «no such process» reads gone (sixth sense round 2 on #172)
+func TestALockWhosePsDidNotRunHolds(t *testing.T) {
+	t.Parallel()
+	noPs := func(int) string { return "" }
+	live := worktreeEntry{locked: true, lockReason: ccLock(os.Getpid(), "Thu Nov 12 11:36:41 2026")}
+	if why, isGone := staleLockBy(live, noPs); why != "" || isGone {
+		t.Errorf("a live pid with no ps answer reads %q, gone %v; want it held", why, isGone)
+	}
+	dead := worktreeEntry{locked: true, lockReason: ccLock(deadPid(t), "Thu Nov 12 11:36:41 2026")}
+	if _, isGone := staleLockBy(dead, noPs); !isGone {
+		t.Errorf("a dead pid must read gone whatever ps says")
+	}
+	zero := worktreeEntry{locked: true, lockReason: ccLock(0, "Thu Nov 12 11:36:41 2026")}
+	if why, _ := staleLockBy(zero, noPs); why != "" {
+		t.Errorf("pid 0 reads %q; want it held", why)
+	}
+}
+
 // cc stamps a lock's start in UTC, ps prints local time: at UTC+2, 11:36 in the lock is 13:36 in ps (clio's measure, 19:32)
 func TestALockStampedInUTCMatchesALocalPsStart(t *testing.T) {
 	t.Parallel()
