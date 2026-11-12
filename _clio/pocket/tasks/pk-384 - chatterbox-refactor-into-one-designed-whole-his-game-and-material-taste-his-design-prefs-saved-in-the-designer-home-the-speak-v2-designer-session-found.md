@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:41:00Z'
+updated_date: '2026-11-12T11:42:00Z'
 labels:
   - m
 dependencies: []
@@ -37,4 +37,34 @@ PK-384:W8 (2026-11-12 inbox, dima): save my wishes about design and looks as my 
 PK-384:W9 (2026-11-12 inbox, dima): save the interests i just printed, and my preferences, ideas and takes, in a designer home folder, as the main ref and archive of what i want.
 
 PK-384:W10 (2026-11-12 inbox, dima): find and fold our previous speak v2 designer session (i printed my design wishes and likes there too), if it is still alive. it spanned at least 2 days, if i recall.
+
+raw drop (2026-11-12 inbox, dima): **tell codie to refactor my chatter box (ask me to drop SS of my current chatter or shot yorself)**
+
+raw drop (2026-11-12 inbox, dima): why: all chatterbox elements are disconnected and feels apart. all elements are stitched together from different places (zoo, shepardr, custom plus ours parts) and look different, not consistent. so far all chatterbox parts are useful functionally, but they need a groom and proper shake. make them in a way they are outlined as together.
+
+raw drop (2026-11-12 inbox, dima): nice look is required required — chatterbox is my main hub from where i send messages it must look, work, and feel very good.
+
+raw drop (2026-11-12 inbox, dima): tell codie that i like high tech and video games like system shock, dead space, x com, portal and portal 2. ask codie to perform  a little design sanity review over my chatterbox.
+
+raw drop (2026-11-12 inbox, dima): i like this stuff:
+
+raw drop (2026-11-12 inbox, dima): - metallic surfaces are good like them
+
+raw drop (2026-11-12 inbox, dima): - no janky bheaviour.
+
+raw drop (2026-11-12 inbox, dima): - matte colored cars and displays.
+
+raw drop (2026-11-12 inbox, dima): - ceramic surfaces (parts, tools, products)
+
+raw drop (2026-11-12 inbox, dima): - nanotech textures.
+
+raw drop (2026-11-12 inbox, dima): - nice, sleek, not insisting, barely noticeable animations. i believe in quick animations ux: animations over 200ms long blurs user attention, distracts over then (animations).
+
+raw drop (2026-11-12 inbox, dima): plus:
+
+raw drop (2026-11-12 inbox, dima): - i want you to save my wishes about design and looks as my prefs.
+
+raw drop (2026-11-12 inbox, dima): - save my interests i just printed and preferences / ideas / takes in a designer home folder as main ref and archive of what i want.
+
+raw drop (2026-11-12 inbox, dima): - find and fold our previous speakapp v2 designer session (i printed my design wishes/likes there too), if it is still alive. it spanned across at least 2 days if i recall.
 <!-- SECTION:NOTES:END -->

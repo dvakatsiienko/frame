@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:41:00Z'
+updated_date: '2026-11-12T11:42:00Z'
 labels:
   - m
 dependencies: []
@@ -39,4 +39,42 @@ PK-382:W9 (2026-11-12 inbox, dima): held (long), the hotkey sends (push). thresh
 PK-382:W10 (2026-11-12 inbox, dima): propose a top-7 name (rethink the split function): a cool name for «join» mode, and a cool name for «send» mode.
 
 PK-382:W11 (2026-11-12 inbox, dima): the rethink may widen to orbit too: all orbit asks are «joiners» too, but they're all named «tick», which is not too bad but blurry. what would be a cool name for such buttons everywhere, one that says what they do best, sounds cool, and is easy to spell and type? ❓
+
+raw drop (2026-11-12 inbox, dima): **chatter prompt box**: «join» tick button for this textbox only (slipstream)
+
+raw drop (2026-11-12 inbox, dima): it is a part of nested chatter box part.
+
+raw drop (2026-11-12 inbox, dima): it reaches you mid turn or on turn start once «join» tick is enabled.
+
+raw drop (2026-11-12 inbox, dima): tick clears on message attach, once joined your turn.
+
+raw drop (2026-11-12 inbox, dima): make indicator states pretty:
+
+raw drop (2026-11-12 inbox, dima): - when ticked message pending - button should have distinguishable ui
+
+raw drop (2026-11-12 inbox, dima): - when ticked messge attached - it should show it. for example turn into «flied» state and keep it for ~3s. or propose prettier way to represent, that message «joined» and reached you.
+
+raw drop (2026-11-12 inbox, dima): «send» button becomes special:
+
+raw drop (2026-11-12 inbox, dima): - by default, on click - it marks enables «join mode».
+
+raw drop (2026-11-12 inbox, dima): - sends a message (push) when LMB held for 5 s. there should be progress indicator. high perf, responsiveness are reuiqred. like 5s of holding the lmb over the send button shows that 5s as filling progress.
+
+raw drop (2026-11-12 inbox, dima): - note:  this is only an idea, and it may does not work or work clunky. in that way - we think another way. or propose better UX before we test this mvp.
+
+raw drop (2026-11-12 inbox, dima): hotkey:
+
+raw drop (2026-11-12 inbox, dima): - propose neat hotkey.
+
+raw drop (2026-11-12 inbox, dima): - when hotkey is pressed once — text in chatter box marks a message as ready to join your next turn or midturn.
+
+raw drop (2026-11-12 inbox, dima): - when hotkey is held (long) - it sends (push). threshold to be defined, start with 200ms and propose better value. what's modern ux baseline?
+
+raw drop (2026-11-12 inbox, dima): propoase a top7 name (rethink split function):
+
+raw drop (2026-11-12 inbox, dima): - cool name for «join» mode
+
+raw drop (2026-11-12 inbox, dima): - rethinking may be widened to orbit too. all orbit asks are «joiners» too. but all of them are only named as «tick». which not too bad but blurry. what would be a cool name for such buttons everywhere that reflects what does it do in best way, and sounds cool. and easy to spell and type?
+
+raw drop (2026-11-12 inbox, dima): - cool name for «send» mode
 <!-- SECTION:NOTES:END -->

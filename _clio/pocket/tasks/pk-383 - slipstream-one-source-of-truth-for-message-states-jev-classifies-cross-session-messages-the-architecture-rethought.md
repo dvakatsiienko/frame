@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:41:00Z'
+updated_date: '2026-11-12T11:42:00Z'
 labels:
   - m
 dependencies: []
@@ -23,4 +23,10 @@ PK-383:W1 (2026-11-12 inbox, dima): another slipstream idea: a single source of 
 PK-383:W2 (2026-11-12 inbox, dima): btw! can we use jev for classification? jev can classify fleet slipstream messages (cross-session only). ❓
 
 PK-383:W3 (2026-11-12 inbox, dima): when we get to slipstream, let's rethink how we have it architecturally (mods side?). i want the slipstream message system to be solid and to function very well. ❓
+
+raw drop (2026-11-12 inbox, dima): another slipstream idea: have a single source of truth for definition of what are slipstream states like «ask» «done» etc.  sharpen slipstream spec so it properly groomed in code too, resilient. each message type properly described in order to be classified.
+
+raw drop (2026-11-12 inbox, dima): btw! can we use jev for classification?? jev can classify fleet sliplstream messages (cross session only).
+
+raw drop (2026-11-12 inbox, dima): when we get to slipstream - let's rething how we have it arechitectureally (mods side?). i want slipstream messages system to be solid and function very well.
 <!-- SECTION:NOTES:END -->

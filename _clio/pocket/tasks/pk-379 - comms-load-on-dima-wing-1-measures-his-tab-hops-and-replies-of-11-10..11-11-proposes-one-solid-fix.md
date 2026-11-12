@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:41:00Z'
+updated_date: '2026-11-12T11:42:00Z'
 labels:
   - m
   - clio-wing-1
@@ -28,4 +28,14 @@ PK-379:W3 (2026-11-12 inbox, dima): wing: learn how my comms went yesterday and 
 PK-379:W4 (2026-11-12 inbox, dima): btw: can you measure my activity per tab, including idle? ❓
 
 PK-379:W5 (2026-11-12 inbox, dima): propose a solid solution to reduce our comms load on me. the operator comms recipe can be rerun, optionally.
+
+raw drop (2026-11-12 inbox, dima): 1. wing 1 first wish after vm part: solve comms.
+
+raw drop (2026-11-12 inbox, dima): 1. yesterday i was stormed with double clip setup. i am very tired to read a lot - the pace is fast and i can't keep up.
+
+raw drop (2026-11-12 inbox, dima): 2. wing: learn how my comms were doing yesterday and day before. hoist all my messages to you (and your replies) and measure how i hop across tabs and chat (especially clio and wing 1).
+
+raw drop (2026-11-12 inbox, dima): 3. btw: can you measure my activity per tab including idle?
+
+raw drop (2026-11-12 inbox, dima): 4. prooose solid solution to reduce our comms load on me. operator comms recipe can be rerun optionally.
 <!-- SECTION:NOTES:END -->
