@@ -32,4 +32,6 @@ PK-378:W7 (2026-11-11 21:42, dima): also, rename threads to the pretty new forma
 decided 2026-11-11 21:45 (dima o58 + his steer): the shape is <mode> <role emoji> <area word> | <ticket or pr>, no lane number and no area emoji: ⚡ 🔧 mods | FRM-574, 🌗 🔎 cli | #161; clio, its wings, crow and helga unchanged. the number goes: after FRM-570 the lane lives in x thread's record by session id, and the ticket already tells two lanes of one area apart
 
 close 03:04 2026-11-12 (wing 1 halt): W1–W7 met — the shape landed in fleet-vibe, fleet-output-format, crew-lead and crew-codie (e1929565), the x reader first (FRM-570, FRM-436 exit 27–28: summon and dispatch name a thread from its record), all five lane threads renamed live; clio, wings, crow and helga keep theirs (W3), their records ride FRM-579
+
+close: W1 done (shorter names, e1929565) · W2 done (member word dropped) · W3 done (clio, wings, crow, helga unchanged) · W4 done (mode emoji kept) · W5 dropped (no area emoji, dima o58) · W6 done (memory and skills rewritten, live renames) · W7 done (all five lane threads renamed live 01:25)
 <!-- SECTION:NOTES:END -->
