@@ -51,7 +51,7 @@ export const meterCells = (pct, cells) =>
 
 /** @param {string} name @param {number | null} pct */
 // the row shows the number; the tooltip names what the bar measures (his 17:18 shot: «remove % in tool tip»)
-const METER_WHAT = { ctx: 'context', week: 'weekly usage' };
+const METER_WHAT = { ctx: 'context', week: 'weekly' };
 export const meterTip = (name, pct) =>
     pct == null
         ? `${METER_WHAT[name] ?? name}: not read yet`

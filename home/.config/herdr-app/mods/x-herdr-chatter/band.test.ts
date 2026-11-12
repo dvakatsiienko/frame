@@ -360,6 +360,6 @@ describe('the meters: no words, the numbers in a tooltip (PK-384)', () => {
 
     test('the tooltip names the meter and its percent', () => {
         expect(meterTip('ctx', 28.4)).toBe('context');
-        expect(meterTip('week', null)).toBe('weekly usage: not read yet');
+        expect(meterTip('week', null)).toBe('weekly: not read yet');
     });
 });
