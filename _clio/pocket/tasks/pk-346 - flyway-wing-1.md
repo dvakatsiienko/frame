@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T16:10:00Z'
+updated_date: '2026-11-12T16:11:00Z'
 labels:
   - s
   - clio-wing-1
@@ -519,4 +519,23 @@ PK-346:W57 (2026-11-12 16:19, dima): ❓ what next can you solve?
 PK-346:W58 (2026-11-12 16:19, dima): /clio:low-tide-triage
 PK-346:W59 (2026-11-12 16:19, dima): my main complaint right now: both flyways, yours and min's, have 29 items each. a pile! propose a gradual way to solve it. and do /clio:flyway-sync.
 PK-346:W60 (2026-11-12 16:19, dima): make flyways pretty.
+
+PK-346:W61 (2026-11-12 17:38, dima): ❓ why no orbit proposal on flyway fix?
+PK-346:W62 (2026-11-12 17:38, dima): can you make flyway more readable for me?
+PK-346:W63 (2026-11-12 17:38, dima): i approve the fix.
+PK-346:W64 (2026-11-12 17:40, dima): let's solve gradually with you.
+PK-346:W65 (2026-11-12 17:40, dima): part by part, batches where possible.
+PK-346:W66 (2026-11-12 17:41, dima): also, yesterday somewhere we agreed that when you do a second wind, instead of pushing a message to everyone, you send a silent notice.
+PK-346:W67 (2026-11-12 17:41, dima): ❓ why does main clio still send a push message on second wind?
+PK-346:W68 (2026-11-12 18:09, dima): your flyway now looks much better than before but main flyway is still not good.
+PK-346:W69 (2026-11-12 18:09, dima): ❓ how to fix main flyway?
+PK-346:W70 (2026-11-12 18:09, dima): ❓ will main solve it herself?
+PK-346:W71 (2026-11-12 18:09, dima): if so let's coordinate a good window for it.
+PK-346:W72 (2026-11-12 18:09, dima): ask main clio when she can solve her flyway, same way you did.
+PK-346:W73 (2026-11-12 18:09, dima): next batches, one at a time with a pause between:
+PK-346:W74 (2026-11-12 18:09, dima): 1. main's flyway, rewritten short in the same shape. ← ok do now but sync with main so no fighting
+PK-346:W75 (2026-11-12 18:09, dima): 2. the flyway fix lands, with its habit line. ← do
+PK-346:W76 (2026-11-12 18:09, dima): 3. FRM-579's leftover chores and its look card for main. ← ok, do
+PK-346:W77 (2026-11-12 18:09, dima): 4. the backlog of older messages not yet sorted for wishes. ← ok go
+PK-346:W78 (2026-11-12 18:09, dima): 5. the code fixes I took over from main's flyway.
 <!-- SECTION:NOTES:END -->
