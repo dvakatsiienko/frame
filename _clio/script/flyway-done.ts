@@ -1,5 +1,5 @@
 // keeps a flyway readable: a finished line leaves into the done note, a new line lands in its kind's place.
-// usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' | <PK-N> --sort
+// usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' | <PK-N> --sort | <PK-N> --check
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -11,7 +11,7 @@ const DATED_ON = / — on: (\d{4}-\d{2}-\d{2})\b/;
 const NAMED_ID = /\b(?:PK|FRM|BYT)-\d+\b/g;
 const CLOSED_STATES = new Set(['done', 'Done', 'Canceled', 'Duplicate']);
 const usage =
-    "usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' | <PK-N> --sort";
+    "usage: node flyway-done.ts <PK-N> <n> | <PK-N> --add '<line>' | <PK-N> --sort | <PK-N> --check";
 
 export function flywayKind(text: string): (typeof kinds)[number] {
     if (text.startsWith('💤')) return 'later';
@@ -101,6 +101,17 @@ if (import.meta.main) {
         rewrite(id, [value]);
     } else if (mode === '--sort') {
         rewrite(id, []);
+    } else if (mode === '--check') {
+        const lines = flywayLines(read(id));
+        const { closed, report } = checkReport(
+            lines,
+            namedStates(...lines.map((l) => l.text)),
+        );
+        for (const line of report) console.log(line);
+        if (closed)
+            fail(
+                `${closed} line(s) name a closed home: clear each with node flyway-done.ts ${id} <n>, or reword it to its live step`,
+            );
     } else {
         const line = flywayLines(read(id)).find((l) => l.n === Number(mode));
         if (!line) fail(`${id} has no line #${mode}`);
@@ -142,8 +153,8 @@ function rewrite(id: string, added: string[]) {
     );
 }
 
-function namedStates(text: string): NamedState[] {
-    const ids = [...new Set(text.match(NAMED_ID) ?? [])];
+function namedStates(...texts: string[]): NamedState[] {
+    const ids = [...new Set(texts.flatMap((t) => t.match(NAMED_ID) ?? []))];
     const tickets = ids.filter((i) => !i.startsWith('PK-'));
     const found: NamedState[] = tickets.length
         ? (JSON.parse(
@@ -155,18 +166,50 @@ function namedStates(text: string): NamedState[] {
     return ids.map((named) => ({
         id: named,
         state: named.startsWith('PK-')
-            ? (read(named).match(/^status: (\S+)/m)?.[1] ?? 'unknown')
+            ? (readMaybe(named)?.match(/^status: (\S+)/m)?.[1] ?? 'unknown')
             : (found.find((f) => f.id === named)?.state ?? 'unknown'),
     }));
 }
 
+// every open line beside the live state of each id it names, so a sync judges by the home, never by recall
+export function checkReport(lines: FlywayLine[], states: NamedState[]) {
+    const stateOf = new Map(states.map((s) => [s.id, s.state]));
+    let closed = 0;
+    const report = lines
+        .filter((l) => !l.done)
+        .map((l) => {
+            const ids = [...new Set(l.text.match(NAMED_ID) ?? [])];
+            const named = ids.map((i) => `${i} ${stateOf.get(i) ?? 'unknown'}`);
+            const isClosed = ids.some((i) =>
+                CLOSED_STATES.has(stateOf.get(i) ?? ''),
+            );
+            if (isClosed) closed++;
+            const mark = isClosed ? '🔴' : ids.length ? '🟢' : '⚪';
+            const home = ids.length
+                ? named.join(', ')
+                : 'no id: read its own home';
+            return `${mark} #${l.n} ${l.text.slice(0, 70)} → ${home}`;
+        });
+    return { closed, report };
+}
+
 function read(id: string): string {
-    const dir = path.join(pocket, 'pocket', 'tasks');
-    const file = readdirSync(dir).find((f) =>
-        f.toLowerCase().startsWith(`${id.toLowerCase()} `),
-    );
-    if (!file) fail(`${id} is not in the pocket`);
-    return readFileSync(path.join(dir, file), 'utf8');
+    return readMaybe(id) ?? fail(`${id} is not in the pocket`);
+}
+
+// an archived item has left tasks/, so its state reads as done
+function readMaybe(id: string): string | undefined {
+    for (const sub of ['tasks', path.join('archive', 'tasks')]) {
+        const dir = path.join(pocket, 'pocket', sub);
+        const file = readdirSync(dir).find((f) =>
+            f.toLowerCase().startsWith(`${id.toLowerCase()} `),
+        );
+        if (file)
+            return sub === 'tasks'
+                ? readFileSync(path.join(dir, file), 'utf8')
+                : 'status: done\n';
+    }
+    return undefined;
 }
 
 function edit(id: string, args: string[]) {

@@ -11,6 +11,7 @@ import path from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import {
+    checkReport,
     flywayKind,
     flywayLines,
     flywaySorted,
@@ -124,5 +125,39 @@ describe('flyway-done', () => {
             { done: true, n: 3, text: 'shipped' },
             { done: false, n: 4, text: '⏳ read — waits for: x' },
         ]);
+    });
+});
+
+describe('flyway-done --check', () => {
+    const lines = flywayLines(
+        '- [ ] #1 ship FRM-1 next\n- [ ] #2 read FRM-2 after PK-3\n- [ ] #3 a chore with no id\n',
+    );
+
+    test('a line naming a closed ticket reds and counts', () => {
+        const { closed, report } = checkReport(lines, [
+            { id: 'FRM-1', state: 'Done' },
+            { id: 'FRM-2', state: 'Todo' },
+            { id: 'PK-3', state: 'open' },
+        ]);
+        expect(closed).toBe(1);
+        expect(report[0]).toMatch(/^🔴 #1 .* → FRM-1 Done$/);
+    });
+
+    test('a line whose every id is live stays green with each state', () => {
+        const { report } = checkReport(lines, [
+            { id: 'FRM-1', state: 'Todo' },
+            { id: 'FRM-2', state: 'Todo' },
+            { id: 'PK-3', state: 'open' },
+        ]);
+        expect(report[1]).toBe(
+            '🟢 #2 read FRM-2 after PK-3 → FRM-2 Todo, PK-3 open',
+        );
+    });
+
+    test('a line naming no id asks for its own home', () => {
+        const { report } = checkReport(lines, []);
+        expect(report[2]).toBe(
+            '⚪ #3 a chore with no id → no id: read its own home',
+        );
     });
 });

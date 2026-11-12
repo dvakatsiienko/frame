@@ -37,7 +37,7 @@ _clio/plugin-clio/skills/evergreen/references/read.md	11000	seed 2026-10-19, its
 _clio/plugin-clio/skills/evergreen/references/weekly-lanes.md	1800	seed 2026-10-16, its size + 15 %
 _clio/plugin-clio/skills/evergreen/SKILL.md	4900	2026-11-12: groomed back to its size + 15 % (11-10 halt); +150 2026-11-04: the signing check after brew; seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/flawlog/SKILL.md	4400	seed 2026-10-16, today's size + 15 %
-_clio/plugin-clio/skills/lowtide-flyway-sync/SKILL.md	2050	+100 2026-11-12: renamed into the lowtide family, its name line (PK-387); +50 2026-11-11: «seat» → «thread», 2 B a hit (dima 19:43); seed 2026-11-11, its size + 15 %
+_clio/plugin-clio/skills/lowtide-flyway-sync/SKILL.md	2200	+150 2026-11-12: step 2 runs flyway-done --check, the home read by command (dima o45); +100 2026-11-12: renamed into the lowtide family, its name line (PK-387); +50 2026-11-11: «seat» → «thread», 2 B a hit (dima 19:43); seed 2026-11-11, its size + 15 %
 _clio/plugin-clio/skills/gazette/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/halt/SKILL.md	1555	2026-11-07: the halt split by thread, PK-351:W55
 _clio/plugin-clio/skills/lowtide-lanes-checkup/SKILL.md	3800	seed 2026-11-12, its size + 15 %
