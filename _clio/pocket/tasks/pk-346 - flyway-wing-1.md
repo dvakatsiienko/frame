@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T17:13:00Z'
+updated_date: '2026-11-12T17:19:00Z'
 labels:
   - s
   - clio-wing-1
@@ -560,4 +560,6 @@ done 2026-11-12 19:13: /clio:low-tide-triage (his 16:19): run it, or ask him if 
 done 2026-11-12 19:13: groom backlog, 105 reds: 33 prompts groomed by helga, 43 stamps with no logged prompt traced
 
 done 2026-11-12 19:13: flyway fix: the stale-line checks and the 120-char rule, built by a helper (dima's ok 17:38)
+
+19:19 2026-11-12 wing 1, 11-10 halt leftovers: kill side read (x verbs 0 unused in 25 days; guard half sent to main as a question, gate-pipe has no source left); four budget rows groomed back to size + 15 % (evergreen, handoff-ingest, clio:pm, _MEMORY), committed in the wing tree, lands with the sizes commit; left: checkup slice, two board redraws
 <!-- SECTION:NOTES:END -->
