@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-12
+until: 2026-11-19
 fits: codie:ts
 ---
 
@@ -58,6 +58,7 @@ beat grep or lost to it.
 - 2026-11-06 · frm-514 codie · not used, no shared symbol to rename in a test file; said so rather than counted
 - 2026-11-12 · wing 1, a real ask for FRM-579 (every reader of x-mod-stash's `isWing`): `findReferences` 5 sites in 1 call, `rg -n '\bisWing\b'` the same 5 · tie on a single-file symbol; the touch also printed 5 false TS5097 errors (`.ts` import extensions) because the server misses the mod's own tsconfig, so its diagnostics on mod files are noise
 - 2026-11-12 · wing 1, the extension's count at its end date · 3 `LSP` tool calls in 1,360 transcripts touched since 11-04 (grep `"name":"LSP","input"` over `~/.claude/projects`) · the verdict is due today, his call
+- 2026-11-12 · dima's steer, the third extension, to 11-19: «push the reminder +7 days, still no time to revisit this ts-lsp» (o41)
 
 ## the reminder, moved here (2026-10-11, o139)
 
