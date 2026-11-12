@@ -4,14 +4,14 @@ title: 🧬 evergreen turn — 2026-11-11
 status: open
 assignee: []
 created_date: '2026-11-10T22:53:00Z'
-updated_date: '2026-11-11T22:00:00Z'
+updated_date: '2026-11-12T11:37:00Z'
 due_date: '2026-11-12'
 labels:
   - xs
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9998
+ordinal: 56000
 ---
 
 ## Description
