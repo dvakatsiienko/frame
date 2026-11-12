@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T18:44:00Z'
+updated_date: '2026-11-12T18:45:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,9 +17,9 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 mods codie in a herdr pane: does dima see each mod change live there, the mods lane's reason
-- [ ] #2 FRM-538 «✍️ sign» and FRM-555 «changed» lines at their dispatch, now the sign hash reader holds
-- [ ] #3 sign hash gap: a body with linear-rewritten links still reads drifted; an x-printed hash would close it
-- [ ] #4 ⏳ FRM-551 vm: both reads — waits for: the first halt with no go lane
+- [ ] #2 sign hash gap: a body with linear-rewritten links still reads drifted; an x-printed hash would close it
+- [ ] #3 ⏳ FRM-551 vm: both reads — waits for: the first halt with no go lane
+- [ ] #4 ⏳ FRM-538 «✍️ sign» and FRM-555 «changed» lines — waits for: each one's dispatch
 - [ ] #5 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
 - [ ] #6 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
 - [ ] #7 📅 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict — on: 2026-11-13
