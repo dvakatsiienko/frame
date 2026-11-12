@@ -109,6 +109,14 @@ fi
 if grep '^home/.claude/plugin-x/' <<<"$changed" | grep -qv '^home/.claude/plugin-x/mods/'; then
 	bump x
 fi
+# a pr merged on github leaves main behind origin, and the push would be refused for every clio: take origin in first
+git -C "$root" fetch --quiet origin main || exit 1
+if ! git -C "$root" merge-base --is-ancestor refs/remotes/origin/main refs/heads/main; then
+	git -C "$root" merge --no-edit --quiet refs/remotes/origin/main || {
+		echo "tree-sync land: origin/main would not merge into main, a peer's uncommitted file or a conflict: ask clio" >&2
+		exit 1
+	}
+fi
 # one push for the piece and its bumps: each push reruns the tests
 x lane push --apply || exit 1
 for other in "$trees"/fork-* "$trees"/clio-wing-*; do
