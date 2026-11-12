@@ -1708,6 +1708,22 @@ test('a press after the note went out cancels, and a third asks again', async ($
     ]);
 });
 
+test('a wind stopped on a handoff that left the store says so, never «still in the store»', async ($, on) => {
+    const store: Record<string, unknown> = {
+        [`wind:${PEER}`]: {
+            at: NOW,
+            isGone: true,
+            slug: 'x-1',
+            state: 'stopped',
+        },
+    };
+    fleet(on, store);
+    const view = await board($);
+    expect(
+        (await view.find({ text: /second wind:/, type: 'Text' }))?.text,
+    ).toEqual(expect.stringContaining('stopped, its handoff left the store'));
+});
+
 test('a press while the session compacts changes nothing', async ($, on) => {
     const store: Record<string, unknown> = {
         [`wind:${PEER}`]: { at: NOW, slug: 'x-1', state: 'refreshing' },

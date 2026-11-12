@@ -1225,6 +1225,8 @@ const WIND_SAY = {
     stopped: 'stopped, its handoff is still in the store',
     writing: 'finishing its step, then its handoff',
 } as const;
+const windSay = (w: StashWind) =>
+    w.isGone ? 'stopped, its handoff left the store' : WIND_SAY[w.state];
 const WIND_HOW = `write your handoff with x:handoff, or \`x handoff write\` where that skill is missing (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (codie: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods codie; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a watch, a task not parked; a background command survives the compact and is no pending), which holds the compact until it resolves, never your work: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
 export const WIND_WORDS =
     'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
@@ -9288,7 +9290,7 @@ export const register: Register = (on) => {
                                         key={`wind:say:${m.sid}`}
                                         paddingLeft={2}>
                                         <Text dimColor wrap='truncate-end'>
-                                            {`🐦‍🔥 second wind: ${WIND_SAY[m.wind.state]} (${span(Math.max(0, now - m.wind.at))})`}
+                                            {`🐦‍🔥 second wind: ${windSay(m.wind)} (${span(Math.max(0, now - m.wind.at))})`}
                                         </Text>
                                     </Box>
                                 ) : null}
