@@ -295,6 +295,65 @@ for (const line of [
         expect((await bash($, line)).deny).toContain('every herdr seat');
     });
 
+// FRM-569: a layout change kills the thread in the focused tab (herdr-app#861, probed on 0.1.15): a switch, a save of
+// `layouts/*.json`, a set, a clone or a reset
+const LAYOUT = '/home/.config/herdr-app/layouts/zoo.json';
+for (const line of [
+    'herdr-app do layout.switch',
+    'herdr-app do layout.switch --name zoo',
+    `herdr-app do '{"name":"layout.switch","layout":"zoo"}'`,
+    'herdr-app do layout.clone --name zoo',
+    `herdr-app do layout.set '{"layout":"zoo","tree":{}}'`,
+    'herdr-app do layout.reset --name zoo',
+    'herdr-app do app.reset',
+    `echo '{}' > ${LAYOUT}`,
+    `cp /tmp/zoo.json ${LAYOUT}`,
+    'cp /tmp/zoo.json ~/.config/herdr-app/layouts/',
+    'mv /tmp/zoo.json "$HOME/.config/herdr-app/layouts/zoo.json"',
+    `jq '.a = 1' ${LAYOUT} | tee ${LAYOUT}`,
+    `sed -i '' 's/a/b/' ${LAYOUT}`,
+    `python3 -c "open('${LAYOUT}', 'w').write('{}')"`,
+    'cd ~/.config/herdr-app/layouts && echo x > zoo.json',
+])
+    test(`a herdr layout change is refused: ${line}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('herdr-app#861'),
+            [],
+        ]);
+    });
+
+for (const line of [
+    'herdr-app do layout.hide --node n1',
+    'herdr-app do layout.show --node n1',
+    'herdr-app do layout.toggle --node n1',
+    'herdr-app do layout.resize --node n1 --size 30',
+    `cat ${LAYOUT}`,
+    `jq . ${LAYOUT}`,
+    'ls ~/.config/herdr-app/layouts',
+    `cp ${LAYOUT} /tmp/zoo.json`,
+])
+    test(`a layout click or read runs: ${line}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([undefined, [line]]);
+    });
+
+test('his tick on an ask quoting a layout switch runs it once', async ($, on) => {
+    const line = 'herdr-app do layout.switch --name zoo';
+    const { ran } = world(on, [
+        {
+            at: NOW - 1,
+            id: 'o5',
+            targets: [line],
+            text: `⚠️ switch the layout: \`${line}\``,
+        },
+    ]);
+    const r = await bash($, line);
+    expect([r.deny, ran]).toEqual([undefined, [line]]);
+});
+
 test('his tick on an ask quoting the close runs it once', async ($, on) => {
     const line = 'hc kill t20';
     const { ran } = world(on, [
