@@ -915,6 +915,16 @@ describe('wish accounting', () => {
             ).toEqual([]);
         });
 
+        test('«dropped» inside a done clause’s parentheses drops nothing', () => {
+            expect(
+                checkPocket(
+                    wishConfig,
+                    [closed('close: W1 done · W2 done (member word dropped)')],
+                    wishToday,
+                ),
+            ).toEqual([]);
+        });
+
         test('a · splits clauses, so a done clause never borrows a drop', () => {
             expect(
                 checkPocket(

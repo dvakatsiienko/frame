@@ -223,7 +223,10 @@ export function checkPocket(
                 .filter((line) => CLOSE_LINE.test(line))
                 // a verdict in parentheses stays with its clause: «W5 dropped (no area emoji, dima o58)»
                 .flatMap((line) => line.split(/[,;·](?![^(]*\))/))
-                .filter((clause) => /\bdropped\b/i.test(clause));
+                // «W2 done (member word dropped)» is a done clause: only its own words outside parentheses drop it
+                .filter((clause) =>
+                    /\bdropped\b/i.test(clause.replace(/\([^)]*\)/g, '')),
+                );
             const dropped = citedIds(droppedClauses.join('\n'), [home]);
             // a line dima wrote or asked for dies only on his word: the clause cites it
             for (const clause of droppedClauses)
