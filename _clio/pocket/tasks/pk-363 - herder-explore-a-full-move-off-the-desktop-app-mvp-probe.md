@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T23:48:00Z'
+updated_date: '2026-11-12T00:33:00Z'
 labels:
   - m
   - clio-main
@@ -2164,4 +2164,17 @@ PK-363:W1155 (2026-11-12 01:04, dima): chatter wisp, unintended strange scrollin
 correction 01:06: W1154's time is 00:59 (his o142 steer)
 
 PK-363:W1154 (2026-11-12 00:59, dima, o142 steer): how big is it? mods lane rider (current)? ❓ (topic: override scopes. context, not dima's words: none.)
+
+PK-363:W1156 (2026-11-12 02:20, dima): i'm discussing some issues with the very long cli lane today with wingone. meanwhile let's do some planning with you. you are at 51 ctx, so let's try to do preps and hold without a second wind while you store info in your context. (topic: lane scopes prep)
+PK-363:W1157 (2026-11-12 02:20, dima): what i want out of you is some grooming of our scopes for the cli lane, the mods lane and the herdr lane. take a look at the chunks and their state. for example, tomorrow i plan to resume the mods lane, herdr lane and cli lane. (topic: lane scopes prep)
+PK-363:W1158 (2026-11-12 02:20, dima): print a full list of chunks for each lane. propose them and render them in the order you propose as useful, e.g. starting from the most wanted chunks, ending with the least wanted. (topic: lane scopes prep)
+PK-363:W1159 (2026-11-12 02:20, dima): print which chunks drifted and need a resign. we also have a cli chunk plan as a wisps cli chunk. i think we can use this chunk to fix more of what is possibly still pending. i want to fix as many flaws in cli as possible with that chunk. (topic: lane scopes prep)
+PK-363:W1160 (2026-11-12 02:20, dima): what are the depending ones for cli, and for each nearest chunk for tomorrow? i want the specs ready today, so tomorrow we don't spend time prepping specs, because that takes a lot of time. (topic: lane scopes prep)
+PK-363:W1161 (2026-11-12 02:20, dima): you can split the load with wingone. for example, you take care of the mods lane and herdr lane, and wingone takes care of the cli lane. tell wing 1 to print compactly. (topic: lane scopes prep)
+PK-363:W1162 (2026-11-12 02:28, dima): if so, take a look at this more closely, because i think our scope is a little blurred and some cli parts started to touch it. i think some cli verb shares part of this functionality. (topic: lane scopes prep. context, not dima's words: the question before "if so" is clio's line and is not a W-line.)
+PK-363:W1163 (2026-11-12 02:28, dima): i want you to verify that we plan to build the right thing and don't create wasted work and dead weight overall. actually, i would ask you to start a researcher or any other card and look at it yourself. examine the scope of the mods lane and the cli lane to see if it contains anything redundant, stale, or that drifted too much. (topic: lane scopes prep)
+PK-363:W1164 (2026-11-12 02:28, dima): the rest looks fine to me except for resigns. let's resign everything at a good point. pick yourself an efficient way to do resigns first, or wait for the review and take over the cli part as well, because i don't want two inventorizations of scopes at once. (topic: lane scopes prep)
+PK-363:W1165 (2026-11-12 02:28, dima): review the cli lane as well while i'm closing tails with wing 1. when done, already print the result again with a revised list of chunks for all lanes: herdr lane and cli lane. since wing 1 was maintaining cli today, use it for consultations about cli scope and overall. (topic: lane scopes prep)
+
+PK-363:W1166 (2026-11-12 02:28, dima): is this a protection against a verifier exceeding its verification rounds? ❓ (topic: lane scopes prep. context, not dima's words: the line before the ← in the raw is clio's FRM-504 status text and is not a W-line.)
 <!-- SECTION:NOTES:END -->
