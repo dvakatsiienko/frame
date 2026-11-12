@@ -568,3 +568,69 @@ for (const line of [
         await bash($, line);
         expect(brakeReads).toEqual(['/real-home']);
     });
+
+// FRM-524:W49, dima's o142 (14k): «rm type of stuff is per session. prs override is global»
+const GUARDS = `{"guards:${SID}":{"at":"2026-11-07T13:00:00.000Z","by":"word"}}`;
+test('his «operator-override guards» grants this session alone', async ($, on) => {
+    const { files } = world(on);
+    const sent = await say($, 'Operator override guards.');
+    expect(JSON.parse(files[REAL] ?? '{}')).toEqual({
+        [`guards:${SID}`]: { at: '2026-11-07T14:00:00.000Z', by: 'word' },
+    });
+    expect(sent.context?.join(' ')).toContain(
+        'operator-override guards is on for this session',
+    );
+});
+
+for (const line of [
+    'rm -rf build',
+    'pkill -f vite',
+    'git reset --hard HEAD~1',
+    'git branch -D old',
+])
+    test(`his guards grant runs an rm-type command in his session: ${line}`, async ($, on) => {
+        const { ran } = world(on, { files: { [REAL]: GUARDS } });
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([undefined, [line]]);
+    });
+
+for (const [name, store, line] of [
+    [
+        "another session's grant",
+        '{"guards:other-0000":{"at":"2026-11-07T13:00:00.000Z","by":"word"}}',
+        'rm -rf build',
+    ],
+    [
+        'a grant past its until',
+        `{"guards:${SID}":{"at":"x","by":"word","until":"2026-11-07T13:30:00.000Z"}}`,
+        'rm -rf build',
+    ],
+    ['a prs grant', ON, 'rm -rf build'],
+    [
+        'his guards grant on a hook bypass',
+        GUARDS,
+        'git commit --no-verify -- a.ts',
+    ],
+    ['his guards grant on a raw merge', GUARDS, 'gh pr merge 7 --squash'],
+    [
+        'his guards grant on an rm beside a hook bypass',
+        GUARDS,
+        'rm -rf build && git commit --no-verify -- a.ts',
+    ],
+    [
+        'his guards grant on a clean stamp write',
+        GUARDS,
+        "echo x > '/real-home/.claude/shelf/pr-verified.json'",
+    ],
+] as const)
+    test(`no guards pass: ${name}`, async ($, on) => {
+        const { ran } = world(on, { files: { [REAL]: store } });
+        const r = await bash($, line);
+        expect([typeof r.deny, ran]).toEqual(['string', []]);
+    });
+
+test('«operator-override off» clears his guards grant too', async ($, on) => {
+    const { files } = world(on, { files: { [REAL]: GUARDS } });
+    await say($, 'operator-override off');
+    expect(files[REAL]).toBe('{}');
+});

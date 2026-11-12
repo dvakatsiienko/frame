@@ -4,13 +4,13 @@ title: memory by surface
 status: open
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
-updated_date: '2026-11-11T17:47:00Z'
+updated_date: '2026-11-12T11:37:00Z'
 labels:
   - s
 dependencies: []
-priority: now
+priority: next
 type: task
-ordinal: 9999
+ordinal: 57000
 ---
 
 held: 2026-11-11 — FRM-576 sign; the item stays open for its leftover lines (W23–W27, W30), each homed on the main flyway, closed once those land

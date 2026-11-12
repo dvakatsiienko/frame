@@ -6,15 +6,18 @@ import {
     askLabel,
     asksOf,
     byName,
+    canTakeBack,
     hasSteerBox,
     hotOf,
     hotPressLine,
     hotPresses,
     inListOrder,
     literalAngles,
+    lockedLabel,
     nextThreads,
     pendingPresses,
     phasesOf,
+    pressLabel,
     runningThreads,
     savePress,
     sentSteer,
@@ -537,5 +540,44 @@ describe('runningThreads', () => {
         ['ps gave no answer', null, [101, 202, 303]],
     ])('%s', (_why, out, pids) => {
         expect(runningThreads(threads, out).map((t) => t.pid)).toEqual(pids);
+    });
+});
+
+describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)', () => {
+    test('a replay, sent or read by the stash, takes the second click', () => {
+        expect(canTakeBack(tickState(ask, 'replay'))).toBe(true);
+        expect(canTakeBack(tickState({ ...ask, mark: 'rejected' }, null))).toBe(
+            true,
+        );
+    });
+
+    test('a tick still does, an open or a locked ask does not', () => {
+        expect(canTakeBack('ticked')).toBe(true);
+        expect(canTakeBack('open')).toBe(false);
+        expect(canTakeBack('locked')).toBe(false);
+    });
+
+    test('a replay the stash has not read leaves the file', () => {
+        expect(untickDoor('replay')).toBe('drop');
+        expect(untickDoor('replay', 'rejected')).toBe('untick');
+    });
+
+    test('an untick on a read replay draws open', () => {
+        expect(tickState({ ...ask, mark: 'rejected' }, 'untick')).toBe('open');
+    });
+
+    test('the take-back button names the press it takes back', () => {
+        expect(pressLabel('replayed').label).toBe('🔁 replayed');
+        expect(pressLabel('ticked').label).toBe('✅ ticked');
+        expect(pressLabel('replayed').tip).toMatch(/^replayed: click again/);
+    });
+
+    test('a locked ask says which press the session took', () => {
+        expect(lockedLabel({ ...ask, mark: 'rejected' })).toBe(
+            '🔒 replayed, the session took it',
+        );
+        expect(lockedLabel({ ...ask, mark: 'accepted' })).toBe(
+            '🔒 ticked, the session took it',
+        );
     });
 });

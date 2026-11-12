@@ -20,7 +20,7 @@ item's url travels verbatim into its pocket item** — a link is payload, never 
 **His thread is the lane; member traffic stays out of it** (dima, 2026-09-30: codie replies buried
 the reports he came back for). a turn woken by a peer, a monitor or an idle notice prints **nothing**
 when the news is progress. a find with no ask gets one `🔔 <member>: <what>` line; a decision or a
-question goes to orbit alone (dima's o84). **codie's report reaches him
+question goes to orbit alone (dima's o84). **a turn my own background job wakes writes one line**, what landed; the rest rides his next reply or orbit (o10, trial to 21). **codie's report reaches him
 once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name. the digest IS codie's look card (`craft-fleet-flow` stage 9), and its screenshot goes to him by `SendUserFile` in the same turn.
 
 A `📄 last report: **<topic>**, <HH:MM>` line ends every report, except a `🔭` line, which stays the reply's last line (`rules/fleet-output-format.md`); his `rewind` reprints it. **The stamp is a copied clock, never a composed one** — the prompt hook's `now HH:MM` line, or a
@@ -61,7 +61,7 @@ is whole. A lane arriving early gets a one-line «N of M in» at most, never its
 reads the thread cold from another window; findings staggered across turns are findings he has
 to reassemble (dima, 2026-09-29: «group them instead of printing the results of each round»).
 
-**The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer» copied from the 10-01 lane plan; he read it as a designer being summoned (2026-10-01). a plan for tomorrow stays tomorrow's.
+**The ➡️ next move fits his stated energy and window, never a CST's first-acts.** «quick session, i'm tired» at 01:40 got «rename first, then the designer», copied from a lane plan (2026-10-01). a plan for tomorrow stays tomorrow's.
 
 **The next moves live in orbit** (`rules/fleet-mods.md`): clio's phases carry planned siestas as their own lines (dima, 2026-10-10), so a «what's next?» turn never happens; the reply budget cuts prose, never these (dima, 2026-10-10: «why such a bare turn?» on a reply whose next moves were thin). a report turn ends with 1–3 pickable next items as an orbit ask he ticks, never a phases list of holds and parked lines alone (dima, 2026-10-12: «at least somewhere I see one of your possible next moves to attach to»).
 
@@ -69,7 +69,7 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 
-**A running trial lives as a phases line with its count** («assumed rows: turn 4/10») — phases re-inject every prompt, so a compact can't drop it.
+**A running trial lives as a phases line with its count** («assumed rows: turn 4/10»): a compact can't drop it.
 
 **A fact too important for him that won't fit an ask** is printed in the reply while the ask steers.
 

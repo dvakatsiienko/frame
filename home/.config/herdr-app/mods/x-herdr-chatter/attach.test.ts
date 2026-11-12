@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('herdr', () => ({ exec: vi.fn() }));
-const { fileName, pickedPaths, promptPath, withFiles } = await import(
-    './attach.js'
-);
+const { fileName, isImagePath, pickedPaths, promptPath, withFiles } =
+    await import('./attach.js');
 
 describe('pickedPaths', () => {
     it('reads one path a line', () => {
@@ -57,5 +56,30 @@ describe('promptPath, the shell characters', () => {
 describe('promptPath, letters outside ascii', () => {
     it('leaves a Cyrillic name as it is', () => {
         expect(promptPath('/d/знімок.png')).toBe('/d/знімок.png');
+    });
+});
+
+describe('isImagePath, a dropped file that shows as a picture', () => {
+    it('takes the picture types Claude reads, any case', () => {
+        for (const p of [
+            '/a/shot.png',
+            '/a/b.JPG',
+            '/a/c.jpeg',
+            '/a/d.gif',
+            '/a/e.webp',
+        ])
+            expect(isImagePath(p)).toBe(true);
+    });
+
+    it('leaves every other file a chip', () => {
+        for (const p of [
+            '/a/notes.md',
+            '/a/png',
+            '/a/shot.png.txt',
+            '/a/.png',
+            '/a/dir/',
+            '/a/scan.tiff',
+        ])
+            expect(isImagePath(p)).toBe(false);
     });
 });

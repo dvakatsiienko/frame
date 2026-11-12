@@ -776,6 +776,12 @@ export function signWords(
     cwd: string,
     ctx: Context = {},
 ): { id: string; file?: string; isOpaque?: boolean }[] {
+    // a backtick or `$(` runs a shell only outside python and js, where it is a string's own text
+    const runsAProcess = (name: string, text: string) =>
+        /subprocess|popen|system|exec|spawn|fork|child_process|pty|__import__|import\s*\(|importlib|getattr|eval|compile|pickle|marshal|ctypes/i.test(
+            text,
+        ) ||
+        (!/^(python[\d.]*|node|bun|deno)$/.test(name) && /`|\$\(/.test(text));
     const out: { id: string; file?: string; isOpaque?: boolean }[] = [];
     for (const c of commandsDeep(command, cwd)) {
         // a program the guard cannot parse that runs a linear set or body write signs each id its text names (sixth sense
@@ -809,7 +815,13 @@ export function signWords(
                 ...fed,
                 ...c.bodies,
             ].join('\n');
-            if (/\blinear\b/.test(text) && /--set\b|--add-label\b/.test(text))
+            // a program that can start no process only writes the words, so quoting a sign command signs nothing
+            // (codie's 15:28 handoff write); any door to a process, a shell or code it builds keeps the old read
+            if (
+                /\blinear\b/.test(text) &&
+                /--set\b|--add-label\b/.test(text) &&
+                runsAProcess(c.name, text)
+            )
                 out.push(
                     ...[...new Set(text.match(TICKET_ANY) ?? [])].map((id) => ({
                         id,
@@ -922,10 +934,48 @@ const LITERAL_FEEDERS = new Set(['echo', 'printf']);
 // the words a pane typer types, past its verb and the terminal it aims at; a herdr call types only through a verb that
 // sends text, never `tab.rename` or `terminal.keep`
 const HERDR_TYPES = /send|type|paste|key|input|text|prompt|write/i;
+// claude's flags whose value is no prompt, from `claude --help`; a prompt flag (`--system-prompt`, `--agents`) stays text
+const CLAUDE_VALUE_FLAGS = new Set([
+    '--add-dir',
+    '--autocompact',
+    '--betas',
+    '--debug-file',
+    '--effort',
+    '--environment',
+    '--fallback-model',
+    '--input-format',
+    '--max-budget-usd',
+    '--mcp-config',
+    '--model',
+    '--name',
+    '--output-format',
+    '--permission-mode',
+    '--permission-prompts',
+    '--plugin-dir',
+    '--plugin-url',
+    '--remote-control-session-name-prefix',
+    '--resume',
+    '--session-id',
+    '--setting-sources',
+    '--settings',
+    '--system-prompt-snapshot',
+    '--tools',
+    '-n',
+    '-r',
+]);
 function textWordsOf(c: Command) {
     const words = c.args;
     const bare = words.filter((w) => !w.text.startsWith('-'));
-    if (c.name === 'claude') return bare;
+    // a value flag takes the next word whatever it is, so the walk skips exactly the words a flag took (local review)
+    if (c.name === 'claude') {
+        const text: typeof words = [];
+        for (let i = 0; i < words.length; i++) {
+            const w = words[i] as (typeof words)[number];
+            if (CLAUDE_VALUE_FLAGS.has(w.text)) i++;
+            else if (!w.text.startsWith('-')) text.push(w);
+        }
+        return text;
+    }
     if (c.name === 'herdr-app')
         return HERDR_TYPES.test(bare[1]?.text ?? '') ? bare.slice(2) : [];
     if (c.name === 'hc' && verbOf(words.map((w) => w.text)) === 'run') {
@@ -1426,13 +1476,19 @@ function saysMergeOf(prompt: string, pr: string) {
         String.raw`^\s*(?:(?:yes|yeah|ok|okay|please|sure)\b[\s,!]*)*(?:merge|land|ship)\s+(?:#?\d+\s*(?:,|and|&)\s*)*#?${pr}\b`,
         'i',
     );
-    const negated = /n['’]t\b|\b(?:not|never|no|nope|later)\b/i;
-    return prompt
+    // a hedge reads as a negation: a trailing «…», a wait or hold, a condition (round 11), in his merge sentence or any
+    // after it, since a sentence of its own still hedges the merge (local review); three dots inside a word are no «…»
+    const hedged =
+        /…(?=\s|$)|\b(?:later|wait|hold|if|unless|once|when|after|assuming|provided|maybe)\b/i;
+    const negated = /n['’]t\b|\b(?:not|never|no|nope)\b/i;
+    const sentences = prompt
         .replaceAll(QUOTED, ' ')
-        .split(/(?<=[.!?\n])/)
-        .some(
-            (s) => !s.trim().endsWith('?') && !negated.test(s) && said.test(s),
-        );
+        .replaceAll(/\.{3,}(?=\s|$)/g, '…')
+        .split(/(?<=[.!?\n](?=\s|$))/);
+    const at = sentences.findIndex(
+        (s) => !s.trim().endsWith('?') && !negated.test(s) && said.test(s),
+    );
+    return at >= 0 && !sentences.slice(at).some((s) => hedged.test(s));
 }
 export function mergeWord(command: string, cwd: string): Refusal | undefined {
     const words = mergeAutoCalls(command, cwd).flatMap((c) => c.words);

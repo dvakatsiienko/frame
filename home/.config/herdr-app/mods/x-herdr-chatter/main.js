@@ -43,7 +43,13 @@ import {
     writeTextFile,
 } from 'herdr';
 
-import { fileName, pickFiles, promptPath, withFiles } from './attach.js';
+import {
+    fileName,
+    isImagePath,
+    pickFiles,
+    promptPath,
+    withFiles,
+} from './attach.js';
 import {
     DECK_BLOCK,
     OVERRIDE_STORE,
@@ -64,6 +70,7 @@ import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import { foldBlocks } from './fold.js';
+import { rejoin } from './joined.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
 import * as ask from './question.js';
@@ -71,7 +78,9 @@ import {
     QUEUED_IDLE_MS,
     QUEUED_SHOWN,
     claudeQueueAfter,
+    clearKeys,
     isHisQueued,
+    isVimNormal,
     queuedAfterIdle,
     queuedAfterRow,
     queuedStripCover,
@@ -93,10 +102,12 @@ import {
     deleteShots,
     loadShots,
     saveClipboardShot,
+    saveFileShot,
     saveShots,
     shotsAfter,
     shotsWith,
     shotsWithout,
+    sweepShots,
 } from './shots.js';
 import { loadableSkills, menuMatches } from './skills.js';
 import { wholeLines } from './slice.js';
@@ -1313,11 +1324,17 @@ export default class ClaudeChat extends View {
         // when each thread last sent, so a preview saved after the send it rode never shows
         this.sentAt = new Map();
         // files picked with + or dropped on the box, by agent address, sent as paths with the next message
+        /** @type {Map<string, string[]>} */
         this.files = new Map();
+        // a dropped picture's preview by its path, drawn with the pasted ones; it lives as long as the file waits
+        /** @type {Map<string, string>} */
+        this.previews = new Map();
         // the message a reply answers, by agent address: shown above the box, sent quoted before the text
         this.replies = new Map();
         cx.spawn(async (cx) => {
             this.shots = await loadShots();
+            // a dropped picture's preview is kept only while its file waits, in memory: a reload leaves it unclaimed
+            await sweepShots(this.shots);
             cx.notify();
         });
         // what he sent while the thread worked, by agent address, until its row reaches the transcript (see queued.js)
@@ -2774,6 +2791,7 @@ export default class ClaudeChat extends View {
             ? (this.pasted.get(address) ?? [])
             : [];
         this.pasted.delete(address);
+        this.forgetPreviews(address);
         this.files.delete(address);
         const replyTo = this.replies.get(address);
         this.replies.delete(address);
@@ -3063,9 +3081,34 @@ export default class ClaudeChat extends View {
         return this.where?.container
             ? (this.pasted.get(address)?.length ?? 0)
             : Math.max(
-                  this.imagesFor === address ? (this.images ?? 0) : 0,
-                  this.shots[address]?.length ?? 0,
+                  this.pastedCount(address) +
+                      this.droppedImages(address).length,
+                  this.thumbs(address).length,
               );
+    }
+
+    /** images pasted into this thread's Claude prompt @param {string} address */
+    pastedCount(address) {
+        return Math.max(
+            this.imagesFor === address ? (this.images ?? 0) : 0,
+            this.shots[address]?.length ?? 0,
+        );
+    }
+
+    /** pictures dropped or picked for this thread, sent as their paths @param {string} address @returns {string[]} */
+    droppedImages(address) {
+        return (this.files.get(address) ?? []).filter(isImagePath);
+    }
+
+    // the previews over the box: pasted screenshots, then dropped pictures, one row for both
+    /** @param {string} address @returns {string[]} */
+    thumbs(address) {
+        return [
+            ...(this.shots[address] ?? []),
+            ...this.droppedImages(address)
+                .map((p) => this.previews.get(`${address} ${p}`))
+                .filter(Boolean),
+        ];
     }
 
     // A prompt Claude Code put back into its own box (a Stop on a sent message does it) is hidden from this view, and the
@@ -3088,7 +3131,10 @@ export default class ClaudeChat extends View {
             text && !this.leftInBox && !/^Try "/.test(text)
                 ? { address: agent.address, text }
                 : null;
-        this.leftNormal = r?.stdout?.includes('-- NORMAL --') ?? false;
+        this.leftNormal = isVimNormal(
+            r?.stdout ?? '',
+            this.settingsNow()?.editorMode,
+        );
     }
 
     // [take it]: the text into the chat box, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
@@ -3231,8 +3277,12 @@ export default class ClaudeChat extends View {
         cx.spawn(async (cx) => {
             try {
                 await this.pullOut(address, chosen.text, cx);
-            } catch {
-                this.steering = null;
+            } catch (e) {
+                const note = `Couldn't take it back: ${e instanceof Error ? e.message : e}`;
+                this.steering = note;
+                cx.notify();
+                await cx.sleep(4000);
+                if (this.steering === note) this.steering = null;
                 cx.notify();
             }
         });
@@ -3250,12 +3300,15 @@ export default class ClaudeChat extends View {
             cx.notify();
         };
         const r = await hc(['read', address, '--lines', '40']).catch(
-            () => null,
+            /** @returns {null} */ () => null,
         );
-        if (!/up to edit queued messages/i.test(r?.stdout ?? ''))
+        const screen = r?.stdout ?? '';
+        if (!/up to edit queued messages/i.test(screen))
             return say('It joined the turn first');
         this.popped.set(address, []);
-        await hc(['keys', address, 'up']);
+        // ↑ from vim's normal mode leaves its cursor on the last character: insert first, the prompt is empty here
+        const isNormal = isVimNormal(screen, this.settingsNow()?.editorMode);
+        await hc(['keys', address, ...(isNormal ? ['i'] : []), 'up']);
         // ↑ pulls every message of his, a send not recorded yet too: the records are in once they stop coming
         let seen = 0;
         for (let i = 0, still = 0; i < 25 && still < 3; i++) {
@@ -3267,14 +3320,22 @@ export default class ClaudeChat extends View {
         const pulled = this.popped.get(address) ?? [];
         // nothing came out: whatever ↑ put in Claude's input stays there, offered by «Still in Claude's box»
         if (!pulled.length) return say('It joined the turn first');
-        const lines = pulled.reduce(
-            (n, q) => n + q.split('\n').length + Math.ceil(q.length / 40) + 2,
-            0,
+        await hc(['keys', address, ...clearKeys(pulled, false)]);
+        await cx.sleep(400);
+        // a send into a prompt that still holds text glues onto it: then every pulled message comes to his box
+        const after = await hc(['read', address, '--lines', '40']).catch(
+            /** @returns {null} */ () => null,
         );
-        await hc(['keys', address, ...Array(lines * 2).fill('ctrl+u')]);
+        const left = boxText(after?.stdout ?? '');
+        const isCleared = after?.code === 0 && (!left || /^Try "/.test(left));
         const isPulled = pulled.includes(text);
-        if (isPulled) {
-            const words = queuedWords(text);
+        const rest = isPulled
+            ? pulled.filter((_, n) => n !== pulled.indexOf(text))
+            : pulled;
+        /** @param {string[]} texts @returns {void} */
+        const toBox = (texts) => {
+            if (!texts.length) return;
+            const words = texts.map(queuedWords).join('\n\n');
             // he may have moved to another thread meanwhile: the words go to this thread's kept draft
             const isShown = this.address === address;
             const had = (
@@ -3288,18 +3349,44 @@ export default class ClaudeChat extends View {
                 this.box.focus();
             }
             cx.notify();
+        };
+        if (!isCleared) {
+            toBox(pulled);
+            return say(
+                left
+                    ? `Claude's box kept «${left.slice(0, 40)}»: all ${pulled.length} are in your box`
+                    : `Couldn't read Claude's box: all ${pulled.length} are in your box`,
+            );
         }
-        const rest = isPulled
-            ? pulled.filter((_, n) => n !== pulled.indexOf(text))
-            : pulled;
-        for (const q of rest) {
+        /** @type {string[]} */
+        let unsent = [];
+        let failure = '';
+        for (const [n, q] of rest.entries()) {
             const words = queuedWords(q);
+            const mine = { at: Date.now(), text: words };
             this.queued.set(address, [
                 ...(this.queued.get(address) ?? []),
-                { at: Date.now(), text: words },
+                mine,
             ]);
-            await hc(['send', address, words]);
+            failure = await hc(['send', address, words]).then(
+                (r) =>
+                    r.code === 0 ? '' : (r.stderr || `exit ${r.code}`).trim(),
+                (e) => String(e),
+            );
+            if (failure) {
+                this.queued.set(
+                    address,
+                    (this.queued.get(address) ?? []).filter((m) => m !== mine),
+                );
+                unsent = rest.slice(n);
+                break;
+            }
         }
+        toBox([...(isPulled ? [text] : []), ...unsent]);
+        if (failure)
+            return say(
+                `Couldn't queue ${unsent.length} again, in your box: ${failure.slice(0, 120)}`,
+            );
         await say(isPulled ? null : 'It joined the turn first');
     }
 
@@ -3312,13 +3399,8 @@ export default class ClaudeChat extends View {
         this.typed = this.box.value();
         keepDraft(address, this.typed);
         this.leftInBox = null;
-        const lines = Math.ceil(text.length / 40) + 2;
-        const keys = [
-            ...(this.leftNormal ? ['i'] : []),
-            ...Array(lines * 2).fill('ctrl+u'),
-        ];
         cx.spawn(async () => {
-            await hc(['keys', address, ...keys]);
+            await hc(['keys', address, ...clearKeys([text], this.leftNormal)]);
         });
         this.box.focus();
         cx.notify();
@@ -3342,11 +3424,18 @@ export default class ClaudeChat extends View {
             this.pasted.delete(address);
             return cx.notify();
         }
+        const isPasted = this.pastedCount(address) > 0;
+        this.forgetPreviews(address);
+        this.files.set(
+            address,
+            (this.files.get(address) ?? []).filter((p) => !isImagePath(p)),
+        );
         this.images = 0;
         this.forgetShots(address, cx);
-        cx.spawn(async () => {
-            await hc(['keys', address, 'esc', 'esc']);
-        });
+        if (isPasted)
+            cx.spawn(async () => {
+                await hc(['keys', address, 'esc', 'esc']);
+            });
         cx.notify();
     }
 
@@ -3357,7 +3446,42 @@ export default class ClaudeChat extends View {
             address,
             withFiles(this.files.get(address) ?? [], paths),
         );
+        const fresh = paths.filter(
+            (p) => isImagePath(p) && !this.previews.has(`${address} ${p}`),
+        );
+        // '' marks a preview on its way, so a second drop starts none
+        for (const p of fresh) this.previews.set(`${address} ${p}`, '');
+        if (fresh.length)
+            cx.spawn(async (cx) => {
+                const at = Date.now();
+                for (const [i, p] of fresh.entries()) {
+                    const key = `${address} ${p}`;
+                    const rel = await saveFileShot(p, at + i);
+                    if (!rel) continue;
+                    // removed, sent, or dropped again while its preview was made: this one goes
+                    if (
+                        !this.files.get(address)?.includes(p) ||
+                        this.previews.get(key)
+                    )
+                        await deleteShots([rel]);
+                    else this.previews.set(key, rel);
+                }
+                cx.notify();
+            });
         cx.notify();
+    }
+
+    // previews of pictures that no longer wait in this thread's box
+    /** @param {string} address */
+    forgetPreviews(address) {
+        const gone = this.droppedImages(address)
+            .map((p) => {
+                const rel = this.previews.get(`${address} ${p}`);
+                this.previews.delete(`${address} ${p}`);
+                return rel;
+            })
+            .filter(Boolean);
+        if (gone.length) deleteShots(gone);
     }
 
     // + at the left of the box's lower card: the mac's own picker, several files at once
@@ -3386,7 +3510,8 @@ export default class ClaudeChat extends View {
 
     // the files waiting for the next send, each a chip with ×
     fileChips(t, address) {
-        const list = this.files.get(address) ?? [];
+        const all = this.files.get(address) ?? [];
+        const list = all.filter((p) => !isImagePath(p));
         return h_flex()
             .flex_wrap()
             .gap(6)
@@ -3430,7 +3555,7 @@ export default class ClaudeChat extends View {
                                 .on_click((_e, cx) => {
                                     this.files.set(
                                         address,
-                                        list.filter((p) => p !== path),
+                                        all.filter((p) => p !== path),
                                     );
                                     cx.notify();
                                 })
@@ -5146,7 +5271,9 @@ export default class ClaudeChat extends View {
             at: item.at,
             from: isIn ? item.from : self,
             text: isIn ? item.text : String(item.input?.message ?? ''),
-            to: isIn ? self : String(item.input?.to ?? 'another thread'),
+            to: isIn
+                ? self
+                : rejoin(String(item.input?.to ?? 'another thread')),
         });
         return h_flex()
             .id(`relay-${item.id}`)
@@ -6155,12 +6282,8 @@ export default class ClaudeChat extends View {
         this.typed = text;
         keepDraft(address, text);
         this.ghost = null;
-        const keys = [
-            ...(this.leftNormal ? ['i'] : []),
-            ...Array((Math.ceil(text.length / 40) + 2) * 2).fill('ctrl+u'),
-        ];
         cx.spawn(async () => {
-            await hc(['keys', address, ...keys]);
+            await hc(['keys', address, ...clearKeys([text], this.leftNormal)]);
         });
         this.box.focus();
         cx.notify();
@@ -6895,7 +7018,9 @@ export default class ClaudeChat extends View {
                         el.child(this.replyStrip(t, agent.address)),
                     )
                     .when(
-                        Boolean(this.files.get(agent.address)?.length),
+                        (this.files.get(agent.address) ?? []).some(
+                            (p) => !isImagePath(p),
+                        ),
                         (el) => el.child(this.fileChips(t, agent.address)),
                     )
                     .when(images > 0, (el) =>
@@ -6908,23 +7033,20 @@ export default class ClaudeChat extends View {
                                 .text_color(t.muted)
                                 // a 56 px preview per screenshot this chat saved; the count stands in for the rest
                                 .children(
-                                    (this.shots[agent.address] ?? []).map(
-                                        (rel) =>
-                                            div()
-                                                .size(px(56))
-                                                .flex_none()
-                                                .rounded(RADIUS.card)
-                                                .overflow_hidden()
-                                                .bg(t.raised)
-                                                .border(1)
-                                                .border_color(t.border)
-                                                .child(image(rel).size_full()),
+                                    this.thumbs(agent.address).map((rel) =>
+                                        div()
+                                            .size(px(56))
+                                            .flex_none()
+                                            .rounded(RADIUS.card)
+                                            .overflow_hidden()
+                                            .bg(t.raised)
+                                            .border(1)
+                                            .border_color(t.border)
+                                            .child(image(rel).size_full()),
                                     ),
                                 )
                                 .when(
-                                    images >
-                                        (this.shots[agent.address]?.length ??
-                                            0),
+                                    images > this.thumbs(agent.address).length,
                                     (el) =>
                                         el.child(
                                             div()
@@ -6948,12 +7070,17 @@ export default class ClaudeChat extends View {
                                         .child(
                                             this.where?.container
                                                 ? 'copied into the container, sent with your message'
-                                                : "in Claude's prompt, sent with your message",
+                                                : this.pastedCount(
+                                                        agent.address,
+                                                    )
+                                                  ? "in Claude's prompt, sent with your message"
+                                                  : 'sent with your message',
                                         ),
                                 )
                                 .when(
                                     Boolean(this.where?.container) ||
-                                        agent.status !== 'working',
+                                        agent.status !== 'working' ||
+                                        !this.pastedCount(agent.address),
                                     (el) =>
                                         el.child(
                                             button(

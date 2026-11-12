@@ -3,7 +3,9 @@ import { describe, expect, test } from 'vitest';
 import {
     QUEUED_IDLE_MS,
     claudeQueueAfter,
+    clearKeys,
     isHisQueued,
+    isVimNormal,
     queuedAfterIdle,
     queuedAfterRow,
     queuedStripCover,
@@ -154,5 +156,43 @@ describe('the strip over the log', () => {
     });
     test('past three, the rest are one counted line', () => {
         expect(queuedStripCover(5)).toBe(30 + 3 * 24 + 18 + 6 + 6);
+    });
+});
+
+// the foot of Claude Code's screen, read off a throwaway thread (2026-11-12): vim's insert mode names itself, its normal
+// mode shows nothing, the same as vim off
+const INSERT_FOOT =
+    '❯\n────\n  🦉 haiku 5.5\n  -- INSERT -- ⏵⏵ bypass permissions on (shift+tab to cycle)';
+const NORMAL_FOOT =
+    '❯\n────\n  🦉 haiku 5.5\n  ⏵⏵ bypass permissions on (shift+tab to cycle)';
+
+describe("emptying Claude Code's prompt", () => {
+    test('vim with no insert marker is normal mode', () => {
+        expect(isVimNormal(NORMAL_FOOT, 'vim')).toBe(true);
+    });
+
+    test('vim inserting is not', () => {
+        expect(isVimNormal(INSERT_FOOT, 'vim')).toBe(false);
+    });
+
+    test('vim off is never normal mode', () => {
+        expect(isVimNormal(NORMAL_FOOT, 'normal')).toBe(false);
+        expect(isVimNormal(NORMAL_FOOT, undefined)).toBe(false);
+    });
+
+    test('inserting: ctrl+u twice for each line the text can take', () => {
+        expect(clearKeys(['plum'], false)).toEqual(Array(8).fill('ctrl+u'));
+        expect(clearKeys(['test', 'test'], false)).toHaveLength(16);
+        expect(clearKeys(['a\nb'], false)).toHaveLength(10);
+    });
+
+    test('normal mode: its cursor sits on the last character, so the whole text goes at once, then back to insert', () => {
+        expect(clearKeys(['plum'], true)).toEqual([
+            'g',
+            'g',
+            'd',
+            'shift+g',
+            'i',
+        ]);
     });
 });

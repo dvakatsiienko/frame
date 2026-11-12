@@ -1,5 +1,7 @@
 // a message between threads: one folded line, «sender → receiver · first words · time», that opens to its whole text
 
+import { rejoin } from './joined.js';
+
 const FIRST_WORDS = 72;
 
 /**
@@ -20,7 +22,7 @@ export function relayIn(entry) {
     return {
         at: entry.timestamp ?? null,
         dir: 'in',
-        from: origin.name || 'another thread',
+        from: rejoin(origin.name || 'another thread'),
         kind: 'relay',
         msgId: origin.msg_id ?? null,
         text: origin.body.trim(),

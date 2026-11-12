@@ -45,6 +45,9 @@ for (const said of [
     'merge #104 please',
     'land 104!',
     'the ci is green. merge 104',
+    // the second review: a hedge in an earlier sentence, or three dots inside a word, hedges nothing
+    'if the bot is happy, fine. merge 104',
+    'merge 104, main...HEAD looked fine',
 ])
     test(`merge-auto's --dima-ok runs when dima's last prompt says «${said}»`, async ($, on) => {
         const { ran } = world(on);
@@ -74,6 +77,23 @@ for (const said of [
     'no way, merge 104 is wrong',
     'I wonder if we should merge 104',
     'merge 104 later, not now',
+    // round 11: a hedge in his sentence refuses; «…» never ends one
+    'MERGE 104… or wait',
+    'merge 104... or wait',
+    'merge 104 if ci passes, otherwise hold',
+    'merge 104…',
+    'merge 104...',
+    'merge 104, wait for ci',
+    'merge 104 if ci passes',
+    'merge 104 on hold',
+    'merge 104 unless the bot objects',
+    // the local review: a hedge in its own sentence, and the conditions past «if»
+    'merge 104. or wait',
+    'merge 104!\nunless ci is red',
+    'merge 104 once ci passes',
+    'merge 104 when green',
+    'merge 104 after the deploy',
+    'maybe merge 104',
 ])
     test(`merge-auto's --dima-ok stays refused when dima's prompt says «${said}»`, async ($, on) => {
         const { ran } = world(on);

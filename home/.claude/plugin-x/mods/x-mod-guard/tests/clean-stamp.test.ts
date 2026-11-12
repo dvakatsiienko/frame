@@ -199,6 +199,105 @@ for (const line of [
         expect(ran).toEqual([]);
     });
 
+// FRM-519 14h: a sentence a script writes into a doc names a store as prose, never as the file it opens
+// (codie's FTR edit at 01:03, wing 1's spec edit at 01:10)
+const SCRIPT = (body: string) => `python3 - <<'EOF'\n${body}\nEOF`;
+for (const line of [
+    SCRIPT(
+        "from pathlib import Path\np = Path('x-mod-guard/FTR.md')\np.write_text(p.read_text().replace('old', 'a merge reads ~/.claude/shelf/pr-verified.json first'))",
+    ),
+    SCRIPT(
+        "import os\np = os.path.expanduser('~/frame/.scratch/cli-lane-8/spec.md')\nopen(p, 'a').write('\\n- the seat id is read from ~/.claude/sessions/<pid>.json\\n')",
+    ),
+])
+    test(`a script writing a doc that names a store in prose passes: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect(r.deny ?? '').not.toContain('clean-stamp');
+        expect(ran.length).toBe(1);
+    });
+
+// round 11: a sentence the script reads on (a split, an index, a regex, a variable) can still hand it the store's path
+for (const line of [
+    SCRIPT(
+        "p = 'a merge reads /home/.claude/shelf/pr-verified.json first'.split()[3]; open(p, 'w')",
+    ),
+    SCRIPT(
+        "p = 'the seat file is /home/.claude/sessions/4242.json'.split()[-1]; open(p, 'w')",
+    ),
+    SCRIPT(
+        "import re\np = re.findall(r'\\S+json', 'see the store /home/.claude/shelf/pr-verified.json now')[0]; open(p, 'w')",
+    ),
+    SCRIPT(
+        "open('x', 'w').write(open('a merge reads /home/.claude/shelf/pr-verified.json first'.split()[3], 'w').name)",
+    ),
+    SCRIPT(
+        "p = 'q'.replace('q', 'the store /home/.claude/shelf/pr-verified.json now').split()[2]; open(p, 'w')",
+    ),
+    SCRIPT(
+        "class A:\n    def write_text(s, t): open(t.split()[3], 'w')\nA().write_text('a merge reads /home/.claude/shelf/pr-verified.json first')",
+    ),
+    SCRIPT(
+        "import pathlib\npathlib.Path.write_text = pathlib.Path.touch\npathlib.Path('x').write_text('a merge reads /home/.claude/shelf/pr-verified.json first')",
+    ),
+    SCRIPT(
+        "f = open('x', 'w')\nf.write(str(open(*'a merge reads /home/.claude/shelf/pr-verified.json first'.split()[3:], 'w')))",
+    ),
+    `python3 - <<'EOF' | xargs -n1 | sed -n 2p | xargs touch\nimport sys\nsys.stdout.write('see /home/.claude/shelf/pr-verified.json now')\nEOF`,
+    // the local reviews: a literal bound by a walrus, text written into a shell, a paren inside a quote
+    SCRIPT(
+        "import sys\nsys.stdout.write(p := '/home/.claude/shelf/pr-verified.json')\nopen(p, 'w').write('{}')",
+    ),
+    SCRIPT(
+        "import os\nos.popen('sh', 'w').write('echo x > /home/.claude/shelf/pr-verified.json')",
+    ),
+    SCRIPT(
+        "import subprocess\nsubprocess.Popen(['sh'], stdin=-1).stdin.write(b'echo x > /home/.claude/shelf/pr-verified.json')",
+    ),
+    SCRIPT(
+        "import sys\nsys.stdout.write('(')\np = '/home/.claude/shelf/pr-verified.json'\nopen(p, 'w').write('{}')",
+    ),
+    `node - <<'EOF'\nconst o = { write: (t) => require('fs').writeFileSync(t, '{}') };\no.write('/home/.claude/shelf/pr-verified.json');\nEOF`,
+    // the second review: a comment that reads like a write's open paren, and exec or spawn under a longer name
+    SCRIPT(
+        "from pathlib import Path\np = Path(  # .write(\n'/home/.claude/shelf/pr-verified.json')\np.write_text('{}')",
+    ),
+    SCRIPT(
+        "import os\nr, w = os.pipe()\nos.execvp('sh', ['sh'])\nos.fdopen(w, 'w').write('echo x > /home/.claude/shelf/pr-verified.json')",
+    ),
+    SCRIPT(
+        "import os\nos.posix_spawnp(0, 'sh', [])\nos.fdopen(1, 'w').write('echo x > /home/.claude/shelf/pr-verified.json')",
+    ),
+    // codie's own review: code inside a written literal, and a quote or a paren the scan could pair unlike python
+    SCRIPT(
+        `import sys\nsys.stdout.write(f'{open("/home/.claude/shelf/pr-verified.json", "w")}')`,
+    ),
+    SCRIPT(
+        `import sys\nsys.stdout.write('\\''); open("/home/.claude/shelf/pr-verified.json", 'w')`,
+    ),
+    SCRIPT(
+        `import sys\nsys.stdout.write('''a\nb'''); open("/home/.claude/shelf/pr-verified.json", 'w')`,
+    ),
+    SCRIPT(
+        "import sys\nsys.stdout.write(sys.stdout.write(open(')' and '/home/.claude/shelf/pr-verified.json', 'w')))",
+    ),
+    SCRIPT(
+        "p = 'at ~/.claude/sessions/4242.json'.split()[1]\nopen(p, 'w').write('{}')",
+    ),
+    SCRIPT(
+        "open('/home/.claude/shelf/pr-verified.json', 'w').write('the clean holds now')",
+    ),
+    SCRIPT(
+        `exec('open("/home/.claude/sessions/4242.json", "w").write("the seat is mine now")')`,
+    ),
+])
+    test(`a store path a script reads out of a literal still counts: ${line}`, async ($, on) => {
+        const { ran } = world(on, CODIE, 'codie');
+        const r = await bash($, line);
+        expect(r.deny).toContain('clean-stamp');
+        expect(ran).toEqual([]);
+    });
+
 // FRM-570: the thread store decides who is a sixth sense, so no session writes it, a sixth sense included; x does
 const THREADS = '/home/.claude/shelf/threads.json';
 const THREAD_WRITES = WRITES.filter((l) => !l.includes('watch-pr.sh')).map(

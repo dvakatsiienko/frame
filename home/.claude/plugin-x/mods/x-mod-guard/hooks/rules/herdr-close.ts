@@ -78,9 +78,87 @@ export function isHerdrTabNew(c: Command) {
 export const herdrCloseKey = (close: HerdrClose) =>
     `${close.scope}:${close.target ?? ''}`;
 
+// a layout change kills the thread in the focused tab (herdr-app#861, probed 2026-11-11 on 0.1.15, herdr/PRODUCT.md): a
+// verb that shows or replaces a layout, or a write to its file; a click on a node (hide, show, resize) kills nothing
+const LAYOUT_CHANGES = new Set([
+    'app.reset',
+    'layout.clone',
+    'layout.reset',
+    'layout.set',
+    'layout.switch',
+]);
+const isLayoutPath = (text: string) =>
+    /herdr-app\/layouts(\/|$)/.test(
+        text.replaceAll(/\/+/g, '/').replaceAll(/\/(\.\/)+/g, '/'),
+    );
+const LAYOUT_READERS = new Set([
+    'bat',
+    'cat',
+    'cd',
+    'diff',
+    'echo',
+    'file',
+    'grep',
+    'head',
+    'jq',
+    'less',
+    'ls',
+    'printf',
+    'rg',
+    'stat',
+    'tail',
+    'wc',
+]);
+const GIT_WRITES = new Set(['apply', 'checkout', 'mv', 'restore', 'rm']);
+// the programs that run a heredoc's text as code
+const LAYOUT_PROGRAMS =
+    /^(python[\d.]*|node|bun|deno|ruby|perl|php|lua|osascript|sh|bash|zsh|dash)$/;
+function layoutChangeOf(c: Command) {
+    const words = c.args.map((w) => w.text);
+    if (c.name === 'herdr-app' && words[0] === 'do') {
+        const rest = words.slice(1);
+        const verb =
+            rest.find((w) => !w.startsWith('-') && !w.startsWith('{')) ??
+            jsonOf(rest.find((w) => w.startsWith('{')))?.name;
+        if (typeof verb === 'string' && LAYOUT_CHANGES.has(verb))
+            return `herdr-app do ${verb}`;
+        return undefined;
+    }
+    const named = (t: string) =>
+        isLayoutPath(t) || isLayoutPath(`${c.dir}/${t}`);
+    if ([...c.writes, ...c.appends].some(named)) return 'a layout file write';
+    const operands = words.filter((w) => !w.startsWith('-'));
+    const isWriter =
+        c.name === 'cp'
+            ? named(operands.at(-1) ?? '')
+            : // sed writes from inside its script too (`w <file>`), so the path may stand only as the file it reads
+              c.name === 'sed'
+              ? (words.some((w) => /^(-\w*i|--in-place)/.test(w)) &&
+                    operands.some(named)) ||
+                words.some((w) =>
+                    [...w.matchAll(/(?:^|[;}/\d$\s])[wW]\s+(\S+)/g)].some((m) =>
+                        named(m[1] ?? ''),
+                    ),
+                )
+              : // git names a path in a message or a read; only these verbs change the file
+                c.name === 'git'
+                ? GIT_WRITES.has(operands[0] ?? '') && operands.some(named)
+                : (!LAYOUT_READERS.has(c.name) && operands.some(named)) ||
+                  (LAYOUT_PROGRAMS.test(c.name) && c.bodies.some(isLayoutPath));
+    return isWriter ? 'a layout file write' : undefined;
+}
+
 // a close passes only on a lookup (`herdrSafe`, filled by the caller): an overlay herdr lists open, since a close of one
 // that is not there falls to whatever herdr picks (FRM-574 decided 4); any other close, the terminals it ends, none a live seat
 export function herdrClose(c: Command, ctx: Context): Refusal | undefined {
+    const layout = layoutChangeOf(c);
+    if (layout)
+        return {
+            door: 'a layout change only on dima’s word, with a throwaway tab focused: put the whole command in an orbit ask for his tick',
+            rule: 'herdr-layout',
+            targets: [layout],
+            why: `${layout} kills the thread in the focused tab (herdr-app#861)`,
+        };
     const close = herdrCloseOf(c);
     if (!close) return undefined;
     const door =

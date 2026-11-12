@@ -47,3 +47,15 @@ From `quiet-log:*` in x-mod-stash's store, every coordinator session (main and w
 - started a turn: 72, 15 %: 43 done, 24 ask, 3 escalate, 2 untagged; 0 lone notices
 - retro card's classifier over main alone: 27 of 368 machine wakes did nothing, 26 only logged, about 14 %
 - not read here: alarm keys (FRM-501's second number), and the baseline over 5 codie chunks that FRM-368's gate asks
+
+## 2026-11-12 round: 11-11 12:00 to 11-12 04:00
+
+From `quiet-log:2026-11-11` and `quiet-log:2026-11-12` (store keys are UTC days) in x-mod-stash's store `~/.claude/plugins/store/x-mod-stash_inline-99d499f0f4e0.json`, every coordinator session, lines with `at` in 10:00Z to 02:00Z, read 11-12 14:07: 492 lines, 134 of them flushes repeating held ones, so 358 messages. The 11-11 key held 477 lines, under its 500 cap, so nothing was cut; its first line is 13:34 local.
+- no turn: 134 held, 74 passed mid-turn, 25 lone notices logged
+- started a turn: 125, 35 %: 69 done, 44 ask, 9 escalate, 3 untagged; 0 lone notices
+- the file's Classifier over main alone (`f6de81e0` and `1e70bf35`, both `🦉 clio`; 1e70bf35 resumes f6de81e0 and shares 10558 record uuids, so records are counted once by uuid), read 11-12 14:07: 87 machine wakes, all `<task-notification` (0 member wakes, 0 `The session` or idle-notice wakes); did nothing 1 (bare by text under 200 chars and read-only, 1 %); bare by text 17, 20 %; only logged: not reproduced
+- the 11-07 «retro card» classifier: not reproduced, its script is not on disk, so «did nothing» and «only logged» are not counted the card's way
+- reading: turn-starting went 15 % to 35 % and empty went about 14 % to 1 % (lower bound) or 20 % (bare by text), and neither pair is comparable. Turn-starting is the same stash-log read on both days, but the 11-07 read (600 lines, source keys not stated) cannot be rebuilt, since the 11-06 key sits at its 500-line cap today; this window has 358 messages against 484, and the mix differs (11-07 held 115 and passed 75 mid-turn against 134 and 74 here). The empty number is not comparable at all: 11-07's 27 + 26 of 368 came from the retro card's own classifier, over a wider window with member and session-ping wakes; here the Classifier section is run on a window where main got only task-notifications, and «only logged» has no definition in it, so 1 % undercounts and 20 % counts every short reply, 16 of them after a Bash call.
+
+## verdict, 2026-11-12 15:55 (dima's o21 tick)
+- the quiet hold does its job: over 11-11 12:00 to 11-12 04:00, main took 87 machine wakes, all its own job notices, 0 member wakes, 1 that did nothing; of member messages that started a turn, all but 3 were tagged done, ask or escalate. the re-count reminder is dropped; no further round is planned.

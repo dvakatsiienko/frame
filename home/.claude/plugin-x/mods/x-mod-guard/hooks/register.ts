@@ -487,8 +487,22 @@ async function overrideGrant($: EngineInterface, scope: string) {
     const path = await overrideStorePath($);
     return path ? overrideGrantAt($, path, scope) : undefined;
 }
+async function overrideGuards($: EngineInterface) {
+    const path = await overrideStorePath($);
+    return path
+        ? overrideGrantAt($, path, 'guards', await $.session.id())
+        : undefined;
+}
 
 // the store after his typed ask, and the note the model reads; a write that fails is told, never silent
+// the rm type of refusal his per-session guards grant opens (dima, FRM-524:W49)
+const GUARDS_RULES: ReadonlySet<string> = new Set([
+    'git-discard',
+    'git-rewrite',
+    'kill',
+    'rm',
+    'stash-sweep',
+]);
 async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
     const path = await overrideStorePath($);
     if (!path)
@@ -499,8 +513,18 @@ async function overrideFlip($: EngineInterface, ask: OverrideAsk) {
         grants = JSON.parse(raw) as OverrideGrants;
     } catch {}
     const at = new Date(await $.clock.now()).toISOString();
-    const after = JSON.stringify(overrideAfter(grants, ask, at));
+    // guards is per session, keyed `guards:<session>` as x reads a session scope; prs stays global (FRM-524:W49)
+    const after = JSON.stringify(
+        ask.scope === 'guards'
+            ? {
+                  ...grants,
+                  [`guards:${await $.session.id()}`]: { at, by: ask.by },
+              }
+            : overrideAfter(grants, ask, at),
+    );
     if (after !== raw) await $.fs.write(path, after);
+    if (ask.scope === 'guards')
+        return `operator-override guards is on for this session, by ${ask.by}: ${[...GUARDS_RULES].join(', ')} refusals run here; every other rule, the forgery fences and the merge doors still hold`;
     return ask.scope === 'off'
         ? "operator-override is off, by dima's typed words"
         : `operator-override prs is on, by ${ask.by}: x lane merge-auto <pr> --apply lands every pr; his hold and the brake still stop it`;
@@ -632,6 +656,9 @@ const WARN_ONLY: ReadonlySet<string> = new Set([
     // warn-only until sixth sense's clean and a 2-day replay with 0 fires on real calls (clio, 17:04)
     'pane-keys',
     'herdr-start',
+    // a layout change kills the focused thread (herdr-app#861), but the herdr lane writes layouts as its own work: a warn
+    // week first (clio, 14:32)
+    'herdr-layout',
     // FRM-579: a start door a non-coordinator names warns, logged, until dima promotes it after a quiet day (15:47,
     // «stop locking yourself out»)
     'start-door',
@@ -1269,6 +1296,38 @@ async function keepTypedSigns($: EngineInterface, text: string) {
         ...kept.filter((s) => now - s.at <= TICK_MS),
         ...ids.map((id) => ({ at: now, id })),
     ]);
+}
+// what the sign door found for an id, said in its refusal so a missed word shows where it went (FRM-566, 2026-11-12)
+async function signSeen($: EngineInterface, scope: string, id: string) {
+    const now = await $.clock.now();
+    const { value: signs = [] } = await $.state
+        .get(SIGNS)
+        .catch(() => ({ value: [] }));
+    const { value: seatTicks = [] } = await $.state
+        .get(TICKS)
+        .catch(() => ({ value: [] }));
+    const ticks = [...seatTicks, ...(await herdrTicks($).catch(() => []))];
+    const { value: spent = [] } = await $.state
+        .get(SPENT)
+        .catch(() => ({ value: [] }));
+    const ago = (at: number) => `${Math.round((now - at) / 60_000)} min ago`;
+    const typed = signs
+        .filter((s) => s.id === id)
+        .map(
+            (s) =>
+                `his typed sign ${ago(s.at)}${spent.includes(`typed@${s.at}:${scope}`) ? ', spent' : ''}${now - s.at > TICK_MS ? ', past 2 h' : ''}`,
+        );
+    const ticked = ticks
+        .filter((t) => isSignAsk(t.text, id))
+        .map(
+            (t) =>
+                `his tick on ${t.id} ${ago(t.at)}${spent.includes(`${t.id}@${t.at}:${scope}`) ? ', spent' : ''}${now - t.at > TICK_MS ? ', past 2 h' : ''}`,
+        );
+    const other = ticks.length - ticked.length;
+    return (
+        [...typed, ...ticked].join('; ') ||
+        `no typed «sign ${id}» and no tick on a «✍️ sign ${id}: …» ask in this session (${ticks.length} ticks held, ${other} on other asks)`
+    );
 }
 async function typedSignFor(
     $: EngineInterface,
@@ -2189,6 +2248,7 @@ export const register: Register = (on) => {
         const spends: string[] = [];
         // the ids whose body set this line writes the file of, judged as it runs (r2): their `x` runs the sign check
         const signChecked = new Set<string>();
+        const signRuns: { file: string; id: string; keys: string[] }[] = [];
         const go = async (ran = command) => {
             const run =
                 (signChecked.size && withSignCheck(ran, signChecked)) || ran;
@@ -2218,6 +2278,35 @@ export const register: Register = (on) => {
                 await keepTabsMade($, typed, cwd, result.text).catch(
                     () => undefined,
                 );
+            // a line's exit is not its set's: a `; echo` after a refused set exits 0 (FRM-566), so a body sign stays spent
+            // only once x's judge reads its sign line in the ticket's body; a file gone after the run stays spent
+            if (result.deny === undefined && !result.isError)
+                for (const r of signRuns) {
+                    const text = await signFile($, r.file).catch(
+                        () => undefined,
+                    );
+                    if (text === undefined) continue;
+                    if ((await hasNewSignLine($, r.id, text)) === false) {
+                        // the spend of his word, kept with the line that spent it, for the next readout's reader
+                        await record($, {
+                            command,
+                            door: "dima's word",
+                            kind: 'escaped',
+                            rule: 'sign-untick',
+                            target: r.id,
+                            why: `spent ${r.keys.join(', ')}`,
+                        });
+                        continue;
+                    }
+                    const { value: held = [] } = await $.state.get(SPENT);
+                    await $.state.set(
+                        SPENT,
+                        held.filter((k) => !r.keys.includes(k)),
+                    );
+                    $.ui.log(
+                        `x-mod-guard: ${r.id}'s body set ran but x's body lacks its sign line, so dima's word is kept for the retry`,
+                    );
+                }
             // a call that failed never spends his word: the retry passes on it (FRM-574 decided 7)
             if (
                 (result.deny !== undefined || result.isError) &&
@@ -2539,6 +2628,7 @@ export const register: Register = (on) => {
                 !(await typedSignFor($, scope, sign.id, []))
             )
                 signChecked.add(sign.id);
+            const spentBefore = signSpends.length;
             if (
                 isNewSign &&
                 !(await tickFor(
@@ -2572,7 +2662,10 @@ export const register: Register = (on) => {
                               targets: [sign.id],
                               why: "a sign is dima's word: only his tick on the ticket's sign ask, or his own typed «sign <id>», carries it",
                           };
-                const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
+                const seen = await signSeen($, scope, sign.id).catch(
+                    () => 'the sign store did not read',
+                );
+                const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. the guard holds: ${seen}.`;
                 {
                     const stop = await enforce(
                         r,
@@ -2582,6 +2675,17 @@ export const register: Register = (on) => {
                     if (stop) return stop;
                 }
             }
+            // a body sign his word carried is spent only once x took it, read back after the run (FRM-566)
+            if (
+                !isLabel &&
+                sign.file !== undefined &&
+                signSpends.length > spentBefore
+            )
+                signRuns.push({
+                    file: sign.file,
+                    id: sign.id,
+                    keys: signSpends.slice(spentBefore),
+                });
         }
         // a re-sign on a cli or mods ticket carries a changed `## ⚖️ worth it` section or says why it stands (FRM-486); a ticket linear
         // cannot read counts as unchanged, and the warning names the failed read
@@ -2915,6 +3019,25 @@ export const register: Register = (on) => {
         if (verdict.kind === 'refused') {
             const found = refusals(command, cwd, { ...ctx, ...facts });
             const targets = [...new Set(found.flatMap((r) => r.targets))];
+            // his guards grant for this session opens the rm type of refusal, and only when every refusal is one
+            const guards =
+                found.length > 0 && found.every((r) => GUARDS_RULES.has(r.rule))
+                    ? await overrideGuards($).catch(() => undefined)
+                    : undefined;
+            if (guards) {
+                await record($, {
+                    command,
+                    door: `operator-override guards, by ${guards.by} at ${guards.at}`,
+                    kind: 'escaped',
+                    rule: found[0]?.rule ?? 'rm',
+                    target: targets.join(', '),
+                    why: "dima's per-session guards grant",
+                });
+                $.ui.log(
+                    `x-mod-guard: ran on operator-override guards: ${targets.join(', ')}`,
+                );
+                return go();
+            }
             const asked = await stashAllowed($, command, cwd, ctx, found);
             if (asked) {
                 await record($, {

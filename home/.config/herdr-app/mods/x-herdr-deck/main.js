@@ -16,6 +16,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import { rejoin } from './joined.js';
 import {
     ORDER_KEY,
     PENDING_MS,
@@ -26,6 +27,7 @@ import {
     askLabel,
     asksOf,
     byName,
+    canTakeBack,
     dropPress,
     hasSteerBox,
     hotOf,
@@ -33,9 +35,11 @@ import {
     hotPresses,
     inListOrder,
     literalAngles,
+    lockedLabel,
     nextThreads,
     pendingPresses,
     phasesOf,
+    pressLabel,
     runningThreads,
     savePress,
     sentSteer,
@@ -52,11 +56,6 @@ import {
 /** @typedef {Record<string, Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {{ asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
-// cc's session registry stores a zero-width joiner as a space: «🐦‍⬛ crow» comes back as «🐦 ⬛ crow»
-const JOINED = ['🐦‍⬛', '🐦‍🔥', '🙋‍♂️'];
-/** @param {string} name */
-const rejoin = (name) =>
-    JOINED.reduce((n, j) => n.replaceAll(j.replace('‍', ' '), j), name);
 
 /** @typedef {{ id?: string, title: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
 
@@ -602,9 +601,9 @@ export default class FleetBoard extends View {
         }
     }
 
-    // his second click on a ticked ask takes it back until a turn took it: a press the stash has not read leaves the
-    // ticks file, one it has read gets an untick line (untickDoor). the stash skips untick lines today
-    // (x-mod-stash hooks/orbit.ts herdrTicks), so a read tick still reaches the turn
+    // his second click on a ticked or replayed ask takes it back until a turn took it: a press the stash has not read
+    // leaves the ticks file, one it has read gets an untick line (untickDoor), which the stash answers by dropping the
+    // mark (x-mod-stash hooks/orbit.ts herdrTicks)
     /** @param {Context} cx @param {Row} s @param {Ask} ask */
     async unpress(cx, s, ask) {
         const key = `${s.sid}:${ask.id}`;
@@ -645,7 +644,7 @@ export default class FleetBoard extends View {
         const steer = this.steers.get(key);
         const state = tickState(ask, sent);
         const done = state !== 'open';
-        const canUntick = state === 'ticked';
+        const canUntick = canTakeBack(state);
         const sentText = sentSteer(state, keptSteer(key));
         // tick is the main act, so it is the one filled button
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
@@ -771,8 +770,8 @@ export default class FleetBoard extends View {
                         h_flex().child(
                             button(
                                 'untick',
-                                '✅ ticked',
-                                'ticked: click again to take it back, until a turn takes it',
+                                pressLabel(state).label,
+                                pressLabel(state).tip,
                                 (cx) =>
                                     cx.spawn((cx) => this.unpress(cx, s, ask)),
                             ),
@@ -784,11 +783,7 @@ export default class FleetBoard extends View {
                         div()
                             .text_size(SIZE.secondary)
                             .text_color(t.muted)
-                            .child(
-                                state === 'locked'
-                                    ? '🔒 ticked, the session took it'
-                                    : `🔁 replay${ask.mark ? '' : ', waiting for the session'}`,
-                            ),
+                            .child(lockedLabel(ask)),
                     ),
                 )
         );

@@ -140,6 +140,8 @@ function world(
 ) {
     mock.clock(on, { now: NOW });
     const store = liveStore(on);
+    // the layout rule warns until its clean; these rows read it as it will refuse
+    store.set('rule-mode:herdr-layout', 'enforce');
     answerPrompts(on);
     const ran: string[] = [];
     const fail = new Set<string>();
@@ -294,6 +296,95 @@ for (const line of [
         world(on);
         expect((await bash($, line)).deny).toContain('every herdr seat');
     });
+
+// FRM-569: a layout change kills the thread in the focused tab (herdr-app#861, probed on 0.1.15): a switch, a save of
+// `layouts/*.json`, a set, a clone or a reset
+const LAYOUT = '/home/.config/herdr-app/layouts/zoo.json';
+for (const line of [
+    'herdr-app do layout.switch',
+    'herdr-app do layout.switch --name zoo',
+    `herdr-app do '{"name":"layout.switch","layout":"zoo"}'`,
+    'herdr-app do layout.clone --name zoo',
+    `herdr-app do layout.set '{"layout":"zoo","tree":{}}'`,
+    'herdr-app do layout.reset --name zoo',
+    'herdr-app do app.reset',
+    `echo '{}' > ${LAYOUT}`,
+    `cp /tmp/zoo.json ${LAYOUT}`,
+    'cp /tmp/zoo.json ~/.config/herdr-app/layouts/',
+    'mv /tmp/zoo.json "$HOME/.config/herdr-app/layouts/zoo.json"',
+    `jq '.a = 1' ${LAYOUT} | tee ${LAYOUT}`,
+    `sed -i '' 's/a/b/' ${LAYOUT}`,
+    `python3 -c "open('${LAYOUT}', 'w').write('{}')"`,
+    'cd ~/.config/herdr-app/layouts && echo x > zoo.json',
+    // the local review: a heredoc program, sed's own w command, a path with // or /./
+    `python3 - <<'EOF'\nopen('${LAYOUT}', 'w').write('{}')\nEOF`,
+    `sed -n 'w ${LAYOUT}' /tmp/z.json`,
+    "echo '{}' > /home/.config/herdr-app//layouts/zoo.json",
+    "echo '{}' > /home/.config/herdr-app/./layouts/zoo.json",
+    // the second review: sed's w after an address, its script the only operand
+    `echo x | sed -n '1w ${LAYOUT}'`,
+    `bash <<'EOF'\necho '{}' > ${LAYOUT}\nEOF`,
+    `git mv /tmp/zoo.json ${LAYOUT}`,
+    `echo x | sed 's/a/b/w ${LAYOUT}'`,
+    "cd ~/.config/herdr-app/layouts && sed -n 'w zoo.json' /tmp/z.json",
+])
+    test(`a herdr layout change is refused: ${line}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([
+            expect.stringContaining('herdr-app#861'),
+            [],
+        ]);
+    });
+
+for (const line of [
+    'herdr-app do layout.hide --node n1',
+    'herdr-app do layout.show --node n1',
+    'herdr-app do layout.toggle --node n1',
+    'herdr-app do layout.resize --node n1 --size 30',
+    `cat ${LAYOUT}`,
+    `jq . ${LAYOUT}`,
+    'ls ~/.config/herdr-app/layouts',
+    `cp ${LAYOUT} /tmp/zoo.json`,
+    'cd ~/.config/herdr-app/layouts && cat zoo.json',
+    `sed -n 1,5p ${LAYOUT}`,
+    'cd ~/.config/herdr-app/layouts && sed -n 1,5p zoo.json',
+    "git commit -F - -- a.ts <<'EOF'\nfix ~/.config/herdr-app/layouts/zoo.json\nEOF",
+    'git commit -m "fix ~/.config/herdr-app/layouts/zoo.json" -- a.ts',
+    `git diff -- ${LAYOUT}`,
+    "tee /tmp/notes.md <<'EOF'\nthe tabs live in ~/.config/herdr-app/layouts/zoo.json\nEOF",
+])
+    test(`a layout click or read runs: ${line}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await bash($, line);
+        expect([r.deny, ran]).toEqual([undefined, [line]]);
+    });
+
+test('the layout rule ships warn-only: the switch runs with a would-refuse note', async ($, on) => {
+    const { ran, store } = world(on);
+    store.delete('rule-mode:herdr-layout');
+    const line = 'herdr-app do layout.switch --name zoo';
+    const r = await bash($, line);
+    expect([r.deny, ran, JSON.stringify(r)]).toEqual([
+        undefined,
+        [line],
+        expect.stringContaining('herdr-layout'),
+    ]);
+});
+
+test('his tick on an ask quoting a layout switch runs it once', async ($, on) => {
+    const line = 'herdr-app do layout.switch --name zoo';
+    const { ran } = world(on, [
+        {
+            at: NOW - 1,
+            id: 'o5',
+            targets: [line],
+            text: `⚠️ switch the layout: \`${line}\``,
+        },
+    ]);
+    const r = await bash($, line);
+    expect([r.deny, ran]).toEqual([undefined, [line]]);
+});
 
 test('his tick on an ask quoting the close runs it once', async ($, on) => {
     const line = 'hc kill t20';

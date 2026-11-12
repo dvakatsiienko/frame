@@ -76,7 +76,9 @@ The questions, drop any the prep settled:
    «glass ↔ swiss»)
 6. axis 2 — two candidate pairs, different in kind from axis 1 (one about material or feel, one
    about layout)
-7. references — up to 3 links with **what exactly to take** from each, yours or his
+7. references — up to 3 links with **what exactly to take** from each, yours or his; first, his
+   taste or an experiment: a) the brief's References names `~/projects/studio/taste.md` b) it
+   stays unread, so a new style can come (dima, 2026-11-12: a pointer, never loaded by default)
 8. do and don't lines — 5 candidates each (don'ts start from the AI look), ticked by default;
    the brief needs ≥3 of each, and he marks the **hard** ones
 9. states — the takes draw the ideal state + one more and the rest go on the pick, or all

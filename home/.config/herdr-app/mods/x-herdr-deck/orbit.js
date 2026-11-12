@@ -287,7 +287,32 @@ export const sentSteer = (state, text) =>
  * @returns {'drop' | 'untick'}
  */
 export const untickDoor = (pending, mark) =>
-    pending === 'tick' && !mark ? 'drop' : 'untick';
+    (pending === 'tick' || pending === 'replay') && !mark ? 'drop' : 'untick';
+
+/**
+ * his second click takes a tick or a replay back until a turn takes it (PK-386: a replay locked at once)
+ * @param {ReturnType<typeof tickState>} state
+ */
+export const canTakeBack = (state) =>
+    state === 'ticked' || state === 'replayed';
+
+/** the take-back button: the press it takes back @param {ReturnType<typeof tickState>} state */
+export const pressLabel = (state) =>
+    state === 'replayed'
+        ? {
+              label: '🔁 replayed',
+              tip: 'replayed: click again to take it back, until a turn takes it',
+          }
+        : {
+              label: '✅ ticked',
+              tip: 'ticked: click again to take it back, until a turn takes it',
+          };
+
+/** what a locked ask says: which press the session took @param {Ask} ask */
+export const lockedLabel = (ask) =>
+    ask.mark === 'rejected'
+        ? '🔒 replayed, the session took it'
+        : '🔒 ticked, the session took it';
 
 /**
  * an ask's id as the board draws it: every thread numbers its asks on its own, so a wing's reads `w1·o8`, another

@@ -2,7 +2,7 @@ import { touchesStore } from './clean-stamp.ts';
 import { type Refusal, basename, commandsDeep } from './command.ts';
 
 // wispr types «Operator override PRs.», so case and a closing period pass; anything else around the words reads as talk about them
-const WORD = /^operator[- ]override (prs|off)\.?$/i;
+const WORD = /^operator[- ]override (prs|guards|off)\.?$/i;
 const SHIFT = /^\/clio:shift\s+\S+$/;
 const TYPED_DOWN = /operator[- ]override\b|\/clio:shift\b/i;
 const REX_READS = new Set(['capture', 'list', 'ls']);
@@ -26,8 +26,8 @@ export function overrideAsked(text: string): OverrideAsk | undefined {
     const prompt = typedPart(text);
     if (SHIFT.test(prompt)) return { by: 'shift', scope: 'prs' };
     const scope = prompt.match(WORD)?.[1]?.toLowerCase();
-    if (scope === 'prs') return { by: 'word', scope };
-    if (scope === 'off') return { by: 'word', scope };
+    if (scope === 'prs' || scope === 'guards' || scope === 'off')
+        return { by: 'word', scope };
     return undefined;
 }
 
@@ -161,6 +161,7 @@ export function overrideTypedDown(
 /* Types */
 export type OverrideAsk =
     | { by: 'shift' | 'word'; scope: 'prs' }
+    | { by: 'word'; scope: 'guards' }
     | { by: 'word'; scope: 'off' };
 
 export type OverrideGrants = Record<

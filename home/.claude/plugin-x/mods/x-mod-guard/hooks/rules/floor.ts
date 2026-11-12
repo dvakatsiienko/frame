@@ -356,7 +356,13 @@ export function floor(c: Command, ctx: Context): Refusal | undefined {
         return rewrite([sub], `git ${sub}`);
     if (sub === 'gc' && hasFlag(subArgs, ['--prune=now']))
         return rewrite(['--prune=now'], 'git gc --prune=now');
-    if (sub === 'worktree' && subOps[0] === 'prune')
+    // a dry run only prints what it would remove (FRM-519 item 17)
+    if (
+        sub === 'worktree' &&
+        subOps[0] === 'prune' &&
+        (!hasFlag(subArgs, ['--dry-run'], 'n') ||
+            hasFlag(subArgs, ['--no-dry-run']))
+    )
         return rewrite(['prune'], 'git worktree prune');
     if (sub === 'worktree' && subOps[0] === 'remove')
         return rewrite(or(subOps.slice(1), 'remove'), 'git worktree remove');
