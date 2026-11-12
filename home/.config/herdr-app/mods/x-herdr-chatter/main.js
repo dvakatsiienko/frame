@@ -72,6 +72,7 @@ import { splitBlocks, withPrompt } from './blocks.js';
 import { viewSwitch } from './chatter-header.js';
 import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
+import { readableBackground } from './contrast.js';
 import { importOldDrafts } from './drafts.js';
 import { foldBlocks } from './fold.js';
 import { rejoin } from './joined.js';
@@ -331,7 +332,12 @@ function chatTheme() {
     const out = {
         ...t,
         accent: ACCENTS.get(look.accent) ?? t.accent,
-        background: HEX.test(look.bg) ? look.bg : (t[look.bg] ?? t.background),
+        background: HEX.test(look.bg)
+            ? look.bg
+            : readableBackground(t[look.bg] ?? t.background, t.foreground, [
+                  t.canvas,
+                  t.surface,
+              ]),
     };
     // A chosen text color also makes the secondary text: the same color, fainter.
     if (HEX.test(look.fg))
