@@ -72,7 +72,7 @@
             "kind": "ours",
             "n": 7,
             "name": "x-herdr-chatter-header (tabs: -header-tabs)",
-            "today": "x-herdr-chatter + my-pane",
+            "today": "x-herdr-chatter + x-herdr-chatter-header",
             "what": "thread's top row (both views), with its Chat | Terminal tabs"
         },
         {

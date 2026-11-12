@@ -69,6 +69,7 @@ import {
     withPress,
 } from './band.js';
 import { splitBlocks, withPrompt } from './blocks.js';
+import { viewSwitch } from './chatter-header.js';
 import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
@@ -1267,44 +1268,6 @@ const plainMarked = (s, re, color) =>
                 .join('\\\n'),
         )
         .join('\n\n');
-
-// The Chat / Terminal switch, the same in my-pane's header (a mod can't import another's).
-function viewSwitch(t, here, flip) {
-    const seg = (id, label) =>
-        div()
-            .id(`view-${id}`)
-            .px(8)
-            .h(20)
-            .flex()
-            .items_center()
-            .rounded(5)
-            .text_size(11.5)
-            .font_medium()
-            .when(id === here, (el) =>
-                el.bg(t.selected).text_color(t.foreground),
-            )
-            .when(id !== here, (el) =>
-                el
-                    .text_color(t.dim)
-                    .cursor_pointer()
-                    .hover((s) => s.text_color(t.foreground))
-                    .on_click((_e, cx) => {
-                        cx.stop_propagation();
-                        flip();
-                    }),
-            )
-            .child(label);
-    return h_flex()
-        .flex_none()
-        .p(2)
-        .gap(2)
-        .rounded(7)
-        .bg(t.surface)
-        .border(1)
-        .border_color(t.border)
-        .child(seg('chat', 'Chat'))
-        .child(seg('terminal', 'Terminal'));
-}
 
 // A tab running Claude before Herdr sees an agent there (its first seconds): it opens on the
 // chat, not the terminal. `panes()` knows the program at once (key "claude"); `terminals()`
