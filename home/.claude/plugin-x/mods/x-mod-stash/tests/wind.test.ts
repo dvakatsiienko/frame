@@ -32,6 +32,8 @@ const PEERS = [
         pid: 3 + i,
         record: { display: name, role: 'sixth-sense' },
     })),
+    // the 01:28 fork: clio's name, no record
+    { name: '🦉 clio', pid: 90, record: {} },
 ];
 // `name` is the session's registry name; `handoffs` the slugs `x handoff peek` finds
 // `during` runs inside the compact, as a turn end that lands while it works would
@@ -540,13 +542,28 @@ const receiveWorld = (on: On, name?: string, role = 'codie') => {
     });
     return { ...w, queued };
 };
-const fromPeer = ($: Engine, body: string, from = CLIO) =>
+// the socket is the sender's own, as cc writes it; the name is only what it signs with
+const fromPeer = (
+    $: Engine,
+    body: string,
+    from = CLIO,
+    pid = PEERS.find((p) => p.name === from)?.pid ?? 1,
+) =>
     $.session.receive({
         origin: { kind: 'peer' },
-        text: `<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="${from}" from-mode="bypass">\n${body}\n</cross-session-message>`,
+        text: `<cross-session-message from="uds:/tmp/cc-socks/${pid}.sock" from-name="${from}" from-mode="bypass">\n${body}\n</cross-session-message>`,
     }) as Promise<{ consumed?: string; text?: string }>;
 const delivered = (lines: string[]) =>
     lines.filter((l) => l.startsWith('🐦‍🔥 held for your second wind'));
+
+// FRM-579 exit 6, sixth sense round 3: a record-less fork that signs as «🦉 clio» holds no wind note, its socket names it
+test('a fork named «🦉 clio» with no record gets no wind note held', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    const r = await fromPeer($, 'next: r6', CLIO, 90);
+    expect(r.text?.includes('held for your second wind')).toBe(false);
+});
 
 test("clio's message to a codie past 55 % becomes the wind note, and joins the first turn after the compact", async ($, on) => {
     const w = receiveWorld(on);

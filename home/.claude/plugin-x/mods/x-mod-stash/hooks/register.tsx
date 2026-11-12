@@ -4426,8 +4426,13 @@ async function holdForWind(
     body: string,
     from: string,
 ): Promise<{ consumed: string } | { text: string } | undefined> {
-    // the sender is a coordinator by the record of the session it names, never by the name it signs with
-    const fromSid = rowOfTo(await registry($), from)?.base.sid;
+    // the sender is a coordinator by the record of the session its socket names, never by the name it signs with: cc
+    // writes the socket into `from`, a fork can share a name
+    const socket = text.match(
+        /<cross-session-message[^>]*\sfrom="([^"]*cc-socks\/\d+\.sock)"/,
+    )?.[1];
+    if (!socket) return undefined;
+    const fromSid = rowOfTo(await registry($), socket)?.base.sid;
     const fromRole = (await threadRecords($)).find(
         (t) => t.sessionId === fromSid,
     )?.role;
