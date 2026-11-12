@@ -81,8 +81,8 @@ behind=$(git -C "$tree" rev-list --count HEAD..refs/heads/main)
 	echo "tree-sync land: stopped, the tree is still $behind behind main" >&2
 	exit 1
 }
-# a peer's git holds main's lock for moments at a time
-for _ in 1 2 3 4 5; do
+# a peer's git holds main's lock for moments at a time, a peer's commit hooks for up to half a minute (3 refusals 11-12)
+for _ in $(seq 30); do
 	output=$(git -C "$root" merge --ff-only --quiet "refs/heads/$branch" 2>&1) && break
 	grep -q 'index.lock' <<<"$output" || break
 	sleep 1
