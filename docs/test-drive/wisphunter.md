@@ -96,4 +96,10 @@ group by 1 order by 2 desc;
 ### round 8 — a live lane's final read, 2026-11-12 (herdr codie, FRM-562 part B, clio's log)
 - one plain-card read on part B's slices 17–27 before its close: 6 findings, all fixed in d2cf8246 (the codie's [done], 00:09); «real» is the codie's word, the findings' text not opened by clio, so not checked
 
+### round 9 — a spec read before the seal, 2026-11-12 (wing 1, FRM-579, no diff)
+- one plain card on the FRM-579 spec against main bc50c02d: 270 s, 82k tokens, 35 tool calls; 12 findings (8 bug, 2 rule, 2 nit), 2 open questions, 2 pre-existing
+- all 12 real by wing 1's read of each cited line: the role field already exists, no door writes the four roles, x's own `callerIsCoordinator` was missing from the readers, the tty shortcut bypass, helga's door named wrong, a grep that would flake; every one folded into the spec before the seal
+- the blind critic (crow:plan-critique, $1.09, 107 s) found 5 beside it, 2 high (the cutover, a store write no door sees); no overlap with wisphunter: the two read different axes, code facts vs threat shape
+- grade vs the usual door (a scout plus a hand read): wider and faster, no miss found later yet; the seal held at `x brief preflight` ok
+
 ## verdict
