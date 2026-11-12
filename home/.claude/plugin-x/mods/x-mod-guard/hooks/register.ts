@@ -2240,6 +2240,7 @@ export const register: Register = (on) => {
         const spends: string[] = [];
         // the ids whose body set this line writes the file of, judged as it runs (r2): their `x` runs the sign check
         const signChecked = new Set<string>();
+        const signRuns: { file: string; id: string; keys: string[] }[] = [];
         const go = async (ran = command) => {
             const run =
                 (signChecked.size && withSignCheck(ran, signChecked)) || ran;
@@ -2269,6 +2270,35 @@ export const register: Register = (on) => {
                 await keepTabsMade($, typed, cwd, result.text).catch(
                     () => undefined,
                 );
+            // a line's exit is not its set's: a `; echo` after a refused set exits 0 (FRM-566), so a body sign stays spent
+            // only once x's judge reads its sign line in the ticket's body; a file gone after the run stays spent
+            if (result.deny === undefined && !result.isError)
+                for (const r of signRuns) {
+                    const text = await signFile($, r.file).catch(
+                        () => undefined,
+                    );
+                    if (text === undefined) continue;
+                    if ((await hasNewSignLine($, r.id, text)) === false) {
+                        // the spend of his word, kept with the line that spent it, for the next readout's reader
+                        await record($, {
+                            command,
+                            door: "dima's word",
+                            kind: 'escaped',
+                            rule: 'sign-untick',
+                            target: r.id,
+                            why: `spent ${r.keys.join(', ')}`,
+                        });
+                        continue;
+                    }
+                    const { value: held = [] } = await $.state.get(SPENT);
+                    await $.state.set(
+                        SPENT,
+                        held.filter((k) => !r.keys.includes(k)),
+                    );
+                    $.ui.log(
+                        `x-mod-guard: ${r.id}'s body set ran but x's body lacks its sign line, so dima's word is kept for the retry`,
+                    );
+                }
             // a call that failed never spends his word: the retry passes on it (FRM-574 decided 7)
             if (
                 (result.deny !== undefined || result.isError) &&
@@ -2584,6 +2614,7 @@ export const register: Register = (on) => {
                 !(await typedSignFor($, scope, sign.id, []))
             )
                 signChecked.add(sign.id);
+            const spentBefore = signSpends.length;
             if (
                 isNewSign &&
                 !(await tickFor(
@@ -2630,6 +2661,17 @@ export const register: Register = (on) => {
                     if (stop) return stop;
                 }
             }
+            // a body sign his word carried is spent only once x took it, read back after the run (FRM-566)
+            if (
+                !isLabel &&
+                sign.file !== undefined &&
+                signSpends.length > spentBefore
+            )
+                signRuns.push({
+                    file: sign.file,
+                    id: sign.id,
+                    keys: signSpends.slice(spentBefore),
+                });
         }
         // a re-sign on a cli or mods ticket carries a changed `## ⚖️ worth it` section or says why it stands (FRM-486); a ticket linear
         // cannot read counts as unchanged, and the warning names the failed read
