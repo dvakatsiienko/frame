@@ -1289,6 +1289,38 @@ async function keepTypedSigns($: EngineInterface, text: string) {
         ...ids.map((id) => ({ at: now, id })),
     ]);
 }
+// what the sign door found for an id, said in its refusal so a missed word shows where it went (FRM-566, 2026-11-12)
+async function signSeen($: EngineInterface, scope: string, id: string) {
+    const now = await $.clock.now();
+    const { value: signs = [] } = await $.state
+        .get(SIGNS)
+        .catch(() => ({ value: [] }));
+    const { value: seatTicks = [] } = await $.state
+        .get(TICKS)
+        .catch(() => ({ value: [] }));
+    const ticks = [...seatTicks, ...(await herdrTicks($).catch(() => []))];
+    const { value: spent = [] } = await $.state
+        .get(SPENT)
+        .catch(() => ({ value: [] }));
+    const ago = (at: number) => `${Math.round((now - at) / 60_000)} min ago`;
+    const typed = signs
+        .filter((s) => s.id === id)
+        .map(
+            (s) =>
+                `his typed sign ${ago(s.at)}${spent.includes(`typed@${s.at}:${scope}`) ? ', spent' : ''}${now - s.at > TICK_MS ? ', past 2 h' : ''}`,
+        );
+    const ticked = ticks
+        .filter((t) => isSignAsk(t.text, id))
+        .map(
+            (t) =>
+                `his tick on ${t.id} ${ago(t.at)}${spent.includes(`${t.id}@${t.at}:${scope}`) ? ', spent' : ''}${now - t.at > TICK_MS ? ', past 2 h' : ''}`,
+        );
+    const other = ticks.length - ticked.length;
+    return (
+        [...typed, ...ticked].join('; ') ||
+        `no typed «sign ${id}» and no tick on a «✍️ sign ${id}: …» ask in this session (${ticks.length} ticks held, ${other} on other asks)`
+    );
+}
 async function typedSignFor(
     $: EngineInterface,
     scope: string,
@@ -2585,7 +2617,10 @@ export const register: Register = (on) => {
                               targets: [sign.id],
                               why: "a sign is dima's word: only his tick on the ticket's sign ask, or his own typed «sign <id>», carries it",
                           };
-                const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}.`;
+                const seen = await signSeen($, scope, sign.id).catch(
+                    () => 'the sign store did not read',
+                );
+                const said = `x-mod-guard stopped this one command. instead: ${r.door}. why: ${r.why}. the guard holds: ${seen}.`;
                 {
                     const stop = await enforce(
                         r,

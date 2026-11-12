@@ -776,6 +776,12 @@ export function signWords(
     cwd: string,
     ctx: Context = {},
 ): { id: string; file?: string; isOpaque?: boolean }[] {
+    // a backtick or `$(` runs a shell only outside python and js, where it is a string's own text
+    const runsAProcess = (name: string, text: string) =>
+        /subprocess|popen|system|exec|spawn|fork|child_process|pty|__import__|import\s*\(|importlib|getattr|eval|compile|pickle|marshal|ctypes/i.test(
+            text,
+        ) ||
+        (!/^(python[\d.]*|node|bun|deno)$/.test(name) && /`|\$\(/.test(text));
     const out: { id: string; file?: string; isOpaque?: boolean }[] = [];
     for (const c of commandsDeep(command, cwd)) {
         // a program the guard cannot parse that runs a linear set or body write signs each id its text names (sixth sense
@@ -809,7 +815,13 @@ export function signWords(
                 ...fed,
                 ...c.bodies,
             ].join('\n');
-            if (/\blinear\b/.test(text) && /--set\b|--add-label\b/.test(text))
+            // a program that can start no process only writes the words, so quoting a sign command signs nothing
+            // (codie's 15:28 handoff write); any door to a process, a shell or code it builds keeps the old read
+            if (
+                /\blinear\b/.test(text) &&
+                /--set\b|--add-label\b/.test(text) &&
+                runsAProcess(c.name, text)
+            )
                 out.push(
                     ...[...new Set(text.match(TICKET_ANY) ?? [])].map((id) => ({
                         id,

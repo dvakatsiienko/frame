@@ -34,6 +34,8 @@ function world(
         isSlugDown?: boolean;
         isXDown?: boolean;
         isXMissing?: boolean;
+        // x's real answer to a new sign line: exit 1, status failed (FRM-566, 2026-11-12)
+        isSignFailedLive?: boolean;
     } = {},
 ) {
     const clock = mock.clock(on, { now: NOW });
@@ -72,10 +74,14 @@ function world(
                 (e.argv.includes('read') && body === undefined) ||
                 (e.argv[0] === 'cat' && cat === undefined) ||
                 (e.argv.includes('sign-check') &&
-                    !signVerdict(e.init?.stdin ?? '')) ||
+                    !signVerdict(e.init?.stdin ?? '') &&
+                    !opts.isSignFailedLive) ||
                 (opts.isXMissing && e.argv[0] === 'x')
                     ? 127
                     : (opts.isXDown && e.argv[0] === 'x') ||
+                        (opts.isSignFailedLive &&
+                            e.argv.includes('sign-check') &&
+                            !signVerdict(e.init?.stdin ?? '')) ||
                         (opts.isSlugDown && e.argv.includes('repo-slug'))
                       ? 1
                       : 0,
@@ -115,27 +121,39 @@ function world(
                                           holdsUnread: '',
                                       },
                                   })
-                                : e.argv.includes('sign-check')
+                                : opts.isSignFailedLive &&
+                                    e.argv.includes('sign-check') &&
+                                    !signVerdict(e.init?.stdin ?? '')
                                   ? JSON.stringify({
-                                        data: { newSign: false },
-                                        ok: signVerdict(e.init?.stdin ?? ''),
-                                        status: signVerdict(e.init?.stdin ?? '')
-                                            ? 'ok'
-                                            : 'refused',
+                                        error: "the file holds a sign line the ticket's body lacks; a sign is dima's word",
+                                        ok: false,
+                                        status: 'failed',
                                     })
-                                  : e.argv.includes('repo-slug')
+                                  : e.argv.includes('sign-check')
                                     ? JSON.stringify({
-                                          data: { repo: 'dvakatsiienko/bytes' },
+                                          data: { newSign: false },
+                                          ok: signVerdict(e.init?.stdin ?? ''),
+                                          status: signVerdict(
+                                              e.init?.stdin ?? '',
+                                          )
+                                              ? 'ok'
+                                              : 'refused',
                                       })
-                                    : e.argv.includes('read')
+                                    : e.argv.includes('repo-slug')
                                       ? JSON.stringify({
                                             data: {
-                                                tickets: [
-                                                    { description: body },
-                                                ],
+                                                repo: 'dvakatsiienko/bytes',
                                             },
                                         })
-                                      : '',
+                                      : e.argv.includes('read')
+                                        ? JSON.stringify({
+                                              data: {
+                                                  tickets: [
+                                                      { description: body },
+                                                  ],
+                                              },
+                                          })
+                                        : '',
         },
     }));
     const refuse: string[] = [];
@@ -2737,3 +2755,62 @@ for (const [why, line, ids] of [
         const r = await bash($, line);
         expect([r.deny, ran]).toEqual([undefined, [checked(line, ...ids)]]);
     });
+
+// FRM-566, 2026-11-12 15:21–15:31: his tick on the sign ask, then his typed «sign FRM-566», each let the label through
+// while the body set carrying the new sign line stayed refused; x answers that body exit 1, status «failed»
+const BODY_SET =
+    "x linear body FRM-566 --set /repo/FRM-566.md 2>&1 | jq -r '.error // .' | head -5";
+const liveSignWorld = (on: On, ticks: Tick[] = []) => {
+    const w = world(on, ticks, UNSIGNED, undefined, [], {
+        isSignFailedLive: true,
+    });
+    on('fs.read', (_$, e) =>
+        e.path === '/repo/FRM-566.md'
+            ? {
+                  value: `${UNSIGNED}\n## signed\n\n✍️ signed ${today()} · body e0590c85\n`,
+              }
+            : { deny: 'outside the readable paths' },
+    );
+    return w;
+};
+// codie's handoff at 15:28: a program's text that quotes a sign command, written into a file, signs nothing
+for (const line of [
+    `python3 - <<'EOF'\nopen('/tmp/notes.md', 'a').write("the label: x linear set FRM-566 --add-label signed")\nEOF`,
+    `python3 - /tmp/a.md /tmp/b.md <<'EOF'\nimport sys\ns = open(sys.argv[1]).read()\nopen(sys.argv[2], 'w').write(s.replace('next', '\`x linear body FRM-566 --set <file>\` refused, then next'))\nEOF`,
+])
+    test(`a script quoting a sign command in its text signs nothing: ${line.slice(0, 50)}`, async ($, on) => {
+        const { ran } = signWorld(on);
+        const r = await bash($, line);
+        expect([signFlagged(r), r.deny, ran]).toEqual([
+            false,
+            undefined,
+            [line],
+        ]);
+    });
+
+test('a refused body set says what the guard holds of his word', async ($, on) => {
+    liveSignWorld(on);
+    const r = await bash($, BODY_SET);
+    expect(r.deny).toContain(
+        'the guard holds: no typed «sign FRM-566» and no tick on a «✍️ sign FRM-566: …» ask',
+    );
+});
+test('his typed «sign FRM-566» lets the body set carrying its sign line through', async ($, on) => {
+    const { ran } = liveSignWorld(on);
+    await hisNext($, 'sign FRM-566');
+    const r = await bash($, BODY_SET);
+    expect([r.deny, ran]).toEqual([undefined, [BODY_SET]]);
+});
+test('his one tick on the sign ask carries the label and the body set', async ($, on) => {
+    const { ran } = liveSignWorld(on, [
+        tick(
+            '✍️ sign FRM-566: x-herdr: one settings layout and theming support from day one',
+        ),
+    ]);
+    const label = labelOf('FRM-566');
+    const rs = [await bash($, label), await bash($, BODY_SET)];
+    expect([rs.map((r) => r.deny), ran]).toEqual([
+        [undefined, undefined],
+        [label, BODY_SET],
+    ]);
+});
