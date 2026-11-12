@@ -40,7 +40,9 @@ one; an ingest without `--for` is refused. x does the mechanics and refuses rath
 
 Then: ingest per spec. **Verify live-state claims before acting on them** (tickets by query,
 sessions by pid). Confirm ≤2 lines, proceed as the old thread. Nothing pending → one line;
-suggest the sender side (`/handoff` in the old thread).
+suggest the sender side (`/handoff` in the old thread). A slug the store no longer holds, when this
+thread's context already carries that CST (a second wind's queued ingest arriving after it was taken):
+end the turn with no reply.
 
 ## Completion criterion
 

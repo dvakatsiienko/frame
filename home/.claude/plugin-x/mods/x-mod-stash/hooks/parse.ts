@@ -254,6 +254,8 @@ export type BackgroundTask = {
     description: string;
     command?: string;
     agent_type?: string;
+    // cc's task kind: `monitor` for a watch, `shell` for a background command
+    type?: string;
     state?: 'done' | 'failed';
 };
 

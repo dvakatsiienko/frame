@@ -1216,14 +1216,14 @@ const WIND_SAY = {
     stopped: 'stopped, its handoff is still in the store',
     writing: 'finishing its step, then its handoff',
 } as const;
-const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (codie: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods codie; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a background job, a task not parked), which refuses the compact until it is resolved: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
+const WIND_HOW = `write your handoff with x:handoff (audience: your own role token, slug <lane or topic>-<n>); its first first-act is your role's init list — every skill your role loads at its start and every file it reads whole (codie: x:crew-codie, x:crew-dna read whole, the tree's AGENTS.md, and its lane's own, plugin-authoring for a mods codie; clio: her boot), since a compact re-attaches only some of your skills. then call ${ORBIT_TOOL} op second-wind with its slug and pending: none, or what is still pending (a subagent, a watch, a task not parked; a background command survives the compact and is no pending), which holds the compact until it resolves, never your work: at that turn's end the mod compacts this conversation and ingests the handoff, so your next turn starts fresh from it.`;
 export const WIND_WORDS =
     'a second wind is a graceful context refresh, a request, never urgent — the session and its coders resolve every subagent and park everything before the compact, so nothing is lost.';
 const WIND_NOTE = `🐦‍🔥 second wind: dima asked you to refresh your context at a good stop. ${WIND_WORDS} finish the step you are on, nothing interrupts it; a member mid-round (sixth sense's loop, a designer's take) stops after that round or take. then ${WIND_HOW}`;
 // clio's good stop is todo 16's nine steps (dima, 10-13)
 const WIND_NOTE_OWNER = `🐦‍🔥 second wind: dima asked you to checkpoint once the topic you are on is done — no rush, no deadline. ${WIND_WORDS} finish that topic whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
 const windRefused = (what: string) =>
-    `🐦‍🔥 second wind refused: ${what} started after you said pending: none, so nothing compacted. resolve it, then call ${ORBIT_TOOL} op second-wind again.`;
+    `🐦‍🔥 second wind refused: ${what} still runs after you said pending: none, so nothing compacted. stop it with TaskStop or name it in pending, then call ${ORBIT_TOOL} op second-wind again.`;
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
 const ingestBy = (slug: string) =>
@@ -4235,11 +4235,11 @@ async function windReady(
         typeof input.pending === 'string' ? input.pending.trim() : '';
     if (!pending)
         return {
-            deny: 'orbit second-wind: pending is required: «none», or the work still pending (a subagent, a background job, a task not parked)',
+            deny: 'orbit second-wind: pending is required: «none», or the work still pending (a subagent, a watch, a task not parked; a background command is no pending)',
         };
     if (pending.toLowerCase() !== 'none')
         return {
-            deny: `orbit second-wind: not yet, pending: ${pending}; resolve it and park everything, then call again with pending: none`,
+            deny: `orbit second-wind: not yet, pending: ${pending}. the compact waits, the work does not: do every step that run doesn't need, then call again with pending: none once it resolves`,
         };
     const name = typeof input.slug === 'string' ? input.slug.trim() : '';
     if (!/^[\w][\w.-]*$/.test(name))
@@ -4530,12 +4530,13 @@ async function steersOnCompact($: EngineInterface) {
         } satisfies HeldSteers);
 }
 
-// work a session starts after it said pending: none and before the compact fires: an agent, a background command or session
+// work a session starts after it said pending: none and before the compact fires: an agent, a watch or a background
+// session; a background command survives the compact, its notice landing in the fresh context (clio's pick, 11-12)
 const BG_SESSION = /\bclaude\b[^\n|;&]*\s--bg\b/;
 function windBlocker(tool: string, input: Record<string, unknown>) {
     if (tool === 'Agent') return 'an agent';
+    if (tool === 'Monitor') return 'a watch';
     if (tool !== 'Bash') return undefined;
-    if (input.run_in_background === true) return 'a background command';
     return typeof input.command === 'string' && BG_SESSION.test(input.command)
         ? 'a background session'
         : undefined;
@@ -4564,10 +4565,17 @@ async function windAfterTurn($: EngineInterface) {
         return;
     }
     if (!(await partsShown($))('stash.second-wind')) return;
-    if (was.blocked) {
+    // the turn's own Stop lists what still runs: a watch started before the op holds the wind too
+    const watch = (
+        (await $.store.get(REPLY + sid)) as Reply | undefined
+    )?.tasks?.find((t) => t.type === 'monitor' && !t.state);
+    const blocked =
+        was.blocked ??
+        (watch && `a watch («${watch.name ?? watch.description}»)`);
+    if (blocked) {
         await $.store.set(WIND + sid, {
             at: await $.clock.now(),
-            blocked: was.blocked,
+            blocked,
             state: 'refused',
         } satisfies StashWind);
         return;
@@ -6216,13 +6224,14 @@ function waitsOf(
     }));
     return {
         tasks: listed?.map(
-            ({ agent_type, command, description, id, name, state }) => ({
+            ({ agent_type, command, description, id, name, state, type }) => ({
                 agent_type,
                 command,
                 description,
                 id,
                 name,
                 ...(state ? { state } : {}),
+                ...(type ? { type } : {}),
             }),
         ),
         wait: backgroundWait(listed),

@@ -558,6 +558,15 @@ test('the op refuses a pending that names work, saying what is pending, and noth
     ]);
 });
 
+test('a wind held for named pending says the compact waits and the work does not', async ($, on) => {
+    world(on);
+    await start($);
+    const r = await ready($, SLUG, 'a ci run');
+    expect(r.deny).toMatch(
+        /the compact waits, the work does not: do every step that run doesn't need/,
+    );
+});
+
 for (const [who, isOwner] of [
     ['a codie', false],
     ['clio', true],
@@ -578,10 +587,7 @@ for (const [who, isOwner] of [
 
 for (const [what, call] of [
     ['an agent', { tool: 'Agent' }],
-    [
-        'a background command',
-        { command: 'sleep 90', run_in_background: true, tool: 'Bash' },
-    ],
+    ['a watch', { command: 'tail -f ci.log', tool: 'Monitor' }],
     [
         'a background session with its flag last',
         { command: "claude -p 'work' --bg", tool: 'Bash' },
@@ -601,6 +607,56 @@ for (const [what, call] of [
             w.store.has(`wind:${SID}`),
         ]).toEqual([[], true, false]);
     });
+
+test('a background command started after pending: none does not block the wind', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ready($, SLUG);
+    await $.tool.call({
+        command: 'sleep 90',
+        run_in_background: true,
+        tool: 'Bash',
+    } as never);
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect(w.commands.filter((c) => c.startsWith('/compact'))).toHaveLength(1);
+});
+
+// the turn's own Stop lists what still runs; a watch is cc's `monitor` task, a background command its `shell` one
+const stopWith = ($: Engine, type: string, description: string) =>
+    $.classic.Stop({
+        background_tasks: [{ description, id: 't1', status: 'running', type }],
+        last_assistant_message: 'done.',
+        session_id: SID,
+        stop_hook_active: false,
+    } as never);
+
+test('a watch still running at the turn end holds the wind, naming it and its two doors', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ready($, SLUG);
+    await stopWith($, 'monitor', 'watch ci on #170');
+    await endTurn($);
+    await w.clock.advance(2_000);
+    await say($);
+    const said = notes(w.lines).join('\n');
+    expect([
+        w.commands.filter((c) => c.startsWith('/compact')),
+        ['watch ci on #170', 'TaskStop', 'pending'].map((t) =>
+            said.includes(t),
+        ),
+    ]).toEqual([[], [true, true, true]]);
+});
+
+test('a background command still running at the turn end does not hold the wind', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await ready($, SLUG);
+    await stopWith($, 'shell', 'pnpm mods:test');
+    await endTurn($);
+    await w.clock.advance(2_000);
+    expect(w.commands.filter((c) => c.startsWith('/compact'))).toHaveLength(1);
+});
 
 test('an agent started before pending: none does not block the wind', async ($, on) => {
     const w = world(on);

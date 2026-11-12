@@ -433,11 +433,13 @@
   - proof: tests/board.test.ts::a second press before the note went out takes the ask back, unseen / a press after the note went out cancels, and a third asks again / a press while the session compacts changes nothing
 - ✅ a second wind compacts only when the session says nothing is pending
   - given a session asked for a second wind, wrote its handoff and calls the orbit op `second-wind`
-  - when the call carries no `pending`, or a `pending` naming work, then it is refused in one line saying what is required or pending, and nothing compacts
+  - when the call carries no `pending`, or a `pending` naming work, then it is refused in one line saying what is required or pending, and nothing compacts; a named pending's line says the compact waits and the work does not: do every step that run doesn't need (FRM-505)
   - when it carries `pending: none`, then the mod compacts at the turn's end and ingests the handoff
-  - when an agent, a background command or a background session starts after `pending: none` and before the compact, then the wind refuses, nothing compacts, and the next prompt carries one «second wind refused» line naming it
+  - when an agent, a watch (`Monitor`) or a background session starts after `pending: none` and before the compact, or a watch the turn's Stop lists still runs, then the wind refuses, nothing compacts, and the next prompt carries one «second wind refused» line naming it and its doors, TaskStop or pending
+  - and a background command never holds the wind: it survives the compact, its notice landing in the fresh context
   - then the note the session reads carries dima's words whole (W4, FRM-431), for codie and for clio alike
-  - proof: tests/wind.test.ts::the op refuses with no pending field / refuses a pending that names work / an agent or a background command started after pending: none makes the wind refuse / both notes carry dima's words
+  - decision: a watch holds the wind, a background command does not (clio's pick, 2026-11-12, reconciling the 11-07 «a background run survives a wind» with «the gate refuses or stops a live watch»)
+  - proof: tests/wind.test.ts::the op refuses with no pending field / refuses a pending that names work / an agent or a watch started after pending: none makes the wind refuse / both notes carry dima's words (+ a background command does not hold it, a watch the turn's Stop lists holds it, a named pending's line)
 - ✅ a coordinator's message to a codie past 55 % context waits for its second wind (r5, dima's o23: «~50–60% is fine»)
   - makes: a `steer-held:<session id>` key in the store, the held messages in order
   - given a codie whose ctx meter reads 55 % or more, when 🦉 clio or a wing sends it a message, then the codie reads a second wind note naming the sender and its fill instead of the message, and its 🐦‍🔥 reads ✍️
