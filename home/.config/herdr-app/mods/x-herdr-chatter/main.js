@@ -4955,36 +4955,7 @@ export default class ClaudeChat extends View {
                     ),
                 ),
             )
-            .child(
-                row(
-                    'Meter warnings',
-                    pills(
-                        div()
-                            .id('look-all-settings')
-                            .px(8)
-                            .h(22)
-                            .flex()
-                            .items_center()
-                            .rounded(5)
-                            .text_size(12)
-                            .cursor_pointer()
-                            .text_color(t.foreground)
-                            .hover((s) => s.bg(t.hover))
-                            .tooltip(
-                                'Open the settings window on its Chatter page',
-                            )
-                            .on_click(() =>
-                                openOverlay({
-                                    ...SETTINGS_WINDOW,
-                                    kind: 'dialog',
-                                    mod: 'x-herdr-chatter',
-                                    props: { settingsWindow: 'chatter' },
-                                }),
-                            )
-                            .child('All settings…'),
-                    ),
-                ),
-            )
+
             .child(
                 row(
                     'Accent',
@@ -6245,7 +6216,6 @@ export default class ClaudeChat extends View {
                 .text_size(px(13))
                 .text_color(t.foreground)
                 .tooltip(btn.tip)
-                .when(btn.key === 'settings', (el) => el.opacity(0.5))
                 .when(!btn.isLive, (el) => el.cursor_not_allowed())
                 .when(btn.isLive, (el) =>
                     el
@@ -6254,6 +6224,13 @@ export default class ClaudeChat extends View {
                         .on_click((_e, cx) => {
                             if (btn.key === 'board')
                                 run('layout.toggle', { id: DECK_BLOCK });
+                            else if (btn.key === 'settings')
+                                openOverlay({
+                                    ...SETTINGS_WINDOW,
+                                    kind: 'dialog',
+                                    mod: 'x-herdr-chatter',
+                                    props: { settingsWindow: 'chatter' },
+                                });
                             else this.press(cx, btn);
                             cx.notify();
                         }),

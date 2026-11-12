@@ -223,6 +223,7 @@ export function bandButtons({
         pressable('override', '🔓', 'override'),
         {
             emoji: '🎛️',
+            isLive: true,
             key: 'settings',
             tip: 'settings',
             word: 'settings',

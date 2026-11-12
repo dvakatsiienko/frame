@@ -74,7 +74,7 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
             ['waker', false, false],
             ['afk', false, false],
             ['override', false, true],
-            ['settings', false, false],
+            ['settings', false, true],
             ['board', true, true],
         ]);
     });

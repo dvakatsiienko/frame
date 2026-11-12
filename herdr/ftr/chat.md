@@ -167,9 +167,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
 - ⬜ one settings window, a page per mod (FRM-566)
   - makes: `~/.claude/shelf/herdr-settings/settings.json`, `{v, rows}`: every row's value, defaults included, written at the chatter's start and on each change
-  - given dima opens ⚙ in the Chat view
-  - when he presses «All settings…»
-  - then the settings window opens as a dialog on its Chatter page: a nav of Chatter, Deck, Tabs and Claude Code mods, each row a title, a one-line why and one control
+  - when dima presses 🎛️ in the chat band
+  - then the settings window opens as a modal over the chatter on its Chatter page: a nav of Chatter, Deck, Tabs and Claude Code mods, each row a title, a one-line why and one control
   - and a change lands in the file at once, and a value off its row's range or options reads as the row's default
   - and only rows that act are drawn: a Claude Code mods row joins once its mod reads it, added by the mods lane with its wiring (dima, o101)
   - decision: the window lives in the chatter: a herdr mod cannot import a sibling mod's file, and only a mod placed at start can write every default (clio, 19:28)

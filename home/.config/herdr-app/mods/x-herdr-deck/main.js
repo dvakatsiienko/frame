@@ -497,7 +497,7 @@ export default class Deck extends View {
             .rounded(11)
             .border_1()
             .border_color(hot.isOn ? t.solid : t.border)
-            .bg(hot.isOn ? t.solid : t.background)
+            .bg(hot.isOn ? t.solid : t.surface)
             .text_size(SIZE.small)
             .tooltip(hot.tip)
             .cursor_pointer()
@@ -658,7 +658,7 @@ export default class Deck extends View {
                 .rounded(6)
                 .border_1()
                 .border_color(isPrimary ? t.solid : t.border)
-                .bg(isPrimary ? t.solid : t.background)
+                .bg(isPrimary ? t.solid : t.surface)
                 .text_size(SIZE.secondary)
                 .text_color(isPrimary ? t.solid_foreground : t.foreground)
                 .when(isPrimary, (el) => el.font_semibold())
@@ -736,7 +736,7 @@ export default class Deck extends View {
                                         )
                                         .border_1()
                                         .border_color(t.border)
-                                        .bg(t.background)
+                                        .bg(t.surface)
                                         .cursor_text()
                                         .on_mouse_down('left', (_e, cx) =>
                                             cx.stop_propagation(),
@@ -951,7 +951,7 @@ export default class Deck extends View {
             .font_family(SANS)
             .size_full()
             .overflow_y_scroll()
-            .bg(t.background)
+            .bg(t.canvas)
             .child(
                 header(
                     `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}${this.isStale ? ' · stale, threads.json unreadable' : ''}`,
