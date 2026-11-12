@@ -39,7 +39,7 @@ func dispatchServer(t *testing.T, s dispatchState) *fakeLinear {
 			delegate = `{"name":"` + s.delegate + `"}`
 		}
 		description, _ := json.Marshal(s.body)
-		return `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","description":` + string(description) + `,"state":{"name":"` + s.state + `","type":"` + stateTypes[s.state] + `"},"delegate":` + delegate +
+		return `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","description":` + string(description) + `,"state":{"name":"` + s.state + `","type":"` + stateTypes[s.state] + `"},"project":{"name":"cli"},"delegate":` + delegate +
 			`,"labels":{"nodes":[` + strings.Join(labels, ",") + `]},"team":{"states":{"nodes":[{"id":"s-todo","name":"Todo"},{"id":"s-ip","name":"In Progress"}]}}},` +
 			`"users":{"nodes":[{"id":"u-codie","name":"codie"}]}}}`
 	})
@@ -388,7 +388,8 @@ func jsonOf(value any) string {
 	return string(raw)
 }
 
-// the threads a dispatch names get their record under the session ids it was given
+// the threads a dispatch names get their record under the session ids it was given; the area word is the ticket's
+// project (cli), never the lane name's first word (FRM-579's rider)
 func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 	t.Parallel()
 	server := dispatchServer(t, undispatched)
@@ -396,7 +397,7 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 
 	write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie"},{"sessionId":"s2","role":"sixth-sense"}]}`)
 	_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store},
-		"lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
+		"lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "thread-records", "--apply")
 
 	var written threadStore
 	raw, _ := os.ReadFile(store)
@@ -438,7 +439,7 @@ esac
 			if err := os.Chmod(filepath.Join(bin, "hc"), 0o755); err != nil {
 				t.Fatal(err)
 			}
-			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc"), "HC_TERMINAL_ID=t3b"}, "🦉 clio")
+			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc"), "HC_TERMINAL_ID=t3b"}, "coordinator")
 
 			envelope, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "cli-3", "--apply")
 
@@ -465,10 +466,10 @@ func TestDispatchGivesARoleOnlyFromTheCoordinatorToAKnownThread(t *testing.T) {
 		name, caller, records, want string
 		isLive, isOk                bool
 	}{
-		{name: "an id no thread holds", caller: "🦉 clio", want: "names no thread"},
-		{name: "a codie's record", caller: "🦉 clio", records: `{"v":1,"threads":[{"sessionId":"s2","role":"codie"}]}`, isLive: true, want: "is already a codie"},
-		{name: "a codie dispatching itself", caller: "🌗 🔧 codie: cli lane 8 | FRM-570", isLive: true, want: "only the coordinator or dima"},
-		{name: "the coordinator on a running thread with no role", caller: "🦉 clio", isLive: true, isOk: true},
+		{name: "an id no thread holds", caller: "coordinator", want: "names no thread"},
+		{name: "a codie's record", caller: "coordinator", records: `{"v":1,"threads":[{"sessionId":"s2","role":"codie"}]}`, isLive: true, want: "is already a codie"},
+		{name: "a codie dispatching itself", caller: "", isLive: true, want: "only the coordinator or dima"},
+		{name: "the coordinator on a running thread with no role", caller: "coordinator", isLive: true, isOk: true},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()

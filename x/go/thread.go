@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
@@ -8,14 +9,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/charmbracelet/x/term"
 )
 
 // a thread: claude code's registry entry, plus the role, lane and ticket x wrote when it summoned or dispatched it
@@ -29,6 +27,8 @@ type thread struct {
 	Lane      string `json:"lane,omitempty"`
 	LaneKind  string `json:"laneKind,omitempty"`
 	Ticket    string `json:"ticket,omitempty"`
+	Wing      int    `json:"wing,omitempty"`
+	Area      string `json:"area,omitempty"`
 	Display   string `json:"display"`
 	At        int64  `json:"at,omitempty"`
 }
@@ -44,7 +44,6 @@ const threadLaunchWait = 10 * time.Minute
 
 var (
 	laneKindMark = map[string]string{"side": "🌗", "quick": "⚡", "shift": "🌘"}
-	roleMark     = map[string]string{"codie": "🔧", "sixth-sense": "🔎", "designer": "🎨"}
 )
 
 // the store x-mod-stash's hooks refresh and a live display reads with no spawn; X_THREADS points a test at a fixture,
@@ -61,17 +60,18 @@ func threadStorePath() string {
 }
 
 // the display name is drawn from the record, never parsed back out of a name: <mode> <role> <area> | <ticket>, the area
-// the lane's first word (dima, PK-378: no lane folder, no number); no record reads as unknown
+// the ticket's linear project (dima, FRM-579's rider: never the lane name's first word); a standing role draws its whole
+// display from roles.json; no record reads as unknown
 func threadDisplay(t thread) string {
-	if t.Role == "" {
+	r := roleOf(t.Role)
+	switch {
+	case t.Role == "":
 		return "unknown"
+	case r.Display != "":
+		return strings.ReplaceAll(r.Display, "{n}", strconv.Itoa(t.Wing))
 	}
 	words := []string{}
-	area := ""
-	if words := strings.FieldsFunc(t.Lane, func(r rune) bool { return r == '-' || r == ' ' }); len(words) > 0 {
-		area = words[0]
-	}
-	for _, w := range []string{laneKindMark[t.LaneKind], roleMark[t.Role], area} {
+	for _, w := range []string{laneKindMark[t.LaneKind], r.Mark, t.Area} {
 		if w != "" {
 			words = append(words, w)
 		}
@@ -80,6 +80,36 @@ func threadDisplay(t thread) string {
 		words = append(words, "|", t.Ticket)
 	}
 	return strings.Join(words, " ")
+}
+
+// a ticket's area word: its linear project's first word, lowercased; "" when linear does not answer, so no summon waits
+// on it
+func ticketArea(actor, id string) string {
+	if id == "" {
+		return ""
+	}
+	data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { project { name } } }`, map[string]any{"id": id})
+	if err != nil {
+		return ""
+	}
+	var found struct {
+		Issue struct {
+			Project *named `json:"project"`
+		} `json:"issue"`
+	}
+	raw, _ := json.Marshal(data)
+	_ = json.Unmarshal(raw, &found)
+	if found.Issue.Project == nil {
+		return ""
+	}
+	return projectArea(found.Issue.Project.Name)
+}
+
+func projectArea(project string) string {
+	if words := strings.Fields(strings.ToLower(project)); len(words) > 0 {
+		return words[0]
+	}
+	return ""
 }
 
 func pidAlive(pid int) bool {
@@ -261,42 +291,18 @@ func newSessionID() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 }
 
-// who may give a role: dima at his own terminal, or a coordinator, read from the registry file of the claude x runs
-// under (an ancestor pid), never from a name or an id the line could pass
+// who may give a role: dima at his own terminal, or a coordinator by its record's role, the session found by the
+// registry file of the nearest claude x runs under (an ancestor pid), never by a name or an id the line could pass
 func callerIsCoordinator() bool {
-	if os.Getenv("CLAUDECODE") == "" && os.Getenv("AI_AGENT") == "" && term.IsTerminal(os.Stdin.Fd()) {
-		return true
-	}
-	dir := sessionsDir()
-	if dir == "" {
+	table, err := readProcessTable()
+	if err != nil {
 		return false
 	}
-	pid := os.Getppid()
-	for range 16 {
-		if pid <= 1 {
-			return false
-		}
-		if raw, err := os.ReadFile(filepath.Join(dir, strconv.Itoa(pid)+".json")); err == nil {
-			var entry struct {
-				Name string `json:"name"`
-			}
-			return json.Unmarshal(raw, &entry) == nil && isCoordinatorName(entry.Name)
-		}
-		out, err := exec.Command("ps", "-o", "ppid=", "-p", strconv.Itoa(pid)).Output()
-		if err != nil {
-			return false
-		}
-		if pid, err = strconv.Atoi(strings.TrimSpace(string(out))); err != nil {
-			return false
-		}
+	chain := callerChain(table, powerSessionsDir())
+	if len(chain) == 0 {
+		return isOwnTerminal(chain)
 	}
-	return false
-}
-
-// clio's registry name, a wing's or her old title's, spaces and joiners dropped as x-mod-guard's isCoordinator reads it
-func isCoordinatorName(name string) bool {
-	bare := strings.NewReplacer(" ", "", "\u200d", "").Replace(name)
-	return bare == "🦉clio" || bare == "🦉cclio" || regexp.MustCompile(`^🦉🪽c?clio:wing\d+$`).MatchString(bare)
+	return callerRole(chain[0]).IsCoordinator
 }
 
 var roleRefusalNext = "ask the coordinator: x lane dispatch --apply gives a role, x brief summon starts a thread with one"
@@ -371,6 +377,7 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		if record.Lane == "" {
 			record.Lane, record.LaneKind = live.Lane, live.LaneKind
 		}
+		record.Area = cmp.Or(record.Area, live.Area)
 		store.Threads = slices.Delete(store.Threads, i, i+1)
 	}
 	record.At = now.UnixMilli()

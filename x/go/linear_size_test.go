@@ -1,31 +1,38 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
 
 // FRM-399: a member's session acts as codie without --as; a ticket's size is a word, XS · S · M
 
-func sessionsFixture(t *testing.T, name string) []string {
+// this test process, x's parent, as the caller's registered session under a name, its record the role; the dir named
+// caller-set so runLinear plants no caller of its own
+func sessionsFixture(t *testing.T, name, role string) []string {
 	t.Helper()
-	dir := t.TempDir()
-	write(t, filepath.Join(dir, "4242.json"), `{"sessionId":"s-1","name":"`+name+`","pid":4242}`)
-	return []string{"X_SESSIONS=" + dir, "CLAUDE_CODE_SESSION_ID=s-1"}
+	dir := filepath.Join(t.TempDir(), "caller-set")
+	store := filepath.Join(t.TempDir(), "threads.json")
+	write(t, filepath.Join(dir, strconv.Itoa(os.Getpid())+".json"), `{"sessionId":"s-1","name":"`+name+`"}`)
+	if role != "" {
+		write(t, store, `{"v":1,"threads":[{"sessionId":"s-1","role":"`+role+`","wing":2}]}`)
+	}
+	return []string{"X_SESSIONS=" + dir, "X_THREADS=" + store}
 }
 
-func TestTheDefaultActorFollowsTheSessionsRegistryName(t *testing.T) {
+// FRM-399, FRM-579: a session acts by its record, never by its name; no record acts as codie
+func TestTheDefaultActorFollowsTheSessionsRecord(t *testing.T) {
 	t.Parallel()
-	cases := []struct{ name, session, want string }{
-		{"a member session acts as codie", "⚡ 🔧 codie: FRM-399", "codie"},
-		{"sixth sense acts as its own app", "⚡ 🔎 sixth sense: FRM-399", "sixth-sense"},
-		{"sixth sense under its badge too", "🌗 🔦 sixth sense: frame | #12", "sixth-sense"},
-		{"clio stays clio", "🦉 clio", "clio"},
-		{"clio as the registry stores her keeps clio", "🦉  clio", "clio"},
-		{"her side channel signs as clio", "🦉 clio (side)", "clio"},
-		{"her wing signs as clio", "🦉🪽 clio: wing 2", "clio"},
-		{"a member naming clio in its scope stays codie", "⚡ 🔧 codie: 🦉 clio memory", "codie"},
+	cases := []struct{ name, session, role, want string }{
+		{"a member session acts as codie", "⚡ 🔧 codie: FRM-399", "codie", "codie"},
+		{"sixth sense acts as its own app", "any name", "sixth-sense", "sixth-sense"},
+		{"the coordinator by its record acts as clio", "any name", "coordinator", "clio"},
+		{"a wing signs as clio", "any name", "wing", "clio"},
+		{"a session named «🦉 clio» with no record acts as codie", "🦉 clio", "", "codie"},
+		{"a session named sixth sense with no record acts as codie", "⚡ 🔎 sixth sense: FRM-399", "", "codie"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -34,7 +41,7 @@ func TestTheDefaultActorFollowsTheSessionsRegistryName(t *testing.T) {
 			})
 			file := filepath.Join(t.TempDir(), "c.md")
 			write(t, file, "done\n")
-			envelope, got := runLinear(t, server, sessionsFixture(t, c.session), "linear", "comment", "FRM-1", "--body-file", file)
+			envelope, got := runLinear(t, server, sessionsFixture(t, c.session, c.role), "linear", "comment", "FRM-1", "--body-file", file)
 			if data, _ := envelope["data"].(map[string]any); got.code != 0 || data["actor"] != c.want {
 				t.Errorf("exit %d, actor %v, want %s\n%s", got.code, data["actor"], c.want, got.stdout)
 			}

@@ -1,0 +1,9 @@
+[
+    { "display": "🦉 clio", "id": "coordinator", "isCoordinator": true },
+    { "display": "🦉🪽 clio: wing {n}", "id": "wing", "isCoordinator": true },
+    { "display": "🐦‍⬛ crow", "id": "adviser" },
+    { "display": "🎀 helga", "id": "copyist" },
+    { "id": "codie", "mark": "🔧" },
+    { "id": "sixth-sense", "mark": "🔎" },
+    { "id": "designer", "mark": "🎨" }
+]

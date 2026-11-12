@@ -28,6 +28,7 @@ type dispatchMark struct {
 type dispatchTicket struct {
 	ID    string         `json:"id"`
 	Marks []dispatchMark `json:"marks"`
+	area  string
 	uuid  string
 	input map[string]any
 }
@@ -52,6 +53,7 @@ type dispatchLookup struct {
 		Description *string                     `json:"description"`
 		State       struct{ Name, Type string } `json:"state"`
 		Delegate    *named                      `json:"delegate"`
+		Project     *named                      `json:"project"`
 		Labels      connection[idName]          `json:"labels"`
 		Team        struct {
 			States connection[idName] `json:"states"`
@@ -77,7 +79,7 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	for _, id := range args {
 		var found dispatchLookup
 		if err := r.Step("read "+id, "its labels, state, delegate and sign", func() (string, error) {
-			data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { id identifier description state { name type } delegate { name }
+			data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { id identifier description state { name type } delegate { name } project { name }
 				labels(first: 100) { nodes { id name } } team { states { nodes { id name } } } }
 				users(filter: { name: { eqIgnoreCase: "codie" } }) { nodes { id name } } }`, map[string]any{"id": id})
 			if err != nil {
@@ -152,6 +154,9 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 	}
 
 	ticket := dispatchTicket{ID: id, uuid: issue.ID, input: map[string]any{}}
+	if issue.Project != nil {
+		ticket.area = projectArea(issue.Project.Name)
+	}
 	mark := func(name string, missing bool, detail string) {
 		status := "set"
 		if missing {
@@ -342,7 +347,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		if sid == "" {
 			continue
 		}
-		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: kind, Ticket: plan.Tickets[0].ID}
+		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: kind, Ticket: plan.Tickets[0].ID, Area: plan.Tickets[0].area}
 		if err := writeThreadRecord(record, time.Now(), false); err != nil {
 			if fail, isFail := errors.AsType[*Fail](err); isFail {
 				return nil, fail

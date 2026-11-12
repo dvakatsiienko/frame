@@ -541,9 +541,9 @@
   - given a session that `/clear` or `/resume` gave a new id, then its record moves to that id through its pid and start time, the role, lane and ticket kept; a joined record's time moves to the call, so one torn registry read never ages it out
   - given two writers at once (a refresh beside a summon's record), then a lock beside the store lets one write at a time and neither record is lost; a store that does not parse refuses the call (exit 1) and stays as it is
   - given a dispatch onto a live thread's record, then the record keeps its pid, name, cwd and start, and the summon's lane when the dispatch names none
-  - given `x brief summon` or `x lane dispatch --apply` from a session that is no coordinator (read from the registry file on x's ancestor pid), then it refuses (exit 1) before any record or linear write; dima's own terminal and clio pass
+  - given `x brief summon` or `x lane dispatch --apply` from a session that is no coordinator (its record's role, the session found by the registry file on x's nearest ancestor pid, never by its name), then it refuses (exit 1) before any record or linear write; dima's own terminal (a tty, no agent env, no registered claude among x's ancestors) and a record whose role coordinates (`roles.json`) pass; a session with no record, a fork named «🦉 clio» included, gets nothing
   - given a dispatch naming an id no thread holds, or a thread whose record holds another role, then it refuses before any linear write; a running thread with no role yet takes its record from the coordinator
-  - the display name reads `<mode> <role> <area> | <ticket>`, the area the lane's first word (`🌗 🔧 cli | FRM-570`)
+  - the display name reads `<mode> <role> <area> | <ticket>`, the area the ticket's linear project (`🌗 🔧 cli | FRM-579` for a lane named `thread-records`), never the lane name; a standing role draws its whole display from `x/go/roles.json`: `🦉 clio`, `🦉🪽 clio: wing N`, `🐦‍⬛ crow`, `🎀 helga`, so a rename of clio is one table line and moves no reader's power
   - given a pid that died (`kill -9`), a registry file gone (an archived session), or a row whose `procStart` is not its pid's start time as `ps` reads it (a crashed session's pid another process took), then it drops out of the store at the next call; a record whose session never started stays 10 minutes, then drops; a thread once seen live stays past its pid or file only while its registry file reads torn
   - given any call, then `~/.claude/shelf/threads.json` is rewritten, so a display reads it with no spawn; x-mod-stash's hooks call `x thread list` at session start, turn end and exit
   - given `show` with a session id or a pid no live session holds, then exit 1
@@ -551,6 +551,12 @@
   - and its `-n` is the display drawn from that record, the one `x thread show <sid>` prints, never the name the command typed; the envelope's `display` holds it (FRM-436 rider, dima o72)
   - given `x lane dispatch --apply` moves a live thread's record, then its herdr terminal (the one whose pid the registry holds) gets `/rename <display>` when it sits idle, through `env -u HC_TERMINAL_ID hc send`, since a slash command typed from inside a herdr thread arrives tag-wrapped and never runs; a busy one is renamed by nothing and `renames` carries that exact command (FRM-436 rider, dima o74)
   - decision: the store sits beside x-mod-stash's `herdr-state/`, a registry mirror kept separate (wing 1, 2026-11-11)
+- ⬜ `x brief summon --role <coordinator|wing:<n>|adviser|copyist>` starts clio, a wing, crow or helga with a record of its standing role (FRM-579)
+  - given a pane start (`hc run … -- claude …`), then the argv carries a fresh `--session-id` and the pretty name as `-n`, and `x thread show <sid>` prints the role and its display before the thread runs
+  - given a `claude --bg` argv, then it refuses (exit 1) naming the `--session` form: cc ignores `--session-id` there, so the door starts the job and records the session id the registry holds for its `jobId`
+  - given `--session <sid>` with `--role`, when the sid is a live thread holding no other role, then its record takes the role: a `--bg` start, the cutover's backfill by the sids dima reads
+  - given a caller that is no coordinator, a session with no record (a fork) included, then both forms refuse (exit 1) and no record is written
+  - decision: no signed store; x alone writes `threads.json` and x-mod-guard refuses every session's write to it, so a power read takes its fixture env only in a test build (FRM-579)
 
 ## linear — tickets
 

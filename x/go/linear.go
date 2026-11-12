@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/x/term"
 )
 
 var ticketShape = regexp.MustCompile(`^[A-Z]+-\d+$`)
@@ -32,20 +31,27 @@ func actorOf(flags Flags) (string, error) {
 		}
 		return named, nil
 	}
-	// only dima's own terminal acts as dima: a launchd job, a hook or cloud-chat's Desktop Commander has no tty
-	if os.Getenv("CLAUDECODE") == "" && os.Getenv("AI_AGENT") == "" && term.IsTerminal(os.Stdin.Fd()) {
+	// only dima's own terminal acts as dima: a launchd job, a hook or cloud-chat's Desktop Commander has no tty; a session
+	// acts by its record, read from the registry file on x's nearest ancestor pid, never by its name (FRM-579), and no
+	// session found fails closed to codie
+	table, err := readProcessTable()
+	if err != nil {
+		return "codie", nil
+	}
+	chain := callerChain(table, powerSessionsDir())
+	if isOwnTerminal(chain) {
 		return "dima", nil
 	}
-	if name, ok := sessionName(); ok {
-		bare := strings.Join(strings.Fields(strings.ReplaceAll(name, "\u200d", " ")), "")
-		if strings.Contains(bare, "sixthsense") {
-			return "sixth-sense", nil
-		}
-		if !strings.HasPrefix(bare, "🦉clio") && !strings.HasPrefix(bare, "🦉🪽clio") && !strings.HasPrefix(bare, "🦉cclio") { // read-both: a clio tab resumed under its old title
-			return "codie", nil
-		}
+	if len(chain) == 0 {
+		return "codie", nil
 	}
-	return "clio", nil
+	switch r := callerRole(chain[0]); {
+	case r.IsCoordinator:
+		return "clio", nil
+	case r.ID == "sixth-sense":
+		return "sixth-sense", nil
+	}
+	return "codie", nil
 }
 
 // the session registry's dir; X_SESSIONS points a test at a fixture registry, and under X_TEST without it nothing is
@@ -58,30 +64,6 @@ func sessionsDir() string {
 		}
 	}
 	return dir
-}
-
-// the calling session's registry name, by CLAUDE_CODE_SESSION_ID
-func sessionName() (string, bool) {
-	sid := os.Getenv("CLAUDE_CODE_SESSION_ID")
-	dir := sessionsDir()
-	if sid == "" || dir == "" {
-		return "", false
-	}
-	entries, _ := os.ReadDir(dir)
-	for _, entry := range entries {
-		raw, err := os.ReadFile(filepath.Join(dir, entry.Name()))
-		if err != nil || !strings.HasSuffix(entry.Name(), ".json") {
-			continue
-		}
-		var session struct {
-			SessionID string `json:"sessionId"`
-			Name      string `json:"name"`
-		}
-		if json.Unmarshal(raw, &session) == nil && session.SessionID == sid && session.Name != "" {
-			return session.Name, true
-		}
-	}
-	return "", false
 }
 
 // a ticket's size: linear stores the number, the fleet says the word (FRM-399)

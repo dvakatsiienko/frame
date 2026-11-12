@@ -34,9 +34,9 @@ func threadWorld(t *testing.T) (env []string, store string, live, dead int) {
 	write(t, filepath.Join(sessions, "sid-reused.json"), fmt.Sprintf(`{"sessionId":"sid-reused","pid":%d,"procStart":"Thu Jan  1 00:00:01 1970","cwd":"/w"}`, live))
 	now := time.Now().UnixMilli()
 	records, _ := json.Marshal(threadStore{V: 1, Threads: []thread{
-		{SessionID: "sid-codie", Role: "codie", Lane: "cli lane 8", LaneKind: "side", Ticket: "FRM-570", At: now - 3_600_000},
+		{SessionID: "sid-codie", Role: "codie", Lane: "cli lane 8", LaneKind: "side", Ticket: "FRM-570", Area: "cli", At: now - 3_600_000},
 		{SessionID: "sid-killed", Role: "sixth-sense", Lane: "cli lane 8", Ticket: "FRM-570", At: now - 3_600_000},
-		{SessionID: "sid-launching", Role: "sixth-sense", Lane: "mods 6", LaneKind: "quick", Ticket: "FRM-574", At: now},
+		{SessionID: "sid-launching", Role: "sixth-sense", Lane: "mods 6", LaneKind: "quick", Ticket: "FRM-574", Area: "mods", At: now},
 		{SessionID: "sid-never-launched", Role: "codie", Lane: "mods 6", At: now - 3_600_000},
 		{SessionID: "sid-reused", Role: "sixth-sense", Lane: "cli lane 8", At: now - 3_600_000},
 		// an archived session: its registry file is gone while its old pid still runs something
@@ -240,23 +240,34 @@ func TestThreadListDropsASeenThreadOnceItsPidOrFileGoes(t *testing.T) {
 	}
 }
 
-// the registry file of the test process, x's parent, under the name x's role gate reads (callerIsCoordinator); no
-// session id, so no thread list counts it. it lands in the env's X_SESSIONS dir, or a new one
-func asCaller(t *testing.T, env []string, name string) []string {
+// the registry file of the test process, x's parent, the session x's role gate finds above it (callerIsCoordinator); no
+// pid, so no thread list counts it live. it lands in the env's X_SESSIONS dir, or a new one; a role lands as its record
+// in a caller store of its own (X_CALLER_THREADS), so the store a test inspects holds only what x wrote
+func asCaller(t *testing.T, env []string, role string) []string {
 	t.Helper()
-	dir := ""
-	for _, kv := range env {
-		if v, ok := strings.CutPrefix(kv, "X_SESSIONS="); ok {
-			dir = v
-		}
-	}
+	dir := envOf(env, "X_SESSIONS")
 	env = slices.Clone(env)
 	if dir == "" {
 		dir = t.TempDir()
 		env = append(env, "X_SESSIONS="+dir)
 	}
-	write(t, filepath.Join(dir, strconv.Itoa(os.Getpid())+".json"), fmt.Sprintf(`{"name":%q}`, name))
-	return env
+	write(t, filepath.Join(dir, strconv.Itoa(os.Getpid())+".json"), `{"sessionId":"sid-caller","name":"any name"}`)
+	if role == "" {
+		return env
+	}
+	store := filepath.Join(t.TempDir(), "caller-threads.json")
+	write(t, store, `{"v":1,"threads":[{"sessionId":"sid-caller","role":"`+role+`","wing":1}]}`)
+	return append(env, "X_CALLER_THREADS="+store)
+}
+
+func envOf(env []string, name string) string {
+	value := ""
+	for _, kv := range env {
+		if v, ok := strings.CutPrefix(kv, name+"="); ok {
+			value = v
+		}
+	}
+	return value
 }
 
 // FRM-570 round 3, exit 17: a codie's own summon is refused before any record, so it never mints itself a sixth sense
@@ -264,7 +275,7 @@ func TestBriefSummonFromACodieIsRefused(t *testing.T) {
 	t.Parallel()
 	w := newSummonWorld(t)
 	store := filepath.Join(t.TempDir(), "threads.json")
-	env := asCaller(t, []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store}, "🌗 🔧 codie: cli lane 8 | FRM-570")
+	env := asCaller(t, []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store}, "")
 
 	got := xIn(t, w.repo, env, "brief", "summon", sixthArgv(w, " spec: .scratch/cli-lane-8/spec.md"))
 

@@ -4,11 +4,16 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/creack/pty"
 )
 
 // summonWorld is a frame root holding the trial script and one live codie trial, a home whose ~/.claude.json
@@ -46,9 +51,12 @@ func (w summonWorld) brief(t *testing.T, text string, stamped bool) string {
 	return path
 }
 
+// the summon reads its ticket's project from linear for the display's area word: a fake answers `cli`
 func (w summonWorld) summon(t *testing.T, command string, env ...string) ran {
 	t.Helper()
-	return xIn(t, w.repo, asCaller(t, append([]string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}, env...), "🦉 clio"), "brief", "summon", command)
+	server := newFakeLinear(t, func(gqlCall) string { return `{"data":{"issue":{"project":{"name":"cli"}}}}` })
+	base := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + server.URL}
+	return xIn(t, w.repo, asCaller(t, append(base, env...), "coordinator"), "brief", "summon", command)
 }
 
 // a bytes checkout is known by its essentials script; this one fails every app
@@ -297,5 +305,201 @@ func TestBriefSummonWritesTheThreadRecordUnderItsSessionID(t *testing.T) {
 	}
 	if list.code != 0 || len(shown) != 3 || shown[ids[0]] != want[ids[0]] || shown[ids[1]] != want[ids[1]] || shown[ids[2]] != want[ids[2]] {
 		t.Errorf("thread list shows %v, want %v:\n%s", shown, want, list.stdout)
+	}
+}
+
+// FRM-579 exit 1: a standing role starts through summon, its record drawing the pretty name from roles.json
+func (w summonWorld) summonStanding(t *testing.T, caller string, env []string, args ...string) ran {
+	t.Helper()
+	base := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}
+	return xIn(t, w.repo, asCaller(t, append(base, env...), caller), append([]string{"brief", "summon"}, args...)...)
+}
+
+func paneArgv(w summonWorld) string {
+	return "hc run --bg --no-parent --no-notify --name boot --cwd " + w.repo + " -- claude -n 'any name' --model opus 'boot'"
+}
+
+func TestBriefSummonStartsEachStandingRoleUnderItsPrettyName(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ role, want string }{
+		{"coordinator", "🦉 clio"},
+		{"wing:3", "🦉🪽 clio: wing 3"},
+		{"adviser", "🐦‍⬛ crow"},
+		{"copyist", "🎀 helga"},
+	} {
+		t.Run(c.role, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			env := []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + t.TempDir()}
+
+			got := w.summonStanding(t, "coordinator", env, "--role", c.role, paneArgv(w))
+			sid, _ := got.data["sessionId"].(string)
+			show := xIn(t, t.TempDir(), env, "thread", "show", sid)
+
+			argv, _ := got.data["argv"].(string)
+			if got.code != 0 || show.code != 0 || show.data["display"] != c.want {
+				t.Fatalf("exit %d/%d, x thread show draws %v, want %q:\n%s", got.code, show.code, show.data["display"], c.want, got.stdout)
+			}
+			if !strings.Contains(argv, "-- claude --session-id "+sid+" -n '"+c.want+"' ") {
+				t.Errorf("argv %q, want the minted id and the pretty name", argv)
+			}
+		})
+	}
+}
+
+// cc's --bg ignores --session-id: the door starts it, reads its job's session id back, and records it through --session
+func TestBriefSummonRecordsABgThreadByItsSessionID(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	sessions := t.TempDir()
+	write(t, filepath.Join(sessions, "crow.json"), fmt.Sprintf(`{"sessionId":"sid-crow","pid":%d,"kind":"bg","jobId":"sid"}`, os.Getpid()))
+	env := []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + sessions}
+
+	bg := w.summonStanding(t, "coordinator", env, "--role", "adviser", "cd "+w.repo+" && claude --bg -n 'any name' 'boot'")
+	got := w.summonStanding(t, "coordinator", env, "--role", "adviser", "--session", "sid-crow")
+	show := xIn(t, t.TempDir(), env, "thread", "show", "sid-crow")
+
+	if bg.code != 1 || !strings.Contains(bg.stdout, "--session <sid>") {
+		t.Errorf("a --bg argv: exit %d, want a refusal naming the --session form:\n%s", bg.code, bg.stdout)
+	}
+	if got.code != 0 || show.code != 0 || show.data["display"] != "🐦‍⬛ crow" || show.data["role"] != "adviser" {
+		t.Fatalf("exit %d/%d, x thread show %v:\n%s", got.code, show.code, show.data, got.stdout)
+	}
+}
+
+// the caller gate: only dima's terminal or a coordinator's record gives a standing role; a record-less session (a fork)
+// or a member gets none, by either form
+func TestBriefSummonGivesAStandingRoleOnlyFromTheCoordinator(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ name, caller string }{{"a session with no record", ""}, {"a codie", "codie"}, {"a sixth sense", "sixth-sense"}} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d}`, os.Getpid()))
+			// the real clio's record sits in the store: another session's role is never the caller's
+			write(t, store, `{"v":1,"threads":[{"sessionId":"sid-real-clio","role":"coordinator"}]}`)
+			env := []string{"X_THREADS=" + store, "X_SESSIONS=" + sessions}
+
+			pane := w.summonStanding(t, c.caller, env, "--role", "coordinator", paneArgv(w))
+			record := w.summonStanding(t, c.caller, env, "--role", "wing:1", "--session", "sid-fork")
+
+			written, _ := readThreadStore(store)
+			for _, got := range []ran{pane, record} {
+				if got.code != 1 || !strings.Contains(got.stdout, "only the coordinator or dima") {
+					t.Errorf("exit %d, want the coordinator's refusal:\n%s", got.code, got.stdout)
+				}
+			}
+			if len(written.Threads) != 1 {
+				t.Errorf("records %+v, want only the real clio's", written.Threads)
+			}
+		})
+	}
+}
+
+// forks (dima's tick, 14:56): on his word the coordinator records a fork as a wing; the fork's own call gets nothing
+func TestBriefSummonRecordsAForkAsAWingOnlyFromTheCoordinator(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	env := []string{"X_THREADS=" + store, "X_SESSIONS=" + sessions}
+	// the fork is x's caller, its registry file on the test's pid; no record, so the gate reads no role
+	write(t, filepath.Join(sessions, strconv.Itoa(os.Getpid())+".json"), `{"sessionId":"sid-fork"}`)
+	self := xIn(t, w.repo, append(env, "HOME="+w.home), "brief", "summon", "--role", "wing:2", "--session", "sid-fork")
+	write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d}`, os.Getpid()))
+
+	byClio := w.summonStanding(t, "coordinator", env, "--role", "wing:2", "--session", "sid-fork")
+	show := xIn(t, t.TempDir(), env, "thread", "show", "sid-fork")
+
+	if self.code != 1 || !strings.Contains(self.stdout, "only the coordinator or dima") {
+		t.Errorf("the fork's own call: exit %d, want the coordinator's refusal:\n%s", self.code, self.stdout)
+	}
+	if byClio.code != 0 || show.data["display"] != "🦉🪽 clio: wing 2" {
+		t.Fatalf("exit %d, x thread show %v, want wing 2:\n%s", byClio.code, show.data, byClio.stdout)
+	}
+}
+
+// exit 4's tty row on x's actor: a member under a pty with its agent env stripped still signs as codie, never as dima
+func TestLinearUnderScriptActsAsTheMemberAboveIt(t *testing.T) {
+	t.Parallel()
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"commentCreate":{"success":true,"comment":{"url":"https://linear.app/x-com/issue/FRM-1#comment-1"}}}}`
+	})
+	file := filepath.Join(t.TempDir(), "c.md")
+	write(t, file, "done\n")
+	env := append(asCaller(t, nil, "codie"), "X_KEYS="+linearKeys(t), "X_LINEAR_URL="+server.URL)
+
+	got := scriptX(t, env, "linear", "comment", "FRM-1", "--body-file", file)
+
+	if got.code != 0 || !strings.Contains(got.out, `"actor":"codie"`) {
+		t.Fatalf("exit %d, want the codie actor:\n%s", got.code, got.out)
+	}
+}
+
+// the backfill: dima's own terminal, no claude above x, records a live thread by the session id he read
+func TestBriefSummonFromDimasTerminalRecordsALiveSession(t *testing.T) {
+	t.Parallel()
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
+	env := []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}
+
+	got := scriptX(t, env, "brief", "summon", "--role", "coordinator", "--session", "sid-other")
+
+	written, _ := readThreadStore(store)
+	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Role != "coordinator" {
+		t.Fatalf("exit %d, records %+v, want sid-other recorded as the coordinator:\n%s", got.code, written.Threads, got.out)
+	}
+}
+
+// exit 4's tty row: a member that strips its agent env and wraps x in a pty still runs under its own registered thread
+func TestBriefSummonUnderScriptReadsTheMemberAboveIt(t *testing.T) {
+	t.Parallel()
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
+	env := asCaller(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}, "codie")
+
+	got := scriptX(t, env, "brief", "summon", "--role", "coordinator", "--session", "sid-other")
+
+	written, _ := readThreadStore(store)
+	if got.code != 1 || !strings.Contains(got.out, "only the coordinator or dima") || len(written.Threads) != 0 {
+		t.Fatalf("exit %d, records %+v, want the coordinator's refusal and no record:\n%s", got.code, written.Threads, got.out)
+	}
+}
+
+type scripted struct {
+	code int
+	out  string
+}
+
+// x on a pty, the agent env stripped: what a member's `env -u CLAUDECODE -u AI_AGENT script -q /dev/null x …` runs
+// (script(1) itself takes other flags on linux, so the test opens the pty)
+func scriptX(t *testing.T, env []string, args ...string) scripted {
+	t.Helper()
+	c := exec.Command(xbin, append(args, "--json")...)
+	c.Env = append(append(cleanEnv(), "X_TEST=1"), env...)
+	ptmx, err := pty.Start(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ptmx.Close()
+	out, _ := io.ReadAll(ptmx)
+	return scripted{exitOf(c.Wait()), string(out)}
+}
+
+func TestBriefSummonRoleFlagTakesOnlyAStandingRole(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	for _, args := range [][]string{
+		{"--role", "bogus", paneArgv(w)},
+		{"--role", "codie", paneArgv(w)},
+		{"--role", "wing", paneArgv(w)},
+		{"--role", "wing:0", paneArgv(w)},
+		{"--role", "adviser:2", paneArgv(w)},
+		{"--session", "sid-1"},
+		{"--role", "adviser", "--session", "sid-1", paneArgv(w)},
+	} {
+		if got := w.summonStanding(t, "coordinator", nil, args...); got.code != 2 {
+			t.Errorf("%v: exit %d, want a usage refusal:\n%s", args, got.code, got.stdout)
+		}
 	}
 }
