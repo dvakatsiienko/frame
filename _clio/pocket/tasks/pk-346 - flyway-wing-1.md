@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T19:23:00Z'
+updated_date: '2026-11-12T19:25:00Z'
 labels:
   - s
   - clio-wing-1
@@ -25,14 +25,13 @@ ordinal: 1001
 - [ ] #7 📅 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop — on: 2026-11-14
 - [ ] #8 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
 - [ ] #9 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #10 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
-- [ ] #11 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #13 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #14 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #16 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #17 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #10 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #11 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #12 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #13 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #14 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #15 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #16 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -632,4 +631,8 @@ done 2026-11-12 21:09: ⏳ FRM-538 «✍️ sign» and FRM-555 «changed» lines
 done 2026-11-12 21:23: 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
 
 21:23 wing 1: that clear answers his PK-363:W389 and W398 (11-10), read from herdr by the herdr codie 21:23: the status bar is the bottom strip, our x-herdr-status in layouts/x-herdr-layout.json; its VS Code button runs `code <folder>` on the focused terminal's folder (x-herdr-status/main.js:26, 45–60), a Folder button opens it in Finder; herdr runs no outside terminal: its terminals live in herdr-core with Ghostty's libghostty-vt bundled, so rex is not hosted inside it (inference from the binaries)
+
+done 2026-11-12 21:25: 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18 (FRM-491 In Progress)
+
+21:25 that #10 clear is a twin's drop (his «review all 📅»): the remeasure lives in _reminders (due 2026-11-18) and the wishkeeper-cache trial in its test-drive file (until 2026-11-25)
 <!-- SECTION:NOTES:END -->
