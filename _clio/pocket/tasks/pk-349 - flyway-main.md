@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T19:09:00Z'
+updated_date: '2026-11-12T19:14:00Z'
 labels:
   - s
   - clio-main
@@ -21,7 +21,7 @@ ordinal: 1000
 - [ ] #3 fork-guard r6: a wing may edit a handoff file carrying its own token; fixture-HOME proof
 - [ ] #4 x brief check's offline stamp line: seven names and ⚖️ worth it, to dima
 - [ ] #5 herdr grills, his order: FRM-564 → 582 → 580 → 567 → 563 → 562, 569, each signed
-- [ ] #6 at dispatch: FRM-538 needs its sign, FRM-555 its changed line (from wing 1)
+- [ ] #6 at dispatch: FRM-555 needs its changed line (from wing 1)
 - [ ] #7 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
 - [ ] #8 ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505
 - [ ] #9 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
@@ -364,4 +364,6 @@ done 2026-11-12 20:13: FRM-504 read: does its round count live in both the stash
 done 2026-11-12 20:13: FRM-505 auto second wind: grill and sign with dima, then the mods codie builds it (FRM-505 Todo)
 
 done 2026-11-12 20:13: lowtide family (PK-387): run the checkup, now the reshape landed (PK-387 open)
+
+done 2026-11-12 21:14: at dispatch: FRM-538 needs its sign, FRM-555 its changed line (from wing 1) (FRM-538 Todo, FRM-555 Todo)
 <!-- SECTION:NOTES:END -->
