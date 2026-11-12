@@ -12,6 +12,17 @@ const STAMP_SLACK_MS = 5000;
 /** @param {string} text */
 const words = (text) => text.replace(/\s+/g, ' ').trim();
 
+// a slash command reaches the transcript as tags, `<command-name>/x</command-name>` and `<command-args>…`: read back
+// as he typed it, `/x …`, or its queued card never clears (his 18:37 wisp)
+/** @param {string} text */
+const asTyped = (text) => {
+    const name = /<command-name>([^<]*)<\/command-name>/.exec(text)?.[1];
+    if (!name) return text;
+    const args =
+        /<command-args>([\s\S]*?)<\/command-args>/.exec(text)?.[1] ?? '';
+    return `${name} ${args}`;
+};
+
 /**
  * the queue after a user row reaches the transcript: the first message it carries leaves
  * @param {Queued[]} queued
@@ -20,7 +31,7 @@ const words = (text) => text.replace(/\s+/g, ' ').trim();
  * @returns {Queued[]}
  */
 export function queuedAfterRow(queued, text, at) {
-    const row = words(text);
+    const row = words(asTyped(text));
     const i = queued.findIndex(
         (q) => at >= q.at - STAMP_SLACK_MS && row.includes(words(q.text)),
     );

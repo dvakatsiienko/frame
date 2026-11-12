@@ -29,6 +29,22 @@ describe('a message sent mid-turn shows as queued until the turn takes it', () =
         expect(queuedAfterRow([HIS], JOINED.text, JOINED.at)).toEqual([]);
     });
 
+    test('a slash command he queued leaves when its command row joins (his 18:37 wisp)', () => {
+        const command = {
+            at: Date.parse('2026-11-12T16:32:50Z'),
+            text: "/clio:lowtide-lanes-checkup let's see how it looks now",
+        };
+        const row =
+            "<command-message>clio:lowtide-lanes-checkup</command-message>\n<command-name>/clio:lowtide-lanes-checkup</command-name>\n<command-args>let's see how it looks now</command-args>";
+        expect(
+            queuedAfterRow(
+                [command],
+                row,
+                Date.parse('2026-11-12T16:33:41.349Z'),
+            ),
+        ).toEqual([]);
+    });
+
     test('a row with other words keeps it queued', () => {
         expect(queuedAfterRow([HIS], 'a tool result', JOINED.at)).toEqual([
             HIS,
