@@ -82,7 +82,7 @@ behind=$(git -C "$tree" rev-list --count HEAD..refs/heads/main)
 	exit 1
 }
 # a peer's git holds main's lock for moments at a time, a peer's commit hooks for up to half a minute (3 refusals 11-12)
-for _ in $(seq 30); do
+for _ in $(seq "${TREE_SYNC_LOCK_TRIES:-30}"); do
 	output=$(git -C "$root" merge --ff-only --quiet "refs/heads/$branch" 2>&1) && break
 	grep -q 'index.lock' <<<"$output" || break
 	sleep 1

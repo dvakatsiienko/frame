@@ -59,6 +59,7 @@ function world() {
         ...gitEnv(),
         CLAUDE_CODE_SESSION_ID: SID,
         PATH: `${bin}:${process.env.PATH}`,
+        TREE_SYNC_LOCK_TRIES: '2',
         TREE_SYNC_ROOT: root,
     };
     const prompt = (session = SID) =>
