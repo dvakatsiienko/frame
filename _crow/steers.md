@@ -74,3 +74,7 @@
 ## 2026-11-04 18:40 · his relays are prio
 - dima, on crow's relay that sat 5 min slipstreamed in clio's turn: «yes, when i ask my relayes are prios.»
 - so: a message dima asks crow to relay goes out at once as a push, led with `[ask]`, past the 30-min cap; never slipstreamed.
+
+## 2026-11-10 14:55 · bottleneck watch, a standing hunt (relayed by clio, his inbox line PK-363:W221)
+- dima: «tell crow to observe operational bottlenecks and suggest main clio coordination tips to help everyone. standing for crow.»
+- so: every wake also looks for operational bottlenecks across main and the wings and names one coordination tip for main when it helps everyone. today's lens, per clio: the herdr move, a solid herdr, and the boundaries between cc mods, cli and herdr.
