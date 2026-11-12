@@ -16,54 +16,30 @@ ordinal: 1001
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 «seat» removed from every file, no retired line (dima o65): 63 non-herdr files left (wing 1 .scratch/seat-removal/files.txt); the saved names renamed with every reader in the same change (the ~/.local/state/clio/seats/ dir, ctx-init trace key, the seat=clio / seat=crow / seat=helga herdr labels, CLIO_SEAT, seatOf); prose done 99e091aa; herdr paths tomorrow after the herdr codie; done when rg --hidden -i for the word over frame prints only outside meanings
-- [ ] #2 FRM-551 vm: both reads at the first halt with no go lane (vm stopped 13:52 by wing 1 for the mods probe, restarted 14:44)
-- [ ] #3 wisphunter trial round (gate-speed and ts-lsp logged today)
-- [ ] #4 all tails solved, never folded, both flyways free of dead weight (dima 16:34); then analyze why the flyways piled up and propose how to prevent it
-- [ ] #5 groom reds (o30): prompt-groom.ts --linear, 96 older tickets, helga in batches of 20
-- [ ] #6 flyway never stale (dima 16:35: «i want flyway state to be synced — never stale»): the prevention proposal after the tails includes a mechanism that keeps every flyway line matched to its home live, not by a manual sync
-- [ ] #7 the halt's milestone refresh, from wing 1's sweep (dima 20:31: «all milestone ticket execution order is properly groomed and saved in Linear … next boot … you don't forget the order»): drop or flip the two blocks links that contradict his ticked mods order (FRM-504 blocks FRM-519, FRM-505 blocks FRM-504); point the initiative's two queues and the halt handoff at .scratch/herdr/scopes-audit.md § the whole execution order; give tonight's four ticketless herdr builds (deck beautify, strip removal, orbit in the agents list's order, tab short labels) and the watcher's «main.js lands last» a ticket line and an FTR line (from main's flyway 17:13)
-- [ ] #8 from wing 1 sweep (21:56): FRM-538 needs «✍️ sign FRM-538» at its dispatch (nine W-lines joined as tiny after its last sign, his tick); FRM-489 gets a «changed, text unchanged» line at dispatch; the sign hash reader wants a fix (linear escapes ~, [x] and _clio/ inside the body, and words after the hash on a sign line), mine, beside ticket-sign.ts (from main's flyway 17:13)
-- [ ] #9 wing 1's summon leftovers: the mods codie's first door (does a pane draw mods for him), /handoff spawn still starts claude --bg, a pane wing's first task has no background field, the crew-pm board redraw (from main's flyway 17:13)
-- [ ] #10 carried from the 11-10 halt, not run: the trial board (pnpm test-drive:check, ts-lsp due), one checkup slice, two stale board redraws (crew-pm, refresh-crew-coordinator), crow note-vet and the crow-receipts round, the milestone order refresh, x linear archive, the kill side, the four budget rows groomed back, x plugin bump --apply clio (from main's flyway 17:13)
-- [ ] #11 prompt-groom.ts --no-wish refuses a prompt holding a want marker («i want», «always», «should», ❓, ← on a line of ours) and sends it to helga's groom (his o43 tick via wing 1, 19:29): measure the false refuses on this week's grooms first, warn before it enforces if the count is high (from main's flyway 17:13)
-- [ ] #12 the lane size alarm (wing 1's slow-lane fix 1, his 02:00): at 1.5× a chunk's size its coordinator gets one alarm, a pick with dima; its home: a FRM-572 line or the shape-lane sign (from main's flyway 17:13)
-- [ ] #13 flyway fix: the stale-line checks and the 120-char rule, built by a helper (dima's ok 17:38)
-- [ ] #14 groom backlog, 105 reds: 33 prompts groomed by helga, 43 stamps with no logged prompt traced
-- [ ] #15 FRM-579 land chores for main: lane-plan close slice, review-rounds lines, worth-it verbs, look card
-- [ ] #16 «seat» code half: the saved names renamed with every reader (seats dir, CLIO_SEAT, seatOf, labels)
-- [ ] #17 milestone order: flip the FRM-504 and FRM-505 blocks links, queues point at scopes-audit.md
-- [ ] #18 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-489 «changed» at dispatch
-- [ ] #19 summon leftovers: the mods codie's first door, /handoff spawn still --bg, a pane wing's background
-- [ ] #20 11-10 halt leftovers: a checkup slice, two board redraws, the kill side, four budget rows
-- [ ] #21 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
-- [ ] #22 lane size alarm at 1.5× a chunk's size: one pick with dima; home FRM-572 or the shape-lane sign
-- [ ] #23 /clio:low-tide-triage (his 16:19): run it, or ask him if his 16:21 «solving» replaced it
-- [ ] #24 FRM-551 vm: both reads at the first halt with no go lane
-- [ ] #25 📅 agent-desktop test drive beside computer-use (dima o106): brew install, Accessibility granted to herdr (his hand), 3 real tasks vs computer-use, card via clio:shape-test-drive — on: 2026-11-13
-- [ ] #26 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
-- [ ] #27 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
-- [ ] #28 📅 herdr's two open questions, answered from herdr itself: where the status bar and the VS Code button are, which terminal herdr runs — on: 2026-11-14
-- [ ] #29 📅 BYT-132 reopened: the week's CI minutes and cache read plus the first deploy-hook push, then close through x lane landed — on: 2026-11-14
-- [ ] #30 📅 FRM-516 crow per thread: the week's read (W15, W21) from harvest.log and notes.jsonl, then close — on: 2026-11-14
-- [ ] #31 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
-- [ ] #32 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
-- [ ] #33 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
-- [ ] #34 📅 FRM-534 kill rule: the week's per-kind push-red read on test-commit.log, a kind over 1 red per 10 commits goes back to whole — on: 2026-11-16
-- [ ] #35 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #36 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
-- [ ] #37 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #38 📅 FRM-572 cli wisps, cli lane 8 chunk 5 after FRM-436: its sign grill at FRM-436's merge, the seat label first (dima o40) — on: 2026-11-18
-- [ ] #39 📅 FRM-491 remeasure: only runs after ee5d08f9, against docs/research/wishkeeper-cadence.md, then keep, partly revert or revert, and close; the wishkeeper-cache trial switches to its 1 h arm the same day — on: 2026-11-18
-- [ ] #40 📅 FRM-465 exit 5 read (tails lane 1 step 04): the 11-18 wednesday window lands renovate/minors in frame and bytes with no Awaiting Schedule left, then close or reopen; the merge round waits on dima — on: 2026-11-18
-- [ ] #41 📅 evergreen, two weeks in one turn (dima 16:26: skipped this week entirely): the renovate prs frame#158 and bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #42 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
-- [ ] #43 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #44 📅 x knowledge (19 runs) and x probe bare (0 runs): the 30-day re-read on x stats, keep or put to dima (his 21:30 tick) — on: 2026-11-27
-- [ ] #45 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #46 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #47 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #48 💤 speak v2 planning with dima; FRM-497 speak meter 120 → 60 fps rides it — later: dima, after x-herdr is stable
+- [ ] #1 flyway fix: the stale-line checks and the 120-char rule, built by a helper (dima's ok 17:38)
+- [ ] #2 groom backlog, 105 reds: 33 prompts groomed by helga, 43 stamps with no logged prompt traced
+- [ ] #3 FRM-579 land chores for main: lane-plan close slice, review-rounds lines, worth-it verbs, look card
+- [ ] #4 «seat» code half: the saved names renamed with every reader (seats dir, CLIO_SEAT, seatOf, labels)
+- [ ] #5 milestone order: flip the FRM-504 and FRM-505 blocks links, queues point at scopes-audit.md
+- [ ] #6 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-489 «changed» at dispatch
+- [ ] #7 summon leftovers: the mods codie's first door, /handoff spawn still --bg, a pane wing's background
+- [ ] #8 11-10 halt leftovers: a checkup slice, two board redraws, the kill side, four budget rows
+- [ ] #9 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
+- [ ] #10 lane size alarm at 1.5× a chunk's size: one pick with dima; home FRM-572 or the shape-lane sign
+- [ ] #11 /clio:low-tide-triage (his 16:19): run it, or ask him if his 16:21 «solving» replaced it
+- [ ] #12 FRM-551 vm: both reads at the first halt with no go lane
+- [ ] #13 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
+- [ ] #14 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
+- [ ] #15 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
+- [ ] #16 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
+- [ ] #17 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
+- [ ] #18 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
+- [ ] #19 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #20 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
+- [ ] #21 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #22 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #23 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #24 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 <!-- AC:END -->
 
 ## Implementation Notes
