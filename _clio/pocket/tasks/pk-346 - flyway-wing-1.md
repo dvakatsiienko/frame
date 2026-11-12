@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T13:25:00Z'
+updated_date: '2026-11-12T13:42:00Z'
 labels:
   - s
   - clio-wing-1
@@ -17,15 +17,15 @@ ordinal: 1001
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 FRM-575 clio-revive built and landed (alias on main, probes 82–97 % hot): dima runs its done test himself, then close
-- [ ] #2 FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142)
-- [ ] #3 «seat» removed from every file, no retired line (dima o65): 63 non-herdr files left (wing 1 .scratch/seat-removal/files.txt); the saved names renamed with every reader in the same change (the ~/.local/state/clio/seats/ dir, ctx-init trace key, the seat=clio / seat=crow / seat=helga herdr labels, CLIO_SEAT, seatOf); prose done 99e091aa; herdr paths tomorrow after the herdr codie; done when rg --hidden -i for the word over frame prints only outside meanings
-- [ ] #4 FRM-579 thread records, cli lane 9: signed 02:43, spec sealed ~/frame/.scratch/thread-records/spec.md (preflight ok); summon the cli codie and its sixth sense first thing 11-12 (dima 02:50), the mods lane FRM-519 resumes after it merges
-- [ ] #5 chore solver 11-12 (dima 02:50): every tail main or dima hands wing 1 is solved the day it lands, nothing piles up
-- [ ] #6 trial rounds 11-12 (dima 02:57 via main): gate-speed, ts-lsp, wisphunter are due within 3 days; log each one's round in docs/test-drive/
-- [ ] #7 backup 11-12 (dima 02:57 via main): the compact hold live probe, a send into a thread mid-/compact read back after its ingest, if the mods lane cannot
-- [ ] #8 PK-379 solve comms (dima inbox via main 13:38): hoist his 11-10/11-11 messages and replies, measure his tab and chat hops and per-tab activity, propose one solid fix; after the vm probe
-- [ ] #9 FRM-579 merge follow-up: cloud chat (via Desktop Commander) now posts to linear as codie, not clio; at merge, a handoff to cloud chat that its x linear calls carry --as clio (its own memory, sys-boundaries)
-- [ ] #10 ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
+- [ ] #2 «seat» removed from every file, no retired line (dima o65): 63 non-herdr files left (wing 1 .scratch/seat-removal/files.txt); the saved names renamed with every reader in the same change (the ~/.local/state/clio/seats/ dir, ctx-init trace key, the seat=clio / seat=crow / seat=helga herdr labels, CLIO_SEAT, seatOf); prose done 99e091aa; herdr paths tomorrow after the herdr codie; done when rg --hidden -i for the word over frame prints only outside meanings
+- [ ] #3 chore solver 11-12 (dima 02:50): every tail main or dima hands wing 1 is solved the day it lands, nothing piles up
+- [ ] #4 trial rounds 11-12 (dima 02:57 via main): gate-speed, ts-lsp, wisphunter are due within 3 days; log each one's round in docs/test-drive/
+- [ ] #5 backup 11-12 (dima 02:57 via main): the compact hold live probe, a send into a thread mid-/compact read back after its ingest, if the mods lane cannot
+- [ ] #6 PK-379 solve comms (dima inbox via main 13:38): hoist his 11-10/11-11 messages and replies, measure his tab and chat hops and per-tab activity, propose one solid fix; after the vm probe
+- [ ] #7 FRM-579 merge follow-up: cloud chat (via Desktop Commander) now posts to linear as codie, not clio; at merge, a handoff to cloud chat that its x linear calls carry --as clio (its own memory, sys-boundaries)
+- [ ] #8 FRM-579 on frame#170: codie builds slices 03–06, sixth sense rounds, then the backfill from dima's terminal, merge, both members renamed to the cli names, ping the mods codie
+- [ ] #9 PK-379 journal row: shape-idea grill round 1 out (o11–o13), then prior art, the cut, the ticket; the silent job-wake trial ends with a keep-or-undo ask at my first turn after 21:00
+- [ ] #10 FRM-551 vm: both reads at the first halt with no go lane (vm stopped 13:52 by wing 1 for the mods probe, restarted 14:44)
 - [ ] #11 ⏳ evergreen turn, delegated from main — waits for: dima's word (postponed 15:04, 15:13)
 - [ ] #12 ⏳ BYT-132 tree .env.local (newer, same keys) kept at ~/projects/bytes/.scratch/byt-132-kept/trophy-sys.env.local — waits for: dima keep or trash
 - [ ] #13 ⏳ renovate merge round: frame#158, bytes#152–#155 (bytes#155 its minors), prConcurrentLimit 10 kept unless he says — waits for: dima's evergreen word
@@ -415,4 +415,12 @@ done 2026-11-12 03:04: 💤 siesta 20:19 tails (wishkeeper, 18 findings, file in
 reopened 03:04 2026-11-12: the 20:19 siesta tails line, cleared too early at the halt (its FRM-465 and FRM-575 parts still open); PK-378 and the FRM-570 parts were done
 
 done 2026-11-12 13:51: 1 · mods tests into the test vm (dima 02:23, wing 1 first todo): install the claude cli in vm-go-test with no login, run `claude plugin test` on one mod there, then cpu and wall against the mac; the runner appends go's -parallel flag, so a non-go suite runs through a wrapper
+
+done 2026-11-12 15:42: ⏳ herdr-first summon proof: the first herdr-summoned side-lane codie names its pwd in its first reply — waits for: the next side-lane summon
+
+done 2026-11-12 15:42: FRM-579 thread records, cli lane 9: signed 02:43, spec sealed ~/frame/.scratch/thread-records/spec.md (preflight ok); summon the cli codie and its sixth sense first thing 11-12 (dima 02:50), the mods lane FRM-519 resumes after it merges (FRM-579 In Progress, FRM-519 In Progress)
+
+done 2026-11-12 15:42: FRM-551 vm: both reads at the first halt with no go lane (vm Running since 11-09 22:02, never stopped; halt step wired in clio:halt main.md:142) (FRM-551 Todo)
+
+15:42 flyway sync: #4 FRM-579 and #2 FRM-551 cleared as refreshed, not done: re-added with today's state (FRM-579 on frame#170; vm stopped 13:52 and restarted 14:44); #10 herdr-first summon proof done: the cli codie named its pwd in its first reply (13:37)
 <!-- SECTION:NOTES:END -->
