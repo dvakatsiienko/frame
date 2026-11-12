@@ -16,6 +16,7 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import { rejoin } from './joined.js';
 import {
     ORDER_KEY,
     PENDING_MS,
@@ -55,11 +56,6 @@ import {
 /** @typedef {Record<string, Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {{ asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
-// cc's session registry stores a zero-width joiner as a space: «🐦‍⬛ crow» comes back as «🐦 ⬛ crow»
-const JOINED = ['🐦‍⬛', '🐦‍🔥', '🙋‍♂️'];
-/** @param {string} name */
-const rejoin = (name) =>
-    JOINED.reduce((n, j) => n.replaceAll(j.replace('‍', ' '), j), name);
 
 /** @typedef {{ id?: string, title: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
 

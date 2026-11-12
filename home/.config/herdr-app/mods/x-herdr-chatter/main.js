@@ -70,6 +70,7 @@ import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { importOldDrafts } from './drafts.js';
 import { foldBlocks } from './fold.js';
+import { rejoin } from './joined.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
 import * as ask from './question.js';
@@ -5270,7 +5271,9 @@ export default class ClaudeChat extends View {
             at: item.at,
             from: isIn ? item.from : self,
             text: isIn ? item.text : String(item.input?.message ?? ''),
-            to: isIn ? self : String(item.input?.to ?? 'another thread'),
+            to: isIn
+                ? self
+                : rejoin(String(item.input?.to ?? 'another thread')),
         });
         return h_flex()
             .id(`relay-${item.id}`)
