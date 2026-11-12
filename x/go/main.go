@@ -81,6 +81,7 @@ var impls = map[string]Impl{
 	"gh pr":                       {Run: ghPr},
 	"gh repo-slug":                {Run: ghRepoSlug},
 	"thread list":                 {Run: threadList},
+	"thread rename":               {Run: threadRenameRun, Undone: "the record keeps its name"},
 	"thread show":                 {Run: threadShow},
 	"gh pr-review-comments-list":  {Run: ghReviewCommentsList},
 	"gh pr-review-comments-reply": {Run: ghReviewCommentsReply, Undone: "nothing was posted"},

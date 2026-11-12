@@ -1204,6 +1204,25 @@
         {
             "args": [
                 {
+                    "description": "the session id of a thread with a record",
+                    "name": "id"
+                },
+                {
+                    "description": "the name it draws from now on, quoted",
+                    "name": "name"
+                }
+            ],
+            "name": "thread rename",
+            "needsApply": false,
+            "purpose": "rename a recorded thread on dima's word: its record keeps the name, and its herdr terminal gets the /rename",
+            "touches": [
+                "~/.claude/shelf/threads.json — the record's title, written ($X_THREADS in tests)",
+                "hc — the thread's herdr terminal, sent /rename when idle"
+            ]
+        },
+        {
+            "args": [
+                {
                     "description": "a session id or a pid",
                     "name": "id"
                 }

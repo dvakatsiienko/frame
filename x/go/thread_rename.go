@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strings"
+	"time"
 )
 
 // hcBin is the herdr cli a rename speaks through; X_HC points a test at a fake, and under X_TEST without it there is none,
@@ -39,6 +41,46 @@ func renameThread(sid, display string) ordered {
 		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"error", string(out)})
 	}
 	return append(row, kv{"renamed", true}, kv{"command", command})
+}
+
+// a rename on dima's word: the record's title, behind summon's caller gate, then the live thread's own /rename; a later
+// refresh keeps the title, since the record carries it
+func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
+	sid, title := args[0], strings.TrimSpace(args[1])
+	if title == "" {
+		return nil, usageFail("an empty name draws nothing", "x thread rename <sid> '<name>'")
+	}
+	if err := coordinatorOnly("x thread rename"); err != nil {
+		return nil, err
+	}
+	path := threadStorePath()
+	if path == "" {
+		return nil, &Fail{Msg: "no thread store to write", Next: "x thread list"}
+	}
+	r.Open("the thread store")
+	unlock, err := lockThreadStore(path)
+	if err != nil {
+		return nil, err
+	}
+	store, err := readThreadStore(path)
+	if err != nil {
+		unlock()
+		return nil, &Fail{Msg: err.Error(), Next: "jq . " + quote(path)}
+	}
+	i := slices.IndexFunc(store.Threads, func(t thread) bool { return t.SessionID == sid && t.Role != "" })
+	if i < 0 {
+		unlock()
+		return nil, &Fail{Refused: true, Msg: sid + " has no record to rename: x brief summon gives one", Next: "x thread list"}
+	}
+	store.Threads[i].Title = title
+	store.Threads[i].Display = threadDisplay(store.Threads[i])
+	err = writeThreadStore(path, time.Now(), store.Threads)
+	unlock()
+	if err != nil {
+		return nil, &Fail{Msg: "the thread store was not written: " + err.Error(), Next: "x thread list"}
+	}
+	r.Done(sid+" is "+title, "")
+	return renameThread(sid, title), nil
 }
 
 // the pid the session registry holds for a live session id; 0 when none

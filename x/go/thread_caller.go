@@ -35,8 +35,10 @@ var roles = func() []role {
 	return rows
 }()
 
-func roleOf(id string) role {
-	for _, r := range roles {
+func roleOf(id string) role { return roleIn(roles, id) }
+
+func roleIn(table []role, id string) role {
+	for _, r := range table {
 		if r.ID == id {
 			return r
 		}

@@ -559,6 +559,7 @@
   - given a coordinator or wing role asked from a herdr terminal (`HC_TERMINAL_ID` set) with no registered claude above x, then it refuses (exit 1): a member's `hc run` pane looks like dima's own; a sidecar's record still lands there; dima's herdr layout runs its clio start with `HC_TERMINAL_ID` unset
   - given a sixth sense's summon, whose inline argv names no lane kind, then its record takes the kind of its lane's codie record, so it reads `🌗 🔎 cli | #170` from its first record
   - decision: no signed store; x alone writes `threads.json` and x-mod-guard refuses every session's write to it, so a power read takes its fixture env only in a test build (FRM-579)
+  - given `x thread rename <sid> '<name>'` from dima's terminal or a coordinator, when the sid holds a record, then its record's `title` takes the name, `x thread show` draws it from then on, a refresh keeps it, and its idle herdr terminal gets `/rename <name>`; a member's call refuses (exit 1); a change to a role's line in `roles.json` moves every display that has no title, and no reader's power (FRM-579)
   - known gaps, labelled (wing 1, 2026-11-12, after sixth sense round 2): a node or python script that writes `threads.json` straight; a member's `hc run -- env -u HC_TERMINAL_ID zsh …` pane, which reads as dima's terminal; `hc run`, rex, osascript and launchctl stay open to members, and the guard refuses only a line that names a start door
 
 ## linear — tickets

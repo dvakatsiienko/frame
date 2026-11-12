@@ -29,6 +29,7 @@ type thread struct {
 	Ticket    string `json:"ticket,omitempty"`
 	Wing      int    `json:"wing,omitempty"`
 	Area      string `json:"area,omitempty"`
+	Title     string `json:"title,omitempty"`
 	Display   string `json:"display"`
 	At        int64  `json:"at,omitempty"`
 }
@@ -76,11 +77,16 @@ func storePathOf(isFixtureOn bool, fixture string, isXTest bool, real string) st
 // the display name is drawn from the record, never parsed back out of a name: <mode> <role> <area> | <ticket>, the area
 // the ticket's linear project (dima, FRM-579's rider: never the lane name's first word); a standing role draws its whole
 // display from roles.json; no record reads as unknown
-func threadDisplay(t thread) string {
-	r := roleOf(t.Role)
+func threadDisplay(t thread) string { return displayFrom(roles, t) }
+
+// the display under a role table: a rename dima gave (x thread rename) wins, then the table's own
+func displayFrom(table []role, t thread) string {
+	r := roleIn(table, t.Role)
 	switch {
 	case t.Role == "":
 		return "unknown"
+	case t.Title != "":
+		return t.Title
 	case r.Display != "":
 		return strings.ReplaceAll(r.Display, "{n}", strconv.Itoa(t.Wing))
 	}
@@ -391,7 +397,7 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		if record.Lane == "" {
 			record.Lane, record.LaneKind = live.Lane, live.LaneKind
 		}
-		record.Area = cmp.Or(record.Area, live.Area)
+		record.Area, record.Title = cmp.Or(record.Area, live.Area), cmp.Or(record.Title, live.Title)
 		store.Threads = slices.Delete(store.Threads, i, i+1)
 	}
 	record.At = now.UnixMilli()

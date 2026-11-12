@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -216,13 +217,14 @@ func withSessionID(command string, got ran) string {
 	return strings.Replace(named, "claude ", "claude --session-id "+sid+" ", 1)
 }
 
-// exit 27: the registry name a summon starts with is the display x thread show draws from the same record
+// exit 27: the registry name a summon starts with is the display x thread show draws from the same record; FRM-579
+// exit 5: its area is the ticket's project (cli), never the lane name's first word (thread)
 func TestBriefSummonNamesTheThreadByItsRecord(t *testing.T) {
 	t.Parallel()
 	w := newSummonWorld(t)
 	store := filepath.Join(t.TempDir(), "threads.json")
 	env := []string{"X_THREADS=" + store, "X_SESSIONS=" + t.TempDir()}
-	brief := w.brief(t, goodBrief+"\nthe spec: /f/.scratch/cli-lane-8/spec.md\n", true)
+	brief := w.brief(t, goodBrief+"\nthe spec: /f/.scratch/thread-records/spec.md\n", true)
 
 	got := w.summon(t, codieArgv(w.repo, brief), env...)
 	sid, _ := got.data["sessionId"].(string)
@@ -509,6 +511,67 @@ func TestBriefSummonUnderScriptReadsTheMemberAboveIt(t *testing.T) {
 	written, _ := readThreadStore(store)
 	if got.code != 1 || !strings.Contains(got.out, "only the coordinator or dima") || len(written.Threads) != 0 {
 		t.Fatalf("exit %d, records %+v, want the coordinator's refusal and no record:\n%s", got.code, written.Threads, got.out)
+	}
+}
+
+// exit 7, the cutover: a clio started before the merge has no record, so her coordinator-only call refuses until dima's
+// terminal backfills her by the session id he read; then it passes
+func TestTheBackfillLetsAClioStartedBeforeTheMergeSummonAgain(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	brief := w.brief(t, goodBrief, true)
+	// her registry as her own process sees it (x's parent is her), and as dima's terminal sees it (no claude above x)
+	hers, dimas, store := t.TempDir(), t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	live := fmt.Sprintf(`{"sessionId":"sid-clio","pid":%d}`, os.Getpid())
+	write(t, filepath.Join(hers, strconv.Itoa(os.Getpid())+".json"), live)
+	write(t, filepath.Join(dimas, "clio.json"), live)
+	env := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store}
+	asClio := func() ran {
+		return xIn(t, w.repo, append(env, "X_SESSIONS="+hers), "brief", "summon", codieArgv(w.repo, brief))
+	}
+
+	before := asClio()
+	backfill := scriptX(t, append(env, "X_SESSIONS="+dimas), "brief", "summon", "--role", "coordinator", "--session", "sid-clio")
+	after := asClio()
+
+	if before.code != 1 || backfill.code != 0 || after.code != 0 {
+		t.Fatalf("before %d, backfill %d, after %d: want 1, 0, 0:\n%s\n%s", before.code, backfill.code, after.code, backfill.out, after.stdout)
+	}
+}
+
+// exit 5: a rename on dima's word lands in the record, x thread show draws it, and a later refresh keeps it; a member
+// renames nothing
+func TestThreadRenameSticksAcrossARefresh(t *testing.T) {
+	t.Parallel()
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	write(t, filepath.Join(sessions, "w.json"), fmt.Sprintf(`{"sessionId":"sid-wing","pid":%d}`, os.Getpid()))
+	write(t, store, `{"v":1,"threads":[{"sessionId":"sid-wing","role":"wing","wing":2}]}`)
+	env := []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}
+
+	byCodie := xIn(t, t.TempDir(), asCaller(t, env, "codie"), "thread", "rename", "sid-wing", "🌌 nova")
+	byClio := xIn(t, t.TempDir(), asCaller(t, env, "coordinator"), "thread", "rename", "sid-wing", "🌌 nova")
+	_ = xIn(t, t.TempDir(), env, "thread", "list")
+	show := xIn(t, t.TempDir(), env, "thread", "show", "sid-wing")
+
+	if byCodie.code != 1 || !strings.Contains(byCodie.stdout, "only the coordinator or dima") {
+		t.Errorf("a codie's rename: exit %d, want the coordinator's refusal:\n%s", byCodie.code, byCodie.stdout)
+	}
+	if byClio.code != 0 || show.data["display"] != "🌌 nova" || show.data["role"] != "wing" {
+		t.Fatalf("exit %d, after a refresh x thread show %v, want «🌌 nova», still a wing:\n%s", byClio.code, show.data, byClio.stdout)
+	}
+}
+
+// exit 5: a role table line changed, every display follows, no reader's power moves
+func TestARoleTableRenameMovesTheDisplayNotThePower(t *testing.T) {
+	t.Parallel()
+	table := slices.Clone(roles)
+	i := slices.IndexFunc(table, func(r role) bool { return r.ID == "coordinator" })
+	table[i].Display = "🦊 fox"
+	if got := displayFrom(table, thread{SessionID: "s", Role: "coordinator"}); got != "🦊 fox" {
+		t.Errorf("display %q, want the table's new line", got)
+	}
+	if !roleIn(table, "coordinator").IsCoordinator || roleIn(table, "codie").IsCoordinator {
+		t.Error("a display rename moved who coordinates")
 	}
 }
 
