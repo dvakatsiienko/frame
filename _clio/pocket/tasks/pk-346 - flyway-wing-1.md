@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T16:36:00Z'
+updated_date: '2026-11-12T16:54:00Z'
 labels:
   - s
   - clio-wing-1
@@ -18,34 +18,33 @@ ordinal: 1001
 <!-- AC:BEGIN -->
 - [ ] #1 flyway fix: the stale-line checks and the 120-char rule, built by a helper (dima's ok 17:38)
 - [ ] #2 groom backlog, 105 reds: 33 prompts groomed by helga, 43 stamps with no logged prompt traced
-- [ ] #3 FRM-579 land chores for main: lane-plan close slice, review-rounds lines, worth-it verbs, look card
-- [ ] #4 «seat» code half: the saved names renamed with every reader (seats dir, CLIO_SEAT, seatOf, labels)
-- [ ] #5 milestone order: flip the FRM-504 and FRM-505 blocks links, queues point at scopes-audit.md
-- [ ] #6 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-489 «changed» at dispatch
-- [ ] #7 summon leftovers: the mods codie's first door, /handoff spawn still --bg, a pane wing's background
-- [ ] #8 11-10 halt leftovers: a checkup slice, two board redraws, the kill side, four budget rows
-- [ ] #9 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
-- [ ] #10 lane size alarm at 1.5× a chunk's size: one pick with dima; home FRM-572 or the shape-lane sign
-- [ ] #11 /clio:low-tide-triage (his 16:19): run it, or ask him if his 16:21 «solving» replaced it
-- [ ] #12 FRM-551 vm: both reads at the first halt with no go lane
-- [ ] #13 FRM-407 fresh-eyes card: close it if the live card already covers the ticket
-- [ ] #14 FRM-525 cpu overload: name what burns kernel time under many sessions
-- [ ] #15 FRM-537 perf probes: a menu to run when usage is spare
-- [ ] #16 PK-385 a standing stray lane for chores: shape it with dima
-- [ ] #17 PK-362 steamac vm disk: shrink 256gb to 192gb
-- [ ] #18 ⏳ FRM-576 exit 8: read dima's next desktop-app thread, then close with PK-377's account — waits for: dima o76
-- [ ] #19 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
-- [ ] #20 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
-- [ ] #21 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
-- [ ] #22 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
-- [ ] #23 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
-- [ ] #24 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
-- [ ] #25 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #26 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
-- [ ] #27 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #28 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #29 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #30 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #3 «seat» code half: the saved names renamed with every reader (seats dir, CLIO_SEAT, seatOf, labels)
+- [ ] #4 milestone order: flip the FRM-504 and FRM-505 blocks links, queues point at scopes-audit.md
+- [ ] #5 sign hash reader fix beside ticket-sign.ts; FRM-538 sign and FRM-489 «changed» at dispatch
+- [ ] #6 summon leftovers: the mods codie's first door, /handoff spawn still --bg, a pane wing's background
+- [ ] #7 11-10 halt leftovers: a checkup slice, two board redraws, the kill side, four budget rows
+- [ ] #8 prompt-groom --no-wish on a want marker: count the false refuses before it enforces (his o43)
+- [ ] #9 lane size alarm at 1.5× a chunk's size: one pick with dima; home FRM-572 or the shape-lane sign
+- [ ] #10 /clio:low-tide-triage (his 16:19): run it, or ask him if his 16:21 «solving» replaced it
+- [ ] #11 FRM-551 vm: both reads at the first halt with no go lane
+- [ ] #12 FRM-407 fresh-eyes card: close it if the live card already covers the ticket
+- [ ] #13 FRM-525 cpu overload: name what burns kernel time under many sessions
+- [ ] #14 FRM-537 perf probes: a menu to run when usage is spare
+- [ ] #15 PK-385 a standing stray lane for chores: shape it with dima
+- [ ] #16 PK-362 steamac vm disk: shrink 256gb to 192gb
+- [ ] #17 ⏳ FRM-576 exit 8: read dima's next desktop-app thread, then close with PK-377's account — waits for: dima o76
+- [ ] #18 📅 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40) — on: 2026-11-13
+- [ ] #19 📅 agent-desktop test drive beside computer-use (o106), Accessibility by his hand — on: 2026-11-13
+- [ ] #20 📅 herdr's two questions, read from herdr: status bar and VS Code button, which terminal — on: 2026-11-14
+- [ ] #21 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
+- [ ] #22 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
+- [ ] #23 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
+- [ ] #24 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #25 📅 FRM-491 remeasure after ee5d08f9; the wishkeeper-cache trial to its 1 h arm — on: 2026-11-18
+- [ ] #26 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #27 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #28 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #29 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -552,4 +551,6 @@ hoist 11-12: done, wing 1 (dima 18:26, main agreed 18:19)
 done 2026-11-12 18:32: PK-377 memory by surface: shape it with dima (PK-377 done)
 
 18:36 FRM-576: the clio-wing-1 label refused twice by linear («did not take the update»); main looks after the merges
+
+done 2026-11-12 18:54: FRM-579 land chores for main: lane-plan close slice, review-rounds lines, worth-it verbs, look card (FRM-579 Done)
 <!-- SECTION:NOTES:END -->

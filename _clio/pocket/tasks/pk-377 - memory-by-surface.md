@@ -1,10 +1,10 @@
 ---
 id: PK-377
 title: memory by surface
-status: open
+status: done
 assignee: []
 created_date: '2026-11-11T15:17:00Z'
-updated_date: '2026-11-12T16:32:00Z'
+updated_date: '2026-11-12T17:00:00Z'
 labels:
   - s
 dependencies: []
@@ -86,4 +86,6 @@ PK-377:W50 (2026-11-11 19:21, dima): memory chunk 2, swept file by file with you
 close: 18:31 2026-11-12 — W34–W50 ride FRM-576 (main's lane, chunk 2 in progress, main flyway #1); nothing left to shape (wing 1, dima's 18:31 question)
 
 18:32 reopened: closing reds 3+ W-lines the close line does not account for in FRM-576's block; the accounting is FRM-576's (main's lane), handed to main
+
+close: 19:00 2026-11-12 — every W-line moved to FRM-576 (W2–W17, W28, W29, W31–W33 as its W1–W21 on 11-11; W1, W23, W24, W34–W50 as its W22–W41 today); FRM-576 closed Done
 <!-- SECTION:NOTES:END -->
