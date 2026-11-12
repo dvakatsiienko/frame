@@ -15,6 +15,7 @@ import { gitEnv } from '../../script/lib/git-fixture.ts';
 const SID = 's-clio';
 const CHECKS = [
     'pocket-check',
+    'flyway-done',
     'wish-cover',
     'close-net',
     'blueprint-drift',
@@ -117,6 +118,7 @@ describe('siesta-checks', () => {
         const heads = out.stdout.match(/^## .+$/gm) ?? [];
         expect(heads.map((h) => h.split(' · ')[0])).toEqual([
             '## pocket-check',
+            '## flyway homes',
             '## wish-cover',
             '## orbit drift',
             '## close net',
