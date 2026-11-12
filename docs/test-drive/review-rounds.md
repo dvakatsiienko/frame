@@ -134,5 +134,7 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-12 · frame#170 · coderabbit · 10; 1 the same as the security finding, 9 robustness nits declined · noise
 - 2026-11-12 · frame#170 · ci reviewer · 4 on cf4179bb; 2 left with the guard, 2 stale comments fixed · useful
 - 2026-11-12 · FRM-576, quick lane on main (c200e8db..652e8af5), memory by surface: clean at 2 rounds · sixth sense found 1 break, fixed: a herdr clio thread whose cwd moved lost its leaf at a compaction, round 2 matches the start project · chunk 2 by clio (doors into the leaves), exit 8 live on dima's «dima probe 2» desktop thread (the desktop leaf loaded, no herdr leaf) · local reviews: none named in the done report
+- 2026-11-12 · FRM-505, quick lane on main (5dd97992..4bb9b71e), second wind runs itself: clean at 3 rounds · sixth sense round 1 broke exits 2, 3, 8 (his take-back undone, a gone handoff untold, 🍃 off kept the mod's ask), round 2 a false board word; all fixed, each fix's mutant red · live on throwaway --bg sessions for exits 3, 11, 13, 14
 
 ## verdict
+- 2026-11-12 · frame#172, FRM-572 chunk 2 (cli wisps): clean at 3 rounds · wishkeeper found 1 high (a UTC lock stamp read every live holder as gone), sixth sense round 2 found 1 P1 (a `ps` that did not run read as gone); both fixed, red-proven · ci reviewer: not named

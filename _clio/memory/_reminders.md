@@ -1,6 +1,6 @@
 # reminders — dima's standing hooks
 
-Store contract: the `clio:remind` skill. Both tiers die only when Dima drops them.
+Store contract: the `clio:remind` skill. Both tiers die only when Dima drops them; a 🦉 one of mine dies once its day passed and its check ran.
 
 ## legend
 

@@ -26,7 +26,7 @@ a reminder lives in `_clio/memory/_reminders.md` (git-backed), one line each, ne
 
 - **`⏰📌`** — at every boot, unprompted, its own line on the board; then an ordinary reminder for the session
 - **`⏰`** — once at a natural moment: the work touches it, a related decision, a wrap; one line, never a recited list
-- it dies only on his drop — never on being raised, looking handled, or answered
+- his dies only on his drop — never on being raised, looking handled, or answered; a 🦉 one of mine dies the turn its day passed and its check ran (dima's o174)
 
 ## a time is not a reminder
 

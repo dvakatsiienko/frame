@@ -20,7 +20,7 @@ item's url travels verbatim into its pocket item** — a link is payload, never 
 **His thread is the lane; member traffic stays out of it** (dima, 2026-09-30: codie replies buried
 the reports he came back for). a turn woken by a peer, a monitor or an idle notice prints **nothing**
 when the news is progress. a find with no ask gets one `🔔 <member>: <what>` line; a decision or a
-question goes to orbit alone (dima's o84). **a turn my own background job wakes writes one line**, what landed; the rest rides his next reply or orbit (o10, trial to 21). **codie's report reaches him
+question goes to orbit alone (dima's o84). **a turn my own background job wakes writes one line**, what landed; the rest rides his next reply or orbit (o10; kept, o131). **codie's report reaches him
 once**, a digest of ≤5 lines in the turn it lands; later turns point at it by name. the digest IS codie's look card (`craft-fleet-flow` stage 9), and its screenshot goes to him by `SendUserFile` in the same turn.
 
 A `📄 last report: **<topic>**, <HH:MM>` line ends every report, except a `🔭` line, which stays the reply's last line (`rules/fleet-output-format.md`); his `rewind` reprints it. **The stamp is a copied clock, never a composed one** — the prompt hook's `now HH:MM` line, or a
