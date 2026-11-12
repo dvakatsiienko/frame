@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:47:00Z'
+updated_date: '2026-11-12T12:44:00Z'
 labels:
   - m
 dependencies: []
@@ -71,4 +71,46 @@ raw drop (2026-11-12 inbox, dima): - find and fold our previous speakapp v2 desi
 sent 13:44: W1–W7 to ⚡ 🔧 herdr | FRM-563 as its next job after FRM-563, step 1 a read-only design sanity review with shots; W8–W10 (prefs in the designer home, the speak v2 designer session) stay main's
 
 fix 13:47: W6 reads «matte coloured cars and displays», as he wrote it; the «cards» in the line above was helga's guess, never his (wishkeeper boot read); the herdr codie told
+
+PK-384:W11 (2026-11-12 14:00, dima): i propose we groom my chatterbox wish here. i want my chatter groomed and prettified before the bigger theme revamp.
+
+PK-384:W12 (2026-11-12 14:00, dima): an «intermediate» revamp, not a full redesign: a chatterbox sanitize.
+
+PK-384:W13 (2026-11-12 14:00, dima): you interview me on how i want it, take a shot of my chatter, and propose how to optimize its layout, look and ux.
+
+PK-384:W14 (2026-11-12 14:00, dima): maybe let's shape my wish slightly with you? ❓
+
+PK-384:W15 (2026-11-12 14:27, dima): my worries are about the chatter layout. how to optimize it?
+
+PK-384:W16 (2026-11-12 14:27, dima): can codie brew something unique with ctx and meter progress bars? like a trick with a nested card below the main chatter box? ❓
+
+PK-384:W17 (2026-11-12 14:27, dima): for example, add another nested card on top, to unify the ui and ux approach: the progress bar part looks off and alienated next to the nested card below.
+
+PK-384:W18 (2026-11-12 14:27, dima): draw the meters prettier. the ctx and week literal words can be dropped and moved to a tooltip. keep only the progress bars and redraw them in the style i told in my wishes in the inbox.
+
+PK-384:W19 (2026-11-12 14:27, dima): plus, unify the whole chatterbox module and redraw it based on my style wishes? and where to keep the buttons then? ❓
+
+raw drop (2026-11-12 14:00, dima): i propose to groom my chatterbox wish here. i want my chatter groomed and prettified before bigger theme reavamp. an «intermediate» revamp (not full redesign but chatterbox sanitization) — you interview me how i want, take a shot of a chatter and propose how to optimize layout, look, ux.
+
+raw drop (2026-11-12 14:00, dima): maybe let's shape/groom my wish slightly with you?
+
+raw drop (2026-11-12 14:27, dima): my worries about chatter (layout). how to optimize layout? can codie brew something unique with ctx and meter progress bars? like a trick with nested card below main chatter box?
+
+raw drop (2026-11-12 14:27, dima): for example add another nested card on the top (unify ui/ux approach - progress bar part looks off and alienated compared to nested card below).
+
+raw drop (2026-11-12 14:27, dima): and draw meters prettier. (ctx and week literal words can be dropped and moved to tooltip). keep only progress bars and redraw them in a style i told in my wishes in inbox. plus whole chatterbox module unification redraw based on style wishes? and where to keep buttons then?
+
+PK-384:W20 (2026-11-12 14:38, dima): q1 let's try. (grill answer: the three-layer layout)
+
+PK-384:W21 (2026-11-12 14:38, dima): q2 lets try, but ask codie to draw something pretty, based on the styles i described. (grill answer: two segmented meters, words in a tooltip)
+
+PK-384:W22 (2026-11-12 14:38, dima): q3 ✓ (grill answer: sanitize now, taste later)
+
+raw drop (2026-11-12 14:38, dima): q1. let's try
+
+raw drop (2026-11-12 14:38, dima): q2. lets try but ask codie to draw something pretty, based on styles i described
+
+raw drop (2026-11-12 14:38, dima): q3 ✓
+
+14:44: W8–W9 done: ~/projects/studio/taste.md (studio c28e412, pushed), his likes in his words; W10: the speak v2 designer sessions (5, 2026-10-01) are dead and held no words of his (they reached the designer through clio relays), his verdicts came from jobs/speak/ files into taste.md
 <!-- SECTION:NOTES:END -->
