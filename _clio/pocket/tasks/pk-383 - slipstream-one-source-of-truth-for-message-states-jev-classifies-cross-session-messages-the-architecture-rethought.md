@@ -3,10 +3,10 @@ id: PK-383
 title: >-
   slipstream: one source of truth for message states, jev classifies
   cross-session messages, the architecture rethought
-status: open
+status: done
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:42:00Z'
+updated_date: '2026-11-12T11:43:00Z'
 labels:
   - m
 dependencies: []
@@ -29,4 +29,10 @@ raw drop (2026-11-12 inbox, dima): another slipstream idea: have a single source
 raw drop (2026-11-12 inbox, dima): btw! can we use jev for classification?? jev can classify fleet sliplstream messages (cross session only).
 
 raw drop (2026-11-12 inbox, dima): when we get to slipstream - let's rething how we have it arechitectureally (mods side?). i want slipstream messages system to be solid and function very well.
+
+moved: PK-383:W1–W3 → FRM-564:W22–W24 (13:43, dima's 13:38 «fold my wishes into slipstream ticket»)
+
+ticket: FRM-564
+
+close: W1–W3 moved to FRM-564 (W22–W24), his raw drop kept here
 <!-- SECTION:NOTES:END -->

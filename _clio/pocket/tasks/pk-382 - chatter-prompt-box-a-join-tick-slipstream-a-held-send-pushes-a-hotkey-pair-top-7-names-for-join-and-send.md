@@ -3,10 +3,10 @@ id: PK-382
 title: >-
   chatter prompt box: a join tick (slipstream), a held send pushes, a hotkey
   pair, top-7 names for join and send
-status: open
+status: done
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T11:42:00Z'
+updated_date: '2026-11-12T11:43:00Z'
 labels:
   - m
 dependencies: []
@@ -77,4 +77,10 @@ raw drop (2026-11-12 inbox, dima): - cool name for «join» mode
 raw drop (2026-11-12 inbox, dima): - rethinking may be widened to orbit too. all orbit asks are «joiners» too. but all of them are only named as «tick». which not too bad but blurry. what would be a cool name for such buttons everywhere that reflects what does it do in best way, and sounds cool. and easy to spell and type?
 
 raw drop (2026-11-12 inbox, dima): - cool name for «send» mode
+
+moved: PK-382:W1–W11 → FRM-564:W11–W21 (13:43, dima's 13:38 «fold my wishes into slipstream ticket»)
+
+ticket: FRM-564
+
+close: W1–W11 moved to FRM-564 (W11–W21), his raw drop kept here
 <!-- SECTION:NOTES:END -->
