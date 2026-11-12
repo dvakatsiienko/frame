@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T13:26:00Z'
+updated_date: '2026-11-12T13:35:00Z'
 labels:
   - m
   - clio-wing-1
@@ -52,4 +52,6 @@ PK-379:W7 (2026-11-12 15:15, dima): can they be folded, but colored or styled di
 PK-379:W8 (2026-11-12 15:15, dima): then you could have an api to separate your system messages from replies and messages meant for me: messages to me go as plain messages, system messages are hidden (folded). i want cross-thread messages to stay as they are.
 PK-379:W9 (2026-11-12 15:15, dima): why do you print your system messages at all? should they be in your replies or not? in my mind yes, because it's your activity and i'd like to see it; there's just too much of it now, so i propose folding. ❓
 PK-379:W10 (2026-11-12 15:15, dima): i still think it's a trick that kills a symptom, not the problem, and i have no smarter idea right now. either propose something better, or let's try it this way and tell me if it will work at all; if you tell me it will probably be clunky, i discard my proposal.
+
+PK-379:W11 (2026-11-12 15:34, dima): i think this temporary habit is worth an mvp test: let's have it for half a day, but i want it easy to undo, because it hides your activity completely and that's not always good. i'd like to know what's under the hood, so i want that folded option. let's shape it.
 <!-- SECTION:NOTES:END -->
