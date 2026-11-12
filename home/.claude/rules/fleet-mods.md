@@ -22,15 +22,16 @@
 <!-- why: replies named asks by oN id; dima's o112 counted 65 unglossed-id reminders on 10-14. -->
 <!-- why: his thread runs many lanes at once, and a reply's ask block got missed, pasted back unchanged or rewritten mid-read (2026-10-10, FRM-381) -->
 
-## 🛡️ x-mod-guard — risky Bash refused
+## 🛡️ x-mod-guard — only the destructive floor is refused
 
-- a floor command (`rm`, a kill by pattern, a force push, `--no-verify`, …) or a known hazard shape is refused, and the refusal names the safe door; it stops that one command, never the session. the list: `plugin-x/mods/x-mod-guard/FTR.md`
+- refused: a delete (`rm`, `find -delete`), a kill by pattern, a discard of uncommitted git work, a force push, a remote delete, `--no-verify` and identity flags, a raw merge, a herdr close of a live thread; every other command runs. the list: `plugin-x/mods/x-mod-guard/FTR.md`
+- a refusal stops one command, never the session, and names its safe door (`trash`, `x lane merge-auto`)
 - a refusal that looks wrong is a guard bug: one line to the coordinator, never a route around it
 
 ## 🔒 x-mod-holds — one writer per file
 
 - a session's first edit of a file holds it until the file is committed, the session ends or it sits idle 30 min; another session's edit is refused, naming the holder and when it took the hold
-- ask the holder or the coordinator; a Bash write to a held file is refused too
+- ask the holder or the coordinator; a Bash write takes no hold, so an edit goes through `Edit`
 
 ## 🫥 x-mod-redact — secrets never land in a transcript
 
