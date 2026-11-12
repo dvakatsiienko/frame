@@ -3,10 +3,10 @@ id: PK-378
 title: >-
   thread names drop the member word: ⚡ 🔧 mods 6 | FRM-574 shape, the x reader
   first (FRM-570 rule 9), then memory, skills, renames
-status: done
+status: open
 assignee: []
 created_date: '2026-11-11T17:28:00Z'
-updated_date: '2026-11-12T01:04:00Z'
+updated_date: '2026-11-12T01:05:00Z'
 labels:
   - s
 dependencies: []
@@ -36,4 +36,6 @@ close 03:04 2026-11-12 (wing 1 halt): W1–W7 met — the shape landed in fleet-
 close: W1 done (shorter names, e1929565) · W2 done (member word dropped) · W3 done (clio, wings, crow, helga unchanged) · W4 done (mode emoji kept) · W5 dropped (no area emoji, dima o58) · W6 done (memory and skills rewritten, live renames) · W7 done (all five lane threads renamed live 01:25)
 
 close: W5 dropped — dima o58 2026-11-11 21:45 (no area emoji)
+
+kept 03:05 2026-11-12 — every W-line met (the close lines above); the first close line splits W5's verdict on a comma, so pocket-check reds it; main fixes that line in her checkout and closes
 <!-- SECTION:NOTES:END -->
