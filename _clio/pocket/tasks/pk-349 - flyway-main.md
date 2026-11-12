@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T15:42:00Z'
+updated_date: '2026-11-12T17:54:00Z'
 labels:
   - s
   - clio-main
@@ -16,32 +16,26 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 now: FRM-576 chunk 2 next batch — halt/main.md:8 and :18 (list_sessions vs ListAgents, archive_session vs hc kill: both doors into the leaves), the crew-dna and crew-codie ask lines per his o63 (a member asks its coordinator first), _reminders :22 :37 :60 (dated; his :37 quote shown to him), grill-chat-3 W667–W668 re-fold in PK-363, then a fresh rg over _clio memory and clio skills for desktop|herdr doors; exit 8 at his next desktop thread
-- [ ] #2 the herdr interview: his OSS layouts and shots, the stacked composer's next look, designer or codie for the looks; not run yet
-- [ ] #3 PK-363 herdr move: the wish behind the herdr lane and tomorrow's boot, its state in .scratch/herdr/plan.md
-- [ ] #4 grill 5 round 2: the setup's name (seven), then wing 1's zoo pairs for his keep-or-go-back, his own sounds, a tick for every refusal
-- [ ] #5 quiet comms gate: a second [done] from one member within minutes is held; propose to dima after the mods lane runs
-- [ ] #6 guard: awk -f, rg --pre, sort --compress-program can run a program inside ~/.local/state/x (sixth sense, FRM-574 round 3): a ticket in safer, quieter mods
-- [ ] #7 herdr lane chunk 1 (its 11-10 date passed, check FRM-568's band slices first), shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping)
-- [ ] #8 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line (its 11-10 date passed)
-- [ ] #9 mods rider r6, now mine (mods codie 18:42): _clio/.claude/hooks/fork-guard.sh allows a wing's edit of a ~/.claude/shelf/handoffs/ file whose name carries that wing's own token; proven with a fixture-HOME driver plus a mutation run (_clio/AGENTS.md)
-- [ ] #10 mods row (his o67 tick): the glide subcard becomes a read-only view of a member's asks, its tick no longer joins the member's turn; x-mod-stash FTR.md:1061 exit 3 changes with it; for the next mods lane
-- [ ] #11 name a desktop-only Claude thread to dima once, for FRM-576 exit 8 and PK-349 #29 probe 4b
-- [ ] #12 autopilot: rounds 1–3 settled (grill-borrow-2/3-proposal.md § answers); shape it into one ticket through clio:shape-idea (prior art: shepherdr assistant.md + automations.py, our clio:shift), born in Triage, then the test-drive night
-- [ ] #13 now: chatterbox proof door (o18) with dima and the herdr codie, then the rebuilt pass lands from its stash; then zoo → x-herdr (file list in, names asked), then FRM-566 slice 1
-- [ ] #14 cli lane, first after it moves to main: x linear body --set refreshes its pull cache, so ticket-sign.ts never stamps a stale body (wishkeeper siesta high 16:34)
-- [ ] #15 cli lane (from wing 1, 16:52): FRM-579 / #170 to merge: codie reorder + final, sixth sense clean, wishkeeper base..head, herdr layout + clio-revive unset HC_TERMINAL_ID, backfill from dima's terminal, merge-auto 170 --apply + landed; then rename both members, ping the mods codie, cloud chat --as clio
-- [ ] #16 cli lane queue after FRM-579: FRM-572 chunk 1, and the x brief check offline stamp line (seven names + worth it, to dima)
-- [ ] #17 before the halt (his o42, «do not forget!»): the guard story whole into docs/knowledge/fleet-stories/guard-lockout/story.md — when it was born, every decision and who made it (clio initiated, dima agreed silently, his read), the days, hours and commits spent on the wrong guard; read git log of x-mod-guard, the flawlogs, pocket and linear
-- [ ] #18 right after #170 merges: `x brief summon --role wing:1 --session 028a696e-a9dd-4eb7-84f0-f378e9e5efaf` with main's rebuilt x (wing 1 lost its number to main's old thread list), then sixth sense rechecks exit 8
-- [ ] #19 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» (its 📅 11-12 came, moved up 17:19)
-- [ ] #20 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order (its 📅 11-12 came, moved up 17:19)
-- [ ] #21 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
-- [ ] #22 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
-- [ ] #23 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
-- [ ] #24 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
-- [ ] #25 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
-- [ ] #26 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #1 guard story into fleet-stories/guard-lockout before the halt (his o42); facts in .scratch/guard/
+- [ ] #2 lowtide family (PK-387): run the checkup, now the reshape landed
+- [ ] #3 FRM-505 auto second wind: grill and sign with dima, then the mods codie builds it
+- [ ] #4 FRM-504 read: does its round count live in both the stash and x, before anyone builds it
+- [ ] #5 herdr rename steps 2–7, then zoo.json → x-herdr-layout.json, by the herdr codie
+- [ ] #6 quiet comms gate: a second [done] from one member within minutes is held; propose it
+- [ ] #7 fork-guard r6: a wing may edit a handoff file carrying its own token; fixture-HOME proof
+- [ ] #8 x brief check's offline stamp line: seven names and ⚖️ worth it, to dima
+- [ ] #9 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
+- [ ] #10 ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505
+- [ ] #11 ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed
+- [ ] #12 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
+- [ ] #13 📅 herdr with dima: the settings window shape, then the look grill, designer or not — on: 2026-11-13
+- [ ] #14 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
+- [ ] #15 💤 grill 5 leftovers: his own sounds, wing 1's zoo pairs keep-or-go-back — later: dima at the mac
+- [ ] #16 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
+- [ ] #17 💤 probe 4b's last leg, the desktop resume — later: dima at the desktop
+- [ ] #18 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #19 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
+- [ ] #20 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -333,4 +327,34 @@ done 2026-11-12 17:18: 📅 herdr look: x:crew-designer-interview with dima (kit
 17:18 wing 1 flyway-sync: the two 📅 2026-11-12 herdr looks with dima moved up as open lines (their date came); no other line done by its home (FRM-576, the herdr lane, cli lane, guard lines all open, read 17:18)
 
 done 2026-11-12 17:42: ⏳ clio:checkpoint step 0 and § 4 drop the hold notice and the back line, then x plugin bump --apply clio, his o141 — waits for: the mods codie's second-wind hold rider
+
+19:54 2026-11-12 wing 1, on main's hand-over and dima's 19:51 «no stray lines»: the before-block, kept whole:
+  #1 now: FRM-576 chunk 2 next batch — halt/main.md:8 and :18 (list_sessions vs ListAgents, archive_session vs hc kill: both doors into the leaves), the crew-dna and crew-codie ask lines per his o63 (a member asks its coordinator first), _reminders :22 :37 :60 (dated; his :37 quote shown to him), grill-chat-3 W667–W668 re-fold in PK-363, then a fresh rg over _clio memory and clio skills for desktop|herdr doors; exit 8 at his next desktop thread
+  #2 the herdr interview: his OSS layouts and shots, the stacked composer's next look, designer or codie for the looks; not run yet
+  #3 PK-363 herdr move: the wish behind the herdr lane and tomorrow's boot, its state in .scratch/herdr/plan.md
+  #4 grill 5 round 2: the setup's name (seven), then wing 1's zoo pairs for his keep-or-go-back, his own sounds, a tick for every refusal
+  #5 quiet comms gate: a second [done] from one member within minutes is held; propose to dima after the mods lane runs
+  #6 guard: awk -f, rg --pre, sort --compress-program can run a program inside ~/.local/state/x (sixth sense, FRM-574 round 3): a ticket in safer, quieter mods
+  #7 herdr lane chunk 1 (its 11-10 date passed, check FRM-568's band slices first), shape-idea first: the band as a herdr mod, built fresh — ctx bar, the waiting-on line, buttons for second wind, keep hot, waker, AFK and the operator override; the settings and board buttons next, the harder kind, built fresh (PK-363:W151–W154; W153's «Flutter» asked at the shaping)
+  #8 after the boot and crow and helga (his order, PK-363:W117–W119): the «🪸 fleet runs in herdr» milestone in linear (o108), done test «main and wing 1 run a day in herdr with no desktop-only fallback», tickets for the band, the crow and helga pane doors (W146–W148, W156) and the for-you row marked later (W114–W115), FRM-542 and FRM-556 moved in; PK-363 closes only after `wish-cover.ts PK-363 <the tickets>` exits 0 and a `close:` line accounts for every W-line (its 11-10 date passed)
+  #9 mods rider r6, now mine (mods codie 18:42): _clio/.claude/hooks/fork-guard.sh allows a wing's edit of a ~/.claude/shelf/handoffs/ file whose name carries that wing's own token; proven with a fixture-HOME driver plus a mutation run (_clio/AGENTS.md)
+  #10 mods row (his o67 tick): the glide subcard becomes a read-only view of a member's asks, its tick no longer joins the member's turn; x-mod-stash FTR.md:1061 exit 3 changes with it; for the next mods lane
+  #11 name a desktop-only Claude thread to dima once, for FRM-576 exit 8 and PK-349 #29 probe 4b
+  #12 autopilot: rounds 1–3 settled (grill-borrow-2/3-proposal.md § answers); shape it into one ticket through clio:shape-idea (prior art: shepherdr assistant.md + automations.py, our clio:shift), born in Triage, then the test-drive night
+  #13 now: chatterbox proof door (o18) with dima and the herdr codie, then the rebuilt pass lands from its stash; then zoo → x-herdr (file list in, names asked), then FRM-566 slice 1
+  #14 cli lane, first after it moves to main: x linear body --set refreshes its pull cache, so ticket-sign.ts never stamps a stale body (wishkeeper siesta high 16:34)
+  #15 cli lane (from wing 1, 16:52): FRM-579 / #170 to merge: codie reorder + final, sixth sense clean, wishkeeper base..head, herdr layout + clio-revive unset HC_TERMINAL_ID, backfill from dima's terminal, merge-auto 170 --apply + landed; then rename both members, ping the mods codie, cloud chat --as clio
+  #16 cli lane queue after FRM-579: FRM-572 chunk 1, and the x brief check offline stamp line (seven names + worth it, to dima)
+  #17 before the halt (his o42, «do not forget!»): the guard story whole into docs/knowledge/fleet-stories/guard-lockout/story.md — when it was born, every decision and who made it (clio initiated, dima agreed silently, his read), the days, hours and commits spent on the wrong guard; read git log of x-mod-guard, the flawlogs, pocket and linear
+  #18 right after #170 merges: `x brief summon --role wing:1 --session 028a696e-a9dd-4eb7-84f0-f378e9e5efaf` with main's rebuilt x (wing 1 lost its number to main's old thread list), then sixth sense rechecks exit 8
+  #19 herdr look: x:crew-designer-interview with dima (kit, chat, band, tabs), his o118 «tomorrow, too tired tonight» (its 📅 11-12 came, moved up 17:19)
+  #20 tomorrow with dima, herdr: 1) shape the settings window (architecture, a grill on how to make it good, shepherdr settings as an idea), 2) a grill on the look: designer or not — his 23:24 order (its 📅 11-12 came, moved up 17:19)
+  #21 ⏳ his look at the model and effort pickers inside the text box (PK-363:W774); the deck 🔥 is proven by his click (W789) — waits for: dima
+  #22 ⏳ probe 4b's last leg, the desktop resume — waits for: dima's look for «tool-existence-probe-and-session-id» in the desktop sidebar
+  #23 📅 FRM-483, closed with its compact half missed: read SessionStart:compact p95 for 11-11..11-13 per day file in ~/.local/share/x-cc-otel (clio compacts only, the rows over 1 s), under 5 s or one more step — on: 2026-11-13
+  #24 💤 📎 the for-you row on x-herdr-deck (o104): nice to have, plain paths until herdr is stable (PK-363:W114–W115) — later: dima, after herdr is stable
+  #25 💤 PK-358 rex settings walkthrough with dima, two at a time, shown live — later: dima when free
+  #26 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+
+19:54 wing 1: out with their homes: FRM-576 #1 #11 (closed, main's word), #6 guard (dropped, FRM-581 W23–W24), #7 band (FRM-565, FRM-561), #13 chatter (done 17:23), #14 cache (FRM-572 chunk 1, #171), #15 FRM-579 (Done), #16 FRM-572 (running #171), #18 summon (done 17:38), #19+#20 merged into the 11-13 herdr line; designer day's full text (main 19:52, his o36 steer 19:48): refresh the designer recipe, designer → Fable 5.2 medium, speak v2 from stashed designs, herdr look round synced
 <!-- SECTION:NOTES:END -->
