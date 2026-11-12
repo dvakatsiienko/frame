@@ -3,10 +3,10 @@ id: PK-385
 title: >-
   idea: a standing stray lane that solves chores, tails and side work, parked
   between jobs
-status: open
+status: done
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T19:00:00Z'
+updated_date: '2026-11-12T19:04:00Z'
 labels:
   - s
 dependencies: []
@@ -57,4 +57,7 @@ PK-385:W10 (2026-11-12 20:59, dima): model? i think opus 5.5 medium will work 10
 PK-385:W11 (2026-11-12 20:59, dima): the cli lane was fully finished and has no chunk pending; that's why the cli codie got reassigned to the stray lane to help you
 PK-385:W12 (2026-11-12 20:59, dima): q6: no, it isn't parked across halts. how do you imagine it parked across halts? its cache goes cold
 PK-385:W13 (2026-11-12 20:59, dima): instead it is never summoned at boot, since why keep it parked for nothing; it is summoned on the first pending chore, solves it, then stays parked and keeps doing the chores that appear during the day, and is stopped with everyone else at the halt
+
+21:04 ticket: FRM-586
+close: 2026-11-12 21:04 — grill rounds 1–2 settled with dima (o51–o58); W1–W13 moved whole into FRM-586's wish block as FRM-586:W1–W13; the trial: docs/test-drive/stray-lane.md
 <!-- SECTION:NOTES:END -->

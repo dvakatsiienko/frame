@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T18:49:00Z'
+updated_date: '2026-11-12T19:05:00Z'
 labels:
   - s
   - clio-wing-1
@@ -36,7 +36,6 @@ ordinal: 1001
 - [ ] #18 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
 - [ ] #19 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
 - [ ] #20 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #21 💤 PK-385 the standing stray lane: shape it with dima (the strays codie runs since 20:06) — later: dima says
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -620,4 +619,6 @@ done 2026-11-12 20:44: prompt-groom --no-wish on a want marker: count the false 
 20:45 wing 1: crow second wind proven live (his o47): compact, then the plugin's plain-prompt ingest (45aa16f6) ran, crow-wind-probe-2 ingested ok, crow's handoff store empty (x handoff list --for crow, read by wing 1)
 
 done 2026-11-12 20:48: mods codie in a herdr pane: does dima see each mod change live there, the mods lane's reason
+
+done 2026-11-12 21:05: 💤 PK-385 the standing stray lane: shape it with dima (the strays codie runs since 20:06) — later: dima says (PK-385 done)
 <!-- SECTION:NOTES:END -->
