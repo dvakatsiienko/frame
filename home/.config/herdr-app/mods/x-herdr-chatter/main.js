@@ -4957,7 +4957,7 @@ export default class ClaudeChat extends View {
             )
             .child(
                 row(
-                    'Meters and the 🔓 override',
+                    'Meter warnings',
                     pills(
                         div()
                             .id('look-all-settings')

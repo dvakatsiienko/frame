@@ -174,22 +174,7 @@ function row(t, w, r, i) {
     const title = h_flex()
         .gap(8)
         .items_center()
-        .child(div().text_size(13).text_color(t.foreground).child(r.title))
-        .when(r.isWired === false, (s) =>
-            s.child(
-                div()
-                    .id(`settings-unwired-${r.key}`)
-                    .px(6)
-                    .rounded(4)
-                    .bg(t.hover)
-                    .text_size(10.5)
-                    .text_color(t.dim)
-                    .tooltip(
-                        'saved, but the mod it steers does not read it yet',
-                    )
-                    .child('not wired yet'),
-            ),
-        );
+        .child(div().text_size(13).text_color(t.foreground).child(r.title));
     const label = v_flex()
         .flex_1()
         .min_w(0)
@@ -255,7 +240,7 @@ function control(t, w, r) {
                         .when(!o.isLocked, (s) => s.cursor_pointer())
                         .tooltip(
                             o.isLocked
-                                ? 'never part of the override'
+                                ? 'locked: this one never changes'
                                 : isOn
                                   ? 'press to leave out'
                                   : 'press to include',

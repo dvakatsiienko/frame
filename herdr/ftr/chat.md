@@ -171,7 +171,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when he presses «All settings…»
   - then the settings window opens as a dialog on its Chatter page: a nav of Chatter, Deck, Tabs and Claude Code mods, each row a title, a one-line why and one control
   - and a change lands in the file at once, and a value off its row's range or options reads as the row's default
-  - and a row whose reader does not read the file yet carries «not wired yet»: the 🔓 override's scopes and the five Claude Code mods rows, until x-mod-stash reads them
+  - and only rows that act are drawn: a Claude Code mods row joins once its mod reads it, added by the mods lane with its wiring (dima, o101)
   - decision: the window lives in the chatter: a herdr mod cannot import a sibling mod's file, and only a mod placed at start can write every default (clio, 19:28)
 - ⬜ the meters warn at his levels
   - given «🧠 ctx turns amber at» and «🗓 week turns amber at» in the settings window, 60 % and 80 % by default
