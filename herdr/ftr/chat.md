@@ -172,6 +172,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a change lands in the file at once, and a value off its row's range or options reads as the row's default
   - and only rows that act are drawn: a Claude Code mods row joins once its mod reads it, added by the mods lane with its wiring (dima, o101)
   - decision: the window lives in the chatter: a herdr mod cannot import a sibling mod's file, and only a mod placed at start can write every default (clio, 19:28)
+- ⬜ Apple's Metal HUD from the settings window
+  - when he turns «Metal HUD» on, on the Chatter page
+  - then herdr's bundle default `MetalForceHudEnabled` turns on and macOS draws its frame-rate meter over herdr; off turns it off
+  - and a flip made in a shell shows in the row at the chatter's next load
+  - decision: herdr's own gpui-fps meter is refused in his window, Apple's HUD is the meter (dima, o1)
 - ⬜ the meters warn at his levels
   - given «🧠 ctx turns amber at» and «🗓 week turns amber at» in the settings window, 60 % and 80 % by default
   - then each bar turns amber once its share reaches its level

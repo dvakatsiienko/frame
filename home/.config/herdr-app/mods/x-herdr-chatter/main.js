@@ -220,8 +220,30 @@ async function writeSettings(change) {
         }
     }
 }
+// Apple's Metal HUD is a macOS default for herdr's bundle, never our file: its row reads the default at every load
+// and writes it on a press, so a flip made in a shell shows here too
+const HUD = ['dev.herdr.app', 'MetalForceHudEnabled'];
+async function metalHudNow() {
+    const r = await exec('defaults', ['read', ...HUD]);
+    return r.code === 0 && r.stdout.trim() === '1';
+}
+/** @param {boolean} isOn */
+async function setMetalHud(isOn) {
+    const r = await exec('defaults', [
+        'write',
+        ...HUD,
+        '-bool',
+        isOn ? 'YES' : 'NO',
+    ]);
+    if (r.code !== 0)
+        throw new Error(r.stderr.trim() || 'defaults write failed');
+}
 async function loadSettings() {
-    const values = resolvedRows(settingRows, storedRows(await writeSettings()));
+    const hud = await metalHudNow().catch(() => null);
+    const text = await writeSettings(
+        hud == null ? {} : { 'chatter.metalHud': hud },
+    );
+    const values = resolvedRows(settingRows, storedRows(text));
     if (JSON.stringify(values) !== JSON.stringify(shared(SETTINGS)))
         setShared(SETTINGS, values);
 }
@@ -6903,7 +6925,11 @@ export default class ClaudeChat extends View {
         if (props()?.settingsWindow)
             return settingsWindow(theme(), {
                 onChange: (key, value) => {
-                    writeSettings({ [key]: value })
+                    (key === 'chatter.metalHud'
+                        ? setMetalHud(value === true)
+                        : Promise.resolve()
+                    )
+                        .then(() => writeSettings({ [key]: value }))
                         .then(loadSettings)
                         .catch((e) =>
                             console.log(`settings: ${e?.message ?? e}`),

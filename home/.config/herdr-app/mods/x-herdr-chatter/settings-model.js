@@ -43,6 +43,18 @@ export const pages = [
                     },
                 ],
             },
+            {
+                heading: 'measure',
+                rows: [
+                    {
+                        control: { kind: 'toggle' },
+                        default: false,
+                        key: 'chatter.metalHud',
+                        title: 'Metal HUD',
+                        why: 'Apple’s frame-rate meter over herdr, for measuring a scroll or a redraw',
+                    },
+                ],
+            },
         ],
         icon: '💬',
         id: 'chatter',
