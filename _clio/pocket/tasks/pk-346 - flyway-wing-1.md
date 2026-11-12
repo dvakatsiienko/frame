@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-12T18:17:00Z'
+updated_date: '2026-11-12T18:22:00Z'
 labels:
   - s
   - clio-wing-1
@@ -609,4 +609,6 @@ done 2026-11-12 20:10: «seat» code half: seatOf, CLIO_SEAT and the seats dir r
 20:16 wing 1 slip: 874c674f (land lock wait 30 s) landed on local main without its own test file run; the pre-push suite went red (tree-sync.test.ts «a lock that stays»), every clio push blocked until the fix; fix: the wait as TREE_SYNC_LOCK_TRIES, test at 2. lesson: a hook edit runs its own test file before x lane commit
 
 20:17 wing 1: sign hash reader landed on main (cc03fa1d, stray codie): x asSigned and ticket-sign.ts strip linear's escapes; dry dispatch FRM-566 confirm, no drift; its gap named by the codie: links linear rewrote
+
+20:22 wing 1: the pre-push red is fixed on origin (73e95c29); cc03fa1d and 3df401fa rode the push
 <!-- SECTION:NOTES:END -->
