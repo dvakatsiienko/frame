@@ -26,13 +26,26 @@ const (
 	scratchTested = ".tested"
 )
 
+// the scratch root of a session is a sibling tree, never inside the repo-level root, so a no-session run never sees a
+// session's dirs as its own content; a run with no session id (dima's terminal) keeps the repo-level root
 func scratchRoot(repo string) string {
+	if session := os.Getenv("CLAUDE_CODE_SESSION_ID"); session != "" {
+		return filepath.Join(scratchHome(), "session-"+session, filepath.Base(repo))
+	}
+	return repoScratchRoot(repo)
+}
+
+func repoScratchRoot(repo string) string {
+	return filepath.Join(scratchHome(), filepath.Base(repo))
+}
+
+func scratchHome() string {
 	// the os tmp dies with the mac, and an unpushed edit with it
 	dir := stateDir()
 	if job := os.Getenv("CLAUDE_JOB_DIR"); job != "" {
 		dir = filepath.Join(job, "tmp")
 	}
-	return filepath.Join(dir, "x-mods-edit", filepath.Base(repo))
+	return filepath.Join(dir, "x-mods-edit")
 }
 
 // a path is a mod's when it sits under the mods dir, one mod deep; the mod's name is that first part
@@ -56,6 +69,13 @@ func modsEditPull(r *Run, args []string, _ Flags) (any, error) {
 		return nil, err
 	}
 	r.Open(scratch)
+	// a session's first pull names an edit the repo-level scratch from before the per-session roots still holds, once; it stays put
+	notice := ""
+	if os.Getenv("CLAUDE_CODE_SESSION_ID") != "" && len(readPulled(scratch)) == 0 {
+		if older := repoScratchRoot(repo); len(readPulled(older)) > 0 {
+			notice = fmt.Sprintf("an older scratch for this repo at %s still holds %s pulled; it is not touched: land or drop it from a terminal with no session id (x mods edit status)", older, plural(len(readPulled(older)), "file"))
+		}
+	}
 	var copies []string
 	if err := r.Step("pull", "copying into scratch", func() (string, error) {
 		pulled := readPulled(scratch)
@@ -85,6 +105,10 @@ func modsEditPull(r *Run, args []string, _ Flags) (any, error) {
 		return nil, err
 	}
 	r.Done(strings.Join(copies, "\n"), "edit the copies, then x mods edit push")
+	if notice != "" {
+		fmt.Fprintln(os.Stderr, notice)
+		return ordered{{"copies", copies}, {"notice", notice}}, nil
+	}
 	return ordered{{"copies", copies}}, nil
 }
 
