@@ -7,6 +7,7 @@
 - under ~20–25 % context it switches in place; above it, it second-winds first; this beats the step grid below
 - a finished member stays parked for the next job (its stops: [watching.md](watching.md) § lifetime and stopping)
 - chunks run one by one through the reused member; a parallel lane only when it matters, when it is needed, or on dima's ask, its reason in the brief
+- a brief-sized code chore goes to the **🐕 strays lane** first (`rules/fleet-vibe.md`): a line in `~/.local/state/x/lanes/strays/queue.md`, then one brief to «⚡ 🔧 strays | chores»; none live → the day's first chore summons it (FRM-586)
 - a fresh summon is the last door; its brief names why no parked member fit
 
 **summon or reuse — the grid** (dima, 2026-10-06: «pre-plan these breakpoints … reuse existing sessions, or spawn a new one?»):
