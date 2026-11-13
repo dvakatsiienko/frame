@@ -183,3 +183,32 @@ func TestListMarksACappedPage(t *testing.T) {
 		t.Errorf("a full page is not marked capped: %s", got.stdout)
 	}
 }
+
+// signedListRow serves body as FRM-1's description to `x linear list` and returns its row
+func signedListRow(t *testing.T, body string) map[string]any {
+	t.Helper()
+	description, _ := json.Marshal(body)
+	node := `{"identifier":"FRM-1","title":"t","priority":3,"estimate":null,"description":` + string(description) +
+		`,"state":{"name":"Todo","type":"unstarted"},"project":null,"labels":{"nodes":[{"name":"signed"}]}}`
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"issues":{"nodes":[` + node + `],"pageInfo":{"hasNextPage":false}}}}`
+	})
+	envelope, got := runLinear(t, server, nil, "linear", "list", "--team", "FRM", "--label", "signed")
+	if got.code != 0 {
+		t.Fatalf("exit %d\n%s%s", got.code, got.stdout, got.stderr)
+	}
+	return tickets(t, envelope)[0]
+}
+
+func TestTheSignedListReadsTheLegacyStampOfItsBody(t *testing.T) {
+	t.Parallel()
+	stored := "lane: side\n\ncost \\~5, see [FRM-12](https://linear.app/x-com/issue/FRM-12)\n\n"
+	legacy := "lane: side\n\ncost ~5, see [FRM-12](https://linear.app/x-com/issue/FRM-12)\n\n"
+	if got := signedListRow(t, signedBody(stored, "", legacy))["sign"]; got != signMatch {
+		t.Errorf("sign %v, want %q for the legacy stamp", got, signMatch)
+	}
+	edited := strings.Replace(stored, "cost", "price", 1)
+	if got := signedListRow(t, signedBody(edited, "", legacy))["sign"]; got != signDrifted {
+		t.Errorf("sign %v, want %q for a body changed after the sign", got, signDrifted)
+	}
+}

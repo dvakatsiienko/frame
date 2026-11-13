@@ -876,7 +876,7 @@
             },
             "name": "linear sign-check",
             "needsApply": false,
-            "purpose": "refuse a body file that adds a sign line or moves a merge grant against the ticket's current body",
+            "purpose": "refuse a body file that adds a sign or a merge grant, and print the hash x's sign reader takes for it",
             "touches": [
                 "linear's graphql api ($X_LINEAR_URL in tests), as the acting member, only when the file holds a sign line or a grant"
             ]

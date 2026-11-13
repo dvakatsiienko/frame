@@ -84,3 +84,41 @@ func TestLinearSignCheckWantsABodyFile(t *testing.T) {
 		}
 	}
 }
+
+func signCheckHash(t *testing.T, text string) string {
+	t.Helper()
+	file := filepath.Join(t.TempDir(), "body.md")
+	write(t, file, text)
+	envelope, got := runLinear(t, signServer(t, signCheckBody), nil, "linear", "sign-check", "FRM-1", "--body-file", file)
+	if got.code != 0 {
+		t.Fatalf("exit %d, want 0:\n%s", got.code, got.stdout)
+	}
+	hash, _ := envelope["data"].(map[string]any)["hash"].(string)
+	return hash
+}
+
+func TestLinearSignCheckPrintsTheHashXsSignReaderCompares(t *testing.T) {
+	t.Parallel()
+	local := "lane: side\n\ncost ~5, see FRM-12\n\n"
+	stored := "lane: side\n\ncost \\~5, see [FRM-12](https://linear.app/x-com/issue/FRM-12)\n\n"
+	hash := signCheckHash(t, local)
+	if hash == "" {
+		t.Fatal("sign-check printed no data.hash")
+	}
+	body := stored + "## signed\n\n✍️ signed 2026-11-13 · body " + hash + "\n"
+	row := signedListRow(t, body)
+	if row["sign"] != signMatch {
+		t.Errorf("sign %v, want %q for a hash x printed", row["sign"], signMatch)
+	}
+}
+
+func TestLinearSignCheckPrintsTheHashWithNoSignLineToo(t *testing.T) {
+	t.Parallel()
+	text := "lane: side\n\nthe want\n"
+	if got, want := signCheckHash(t, text), signCheckHash(t, text+"\n\n"); got == "" || got != want {
+		t.Errorf("hash %q, want a non-empty one equal to %q for the same text with a longer end", got, want)
+	}
+	if signCheckHash(t, text) != signCheckHash(t, text+"## signed\n\na note\n") {
+		t.Error("a hash covers the text above the closing ## signed heading only")
+	}
+}

@@ -205,10 +205,19 @@ func asSigned(above string) string {
 	return folded
 }
 
+// bodySignHash is the hash x's sign reader compares for a text: the normalized form of what sits above its closing
+// ## signed heading, or of the whole text when it has none
+func bodySignHash(text string) string {
+	if above, _, ok := signedBlock(text); ok {
+		text = above
+	}
+	return shortHash(asSigned(text))
+}
+
 func shortHash(text string) string { return fmt.Sprintf("%x", sha256.Sum256([]byte(text)))[:8] }
 
 // bodySign reads the last «· body <hash>» line of the closing sign block against the body above it. the sign holds
-// on the raw body's hash (how every stored hash was written) or the normalized one; now is the raw body's
+// on the raw body's hash, the normalized one, or the legacy stamp's (only linear's escapes taken out); now is the raw body's
 func bodySign(body string) (state, stored, now string) {
 	above, block, ok := signedBlock(body)
 	if !ok {
@@ -223,7 +232,7 @@ func bodySign(body string) (state, stored, now string) {
 	switch {
 	case stored == "":
 		return signNoHash, "", now
-	case stored == now || stored == shortHash(asSigned(above)):
+	case stored == now || stored == shortHash(asSigned(above)) || stored == shortHash(unescaped(above)):
 		return signMatch, stored, now
 	}
 	return signDrifted, stored, now
@@ -297,7 +306,7 @@ func linearSignCheck(r *Run, args []string, flags Flags) (any, error) {
 	}
 	if !hasLine && !hasGrant {
 		r.Done("no sign line, no merge grant", "")
-		return map[string]any{"id": id, "newSign": false}, nil
+		return map[string]any{"id": id, "newSign": false, "hash": bodySignHash(string(body))}, nil
 	}
 	actor, err := actorOf(flags)
 	if err != nil {
@@ -312,7 +321,7 @@ func linearSignCheck(r *Run, args []string, flags Flags) (any, error) {
 		return nil, &Fail{Refused: true, Msg: "the file holds " + why + "; a sign is dima's word", Next: "ask dima to tick «✍️ sign " + id + ": <title>», or to type «sign " + id + "» himself"}
 	}
 	r.Done("adds no sign", "")
-	return map[string]any{"id": id, "newSign": false}, nil
+	return map[string]any{"id": id, "newSign": false, "hash": bodySignHash(string(body))}, nil
 }
 
 func ptrText(text *string) string {
