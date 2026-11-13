@@ -11,7 +11,7 @@ beforeAll(() => {
 const now = Date.parse('2026-11-13T13:20:00Z');
 
 describe('a message reads when it was sent and when Claude read it (FRM-594)', () => {
-    test('his message Claude Code took: «sent» and «read» on his clock', () => {
+    test('his message Claude Code took reads «read» at the moment it took it', () => {
         expect(
             messageDetails(
                 {
@@ -22,7 +22,7 @@ describe('a message reads when it was sent and when Claude read it (FRM-594)', (
                 },
                 now,
             ),
-        ).toBe('sent 14:45 · read 14:45');
+        ).toBe('read 14:45');
     });
 
     test('a message from an earlier day carries its date', () => {
@@ -36,16 +36,16 @@ describe('a message reads when it was sent and when Claude read it (FRM-594)', (
                 },
                 now,
             ),
-        ).toBe('sent Nov 12, 23:52 · read 23:53');
+        ).toBe('read Nov 12, 23:53');
     });
 
-    test('a message Claude Code still holds reads «queued»', () => {
+    test('a message Claude Code still holds reads «sent» at its send time', () => {
         expect(
             messageDetails(
                 { at: '2026-11-13T13:10:00Z', isMine: true, isQueued: true },
                 now,
             ),
-        ).toBe('sent 15:10 · queued');
+        ).toBe('sent 15:10');
     });
 
     test('a message whose pick-up was never read shows its send time alone', () => {
@@ -109,12 +109,10 @@ describe('his line over a fixture transcript (FRM-594 re-sign)', () => {
         );
     test('a message taken mid-turn reads the remove that took it', () => {
         expect(line('Click to open an image', '2026-11-13T12:45:01.682Z')).toBe(
-            'sent 14:45 · read 14:46',
+            'read 14:46',
         );
     });
     test('an idle send reads its own row', () => {
-        expect(line('proceed', '2026-11-13T12:18:15Z')).toBe(
-            'sent 14:18 · read 14:18',
-        );
+        expect(line('proceed', '2026-11-13T12:18:15Z')).toBe('read 14:18');
     });
 });
