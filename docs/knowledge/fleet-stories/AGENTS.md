@@ -18,3 +18,4 @@ one problem's arc over days, told so the next session does not walk it again: wh
 
 - [cpu-overload](cpu-overload/story.md) — why this mac hit 100 % cpu under the lanes, what held; sealed
 - [guard-lockout](guard-lockout/story.md) — the guard clio grew until it locked the fleet out, and its cut to the destructive floor; sealed
+- [x-live-on-commit](x-live-on-commit/story.md) — an x change on main is live at its commit, before the read; open until FRM-624
