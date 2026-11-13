@@ -74,6 +74,7 @@ import { viewSwitch } from './chatter-header.js';
 import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { readableBackground } from './contrast.js';
+import { messageDetails } from './details.js';
 import { importOldDrafts } from './drafts.js';
 import {
     EFFORTS,
@@ -3051,7 +3052,7 @@ export default class ClaudeChat extends View {
                         ? this.lastReply.uuid
                         : undefined;
                 if (typeof content === 'string')
-                    this.said(content, into, before);
+                    this.said(content, into, before, d.timestamp);
                 else
                     for (const b of dropImageMarks(content ?? [])) {
                         if (b.type === 'tool_result') {
@@ -3074,7 +3075,7 @@ export default class ClaudeChat extends View {
                                 }
                             }
                         } else if (b.type === 'text')
-                            this.said(b.text, into, before);
+                            this.said(b.text, into, before, d.timestamp);
                         else if (b.type === 'image')
                             into.items.push({ kind: 'user', text: '🖼 image' });
                     }
@@ -3090,6 +3091,7 @@ export default class ClaudeChat extends View {
                 for (const b of content ?? []) {
                     if (b.type === 'text' && b.text.trim())
                         into.items.push({
+                            at: d.timestamp ?? null,
                             kind: 'claude',
                             text: b.text.trim(),
                         });
@@ -3111,7 +3113,9 @@ export default class ClaudeChat extends View {
     }
 
     // What the person typed, or what Claude Code put in their turn (slash commands, ! commands).
-    said(raw, into = this, before = undefined) {
+    // `at`: the row's stamp, the send time his message shows on hover (FRM-594)
+    /** @param {any} raw @param {any} [into] @param {any} [before] @param {string | null} [at] */
+    said(raw, into = this, before = undefined, at = null) {
         const text = cleanTyped(raw);
         if (!text || text.startsWith('<local-command-caveat>')) return;
         const command = tag(text, 'command-name');
@@ -3142,12 +3146,13 @@ export default class ClaudeChat extends View {
         const sent = /^<hc from="(?:\S+ )?([^"]*)">([\s\S]*)<\/hc>$/.exec(text);
         if (sent)
             return into.items.push({
+                at,
                 before,
                 kind: 'user',
                 text: `↪ ${sent[1] || 'another terminal'}: ${sent[2].trim()}`,
             });
         if (/^<[\w-]+>/.test(text)) return;
-        into.items.push({ before, kind: 'user', text });
+        into.items.push({ at, before, kind: 'user', text });
     }
 
     // The session's skills ("- name: what it does" lines), for the / menu.
@@ -3725,7 +3730,7 @@ export default class ClaudeChat extends View {
 
     // what he sent while the thread works, one line each with its cross, over the log's bottom edge so the transcript
     // never moves when it comes or goes
-    /** @param {any} t @param {{ text: string, isRecorded: boolean }[]} queued */
+    /** @param {any} t @param {{ at: number, text: string, isRecorded: boolean }[]} queued */
     queuedStrip(t, queued) {
         const shown = queued.slice(0, QUEUED_SHOWN);
         const more = queued.length - shown.length;
@@ -3740,10 +3745,17 @@ export default class ClaudeChat extends View {
                 .items_center()
                 .child(
                     div()
+                        .id(`queued-words-${i}`)
                         .flex_1()
                         .min_w(0)
                         .truncate()
                         .text_color(t.foreground)
+                        .tooltip(
+                            messageDetails(
+                                { at: q.at, isMine: true, isQueued: true },
+                                Date.now(),
+                            ) ?? 'queued',
+                        )
                         .child(queuedWords(q.text).replace(/\s+/g, ' ')),
                 )
                 .child(
@@ -4282,6 +4294,11 @@ export default class ClaudeChat extends View {
         if (isRelay(item)) return this.relayRow(t, item);
         const mine = chatLook().mine;
         if (item.kind === 'user') {
+            // a row in the transcript is a message Claude Code received; one still queued sits in the strip
+            const details = messageDetails(
+                { at: item.at ?? null, isMine: true, isQueued: false },
+                Date.now(),
+            );
             // his words: a bubble on the right in an accent tint (after shepherdr's chat), or full width on the left
             // as a box like the VS Code extension's, tinted with the accent, or a bar
             const words = TextView.markdown(
@@ -4328,6 +4345,10 @@ export default class ClaudeChat extends View {
                             .justify_end()
                             .child(
                                 div()
+                                    .id(`me-bubble-${i}`)
+                                    .when(Boolean(details), (el) =>
+                                        el.tooltip(details),
+                                    )
                                     .max_w(this.bubbleW)
                                     .px(12)
                                     .py(8)
@@ -4341,6 +4362,8 @@ export default class ClaudeChat extends View {
                     )
                     .child(forkJSX);
             return div()
+                .id(`me-box-${i}`)
+                .when(Boolean(details), (el) => el.tooltip(details))
                 .w_full()
                 .px(12)
                 .py(8)
@@ -4371,8 +4394,16 @@ export default class ClaudeChat extends View {
                         .child(forkJSX),
                 );
         }
-        if (item.kind === 'claude')
-            return this.claudeLook(t, this.replyBody(t, item, i), true);
+        if (item.kind === 'claude') {
+            const time = messageDetails(
+                { at: item.at ?? null, isMine: false, isQueued: false },
+                Date.now(),
+            );
+            const reply = this.claudeLook(t, this.replyBody(t, item, i), true);
+            return time
+                ? div().id(`reply-at-${i}`).w_full().tooltip(time).child(reply)
+                : reply;
+        }
         if (item.kind === 'system') return this.systemRow(t, item, i);
         if (item.kind === 'note') {
             return div()
