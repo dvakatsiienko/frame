@@ -289,9 +289,14 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: no disabled state on send; an empty quill's press just does nothing (dima, 20:30)
 - ⬜ a 1 s hold on send or Enter pushes, its disc filling (FRM-564)
   - given text in the quill
-  - when dima holds send, Enter or cmd-enter
+  - when dima holds send or Enter
   - then after a short pause (100 ms, so a tap never shows it) a disc fills the button over 1 s and then the message pushes; Settings › Chatter › send sets both, words marked to join taken out of the join file first: a turn starts, as a send did before joins
-  - and a release before the disc starts joins, one after it sends nothing and marks nothing, a key acting on its release, its repeats typing no newlines; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
+  - and a release before the disc starts joins, one after it sends nothing and marks nothing, Enter acting on its release, its repeats typing no newlines; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
+- ⬜ cmd-enter in the quill sends at once (FRM-564)
+  - given text in the focused quill
+  - when dima presses cmd-enter
+  - then the message pushes at once, no disc, words marked to join taken out of the join file first: a turn starts
+  - decision: dima, 20:41: «cmd+enter — sends immediately», only while the quill holds focus
 - ⬜ a send that cannot join pushes and says why (FRM-564)
   - given a slash command in the quill, or a thread whose join queue is switched off
   - when dima clicks send

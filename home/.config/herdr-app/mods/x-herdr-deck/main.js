@@ -144,8 +144,9 @@ async function sessions(shelf) {
     );
 }
 
-// a held Enter repeats every ~150 ms: within this, a submit is the same press
-const STEER_KEY_REPEAT_MS = 400;
+// a held key's repeats come under this apart (his first repeat at 150 ms): a submit that close to the last one is the
+// same press, so a held key acts once and two taps act twice
+const STEER_KEY_REPEAT_MS = 180;
 
 // a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
 /** @param {string} key */
@@ -656,8 +657,9 @@ export default class Deck extends View {
     /** @param {Context} cx @param {string} key @param {boolean} isCmd */
     steerKey(cx, key, isCmd) {
         const now = Date.now();
-        if (now - (this.steerKeyAt ?? 0) < STEER_KEY_REPEAT_MS) return;
+        const isRepeat = now - (this.steerKeyAt ?? 0) < STEER_KEY_REPEAT_MS;
         this.steerKeyAt = now;
+        if (isRepeat) return;
         for (const s of this.rows)
             for (const ask of s.asks) {
                 if (`${s.sid}:${ask.id}` !== key) continue;
@@ -688,8 +690,10 @@ export default class Deck extends View {
         this.pressError = null;
         try {
             if (untickDoor(s.pending.get(ask.id), ask.mark) === 'drop') {
+                // drawn open at once: the pending read keeps the dropped press until the next poll
+                this.sent.set(key, { at: Date.now(), verdict: 'untick' });
+                cx.notify();
                 await dropPress(io, path, ask.id, s.taken);
-                this.sent.delete(key);
             } else {
                 const at = Date.now();
                 this.sent.set(key, { at, verdict: 'untick' });

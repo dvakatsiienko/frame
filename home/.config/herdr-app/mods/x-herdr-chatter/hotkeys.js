@@ -31,10 +31,10 @@ export const OUR_KEYS = [
         title: "Tick all of the shown thread's asks",
     },
     {
-        action: 'x-herdr-chatter.join',
+        action: 'x-herdr-chatter.send',
         isLocal: true,
         key: 'cmd-enter',
-        title: 'Join the thread’s turn; held: send',
+        title: 'Send now: a turn starts',
     },
 ];
 /** @typedef {OurKey & { takenBy: string }} Refused */
