@@ -1,10 +1,10 @@
 ---
 id: PK-363
 title: 'herder: explore a full move off the desktop app, mvp probe'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-12T00:33:00Z'
+updated_date: '2026-11-13T20:08:00Z'
 labels:
   - m
   - clio-main
@@ -2177,4 +2177,7 @@ PK-363:W1164 (2026-11-12 02:28, dima): the rest looks fine to me except for resi
 PK-363:W1165 (2026-11-12 02:28, dima): review the cli lane as well while i'm closing tails with wing 1. when done, already print the result again with a revised list of chunks for all lanes: herdr lane and cli lane. since wing 1 was maintaining cli today, use it for consultations about cli scope and overall. (topic: lane scopes prep)
 
 PK-363:W1166 (2026-11-12 02:28, dima): is this a protection against a verifier exceeding its verification rounds? ❓ (topic: lane scopes prep. context, not dima's words: the line before the ← in the raw is clio's FRM-504 status text and is not a W-line.)
+
+ticket: FRM-616
+close: 22:08 PK-363:W1–W1166 moved to FRM-616 (his o143 tick, 22:06)
 <!-- SECTION:NOTES:END -->

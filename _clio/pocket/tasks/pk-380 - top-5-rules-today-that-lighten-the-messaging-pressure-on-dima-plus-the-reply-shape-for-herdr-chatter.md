@@ -3,10 +3,10 @@ id: PK-380
 title: >-
   top 5 rules today that lighten the messaging pressure on dima, plus the reply
   shape for herdr chatter
-status: open
+status: done
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T15:43:00Z'
+updated_date: '2026-11-13T20:08:00Z'
 labels:
   - s
 dependencies: []
@@ -118,4 +118,7 @@ PK-380:W43 (2026-11-12 17:35, dima): let's have this skill first, then do the in
 
 PK-380:W44 (2026-11-12 17:44, dima, o53 steer): auto second wind (FRM-505): shape and sign it today, not tomorrow.
 PK-380:W45 (2026-11-12 17:44, dima, o54 steer): speak v2: i will tell when; first the habit gaps are fixed.
+
+ticket: FRM-582
+close: 22:08 PK-380:W1–W45 moved to FRM-582 (his o143 tick, 22:06)
 <!-- SECTION:NOTES:END -->

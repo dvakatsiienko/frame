@@ -3,10 +3,10 @@ id: PK-391
 title: >-
   herdr today: main shoots and grades codie's herdr ui, a solid, beautiful herdr
   setup (inbox S1)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T11:41:00Z'
+updated_date: '2026-11-13T20:08:00Z'
 labels:
   - s
 dependencies: []
@@ -32,4 +32,7 @@ raw drop (2026-11-13 inbox, dima): 2. good herdr synergy across full feature set
 raw drop (2026-11-13 inbox, dima): 1. looks like mature coding app tailored for dima by dima's cc team.
 
 raw drop (2026-11-13 inbox, dima): 2. let's have my herdr setup turned solid!
+
+ticket: FRM-616
+close: 22:08 PK-391:W1–W4 moved to FRM-616 (his o143 tick, 22:06)
 <!-- SECTION:NOTES:END -->

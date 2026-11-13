@@ -3,10 +3,10 @@ id: PK-384
 title: >-
   chatterbox refactor into one designed whole (his game and material taste), his
   design prefs saved in the designer home, the speak v2 designer session found
-status: open
+status: done
 assignee: []
 created_date: '2026-11-12T11:37:00Z'
-updated_date: '2026-11-12T13:59:00Z'
+updated_date: '2026-11-13T20:08:00Z'
 labels:
   - m
 dependencies: []
@@ -135,4 +135,7 @@ PK-384:W27 (2026-11-12 15:58, dima): previously you drew me a map with names for
 raw drop (2026-11-12 15:58, dima): i want my-pane, my-status, quick-term, my-new-menu to keep their names only if they describe what they are. no, let's rename them to describe what they are and where they are. i don't understand what they are about by name and it's not good. i want to know what each part of UI does.
 
 raw drop (2026-11-12 15:58, dima): previously you drew me a map with names for everything and we had an agreement about names. propose how to rename all this stuff properly, but do not do everything at once. let's solve stuff sequentially, one at a time.
+
+ticket: FRM-616
+close: 22:08 PK-384:W1–W27 moved to FRM-616 (his o143 tick, 22:06)
 <!-- SECTION:NOTES:END -->
