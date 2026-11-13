@@ -56,4 +56,4 @@ workflow was guessed at ~150k and spent 1.27M for 82 ticket bodies + comments.
 
 Full evidence base: [references/spawn-mechanics.md](references/spawn-mechanics.md), on demand.
 
-**a coordinator reopening a clean lane names its one round**: the delta, «one round, then merge or stop to me», and a follow-up finding goes to the next chunk unless it passes his brake or hold; `lane-rounds:<lane>` in x-mod-stash's store holds the count (frame#146 went 3 rounds to 6 on an open steer, 2026-11-07).
+**a coordinator reopening a clean lane names its one round**: the delta, «one round, then merge or stop to me», and a follow-up finding goes to the next chunk unless it passes his brake or hold; `~/.claude/shelf/lane-rounds.json` holds the count, `rounds["<lane> | <ticket>"].count` (frame#146 went 3 rounds to 6 on an open steer, 2026-11-07).
