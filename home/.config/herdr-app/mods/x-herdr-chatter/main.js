@@ -89,10 +89,8 @@ import { replyFold } from './fold.js';
 import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 import { rejoin } from './joined.js';
 import {
-    HOLD_PUSH_MS,
     JOINED_SHOWN_MS,
     JOINS_DIR,
-    KEY_HOLD_PUSH_MS,
     appendJoin,
     backTexts,
     holdSend,
@@ -1193,6 +1191,8 @@ function joinIo(cx) {
  * @typedef {{ address: string, at: number, extra: string[], id: string, said: string, sid: string,
  *   state: 'pending' | 'joined', text: string }} Mark
  */
+// a held key's repeats stop for longer than this only once it is let go
+const KEY_SILENCE_MS = 250;
 // the words marked to join, kept across a reload so the quill and the row stay one
 const MARKED = 'joins:marked';
 /** @param {object | null} mark */
@@ -1663,6 +1663,8 @@ export default class ClaudeChat extends View {
         this.box = TextareaState.new({});
         this.box.set_auto_grow(1, 8);
         this.joining = keptMark();
+        /** @type {Set<string>} ids the transcript shows a turn took */
+        this.tookIds = new Set();
         cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
             const old = `${appHome()}/data/claude-chat`;
             if (
@@ -1751,18 +1753,20 @@ export default class ClaudeChat extends View {
         // Enter runs the highlighted command, as in Claude's own menu, when the command starts the
         // message; further in (a skill named mid-sentence), it only fills the name in.
         this.box.on('submit', (e, cx) => {
-            if (e.secondary) return this.pressKey(cx);
-            if (e.shift || this.hold) return;
+            if (e.shift) return;
             const pick = this.matches()[this.menuAt];
             if (pick && this.slash.start > 0) {
                 this.complete(pick[0]);
                 return cx.notify();
             }
-            if (pick)
+            if (pick) {
                 this.box.set_value(
                     `/${pick[0]}${this.slash.text.slice(this.slash.end)}`,
                 );
-            this.send(cx);
+                return this.send(cx);
+            }
+            // Enter acts on its release: a tap joins, held 1 s it sends; its key repeat types no newlines (FRM-564)
+            this.pressKey(cx);
         });
         this.box.on('paste_other', (_e, cx) => this.pasteImage(cx));
         // The / menu's keys. The quill binds ↑ ↓ Tab Esc ← → Home End itself (input::MoveUp,
@@ -3115,8 +3119,14 @@ export default class ClaudeChat extends View {
                 continue;
             }
             // his joins the turn took, handed in as model-only context: drawn as his own messages, at the take (FRM-564)
-            for (const text of joinedTexts(d))
+            for (const text of joinedTexts(d)) {
                 into.items.push({ at: d.timestamp, kind: 'user', text });
+                // the turn took the marked words: the transcript says so before the stash's next state write
+                if (into === this && this.joining?.text === text) {
+                    this.tookIds ??= new Set();
+                    this.tookIds.add(this.joining.id);
+                }
+            }
             d = midTurnPrompt(d) ?? d;
             if (into === this && d.type === 'user') this.joinQueued(d);
             if (d.isMeta || d.isCompactSummary) continue;
@@ -3348,13 +3358,12 @@ export default class ClaudeChat extends View {
         }
     }
 
-    // a press on send starts the hold: herdr's timer fills the bar until the release joins or 5 s push (FRM-564)
+    // a press on send, Enter or cmd-enter starts the hold: herdr's timer fills the disc until the release joins or 1 s
+    // pushes (FRM-564)
     /** @param {import('gpui-kit').Context} cx */
-    /** @param {import('gpui-kit').Context} cx @param {number} [ms] how long a hold pushes: a held cmd-enter, sooner */
-    pressSend(cx, ms = HOLD_PUSH_MS) {
+    pressSend(cx) {
         this.holdTask?.cancel();
-        this.holdMs = ms;
-        this.hold = holdSend(null, 'press', Date.now(), ms).hold;
+        this.hold = holdSend(null, 'press', Date.now()).hold;
         this.holdFill = 0;
         this.holdTask = cx.timer.every(33, (cx) => this.holdStep('tick', cx));
     }
@@ -3363,20 +3372,35 @@ export default class ClaudeChat extends View {
     // repeat and the second sighting start nothing
     /** @param {import('gpui-kit').Context} cx */
     pressKey(cx) {
+        // a key-up the chat never saw: a press after the repeats went quiet is a new press
+        if (Date.now() - (this.lastKeyAt ?? 0) > KEY_SILENCE_MS)
+            this.isKeyHeld = false;
+        this.lastKeyAt = Date.now();
+        const typed = this.box.value();
+        if (/\n+$/.test(typed)) this.box.set_value(typed.replace(/\n+$/, ''));
         if (this.isKeyHeld || this.hold) return;
         this.isKeyHeld = true;
-        this.pressSend(cx, KEY_HOLD_PUSH_MS);
+        this.pressSend(cx);
     }
 
     // one step of the hold; a window that lost focus cuts it, as a pointer that left the button does
     /** @param {'tick' | 'release' | 'cancel'} event @param {import('gpui-kit').Context} cx */
     holdStep(event, cx) {
         if (!this.hold) return;
+        // a held key repeats every few ms past its first delay (his: 150 ms); silence longer than that is its release,
+        // for a quill whose key-up never reaches the chat
+        if (
+            event === 'tick' &&
+            this.isKeyHeld &&
+            Date.now() - (this.lastKeyAt ?? 0) > KEY_SILENCE_MS
+        ) {
+            this.isKeyHeld = false;
+            event = 'release';
+        }
         const r = holdSend(
             this.hold,
             event === 'tick' && !isWindowActive() ? 'cancel' : event,
             Date.now(),
-            this.holdMs,
         );
         this.hold = r.hold;
         // the bar shows only while the hold runs: a push or a release leaves the button as it was
@@ -3579,7 +3603,8 @@ export default class ClaudeChat extends View {
         // a turn took it: its words leave the quill (what he typed after the last write stays) and show as sent
         if (
             state === 'joined' ||
-            this.states?.thread?.joins?.taken?.includes(j.id)
+            this.states?.thread?.joins?.taken?.includes(j.id) ||
+            this.tookIds?.has(j.id)
         ) {
             const typed = this.box.value().trim();
             if (typed.startsWith(j.said)) {
@@ -7895,8 +7920,7 @@ export default class ClaudeChat extends View {
                 .on_key_up((e, cx) => {
                     if (e.key !== 'enter' || !this.isKeyHeld) return;
                     this.isKeyHeld = false;
-                    if (this.hold && this.holdMs === KEY_HOLD_PUSH_MS)
-                        this.holdStep('release', cx);
+                    if (this.hold) this.holdStep('release', cx);
                 })
                 .on_key_down((e, cx) => {
                     if (e.keystroke === 'cmd-enter') {
@@ -8489,7 +8513,7 @@ export default class ClaudeChat extends View {
                                                                                 ),
                                                                     )
                                                                     .tooltip(
-                                                                        'Join (Enter), hold 2 s to send',
+                                                                        'Join (Enter), hold 1 s to send',
                                                                     )
                                                                     .overflow_hidden()
                                                                     .on_mouse_down(

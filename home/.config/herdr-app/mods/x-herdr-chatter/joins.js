@@ -81,22 +81,20 @@ export const retextJoin = (io, path, id, text) =>
 export const takeBackJoin = (io, path, id) =>
     editJoins(io, path, (was) => dropJoin(was ?? '', id));
 
-// a hold on send this long pushes instead of joining; a held cmd-enter pushes sooner
-export const HOLD_PUSH_MS = 2000;
-export const KEY_HOLD_PUSH_MS = 500;
+// a hold on send, Enter or cmd-enter this long pushes instead of joining
+export const HOLD_PUSH_MS = 1000;
 
 /**
  * a press on send, step by step: a release before HOLD_PUSH_MS joins, a hold that reaches it pushes once, and a hold
  * cut short (focus loss, a blur, the pointer gone) does nothing; `fill` is the bar, 0 to 1
  * @param {{ at: number } | null} hold @param {'press' | 'tick' | 'release' | 'cancel'} event @param {number} now
- * @param {number} [ms] how long a hold pushes
  * @returns {{ hold: { at: number } | null, act: 'join' | 'push' | null, fill: number }}
  */
-export function holdSend(hold, event, now, ms = HOLD_PUSH_MS) {
+export function holdSend(hold, event, now) {
     if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
     if (event === 'release') return { act: 'join', fill: 0, hold: null };
-    const fill = Math.min(1, (now - hold.at) / ms);
+    const fill = Math.min(1, (now - hold.at) / HOLD_PUSH_MS);
     return fill < 1
         ? { act: null, fill, hold }
         : { act: 'push', fill: 1, hold: null };

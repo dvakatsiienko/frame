@@ -4,7 +4,6 @@ import {
     HOLD_PUSH_MS,
     JOIN_LOCK_STALE_MS,
     JOIN_TAKE_MS,
-    KEY_HOLD_PUSH_MS,
     appendJoin,
     backTexts,
     dropJoin,
@@ -122,9 +121,9 @@ describe('where a join stands, read off the thread’s herdr state', () => {
     });
 });
 
-describe('a hold on send: a bar fills over 2 s and pushes; a release before joins; a cut hold does nothing', () => {
+describe('a hold on send: a bar fills over 1 s and pushes; a release before joins; a cut hold does nothing', () => {
     const pressed = holdSend(null, 'press', 1000);
-    test('held to 2 s, it pushes once, the bar full', () => {
+    test('held to 1 s, it pushes once, the bar full', () => {
         const half = holdSend(pressed.hold, 'tick', 1000 + HOLD_PUSH_MS / 2);
         expect(half).toEqual({ act: null, fill: 0.5, hold: pressed.hold });
         const full = holdSend(half.hold, 'tick', 1000 + HOLD_PUSH_MS);
@@ -134,7 +133,7 @@ describe('a hold on send: a bar fills over 2 s and pushes; a release before join
             holdSend(full.hold, 'release', 1000 + HOLD_PUSH_MS + 50).act,
         ).toBeNull();
     });
-    test('released before 2 s, it joins and the bar resets', () => {
+    test('released before 1 s, it joins and the bar resets', () => {
         expect(
             holdSend(pressed.hold, 'release', 1000 + HOLD_PUSH_MS - 1),
         ).toEqual({
@@ -193,42 +192,15 @@ describe('an ended thread hands its unjoined rows back: each comes to the quill 
     });
 });
 
-describe('cmd-enter: a tap joins, a hold of ~500 ms pushes once', () => {
-    const pressed = holdSend(null, 'press', 0, KEY_HOLD_PUSH_MS);
-    test('held past 500 ms, it pushes', () => {
-        expect(
-            holdSend(pressed.hold, 'tick', KEY_HOLD_PUSH_MS, KEY_HOLD_PUSH_MS)
-                .act,
-        ).toBe('push');
-    });
-    test('a tap joins', () => {
-        expect(
-            holdSend(pressed.hold, 'release', 120, KEY_HOLD_PUSH_MS).act,
-        ).toBe('join');
-    });
-    test('key repeat after the push neither joins nor pushes again', () => {
-        const pushed = holdSend(
-            pressed.hold,
-            'tick',
-            KEY_HOLD_PUSH_MS,
-            KEY_HOLD_PUSH_MS,
-        );
-        expect(
-            holdSend(
-                pushed.hold,
-                'tick',
-                KEY_HOLD_PUSH_MS + 40,
-                KEY_HOLD_PUSH_MS,
-            ).act,
-        ).toBeNull();
-        expect(
-            holdSend(
-                pushed.hold,
-                'release',
-                KEY_HOLD_PUSH_MS + 90,
-                KEY_HOLD_PUSH_MS,
-            ).act,
-        ).toBeNull();
+describe('a held Enter or cmd-enter: key repeat after the push neither joins nor pushes again', () => {
+    test('a tick or a release after the push does nothing', () => {
+        const pressed = holdSend(null, 'press', 0);
+        const pushed = holdSend(pressed.hold, 'tick', HOLD_PUSH_MS);
+        expect([
+            pushed.act,
+            holdSend(pushed.hold, 'tick', HOLD_PUSH_MS + 15).act,
+            holdSend(pushed.hold, 'release', HOLD_PUSH_MS + 90).act,
+        ]).toEqual(['push', null, null]);
     });
 });
 

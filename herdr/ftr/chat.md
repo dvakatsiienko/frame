@@ -285,11 +285,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and once a turn takes the row, its words leave the quill (anything typed after its last write stays), the button shows ✓ for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
   - and a row listed nowhere a minute after the write, or a write refused, stays in the quill unmarked, the note saying why; after a chatter reload the mark and the words come back once
   - and a picture waiting over the quill joins as its path
-- ⬜ a 2 s hold on send pushes, its bar filling (FRM-564)
+- ⬜ a 1 s hold on send or Enter pushes, its disc filling (FRM-564)
   - given text in the quill
-  - when dima holds send
-  - then a disc fills the button over 2 s and at 2 s the message pushes, words marked to join taken out of the join file first: a turn starts, as a send did before joins
-  - and a release before 2 s joins; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
+  - when dima holds send, Enter or cmd-enter
+  - then a disc fills the button over 1 s and at 1 s the message pushes, words marked to join taken out of the join file first: a turn starts, as a send did before joins
+  - and a release before 1 s joins, a key acting on its release, its repeats typing no newlines; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
 - ⬜ a send that cannot join pushes and says why (FRM-564)
   - given a slash command in the quill, or a thread whose join queue is switched off
   - when dima clicks send
@@ -298,10 +298,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread archived or killed with his joins still waiting
   - then each text comes back to the quill once, in the order he sent it, after what he typed there, and a note reads «Back from <thread>: it ended before joining»
   - and a row the thread joined before it ended does not come back
-- ⬜ cmd-enter joins, held it sends (FRM-564)
-  - given text in the quill
-  - when dima taps cmd-enter, then it joins as a click does; when he holds it ~500 ms, the bar fills and it sends once, key repeat starting nothing
-  - and the Keys page lists it, refused by name when herdr binds cmd-enter
+- ⬜ cmd-enter is listed with the x-herdr keys (FRM-564)
+  - then the Keys page lists it, refused by name when herdr binds cmd-enter, never written into his keys.json
 - ⬜ a message tells when it was sent and when Claude read it
   - given a message in the chat
   - then a small dim line under it holds one state and its own time, on his clock, a date before it from an earlier day: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue (at a tool round or the turn's end; a row with no queue record, an idle send above all, at its own time); a reply reads its time alone, under its last part when it is cut into parts
