@@ -1191,8 +1191,10 @@ function joinIo(cx) {
  * @typedef {{ address: string, at: number, extra: string[], id: string, said: string, sid: string,
  *   state: 'pending' | 'joined', text: string }} Mark
  */
-// a held key's repeats stop for longer than this only once it is let go
+// a held key's repeats stop for longer than this only once it is let go: before its first repeat (his macOS delay is
+// 150 ms), and between repeats (his are 15 ms apart); macOS sends no key-up for a key let go while ⌘ is down
 const KEY_SILENCE_MS = 250;
+const KEY_REPEAT_SILENCE_MS = 80;
 // the words marked to join, kept across a reload so the quill and the row stay one
 const MARKED = 'joins:marked';
 /** @param {object | null} mark */
@@ -3388,6 +3390,7 @@ export default class ClaudeChat extends View {
         // a key-up the chat never saw: a press after the repeats went quiet is a new press
         if (Date.now() - (this.lastKeyAt ?? 0) > KEY_SILENCE_MS)
             this.isKeyHeld = false;
+        this.keyRepeats = this.isKeyHeld ? (this.keyRepeats ?? 0) + 1 : 0;
         this.lastKeyAt = Date.now();
         const typed = this.box.value();
         if (/\n+$/.test(typed)) this.box.set_value(typed.replace(/\n+$/, ''));
@@ -3405,7 +3408,8 @@ export default class ClaudeChat extends View {
         if (
             event === 'tick' &&
             this.isKeyHeld &&
-            Date.now() - (this.lastKeyAt ?? 0) > KEY_SILENCE_MS
+            Date.now() - (this.lastKeyAt ?? 0) >
+                (this.keyRepeats ? KEY_REPEAT_SILENCE_MS : KEY_SILENCE_MS)
         ) {
             this.isKeyHeld = false;
             event = 'release';
@@ -7930,6 +7934,13 @@ export default class ClaudeChat extends View {
                 .id('chat-root')
                 .track_focus(this.rootKeys)
                 // cmd-enter in the quill: a tap joins, a hold of ~500 ms sends; key repeat starts nothing (FRM-564)
+                // ⌘ let go during a cmd-enter hold is its release: macOS never sends that Enter's key-up
+                .on_modifiers_changed((e, cx) => {
+                    if (!e.modifiers.platform && this.isKeyHeld && this.hold) {
+                        this.isKeyHeld = false;
+                        this.holdStep('release', cx);
+                    }
+                })
                 .on_key_up((e, cx) => {
                     if (e.key !== 'enter' || !this.isKeyHeld) return;
                     this.isKeyHeld = false;
