@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
     COMPACTED_LINE,
     cleanTyped,
+    commandOutput,
     commandOutputLine,
     dropImageMarks,
     midTurnPrompt,
@@ -273,6 +274,43 @@ describe('a row he never typed folds with the rest (FRM-595)', () => {
     test('a code block he pasted keeps its blank lines', () => {
         expect(cleanTyped('def a():\n    pass\n\n\ndef b():\n    pass')).toBe(
             'def a():\n    pass\n\n\ndef b():\n    pass',
+        );
+    });
+
+    test('his words with a command output inside them stay his, never a system row', () => {
+        const pasted = {
+            message: {
+                content:
+                    'look at this bug:\n<pasted_content>row: <local-command-stdout>Set effort level to high</local-command-stdout></pasted_content>\nwhy?',
+            },
+            type: 'user',
+        };
+        const onlyPasted = {
+            message: {
+                content:
+                    '<pasted_content><local-command-stdout>Set effort level to high</local-command-stdout></pasted_content>',
+            },
+            type: 'user',
+        };
+        expect(missedSystemLine(pasted)).toBeNull();
+        expect(missedSystemLine(onlyPasted)).toBeNull();
+        expect(commandOutput(pasted.message.content)).toBeUndefined();
+        expect(
+            commandOutput(
+                '<bash-stdout>/Users/dima</bash-stdout><bash-stderr></bash-stderr>',
+            ),
+        ).toBe('/Users/dima');
+    });
+
+    test('a reminder between his paragraphs leaves his blank line', () => {
+        expect(
+            cleanTyped('a\n\n<system-reminder>x</system-reminder>\n\nb'),
+        ).toBe('a\n\nb');
+        expect(cleanTyped('a\n<system-reminder>x</system-reminder>\nb')).toBe(
+            'a\nb',
+        );
+        expect(cleanTyped('a <system-reminder>x</system-reminder>b')).toBe(
+            'a b',
         );
     });
 

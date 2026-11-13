@@ -142,6 +142,8 @@ import { wholeLines } from './slice.js';
 import {
     SYSTEM_MODES,
     cleanTyped,
+    commandOutput,
+    commandOutputLine,
     dropImageMarks,
     midTurnPrompt,
     missedSystemLine,
@@ -3133,8 +3135,7 @@ export default class ClaudeChat extends View {
         const bash = tag(text, 'bash-input');
         if (bash)
             return into.items.push({ at, kind: 'user', text: `! ${bash}` });
-        const out =
-            tag(text, 'local-command-stdout') ?? tag(text, 'bash-stdout');
+        const out = commandOutput(raw);
         if (out !== undefined && into === this) {
             const model = /^(?:Set model to|Kept model as) `([^`]+)`/.exec(out);
             if (model) this.model = modelLabel(model[1]);
@@ -3144,10 +3145,7 @@ export default class ClaudeChat extends View {
         }
         // a command's output (hook lines after a compact, «Set effort level…» after a pick) folds as a system line
         if (out !== undefined) {
-            const output = missedSystemLine({
-                message: { content: text },
-                type: 'user',
-            });
+            const output = commandOutputLine(out);
             return (
                 output &&
                 into.items.push({
@@ -6467,7 +6465,7 @@ export default class ClaudeChat extends View {
                               `\`\`\`\n${b.text}\n\`\`\``,
                           ).selectable(true),
                       );
-        return this.claudeLook(t, box, false);
+        return withTime(this.claudeLook(t, box, false));
     }
 
     /** @param {Theme} t @param {{ to: string, text: string }} b @param {string} key */
