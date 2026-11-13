@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T12:34:00Z'
+updated_date: '2026-11-13T13:01:00Z'
 labels:
   - s
   - clio-main
@@ -23,11 +23,10 @@ ordinal: 1000
 - [ ] #5 f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
 - [ ] #6 f14 today: stabilize the fleet flows, root fixes only (dima 14:34); speak waits until all runs smoothly
 - [ ] #7 f3 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
-- [ ] #8 f6 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
-- [ ] #9 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #10 f8 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
-- [ ] #11 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #12 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #8 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #9 f8 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
+- [ ] #10 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #11 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -431,4 +430,6 @@ PK-349:W44 (2026-11-13 14:01, dima): remind - we built start lane spec or only s
 PK-349:W45 (2026-11-13 14:04, dima): would a strays lane help from today? ❓
 
 PK-349:W46 (2026-11-13 14:04, dima): we already have stray lane in fleet or only ticket is created? ❓
+
+done 2026-11-13 15:01: f6 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac (PK-363 open)
 <!-- SECTION:NOTES:END -->
