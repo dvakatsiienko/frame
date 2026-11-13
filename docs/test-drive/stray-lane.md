@@ -22,5 +22,7 @@ Ticket: FRM-586
 ## rounds
 - 2026-11-12 · «seat» code half from wing 1 (seatOf, CLIO_SEAT, the seats dir) · ~6 min brief → [done], 238/238 tests, one self-reported slip (a cd into _clio/), Opus 5.5 · clean, no summon paid (the cli codie, renamed)
 - 2026-11-12 · the sign hash reader from wing 1 (x asSigned and ticket-sign.ts) · ~10 min, two rows red then green, the dry dispatch clean, a gap named (linear-rewritten links), Opus 5.5 · clean
+- 2026-11-13 · FRM-598 x half from wing 1, the lane's first own summon (Sonnet 5.5 medium, herdr, `⚡ 🔧 strays | chores`) · ~5 min brief → [done], 4 exit lines red then green, one gate refusal it fixed itself (the glossary line) · clean, 1 summon paid (the day's first chore); slip: the registry named the thread «🌗 🔧 cli» from the ticket's project, fixed by `x thread rename`, dima confused by it
+- 2026-11-13 · FRM-551 warm/cold field on the go-test log from wing 1, reused by message · ~8 min → [done], 32/32 tests, every log reader named · clean, 0 summons; the 10 min cold line uncalibrated
 
 ## verdict
