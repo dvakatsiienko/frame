@@ -1719,7 +1719,9 @@ export default class ClaudeChat extends View {
         } catch {}
         // the last ⌘⇧E press seen: one made before this load never opens the popover
         /** @type {number | null} */
-        this.effortAsk = shared('chat.effort') ?? null;
+        this.effortAsk = /** @type {number | null} */ (
+            shared('chat.effort') ?? null
+        );
         /** @type {import('./effort.js').EffortPopover | null} */
         this.effortPop = null;
         this.effortKeys = cx.focus_handle();
@@ -2198,7 +2200,9 @@ export default class ClaudeChat extends View {
             .when(open, (el) => el.bg(t.hover))
             .cursor_pointer()
             .text_size(px(12))
-            .text_color(this.pending ? t.accent : t.muted)
+            .text_color(
+                pendingOf('model') || pendingOf('effort') ? t.accent : t.muted,
+            )
             .hover((s) => s.bg(t.hover).text_color(t.foreground))
             .child(
                 `${pendingOf('model') ?? model ?? 'Model'} · ${pendingOf('effort') ?? effort ?? 'Effort'}`,
@@ -2261,7 +2265,8 @@ export default class ClaudeChat extends View {
                 this.effortPop = o
                     ? effortKey(null, effort, false).popover
                     : null;
-                this.pickNote = null;
+                this.pickNote =
+                    o && !ready ? 'Answer Claude first, then pick' : null;
                 this.focusEffort(cx);
                 cx.notify();
             })
@@ -2302,16 +2307,6 @@ export default class ClaudeChat extends View {
                         div()
                             .px(8)
                             .child(this.effortTrack(t, agent, ready, effort)),
-                    )
-                    .when(!ready, (el) =>
-                        el.child(
-                            div()
-                                .px(8)
-                                .pt(8)
-                                .text_size(px(10.5))
-                                .text_color(t.dim)
-                                .child('Can change once you answer Claude'),
-                        ),
                     ),
             );
     }
@@ -2339,10 +2334,13 @@ export default class ClaudeChat extends View {
                 .items_center()
                 .justify_center()
                 .rounded_full()
-                .when(ready && i !== at, (el) =>
+                // the hover is an opaque ring over the line, so the line never shows through it (dima, 14:17)
+                .when(ready, (el) =>
                     el
                         .cursor_pointer()
-                        .hover((s) => s.bg(t.hover))
+                        .hover((s) =>
+                            s.bg(t.popover).border(1).border_color(t.border),
+                        )
                         .on_click((_e, cx) => {
                             this.effortClose(cx);
                             if (level !== now)
@@ -6968,12 +6966,6 @@ export default class ClaudeChat extends View {
                             'model-switch',
                             `Switch to ${value}`,
                             (_e, cx) => {
-                                // a turn started since the card opened: /model mid-turn would queue behind it
-                                if (this.target()?.status === 'working') {
-                                    this.pickNote =
-                                        'Claude is working: switch after this turn';
-                                    return close(cx);
-                                }
                                 close(cx);
                                 this.pick('model', value, address, cx);
                             },
@@ -7303,21 +7295,31 @@ export default class ClaudeChat extends View {
             (seen && seen !== this.seen) ||
             (seen != null && quillAsk !== this.quillAsk)
         )
-            cx.timer.after(50, () => this.box.focus());
+            // the effort slider, opened by the same press that brought the chat forward, keeps the keyboard
+            cx.timer.after(50, () => {
+                if (this.drop !== 'pick') this.box.focus();
+            });
         this.seen = seen;
         if (seen != null) this.quillAsk = quillAsk;
         // ⌘⇧E the same way; a press older than 2 s (the chat sat hidden) is dropped, never opened late
-        const effortAsk = shared('chat.effort') ?? null;
+        const effortAsk = /** @type {number | null} */ (
+            shared('chat.effort') ?? null
+        );
         if (seen != null && effortAsk !== this.effortAsk) {
             this.effortAsk = effortAsk;
-            if (Date.now() - effortAsk < 2000)
-                cx.timer.after(0, (cx) => this.effortPress(cx));
+            if (effortAsk && Date.now() - effortAsk < 2000)
+                cx.timer.after(0, (/** @type {any} */ cx) =>
+                    this.effortPress(cx),
+                );
         }
         // the thread the chat shows, by pid: ⌘⇧K ticks its asks on the deck (FRM-589); a chat bound to one terminal
         // never speaks for the window
+        // a hidden chat names no thread; a container thread's pid is the container's own, never a host one
         const shownPid = props()?.terminal
             ? undefined
-            : (this.session?.pid ?? null);
+            : seen == null || this.where?.container
+              ? null
+              : (this.session?.pid ?? null);
         if (shownPid !== undefined && shownPid !== this.shownPid) {
             this.shownPid = shownPid;
             cx.timer.after(0, () => setShared('chat.shown', { pid: shownPid }));

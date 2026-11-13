@@ -242,9 +242,9 @@ export default class Deck extends View {
         // presses written and not yet taken by the session's stash, so a second press waits
         /** @type {Map<string, { verdict: import('./orbit.js').Press['verdict'], at: number }>} */
         this.sent = new Map();
-        // threads «tick all» was pressed on: their gated asks say they still need his own press
+        // the gated asks a «tick all» passed over, `sid:id`: each says it still needs his own press
         /** @type {Set<string>} */
-        this.tickedAll = new Set();
+        this.passedOver = new Set();
         /** @type {number | null} the last ⌘⇧K press seen */
         this.tickAsk = /** @type {number | null} */ (
             shared('deck.tickAll') ?? null
@@ -613,7 +613,9 @@ export default class Deck extends View {
         const takes = tickAllTakes(s.asks, sentOf);
         for (const a of takes)
             this.sent.set(`${s.sid}:${a.id}`, { at, verdict: 'tick' });
-        this.tickedAll.add(s.sid);
+        if (takes.length > 0)
+            for (const a of s.asks)
+                if (a.isGated) this.passedOver.add(`${s.sid}:${a.id}`);
         this.pressError = null;
         cx.notify();
         try {
@@ -803,7 +805,7 @@ export default class Deck extends View {
                             ),
                     ),
                 )
-                .when(ask.isGated && !done && this.tickedAll.has(s.sid), (el) =>
+                .when(ask.isGated && !done && this.passedOver.has(key), (el) =>
                     el.child(
                         div()
                             .text_size(SIZE.secondary)
