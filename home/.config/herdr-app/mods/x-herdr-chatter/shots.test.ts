@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process';
+import { platform } from 'node:os';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('herdr', () => ({ appHome: () => '/app', exec: vi.fn() }));
@@ -13,6 +15,7 @@ vi.mock('fs/promises', () => ({
     writeFile: vi.fn(),
 }));
 const {
+    MAC_CLIPBOARD_IMAGE,
     clipboardRead,
     parseShots,
     sweepShots,
@@ -111,3 +114,48 @@ describe('what a paste with no text found on the clipboard', () => {
         expect(clipboardRead('', rel)).toBeNull();
     });
 });
+
+// the real clipboard script on a private pasteboard, never his clipboard: a text paste stays text
+describe.runIf(platform() === 'darwin')(
+    'a text paste never reads as a file or an image',
+    () => {
+        const board = `x-chatter-test-${process.pid}`;
+        const put = (text: string) =>
+            execFileSync('osascript', [
+                '-l',
+                'JavaScript',
+                '-e',
+                'ObjC.import("AppKit"); function run(a) { const pb = $.NSPasteboard.pasteboardWithName(a[0]); pb.clearContents; pb.setStringForType(a[1], $.NSPasteboardTypeString); return ""; }',
+                board,
+                text,
+            ]);
+        const read = () =>
+            clipboardRead(
+                execFileSync(
+                    'osascript',
+                    [
+                        '-l',
+                        'JavaScript',
+                        '-e',
+                        MAC_CLIPBOARD_IMAGE,
+                        '/dev/null',
+                        board,
+                    ],
+                    {
+                        encoding: 'utf8',
+                    },
+                ),
+                'data/x-herdr-chatter/shots/shot-1.png',
+            );
+        it('a line of text', () => {
+            put('ship it');
+            expect(read()).toBeNull();
+        });
+        it('several lines, a path among them', () => {
+            put(
+                'first line\n/Users/dima/frame/README.md\nfile:///Users/dima/a.png',
+            );
+            expect(read()).toBeNull();
+        });
+    },
+);

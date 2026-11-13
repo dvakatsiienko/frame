@@ -12,7 +12,7 @@ const storePath = () => `${appHome()}/data/x-herdr-chatter/shots.json`;
 // (their pasteboard also holds the file's icon, never the picture); else the image (a screenshot is PNG or TIFF) is
 // written as a PNG to argv[0] and «image» printed. argv[1] names a private pasteboard, for a probe that must leave
 // his clipboard alone. JXA from shepherdr's mods/chat/attach.js (MIT).
-const MAC_CLIPBOARD_IMAGE = `ObjC.import("AppKit");
+export const MAC_CLIPBOARD_IMAGE = `ObjC.import("AppKit");
 function run(argv) {
   const pb = argv[1] ? $.NSPasteboard.pasteboardWithName(argv[1]) : $.NSPasteboard.generalPasteboard;
   const urls = pb.readObjectsForClassesOptions($([$.NSURL]), $({ NSPasteboardURLReadingFileURLsOnlyKey: true }));
