@@ -31,6 +31,10 @@ is_main() { [ "$main_pid" = "$me" ]; }
 takes_thread() {
 	is_main && return 0
 	[ -n "$session" ] && [ "$session" = "$(sed -n 's/^session=//p' "$main_file" 2>/dev/null)" ] && return 0
+	# clio-start's summon gives the main her coordinator record before she runs, so a desktop session opened in this
+	# folder first never seats her as a wing
+	[ -n "$session" ] && jq -e --arg s "$session" 'any(.threads[]?; .sessionId == $s and .role == "coordinator" and (.fallback | not))' \
+		"${FORK_GUARD_THREADS:-$HOME/.claude/shelf/threads.json}" >/dev/null 2>&1 && return 0
 	case "$source" in compact | clear) return 1 ;; esac
 	grep -q "^$session " "$state/forks.log" 2>/dev/null && return 1
 	case "$entry" in *🪽* | *wing*) return 1 ;; esac

@@ -68,6 +68,34 @@ describe('fork-guard', () => {
         );
     });
 
+    test('a session x records as coordinator takes the thread from a live holder', () => {
+        const state = mkdtempSync(join(tmpdir(), 'fg-'));
+        writeFileSync(
+            join(state, 'main-session'),
+            `pid=${process.pid}\nsession=s-desktop\n`,
+        );
+        const threads = join(state, 'threads.json');
+        writeFileSync(
+            threads,
+            '{"v":1,"threads":[{"sessionId":"s-clio","role":"coordinator"}]}',
+        );
+        const out = spawnSync('bash', [GUARD, 'start'], {
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                FORK_GUARD_CC_PID: String(process.ppid),
+                FORK_GUARD_STATE: state,
+                FORK_GUARD_THREADS: threads,
+            },
+            input: '{"session_id":"s-clio","source":"startup"}',
+            timeout: 10_000,
+        });
+        expect(out.stdout).toBe('');
+        expect(readFileSync(join(state, 'main-session'), 'utf8')).toContain(
+            'session=s-clio',
+        );
+    });
+
     test('a session whose recorded main pid is dead takes over as the main', () => {
         const state = mkdtempSync(join(tmpdir(), 'fg-'));
         writeFileSync(
