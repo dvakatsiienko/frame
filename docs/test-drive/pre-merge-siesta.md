@@ -139,3 +139,4 @@ Ticket: none
 - 2026-11-13 15:50 · siesta since 15:10, medium: tokens 112k, findings 1 high / 2 medium / 4 low, high real y, acted (all three fixed)
 - 2026-11-13 16:05 · siesta since 15:41, medium: tokens 87k, findings 0 high / 7 medium / 3 low, acted (6 fixed, the rule change asked)
 - 2026-11-13 18:37 wing 1 · ~53k tokens · 1 high, 1 medium, 0 low · highs real: y · acted: high to main for FRM-611, medium fixed (FRM-600 sign line marked inference)
+- 2026-11-13 19:34 wing 1 · 78k tokens · 0 high, 3 medium, 2 low · acted: the gate narrowed to a lone close (proven red twice), the o30 steer logged, FRM-621's sign asked in orbit
