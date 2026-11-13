@@ -1701,7 +1701,12 @@ export default class ClaudeChat extends View {
         this.box.on('change', (_e, cx) => {
             if (this.joining?.state === 'pending') {
                 this.retextTask?.cancel();
-                this.retextTask = cx.timer.after(400, (cx) => this.retext(cx));
+                // an emptied quill takes the mark off: the row leaves the join file, 📥 goes (dima, 20:28)
+                if (!this.box.value().trim()) this.unmark(cx);
+                else
+                    this.retextTask = cx.timer.after(400, (cx) =>
+                        this.retext(cx),
+                    );
             }
             const was = this.typed,
                 had = this.slash;
@@ -3637,6 +3642,9 @@ export default class ClaudeChat extends View {
             this.states?.thread?.joins?.taken?.includes(j.id) ||
             this.tookIds?.has(j.id)
         ) {
+            // joined first: the quill's change handler must not read the emptied quill as his unmark
+            keepMark(null);
+            this.joining = { ...j, state: 'joined' };
             const typed = this.box.value().trim();
             if (typed.startsWith(j.said)) {
                 const rest = typed.slice(j.said.length).trimStart();
@@ -3644,8 +3652,6 @@ export default class ClaudeChat extends View {
                 this.typed = rest;
                 keepDraft(this.address, rest);
             }
-            keepMark(null);
-            this.joining = { ...j, state: 'joined' };
             cx.timer.after(JOINED_SHOWN_MS, (cx) => {
                 if (this.joining?.id === j.id) this.joining = null;
                 cx.notify();
