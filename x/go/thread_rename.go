@@ -97,27 +97,61 @@ func renameTab(terminal, name string) ordered {
 
 // renameThread gives a live session the display its record now draws: typed as a /rename into its herdr terminal when
 // that terminal sits idle, or handed back as the exact command when it is busy or out of reach. with a wait, a busy
-// terminal or a draft in its box is retried until the deadline, then reads pending
-func renameThread(sid, display string, wait time.Duration) ordered {
-	deadline := time.Now().Add(wait)
+// terminal or a draft in its box is retried until the deadline, then reads pending; a thread still busy after nudgeAfter is
+// asked once to end its turn at its next step, and told to resume once renamed — never an Esc or a forced stop
+func renameThread(sid, display string, wait, nudgeAfter time.Duration) ordered {
+	start := time.Now()
+	isNudged := false
 	for {
-		row, isBlocked := renameOnce(sid, display)
-		if !isBlocked || wait <= 0 {
+		row, blocked := renameOnce(sid, display)
+		if blocked == "" || wait <= 0 {
+			if isNudged && isRenamed(row) {
+				row = append(row, kv{"nudged", true}, kv{"resumed", tellThread(sid, "resume")})
+			}
 			return row
 		}
-		if time.Now().After(deadline) {
-			return append(row, kv{"pending", true})
+		if time.Since(start) > wait {
+			row = append(row, kv{"pending", true})
+			if isNudged {
+				row = append(row, kv{"nudged", true}, kv{"why", "it was asked to end its turn; send «resume» once it is renamed"})
+			}
+			return row
+		}
+		if blocked == "busy" && !isNudged && time.Since(start) >= nudgeAfter {
+			isNudged = tellThread(sid, "end your turn at your next step")
 		}
 		time.Sleep(renamePoll())
 	}
 }
 
-// how long a thread rename waits for an idle terminal; X_RENAME_WAIT (seconds) shortens it under X_TEST only
-func renameWait() time.Duration {
-	if seconds, err := strconv.ParseFloat(os.Getenv("X_RENAME_WAIT"), 64); err == nil && os.Getenv("X_TEST") != "" {
-		return time.Duration(seconds * float64(time.Second))
+func isRenamed(row ordered) bool {
+	for _, field := range row {
+		if field.key == "renamed" {
+			return field.value == true
+		}
 	}
-	return 30 * time.Second
+	return false
+}
+
+// a plain message to a thread's herdr terminal, as one member writes to another; whether it was sent
+func tellThread(sid, text string) bool {
+	terminal, _ := herdrTerminalOf(sessionPid(sid))
+	return terminal != "" && exec.Command(hcBin(), "send", terminal, text).Run() == nil
+}
+
+// how long a thread rename waits for an idle terminal, and how long before it asks the thread to end its turn;
+// X_RENAME_WAIT and X_RENAME_NUDGE (seconds) shorten them under X_TEST only
+func renameWait() (time.Duration, time.Duration) {
+	wait, nudge := 5*time.Minute, 2*time.Minute
+	if os.Getenv("X_TEST") != "" {
+		if seconds, err := strconv.ParseFloat(os.Getenv("X_RENAME_WAIT"), 64); err == nil {
+			wait = time.Duration(seconds * float64(time.Second))
+		}
+		if seconds, err := strconv.ParseFloat(os.Getenv("X_RENAME_NUDGE"), 64); err == nil {
+			nudge = time.Duration(seconds * float64(time.Second))
+		}
+	}
+	return wait, nudge
 }
 
 func renamePoll() time.Duration {
@@ -127,28 +161,28 @@ func renamePoll() time.Duration {
 	return time.Second
 }
 
-// one try: the row, and whether only the thread's busy state or draft stood in the way, so a later try may land. a slash command
+// one try: the row, and why only the thread's state stood in the way ("busy", "draft"; "" when nothing did), so a later try may land. a slash command
 // typed from inside a herdr thread arrives wrapped in an <hc from> tag and never runs, so the send drops HC_TERMINAL_ID
-func renameOnce(sid, display string) (ordered, bool) {
+func renameOnce(sid, display string) (ordered, string) {
 	row := ordered{{"session", sid}, {"display", display}}
 	terminal, idle := herdrTerminalOf(sessionPid(sid))
 	if terminal == "" {
-		return append(row, kv{"renamed", false}, kv{"command", "/rename " + display + " in the thread's own chat: no herdr terminal holds it"}), false
+		return append(row, kv{"renamed", false}, kv{"command", "/rename " + display + " in the thread's own chat: no herdr terminal holds it"}), ""
 	}
 	command := "env -u HC_TERMINAL_ID hc send " + terminal + " " + quote("/rename "+display)
 	if !idle {
-		return append(row, kv{"renamed", false}, kv{"command", command}), true
+		return append(row, kv{"renamed", false}, kv{"command", command}), "busy"
 	}
 	// a send waits out a typing pause, then lands in the box after the draft: dima's half-typed prompt would carry it
 	if !isInputBoxEmpty(terminal) {
-		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"why", "its input box holds text, or did not read"}), true
+		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"why", "its input box holds text, or did not read"}), "draft"
 	}
 	send := exec.Command(hcBin(), "send", terminal, "/rename "+display)
 	send.Env = slices.DeleteFunc(os.Environ(), func(pair string) bool { return len(pair) > 15 && pair[:15] == "HC_TERMINAL_ID=" })
 	if out, err := send.CombinedOutput(); err != nil {
-		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"error", string(out)}), false
+		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"error", string(out)}), ""
 	}
-	return append(row, kv{"renamed", true}, kv{"command", command}), false
+	return append(row, kv{"renamed", true}, kv{"command", command}), ""
 }
 
 // the record a rename means: a session id, else the one thread drawing that display; a display two threads draw is refused
@@ -219,10 +253,11 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 		return nil, &Fail{Msg: "the thread store was not written: " + err.Error(), Next: "x thread list"}
 	}
 	terminal, _ := herdrTerminalOf(sessionPid(sid))
-	places := []ordered{{{"place", "record"}, {"renamed", true}}, renameTab(terminal, title), renameThread(sid, title, renameWait())}
+	wait, nudge := renameWait()
+	places := []ordered{{{"place", "record"}, {"renamed", true}}, renameTab(terminal, title), renameThread(sid, title, wait, nudge)}
 	taken, left, next := []string{}, []string{}, ""
 	for _, row := range places {
-		place, command, isRenamed, isAbsent, isPending := "", "", false, false, false
+		place, command, why, isRenamed, isAbsent, isPending := "", "", "", false, false, false
 		for _, field := range row {
 			switch field.key {
 			case "place":
@@ -233,6 +268,8 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 				isRenamed, _ = field.value.(bool)
 			case "isAbsent":
 				isAbsent, _ = field.value.(bool)
+			case "why":
+				why, _ = field.value.(string)
 			case "pending":
 				isPending, _ = field.value.(bool)
 			}
@@ -246,7 +283,11 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 			if isPending {
 				label += " (pending: busy past the wait)"
 			}
-			left = append(left, label+": "+command)
+			entry := label + ": " + command
+			if why != "" {
+				entry += " — " + why
+			}
+			left = append(left, entry)
 			next = cmp.Or(next, command)
 		}
 	}

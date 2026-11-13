@@ -359,7 +359,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 			return nil, &Fail{Msg: "the thread record of " + sid + " was not written: " + err.Error(), Next: "x thread list"}
 		}
 		// the live name follows the record, so the registry and x's display stay one string
-		renames = append(renames, renameThread(sid, threadDisplay(record), 0))
+		renames = append(renames, renameThread(sid, threadDisplay(record), 0, 0))
 	}
 	r.Done("dispatched; left by hand: the glide link", plan.Window)
 	if len(renames) == 0 {

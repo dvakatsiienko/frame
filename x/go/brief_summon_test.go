@@ -950,3 +950,31 @@ func TestThreadRenameWaitsForAnIdleThread(t *testing.T) {
 		})
 	}
 }
+
+// dima 15:28: a thread still busy after the nudge delay is asked once to end its turn, renamed once idle, then told to resume
+func TestThreadRenameAsksABusyThreadToEndItsTurn(t *testing.T) {
+	t.Parallel()
+	const name = "⚡ 🐕 strays | renamed"
+	for _, c := range []struct {
+		name     string
+		busy     int
+		wantCode int
+		wantSent string
+	}{
+		{"idle at once, nobody is asked", 0, 0, "send t9 /rename " + name + "\n"},
+		{"busy past the nudge, idle after", 15, 0, "send t9 end your turn at your next step\nsend t9 /rename " + name + "\nsend t9 resume\n"},
+		{"busy past the deadline: asked, never resumed by x", 100000, 1, "send t9 end your turn at your next step\n"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, c.busy)
+
+			got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_RENAME_WAIT=1", "X_RENAME_NUDGE=0.1"), "coordinator"), "thread", "rename", "s1", name)
+
+			sent, _ := os.ReadFile(w.hcLog)
+			if got.code != c.wantCode || string(sent) != c.wantSent || (c.wantCode != 0 && !strings.Contains(got.stdout, "«resume»")) {
+				t.Errorf("exit %d, hc was told %q, want exit %d and %q:\n%s", got.code, sent, c.wantCode, c.wantSent, got.stdout)
+			}
+		})
+	}
+}
