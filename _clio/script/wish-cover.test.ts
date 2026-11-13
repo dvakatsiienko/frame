@@ -316,6 +316,17 @@ describe('normalize, against linear’s rewrites of a body', () => {
             normalize('the draw.io mini flow'),
         );
     });
+    test('a bare issue url linear linked as its id reads as written', () => {
+        expect(
+            normalize(
+                'tilde FRM-368 ([FRM-368](https://linear.app/x-com/issue/FRM-368)). not today.',
+            ),
+        ).toBe(
+            normalize(
+                'tilde FRM-368 (https://linear.app/x-com/issue/FRM-368). not today.',
+            ),
+        );
+    });
     test('an escaped bracket or tilde reads as written', () => {
         expect(normalize('W201 (13:34) \\[pasted\\] the \\~35 % loss')).toBe(
             normalize('W201 (13:34) [pasted] the ~35 % loss'),

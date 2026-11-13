@@ -103,6 +103,11 @@ export function normalize(text: string) {
             .replace(/\\([[\]_*`#~<>|+.!-])/g, '$1')
             // linear autolinks a bare id, url or domain as [text](<url>): its text is what was written
             .replace(/\[([^\]]*)\]\(<?[^)>\s]+>?\)|<(https?:[^>\s]+)>/g, '$1$2')
+            // linear rewrites a bare issue url into [ID](url): both read as the id
+            .replace(
+                /https:\/\/linear\.app\/[\w-]+\/issue\/([A-Z]+-\d+)[^\s)]*/g,
+                '$1',
+            )
             .toLowerCase()
             .replace(/[«»“”]/g, '"')
             .replace(/[‘’]/g, "'")
