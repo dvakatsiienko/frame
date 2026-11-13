@@ -26,7 +26,7 @@ herdr first (dima, 11-10), the desktop app the fallback and a forked wing's only
 
 1. several may run (dima, 2026-11-06): the live wings listed by the leaf's door; the new one takes his number, else the lowest no live wing holds
 2. started by the leaf's door, titled `🦉🪽 clio: wing <N>`:
-   - fresh: cwd `~/frame/_clio`, the `claude` line carries no prompt, so the desktop row keeps the `-n` title (a first prompt there titles the row, 2026-11-13); its first message goes by `SendMessage` once it lists: «greet dima in one line; read your flyway, clean its finished lines, then work it with him», and a background naming today's roadmap step, the day's chores and what he asked the wing for
+   - fresh, herdr: `~/frame/_clio/script/clio-start.sh wing <N> '<first prompt>'`; x records it and draws its name, its prompt sits before `--remote-control` so every surface reads `🦉🪽 clio: wing <N>` (FRM-600); the prompt: «greet dima in one line; read your flyway, clean its finished lines, then work it with him», and a background naming today's roadmap step, the day's chores and what he asked the wing for
    - forked: prompt «you are a wing; greet dima in one line; read your flyway, clean its finished lines, then work it with him»
 3. done: the result names a started session, linked in one line in the leaf's link form
 

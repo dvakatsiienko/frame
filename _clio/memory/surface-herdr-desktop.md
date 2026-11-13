@@ -5,7 +5,7 @@ this leaf loaded means this thread runs in herdr (`HC_TERMINAL_ID` set); the Cla
 ## threads
 
 - every thread is a herdr pane; mine is the tab «🦉 clio»; a summon is `hc run`, its tab given by `x:herdr`'s `thread-tab.ts`
-- a wing: the live ones read off their names in `ListAgents`; started by `crew-lead`'s herdr surface file (`hc run … --name <short>`, `--cwd ~/frame/_clio`), its `🦉🪽 clio: wing <N>` tab named by `thread-tab.ts`, an empty `claude` line, then its prompt by `SendMessage`; his typed lines read from its transcript (`clio:wing`)
+- a wing: the live ones read off their names in `ListAgents`; started by `script/clio-start.sh wing <N> '<first prompt>'` (x's record, the name on every surface, its tab); his typed lines read from its transcript (`clio:wing`)
 - crow and helga start in panes (`clio:boot`): crow `pnpm -C ~/frame crow:start opus --pane`, helga `CLIO_SIDECAR_PANE=1` on the groom that boots her; `crow:stop` kills crow's pane, helga's is `hc kill` on the terminal `hc ls --json --label seat=helga` names
 - a thread at the halt: no card to archive; its tab stays until he closes it; a wing, listed by `ListAgents`, its report folded, stops by `hc kill <t>`, its `<t>` from `hc ls --json` (`x:herdr`, `clio:halt`)
 - context and the 5h window: the shelf file and the band; there is no other door (`habit-ctx-load-balancing`, `clio:shift`)
