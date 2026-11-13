@@ -73,21 +73,8 @@ const HERDR_MARK = {
 export function herdrTicks(text: string, after: number) {
     const marks: Record<string, RemoteMark & { text?: string }> = {};
     let last = after;
-    for (const line of text.split('\n')) {
-        let press: unknown;
-        try {
-            press = JSON.parse(line);
-        } catch {
-            continue;
-        }
-        if (typeof press !== 'object' || !press) continue;
-        const {
-            at,
-            id,
-            steer,
-            text: asked,
-            verdict,
-        } = press as Record<string, unknown>;
+    for (const { row: press } of jsonRows(text)) {
+        const { at, id, steer, text: asked, verdict } = press;
         if (
             typeof id !== 'string' ||
             typeof at !== 'number' ||
@@ -110,6 +97,48 @@ export function herdrTicks(text: string, after: number) {
     }
     return { last, marks };
 }
+
+// the one reader of herdr's shelf files: each line an object, a broken or half-written line skipped
+function jsonRows(text: string) {
+    const rows: { line: string; row: Record<string, unknown> }[] = [];
+    for (const line of text.split('\n')) {
+        let row: unknown;
+        try {
+            row = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        if (typeof row === 'object' && row && !Array.isArray(row))
+            rows.push({ line, row: row as Record<string, unknown> });
+    }
+    return rows;
+}
+
+// herdr's chatter appends each message dima joins to a thread as one line of `~/.claude/shelf/herdr-joins/<sid>.jsonl`,
+// `{id, text}`: the rows in the order written, an id's first row only; a row with no id or no text is skipped
+export type JoinRow = { id: string; line: string; text: string };
+export function joinRows(text: string) {
+    const rows: JoinRow[] = [];
+    for (const { line, row } of jsonRows(text)) {
+        const { id, text: said } = row;
+        if (
+            typeof id !== 'string' ||
+            !id ||
+            typeof said !== 'string' ||
+            !said.trim() ||
+            rows.some((r) => r.id === id)
+        )
+            continue;
+        rows.push({ id, line, text: said });
+    }
+    return rows;
+}
+
+// a slash command only pushes (spec FRM-584, clio's call 6): its row is never joined, herdr pushes it
+export const isPushOnly = (r: JoinRow) => r.text.trimStart().startsWith('/');
+
+export const joinRowsText = (rows: JoinRow[]) =>
+    `💨 dima wrote ${rows.length === 1 ? 'this' : `these ${rows.length}, in order,`} in herdr while you worked; it joins this turn as his own words:\n${rows.map((r) => `«${r.text}»`).join('\n')}`;
 
 // a marked ask no turn has taken yet
 export const isFresh = (a: OrbitAsk) =>

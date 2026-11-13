@@ -220,6 +220,15 @@ const SCENARIOS: Record<string, Scenario> = {
         fire: (_$, w) => w.clock.advance(50 * MIN),
         trace: /^turn: .*keep-hot/,
     },
+    'stash.joins': {
+        // herdr's chatter wrote a message to join this thread's next turn
+        arm: async (_$, w) => {
+            w.files[`/home/.claude/shelf/herdr-joins/${SID}.jsonl`] =
+                `${JSON.stringify({ id: 'j1', text: 'hi from herdr' })}\n`;
+        },
+        fire: ($) => say($, 'go'),
+        trace: /dima wrote/,
+    },
     'stash.orbit': {
         arm: async ($, _w, ui) => {
             await orbit($, {

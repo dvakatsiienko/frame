@@ -107,8 +107,12 @@ the one store a session keeps every message that waits for it in, whatever holds
 _Avoid_: steer-held list, quiet-held list, the two stores
 
 **Message kind**:
-what a slipstream message is, from the one list in `hooks/quiet.ts` (`MESSAGE_KINDS`): ask, done, escalate, progress, for-dima, untagged, and the mod's own held and joined lines; each says how it reads and what it does, and every held message goes in named by its kind after its sender (FRM-583).
+what a slipstream message is, from the one list in `hooks/quiet.ts` (`MESSAGE_KINDS`): ask, done, escalate, progress, for-dima, untagged, the mod's own held and joined lines, and dima's herdr joins (`herdr-join`); each says how it reads and what it does, and every held message goes in named by its kind after its sender (FRM-583).
 _Avoid_: tag (the quiet log's stored word), message type, category
+
+**Herdr join**:
+a message dima writes in herdr's chatter for a thread, a row `{id, text}` in `~/.claude/shelf/herdr-joins/<sid>.jsonl`, the kind `herdr-join` in `MESSAGE_KINDS`: it joins the thread's next turn or tool step, never starts one, reads `joined` in the thread's state file only once that turn completed, and goes back to herdr (`herdr-joins/back/<sid>.jsonl`) when the thread ends first (FRM-584).
+_Avoid_: queued message (herdr's word for a draft it types into the prompt), herdr ping
 
 **Glued prompt**:
 the desktop's one `sdk` prompt holding the app's reminders and a member's message together, which reaches clio past `session.receive`; each of its blocks is held or pushed alone, and any typed words keep it whole.

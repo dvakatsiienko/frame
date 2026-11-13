@@ -17,7 +17,18 @@ async function session($: Engine, on: On) {
     const mtimes = new Map<string, number>();
     const alive = new Set([100]);
     const midway: string[] = [];
+    const dirs = new Set<string>();
+    // each prompt's model-only context, and each tool result's
+    const contexts: string[][] = [];
     const state = new Map<string, unknown>();
+    on('prompt.submit', (_$, e) => {
+        contexts.push([...(e.context ?? [])]);
+        return { text: e.text };
+    });
+    on('tool.call', () => ({ result: {}, text: 'done' }));
+    on('turn.complete', () => ({ text: '' }));
+    on('classic.Stop', () => ({}));
+    on('skill.prompt', (_$, e) => ({ text: e.text }));
     on('state.get', (_$, e) => ({
         value: { value: state.get(e.key), version: state.has(e.key) ? 1 : 0 },
     }));
@@ -98,6 +109,17 @@ async function session($: Engine, on: On) {
             files.delete(String(args.at(-1)));
             return out('');
         }
+        // a lock dir: a plain mkdir fails on one that exists, as herdr's held lock would
+        if (cmd === 'mkdir') {
+            const dir = String(args.at(-1));
+            if (args[0] !== '-p' && dirs.has(dir)) return out('', 1);
+            dirs.add(dir);
+            return out('');
+        }
+        if (cmd === 'rmdir') {
+            dirs.delete(String(args.at(-1)));
+            return out('');
+        }
         if (cmd === 'ps')
             return out('', alive.has(Number(args.at(-1))) ? 0 : 1);
         return out('', 1);
@@ -120,6 +142,8 @@ async function session($: Engine, on: On) {
     return {
         alive,
         clock,
+        contexts,
+        dirs,
         files,
         midway,
         mtimes,
@@ -472,4 +496,148 @@ test('an override press dated ahead of now is never taken', async ($, on) => {
     ]);
     for (let i = 0; i < 15; i++) await s.clock.advance(4_000);
     expect(s.files.get(OVERRIDE)).toBeUndefined();
+});
+
+// FRM-584: herdr's chatter appends the messages dima joins to a thread, one row a line; the thread hands them into its
+// next turn and herdr reads `joined` only once that turn completed
+const JOINS = `/home/.claude/shelf/herdr-joins/${A}.jsonl`;
+const BACK = `/home/.claude/shelf/herdr-joins/back/${A}.jsonl`;
+const row = (id: string, text: string) => `${JSON.stringify({ id, text })}\n`;
+const say = ($: Engine, text = 'go') =>
+    $.prompt.submit({ origin: { kind: 'composer' }, text, wait: false });
+const step = async ($: Engine) =>
+    ((await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? []).join(
+        '\n',
+    );
+const endTurn = ($: Engine, isAborted = false) =>
+    $.turn.complete({
+        answer: '',
+        durationMs: 1,
+        isAborted,
+        reason: isAborted ? 'aborted' : 'answer',
+        turnId: 't',
+    });
+const said = (s: { contexts: string[][] }) =>
+    s.contexts.flat().filter((l) => l.startsWith('💨 dima wrote'));
+
+test('exit 1: two joins written before a turn land in it in order, once, and read joined only after it completes', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, row('j1', 'first') + row('j2', 'second'));
+    await say($);
+    await step($);
+    await s.clock.advance(12_000);
+    const during = s.read(A)?.joins;
+    await endTurn($);
+    await say($);
+    expect([said(s), during, s.read(A)?.joins]).toEqual([
+        [
+            '💨 dima wrote these 2, in order, in herdr while you worked; it joins this turn as his own words:\n«first»\n«second»',
+        ],
+        { joined: [], push: [], waiting: ['j1', 'j2'] },
+        { joined: ['j1', 'j2'], push: [], waiting: [] },
+    ]);
+});
+
+test('exit 1 twin: a join written mid-turn lands at the next tool step, once', async ($, on) => {
+    const s = await session($, on);
+    await say($);
+    s.files.set(JOINS, row('j1', 'late'));
+    const first = await step($);
+    const second = await step($);
+    expect([first.includes('«late»'), second.includes('«late»')]).toEqual([
+        true,
+        false,
+    ]);
+});
+
+test('exit 1 twins: a broken line, a row with no id and an id written twice each land once or not at all', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(
+        JOINS,
+        `${row('j1', 'one')}{"id":"j2","text":"half${'\n'}${JSON.stringify({ text: 'no id' })}\n${row('j1', 'again')}${row('j3', 'three')}`,
+    );
+    await say($);
+    await endTurn($);
+    expect([said(s), s.read(A)?.joins]).toEqual([
+        [
+            '💨 dima wrote these 2, in order, in herdr while you worked; it joins this turn as his own words:\n«one»\n«three»',
+        ],
+        { joined: ['j1', 'j3'], push: [], waiting: [] },
+    ]);
+});
+
+test('a slash row is never joined: it waits for herdr to push it', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, row('j1', '/compact'));
+    await say($);
+    await endTurn($);
+    expect([said(s), s.read(A)?.joins]).toEqual([
+        [],
+        { joined: [], push: ['j1'], waiting: [] },
+    ]);
+});
+
+test('exit 2: an Esc after the hand-in stamps nothing, and the rows land again at the next turn, once', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, row('j1', 'first') + row('j2', 'second'));
+    await say($);
+    await endTurn($, true);
+    const after = s.read(A)?.joins;
+    await say($);
+    await endTurn($);
+    await say($);
+    expect([said(s).length, after, s.read(A)?.joins]).toEqual([
+        2,
+        { joined: [], push: [], waiting: ['j1', 'j2'] },
+        { joined: ['j1', 'j2'], push: [], waiting: [] },
+    ]);
+});
+
+test('exit 3: a join into an idle thread reads waiting and starts no turn, then lands at its next turn', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, row('j1', 'hi'));
+    await s.clock.advance(60_000);
+    const idle = [s.contexts.length, s.read(A)?.joins];
+    await say($);
+    expect([idle, said(s).length]).toEqual([
+        [0, { joined: [], push: [], waiting: ['j1'] }],
+        1,
+    ]);
+});
+
+test('exit 4: a thread that ends hands its waiting joins back as herdr wrote them, the joined ones not', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, row('j1', 'took'));
+    await say($);
+    await endTurn($);
+    s.files.set(JOINS, row('j1', 'took') + row('j2', 'waits'));
+    await $.session.end({ reason: 'other', sessionId: A } as never);
+    expect([
+        s.files.get(BACK),
+        s.files.has(JOINS),
+        said(s).length,
+        s.store.has(`join-done:${A}`),
+    ]).toEqual([row('j2', 'waits'), false, 1, false]);
+});
+
+test('exit 4: a killed thread hands its joins back at the sweep, and while herdr holds the lock it waits for the next', async ($, on) => {
+    const s = await session($, on);
+    const dead = 'dead-0000';
+    s.files.set(`${DIR}/${dead}.json`, JSON.stringify({ pid: 200, v: 1 }));
+    s.files.set(
+        `/home/.claude/shelf/herdr-joins/${dead}.jsonl`,
+        row('j1', 'hi'),
+    );
+    s.dirs.add(`/home/.claude/shelf/herdr-joins/${dead}.jsonl.lock`);
+    await s.clock.advance(4_000);
+    const held = s.files.has(`${DIR}/${dead}.json`);
+    s.dirs.clear();
+    // the sweep runs every 5th shelf pass, a shelf pass every 3rd poll
+    for (let i = 0; i < 15; i++) await s.clock.advance(4_000);
+    expect([
+        held,
+        s.files.has(`${DIR}/${dead}.json`),
+        s.files.get(`/home/.claude/shelf/herdr-joins/back/${dead}.jsonl`),
+        s.files.has(`/home/.claude/shelf/herdr-joins/${dead}.jsonl`),
+    ]).toEqual([true, false, row('j1', 'hi'), false]);
 });

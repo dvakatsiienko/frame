@@ -746,6 +746,16 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - and the grant holds until he presses off (dima's o103, 23:10 on o111), unless `~/.claude/shelf/band-settings.json` reads `{"overrideWindow": "2h"}`: then it ends 2 h after the press
   - 📌 the limit: a line a thread's script forges (the guard's `press-write` reads tool calls, not what a script does) flips it too; a key only herdr holds is asked as its own ticket
   - proof: tests/herdr-state.test.ts::an override on press turns the prs grant on by band, with no end; an override on press with the window …; an override off press clears every grant; an override on then off in one poll ends off; an override press older than the store's last write is not taken; an override press dated ahead of now is never taken
+- ✅ herdr's joins slipstream into the thread's turn, in order, stamped after it (FRM-584, 🎛️ `💨 herdr joins`)
+  - given herdr's chatter appended rows `{id, text}` to `~/.claude/shelf/herdr-joins/<sid>.jsonl`, appending under the lock dir `<sid>.jsonl.lock` (a `mkdir`; no compare-and-swap exists, clio's call 7)
+  - when the thread's next turn starts, or its running turn takes a tool step, then every row no turn took yet joins as one model-only line, in the order written, once; a broken line, a row with no id or no text, and an id's second row are skipped; the keep-hot ping takes none
+  - then the state file's `joins` reads each id `waiting` until the turn that took it completes, then `joined`; an Esc or an error ends that turn and the rows join the next one again; an idle thread starts no turn for a join
+  - and a row whose text starts with `/` is never joined: it reads `push`, for herdr to push (clio's call 6)
+  - and a thread that ends (any end, `/clear` included) or is killed (the 15th-poll sweep) hands the rows it never joined back: their lines move to `~/.claude/shelf/herdr-joins/back/<sid>.jsonl` as herdr wrote them, under the same lock, and the join file goes; a lock held elsewhere leaves the dead thread's state file for the next sweep
+  - makes: `joins: {joined, waiting, push}` in `herdr-state/<sid>.json`; `herdr-joins/back/<sid>.jsonl`
+  - decision: a picture joins as its file path, never pushed — a `pnpm mods:probe` haiku session read the joined path with `Read` and answered from the image in the same turn, no hiccup (2026-11-13, his o121: «kept only if it works with no hiccups»)
+  - proof, live: a `pnpm mods:live` child took two joins in one turn in order, both read `joined`; a third written while idle read `waiting` and started no turn, and went to `back/` at the child's stop (FRM-584 done comment)
+  - proof: tests/herdr-state.test.ts::exit 1: two joins written before a turn …; exit 1 twin: a join written mid-turn …; exit 1 twins: a broken line, a row with no id …; a slash row is never joined …; exit 2: an Esc after the hand-in …; exit 3: a join into an idle thread …; exit 4: a thread that ends hands its waiting joins back …; exit 4: a killed thread hands its joins back at the sweep …
 
 ## the prompt — the tickets it names
 

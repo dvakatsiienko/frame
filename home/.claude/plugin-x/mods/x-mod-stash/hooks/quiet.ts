@@ -74,6 +74,11 @@ export const MESSAGE_KINDS = [
         kind: 'joined',
         reads: 'sent by x-mod-stash, never by a member',
     },
+    {
+        does: "dima's own words: join the thread's next turn or tool step, never start one; a slash command only pushes",
+        kind: 'herdr-join',
+        reads: "a row herdr's chatter wrote to `~/.claude/shelf/herdr-joins/<sid>.jsonl`",
+    },
 ] as const;
 export type MessageKind = (typeof MESSAGE_KINDS)[number]['kind'];
 
