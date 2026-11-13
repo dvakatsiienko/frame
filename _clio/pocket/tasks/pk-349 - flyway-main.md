@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T12:30:00Z'
+updated_date: '2026-11-13T12:34:00Z'
 labels:
   - s
   - clio-main
@@ -21,12 +21,13 @@ ordinal: 1000
 - [ ] #3 f4 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look
 - [ ] #4 f1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
 - [ ] #5 f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
-- [ ] #6 f3 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
-- [ ] #7 f6 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
-- [ ] #8 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #9 f8 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
-- [ ] #10 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #11 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #6 f14 today: stabilize the fleet flows, root fixes only (dima 14:34); speak waits until all runs smoothly
+- [ ] #7 f3 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
+- [ ] #8 f6 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
+- [ ] #9 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #10 f8 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
+- [ ] #11 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #12 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
