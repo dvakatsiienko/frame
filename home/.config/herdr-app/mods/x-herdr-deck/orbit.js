@@ -357,12 +357,10 @@ export function askLabel(thread, id) {
 }
 
 /**
- * an ask takes a steer while it draws open: never marked, or unticked though the stash still holds its tick mark
+ * an ask keeps its steer box, holding his steer, until a turn takes the press (dima's W63, W70: «steer stays»)
  * @param {Ask} ask
- * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file, or just sent
  */
-export const hasSteerBox = (ask, pending) =>
-    !ask.isLocked && (!ask.mark || pending === 'untick');
+export const hasSteerBox = (ask) => !ask.isLocked;
 
 // twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
 // reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)

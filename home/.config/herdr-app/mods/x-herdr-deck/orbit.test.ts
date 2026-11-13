@@ -398,11 +398,16 @@ describe('his second click writes the door that still reaches the thread', () =>
 
 describe('a tick after an untick (dima, 14:51: «the very next tick lands»)', () => {
     test('an unticked ask draws its steer box though the stash still holds the tick mark', () => {
-        expect(hasSteerBox({ ...ask, mark: 'accepted' }, 'untick')).toBe(true);
+        expect(hasSteerBox({ ...ask, mark: 'accepted' })).toBe(true);
     });
 
-    test('a ticked ask has no steer box', () => {
-        expect(hasSteerBox({ ...ask, mark: 'accepted' }, null)).toBe(false);
+    test('a pressed ask keeps its steer box, holding his steer, until a turn takes it (W63, W70)', () => {
+        expect([
+            hasSteerBox(ask),
+            hasSteerBox({ ...ask, mark: 'accepted' }),
+            hasSteerBox({ ...ask, mark: 'rejected' }),
+            hasSteerBox({ ...ask, isLocked: true, mark: 'accepted' }),
+        ]).toEqual([true, true, true, false]);
     });
 
     test('a tick pressed after an untick is a new press line, never a drop of the old ones', () => {

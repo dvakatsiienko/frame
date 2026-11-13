@@ -3485,6 +3485,11 @@ export default class ClaudeChat extends View {
             this.keepFiles(address);
             // the words stay in the quill, marked: what he types next rides the same join until a turn takes it
             this.box.set_value(text);
+            // set_value puts the caret at the start: back to the end, where he was typing
+            this.box.set_selected_range({
+                end: text.length,
+                start: text.length,
+            });
             this.typed = text;
             keepDraft(address, text);
             // a second click while the words wait takes the mark off: their row leaves the join file, the words stay
