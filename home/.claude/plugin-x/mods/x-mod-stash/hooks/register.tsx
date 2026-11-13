@@ -1294,6 +1294,8 @@ type HeldMessage = {
     isCompact?: true;
     // held by quiet comms in the coordinator's thread
     isQuiet?: true;
+    // a compact's held message whose sender heard it outlived the deadline
+    isWaitTold?: true;
     tag?: string;
     deliveryTest?: string;
 };
@@ -1412,6 +1414,10 @@ const steerLine = (s: HeldMessage) => {
         ? `🌀 held while this thread compacted, delivered now — ${who}`
         : `🐦‍🔥 held for your second wind, delivered now — ${who}`;
 };
+const heldWaitingLine = (name: string) =>
+    `held, waiting: ${name} has taken no turn since its compact; your message joins its next turn`;
+const heldWaitingText = (since: number) =>
+    `waiting: held messages for this thread's next turn, since ${new Date(since).toTimeString().slice(0, 5)}`;
 const steerDeliveredLine = (name: string) =>
     `delivered: your message joined ${name}'s first turn after its compact`;
 // the turn's end lets the engine settle before the compact runs
@@ -4643,6 +4649,8 @@ async function holdForCompact(
         ...(reply ? { isTold: true as const, reply } : {}),
     });
     if (!isHeld) return undefined;
+    const at = await $.clock.now();
+    armHeldDeadline($, at, at);
     const name = (await sessionName($)) ?? 'this session';
     if (reply)
         await $.session
@@ -4817,6 +4825,56 @@ async function armHeldTells($: EngineInterface) {
     const first = kept.messages.find((s) => !s.isTold && s.reply);
     if (first && !kept.isCompacted)
         armSteerTell($, first.at, await $.clock.now());
+    const waiting = kept.messages.find((s) => s.isCompact && !s.isWaitTold);
+    if (waiting) armHeldDeadline($, waiting.at, await $.clock.now());
+}
+
+function armHeldDeadline($: EngineInterface, heldAt: number, now: number) {
+    $.clock.after(Math.max(0, heldAt + STEER_TELL_MS - now), () =>
+        tellWaiting($).catch(() =>
+            $.ui.log(
+                "x-mod-stash: a held message's sender was not told it waits",
+            ),
+        ),
+    );
+}
+
+// a compact's held message no turn took inside the deadline: its sender hears it waits, and the thread's 🔭 line says
+// so, never silence (FRM-583 exit 4: a --bg thread's turn after its compact may never come)
+async function tellWaiting($: EngineInterface) {
+    const keys = await heldKeys($);
+    const sid = await currentId($);
+    if (!keys || !sid) return;
+    const now = await $.clock.now();
+    const due = await quietLocked(async () => {
+        const kept = await heldStore($, keys);
+        const late = kept.messages.filter(
+            (m) => m.isCompact && !m.isWaitTold && now - m.at >= STEER_TELL_MS,
+        );
+        if (!late.length) return [];
+        const isSaved = await saveHeld($, keys, {
+            ...kept,
+            messages: kept.messages.map((m) =>
+                late.some((d) => d.id === m.id)
+                    ? { ...m, isWaitTold: true as const }
+                    : m,
+            ),
+        });
+        return isSaved ? late : [];
+    });
+    if (!due.length) return;
+    const line = heldWaitingLine((await sessionName($)) ?? 'this session');
+    for (const to of new Set(due.flatMap((m) => (m.reply ? [m.reply] : []))))
+        await $.session.send({ text: line, to }).catch(() => undefined);
+    // the 🔭 line the band and every board read, until the next reply writes its own
+    const { waits: _, ...reply } = ((await $.store
+        .get(REPLY + sid)
+        .catch(() => undefined)) as Reply | undefined) ?? { at: now };
+    await $.store.set(REPLY + sid, {
+        ...reply,
+        wait: heldWaitingText(Math.min(...due.map((m) => m.at))),
+    } satisfies Reply);
+    await load($).catch(() => undefined);
 }
 
 async function tellHeldSenders($: EngineInterface) {

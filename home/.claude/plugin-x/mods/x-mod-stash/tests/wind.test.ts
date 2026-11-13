@@ -2082,3 +2082,73 @@ test('quiet comms name each held ping by its kind, a push kind switched off kept
         ),
     ).toEqual(['untagged', 'progress', 'ask']);
 });
+
+// FRM-583 exit 4: a compact's held message no turn takes inside the deadline never ends in silence
+const WAITING_LINE =
+    'held, waiting: ☕️ 🔧 codie: mods has taken no turn since its compact; your message joins its next turn';
+const waitOf = (w: ReturnType<typeof sentWorld>) =>
+    (w.store.get(`reply:${SID}`) as { wait?: string } | undefined)?.wait;
+
+test('a compact-held message no turn takes in 10 min tells its sender «held, waiting» once, and the thread shows waiting', async ($, on) => {
+    const w = sentWorld(on);
+    inCompact = async () => {
+        await fromPeer($, 'round 9 on abc1234', SIXTH);
+    };
+    await start($);
+    submitRefusal = 'busy';
+    await compact($, 'manual');
+    await w.clock.advance(9 * 60_000);
+    const early = w.sent.length;
+    await w.clock.advance(2 * 60_000);
+    await w.clock.advance(20 * 60_000);
+    expect([
+        early,
+        w.sent.map((s) => s.text),
+        waitOf(w)?.startsWith('waiting: held messages'),
+    ]).toEqual([
+        1,
+        [
+            'held: ☕️ 🔧 codie: mods is compacting; your message joins its next turn',
+            WAITING_LINE,
+        ],
+        true,
+    ]);
+});
+
+test('a compact-held message a turn takes inside the deadline tells no one it waits', async ($, on) => {
+    const w = sentWorld(on);
+    inCompact = async () => {
+        await fromPeer($, 'round 9 on abc1234', SIXTH);
+    };
+    await start($);
+    await compact($, 'manual');
+    await w.clock.advance(30 * 60_000);
+    expect([w.sent.map((s) => s.text.split(':')[0]), waitOf(w)]).toEqual([
+        ['held', 'delivered'],
+        undefined,
+    ]);
+});
+
+test('a reload re-arms the deadline of a compact-held message', async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(STORE, {
+        isCompacted: true,
+        messages: [
+            {
+                at: NOW,
+                from: SIXTH,
+                id: 'a1',
+                isCompact: true,
+                isTold: true,
+                reply: 'uds:/tmp/cc-socks/3.sock',
+                text: 'round 9 on abc1234',
+            },
+        ],
+    });
+    submitRefusal = 'busy';
+    await start($);
+    await w.clock.advance(11 * 60_000);
+    expect(w.sent).toEqual([
+        { text: WAITING_LINE, to: 'uds:/tmp/cc-socks/3.sock' },
+    ]);
+});
