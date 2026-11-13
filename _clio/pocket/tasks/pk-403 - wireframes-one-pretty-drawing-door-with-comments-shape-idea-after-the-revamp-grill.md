@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-13T16:18:00Z'
-updated_date: '2026-11-13T16:32:00Z'
+updated_date: '2026-11-13T16:44:00Z'
 labels:
   - s
   - clio-wing-1
@@ -47,4 +47,7 @@ close: folded into FRM-611 as W31–W46 by main clio 18:31 (one home, one grill)
 
 18:32 W-lines accounted:
 close: PK-403:W1–W16 moved → FRM-611:W31–W46
+
+18:44 correction (dima 18:42: FRM-611 is a different ticket):
+close: PK-403:W1–W16 moved → FRM-614:W1–W16
 <!-- SECTION:NOTES:END -->
