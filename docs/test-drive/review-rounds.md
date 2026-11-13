@@ -144,4 +144,3 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-13 · FRM-595, herdr-lane-2 quick lane on main, joiner: clean at round 5 · round 4 found his pasted command output folded as a system row (P1), fixed with the row-kind list; two look fixes rode round 5
 - 2026-11-13 · FRM-607, herdr-lane-2 quick lane on main, the «show more» off switch: clean at round 1 · dima flipped it live (o36)
 - 2026-11-13 · FRM-600, strays-lane quick lane on main (e4d0413e..2ffc37c6), one naming door: no sixth sense; main clio's wisphunter read twice · round 1 found 7 (a nudged member never resumed, clio's and crow's starts refused by the name check, a reused session id), round 2 found 2 (a resume typed into a draft, the store lock held through the renames); my live runs found 3 (no mode emoji at summon, the first tab rename racing terminal.keep, cc's grey suggestion read as a draft → suggestions off for members, dima's o22)
-||||||| 201080e0
