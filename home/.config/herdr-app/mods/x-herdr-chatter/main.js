@@ -3504,6 +3504,16 @@ export default class ClaudeChat extends View {
         this.images = (this.images ?? 0) + 1;
         const pastedAt = Date.now();
         this.pasteSeen = null;
+        // the prompt is read every half second until it shows the image, so a removal in the Terminal view right after
+        // the paste still reads as one at the next poll
+        cx.spawn(async (cx) => {
+            for (let i = 0; i < 30 && this.pasteSeen !== address; i++) {
+                await cx.sleep(500);
+                const r = await hc(['read', address]).catch(() => null);
+                if (isPasteSeen(r?.code === 0 ? boxText(r.stdout) : null))
+                    this.pasteSeen = address;
+            }
+        });
         cx.spawn(async (cx) => {
             await hc([
                 'keys',
