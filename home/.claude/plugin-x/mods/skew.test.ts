@@ -56,6 +56,14 @@ describe('the mod side', () => {
             ),
         ]).toEqual(['session.start', 'ui.render', 'tool.call']);
     });
+
+    it("drops cc 2.1.323's «(default matcher key: …)» note, a comma inside it included", () => {
+        expect([
+            ...hookedEvents(
+                '  ❯ ./register.tsx hooks: ui.press (default matcher key: plugin, component), ui.render{component=Pane, requestId=x} (default matcher key: plugin), tool.call',
+            ),
+        ]).toEqual(['ui.press', 'ui.render', 'tool.call']);
+    });
 });
 
 describe('verdict', () => {
