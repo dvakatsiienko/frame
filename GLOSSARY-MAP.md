@@ -5,7 +5,7 @@ ten contexts live in this repo:
 - **repo** — `GLOSSARY.md` (root) + `docs/adr/` (`ADR-nnnn`) — the frame codebase itself
 - **chords** — `hotkeys/chords/GLOSSARY.md` — the hotkey map app: bindings, presses, rebinds; its feature ledger is `hotkeys/chords/FTR.md`
   - contract: none yet
-- **herdr** — `herdr/GLOSSARY.md` — x-herdr, our setup in the herdr app: threads, the Chat view, our mods; its feature ledger is `herdr/FTR.md`
+- **herdr** — `herdr/GLOSSARY.md` + `herdr/docs/adr/` (`HRD-nnnn`) — x-herdr, our setup in the herdr app: threads, the Chat view, our mods; its feature ledger is `herdr/FTR.md`
   - contract: none yet
 - **tracker** — `docs/tracker/GLOSSARY.md` + `docs/tracker/adr/` (`TRK-nnnn`) — the linear workspace domain (teams DOT/BYT)
   - contract: none yet
