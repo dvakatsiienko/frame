@@ -37,6 +37,8 @@ type summonPlanned struct {
 	ordered
 	record  thread
 	isFresh bool
+	// a member home whose trust key --apply sets true before the member starts, "" when there is none
+	trustHome string
 }
 
 func askSummon(plan any) string {
@@ -46,6 +48,14 @@ func askSummon(plan any) string {
 // briefSummonApply writes the record a check planned; the session id in the argv it printed is the one recorded
 func briefSummonApply(r *Run, _ []string, _ Flags, planned any) (any, error) {
 	plan := planned.(summonPlanned)
+	if plan.trustHome != "" {
+		if err := setTrust(plan.trustHome); err != nil {
+			if fail, isFail := errors.AsType[*Fail](err); isFail {
+				return nil, fail
+			}
+			return nil, &Fail{Msg: "the trust key of " + plan.trustHome + " was not set: " + err.Error(), Next: "x brief summon"}
+		}
+	}
 	if err := writeThreadRecord(plan.record, time.Now(), plan.isFresh); err != nil {
 		if fail, isFail := errors.AsType[*Fail](err); isFail {
 			return nil, fail
@@ -110,6 +120,7 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 	prompt := slices.IndexFunc(argv, func(w string) bool { return briefOfCat.MatchString(w) || roleSkill.MatchString(w) })
 
 	var failed []summonCheck
+	mendHome := ""
 	// next is the command that fixes the step; a step fixed in the command itself reruns the check
 	fail := func(step, why string, next ...string) {
 		failed = append(failed, summonCheck{step, why, strings.Join(next, "")})
@@ -198,7 +209,8 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 	})
 	{
 		step("trust", "the summon home's trust key", func() {
-			if !trusted(home) {
+			var isTrusted bool
+			if isTrusted, mendHome = trustOf(home); !isTrusted && mendHome == "" {
 				fail("trust", home+" has no hasTrustDialogAccepted in ~/.claude.json: a --bg summon there stalls on the dialog",
 					"jq '.projects[\""+home+"\"].hasTrustDialogAccepted = true' ~/.claude.json > /tmp/claude.json && mv /tmp/claude.json ~/.claude.json")
 			}
@@ -273,7 +285,7 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return summonPlanned{ordered{{"argv", out}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, record, true}, nil
+	return summonPlanned{ordered{{"argv", out}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, record, true, mendHome}, nil
 }
 
 // the four standing roles start by a door of their own, never a lane brief, so their summon checks only what a start
@@ -295,9 +307,12 @@ func summonStandingPlan(r *Run, command string, words []string, home string, rec
 		}
 		return ""
 	})
+	mendHome := ""
 	step("trust", "the summon home's trust key", func() string {
-		if !trusted(home) {
+		if isTrusted, mend := trustOf(home); !isTrusted && mend == "" {
 			return home + " has no hasTrustDialogAccepted in ~/.claude.json"
+		} else {
+			mendHome = mend
 		}
 		return ""
 	})
@@ -318,7 +333,7 @@ func summonStandingPlan(r *Run, command string, words []string, home string, rec
 	if err != nil {
 		return nil, err
 	}
-	return summonPlanned{ordered{{"argv", out}, {"home", home}, {"role", record.Role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, record, true}, nil
+	return summonPlanned{ordered{{"argv", out}, {"home", home}, {"role", record.Role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, record, true, mendHome}, nil
 }
 
 // a thread already running gets its standing role: a --bg start once cc printed its job, or the cutover's backfill;
@@ -329,7 +344,7 @@ func recordRunningPlan(r *Run, record thread, sid string) (any, error) {
 		return nil, err
 	}
 	record.SessionID = sid
-	return summonPlanned{ordered{{"sessionId", sid}, {"role", record.Role}, {"display", threadDisplay(record)}}, record, false}, nil
+	return summonPlanned{ordered{{"sessionId", sid}, {"role", record.Role}, {"display", threadDisplay(record)}}, record, false, ""}, nil
 }
 
 // the caller gate, plus round 2's pane rule: a coordinator or wing record is never written for a caller in a herdr
@@ -505,20 +520,6 @@ func trialGate(command string) string {
 	return ""
 }
 
-func trusted(home string) bool {
-	userHome, _ := os.UserHomeDir()
-	raw, err := os.ReadFile(filepath.Join(userHome, ".claude.json"))
-	if err != nil {
-		return false
-	}
-	var config struct {
-		Projects map[string]struct {
-			Trusted bool `json:"hasTrustDialogAccepted"`
-		} `json:"projects"`
-	}
-	return json.Unmarshal(raw, &config) == nil && config.Projects[home].Trusted
-}
-
 // a spare's elapsed time reads [[dd-]hh:]mm:ss, so a day or more holds a dash; a test stands in X_SPARES for ps
 func staleSpare() bool {
 	listing := os.Getenv("X_SPARES")
@@ -634,6 +635,10 @@ func withoutPromptSuggestions(command string) (string, error) {
 	value := unquoted(command[from:to])
 	raw := []byte(value)
 	if !strings.HasPrefix(strings.TrimSpace(value), "{") {
+		// x reads the file from its own cwd, not the command's cd, so only an absolute path names one file
+		if !filepath.IsAbs(value) {
+			return "", usageFail("the --settings file "+value+" is a relative path, which x would read from its own cwd: name it absolute", "x brief summon … --settings /abs/path/settings.json")
+		}
 		var err error
 		if raw, err = os.ReadFile(value); err != nil {
 			return "", usageFail("the --settings file "+value+" does not read: "+err.Error(), "x brief summon … --settings '{…}'")
@@ -642,6 +647,9 @@ func withoutPromptSuggestions(command string) (string, error) {
 	var settings map[string]any
 	if err := json.Unmarshal(raw, &settings); err != nil {
 		return "", usageFail("the --settings json "+value+" does not parse: "+err.Error(), "x brief summon … --settings '{…}'")
+	}
+	if settings == nil {
+		return "", usageFail("the --settings json "+value+" is not a json object", "x brief summon … --settings '{…}'")
 	}
 	if _, isSet := settings[key]; !isSet {
 		settings[key] = false
