@@ -46,7 +46,7 @@ skips nothing.
 3. **his guess**: before the issue list, he names his own suspicion in one line, or skips.
 4. **the issue list, by turn 4** (a target: still unclear at 4 → say so, he picks one more layer): each issue is the fact, a file:line link, the effect in
    plain words and one proposed fix; his guess sits beside my findings.
-5. **the decision round**: one `mattpocock-skills:grilling` round on the fixes; tech choices that
+5. **the decision round**: one `mattpocock-skills:grilling` round on the fixes, his four-line opener first (`habit-dima-comms` § grill); tech choices that
    matter are asked too, the rest i make myself and name in one line he can steer.
 6. **fix in place first** (dima, o55: «when I want to interfere, it means something is really off. we
    should go and fix it instead of folding into a ticket and postponing»): only the fixes he picked,
