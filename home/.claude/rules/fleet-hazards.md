@@ -26,6 +26,7 @@ live in `x:notes`, copied by hand into the cloud chat leaf `/topics/obsidian.md`
 ## the bash sandbox
 
 - **a worktree-isolated session runs git only through `x lane <verb>`** (commit, push, pr-open, merge-main, unlock): cc's own isolation check refuses git it cannot prove targets the tree, and no mod can lift it (FRM-356). any other text naming git or `eval` (`.git.x` in jq, `gh --jq`, an agent-browser `eval`) goes into a scratch script, run by path. guard: `x lane <verb>`
+- **an x/go change committed in main's checkout is live for every session at once**: the shim builds the working tree, so it lands before any read or push; one that changes a shared path or state is timed by its commit (FRM-621 moved the mods-edit scratch under a working codie, 2026-11-13: `docs/knowledge/fleet-stories/x-live-on-commit/story.md`). guard: none · FRM-624
 
 ## node
 
