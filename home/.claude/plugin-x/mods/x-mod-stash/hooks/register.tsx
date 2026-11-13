@@ -1870,7 +1870,36 @@ async function quietSilentMembers($: EngineInterface, now: number) {
 
 // a lane with open steps and every live member idle is parked: the clio running it hears at 10 min, once per
 // silence, shift or not, since nobody else will; a busy turn or a refused wake asks again at the next read (PK-351:W44)
+// herdr's settings rows (`~/.claude/shelf/herdr-settings/settings.json`, `{ rows, v }`), written by herdr alone: the one
+// reader, called at each poll, so an edit there counts at the next read
+async function herdrRow($: EngineInterface, home: string, key: string) {
+    const raw = await $.fs
+        .read(`${home}/.claude/shelf/herdr-settings/settings.json`)
+        .catch(() => undefined);
+    try {
+        const { rows } = JSON.parse(raw ?? '') as { rows?: unknown };
+        return rows && typeof rows === 'object'
+            ? (rows as Record<string, unknown>)[key]
+            : undefined;
+    } catch {
+        return undefined;
+    }
+}
+// herdr's «lane idle alarm after» row, in minutes; empty or unreadable is the 10 min line (FRM-605 exit 4, dima's o125)
+export function parkedWakeMs(row: unknown) {
+    const minutes =
+        typeof row === 'string' && /^\s*\d+(\.\d+)?\s*$/.test(row)
+            ? Number(row)
+            : row;
+    return typeof minutes === 'number' &&
+        Number.isFinite(minutes) &&
+        minutes > 0
+        ? minutes * 60_000
+        : PARKED_WAKE_MS;
+}
+
 let parkedReadAt = 0;
+const parkedUnreadLogged = new Map<string, string>();
 async function wakeForParkedLanes($: EngineInterface) {
     const now = await $.clock.now();
     if (now - parkedReadAt < LEDGER_EVERY_MS) return;
@@ -1884,6 +1913,7 @@ async function wakeForParkedLanes($: EngineInterface) {
         return;
     const home = (await $.env.get('HOME')) ?? '';
     const rows = await registry($);
+    const wakeAfter = parkedWakeMs(await herdrRow($, home, 'stash.park.after'));
     for (const lane of await readLanes($)) {
         if (lane.endedAt || lane.current >= lane.items.length) continue;
         // a dead wing's lane falls to main; a runner is the wing's display, drawn from its record
@@ -1898,10 +1928,17 @@ async function wakeForParkedLanes($: EngineInterface) {
                 : isMain;
         if (!isMine) continue;
         const members = [];
-        for (const name of Object.values(lane.members)) {
+        const unread: string[] = [];
+        for (const [role, name] of Object.entries(lane.members)) {
             if (!name) continue;
-            const row = memberOf(rows, await successorOf($, name));
-            if (row?.isAlive && row.base.sid !== myId) members.push(row);
+            const id = lane.linkedIds?.[role as LaneRole];
+            const row = laneMemberRow(
+                rows,
+                await successorOf($, name),
+                id && (await successorOf($, id)),
+            );
+            if (!row) unread.push(`${role} «${name}»`);
+            else if (row.base.sid !== myId) members.push(row);
         }
         if (!members.length) continue;
         if (members.some((row) => row.base.status !== 'idle')) continue;
@@ -1912,7 +1949,15 @@ async function wakeForParkedLanes($: EngineInterface) {
         if (heard.length < members.length) continue;
         const at = Math.max(...heard);
         const minutes = Math.round((now - at) / 60_000);
-        if (now - at < PARKED_WAKE_MS || (await quietIsBusy($))) continue;
+        // a member with no live session counts as gone; said once per silence, since `at` moves only on a new word
+        const silence = `${at}|${unread.join()}`;
+        if (unread.length && parkedUnreadLogged.get(lane.id) !== silence) {
+            parkedUnreadLogged.set(lane.id, silence);
+            await $.ui.log(
+                `x-mod-stash: lane ${lane.id} reads no live session for ${unread.join(', ')}; counted as gone`,
+            );
+        }
+        if (now - at < wakeAfter || (await quietIsBusy($))) continue;
         // a ping moves `at` back to the reply before it, so only a newer word re-arms
         const key = `${PARKED_WOKE}${lane.id}`;
         const woke = (await $.store.get(key)) as number | undefined;
@@ -3234,6 +3279,10 @@ export function glideOp(
                         done,
                     },
                 ],
+                linkedIds: {
+                    ...lane.linkedIds,
+                    [role]: oneLine(input.linkedId) || session,
+                },
                 members: { ...lane.members, [role]: session },
             },
             `lane ${lane.id}: ${role} is ${session}`,
@@ -3626,6 +3675,7 @@ function laneRolesNow(lane: StashLane): StashLane {
         ...lane,
         members: now(lane.members) ?? {},
         ...(lane.memberSids ? { memberSids: now(lane.memberSids) } : {}),
+        ...(lane.linkedIds ? { linkedIds: now(lane.linkedIds) } : {}),
     };
 }
 
@@ -6669,6 +6719,19 @@ export function memberOf(
     );
 }
 
+// a lane member's live row: the session its link named, followed through its /clears, so a rename after the link keeps
+// it (FRM-605, the 14:55 replay); else the name the card keeps; none when neither finds a live session
+export function laneMemberRow(
+    rows: Pick<Registered, 'base' | 'hostId' | 'isAlive' | 'startedAt'>[],
+    name: string | undefined,
+    id?: string,
+) {
+    const linked =
+        id &&
+        rows.find((r) => r.isAlive && (r.base.sid === id || r.hostId === id));
+    return linked || (name ? memberOf(rows, name) : undefined);
+}
+
 // cc's registry stores the black bird's zero-width joiner as a space: «🐦 ⬛ crow» for «🐦‍⬛ crow»
 const SPLIT_CROW = '\u{1F426} \u{2B1B}';
 const CROW = '\u{1F426}\u{200D}\u{2B1B}';
@@ -7145,13 +7208,16 @@ async function orbitCall(
                     deny: `orbit glide: lane ${card.id} is not this wing's; it writes only a card it created, ${LANE_OWNER} the rest`,
                 };
         }
-        // a link keeps the member's registry name, so the card finds its asks after a /clear or by a desktop id
+        // a link keeps the member's registry name, so the card finds its asks after a /clear or by a desktop id, and the
+        // session id that name resolved to, so a rename after the link keeps the member (FRM-605)
         const linkTo =
             input.act === 'link' && typeof input.session === 'string'
-                ? memberOf(await registry($), input.session.trim())?.base.name
+                ? memberOf(await registry($), input.session.trim())?.base
                 : undefined;
         // a create that names its lane plan takes its first steps from that file, so the card is never drawn from a guess
-        let given = linkTo ? { ...input, session: linkTo } : input;
+        let given = linkTo
+            ? { ...input, linkedId: linkTo.sid, session: linkTo.name }
+            : input;
         if (
             (input.act === 'create' || input.act === 'edit') &&
             typeof input.plan === 'string'

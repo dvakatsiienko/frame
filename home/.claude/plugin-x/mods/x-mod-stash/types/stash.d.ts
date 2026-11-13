@@ -274,6 +274,8 @@ export type StashLane = {
     // the linked members as the registry names them (an id the registry did not know stays as given); a re-link of a
     // role replaces the old one
     members: Partial<Record<LaneRole, string>>;
+    // the session id each link was given, followed through its /clears: a rename after the link keeps the member
+    linkedIds?: Partial<Record<LaneRole, string>>;
     // the board's view only: each member's session id now, resolved from its name at every draw
     memberSids?: Partial<Record<LaneRole, string>>;
     // dima's steer on the current step: a draft until his take, then it joins clio's next prompt or running turn once
