@@ -36,8 +36,8 @@ for _ in {1..30}; do
   sleep 1
 done
 # run from dima's herdr pane, the gate would refuse a coordinator's role while main's record lives
-env -u HC_TERMINAL_ID x brief summon --role "$role" --session "$sid" >/dev/null \
-  || { echo "clio-revive: «$name» is back as $T but has no record: x brief summon --role $role --session $sid" >&2; exit 1; }
+env -u HC_TERMINAL_ID x brief summon --apply --role "$role" --session "$sid" >/dev/null \
+  || { echo "clio-revive: «$name» is back as $T but has no record: x brief summon --apply --role $role --session $sid" >&2; exit 1; }
 node -e "import('$HOME/frame/home/.claude/plugin-x/skills/herdr/scripts/thread-tab.ts').then(m => process.exit(m.keepThreadInTab('$T', '$name') ? 0 : 1))" \
   || { echo "clio-revive: $T runs in hc but got no herdr tab, retry: herdr-app do terminal.keep '{\"terminal\":\"$T\",\"place\":\"tab\"}'" >&2; exit 1; }
 echo "«$name» is back in herdr as $T on session $sid ($model, $effort): type your next message there"

@@ -1,7 +1,7 @@
 #!/bin/zsh
 # main clio in a herdr tab named «🦉 clio», opened with no message: the zsh alias `clio-herdr` or `pnpm clio:start`, from any terminal
 # her role is the record x brief summon writes under the session id it mints, behind its caller gate (FRM-579)
-S=$(x brief summon --role coordinator --json "hc run --bg --no-parent --cwd $HOME/frame/_clio -- claude -n clio --remote-control") \
+S=$(x brief summon --apply --role coordinator --json "hc run --bg --no-parent --cwd $HOME/frame/_clio -- claude -n '🦉 clio' --remote-control") \
   || { echo "clio-start: x brief summon refused: $S" >&2; exit 1; }
 sid=$(jq -er .data.sessionId <<<"$S") && name=$(jq -er .data.display <<<"$S") || { echo "clio-start: no session in: $S" >&2; exit 1; }
 J=$(hc run --bg --no-parent --no-notify --json --name clio --label seat=clio --cwd ~/frame/_clio -- \

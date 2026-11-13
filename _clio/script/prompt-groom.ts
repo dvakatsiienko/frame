@@ -583,7 +583,7 @@ async function startHelga() {
     // her role is the record x brief summon writes (FRM-579): a pane start takes the id x mints, a --bg one is recorded
     // by the session its job started, since cc ignores --session-id there
     const minted = isPane
-        ? summonCopyist(cwd, [`cd ${cwd} && claude -n helga 'start'`])
+        ? summonCopyist(cwd, [`cd ${cwd} && claude -n '🎀 helga' 'start'`])
         : undefined;
     const claudeArgs = [
         ...(minted ? ['--session-id', minted.sessionId] : []),
@@ -653,7 +653,7 @@ async function startHelga() {
 function summonCopyist(cwd: string, args: string[]) {
     const run = spawnSync(
         'x',
-        ['brief', 'summon', '--role', 'copyist', ...args, '--json'],
+        ['brief', 'summon', '--apply', '--role', 'copyist', ...args, '--json'],
         { cwd, encoding: 'utf8' },
     );
     const envelope = JSON.parse(run.stdout || '{}') as {
