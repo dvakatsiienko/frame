@@ -37,7 +37,7 @@ the lane is the ticket's first body line, `lane: <kind>` (the four kinds: `fleet
 
 ## lane init — the contract (dima, 2026-10-23, PK-263)
 
-🌠 wish → shape-idea, when picked → a shaped ticket → shape-lane → **✍️ signed** → his pick → **🦭 sealed** → **🚀 dispatched** → **🟢 greenlight** → build (the words: `fleet-vibe` § entities, lane init)
+🌠 wish → shape-idea (every grill) or a full ticket folded straight (plain work) → a shaped ticket → shape-lane → **✍️ signed** → his pick → **🦭 sealed** → **🚀 dispatched** → **🟢 greenlight** → build (the words: `fleet-vibe` § entities, lane init)
 
 - **where each thing lives**: the ticket holds the wish, the 🎯 done test and the `## signed` block (format: `clio:pm` `references/body.md`); the 📐 spec (`.scratch/<feature>/spec.md`) holds the how and the exit lines; the lane plan holds the order of codie's tickets
 - **every grill runs through shape-idea**: the rule is `craft-pm` § wishes

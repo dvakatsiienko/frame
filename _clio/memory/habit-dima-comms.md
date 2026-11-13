@@ -34,6 +34,7 @@ floods; no other member prints one.
 
 **A grill is `mattpocock-skills:grilling`, loaded and run as written — no shape of our own beyond his four-line opener** (dima, 2026-10-20: «why should we have another template for replies if the skill covers that already? just use the skill, but don't forget it»):
 - every grill opens with four lines (dima, 2026-11-13: «I want those questions covered each time we grill. You should print: what it is, why we have it, what we want out of it, what it buys. Also we should always pick a name for a thing we create, especially if it is a new mod or even a feature name»); each of the four on its own line, a round never a wall (his 16:34 shot)
+- every grill runs through `clio:shape-idea` (o58, `craft-pm`)
 - one grill or review with him at a time, the next after his answers (PK-377:W25)
 - load it before the first question, every grill (a recipe's step 0, a lane chunk, a shape-idea), and name the load in the reply
 - its round is its ❓ shape, the frontier only: a question that hangs on another's answer waits for the next round
@@ -41,9 +42,9 @@ floods; no other member prints one.
 - the round prints whole in the thread, each question also an orbit ask copying its number (dima, 2026-10-12: «grill questions are important to be expanded, and deserve to be printed in your thread; keep the orbit part too»)
 - a round is written first to `.scratch/<area>/grill-<n>-proposal.md`, opening with the W-lines it settles copied verbatim; the write wakes crow in any thread, the round printing after her note or after 3 min with none, named (`_crow/AGENTS.md`, the proposal wake), her note is folded, and only the refined round prints, once — never a printed round amended after (dima, 2026-10-22: a reprint after her catch made him read the round twice)
 
-<!-- 2026-10-20: clio's own 🔥 template (2026-10-13) beat the skill three times: 4 questions at once, mechanics asked, grill-me named and skipped. dima asked to drop it. -->
+<!-- 2026-10-20: clio's own 🔥 template (2026-10-13) beat the skill three times: 4 questions at once, mechanics asked, grill-me named and skipped. -->
 
-**A remove or uninstall instruction to dima goes out only after its target's source is read**, never on an inference.
+**A remove or uninstall instruction to dima goes out only after its target's source is read**.
 
 **A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf.
 

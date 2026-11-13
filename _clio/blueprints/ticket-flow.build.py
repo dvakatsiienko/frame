@@ -132,8 +132,8 @@ BANDS = [
         "b5", "🧭 5 — lane init: which states does a chunk walk?",
         "craft-fleet-flow § lane init · rules/fleet-vibe.md lane-init words · pm references/body.md",
         [
-            ("wish", 0, 0, "event", "🌠 a wish", "his words, folded into W-lines; the fold proposes «shape-idea or not»", "craft-pm § wishes"),
-            ("shaped", 1, 0, "file", "🎫 a shaped ticket", "through shape-idea when he picks it, else folded straight into a full ticket", "fleet-flow § lane init"),
+            ("wish", 0, 0, "event", "🌠 a wish", "his words, folded into W-lines", "craft-pm § wishes"),
+            ("shaped", 1, 0, "file", "🎫 a shaped ticket", "every grill runs through shape-idea; plain work is folded straight into a full ticket", "fleet-flow § lane init"),
             ("signed", 2, 0, "dima", "✍️ signed", "his whole answer to the grill: the signed label + a dated, hashed ## signed line", "clio:shape-lane § 4"),
             ("pick", 3, 0, "dima", "🙋‍♂️ his pick", "«what can we dispatch?» — his pick is the summon word, no second ask", "shape-lane-dispatch § 1"),
             ("sealed", 4, 0, "script", "🦭 sealed", "spec + exit lines written and preflight green, before codie starts", "shape-lane-dispatch § 2–4"),
