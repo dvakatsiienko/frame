@@ -24,9 +24,9 @@ raw drop (2026-11-13 inbox, dima): we have support for copypaste blocks in chatt
 PK-395:W3 (2026-11-13 22:22, dima, o147): yes delete it, and prefer a copy-paste block to transfer any stuff for me to copy-paste to any other place → done: the copy block is the one door
 close: the draft block deleted on his o147 tick
 
-22:38 close: W1 done (named, then deleted on o147), W2 dropped (the block is gone), W3 done (copy block is the one door)
+22:38 close: W1 done (named, then deleted on o147), W2 dropped on o147 (the block is gone), W3 done (copy block is the one door)
 
-close: PK-395:W1 done, PK-395:W2 dropped, PK-395:W3 done — the draft block deleted on o147, the copy block is the one door
+close: PK-395:W1 done, PK-395:W2 dropped on o147, PK-395:W3 done — the draft block deleted on o147, the copy block is the one door
 
 close: PK-395:W2 done by deletion on his o147 tick, no name needed
 <!-- SECTION:NOTES:END -->
