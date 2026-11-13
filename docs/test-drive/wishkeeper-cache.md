@@ -44,5 +44,6 @@ the regression set: `wishkeeper-cache/regression-set.md`, seven real highs, repl
 ## rounds
 
 - 2026-11-11 23:45 · the regression set's first replay, 7 blind runs on the new card (29db59e4), not siesta runs, so kept out of both arms' averages · caught 6/7, case 2 missed (`regression-set.md` § replays) · $3.27 a run (7 runs, $22.89), 5 min writes only, first-request warm share median 0.69 against the baseline's 0 · `measure.ts 2026-11-11T21:33:00Z`
+- 2026-11-13 19:06 · today's siesta runs, all threads, 5 min arm (wing 1, dima's ask: «is 5 min ok on today's load») · 22 runs, $46.64 ($2.12 a run), 3.55M 5 min writes, 71.8M reads; first request warm in 6 of 22 · gaps between runs: median 14 min, 3 within 5 min, 21 within 60 min · a 1 h ttl would warm the ~12k shared opening on ~15 more runs, ~$0.86 saved, and price all 3.55M writes 1.6×, ~$10.65 more: 1 h loses ~12× on today's load (inference from the measured tokens and the model-card prices) · `measure.ts 2026-11-12T22:00:00Z`
 
 ## verdict
