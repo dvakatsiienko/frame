@@ -4980,7 +4980,11 @@ async function tellWaiting($: EngineInterface) {
     const now = await $.clock.now();
     // a compact still running is no missed turn: look again once it could have ended
     const isWindOn = (await partsShown($))('stash.second-wind');
-    if (await isCompactingNow($, sid, isWindOn))
+    // a turn still running is no missed turn either: the compact ran inside it, and its end hands the message over
+    const isWorking =
+        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
+        isBusy;
+    if (isWorking || (await isCompactingNow($, sid, isWindOn)))
         return armHeldDeadline($, now + 60_000 - STEER_TELL_MS, now);
     const due = await quietLocked(async () => {
         const kept = await heldStore($, keys);
@@ -6759,7 +6763,10 @@ async function setKnobNumber(
         'wind-notice': await readNumber($, 'wind-notice'),
     };
     const refusal = windPairRefusal(lines, name, n);
+    // a saved wind number settles the pair: the other field's reason quoted the old pair
     if (refusal) knobRefusals.set(name, refusal);
+    else if (name in lines)
+        for (const key of Object.keys(lines)) knobRefusals.delete(key);
     else knobRefusals.delete(name);
     if (!refusal) await $.store.set(NUMBERS[name].key, n);
     $.ui.invalidate('ui.render');

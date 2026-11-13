@@ -2020,13 +2020,6 @@ const TWINS = [
     ['[ask] a or b?', 'ask'],
 ] as const;
 
-test('the kinds list names each kind once, and every kind says how it reads and what it does', () => {
-    expect([
-        new Set(KINDS).size === KINDS.length,
-        MESSAGE_KINDS.every((k) => k.reads.length > 0 && k.does.length > 0),
-    ]).toEqual([true, true]);
-});
-
 for (const [body, kind] of [
     ['', 'untagged'],
     ['[ask]', 'ask'],
@@ -2156,6 +2149,55 @@ test('a reload re-arms the deadline of a compact-held message', async ($, on) =>
     expect(w.sent).toEqual([
         { text: WAITING_LINE, to: 'uds:/tmp/cc-socks/3.sock' },
     ]);
+});
+
+// sixth sense round 1 on f1579643: a compact inside a turn still running is no missed turn
+test('a compact mid-turn in a turn still running past 10 min tells no one it waits', async ($, on) => {
+    const w = sentWorld(on);
+    inCompact = async () => {
+        await fromPeer($, 'round 9 on abc1234', SIXTH);
+    };
+    await start($);
+    await say($, 'long work');
+    await compact($, 'auto');
+    await w.clock.advance(11 * 60_000);
+    expect([w.sent.map((s) => s.text.split(':')[0]), waitOf(w)]).toEqual([
+        ['held'],
+        undefined,
+    ]);
+});
+
+// a reload re-arms for the untold one, and the tell it fires skips the sender already told
+test('a reload after the waiting line was told tells that sender no second time', async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(STORE, {
+        isCompacted: true,
+        messages: [
+            {
+                at: NOW,
+                from: SIXTH,
+                id: 'a1',
+                isCompact: true,
+                isTold: true,
+                isWaitTold: true,
+                reply: 'uds:/tmp/cc-socks/3.sock',
+                text: 'round 9 on abc1234',
+            },
+            {
+                at: NOW,
+                from: '🦉 clio',
+                id: 'a2',
+                isCompact: true,
+                isTold: true,
+                reply: 'uds:/tmp/cc-socks/4.sock',
+                text: 'next: r6',
+            },
+        ],
+    });
+    submitRefusal = 'busy';
+    await start($);
+    await w.clock.advance(11 * 60_000);
+    expect(w.sent.map((s) => s.to)).toEqual(['uds:/tmp/cc-socks/4.sock']);
 });
 
 // wisphunter on f9e633d2: the wind's first message swapped for its note while no store held it

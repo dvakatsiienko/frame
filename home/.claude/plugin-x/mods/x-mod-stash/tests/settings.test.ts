@@ -383,6 +383,17 @@ for (const kind of ['change', 'submit'] as const)
         ]);
     });
 
+test("a wind line raised past a refused notice clears the notice's stale reason", async ($, on) => {
+    const { store } = world(on);
+    await band($);
+    const view = await pane($);
+    await view.input({ key: 'knob:wind-notice', kind: 'change', text: '70' });
+    await view.input({ key: 'knob:wind-at', kind: 'change', text: '80' });
+    expect([store.get('wind-at'), await shows(view, 'must sit below')]).toEqual(
+        [80, false],
+    );
+});
+
 test('a wind number the rule allows saves as before and clears the reason', async ($, on) => {
     const { store } = world(on);
     await band($);
