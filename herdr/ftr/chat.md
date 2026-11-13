@@ -278,7 +278,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
 - ⬜ a message tells when it was sent and when Claude read it
   - given a message in the chat
-  - then a small dim line under it reads its send time on his clock, a date before it from an earlier day; his own message reads «sent 14:45 · read 14:45», the read time when Claude Code took it off its queue, at a tool round or the turn's end; a reply reads its time alone, under its last part when it is cut into parts
+  - then a small dim line under it reads its send time on his clock, a date before it from an earlier day; his own message reads «sent 14:45 · read 14:45», the read time when Claude Code took it off its queue, at a tool round or the turn's end, or its own row's time for a message sent while the thread was idle; a reply reads its time alone, under its last part when it is cut into parts
   - and a message still in the queued strip reads «sent 15:10 · queued» on hover
   - decision: «sent» | «read» are his words (o55, 16:56); «read» replaced «received», which showed the send time and looked instant though the turn took the message seconds later (16:52, read off clio's transcript)
   - decision: always shown, not on hover: a tooltip inside a lazy-list row never showed for him, beside his bubble (15:51) or on its strip (16:27: «no, i do not see it»); a row's renderer takes no handlers ([herdr-app#598](https://github.com/herdrdev/herdr-app/issues/598)); clio's fallback, 16:27

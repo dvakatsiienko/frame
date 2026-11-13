@@ -170,6 +170,7 @@ export function midTurnPrompt(entry) {
         return null;
     return {
         ...entry,
+        isMidTurn: true,
         message: { content: queued.prompt, role: 'user' },
         type: 'user',
     };

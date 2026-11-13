@@ -3162,7 +3162,13 @@ export default class ClaudeChat extends View {
                 text: `↪ ${sent[1] || 'another terminal'}: ${sent[2].trim()}`,
             });
         if (/^<[\w-]+>/.test(text)) return;
-        into.items.push({ at, before, kind: 'user', text });
+        into.items.push({
+            at,
+            before,
+            isMidTurn: Boolean(entry?.isMidTurn),
+            kind: 'user',
+            text,
+        });
     }
 
     // The session's skills ("- name: what it does" lines), for the / menu.
@@ -4238,6 +4244,7 @@ export default class ClaudeChat extends View {
                         this.reads.get(this.address) ?? [],
                         item.text,
                         Date.parse(item.at ?? '') || 0,
+                        Boolean(item.isMidTurn),
                     ),
                 },
                 Date.now(),

@@ -294,4 +294,10 @@ describe('when Claude Code read a message of his', () => {
         expect(readTime(reads, 'click to open', at('49:00'))).toBeNull();
         expect(readTime(reads, 'something else', at('45:04.700'))).toBeNull();
     });
+    test('a message sent while the thread was idle never waited: its own row is the read', () => {
+        expect(readTime([], 'proceed', at('18:15'), false)).toBe(at('18:15'));
+    });
+    test('a mid-turn row whose pick-up was never read has no read time', () => {
+        expect(readTime([], 'ok', at('46:01'), true)).toBeNull();
+    });
 });
