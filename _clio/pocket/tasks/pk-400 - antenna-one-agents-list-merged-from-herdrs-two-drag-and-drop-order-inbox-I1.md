@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T15:33:00Z'
+updated_date: '2026-11-13T15:40:00Z'
 labels:
   - s
 dependencies: []
@@ -150,4 +150,12 @@ PK-400:W68 (2026-11-13 17:32, dima): i want flexible.
 PK-400:W69 (2026-11-13 17:32, dima): if i decide to change framework to something else than herdr.
 PK-400:W70 (2026-11-13 17:32, dima): q4. yes, wing 1 often prints ids in orbit like w44•o14, i do not like it i like clean ids.
 PK-400:W71 (2026-11-13 17:32, dima): and want unified system.
+
+17:40 groomed by helga, folded:
+PK-400:W72 (2026-11-13 17:40, dima): lets try: antenna left top, glide left bot (stick to bot, grows to top), orbit to the right.
+PK-400:W73 (2026-11-13 17:40, dima): also ask codie:
+PK-400:W74 (2026-11-13 17:40, dima): 1. how hard it is today to move blocks between places, like with current ask? ❓
+PK-400:W75 (2026-11-13 17:40, dima): 2. can anything be done to make block juggling easier, smoother, cheaper? ❓
+PK-400:W76 (2026-11-13 17:40, dima): and if yes, how to set it as default part of product.md and herdr rules, as default architectural rule - flexible block juggling? ❓
+PK-400:W77 (2026-11-13 17:40, dima): (i'll ask to juggle a lot i think, because all pieces are raw i A/B test a lot)
 <!-- SECTION:NOTES:END -->
