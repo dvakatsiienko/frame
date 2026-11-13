@@ -40,7 +40,7 @@ the lane is the ticket's first body line, `lane: <kind>` (the four kinds: `fleet
 🌠 wish → shape-idea (every grill) or a full ticket folded straight (plain work) → a shaped ticket → shape-lane → **✍️ signed** → his pick → **🦭 sealed** → **🚀 dispatched** → **🟢 greenlight** → build (the words: `fleet-vibe` § entities, lane init)
 
 - **where each thing lives**: the ticket holds the wish, the 🎯 done test and the `## signed` block (format: `clio:pm` `references/body.md`); the 📐 spec (`.scratch/<feature>/spec.md`) holds the how and the exit lines; the lane plan holds the order of codie's tickets
-- **every grill runs through shape-idea**: the rule is `craft-pm` § wishes
+- **every grill runs through shape-idea**: the rule is `habit-dima-comms` § grill
 - **shape-lane signs** over a ticket (the fold is its one birth door: `shape-lane` skill § 4): one chunk per grill, or fast mode for chunks needing no call of his (shape-lane § 2); a safety-net re-grill after shape-idea, the real shaping otherwise
 - **a sign carries what dispatch needs**: the done test, the milestone, the lane kind, the repo, the order among its siblings, and a merge pre-approval when the chunk edits the guards, the review workflows or merge-auto
 - **chunk order** — a new chunk in a hot area, the regroup at every sign, a reorder on his ask: one home, the clio plugin's `skills/lowtide/references/chunk-order.md`

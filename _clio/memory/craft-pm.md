@@ -49,7 +49,7 @@ comparison brief).
   it in the same turn, asked at the next siesta. a chaotic wish is normal; a wish that reaches
   `to-spec` with an open `?` is the failure.
 - **⚖️ worth it reads every wish too** (root invariant 3, W1247): at the fold, a doubtful wish gets one `🧐 doubt: <why, what he'd lose>` line in that reply, then his call
-- **a grill runs through shape-idea, never a pick** (dima, 2026-11-13: «for next stuff we grill with you or wing 1 - we use shape-idea»; o58): a new app, a new feature, a change to how a product part works, or any wish we grill → `clio:shape-idea`; plain, mechanical work → a full ticket folded straight away, never a thin one; the path after it is `craft-fleet-flow` § lane init.
+- **a grill runs through shape-idea**: the rule and every grill habit live in `habit-dima-comms` § grill
 
 ## milestones first — initiatives → 🎑 milestones → our flow
 
