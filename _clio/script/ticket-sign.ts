@@ -80,7 +80,7 @@ function main([id, kind, what = ''] = process.argv.slice(2)) {
             (above) => xSignHash(id, above),
         ),
     );
-    console.log(`x linear body ${id} --set ${file}`);
+    console.log(`x linear body ${id} --set ${file} --restamp-sign`);
     return 0;
 }
 
