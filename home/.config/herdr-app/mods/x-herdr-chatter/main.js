@@ -92,6 +92,7 @@ import {
     JOINED_SHOWN_MS,
     JOINS_DIR,
     appendJoin,
+    holdSend,
     isJoinPending,
     joinStatus,
     pendingJoins,
@@ -3260,12 +3261,41 @@ export default class ClaudeChat extends View {
         }
     }
 
-    send(cx) {
+    // a press on send starts the hold: herdr's timer fills the bar until the release joins or 5 s push (FRM-564)
+    /** @param {import('gpui-kit').Context} cx */
+    pressSend(cx) {
+        this.holdTask?.cancel();
+        this.hold = holdSend(null, 'press', Date.now()).hold;
+        this.holdFill = 0;
+        this.holdTask = cx.timer.every(33, (cx) => this.holdStep('tick', cx));
+    }
+
+    // one step of the hold; a window that lost focus cuts it, as a pointer that left the button does
+    /** @param {'tick' | 'release' | 'cancel'} event @param {import('gpui-kit').Context} cx */
+    holdStep(event, cx) {
+        if (!this.hold) return;
+        const r = holdSend(
+            this.hold,
+            event === 'tick' && !window.is_window_active() ? 'cancel' : event,
+            Date.now(),
+        );
+        this.hold = r.hold;
+        this.holdFill = r.fill;
+        if (!r.hold) {
+            this.holdTask?.cancel();
+            this.holdTask = null;
+        }
+        if (r.act) this.send(cx, r.act === 'push');
+        cx.notify();
+    }
+
+    /** @param {import('gpui-kit').Context} cx @param {boolean} [isPush] a hold's push: a turn starts, never a join */
+    send(cx, isPush = false) {
         const pasting = this.pasting.get(this.address);
         if (pasting)
             return cx.spawn(async (cx) => {
                 await pasting;
-                this.send(cx);
+                this.send(cx, isPush);
             });
         const text = this.box.value().trim();
         const attached = this.files.get(this.address) ?? [];
@@ -3289,6 +3319,7 @@ export default class ClaudeChat extends View {
         // the words join the thread's turn, the running one or its next, a picture as its path: no turn starts (FRM-564)
         const sid = this.states?.thread?.sid;
         if (
+            !isPush &&
             !text.startsWith('/') &&
             !this.where?.container &&
             !this.replies.get(address) &&
@@ -8247,12 +8278,58 @@ export default class ClaudeChat extends View {
                                                                             ),
                                                                 )
                                                                 .tooltip(
-                                                                    'Send (Enter)',
+                                                                    'Join (Enter), hold 5 s to send',
                                                                 )
-                                                                .on_click(
+                                                                .relative()
+                                                                .overflow_hidden()
+                                                                .on_mouse_down(
+                                                                    'left',
                                                                     (_e, cx) =>
-                                                                        this.send(
+                                                                        this.pressSend(
                                                                             cx,
+                                                                        ),
+                                                                )
+                                                                .on_mouse_up(
+                                                                    'left',
+                                                                    (_e, cx) =>
+                                                                        this.holdStep(
+                                                                            'release',
+                                                                            cx,
+                                                                        ),
+                                                                )
+                                                                .on_hover(
+                                                                    (on, cx) =>
+                                                                        on ||
+                                                                        this.holdStep(
+                                                                            'cancel',
+                                                                            cx,
+                                                                        ),
+                                                                )
+                                                                .when(
+                                                                    this
+                                                                        .holdFill >
+                                                                        0,
+                                                                    (el) =>
+                                                                        el.child(
+                                                                            div()
+                                                                                .absolute()
+                                                                                .left(
+                                                                                    0,
+                                                                                )
+                                                                                .right(
+                                                                                    0,
+                                                                                )
+                                                                                .bottom(
+                                                                                    0,
+                                                                                )
+                                                                                .h(
+                                                                                    28 *
+                                                                                        this
+                                                                                            .holdFill,
+                                                                                )
+                                                                                .bg(
+                                                                                    t.solid,
+                                                                                ),
                                                                         ),
                                                                 )
                                                                 .child(

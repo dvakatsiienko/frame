@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+    HOLD_PUSH_MS,
     JOIN_TAKE_MS,
     appendJoin,
+    holdSend,
     isJoinPending,
     joinStatus,
     pendingJoins,
@@ -102,5 +104,37 @@ describe('a join into an idle thread waits as a card, drawn again after a reload
         expect(isJoinPending(rows, 'wait for me')).toBe(true);
         expect(isJoinPending(rows, ' wait for me\n')).toBe(true);
         expect(isJoinPending(rows, 'something new')).toBe(false);
+    });
+});
+
+describe('a hold on send: a bar fills over 5 s and pushes; a release before joins; a cut hold does nothing', () => {
+    const pressed = holdSend(null, 'press', 1000);
+    test('held to 5 s, it pushes once, the bar full', () => {
+        const half = holdSend(pressed.hold, 'tick', 1000 + HOLD_PUSH_MS / 2);
+        expect(half).toEqual({ act: null, fill: 0.5, hold: pressed.hold });
+        const full = holdSend(half.hold, 'tick', 1000 + HOLD_PUSH_MS);
+        expect(full.act).toBe('push');
+        expect(full.hold).toBeNull();
+        expect(
+            holdSend(full.hold, 'release', 1000 + HOLD_PUSH_MS + 50).act,
+        ).toBeNull();
+    });
+    test('released before 5 s, it joins and the bar resets', () => {
+        expect(
+            holdSend(pressed.hold, 'release', 1000 + HOLD_PUSH_MS - 1),
+        ).toEqual({
+            act: 'join',
+            fill: 0,
+            hold: null,
+        });
+    });
+    test('cut by focus loss, a blur or a cancelled press: nothing written, the bar resets', () => {
+        expect(
+            holdSend(pressed.hold, 'cancel', 1000 + HOLD_PUSH_MS - 1),
+        ).toEqual({
+            act: null,
+            fill: 0,
+            hold: null,
+        });
     });
 });

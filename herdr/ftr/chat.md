@@ -288,6 +288,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then the row is written, the quill clears, and a card over the quill reads «Waits for its next turn» with his words
   - and after a chatter reload the card is drawn again from the join file, the words shown once, never also in the quill
   - and a second send of the same words writes no second row
+- ⬜ a 5 s hold on send pushes, its bar filling (FRM-564)
+  - given text in the quill
+  - when dima holds send
+  - then the button fills from the bottom over 5 s and at 5 s the message pushes: a turn starts, as a send did before joins
+  - and a release before 5 s joins; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
 - ⬜ a message tells when it was sent and when Claude read it
   - given a message in the chat
   - then a small dim line under it holds one state and its own time, on his clock, a date before it from an earlier day: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue (at a tool round or the turn's end; a row with no queue record, an idle send above all, at its own time); a reply reads its time alone, under its last part when it is cut into parts
