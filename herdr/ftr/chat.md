@@ -84,6 +84,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a send puts its path after his text, and Claude reads it
   - decision: one path for paste and drop (dima's o49, 16:38); it replaces ctrl+v into Claude's prompt, whose × had to empty that prompt and lagged when he emptied it in the Terminal view (FRM-609)
   - decision: the clipboard is read, never written (FRM-612)
+  - decision: the preview row holds the previews alone, no caption and no Remove: each × takes its own (FRM-609, his 16:40 shot: «delete description, i know what it does»); Remove stays only beside a «🖼 N images» count with no previews, a dev container's
 - ⬜ the shared keys carry the x-herdr name
   - given the chat, the status bar and the agents list share `chat.look`, `chat.subs`, `chat.containers`
   - then each key is `x-herdr-chatter.*`, read by every mod under its new name, and «zoo» appears nowhere

@@ -7773,39 +7773,32 @@ export default class ClaudeChat extends View {
                                 .when(
                                     images > this.thumbs(agent.address).length,
                                     (el) =>
-                                        el.child(
-                                            div()
-                                                .px(8)
-                                                .py(2)
-                                                .rounded(RADIUS.control)
-                                                .bg(t.raised)
-                                                .text_color(t.foreground)
-                                                .child(
-                                                    images === 1
-                                                        ? '🖼 1 image'
-                                                        : `🖼 ${images} images`,
+                                        el
+                                            .child(
+                                                div()
+                                                    .px(8)
+                                                    .py(2)
+                                                    .rounded(RADIUS.control)
+                                                    .bg(t.raised)
+                                                    .text_color(t.foreground)
+                                                    .child(
+                                                        images === 1
+                                                            ? '🖼 1 image'
+                                                            : `🖼 ${images} images`,
+                                                    ),
+                                            )
+                                            // pictures with no preview to × (a dev container's) go together; the row
+                                            // carries no caption (his 16:40 shot: «i know what it does»)
+                                            .child(
+                                                button(
+                                                    t,
+                                                    px,
+                                                    'drop-images',
+                                                    'Remove',
+                                                    (_e, cx) =>
+                                                        this.dropImages(cx),
                                                 ),
-                                        ),
-                                )
-                                .child(
-                                    div()
-                                        .flex_1()
-                                        .min_w(0)
-                                        .truncate()
-                                        .child(
-                                            this.where?.container
-                                                ? 'copied into the container, sent with your message'
-                                                : 'sent with your message',
-                                        ),
-                                )
-                                .child(
-                                    button(
-                                        t,
-                                        px,
-                                        'drop-images',
-                                        'Remove',
-                                        (_e, cx) => this.dropImages(cx),
-                                    ),
+                                            ),
                                 ),
                         ),
                     )
