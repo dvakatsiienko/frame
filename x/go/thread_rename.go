@@ -2,7 +2,6 @@ package main
 
 import (
 	"cmp"
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -124,7 +123,7 @@ func renameThread(sid, display string, wait, nudgeAfter time.Duration) ordered {
 		return row
 	}
 	for {
-		row, blocked := renameOnce(sid, display, wait > 0)
+		row, blocked := renameOnce(sid, display)
 		if blocked == "" || wait <= 0 {
 			return finish(row)
 		}
@@ -148,24 +147,17 @@ func isRenamed(row ordered) bool {
 }
 
 // a plain message to a thread's herdr terminal, as one member writes to another: whether it was sent, and the exact
-// command that sends it. a screen read cannot tell a person's draft from cc's grey prompt suggestion (hc read prints plain
-// text, no colour), so a message trusts hc send, which waits out a person's unfinished draft by their keystrokes
+// command that sends it. a message waits for an empty input box, or it would join dima's draft and send it
 func tellThread(sid, text string) (bool, string) {
 	terminal, _ := herdrTerminalOf(sessionPid(sid))
 	if terminal == "" {
 		return false, ""
 	}
 	command := "env -u HC_TERMINAL_ID hc send " + terminal + " " + quote(text)
-	return sendHeld(terminal, text) == nil, command
-}
-
-// hc send, which holds for a person's draft up to 60 s after their last key; bounded, so a stuck hc never holds x
-func sendHeld(terminal, text string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
-	defer cancel()
-	send := exec.CommandContext(ctx, hcBin(), "send", terminal, text)
-	send.Env = slices.DeleteFunc(os.Environ(), func(pair string) bool { return len(pair) > 15 && pair[:15] == "HC_TERMINAL_ID=" })
-	return send.Run()
+	if !isInputBoxEmpty(terminal) {
+		return false, command
+	}
+	return exec.Command(hcBin(), "send", terminal, text).Run() == nil, command
 }
 
 // how long a thread rename waits for an idle terminal, and how long before it asks the thread to end its turn;
@@ -192,7 +184,7 @@ func renamePoll() time.Duration {
 
 // one try: the row, and why only the thread's state stood in the way ("busy", "draft"; "" when nothing did), so a later try may land. a slash command
 // typed from inside a herdr thread arrives wrapped in an <hc from> tag and never runs, so the send drops HC_TERMINAL_ID
-func renameOnce(sid, display string, isWaiting bool) (ordered, string) {
+func renameOnce(sid, display string) (ordered, string) {
 	row := ordered{{"session", sid}, {"display", display}}
 	terminal, idle := herdrTerminalOf(sessionPid(sid))
 	if terminal == "" {
@@ -202,13 +194,14 @@ func renameOnce(sid, display string, isWaiting bool) (ordered, string) {
 	if !idle {
 		return append(row, kv{"renamed", false}, kv{"command", command}), "busy"
 	}
-	// a caller with no wait (a dispatch) never holds for a person: text in the box, a draft or cc's grey suggestion alike,
-	// hands back the command. a waiting rename trusts hc send, which waits out a person's draft by their keystrokes
-	if !isWaiting && !isInputBoxEmpty(terminal) {
+	// a send waits out a typing pause, then lands in the box after the draft: dima's half-typed prompt would carry it
+	if !isInputBoxEmpty(terminal) {
 		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"why", "its input box holds text, or did not read"}), "draft"
 	}
-	if err := sendHeld(terminal, "/rename "+display); err != nil {
-		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"error", err.Error()}), ""
+	send := exec.Command(hcBin(), "send", terminal, "/rename "+display)
+	send.Env = slices.DeleteFunc(os.Environ(), func(pair string) bool { return len(pair) > 15 && pair[:15] == "HC_TERMINAL_ID=" })
+	if out, err := send.CombinedOutput(); err != nil {
+		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"error", string(out)}), ""
 	}
 	return append(row, kv{"renamed", true}, kv{"command", command}), ""
 }

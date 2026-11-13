@@ -264,6 +264,11 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 			}
 		}
 	}
+	// a lane member works from its brief: cc's grey prompt suggestion in its box would only block a rename (x thread rename)
+	command, err = withoutPromptSuggestions(command)
+	if err != nil {
+		return nil, err
+	}
 	out, record, err := summonArgv(command, record)
 	if err != nil {
 		return nil, err
@@ -590,4 +595,42 @@ func laneKindFlag(flags Flags) (string, error) {
 		return "", usageFail(kind+" is no lane kind: side, quick or shift", "x brief summon … --lane-kind quick")
 	}
 	return kind, nil
+}
+
+// withoutPromptSuggestions puts promptSuggestionEnabled: false into the claude call's --settings json: the one flag the
+// command carries, merged into when it has one (a quick lane's worktree setting), added when it has none; a value the
+// command already gave the key stays
+func withoutPromptSuggestions(command string) (string, error) {
+	at := claudeCallAt(command)
+	if at == nil {
+		return command, nil
+	}
+	const key = "promptSuggestionEnabled"
+	flagAt := strings.Index(" "+command[at[1]:], " --settings ")
+	if flagAt < 0 {
+		return command[:at[1]] + `--settings '{"` + key + `":false}' ` + command[at[1]:], nil
+	}
+	start := at[1] + flagAt + len(" --settings ") - 1
+	from, to := start, start
+	if start < len(command) && (command[start] == '\'' || command[start] == '"') {
+		end := strings.IndexByte(command[start+1:], command[start])
+		if end < 0 {
+			return "", usageFail("the --settings json is not closed", "x brief summon … --settings '{…}'")
+		}
+		to = start + end + 2
+	} else if end := strings.IndexAny(command[start:], " \t\n"); end >= 0 {
+		to = start + end
+	} else {
+		to = len(command)
+	}
+	var settings map[string]any
+	if err := json.Unmarshal([]byte(unquoted(command[from:to])), &settings); err != nil {
+		return "", usageFail("the --settings json does not parse: "+err.Error(), "x brief summon … --settings '{…}'")
+	}
+	if _, isSet := settings[key]; isSet {
+		return command, nil
+	}
+	settings[key] = false
+	merged, _ := json.Marshal(settings)
+	return command[:from] + quote(string(merged)) + command[to:], nil
 }

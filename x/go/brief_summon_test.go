@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"slices"
 	"strconv"
@@ -217,13 +218,13 @@ func TestBriefSummonFromAHerdrThreadWantsTheHcRunLine(t *testing.T) {
 	}
 }
 
-// the argv a passing summon prints: the command with its minted --session-id right after claude
+// the argv a passing summon prints: the command with its session id and the prompt-suggestion setting right after claude
 // the summon x prints: the session id after the claude it runs, and -n the display it drew from the record
 func withSessionID(command string, got ran) string {
 	sid, _ := got.data["sessionId"].(string)
 	display, _ := got.data["display"].(string)
 	named := regexp.MustCompile(`-n '[^']*'`).ReplaceAllLiteralString(command, "-n '"+display+"'")
-	return strings.Replace(named, "claude ", "claude --session-id "+sid+" ", 1)
+	return strings.Replace(named, "claude ", "claude --session-id "+sid+" --settings '{\"promptSuggestionEnabled\":false}' ", 1)
 }
 
 // exit 27: the registry name a summon starts with is the display x thread show draws from the same record; FRM-579
@@ -260,7 +261,7 @@ func TestBriefSummonAddsTheSessionIDAfterTheClaudeItRuns(t *testing.T) {
 
 	sid, _ := got.data["sessionId"].(string)
 	display, _ := got.data["display"].(string)
-	want := strings.Replace(strings.Replace(command, "-n '🌗 🔧 cli | FRM-1'", "-n '"+display+"'", 1), "-- claude ", "-- claude --session-id "+sid+" ", 1)
+	want := strings.Replace(strings.Replace(command, "-n '🌗 🔧 cli | FRM-1'", "-n '"+display+"'", 1), "-- claude ", "-- claude --session-id "+sid+" --settings '{\"promptSuggestionEnabled\":false}' ", 1)
 	if got.code != 0 || got.data["argv"] != want {
 		t.Fatalf("exit %d argv %v, want %q:\n%s", got.code, got.data["argv"], want, got.stdout)
 	}
@@ -994,6 +995,8 @@ func TestThreadRenameResumesANudgedThreadWhateverBecameOfTheRename(t *testing.T)
 		knobs                   []string
 	}{
 		{"the /rename send fails", "send t9 end your turn at your next step\nsend t9 /rename " + name + "\nsend t9 resume\n", "", []string{"FAIL_RENAME=1"}},
+		{"a draft sits in its box all along: nobody is nudged", "", "", []string{"DRAFT=1"}},
+		{"a draft appears after the nudge: resume is left to send", "send t9 end your turn at your next step\n", "«resume» left to send: env -u HC_TERMINAL_ID hc send t9 resume", []string{"DRAFT=1", "DRAFT_AFTER=1"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -1102,18 +1105,45 @@ func TestBriefSummonRefusesALaneKindOrAreaOnAStandingRole(t *testing.T) {
 	}
 }
 
-// the thread's input box holds cc's grey suggestion, which a plain screen read shows like typed text: the rename and the
-// nudge still go out, since hc send itself waits out a person's real draft
-func TestThreadRenameSendsThroughATextTheBoxHolds(t *testing.T) {
+// dima's pick (o22): a lane member starts with cc's prompt suggestions off, in the one --settings json its argv carries
+func TestBriefSummonSwitchesPromptSuggestionsOffForALaneMember(t *testing.T) {
 	t.Parallel()
-	const name = "⚡ 🐕 strays | renamed"
-	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 15)
+	for _, c := range []struct {
+		name, settings string
+		want           map[string]any
+	}{
+		{"no --settings of its own", "", map[string]any{"promptSuggestionEnabled": false}},
+		{"a quick lane's worktree setting gets the key merged in", ` --settings '{"worktree":{"bgIsolation":"none"}}'`, map[string]any{"worktree": map[string]any{"bgIsolation": "none"}, "promptSuggestionEnabled": false}},
+		{"a value the command gave stays", ` --settings '{"promptSuggestionEnabled":true}'`, map[string]any{"promptSuggestionEnabled": true}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			command := strings.Replace(codieArgv(w.repo, w.brief(t, goodBrief, true)), "--model opus", "--model opus"+c.settings, 1)
 
-	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_RENAME_WAIT=1", "X_RENAME_NUDGE=0.1", "DRAFT=1"), "coordinator"), "thread", "rename", "s1", name)
+			got := w.summon(t, command, "X_THREADS="+filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS="+t.TempDir())
 
-	sent, _ := os.ReadFile(w.hcLog)
-	want := "send t9 end your turn at your next step\nsend t9 /rename " + name + "\nsend t9 resume\n"
-	if got.code != 0 || string(sent) != want {
-		t.Errorf("exit %d, hc was told %q, want exit 0 and %q:\n%s", got.code, sent, want, got.stdout)
+			argv, _ := got.data["argv"].(string)
+			flags := regexp.MustCompile(`--settings '([^']*)'`).FindAllStringSubmatch(argv, -1)
+			var settings map[string]any
+			if len(flags) == 1 {
+				_ = json.Unmarshal([]byte(flags[0][1]), &settings)
+			}
+			if got.code != 0 || len(flags) != 1 || !reflect.DeepEqual(settings, c.want) {
+				t.Errorf("exit %d, %d --settings flags, json %v, want one flag holding %v:\n%s", got.code, len(flags), settings, c.want, argv)
+			}
+		})
+	}
+}
+
+func TestBriefSummonLeavesPromptSuggestionsOnForAStandingRole(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+
+	got := w.summonStanding(t, "coordinator", []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + t.TempDir()}, "--role", "adviser", paneArgv(w, "🐦‍⬛ crow"))
+
+	argv, _ := got.data["argv"].(string)
+	if got.code != 0 || strings.Contains(argv, "--settings") {
+		t.Errorf("exit %d, argv %q, want a standing role's argv with no --settings", got.code, argv)
 	}
 }
