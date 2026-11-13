@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T15:05:00Z'
+updated_date: '2026-11-13T15:08:00Z'
 labels:
   - s
 dependencies: []
@@ -120,4 +120,6 @@ PK-400:W43 (2026-11-13 16:13, dima, wing 1): im stuck reading replies across cli
 PK-400:W44 (2026-11-13 16:13, dima, wing 1): (does not means that we should rush decisions because if it).
 
 relayed by the herdr codie 17:05: dima 17:01 in its chat — «can you stick glide to bottom? … it sticks to bot by default, and scrolls if orbit grows too far.» → the revamp grill's right-column question (Q1); codie: ~20 lines in x-herdr-deck main.js ~1071, sessions + orbit scroll, glide pinned under
+
+17:08 dima (main thread): during revamp: consult with wing 1 on rename tool too, it is also part of a bigger probem we have. every single pece from today and maybe other places i did not considered because i do not see whats under the hood should be considered, let's shake arch a little.
 <!-- SECTION:NOTES:END -->
