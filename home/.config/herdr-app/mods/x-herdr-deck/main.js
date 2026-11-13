@@ -45,6 +45,8 @@ import {
     sentSteer,
     stateOfPid,
     threadFacts,
+    tickAll,
+    tickAllTakes,
     tickState,
     untickDoor,
     waitOf,
@@ -240,6 +242,13 @@ export default class Deck extends View {
         // presses written and not yet taken by the session's stash, so a second press waits
         /** @type {Map<string, { verdict: import('./orbit.js').Press['verdict'], at: number }>} */
         this.sent = new Map();
+        // threads «tick all» was pressed on: their gated asks say they still need his own press
+        /** @type {Set<string>} */
+        this.tickedAll = new Set();
+        /** @type {number | null} the last ⌘⇧K press seen */
+        this.tickAsk = /** @type {number | null} */ (
+            shared('deck.tickAll') ?? null
+        );
         // his 🔥 presses by sid, drawn until the thread's state file reads them
         /** @type {Map<string, { at: number, on: boolean }>} */
         this.hotPressed = new Map();
@@ -587,6 +596,49 @@ export default class Deck extends View {
         cx.notify();
     }
 
+    // «tick all» (FRM-589): every open, ungated ask of one thread in one write; the asks draw ticked at once, and a
+    // failure takes them back and lands in the panel
+    /** @param {Context} cx @param {Row} s */
+    async pressAll(cx, s) {
+        const at = Date.now();
+        // read before the asks draw ticked below, or the write would find nothing left to take
+        const was = new Map(
+            s.asks.map((a) => [
+                a.id,
+                this.sent.get(`${s.sid}:${a.id}`)?.verdict ??
+                    s.pending.get(a.id ?? ''),
+            ]),
+        );
+        const sentOf = (/** @type {string} */ id) => was.get(id);
+        const takes = tickAllTakes(s.asks, sentOf);
+        for (const a of takes)
+            this.sent.set(`${s.sid}:${a.id}`, { at, verdict: 'tick' });
+        this.tickedAll.add(s.sid);
+        this.pressError = null;
+        cx.notify();
+        try {
+            const made = await exec('mkdir', ['-p', TICKS]);
+            if (made.code !== 0)
+                throw new Error(
+                    made.stderr.trim() || `mkdir exited ${made.code}`,
+                );
+            await tickAll(
+                { read: readTextFile, write: writeTextFile },
+                TICKS,
+                [s],
+                s.sid,
+                sentOf,
+                (id) => this.steers.get(`${s.sid}:${id}`)?.value(),
+                at,
+            );
+            for (const a of takes) this.steers.delete(`${s.sid}:${a.id}`);
+        } catch (err) {
+            for (const a of takes) this.sent.delete(`${s.sid}:${a.id}`);
+            this.pressError = `tick all not sent: ${err instanceof Error ? err.message : err}`;
+        }
+        cx.notify();
+    }
+
     /** @param {string} key */
     makeSteerBox(key) {
         try {
@@ -751,6 +803,14 @@ export default class Deck extends View {
                             ),
                     ),
                 )
+                .when(ask.isGated && !done && this.tickedAll.has(s.sid), (el) =>
+                    el.child(
+                        div()
+                            .text_size(SIZE.secondary)
+                            .text_color(t.muted)
+                            .child('needs your own press'),
+                    ),
+                )
                 .when(Boolean(sentText), (el) =>
                     el.child(
                         div()
@@ -832,16 +892,57 @@ export default class Deck extends View {
     /** @param {Theme} t @param {Row[]} rows */
     orbit(t, rows) {
         const owners = rows.filter((s) => s.asks.length > 0);
-        return owners.map((s, i) =>
-            v_flex()
+        return owners.map((s, i) => {
+            const canTickAll =
+                tickAllTakes(
+                    s.asks,
+                    (id) =>
+                        this.sent.get(`${s.sid}:${id}`)?.verdict ??
+                        s.pending.get(id),
+                ).length > 0;
+            return v_flex()
                 .px(12)
                 .py(4)
                 .gap(8)
                 .child(
-                    line(t.foreground, SIZE.main).font_semibold().child(s.name),
+                    h_flex()
+                        .gap(8)
+                        .items_center()
+                        .child(
+                            line(t.foreground, SIZE.main)
+                                .flex_1()
+                                .font_semibold()
+                                .child(s.name),
+                        )
+                        .when(canTickAll, (row) =>
+                            row.child(
+                                Button.new(`tick-all-${s.sid}`)
+                                    .h(24)
+                                    .px(10)
+                                    .flex_none()
+                                    .flex()
+                                    .items_center()
+                                    .rounded(6)
+                                    .border_1()
+                                    .border_color(t.border)
+                                    .bg(t.surface)
+                                    .text_size(SIZE.secondary)
+                                    .text_color(t.foreground)
+                                    .cursor_pointer()
+                                    .hover((st) => st.bg(t.hover))
+                                    .on_click((_e, cx) =>
+                                        cx.spawn((cx) => this.pressAll(cx, s)),
+                                    )
+                                    .gap(6)
+                                    .child('🛎️ tick all')
+                                    .child(
+                                        div().text_color(t.muted).child('⌘⇧K'),
+                                    ),
+                            ),
+                        ),
                 )
-                .children(s.asks.map((ask, j) => this.ask(t, s, ask, i, j))),
-        );
+                .children(s.asks.map((ask, j) => this.ask(t, s, ask, i, j)));
+        });
     }
 
     /** @param {Theme} t @param {Lane} l */
@@ -917,9 +1018,24 @@ export default class Deck extends View {
             );
     }
 
-    render() {
+    /** @param {Context} cx */
+    render(cx) {
         const t = /** @type {Theme} */ (theme());
         if (this.isThread) return div();
+        // ⌘⇧K (FRM-589): the status bar relays the key, the chat names the thread it shows by pid; a press older than
+        // 2 s, or one made before this load, never fires
+        const tickAsk = /** @type {number | null} */ (
+            shared('deck.tickAll') ?? null
+        );
+        if (tickAsk !== this.tickAsk) {
+            this.tickAsk = tickAsk;
+            const pid = /** @type {{ pid?: number } | null} */ (
+                shared('chat.shown')
+            )?.pid;
+            const shown = this.rows.find((r) => r.pid === pid);
+            if (shown && tickAsk && Date.now() - tickAsk < 2000)
+                cx.spawn((cx) => this.pressAll(cx, shown));
+        }
         // his order from the agents list, read at every draw, so a drag there moves the deck at once; the read's own
         // order (blocked, working, then by name) stays for a thread the list does not show
         const rows = inListOrder(

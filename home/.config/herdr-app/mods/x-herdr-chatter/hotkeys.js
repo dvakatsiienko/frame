@@ -23,6 +23,11 @@ export const OUR_KEYS = [
         key: 'cmd-shift-e',
         title: 'Pick the effort',
     },
+    {
+        action: 'x-herdr-status.tickall',
+        key: 'cmd-shift-k',
+        title: "Tick all of the shown thread's asks",
+    },
 ];
 /** @typedef {OurKey & { takenBy: string }} Refused */
 

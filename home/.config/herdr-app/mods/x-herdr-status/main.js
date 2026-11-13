@@ -675,6 +675,8 @@ export default class WorkspaceStatus extends View {
                             stack: chat.content.props.stack,
                         });
                     setShared(`chat.${command}`, Date.now());
+                } else if (command === 'tickall') {
+                    setShared('deck.tickAll', Date.now());
                 } else if (command === 'deck') {
                     const deck = blockOf(
                         (c) => c?.mod === 'x-herdr-deck' && !c.props?.view,

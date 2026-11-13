@@ -23,6 +23,8 @@ import {
     sentSteer,
     stateOfPid,
     threadFacts,
+    tickAll,
+    tickAllTakes,
     tickState,
     unbold,
     untickDoor,
@@ -579,5 +581,103 @@ describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)'
         expect(lockedLabel({ ...ask, mark: 'accepted' })).toBe(
             '🔒 ticked, the session took it',
         );
+    });
+});
+
+describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
+    const open = (id: string, isGated = false): Ask => ({
+        ...ask,
+        id,
+        isGated,
+        text: `ask ${id}`,
+    });
+    function shelf(files: Record<string, string | null>) {
+        return {
+            read: async (path: string) => files[path] ?? null,
+            write: async (path: string, text: string) => {
+                files[path] = text;
+                return null;
+            },
+        };
+    }
+    const none = () => undefined;
+    const lines = (text: string | null | undefined) =>
+        (text ?? '')
+            .trimEnd()
+            .split('\n')
+            .filter(Boolean)
+            .map((l) => JSON.parse(l));
+
+    test("a press on A writes three tick lines in A's file, B's file unchanged", async () => {
+        const files: Record<string, string | null> = { 't/B.jsonl': 'b\n' };
+        const rows = [
+            { asks: [open('o1'), open('o2')], sid: 'B', taken: 0 },
+            { asks: [open('o1'), open('o2'), open('o3')], sid: 'A', taken: 0 },
+        ];
+        await tickAll(shelf(files), 't', rows, 'A', none, none, 7);
+        expect(lines(files['t/A.jsonl'])).toEqual(
+            ['o1', 'o2', 'o3'].map((id, i) => ({
+                at: 7 + i,
+                id,
+                text: `ask ${id}`,
+                verdict: 'tick',
+            })),
+        );
+        expect(files['t/B.jsonl']).toBe('b\n');
+    });
+
+    test('a gated ask stays open: only the two others are ticked', async () => {
+        const files: Record<string, string | null> = {};
+        const rows = [
+            {
+                asks: [open('o1'), open('o2', true), open('o3')],
+                sid: 'A',
+                taken: 0,
+            },
+        ];
+        const ticked = await tickAll(
+            shelf(files),
+            't',
+            rows,
+            'A',
+            none,
+            none,
+            1,
+        );
+        expect(ticked.map((a) => a.id)).toEqual(['o1', 'o3']);
+        expect(lines(files['t/A.jsonl']).map((p) => p.id)).toEqual([
+            'o1',
+            'o3',
+        ]);
+    });
+
+    test('an ask already ticked or replayed is left as it is', () => {
+        const sent = new Map([
+            ['o1', 'tick' as const],
+            ['o2', 'replay' as const],
+        ]);
+        const asks = [open('o1'), open('o2'), open('o3')];
+        expect(
+            tickAllTakes(asks, (id) => sent.get(id)).map((a) => a.id),
+        ).toEqual(['o3']);
+    });
+
+    test("a steer typed in an ask's box rides its tick", async () => {
+        const files: Record<string, string | null> = {};
+        const rows = [{ asks: [open('o1')], sid: 'A', taken: 0 }];
+        await tickAll(shelf(files), 't', rows, 'A', none, () => ' go b ', 1);
+        expect(lines(files['t/A.jsonl'])[0].steer).toBe('go b');
+    });
+
+    test('a thread with no open ask writes nothing', async () => {
+        const files: Record<string, string | null> = {};
+        const rows = [{ asks: [open('o1', true)], sid: 'A', taken: 0 }];
+        expect(
+            await tickAll(shelf(files), 't', rows, 'A', none, none, 1),
+        ).toEqual([]);
+        expect(
+            await tickAll(shelf(files), 't', rows, 'Z', none, none, 1),
+        ).toEqual([]);
+        expect(files).toEqual({});
     });
 });

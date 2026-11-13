@@ -183,6 +183,53 @@ export const savePress = (io, path, press, taken) =>
 export const dropPress = (io, path, id, taken) =>
     rewrite(io, path, (text) => withoutPress(text, id, taken));
 
+/**
+ * the asks «tick all» takes (FRM-589): open and pressable, never gated, since a gated ask unlocks an action and stays
+ * his own press, one each (mods AGENTS.md § never)
+ * @param {Ask[]} asks
+ * @param {(id: string) => Press['verdict'] | null | undefined} sentOf
+ */
+export const tickAllTakes = (asks, sentOf) =>
+    asks.filter(
+        (a) =>
+            a.id !== null &&
+            !a.isGated &&
+            tickState(a, sentOf(a.id)) === 'open',
+    );
+
+/**
+ * «tick all» on the one thread `sid` names: a tick line per ask it takes, the single tick's shape, in that thread's
+ * ticks file alone, one write
+ * @param {TicksIo} io
+ * @param {string} dir the ticks folder
+ * @param {{ sid: string, asks: Ask[], taken: number }[]} rows every thread on the deck
+ * @param {string} sid
+ * @param {(id: string) => Press['verdict'] | null | undefined} sentOf
+ * @param {(id: string) => string | undefined} steerOf a steer typed in an ask's box rides its tick, as with one tick
+ * @param {number} at
+ * @returns {Promise<Ask[]>} the asks it ticked
+ */
+export async function tickAll(io, dir, rows, sid, sentOf, steerOf, at) {
+    const row = rows.find((r) => r.sid === sid);
+    const takes = row ? tickAllTakes(row.asks, sentOf) : [];
+    if (!row || takes.length === 0) return [];
+    await rewrite(io, `${dir}/${sid}.jsonl`, (text) =>
+        takes.reduce((was, a) => {
+            const steer = steerOf(/** @type {string} */ (a.id))?.trim();
+            /** @type {Press} */
+            const press = {
+                at,
+                id: /** @type {string} */ (a.id),
+                text: a.text,
+                verdict: 'tick',
+                ...(steer ? { steer } : {}),
+            };
+            return withPress(was, press, row.taken);
+        }, text),
+    );
+    return takes;
+}
+
 /** @typedef {{ context: number | null, wait: string | null, week: number | null }} ThreadFacts */
 /** @typedef {{ at: number, threads: Record<string, ThreadFacts> }} DeckThreads */
 

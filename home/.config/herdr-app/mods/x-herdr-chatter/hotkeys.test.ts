@@ -163,7 +163,7 @@ describe('rebind', () => {
 });
 
 describe('the x-herdr keys', () => {
-    test('the effort key lands on cmd-shift-e beside cmd-k and cmd-e, through the status bar', () => {
+    test('the effort and tick-all keys land on cmd-shift-e and cmd-shift-k beside cmd-k and cmd-e, through the status bar', () => {
         const { keys, refused } = keysWithOurs(
             { global: { 'cmd-shift-d': 'pane.split:down' } },
             OUR_KEYS,
@@ -173,6 +173,7 @@ describe('the x-herdr keys', () => {
             'cmd-e': 'x-herdr-status.deck',
             'cmd-k': 'x-herdr-status.quill',
             'cmd-shift-e': 'x-herdr-status.effort',
+            'cmd-shift-k': 'x-herdr-status.tickall',
         });
     });
 });
