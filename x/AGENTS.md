@@ -3,7 +3,7 @@
 `x` — the agent-first cli, in go + charm (`go/`, its build and traps in `go/AGENTS.md`). `bin/x` is the
 shim on the PATH: it runs the go binary of the nearest frame tree above the cwd, so a worktree runs its
 own edits; anywhere else it runs the checkout the shim lives in. It rebuilds the binary first when a
-source file is newer.
+source file is newer. in the main checkout, while `x/go` reads dev, it runs `bin/x-pushed`, built from origin/main: **`X_DEV=1` runs your own unpushed x** (go tests and `x verify red` need none).
 
 ## a verb is one registry entry
 

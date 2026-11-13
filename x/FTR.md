@@ -12,6 +12,7 @@
   - when `x` runs
   - then that tree's `x/go/bin/x` runs, or the checkout the shim lives in when no tree is above the cwd
   - given a go source file newer than the binary, then the shim rebuilds it first, and a failed build prints the compiler output to stderr, says so, and runs the last binary
+  - given the main checkout while its `x/go` reads dev (an edit, an untracked file, an unpushed commit), then the shim runs `x/go/bin/x-pushed`, built in the background from origin/main's `x/go` and stamped with that tree's hash after the rename, so no session runs code its author has not pushed; a call never waits on the build (one lock holder builds, a lock older than 5 min is taken over, the last pushed build runs meanwhile, with none the working tree's build runs with one stderr line); a failed build or an unreadable origin/main runs the last pushed build with one stderr line; `X_DEV=1` runs the working tree's build; a worktree runs its own edits; a main checkout not dev runs one binary and asks git nothing per call (FRM-624)
   - decision: go + charm, picked on the FRM-284 look probe (2026-10-06); the TS arm and its bun shim retire
 - ✅ bare `x` lists the families on one screen
   - given dima runs bare `x` in a terminal at 80 and at 120 cols

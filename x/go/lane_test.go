@@ -776,8 +776,9 @@ func TestShimPinsADevBuildWhenXGoDiffersFromOriginMain(t *testing.T) {
 			gitT(t, tree, "update-ref", "refs/remotes/origin/main", "HEAD")
 			c.change(t, tree)
 
+			// the dev pin is the working tree's build: a main checkout reading dev runs the pushed one unless X_DEV is set
 			run := exec.Command(filepath.Join(tree, "x/bin/x"))
-			run.Dir = tree
+			run.Dir, run.Env = tree, append(cleanEnv(), "X_DEV=1")
 			out, _ := run.Output()
 
 			if strings.TrimSpace(string(out)) != c.want {

@@ -13,7 +13,7 @@ fleet sees whether the page earns its place.
 
 - `pnpm x-go:build` → `bin/x` (gitignored); the shim `../bin/x` runs the same build itself when a
   source file is newer. It pins `srcDir` to this dir: the binary finds the frame tree from there
-  (the knowledge shelf), so a moved copy without the pin cannot. an uncommitted go edit is live for every session at once through the shim: land an `x/go` change fast, or build it in a worktree.
+  (the knowledge shelf), so a moved copy without the pin cannot. in the main checkout an unpushed edit is live only through `X_DEV=1` (the shim runs origin/main's build).
 - the shim also pins `devBuild=1` when `x/go` differs from its merge base with `origin/main` (an edit, an untracked file,
   an unpushed commit), so the trace marks the build a **dev build**; `pnpm x-go:build` never pins it,
   and the pin lasts until the next rebuild — a push alone does not clear it.

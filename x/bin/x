@@ -2,6 +2,8 @@
 # x — runs the go binary of the nearest frame tree above the cwd, so a worktree runs its own edits;
 # anywhere else (bytes, ~) it runs the checkout this shim lives in. the binary is rebuilt first when
 # it is missing or older than any of its source files, so a merge or an edit never runs stale code.
+# the main checkout, while its x/go reads dev (an edit, an unpushed commit), runs x/go/bin/x-pushed instead, built from
+# origin/main's x/go, so no session runs code its author has not pushed; X_DEV=1 runs the working tree's build (FRM-624)
 dir=${PWD}
 while [[ ${dir} != / && ! (-f ${dir}/x/go/go.mod && -x ${dir}/x/bin/x) ]]; do
     dir=${dir%/*}
@@ -24,22 +26,97 @@ is_dev() {
     (($? == 1)) || [[ -n $(git -C "${dir}" ls-files --others --exclude-standard -- x/go 2>/dev/null) ]]
 }
 
+# the pushed build: a call never waits on it. one call takes the lock (a mkdir, a lock older than 5 min is taken over) and
+# builds in the background, in a process group of its own so a hook's timeout never kills it; every call runs the last
+# x-pushed meanwhile, and the stamp (origin/main's x/go tree hash) is written after the rename
+build_pushed() {
+    local tmp gobin
+    set -o pipefail
+    gobin=$(command -v go || echo /opt/homebrew/bin/go)
+    tmp=$(mktemp -d "${TMPDIR:-/tmp}/x-pushed.XXXXXX")
+    if git -C "${dir}" archive --prefix=go/ "${want}" | tar -x -C "${tmp}" &&
+        (cd "${tmp}/go" && "${gobin}" build -buildvcs=false -trimpath -ldflags "-s -w -X main.srcDir=${go} -X main.devBuild=" -o "${pbin}.$$" .) &&
+        mv -f "${pbin}.$$" "${pbin}"; then
+        printf '%s\n' "${want}" >"${pbin}.stamp"
+        : >"${pbin}.failed"
+    else
+        printf '%s\n' "${want}" >"${pbin}.failed"
+    fi
+    # the temp dir this function made above, and the lock dir it took
+    rm -rf -- "${tmp}"
+    rmdir "${lock}"
+}
+
+# the stale read, as it always was: a missing binary, a source newer than it, or a dev binary whose tree reads clean again
+# (the dev stamp is baked in at build time, so a dev binary is rebuilt once its tree reads clean; without it every later call
+# stays a dev trace and x stats goes blind, 10-12 → 10-19). git is asked about dev only where a call needs it: a rebuild, a
+# dev binary's re-read, the pushed route — a main checkout not dev pays no git per call
 stale=0
 [[ -x ${bin} ]] || stale=1
 for file in "${go}"/*.go "${go}"/*.json "${go}"/go.mod "${go}"/go.sum; do
     ((stale)) && break
     [[ ${file} -nt ${bin} ]] && stale=1
 done
-# the dev stamp is baked in at build time, so a dev binary is rebuilt once its tree reads clean again;
-# without it every later call stays a dev trace and x stats goes blind (10-12 → 10-19)
-if ((!stale)) && [[ $(cat "${go}/bin/.dev" 2>/dev/null) == 1 ]] && ! is_dev; then
-    stale=1
+dev_now=0
+if ((!stale)) && [[ $(cat "${go}/bin/.dev" 2>/dev/null) == 1 ]]; then
+    if is_dev; then dev_now=1; else stale=1; fi
+elif ((stale)) && is_dev; then
+    dev_now=1
 fi
-if ((stale)); then
+
+use_pushed=0 said=0
+if ((dev_now)) && [[ -z ${X_DEV-} ]]; then
+    main=$(realpath "${BASH_SOURCE[0]}")
+    main=${main%/x/bin/x}
+fi
+if ((dev_now)) && [[ -z ${X_DEV-} && ${dir} == "${main}" ]]; then
+    pbin=${go}/bin/x-pushed
+    lock=${go}/bin/.x-pushed.lock
+    want=$(git -C "${dir}" rev-parse --verify --quiet origin/main:x/go 2>/dev/null)
+    if [[ -z ${want} ]]; then
+        if [[ -x ${pbin} ]]; then
+            echo "x: origin/main is unreadable — running the last pushed build" >&2
+            bin=${pbin} use_pushed=1
+        else
+            echo "x: origin/main is unreadable and no pushed build exists — running the working tree's build" >&2
+        fi
+    else
+        if [[ -x ${pbin} && $(cat "${pbin}.stamp" 2>/dev/null) == "${want}" ]]; then
+            :
+        elif [[ $(cat "${pbin}.failed" 2>/dev/null) == "${want}" && -z $(find "${pbin}.failed" -mmin +10 2>/dev/null) ]]; then
+            # a failed build of this tree is not retried for 10 min, or the next push
+            said=1
+            if [[ -x ${pbin} ]]; then
+                echo "x: the pushed build of ${want} failed (${pbin}.log) — running the last pushed build" >&2
+            else
+                echo "x: the pushed build of ${want} failed (${pbin}.log) — running the working tree's build" >&2
+            fi
+        else
+            mkdir -p "${go}/bin"
+            # a lock older than 5 min is taken over by a rename, so two callers never both clear it
+            if [[ -n $(find "${lock}" -maxdepth 0 -mmin +5 2>/dev/null) ]]; then
+                mv "${lock}" "${lock}.stale.$$" 2>/dev/null && rmdir "${lock}.stale.$$"
+            fi
+            if mkdir "${lock}" 2>/dev/null; then
+                (
+                    set -m
+                    build_pushed >"${pbin}.log" 2>&1 </dev/null &
+                )
+            fi
+        fi
+        if [[ -x ${pbin} ]]; then
+            bin=${pbin} use_pushed=1
+        elif ((!said)); then
+            echo "x: no pushed build yet — running the working tree's build" >&2
+        fi
+    fi
+fi
+
+if ((stale && !use_pushed)); then
     gobin=$(command -v go || echo /opt/homebrew/bin/go)
     echo "x: building from ${go} with ${gobin}" >&2
     dev=
-    is_dev && dev=1
+    ((dev_now)) && dev=1
     mkdir -p "${go}/bin"
     printf '%s\n' "${dev}" >"${go}/bin/.dev"
     # a temp file then a rename: two shells building at once never run a half-written binary.
