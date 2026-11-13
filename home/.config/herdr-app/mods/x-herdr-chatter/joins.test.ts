@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+    HOLD_DELAY_MS,
     HOLD_PUSH_MS,
     JOIN_LOCK_STALE_MS,
     JOIN_TAKE_MS,
@@ -124,14 +125,31 @@ describe('where a join stands, read off the thread’s herdr state', () => {
 describe('a hold on send: a bar fills over 1 s and pushes; a release before joins; a cut hold does nothing', () => {
     const pressed = holdSend(null, 'press', 1000);
     test('held to 1 s, it pushes once, the bar full', () => {
-        const half = holdSend(pressed.hold, 'tick', 1000 + HOLD_PUSH_MS / 2);
+        const half = holdSend(
+            pressed.hold,
+            'tick',
+            1000 + HOLD_DELAY_MS + HOLD_PUSH_MS / 2,
+        );
         expect(half).toEqual({ act: null, fill: 0.5, hold: pressed.hold });
-        const full = holdSend(half.hold, 'tick', 1000 + HOLD_PUSH_MS);
+        const full = holdSend(
+            half.hold,
+            'tick',
+            1000 + HOLD_DELAY_MS + HOLD_PUSH_MS,
+        );
         expect(full.act).toBe('push');
         expect(full.hold).toBeNull();
         expect(
-            holdSend(full.hold, 'release', 1000 + HOLD_PUSH_MS + 50).act,
+            holdSend(
+                full.hold,
+                'release',
+                1000 + HOLD_DELAY_MS + HOLD_PUSH_MS + 50,
+            ).act,
         ).toBeNull();
+    });
+    test('a tap shows no fill: the disc waits out a short delay first', () => {
+        expect(holdSend(pressed.hold, 'tick', 1000 + HOLD_DELAY_MS).fill).toBe(
+            0,
+        );
     });
     test('released before 1 s, it joins and the bar resets', () => {
         expect(
@@ -195,11 +213,17 @@ describe('an ended thread hands its unjoined rows back: each comes to the quill 
 describe('a held Enter or cmd-enter: key repeat after the push neither joins nor pushes again', () => {
     test('a tick or a release after the push does nothing', () => {
         const pressed = holdSend(null, 'press', 0);
-        const pushed = holdSend(pressed.hold, 'tick', HOLD_PUSH_MS);
+        const pushed = holdSend(
+            pressed.hold,
+            'tick',
+            HOLD_DELAY_MS + HOLD_PUSH_MS,
+        );
         expect([
             pushed.act,
-            holdSend(pushed.hold, 'tick', HOLD_PUSH_MS + 15).act,
-            holdSend(pushed.hold, 'release', HOLD_PUSH_MS + 90).act,
+            holdSend(pushed.hold, 'tick', HOLD_DELAY_MS + HOLD_PUSH_MS + 15)
+                .act,
+            holdSend(pushed.hold, 'release', HOLD_DELAY_MS + HOLD_PUSH_MS + 90)
+                .act,
         ]).toEqual(['push', null, null]);
     });
 });

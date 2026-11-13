@@ -81,7 +81,9 @@ export const retextJoin = (io, path, id, text) =>
 export const takeBackJoin = (io, path, id) =>
     editJoins(io, path, (was) => dropJoin(was ?? '', id));
 
-// a hold on send, Enter or cmd-enter this long pushes instead of joining
+// a hold on send, Enter or cmd-enter this long pushes instead of joining, its disc filling after a short delay so a
+// tap never flashes it (dima, 20:03)
+export const HOLD_DELAY_MS = 300;
 export const HOLD_PUSH_MS = 1000;
 
 /**
@@ -94,7 +96,10 @@ export function holdSend(hold, event, now) {
     if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
     if (event === 'release') return { act: 'join', fill: 0, hold: null };
-    const fill = Math.min(1, (now - hold.at) / HOLD_PUSH_MS);
+    const fill = Math.min(
+        1,
+        Math.max(0, now - hold.at - HOLD_DELAY_MS) / HOLD_PUSH_MS,
+    );
     return fill < 1
         ? { act: null, fill, hold }
         : { act: 'push', fill: 1, hold: null };

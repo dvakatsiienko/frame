@@ -288,7 +288,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a 1 s hold on send or Enter pushes, its disc filling (FRM-564)
   - given text in the quill
   - when dima holds send, Enter or cmd-enter
-  - then a disc fills the button over 1 s and at 1 s the message pushes, words marked to join taken out of the join file first: a turn starts, as a send did before joins
+  - then after a short pause (300 ms, so a tap never shows it) a disc fills the button over 1 s and then the message pushes, words marked to join taken out of the join file first: a turn starts, as a send did before joins
   - and a release before 1 s joins, a key acting on its release, its repeats typing no newlines; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
 - ⬜ a send that cannot join pushes and says why (FRM-564)
   - given a slash command in the quill, or a thread whose join queue is switched off
