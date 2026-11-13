@@ -33,6 +33,10 @@ dima's words:
 
 ## the values, standing for every chunk
 
+> PK-391:W2 (2026-11-13 inbox, dima): good herdr synergy across the full feature set, app wide. ❓ worth adding to herdr's product.md? i think i want it there.
+>
+> PK-391:W3 (2026-11-13 inbox, dima): looks like a mature coding app, tailored for dima by dima's cc team.
+>
 > PK-363:W246 (2026-11-10 inbox, dima) main herder wishes. codie and verifier must know the values i want in my wishes and consider them during implementation. it is a standing rule for herder agents.md.
 >
 > PK-363:W247 (2026-11-10 inbox, dima) pretty ui. the almost ugly claude desktop ui is one of the reasons i picked herder. in herder: no clunky ui.
