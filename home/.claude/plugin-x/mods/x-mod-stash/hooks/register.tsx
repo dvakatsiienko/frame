@@ -2315,16 +2315,16 @@ async function roundsLocked<T>(
     }
 }
 // the chunk a lane member is on: its lane plan's first open step x does not hold under «## not greenlit», as the glide
-// card reads it; a read x failed keeps the last good one, so a busy mac never keys a round on the summon's ticket
+// card reads it; a read x failed keeps the last good one. a lane with no plan file keys on x's record (`gone`); a plan
+// with no current chunk keys on nothing (clio, 20:42), so a next chunk's round 1 never lands on the summon's ticket
 async function chunkTicket($: EngineInterface, home: string, lane: string) {
     const path = `${home}/.local/state/x/lanes/${lane}/lane-plan.md`;
     const read = await readPlanSteps($, path);
+    if ('state' in read && read.state === 'gone') return 'gone';
     const steps =
         'steps' in read
             ? read.steps
-            : read.state === 'stale'
-              ? (planParses.get(path)?.steps as PlanSteps | undefined)
-              : undefined;
+            : (planParses.get(path)?.steps as PlanSteps | undefined);
     return steps?.find((s) => !s.done && !s.held)?.ticket;
 }
 async function laneRoundLine(
@@ -2341,8 +2341,10 @@ async function laneRoundLine(
     if (await isToCoordinator($, to)) return undefined;
     const home = (await $.env.get('HOME')) ?? '';
     // the plan's chunk, so a next chunk starts at 1 though x's record keeps the summon's ticket
-    const ticket = (await chunkTicket($, home, self.lane)) ?? self.ticket ?? '';
-    const lane = `${self.lane} | ${ticket}`;
+    const chunk = await chunkTicket($, home, self.lane);
+    if (chunk === undefined)
+        return `round ${round.n} on ${round.sha} not counted (the lane plan names no current chunk): resend the same line once it does`;
+    const lane = `${self.lane} | ${chunk === 'gone' ? (self.ticket ?? '') : chunk}`;
     const now = await $.clock.now();
     // a count that could not be taken says so: a silent miss is a cap nobody hears
     const taken = await roundsLocked($, home, async () => {
@@ -2407,7 +2409,7 @@ async function capTold(
         const codie = card.members.codie;
         if (card.endedAt || !runner || !codie) continue;
         if ((await successorOf($, codie)) !== sid) continue;
-        wing = threads.find(
+        wing ??= threads.find(
             (t) => t.role === WING_ROLE && bare(runnerOf(t)) === bare(runner),
         );
     }
