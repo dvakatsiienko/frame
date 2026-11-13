@@ -1,10 +1,10 @@
 ---
 id: PK-389
 title: switch a clio thread's role live (main, wing N), no reboot
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T11:21:00Z'
-updated_date: '2026-11-13T11:32:00Z'
+updated_date: '2026-11-13T11:41:00Z'
 labels:
   - s
 dependencies: []
@@ -23,4 +23,7 @@ PK-389:W1 can you change yourself to main clio out of a wing, or do you need a r
 PK-389:W2 i want the ability to change this role stuff in real time, without a reboot.
 PK-389:W3 why could i not boot you today? does halt not clean your role? will i be able to boot you tomorrow?
 PK-389:W4 grill it today, right after all the herdr topics are grilled. (wing 1 shapes it, 13:3x, his «lets do now»)
+
+13:41 ticket: FRM-596
+close: shaped by wing 1 (grill rounds 1–2, plan critic folded), filed as FRM-596; its wish block carries W1–W3
 <!-- SECTION:NOTES:END -->
