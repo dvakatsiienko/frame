@@ -270,7 +270,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: a dev container's box shows no + (its Claude cannot read a mac path)
 - ⬜ the quill is a stacked card with send in its corner
   - given the chat shows its quill
-  - then the text card, rounder and with a soft shadow, rests on a narrower card holding + and the band's buttons; a round ↑ send sits in the text card's bottom right, the model and effort picker just left of it, lit once text is typed, and the text uses the full width above one button-high bottom row
+  - then the text card, rounder and with a soft shadow, rests on a narrower card holding + and the band's buttons; a round ↑ send sits in the text card's bottom right, lit once text is typed, the model and effort picker just left of it, and the text uses the full width above one button-high bottom row
   - and the quill shows no placeholder; Enter still sends
   - and a hover on the lit ↑ turns it ink, and it spins from the press until the thread has the message (FRM-562 part B)
   - decision: his word, 15:15: «still eats space» on a right gutter; the bottom row is the one herdr allows (Textarea has no per-line inset)

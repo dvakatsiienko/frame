@@ -18,6 +18,7 @@ import {
     pendingPresses,
     phasesOf,
     pressLabel,
+    psStartArgs,
     runningThreads,
     savePress,
     sentSteer,
@@ -564,6 +565,18 @@ describe('runningThreads: a row stays only while its own process runs (FRM-601)'
         expect(
             runningThreads(rows, '    7 Mon Nov  3 09:00:00 2026\n')?.length,
         ).toBe(1);
+    });
+
+    test("ps reads start times in utc and the c locale, the store's own form", () => {
+        expect(psStartArgs([101, 202])).toEqual([
+            'LC_ALL=C',
+            'TZ=UTC',
+            'ps',
+            '-o',
+            'pid=,lstart=',
+            '-p',
+            '101,202',
+        ]);
     });
 
     test('no answer from ps lists nothing new: the deck keeps its last rows', () => {

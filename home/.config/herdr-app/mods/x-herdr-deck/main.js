@@ -40,6 +40,7 @@ import {
     pendingPresses,
     phasesOf,
     pressLabel,
+    psStartArgs,
     runningThreads,
     savePress,
     sentSteer,
@@ -108,15 +109,7 @@ async function sessions(shelf) {
     const ps = listed.length
         ? await exec(
               'env',
-              [
-                  'LC_ALL=C',
-                  'TZ=UTC',
-                  'ps',
-                  '-o',
-                  'pid=,lstart=',
-                  '-p',
-                  listed.map((t) => t.pid).join(','),
-              ],
+              psStartArgs(listed.map((/** @type {any} */ t) => t.pid)),
               { timeout: 2000 },
           ).catch(() => null)
         : { code: 0, stdout: '' };

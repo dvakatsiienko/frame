@@ -385,6 +385,20 @@ export const hasSteerBox = (ask, pending) =>
 // twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
 // reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)
 /**
+ * the `env … ps` call `runningThreads` reads: its start times in utc and the c locale, the form x writes `procStart` in
+ * @param {number[]} pids
+ */
+export const psStartArgs = (pids) => [
+    'LC_ALL=C',
+    'TZ=UTC',
+    'ps',
+    '-o',
+    'pid=,lstart=',
+    '-p',
+    pids.join(','),
+];
+
+/**
  * the store's threads still running on their own process, by one `ps -o pid=,lstart= -p <pids>` answer read in utc and
  * the c locale, x's own form for `procStart`: the store keeps a thread until some session refreshes it, so a row whose
  * pid ended, or came back as another process, leaves here (FRM-601). no answer (null) is no answer: the deck keeps its

@@ -2193,7 +2193,7 @@ export default class ClaudeChat extends View {
         }
     }
 
-    // the quill's one picker, shepherdr's shape (dima's o10 pick, 2026-11-13): «Opus 5.5 · medium ⌄», its popover the
+    // the quill's one picker, shepherdr's shape (dima's o10 pick, 2026-11-13): «Opus 5.5 · Medium ⌄» left of send, its popover the
     // model list over the effort slider; ⌘⇧E opens it with ← → on the effort. A part shows «…» while its pick lands.
     // Both switch mid-turn: Claude Code opens /model and /effort while a reply streams and sets them at once, the turn
     // runs on and the next reply uses the pick (/effort probed 2026-11-11; /model 2026-11-13, Haiku 5.5 → Sonnet 5.5,
@@ -6845,7 +6845,7 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // the module's lower card: + and the pickers on the left, the band's buttons on the right
+    // the module's lower card: + on the left, the band's buttons on the right
     /** @param {any} t @param {any} agent */
     controlCard(t, agent) {
         return nestedCard(t, 'bottom')
@@ -7840,7 +7840,7 @@ export default class ClaudeChat extends View {
                     // While the menu is open, ↑ ↓ Tab Esc are its keys (bound in init); ← → Home End close
                     // it (the caret would leave the word with no change event), and the next press moves.
                     // the module: the state card, then the control card painted under the quill (column-reverse paints
-                    // the quill last). only the text card sits in the quill's focus scope; the cards' buttons stay out
+                    // the quill last). only the text card sits in the quill's focus scope (send and the picker in its corner, clear of the text); the cards' buttons stay out
                     // of it, so no click or render ever moves his caret (his 15:24: «i cannot type into texbox»)
                     .child(
                         v_flex().child(
