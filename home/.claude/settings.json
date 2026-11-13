@@ -305,7 +305,7 @@
   "outputStyle": "output-crew",
   "spinnerTipsEnabled": false,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "modelSettings": {
     "claude-opus-5": {
       "effortLevel": "low"
