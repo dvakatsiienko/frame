@@ -64,6 +64,7 @@ export function claudeArgs(
                 additionalDirectories: ['~'],
                 defaultMode: 'bypassPermissions',
             },
+            promptSuggestionEnabled: false,
             skipDangerousModePermissionPrompt: true,
         }),
     ];

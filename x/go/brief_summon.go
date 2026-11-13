@@ -307,6 +307,13 @@ func summonStandingPlan(r *Run, command string, words []string, home string, rec
 	if err := standingGate("x brief summon", record); err != nil {
 		return nil, err
 	}
+	// crow and helga work unprompted, so a grey suggestion would only block a rename; clio and her wings keep theirs
+	if record.Role == "adviser" || record.Role == "copyist" {
+		var err error
+		if command, err = withoutPromptSuggestions(command); err != nil {
+			return nil, err
+		}
+	}
 	out, record, err := summonArgv(command, record)
 	if err != nil {
 		return nil, err

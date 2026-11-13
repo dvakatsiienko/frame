@@ -352,7 +352,7 @@ func TestBriefSummonStartsEachStandingRoleUnderItsPrettyName(t *testing.T) {
 			if got.code != 0 || show.code != 0 || show.data["display"] != c.want {
 				t.Fatalf("exit %d/%d, x thread show draws %v, want %q:\n%s", got.code, show.code, show.data["display"], c.want, got.stdout)
 			}
-			if !strings.Contains(argv, "-- claude --session-id "+sid+" -n '"+c.want+"' ") {
+			if !strings.Contains(argv, "-- claude --session-id "+sid+" ") || !strings.Contains(argv, " -n '"+c.want+"' ") {
 				t.Errorf("argv %q, want the minted id and the pretty name", argv)
 			}
 		})
@@ -1136,14 +1136,27 @@ func TestBriefSummonSwitchesPromptSuggestionsOffForALaneMember(t *testing.T) {
 	}
 }
 
-func TestBriefSummonLeavesPromptSuggestionsOnForAStandingRole(t *testing.T) {
+func TestBriefSummonSwitchesPromptSuggestionsOffForCrowAndHelgaOnly(t *testing.T) {
 	t.Parallel()
-	w := newSummonWorld(t)
+	for _, c := range []struct {
+		role, name string
+		isOff      bool
+	}{
+		{"adviser", "🐦‍⬛ crow", true},
+		{"copyist", "🎀 helga", true},
+		{"coordinator", "🦉 clio", false},
+		{"wing:2", "🦉🪽 clio: wing 2", false},
+	} {
+		t.Run(c.role, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
 
-	got := w.summonStanding(t, "coordinator", []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + t.TempDir()}, "--role", "adviser", paneArgv(w, "🐦‍⬛ crow"))
+			got := w.summonStanding(t, "coordinator", []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + t.TempDir()}, "--role", c.role, paneArgv(w, c.name))
 
-	argv, _ := got.data["argv"].(string)
-	if got.code != 0 || strings.Contains(argv, "--settings") {
-		t.Errorf("exit %d, argv %q, want a standing role's argv with no --settings", got.code, argv)
+			argv, _ := got.data["argv"].(string)
+			if got.code != 0 || strings.Contains(argv, `--settings '{"promptSuggestionEnabled":false}'`) != c.isOff || strings.Count(argv, "--settings") > 1 {
+				t.Errorf("exit %d, argv %q, want the suggestions switched off: %v", got.code, argv, c.isOff)
+			}
+		})
 	}
 }
