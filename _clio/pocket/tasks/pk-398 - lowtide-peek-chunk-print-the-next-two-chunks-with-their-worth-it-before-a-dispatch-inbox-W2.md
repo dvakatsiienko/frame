@@ -3,10 +3,10 @@ id: PK-398
 title: >-
   lowtide-peek-chunk: print the next two chunks with their worth-it before a
   dispatch (inbox W2)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T11:41:00Z'
+updated_date: '2026-11-13T18:40:00Z'
 labels:
   - s
 dependencies: []
@@ -56,4 +56,7 @@ raw drop (2026-11-13 inbox, dima): - idea: rename lowtide-lanes-checkup → lowt
 raw drop (2026-11-13 inbox, dima): - top7 names to have everything consistent (other skils are allowed to be renamed)
 
 raw drop (2026-11-13 inbox, dima): #wing-1 #grill
+
+ticket: FRM-626
+close: 20:40 PK-398:W1–W8 moved to FRM-626:W1–W8, shaped in grill 1 (o118–o121)
 <!-- SECTION:NOTES:END -->
