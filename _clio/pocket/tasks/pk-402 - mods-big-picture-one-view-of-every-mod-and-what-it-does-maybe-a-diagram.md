@@ -30,4 +30,10 @@ PK-402:W6 (2026-11-13 15:27, dima): for now - print me a list.
 15:28 kept here: no linear ticket owns a mods map; the first answer, a printed list, went out 15:28
 
 15:49 ticket: FRM-611 — close: moved to linear as «mods big picture for dima» (dima's tools, no milestone, his 15:48 word); W2–W6 renumbered FRM-611:W1–W5
+
+close: PK-402:W1 dropped on dima 15:48 (clio's pre-groom fold, its words are W4–W6); PK-402:W2 done (the mods list printed 15:28); PK-402:W3 moved FRM-611:W2; PK-402:W4 moved FRM-611:W3; PK-402:W5 moved FRM-611:W4; PK-402:W6 done (list printed 15:28), moved FRM-611:W5
+
+close: PK-402:W1 moved FRM-611, dima 15:48 («fold into that ticket»): its words are FRM-611:W3–W5
+
+close (corrects the above): PK-402:W1 moved FRM-611, dima 15:48; PK-402:W2–W6 kept their numbers as FRM-611:W2–W6
 <!-- SECTION:NOTES:END -->
