@@ -215,10 +215,14 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 
 	// a path gone from both the tree and the index (the old side of a mv) kills `add`,
 	// so stage only what exists and let the index carry the removal
-	var present []string
+	var present, named []string
 	for _, path := range paths {
+		named = append(named, path)
 		if exists(path) || ok(git("ls-files", "--error-unmatch", "--", path)) {
 			present = append(present, path)
+		} else if logged, _ := git("log", "-1", "--format=%h", "--", path); !ok(git("cat-file", "-e", "HEAD:"+path)) && logged.out != "" {
+			// a racing commit (the pocket hook's) already landed this delete: nothing is left to commit for it
+			named = named[:len(named)-1]
 		} else if words := strings.Fields(path); len(words) > 1 && !ok(git("cat-file", "-e", "HEAD:"+path)) {
 			// zsh hands a quoted "$paths" over as one argument; «nothing staged» hid that (2026-10-18)
 			return nil, usageFail(fmt.Sprintf("%q names no file: the path list arrived as one word", path),
@@ -228,6 +232,7 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 			return nil, &Fail{Refused: true, Msg: "pathspec " + path + " matches no file: a real commit refuses it", Next: "x lane commit --dry " + msgFile + " -- <paths that exist>"}
 		}
 	}
+	paths = named
 	if err := r.Step("format", "biome on the named paths", func() (string, error) {
 		return format(tree, onDisk(present)), nil
 	}); err != nil {

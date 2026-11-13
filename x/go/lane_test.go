@@ -917,6 +917,25 @@ func TestCommitTakesAStagedDeleteOfASpacedFile(t *testing.T) {
 	}
 }
 
+// the pocket hook's racing commits: a sibling already landed the delete, so the spaced name is gone everywhere
+func TestCommitPassesASpacedFileARacingCommitAlreadyRemoved(t *testing.T) {
+	t.Parallel()
+	target := repo(t)
+	write(t, filepath.Join(target, "my notes.md"), "notes\n")
+	write(t, filepath.Join(target, "other.md"), "one\n")
+	gitT(t, target, "add", ".")
+	gitT(t, target, "commit", "-q", "-m", "notes")
+	gitT(t, target, "rm", "-q", "my notes.md")
+	gitT(t, target, "commit", "-q", "-m", "the sibling's delete")
+	write(t, filepath.Join(target, "other.md"), "two\n")
+
+	got := xIn(t, target, nil, "lane", "commit", message(t), "--", "my notes.md", "other.md")
+
+	if got.code != 0 || gitT(t, target, "diff", "HEAD", "--", "other.md") != "" {
+		t.Fatalf("exit %d, want other.md committed past the gone spaced name\n%s", got.code, got.stdout)
+	}
+}
+
 // no lock, no line: a commit that never waited says nothing about waiting
 func TestCommitWithNoIndexLockSaysNothingOfWaiting(t *testing.T) {
 	t.Parallel()
