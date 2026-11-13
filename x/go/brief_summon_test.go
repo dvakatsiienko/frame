@@ -994,8 +994,6 @@ func TestThreadRenameResumesANudgedThreadWhateverBecameOfTheRename(t *testing.T)
 		knobs                   []string
 	}{
 		{"the /rename send fails", "send t9 end your turn at your next step\nsend t9 /rename " + name + "\nsend t9 resume\n", "", []string{"FAIL_RENAME=1"}},
-		{"a draft sits in its box all along: nobody is nudged", "", "", []string{"DRAFT=1"}},
-		{"a draft appears after the nudge: resume is left to send", "send t9 end your turn at your next step\n", "«resume» left to send: env -u HC_TERMINAL_ID hc send t9 resume", []string{"DRAFT=1", "DRAFT_AFTER=1"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -1101,5 +1099,21 @@ func TestBriefSummonRefusesALaneKindOrAreaOnAStandingRole(t *testing.T) {
 		if got.code != 2 || !strings.Contains(got.stdout, "a standing role draws its whole display") {
 			t.Errorf("%v: exit %d, want a usage refusal:\n%s", flag, got.code, got.stdout)
 		}
+	}
+}
+
+// the thread's input box holds cc's grey suggestion, which a plain screen read shows like typed text: the rename and the
+// nudge still go out, since hc send itself waits out a person's real draft
+func TestThreadRenameSendsThroughATextTheBoxHolds(t *testing.T) {
+	t.Parallel()
+	const name = "⚡ 🐕 strays | renamed"
+	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 15)
+
+	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_RENAME_WAIT=1", "X_RENAME_NUDGE=0.1", "DRAFT=1"), "coordinator"), "thread", "rename", "s1", name)
+
+	sent, _ := os.ReadFile(w.hcLog)
+	want := "send t9 end your turn at your next step\nsend t9 /rename " + name + "\nsend t9 resume\n"
+	if got.code != 0 || string(sent) != want {
+		t.Errorf("exit %d, hc was told %q, want exit 0 and %q:\n%s", got.code, sent, want, got.stdout)
 	}
 }
