@@ -17,4 +17,6 @@ ordinal: 66000
 
 <!-- SECTION:NOTES:BEGIN -->
 PK-394:W1 (2026-11-13 inbox, dima): ❓ does herdr support interactive elements right in thread? e.g. when a grill message is printed in chatter, can it contain buttons i tick to mark my answers on grill questions? #clio #codie
+
+raw drop (2026-11-13 inbox, dima): does herder supports interactive elements right in thread? for example, when you print grill messagy response in chatter - can it contain something like buttons right in chatter? so i can tick them and mark my answer on grill questions by ticking them? #clio #codie
 <!-- SECTION:NOTES:END -->

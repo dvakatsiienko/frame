@@ -22,4 +22,12 @@ PK-392:W1 (2026-11-13 inbox, dima): wing 1 answers: ❓ how do herdr desktop and
 PK-392:W2 (2026-11-13 inbox, dima): https://github.com/herdrdev/herdr
 PK-392:W3 (2026-11-13 inbox, dima): https://github.com/herdrdev/herdr-core
 PK-392:W4 (2026-11-13 inbox, dima): https://github.com/herdrdev/herdr-app
+
+raw drop (2026-11-13 inbox, dima): - answers question about herdr: how herdr desktop and herdr-core related? so herdr-core initially is a terminal agentic framework/harness. the desktop is only recently released «head»? so when i use herdr desktop - i actually still run hedr-core under the hood? so which repos should we watch?
+
+raw drop (2026-11-13 inbox, dima): - https://github.com/herdrdev/herdr
+
+raw drop (2026-11-13 inbox, dima): - https://github.com/herdrdev/herdr-core
+
+raw drop (2026-11-13 inbox, dima): - https://github.com/herdrdev/herdr-app
 <!-- SECTION:NOTES:END -->

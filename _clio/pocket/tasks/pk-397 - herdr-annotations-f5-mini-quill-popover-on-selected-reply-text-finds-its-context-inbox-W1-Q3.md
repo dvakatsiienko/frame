@@ -26,4 +26,24 @@ PK-397:W5 (2026-11-13 inbox, dima): style is shared with the main quill; style i
 PK-397:W6 (2026-11-13 inbox, dima): mount and unmount are animated, if possible.
 PK-397:W7 (2026-11-13 inbox, dima): ❓ top7: how to name this part? quill-mini? #clio #codie #grill
 PK-397:W8 (2026-11-13 inbox, dima): ❓ herdr annotation with miniquill: will you be able to recognize the context of my annotation if i annotate just one small sentence? e.g. where that small sentence is in your whole reply history? #clio #codie
+
+raw drop (2026-11-13 inbox, dima): herdr annotation with miniquill: will you be able to recognize the context of my annotation if i annotate just one small sentence? e.g. where that small sentence is in your whole reply history? #clio #codie
+
+raw drop (2026-11-13 inbox, dima): herdr annotations: i want a popover mini quill to open and close on hotkey press — f5. (i use f4 for readaloud across system, and almost always select pieces of you rely and F4 them. so having F5 for that mini quill would be really good.).
+
+raw drop (2026-11-13 inbox, dima): - if no test selected - no actions.
+
+raw drop (2026-11-13 inbox, dima): - if selected — (only your response text counts), shows and hides. my notes survives there.
+
+raw drop (2026-11-13 inbox, dima): - popover opens = auto foucs its miniquill.
+
+raw drop (2026-11-13 inbox, dima): - style is shared with main
+
+raw drop (2026-11-13 inbox, dima): - mount and unmount are animated, if possible.
+
+raw drop (2026-11-13 inbox, dima): - style it similar to my main quill, or cook something other unique and pretty.
+
+raw drop (2026-11-13 inbox, dima): - top7 how to name this part? quill-mini?
+
+raw drop (2026-11-13 inbox, dima): #clio #codie #grill
 <!-- SECTION:NOTES:END -->

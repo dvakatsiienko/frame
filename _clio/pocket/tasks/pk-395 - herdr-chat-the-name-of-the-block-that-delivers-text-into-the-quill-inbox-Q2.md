@@ -17,4 +17,6 @@ ordinal: 67000
 
 <!-- SECTION:NOTES:BEGIN -->
 PK-395:W1 (2026-11-13 inbox, dima): ❓ we have copy-paste blocks in chatter, and another type of block that delivers a piece of text into the quill. how is that second one called? #clio #codie
+
+raw drop (2026-11-13 inbox, dima): we have support for copypaste blocks in chatter and for other type of a block, that delivers piece of text into the quill. how that second one is called? #clio #codie
 <!-- SECTION:NOTES:END -->

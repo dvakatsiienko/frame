@@ -26,4 +26,34 @@ PK-398:W5 (2026-11-13 inbox, dima): say what the chunk is about, why we have it,
 PK-398:W6 (2026-11-13 inbox, dima): idea: print two chunks each time, the current and the next one in the queue (or any other on my ask), so if we discard or postpone a chunk, we see other candidates right away.
 PK-398:W7 (2026-11-13 inbox, dima): ❓ name: lowtide-peek-chunk? ❓ rename lowtide-lanes-checkup → lowtide-peek-lanes? top7 names to have everything consistent (other skills are allowed to be renamed). #wing-1 #grill
 PK-398:W8 (2026-11-13 inbox, dima): wing 1: lowtide-peek-chunk idea, shape-idea with me.
+
+raw drop (2026-11-13 inbox, dima): - lowtide-peek-chunk idea - shape-idea with me
+
+raw drop (2026-11-13 inbox, dima): because of yesterday guard issue/discovery, i now think that planning out your scope of work more thoroughly weights more than implementation. i will now more thoroughly verify the build plans we have in linear. let's shape new habit and maybe new small lowtide skill.
+
+raw drop (2026-11-13 inbox, dima): it should run when we are about to dispatch next chunk.
+
+raw drop (2026-11-13 inbox, dima): skill
+
+raw drop (2026-11-13 inbox, dima): - should print info about one or two upcoming chunks.
+
+raw drop (2026-11-13 inbox, dima): - similarly to lowtide:lane-checkup but:
+
+raw drop (2026-11-13 inbox, dima): - slightly more detailed and focused specifically in info about this chunk
+
+raw drop (2026-11-13 inbox, dima): - if a chunk is conisted from multiple tickets, you print them all: root chunk ticket, and all slice tickets
+
+raw drop (2026-11-13 inbox, dima): - tell: what chunk is about, why we have it, why we want out from it, and what it buys.
+
+raw drop (2026-11-13 inbox, dima): - recheck «worth-it» each time.
+
+raw drop (2026-11-13 inbox, dima): - idea: print two chunks each time, current and next one un queue (or any other on my ask). so if we for some reason discard or postpone a chunk, we se other candidates right away.
+
+raw drop (2026-11-13 inbox, dima): - name: lowtide-peek-chunk ?
+
+raw drop (2026-11-13 inbox, dima): - idea: rename lowtide-lanes-checkup → lowtide-peek-lanes ?
+
+raw drop (2026-11-13 inbox, dima): - top7 names to have everything consistent (other skils are allowed to be renamed)
+
+raw drop (2026-11-13 inbox, dima): #wing-1 #grill
 <!-- SECTION:NOTES:END -->

@@ -24,4 +24,20 @@ PK-400:W3 (2026-11-13 inbox, dima): ❓ can sessions in the deck support dnd, to
 PK-400:W4 (2026-11-13 inbox, dima): i want the best from both: a smart feature set, robust and pretty, not clunky. the final version must have great ux and a beautiful look, minimum redundant ui elements/parts.
 PK-400:W5 (2026-11-13 inbox, dima): name: antenna. i see everyone there: you, wings, crew. minimal info spots, supports interactions. drag and drop (fluent cool dnd like dnd kit; make solid dnd support possible).
 PK-400:W6 (2026-11-13 inbox, dima): note: i think it's the first grill, and maybe even the first thing to do (if it is truly duplicated and mergeable). #clio #codie #grill
+
+raw drop (2026-11-13 inbox, dima): herder agents list vs agents list: similar features? can we merge them (why to pollute screen estate with dupe info)? and juggle with block placement a little? i could have richer agents list on the left size (but left size is smaller for me, i keep it narrower so less info can fit there). alternatively - the right sessions side can become richer?
+
+raw drop (2026-11-13 inbox, dima): probably worth an AB - make both versions upgraded and decide which to keep.
+
+raw drop (2026-11-13 inbox, dima): can sessions in deck support dnd? to change their order?
+
+raw drop (2026-11-13 inbox, dima): i want best from both. with smart feature set, robust and pretty, not clunky. final version must have great ux and beautiful look. minimum redundant ui elements/parts.
+
+raw drop (2026-11-13 inbox, dima): name: antenna.
+
+raw drop (2026-11-13 inbox, dima): i see everyone there. you, wings, crew. minimal info spots, supports interactions. drag and drop (i want fluent cool dnd like dnd kit. make solid dnd support possible.).
+
+raw drop (2026-11-13 inbox, dima): note: i think its the first grill and mybe even first thing to do (if it is truly duplicated and mergeable)
+
+raw drop (2026-11-13 inbox, dima): #clio #codie #grill
 <!-- SECTION:NOTES:END -->
