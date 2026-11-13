@@ -84,9 +84,9 @@ index_only=
 [ -z "${CI:-}" ] || exec "$@"
 
 suite=("$@")
-# on_mac <leg> [vm cpu ms]: the row's report, then for any leg but the vm's own, the suite as the mac always ran it
+# on_mac <leg> [vm cpu ms] [warm|cold]: the row's report, then for any leg but the vm's own, the suite as the mac always ran it
 on_mac() {
-    [ -z "${TEST_VM_GO_REPORT:-}" ] || printf '%s\t%s\n' "$1" "${2:-0}" >"$TEST_VM_GO_REPORT"
+    [ -z "${TEST_VM_GO_REPORT:-}" ] || printf '%s\t%s\t%s\n' "$1" "${2:-0}" "${3:--}" >"$TEST_VM_GO_REPORT"
     [ "$1" != vm ] && [ "$1" != vm-overlap ] || return 0
     exec "${suite[@]}" -parallel "$mac_parallel"
 }
@@ -115,6 +115,21 @@ vm_cpu_ms() {
     }
     ps -o time= -p "$(echo "$pids" | paste -sd, -)" 2>/dev/null |
         awk '{ n = split($1, part, ":"); s = 0; for (i = 1; i <= n; i++) s = s * 60 + part[i]; total += s } END { printf "%d\n", total * 1000 }'
+}
+
+# a run on a vm under warm_after seconds old is cold: its boot chores and page cache run with the suite (FRM-551:W7);
+# the age is the VZ process's, ps etime [[dd-]hh:]mm:ss; none read says -
+warm_after=600
+vm_warmth() {
+    local pid age
+    pid=$(lsof -t "$lima_home/$vm/disk" 2>/dev/null | sed -n 1p)
+    age=$(ps -o etime= -p "${pid:-0}" 2>/dev/null | tr -d ' ')
+    [[ $age =~ ^(([0-9]+)-)?(([0-9]+):)?([0-9]+):([0-9]+)$ ]] || {
+        echo -
+        return
+    }
+    local seconds=$((10#${BASH_REMATCH[2]:-0} * 86400 + 10#${BASH_REMATCH[4]:-0} * 3600 + 10#${BASH_REMATCH[5]} * 60 + 10#${BASH_REMATCH[6]}))
+    [ "$seconds" -ge "$warm_after" ] && echo warm || echo cold
 }
 
 id=$$-$RANDOM$RANDOM
@@ -211,12 +226,13 @@ GUEST
 )
 
 cpu_before=$(vm_cpu_ms)
+warmth=$(vm_warmth)
 started=$(date +%s)
 echo "start $started $id" >>"$windows"
 if ! sync_tree; then
     echo "end $(date +%s) $id" >>"$windows"
     echo "$vm cut (the sync failed): re-ran on the mac" >&2
-    on_mac vm-cut "$(($(vm_cpu_ms) - cpu_before))"
+    on_mac vm-cut "$(($(vm_cpu_ms) - cpu_before))" "$warmth"
 fi
 remote=$(printf '%q ' "$id" "$commit" "$(git rev-parse --show-prefix)" "$deadline" "${GOFLAGS-}" "${GIT_CONFIG_GLOBAL-}" "$@" -parallel "$vm_parallel")
 # --foreground: a ctrl-c on a by-hand run reaches ssh; ssh with no tty forwards no signal, so the guest run ends at its own deadline.
@@ -234,7 +250,7 @@ used=$(($(vm_cpu_ms) - cpu_before))
 case $code in
 124 | 125 | 126 | 127 | 137 | 143 | 255)
     echo "$vm cut (exit $code): re-ran on the mac" >&2
-    on_mac vm-cut "$used"
+    on_mac vm-cut "$used" "$warmth"
     ;;
 esac
 
@@ -244,7 +260,7 @@ overlap=$(awk -v me="$id" -v from="$started" -v to="$ended" -v bound=$((2 * dead
     $3 != me && $1 == "start" { start[$3] = $2 }
     $3 != me && $1 == "end" { end[$3] = $2 }
     END { for (run in start) if (start[run] < to && ((run in end) ? end[run] > from : start[run] + bound > from)) { print "yes"; exit } }' "$windows")
-on_mac "vm${overlap:+-overlap}" "$used"
+on_mac "vm${overlap:+-overlap}" "$used" "$warmth"
 # the log keeps its last day or so
 [ "$(wc -l <"$windows")" -lt 2000 ] || { tail -n 400 "$windows" >"$windows.new" && mv "$windows.new" "$windows"; }
 exit "$code"

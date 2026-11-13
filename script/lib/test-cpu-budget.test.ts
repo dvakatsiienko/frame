@@ -146,6 +146,35 @@ describe('the runner it hands the suite to', () => {
         expect(Number(rows()[0]?.[3])).toBeGreaterThanOrEqual(5);
     });
 
+    test.each([
+        ['cold', 'vm\\t5000\\tcold', 'cold'],
+        ['warm', 'vm\\t5000\\twarm', 'warm'],
+        ['a report with no warmth field', 'vm\\t5000', '-'],
+        ['a warmth that is neither word', 'vm\\t5000\\tlukewarm', '-'],
+    ])('the row ends with the vm run read %s', (_name, report, want) => {
+        const { dir, rows, run } = fixture({
+            budget: '9999\t2026-11-07\tno red',
+        });
+        writeFileSync(
+            join(dir, 'test-vm-go.sh'),
+            `#!/bin/bash\nprintf '${report}\\n' >"$TEST_VM_GO_REPORT"\necho 'ok  \tx\t1s'\n`,
+        );
+
+        const got = run(whole);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(rows()[0]).toHaveLength(11);
+        expect(rows()[0]?.[10]).toBe(want);
+    });
+
+    test('a run on this mac, with no report at all, ends its row with -', () => {
+        const { rows, run } = fixture({ budget: '9999\t2026-11-07\tno red' });
+
+        run(whole);
+
+        expect(rows()[0]?.[10]).toBe('-');
+    });
+
     test('a report whose cpu is no number adds nothing and runs nothing', () => {
         const { dir, rows, run } = fixture({ budget: '60\t2026-11-07\troomy' });
         const ran = join(dir, 'ran');
@@ -310,7 +339,7 @@ describe('a run under its line', () => {
 
         run(whole, extra);
 
-        expect(rows()[0]).toHaveLength(10);
+        expect(rows()[0]).toHaveLength(11);
         expect(rows()[0]?.[9]).toBe(leg);
     });
 });

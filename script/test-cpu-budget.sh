@@ -4,7 +4,8 @@
 # whole means go test with only the args below: a filter, a tag or a file runs through with no row, and so does a (cached) run.
 # one row a whole run in test-cpu-budget.log, tab-separated: start, 1-min load, suite, user + sys, budget, exit, git path,
 # code key (a hash of the index entries under the cwd, so a gate copy and a tree holding the same bytes match), clean or dirty,
-# the leg test-vm-go.sh ran it on (mac, vm, vm-cut, vm-overlap, vm-down; - in ci). user + sys adds the vm's own cpu, which no rusage here sees.
+# the leg test-vm-go.sh ran it on (mac, vm, vm-cut, vm-overlap, vm-down; - in ci), then warm or cold: cold when the vm was under 10 min old at the
+# run's start, its boot chores and empty page cache in the number; - on a leg with no vm age (the mac's own). user + sys adds the vm's own cpu, which no rusage here sees.
 # the line is set on git-slim: a run on any other git only logs, since its cost is the git's, and the line it prints names the rebuild.
 set -u
 log_only=
@@ -66,8 +67,9 @@ before=$children
 TEST_VM_GO_REPORT=$report "$here/test-vm-go.sh" $index "$@" | tee "$scratch.out"
 code=${PIPESTATUS[0]}
 children_ms
-leg=- guest_ms=0
-[ -s "$report" ] && IFS=$'\t' read -r leg guest_ms <"$report"
+leg=- guest_ms=0 warmth=-
+[ -s "$report" ] && IFS=$'\t' read -r leg guest_ms warmth <"$report"
+case $warmth in warm | cold) ;; *) warmth=- ;; esac
 # a number only: bash arithmetic would run anything else
 [[ $guest_ms =~ ^[0-9]+$ ]] || guest_ms=0
 used_ms=$((children - before + guest_ms))
@@ -99,7 +101,7 @@ tree=clean
 if ! git diff --quiet -- . 2>/dev/null || [ -n "$(git ls-files -o --exclude-standard -- . 2>/dev/null | head -1)" ]; then
     tree=dirty
 fi
-printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(date +%FT%T%z)" "$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')" "$suite" "$used" "$budget" "$code" "$git_path" "${key:--}" "$tree" "$leg" >>"$state/test-cpu-budget.log"
+printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(date +%FT%T%z)" "$(uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/')" "$suite" "$used" "$budget" "$code" "$git_path" "${key:--}" "$tree" "$leg" "$warmth" >>"$state/test-cpu-budget.log"
 echo "test-cpu-budget: $suite ran on git $git_path" >&2
 case $git_path in
 */git-slim/*) ;;

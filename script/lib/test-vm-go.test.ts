@@ -33,6 +33,7 @@ function fixture({
     probeCode = 0,
     realGoInGuest = false,
     runCode = 0,
+    vmAge,
     vmStatus = 'Running',
 }: {
     goCode?: number;
@@ -40,6 +41,7 @@ function fixture({
     probeCode?: number;
     realGoInGuest?: boolean;
     runCode?: number;
+    vmAge?: string;
     vmStatus?: string;
 } = {}) {
     const dir = mkdtempSync(
@@ -95,6 +97,15 @@ unset $(compgen -e | grep '^GIT_')
 cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$PATH" exec bash -c "\${cmd/bash -l -s/bash -s}"`,
     );
     if (hasLima) fake(bin, 'limactl', `echo '${vmStatus}'`);
+    // a VZ process of the given age holds the vm's disk; ps prints [[dd-]hh:]mm:ss for etime
+    if (vmAge !== undefined) {
+        fake(bin, 'lsof', 'echo 4242');
+        fake(
+            bin,
+            'ps',
+            `case "$*" in *etime*) echo '  ${vmAge}' ;; *) echo '0:01.00' ;; esac`,
+        );
+    }
     const lima = join(dir, 'lima');
     mkdirSync(join(lima, 'vm-go-test'), { recursive: true });
 
@@ -179,6 +190,10 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
             : [];
     const leg = () =>
         existsSync(report) ? readFileSync(report, 'utf8').split('\t')[0] : '';
+    const warmth = () =>
+        existsSync(report)
+            ? (readFileSync(report, 'utf8').split('\t')[2] ?? '').trim()
+            : '';
     const guestRefs = () =>
         spawnSync('git', ['for-each-ref', 'refs/runs/'], {
             cwd: join(guest, 'runs.git'),
@@ -277,6 +292,7 @@ cd "${guest}" && HOME="${guest}" FAKE_GUEST=guest PATH="${guestBin}${delimiter}$
         run,
         runAsync,
         runInterrupted,
+        warmth,
         windows: join(dir, 'state/test-vm-go.log'),
     };
 }
@@ -324,6 +340,39 @@ test('a machine with no limactl runs on the mac and says nothing', () => {
     expect(calls('go')).toEqual(['mac test -count=1 ./... -parallel 5 | good']);
     expect(got.stderr).not.toContain(downLine);
     expect(leg()).toBe('mac');
+});
+
+describe('the vm leg tells a warm run from a cold one', () => {
+    test.each([
+        [
+            'a vm up 3 min is cold: its boot chores and page cache run with the suite',
+            '03:10',
+            'cold',
+        ],
+        ['a vm up 9 min 59 s is still cold', '09:59', 'cold'],
+        ['a vm up 10 min is warm', '10:00', 'warm'],
+        ['a vm up a day and an hour is warm', '1-01:00:00', 'warm'],
+        ['a vm whose process age cannot be read says nothing', '', '-'],
+    ])('%s', (_name, vmAge, want) => {
+        const { leg, run, warmth } = fixture({ vmAge });
+
+        const got = run(suite);
+
+        expect(got.status, got.stderr).toBe(0);
+        expect(leg()).toBe('vm');
+        expect(warmth()).toBe(want);
+    });
+
+    test('a run that fell back to the mac says nothing', () => {
+        const { run, warmth } = fixture({
+            vmAge: '03:10',
+            vmStatus: 'Stopped',
+        });
+
+        run(suite);
+
+        expect(warmth()).toBe('-');
+    });
 });
 
 describe('the vm leg', () => {
