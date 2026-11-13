@@ -12,9 +12,13 @@ vi.mock('fs/promises', () => ({
     unlink: fs.unlink,
     writeFile: vi.fn(),
 }));
-const { parseShots, sweepShots, waitingFiles, withWaitingFiles } = await import(
-    './shots.js'
-);
+const {
+    clipboardRead,
+    parseShots,
+    sweepShots,
+    waitingFiles,
+    withWaitingFiles,
+} = await import('./shots.js');
 
 describe('parseShots', () => {
     it('reads a store of thread addresses to preview paths', () => {
@@ -88,5 +92,22 @@ describe('sweepShots, previews no thread claims', () => {
         fs.unlink.mockClear();
         await sweepShots({});
         expect(fs.unlink).not.toHaveBeenCalled();
+    });
+});
+
+describe('what a paste with no text found on the clipboard', () => {
+    const rel = 'data/x-herdr-chatter/shots/shot-1.png';
+    it('an image, saved as a png', () => {
+        expect(clipboardRead('image\n', rel)).toEqual({ rel });
+    });
+    it('files copied in Finder, attached by their paths, never their icon', () => {
+        expect(
+            clipboardRead('files\n/Users/d/a.pdf\n/Users/d/b c.png\n', rel),
+        ).toEqual({
+            paths: ['/Users/d/a.pdf', '/Users/d/b c.png'],
+        });
+    });
+    it('nothing it can attach', () => {
+        expect(clipboardRead('', rel)).toBeNull();
     });
 });

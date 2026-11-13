@@ -131,7 +131,7 @@ import { SETTINGS_WINDOW, settingsWindow } from './settings-window.js';
 import {
     deleteShots,
     loadShots,
-    saveClipboardShot,
+    readClipboard,
     saveFileShot,
     saveLinkThumb,
     saveShots,
@@ -1514,7 +1514,7 @@ export default class ClaudeChat extends View {
         // sent with the next message (see pasteIntoContainer).
         this.pasted = new Map();
         // a paste whose png is still being written, by agent address
-        /** @type {Map<string, Promise<string | null>>} */
+        /** @type {Map<string, Promise<import('./shots.js').ClipboardRead>>} */
         this.pasting = new Map();
         // the pasted pictures waiting in each thread's box, by `<address> files` (see shots.js)
         /** @type {import('./shots.js').ShotStore} */
@@ -3494,21 +3494,25 @@ export default class ClaudeChat extends View {
 
     // A paste with no text (an image) goes the way a dropped picture does (FRM-613): the clipboard saved as a png in our
     // own dir, sent as its path with the next message. It never enters Claude's own prompt, so × edits only our list,
-    // and the png is its own preview. The clipboard is read, never written.
+    // and the png is its own preview; files copied in Finder are attached by their paths, as a drop. The clipboard is
+    // read, never written.
     pasteImage(cx) {
         if (!this.address) return;
         const address = this.address;
         if (this.where?.container)
             return this.pasteIntoContainer(address, this.where, cx);
-        const saving = saveClipboardShot();
+        const saving = readClipboard();
         // a send pressed while the png is still being written waits for it, or it would leave without the picture
         this.pasting.set(address, saving);
         cx.spawn(async (cx) => {
-            const rel = await saving;
+            const read = await saving;
             if (this.pasting.get(address) === saving)
                 this.pasting.delete(address);
             const missing = 'No image on the clipboard';
-            if (rel && this.pasteNote === missing) this.pasteNote = null;
+            if (read && this.pasteNote === missing) this.pasteNote = null;
+            if (read && 'paths' in read)
+                return this.addFiles(address, read.paths, cx);
+            const rel = read?.rel;
             if (!rel) {
                 this.pasteNote = missing;
                 cx.timer.after(6000, (cx) => {

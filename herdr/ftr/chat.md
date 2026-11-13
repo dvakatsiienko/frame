@@ -82,6 +82,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then its preview waits over the quill and nothing is typed into Claude Code's own prompt
   - and its × takes it at once, mid-turn too, and the next send carries no image
   - and a send puts its path after his text, and Claude reads it
+  - and files copied in Finder paste as their paths, the way a drop does, never as the file's icon; a text paste stays text
   - and a click on a pasted or dropped picture's preview opens it in macOS Preview, a dropped one as itself, never its small preview copy
   - decision: one path for paste and drop (dima's o49, 16:38); it replaces ctrl+v into Claude's prompt, whose × had to empty that prompt and lagged when he emptied it in the Terminal view (FRM-609)
   - decision: the clipboard is read, never written (FRM-612)

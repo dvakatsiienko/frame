@@ -8,11 +8,19 @@ import { appHome, exec } from 'herdr';
 export const SHOTS_DIR = 'data/x-herdr-chatter/shots';
 const storePath = () => `${appHome()}/data/x-herdr-chatter/shots.json`;
 
-// the clipboard's image (a screenshot is PNG or TIFF) written as a PNG to argv[0]; prints «image» when
-// it wrote one. JXA from shepherdr's mods/chat/attach.js (MIT), cut to the image case.
+// what a paste with no text found, read only: files copied in Finder print «files» and their paths, one a line
+// (their pasteboard also holds the file's icon, never the picture); else the image (a screenshot is PNG or TIFF) is
+// written as a PNG to argv[0] and «image» printed. argv[1] names a private pasteboard, for a probe that must leave
+// his clipboard alone. JXA from shepherdr's mods/chat/attach.js (MIT).
 const MAC_CLIPBOARD_IMAGE = `ObjC.import("AppKit");
 function run(argv) {
-  const pb = $.NSPasteboard.generalPasteboard;
+  const pb = argv[1] ? $.NSPasteboard.pasteboardWithName(argv[1]) : $.NSPasteboard.generalPasteboard;
+  const urls = pb.readObjectsForClassesOptions($([$.NSURL]), $({ NSPasteboardURLReadingFileURLsOnlyKey: true }));
+  if (urls && !urls.isNil() && urls.count > 0) {
+    const paths = [];
+    for (let i = 0; i < urls.count; i++) paths.push(urls.objectAtIndex(i).path.js);
+    return ["files", ...paths].join("\\n");
+  }
   let png = pb.dataForType($.NSPasteboardTypePNG);
   if (!png || png.isNil()) {
     const tiff = pb.dataForType($.NSPasteboardTypeTIFF);
@@ -42,7 +50,7 @@ export function parseShots(text) {
     }
 }
 
-// a preview's paste time, from its name (saveClipboardShot writes shot-<ms>.png)
+// a preview's paste time, from its name (readClipboard writes shot-<ms>.png)
 /** @param {string} rel */
 const shotTime = (rel) => Number(/shot-(\d+)\.png$/.exec(rel)?.[1] ?? 0);
 
@@ -166,9 +174,23 @@ export async function saveShots(store) {
     await writeFile(storePath(), `${JSON.stringify(store, null, 2)}\n`);
 }
 
-// the clipboard's image saved as a preview: its path under the app dir, or null when it holds none
-/** @returns {Promise<string | null>} */
-export async function saveClipboardShot() {
+/** @typedef {{ rel: string } | { paths: string[] } | null} ClipboardRead */
+
+/** what the script printed: an image saved at `rel`, files by their paths, or nothing to attach @returns {ClipboardRead} */
+export function clipboardRead(
+    /** @type {string} */ stdout,
+    /** @type {string} */ rel,
+) {
+    const [head, ...rest] = stdout.split('\n').filter(Boolean);
+    if (head === 'image') return { rel };
+    if (head === 'files' && rest.length) return { paths: rest };
+    return null;
+}
+
+// a paste with no text, read off the clipboard (never written): its image saved as a png under the app dir, or the
+// files copied in Finder
+/** @param {string} [board] a private pasteboard's name, for a probe @returns {Promise<ClipboardRead>} */
+export async function readClipboard(board) {
     const rel = `${SHOTS_DIR}/shot-${Date.now()}.png`;
     await mkdir(`${appHome()}/${SHOTS_DIR}`, { recursive: true });
     const r = await exec('osascript', [
@@ -177,6 +199,7 @@ export async function saveClipboardShot() {
         '-e',
         MAC_CLIPBOARD_IMAGE,
         `${appHome()}/${rel}`,
+        ...(board ? [board] : []),
     ]).catch(() => null);
-    return r?.code === 0 && r.stdout.trim() === 'image' ? rel : null;
+    return r?.code === 0 ? clipboardRead(r.stdout, rel) : null;
 }
