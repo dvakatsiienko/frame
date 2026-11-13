@@ -3316,7 +3316,8 @@ export default class ClaudeChat extends View {
             this.holdMs,
         );
         this.hold = r.hold;
-        this.holdFill = r.fill;
+        // the bar shows only while the hold runs: a push or a release leaves the button as it was
+        this.holdFill = r.hold ? r.fill : 0;
         if (!r.hold) {
             this.holdTask?.cancel();
             this.holdTask = null;
@@ -3454,6 +3455,18 @@ export default class ClaudeChat extends View {
                             (
                                 await exec('mkdir', [path]).catch(() => null)
                             )?.code === 0,
+                        // macOS stat: the lock dir's modified time, in seconds
+                        lockAge: async (path) => {
+                            const r = await exec('stat', [
+                                '-f',
+                                '%m',
+                                path,
+                            ]).catch(() => null);
+                            const at = Number(r?.stdout?.trim());
+                            return r?.code === 0 && at
+                                ? Date.now() - at * 1000
+                                : null;
+                        },
                         now: () => Date.now(),
                         read: (path) => readTextFile(path),
                         sleep: (ms) => cx.sleep(ms),
@@ -8475,22 +8488,27 @@ export default class ClaudeChat extends View {
                                                                             0,
                                                                         (el) =>
                                                                             el.child(
+                                                                                // a disc grows from the centre: the round button clips nothing square
                                                                                 div()
                                                                                     .absolute()
                                                                                     .left(
-                                                                                        0,
+                                                                                        14 *
+                                                                                            (1 -
+                                                                                                this
+                                                                                                    .holdFill),
                                                                                     )
-                                                                                    .right(
-                                                                                        0,
+                                                                                    .top(
+                                                                                        14 *
+                                                                                            (1 -
+                                                                                                this
+                                                                                                    .holdFill),
                                                                                     )
-                                                                                    .bottom(
-                                                                                        0,
-                                                                                    )
-                                                                                    .h(
+                                                                                    .size(
                                                                                         28 *
                                                                                             this
                                                                                                 .holdFill,
                                                                                     )
+                                                                                    .rounded_full()
                                                                                     .bg(
                                                                                         t.solid,
                                                                                     ),
