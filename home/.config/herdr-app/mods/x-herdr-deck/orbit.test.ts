@@ -25,6 +25,7 @@ import {
     threadFacts,
     tickAll,
     tickAllTakes,
+    tickAllThread,
     tickState,
     unbold,
     untickDoor,
@@ -769,5 +770,44 @@ describe("a press switches over the stash's mark at once: a read tick takes cmd-
                 false,
             ),
         ).toBe('replay');
+    });
+});
+
+describe('⌘⇧K picks the asker it ticks', () => {
+    const sids = ['clio', 'codie'];
+    test('the asker under the pointer wins (dima, 21:42)', () => {
+        expect(
+            tickAllThread(sids, {
+                hovered: 'codie',
+                picked: 'clio',
+                shown: 'clio',
+            }),
+        ).toBe('codie');
+    });
+    test('no hover: the asker he last clicked', () => {
+        expect(
+            tickAllThread(sids, {
+                hovered: null,
+                picked: 'codie',
+                shown: 'clio',
+            }),
+        ).toBe('codie');
+    });
+    test('neither: the thread the chat shows', () => {
+        expect(
+            tickAllThread(sids, { hovered: null, picked: null, shown: 'clio' }),
+        ).toBe('clio');
+    });
+    test('an asker whose asks left is skipped for the next', () => {
+        expect(
+            tickAllThread(['clio'], {
+                hovered: 'gone',
+                picked: null,
+                shown: 'clio',
+            }),
+        ).toBe('clio');
+        expect(
+            tickAllThread([], { hovered: null, picked: null, shown: 'clio' }),
+        ).toBe(null);
     });
 });

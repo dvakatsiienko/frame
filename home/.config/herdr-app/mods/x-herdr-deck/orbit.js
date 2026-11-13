@@ -527,3 +527,17 @@ export function hotPresses(text) {
     }
     return presses;
 }
+
+/**
+ * the asker ⌘⇧K ticks: the one under the pointer, else the one he last clicked, else the thread the chat shows; one
+ * whose asks all left is passed over (dima, 21:42: «tick all asks of an asker that the pointer currently hovers»)
+ * @param {string[]} sids the askers with open asks
+ * @param {{ hovered: string | null, picked: string | null, shown: string | null }} at
+ * @returns {string | null}
+ */
+export function tickAllThread(sids, { hovered, picked, shown }) {
+    return (
+        [hovered, picked, shown].find((sid) => sid && sids.includes(sid)) ??
+        null
+    );
+}

@@ -46,6 +46,7 @@ import {
     threadFacts,
     tickAll,
     tickAllTakes,
+    tickAllThread,
     tickState,
     untickDoor,
     waitOf,
@@ -985,10 +986,25 @@ export default class Deck extends View {
                         this.sent.get(`${s.sid}:${id}`)?.verdict ??
                         s.pending.get(id),
                 ).length > 0;
+            // ⌘⇧K ticks the asker under the pointer, else the one he clicked last, ringed so he sees which
+            const isPicked = this.pickedSid === s.sid;
             return v_flex()
+                .id(`asker-${s.sid}`)
                 .px(12)
                 .py(4)
                 .gap(8)
+                .rounded(8)
+                .border_1()
+                .border_color(isPicked ? t.border : t.canvas)
+                .on_hover((isOn, cx) => {
+                    if (isOn) this.hoverSid = s.sid;
+                    else if (this.hoverSid === s.sid) this.hoverSid = null;
+                })
+                .on_click((_e, cx) => {
+                    if (this.pickedSid === s.sid) return;
+                    this.pickedSid = s.sid;
+                    cx.notify();
+                })
                 .child(
                     h_flex()
                         .gap(8)
@@ -1117,9 +1133,17 @@ export default class Deck extends View {
             const pid = /** @type {{ pid?: number } | null} */ (
                 shared('chat.shown')
             )?.pid;
-            const shown = this.rows.find((r) => r.pid === pid);
-            if (shown && tickAsk && Date.now() - tickAsk < 2000)
-                cx.spawn((cx) => this.pressAll(cx, shown));
+            const sid = tickAllThread(
+                this.rows.filter((r) => r.asks.length > 0).map((r) => r.sid),
+                {
+                    hovered: this.hoverSid ?? null,
+                    picked: this.pickedSid ?? null,
+                    shown: this.rows.find((r) => r.pid === pid)?.sid ?? null,
+                },
+            );
+            const asker = this.rows.find((r) => r.sid === sid);
+            if (asker && tickAsk && Date.now() - tickAsk < 2000)
+                cx.spawn((cx) => this.pressAll(cx, asker));
         }
         // his order from the agents list, read at every draw, so a drag there moves the deck at once; the read's own
         // order (blocked, working, then by name) stays for a thread the list does not show
