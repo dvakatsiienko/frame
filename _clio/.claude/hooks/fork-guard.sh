@@ -126,13 +126,21 @@ fork-edit | fork-bash)
 		cmd=$(jq -r '.tool_input.command // ""' <<<"$input")
 		# its own pocket items (pocket-add --wing <N>) are the one commit a fork makes in main, or x-mod-holds keeps them held (FRM-472 07c)
 		q="[\"']"
-		# anchored: _clio/pocket/tasks/pk-<name>.md or pocket/tasks/…, no / after pk- (so no ..), a cd only to frame or _clio
-		dir="(_clio/)?pocket/tasks/pk-"
-		pocket="($q$dir[^/;&|\"']*\.md$q|$dir[^/ ;&|\"']*\.md)"
-		home="(~|$HOME)/frame(/_clio)?/?"
+		# anchored: no / after pk- (so no ..); x lane commit reads paths from the cwd (FRM-606), so the prefix follows
+		# the dir: _clio/pocket/… from ~/frame, bare pocket/… from ~/frame/_clio; no cd → the session's cwd decides
+		pockets() { local d="$1pocket/tasks/pk-"; echo "(($q$d[^/;&|\"']*\.md$q|$d[^/ ;&|\"']*\.md) *)+"; }
+		root="(~|$HOME)/frame/?"
+		clio="(~|$HOME)/frame/_clio/?"
+		lane="(timeout [0-9]+ )?x lane commit [^- ;&|][^ ;&|]* --"
+		here=$(jq -r '.cwd // ""' <<<"$input")
+		here=${here%/}
+		bare="^ *$lane *$(pockets '_clio/')$"
+		[[ ${here##*/} == _clio ]] && bare="^ *$lane *$(pockets '')$"
 		# one line, no substitution: grep matches per line, and $( or a backtick runs inside the quotes
 		case "$cmd" in *$'\n'* | *$'\t'* | *$'\r'* | *'$'* | *'`'* | *'*'* | *'?'* | *'['* | *'<'* | *'>'* | *'('*) ;; *)
-			grep -qE "^ *(cd $home && )?(timeout [0-9]+ )?x lane commit [^- ;&|][^ ;&|]* -- *($pocket *)+$" <<<"$cmd" && exit 0 ;;
+			grep -qE "^ *cd $root && $lane *$(pockets '_clio/')$" <<<"$cmd" && exit 0
+			grep -qE "^ *cd $clio && $lane *$(pockets '')$" <<<"$cmd" && exit 0
+			grep -qE "$bare" <<<"$cmd" && exit 0 ;;
 		esac
 		# the guard's own parser, so a quoted `>` or a prose word stays text; a crash here passes the call, as no guard stands
 		hit=$(node "$(dirname "$0")/../../script/check-fork-bash.ts" <<<"$input" 2>/dev/null)

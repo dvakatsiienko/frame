@@ -500,7 +500,7 @@ describe('fork-guard fork-edit', () => {
         expect(
             bashIn(
                 repo,
-                'timeout 600 x lane commit /tmp/m -- pocket/tasks/pk-9.md',
+                'timeout 600 x lane commit /tmp/m -- _clio/pocket/tasks/pk-9.md',
             ),
         ).toBe('');
         expect(
@@ -530,13 +530,43 @@ describe('fork-guard fork-edit', () => {
             ),
         ).toBe('');
         expect(
-            bash('x lane commit /tmp/m.txt -- "pocket/tasks/pk-9 - a.md"'),
+            bashIn(
+                join(repo, '_clio'),
+                'x lane commit /tmp/m.txt -- "pocket/tasks/pk-9 - a.md"',
+            ),
+        ).toBe('');
+        expect(
+            bash(
+                'cd ~/frame/_clio && x lane commit /tmp/m.txt -- pocket/tasks/pk-9.md',
+            ),
         ).toBe('');
         expect(
             bash(
                 'cd ~/frame && x lane commit /tmp/m.txt -- "_clio/pocket/tasks/pk-9 - a.md"',
             ),
         ).toBe('');
+    });
+
+    test('a pocket path read from the wrong dir is refused, since x lane commit reads paths from the cwd', () => {
+        expect(
+            bash('x lane commit /tmp/m.txt -- pocket/tasks/pk-9.md'),
+        ).toContain('edits only inside');
+        expect(
+            bashIn(
+                join(repo, '_clio'),
+                'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md',
+            ),
+        ).toContain('edits only inside');
+        expect(
+            bash(
+                'cd ~/frame && x lane commit /tmp/m.txt -- pocket/tasks/pk-9.md',
+            ),
+        ).toContain('edits only inside');
+        expect(
+            bash(
+                'cd ~/frame/_clio && x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md',
+            ),
+        ).toContain('edits only inside');
     });
 
     test('a fork commit naming any other path in a main checkout is refused', () => {
