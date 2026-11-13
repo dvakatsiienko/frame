@@ -40,6 +40,11 @@ func stamped(above string) string {
 
 // rewritingServer holds one ticket; every write is stored as save(text, the write's number), like a linear that rewrites
 func rewritingServer(t *testing.T, first string, save func(text string, writes int) string) (*fakeLinear, func() string) {
+	return rewritingServerAt(t, first, save, func(writes int) int { return writes })
+}
+
+// rewritingServerAt answers a read with the updatedAt minute readAt gives for the writes so far: a peer's edit moves it past the write's own
+func rewritingServerAt(t *testing.T, first string, save func(text string, writes int) string, readAt func(writes int) int) (*fakeLinear, func() string) {
 	var current atomic.Value
 	var writes atomic.Int32
 	current.Store(first)
@@ -49,7 +54,7 @@ func rewritingServer(t *testing.T, first string, save func(text string, writes i
 			current.Store(save(fmt.Sprint(input["description"]), int(writes.Add(1))))
 			return fmt.Sprintf(`{"data":{"issueUpdate":{"success":true,"issue":{"updatedAt":"2026-11-13T10:%02d:00.000Z"}}}}`, writes.Load())
 		}
-		return fmt.Sprintf(`{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","description":%q,"updatedAt":"2026-11-13T10:%02d:00.000Z"}}}`, current.Load(), writes.Load())
+		return fmt.Sprintf(`{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","description":%q,"updatedAt":"2026-11-13T10:%02d:00.000Z"}}}`, current.Load(), readAt(int(writes.Load())))
 	})
 	return server, func() string { return fmt.Sprint(current.Load()) }
 }
@@ -194,5 +199,45 @@ func TestBodyRestampSignBelongsToSet(t *testing.T) {
 
 	if got.code != 2 || len(mutations(server)) != 0 {
 		t.Errorf("exit %d, %d writes, want a usage refusal and no write:\n%s", got.code, len(mutations(server)), got.stdout)
+	}
+}
+
+// a body whose hash matched neither text before the write says so, with or without the flag, never «use --restamp-sign»
+func TestBodySetNamesAnEditAfterTheSignWithoutTheFlag(t *testing.T) {
+	t.Parallel()
+	server, _ := rewritingServer(t, newTicket, cosmeticSave)
+	sent := strings.Replace(stamped(newTicket), bodySignHash(newTicket), "00000000", 1)
+
+	data, got, _ := setSigned(t, server, sent)
+
+	if got.code != 0 || data["sign"] != signDrifted || !strings.Contains(fmt.Sprint(data["reason"]), "an edit after the sign") || strings.Contains(fmt.Sprint(data["reason"]), "--restamp-sign re-stamps") {
+		t.Errorf("exit %d, data %v, want drifted with the reason «an edit after the sign»:\n%s", got.code, data, got.stdout)
+	}
+}
+
+// a ticket a peer changed between the first write and the re-stamp is never written over
+func TestBodySetSkipsTheRestampWhenTheTicketMovedAfterTheFirstWrite(t *testing.T) {
+	t.Parallel()
+	server, _ := rewritingServerAt(t, newTicket, cosmeticSave, func(writes int) int { return writes + 30 })
+
+	data, got, _ := setSigned(t, server, stamped(newTicket), "--restamp-sign")
+
+	if got.code != 0 || data["sign"] != signDrifted || data["restamped"] != false || len(mutations(server)) != 1 || !strings.Contains(fmt.Sprint(data["reason"]), "changed since the first write") {
+		t.Errorf("exit %d, %d writes, data %v, want drifted, one write, «changed since the first write»:\n%s", got.code, len(mutations(server)), data, got.stdout)
+	}
+}
+
+// linear changing a list's first number is as cosmetic as renumbering the rest
+func TestBodySetRestampsAListWhoseFirstNumberLinearChanged(t *testing.T) {
+	t.Parallel()
+	shiftsFirst := func(text string, _ int) string {
+		return savedEscapes.ReplaceAllString(strings.Replace(renumbered(text, 1), "1. one", "3. one", 1), `$1\$2`)
+	}
+	server, saved := rewritingServer(t, newTicket, shiftsFirst)
+
+	data, got, _ := setSigned(t, server, stamped(newTicket), "--restamp-sign")
+
+	if got.code != 0 || data["sign"] != signMatch || data["restamped"] != true || bodySignHash(saved()) == bodySignHash(newTicket) {
+		t.Errorf("exit %d, data %v, want a re-stamp on the saved text:\n%s\n%s", got.code, data, got.stdout, saved())
 	}
 }

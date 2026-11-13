@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const editAfterSign = "the sign line's hash matches neither the sent nor the saved text: an edit after the sign, which a re-stamp never covers"
+
 var listNumber = regexp.MustCompile(`(?m)^([ \t]*)\d+([.)])[ \t]`)
 
 // what a body set read back: the text linear holds, its sign state as `x linear list` reads it (match, drifted, none),
@@ -32,6 +34,10 @@ func readBack(r *Run, actor, id, sent string, restamp bool, write func(map[strin
 	if saved.state != signDrifted {
 		return saved
 	}
+	if state, _, _ := bodySign(sent); state == signDrifted {
+		saved.why = editAfterSign
+		return saved
+	}
 	if !restamp {
 		saved.why = "linear saved other text than was sent; --restamp-sign re-stamps a fresh sign when the change is cosmetic"
 		return saved
@@ -39,6 +45,11 @@ func readBack(r *Run, actor, id, sent string, restamp bool, write func(map[strin
 	stamped, why := restampedText(sent, saved.text)
 	if why != "" {
 		saved.why = why
+		return saved
+	}
+	// a peer's edit after the first write is never overwritten by the re-stamp
+	if back.UpdatedAt != *updatedAt {
+		saved.why = "the ticket changed since the first write (" + *updatedAt + " → " + back.UpdatedAt + "); nothing was re-stamped"
 		return saved
 	}
 	at, err := write(map[string]any{"description": stamped})
@@ -78,7 +89,7 @@ func restampedText(sent, saved string) (stamped, why string) {
 	case signNoHash:
 		return "", "the file holds no sign hash to re-stamp"
 	case signDrifted:
-		return "", "the sign line's hash matches neither the sent nor the saved text: an edit after the sign, which a re-stamp never covers"
+		return "", editAfterSign
 	}
 	if cosmeticForm(sent) != cosmeticForm(saved) {
 		return "", "linear's save changed more than escapes and list numbers: " + linesChanged(cosmeticForm(sent), cosmeticForm(saved))

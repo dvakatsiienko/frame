@@ -610,9 +610,9 @@
   - when `x linear body <id> --set <file>` runs after a pull and the ticket is unchanged, then the file becomes the description, and the envelope names the actor
   - given the ticket changed since the pull (a peer's edit, dima's words), then nothing is written: exit 1, and `next` pulls theirs beside yours and diffs the two
   - given no pull of that ticket, then nothing is written and `next` is the pull
-  - given a set that wrote, then x reads the saved body back and the envelope's `sign` says match, drifted or none, as `x linear list` reads it (FRM-603)
+  - given a set that wrote, then x reads the saved body back and the envelope's `sign` says match, drifted or none, as `x linear list` reads it, or unread when the saved body did not read (FRM-603)
   - given `--set <file> --restamp-sign` and a saved body that drifted only by linear's cosmetic rewrite (escapes, list numbers) while the file's newest sign hash matched the text sent, then one more write sets that hash to the saved text's own, the local file and the pull take the saved text, and `sign` reads match; one re-stamp per call, a second drift is reported with its reason, never looped
-  - given a hash that matched neither text, or a save that dropped a line, then nothing is re-stamped and `sign` reads drifted with the reason (the changed lines for a drop); a set with no flag changes no sign line
+  - given a hash that matched neither text, or a save that dropped a line, then nothing is re-stamped and `sign` reads drifted with the reason (the changed lines for a drop; with no flag too, a hash of neither text says «an edit after the sign»); a ticket that moved between the two writes is never re-stamped; a set with no flag changes no sign line
 - ⬜ `x linear body --set` refuses a file that would damage the body
   - given a ticket pulled at N bytes
   - when `--set` gets a file under N/5, then it refuses naming both sizes and writes nothing; `--shrink` lets it through; N stays the largest size since the pull, so a later set is held against it too
