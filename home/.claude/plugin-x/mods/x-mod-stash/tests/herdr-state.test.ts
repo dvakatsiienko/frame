@@ -18,6 +18,8 @@ async function session($: Engine, on: On) {
     const alive = new Set([100]);
     const midway: string[] = [];
     const dirs = new Set<string>();
+    // destinations a rename fails on, as a full or read-only shelf would
+    const failMv = new Set<string>();
     // each prompt's model-only context, and each tool result's
     const contexts: string[][] = [];
     const state = new Map<string, unknown>();
@@ -100,7 +102,7 @@ async function session($: Engine, on: On) {
         if (cmd === 'mv') {
             const [from, to] = args.slice(1);
             const text = files.get(String(from));
-            if (text === undefined || !to) return out('', 1);
+            if (text === undefined || !to || failMv.has(to)) return out('', 1);
             files.delete(String(from));
             files.set(to, text);
             return out('');
@@ -144,6 +146,7 @@ async function session($: Engine, on: On) {
         clock,
         contexts,
         dirs,
+        failMv,
         files,
         midway,
         mtimes,
@@ -640,4 +643,56 @@ test('exit 4: a killed thread hands its joins back at the sweep, and while herdr
         s.files.get(`/home/.claude/shelf/herdr-joins/back/${dead}.jsonl`),
         s.files.has(`/home/.claude/shelf/herdr-joins/${dead}.jsonl`),
     ]).toEqual([true, false, row('j1', 'hi'), false]);
+});
+
+// wisphunter on aa2c7d89: five review fixes, each row red on that commit
+test('a thread past 500 joins never hands an old one in again', async ($, on) => {
+    const s = await session($, on);
+    const many = Array.from({ length: 500 }, (_, i) => `x${i}`);
+    s.store.set(`join-done:${A}`, ['j0', ...many]);
+    s.files.set(JOINS, row('j0', 'old') + row('j1', 'new'));
+    await say($);
+    await endTurn($);
+    await say($);
+    expect(said(s).map((l) => l.includes('«old»'))).toEqual([false]);
+});
+
+test('a hand-back the lock refused at /clear goes back at a later sweep', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, row('j1', 'waits'));
+    s.dirs.add(`${JOINS}.lock`);
+    await $.session.end({ reason: 'clear', sessionId: A } as never);
+    const held = s.files.has(BACK);
+    s.dirs.clear();
+    for (let i = 0; i < 15; i++) await s.clock.advance(4_000);
+    expect([held, s.files.get(BACK), s.files.has(JOINS)]).toEqual([
+        false,
+        row('j1', 'waits'),
+        false,
+    ]);
+});
+
+test('one dead thread whose hand-back throws leaves the sweep going for the rest', async ($, on) => {
+    const s = await session($, on);
+    for (const dead of ['dead-a000', 'dead-b000']) {
+        s.files.set(`${DIR}/${dead}.json`, JSON.stringify({ pid: 200, v: 1 }));
+        s.files.set(
+            `/home/.claude/shelf/herdr-joins/${dead}.jsonl`,
+            row('j1', dead),
+        );
+    }
+    s.failMv.add('/home/.claude/shelf/herdr-joins/back/dead-a000.jsonl');
+    await s.clock.advance(4_000);
+    expect([
+        s.files.has(`${DIR}/dead-a000.json`),
+        s.files.has(`${DIR}/dead-b000.json`),
+    ]).toEqual([true, false]);
+});
+
+test('with 💨 herdr joins off, the state file draws no joins', async ($, on) => {
+    const s = await session($, on);
+    s.store.set('shown', { 'stash.joins': false });
+    s.files.set(JOINS, row('j1', 'hi'));
+    await s.clock.advance(12_000);
+    expect(s.read(A)?.joins).toBeNull();
 });

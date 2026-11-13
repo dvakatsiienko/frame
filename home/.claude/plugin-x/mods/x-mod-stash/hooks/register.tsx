@@ -152,10 +152,11 @@ const MARKS = 'marks:';
 // how far this session read herdr's ticks file for it: the `at` of the newest press taken, one key per session id
 const HERDR_READ = 'herdr-read:';
 // the join queue (FRM-584): `join-taken:<sid>` the ids handed into the running turn, `join-done:<sid>` the ids a
-// completed turn took, which herdr reads as `joined`
+// completed turn took, which herdr reads as `joined`, kept whole while the thread lives, since its rows stay in the file;
+// `join-owed:<sid>` an ended thread whose hand-back a held lock refused, retried at the sweep
 const JOIN_TAKEN = 'join-taken:';
 const JOIN_DONE = 'join-done:';
-const JOIN_DONE_MAX = 500;
+const JOIN_OWED = 'join-owed:';
 // 🛼 a member's lane step from its plan op, one key per registry name, written only by that session (todo 6)
 const LANE_STEP = 'lane-step:';
 // the moves clio's stash made from codie's step, held for her next tool call or prompt
@@ -3860,7 +3861,11 @@ const SESSION_KEYS = [
 
 async function forget($: EngineInterface, sid: string) {
     const home = await $.env.get('HOME').catch(() => undefined);
-    if (home) await handBackJoins($, home, sid).catch(() => undefined);
+    const isHandedBack = home
+        ? await handBackJoins($, home, sid).catch(() => false)
+        : true;
+    if (!isHandedBack)
+        await $.store.set(JOIN_OWED + sid, true).catch(() => undefined);
     await dropState($, sid).catch(() => undefined);
     await $.store.delete(BAND_READ + sid);
     await $.store.delete(BAND_REFUSED + sid);
@@ -4243,10 +4248,7 @@ async function settleJoins($: EngineInterface, isLanded: boolean) {
         const done = idsOf(
             await $.store.get(JOIN_DONE + sid).catch(() => undefined),
         );
-        await $.store.set(
-            JOIN_DONE + sid,
-            [...done, ...taken].slice(-JOIN_DONE_MAX),
-        );
+        await $.store.set(JOIN_DONE + sid, [...done, ...taken]);
     }
     await $.store.delete(JOIN_TAKEN + sid);
 }
@@ -4290,7 +4292,9 @@ async function writeState($: EngineInterface) {
     const home = await $.env.get('HOME').catch(() => undefined);
     if (!sid || !home) return;
     const get = (key: string) => $.store.get(key).catch(() => undefined);
-    const joins = await joinsOf($, home, sid);
+    const joins = (await partsShown($))('stash.joins')
+        ? await joinsOf($, home, sid)
+        : undefined;
     const entry = (await get(PREFIX + sid)) as Entry | undefined;
     const reply = (await get(REPLY + sid)) as Reply | undefined;
     const taken = await get(HERDR_READ + sid);
@@ -4302,18 +4306,25 @@ async function writeState($: EngineInterface) {
         assumed: o.assumed ?? [],
         ctx: typeof ctx === 'number' ? ctx : null,
         hot: hotOf(await get(HOT + sid)) ?? null,
-        // a row reads joined only once the turn that took it completed; a slash row waits for herdr's push
-        joins: {
-            joined: joins.rows
-                .filter((r) => joins.done.includes(r.id))
-                .map((r) => r.id),
-            push: joins.rows
-                .filter((r) => isPushOnly(r) && !joins.done.includes(r.id))
-                .map((r) => r.id),
-            waiting: joins.rows
-                .filter((r) => !isPushOnly(r) && !joins.done.includes(r.id))
-                .map((r) => r.id),
-        },
+        // a row reads joined only once the turn that took it completed; a slash row waits for herdr's push; switched
+        // off, none: herdr pushes instead
+        joins: !joins
+            ? null
+            : {
+                  joined: joins.rows
+                      .filter((r) => joins.done.includes(r.id))
+                      .map((r) => r.id),
+                  push: joins.rows
+                      .filter(
+                          (r) => isPushOnly(r) && !joins.done.includes(r.id),
+                      )
+                      .map((r) => r.id),
+                  waiting: joins.rows
+                      .filter(
+                          (r) => !isPushOnly(r) && !joins.done.includes(r.id),
+                      )
+                      .map((r) => r.id),
+              },
         label,
         model: typeof model === 'string' ? model : null,
         name: entry?.name ?? (await sessionName($)) ?? null,
@@ -4380,9 +4391,20 @@ async function pruneStates($: EngineInterface) {
         // a killed thread fires no end: its waiting joins go back first, and its file stays until they could
         if (
             ps.exitCode !== 0 &&
-            (await handBackJoins($, home, f.name.slice(0, -'.json'.length)))
+            (await handBackJoins(
+                $,
+                home,
+                f.name.slice(0, -'.json'.length),
+            ).catch(() => false))
         )
             await $.process.run(['rm', '-f', `${dir}/${f.name}`]);
+    }
+    // an ended thread whose hand-back a held lock refused at its end
+    for (const key of await $.store.keys().catch(() => [] as string[])) {
+        if (!key.startsWith(JOIN_OWED)) continue;
+        const sid = key.slice(JOIN_OWED.length);
+        if (await handBackJoins($, home, sid).catch(() => false))
+            await $.store.delete(key).catch(() => undefined);
     }
 }
 // how far this thread read the band presses: the `at` of the newest line taken, from the thread's start on
@@ -9941,11 +9963,6 @@ export const register: Register = (on) => {
                 ? []
                 : await takeMarks($, (o) => o.asks.filter(isFresh));
         if (fresh.length) notes.push(joinText(fresh));
-        // a join herdr wrote mid-turn lands at the next tool step, as a tick does
-        const joins = isPing
-            ? []
-            : await joinsLocked(() => takeJoins($)).catch(() => []);
-        if (joins.length) notes.push(joinRowsText(joins));
         // a lane steer dima took while clio's turn runs joins it here too, as an orbit mark does
         if (!isPing && isOn('stash.glide') && (await isLaneOwner($))) {
             notes.push(...(await takeLaneMoves($)));
@@ -9990,6 +10007,12 @@ export const register: Register = (on) => {
             const pace = await paceStep($).catch(() => undefined);
             if (pace) notes.push(pace);
         }
+        // a join herdr wrote mid-turn lands at the next tool step, as a tick does; taken after every step that could
+        // throw, since a taken row is stamped joined at the turn's end
+        const joins = isPing
+            ? []
+            : await joinsLocked(() => takeJoins($)).catch(() => []);
+        if (joins.length) notes.push(joinRowsText(joins));
         if (!notes.length) return answer;
         return { ...answer, context: [...(r.context ?? []), ...notes] };
     });
