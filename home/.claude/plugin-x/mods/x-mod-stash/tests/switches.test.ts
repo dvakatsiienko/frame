@@ -282,7 +282,7 @@ const SCENARIOS: Record<string, Scenario> = {
         trace: /phases|plan/,
     },
     'stash.rounds': {
-        arm: async ($, w) => {
+        arm: async (_$, w) => {
             // x's thread record names the lane a round counts under
             w.files[THREADS_FILE] = JSON.stringify({
                 at: 0,
@@ -296,12 +296,16 @@ const SCENARIOS: Record<string, Scenario> = {
                 ],
                 v: 1,
             });
-            for (const sha of ['aaaaaaa', 'bbbbbbb'])
-                await $.tool.call({
-                    message: `round 1 on ${sha}`,
-                    to: '⚡ 🔎 sixth sense: x',
-                    tool: 'SendMessage',
-                } as never);
+            // two rounds already in the one shelf file
+            w.files['/home/.claude/shelf/lane-rounds.json'] = JSON.stringify({
+                rounds: {
+                    'mods-lane-4 | FRM-500': {
+                        count: 2,
+                        shas: ['aaaaaaa', 'bbbbbbb'],
+                    },
+                },
+                v: 1,
+            });
         },
         fire: async ($, w) => {
             const r = await $.tool.call({

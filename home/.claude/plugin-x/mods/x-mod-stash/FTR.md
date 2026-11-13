@@ -1137,15 +1137,29 @@ quiet by default ([test drive](../../../../../docs/test-drive/quiet-comms.md), p
   - decision: the buttons never share the pick's line — exit 4's «one row» misread the 19:31 shot (dima, 20:23)
   - proof: tests/lane.test.ts::an ask's buttons sit on the line under its pick, never beside it
 
-## the round count — a lane's 3-round stop, kept by the mod (FRM-504)
+## the round count — a lane's 3-round cap, kept by the mod (FRM-504)
 
-- ✅ codie's rounds count in the store, so a compact loses nothing
-  - given a thread whose record in x's thread store (`~/.claude/shelf/threads.json`, by its session id) names it a codie, its send to anyone but the coordinator, opening `round N`, with the first sha on that line whatever sits between («round 4, final, on <sha>»), (a ticket id, `#n`, `slice NN`, `coder:`, `sixth sense,`, `final` or a tag may lead it), then its sha joins `lane-rounds:<what its name holds past «codie:»>`, `{ count, shas }`: a key per lane and ticket, so a next chunk starts over and a quick lane's chunks stay apart (his one key per lane, bent at the read of 2026-11-06, clio tells him), never the lanes file; the count is the larger of the number sent and the last + 1, and `final on <sha>` is round 1
+- ✅ codie's rounds count in one shelf file, so a compact or a reload loses nothing
+  - makes: `~/.claude/shelf/lane-rounds.json`, `{ rounds: { "<lane> | <ticket>": { at, count, shas } }, v: 1 }`, written only by x-mod-stash, whole or not at all, under the lock dir `lane-rounds.json.lock`, the joins' rule (a live writer's waited out up to 2 s, one older than 30 s is a crash's, broken); clio's compact carry and the board read it, and no hook reads the mod's private store for a round
+  - given a thread whose record in x's thread store (`~/.claude/shelf/threads.json`, by its session id) names it a codie, its send to anyone but the coordinator, opening `round N`, with the first sha on that line whatever sits between («round 4, final, on <sha>»), (a ticket id, `#n`, `slice NN`, `coder:`, `sixth sense,`, `final` or a tag may lead it), then its sha joins its lane's entry in the file; the count is the larger of the number sent and the last + 1, and `final on <sha>` is round 1
+  - and the ticket is the lane plan's chunk (`~/.local/state/x/lanes/<lane>/lane-plan.md`, its first open step above the plan's first `## ` heading, «## not greenlit», read through `x lane plan-steps` as the glide card reads it), else the record's ticket, so a next chunk starts at 1 though the record keeps the summon's ticket; a chunk moves on when its «reviewed and closed» line is ticked
   - and a resend of a sha, a round word further in, a failed send, sixth sense's own round or any other sender counts nothing
-  - and the key is the record's lane and ticket, whatever the name holds: a codie named «⚡ 🔧 mods 6 | FRM-574» or with no emoji counts as before, a codie-named thread with no record counts nothing (FRM-570 rule 9); proof: tests/quiet.test.ts::a codie named «mods six» counts its rounds by its record; ::a codie name with no thread record counts no round
-  - given round 3, then the sender reads that a next round with a P0 or P1 is past the cap; past 3, that the stop goes to the coordinator; no message is ever refused, and the cap's terms stay sixth sense's judgment
-  - and a `stash.rounds` switch off counts nothing and draws no line; a key never ends, so a thread name used again starts from its old count (inference)
-  - proof: tests/quiet.test.ts § the round count, tests/switches.test.ts — not asserted: `_clio`'s compact carry reads the key at the land, clio's
+  - and the key is the record's lane, whatever the name holds: a codie named «⚡ 🔧 mods 6 | FRM-574» or with no emoji counts as before, a codie-named thread with no record counts nothing (FRM-570 rule 9)
+  - and a lane the file lacks starts from the private `lane-rounds:<lane> | <ticket>` key the build before kept, read only, so a lane mid-count at the land keeps its count (clio's call 9)
+  - proof: tests/quiet.test.ts § the round count
+- ✅ a round past the cap warns the sender and reaches the coordinator; nothing is refused
+  - given round 3, then the sender reads that a next round with a P0 or P1 is past the cap, and the coordinator hears nothing
+  - given round 4 and each new round after, then one line goes to main clio, `[escalate] round <n> of <lane> | <ticket>, past the cap of 3, from <sender>: ask dima «go on, or stop the lane»`, which passes quiet comms and starts her turn, and the sender reads that the coordinator has the count, nothing is refused, keep working; a line that cannot go says so in the sender's turn, with the reason
+  - and a resend of a counted sha tells her nothing again
+  - decision: a warning and a line to the coordinator, never a refusal: a block stops everyone, 16 of 22 lanes ran past 3 on 11-12 (FRM-504:W49, his o86–o90)
+  - proof: tests/quiet.test.ts::round 4 tells the coordinator the lane and the count, once, and warns the sender; ::the coordinator's line passes quiet comms and starts her turn; ::the past-the-cap line still fires across a compact and a reload, read from the shelf file
+- ✅ a lane member's title follows its chunk
+  - given a codie or sixth sense whose lane plan's first open step names another ticket than the one after its title's last « | »
+  - when its next prompt is submitted
+  - then its title takes the plan's ticket, through the prompt hook's `sessionTitle`; cc's registry name follows it, a `--bg` member's too (probe, 2026-11-13: «⚡ 🔧 probe | FRM-998» read «⚡ 🔧 probe | FRM-999» after one turn); the desktop app's name is not checked
+  - and a title with no ticket after a « | », a plan with no open greenlit step, no plan or the coordinator is left as it is
+  - proof: tests/quiet.test.ts § a member's title follows its chunk
+- and a `stash.rounds` switch off counts nothing, sends nothing, sets no title and draws no line; proof: tests/quiet.test.ts::🎛️ rounds switched off: no count, no coordinator line, no title, tests/switches.test.ts
 
 ## spawn hints — the board's name flag only
 

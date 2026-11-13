@@ -347,13 +347,27 @@ export function roundOf(message: string) {
     return sha ? { n: 1, sha } : undefined;
 }
 
-const ROUND_CAP = 3;
-// the count only signals: the cap's terms, a P0 or P1 and a scope reset, stay sixth sense's judgment
-export function roundLine(count: number) {
+export const ROUND_CAP = 3;
+// the count only signals and refuses nothing (FRM-504:W49: a block stops everyone); past the cap the coordinator decides,
+// `untold` the reason her line did not go
+export function roundLine(count: number, untold?: string) {
     if (count < ROUND_CAP) return undefined;
-    return count === ROUND_CAP
-        ? `round ${count} of this lane: a next round with a P0 or P1 is past the cap of ${ROUND_CAP}`
-        : `round ${count} of this lane, past the cap of ${ROUND_CAP}: with a P0 or P1 and no scope reset from sixth sense, the stop goes to the coordinator`;
+    if (count === ROUND_CAP)
+        return `round ${count} of this lane: a next round with a P0 or P1 is past the cap of ${ROUND_CAP}`;
+    const heard =
+        untold === undefined
+            ? 'the coordinator has the count and says go on or stop'
+            : `the line to the coordinator did not go (${untold}): send her this count yourself`;
+    return `round ${count} of this lane, past the cap of ${ROUND_CAP}: ${heard}; nothing is refused, keep working`;
+}
+// the coordinator's line past the cap: [escalate] passes quiet comms and starts her turn
+export const capLine = (lane: string, count: number, from: string) =>
+    `[escalate] round ${count} of ${lane}, past the cap of ${ROUND_CAP}, from ${from}: ask dima «go on, or stop the lane»`;
+
+// a lane member's title past its chunk: the ticket after its last « | » becomes the plan's; a title with none stays
+export function chunkTitle(title: string, ticket: string) {
+    const m = title.match(/^(.*\|\s*)((?:FRM|BYT)-\d+)\s*$/);
+    return m && m[2] !== ticket ? `${m[1]}${ticket}` : undefined;
 }
 
 // the quiet ledger's count of one member's sends to clio: `sh -c LEDGER_SENDS <home> <session id> <address regex>`

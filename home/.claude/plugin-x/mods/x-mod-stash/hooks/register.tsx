@@ -72,12 +72,15 @@ import {
 import {
     type BackgroundTask,
     LEDGER_SENDS,
+    ROUND_CAP,
     TRANSCRIPT_TAIL,
     backgroundWait,
     backgroundWaits,
     boldFleetWords,
     bulletDots,
+    capLine,
     capOf,
+    chunkTitle,
     dropWaitAside,
     linkTickets,
     memberBadge,
@@ -2251,9 +2254,57 @@ async function isToCoordinator($: EngineInterface, to: string) {
     );
 }
 
-// `lane-rounds:<lane>`, the shas codie sent as rounds: a resend adds nothing, and a compact, which empties a thread's
-// memory of its count, leaves the key
+// the one round store (FRM-504:W49): `~/.claude/shelf/lane-rounds.json`, `<lane> | <ticket>` → the shas codie sent as
+// rounds; only this mod writes it, clio's compact-carry and the board read it, so a compact or a reload loses no count.
+// a resend adds nothing; the private `lane-rounds:` keys of the build before seed a key the file lacks (clio's call 9)
 const LANE_ROUNDS = 'lane-rounds:';
+type LaneRounds = { at?: number; count: number; shas: string[] };
+const roundsPath = (home: string) => `${home}/.claude/shelf/lane-rounds.json`;
+async function readRounds($: EngineInterface, home: string) {
+    const raw = await $.fs.read(roundsPath(home)).catch(() => undefined);
+    if (raw === undefined) return {};
+    const { rounds } = JSON.parse(raw) as { rounds?: unknown };
+    return (rounds && typeof rounds === 'object' ? rounds : {}) as Record<
+        string,
+        LaneRounds
+    >;
+}
+// an array is the first build's shape
+const roundsOf = (kept: unknown): LaneRounds =>
+    Array.isArray(kept)
+        ? { count: kept.length, shas: kept as string[] }
+        : ((kept as LaneRounds | undefined) ?? { count: 0, shas: [] });
+// several codies write the one file: the joins' lock dir rule, a live writer's waited out for 2 s, a crash's broken
+async function roundsLocked<T>(
+    $: EngineInterface,
+    home: string,
+    job: () => Promise<T>,
+) {
+    const lock = `${roundsPath(home)}.lock`;
+    for (let tries = 0; !(await takeJoinLock($, lock)); tries++) {
+        if (tries === 20) throw new Error('the round store is locked');
+        await $.clock.sleep(100);
+    }
+    try {
+        return await job();
+    } finally {
+        await $.process.run(['rmdir', lock]);
+    }
+}
+// the chunk a lane member is on: its lane plan's first open step, as the glide card reads it, among the greenlit ones, the
+// step lines above the plan's first `## ` heading («## not greenlit»); the line shape is x's `planStepLine`
+const PLAN_STEP = /^- \[[ xX]\] \d+ · /;
+async function chunkTicket($: EngineInterface, home: string, lane: string) {
+    const path = `${home}/.local/state/x/lanes/${lane}/lane-plan.md`;
+    const read = await readPlanSteps($, path);
+    if (!('steps' in read)) return undefined;
+    const lines = (await $.fs.read(path).catch(() => '')).split('\n');
+    const cut = lines.findIndex((l) => l.startsWith('## '));
+    const greenlit = (cut < 0 ? lines : lines.slice(0, cut)).filter((l) =>
+        PLAN_STEP.test(l),
+    ).length;
+    return read.steps.slice(0, greenlit).find((s) => !s.done)?.ticket;
+}
 async function laneRoundLine(
     $: EngineInterface,
     e: Record<string, unknown>,
@@ -2265,22 +2316,89 @@ async function laneRoundLine(
         return undefined;
     const self = await selfRecord($);
     if (self?.role !== 'codie' || !self.lane) return undefined;
-    const lane = `${self.lane} | ${self.ticket ?? ''}`;
     if (await isToCoordinator($, to)) return undefined;
-    const key = LANE_ROUNDS + lane;
-    const kept = await $.store.get(key);
-    // an array is the first build's shape
-    const { count, shas } = (
-        Array.isArray(kept)
-            ? { count: kept.length, shas: kept }
-            : (kept ?? { count: 0, shas: [] })
-    ) as { count: number; shas: string[] };
-    if (shas.some((s) => s.startsWith(round.sha) || round.sha.startsWith(s)))
-        return roundLine(count);
-    // a lane may open past round 1, and a number sent is never read back as less
-    const next = Math.max(round.n, count + 1);
-    await $.store.set(key, { count: next, shas: [...shas, round.sha] });
-    return roundLine(next);
+    const home = (await $.env.get('HOME')) ?? '';
+    // the plan's chunk, so a next chunk starts at 1 though x's record keeps the summon's ticket
+    const ticket = (await chunkTicket($, home, self.lane)) ?? self.ticket ?? '';
+    const lane = `${self.lane} | ${ticket}`;
+    const now = await $.clock.now();
+    const { count, isNew } = await roundsLocked($, home, async () => {
+        const rounds = await readRounds($, home);
+        const kept =
+            rounds[lane] ??
+            roundsOf(
+                await $.store.get(LANE_ROUNDS + lane).catch(() => undefined),
+            );
+        if (
+            kept.shas.some(
+                (s) => s.startsWith(round.sha) || round.sha.startsWith(s),
+            )
+        )
+            return { count: kept.count, isNew: false };
+        // a lane may open past round 1, and a number sent is never read back as less
+        const next = Math.max(round.n, kept.count + 1);
+        await writeWhole(
+            $,
+            roundsPath(home),
+            `${JSON.stringify(
+                {
+                    rounds: {
+                        ...rounds,
+                        [lane]: {
+                            at: now,
+                            count: next,
+                            shas: [...kept.shas, round.sha],
+                        },
+                    },
+                    v: 1,
+                },
+                null,
+                2,
+            )}\n`,
+        );
+        return { count: next, isNew: true };
+    });
+    if (!isNew || count <= ROUND_CAP) return roundLine(count);
+    return roundLine(count, await capTold($, self.sessionId, lane, count));
+}
+
+// past the cap, each new round: one line to main clio; the reason it did not go, else undefined
+async function capTold(
+    $: EngineInterface,
+    sid: string,
+    lane: string,
+    count: number,
+) {
+    const lead = (await threadRecords($)).find(
+        (t) =>
+            t.role === MAIN_ROLE && t.pid !== undefined && t.sessionId !== sid,
+    );
+    if (!lead?.sessionId) return 'no live coordinator';
+    const sent = await $.session
+        .send({
+            text: capLine(lane, count, (await sessionName($)) ?? sid),
+            to: { sessionId: lead.sessionId },
+        })
+        .catch((err) => ({
+            isDelivered: false as const,
+            reason: errorText(err),
+        }));
+    return sent.isDelivered ? undefined : (sent.reason ?? 'not delivered');
+}
+
+// a lane member whose plan moved to its next chunk takes the new ticket in its title; cc's name follows a hook's title,
+// a --bg member's too (the 2026-11-13 probe)
+async function chunkRetitle($: EngineInterface) {
+    const self = await selfRecord($);
+    if ((self?.role !== 'codie' && self?.role !== 'sixth-sense') || !self.lane)
+        return undefined;
+    const name = await sessionName($);
+    const ticket = await chunkTicket(
+        $,
+        (await $.env.get('HOME')) ?? '',
+        self.lane,
+    );
+    return name && ticket ? chunkTitle(name, ticket) : undefined;
 }
 
 async function askedOf($: EngineInterface) {
@@ -7288,6 +7406,13 @@ export const register: Register = (on) => {
     on('ui.press', async ($, e, next) => {
         await flushFields($);
         return next(e);
+    });
+
+    on('classic.UserPromptSubmit', async ($, e, next) => {
+        const r = await next(e);
+        if (!(await partsShown($))('stash.rounds')) return r;
+        const title = await chunkRetitle($).catch(() => undefined);
+        return title ? { ...r, sessionTitle: title } : r;
     });
 
     on('prompt.submit', async ($, e, next) => {

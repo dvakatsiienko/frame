@@ -41,6 +41,8 @@ function world(
         isTestChild = false,
         // what happens while a send is on its way
         whileSending = async (): Promise<void> => {},
+        // files a dir lists beyond the registry's, with their mtime
+        listed = {} as Record<string, { mtimeMs: number; name: string }[]>,
     } = {},
 ) {
     for (const p of peers)
@@ -133,7 +135,13 @@ function world(
                       name: `${pid}.json`,
                       size: 1,
                   }))
-                : [],
+                : (listed[e.path] ?? []).map((f) => ({
+                      isLink: false,
+                      kind: 'file' as const,
+                      mtimeMs: f.mtimeMs,
+                      name: f.name,
+                      size: 1,
+                  })),
     }));
     on('tool.register', (_$, e) => ({
         value: { tool: `mcp__x-mod-stash__${e.name}` },
@@ -3129,10 +3137,13 @@ test('a waiting note with the event keeps its wake', async ($, on) => {
     expect([r.drop, w.contexts.length]).toEqual([undefined, 1]);
 });
 
-/* the round count: codie's own «round N on <sha>», one store key per lane */
+/* the round count (FRM-504): codie's own «round N on <sha>», one shelf file, `<lane> | <ticket>` per chunk */
 
 const ROUND_CODIE = '⚡ 🔧 codie: mods lane 5 | FRM-9';
-const LANE_KEY = 'lane-rounds:mods-lane-5 | FRM-9';
+const LANE = 'mods-lane-5 | FRM-9';
+const LANE_KEY = `lane-rounds:${LANE}`;
+const ROUNDS_FILE = '/home/.claude/shelf/lane-rounds.json';
+const PLAN_DIR = '/home/.local/state/x/lanes/mods-lane-5';
 // x's thread record for this session (`x thread list` writes it): role, lane and ticket by session id
 const thread = (role: string, over: Record<string, unknown> = {}) => ({
     [THREADS_FILE]: JSON.stringify({
@@ -3156,28 +3167,107 @@ const thread = (role: string, over: Record<string, unknown> = {}) => ({
 const ROUND_SENSE = '⚡ 🔎 sixth sense: mods lane 5';
 const roundLines = (r: { context?: string[] }) =>
     (r.context ?? []).filter((c) => /\bround \d/.test(c));
+// a plan file's mtime is the parse cache's key: each world its own
+let planAt = 1;
+// a codie on lane 5: a whole-file write lands as the shell's mv would; `plan` is the lane plan's steps as x prints them
+function roundWorld(
+    on: On,
+    {
+        files = {} as Record<string, string>,
+        greenlit,
+        name = ROUND_CODIE,
+        plan,
+        record = {} as Record<string, unknown>,
+        refusal,
+        role = 'codie',
+        sent,
+    }: {
+        files?: Record<string, string>;
+        // the steps above the plan's «## not greenlit» heading; all of them when unset
+        greenlit?: number;
+        name?: string;
+        plan?: { done: boolean; ticket?: string; text: string }[];
+        record?: Record<string, unknown>;
+        // why a mod's own send to a session does not go
+        refusal?: string;
+        role?: string;
+        sent?: Record<string, unknown>;
+    } = {},
+) {
+    const all: Record<string, string> = { ...thread(role, record), ...files };
+    if (plan) {
+        const lines = plan.map(
+            (s, i) =>
+                `- [${s.done ? 'x' : ' '}] ${String(i + 1).padStart(2, '0')} · ${s.ticket ?? ''} ${s.text}`,
+        );
+        if (greenlit !== undefined)
+            lines.splice(greenlit, 0, '', '## not greenlit', '');
+        all[`${PLAN_DIR}/lane-plan.md`] =
+            `# lane plan\n\n${lines.join('\n')}\n`;
+    }
+    const w = world(on, {
+        files: all,
+        listed: plan
+            ? { [PLAN_DIR]: [{ mtimeMs: planAt++, name: 'lane-plan.md' }] }
+            : {},
+        name,
+        peers: [CLIO],
+        run: (argv) => {
+            if (argv[0] === 'mv') {
+                const [, , from, to] = argv;
+                if (from === undefined || to === undefined) return 1;
+                all[to] = all[from] ?? '';
+                delete all[from];
+                return 0;
+            }
+            if (argv[0] === 'x' && argv[2] === 'plan-steps')
+                return JSON.stringify({ data: { steps: plan } });
+            return undefined;
+        },
+        ...(sent ? { sent } : {}),
+    });
+    on('classic.UserPromptSubmit', () => ({}));
+    const told: { text: string; to: unknown }[] = [];
+    on('session.send', (_$, e) => {
+        if (refusal) return { isDelivered: false, reason: refusal };
+        told.push({ text: e.text, to: e.to });
+        return { isDelivered: true };
+    });
+    return { ...w, files: all, told };
+}
+// the shelf file's rounds, each without its time
+const roundsIn = (files: Record<string, string>) =>
+    Object.fromEntries(
+        Object.entries(
+            (
+                JSON.parse(files[ROUNDS_FILE] ?? '{}') as {
+                    rounds?: Record<string, { at?: number }>;
+                }
+            ).rounds ?? {},
+        ).map(([k, { at: _at, ...v }]) => [k, v]),
+    );
+const kept = (w: { files: Record<string, string> }, lane = LANE) =>
+    roundsIn(w.files)[lane];
 
-test('a round message counts in one store key for its lane', async ($, on) => {
-    const w = world(on, { files: thread('codie'), name: ROUND_CODIE });
+test('a round message counts in the shelf file under its lane and ticket', async ($, on) => {
+    const w = roundWorld(on);
     await start($);
     await send($, ROUND_SENSE, 'round 1 on abc12345 — pushed');
     await send($, ROUND_SENSE, 'round 2 on def67890');
-    expect(w.store.get(LANE_KEY)).toEqual({
+    expect(kept(w)).toEqual({
         count: 2,
         shas: ['abc12345', 'def67890'],
     });
-    expect([...w.store.keys()].filter((k) => k.includes('rounds'))).toEqual([
-        LANE_KEY,
-    ]);
+    expect(Object.keys(roundsIn(w.files))).toEqual([LANE]);
 });
 
 test('a resend of one round counts once, its sha long or short', async ($, on) => {
-    const w = world(on, { files: thread('codie'), name: ROUND_CODIE });
+    const w = roundWorld(on);
     await start($);
     await send($, ROUND_SENSE, 'round 1 on abc12345');
     await send($, ROUND_SENSE, 'round 1 on abc12345');
     await send($, ROUND_SENSE, 'round 1 on abc1234567890');
-    expect(w.store.get(LANE_KEY)).toEqual({ count: 1, shas: ['abc12345'] });
+    expect(kept(w)).toEqual({ count: 1, shas: ['abc12345'] });
 });
 
 for (const message of [
@@ -3194,12 +3284,10 @@ for (const message of [
     'round 2 pushed: 7c90198 holds the fix',
 ])
     test(`a real lead counts: ${message}`, async ($, on) => {
-        const w = world(on, { files: thread('codie'), name: ROUND_CODIE });
+        const w = roundWorld(on);
         await start($);
         await send($, ROUND_SENSE, message);
-        expect((w.store.get(LANE_KEY) as { shas: string[] }).shas.length).toBe(
-            1,
-        );
+        expect((kept(w) as { shas: string[] }).shas.length).toBe(1);
     });
 
 for (const message of [
@@ -3212,10 +3300,10 @@ for (const message of [
     'round 2 defaced the old row',
 ])
     test(`no round in this line: ${message}`, async ($, on) => {
-        const w = world(on, { files: thread('codie'), name: ROUND_CODIE });
+        const w = roundWorld(on);
         await start($);
         const r = await send($, ROUND_SENSE, message);
-        expect([w.store.get(LANE_KEY), roundLines(r)]).toEqual([undefined, []]);
+        expect([kept(w), roundLines(r)]).toEqual([undefined, []]);
     });
 
 for (const [name, sender, to] of [
@@ -3229,31 +3317,37 @@ for (const [name, sender, to] of [
     ['a report to the coordinator', ROUND_CODIE, '🦉 clio'],
 ] as const)
     test(`not counted: ${name}`, async ($, on) => {
-        const w = world(on, {
-            files:
-                sender === ROUND_CODIE
-                    ? thread('codie')
-                    : sender === ROUND_SENSE
-                      ? thread('sixth-sense')
-                      : {},
+        const w = roundWorld(on, {
             name: sender,
-            peers: [CLIO],
+            role:
+                sender === ROUND_CODIE
+                    ? 'codie'
+                    : sender === ROUND_SENSE
+                      ? 'sixth-sense'
+                      : 'none',
         });
         await start($);
         await send($, to, 'round 1 on abc12345');
-        expect(
-            [...w.store.keys()].filter((k) => k.startsWith('lane-rounds:')),
-        ).toEqual([]);
+        expect([w.files[ROUNDS_FILE], w.told]).toEqual([undefined, []]);
     });
 
 test('a send that went nowhere is no round', async ($, on) => {
-    const w = world(on, {
-        name: ROUND_CODIE,
+    const w = roundWorld(on, {
         sent: { message: 'no such session', success: false },
     });
     await start($);
     await send($, ROUND_SENSE, 'round 1 on abc12345');
-    expect(w.store.get(LANE_KEY)).toBeUndefined();
+    expect(w.files[ROUNDS_FILE]).toBeUndefined();
+});
+
+test('no round is read from or written to the private store', async ($, on) => {
+    const w = roundWorld(on);
+    await start($);
+    await send($, ROUND_SENSE, 'round 1 on abc12345');
+    expect([
+        [...w.store.keys()].filter((k) => k.startsWith('lane-rounds:')),
+        kept(w),
+    ]).toEqual([[], { count: 1, shas: ['abc12345'] }]);
 });
 
 const sendRounds = async ($: Engine, n: number) => {
@@ -3263,15 +3357,58 @@ const sendRounds = async ($: Engine, n: number) => {
     return out;
 };
 
-test('a next chunk of one lane starts its own count', async ($, on) => {
-    const w = world(on, {
-        files: thread('codie', { ticket: 'FRM-10' }),
-        name: ROUND_CODIE,
+const PLAN_NEXT = [
+    { done: true, text: 'the round store', ticket: 'FRM-9' },
+    { done: true, text: 'reviewed and closed', ticket: 'FRM-9' },
+    { done: false, text: 'the next chunk', ticket: 'FRM-10' },
+];
+
+test('a next chunk in the lane plan starts its own count at 1, with no cap line', async ($, on) => {
+    const w = roundWorld(on, {
+        files: {
+            [ROUNDS_FILE]: JSON.stringify({
+                rounds: {
+                    [LANE]: { count: 4, shas: ['a1', 'b2', 'c3', 'd4'] },
+                },
+                v: 1,
+            }),
+        },
+        plan: PLAN_NEXT,
     });
-    w.store.set(LANE_KEY, { count: 2, shas: ['aaaaaaa', 'bbbbbbb'] });
+    await start($);
+    const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    expect([
+        kept(w, 'mods-lane-5 | FRM-10'),
+        kept(w),
+        roundLines(r),
+        w.told,
+    ]).toEqual([
+        { count: 1, shas: ['ccccccc'] },
+        { count: 4, shas: ['a1', 'b2', 'c3', 'd4'] },
+        [],
+        [],
+    ]);
+});
+
+test("a step under the plan's «not greenlit» heading is no chunk yet", async ($, on) => {
+    const w = roundWorld(on, {
+        greenlit: 2,
+        name: '⚡ 🔧 mods | FRM-9',
+        plan: PLAN_NEXT,
+    });
     await start($);
     await send($, ROUND_SENSE, 'round 1 on ccccccc');
-    expect(w.store.get('lane-rounds:mods-lane-5 | FRM-10')).toEqual({
+    expect([
+        Object.keys(roundsIn(w.files)),
+        (await titled($)).sessionTitle,
+    ]).toEqual([[LANE], undefined]);
+});
+
+test("with no lane plan the count keys on x's record's ticket", async ($, on) => {
+    const w = roundWorld(on, { record: { ticket: 'FRM-10' } });
+    await start($);
+    await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    expect(kept(w, 'mods-lane-5 | FRM-10')).toEqual({
         count: 1,
         shas: ['ccccccc'],
     });
@@ -3280,23 +3417,21 @@ test('a next chunk of one lane starts its own count', async ($, on) => {
 // FRM-570 exit 15: the count reads x's record, so a rename keeps it and a name alone starts none
 for (const name of ['⚡ 🔧 mods 6 | FRM-574', 'mods six'])
     test(`a codie named «${name}» counts its rounds by its record`, async ($, on) => {
-        const w = world(on, { files: thread('codie'), name });
+        const w = roundWorld(on, { name });
         await start($);
         await send($, ROUND_SENSE, 'round 1 on abc12345');
-        expect(w.store.get(LANE_KEY)).toEqual({ count: 1, shas: ['abc12345'] });
+        expect(kept(w)).toEqual({ count: 1, shas: ['abc12345'] });
     });
 
 test('a codie name with no thread record counts no round', async ($, on) => {
-    const w = world(on, { name: ROUND_CODIE });
+    const w = roundWorld(on, { role: 'none' });
     await start($);
     await send($, ROUND_SENSE, 'round 1 on abc12345');
-    expect(
-        [...w.store.keys()].filter((k) => k.startsWith('lane-rounds:')),
-    ).toEqual([]);
+    expect(w.files[ROUNDS_FILE]).toBeUndefined();
 });
 
 test('a count follows the number sent, a lane opening past round 1', async ($, on) => {
-    world(on, { files: thread('codie'), name: ROUND_CODIE });
+    roundWorld(on);
     await start($);
     const lines: string[] = [];
     for (const [n, sha] of [
@@ -3311,85 +3446,224 @@ test('a count follows the number sent, a lane opening past round 1', async ($, o
         );
     expect(lines[0]).toBe('');
     expect(lines[1]).toContain('past the cap');
-    expect(lines[2]).toContain('the stop goes to the coordinator');
+    expect(lines[2]).toContain('the coordinator has the count');
 });
 
 test('a final leading a numbered round counts that round', async ($, on) => {
-    const w = world(on, { files: thread('codie'), name: ROUND_CODIE });
+    const w = roundWorld(on);
     await start($);
     await send($, ROUND_SENSE, 'final FRM-9 round 3 on abc1234');
-    expect((w.store.get(LANE_KEY) as { count: number }).count).toBe(3);
+    expect((kept(w) as { count: number }).count).toBe(3);
 });
 
 test('a final with no number counts as round 1', async ($, on) => {
-    const w = world(on, { files: thread('codie'), name: ROUND_CODIE });
+    const w = roundWorld(on);
     await start($);
     await send($, ROUND_SENSE, 'final on 6381739f, the pr');
     await send($, ROUND_SENSE, 'round 2 on 7c90198');
-    expect(w.store.get(LANE_KEY)).toEqual({
+    expect(kept(w)).toEqual({
         count: 2,
         shas: ['6381739f', '7c90198'],
     });
 });
 
 test('a final with no sha in it is no round', async ($, on) => {
-    const w = world(on, { files: thread('codie'), name: ROUND_CODIE });
+    const w = roundWorld(on);
     await start($);
     await send($, ROUND_SENSE, 'final word: defaced is not a sha');
-    expect(w.store.get(LANE_KEY)).toBeUndefined();
+    expect(kept(w)).toBeUndefined();
 });
 
-test('a key the first build wrote keeps counting', async ($, on) => {
-    const w = world(on, { files: thread('codie'), name: ROUND_CODIE });
-    w.store.set(LANE_KEY, ['aaaaaaa', 'bbbbbbb']);
+// clio's call 9: the old private keys are read at the land, only the shelf file is written
+for (const [shape, old] of [
+    ['the first build', ['aaaaaaa', 'bbbbbbb']],
+    ['the second build', { count: 2, shas: ['aaaaaaa', 'bbbbbbb'] }],
+] as const)
+    test(`a key ${shape} kept privately seeds the shelf count`, async ($, on) => {
+        const w = roundWorld(on);
+        w.store.set(LANE_KEY, old);
+        await start($);
+        await send($, ROUND_SENSE, 'round 1 on ccccccc');
+        expect([kept(w), w.store.get(LANE_KEY)]).toEqual([
+            { count: 3, shas: ['aaaaaaa', 'bbbbbbb', 'ccccccc'] },
+            old,
+        ]);
+    });
+
+test('the shelf file outranks a private key of the same lane', async ($, on) => {
+    const w = roundWorld(on, {
+        files: {
+            [ROUNDS_FILE]: JSON.stringify({
+                rounds: { [LANE]: { count: 1, shas: ['aaaaaaa'] } },
+                v: 1,
+            }),
+        },
+    });
+    w.store.set(LANE_KEY, { count: 5, shas: ['x1', 'x2', 'x3', 'x4', 'x5'] });
     await start($);
-    await send($, ROUND_SENSE, 'round 1 on ccccccc');
-    expect((w.store.get(LANE_KEY) as { count: number }).count).toBe(3);
+    await send($, ROUND_SENSE, 'round 2 on bbbbbbb');
+    expect(kept(w)).toEqual({ count: 2, shas: ['aaaaaaa', 'bbbbbbb'] });
+});
+
+test("another lane's rounds in the file stay as they were", async ($, on) => {
+    const other = { count: 2, shas: ['e1', 'e2'] };
+    const w = roundWorld(on, {
+        files: {
+            [ROUNDS_FILE]: JSON.stringify({
+                rounds: { 'herdr-lane-2 | FRM-1': other },
+                v: 1,
+            }),
+        },
+    });
+    await start($);
+    await send($, ROUND_SENSE, 'round 1 on abc12345');
+    expect(roundsIn(w.files)).toEqual({
+        [LANE]: { count: 1, shas: ['abc12345'] },
+        'herdr-lane-2 | FRM-1': other,
+    });
 });
 
 test('below the cap the sender hears no round line', async ($, on) => {
-    world(on, { files: thread('codie'), name: ROUND_CODIE });
+    roundWorld(on);
     await start($);
     const sent = await sendRounds($, 2);
     expect(sent.flatMap(roundLines)).toEqual([]);
 });
 
-test('at the cap the sender hears that a next round is past it', async ($, on) => {
-    world(on, { files: thread('codie'), name: ROUND_CODIE });
+test('at the cap the sender hears that a next round is past it, and clio hears nothing', async ($, on) => {
+    const w = roundWorld(on);
     await start($);
     const sent = await sendRounds($, 3);
-    expect(roundLines(sent[2] ?? {}).join('')).toContain(
-        'a next round with a P0 or P1 is past the cap',
-    );
+    expect([roundLines(sent[2] ?? {}).join(''), w.told]).toEqual([
+        expect.stringContaining('a next round with a P0 or P1 is past the cap'),
+        [],
+    ]);
 });
 
-test('past the cap the sender hears the stop goes to the coordinator', async ($, on) => {
-    world(on, { files: thread('codie'), name: ROUND_CODIE });
+test('round 4 tells the coordinator the lane and the count, once, and warns the sender', async ($, on) => {
+    const w = roundWorld(on);
     await start($);
     const sent = await sendRounds($, 4);
-    expect(roundLines(sent[3] ?? {}).join('')).toContain(
-        'the stop goes to the coordinator',
-    );
+    await send($, ROUND_SENSE, 'round 4 on abcdef3');
+    expect([w.told, roundLines(sent[3] ?? {})]).toEqual([
+        [
+            {
+                text: `[escalate] round 4 of ${LANE}, past the cap of 3, from ${ROUND_CODIE}: ask dima «go on, or stop the lane»`,
+                to: CLIO.sessionId,
+            },
+        ],
+        [
+            'round 4 of this lane, past the cap of 3: the coordinator has the count and says go on or stop; nothing is refused, keep working',
+        ],
+    ]);
+});
+
+test('each round past the cap tells the coordinator again', async ($, on) => {
+    const w = roundWorld(on);
+    await start($);
+    await sendRounds($, 5);
+    expect(w.told.map((t) => t.text.match(/round (\d)/)?.[1])).toEqual([
+        '4',
+        '5',
+    ]);
 });
 
 test('a round past the cap is still delivered', async ($, on) => {
-    world(on, { files: thread('codie'), name: ROUND_CODIE });
+    roundWorld(on);
     await start($);
     const sent = await sendRounds($, 4);
     expect(sent[3]?.result.success).toBe(true);
 });
 
-test('the stop still fires across a compact', async ($, on) => {
+test('a coordinator line that cannot go says so in the sender’s turn', async ($, on) => {
+    const w = roundWorld(on, { refusal: 'not reachable' });
+    await start($);
+    const sent = await sendRounds($, 4);
+    expect([
+        roundLines(sent[3] ?? {}).join(''),
+        sent[3]?.result.success,
+    ]).toEqual([
+        expect.stringContaining(
+            'the line to the coordinator did not go (not reachable)',
+        ),
+        true,
+    ]);
+    expect(w.told).toEqual([]);
+});
+
+test("the coordinator's line passes quiet comms and starts her turn", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const r = await ping(
+        $,
+        `[escalate] round 4 of ${LANE}, past the cap of 3, from ${ROUND_CODIE}: ask dima «go on, or stop the lane»`,
+        ROUND_CODIE,
+    );
+    expect([r.consumed, w.queued.length]).toEqual([undefined, 1]);
+});
+
+test('the past-the-cap line still fires across a compact and a reload, read from the shelf file', async ($, on) => {
     on('session.compact', (_$, e) => ({ messages: e.messages }));
-    world(on, { files: thread('codie'), name: ROUND_CODIE });
+    const w = roundWorld(on);
     await start($);
     await sendRounds($, 3);
     await $.session.compact({
         messages: [{ role: 'user', text: 'hi', toolUses: [] }],
         trigger: 'auto',
     } as never);
+    w.store.clear();
     const r = await send($, ROUND_SENSE, 'round 1 on ddddddd');
-    expect(roundLines(r).join('')).toContain(
-        'the stop goes to the coordinator',
-    );
+    expect([roundLines(r).join(''), w.told.length]).toEqual([
+        expect.stringContaining('the coordinator has the count'),
+        1,
+    ]);
+});
+
+/* a member's title follows its chunk (FRM-504 exit 4) */
+
+const titled = ($: Engine) =>
+    $.classic.UserPromptSubmit({
+        hook_event_name: 'UserPromptSubmit',
+        prompt: 'go',
+    } as never) as Promise<{ sessionTitle?: string }>;
+
+for (const [role, name, want] of [
+    ['codie', '⚡ 🔧 mods | FRM-9', '⚡ 🔧 mods | FRM-10'],
+    ['sixth-sense', '⚡ 🔎 mods | FRM-9', '⚡ 🔎 mods | FRM-10'],
+    ['codie', '🌗 🔧 mods |FRM-9', '🌗 🔧 mods |FRM-10'],
+] as const)
+    test(`a ${role} «${name}» whose plan moved on is titled «${want}»`, async ($, on) => {
+        roundWorld(on, { name, plan: PLAN_NEXT, role });
+        await start($);
+        expect((await titled($)).sessionTitle).toBe(want);
+    });
+
+for (const [why, over] of [
+    ['its title already names the chunk', { name: '⚡ 🔧 mods | FRM-10' }],
+    ['its title names no ticket', { name: '⚡ 🔧 mods' }],
+    ['no lane plan', { plan: undefined }],
+    ['the coordinator', { name: '🦉 clio', role: 'coordinator' }],
+    ['every step done', { plan: PLAN_NEXT.map((s) => ({ ...s, done: true })) }],
+] as const)
+    test(`no title is set: ${why}`, async ($, on) => {
+        roundWorld(on, {
+            name: '⚡ 🔧 mods | FRM-9',
+            plan: PLAN_NEXT,
+            ...over,
+        } as never);
+        await start($);
+        expect((await titled($)).sessionTitle).toBeUndefined();
+    });
+
+test('🎛️ rounds switched off: no count, no coordinator line, no title', async ($, on) => {
+    const w = roundWorld(on, { name: '⚡ 🔧 mods | FRM-9', plan: PLAN_NEXT });
+    w.store.set('shown', { 'stash.rounds': false });
+    await start($);
+    for (let i = 0; i < 4; i++)
+        await send($, ROUND_SENSE, `round ${i + 1} on abcdef${i}`);
+    expect([
+        w.files[ROUNDS_FILE],
+        w.told,
+        (await titled($)).sessionTitle,
+    ]).toEqual([undefined, [], undefined]);
 });
