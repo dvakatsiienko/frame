@@ -161,7 +161,7 @@ const (
 )
 
 var (
-	// a markdown link linear writes over a bare id or url after the write
+	// a markdown link linear writes over a bare id, url or file word (the autolink [FTR.md:985](<http://FTR.md:985>)) after the write
 	linkRewrite = regexp.MustCompile(`\[([^\[\]\n]+)\]\(([^)\s]+)\)`)
 	bareID      = regexp.MustCompile(`^(?:FRM|BYT|PK)-\d+$`)
 	// linear links an id only to that id's own issue page in our workspace; any other target is an edit
@@ -193,7 +193,7 @@ func signedBlock(body string) (above, block string, ok bool) {
 func asSigned(above string) string {
 	folded := linkRewrite.ReplaceAllStringFunc(above, func(link string) string {
 		m := linkRewrite.FindStringSubmatch(link)
-		if target := issueURL.FindStringSubmatch(m[2]); m[1] == m[2] || (bareID.MatchString(m[1]) && target != nil && target[1] == m[1]) {
+		if target := issueURL.FindStringSubmatch(m[2]); m[1] == m[2] || "http://"+m[1] == strings.Trim(m[2], "<>") || (bareID.MatchString(m[1]) && target != nil && target[1] == m[1]) {
 			return m[1]
 		}
 		return link

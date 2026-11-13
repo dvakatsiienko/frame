@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -239,5 +240,51 @@ func TestBodySetRestampsAListWhoseFirstNumberLinearChanged(t *testing.T) {
 
 	if got.code != 0 || data["sign"] != signMatch || data["restamped"] != true || bodySignHash(saved()) == bodySignHash(newTicket) {
 		t.Errorf("exit %d, data %v, want a re-stamp on the saved text:\n%s\n%s", got.code, data, got.stdout, saved())
+	}
+}
+
+// FRM-603 exit 1: FRM-605's saved body, its bare `FTR.md:985` linked by linear's autolink, reads match against its newest sign hash
+func TestSignReadsAnAutolinkedFileWordAsMatch(t *testing.T) {
+	t.Parallel()
+	saved, err := os.ReadFile("testdata/frm-605-saved.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	state, stored, now := bodySign(string(saved))
+
+	if state != signMatch || stored != "dd2a1f86" {
+		t.Errorf("the sign reads %s (stored %s, raw %s), want match on dd2a1f86", state, stored, now)
+	}
+}
+
+// FRM-603 exit 2: a link whose text is not its own target stays a link (asSigned's angle-url fold still drops the <>, as before)
+func TestAsSignedKeepsALinkWhoseTextIsNotItsTarget(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ name, text, want string }{
+		{"the autolink of a file word folds", "see [FTR.md:985](<http://FTR.md:985>) now\n", "see FTR.md:985 now\n\n"},
+		{"a link with another text stays", "see [docs](<http://FTR.md:985>) now\n", "see [docs](http://FTR.md:985) now\n\n"},
+		{"a link to another target stays", "see [FTR.md:985](<http://other.md:985>) now\n", "see [FTR.md:985](http://other.md:985) now\n\n"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			if got := asSigned(c.text); got != c.want {
+				t.Errorf("asSigned(%q) = %q, want %q", c.text, got, c.want)
+			}
+		})
+	}
+}
+
+// FRM-603 exit 3: a body sent with a bare file word and saved with the autolink re-stamps, with no «changed more than escapes» refusal
+func TestRestampTakesLinearsAutolinkOfABareFileWord(t *testing.T) {
+	t.Parallel()
+	above := newTicket + "the stash says it in FTR.md:985 already\n\n"
+	sent := stamped(above)
+	saved := strings.Replace(cosmeticSave(sent, 1), "FTR.md:985", "[FTR.md:985](<http://FTR.md:985>)", 1)
+
+	stampedText, why := restampedText(sent, saved)
+
+	if state := signStateName(stampedText); why != "" || state != signMatch {
+		t.Errorf("why %q, the re-stamped body reads %s, want a re-stamp that reads match", why, state)
 	}
 }
