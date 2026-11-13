@@ -27,6 +27,8 @@ export const cleanTyped = (text) =>
             /<pasted_content\b[^>]*>([\s\S]*?)<\/pasted_content\b[^>]*>/g,
             '$1',
         )
+        // a stripped reminder leaves its line breaks: never more than one blank line where it was
+        .replace(/\n{3,}/g, '\n\n')
         .trim();
 
 /** @param {unknown} content */
@@ -46,6 +48,35 @@ const tagged = (text, name) =>
 
 /** @param {string} text */
 const firstLine = (text) => text.trim().split('\n')[0].trim().slice(0, 160);
+
+/**
+ * a slash command's output as a system line (FRM-595): hook output after a compact, «Set effort level…» after a pick;
+ * its terminal colour codes go
+ * @param {string} out
+ * @returns {SystemLine | null}
+ */
+export function commandOutputLine(out) {
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: the escape is what a terminal colour code starts with
+    const text = out.replace(/\x1b\[[0-9;]*m/g, '').trim();
+    return text ? { label: `⌘ ${firstLine(text)}`, text } : null;
+}
+
+/** the compact boundary Claude Code writes when a conversation is compacted @type {SystemLine} */
+export const COMPACTED_LINE = {
+    label: '🗜 Conversation compacted',
+    text: '🗜 Conversation compacted',
+};
+
+/**
+ * how a row draws under his «System lines» pick: a system row folded, hidden or whole; anything else whole
+ * @param {SystemMode} mode
+ * @param {string} kind the row's kind
+ * @returns {'folded' | 'none' | 'whole'}
+ */
+export function systemDraw(mode, kind) {
+    if (kind !== 'system') return 'whole';
+    return mode === 'hide' ? 'none' : mode === 'show' ? 'whole' : 'folded';
+}
 
 /**
  * the system line a transcript entry is, or null when it is a person's or a model's own

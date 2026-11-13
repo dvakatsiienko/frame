@@ -140,10 +140,13 @@ import {
 import { loadableSkills, menuMatches } from './skills.js';
 import { wholeLines } from './slice.js';
 import {
+    COMPACTED_LINE,
     SYSTEM_MODES,
     cleanTyped,
+    commandOutputLine,
     dropImageMarks,
     midTurnPrompt,
+    systemDraw,
     systemLine,
 } from './system.js';
 import { RADIUS, TEXT, button } from './ui.js';
@@ -1206,8 +1209,6 @@ function keepScroll(address, scroll) {
             localStorage.setItem(scrollKey(address), JSON.stringify(scroll));
     } catch {}
 }
-// biome-ignore lint/suspicious/noControlCharactersInRegex: it strips the terminal's colour codes, which start with ESC
-const plain = (s) => s.replace(/\x1b\[[0-9;]*m/g, '');
 
 function resultText(content) {
     if (typeof content === 'string') return content;
@@ -2999,8 +3000,9 @@ export default class ClaudeChat extends View {
             if (d.isSidechain && into === this) continue;
             if (d.type === 'system' && d.subtype === 'compact_boundary')
                 into.items.push({
-                    kind: 'note',
-                    text: 'Conversation compacted',
+                    id: d.uuid,
+                    kind: 'system',
+                    ...COMPACTED_LINE,
                 });
             if (
                 d.type === 'attachment' &&
@@ -3135,10 +3137,16 @@ export default class ClaudeChat extends View {
             if (effort)
                 this.effort = { level: effort[1], model: this.modelNow() };
         }
+        // a command's output (hook lines after a compact, «Set effort level…» after a pick) folds as a system line
+        const output = out === undefined ? null : commandOutputLine(out);
         if (out !== undefined)
             return (
-                out &&
-                into.items.push({ kind: 'note', mono: true, text: plain(out) })
+                output &&
+                into.items.push({
+                    id: `out-${at ?? into.items.length}`,
+                    kind: 'system',
+                    ...output,
+                })
             );
         if (text.startsWith('[Request interrupted'))
             return into.items.push({ kind: 'note', text: 'Interrupted' });
@@ -4464,7 +4472,9 @@ export default class ClaudeChat extends View {
     // A line he never typed: folded to one dim line that opens to its whole text on a click, or shown whole
     /** @param {any} t @param {{ id: string, label: string, text: string }} item @param {number | string} i */
     systemRow(t, item, i) {
-        const open = chatLook().system === 'show' || this.open.has(item.id);
+        const open =
+            systemDraw(chatLook().system, 'system') === 'whole' ||
+            this.open.has(item.id);
         return v_flex()
             .w_full()
             .px(10)
@@ -7411,7 +7421,7 @@ export default class ClaudeChat extends View {
             .filter(
                 ([item]) =>
                     !ask.rejected(item) &&
-                    !(item.kind === 'system' && chatLook().system === 'hide'),
+                    systemDraw(chatLook().system, item.kind) !== 'none',
             );
         const found = this.findings(all.filter(visible), sub);
         const current = this.findList[this.findAt]?.id;

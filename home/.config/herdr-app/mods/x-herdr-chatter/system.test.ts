@@ -1,9 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+    COMPACTED_LINE,
     cleanTyped,
+    commandOutputLine,
     dropImageMarks,
     midTurnPrompt,
+    systemDraw,
     systemLine,
 } from './system.js';
 
@@ -185,5 +188,67 @@ describe('a prompt he typed while a turn ran draws like any other', () => {
         expect(
             midTurnPrompt({ message: { content: 'hi' }, type: 'user' }),
         ).toBeNull();
+    });
+});
+
+// FRM-595: the rows Claude Code writes into a herdr thread's transcript that he never typed, read off a busy thread
+// (clio main, 2026-11-13). already folded: a task notification, a plugin prompt (an orbit tick), a synthetic reply.
+// missed, drawn whole: a slash command's stdout (hook output after a compact, «Set effort level…» after a pick) and the
+// compact boundary. never drawn, so nothing to fold: system rows (turn durations, stop-hook summaries, idle notices),
+// hook attachments, a command's caveat, the compact summary. fixtures here are written by hand in each kind's shape
+const missed = {
+    compact: COMPACTED_LINE,
+    effortSet: commandOutputLine(
+        'Set effort level to high (this session only): Claude takes more care',
+    ),
+    hookOutput: commandOutputLine(
+        '\u001b[2mCompacted (ctrl+o to see full summary)\u001b[22m\nPreCompact [command hook 1] completed successfully',
+    ),
+};
+
+describe('a row he never typed folds with the rest (FRM-595)', () => {
+    test("a command's output folds to its first line, colour codes gone, the whole output kept", () => {
+        expect(missed.hookOutput).toEqual({
+            label: '⌘ Compacted (ctrl+o to see full summary)',
+            text: 'Compacted (ctrl+o to see full summary)\nPreCompact [command hook 1] completed successfully',
+        });
+        expect(missed.effortSet?.label).toBe(
+            '⌘ Set effort level to high (this session only): Claude takes more care',
+        );
+    });
+
+    test('an empty output is no line', () => {
+        expect(commandOutputLine('  ')).toBeNull();
+    });
+
+    test('the compact boundary is a system line', () => {
+        expect(COMPACTED_LINE.label).toBe('🗜 Conversation compacted');
+    });
+
+    test('folded: each missed kind sits in one row he can open; his own text beside it is no system row', () => {
+        for (const line of Object.values(missed))
+            expect(systemDraw('fold', line ? 'system' : 'none')).toBe('folded');
+        expect(systemDraw('fold', 'user')).toBe('whole');
+    });
+
+    test('hidden: none draws; shown: each draws whole', () => {
+        expect(systemDraw('hide', 'system')).toBe('none');
+        expect(systemDraw('show', 'system')).toBe('whole');
+        expect(systemDraw('hide', 'user')).toBe('whole');
+    });
+
+    test('his message with a reminder and a paste reads whole and plain, never a system row', () => {
+        const mine = {
+            message: {
+                content:
+                    'ship the fix\n<system-reminder>\nnote for the model\n</system-reminder>\n<pasted_content id="a1">\nthe log line\n</pasted_content id="a1">',
+            },
+            origin: { kind: 'human' },
+            type: 'user',
+        };
+        expect(systemLine(mine)).toBeNull();
+        expect(cleanTyped(mine.message.content)).toBe(
+            'ship the fix\n\nthe log line',
+        );
     });
 });
