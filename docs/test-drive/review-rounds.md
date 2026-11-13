@@ -138,3 +138,8 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 
 ## verdict
 - 2026-11-12 · frame#172, FRM-572 chunk 2 (cli wisps): clean at 3 rounds · wishkeeper found 1 high (a UTC lock stamp read every live holder as gone), sixth sense round 2 found 1 P1 (a `ps` that did not run read as gone); both fixed, red-proven · ci reviewer: not named
+- 2026-11-13 · FRM-601, herdr-lane-2 quick lane on main (a2559f99..61ff052c), the deck drops a dead thread's row: clean at 3 rounds · rounds 1–2 found the start-time check missing and a silent `ps` listing every row; both fixed, red on revert · P2 left: the deck keeps a JS twin of x's running-thread rule, a cli-lane ticket
+- 2026-11-13 · FRM-597, mods-lane-7 quick lane on main (3d741859..1fea2c06), a held message reaches an idle session at its compact end: clean at round 1 · haiku probe table over every edge, all pass; wisphunter found 6 P2s, none reproduced, 4 folded into FRM-583 slice 04
+- 2026-11-13 · FRM-594, herdr-lane-2 quick lane on main, joiner: clean at round 5 · round 4 found his pasted command output folded as a system row (P1), fixed with the row-kind list; two look fixes rode round 5
+- 2026-11-13 · FRM-595, herdr-lane-2 quick lane on main, joiner: clean at round 5 · round 4 found his pasted command output folded as a system row (P1), fixed with the row-kind list; two look fixes rode round 5
+- 2026-11-13 · FRM-607, herdr-lane-2 quick lane on main, the «show more» off switch: clean at round 1 · dima flipped it live (o36)
