@@ -17,8 +17,7 @@ esac
 line="hc run --bg --no-parent --cwd $HOME/frame/_clio -- claude -n ${(qq)name}"
 (( $#first )) && line+=" ${(qq)first[1]}"
 line+=' --remote-control'
-# run from a clio pane, the gate would refuse a role a live record of that pane holds
-S=$(env -u HC_TERMINAL_ID x brief summon --apply --role "$role" --json "$line") \
+S=$(x brief summon --apply --role "$role" --json "$line") \
   || { echo "clio-start: x brief summon refused: $S" >&2; exit 1; }
 sid=$(jq -er .data.sessionId <<<"$S") && name=$(jq -er .data.display <<<"$S") || { echo "clio-start: no session in: $S" >&2; exit 1; }
 J=$(hc run --bg --no-parent --no-notify --json --name "$short" --label "$label" --cwd ~/frame/_clio -- \
