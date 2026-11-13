@@ -6606,6 +6606,9 @@ async function flipKnob($: EngineInterface, name: SwitchName) {
     return isOn;
 }
 
+// a wind number the notice-below-wind rule refused, by knob, with the rule's reason: drawn under its field until a value
+// saves (FRM-583:W37 «it should show»)
+const knobRefusals = new Map<string, string>();
 // a keystroke saves at once when it makes a valid value, and is never applied when it does not (exit 6)
 async function setKnobNumber(
     $: EngineInterface,
@@ -6619,8 +6622,10 @@ async function setKnobNumber(
         'wind-at': await readNumber($, 'wind-at'),
         'wind-notice': await readNumber($, 'wind-notice'),
     };
-    if (windPairRefusal(lines, name, n)) return;
-    await $.store.set(NUMBERS[name].key, n);
+    const refusal = windPairRefusal(lines, name, n);
+    if (refusal) knobRefusals.set(name, refusal);
+    else knobRefusals.delete(name);
+    if (!refusal) await $.store.set(NUMBERS[name].key, n);
     $.ui.invalidate('ui.render');
 }
 
@@ -7732,7 +7737,8 @@ export const register: Register = (on) => {
                             unit: string,
                         ) => {
                             const { key, range } = NUMBERS[name];
-                            return Input ? (
+                            const refusal = knobRefusals.get(name);
+                            const row = Input ? (
                                 <Box
                                     alignItems='center'
                                     flexDirection='row'
@@ -7784,6 +7790,17 @@ export const register: Register = (on) => {
                                     </Box>
                                 </Box>
                             ) : null;
+                            return row && refusal ? (
+                                <Box
+                                    flexDirection='column'
+                                    key={`knob-field:${key}`}>
+                                    {row}
+                                    <Text
+                                        dimColor>{`🛑 not saved: ${refusal}`}</Text>
+                                </Box>
+                            ) : (
+                                row
+                            );
                         };
                         const air = e.surface === 'desktop';
                         const knobsJSX = (
