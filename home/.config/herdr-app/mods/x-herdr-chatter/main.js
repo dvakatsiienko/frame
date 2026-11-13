@@ -1191,6 +1191,19 @@ function joinIo(cx) {
  * @typedef {{ address: string, at: number, extra: string[], id: string, said: string, sid: string,
  *   state: 'pending' | 'joined', text: string }} Mark
  */
+
+// the send button's 📥 or ✉️, centred: a square line box the glyph's own height, so the text's line gap never lifts it
+// (dima, 20:55: «perfectly centered … tiny little smaller»)
+/** @param {string} emoji */
+const sendMark = (emoji) =>
+    div()
+        .size(px(14))
+        .flex()
+        .items_center()
+        .justify_center()
+        .text_size(px(TEXT.xs))
+        .line_height(px(14))
+        .child(emoji);
 // a held key's repeats stop for longer than this only once it is let go: before its first repeat (his macOS delay is
 // 150 ms), and between repeats (his are 15 ms apart); macOS sends no key-up for a key let go while ⌘ is down
 const KEY_SILENCE_MS = 250;
@@ -3507,10 +3520,7 @@ export default class ClaudeChat extends View {
         ) {
             const extra = attached.map(promptPath);
             const words = [text, ...extra].filter(Boolean).join('\n');
-            this.forgetPreviews(address, true);
-            this.files.delete(address);
-            this.keepFiles(address);
-            // the words stay in the quill, marked: what he types next rides the same join until a turn takes it
+            // the words stay in the quill, marked, and the pictures over it, until a turn takes them (dima, 20:55): what he types next rides the same join until a turn takes it
             this.box.set_value(text);
             // set_value puts the caret at the start: back to the end, where he was typing
             this.box.set_selected_range({
@@ -3667,6 +3677,16 @@ export default class ClaudeChat extends View {
             // joined first: the quill's change handler must not read the emptied quill as his unmark
             keepMark(null);
             this.joining = { ...j, state: 'joined' };
+            // the pictures it took leave with its words; one dropped after the last write stays
+            const files = this.files.get(this.address) ?? [];
+            const left = files.filter((p) => !j.extra.includes(promptPath(p)));
+            if (left.length < files.length) {
+                for (const p of files)
+                    if (!left.includes(p))
+                        this.previews.delete(`${this.address} ${p}`);
+                this.files.set(this.address, left);
+                this.keepFiles(this.address);
+            }
             const typed = this.box.value().trim();
             if (typed.startsWith(j.said)) {
                 const rest = typed.slice(j.said.length).trimStart();
@@ -3742,7 +3762,8 @@ export default class ClaudeChat extends View {
         const j = this.joining;
         if (!j || j.state !== 'pending' || j.address !== this.address) return;
         const said = this.box.value().trim();
-        const text = [said, ...j.extra].filter(Boolean).join('\n');
+        const extra = (this.files.get(this.address) ?? []).map(promptPath);
+        const text = [said, ...extra].filter(Boolean).join('\n');
         if (text === j.text) return cx.notify();
         if (this.states?.thread?.joins?.taken?.includes(j.id)) return;
         cx.spawn(async (cx) => {
@@ -3753,7 +3774,7 @@ export default class ClaudeChat extends View {
                 text,
             );
             if (!isWritten || this.joining?.id !== j.id) return;
-            this.joining = { ...this.joining, said, text };
+            this.joining = { ...this.joining, extra, said, text };
             keepMark(this.joining);
             cx.notify();
         });
@@ -4007,6 +4028,7 @@ export default class ClaudeChat extends View {
                 );
                 this.previews.set(`${address} ${path}`, rel);
                 this.keepFiles(address);
+                this.retext(cx);
             }
             cx.notify();
         });
@@ -4092,6 +4114,7 @@ export default class ClaudeChat extends View {
             (this.files.get(address) ?? []).filter((p) => p !== path),
         );
         this.keepFiles(address);
+        this.retext(cx);
         deleteShots([rel]);
         cx.notify();
     }
@@ -4432,6 +4455,7 @@ export default class ClaudeChat extends View {
             (this.files.get(address) ?? []).filter((p) => !isImagePath(p)),
         );
         this.keepFiles(address);
+        this.retext(cx);
         cx.notify();
     }
 
@@ -4442,6 +4466,8 @@ export default class ClaudeChat extends View {
             address,
             withFiles(this.files.get(address) ?? [], paths),
         );
+        // a picture dropped on marked words rides their join
+        this.retext(cx);
         const fresh = paths.filter(
             (p) => isImagePath(p) && !this.previews.has(`${address} ${p}`),
         );
@@ -4556,6 +4582,7 @@ export default class ClaudeChat extends View {
                                         address,
                                         all.filter((p) => p !== path),
                                     );
+                                    this.retext(cx);
                                     cx.notify();
                                 })
                                 .child('×'),
@@ -8622,24 +8649,12 @@ export default class ClaudeChat extends View {
                                                                                 .joining
                                                                                 .state ===
                                                                             'joined'
-                                                                              ? div()
-                                                                                    .text_size(
-                                                                                        px(
-                                                                                            TEXT.sm,
-                                                                                        ),
-                                                                                    )
-                                                                                    .child(
-                                                                                        '✉️',
-                                                                                    )
-                                                                              : div()
-                                                                                    .text_size(
-                                                                                        px(
-                                                                                            TEXT.sm,
-                                                                                        ),
-                                                                                    )
-                                                                                    .child(
-                                                                                        '📥',
-                                                                                    )
+                                                                              ? sendMark(
+                                                                                    '✉️',
+                                                                                )
+                                                                              : sendMark(
+                                                                                    '📥',
+                                                                                )
                                                                           : '↑',
                                                                 ),
                                                         ),
