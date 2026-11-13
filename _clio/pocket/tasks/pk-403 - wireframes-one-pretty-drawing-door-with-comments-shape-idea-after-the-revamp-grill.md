@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-13T16:18:00Z'
-updated_date: '2026-11-13T16:31:00Z'
+updated_date: '2026-11-13T16:32:00Z'
 labels:
   - s
   - clio-wing-1
@@ -44,4 +44,7 @@ answered 18:11 and 18:19 (wing 1): Theo's diagram is agent-written html publishe
 close: folded into FRM-611 as W31–W46 by main clio 18:31 (one home, one grill)
 
 18:31 close: PK-403:W1–W16 moved → FRM-611:W31–W46
+
+18:32 W-lines accounted:
+close: PK-403:W1–W16 moved → FRM-611:W31–W46
 <!-- SECTION:NOTES:END -->
