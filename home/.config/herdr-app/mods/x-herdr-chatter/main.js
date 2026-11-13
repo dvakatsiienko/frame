@@ -88,7 +88,14 @@ import {
 import { replyFold } from './fold.js';
 import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 import { rejoin } from './joined.js';
-import { JOINED_SHOWN_MS, JOINS_DIR, appendJoin, joinStatus } from './joins.js';
+import {
+    JOINED_SHOWN_MS,
+    JOINS_DIR,
+    appendJoin,
+    isJoinPending,
+    joinStatus,
+    pendingJoins,
+} from './joins.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
 import { withPlainPaste } from './paste.js';
@@ -3279,10 +3286,9 @@ export default class ClaudeChat extends View {
             cx.timer.after(600, (cx) => this.tick(cx));
             return cx.notify();
         }
-        // a busy thread takes the words into its running turn, a picture as its path: no new turn starts (FRM-564)
+        // the words join the thread's turn, the running one or its next, a picture as its path: no turn starts (FRM-564)
         const sid = this.states?.thread?.sid;
         if (
-            this.target()?.status === 'working' &&
             !text.startsWith('/') &&
             !this.where?.container &&
             !this.replies.get(address) &&
@@ -3295,6 +3301,8 @@ export default class ClaudeChat extends View {
             this.forgetPreviews(address, true);
             this.files.delete(address);
             this.keepFiles(address);
+            if (isJoinPending(this.joinsWaiting(address), words))
+                return cx.notify();
             return this.join(address, sid, words, cx);
         }
         // A dev container's pasted images go as their paths in the container, after the text.
@@ -3412,6 +3420,41 @@ export default class ClaudeChat extends View {
             return true;
         }
         return false;
+    }
+
+    // the joins the shown thread still waits on, read back from its join file, so a reload draws the card again; words
+    // the quill still holds that already wait there leave it, so they show once
+    async readJoins() {
+        const address = this.address;
+        const sid = this.states?.thread?.sid;
+        const file = sid
+            ? ((await readTextFile(`${home()}/${JOINS_DIR}/${sid}.jsonl`).catch(
+                  () => null,
+              )) ?? '')
+            : '';
+        const rows = pendingJoins(file, this.states?.thread?.joins);
+        const was = this.joinRows;
+        this.joinRows = { address, rows };
+        const typed = this.box?.value() ?? '';
+        if (address === this.address && typed && isJoinPending(rows, typed)) {
+            this.box.set_value('');
+            this.typed = '';
+            keepDraft(address, '');
+        }
+        return JSON.stringify(was) !== JSON.stringify(this.joinRows);
+    }
+
+    // his joins waiting on a thread: the file's rows, then the click still being written
+    /** @param {string} address @returns {{ id: string, text: string }[]} */
+    joinsWaiting(address) {
+        const rows =
+            this.joinRows?.address === address ? this.joinRows.rows : [];
+        const j = this.joining;
+        return j?.address === address &&
+            j.state === 'pending' &&
+            !rows.some((r) => r.id === j.id)
+            ? [...rows, { id: j.id, text: j.text }]
+            : rows;
     }
 
     // a join no turn took: its words come back to the quill, after anything typed since, and the note says why
@@ -3884,6 +3927,51 @@ export default class ClaudeChat extends View {
                     ),
             )
             .children(lineJSX)
+            .when(more > 0, (el) =>
+                el.child(div().h(18).child(`+${more} more`)),
+            );
+    }
+
+    // his joins waiting on the thread, in the queued strip's place and shape: a busy thread takes them into this turn,
+    // an idle one at its next (FRM-564)
+    /** @param {any} t @param {{ id: string, text: string }[]} rows @param {boolean} isBusy */
+    joinStrip(t, rows, isBusy) {
+        const shown = rows.slice(0, QUEUED_SHOWN);
+        const more = rows.length - shown.length;
+        const head = isBusy
+            ? rows.length > 1
+                ? `${rows.length} join this turn`
+                : 'Joins this turn'
+            : rows.length > 1
+              ? `${rows.length} wait for its next turn`
+              : 'Waits for its next turn';
+        return v_flex()
+            .absolute()
+            .left(10)
+            .right(10)
+            .top(-(queuedStripCover(rows.length) - 6))
+            .px(10)
+            .pb(4)
+            .rounded(8)
+            .bg(t.raised)
+            .border(1)
+            .border_color(t.border)
+            .text_size(px(12))
+            .text_color(t.muted)
+            .child(h_flex().h(30).items_center().child(head))
+            .children(
+                shown.map((r) =>
+                    div()
+                        .id(`join-${r.id}`)
+                        .h(24)
+                        .flex()
+                        .items_center()
+                        .min_w(0)
+                        .truncate()
+                        .text_color(t.foreground)
+                        .child(r.text.replace(/\s+/g, ' ')),
+                ),
+            )
             .when(more > 0, (el) =>
                 el.child(div().h(18).child(`+${more} more`)),
             );
@@ -6774,6 +6862,7 @@ export default class ClaudeChat extends View {
                     cx.notify();
                 }
                 if (this.settleJoin(cx)) cx.notify();
+                if (await this.readJoins()) cx.notify();
                 if (this.settlePresses()) cx.notify();
             } finally {
                 this.statesBusy = false;
@@ -7544,13 +7633,16 @@ export default class ClaudeChat extends View {
         this.agentWorking = agent.status === 'working';
         this.settleQueued(agent.status, cx);
         const queued = this.waiting(this.address);
+        const joinsWaiting = queued.length
+            ? []
+            : this.joinsWaiting(this.address);
         const isLeftShown =
             Boolean(this.leftInBox) && agent.status !== 'working';
         // how far a strip covers the log's bottom: a press there is the strip's, never the row's under it
         this.stripCover = isLeftShown
             ? LEFT_STRIP_COVER
-            : queued.length
-              ? queuedStripCover(queued.length)
+            : queued.length || joinsWaiting.length
+              ? queuedStripCover(queued.length || joinsWaiting.length)
               : 0;
         // A row's height holds only at the width and look it was measured at.
         /** @type {string} */
@@ -7759,6 +7851,15 @@ export default class ClaudeChat extends View {
                     // over the log's bottom edge, so the transcript never moves when it comes or goes
                     .when(queued.length > 0 && !isLeftShown, (el) =>
                         el.child(this.queuedStrip(t, queued)),
+                    )
+                    .when(joinsWaiting.length > 0 && !isLeftShown, (el) =>
+                        el.child(
+                            this.joinStrip(
+                                t,
+                                joinsWaiting,
+                                agent.status === 'working',
+                            ),
+                        ),
                     )
                     .when(isLeftShown, (el) =>
                         el.child(

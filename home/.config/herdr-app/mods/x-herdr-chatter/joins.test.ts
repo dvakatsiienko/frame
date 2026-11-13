@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
-import { JOIN_TAKE_MS, appendJoin, joinStatus } from './joins.js';
+import {
+    JOIN_TAKE_MS,
+    appendJoin,
+    isJoinPending,
+    joinStatus,
+    pendingJoins,
+} from './joins.js';
 
 // a join file and its lock dir in memory, on a fake clock
 function fakeIo({ isLockHeld = false, isWriteRefused = false } = {}) {
@@ -62,7 +68,7 @@ describe('a click joins: one row in the thread’s join file, under its lock (FR
 });
 
 describe('where a join stands, read off the thread’s herdr state', () => {
-    const joins = { joined: ['a1'], push: [], waiting: ['a2'] };
+    const joins = { joined: ['a1'], push: [] as string[], waiting: ['a2'] };
     test('joined once the turn that took it completed', () => {
         expect(joinStatus(joins, 'a1', 0, 1000)).toBe('joined');
     });
@@ -75,5 +81,26 @@ describe('where a join stands, read off the thread’s herdr state', () => {
     test('listed nowhere 60 s after the write: not taken', () => {
         expect(joinStatus(joins, 'a3', 0, JOIN_TAKE_MS)).toBe('not taken');
         expect(joinStatus(undefined, 'a3', 0, JOIN_TAKE_MS)).toBe('not taken');
+    });
+});
+
+describe('a join into an idle thread waits as a card, drawn again after a reload', () => {
+    const file =
+        '{"id":"a1","text":"done one"}\n{"id":"a2","text":"wait for me"}\n{"id":"a2","text":"a second row with a1’s id"}\n{"id":"","text":"no id"}\n{"id":"a3","text":"  "}\nnot json\n{"id":"a4","text":"/compact"}\n';
+    const joins = { joined: ['a1'], push: ['a4'], waiting: ['a2'] };
+    test('a reload reads the card back from the join file: the rows the thread still lists as waiting', () => {
+        expect(pendingJoins(file, joins)).toEqual([
+            { id: 'a2', text: 'wait for me' },
+        ]);
+    });
+    test('no state yet, no card: the file alone never says a row waits', () => {
+        expect(pendingJoins(file, undefined)).toEqual([]);
+        expect(pendingJoins('', joins)).toEqual([]);
+    });
+    test('a second click with the same words writes no duplicate row', () => {
+        const rows = pendingJoins(file, joins);
+        expect(isJoinPending(rows, 'wait for me')).toBe(true);
+        expect(isJoinPending(rows, ' wait for me\n')).toBe(true);
+        expect(isJoinPending(rows, 'something new')).toBe(false);
     });
 });

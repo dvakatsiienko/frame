@@ -44,6 +44,35 @@ export async function appendJoin(io, path, id, text) {
 }
 
 /**
+ * the joins a thread still waits on, read back from its join file: what a reload draws as the card. a row counts only
+ * once the thread's state lists it as waiting, so a file with no state behind it draws nothing; an id's first row wins
+ * @param {string} file @param {Joins | null | undefined} joins @returns {{ id: string, text: string }[]}
+ */
+export function pendingJoins(file, joins) {
+    const waiting = new Set(joins?.waiting ?? []);
+    /** @type {Map<string, string>} */
+    const rows = new Map();
+    for (const line of file.split('\n')) {
+        let row;
+        try {
+            row = JSON.parse(line);
+        } catch {
+            continue;
+        }
+        const { id, text } = row ?? {};
+        if (typeof id !== 'string' || !id || rows.has(id)) continue;
+        if (typeof text === 'string' && text.trim()) rows.set(id, text);
+    }
+    return [...rows]
+        .filter(([id]) => waiting.has(id))
+        .map(([id, text]) => ({ id, text }));
+}
+
+/** these words already wait as a join: a second click writes no second row @param {{ text: string }[]} rows @param {string} text */
+export const isJoinPending = (rows, text) =>
+    rows.some((r) => r.text.trim() === text.trim());
+
+/**
  * where a join stands: «joined», still «waiting» on the thread, «pending» until its state lists it, or «not taken» once
  * it is listed nowhere a minute after the write
  * @param {Joins | null | undefined} joins @param {string} id @param {number} writtenAt @param {number} now
