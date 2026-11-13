@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { effortKey, slideEffort } from './effort.js';
+import { effortKey, pickerLabel, slideEffort } from './effort.js';
 
 describe('effortKey', () => {
     test('a first press opens the popover on the current level', () => {
@@ -69,5 +69,33 @@ describe('slideEffort', () => {
             at: 0,
             from: 2,
         });
+    });
+});
+
+describe("the picker trigger reads like shepherdr's (dima's o13)", () => {
+    test('the model and the capitalised effort', () => {
+        expect(pickerLabel('Opus 5.5', 'medium', null)).toBe(
+            'Opus 5.5 · Medium',
+        );
+        expect(pickerLabel('Opus 5.5', 'xhigh', null)).toBe('Opus 5.5 · Xhigh');
+    });
+
+    test('a part still landing reads with «…»', () => {
+        expect(
+            pickerLabel('Opus 5.5', 'medium', {
+                kind: 'effort',
+                value: 'high',
+            }),
+        ).toBe('Opus 5.5 · High…');
+        expect(
+            pickerLabel('Opus 5.5', 'medium', {
+                kind: 'model',
+                value: 'Haiku 5.5',
+            }),
+        ).toBe('Haiku 5.5… · Medium');
+    });
+
+    test('an unknown part names itself', () => {
+        expect(pickerLabel(null, null, null)).toBe('Model · Effort');
     });
 });

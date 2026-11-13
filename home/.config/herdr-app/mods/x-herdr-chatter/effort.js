@@ -27,3 +27,24 @@ export function slideEffort(popover, way) {
     const at = popover.at + (way === 'right' ? 1 : -1);
     return { ...popover, at: Math.min(EFFORTS.length - 1, Math.max(0, at)) };
 }
+
+/** an effort level as people read it: «medium» → «Medium» @param {string} level */
+export const effortWord = (level) =>
+    level.charAt(0).toUpperCase() + level.slice(1);
+
+/**
+ * the picker's trigger, shepherdr's «Opus 5.5 · Medium» (dima's o13, 2026-11-13); a part still landing reads «…»
+ * @param {string | null} model @param {string | null} effort
+ * @param {{ kind: string, value: string } | null} pending the shown thread's pick in flight
+ */
+export function pickerLabel(model, effort, pending) {
+    const m =
+        pending?.kind === 'model' ? `${pending.value}…` : (model ?? 'Model');
+    const e =
+        pending?.kind === 'effort'
+            ? `${effortWord(pending.value)}…`
+            : effort
+              ? effortWord(effort)
+              : 'Effort';
+    return `${m} · ${e}`;
+}

@@ -75,7 +75,13 @@ import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { readableBackground } from './contrast.js';
 import { importOldDrafts } from './drafts.js';
-import { EFFORTS, effortKey, slideEffort } from './effort.js';
+import {
+    EFFORTS,
+    effortKey,
+    effortWord,
+    pickerLabel,
+    slideEffort,
+} from './effort.js';
 import { foldBlocks } from './fold.js';
 import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 import { rejoin } from './joined.js';
@@ -553,11 +559,12 @@ const OPENS = new Set([
 
 // The header's model / effort bar (see pick), as Claude's /model list names them; the alias is
 // how settings.json's "model" names the default. Read off Claude 2.1.318, 2026-11-05.
+// the picker's order, biggest first (dima, 2026-11-13 14:56)
 const MODELS = [
+    ['fable', 'Fable 5.2'],
     ['opus', 'Opus 5.5'],
     ['sonnet', 'Sonnet 5.5'],
     ['haiku', 'Haiku 5.5'],
-    ['fable', 'Fable 5.2'],
 ];
 // "claude-opus-5-5" → "Opus 5.5"; a display name stays as it is.
 const modelLabel = (m) => {
@@ -2196,10 +2203,8 @@ export default class ClaudeChat extends View {
         const ready = agent.status !== 'blocked';
         const model = this.modelNow();
         const effort = this.effortNow();
-        const pendingOf = (/** @type {string} */ kind) =>
-            this.pending?.address === this.address && this.pending.kind === kind
-                ? `${this.pending.value}…`
-                : null;
+        const pending =
+            this.pending?.address === this.address ? this.pending : null;
         const open = this.drop === 'pick';
         const trigger = h_flex()
             .id('drop-pick-trigger')
@@ -2212,13 +2217,9 @@ export default class ClaudeChat extends View {
             .when(open, (el) => el.bg(t.hover))
             .cursor_pointer()
             .text_size(px(12))
-            .text_color(
-                pendingOf('model') || pendingOf('effort') ? t.accent : t.muted,
-            )
+            .text_color(pending ? t.accent : t.muted)
             .hover((s) => s.bg(t.hover).text_color(t.foreground))
-            .child(
-                `${pendingOf('model') ?? model ?? 'Model'} · ${pendingOf('effort') ?? effort ?? 'Effort'}`,
-            )
+            .child(pickerLabel(model, effort, pending))
             .child(
                 svg('mods/workspace-chrome/chevron-down.svg')
                     .size(12)
@@ -2254,14 +2255,10 @@ export default class ClaudeChat extends View {
                         }),
                 )
                 .when(value !== model && !ready, (el) => el.text_color(t.dim))
-                .child(
-                    div()
-                        .w(12)
-                        .flex_none()
-                        .text_color(t.accent)
-                        .child(value === model ? '✓' : ''),
-                )
-                .child(value);
+                .child(div().flex_1().child(value))
+                .when(value === model, (el) =>
+                    el.child(div().flex_none().text_color(t.accent).child('✓')),
+                );
         const title = (/** @type {string} */ text) =>
             div()
                 .px(8)
@@ -2270,7 +2267,7 @@ export default class ClaudeChat extends View {
                 .text_color(t.foreground)
                 .child(text);
         return Popover.new('drop-pick')
-            .anchor('bottom_left')
+            .anchor('bottom_right')
             .open(open)
             .on_open_change((o, cx) => {
                 // a thread asking him something opens nothing: a pick would type into its question
@@ -2333,8 +2330,8 @@ export default class ClaudeChat extends View {
             0,
             this.effortPop?.at ?? EFFORTS.indexOf(now ?? ''),
         );
-        const STEP = 52;
-        const EDGE = 22;
+        const STEP = 46;
+        const EDGE = 14;
         const x = (/** @type {number} */ i) => EDGE + i * STEP;
         const width = EDGE * 2 + STEP * (EFFORTS.length - 1);
         const stop = (/** @type {string} */ level, /** @type {number} */ i) =>
@@ -2379,7 +2376,7 @@ export default class ClaudeChat extends View {
                 .text_size(px(11))
                 .text_color(i === at ? t.foreground : t.muted)
                 .when(i === at, (el) => el.font_semibold())
-                .child(level);
+                .child(effortWord(level));
         return v_flex()
             .gap(6)
             .child(
@@ -6859,7 +6856,6 @@ export default class ClaudeChat extends View {
             .when(!this.where?.container, (el) =>
                 el.child(this.attachButton(t)),
             )
-            .child(this.picker(t, agent))
             .child(div().flex_1())
             .child(this.bandChips(t));
     }
@@ -7960,6 +7956,19 @@ export default class ClaudeChat extends View {
                                                                                 .text,
                                                                     ),
                                                             ),
+                                                        )
+                                                        // the model and effort picker sits left of send, as shepherdr's does (dima's o13)
+                                                        .child(
+                                                            div()
+                                                                .absolute()
+                                                                .right(42)
+                                                                .bottom(10)
+                                                                .child(
+                                                                    this.picker(
+                                                                        t,
+                                                                        agent,
+                                                                    ),
+                                                                ),
                                                         )
                                                         .child(
                                                             div()
