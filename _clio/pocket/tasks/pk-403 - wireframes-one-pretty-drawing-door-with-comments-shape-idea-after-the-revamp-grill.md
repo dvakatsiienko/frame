@@ -3,7 +3,7 @@ id: PK-403
 title: >-
   wireframes: one pretty drawing door with comments, shape-idea after the revamp
   grill
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T16:18:00Z'
 updated_date: '2026-11-13T16:31:00Z'
@@ -39,4 +39,7 @@ PK-403:W16 (2026-11-13 18:18, dima): In that case it would be useful because eve
 answered 18:11 and 18:19 (wing 1): Theo's diagram is agent-written html published at postplan.dev; postplan publishes, it does not draw, and is worth a test drive only once a non-Anthropic model joins; no earlier ticket held this wish (linear FRM + BYT and the pocket searched); the bytes app is design-loupe, built because the Claude Design canvas lets only a person open a comment. the pick (his o27): shape with clio:shape-idea after main's herdr ux revamp grill — candidates: agent-drawn html pages (Artifacts) plus a design-loupe-style comment loop, blueprints. not FRM-441 (a board for x-changedetector, another outcome).
 
 18:31 held: 2026-11-13 — FRM-611 main folds W1–W16 (FRM-611 already holds the wireframe wish, W22–W24); closes with ticket: FRM-611 once folded
+
+18:31 ticket: FRM-611
+close: folded into FRM-611 as W31–W46 by main clio 18:31 (one home, one grill)
 <!-- SECTION:NOTES:END -->
