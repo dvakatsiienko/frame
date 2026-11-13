@@ -4980,11 +4980,9 @@ async function tellWaiting($: EngineInterface) {
     const now = await $.clock.now();
     // a compact still running is no missed turn: look again once it could have ended
     const isWindOn = (await partsShown($))('stash.second-wind');
-    // a turn still running is no missed turn either: the compact ran inside it, and its end hands the message over
-    const isWorking =
-        (await $.state.get(TURN).catch(() => undefined))?.value?.isBusy ??
-        isBusy;
-    if (isWorking || (await isCompactingNow($, sid, isWindOn)))
+    // a turn still running is no missed turn either: the compact ran inside it, and its end hands the message over. the
+    // module's flag, as releaseIfIdle reads it: a state read inside this timer sees its arming hook's moment, busy forever
+    if (isBusy || (await isCompactingNow($, sid, isWindOn)))
         return armHeldDeadline($, now + 60_000 - STEER_TELL_MS, now);
     const due = await quietLocked(async () => {
         const kept = await heldStore($, keys);

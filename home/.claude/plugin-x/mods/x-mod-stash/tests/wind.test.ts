@@ -2167,6 +2167,34 @@ test('a compact mid-turn in a turn still running past 10 min tells no one it wai
     ]);
 });
 
+// sixth sense round 2 on 28a06804: a state read inside the timer sees its arming hook's moment, a busy turn forever
+test('a hold armed mid-turn still tells its sender once that turn ended and every release was refused', async ($, on) => {
+    let isStale = false;
+    on('state.get', (_$, e, next) =>
+        isStale && e.key === 'turn'
+            ? { value: { value: { isBusy: true }, version: 1 } }
+            : next(e),
+    );
+    const w = sentWorld(on);
+    inCompact = async () => {
+        await fromPeer($, 'round 9 on abc1234', SIXTH);
+    };
+    await start($);
+    await say($, 'long work');
+    await compact($, 'auto');
+    submitRefusal = 'busy';
+    await $.turn.complete({
+        answer: '',
+        durationMs: 1,
+        isAborted: false,
+        reason: 'answer',
+        turnId: 't',
+    });
+    isStale = true;
+    await w.clock.advance(20 * 60_000);
+    expect(w.sent.map((s) => s.text)).toContain(WAITING_LINE);
+});
+
 // a reload re-arms for the untold one, and the tell it fires skips the sender already told
 test('a reload after the waiting line was told tells that sender no second time', async ($, on) => {
     const w = sentWorld(on);
