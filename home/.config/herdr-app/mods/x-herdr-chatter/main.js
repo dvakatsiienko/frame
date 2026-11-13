@@ -1189,11 +1189,11 @@ function joinIo(cx) {
 }
 /**
  * @typedef {{ address: string, at: number, extra: string[], id: string, said: string, sid: string,
- *   state: 'pending' | 'joined', text: string }} Mark
+ *   state: 'pending' | 'joined', text: string, written?: Promise<boolean> }} Mark
  */
 
-// the send button's 📥 or ✉️, centred: a square line box the glyph's own height, so the text's line gap never lifts it
-// (dima, 20:55: «perfectly centered … tiny little smaller»)
+// the send button's 📥 or ✉️, centred in a square the glyph's own height (dima, 20:55: «perfectly centered … tiny little
+// smaller»); no line_height: herdr reads px() there as a multiple of the text size and the glyph left the button (21:05)
 /** @param {string} emoji */
 const sendMark = (emoji) =>
     div()
@@ -1202,7 +1202,6 @@ const sendMark = (emoji) =>
         .items_center()
         .justify_center()
         .text_size(px(TEXT.xs))
-        .line_height(px(14))
         .child(emoji);
 // a held key's repeats stop for longer than this only once it is let go: before its first repeat (his macOS delay is
 // 150 ms), and between repeats (his are 15 ms apart); macOS sends no key-up for a key let go while ⌘ is down
@@ -2620,6 +2619,8 @@ export default class ClaudeChat extends View {
     // Every 2 s: which session the agent is on now (/clear and /resume change it), and while
     // it's asking something, the bottom of its screen.
     tick(cx) {
+        // a retext refused while its row was on its way, or a picture added meanwhile, lands here
+        this.retext(cx);
         const wanted = this.thumbsWanted;
         if (wanted.length) {
             this.thumbsWanted = [];
@@ -3495,14 +3496,17 @@ export default class ClaudeChat extends View {
         const text = this.box.value().trim();
         const attached = this.files.get(this.address) ?? [];
         const address = this.address;
-        this.box.set_value('');
-        this.typed = '';
-        keepDraft(address, '');
-        this.leftInBox = null;
+        const clearQuill = () => {
+            this.box.set_value('');
+            this.typed = '';
+            keepDraft(address, '');
+            this.leftInBox = null;
+        };
         this.ghost = null;
         this.slash = null;
         // While Claude asks, what's typed is the "Type something" answer.
         if (text && ask.typeAnswer(this, text, cx)) {
+            clearQuill();
             cx.timer.after(600, (cx) => this.tick(cx));
             return cx.notify();
         }
@@ -3520,34 +3524,33 @@ export default class ClaudeChat extends View {
         ) {
             const extra = attached.map(promptPath);
             const words = [text, ...extra].filter(Boolean).join('\n');
-            // the words stay in the quill, marked, and the pictures over it, until a turn takes them (dima, 20:55): what he types next rides the same join until a turn takes it
-            this.box.set_value(text);
-            // set_value puts the caret at the start: back to the end, where he was typing
-            this.box.set_selected_range({
-                end: text.length,
-                start: text.length,
-            });
-            this.typed = text;
-            keepDraft(address, text);
+            // the words stay in the quill untouched, the caret where it was (W71), marked, and the pictures over it, until
+            // a turn takes them (dima, 20:55): what he types next rides the same join
             // a second click while the words wait takes the mark off: their row leaves the join file, the words stay
             const j = this.joining;
             if (j?.address === address && j.state === 'pending')
                 return this.unmark(cx);
+            // one mark at a time: a mark left in another thread takes its row back first, its words staying in that quill
+            if (j?.state === 'pending') this.unmark(cx);
             return this.join(address, sid, words, text, extra, cx);
         }
-        // a push of words still marked to join: their row leaves the join file first, so they never land twice
+        // a push of words still marked to join: their row leaves the join file first, and a row a turn took already is
+        // never pushed again
         const marked = this.joining;
-        if (marked?.address === address && marked.state === 'pending') {
-            this.joining = null;
-            keepMark(null);
-            cx.spawn(async (cx) => {
-                await takeBackJoin(
+        if (marked?.address === address && marked.state === 'pending')
+            return cx.spawn(async (cx) => {
+                await marked.written;
+                const isBack = await takeBackJoin(
                     joinIo(cx),
                     `${home()}/${JOINS_DIR}/${marked.sid}.jsonl`,
                     marked.id,
                 );
+                if (!isBack) return this.say('It joined the turn first', cx);
+                if (this.joining?.id === marked.id) this.joining = null;
+                keepMark(null);
+                this.send(cx, isPush);
             });
-        }
+        clearQuill();
         // A dev container's pasted images go as their paths in the container, after the text.
         const files = this.where?.container
             ? (this.pasted.get(address) ?? [])
@@ -3623,16 +3626,24 @@ export default class ClaudeChat extends View {
             state: 'pending',
             text,
         };
+        /** @type {(isWritten: boolean) => void} */
+        let landed = () => {};
+        this.joining.written = new Promise((r) => {
+            landed = r;
+        });
         cx.spawn(async (cx) => {
             const made = await exec('mkdir', ['-p', dir]).catch(() => null);
             const isWritten =
                 made?.code === 0 &&
                 (await appendJoin(joinIo(cx), `${dir}/${sid}.jsonl`, id, text));
+            landed(isWritten);
             if (!isWritten) {
                 if (this.joining?.id === id) this.joining = null;
                 this.say('Not joined, still in the box', cx);
             } else {
                 if (this.joining?.id === id) keepMark(this.joining);
+                // words typed while the row was on its way ride it now
+                this.retext(cx);
                 const sids = joinedSids().filter((k) => k.sid !== sid);
                 const was = joinedSids().find((k) => k.sid === sid);
                 keepJoinedSids([
@@ -3703,6 +3714,14 @@ export default class ClaudeChat extends View {
         if (state === 'not taken') {
             this.joining = null;
             keepMark(null);
+            // its row leaves the file too, so a stash that comes back never hands it in a second time
+            cx.spawn((cx) =>
+                takeBackJoin(
+                    joinIo(cx),
+                    `${home()}/${JOINS_DIR}/${j.sid}.jsonl`,
+                    j.id,
+                ),
+            );
             this.say('Not taken, still in the box', cx);
             return true;
         }
@@ -3790,13 +3809,15 @@ export default class ClaudeChat extends View {
         this.joining = null;
         keepMark(null);
         cx.spawn(async (cx) => {
+            // the append first: a take-back that won the lock before it would drop nothing, then the row would join
+            await j.written;
             const isTaken = await takeBackJoin(
                 joinIo(cx),
                 `${home()}/${JOINS_DIR}/${j.sid}.jsonl`,
                 j.id,
             );
             if (!isTaken) this.say('Still joining, try again', cx);
-            if (!isTaken) this.joining = j;
+            if (!isTaken && !this.joining) this.joining = j;
             cx.notify();
         });
         cx.notify();

@@ -50,7 +50,7 @@ export const pages = [
                         control: {
                             kind: 'stepper',
                             max: 500,
-                            min: 0,
+                            min: 50,
                             step: 50,
                             unit: 'ms',
                         },

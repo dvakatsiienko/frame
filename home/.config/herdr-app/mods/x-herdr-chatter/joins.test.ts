@@ -317,3 +317,43 @@ describe('his settings set the hold: its delay and its length', () => {
         ]).toEqual([null, 'push', 'join']);
     });
 });
+
+describe('round 1 of the sixth sense: a join row is never lost, never doubled', () => {
+    test('a retext finds no row (taken, or not written yet): false, the file as it was', async () => {
+        const { files, io } = fakeIo();
+        await appendJoin(io, '/j/s1.jsonl', 'a2', 'two');
+        expect(await retextJoin(io, '/j/s1.jsonl', 'a1', 'one, more')).toBe(
+            false,
+        );
+        expect(files.get('/j/s1.jsonl')).toBe('{"id":"a2","text":"two"}\n');
+    });
+    test('a take-back of a row a turn already took: false, so a push never sends it twice', async () => {
+        const { io } = fakeIo();
+        await appendJoin(io, '/j/s1.jsonl', 'a2', 'two');
+        expect(await takeBackJoin(io, '/j/s1.jsonl', 'a1')).toBe(false);
+    });
+    test('a stale lock that will not break still gives up by the deadline', async () => {
+        const { io } = fakeIo({
+            isLockHeld: true,
+            lockAgeMs: JOIN_LOCK_STALE_MS,
+        });
+        const stuck = { ...io, unlock: async () => {} };
+        expect(await appendJoin(stuck, '/j/s1.jsonl', 'a1', 'x')).toBe(false);
+    });
+    test('a hold delay of 0 or a broken value still lets a tap join', () => {
+        const pressed = holdSend(null, 'press', 0, { delay: 0, push: 1000 });
+        expect(
+            holdSend(pressed.hold, 'release', 10, { delay: 0, push: 1000 }).act,
+        ).toBe('join');
+        const odd = holdSend(null, 'press', 0, {
+            delay: Number.NaN,
+            push: Number.NaN,
+        });
+        expect(
+            holdSend(odd.hold, 'tick', 33, {
+                delay: Number.NaN,
+                push: Number.NaN,
+            }).act,
+        ).toBeNull();
+    });
+});

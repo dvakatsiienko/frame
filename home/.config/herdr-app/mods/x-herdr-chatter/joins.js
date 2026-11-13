@@ -27,24 +27,24 @@ export const JOINED_SHOWN_MS = 3000;
 /**
  * the join file rewritten under the lock dir: true once written; false when the lock stays held past ~2 s or the write
  * fails, nothing written then
- * @param {JoinIo} io @param {string} path @param {(was: string | null) => string} edit
+ * @param {JoinIo} io @param {string} path @param {(was: string | null) => string | null} edit null: nothing to write
  */
 async function editJoins(io, path, edit) {
     const lock = `${path}.lock`;
     const until = io.now() + LOCK_WAIT_MS;
     while (!(await io.lock(lock))) {
         const age = await io.lockAge(lock);
-        if (age !== null && age >= JOIN_LOCK_STALE_MS) {
+        if (age !== null && age >= JOIN_LOCK_STALE_MS)
             await io.unlock(lock).catch(() => {});
-            continue;
-        }
         if (io.now() >= until) return false;
         await io.sleep(LOCK_RETRY_MS);
     }
     try {
         // herdr writes only over the text it read, null for a new file
         const was = await io.read(path);
-        await io.write(path, edit(was), was);
+        const next = edit(was);
+        if (next === null) return false;
+        await io.write(path, next, was);
         return true;
     } catch {
         return false;
@@ -60,31 +60,44 @@ export const appendJoin = (io, path, id, text) =>
         return `${head}${JSON.stringify({ id, text })}\n`;
     });
 
-/** a waiting join's words replaced, its id and place kept @param {JoinIo} io @param {string} path @param {string} id @param {string} text */
+/**
+ * a waiting join's words replaced, its id and place kept; false when its row is gone (a turn took it) or not written
+ * yet, the file as it was @param {JoinIo} io @param {string} path @param {string} id @param {string} text
+ */
 export const retextJoin = (io, path, id, text) =>
-    editJoins(io, path, (was) =>
-        (was ?? '')
+    editJoins(io, path, (was) => {
+        let isFound = false;
+        const next = (was ?? '')
             .split('\n')
             .map((line) => {
                 try {
-                    return JSON.parse(line)?.id === id
-                        ? JSON.stringify({ id, text })
-                        : line;
+                    if (JSON.parse(line)?.id !== id) return line;
+                    isFound = true;
+                    return JSON.stringify({ id, text });
                 } catch {
                     return line;
                 }
             })
-            .join('\n'),
-    );
+            .join('\n');
+        return isFound ? next : null;
+    });
 
-/** a waiting join taken back: its row leaves the file @param {JoinIo} io @param {string} path @param {string} id */
+/**
+ * a waiting join taken back: its row leaves the file; false when no row holds it (a turn took it, or the write that
+ * adds it has not landed), nothing written @param {JoinIo} io @param {string} path @param {string} id
+ */
 export const takeBackJoin = (io, path, id) =>
-    editJoins(io, path, (was) => dropJoin(was ?? '', id));
+    editJoins(io, path, (was) => {
+        const next = dropJoin(was ?? '', id);
+        return next === (was ?? '') ? null : next;
+    });
 
 // a hold on send, Enter or cmd-enter this long pushes instead of joining, its disc filling after a short delay so a
 // tap never flashes it (dima, 20:03; 100 ms at 20:14); both are settings rows, these their defaults
 export const HOLD_DELAY_MS = 100;
 export const HOLD_PUSH_MS = 1000;
+// a tap shorter than this always joins: a 0 delay would start the disc at the press and leave no tap at all
+export const HOLD_DELAY_MIN_MS = 50;
 
 /**
  * a press on send, step by step: a release before HOLD_DELAY_MS joins, one after it does nothing, a hold that reaches it pushes once, and a hold
@@ -97,8 +110,16 @@ export function holdSend(
     hold,
     event,
     now,
-    timing = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS },
+    { delay, push } = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS },
 ) {
+    // a setting at 0 or not a number never kills a tap or pushes on the first tick
+    const timing = {
+        delay: Math.max(
+            HOLD_DELAY_MIN_MS,
+            Number.isFinite(delay) ? delay : HOLD_DELAY_MS,
+        ),
+        push: Math.max(1, Number.isFinite(push) ? push : HOLD_PUSH_MS),
+    };
     if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
     // a tap joins; a hold he lets go once its disc started is changed mind, nothing sent or marked (dima, 20:05)
