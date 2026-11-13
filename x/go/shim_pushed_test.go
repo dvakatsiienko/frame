@@ -115,15 +115,20 @@ func (w pushedWorld) allBuilds(t *testing.T) int {
 	return strings.Count(readFile(t, w.calls), "\n")
 }
 
-// waitFor polls a file until it holds want, ending the wait at ten seconds
+// waitFor waits for the build's own end, never a clock: the shim takes its lock before a build starts and the build drops it
+// last, so the lock gone means the stamp or the .failed marker is written; a two-minute ceiling is only a hang guard. path then
+// has to hold want
 func waitFor(t *testing.T, path, want string) {
 	t.Helper()
-	for deadline := time.Now().Add(10 * time.Second); time.Now().Before(deadline); time.Sleep(50 * time.Millisecond) {
-		if strings.TrimSpace(readFile(t, path)) == want {
-			return
+	lock := filepath.Join(filepath.Dir(path), ".x-pushed.lock")
+	for deadline := time.Now().Add(2 * time.Minute); exists(lock); time.Sleep(50 * time.Millisecond) {
+		if time.Now().After(deadline) {
+			t.Fatalf("the build still holds %s after 2 min", lock)
 		}
 	}
-	t.Fatalf("%s never held %q: %q", path, want, readFile(t, path))
+	if got := strings.TrimSpace(readFile(t, path)); got != want {
+		t.Fatalf("%s holds %q once the build ended, want %q", path, got, want)
+	}
 }
 
 func (w pushedWorld) pushedTree(t *testing.T) string {
@@ -142,8 +147,6 @@ func TestShimRunsThePushedBuildWhileTheMainCheckoutReadsDev(t *testing.T) {
 
 	first := w.run(t, w.tree)
 	waitFor(t, w.stamp(), w.pushedTree(t))
-	for deadline := time.Now().Add(10 * time.Second); exists(filepath.Join(w.tree, "x/go/bin/.x-pushed.lock")) && time.Now().Before(deadline); time.Sleep(50 * time.Millisecond) {
-	}
 	second := w.run(t, w.base)
 
 	if left, _ := os.ReadDir(filepath.Join(w.base, "tmp")); len(left) != 0 {
@@ -313,7 +316,9 @@ func TestShimTakesOverAStaleLockOnly(t *testing.T) {
 			before := w.pushedBuilds(t)
 
 			got := w.run(t, w.base, "GO_SLEEP=1")
-			time.Sleep(500 * time.Millisecond)
+			if c.builds == 1 {
+				waitFor(t, w.stamp(), w.pushedTree(t))
+			}
 
 			if got.out != "pushed-v1" || w.pushedBuilds(t)-before != c.builds {
 				t.Errorf("%q, %d new pushed builds, want the last build and %d", got.out, w.pushedBuilds(t)-before, c.builds)
