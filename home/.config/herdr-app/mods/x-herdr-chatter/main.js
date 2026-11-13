@@ -2225,6 +2225,19 @@ export default class ClaudeChat extends View {
                 // Esc mid-turn would stop the turn: only an idle thread gets one to close a stray picker
                 if (this.target()?.status !== 'working')
                     await hc(['keys', address, 'esc']);
+                // the typed command leaves Claude's prompt too: left there, his next send glued onto it and died as
+                // «Unknown command: /effortqueued» (21:46)
+                await hc([
+                    'keys',
+                    address,
+                    ...clearKeys(
+                        [command],
+                        isVimNormal(
+                            await screen(),
+                            this.settingsNow()?.editorMode,
+                        ),
+                    ),
+                ]);
                 throw new Error(`Claude's ${what} picker didn't open`);
             };
             try {
