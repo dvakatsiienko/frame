@@ -8,7 +8,7 @@ the machine part of lane init, clio's alone: dima signed the chunks in `clio:sha
 
 ## 1 · the offer
 
-first `clio:lowtide-peek-chunk` on that lane (its gate: FRM-626).
+each chunk his pick names gets `clio:lowtide-peek-chunk` and its gate before the summon (FRM-626).
 
 «what can we dispatch?» → the signed chunks of both teams (`x linear list --team FRM --label signed` and `--team BYT`) with no open blocker, no `lane: main` (ours, never codie's) and no `human` or `needs human` label, grouped by milestone in the initiative's queue order (main road, then side tracks), each with its sign age; a body hash off its last `## signed` line means an edit after the sign: offered with a re-sign instead; a lane walks its area's milestones one after another, each one's chunks in their `blocks` chain (codie's ticket order inside a chunk is its lane plan). his pick is the summon word: no second ask. a sixth sense comes by default, none on an all-light lane (only research or test-drive markdown and `assets/`, `brand/` media; merge-auto's dry run names the tier); a quick lane's pick also says sixth sense yes or no. a quick lane is signed like any chunk (`x lane dispatch` refuses one with no `## signed` block); a quick chunk that edits the guards, the review workflows or merge-auto carries his merge pre-approval as a `## signed` line (`clio:shape-lane` § 3).
 
@@ -50,6 +50,6 @@ an exit line whose check reads shared state (a live session, `~/.local/state`, t
 - **a re-sign after 🚀** never puts the `signed` label back (the chunk is running), unless a ↩️ follows the 🚀 (the line above): that turn `to-spec` runs over its section alone, the spec's top following, its `wish:` line records `body <hash>`, § 3–4 re-run, codie is steered to the changed lines
 - **a re-seal** lands on disk before its ping and re-reads its sibling lines
 - **a park** — his weekly window out, the 5h pace, his pause, a decision only he can make — writes its reason into the spec; a shift then takes the next signed chunk, and a merge his sign pre-approved never stops it; the next siesta back on pace resumes a pace park
-- **a member that parks after its chunk gets the next signed chunk the same turn**, or a wait with its date; late evening it goes to orbit first, and a wind-down takes none (his o181 steer, 2026-11-12)
+- **a member that parks after its chunk gets the next signed chunk the same turn**, after `clio:lowtide-peek-chunk` and its gate, or a wait with its date; late evening it goes to orbit first, and a wind-down takes none (his o181 steer, 2026-11-12)
 
 **done** = each picked chunk, a joiner included, has its spec section with sealed exit lines, its `🚀 dispatched` line, a summoned codie (a sixth sense unless his pick said no), and a greenlit lane plan.
