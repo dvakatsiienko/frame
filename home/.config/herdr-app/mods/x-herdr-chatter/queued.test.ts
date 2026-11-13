@@ -10,6 +10,8 @@ import {
     queuedAfterRow,
     queuedStripCover,
     queuedWords,
+    readTime,
+    readsAfter,
     sendArgs,
 } from './queued.js';
 
@@ -232,5 +234,64 @@ describe('sendArgs', () => {
             '--',
             '--help',
         ]);
+    });
+});
+
+describe('when Claude Code read a message of his', () => {
+    const at = (s: string) => Date.parse(`2026-11-13T12:${s}Z`);
+    const enq = (text: string, t: string) => ({
+        content: text,
+        operation: 'enqueue',
+        timestamp: `2026-11-13T12:${t}Z`,
+    });
+    const pick = (operation: string, t: string, content?: string) => ({
+        content,
+        operation,
+        timestamp: `2026-11-13T12:${t}Z`,
+    });
+    test('a tool round takes it by its text: read at that remove', () => {
+        const queue = [enq('click to open', '45:04.965')].reduce(
+            claudeQueueAfter,
+            [],
+        );
+        expect(
+            readsAfter([], queue, pick('remove', '45:19.332', 'click to open')),
+        ).toEqual([
+            {
+                at: at('45:04.965'),
+                readAt: at('45:19.332'),
+                text: 'click to open',
+            },
+        ]);
+    });
+    test('a turn end takes his before a task notice: read at that dequeue', () => {
+        const notice = '<task-notification>x</task-notification>';
+        const queue = [enq(notice, '46:00'), enq('ok', '46:01')].reduce(
+            claudeQueueAfter,
+            [],
+        );
+        expect(readsAfter([], queue, pick('dequeue', '46:35'))).toEqual([
+            { at: at('46:01'), readAt: at('46:35'), text: 'ok' },
+        ]);
+    });
+    test('↑ pulling it back out is no read', () => {
+        const queue = [enq('ok', '46:01')].reduce(claudeQueueAfter, []);
+        expect(readsAfter([], queue, pick('popAll', '46:05', 'ok'))).toEqual(
+            [],
+        );
+    });
+    test('his row finds its read by its words and send time', () => {
+        const reads = [
+            {
+                at: at('45:04.965'),
+                readAt: at('45:19.332'),
+                text: '<pasted_content id="a">\nclick  to open\n</pasted_content>',
+            },
+        ];
+        expect(readTime(reads, 'click to open', at('45:04.700'))).toBe(
+            at('45:19.332'),
+        );
+        expect(readTime(reads, 'click to open', at('49:00'))).toBeNull();
+        expect(readTime(reads, 'something else', at('45:04.700'))).toBeNull();
     });
 });

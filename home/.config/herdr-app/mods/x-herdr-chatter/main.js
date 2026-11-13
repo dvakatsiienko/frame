@@ -104,6 +104,8 @@ import {
     queuedAfterRow,
     queuedStripCover,
     queuedWords,
+    readTime,
+    readsAfter,
     sendArgs,
 } from './queued.js';
 import { relayIn, relayLine } from './relay.js';
@@ -1562,6 +1564,9 @@ export default class ClaudeChat extends View {
         // Claude Code's own queue as its transcript records it, by agent address (see claudeQueueAfter)
         /** @type {Map<string, import('./queued.js').Queued[]>} */
         this.claudeQueued = new Map();
+        // when Claude Code read each message of his, by agent address, off the records that took it (FRM-594)
+        /** @type {Map<string, import('./queued.js').Read[]>} */
+        this.reads = new Map();
         // what ↑ pulled out of Claude Code's queue, in order, by agent address: a pull reads what came out
         /** @type {Map<string, string[]>} */
         this.popped = new Map();
@@ -2636,6 +2641,7 @@ export default class ClaudeChat extends View {
                         this.base = 0;
                         this.relayIds = new Set();
                         this.claudeQueued.delete(address);
+                        this.reads.delete(address);
                         // another conversation in this thread (a /clear, a resume): it starts at its newest
                         this.follow = true;
                         this.stick = true;
@@ -3335,10 +3341,12 @@ export default class ClaudeChat extends View {
             return;
         }
         const address = this.address;
-        this.claudeQueued.set(
+        const before = this.claudeQueued.get(address) ?? [];
+        this.reads.set(
             address,
-            claudeQueueAfter(this.claudeQueued.get(address) ?? [], op),
+            readsAfter(this.reads.get(address) ?? [], before, op),
         );
+        this.claudeQueued.set(address, claudeQueueAfter(before, op));
         if (op.operation === 'popAll' && typeof op.content === 'string')
             this.popped.set(address, [
                 ...(this.popped.get(address) ?? []),
@@ -4222,7 +4230,16 @@ export default class ClaudeChat extends View {
         if (item.kind === 'user') {
             // a row in the transcript is a message Claude Code received; one still queued sits in the strip
             const details = messageDetails(
-                { at: item.at ?? null, isMine: true, isQueued: false },
+                {
+                    at: item.at ?? null,
+                    isMine: true,
+                    isQueued: false,
+                    readAt: readTime(
+                        this.reads.get(this.address) ?? [],
+                        item.text,
+                        Date.parse(item.at ?? '') || 0,
+                    ),
+                },
                 Date.now(),
             );
             // his words: a bubble on the right in an accent tint (after shepherdr's chat), or full width on the left

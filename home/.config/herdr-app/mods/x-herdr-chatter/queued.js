@@ -68,25 +68,59 @@ export const isHisQueued = (text) =>
  */
 export function claudeQueueAfter(queue, op) {
     const text = typeof op.content === 'string' ? op.content : '';
+    if (op.operation === 'enqueue')
+        return [...queue, { at: Date.parse(op.timestamp ?? '') || 0, text }];
+    const i = leavingAt(queue, op);
+    return i < 0 ? queue : queue.filter((_, n) => n !== i);
+}
+
+/** where in the queue a record takes a message out, -1 for none @param {Queued[]} queue @param {any} op */
+function leavingAt(queue, op) {
+    const text = typeof op.content === 'string' ? op.content : '';
     switch (op.operation) {
-        case 'enqueue':
-            return [
-                ...queue,
-                { at: Date.parse(op.timestamp ?? '') || 0, text },
-            ];
         case 'remove':
-        case 'popAll': {
-            const i = queue.findIndex((q) => q.text === text);
-            return i < 0 ? queue : queue.filter((_, n) => n !== i);
-        }
+        case 'popAll':
+            return queue.findIndex((q) => q.text === text);
         case 'dequeue': {
+            if (!queue.length) return -1;
             const his = queue.findIndex((q) => isHisQueued(q.text));
-            const i = his < 0 ? 0 : his;
-            return queue.filter((_, n) => n !== i);
+            return his < 0 ? 0 : his;
         }
         default:
-            return queue;
+            return -1;
     }
+}
+
+/** @typedef {Queued & { readAt: number }} Read */
+
+/**
+ * the reads after one record: a tool round's `remove` or a turn end's `dequeue` that takes a message of his is the
+ * moment Claude Code read it; ↑ pulling it back out (`popAll`) is none
+ * @param {Read[]} reads @param {Queued[]} queue the queue before the record @param {any} op
+ * @returns {Read[]}
+ */
+export function readsAfter(reads, queue, op) {
+    if (op.operation !== 'remove' && op.operation !== 'dequeue') return reads;
+    const taken = queue[leavingAt(queue, op)];
+    const readAt = Date.parse(op.timestamp ?? '');
+    if (!taken || !isHisQueued(taken.text) || !readAt) return reads;
+    return [...reads.slice(-199), { ...taken, readAt }];
+}
+
+/**
+ * when Claude Code read his message: the read whose words and send time match its row (cc stamps the row with its
+ * enqueue time), or null when no record of it was read
+ * @param {Read[]} reads @param {string} text @param {number} at
+ */
+export function readTime(reads, text, at) {
+    const said = words(queuedWords(text));
+    return (
+        reads.find(
+            (r) =>
+                Math.abs(r.at - at) <= STAMP_SLACK_MS &&
+                words(asTyped(queuedWords(r.text))) === said,
+        )?.readAt ?? null
+    );
 }
 
 /** what he typed, out of the wrapper Claude Code puts around a paste @param {string} text */
