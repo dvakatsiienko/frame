@@ -3390,6 +3390,8 @@ export default class ClaudeChat extends View {
     // pushes (FRM-564)
     /** @param {import('gpui-kit').Context} cx */
     pressSend(cx) {
+        // an empty quill has nothing to send: a press there does nothing, no disc (dima, 20:30)
+        if (!this.hasSendable()) return;
         this.holdTask?.cancel();
         this.hold = holdSend(null, 'press', Date.now(), holdTiming()).hold;
         this.holdFill = 0;
@@ -3444,6 +3446,15 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
+    hasSendable() {
+        return Boolean(
+            this.address &&
+                (this.box.value().trim() ||
+                    (this.files.get(this.address) ?? []).length ||
+                    this.imageCount(this.address)),
+        );
+    }
+
     /** @param {import('gpui-kit').Context} cx @param {boolean} [isPush] a hold's push: a turn starts, never a join */
     send(cx, isPush = false) {
         const pasting = this.pasting.get(this.address);
@@ -3452,13 +3463,9 @@ export default class ClaudeChat extends View {
                 await pasting;
                 this.send(cx, isPush);
             });
+        if (!this.hasSendable()) return;
         const text = this.box.value().trim();
         const attached = this.files.get(this.address) ?? [];
-        if (
-            !this.address ||
-            (!text && !attached.length && !this.imageCount(this.address))
-        )
-            return;
         const address = this.address;
         this.box.set_value('');
         this.typed = '';
@@ -8539,19 +8546,9 @@ export default class ClaudeChat extends View {
                                                                     .items_center()
                                                                     .justify_center()
                                                                     .rounded_full()
-                                                                    .bg(
-                                                                        this
-                                                                            .hold ||
-                                                                            this.typed?.trim()
-                                                                            ? t.solid
-                                                                            : t.raised,
-                                                                    )
+                                                                    .bg(t.solid)
                                                                     .text_color(
-                                                                        this
-                                                                            .hold ||
-                                                                            this.typed?.trim()
-                                                                            ? t.solid_foreground
-                                                                            : t.dim,
+                                                                        t.solid_foreground,
                                                                     )
                                                                     .text_size(
                                                                         px(
@@ -8561,26 +8558,17 @@ export default class ClaudeChat extends View {
                                                                     .font_weight(
                                                                         700,
                                                                     )
-                                                                    // black with text in the quill (dima, 20:05); a surface shift on hover, never opacity: an opacity hover keeps
-                                                                    // the view's spinners rebuilding it
-                                                                    .when(
-                                                                        Boolean(
-                                                                            this.typed?.trim(),
-                                                                        ),
-                                                                        (el) =>
-                                                                            el
-                                                                                .cursor_pointer()
-                                                                                .hover(
-                                                                                    (
-                                                                                        s,
-                                                                                    ) =>
-                                                                                        s
-                                                                                            .bg(
-                                                                                                t.muted,
-                                                                                            )
-                                                                                            .text_color(
-                                                                                                t.solid_foreground,
-                                                                                            ),
+                                                                    // always black, no disabled face: a press on an empty quill does nothing (dima, 20:30); a surface shift
+                                                                    // on hover, never opacity: an opacity hover keeps the view's spinners rebuilding it
+                                                                    .cursor_pointer()
+                                                                    .hover(
+                                                                        (s) =>
+                                                                            s
+                                                                                .bg(
+                                                                                    t.muted,
+                                                                                )
+                                                                                .text_color(
+                                                                                    t.solid_foreground,
                                                                                 ),
                                                                     )
                                                                     .tooltip(
