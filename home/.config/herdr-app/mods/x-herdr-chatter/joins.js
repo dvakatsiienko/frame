@@ -103,3 +103,13 @@ export function joinStatus(joins, id, writtenAt, now) {
         return 'waiting';
     return now - writtenAt >= JOIN_TAKE_MS ? 'not taken' : 'pending';
 }
+
+/**
+ * why a send pushes instead of joining, in the button's few words; null when it joins
+ * @param {string} text @param {Joins | null | undefined} joins
+ */
+export function pushReason(text, joins) {
+    if (text.startsWith('/')) return 'Sent: a slash command starts a turn';
+    if (!joins) return 'Sent: joins are off for this thread';
+    return null;
+}

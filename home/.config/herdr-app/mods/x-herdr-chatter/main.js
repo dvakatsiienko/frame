@@ -96,6 +96,7 @@ import {
     isJoinPending,
     joinStatus,
     pendingJoins,
+    pushReason,
 } from './joins.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
@@ -3318,13 +3319,15 @@ export default class ClaudeChat extends View {
         }
         // the words join the thread's turn, the running one or its next, a picture as its path: no turn starts (FRM-564)
         const sid = this.states?.thread?.sid;
+        const why = isPush
+            ? null
+            : pushReason(text, this.states?.thread?.joins);
         if (
             !isPush &&
-            !text.startsWith('/') &&
+            !why &&
             !this.where?.container &&
             !this.replies.get(address) &&
-            sid &&
-            this.states?.thread?.joins
+            sid
         ) {
             const words = [text, ...attached.map(promptPath)]
                 .filter(Boolean)
@@ -3388,6 +3391,7 @@ export default class ClaudeChat extends View {
         });
         // These open a menu or a screen in Claude's terminal: show it there.
         if (OPENS.has(text.slice(1))) this.toTerminal(address);
+        if (why && !this.where?.container) this.say(why, cx);
         cx.notify();
     }
 
@@ -3494,6 +3498,12 @@ export default class ClaudeChat extends View {
         this.joining = null;
         const typed = this.box.value();
         this.box.set_value(typed ? `${typed}\n${text}` : text);
+        this.say(note, cx);
+    }
+
+    // a few words beside the quill for 6 s: why a send went the way it did
+    /** @param {string} note @param {import('gpui-kit').Context} cx */
+    say(note, cx) {
         this.pasteNote = note;
         cx.timer.after(6000, (cx) => {
             if (this.pasteNote === note) this.pasteNote = null;
@@ -8280,7 +8290,6 @@ export default class ClaudeChat extends View {
                                                                 .tooltip(
                                                                     'Join (Enter), hold 5 s to send',
                                                                 )
-                                                                .relative()
                                                                 .overflow_hidden()
                                                                 .on_mouse_down(
                                                                     'left',

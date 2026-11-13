@@ -8,6 +8,7 @@ import {
     isJoinPending,
     joinStatus,
     pendingJoins,
+    pushReason,
 } from './joins.js';
 
 // a join file and its lock dir in memory, on a fake clock
@@ -136,5 +137,22 @@ describe('a hold on send: a bar fills over 5 s and pushes; a release before join
             fill: 0,
             hold: null,
         });
+    });
+});
+
+describe('a send that cannot join pushes, and the button says why', () => {
+    const joins = { joined: [], push: [], waiting: [] };
+    test('a slash command pushes', () => {
+        expect(pushReason('/compact', joins)).toBe(
+            'Sent: a slash command starts a turn',
+        );
+    });
+    test('the join queue switched off pushes', () => {
+        expect(pushReason('ship it', null)).toBe(
+            'Sent: joins are off for this thread',
+        );
+    });
+    test('plain words with the queue on join, nothing said', () => {
+        expect(pushReason('ship it', joins)).toBeNull();
     });
 });

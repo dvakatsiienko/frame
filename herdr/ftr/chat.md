@@ -293,6 +293,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima holds send
   - then the button fills from the bottom over 5 s and at 5 s the message pushes: a turn starts, as a send did before joins
   - and a release before 5 s joins; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
+- ⬜ a send that cannot join pushes and says why (FRM-564)
+  - given a slash command in the quill, or a thread whose join queue is switched off
+  - when dima clicks send
+  - then it pushes, and a note beside the quill reads «Sent: a slash command starts a turn» or «Sent: joins are off for this thread» for 6 s
 - ⬜ a message tells when it was sent and when Claude read it
   - given a message in the chat
   - then a small dim line under it holds one state and its own time, on his clock, a date before it from an earlier day: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue (at a tool round or the turn's end; a row with no queue record, an idle send above all, at its own time); a reply reads its time alone, under its last part when it is cut into parts
