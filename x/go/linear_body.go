@@ -119,7 +119,10 @@ func linearBody(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	if source, _ := flags["set"].(string); source != "" {
-		return setBody(r, actor, id, source, flags["shrink"] == true)
+		return setBody(r, actor, id, source, flags["shrink"] == true, flags["restamp-sign"] == true)
+	}
+	if flags["restamp-sign"] == true {
+		return nil, usageFail("--restamp-sign belongs to --set: it re-stamps the sign of the body just written", "x linear body "+id+" --set <file> --restamp-sign")
 	}
 	var issue bodyIssue
 	r.Wait("pulling "+id+" as "+actor, func() { issue, err = fetchBody(actor, id) })
@@ -145,7 +148,7 @@ func linearBody(r *Run, args []string, flags Flags) (any, error) {
 	return ordered{{"actor", actor}, {"file", file}, {"id", id}, {"updatedAt", issue.UpdatedAt}}, nil
 }
 
-func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
+func setBody(r *Run, actor, id, source string, shrink, restamp bool) (any, error) {
 	text, err := os.ReadFile(source)
 	if err != nil {
 		return nil, usageFail("cannot read "+source, "x linear body "+id+" --set <file>")
@@ -199,36 +202,55 @@ func setBody(r *Run, actor, id, source string, shrink bool) (any, error) {
 			}
 		}
 	}
-	var data map[string]json.RawMessage
-	r.Wait("writing "+id+" as "+actor, func() {
-		data, _, err = gql(actor, `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success issue { updatedAt } } }`,
-			map[string]any{"id": current.ID, "input": input})
-	})
+	// one write: the description input, the updatedAt linear answers with
+	write := func(input map[string]any) (updatedAt string, err error) {
+		var data map[string]json.RawMessage
+		r.Wait("writing "+id+" as "+actor, func() {
+			data, _, err = gql(actor, `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success issue { updatedAt } } }`,
+				map[string]any{"id": current.ID, "input": input})
+		})
+		if err != nil {
+			return "", err
+		}
+		var result struct {
+			Success bool `json:"success"`
+			Issue   struct {
+				UpdatedAt string `json:"updatedAt"`
+			} `json:"issue"`
+		}
+		if json.Unmarshal(data["issueUpdate"], &result) != nil || !result.Success {
+			return "", &Fail{Msg: "linear did not take the write to " + id, Next: "x linear read " + id}
+		}
+		return result.Issue.UpdatedAt, nil
+	}
+	updatedAt, err := write(input)
 	if err != nil {
 		return nil, err
 	}
-	var result struct {
-		Success bool `json:"success"`
-		Issue   struct {
-			UpdatedAt string `json:"updatedAt"`
-		} `json:"issue"`
-	}
-	if json.Unmarshal(data["issueUpdate"], &result) != nil || !result.Success {
-		return nil, &Fail{Msg: "linear did not take the write to " + id, Next: "x linear read " + id}
-	}
+	sent := string(text)
+	saved := readBack(r, actor, id, sent, restamp, write, &updatedAt)
 	// the write is the new baseline: a second edit of the same file needs no second pull; its size stays the largest.
 	// the pull's own file takes the written text too, since ticket-sign.ts stamps that file and a stale one would pass
-	// the next set's moved check
+	// the next set's moved check; after a re-stamp both take the text linear holds, so a later edit starts from it
+	kept, kept2 := []byte(sent), source
+	if saved.restamped {
+		kept = []byte(saved.text)
+		_ = os.WriteFile(source, kept, 0o644)
+	}
 	if cache := pullFile(id); cache != source {
-		_ = os.WriteFile(cache, text, 0o644)
+		_ = os.WriteFile(cache, kept, 0o644)
+		if exists(cache) {
+			kept2 = cache
+		}
 	}
-	kept := source
-	if cache := pullFile(id); cache != source && exists(cache) {
-		kept = cache
-	}
-	_ = savePull(id, pull{kept, result.Issue.UpdatedAt, max(largest, len(text))})
+	_ = savePull(id, pull{kept2, updatedAt, max(largest, len(kept))})
 	r.Board(ui.ok.Render("✓ ") + ui.fg.Render("wrote "+id+"'s body as "+actor))
-	return ordered{{"actor", actor}, {"id", id}, {"updatedAt", result.Issue.UpdatedAt}}, nil
+	out := ordered{{"actor", actor}, {"id", id}, {"updatedAt", updatedAt}, {"sign", saved.state}, {"restamped", saved.restamped}}
+	if saved.why != "" {
+		out = append(out, kv{"reason", saved.why})
+		r.Board(ui.er.Render("✗ ") + ui.fg.Render(id+"'s sign reads "+saved.state+": "+saved.why))
+	}
+	return out, nil
 }
 
 func deref(text *string) string {

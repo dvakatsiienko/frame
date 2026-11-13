@@ -856,6 +856,10 @@
                     "type": "string",
                     "value": "member"
                 },
+                "restamp-sign": {
+                    "description": "with --set: when linear's save rewrote the text only cosmetically (escapes, list numbers) and the file's newest sign hash matched what was sent, set that hash to the saved text's own, in one more write; data.sign reads match, drifted or none after every set",
+                    "type": "boolean"
+                },
                 "set": {
                     "description": "write this file back as the body; refused when the ticket changed since the pull, or the file would blank it, drop a W-line or break its sign block",
                     "type": "string",
