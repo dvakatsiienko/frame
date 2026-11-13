@@ -69,7 +69,7 @@ for (const [which, role] of [
         expect([run.status, calls]).toEqual([
             0,
             expect.stringContaining(
-                `x brief summon --role ${role} --session ${sid} hc=none`,
+                `x brief summon --apply --role ${role} --session ${sid} hc=none`,
             ),
         ]);
         expect(calls).toContain(`claude --resume ${sid}`);
