@@ -3,10 +3,10 @@ id: PK-397
 title: >-
   herdr annotations: f5 mini quill popover on selected reply text, finds its
   context (inbox W1, Q3)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T19:22:00Z'
+updated_date: '2026-11-13T19:29:00Z'
 labels:
   - s
 dependencies: []
@@ -53,4 +53,9 @@ PK-397:W11 (2026-11-13 21:22, dima): Q4 context ← this is important, but a que
 PK-397:W12 (2026-11-13 21:22, dima): are they written into your context, into your thread history, counted as a message, and sent to you on each later turn (i.e. they become part of the thread history), right? ❓
 PK-397:W13 (2026-11-13 21:22, dima): this is important: if you attach a lot of surrounding context to my annotations, they will pollute your thread history, so they shouldn't be too big. i will do a lot of annotations, often on the same message: maybe up to 7–10 in the most annotatable cases; sometimes a few, sometimes one, but a long, detailed message (a grill, for example) i can annotate a lot, like 10 per thread.
 PK-397:W14 (2026-11-13 21:22, dima): ideally you would attach to some kind of id. can you attach to a message id or reply id somehow? it must be efficient. ❓
+
+PK-397:W15 (2026-11-13 21:28, dima): my proposal ← okay, how do you propose to tune this number for the cut of the surrounding context? if we test drive it for a week, will you have enough evidence to measure it properly? ❓
+
+ticket: FRM-585
+close: 21:29 PK-397:W1–W15 moved to FRM-585:W3–W17, grilled 21:14–21:28 (o129–o133)
 <!-- SECTION:NOTES:END -->
