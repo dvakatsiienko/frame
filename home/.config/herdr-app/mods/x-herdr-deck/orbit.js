@@ -385,22 +385,30 @@ export const hasSteerBox = (ask, pending) =>
 // twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
 // reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)
 /**
- * the store's threads still running, by one `ps -o pid= -p <pids>` answer: a crashed session stays in the store until some
- * session refreshes it; no answer (null) keeps every thread
- * @template {{ pid: number }} T
+ * the store's threads still running on their own process, by one `ps -o pid=,lstart= -p <pids>` answer read in utc and
+ * the c locale, x's own form for `procStart`: the store keeps a thread until some session refreshes it, so a row whose
+ * pid ended, or came back as another process, leaves here (FRM-601). no answer (null) is no answer: the deck keeps its
+ * last rows, never every row the store still holds
+ * @template {{ pid: number, procStart?: string }} T
  * @param {T[]} threads
  * @param {string | null} psOut
- * @returns {T[]}
+ * @returns {T[] | null}
  */
 export function runningThreads(threads, psOut) {
-    if (psOut === null) return threads;
-    const alive = new Set(
-        psOut
-            .split('\n')
-            .map((l) => Number(l.trim()))
-            .filter((pid) => pid > 0),
+    if (psOut === null) return null;
+    const fold = (/** @type {string} */ text) =>
+        text.trim().split(/\s+/).join(' ');
+    /** @type {Map<number, string>} */
+    const started = new Map();
+    for (const line of psOut.split('\n')) {
+        const [pid, ...start] = line.trim().split(/\s+/);
+        if (Number(pid) > 0) started.set(Number(pid), start.join(' '));
+    }
+    return threads.filter(
+        (t) =>
+            started.has(t.pid) &&
+            (!t.procStart || fold(t.procStart) === started.get(t.pid)),
     );
-    return threads.filter((t) => alive.has(t.pid));
 }
 
 export const PRESS_DIR = '.claude/shelf/band-presses';

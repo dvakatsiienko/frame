@@ -103,19 +103,30 @@ async function sessions(shelf) {
     const listed = store.threads.filter(
         (/** @type {any} */ t) => t?.pid && t.sessionId && t.name,
     );
-    // ps exits 1 when a pid is gone, its stdout still naming the live ones; any other end is no answer
+    // ps exits 1 when a pid is gone, its stdout still naming the live ones; any other end is no answer, and the deck
+    // keeps its last rows marked stale. its start times read in utc and the c locale, the store's own form
     const ps = listed.length
         ? await exec(
-              'ps',
-              ['-o', 'pid=', '-p', listed.map((t) => t.pid).join(',')],
+              'env',
+              [
+                  'LC_ALL=C',
+                  'TZ=UTC',
+                  'ps',
+                  '-o',
+                  'pid=,lstart=',
+                  '-p',
+                  listed.map((t) => t.pid).join(','),
+              ],
               { timeout: 2000 },
           ).catch(() => null)
-        : null;
+        : { code: 0, stdout: '' };
+    const running = runningThreads(
+        listed,
+        ps && (ps.code === 0 || ps.code === 1) ? ps.stdout : null,
+    );
+    if (!running) return null;
     const rows = await Promise.all(
-        runningThreads(
-            listed,
-            ps && (ps.code === 0 || ps.code === 1) ? ps.stdout : null,
-        ).map(async (/** @type {any} */ t) => ({
+        running.map(async (/** @type {any} */ t) => ({
             ...t,
             status: (await json(`${SESSIONS}/${t.pid}.json`))?.status,
         })),
@@ -1072,7 +1083,7 @@ export default class Deck extends View {
             .bg(t.canvas)
             .child(
                 header(
-                    `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}${this.isStale ? ' · stale, threads.json unreadable' : ''}`,
+                    `🧵 sessions: ${this.rows.length}${busy ? `, ${busy} working` : ''}${this.isStale ? ' · stale, the last list kept' : ''}`,
                 ),
             )
             .children(rows.map((s, i) => this.session(t, s, i)))

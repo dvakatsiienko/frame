@@ -534,14 +534,40 @@ describe('the deck follows a press made on the band (dima, 23:42)', () => {
 });
 
 // FRM-570: a crashed bg session leaves the deck at the next refresh, not when some session rewrites the store
-describe('runningThreads', () => {
-    const threads = [{ pid: 101 }, { pid: 202 }, { pid: 303 }];
-    test.each([
-        ['ps names the live pids', '  101\n  303\n', [101, 303]],
-        ['every pid gone', '', []],
-        ['ps gave no answer', null, [101, 202, 303]],
-    ])('%s', (_why, out, pids) => {
-        expect(runningThreads(threads, out).map((t) => t.pid)).toEqual(pids);
+describe('runningThreads: a row stays only while its own process runs (FRM-601)', () => {
+    const at = 'Fri Nov 13 12:56:27 2026';
+    const threads = [
+        { pid: 101, procStart: at },
+        { pid: 202, procStart: at },
+        { pid: 303 },
+    ];
+    const pids = (out: string | null) =>
+        runningThreads(threads, out)?.map((t) => t.pid) ?? null;
+
+    test('a live idle thread stays, its start time matching', () => {
+        expect(pids(`  101 ${at}\n  303 ${at}\n`)).toEqual([101, 303]);
+    });
+
+    test('a thread whose process ended leaves', () => {
+        expect(pids(`  303 ${at}\n`)).toEqual([303]);
+        expect(pids('')).toEqual([]);
+    });
+
+    test('a pid reused by another process leaves', () => {
+        expect(pids(`  101 Fri Nov 13 14:59:01 2026\n  202 ${at}\n`)).toEqual([
+            202,
+        ]);
+    });
+
+    test('ps padding a one-digit day still matches', () => {
+        const rows = [{ pid: 7, procStart: 'Mon Nov 3 09:00:00 2026' }];
+        expect(
+            runningThreads(rows, '    7 Mon Nov  3 09:00:00 2026\n')?.length,
+        ).toBe(1);
+    });
+
+    test('no answer from ps lists nothing new: the deck keeps its last rows', () => {
+        expect(pids(null)).toBeNull();
     });
 });
 
