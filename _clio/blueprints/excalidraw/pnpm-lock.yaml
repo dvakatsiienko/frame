@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@excalidraw/cli':
-        specifier: 0.2.0
-        version: 0.2.0
+        specifier: 0.3.0
+        version: 0.3.0
       '@excalidraw/excalidraw':
         specifier: 0.18.1
         version: 0.18.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -21,8 +21,8 @@ importers:
         specifier: 0.28.2
         version: 0.28.2
       playwright-core:
-        specifier: 1.64.1
-        version: 1.64.1
+        specifier: 1.65.0
+        version: 1.65.0
       react:
         specifier: 19.3.1
         version: 19.3.1
@@ -223,8 +223,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@excalidraw/cli@0.2.0':
-    resolution: {integrity: sha512-Qk1pQt8FMcbW//6XbhOvPSJVngE5NwgmHIb8X++m7ONwfHc01ortmWemDrBAMyolS1amGESmGbNBOK3hVb9otA==}
+  '@excalidraw/cli@0.3.0':
+    resolution: {integrity: sha512-KOKe6TjnxKJBM6M3UXi/7/2lT+rTp94I8MM48tSU1Pq/TsGEbmZgY/tuQwJI8IHCse3oMVvOiC4WSa8zvrpQNg==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -1349,8 +1349,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  playwright-core@1.64.1:
-    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
+  playwright-core@1.65.0:
+    resolution: {integrity: sha512-vNSKgH6YqtN7cdT/L334zo0a+YwkrpicyrHJlWWPIm/Q+Nn2SWInil01oT0mbu96U4GgoRtCYQD9CzJQgju+lA==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -1772,7 +1772,7 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@excalidraw/cli@0.2.0':
+  '@excalidraw/cli@0.3.0':
     dependencies:
       playwright-core: 1.63.0
 
@@ -2838,7 +2838,7 @@ snapshots:
 
   playwright-core@1.63.0: {}
 
-  playwright-core@1.64.1: {}
+  playwright-core@1.65.0: {}
 
   png-chunk-text@1.0.0: {}
 
