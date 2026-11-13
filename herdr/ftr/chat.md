@@ -281,7 +281,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima clicks send or presses Enter
   - then a join row lands in the thread's join file, no turn starts, the words stay in the quill and the button shows ↗
   - and what he types after the click rides the same row until a turn takes it
-  - and a second click before a turn took it takes the mark off: the row leaves the join file, the words stay, «Not joining»
+  - and a second click before a turn took it takes the mark off: the row leaves the join file, the words stay
   - and once a turn takes the row, its words leave the quill (anything typed after its last write stays), the button shows ✓ for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
   - and a row listed nowhere a minute after the write, or a write refused, stays in the quill unmarked, the note saying why; after a chatter reload the mark and the words come back once
   - and a picture waiting over the quill joins as its path

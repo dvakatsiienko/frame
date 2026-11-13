@@ -1814,6 +1814,19 @@ export default class ClaudeChat extends View {
                     keystroke,
                 })),
             );
+            // Enter and cmd-enter are ours outside the / menu: each press and each key repeat reaches pressKey and types
+            // no newline, so a held Enter sends after 1 s and a tap joins on its release (FRM-564)
+            cx.bind_keys(
+                ['ChatQuill', 'ChatStop', 'ChatGhost'].flatMap((quill) =>
+                    ['Input', 'Textarea', 'TextArea'].flatMap((box) =>
+                        ['enter', 'cmd-enter'].map((keystroke) => ({
+                            action: 'x_herdr_chatter_enter',
+                            context: `${quill} > ${box}`,
+                            keystroke,
+                        })),
+                    ),
+                ),
+            );
             // Tab in an empty quill takes Claude Code's suggestion (the quill is "ChatGhost" then).
             cx.bind_keys(
                 ['Input', 'Textarea', 'TextArea'].map((box) => ({
@@ -3715,7 +3728,7 @@ export default class ClaudeChat extends View {
                 `${home()}/${JOINS_DIR}/${j.sid}.jsonl`,
                 j.id,
             );
-            this.say(isTaken ? 'Not joining' : 'Still joining, try again', cx);
+            if (!isTaken) this.say('Still joining, try again', cx);
             if (!isTaken) this.joining = j;
             cx.notify();
         });
@@ -8364,6 +8377,28 @@ export default class ClaudeChat extends View {
                                                 (el) =>
                                                     el.key_context('ChatGhost'),
                                             )
+                                            .when(
+                                                !menu &&
+                                                    !(
+                                                        agent.status ===
+                                                            'working' &&
+                                                        !this.stuck
+                                                    ) &&
+                                                    !(
+                                                        isWaitingOnHim(agent) &&
+                                                        Boolean(
+                                                            this.ghostFor(
+                                                                agent.address,
+                                                            ),
+                                                        )
+                                                    ),
+                                                (el) =>
+                                                    el.key_context('ChatQuill'),
+                                            )
+                                            .on_action(
+                                                'x_herdr_chatter_enter',
+                                                (_e, cx) => this.pressKey(cx),
+                                            )
                                             .on_action(
                                                 'x_herdr_chatter_stop',
                                                 (_e, cx) => this.stop(cx),
@@ -8474,14 +8509,20 @@ export default class ClaudeChat extends View {
                                                                     .justify_center()
                                                                     .rounded_full()
                                                                     .bg(
-                                                                        this.typed?.trim()
-                                                                            ? t.accent
-                                                                            : t.raised,
+                                                                        this
+                                                                            .hold
+                                                                            ? t.solid
+                                                                            : this.typed?.trim()
+                                                                              ? t.accent
+                                                                              : t.raised,
                                                                     )
                                                                     .text_color(
-                                                                        this.typed?.trim()
-                                                                            ? t.background
-                                                                            : t.dim,
+                                                                        this
+                                                                            .hold
+                                                                            ? t.solid_foreground
+                                                                            : this.typed?.trim()
+                                                                              ? t.background
+                                                                              : t.dim,
                                                                     )
                                                                     .text_size(
                                                                         px(
