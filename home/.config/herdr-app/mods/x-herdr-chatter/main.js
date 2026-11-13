@@ -8539,7 +8539,7 @@ export default class ClaudeChat extends View {
                                                                             0,
                                                                         (el) =>
                                                                             el.child(
-                                                                                // a disc grows from the centre: the round button clips nothing square
+                                                                                // a disc grows from the centre in the accent: a held button is hovered, its face already the solid colour
                                                                                 div()
                                                                                     .absolute()
                                                                                     .left(
@@ -8561,7 +8561,7 @@ export default class ClaudeChat extends View {
                                                                                     )
                                                                                     .rounded_full()
                                                                                     .bg(
-                                                                                        t.solid,
+                                                                                        t.accent,
                                                                                     ),
                                                                             ),
                                                                     )
