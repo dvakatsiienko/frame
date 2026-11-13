@@ -16,7 +16,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - ux first: every state, input and edge he meets; hotkeys welcome
 - a feature that has a choice gets its settings row, the essential knobs only, never an overload; a preference never hides in code
 - slipstream first wherever he talks to a thread, with visible feedback that it worked
-- cheap to change stays cheap: one mod per feature, plain JS, colours from `theme()`, no layer a newcomer must learn first
+- cheap to change stays cheap: one mod per block, placed by the layout json alone, plain JS, colours from `theme()`
 - his word wins over every guard: none locks him out of any action, a merge and a delete just work; his tick and his override switch work from a guard's first commit
 - hot reload is smooth or not done: at once, no flicker, no shifted tabs, no lost text
 - he lives in the Chat view: a thing he must see or click is drawn there, never only in Terminal view

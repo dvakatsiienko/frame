@@ -54,6 +54,10 @@ dima's words:
 - **every feature gets its settings row**, the essential knobs only, in one clean settings surface
 - **slipstream first** wherever he talks to a thread: a send that joins the next turn before a send that starts one, each with visible feedback
 - **cheap to modify stays cheap**: one mod per feature, plain JS, no clever layers
+- **his window is a set of parts he places: moving one is a layout edit, never a build** (dima's o65, 2026-11-13: he juggles blocks a lot while the parts are raw)
+  - one block, one mod: each part he sees (antenna, glide, orbit, the chat) is its own mod, drawn whole in whatever block holds it; where it sits is the layout json's alone
+  - a part reads its facts from one shared store (`x`'s record as json, the stash's files, `shared()`), never from a sibling part
+  - each part draws a narrow form below its min width, so a move to a thin column needs no code
 - **no ring on a pressed or focused button**: hover is its only feedback; a text field keeps its focus ring
 - **a tooltip only on an action with no text** (an emoji or icon button), a few words naming what it does; never one that repeats the text in view
 
