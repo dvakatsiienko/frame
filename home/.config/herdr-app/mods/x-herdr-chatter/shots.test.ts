@@ -120,19 +120,25 @@ describe.runIf(platform() === 'darwin')(
     'a text paste never reads as a file or an image',
     () => {
         const board = `x-chatter-test-${process.pid}`;
+        // macOS's own: the block runs only on a mac, the linux ci skips it, so no ci job installs it
+        const osascript = 'osascript';
         const put = (text: string) =>
-            execFileSync('osascript', [
-                '-l',
-                'JavaScript',
-                '-e',
-                'ObjC.import("AppKit"); function run(a) { const pb = $.NSPasteboard.pasteboardWithName(a[0]); pb.clearContents; pb.setStringForType(a[1], $.NSPasteboardTypeString); return ""; }',
-                board,
-                text,
-            ]);
+            execFileSync(
+                osascript,
+                [
+                    '-l',
+                    'JavaScript',
+                    '-e',
+                    'ObjC.import("AppKit"); function run(a) { const pb = $.NSPasteboard.pasteboardWithName(a[0]); pb.clearContents; pb.setStringForType(a[1], $.NSPasteboardTypeString); return ""; }',
+                    board,
+                    text,
+                ],
+                { timeout: 10_000 },
+            );
         const read = () =>
             clipboardRead(
                 execFileSync(
-                    'osascript',
+                    osascript,
                     [
                         '-l',
                         'JavaScript',
@@ -141,9 +147,7 @@ describe.runIf(platform() === 'darwin')(
                         '/dev/null',
                         board,
                     ],
-                    {
-                        encoding: 'utf8',
-                    },
+                    { encoding: 'utf8', timeout: 10_000 },
                 ),
                 'data/x-herdr-chatter/shots/shot-1.png',
             );
