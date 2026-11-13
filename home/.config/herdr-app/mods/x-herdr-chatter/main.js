@@ -131,6 +131,7 @@ import {
     canTakePasted,
     deleteShots,
     isPasteGone,
+    isPasteSeen,
     loadShots,
     saveClipboardShot,
     saveFileShot,
@@ -3502,7 +3503,7 @@ export default class ClaudeChat extends View {
         this.imagesFor = address;
         this.images = (this.images ?? 0) + 1;
         const pastedAt = Date.now();
-        this.pastedAt = pastedAt;
+        this.pasteSeen = null;
         cx.spawn(async (cx) => {
             await hc([
                 'keys',
@@ -3693,16 +3694,14 @@ export default class ClaudeChat extends View {
         const r = await hc(['read', agent.address]).catch(() => null);
         if (this.address !== agent.address) return false;
         const box = r?.code === 0 ? boxText(r.stdout) : null;
-        this.leftNormal = isVimNormal(
-            r?.stdout ?? '',
-            this.settingsNow()?.editorMode,
-        );
+        if (isPasteSeen(box)) this.pasteSeen = agent.address;
         const isGone =
             isPasted &&
             agent.status !== 'blocked' &&
-            isPasteGone(box, this.pastedAt ?? 0, Date.now());
+            isPasteGone(box, this.pasteSeen === agent.address);
         if (isGone) {
-            this.images = 0;
+            if (this.imagesFor === agent.address) this.images = 0;
+            this.pasteSeen = null;
             this.sentAt.set(agent.address, Date.now());
             this.forgetShotsBefore(agent.address, Date.now());
         }
@@ -3718,6 +3717,10 @@ export default class ClaudeChat extends View {
             text && !this.leftInBox && !/^Try "/.test(text)
                 ? { address: agent.address, text }
                 : null;
+        this.leftNormal = isVimNormal(
+            r?.stdout ?? '',
+            this.settingsNow()?.editorMode,
+        );
         return isGone;
     }
 

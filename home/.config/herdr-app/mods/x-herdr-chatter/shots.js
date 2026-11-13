@@ -76,14 +76,15 @@ export function shotsAfter(store, address, at) {
     };
 }
 
-// a pasted image sits in Claude's own prompt as «[Image #n]» (probed 2026-11-13); a prompt with none left, read once the
-// paste had time to land, was emptied in the Terminal view, so its previews go
-export const PASTE_LANDS_MS = 3000;
-/** @param {string | null} box Claude's prompt, null when it is not on screen @param {number} pastedAt @param {number} now */
-export const isPasteGone = (box, pastedAt, now) =>
-    box != null &&
-    now - pastedAt > PASTE_LANDS_MS &&
-    !/\[Image #\d+\]/.test(box);
+// a pasted image sits in Claude's own prompt as «[Image #n]» (probed 2026-11-13); a prompt seen holding one, then read
+// with none left, was emptied in the Terminal view, so its previews go. one never seen may still be on its way: a big
+// screenshot takes Claude a while to read off the clipboard
+const IMAGE_MARK = /\[Image #\d+\]/;
+/** @param {string | null} box Claude's prompt, null when it is not on screen */
+export const isPasteSeen = (box) => box != null && IMAGE_MARK.test(box);
+/** @param {string | null} box @param {boolean} wasSeen */
+export const isPasteGone = (box, wasSeen) =>
+    wasSeen && box != null && !IMAGE_MARK.test(box);
 
 // ctrl+u takes the images out of Claude's prompt without stopping its turn (probed 2026-11-13: the next send carried no
 // image); a question's dialog would take the keys, and a paste whose preview is not saved yet has nothing to keep

@@ -15,6 +15,7 @@ vi.mock('fs/promises', () => ({
 const {
     canTakePasted,
     isPasteGone,
+    isPasteSeen,
     parseShots,
     shotsAfter,
     shotsWith,
@@ -120,18 +121,22 @@ const screen = (box: string) =>
 
 describe('isPasteGone', () => {
     it('reads a prompt emptied in the Terminal view as gone', () => {
-        expect(isPasteGone(boxText(screen('')), 0, 10_000)).toBe(true);
+        expect(isPasteGone(boxText(screen('')), true)).toBe(true);
     });
     it('keeps a pasted image still in the prompt', () => {
-        expect(isPasteGone(boxText(screen('[Image #1]')), 0, 10_000)).toBe(
-            false,
-        );
+        expect(isPasteGone(boxText(screen('[Image #1]')), true)).toBe(false);
     });
-    it('waits for a fresh paste to reach the prompt', () => {
-        expect(isPasteGone(boxText(screen('')), 9_000, 10_000)).toBe(false);
+    it('waits until the prompt has shown the paste', () => {
+        expect(isPasteGone(boxText(screen('')), false)).toBe(false);
     });
     it('keeps the images while no prompt is on screen', () => {
-        expect(isPasteGone(boxText('● working…'), 0, 10_000)).toBe(false);
+        expect(isPasteGone(boxText('● working…'), true)).toBe(false);
+    });
+});
+
+describe('isPasteSeen', () => {
+    it('sees a pasted image in the prompt', () => {
+        expect(isPasteSeen(boxText(screen('look [Image #2]')))).toBe(true);
     });
 });
 
