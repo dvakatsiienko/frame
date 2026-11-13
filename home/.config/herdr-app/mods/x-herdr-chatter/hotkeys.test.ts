@@ -99,6 +99,31 @@ describe('keysWithOurs', () => {
     });
 });
 
+describe('a key the quill reads itself (cmd-enter): listed, never written into his keys.json', () => {
+    const local = [
+        {
+            action: 'x-herdr-chatter.join',
+            isLocal: true,
+            key: 'cmd-enter',
+            title: 'Join, held: send',
+        },
+    ];
+    test('a free key stays out of his file', () => {
+        expect(keysWithOurs({ global: { 'cmd-t': 'tab.new' } }, local)).toEqual(
+            {
+                keys: { global: { 'cmd-t': 'tab.new' } },
+                refused: [],
+            },
+        );
+    });
+    test('a key herdr binds is refused by name', () => {
+        expect(
+            keysWithOurs({ global: { 'cmd-enter': 'pane.zoom' } }, local)
+                .refused,
+        ).toEqual([{ ...local[0], takenBy: 'pane.zoom' }]);
+    });
+});
+
 describe('a rebind kept in his keys.json', () => {
     test('an action of ours already on another key stays there, its default unused', () => {
         const { keys } = keysWithOurs(

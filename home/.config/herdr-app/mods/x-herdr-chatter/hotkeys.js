@@ -2,7 +2,9 @@
 // entries are written into his `global` section. an action that opens with `x-herdr-` is ours: rewritten every load,
 // never his. a key herdr already binds to anything else stays herdr's, and ours is refused by name
 
-/** @typedef {{ key: string, action: string, title: string }} OurKey */
+// `isLocal`: a key the quill reads on its own key-down and key-up (a hold has no binding), listed and checked for a
+// clash, never written into his keys.json
+/** @typedef {{ key: string, action: string, title: string, isLocal?: boolean }} OurKey */
 
 // a mod cannot import a sibling mod's file, so the chatter holds every x-herdr key, its action naming the mod that
 // takes it; herdr calls a command of a mod that is not drawn «unknown», so a key goes to a mod that is always placed
@@ -27,6 +29,12 @@ export const OUR_KEYS = [
         action: 'x-herdr-status.tickall',
         key: 'cmd-shift-k',
         title: "Tick all of the shown thread's asks",
+    },
+    {
+        action: 'x-herdr-chatter.join',
+        isLocal: true,
+        key: 'cmd-enter',
+        title: 'Join the thread’s turn; held: send',
     },
 ];
 /** @typedef {OurKey & { takenBy: string }} Refused */
@@ -60,6 +68,7 @@ export function keysWithOurs(herdrKeys, ours) {
             });
             continue;
         }
+        if (k.isLocal) continue;
         global[k.key] = k.action;
         placed.add(k.action);
     }

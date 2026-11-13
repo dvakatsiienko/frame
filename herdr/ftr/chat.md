@@ -297,6 +297,14 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a slash command in the quill, or a thread whose join queue is switched off
   - when dima clicks send
   - then it pushes, and a note beside the quill reads «Sent: a slash command starts a turn» or «Sent: joins are off for this thread» for 6 s
+- ⬜ joins a thread never took come back when it ends (FRM-564)
+  - given a thread archived or killed with his joins still waiting
+  - then each text comes back to the quill once, in the order he sent it, after what he typed there, and a note reads «Back from <thread>: it ended before joining»
+  - and a row the thread joined before it ended does not come back
+- ⬜ cmd-enter joins, held it sends (FRM-564)
+  - given text in the quill
+  - when dima taps cmd-enter, then it joins as a click does; when he holds it ~500 ms, the bar fills and it sends once, key repeat starting nothing
+  - and the Keys page lists it, refused by name when herdr binds cmd-enter
 - ⬜ a message tells when it was sent and when Claude read it
   - given a message in the chat
   - then a small dim line under it holds one state and its own time, on his clock, a date before it from an earlier day: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue (at a tool round or the turn's end; a row with no queue record, an idle send above all, at its own time); a reply reads its time alone, under its last part when it is cut into parts

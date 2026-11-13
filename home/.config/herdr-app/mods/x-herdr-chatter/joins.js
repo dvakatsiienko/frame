@@ -43,20 +43,22 @@ export async function appendJoin(io, path, id, text) {
     }
 }
 
-// a hold on send this long pushes instead of joining
+// a hold on send this long pushes instead of joining; a held cmd-enter pushes sooner
 export const HOLD_PUSH_MS = 5000;
+export const KEY_HOLD_PUSH_MS = 500;
 
 /**
  * a press on send, step by step: a release before HOLD_PUSH_MS joins, a hold that reaches it pushes once, and a hold
  * cut short (focus loss, a blur, the pointer gone) does nothing; `fill` is the bar, 0 to 1
  * @param {{ at: number } | null} hold @param {'press' | 'tick' | 'release' | 'cancel'} event @param {number} now
+ * @param {number} [ms] how long a hold pushes
  * @returns {{ hold: { at: number } | null, act: 'join' | 'push' | null, fill: number }}
  */
-export function holdSend(hold, event, now) {
+export function holdSend(hold, event, now, ms = HOLD_PUSH_MS) {
     if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
     if (event === 'release') return { act: 'join', fill: 0, hold: null };
-    const fill = Math.min(1, (now - hold.at) / HOLD_PUSH_MS);
+    const fill = Math.min(1, (now - hold.at) / ms);
     return fill < 1
         ? { act: null, fill, hold }
         : { act: 'push', fill: 1, hold: null };
@@ -65,9 +67,10 @@ export function holdSend(hold, event, now) {
 /**
  * the joins a thread still waits on, read back from its join file: what a reload draws as the card. a row counts only
  * once the thread's state lists it as waiting, so a file with no state behind it draws nothing; an id's first row wins
- * @param {string} file @param {Joins | null | undefined} joins @returns {{ id: string, text: string }[]}
+ * @param {string} file @param {Joins | null | undefined} joins @param {boolean} [isEvery] every row, whatever the state
+ * @returns {{ id: string, text: string }[]}
  */
-export function pendingJoins(file, joins) {
+export function pendingJoins(file, joins, isEvery = false) {
     const waiting = new Set(joins?.waiting ?? []);
     /** @type {Map<string, string>} */
     const rows = new Map();
@@ -83,8 +86,20 @@ export function pendingJoins(file, joins) {
         if (typeof text === 'string' && text.trim()) rows.set(id, text);
     }
     return [...rows]
-        .filter(([id]) => waiting.has(id))
+        .filter(([id]) => isEvery || waiting.has(id))
         .map(([id, text]) => ({ id, text }));
+}
+
+/**
+ * the rows an ended thread handed back that the quill has not taken yet, in send order; an id's first row wins
+ * @param {string} file the `back/<sid>.jsonl` file @param {string[]} taken ids already brought back
+ * @returns {{ ids: string[], texts: string[] }}
+ */
+export function backTexts(file, taken) {
+    const rows = pendingJoins(file, null, true).filter(
+        (r) => !taken.includes(r.id),
+    );
+    return { ids: rows.map((r) => r.id), texts: rows.map((r) => r.text) };
 }
 
 /** these words already wait as a join: a second click writes no second row @param {{ text: string }[]} rows @param {string} text */

@@ -3,7 +3,9 @@ import { describe, expect, test } from 'vitest';
 import {
     HOLD_PUSH_MS,
     JOIN_TAKE_MS,
+    KEY_HOLD_PUSH_MS,
     appendJoin,
+    backTexts,
     holdSend,
     isJoinPending,
     joinStatus,
@@ -154,5 +156,62 @@ describe('a send that cannot join pushes, and the button says why', () => {
     });
     test('plain words with the queue on join, nothing said', () => {
         expect(pushReason('ship it', joins)).toBeNull();
+    });
+});
+
+describe('an ended thread hands its unjoined rows back: each comes to the quill once, in send order', () => {
+    const back =
+        '{"id":"b1","text":"first"}\n{"id":"b2","text":"second"}\n{"id":"b1","text":"a copy"}\n{"id":"b3","text":" "}\nnot json\n';
+    test('the rows not yet taken, in the order he sent them', () => {
+        expect(backTexts(back, [])).toEqual({
+            ids: ['b1', 'b2'],
+            texts: ['first', 'second'],
+        });
+    });
+    test('a row already brought back never comes again', () => {
+        expect(backTexts(back, ['b1'])).toEqual({
+            ids: ['b2'],
+            texts: ['second'],
+        });
+        expect(backTexts(back, ['b1', 'b2'])).toEqual({ ids: [], texts: [] });
+    });
+});
+
+describe('cmd-enter: a tap joins, a hold of ~500 ms pushes once', () => {
+    const pressed = holdSend(null, 'press', 0, KEY_HOLD_PUSH_MS);
+    test('held past 500 ms, it pushes', () => {
+        expect(
+            holdSend(pressed.hold, 'tick', KEY_HOLD_PUSH_MS, KEY_HOLD_PUSH_MS)
+                .act,
+        ).toBe('push');
+    });
+    test('a tap joins', () => {
+        expect(
+            holdSend(pressed.hold, 'release', 120, KEY_HOLD_PUSH_MS).act,
+        ).toBe('join');
+    });
+    test('key repeat after the push neither joins nor pushes again', () => {
+        const pushed = holdSend(
+            pressed.hold,
+            'tick',
+            KEY_HOLD_PUSH_MS,
+            KEY_HOLD_PUSH_MS,
+        );
+        expect(
+            holdSend(
+                pushed.hold,
+                'tick',
+                KEY_HOLD_PUSH_MS + 40,
+                KEY_HOLD_PUSH_MS,
+            ).act,
+        ).toBeNull();
+        expect(
+            holdSend(
+                pushed.hold,
+                'release',
+                KEY_HOLD_PUSH_MS + 90,
+                KEY_HOLD_PUSH_MS,
+            ).act,
+        ).toBeNull();
     });
 });

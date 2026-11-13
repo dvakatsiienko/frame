@@ -89,9 +89,12 @@ import { replyFold } from './fold.js';
 import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 import { rejoin } from './joined.js';
 import {
+    HOLD_PUSH_MS,
     JOINED_SHOWN_MS,
     JOINS_DIR,
+    KEY_HOLD_PUSH_MS,
     appendJoin,
+    backTexts,
     holdSend,
     isJoinPending,
     joinStatus,
@@ -1163,6 +1166,24 @@ const meterBar = (t, pct, fill) => {
             ),
         );
 };
+// the threads his joins went to, and the rows each handed back that the quill already took, kept across a reload
+const JOINED_SIDS = 'joins:sids';
+const BACK_KEPT_MS = 24 * 60 * 60 * 1000;
+/** @returns {{ sid: string, name: string, at: number, taken: string[] }[]} */
+function joinedSids() {
+    try {
+        const kept = JSON.parse(localStorage.getItem(JOINED_SIDS) ?? '[]');
+        return Array.isArray(kept) ? kept : [];
+    } catch {
+        return [];
+    }
+}
+/** @param {{ sid: string, name: string, at: number, taken: string[] }[]} sids */
+function keepJoinedSids(sids) {
+    try {
+        localStorage.setItem(JOINED_SIDS, JSON.stringify(sids));
+    } catch {}
+}
 // the quill's draft per thread, kept across a reload of this mod (localStorage outlives a copy).
 const draftKey = (address) => `draft:${address}`;
 function keptDraft(address) {
@@ -1669,7 +1690,7 @@ export default class ClaudeChat extends View {
         // Enter runs the highlighted command, as in Claude's own menu, when the command starts the
         // message; further in (a skill named mid-sentence), it only fills the name in.
         this.box.on('submit', (e, cx) => {
-            if (e.shift) return;
+            if (e.shift || this.hold) return;
             const pick = this.matches()[this.menuAt];
             if (pick && this.slash.start > 0) {
                 this.complete(pick[0]);
@@ -3264,9 +3285,11 @@ export default class ClaudeChat extends View {
 
     // a press on send starts the hold: herdr's timer fills the bar until the release joins or 5 s push (FRM-564)
     /** @param {import('gpui-kit').Context} cx */
-    pressSend(cx) {
+    /** @param {import('gpui-kit').Context} cx @param {number} [ms] how long a hold pushes: a held cmd-enter, sooner */
+    pressSend(cx, ms = HOLD_PUSH_MS) {
         this.holdTask?.cancel();
-        this.hold = holdSend(null, 'press', Date.now()).hold;
+        this.holdMs = ms;
+        this.hold = holdSend(null, 'press', Date.now(), ms).hold;
         this.holdFill = 0;
         this.holdTask = cx.timer.every(33, (cx) => this.holdStep('tick', cx));
     }
@@ -3279,6 +3302,7 @@ export default class ClaudeChat extends View {
             this.hold,
             event === 'tick' && !window.is_window_active() ? 'cancel' : event,
             Date.now(),
+            this.holdMs,
         );
         this.hold = r.hold;
         this.holdFill = r.fill;
@@ -3426,6 +3450,19 @@ export default class ClaudeChat extends View {
                 ));
             if (!isWritten)
                 this.joinBack(text, 'Not joined, back in the box', cx);
+            else {
+                const sids = joinedSids().filter((k) => k.sid !== sid);
+                const was = joinedSids().find((k) => k.sid === sid);
+                keepJoinedSids([
+                    ...sids,
+                    {
+                        at: Date.now(),
+                        name: this.states?.thread?.name ?? 'a thread',
+                        sid,
+                        taken: was?.taken ?? [],
+                    },
+                ]);
+            }
             cx.notify();
         });
         cx.notify();
@@ -3477,6 +3514,31 @@ export default class ClaudeChat extends View {
             keepDraft(address, '');
         }
         return JSON.stringify(was) !== JSON.stringify(this.joinRows);
+    }
+
+    // a thread that ended before its turn took his joins hands them back (x-mod-stash moves them to `back/<sid>.jsonl`):
+    // each comes to the quill once, in send order, after what he typed there, and the note names the thread
+    /** @param {import('gpui-kit').Context} cx */
+    async readBack(cx) {
+        const sids = joinedSids().filter(
+            (k) => Date.now() - k.at < BACK_KEPT_MS,
+        );
+        for (const k of sids) {
+            const file =
+                (await readTextFile(
+                    `${home()}/${JOINS_DIR}/back/${k.sid}.jsonl`,
+                ).catch(() => null)) ?? '';
+            const { ids, texts } = backTexts(file, k.taken);
+            if (!ids.length || !this.box) continue;
+            k.taken = [...k.taken, ...ids];
+            keepJoinedSids(sids);
+            const typed = this.box.value();
+            this.box.set_value([typed, ...texts].filter(Boolean).join('\n'));
+            this.typed = this.box.value();
+            keepDraft(this.address, this.typed);
+            this.say(`Back from ${k.name}: it ended before joining`, cx);
+            cx.notify();
+        }
     }
 
     // his joins waiting on a thread: the file's rows, then the click still being written
@@ -6904,6 +6966,7 @@ export default class ClaudeChat extends View {
                 }
                 if (this.settleJoin(cx)) cx.notify();
                 if (await this.readJoins()) cx.notify();
+                await this.readBack(cx);
                 if (this.settlePresses()) cx.notify();
             } finally {
                 this.statesBusy = false;
@@ -7728,96 +7791,142 @@ export default class ClaudeChat extends View {
         }
 
         // Ctrl+F from anywhere in the chat (the quill, the search box) opens the search, or goes back to it.
-        return root
-            .id('chat-root')
-            .track_focus(this.rootKeys)
-            .on_key_down((e, cx) => {
-                if (
-                    e.keystroke === 'escape' &&
-                    agent.status === 'working' &&
-                    !this.stuck &&
-                    !menu &&
-                    this.drop !== 'pick'
-                ) {
+        return (
+            root
+                .id('chat-root')
+                .track_focus(this.rootKeys)
+                // cmd-enter in the quill: a tap joins, a hold of ~500 ms sends; key repeat starts nothing (FRM-564)
+                .on_key_up((e, cx) => {
+                    if (e.key === 'enter' && this.hold)
+                        this.holdStep('release', cx);
+                })
+                .on_key_down((e, cx) => {
+                    if (e.keystroke === 'cmd-enter') {
+                        cx.stop_propagation();
+                        if (!e.is_held && !this.hold)
+                            this.pressSend(cx, KEY_HOLD_PUSH_MS);
+                        return;
+                    }
+                    if (
+                        e.keystroke === 'escape' &&
+                        agent.status === 'working' &&
+                        !this.stuck &&
+                        !menu &&
+                        this.drop !== 'pick'
+                    ) {
+                        cx.stop_propagation();
+                        this.stop(cx);
+                        return;
+                    }
+                    if (!['ctrl-f', 'cmd-f'].includes(e.keystroke)) return;
                     cx.stop_propagation();
-                    this.stop(cx);
-                    return;
-                }
-                if (!['ctrl-f', 'cmd-f'].includes(e.keystroke)) return;
-                cx.stop_propagation();
-                this.openFind(cx);
-            })
-            .child(
-                h_flex()
-                    .h(34)
-                    .flex_none()
-                    .text_size(13)
-                    .px(12)
-                    .gap(8)
-                    .items_center()
-                    .border_b(1)
-                    .border_color(t.border)
-                    .bg(t.chrome)
-                    .child(
-                        div()
-                            .size(8)
-                            .flex_none()
-                            .rounded(4)
-                            .bg(t[agent.status] ?? t.dim),
-                    )
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w(0)
-                            .truncate()
-                            .font_semibold()
-                            .text_color(t.foreground)
-                            .child(agent.title || 'Claude'),
-                    )
-                    .child(
-                        div()
-                            .flex_none()
-                            .text_size(11)
-                            .text_color(t.dim)
-                            .child(`${agent.space_name} · ${agent.address}`),
-                    )
-                    .when(Boolean(this.forkNote), (el) =>
-                        el.child(
+                    this.openFind(cx);
+                })
+                .child(
+                    h_flex()
+                        .h(34)
+                        .flex_none()
+                        .text_size(13)
+                        .px(12)
+                        .gap(8)
+                        .items_center()
+                        .border_b(1)
+                        .border_color(t.border)
+                        .bg(t.chrome)
+                        .child(
+                            div()
+                                .size(8)
+                                .flex_none()
+                                .rounded(4)
+                                .bg(t[agent.status] ?? t.dim),
+                        )
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w(0)
+                                .truncate()
+                                .font_semibold()
+                                .text_color(t.foreground)
+                                .child(agent.title || 'Claude'),
+                        )
+                        .child(
                             div()
                                 .flex_none()
                                 .text_size(11)
-                                .text_color(t.accent)
-                                .child(this.forkNote),
-                        ),
-                    )
-                    .child(
-                        div()
-                            .id('chat-find')
-                            .flex_none()
-                            .p(4)
-                            .rounded(6)
-                            .cursor_pointer()
-                            .text_color(this.findOpen ? t.foreground : t.dim)
-                            .when(this.findOpen, (el) => el.bg(t.selected))
-                            .hover((s) =>
-                                s.bg(t.hover).text_color(t.foreground),
-                            )
-                            .tooltip('Search this chat (Ctrl+F)')
-                            .on_click((_e, cx) =>
-                                this.findOpen
-                                    ? this.closeFind(cx)
-                                    : this.openFind(cx),
-                            )
-                            .child(
-                                svg('mods/workspace-chrome/search.svg').size(
-                                    14,
+                                .text_color(t.dim)
+                                .child(
+                                    `${agent.space_name} · ${agent.address}`,
                                 ),
+                        )
+                        .when(Boolean(this.forkNote), (el) =>
+                            el.child(
+                                div()
+                                    .flex_none()
+                                    .text_size(11)
+                                    .text_color(t.accent)
+                                    .child(this.forkNote),
                             ),
-                    )
-                    .when(Boolean(this.session?.sessionId) && !sub, (el) =>
-                        el.child(
+                        )
+                        .child(
                             div()
-                                .id('chat-fork')
+                                .id('chat-find')
+                                .flex_none()
+                                .p(4)
+                                .rounded(6)
+                                .cursor_pointer()
+                                .text_color(
+                                    this.findOpen ? t.foreground : t.dim,
+                                )
+                                .when(this.findOpen, (el) => el.bg(t.selected))
+                                .hover((s) =>
+                                    s.bg(t.hover).text_color(t.foreground),
+                                )
+                                .tooltip('Search this chat (Ctrl+F)')
+                                .on_click((_e, cx) =>
+                                    this.findOpen
+                                        ? this.closeFind(cx)
+                                        : this.openFind(cx),
+                                )
+                                .child(
+                                    svg(
+                                        'mods/workspace-chrome/search.svg',
+                                    ).size(14),
+                                ),
+                        )
+                        .when(Boolean(this.session?.sessionId) && !sub, (el) =>
+                            el.child(
+                                div()
+                                    .id('chat-fork')
+                                    .flex_none()
+                                    .p(4)
+                                    .rounded(6)
+                                    .text_color(t.dim)
+                                    .cursor_pointer()
+                                    .hover((s) =>
+                                        s.bg(t.hover).text_color(t.foreground),
+                                    )
+                                    .tooltip(
+                                        'Fork: a copy of this conversation in a new tab',
+                                    )
+                                    .on_click((_e, cx) =>
+                                        cx.spawn(async (cx) => {
+                                            await this.fork(
+                                                agent,
+                                                undefined,
+                                                cx,
+                                            );
+                                        }),
+                                    )
+                                    .child(
+                                        svg(
+                                            'mods/workspace-chrome/git-branch.svg',
+                                        ).size(14),
+                                    ),
+                            ),
+                        )
+                        .child(
+                            div()
+                                .id('chat-settings')
                                 .flex_none()
                                 .p(4)
                                 .rounded(6)
@@ -7826,560 +7935,574 @@ export default class ClaudeChat extends View {
                                 .hover((s) =>
                                     s.bg(t.hover).text_color(t.foreground),
                                 )
-                                .tooltip(
-                                    'Fork: a copy of this conversation in a new tab',
-                                )
-                                .on_click((_e, cx) =>
-                                    cx.spawn(async (cx) => {
-                                        await this.fork(agent, undefined, cx);
+                                .tooltip('Chat settings')
+                                .on_click(() =>
+                                    openOverlay({
+                                        height: 556,
+                                        kind: 'popup',
+                                        mod: 'x-herdr-chatter',
+                                        props: { settings: true },
+                                        width: 360,
                                     }),
                                 )
                                 .child(
                                     svg(
-                                        'mods/workspace-chrome/git-branch.svg',
+                                        'mods/workspace-chrome/settings.svg',
                                     ).size(14),
                                 ),
+                        )
+                        .child(
+                            props()?.stack
+                                ? viewSwitch(t, 'chat', () =>
+                                      this.toTerminal(agent.address),
+                                  )
+                                : button(t, px, 'terminal', 'Terminal', () =>
+                                      this.toTerminal(agent.address),
+                                  ),
                         ),
-                    )
-                    .child(
-                        div()
-                            .id('chat-settings')
-                            .flex_none()
-                            .p(4)
-                            .rounded(6)
-                            .text_color(t.dim)
-                            .cursor_pointer()
-                            .hover((s) =>
-                                s.bg(t.hover).text_color(t.foreground),
-                            )
-                            .tooltip('Chat settings')
-                            .on_click(() =>
-                                openOverlay({
-                                    height: 556,
-                                    kind: 'popup',
-                                    mod: 'x-herdr-chatter',
-                                    props: { settings: true },
-                                    width: 360,
-                                }),
-                            )
-                            .child(
-                                svg('mods/workspace-chrome/settings.svg').size(
-                                    14,
-                                ),
-                            ),
-                    )
-                    .child(
-                        props()?.stack
-                            ? viewSwitch(t, 'chat', () =>
-                                  this.toTerminal(agent.address),
-                              )
-                            : button(t, px, 'terminal', 'Terminal', () =>
-                                  this.toTerminal(agent.address),
-                              ),
-                    ),
-            )
-            .when(Boolean(sub), (el) => el.child(this.subBar(t, sub)))
-            .when(this.findOpen, (el) => el.child(this.findBar(t)))
-            .child(font(this.log(t, agent, rows, sub)))
-            .child(
-                font(v_flex())
-                    .flex_none()
-                    .p(10)
-                    .gap(8)
-                    // the module floats on the log's own white, no edge between them (his 17:19 shot)
-                    .bg(t.background)
-                    .relative()
-                    // over the log's bottom edge, so the transcript never moves when it comes or goes
-                    .when(queued.length > 0 && !isLeftShown, (el) =>
-                        el.child(this.queuedStrip(t, queued)),
-                    )
-                    .when(joinsWaiting.length > 0 && !isLeftShown, (el) =>
-                        el.child(
-                            this.joinStrip(
-                                t,
-                                joinsWaiting,
-                                agent.status === 'working',
-                            ),
-                        ),
-                    )
-                    .when(isLeftShown, (el) =>
-                        el.child(
-                            h_flex()
-                                .absolute()
-                                .left(10)
-                                .right(10)
-                                .top(-LEFT_STRIP_COVER)
-                                .h(28)
-                                .px(10)
-                                .gap(8)
-                                .items_center()
-                                .rounded(8)
-                                .bg(t.raised)
-                                .border(1)
-                                .border_color(t.border)
-                                .text_size(px(12))
-                                .text_color(t.muted)
-                                .child(
-                                    div()
-                                        .flex_none()
-                                        .child("Still in Claude's box:"),
-                                )
-                                .child(
-                                    div()
-                                        .flex_1()
-                                        .min_w(0)
-                                        .truncate()
-                                        .text_color(t.foreground)
-                                        .child(this.leftInBox),
-                                )
-                                .when(
-                                    !/\[Image #\d+\]/.test(this.leftInBox),
-                                    (el) =>
-                                        el.child(
-                                            button(
-                                                t,
-                                                px,
-                                                'left-take',
-                                                'Take it',
-                                                (_e, cx) => this.takeLeft(cx),
-                                            ),
-                                        ),
-                                )
-                                .child(
-                                    button(
-                                        t,
-                                        px,
-                                        'left-send',
-                                        'Send as is',
-                                        (_e, cx) => this.sendLeft(cx),
-                                    ),
-                                ),
-                        ),
-                    )
-                    .when(Boolean(chips), (el) => el.child(chips))
-                    .when(Boolean(status), (el) => el.child(status))
-                    .when(Boolean(this.pasteNote), (el) =>
-                        el.child(
-                            div()
-                                .px(4)
-                                .text_size(px(TEXT.sm))
-                                .text_color(t.muted)
-                                .child(this.pasteNote),
-                        ),
-                    )
-                    .when(Boolean(this.pickNote), (el) =>
-                        el.child(
-                            div()
-                                .px(4)
-                                .text_size(px(TEXT.sm))
-                                .text_color(t.accent)
-                                .child(this.pickNote),
-                        ),
-                    )
-                    .when(
-                        isWaitingOnHim(agent) &&
-                            Boolean(this.ghostFor(agent.address)),
-                        (el) =>
+                )
+                .when(Boolean(sub), (el) => el.child(this.subBar(t, sub)))
+                .when(this.findOpen, (el) => el.child(this.findBar(t)))
+                .child(font(this.log(t, agent, rows, sub)))
+                .child(
+                    font(v_flex())
+                        .flex_none()
+                        .p(10)
+                        .gap(8)
+                        // the module floats on the log's own white, no edge between them (his 17:19 shot)
+                        .bg(t.background)
+                        .relative()
+                        // over the log's bottom edge, so the transcript never moves when it comes or goes
+                        .when(queued.length > 0 && !isLeftShown, (el) =>
+                            el.child(this.queuedStrip(t, queued)),
+                        )
+                        .when(joinsWaiting.length > 0 && !isLeftShown, (el) =>
                             el.child(
-                                this.ghostLine(t, this.ghostFor(agent.address)),
+                                this.joinStrip(
+                                    t,
+                                    joinsWaiting,
+                                    agent.status === 'working',
+                                ),
                             ),
-                    )
-                    .when(this.askModel?.address === agent.address, (el) =>
-                        el.child(this.modelConfirm(t, agent.address)),
-                    )
-                    .when(this.replies.has(agent.address), (el) =>
-                        el.child(this.replyStrip(t, agent.address)),
-                    )
-                    .when(
-                        (this.files.get(agent.address) ?? []).some(
-                            (p) => !isImagePath(p),
-                        ),
-                        (el) => el.child(this.fileChips(t, agent.address)),
-                    )
-                    .when(images > 0, (el) =>
-                        el.child(
-                            h_flex()
-                                .gap(8)
-                                .items_center()
-                                .px(4)
-                                .text_size(px(TEXT.sm))
-                                .text_color(t.muted)
-                                // a 56 px preview per screenshot this chat saved; the count stands in for the rest
-                                .children(
-                                    this.thumbs(agent.address).map((rel, i) =>
+                        )
+                        .when(isLeftShown, (el) =>
+                            el.child(
+                                h_flex()
+                                    .absolute()
+                                    .left(10)
+                                    .right(10)
+                                    .top(-LEFT_STRIP_COVER)
+                                    .h(28)
+                                    .px(10)
+                                    .gap(8)
+                                    .items_center()
+                                    .rounded(8)
+                                    .bg(t.raised)
+                                    .border(1)
+                                    .border_color(t.border)
+                                    .text_size(px(12))
+                                    .text_color(t.muted)
+                                    .child(
                                         div()
-                                            .id(`thumb-${i}`)
-                                            .size(px(56))
                                             .flex_none()
-                                            .relative()
-                                            .rounded(RADIUS.card)
-                                            .overflow_hidden()
-                                            .bg(t.raised)
-                                            .border(1)
-                                            .border_color(t.border)
-                                            .cursor_pointer()
-                                            .tooltip('Open in Preview')
-                                            .on_click(() =>
-                                                openInPreview(
-                                                    this.files.get(
-                                                        agent.address,
-                                                    ) ?? [],
-                                                    (p) =>
-                                                        this.previews.get(
-                                                            `${agent.address} ${p}`,
-                                                        ),
-                                                    rel,
-                                                ),
-                                            )
-                                            .child(image(rel).size_full())
-                                            .child(
-                                                div()
-                                                    .id(`thumb-x-${i}`)
-                                                    .absolute()
-                                                    .top(3)
-                                                    .right(3)
-                                                    .size(px(18))
-                                                    .flex()
-                                                    .items_center()
-                                                    .justify_center()
-                                                    .rounded_full()
-                                                    .bg(t.background)
-                                                    .border(1)
-                                                    .border_color(t.border)
-                                                    .text_size(px(TEXT.sm))
-                                                    .text_color(t.muted)
-                                                    .cursor_pointer()
-                                                    .hover((s) =>
-                                                        s.text_color(
-                                                            t.foreground,
-                                                        ),
-                                                    )
-                                                    .tooltip(
-                                                        'Remove this image',
-                                                    )
-                                                    // × is its own press: the click never opens the picture too
-                                                    .on_click((_e, cx) => {
-                                                        cx.stop_propagation();
-                                                        this.removeImage(
-                                                            agent.address,
-                                                            rel,
-                                                            cx,
-                                                        );
-                                                    })
-                                                    .child('×'),
-                                            ),
-                                    ),
-                                )
-                                .when(
-                                    this.where?.container
-                                        ? images > 0
-                                        : images >
-                                              this.thumbs(agent.address).length,
-                                    (el) =>
-                                        el
-                                            .child(
-                                                div()
-                                                    .px(8)
-                                                    .py(2)
-                                                    .rounded(RADIUS.control)
-                                                    .bg(t.raised)
-                                                    .text_color(t.foreground)
-                                                    .child(
-                                                        images === 1
-                                                            ? '🖼 1 image'
-                                                            : `🖼 ${images} images`,
-                                                    ),
-                                            )
-                                            // pictures with no preview to × (a dev container's) go together; the row
-                                            // carries no caption (his 16:40 shot: «i know what it does»)
-                                            .child(
+                                            .child("Still in Claude's box:"),
+                                    )
+                                    .child(
+                                        div()
+                                            .flex_1()
+                                            .min_w(0)
+                                            .truncate()
+                                            .text_color(t.foreground)
+                                            .child(this.leftInBox),
+                                    )
+                                    .when(
+                                        !/\[Image #\d+\]/.test(this.leftInBox),
+                                        (el) =>
+                                            el.child(
                                                 button(
                                                     t,
                                                     px,
-                                                    'drop-images',
-                                                    'Remove',
+                                                    'left-take',
+                                                    'Take it',
                                                     (_e, cx) =>
-                                                        this.dropImages(cx),
+                                                        this.takeLeft(cx),
                                                 ),
                                             ),
+                                    )
+                                    .child(
+                                        button(
+                                            t,
+                                            px,
+                                            'left-send',
+                                            'Send as is',
+                                            (_e, cx) => this.sendLeft(cx),
+                                        ),
+                                    ),
+                            ),
+                        )
+                        .when(Boolean(chips), (el) => el.child(chips))
+                        .when(Boolean(status), (el) => el.child(status))
+                        .when(Boolean(this.pasteNote), (el) =>
+                            el.child(
+                                div()
+                                    .px(4)
+                                    .text_size(px(TEXT.sm))
+                                    .text_color(t.muted)
+                                    .child(this.pasteNote),
+                            ),
+                        )
+                        .when(Boolean(this.pickNote), (el) =>
+                            el.child(
+                                div()
+                                    .px(4)
+                                    .text_size(px(TEXT.sm))
+                                    .text_color(t.accent)
+                                    .child(this.pickNote),
+                            ),
+                        )
+                        .when(
+                            isWaitingOnHim(agent) &&
+                                Boolean(this.ghostFor(agent.address)),
+                            (el) =>
+                                el.child(
+                                    this.ghostLine(
+                                        t,
+                                        this.ghostFor(agent.address),
+                                    ),
                                 ),
-                        ),
-                    )
-                    .when(Boolean(menu), (el) => el.child(menu))
-                    // While the menu is open, ↑ ↓ Tab Esc are its keys (bound in init); ← → Home End close
-                    // it (the caret would leave the word with no change event), and the next press moves.
-                    // the module: the meters card, then the control card painted under the quill (column-reverse paints
-                    // the quill last). only the text card sits in the quill's focus scope (send and the picker in its corner, clear of the text); the cards' buttons stay out
-                    // of it, so no click or render ever moves his caret (his 15:24: «i cannot type into texbox»)
-                    .child(
-                        v_flex().child(
-                            v_flex()
-                                .flex_col_reverse()
-                                .child(this.controlCard(t, agent))
-                                .child(
-                                    h_flex()
-                                        .id('quill')
-                                        .track_focus(this.keyboard)
-                                        .when(!this.where?.container, (el) =>
-                                            el.on_drop((e, cx) =>
-                                                this.addFiles(
-                                                    this.address,
-                                                    e?.paths ?? [],
-                                                    cx,
-                                                ),
-                                            ),
-                                        )
-                                        .when(Boolean(menu), (el) =>
-                                            el.key_context('ChatSlash'),
-                                        )
-                                        .when(
-                                            !menu &&
-                                                agent.status === 'working' &&
-                                                !this.stuck,
-                                            (el) => el.key_context('ChatStop'),
-                                        )
-                                        .when(
-                                            !menu &&
-                                                isWaitingOnHim(agent) &&
-                                                Boolean(
-                                                    this.ghostFor(
-                                                        agent.address,
+                        )
+                        .when(this.askModel?.address === agent.address, (el) =>
+                            el.child(this.modelConfirm(t, agent.address)),
+                        )
+                        .when(this.replies.has(agent.address), (el) =>
+                            el.child(this.replyStrip(t, agent.address)),
+                        )
+                        .when(
+                            (this.files.get(agent.address) ?? []).some(
+                                (p) => !isImagePath(p),
+                            ),
+                            (el) => el.child(this.fileChips(t, agent.address)),
+                        )
+                        .when(images > 0, (el) =>
+                            el.child(
+                                h_flex()
+                                    .gap(8)
+                                    .items_center()
+                                    .px(4)
+                                    .text_size(px(TEXT.sm))
+                                    .text_color(t.muted)
+                                    // a 56 px preview per screenshot this chat saved; the count stands in for the rest
+                                    .children(
+                                        this.thumbs(agent.address).map(
+                                            (rel, i) =>
+                                                div()
+                                                    .id(`thumb-${i}`)
+                                                    .size(px(56))
+                                                    .flex_none()
+                                                    .relative()
+                                                    .rounded(RADIUS.card)
+                                                    .overflow_hidden()
+                                                    .bg(t.raised)
+                                                    .border(1)
+                                                    .border_color(t.border)
+                                                    .cursor_pointer()
+                                                    .tooltip('Open in Preview')
+                                                    .on_click(() =>
+                                                        openInPreview(
+                                                            this.files.get(
+                                                                agent.address,
+                                                            ) ?? [],
+                                                            (p) =>
+                                                                this.previews.get(
+                                                                    `${agent.address} ${p}`,
+                                                                ),
+                                                            rel,
+                                                        ),
+                                                    )
+                                                    .child(
+                                                        image(rel).size_full(),
+                                                    )
+                                                    .child(
+                                                        div()
+                                                            .id(`thumb-x-${i}`)
+                                                            .absolute()
+                                                            .top(3)
+                                                            .right(3)
+                                                            .size(px(18))
+                                                            .flex()
+                                                            .items_center()
+                                                            .justify_center()
+                                                            .rounded_full()
+                                                            .bg(t.background)
+                                                            .border(1)
+                                                            .border_color(
+                                                                t.border,
+                                                            )
+                                                            .text_size(
+                                                                px(TEXT.sm),
+                                                            )
+                                                            .text_color(t.muted)
+                                                            .cursor_pointer()
+                                                            .hover((s) =>
+                                                                s.text_color(
+                                                                    t.foreground,
+                                                                ),
+                                                            )
+                                                            .tooltip(
+                                                                'Remove this image',
+                                                            )
+                                                            // × is its own press: the click never opens the picture too
+                                                            .on_click(
+                                                                (_e, cx) => {
+                                                                    cx.stop_propagation();
+                                                                    this.removeImage(
+                                                                        agent.address,
+                                                                        rel,
+                                                                        cx,
+                                                                    );
+                                                                },
+                                                            )
+                                                            .child('×'),
                                                     ),
-                                                ),
-                                            (el) => el.key_context('ChatGhost'),
-                                        )
-                                        .on_action(
-                                            'x_herdr_chatter_stop',
-                                            (_e, cx) => this.stop(cx),
-                                        )
-                                        .on_action(
-                                            'x_herdr_chatter_ghost_take',
-                                            (_e, cx) => this.takeGhost(cx),
-                                        )
-                                        .on_action(
-                                            'x_herdr_chatter_menu_down',
-                                            (_e, cx) =>
-                                                this.menuKey('down', cx),
-                                        )
-                                        .on_action(
-                                            'x_herdr_chatter_menu_up',
-                                            (_e, cx) => this.menuKey('up', cx),
-                                        )
-                                        .on_action(
-                                            'x_herdr_chatter_menu_fill',
-                                            (_e, cx) =>
-                                                this.menuKey('fill', cx),
-                                        )
-                                        .on_action(
-                                            'x_herdr_chatter_menu_close',
-                                            (_e, cx) =>
-                                                this.menuKey('close', cx),
-                                        )
-                                        .on_action(
-                                            'x_herdr_chatter_menu_leave',
-                                            (_e, cx) =>
-                                                this.menuKey('leave', cx),
-                                        )
-                                        .items_end()
-                                        .child(
-                                            v_flex()
-                                                .flex_1()
-                                                .min_w(0)
+                                        ),
+                                    )
+                                    .when(
+                                        this.where?.container
+                                            ? images > 0
+                                            : images >
+                                                  this.thumbs(agent.address)
+                                                      .length,
+                                        (el) =>
+                                            el
                                                 .child(
                                                     div()
-                                                        .w_full()
-                                                        .px(14)
-                                                        .py(12)
-                                                        .rounded(RADIUS.bubble)
-                                                        .bg(t.background)
-                                                        .border(1)
-                                                        .border_color(t.border)
-                                                        .shadow_sm()
-                                                        .relative()
-                                                        // send sits in the text card's bottom-right corner; the text takes the
-                                                        // full width and keeps clear of it by one button-high bottom padding
-                                                        // (Textarea has no per-line inset to wrap around it)
-                                                        .pb(40)
+                                                        .px(8)
+                                                        .py(2)
+                                                        .rounded(RADIUS.control)
+                                                        .bg(t.raised)
+                                                        .text_color(
+                                                            t.foreground,
+                                                        )
                                                         .child(
-                                                            Textarea.new(
-                                                                this.box,
-                                                            ).token((tok) =>
-                                                                div()
-                                                                    .px(4)
-                                                                    .rounded(4)
-                                                                    .bg(
-                                                                        t.raised,
-                                                                    )
-                                                                    .font_family(
-                                                                        this.mono(),
-                                                                    )
-                                                                    .text_color(
-                                                                        t.foreground,
-                                                                    )
-                                                                    .child(
-                                                                        tok
-                                                                            .token
-                                                                            .label ??
+                                                            images === 1
+                                                                ? '🖼 1 image'
+                                                                : `🖼 ${images} images`,
+                                                        ),
+                                                )
+                                                // pictures with no preview to × (a dev container's) go together; the row
+                                                // carries no caption (his 16:40 shot: «i know what it does»)
+                                                .child(
+                                                    button(
+                                                        t,
+                                                        px,
+                                                        'drop-images',
+                                                        'Remove',
+                                                        (_e, cx) =>
+                                                            this.dropImages(cx),
+                                                    ),
+                                                ),
+                                    ),
+                            ),
+                        )
+                        .when(Boolean(menu), (el) => el.child(menu))
+                        // While the menu is open, ↑ ↓ Tab Esc are its keys (bound in init); ← → Home End close
+                        // it (the caret would leave the word with no change event), and the next press moves.
+                        // the module: the meters card, then the control card painted under the quill (column-reverse paints
+                        // the quill last). only the text card sits in the quill's focus scope (send and the picker in its corner, clear of the text); the cards' buttons stay out
+                        // of it, so no click or render ever moves his caret (his 15:24: «i cannot type into texbox»)
+                        .child(
+                            v_flex().child(
+                                v_flex()
+                                    .flex_col_reverse()
+                                    .child(this.controlCard(t, agent))
+                                    .child(
+                                        h_flex()
+                                            .id('quill')
+                                            .track_focus(this.keyboard)
+                                            .when(
+                                                !this.where?.container,
+                                                (el) =>
+                                                    el.on_drop((e, cx) =>
+                                                        this.addFiles(
+                                                            this.address,
+                                                            e?.paths ?? [],
+                                                            cx,
+                                                        ),
+                                                    ),
+                                            )
+                                            .when(Boolean(menu), (el) =>
+                                                el.key_context('ChatSlash'),
+                                            )
+                                            .when(
+                                                !menu &&
+                                                    agent.status ===
+                                                        'working' &&
+                                                    !this.stuck,
+                                                (el) =>
+                                                    el.key_context('ChatStop'),
+                                            )
+                                            .when(
+                                                !menu &&
+                                                    isWaitingOnHim(agent) &&
+                                                    Boolean(
+                                                        this.ghostFor(
+                                                            agent.address,
+                                                        ),
+                                                    ),
+                                                (el) =>
+                                                    el.key_context('ChatGhost'),
+                                            )
+                                            .on_action(
+                                                'x_herdr_chatter_stop',
+                                                (_e, cx) => this.stop(cx),
+                                            )
+                                            .on_action(
+                                                'x_herdr_chatter_ghost_take',
+                                                (_e, cx) => this.takeGhost(cx),
+                                            )
+                                            .on_action(
+                                                'x_herdr_chatter_menu_down',
+                                                (_e, cx) =>
+                                                    this.menuKey('down', cx),
+                                            )
+                                            .on_action(
+                                                'x_herdr_chatter_menu_up',
+                                                (_e, cx) =>
+                                                    this.menuKey('up', cx),
+                                            )
+                                            .on_action(
+                                                'x_herdr_chatter_menu_fill',
+                                                (_e, cx) =>
+                                                    this.menuKey('fill', cx),
+                                            )
+                                            .on_action(
+                                                'x_herdr_chatter_menu_close',
+                                                (_e, cx) =>
+                                                    this.menuKey('close', cx),
+                                            )
+                                            .on_action(
+                                                'x_herdr_chatter_menu_leave',
+                                                (_e, cx) =>
+                                                    this.menuKey('leave', cx),
+                                            )
+                                            .items_end()
+                                            .child(
+                                                v_flex()
+                                                    .flex_1()
+                                                    .min_w(0)
+                                                    .child(
+                                                        div()
+                                                            .w_full()
+                                                            .px(14)
+                                                            .py(12)
+                                                            .rounded(
+                                                                RADIUS.bubble,
+                                                            )
+                                                            .bg(t.background)
+                                                            .border(1)
+                                                            .border_color(
+                                                                t.border,
+                                                            )
+                                                            .shadow_sm()
+                                                            .relative()
+                                                            // send sits in the text card's bottom-right corner; the text takes the
+                                                            // full width and keeps clear of it by one button-high bottom padding
+                                                            // (Textarea has no per-line inset to wrap around it)
+                                                            .pb(40)
+                                                            .child(
+                                                                Textarea.new(
+                                                                    this.box,
+                                                                ).token((tok) =>
+                                                                    div()
+                                                                        .px(4)
+                                                                        .rounded(
+                                                                            4,
+                                                                        )
+                                                                        .bg(
+                                                                            t.raised,
+                                                                        )
+                                                                        .font_family(
+                                                                            this.mono(),
+                                                                        )
+                                                                        .text_color(
+                                                                            t.foreground,
+                                                                        )
+                                                                        .child(
                                                                             tok
                                                                                 .token
-                                                                                .text,
-                                                                    ),
-                                                            ),
-                                                        )
-                                                        // the model and effort picker sits left of send, as shepherdr's does (dima's o13)
-                                                        .child(
-                                                            div()
-                                                                .absolute()
-                                                                .right(42)
-                                                                .bottom(10)
-                                                                .child(
-                                                                    this.picker(
-                                                                        t,
-                                                                        agent,
-                                                                    ),
+                                                                                .label ??
+                                                                                tok
+                                                                                    .token
+                                                                                    .text,
+                                                                        ),
                                                                 ),
-                                                        )
-                                                        .child(
-                                                            div()
-                                                                .id('send')
-                                                                .absolute()
-                                                                .right(8)
-                                                                .bottom(8)
-                                                                .size(28)
-                                                                .flex()
-                                                                .items_center()
-                                                                .justify_center()
-                                                                .rounded_full()
-                                                                .bg(
-                                                                    this.typed?.trim()
-                                                                        ? t.accent
-                                                                        : t.raised,
-                                                                )
-                                                                .text_color(
-                                                                    this.typed?.trim()
-                                                                        ? t.background
-                                                                        : t.dim,
-                                                                )
-                                                                .text_size(
-                                                                    px(TEXT.lg),
-                                                                )
-                                                                .font_weight(
-                                                                    700,
-                                                                )
-                                                                // a surface shift, never opacity: an opacity hover keeps the view's spinners rebuilding it
-                                                                .when(
-                                                                    Boolean(
-                                                                        this.typed?.trim(),
+                                                            )
+                                                            // the model and effort picker sits left of send, as shepherdr's does (dima's o13)
+                                                            .child(
+                                                                div()
+                                                                    .absolute()
+                                                                    .right(42)
+                                                                    .bottom(10)
+                                                                    .child(
+                                                                        this.picker(
+                                                                            t,
+                                                                            agent,
+                                                                        ),
                                                                     ),
-                                                                    (el) =>
-                                                                        el
-                                                                            .cursor_pointer()
-                                                                            .hover(
-                                                                                (
-                                                                                    s,
-                                                                                ) =>
-                                                                                    s
-                                                                                        .bg(
-                                                                                            t.solid,
-                                                                                        )
-                                                                                        .text_color(
-                                                                                            t.solid_foreground,
-                                                                                        ),
-                                                                            ),
-                                                                )
-                                                                .tooltip(
-                                                                    'Join (Enter), hold 5 s to send',
-                                                                )
-                                                                .overflow_hidden()
-                                                                .on_mouse_down(
-                                                                    'left',
-                                                                    (_e, cx) =>
-                                                                        this.pressSend(
-                                                                            cx,
+                                                            )
+                                                            .child(
+                                                                div()
+                                                                    .id('send')
+                                                                    .absolute()
+                                                                    .right(8)
+                                                                    .bottom(8)
+                                                                    .size(28)
+                                                                    .flex()
+                                                                    .items_center()
+                                                                    .justify_center()
+                                                                    .rounded_full()
+                                                                    .bg(
+                                                                        this.typed?.trim()
+                                                                            ? t.accent
+                                                                            : t.raised,
+                                                                    )
+                                                                    .text_color(
+                                                                        this.typed?.trim()
+                                                                            ? t.background
+                                                                            : t.dim,
+                                                                    )
+                                                                    .text_size(
+                                                                        px(
+                                                                            TEXT.lg,
                                                                         ),
-                                                                )
-                                                                .on_mouse_up(
-                                                                    'left',
-                                                                    (_e, cx) =>
-                                                                        this.holdStep(
-                                                                            'release',
-                                                                            cx,
+                                                                    )
+                                                                    .font_weight(
+                                                                        700,
+                                                                    )
+                                                                    // a surface shift, never opacity: an opacity hover keeps the view's spinners rebuilding it
+                                                                    .when(
+                                                                        Boolean(
+                                                                            this.typed?.trim(),
                                                                         ),
-                                                                )
-                                                                .on_hover(
-                                                                    (on, cx) =>
-                                                                        on ||
-                                                                        this.holdStep(
-                                                                            'cancel',
-                                                                            cx,
-                                                                        ),
-                                                                )
-                                                                .when(
-                                                                    this
-                                                                        .holdFill >
-                                                                        0,
-                                                                    (el) =>
-                                                                        el.child(
-                                                                            div()
-                                                                                .absolute()
-                                                                                .left(
-                                                                                    0,
-                                                                                )
-                                                                                .right(
-                                                                                    0,
-                                                                                )
-                                                                                .bottom(
-                                                                                    0,
-                                                                                )
-                                                                                .h(
-                                                                                    28 *
-                                                                                        this
-                                                                                            .holdFill,
-                                                                                )
-                                                                                .bg(
-                                                                                    t.solid,
+                                                                        (el) =>
+                                                                            el
+                                                                                .cursor_pointer()
+                                                                                .hover(
+                                                                                    (
+                                                                                        s,
+                                                                                    ) =>
+                                                                                        s
+                                                                                            .bg(
+                                                                                                t.solid,
+                                                                                            )
+                                                                                            .text_color(
+                                                                                                t.solid_foreground,
+                                                                                            ),
                                                                                 ),
-                                                                        ),
-                                                                )
-                                                                .child(
-                                                                    this
-                                                                        .sendingTo ===
+                                                                    )
+                                                                    .tooltip(
+                                                                        'Join (Enter), hold 5 s to send',
+                                                                    )
+                                                                    .overflow_hidden()
+                                                                    .on_mouse_down(
+                                                                        'left',
+                                                                        (
+                                                                            _e,
+                                                                            cx,
+                                                                        ) =>
+                                                                            this.pressSend(
+                                                                                cx,
+                                                                            ),
+                                                                    )
+                                                                    .on_mouse_up(
+                                                                        'left',
+                                                                        (
+                                                                            _e,
+                                                                            cx,
+                                                                        ) =>
+                                                                            this.holdStep(
+                                                                                'release',
+                                                                                cx,
+                                                                            ),
+                                                                    )
+                                                                    .on_hover(
+                                                                        (
+                                                                            on,
+                                                                            cx,
+                                                                        ) =>
+                                                                            on ||
+                                                                            this.holdStep(
+                                                                                'cancel',
+                                                                                cx,
+                                                                            ),
+                                                                    )
+                                                                    .when(
                                                                         this
-                                                                            .address
-                                                                        ? svg(
-                                                                              'mods/workspace-chrome/spinner.svg',
-                                                                          )
-                                                                              .size(
-                                                                                  px(
-                                                                                      14,
-                                                                                  ),
-                                                                              )
-                                                                              .text_color(
-                                                                                  t.dim,
-                                                                              )
-                                                                              .spin(
-                                                                                  900,
-                                                                              )
-                                                                        : this
-                                                                                .joining
-                                                                                ?.address ===
+                                                                            .holdFill >
+                                                                            0,
+                                                                        (el) =>
+                                                                            el.child(
+                                                                                div()
+                                                                                    .absolute()
+                                                                                    .left(
+                                                                                        0,
+                                                                                    )
+                                                                                    .right(
+                                                                                        0,
+                                                                                    )
+                                                                                    .bottom(
+                                                                                        0,
+                                                                                    )
+                                                                                    .h(
+                                                                                        28 *
+                                                                                            this
+                                                                                                .holdFill,
+                                                                                    )
+                                                                                    .bg(
+                                                                                        t.solid,
+                                                                                    ),
+                                                                            ),
+                                                                    )
+                                                                    .child(
+                                                                        this
+                                                                            .sendingTo ===
                                                                             this
                                                                                 .address
-                                                                          ? this
-                                                                                .joining
-                                                                                .state ===
-                                                                            'joined'
-                                                                              ? '✓'
-                                                                              : '↗'
-                                                                          : '↑',
-                                                                ),
-                                                        ),
-                                                ),
-                                        ),
-                                )
-                                .child(this.stateCard(t)),
+                                                                            ? svg(
+                                                                                  'mods/workspace-chrome/spinner.svg',
+                                                                              )
+                                                                                  .size(
+                                                                                      px(
+                                                                                          14,
+                                                                                      ),
+                                                                                  )
+                                                                                  .text_color(
+                                                                                      t.dim,
+                                                                                  )
+                                                                                  .spin(
+                                                                                      900,
+                                                                                  )
+                                                                            : this
+                                                                                    .joining
+                                                                                    ?.address ===
+                                                                                this
+                                                                                    .address
+                                                                              ? this
+                                                                                    .joining
+                                                                                    .state ===
+                                                                                'joined'
+                                                                                  ? '✓'
+                                                                                  : '↗'
+                                                                              : '↑',
+                                                                    ),
+                                                            ),
+                                                    ),
+                                            ),
+                                    )
+                                    .child(this.stateCard(t)),
+                            ),
                         ),
-                    ),
-            );
+                )
+        );
     }
 }
