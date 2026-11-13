@@ -8,6 +8,8 @@
 
 # BOOT_PROBE=1 marks the hook's own nested `claude -p` — that process skips the digest, or the probe recurses
 [ -n "$BOOT_PROBE" ] && exit 0
+# the go-test vm first, before any step of the boot can commit: a later start let the day's first go run find it down (FRM-551)
+command -v limactl >/dev/null && (limactl start --tty=false vm-go-test >/dev/null 2>&1 &)
 fails=0
 fail() { echo "🚨 FAIL · $1"; fails=$((fails + 1)); }
 STAMP="$HOME/.claude/shelf/boot-digest.stamp"
