@@ -4,7 +4,7 @@ title: 'orbit v2 with smart asks: shots and option ticks, critique first (inbox 
 status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T17:17:00Z'
+updated_date: '2026-11-13T17:18:00Z'
 labels:
   - s
 dependencies: []
@@ -50,4 +50,6 @@ PK-399:W11 (2026-11-13 18:37, dima): is it possible to have some buttons inside 
 
 ticket: FRM-616
 close: 2026-11-13 19:17 — shaped into FRM-616 (herdr ux revamp)
+
+close: every W-line moved to FRM-616's wish block (FRM-616:W1–W122, each marked «from PK-N:Wn»)
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'orbit: rich text and bold in ask text (inbox Q4)'
 status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T17:17:00Z'
+updated_date: '2026-11-13T17:18:00Z'
 labels:
   - s
 dependencies: []
@@ -22,4 +22,6 @@ raw drop (2026-11-13 inbox, dima): can orbit ask text item support bold and md s
 
 ticket: FRM-616
 close: 2026-11-13 19:17 — shaped into FRM-616 (herdr ux revamp)
+
+close: every W-line moved to FRM-616's wish block (FRM-616:W1–W122, each marked «from PK-N:Wn»)
 <!-- SECTION:NOTES:END -->
