@@ -63,6 +63,7 @@ function world(
     const prompts: string[] = [];
     const lines: string[] = [];
     const commands: string[] = [];
+    const appended: string[] = [];
     const clock = mock.clock(on, { now: NOW });
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
@@ -194,7 +195,12 @@ function world(
     });
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
-    return { clock, commands, lines, prompts, store };
+    on('session.append', (_$, e, next) => {
+        for (const c of e.message.content)
+            if (c.type === 'text') appended.push(String(c.text));
+        return next(e);
+    });
+    return { appended, clock, commands, lines, prompts, store };
 }
 
 const start = ($: Engine) =>
@@ -1238,8 +1244,11 @@ test('a foreground command started after pending: none does not block the wind',
 
 // r5 (dima's o23): a coordinator's message to a codie past 55 % context waits for the codie's second wind
 const CLIO = '🦉 clio';
-// the held list's key: the codie's registry name, bare
-const HELD = 'steer-held:☕️🔧codie:mods';
+// FRM-583: one held store, `held:<name>`, one entry per message id, for every reason a message waits; the old key's
+// lists are read at the land, so a fixture planted under it still holds
+const STORE = 'held:☕️🔧codie:mods';
+const OLD_HELD = 'steer-held:☕️🔧codie:mods';
+type Held = { isCompacted?: true; messages: { id: string; text: string }[] };
 const receiveWorld = (on: On, name?: string, role = 'codie') => {
     const w = world(on, name, undefined, undefined, role);
     const queued: string[] = [];
@@ -1338,7 +1347,7 @@ test('a codie under 55 % reads the message as sent', async ($, on) => {
     w.store.set(`context:${SID}`, 54);
     await start($);
     const r = await fromPeer($, 'next: r6');
-    expect([r.text?.includes('next: r6'), w.store.has(HELD)]).toEqual([
+    expect([r.text?.includes('next: r6'), w.store.has(STORE)]).toEqual([
         true,
         false,
     ]);
@@ -1395,7 +1404,7 @@ test('🐦‍🔥 second wind switched off holds nothing', async ($, on) => {
     w.store.set('shown', { 'stash.second-wind': false });
     await start($);
     const r = await fromPeer($, 'next: r6');
-    expect([r.text?.includes('next: r6'), w.store.has(HELD)]).toEqual([
+    expect([r.text?.includes('next: r6'), w.store.has(STORE)]).toEqual([
         true,
         false,
     ]);
@@ -1408,7 +1417,7 @@ test('a /clear while a message is held keeps it for the next conversation', asyn
     await start($);
     await fromPeer($, 'next: r6');
     await $.session.end({ reason: 'clear', sessionId: SID } as never);
-    expect(w.store.has(HELD)).toBe(true);
+    expect(w.store.has(STORE)).toBe(true);
 });
 
 test('a wind dima took back stays taken back: a message at 62 % passes as sent', async ($, on) => {
@@ -1420,7 +1429,7 @@ test('a wind dima took back stays taken back: a message at 62 % passes as sent',
     expect([
         r.text?.includes('next: r6'),
         (w.store.get(`wind:${SID}`) as { state?: string }).state,
-        w.store.has(HELD),
+        w.store.has(STORE),
     ]).toEqual([true, 'cancelled', false]);
 });
 
@@ -1467,8 +1476,8 @@ test('a refused wind keeps the message held until the compact', async ($, on) =>
 });
 
 // r10 (dima's o62): a message held 10 min for a codie that has not wound tells its sender once; the hold stays
-const sentWorld = (on: On) => {
-    const w = receiveWorld(on);
+const sentWorld = (on: On, name?: string, role?: string) => {
+    const w = receiveWorld(on, name, role);
     const sent: { to: unknown; text: string }[] = [];
     on('session.send', (_$, e) => {
         sent.push({ text: e.text, to: e.to });
@@ -1514,7 +1523,7 @@ test('a message held during a wind follows the ingest as a prompt of its own, so
     const w = sentWorld(on);
     await start($);
     await ready($, SLUG);
-    w.store.set(HELD, {
+    w.store.set(OLD_HELD, {
         isCompacted: true,
         steers: [
             {
@@ -1531,7 +1540,7 @@ test('a message held during a wind follows the ingest as a prompt of its own, so
         w.prompts.filter((p) =>
             p.startsWith('🌀 held while this thread compacted, delivered now'),
         ),
-        w.store.has(HELD),
+        w.store.has(STORE),
     ]).toEqual([
         [
             `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
@@ -1708,7 +1717,7 @@ test('a release the engine refuses keeps the held message for the next one', asy
     submitRefusal = 'busy';
     await compact($, 'manual');
     await w.clock.advance(10_000);
-    const kept = (w.store.get(HELD) as { steers?: unknown[] }).steers?.length;
+    const kept = (w.store.get(STORE) as Held).messages.length;
     submitRefusal = undefined;
     await say($, 'his prompt');
     expect([kept, compactHeld(w.lines).length, w.sent.length]).toEqual([
@@ -1739,10 +1748,11 @@ test('a prompt inside the settle window takes the held message, and no release f
     await compact($, 'manual');
     await say($, 'his prompt');
     await w.clock.advance(20 * 60_000);
-    expect([compactHeld(w.lines).length, heldPrompts(w.prompts)]).toEqual([
-        1,
-        [],
-    ]);
+    expect([
+        compactHeld(w.lines).length,
+        heldPrompts(w.prompts),
+        w.sent.map((m) => m.text.split(':')[0]),
+    ]).toEqual([1, [], ['held', 'delivered']]);
 });
 
 // sixth sense round 9 on 59feb7c8: a compact whose process died never cleared its key; past COMPACT_MAX_MS it holds nothing
@@ -1780,7 +1790,7 @@ test('a message held 10 min for a codie that has not wound tells its sender once
     expect([
         early,
         w.sent,
-        (w.store.get(HELD) as { steers?: unknown[] }).steers?.length,
+        (w.store.get(STORE) as Held).messages.length,
     ]).toEqual([0, [{ text: HELD_LINE, to: 'uds:/tmp/cc-socks/1.sock' }], 1]);
 });
 
@@ -1797,7 +1807,7 @@ test('a codie that wound inside the 10 min tells no sender', async ($, on) => {
 test('a hold kept across a reload still tells its sender at 10 min', async ($, on) => {
     const w = sentWorld(on);
     w.store.set(`context:${SID}`, 62);
-    w.store.set(HELD, {
+    w.store.set(OLD_HELD, {
         steers: [
             {
                 at: NOW - 9 * 60_000,
@@ -1838,12 +1848,155 @@ test('each held message tells its own sender at its own 10 min', async ($, on) =
 test('a hold delivered while its sender is told stays delivered', async ($, on) => {
     const w = receiveWorld(on);
     on('session.send', () => {
-        w.store.delete(HELD);
+        w.store.delete(STORE);
         return { isDelivered: true };
     });
     w.store.set(`context:${SID}`, 62);
     await start($);
     await fromPeer($, 'next: r6');
     await w.clock.advance(10 * 60_000);
-    expect(w.store.has(HELD)).toBe(false);
+    expect(w.store.has(STORE)).toBe(false);
+});
+
+test('a compact holds its message in the one store, keyed by its id', async ($, on) => {
+    const w = sentWorld(on);
+    let held: Held | undefined;
+    inCompact = async () => {
+        await fromPeer($, 'round 9 on abc1234', SIXTH);
+        held = w.store.get(STORE) as Held | undefined;
+    };
+    await start($);
+    await compact($, 'manual');
+    expect([
+        held?.messages.map((m) => [typeof m.id, m.text]),
+        w.store.has(OLD_HELD),
+    ]).toEqual([[['string', 'round 9 on abc1234']], false]);
+});
+
+test("the old stores are read at the land: a compact's and quiet's held lists each go in once, and both keys go", async ($, on) => {
+    const w = receiveWorld(on, CLIO, 'coordinator');
+    w.store.set('steer-held:🦉clio', {
+        steers: [{ at: NOW, from: SIXTH, isCompact: true, text: 'round 9' }],
+    });
+    w.store.set(`quiet-held:${SID}`, [
+        { at: NOW, from: SIXTH, tag: 'progress', text: 'step 2 landed' },
+    ]);
+    await start($);
+    await say($, 'next');
+    await say($, 'and next');
+    const all = w.lines.join('\n');
+    expect([
+        all.split('round 9').length - 1,
+        all.split('step 2 landed').length - 1,
+        w.store.has('steer-held:🦉clio'),
+        w.store.has(`quiet-held:${SID}`),
+    ]).toEqual([1, 1, false, false]);
+});
+
+// exit 2: a member ping quiet comms holds while clio's thread compacts goes in once, by quiet's own release
+const QUIET_PING = '[progress] step 2 landed';
+const quietSeen = (w: ReturnType<typeof receiveWorld>) =>
+    [...w.lines, ...w.prompts, ...w.appended].join('\n').split('step 2 landed')
+        .length - 1;
+test('a ping quiet held before the compact is never appended mid-compact, and goes in once after it', async ($, on) => {
+    const w = receiveWorld(on, CLIO, 'coordinator');
+    // a wait shorter than a compact's longest run, so it passes inside the compact
+    w.store.set('quiet-wait', 2);
+    let midCompact = -1;
+    inCompact = async () => {
+        await w.clock.advance(3 * 60_000);
+        midCompact = w.appended.length;
+    };
+    await start($);
+    const r = await fromPeer($, QUIET_PING, SIXTH);
+    await compact($, 'manual');
+    await w.clock.advance(10_000);
+    await say($, 'next');
+    await w.clock.advance(20 * 60_000);
+    expect([r.consumed !== undefined, midCompact, quietSeen(w)]).toEqual([
+        true,
+        0,
+        1,
+    ]);
+});
+
+for (const isPrompt of [true, false])
+    test(`a ping sent into clio's compact is held by quiet comms, starts no turn, and goes in once at ${isPrompt ? 'her next prompt' : 'the idle append'}`, async ($, on) => {
+        const w = sentWorld(on, CLIO, 'coordinator');
+        inCompact = async () => {
+            await fromPeer($, QUIET_PING, SIXTH);
+        };
+        await start($);
+        await compact($, 'manual');
+        await w.clock.advance(10_000);
+        const turns = w.prompts.length;
+        if (isPrompt) await say($, 'next');
+        await w.clock.advance(20 * 60_000);
+        expect([turns, quietSeen(w), w.sent]).toEqual([0, 1, []]);
+    });
+
+// exit 3: every role's compact hands two messages, a push among them, to its first turn after, in order, once each
+for (const [name, role] of [
+    [undefined, 'codie'],
+    [SIXTH, 'sixth-sense'],
+    [CLIO, 'coordinator'],
+    ['🦉🪽 clio: wing 1', 'wing'],
+] as const)
+    test(`a ${role} mid-compact takes a ping and a push, sent in that order, in its first turn after, once each`, async ($, on) => {
+        const w = receiveWorld(on, name, role);
+        inCompact = async () => {
+            await fromPeer($, 'round 9 on abc1234', SENSE_NAMES[1]);
+            await fromPeer($, '[done] the gate is green');
+        };
+        await start($);
+        await compact($, 'manual');
+        await w.clock.advance(10_000);
+        await w.clock.advance(20 * 60_000);
+        const all = [...w.lines, ...w.prompts, ...w.appended].join('\n');
+        const at = (s: string) => [all.indexOf(s), all.split(s).length - 1];
+        const [ping, push] = [
+            at('round 9 on abc1234'),
+            at('the gate is green'),
+        ];
+        expect([ping[1], push[1], (ping[0] ?? 0) < (push[0] ?? 0)]).toEqual([
+            1,
+            1,
+            true,
+        ]);
+    });
+
+// sixth sense's P2s on 1fea2c06: a release timer a reload dropped, a refused release with no prompt behind it
+test('a start with a compact-held list and no turn running releases it', async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(STORE, {
+        isCompacted: true,
+        messages: [
+            {
+                at: NOW,
+                from: SIXTH,
+                id: 'a1',
+                isCompact: true,
+                text: 'round 9 on abc1234',
+            },
+        ],
+    });
+    await start($);
+    await w.clock.advance(5_000);
+    expect(heldPrompts(w.prompts)).toEqual([
+        `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
+    ]);
+});
+
+test('a refused release tries again, so an idle session with no next prompt still reads it', async ($, on) => {
+    const w = sentWorld(on);
+    inCompact = async () => {
+        await fromPeer($, 'round 9 on abc1234', SIXTH);
+    };
+    await start($);
+    submitRefusal = 'busy';
+    await compact($, 'manual');
+    await w.clock.advance(10_000);
+    submitRefusal = undefined;
+    await w.clock.advance(60_000);
+    expect(heldPrompts(w.prompts).length).toBe(1);
 });

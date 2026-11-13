@@ -295,7 +295,6 @@ declare module 'claude-code' {
         'x-mod-stash': {
             // speak is reading aloud and not paused: the board's play button reads pause (dima, 15:51)
             speaking: boolean;
-            quiet: StashQuiet;
             view: StashView;
             board: StashBoardView;
             turn: StashTurn;

@@ -3326,20 +3326,6 @@ test('📱 mobile mode comes back on when the session is resumed in a new proces
     expect(lines(w)).toMatch(/no board reaches dima/);
 });
 
-test("held member pings come back when clio's session is resumed in a new process", async ($, on) => {
-    world(on);
-    const state = stateOf(on);
-    await start($);
-    const held = {
-        held: [{ at: 1, from: '☕️ 🔧 codie: mods', text: 'step 2 landed' }],
-    };
-    state.set('quiet', held);
-    await quit($);
-    state.clear();
-    await start($);
-    expect(state.get('quiet')).toEqual(held);
-});
-
 // a crash or a power cut ends the process with no session.end: what was saved before it comes back
 test('asks saved before a crash come back, with no clean quit', async ($, on) => {
     world(on);

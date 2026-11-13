@@ -102,6 +102,10 @@ _Avoid_: mute, silent mode, filter
 
 _Avoid_: prompt rewriter, polish
 
+**Held store**:
+the one store a session keeps every message that waits for it in, whatever holds it (a compact, a wind, quiet comms): `held:<registry name>`, one entry per message id, so a message held for two reasons goes in once; each reason releases its own (FRM-583).
+_Avoid_: steer-held list, quiet-held list, the two stores
+
 **Glued prompt**:
 the desktop's one `sdk` prompt holding the app's reminders and a member's message together, which reaches clio past `session.receive`; each of its blocks is held or pushed alone, and any typed words keep it whole.
 _Avoid_: merged prompt, combined notice

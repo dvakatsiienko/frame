@@ -68,6 +68,7 @@ function world(
     });
     on('store.keys', () => ({ value: [...store.keys()] }));
     on('store.delete', (_$, e) => {
+        if (refuseSet(e.key)) return { deny: 'disk full' };
         store.delete(e.key);
         return { value: undefined };
     });
@@ -186,6 +187,14 @@ const quiet = ($: Engine, args: string) =>
 
 const held = (w: ReturnType<typeof world>) =>
     (w.contexts.at(-1) ?? []).filter((c) => c.startsWith('🤫 quiet comms'));
+// quiet comms' share of the one held store (FRM-583), keyed by clio's registry name
+const HELD = 'held:🦉clio';
+const stored = (w: ReturnType<typeof world>) =>
+    (
+        (w.store.get(HELD) as
+            | { messages: { from: string; isQuiet?: true; text: string }[] }
+            | undefined) ?? { messages: [] }
+    ).messages.filter((m) => m.isQuiet);
 
 /* the hold */
 
@@ -445,7 +454,7 @@ test("a note joins clio's next prompt neither as text nor as a count", async ($,
     await start($);
     await fromApp($, NOTE);
     await say($, 'status?');
-    expect([held(w), w.store.get(`quiet-held:${SID}`) ?? []]).toEqual([[], []]);
+    expect([held(w), stored(w)]).toEqual([[], []]);
 });
 
 test('a [done] note spends the slot, so the next untagged line is held', async ($, on) => {
@@ -1204,11 +1213,7 @@ test("the held pings reach the store for clio's sessions row", async ($, on) => 
     await start($);
     await ping($, '[progress] a');
     await ping($, '[progress] b');
-    expect(
-        (
-            w.store.get(`quiet-held:${SID}`) as { from: string; text: string }[]
-        ).map((p) => [p.from, p.text]),
-    ).toEqual([
+    expect(stored(w).map((p) => [p.from, p.text])).toEqual([
         ['☕️ 🔧 codie: mods', 'a'],
         ['☕️ 🔧 codie: mods', 'b'],
     ]);
@@ -1248,7 +1253,7 @@ test('a throw inside the hold passes the ping and logs failed-open', async ($, o
 test('a held list that does not save passes the ping, failed-open, nothing held', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
-        refuseSet: (key) => isBroken && key.startsWith('quiet-held:'),
+        refuseSet: (key) => isBroken && key.startsWith('held:'),
     });
     await start($);
     isBroken = true;
@@ -1262,7 +1267,7 @@ test('a held list that does not save passes the ping, failed-open, nothing held'
 test('a message whose hold did not save is never delivered again', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
-        refuseSet: (key) => isBroken && key.startsWith('quiet-held:'),
+        refuseSet: (key) => isBroken && key.startsWith('held:'),
     });
     await start($);
     isBroken = true;
@@ -1275,7 +1280,7 @@ test('a message whose hold did not save is never delivered again', async ($, on)
 test('a list that will not empty waits, and reaches the prompt after once', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
-        refuseSet: (key) => isBroken && key.startsWith('quiet-held:'),
+        refuseSet: (key) => isBroken && key.startsWith('held:'),
     });
     await start($);
     await ping($, 'once only');
@@ -1301,10 +1306,7 @@ test('a held line that does not log passes the ping and takes it back out of the
     await start($);
     isBroken = true;
     await ping($, '[progress] step 2 landed');
-    expect([w.queued.length, w.store.get(`quiet-held:${SID}`)]).toEqual([
-        1,
-        [],
-    ]);
+    expect([w.queued.length, stored(w)]).toEqual([1, []]);
 });
 
 test('a held ping that rides the next prompt logs flushed', async ($, on) => {
@@ -2309,7 +2311,7 @@ test('/quiet off logs a glued message, in whole', async ($, on) => {
 test('a held list that will not save fails open', async ($, on) => {
     let isBroken = false;
     const w = world(on, {
-        refuseSet: (key) => isBroken && key.startsWith('quiet-held:'),
+        refuseSet: (key) => isBroken && key.startsWith('held:'),
     });
     await start($);
     isBroken = true;
@@ -2346,7 +2348,7 @@ test('a held line that will not log empties the list', async ($, on) => {
     isBroken = true;
     const text = gluedPrompt(message('step 2 landed'));
     const r = await fromAppText($, text);
-    expect([r.text, w.store.get(`quiet-held:${SID}`)]).toEqual([text, []]);
+    expect([r.text, stored(w)]).toEqual([text, []]);
 });
 
 test('an answer beside its sender note takes the slot, the note logged', async ($, on) => {
@@ -2674,7 +2676,7 @@ test('a flip back binds the next send, and a held line stays held', async ($, on
         w.queued.length,
         linesFor(w, 'ask').map((l) => l[2]),
     ]).toEqual([undefined, 1, ['held', 'passed']]);
-    expect(w.store.get(`quiet-held:${SID}`)).toHaveLength(1);
+    expect(stored(w)).toHaveLength(1);
 });
 
 test('bare /quiet names each kind that is off', async ($, on) => {
