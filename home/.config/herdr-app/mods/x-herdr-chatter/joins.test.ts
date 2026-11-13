@@ -143,7 +143,11 @@ describe('a hold on send: a bar fills over 5 s and pushes; a release before join
 });
 
 describe('a send that cannot join pushes, and the button says why', () => {
-    const joins = { joined: [], push: [], waiting: [] };
+    const joins = {
+        joined: [] as string[],
+        push: [] as string[],
+        waiting: [] as string[],
+    };
     test('a slash command pushes', () => {
         expect(pushReason('/compact', joins)).toBe(
             'Sent: a slash command starts a turn',

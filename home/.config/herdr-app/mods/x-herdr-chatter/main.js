@@ -842,6 +842,7 @@ async function bandStates(pid) {
                   hot: thread.hot ?? null,
                   // x-mod-stash's join queue: null when switched off, so a click pushes (FRM-564)
                   joins: thread.joins ?? null,
+                  name: thread.name ?? null,
                   sid: thread.sid,
                   wind: thread.wind ?? null,
               }
@@ -1166,9 +1167,9 @@ const meterBar = (t, pct, fill) => {
             ),
         );
 };
-// the threads his joins went to, and the rows each handed back that the quill already took, kept across a reload
+// the threads his joins went to, and the rows each handed back that the quill already took, kept across a reload until
+// the thread ended and its rows came back
 const JOINED_SIDS = 'joins:sids';
-const BACK_KEPT_MS = 24 * 60 * 60 * 1000;
 /** @returns {{ sid: string, name: string, at: number, taken: string[] }[]} */
 function joinedSids() {
     try {
@@ -1690,6 +1691,7 @@ export default class ClaudeChat extends View {
         // Enter runs the highlighted command, as in Claude's own menu, when the command starts the
         // message; further in (a skill named mid-sentence), it only fills the name in.
         this.box.on('submit', (e, cx) => {
+            if (e.secondary) return this.pressKey(cx);
             if (e.shift || this.hold) return;
             const pick = this.matches()[this.menuAt];
             if (pick && this.slash.start > 0) {
@@ -3294,6 +3296,15 @@ export default class ClaudeChat extends View {
         this.holdTask = cx.timer.every(33, (cx) => this.holdStep('tick', cx));
     }
 
+    // cmd-enter down, seen by the quill's submit or the chat's key handler, whichever gets it: one hold per press, so key
+    // repeat and the second sighting start nothing
+    /** @param {import('gpui-kit').Context} cx */
+    pressKey(cx) {
+        if (this.isKeyHeld || this.hold) return;
+        this.isKeyHeld = true;
+        this.pressSend(cx, KEY_HOLD_PUSH_MS);
+    }
+
     // one step of the hold; a window that lost focus cuts it, as a pointer that left the button does
     /** @param {'tick' | 'release' | 'cancel'} event @param {import('gpui-kit').Context} cx */
     holdStep(event, cx) {
@@ -3424,7 +3435,15 @@ export default class ClaudeChat extends View {
     join(address, sid, text, cx) {
         const id = newUuid();
         const dir = `${home()}/${JOINS_DIR}`;
-        this.joining = { address, at: Date.now(), id, state: 'pending', text };
+        /** @type {{ address: string, at: number, id: string, sid: string, state: 'pending' | 'joined', text: string } | null} */
+        this.joining = {
+            address,
+            at: Date.now(),
+            id,
+            sid,
+            state: 'pending',
+            text,
+        };
         cx.spawn(async (cx) => {
             const made = await exec('mkdir', ['-p', dir]).catch(() => null);
             const isWritten =
@@ -3472,7 +3491,14 @@ export default class ClaudeChat extends View {
     /** @param {import('gpui-kit').Context} cx */
     settleJoin(cx) {
         const j = this.joining;
-        if (!j || j.state === 'joined') return false;
+        // only the state of the thread the join went to says where it stands
+        if (
+            !j ||
+            j.state === 'joined' ||
+            j.address !== this.address ||
+            this.states?.thread?.sid !== j.sid
+        )
+            return false;
         const state = joinStatus(
             this.states?.thread?.joins,
             j.id,
@@ -3507,12 +3533,6 @@ export default class ClaudeChat extends View {
         const rows = pendingJoins(file, this.states?.thread?.joins);
         const was = this.joinRows;
         this.joinRows = { address, rows };
-        const typed = this.box?.value() ?? '';
-        if (address === this.address && typed && isJoinPending(rows, typed)) {
-            this.box.set_value('');
-            this.typed = '';
-            keepDraft(address, '');
-        }
         return JSON.stringify(was) !== JSON.stringify(this.joinRows);
     }
 
@@ -3520,18 +3540,28 @@ export default class ClaudeChat extends View {
     // each comes to the quill once, in send order, after what he typed there, and the note names the thread
     /** @param {import('gpui-kit').Context} cx */
     async readBack(cx) {
-        const sids = joinedSids().filter(
-            (k) => Date.now() - k.at < BACK_KEPT_MS,
-        );
-        for (const k of sids) {
+        for (const k of joinedSids()) {
+            const dir = `${home()}/${JOINS_DIR}`;
+            // the join file first: once it is gone, the stash already wrote everything it hands back
+            const isEnded =
+                (await readTextFile(`${dir}/${k.sid}.jsonl`).catch(
+                    () => null,
+                )) === null;
             const file =
-                (await readTextFile(
-                    `${home()}/${JOINS_DIR}/back/${k.sid}.jsonl`,
-                ).catch(() => null)) ?? '';
+                (await readTextFile(`${dir}/back/${k.sid}.jsonl`).catch(
+                    () => null,
+                )) ?? '';
             const { ids, texts } = backTexts(file, k.taken);
+            // re-read, so a sid join() saved meanwhile stays
+            const others = joinedSids().filter((o) => o.sid !== k.sid);
+            if (isEnded && !ids.length) {
+                keepJoinedSids(others);
+                continue;
+            }
             if (!ids.length || !this.box) continue;
-            k.taken = [...k.taken, ...ids];
-            keepJoinedSids(sids);
+            keepJoinedSids([...others, { ...k, taken: [...k.taken, ...ids] }]);
+            if (this.joining && ids.includes(this.joining.id))
+                this.joining = null;
             const typed = this.box.value();
             this.box.set_value([typed, ...texts].filter(Boolean).join('\n'));
             this.typed = this.box.value();
@@ -3560,6 +3590,8 @@ export default class ClaudeChat extends View {
         this.joining = null;
         const typed = this.box.value();
         this.box.set_value(typed ? `${typed}\n${text}` : text);
+        this.typed = this.box.value();
+        keepDraft(this.address, this.typed);
         this.say(note, cx);
     }
 
@@ -7797,14 +7829,15 @@ export default class ClaudeChat extends View {
                 .track_focus(this.rootKeys)
                 // cmd-enter in the quill: a tap joins, a hold of ~500 ms sends; key repeat starts nothing (FRM-564)
                 .on_key_up((e, cx) => {
-                    if (e.key === 'enter' && this.hold)
+                    if (e.key !== 'enter' || !this.isKeyHeld) return;
+                    this.isKeyHeld = false;
+                    if (this.hold && this.holdMs === KEY_HOLD_PUSH_MS)
                         this.holdStep('release', cx);
                 })
                 .on_key_down((e, cx) => {
                     if (e.keystroke === 'cmd-enter') {
                         cx.stop_propagation();
-                        if (!e.is_held && !this.hold)
-                            this.pressSend(cx, KEY_HOLD_PUSH_MS);
+                        this.pressKey(cx);
                         return;
                     }
                     if (
