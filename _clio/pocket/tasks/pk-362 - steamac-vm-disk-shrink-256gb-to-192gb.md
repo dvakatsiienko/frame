@@ -1,10 +1,10 @@
 ---
 id: PK-362
 title: 'steamac vm disk: shrink 256gb to 192gb'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-11T16:33:00Z'
+updated_date: '2026-11-13T20:06:00Z'
 labels:
   - s
 dependencies: []
@@ -54,4 +54,6 @@ typo above: «fstraps» reads «fstrims».
 2026-11-09 23:12 wing 2 halts: handed back unlabelled; still dima's «i tell when» (20:17)
 
 2026-11-11 wing 1 (dima o35): later, one at a time: a vm disk shrink, his word and the vm idle first
+
+close: 22:06 PK-362:W1–W8 kept here, linked from wing 1's flyway as a 💤 line (dima 22:04: «keep them linked in wing 1 flyway, mark as 💤, i'll tell when»)
 <!-- SECTION:NOTES:END -->

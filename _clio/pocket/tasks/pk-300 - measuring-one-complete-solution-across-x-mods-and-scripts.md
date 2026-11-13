@@ -1,10 +1,10 @@
 ---
 id: PK-300
 title: 'measuring: one complete solution across x, mods and scripts'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-11T22:00:00Z'
+updated_date: '2026-11-13T20:05:00Z'
 labels:
   - m
 dependencies: []
@@ -39,4 +39,6 @@ kept: 2026-11-09 — parked on dima's 17:26 word (11-07), wing 1 flyway line #1;
 kept: 2026-11-09 — dima 14:42: touch it again in two days, 2026-11-11
 
 kept: 2026-11-12 — still dima's prio 1 measuring item, waits for a free main-lane slot after the herdr shapes
+
+close: 22:05 PK-300:W1–W1 kept here, linked from wing 1's flyway as a 💤 line (dima 22:04: «keep them linked in wing 1 flyway, mark as 💤, i'll tell when»)
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-13T17:21:00Z'
+updated_date: '2026-11-13T20:05:00Z'
 labels:
   - s
   - clio-wing-1
@@ -34,6 +34,8 @@ ordinal: 1001
 - [ ] #16 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
 - [ ] #17 f16 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
 - [ ] #18 f17 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #19 f20 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima, his vet
+- [ ] #20 f21 💤 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
 <!-- AC:END -->
 
 ## Implementation Notes

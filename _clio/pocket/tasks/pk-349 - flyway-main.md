@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T14:48:00Z'
+updated_date: '2026-11-13T20:01:00Z'
 labels:
   - s
   - clio-main
@@ -502,4 +502,8 @@ PK-349:W79 (2026-11-13 16:36, dima): what i need to check? ❓
 PK-349:W80 (2026-11-13 16:36, dima): refresh orbit.
 
 PK-349:W81 (2026-11-13 16:36, dima): remove old grill and actualize orbit.
+
+done 2026-11-13 22:01: f16 FRM-564 closed record: decided and done test brought to W57, W76 (1 s hold, cmd+enter at once) — on: 2026-11-16 (FRM-564 Done)
+
+done 2026-11-13 22:01: f15 FRM-585 body: decided + done test match the quill-mini grill — on: 2026-11-16 (FRM-585 Todo)
 <!-- SECTION:NOTES:END -->

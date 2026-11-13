@@ -1,10 +1,10 @@
 ---
 id: PK-374
 title: 'gates: one naming convention everywhere, one big sweep'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T20:03:00Z'
-updated_date: '2026-11-11T22:00:00Z'
+updated_date: '2026-11-13T20:06:00Z'
 labels:
   - s
 dependencies: []
@@ -59,4 +59,6 @@ PK-374:W18 (2026-11-09 21:59, dima): gates: do the cheap wins and clean up every
 note 2026-11-10 14:50 wing 1: the 21:59 groom (siesta red). W1–W4 carry the 21:59 stamp but fold the o80 steer, the same words as W8–W17 (22:39); kept as written, W8–W17 is the sanctioned fold
 
 kept: 2026-11-12 — 💤 on his word (o80), unchanged
+
+close: 22:06 PK-374:W1–W18 kept here, linked from wing 1's flyway as a 💤 line (dima 22:04: «keep them linked in wing 1 flyway, mark as 💤, i'll tell when»)
 <!-- SECTION:NOTES:END -->

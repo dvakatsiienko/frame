@@ -3,10 +3,10 @@ id: PK-392
 title: >-
   wing 1: how herdr desktop, herdr-core and herdr relate, which repos to watch
   (inbox S1)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T11:41:00Z'
+updated_date: '2026-11-13T20:06:00Z'
 labels:
   - s
 dependencies: []
@@ -30,4 +30,6 @@ raw drop (2026-11-13 inbox, dima): - https://github.com/herdrdev/herdr
 raw drop (2026-11-13 inbox, dima): - https://github.com/herdrdev/herdr-core
 
 raw drop (2026-11-13 inbox, dima): - https://github.com/herdrdev/herdr-app
+
+close: 22:06 PK-392:W1–W4 answered in main clio's thread 22:06 (herdr-app is the window, herdr-core runs every terminal and agent, ~/.config/herdr-app/AGENTS.md § two programs); the three repos are changedetector watches
 <!-- SECTION:NOTES:END -->

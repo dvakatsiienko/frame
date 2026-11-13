@@ -1,10 +1,10 @@
 ---
 id: PK-358
 title: rex settings walkthrough, two items at a time, shown live
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-11T22:00:00Z'
+updated_date: '2026-11-13T20:05:00Z'
 labels:
   - s
   - clio-main
@@ -98,4 +98,6 @@ note 2026-11-09 clio: the raw drops above sit twice, the first set stamped «11-
 19:02 reassigned wing 1 → main clio on dima's 19:01 word
 
 kept: 2026-11-12 — 💤 his own choice, the walkthrough when he is free (flyway 💤 line)
+
+close: 22:05 PK-358:W1–W12 kept here, linked from wing 1's flyway as a 💤 line (dima 22:04: «keep them linked in wing 1 flyway, mark as 💤, i'll tell when»)
 <!-- SECTION:NOTES:END -->
