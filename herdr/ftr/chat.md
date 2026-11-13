@@ -282,13 +282,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then a join row lands in the thread's join file, no turn starts, the words stay in the quill and the button shows 📥 (queued)
   - and what he types after the click rides the same row until a turn takes it
   - and a second click before a turn took it takes the mark off: the row leaves the join file, the words stay
-  - and once a turn takes the row, its words leave the quill (anything typed after its last write stays), the button shows ✉️ (joined) for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
+  - and once a turn takes the row, its words leave the quill in the same frame the chat draws them (anything typed after its last write stays), the button shows ✉️ (joined) for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
   - and a row listed nowhere a minute after the write, or a write refused, stays in the quill unmarked, the note saying why; after a chatter reload the mark and the words come back once
   - and a picture waiting over the quill joins as its path
 - ⬜ a 1 s hold on send or Enter pushes, its disc filling (FRM-564)
   - given text in the quill
   - when dima holds send, Enter or cmd-enter
-  - then after a short pause (300 ms, so a tap never shows it) a disc fills the button over 1 s and then the message pushes, words marked to join taken out of the join file first: a turn starts, as a send did before joins
+  - then after a short pause (100 ms, so a tap never shows it) a disc fills the button over 1 s and then the message pushes; Settings › Chatter › send sets both, words marked to join taken out of the join file first: a turn starts, as a send did before joins
   - and a release before the disc starts joins, one after it sends nothing and marks nothing, a key acting on its release, its repeats typing no newlines; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
 - ⬜ a send that cannot join pushes and says why (FRM-564)
   - given a slash command in the quill, or a thread whose join queue is switched off

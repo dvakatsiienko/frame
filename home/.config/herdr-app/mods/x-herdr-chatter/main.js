@@ -1216,6 +1216,11 @@ function keptMark() {
         return null;
     }
 }
+// the hold's delay and length, his two settings rows
+const holdTiming = () => ({
+    delay: Number(settingValue('chatter.send.holdDelay') ?? 100),
+    push: Number(settingValue('chatter.send.holdPush') ?? 1000),
+});
 // herdr's window answers only inside a call it made; a timer tick may get a throw, read as «still active»
 function isWindowActive() {
     try {
@@ -2891,7 +2896,7 @@ export default class ClaudeChat extends View {
     }
 
     // Reads what was added since last time. The file only grows; a half-written last line waits.
-    async load(_cx) {
+    async load(cx) {
         const file = this.file;
         if (this.loading === file) {
             this.again = true;
@@ -2934,6 +2939,9 @@ export default class ClaudeChat extends View {
                     this.again = true;
                 } else if (text) {
                     this.ingest(text);
+                    // a take the transcript just showed clears the quill now, not at the next state read
+                    if (this.joining && this.tookIds?.has(this.joining.id))
+                        this.settleJoin(cx);
                     this.pos = end;
                     if (more) this.again = true;
                 }
@@ -3378,7 +3386,7 @@ export default class ClaudeChat extends View {
     /** @param {import('gpui-kit').Context} cx */
     pressSend(cx) {
         this.holdTask?.cancel();
-        this.hold = holdSend(null, 'press', Date.now()).hold;
+        this.hold = holdSend(null, 'press', Date.now(), holdTiming()).hold;
         this.holdFill = 0;
         this.holdTask = cx.timer.every(33, (cx) => this.holdStep('tick', cx));
     }
@@ -3418,6 +3426,7 @@ export default class ClaudeChat extends View {
             this.hold,
             event === 'tick' && !isWindowActive() ? 'cancel' : event,
             Date.now(),
+            holdTiming(),
         );
         this.hold = r.hold;
         // the bar shows only while the hold runs: a push or a release leaves the button as it was

@@ -27,7 +27,6 @@ import {
     askLabel,
     asksOf,
     byName,
-    canTakeBack,
     dropPress,
     hasSteerBox,
     hotOf,
@@ -35,7 +34,6 @@ import {
     hotPresses,
     inListOrder,
     literalAngles,
-    lockedLabel,
     nextThreads,
     pendingPresses,
     phasesOf,
@@ -43,7 +41,6 @@ import {
     psStartArgs,
     runningThreads,
     savePress,
-    sentSteer,
     stateOfPid,
     threadFacts,
     tickAll,
@@ -701,9 +698,8 @@ export default class Deck extends View {
         const sent = this.sent.get(key)?.verdict ?? s.pending.get(ask.id);
         const steer = this.steers.get(key);
         const state = tickState(ask, sent);
-        const done = state !== 'open';
-        const canUntick = canTakeBack(state);
-        const sentText = sentSteer(state, keptSteer(key));
+        const isLocked = state === 'locked';
+        const labels = pressLabel(state);
         // tick is the main act, so it is the one filled button
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
         const button = (id, label, tip, onClick, isPrimary = false) =>
@@ -746,7 +742,7 @@ export default class Deck extends View {
                         ),
                     ),
                 )
-                .when(Boolean(ask.id) && !done, (el) =>
+                .when(Boolean(ask.id) && !isLocked, (el) =>
                     el.child(
                         h_flex()
                             .gap(8)
@@ -754,13 +750,22 @@ export default class Deck extends View {
                             .child(
                                 button(
                                     'tick',
-                                    '🛎️ tick',
-                                    ask.isGated
-                                        ? 'your word for this guarded action: it runs once, within 2 h'
-                                        : 'good to go: the session takes the pick',
+                                    labels.tick,
+                                    state === 'ticked'
+                                        ? 'queued for its next turn: click to take it back'
+                                        : ask.isGated
+                                          ? 'tick: your word for this guarded action, it runs once within 2 h'
+                                          : 'tick: good to go, the session takes the pick',
                                     (cx) =>
                                         cx.spawn((cx) =>
-                                            this.press(cx, s, ask, 'tick'),
+                                            state === 'ticked'
+                                                ? this.unpress(cx, s, ask)
+                                                : this.press(
+                                                      cx,
+                                                      s,
+                                                      ask,
+                                                      'tick',
+                                                  ),
                                         ),
                                     true,
                                 ),
@@ -768,11 +773,20 @@ export default class Deck extends View {
                             .child(
                                 button(
                                     'replay',
-                                    '🔁 replay',
-                                    'another round, with your steer',
+                                    labels.replay,
+                                    state === 'replayed'
+                                        ? 'queued for its next turn: click to take it back'
+                                        : 'replay: another round, with your steer',
                                     (cx) =>
                                         cx.spawn((cx) =>
-                                            this.press(cx, s, ask, 'replay'),
+                                            state === 'replayed'
+                                                ? this.unpress(cx, s, ask)
+                                                : this.press(
+                                                      cx,
+                                                      s,
+                                                      ask,
+                                                      'replay',
+                                                  ),
                                         ),
                                 ),
                             )
@@ -809,47 +823,24 @@ export default class Deck extends View {
                             ),
                     ),
                 )
-                .when(ask.isGated && !done && this.passedOver.has(key), (el) =>
-                    el.child(
-                        div()
-                            .text_size(SIZE.secondary)
-                            .text_color(t.muted)
-                            .child('needs your own press'),
-                    ),
-                )
-                .when(Boolean(sentText), (el) =>
-                    el.child(
-                        div()
-                            .id(`sent-steer-${key}`)
-                            .text_size(SIZE.secondary)
-                            .text_color(t.muted)
-                            .child(
-                                TextView.markdown(
-                                    `sent-steer-md-${key}`,
-                                    `↳ ${literalAngles(sentText ?? '')}`,
-                                ).selectable(true),
-                            ),
-                    ),
-                )
-                .when(canUntick, (el) =>
-                    el.child(
-                        h_flex().child(
-                            button(
-                                'untick',
-                                pressLabel(state).label,
-                                pressLabel(state).tip,
-                                (cx) =>
-                                    cx.spawn((cx) => this.unpress(cx, s, ask)),
-                            ),
+                .when(
+                    ask.isGated && !isLocked && this.passedOver.has(key),
+                    (el) =>
+                        el.child(
+                            div()
+                                .text_size(SIZE.secondary)
+                                .text_color(t.muted)
+                                .child('needs your own press'),
                         ),
-                    ),
                 )
-                .when(done && !canUntick, (el) =>
+                // a press a turn took, tick or replay alike: ✉️ joined (dima's W63–W67)
+                .when(isLocked, (el) =>
                     el.child(
                         div()
                             .text_size(SIZE.secondary)
                             .text_color(t.muted)
-                            .child(lockedLabel(ask)),
+                            .tooltip('joined: the session took it')
+                            .child('✉️'),
                     ),
                 )
         );

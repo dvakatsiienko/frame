@@ -44,6 +44,37 @@ export const pages = [
                 ],
             },
             {
+                heading: 'send',
+                rows: [
+                    {
+                        control: {
+                            kind: 'stepper',
+                            max: 500,
+                            min: 0,
+                            step: 50,
+                            unit: 'ms',
+                        },
+                        default: 100,
+                        key: 'chatter.send.holdDelay',
+                        title: 'Hold starts after',
+                        why: 'how long send or Enter is held before its disc starts filling; a quicker let-go joins',
+                    },
+                    {
+                        control: {
+                            kind: 'stepper',
+                            max: 3000,
+                            min: 500,
+                            step: 250,
+                            unit: 'ms',
+                        },
+                        default: 1000,
+                        key: 'chatter.send.holdPush',
+                        title: 'Hold to send',
+                        why: 'how long the disc fills before the message sends at once instead of joining',
+                    },
+                ],
+            },
+            {
                 heading: 'replies',
                 rows: [
                     {

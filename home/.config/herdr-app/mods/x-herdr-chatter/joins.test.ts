@@ -305,3 +305,15 @@ describe('words typed after the click ride the same join until a turn takes it',
         ]);
     });
 });
+
+describe('his settings set the hold: its delay and its length', () => {
+    test('a 300 ms delay and a 2 s hold push at 2.3 s, not before', () => {
+        const timing = { delay: 300, push: 2000 };
+        const pressed = holdSend(null, 'press', 0, timing);
+        expect([
+            holdSend(pressed.hold, 'tick', 2299, timing).act,
+            holdSend(pressed.hold, 'tick', 2300, timing).act,
+            holdSend(pressed.hold, 'release', 250, timing).act,
+        ]).toEqual([null, 'push', 'join']);
+    });
+});

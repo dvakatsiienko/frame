@@ -318,15 +318,6 @@ export function tickState(ask, sent) {
 }
 
 /**
- * the steer he sent with a press, shown under the ask until the turn takes it (dima, 22:54: «when i tick my steer text
- * is hidden. do not hide it. instead, hide it when it slipstreamed»); an open ask has its box instead
- * @param {ReturnType<typeof tickState>} state
- * @param {string} text
- */
-export const sentSteer = (state, text) =>
-    state !== 'open' && state !== 'locked' && text.trim() ? text.trim() : null;
-
-/**
  * how his second click takes a tick back: a press the stash has not read leaves the ticks file, so neither the stash
  * nor the guard ever sees it; a press it has read gets an untick line, which the stash answers by dropping the mark
  * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file
@@ -343,22 +334,14 @@ export const untickDoor = (pending, mark) =>
 export const canTakeBack = (state) =>
     state === 'ticked' || state === 'replayed';
 
-/** the take-back button: the press it takes back @param {ReturnType<typeof tickState>} state */
-export const pressLabel = (state) =>
-    state === 'replayed'
-        ? {
-              label: '🔁 replayed',
-              tip: 'replayed: click again to take it back, until a turn takes it',
-          }
-        : {
-              label: '📥 queued',
-              tip: 'queued for the thread’s next turn: click again to take it back, until a turn takes it',
-          };
-
-// dima's names (FRM-564:W62): 📥 queued waits for the thread's next turn, ✉️ joined is taken into its turn
-/** what a locked ask says: which press the session took @param {Ask} ask */
-export const lockedLabel = (ask) =>
-    ask.mark === 'rejected' ? '🔒 replayed, the session took it' : '✉️ joined';
+/**
+ * the two buttons' emojis (dima's W63–W67): each stays until a turn takes the press, the pressed one reading 📥 queued
+ * @param {ReturnType<typeof tickState>} state
+ */
+export const pressLabel = (state) => ({
+    replay: state === 'replayed' ? '📥' : '🔁',
+    tick: state === 'ticked' ? '📥' : '🛎️',
+});
 
 /**
  * an ask's id as the deck draws it: every thread numbers its asks on its own, so a wing's reads `w1·o8`, another

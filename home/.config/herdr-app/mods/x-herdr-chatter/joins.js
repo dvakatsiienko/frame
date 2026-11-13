@@ -82,29 +82,35 @@ export const takeBackJoin = (io, path, id) =>
     editJoins(io, path, (was) => dropJoin(was ?? '', id));
 
 // a hold on send, Enter or cmd-enter this long pushes instead of joining, its disc filling after a short delay so a
-// tap never flashes it (dima, 20:03)
-export const HOLD_DELAY_MS = 300;
+// tap never flashes it (dima, 20:03; 100 ms at 20:14); both are settings rows, these their defaults
+export const HOLD_DELAY_MS = 100;
 export const HOLD_PUSH_MS = 1000;
 
 /**
  * a press on send, step by step: a release before HOLD_DELAY_MS joins, one after it does nothing, a hold that reaches it pushes once, and a hold
  * cut short (focus loss, a blur, the pointer gone) does nothing; `fill` is the bar, 0 to 1
  * @param {{ at: number } | null} hold @param {'press' | 'tick' | 'release' | 'cancel'} event @param {number} now
+ * @param {{ delay: number, push: number }} [timing] his settings, the defaults above when unset
  * @returns {{ hold: { at: number } | null, act: 'join' | 'push' | null, fill: number }}
  */
-export function holdSend(hold, event, now) {
+export function holdSend(
+    hold,
+    event,
+    now,
+    timing = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS },
+) {
     if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
     // a tap joins; a hold he lets go once its disc started is changed mind, nothing sent or marked (dima, 20:05)
     if (event === 'release')
         return {
-            act: now - hold.at > HOLD_DELAY_MS ? null : 'join',
+            act: now - hold.at > timing.delay ? null : 'join',
             fill: 0,
             hold: null,
         };
     const fill = Math.min(
         1,
-        Math.max(0, now - hold.at - HOLD_DELAY_MS) / HOLD_PUSH_MS,
+        Math.max(0, now - hold.at - timing.delay) / timing.push,
     );
     return fill < 1
         ? { act: null, fill, hold }

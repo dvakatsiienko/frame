@@ -13,7 +13,6 @@ import {
     hotPresses,
     inListOrder,
     literalAngles,
-    lockedLabel,
     nextThreads,
     pendingPresses,
     phasesOf,
@@ -21,7 +20,6 @@ import {
     psStartArgs,
     runningThreads,
     savePress,
-    sentSteer,
     stateOfPid,
     threadFacts,
     tickAll,
@@ -437,22 +435,6 @@ describe('an ask id names its thread (crow, 15:03: o8 lived in main and in wing 
     });
 });
 
-describe('his steer stays in sight until the turn takes it', () => {
-    test('a tick or a replay sent with a steer keeps the steer shown', () => {
-        expect(sentSteer('ticked', 'only the docs')).toBe('only the docs');
-        expect(sentSteer('replayed', 'try b')).toBe('try b');
-    });
-
-    test('the turn took it: the steer leaves with the lock', () => {
-        expect(sentSteer('locked', 'only the docs')).toBeNull();
-    });
-
-    test('an open ask has its box instead, and no steer is no line', () => {
-        expect(sentSteer('open', 'typing')).toBeNull();
-        expect(sentSteer('ticked', '  ')).toBeNull();
-    });
-});
-
 describe('a keep-hot button on each deck row (dima, 23:16)', () => {
     const now = new Date(2026, 10, 10, 23, 0).getTime();
     const since = new Date(2026, 10, 10, 22, 20).getTime();
@@ -607,17 +589,10 @@ describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)'
         expect(tickState({ ...ask, mark: 'rejected' }, 'untick')).toBe('open');
     });
 
-    test('the take-back button names the press it takes back', () => {
-        expect(pressLabel('replayed').label).toBe('🔁 replayed');
-        expect(pressLabel('ticked').label).toBe('📥 queued');
-        expect(pressLabel('replayed').tip).toMatch(/^replayed: click again/);
-    });
-
-    test('a locked ask says which press the session took', () => {
-        expect(lockedLabel({ ...ask, mark: 'rejected' })).toBe(
-            '🔒 replayed, the session took it',
-        );
-        expect(lockedLabel({ ...ask, mark: 'accepted' })).toBe('✉️ joined');
+    test('the pressed button reads 📥, the other keeps its emoji', () => {
+        expect(pressLabel('open')).toEqual({ replay: '🔁', tick: '🛎️' });
+        expect(pressLabel('ticked')).toEqual({ replay: '🔁', tick: '📥' });
+        expect(pressLabel('replayed')).toEqual({ replay: '📥', tick: '🛎️' });
     });
 });
 
