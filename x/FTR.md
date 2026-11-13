@@ -707,6 +707,7 @@
 
 - ⬜ `x mods edit pull|status|test|push` edits a live mod through a scratch copy and lands it only green and whole (FRM-388)
   - makes: the scratch copies under the job tmp (`$CLAUDE_JOB_DIR/tmp/x-mods-edit/<repo>`, else `~/.local/state/x/x-mods-edit/<repo>`, so a mac restart loses no edit; proof: mods_test.go::TestModsEditScratchLivesUnderTheStateDirOutsideAJob), and on a push the edited files in `home/.claude/plugin-x/mods/<mod>/`
+  - given a session id (`CLAUDE_CODE_SESSION_ID`), then its scratch is a sibling tree, `<…>/x-mods-edit/session-<id>/<repo>`, so two sessions pulling one file keep their own copy and base, a re-pull or a land of one never moves the other's, and the second land refuses on the repo's drift; with no session id the root stays `<…>/x-mods-edit/<repo>` and never lists a session's dir; a session's first pull names an older repo-level scratch that still holds a pulled file (`notice`), once, and leaves it untouched (FRM-621)
   - given a path outside `home/.claude/plugin-x/mods/<mod>/`, then pull exits 2 naming the shape
   - given an edit that turns a mod test red, when push runs, then nothing reaches the mod and the refusal names the red test; `test` shows the same red on the overlay copy
   - given a hooks file that does not parse, when push runs, then the validator refuses it before any test or write, naming the parse error (PK-64)
