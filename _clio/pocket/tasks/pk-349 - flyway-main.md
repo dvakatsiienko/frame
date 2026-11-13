@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T14:04:00Z'
+updated_date: '2026-11-13T14:48:00Z'
 labels:
   - s
   - clio-main
@@ -476,4 +476,30 @@ PK-349:W66 (2026-11-13 15:59, dima): maybe move into some of lowtide skill? or w
 PK-349:W67 (2026-11-13 15:59, dima): maybe we forget using shape-idea with me? ❓
 
 PK-349:W68 (2026-11-13 15:59, dima): i suppose we already have all of that in that skill? or new skill needed? ❓
+
+PK-349:W69 (2026-11-13 16:34, dima): add «what it buys».
+
+PK-349:W70 (2026-11-13 16:34, dima): and groom memories so no habits scattered.
+
+PK-349:W71 (2026-11-13 16:34, dima): for next stuff we grill with you or wing 1 - we use shape-idea (and tell wing 1 what we decided so far, i am about to grill something with it)
+
+PK-349:W72 (2026-11-13 16:34, dima): note i was unable to write you a reply for 30 min so far since last message. #comms-bottleneck-yellow-sign
+
+PK-349:W73 (2026-11-13 16:34, dima): did you received my full herdr big picture revamp request from wing one? i saw you grill but i am overloaded, and new requests in your orbit and wing 1 arrives sonner than i am able to process the grill. ❓
+
+PK-349:W74 (2026-11-13 16:34, dima): tell where you are and re-plan grilling steps in calmer nature.
+
+PK-349:W75 (2026-11-13 16:34, dima): what to grill now best, given my request? i want a good working system. ❓
+
+PK-349:W76 (2026-11-13 16:34, dima): (condier my mods big picture request big picture, folded for later).
+
+PK-349:W77 (2026-11-13 16:34, dima): also - you are at 49% — grill big picture now or after your SW? ❓
+
+PK-349:W78 (2026-11-13 16:36, dima): whats the state with herdr codie progress? ❓
+
+PK-349:W79 (2026-11-13 16:36, dima): what i need to check? ❓
+
+PK-349:W80 (2026-11-13 16:36, dima): refresh orbit.
+
+PK-349:W81 (2026-11-13 16:36, dima): remove old grill and actualize orbit.
 <!-- SECTION:NOTES:END -->
