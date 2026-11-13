@@ -74,6 +74,24 @@ async function enabledPlugins(fs, home, cwd) {
 }
 
 /**
+ * a plugin's skill folders: the ones its manifest lists (`.claude-plugin/plugin.json` `skills`, as Claude Code ships a
+ * plugin that nests them by bucket, matt's), else every folder one level under `skills/`; never a walk deeper, so a
+ * bucket the manifest leaves out (`deprecated/`, `in-progress/`) never shows (FRM-593)
+ * @param {SkillFs} fs
+ * @param {string} root the plugin's install path
+ */
+async function skillDirs(fs, root) {
+    const listed = json(
+        await fs.read(`${root}/.claude-plugin/plugin.json`),
+    )?.skills;
+    if (Array.isArray(listed))
+        return listed
+            .filter((p) => typeof p === 'string')
+            .map((p) => `${root}/${p}`);
+    return (await fs.list(`${root}/skills`)).map((e) => `${root}/skills/${e}`);
+}
+
+/**
  * every skill of the plugins enabled for the thread's folder, as `plugin:skill` → what it does
  * @param {SkillFs} fs
  * @param {{ home: string, cwd: string }} thread
@@ -93,12 +111,12 @@ export async function loadableSkills(fs, { home, cwd }) {
         );
         if (!install?.installPath) continue;
         const plugin = key.split('@')[0];
-        const dir = `${install.installPath}/skills`;
-        for (const entry of await fs.list(dir)) {
-            const text = await fs.read(`${dir}/${entry}/SKILL.md`);
+        for (const dir of await skillDirs(fs, install.installPath)) {
+            const text = await fs.read(`${dir}/SKILL.md`);
             if (!text) continue;
             const head = skillHead(text);
-            skills.set(`${plugin}:${head.name ?? entry}`, head.description);
+            const folder = dir.split('/').filter(Boolean).at(-1) ?? dir;
+            skills.set(`${plugin}:${head.name ?? folder}`, head.description);
         }
     }
     return skills;

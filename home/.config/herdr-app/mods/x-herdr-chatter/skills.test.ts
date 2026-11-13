@@ -29,7 +29,14 @@ beforeAll(async () => {
     const cache = join(home, '.claude/plugins/cache');
     await put(
         join(home, '.claude/settings.json'),
-        JSON.stringify({ enabledPlugins: { 'alpha@m': false, 'foo@m': true } }),
+        JSON.stringify({
+            enabledPlugins: {
+                'alpha@m': false,
+                'foo@m': true,
+                'matt@m': true,
+                'shut@m': true,
+            },
+        }),
     );
     await put(
         join(cwd, '.claude/settings.json'),
@@ -37,7 +44,7 @@ beforeAll(async () => {
     );
     await put(
         join(cwd, '.claude/settings.local.json'),
-        JSON.stringify({ enabledPlugins: { 'foo@m': false } }),
+        JSON.stringify({ enabledPlugins: { 'foo@m': false, 'shut@m': false } }),
     );
     await put(
         join(home, '.claude/plugins/installed_plugins.json'),
@@ -51,6 +58,8 @@ beforeAll(async () => {
                     },
                 ],
                 'foo@m': [{ installPath: join(cache, 'foo'), scope: 'user' }],
+                'matt@m': [{ installPath: join(cache, 'matt'), scope: 'user' }],
+                'shut@m': [{ installPath: join(cache, 'shut'), scope: 'user' }],
             },
         }),
     );
@@ -62,6 +71,48 @@ beforeAll(async () => {
         join(cache, 'foo/skills/bar/SKILL.md'),
         skill('bar', 'a foo skill'),
     );
+    // a plugin that nests its skills by bucket and lists the shipped ones in its manifest, as matt's 1.3.2 does
+    await put(
+        join(cache, 'matt/.claude-plugin/plugin.json'),
+        JSON.stringify({
+            name: 'matt',
+            skills: [
+                './skills/engineering/retro',
+                'skills/engineering/tdd',
+                './skills/engineering/ghost',
+                './skills/engineering/review',
+            ],
+        }),
+    );
+    await put(
+        join(cache, 'matt/skills/engineering/retro/SKILL.md'),
+        skill('retro', 'a retro'),
+    );
+    await put(
+        join(cache, 'matt/skills/engineering/tdd/SKILL.md'),
+        skill('tdd', 'test first'),
+    );
+    await put(
+        join(cache, 'matt/skills/engineering/review/SKILL.md'),
+        skill('code-review', 'a review'),
+    );
+    await put(
+        join(cache, 'matt/skills/deprecated/old/SKILL.md'),
+        skill('old', 'gone'),
+    );
+    await put(
+        join(cache, 'matt/skills/in-progress/beta/SKILL.md'),
+        skill('beta', 'not shipped'),
+    );
+    await put(
+        join(cache, 'matt/skills/flat/SKILL.md'),
+        skill('flat', 'one level down, not listed'),
+    );
+    await put(
+        join(cache, 'shut/.claude-plugin/plugin.json'),
+        JSON.stringify({ skills: ['./skills/a/one'] }),
+    );
+    await put(join(cache, 'shut/skills/a/one/SKILL.md'), skill('one', 'off'));
 });
 
 describe('every skill the thread can load autocompletes', () => {
@@ -80,6 +131,27 @@ describe('every skill the thread can load autocompletes', () => {
     test('a project plugin installed for another folder lists none', async () => {
         const skills = await loadableSkills(fs, { cwd: join(cwd, 'x'), home });
         expect(skills.has('alpha:boot')).toBe(false);
+    });
+});
+
+describe('a plugin manifest names its skills (FRM-593)', () => {
+    test('the menu holds exactly the listed skills, with or without ./, a missing one skipped, its own name kept', async () => {
+        const all = await loadableSkills(fs, { cwd, home });
+        expect(
+            [...all.keys()].filter((k) => k.startsWith('matt:')).sort(),
+        ).toEqual(['matt:code-review', 'matt:retro', 'matt:tdd']);
+    });
+
+    test('a manifest plugin disabled in a later layer lists none', async () => {
+        const all = await loadableSkills(fs, { cwd, home });
+        expect([...all.keys()].some((k) => k.startsWith('shut:'))).toBe(false);
+    });
+
+    test('«ret» offers the manifest-listed retro', async () => {
+        const all = await loadableSkills(fs, { cwd, home });
+        expect(menuMatches([...all], 'ret').map(([n]) => n)).toContain(
+            'matt:retro',
+        );
     });
 });
 

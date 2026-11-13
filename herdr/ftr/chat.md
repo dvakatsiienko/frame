@@ -234,10 +234,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima clicks the card
   - then the prompt lands in his quill after what he typed, one blank line between, unsent, and the quill takes the keyboard
   - decision: in-message cards on our own column, his pick a (15:50): herdr's lazy list drops any row with its own handler (herdr-app#894)
-- ⬜ the / menu lists every skill the thread can load
+- ✅ the / menu lists every skill the thread can load
   - given the thread's folder enables a plugin through the user, project or local settings
   - when dima types «/» and part of a name
   - then that plugin's skills show (clio's 22 `clio:` skills in main), a match on the part after the colon too («/boot» → `clio:boot`), and a disabled plugin's skills never show
+  - and a plugin whose manifest lists its skills (`.claude-plugin/plugin.json` `skills`) shows exactly those, so «/ret» offers `mattpocock-skills:retro`; its unlisted `deprecated/` and `in-progress/` never show
+  - proof: `skills.test.ts` over a fixture plugin tree, and a read of this mac's plugins: all 27 of matt's 1.3.2 skills, «ret» → `mattpocock-skills:retro` (FRM-593, 2026-11-13)
 - ⬜ inline code in the quill turns into a chip
   - given dima types «use `ls` here»
   - when the closing backtick lands
