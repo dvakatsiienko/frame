@@ -33,6 +33,7 @@ import {
     hotPressLine,
     hotPresses,
     inListOrder,
+    isPressSettled,
     literalAngles,
     nextThreads,
     pendingPresses,
@@ -144,8 +145,7 @@ async function sessions(shelf) {
     );
 }
 
-// a held key's repeats come under this apart (his first repeat at 150 ms): a submit that close to the last one is the
-// same press, so a held key acts once and two taps act twice
+// with no key-up seen, a submit this close to the last one is the held key's repeat (his first repeat at 150 ms)
 const STEER_KEY_REPEAT_MS = 180;
 
 // a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
@@ -245,6 +245,8 @@ export default class Deck extends View {
         // a steer box per open ask, made when a read finds the ask: an InputState is never made while drawing
         /** @type {Map<string, import('gpui-base').InputState>} */
         this.steers = new Map();
+        /** @type {Promise<unknown>} */
+        this.writing = Promise.resolve();
         // presses written and not yet taken by the session's stash, so a second press waits
         /** @type {Map<string, { verdict: import('./orbit.js').Press['verdict'], at: number }>} */
         this.sent = new Map();
@@ -340,7 +342,14 @@ export default class Deck extends View {
             };
             for (const [key, press] of this.sent) {
                 const ask = askOf(key);
-                if (!ask || ask.mark || Date.now() - press.at > SENT_MS)
+                const pending = this.rows
+                    .find((s) => s.sid === key.split(':')[0])
+                    ?.pending.get(ask?.id ?? '');
+                if (
+                    !ask ||
+                    isPressSettled(ask, pending, press.verdict) ||
+                    Date.now() - press.at > SENT_MS
+                )
                     this.sent.delete(key);
             }
             for (const key of this.steers.keys()) {
@@ -573,20 +582,22 @@ export default class Deck extends View {
                 throw new Error(
                     made.stderr.trim() || `mkdir exited ${made.code}`,
                 );
-            await savePress(
-                { read: readTextFile, write: writeTextFile },
-                `${TICKS}/${s.sid}.jsonl`,
-                {
-                    at,
-                    id: ask.id,
-                    text: ask.text,
-                    verdict,
-                    ...(steer ? { steer } : {}),
-                },
-                s.taken,
+            await this.inTurn(() =>
+                savePress(
+                    { read: readTextFile, write: writeTextFile },
+                    `${TICKS}/${s.sid}.jsonl`,
+                    {
+                        at,
+                        id: ask.id,
+                        text: ask.text,
+                        verdict,
+                        ...(steer ? { steer } : {}),
+                    },
+                    s.taken,
+                ),
             );
         } catch (err) {
-            this.sent.delete(key);
+            if (this.sent.get(key)?.at === at) this.sent.delete(key);
             this.pressError = `${ask.id} not sent: ${err instanceof Error ? err.message : err}`;
         }
         cx.notify();
@@ -620,20 +631,34 @@ export default class Deck extends View {
                 throw new Error(
                     made.stderr.trim() || `mkdir exited ${made.code}`,
                 );
-            await tickAll(
-                { read: readTextFile, write: writeTextFile },
-                TICKS,
-                [s],
-                s.sid,
-                sentOf,
-                (id) => this.steers.get(`${s.sid}:${id}`)?.value(),
-                at,
+            await this.inTurn(() =>
+                tickAll(
+                    { read: readTextFile, write: writeTextFile },
+                    TICKS,
+                    [s],
+                    s.sid,
+                    sentOf,
+                    (id) => this.steers.get(`${s.sid}:${id}`)?.value(),
+                    at,
+                ),
             );
         } catch (err) {
             for (const a of takes) this.sent.delete(`${s.sid}:${a.id}`);
             this.pressError = `tick all not sent: ${err instanceof Error ? err.message : err}`;
         }
         cx.notify();
+    }
+
+    // the ticks files are written one at a time: two presses in flight would each read the file before the other's
+    // write, and herdr refuses the second (it writes only over the text it read), so the press flipped back. one retry
+    // covers a write the stash slipped in between
+    /** @template T @param {() => Promise<T>} write @returns {Promise<T>} */
+    inTurn(write) {
+        const run = this.writing
+            .catch(() => {})
+            .then(() => write().catch(() => write()));
+        this.writing = run;
+        return run;
     }
 
     /** @param {string} key */
@@ -657,9 +682,12 @@ export default class Deck extends View {
     /** @param {Context} cx @param {string} key @param {boolean} isCmd */
     steerKey(cx, key, isCmd) {
         const now = Date.now();
-        const isRepeat = now - (this.steerKeyAt ?? 0) < STEER_KEY_REPEAT_MS;
+        const isRepeat =
+            !this.isSteerKeyUp &&
+            now - (this.steerKeyAt ?? 0) < STEER_KEY_REPEAT_MS;
         this.steerKeyAt = now;
         if (isRepeat) return;
+        this.isSteerKeyUp = false;
         for (const s of this.rows)
             for (const ask of s.asks) {
                 if (`${s.sid}:${ask.id}` !== key) continue;
@@ -688,25 +716,24 @@ export default class Deck extends View {
         const io = { read: readTextFile, write: writeTextFile };
         const path = `${TICKS}/${s.sid}.jsonl`;
         this.pressError = null;
+        // drawn open at once, before the write: the ticks file's last read may still hold the press
+        const at = Date.now();
+        const isDrop = untickDoor(s.pending.get(ask.id), ask.mark) === 'drop';
+        this.sent.set(key, { at, verdict: 'untick' });
+        cx.notify();
         try {
-            if (untickDoor(s.pending.get(ask.id), ask.mark) === 'drop') {
-                // drawn open at once: the pending read keeps the dropped press until the next poll
-                this.sent.set(key, { at: Date.now(), verdict: 'untick' });
-                cx.notify();
-                await dropPress(io, path, ask.id, s.taken);
-            } else {
-                const at = Date.now();
-                this.sent.set(key, { at, verdict: 'untick' });
-                cx.notify();
-                await savePress(
-                    io,
-                    path,
-                    { at, id: ask.id, text: ask.text, verdict: 'untick' },
-                    s.taken,
-                );
-            }
+            await this.inTurn(() =>
+                isDrop
+                    ? dropPress(io, path, ask.id, s.taken)
+                    : savePress(
+                          io,
+                          path,
+                          { at, id: ask.id, text: ask.text, verdict: 'untick' },
+                          s.taken,
+                      ),
+            );
         } catch (err) {
-            this.sent.delete(key);
+            if (this.sent.get(key)?.at === at) this.sent.delete(key);
             this.pressError = `${ask.id} not unticked: ${err instanceof Error ? err.message : err}`;
         }
         cx.notify();
@@ -836,6 +863,16 @@ export default class Deck extends View {
                                         .on_mouse_down('left', (_e, cx) =>
                                             cx.stop_propagation(),
                                         )
+                                        // a let-go key ends a press, so the next Enter acts however soon; ⌘ let go
+                                        // ends a cmd-enter, whose Enter key-up macOS never sends
+                                        .on_key_up((e) => {
+                                            if (e.key === 'enter')
+                                                this.isSteerKeyUp = true;
+                                        })
+                                        .on_modifiers_changed((e) => {
+                                            if (!e.modifiers.platform)
+                                                this.isSteerKeyUp = true;
+                                        })
                                         .child(
                                             Input.new(steer)
                                                 .w_full()

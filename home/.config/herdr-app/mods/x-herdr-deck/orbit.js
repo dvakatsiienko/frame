@@ -318,6 +318,15 @@ export function tickState(ask, sent) {
 }
 
 /**
+ * a press he made is settled once the shelf draws the ask the same without it: his mark from the stash or his press in
+ * the ticks file; until then the deck draws his press, so a poll that read the shelf a moment early never flips it back
+ * @param {Ask} ask @param {Press['verdict'] | null | undefined} pending his press as the last read of the ticks file has it
+ * @param {Press['verdict']} sent
+ */
+export const isPressSettled = (ask, pending, sent) =>
+    ask.isLocked || tickState(ask, pending) === tickState(ask, sent);
+
+/**
  * how his second click takes a tick back: a press the stash has not read leaves the ticks file, so neither the stash
  * nor the guard ever sees it; a press it has read gets an untick line, which the stash answers by dropping the mark
  * @param {Press['verdict'] | null | undefined} pending his press still in the ticks file

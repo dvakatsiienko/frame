@@ -12,6 +12,7 @@ import {
     hotPressLine,
     hotPresses,
     inListOrder,
+    isPressSettled,
     literalAngles,
     nextThreads,
     pendingPresses,
@@ -719,5 +720,32 @@ describe('Enter in a steer box ticks, cmd-enter replays, each a second time take
     test('a locked ask takes no key', () => {
         expect(steerKeyPress('locked', false, false)).toBeNull();
         expect(steerKeyPress('locked', true, false)).toBeNull();
+    });
+});
+
+describe('a press draws as sent until the shelf agrees with it, so a fast run of presses never flips back (dima, 20:48)', () => {
+    const open: Ask = { ...ask, isLocked: false, mark: null };
+    test('an untick the stash has not answered yet stays drawn open', () => {
+        expect(
+            isPressSettled({ ...open, mark: 'accepted' }, 'tick', 'untick'),
+        ).toBe(false);
+    });
+    test('a take-back whose file read still holds the press stays drawn open', () => {
+        expect(isPressSettled(open, 'tick', 'untick')).toBe(false);
+    });
+    test('a tick is settled once the file or the mark shows it', () => {
+        expect(isPressSettled(open, undefined, 'tick')).toBe(false);
+        expect(isPressSettled(open, 'tick', 'tick')).toBe(true);
+        expect(
+            isPressSettled({ ...open, mark: 'accepted' }, undefined, 'tick'),
+        ).toBe(true);
+    });
+    test('an untick is settled once nothing holds the press', () => {
+        expect(isPressSettled(open, undefined, 'untick')).toBe(true);
+    });
+    test('a locked ask settles every press', () => {
+        expect(
+            isPressSettled({ ...open, isLocked: true }, undefined, 'untick'),
+        ).toBe(true);
     });
 });
