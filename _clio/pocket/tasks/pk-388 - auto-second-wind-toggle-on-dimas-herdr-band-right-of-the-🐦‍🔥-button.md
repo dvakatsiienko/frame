@@ -1,10 +1,12 @@
 ---
 id: PK-388
-title: auto second wind toggle on dima's herdr band, right of the second-wind button
+title: >-
+  auto second wind: the band toggle and every second wind knob and note in herdr
+  settings
 status: open
 assignee: []
 created_date: '2026-11-13T11:13:00Z'
-updated_date: '2026-11-13T17:57:00Z'
+updated_date: '2026-11-13T18:22:00Z'
 labels:
   - s
 dependencies: []
