@@ -91,8 +91,8 @@ export function missedSystemLine(entry) {
 
 /** the compact boundary Claude Code writes when a conversation is compacted @type {SystemLine} */
 export const COMPACTED_LINE = {
-    label: '🗜 Conversation compacted',
-    text: '🗜 Conversation compacted',
+    label: '📦 Conversation compacted',
+    text: '📦 Conversation compacted',
 };
 
 /**

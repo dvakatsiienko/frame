@@ -4414,10 +4414,10 @@ export default class ClaudeChat extends View {
                 { at: item.at ?? null, isMine: false, isQueued: false },
                 Date.now(),
             );
-            const reply = this.claudeLook(t, this.replyBody(t, item, i), true);
-            return time
-                ? div().id(`reply-at-${i}`).w_full().tooltip(time).child(reply)
-                : reply;
+            return this.claudeLook(t, this.replyBody(t, item, i), true, {
+                id: `reply-at-${i}`,
+                time,
+            });
         }
         if (item.kind === 'system') return this.systemRow(t, item, i);
         if (item.kind === 'note') {
@@ -4436,9 +4436,11 @@ export default class ClaudeChat extends View {
         return this.tool(t, item, i);
     }
 
-    // Claude's words: on the left in a quiet bubble, or after an accent dot; a reply cut into rows dots only its first
-    /** @param {any} t @param {any} body @param {boolean} isFirst */
-    claudeLook(t, body, isFirst) {
+    // Claude's words: on the left in a quiet bubble, or after an accent dot; a reply cut into rows dots only its first.
+    // its send time shows on a hover beside the words, never over them: the bubble's empty margin, or the dot's strip
+    /** @param {any} t @param {any} body @param {boolean} isFirst @param {{ id: string, time: string | null }} [at] */
+    claudeLook(t, body, isFirst, at = undefined) {
+        const time = at?.time ?? null;
         if (chatLook().mine === 'bubble')
             return h_flex()
                 .w_full()
@@ -4451,18 +4453,29 @@ export default class ClaudeChat extends View {
                         .bg(t.raised)
                         .text_color(t.foreground)
                         .child(body),
+                )
+                .when(Boolean(time), (el) =>
+                    el.child(
+                        div().id(at.id).flex_1().self_stretch().tooltip(time),
+                    ),
                 );
         return h_flex()
             .w_full()
             .gap(8)
             .items_start()
             .child(
-                div()
-                    .mt(4)
-                    .size(8)
+                v_flex()
+                    .w(px(8))
                     .flex_none()
-                    .rounded(4)
-                    .when(isFirst, (el) => el.bg(t.accent)),
+                    .self_stretch()
+                    .when(Boolean(time), (el) => el.id(at.id).tooltip(time))
+                    .child(
+                        div()
+                            .mt(4)
+                            .size(8)
+                            .rounded(4)
+                            .when(isFirst, (el) => el.bg(t.accent)),
+                    ),
             )
             .child(
                 div().flex_1().min_w(0).text_color(t.foreground).child(body),
@@ -6389,28 +6402,23 @@ export default class ClaudeChat extends View {
                   Date.now(),
               )
             : null;
-        const withTime = (/** @type {any} */ el) =>
-            time
-                ? div()
-                      .id(`reply-part-at-${row.key}`)
-                      .w_full()
-                      .tooltip(time)
-                      .child(el)
-                : el;
+        const at = { id: `reply-part-at-${row.key}`, time };
         if (part === 'text')
-            return withTime(
-                this.claudeLook(
-                    t,
-                    TextView.markdown(
-                        `${this.pre}md-${row.key}`,
-                        unlinkFiles(b.text),
-                    ).selectable(true),
-                    row.isFirst,
-                ),
+            return this.claudeLook(
+                t,
+                TextView.markdown(
+                    `${this.pre}md-${row.key}`,
+                    unlinkFiles(b.text),
+                ).selectable(true),
+                row.isFirst,
+                at,
             );
         if (part === 'prompt')
-            return withTime(
-                this.claudeLook(t, this.promptCard(t, b, row.key), row.isFirst),
+            return this.claudeLook(
+                t,
+                this.promptCard(t, b, row.key),
+                row.isFirst,
+                at,
             );
         const isCopied =
             this.copied?.key === row.key && Date.now() - this.copied.at < 1500;
@@ -6465,7 +6473,7 @@ export default class ClaudeChat extends View {
                               `\`\`\`\n${b.text}\n\`\`\``,
                           ).selectable(true),
                       );
-        return withTime(this.claudeLook(t, box, false));
+        return this.claudeLook(t, box, false, at);
     }
 
     /** @param {Theme} t @param {{ to: string, text: string }} b @param {string} key */

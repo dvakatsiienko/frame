@@ -3,7 +3,7 @@
 wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
 - ⬜ lines he never typed fold out of his way (FRM-562:W17)
-  - given a thread's transcript holds a plugin's message (an orbit tick), a task notice, a synthetic «No response requested.», a command's output (hook lines after a compact, «Set effort level…» after a pick, its colour codes gone, «⌘ » before it) or the compact boundary («🗜 Conversation compacted»)
+  - given a thread's transcript holds a plugin's message (an orbit tick), a task notice, a synthetic «No response requested.», a command's output (hook lines after a compact, «Set effort level…» after a pick, its colour codes gone, «⌘ » before it) or the compact boundary («📦 Conversation compacted»)
   - then each draws as one dim line that opens to its whole text on a click, and «System lines: Folded / Hidden / Shown» in ⚙ picks the look, Folded by default
   - and a message he pasted reads as his plain text, the `<pasted_content>` tags gone; a system-reminder with an id attribute goes too
   - and a command's output pasted inside his own words stays his message, never a system line
