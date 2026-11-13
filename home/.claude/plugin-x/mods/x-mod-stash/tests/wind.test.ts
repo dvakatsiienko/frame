@@ -19,6 +19,8 @@ let hasIngestCommand = true;
 // the engine refuses the compact, as it refuses an unknown command
 let compactRefusal: string | undefined;
 let ingestRefusal: string | undefined;
+// the engine refuses the mod's own prompt
+let submitRefusal: string | undefined;
 // the context % a step reads live, through $.session.usage
 let fillNow: number | undefined;
 
@@ -56,6 +58,7 @@ function world(
     hasIngestCommand = true;
     compactRefusal = undefined;
     ingestRefusal = undefined;
+    submitRefusal = undefined;
     fillNow = undefined;
     const prompts: string[] = [];
     const lines: string[] = [];
@@ -142,6 +145,8 @@ function world(
         value: { tool: `mcp__x-mod-stash__${e.name}` },
     }));
     on('prompt.submit', (_$, e) => {
+        if (e.origin?.kind === 'plugin' && submitRefusal)
+            throw new Error(submitRefusal);
         lines.push(...(e.context ?? []));
         if (e.origin?.kind === 'plugin') prompts.push(e.text);
         return { text: e.text };
@@ -1678,6 +1683,50 @@ test('two messages and a push held through one compact go in once, in order, and
                 to: 'uds:/tmp/cc-socks/1.sock',
             },
         ],
+    ]);
+});
+
+// wisphunter on 6e7afec4: a 🌀 row left when second wind went off held every message, and no compact ever released it
+test('second wind off, a 🌀 row left behind holds nothing', async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set('shown', { 'stash.second-wind': false });
+    w.store.set(`wind:${SID}`, { at: NOW, slug: SLUG, state: 'refreshing' });
+    await start($);
+    const r = await fromPeer($, 'round 9 on abc1234', SIXTH);
+    expect([r.consumed, r.text?.includes('round 9 on abc1234')]).toEqual([
+        undefined,
+        true,
+    ]);
+});
+
+test('a release the engine refuses keeps the held message for the next one', async ($, on) => {
+    const w = sentWorld(on);
+    inCompact = async () => {
+        await fromPeer($, 'round 9 on abc1234', SIXTH);
+    };
+    await start($);
+    submitRefusal = 'busy';
+    await compact($, 'manual');
+    await w.clock.advance(10_000);
+    const kept = (w.store.get(HELD) as { steers?: unknown[] }).steers?.length;
+    submitRefusal = undefined;
+    await say($, 'his prompt');
+    expect([kept, compactHeld(w.lines).length, w.sent.length]).toEqual([
+        1, 1, 2,
+    ]);
+});
+
+test('a sender told its r5 hold outlived 10 min hears no «after its compact» when no compact ran', async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    await w.clock.advance(10 * 60_000);
+    w.store.set('shown', { 'stash.second-wind': false });
+    await say($, 'his prompt');
+    expect([delivered(w.lines).length, w.sent]).toEqual([
+        1,
+        [{ text: HELD_LINE, to: 'uds:/tmp/cc-socks/1.sock' }],
     ]);
 });
 

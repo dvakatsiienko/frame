@@ -4504,11 +4504,13 @@ async function holdForCompact(
     text: string,
     body: string,
     from: string,
+    isWindOn: boolean,
 ): Promise<{ consumed: string } | undefined> {
     const key = await steerKey($);
     const sid = await currentId($);
     if (!sid || !key) return undefined;
-    const was = (await windOf($, sid))?.state;
+    // a 🌀 row is second wind's: switched off, a row left behind holds nothing, only a real compact does
+    const was = isWindOn ? (await windOf($, sid))?.state : undefined;
     const since = await $.store.get(COMPACTING + sid).catch(() => undefined);
     // a process that died mid-compact never cleared its key, so the key counts only inside a compact's longest run
     const isCompacting =
@@ -4572,10 +4574,9 @@ async function holdSteer(
     if (isQuietPause(body)) return undefined;
     // r5 first: a codie past 55 % turns a coordinator's message into its wind note; what it leaves, a compact holds. the
     // compact hold is no part of second wind: switched off, a compact still holds (FRM-564:W36 «has to work for everyone»)
-    const wind = (await partsShown($))('stash.second-wind')
-        ? await holdForWind($, text, body, from)
-        : undefined;
-    return wind ?? holdForCompact($, text, body, from);
+    const isWindOn = (await partsShown($))('stash.second-wind');
+    const wind = isWindOn ? await holdForWind($, text, body, from) : undefined;
+    return wind ?? holdForCompact($, text, body, from, isWindOn);
 }
 
 async function holdForWind(
@@ -4674,7 +4675,9 @@ function takeHeld(
 // a sender that heard «held» hears its message went in, so a hold never ends in silence (FRM-597)
 async function tellDelivered($: EngineInterface, steers: HeldSteers['steers']) {
     const told = new Set(
-        steers.flatMap((s) => (s.isTold && s.reply ? [s.reply] : [])),
+        steers.flatMap((s) =>
+            s.isCompact && s.isTold && s.reply ? [s.reply] : [],
+        ),
     );
     if (!told.size) return;
     const line = steerDeliveredLine((await sessionName($)) ?? 'this session');
@@ -4742,7 +4745,20 @@ async function releaseHeldSteers(
     if (!key) return;
     const steers = await takeHeld($, key, isDue);
     if (!steers.length) return;
-    await $.prompt.submit({ text: steers.map(steerLine).join('\n') });
+    // through selfSubmit, so the released turn reads busy: a keep-hot ping or a wake never lands inside it
+    await selfSubmit($, steers.map(steerLine).join('\n')).catch(
+        async (err: unknown) => {
+            // a refused submit hands the list back ahead of what landed since, flagged, so the next release takes it
+            await quietLocked(async () => {
+                const now = await steersOf($, key);
+                await $.store.set(key, {
+                    isCompacted: true,
+                    steers: [...steers, ...now.steers],
+                } satisfies HeldSteers);
+            });
+            throw err;
+        },
+    );
     await tellDelivered($, steers);
 }
 
@@ -4750,7 +4766,8 @@ async function releaseHeldSteers(
 // next prompt to carry it (FRM-597: helga's auto-compact mid-turn, then 22 min idle); a busy one hands it over at its turn's
 // end, or its next prompt takes it first
 async function releaseIfIdle($: EngineInterface) {
-    if (await quietIsBusy($)) return;
+    // the module's flag, as the keep-hot timer reads it: a state read inside the timer may see its arming hook's moment
+    if (isBusy) return;
     await releaseHeldSteers($, (kept) => kept.isCompacted === true);
 }
 
