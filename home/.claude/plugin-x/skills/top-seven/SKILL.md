@@ -24,18 +24,18 @@ he answers with a number. the kind follows his words: «emoji» → emojis; «na
 
 ## the shape — exactly this, nothing before or after
 
-this shape overrides the emoji-prefix rule of `fleet-output-format.md`. names only: drop the emoji; emojis only: the name is the emoji's own name; pairs: both.
+this shape overrides the emoji-prefix rule of `fleet-output-format.md`. names only: drop the emoji; emojis only: the name is the emoji's own name; pairs: both. `<stars>` rates, ⭐ to ⭐⭐⭐⭐⭐, lines sorted best first.
 
 ```
 top 7 <names|emojis|names + emojis> for **<topic>** (<⚙️ a cog|a character>, names only).
 
-1. ⭐ <emoji> — **<name>**: <why, ≤5 words>
-2. ⭐ <emoji> — **<name>**: <why, ≤5 words>
-3. ⭐ <emoji> — **<name>**: <why, ≤5 words> ⬅️ **my pick**: <reason>
-4. ⭐ <emoji> — **<name>**: <why, ≤5 words>
-5. ⭐ <emoji> — **<name>**: <why, ≤5 words>
-6. ⭐ <emoji> — **<name>**: <why, ≤5 words>
-7. ⭐ <emoji> — **<name>**: <why, ≤5 words>
+1. <stars> <emoji> — **<name>**: <why, ≤5 words> ⬅️ **my pick**: <reason>
+2. <stars> <emoji> — **<name>**: <why, ≤5 words>
+3. <stars> <emoji> — **<name>**: <why, ≤5 words>
+4. <stars> <emoji> — **<name>**: <why, ≤5 words>
+5. <stars> <emoji> — **<name>**: <why, ≤5 words>
+6. <stars> <emoji> — **<name>**: <why, ≤5 words>
+7. <stars> <emoji> — **<name>**: <why, ≤5 words>
 ```
 
-done: seven numbered lines, seven distinct candidates, `⬅️ **my pick**` on exactly one; for names, the clash grep ran.
+done: seven numbered lines ranked by their stars, seven distinct candidates, `⬅️ **my pick**` on exactly one; for names, the clash grep ran.
