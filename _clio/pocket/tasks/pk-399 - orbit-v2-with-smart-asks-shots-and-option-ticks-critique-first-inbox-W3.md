@@ -4,7 +4,7 @@ title: 'orbit v2 with smart asks: shots and option ticks, critique first (inbox 
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T11:41:00Z'
+updated_date: '2026-11-13T16:39:00Z'
 labels:
   - s
 dependencies: []
@@ -38,4 +38,13 @@ raw drop (2026-11-13 inbox, dima): - steer textbox is always present
 raw drop (2026-11-13 inbox, dima): - note: this is an idea/mini test-drive - i am not sure if it is worth it. i know that functionality is possible but not sure of what actually put there, to be useful not just dead weight toy. so i expect critic and proposal of what to have there.
 
 raw drop (2026-11-13 inbox, dima): #clio #codie #grill
+
+18:39 groomed by helga, folded:
+PK-399:W5 (2026-11-13 18:37, dima): addition/extension of what you proposed.
+PK-399:W6 (2026-11-13 18:37, dima): why we have it: orbit is a mod that is intended for rapid communications with agents (~90% with clio and wings, but any thread too; current balance is just a consequence of other parts of the flow we run). with orbit, I am able to answer your requests via ticks instead of looking for your requests in an overloaded message list and lots of text. you leave me «emails» that I can tick when I can. it is flexible and very useful. I am overloaded with the amount of text you and all other threads print to me, and I reply slowly, so asks for me got lost. with orbit they don't.
+PK-399:W7 (2026-11-13 18:37, dima): yes, but i want it to utilize more herdr features, and cover more comms gaps we have right now. it currently functions good, but i feel it is underused. it is essentially a code, so we can put there almost anything (but only useful stuff). i also want it readable and clean. plus currently it is a quickdraw by codie, not a weighted design decision. i want it to look very good.
+PK-399:W8 (2026-11-13 18:37, dima): yes, it is a way for me to reply to your requests quickly, plus efficiently, because of a slipstream feature, plus steers.
+PK-399:W9 (2026-11-13 18:37, dima): 💡wish: ability to attach images or files to orbit ask.
+PK-399:W10 (2026-11-13 18:37, dima): q4: I actually meant something different. I meant an ability to have some interactivity right inside the chatter (e.g., where messages arrive).
+PK-399:W11 (2026-11-13 18:37, dima): is it possible to have some buttons inside the chatter where messages flow? Theoretically? ❓
 <!-- SECTION:NOTES:END -->
