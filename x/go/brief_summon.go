@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"cmp"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,9 +32,40 @@ var (
 // summonCheck is one mechanical preflight step a summon command fails
 type summonCheck struct{ step, why, next string }
 
-// briefSummon checks a summon command the way x:crew-lead § preflight would by hand, and never launches it:
-// the judgment steps (reuse or summon, the model pick) stay the coordinator's
-func briefSummon(r *Run, args []string, flags Flags) (any, error) {
+// a summon check's answer: what a caller reads, and the record --apply writes (a check writes none)
+type summonPlanned struct {
+	ordered
+	record  thread
+	isFresh bool
+}
+
+func askSummon(plan any) string {
+	return "record the thread " + plan.(summonPlanned).record.Display + "?"
+}
+
+// briefSummonApply writes the record a check planned; the session id in the argv it printed is the one recorded
+func briefSummonApply(r *Run, _ []string, _ Flags, planned any) (any, error) {
+	plan := planned.(summonPlanned)
+	if err := writeThreadRecord(plan.record, time.Now(), plan.isFresh); err != nil {
+		if fail, isFail := errors.AsType[*Fail](err); isFail {
+			return nil, fail
+		}
+		return nil, &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
+	}
+	if r.human && plan.isFresh {
+		for _, field := range plan.ordered {
+			if field.key == "argv" {
+				fmt.Println(field.value)
+			}
+		}
+	}
+	r.Done("ok: "+plan.record.SessionID+" is "+threadDisplay(plan.record), "")
+	return plan.ordered, nil
+}
+
+// briefSummonPlan checks a summon command the way x:crew-lead § preflight would by hand, and never launches it:
+// the judgment steps (reuse or summon, the model pick) stay the coordinator's; --apply writes the thread's record
+func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 	standing, err := standingRoleFlag(flags)
 	if err != nil {
 		return nil, err
@@ -42,7 +74,7 @@ func briefSummon(r *Run, args []string, flags Flags) (any, error) {
 		if len(args) > 0 || standing.Role == "" {
 			return nil, usageFail("--session records a running thread: --role and no command", "x brief summon --role <role> --session "+sid)
 		}
-		return recordRunning(r, standing, sid)
+		return recordRunningPlan(r, standing, sid)
 	}
 	if len(args) == 0 {
 		return nil, usageFail("no summon command", "x brief summon <the summon command>")
@@ -69,7 +101,7 @@ func briefSummon(r *Run, args []string, flags Flags) (any, error) {
 		home, _ = os.Getwd()
 	}
 	if standing.Role != "" {
-		return summonStanding(r, command, words[claude:], home, standing)
+		return summonStandingPlan(r, command, words[claude:], home, standing)
 	}
 	argv := words[claude:]
 	prompt := slices.IndexFunc(argv, func(w string) bool { return briefOfCat.MatchString(w) || roleSkill.MatchString(w) })
@@ -199,12 +231,13 @@ func briefSummon(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	// the thread's identity is its session id, minted here so the record exists before the thread runs
-	record := thread{SessionID: newSessionID(), Role: role}
+	area, err := areaRequired(flags, "brief summon")
+	if err != nil {
+		return nil, err
+	}
+	record := thread{Role: role, Area: area}
 	if words := strings.Fields(first); len(words) > 1 && ticketArg.MatchString(words[1]) {
 		record.Ticket = words[1]
-		if actor, err := actorOf(flags); err == nil {
-			record.Area = ticketArea(actor, record.Ticket)
-		}
 	}
 	if m := laneSpecDir.FindStringSubmatch(text); m != nil {
 		record.Lane = m[1]
@@ -222,16 +255,16 @@ func briefSummon(r *Run, args []string, flags Flags) (any, error) {
 			}
 		}
 	}
-	out, err := summonArgv(r, command, record)
+	out, record, err := summonArgv(command, record)
 	if err != nil {
 		return nil, err
 	}
-	return ordered{{"argv", out}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, nil
+	return summonPlanned{ordered{{"argv", out}, {"brief", brief}, {"home", home}, {"role", role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, record, true}, nil
 }
 
 // the four standing roles start by a door of their own, never a lane brief, so their summon checks only what a start
 // needs: a claude call and the trusted home; a --bg start records after cc prints its job, through --session
-func summonStanding(r *Run, command string, words []string, home string, record thread) (any, error) {
+func summonStandingPlan(r *Run, command string, words []string, home string, record thread) (any, error) {
 	var failed []summonCheck
 	step := func(name, detail string, check func() string) {
 		_ = r.Step(name, detail, func() (string, error) {
@@ -260,31 +293,22 @@ func summonStanding(r *Run, command string, words []string, home string, record 
 	if err := standingGate("x brief summon", record); err != nil {
 		return nil, err
 	}
-	record.SessionID = newSessionID()
-	out, err := summonArgv(r, command, record)
+	out, record, err := summonArgv(command, record)
 	if err != nil {
 		return nil, err
 	}
-	return ordered{{"argv", out}, {"home", home}, {"role", record.Role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, nil
+	return summonPlanned{ordered{{"argv", out}, {"home", home}, {"role", record.Role}, {"sessionId", record.SessionID}, {"display", threadDisplay(record)}}, record, true}, nil
 }
 
 // a thread already running gets its standing role: a --bg start once cc printed its job, or the cutover's backfill;
 // the session must be live and hold no other role (threadRoleRefusal)
-func recordRunning(r *Run, record thread, sid string) (any, error) {
+func recordRunningPlan(r *Run, record thread, sid string) (any, error) {
 	r.Open("summon")
 	if err := standingGate("x brief summon --session", record); err != nil {
 		return nil, err
 	}
 	record.SessionID = sid
-	if err := writeThreadRecord(record, time.Now(), false); err != nil {
-		if fail, isFail := errors.AsType[*Fail](err); isFail {
-			return nil, fail
-		}
-		return nil, &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
-	}
-	display := threadDisplay(record)
-	r.Done("ok: "+sid+" is "+display, "")
-	return ordered{{"sessionId", sid}, {"role", record.Role}, {"display", display}}, nil
+	return summonPlanned{ordered{{"sessionId", sid}, {"role", record.Role}, {"display", threadDisplay(record)}}, record, false}, nil
 }
 
 // the caller gate, plus round 2's pane rule: a coordinator or wing record is never written for a caller in a herdr
@@ -337,26 +361,60 @@ func standingRoleWord(t thread) string {
 	return t.Role
 }
 
-// the argv a summon prints: the registry name the record draws, the minted session id after the claude call, and the
-// record written before the thread runs
-func summonArgv(r *Run, command string, record thread) (string, error) {
+// the argv a summon prints: the name the record draws, which the command's own -n must already be, and the session id
+// after the claude call, the one the command carries or one derived from its text, so a check and its --apply agree
+func summonArgv(command string, record thread) (string, thread, error) {
 	at := claudeCallAt(command)
 	if at == nil {
-		return "", usageFail("the claude call is quoted, so x cannot add its --session-id", "x brief summon "+quote(herdrClaude(command)))
+		return "", record, usageFail("the claude call is quoted, so x cannot add its --session-id", "x brief summon "+quote(herdrClaude(command)))
 	}
-	// the registry name is the display x draws from the record, one string, never the one the command typed
 	if from, to := nameValueAt(command, at[1]); from >= 0 {
-		command = command[:from] + quote(threadDisplay(record)) + command[to:]
+		typed, display := unquoted(command[from:to]), threadDisplay(record)
+		if typed != display {
+			fixed := command[:from] + quote(display) + command[to:]
+			return "", record, &Fail{Refused: true, Msg: "-n names «" + typed + "», and x draws «" + display + "» for this thread: one thread, one name on every surface. another area word is --area <word>", Next: "x brief summon " + quote(fixed)}
+		}
 	}
-	command = command[:at[1]] + "--session-id " + record.SessionID + " " + command[at[1]:]
-	if err := writeThreadRecord(record, time.Now(), true); err != nil {
-		return "", &Fail{Msg: "the thread record was not written: " + err.Error(), Next: "x thread list"}
+	record.SessionID = summonSessionID(command)
+	if !sessionIDFlag.MatchString(command) {
+		command = command[:at[1]] + "--session-id " + record.SessionID + " " + command[at[1]:]
 	}
-	if r.human {
-		fmt.Println(command)
+	return command, record, nil
+}
+
+var sessionIDFlag = regexp.MustCompile(`--session-id\s+([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`)
+
+// the id a command's thread runs under: the one it carries, else a uuid derived from its text, the next free one when
+// a record already holds it, so a check and the --apply that follows it print the same id and a repeated summon gets its own
+func summonSessionID(command string) string {
+	if m := sessionIDFlag.FindStringSubmatch(command); m != nil {
+		return m[1]
 	}
-	r.Done("ok: every mechanical step holds, the argv is the summon", "")
-	return command, nil
+	held := map[string]bool{}
+	if path := threadStorePath(); path != "" {
+		if store, err := readThreadStore(path); err == nil {
+			for _, t := range store.Threads {
+				held[t.SessionID] = true
+			}
+		}
+	}
+	for n := 0; ; n++ {
+		sum := sha256.Sum256([]byte(command + "\x00" + strconv.Itoa(n)))
+		b := sum[:16]
+		b[6] = b[6]&0x0f | 0x40
+		b[8] = b[8]&0x3f | 0x80
+		if id := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:]); !held[id] {
+			return id
+		}
+	}
+}
+
+// a shell word without the quotes that held it
+func unquoted(word string) string {
+	if len(word) >= 2 && (word[0] == '\'' || word[0] == '"') && word[len(word)-1] == word[0] {
+		return word[1 : len(word)-1]
+	}
+	return word
 }
 
 // nameValueAt is the byte span of the word after the claude call's first -n, quotes included; -1 when it has none

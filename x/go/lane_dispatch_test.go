@@ -65,7 +65,7 @@ func TestDispatchRefusesTicketsFromTwoLaneSpecs(t *testing.T) {
 	write(t, filepath.Join(frame, ".scratch/feat-b/spec.md"), "# feat b\n\n## FRM-2 — two\n")
 	server := dispatchServer(t, dispatchState{body: signedTicket, state: "Todo", labels: []string{"agent", "signed"}})
 
-	envelope, got := runDispatchIn(t, server, frame, "FRM-1", "FRM-2", "--session", "s1", "--lane", "cli-9")
+	envelope, got := runDispatchIn(t, server, frame, "FRM-1", "FRM-2", "--session", "s1", "--area", "cli", "--lane", "cli-9")
 
 	if got.code != 2 || !strings.Contains(jsonOf(envelope["error"]), "one dispatch is one lane") {
 		t.Errorf("exit %d, want a usage refusal naming both specs:\n%s", got.code, got.stdout)
@@ -78,7 +78,7 @@ func TestDispatchNamesTheSlicesDirAfterTheSpecsFeature(t *testing.T) {
 	write(t, filepath.Join(frame, ".scratch/feat-a/spec.md"), "# feat a\n\n## FRM-1 — the chunk\n")
 	server := dispatchServer(t, dispatchState{body: signedTicket, state: "Todo", labels: []string{"agent", "signed"}})
 
-	envelope, _ := runDispatchIn(t, server, frame, "FRM-1", "--session", "s1", "--lane", "cli-9")
+	envelope, _ := runDispatchIn(t, server, frame, "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-9")
 
 	if out := jsonOf(envelope["plan"]); !strings.Contains(out, "lanes/feat-a/issues/") {
 		t.Errorf("the slices dir must follow the spec's feature, as the lane plan does:\n%s", out)
@@ -91,7 +91,7 @@ func TestDispatchDryRunPrintsTheFourMarksAndWritesNothing(t *testing.T) {
 	t.Parallel()
 	server := dispatchServer(t, undispatched)
 
-	envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3")
+	envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3")
 
 	plan, _ := json.Marshal(envelope["plan"])
 	if got.code != 4 || strings.Count(string(plan), `"write"`) != 4 {
@@ -116,7 +116,7 @@ func TestDispatchQuickWritesItsThreeMarksWithNoSign(t *testing.T) {
 	frame, base := frameAtBase(t)
 	server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo", labels: []string{"agent"}})
 
-	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q", "--sixth-sense", "s2", "--apply")
+	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--area", "cli", "--lane", "q", "--sixth-sense", "s2", "--apply")
 
 	if got.code != 0 {
 		t.Fatalf("exit %d\n%s", got.code, got.stdout)
@@ -138,7 +138,7 @@ func TestDispatchQuickRefusesARepoNotOnThisMac(t *testing.T) {
 	body := strings.ReplaceAll(quickTicket, "repo: frame", "repo: nowhere-here")
 	server := dispatchServer(t, dispatchState{body: body, state: "Todo"})
 
-	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q", "--apply")
+	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--area", "cli", "--lane", "q", "--apply")
 
 	if got.code == 0 || !strings.Contains(got.stdout, "nowhere-here") || len(mutations(server)) != 0 {
 		t.Fatalf("exit %d, want a refusal naming the repo, no write:\n%s", got.code, got.stdout)
@@ -150,7 +150,7 @@ func TestDispatchQuickDryRunPlansThreeMarks(t *testing.T) {
 	frame, _ := frameAtBase(t)
 	server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo"})
 
-	envelope, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q")
+	envelope, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--area", "cli", "--lane", "q")
 
 	if plan := jsonOf(envelope["plan"]); got.code != 4 || strings.Count(plan, `"write"`) != 3 {
 		t.Fatalf("exit %d, want 4 with three marks:\n%s", got.code, got.stdout)
@@ -163,7 +163,7 @@ func TestDispatchQuickReRunWritesNoSecondLine(t *testing.T) {
 	body := "lane: quick\n\n🚀 dispatched 2026-11-05 — q, codie s1, main:abc1234\n"
 	server := dispatchServer(t, dispatchState{body: body, state: "In Progress", delegate: "codie"})
 
-	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--lane", "q", "--apply")
+	_, got := runDispatchIn(t, server, frame, "--quick", "FRM-1", "--session", "s1", "--area", "cli", "--lane", "q", "--apply")
 
 	if n := len(mutations(server)); got.code != 0 || n != 0 {
 		t.Fatalf("exit %d, %d mutations on a re-run:\n%s", got.code, n, got.stdout)
@@ -174,7 +174,7 @@ func TestDispatchWithoutQuickStillRefusesNoSign(t *testing.T) {
 	t.Parallel()
 	server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo"})
 
-	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "q", "--apply")
+	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--area", "cli", "--lane", "q", "--apply")
 
 	if got.code == 0 || !strings.Contains(got.stderr+got.stdout, "no ## signed block") {
 		t.Fatalf("exit %d, want the sign refusal:\n%s", got.code, got.stdout)
@@ -185,7 +185,7 @@ func TestDispatchNamesASixthSenseOnASignedTicket(t *testing.T) {
 	t.Parallel()
 	server := dispatchServer(t, undispatched)
 
-	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3", "--sixth-sense", "s2", "--apply")
+	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3", "--sixth-sense", "s2", "--apply")
 
 	body, _ := updateInput(t, server)["description"].(string)
 	if got.code != 0 || !strings.Contains(body, " — cli-3, codie s1, sixth sense s2\n") {
@@ -197,7 +197,7 @@ func TestDispatchApplySetsEveryMarkInOneUpdate(t *testing.T) {
 	t.Parallel()
 	server := dispatchServer(t, undispatched)
 
-	envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3", "--apply")
+	envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3", "--apply")
 
 	if got.code != 0 {
 		t.Fatalf("exit %d\n%s", got.code, got.stdout)
@@ -263,7 +263,7 @@ func TestDispatchWritesAgainAfterADispatchWasTakenBack(t *testing.T) {
 	back := signedBody(dispatchAbove, "🚀 dispatched 2026-10-29 — cli-2, codie s0\n↩️ back to Todo 2026-10-29\n", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
 	server := dispatchServer(t, dispatchState{body: back, state: "Todo", labels: []string{"agent", "signed"}})
 
-	envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3")
+	envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3")
 
 	if out := jsonOf(envelope["plan"]); got.code != 4 || strings.Count(out, `"write"`) != 4 {
 		t.Errorf("exit %d, want all four marks to write again after the ↩️ line:\n%s", got.code, out)
@@ -280,7 +280,7 @@ func TestDispatchAgainWritesItsOwnLineWhenItNamesSomethingNew(t *testing.T) {
 		args       []string
 		want       string
 	}{
-		{"a sixth sense added", "cli-3, codie s1", []string{"--lane", "cli-3", "--session", "s1", "--sixth-sense", "s2"}, " — cli-3, codie s1, sixth sense s2\n"},
+		{"a sixth sense added", "cli-3, codie s1", []string{"--lane", "cli-3", "--session", "s1", "--area", "cli", "--sixth-sense", "s2"}, " — cli-3, codie s1, sixth sense s2\n"},
 		{"a sixth sense alone", "cli-3, codie s1", []string{"--sixth-sense", "s2"}, " — cli-3, codie s1, sixth sense s2\n"},
 		{"another lane starts fresh", "mods-3, codie s0, sixth sense s9", []string{"--lane", "cli-3", "--session", "s1"}, " — cli-3, codie s1\n"},
 		{"the same lane's successor keeps its sixth sense and base", "cli-3, codie s1, main:abc1234, sixth sense s2", []string{"--lane", "cli-3", "--session", "s5"}, " — cli-3, codie s5, main:abc1234, sixth sense s2\n"},
@@ -291,7 +291,7 @@ func TestDispatchAgainWritesItsOwnLineWhenItNamesSomethingNew(t *testing.T) {
 			done := signedBody(dispatchAbove, "🚀 dispatched 2026-10-30 — "+c.held+"\n", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
 			server := dispatchServer(t, dispatchState{body: done, state: "In Progress", delegate: "codie", labels: []string{"agent"}})
 
-			_, got := runDispatch(t, server, append([]string{"FRM-1", "--apply"}, c.args...)...)
+			_, got := runDispatch(t, server, append([]string{"FRM-1", "--apply", "--area", "cli"}, c.args...)...)
 
 			body, _ := updateInput(t, server)["description"].(string)
 			if got.code != 0 || !strings.Contains(body, c.want) {
@@ -335,7 +335,7 @@ func TestDispatchQuickReadsABytesTicketsBaseFromBytes(t *testing.T) {
 	}
 	server := dispatchServer(t, dispatchState{body: "lane: quick\n\n## 🎯 done test\n\ngiven it, then it holds\n", state: "Todo"})
 
-	_, got := runLinear(t, server, []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}, "lane", "dispatch", "--quick", "BYT-1", "--session", "s1", "--lane", "q", "--apply")
+	_, got := runLinear(t, server, []string{"HOME=" + home, "X_FRAME_ROOT=" + frame}, "lane", "dispatch", "--quick", "BYT-1", "--session", "s1", "--area", "cli", "--lane", "q", "--apply")
 
 	body, _ := updateInput(t, server)["description"].(string)
 	if got.code != 0 || !strings.Contains(body, "main:"+base) {
@@ -363,7 +363,7 @@ func TestDispatchHoldsASignWhoseOnlyDriftIsLinearsEscapes(t *testing.T) {
 	saved := dispatchAbove + "- \\[x\\] read \\~/.config and \\_clio/ \\#1\n- \\[x\\] the new line in \\~/frame\n\n"
 	server := dispatchServer(t, dispatchState{body: signedBody(saved, "", signedAs), state: "Todo", labels: []string{"agent", "signed"}})
 
-	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3")
+	_, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3")
 
 	if got.code != 4 || strings.Contains(got.stdout, "drifted") {
 		t.Errorf("exit %d, want the dry run's confirm, a sign linear only escaped never drifted:\n%s", got.code, got.stdout)
@@ -386,7 +386,7 @@ func TestDispatchRefusesATicketWithNoSign(t *testing.T) {
 			t.Parallel()
 			server := dispatchServer(t, c.s)
 
-			envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--lane", "cli-3", "--apply")
+			envelope, got := runDispatch(t, server, "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3", "--apply")
 
 			if got.code == 0 || !strings.Contains(jsonOf(envelope["error"]), c.want) {
 				t.Errorf("exit %d, want a refusal naming %q:\n%s", got.code, c.want, got.stdout)
@@ -412,7 +412,7 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 
 	write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie"},{"sessionId":"s2","role":"sixth-sense"}]}`)
 	_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store},
-		"lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "thread-records", "--apply")
+		"lane", "dispatch", "FRM-1", "--session", "s1", "--area", "cli", "--sixth-sense", "s2", "--lane", "thread-records", "--apply")
 
 	var written threadStore
 	raw, _ := os.ReadFile(store)
@@ -467,7 +467,7 @@ esac
 			}
 			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc"), "HC_TERMINAL_ID=t3b"}, "coordinator")
 
-			envelope, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "cli-3", "--apply")
+			envelope, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3", "--apply")
 
 			sent, _ := os.ReadFile(log)
 			command := "env -u HC_TERMINAL_ID hc send t9 '/rename 🌗 🔧 cli | FRM-1'"
@@ -510,7 +510,7 @@ func TestDispatchGivesARoleOnlyFromTheCoordinatorToAKnownThread(t *testing.T) {
 			}
 			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions}, c.caller)
 
-			_, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
+			_, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--area", "cli", "--sixth-sense", "s2", "--lane", "cli-3", "--apply")
 
 			written, _ := readThreadStore(store)
 			mutations := 0
@@ -525,6 +525,55 @@ func TestDispatchGivesARoleOnlyFromTheCoordinatorToAKnownThread(t *testing.T) {
 			}
 			if !c.isOk && (got.code != 1 || !strings.Contains(got.stdout, c.want) || mutations != 0 || isSixth) {
 				t.Fatalf("exit %d, %d linear writes, records %+v, want exit 1 naming %q before any write:\n%s", got.code, mutations, written.Threads, c.want, got.stdout)
+			}
+		})
+	}
+}
+
+// FRM-600 exit 1: the scopes table names the thread: the word, its emoji where it has one, its unit where it has one
+func TestDispatchNamesTheThreadByItsScope(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ area, want string }{
+		{"strays", "⚡ 🐕 strays | chores"},
+		{"mods", "⚡ 🔧 mods | FRM-1"},
+	} {
+		t.Run(c.area, func(t *testing.T) {
+			t.Parallel()
+			frame, _ := frameAtBase(t)
+			server := dispatchServer(t, dispatchState{body: quickTicket, state: "Todo", labels: []string{"agent"}})
+			store := filepath.Join(t.TempDir(), "threads.json")
+			write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie"}]}`)
+
+			_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_FRAME_ROOT=" + frame, "X_THREADS=" + store},
+				"lane", "dispatch", "--quick", "FRM-1", "--session", "s1", "--lane", "chores", "--area", c.area, "--apply")
+
+			written, _ := readThreadStore(store)
+			if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Display != c.want {
+				t.Fatalf("exit %d, records %+v, want the display %q:\n%s", got.code, written.Threads, c.want, got.stdout)
+			}
+		})
+	}
+}
+
+// no fallback to the ticket's project: no scope, or one the table lacks, is refused naming the table, before any write
+func TestDispatchRefusesAThreadWithNoScopeFromTheTable(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name  string
+		extra []string
+	}{
+		{"no area", nil},
+		{"a word that is no scope", []string{"--area", "fleet"}},
+		{"a word with shell in it", []string{"--area", "My Lane; ls"}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			server := dispatchServer(t, undispatched)
+
+			_, got := runDispatch(t, server, append([]string{"FRM-1", "--session", "s1", "--lane", "cli-3", "--apply"}, c.extra...)...)
+
+			if got.code != 2 || !strings.Contains(got.stdout, "chords, cli, herdr, mods, speak, strays, trophy-sys") || len(mutations(server)) != 0 {
+				t.Errorf("exit %d with %d linear writes, want a usage refusal naming the table before any write:\n%s", got.code, len(mutations(server)), got.stdout)
 			}
 		})
 	}

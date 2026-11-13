@@ -35,6 +35,43 @@ var roles = func() []role {
 	return rows
 }()
 
+// every scope a lane member's thread names, by its word: an emoji that replaces its role's mark, and a unit that replaces
+// its ticket; a new scope is one line here. strays draws «⚡ 🐕 strays | chores»
+//
+//go:embed scopes.json
+var scopesJSON []byte
+
+type scope struct {
+	Word  string `json:"word"`
+	Emoji string `json:"emoji,omitempty"`
+	Unit  string `json:"unit,omitempty"`
+}
+
+var scopes = func() []scope {
+	var rows []scope
+	if err := json.Unmarshal(scopesJSON, &rows); err != nil {
+		panic("scopes.json does not parse: " + err.Error())
+	}
+	return rows
+}()
+
+func scopeOf(word string) scope {
+	for _, s := range scopes {
+		if s.Word == word {
+			return s
+		}
+	}
+	return scope{}
+}
+
+func scopeWords() string {
+	words := []string{}
+	for _, s := range scopes {
+		words = append(words, s.Word)
+	}
+	return strings.Join(words, ", ")
+}
+
 func roleOf(id string) role { return roleIn(roles, id) }
 
 func roleIn(table []role, id string) role {

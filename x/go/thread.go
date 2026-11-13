@@ -79,9 +79,9 @@ func storePathOf(isFixtureOn bool, fixture string, isXTest bool, real string) st
 	return ""
 }
 
-// the display name is drawn from the record, never parsed back out of a name: <mode> <role> <area> | <ticket>, the area
-// the ticket's linear project (dima, FRM-579's rider: never the lane name's first word); a standing role draws its whole
-// display from roles.json; no record reads as unknown
+// the display name is drawn from the record, never parsed back out of a name: <mode> <role> <area> | <unit>, the area the
+// lane's scope word from scopes.json, the unit its ticket or its scope's own word; a standing role draws its whole display
+// from roles.json; no record reads as unknown
 func threadDisplay(t thread) string { return displayFrom(roles, t) }
 
 // a renamed thread keeps its role's own display beside the title dima gave, so a reader that owns by name (a wing's
@@ -106,49 +106,36 @@ func displayFrom(table []role, t thread) string {
 	case r.Display != "":
 		return strings.ReplaceAll(r.Display, "{n}", strconv.Itoa(t.Wing))
 	}
+	// a scope's emoji replaces its role's mark and its own unit replaces the ticket (scopes.json)
+	sc := scopeOf(t.Area)
 	words := []string{}
-	for _, w := range []string{laneKindMark[t.LaneKind], r.Mark, t.Area} {
+	for _, w := range []string{laneKindMark[t.LaneKind], cmp.Or(sc.Emoji, r.Mark), t.Area} {
 		if w != "" {
 			words = append(words, w)
 		}
 	}
-	if t.Ticket != "" {
-		words = append(words, "|", t.Ticket)
+	if unit := cmp.Or(sc.Unit, t.Ticket); unit != "" {
+		words = append(words, "|", unit)
 	}
 	return strings.Join(words, " ")
 }
 
-// a ticket's area word: its linear project's first word, lowercased; "" when linear does not answer, so a summon still
-// runs, after linear's own timeout at worst
-func ticketArea(actor, id string) string {
-	if id == "" {
-		return ""
+// areaFlag is the scope word a summon or a dispatch names for its lane, one of scopes.json's; "" when it names none
+func areaFlag(flags Flags) (string, error) {
+	word := flagString(flags, "area")
+	if word != "" && scopeOf(word).Word == "" {
+		return "", usageFail(word+" is no scope; a lane's scope is one of: "+scopeWords(), "x brief summon … --area <word>")
 	}
-	data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { project { name } } }`, map[string]any{"id": id})
-	if err != nil {
-		return ""
-	}
-	var found struct {
-		Issue struct {
-			Project *named `json:"project"`
-		} `json:"issue"`
-	}
-	raw, _ := json.Marshal(data)
-	_ = json.Unmarshal(raw, &found)
-	if found.Issue.Project == nil {
-		return ""
-	}
-	return projectArea(found.Issue.Project.Name)
+	return word, nil
 }
 
-// a project name is linear's data, typed into a printed argv and a display: only a plain word passes
-var areaWord = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
-
-func projectArea(project string) string {
-	if words := strings.Fields(strings.ToLower(project)); len(words) > 0 && areaWord.MatchString(words[0]) {
-		return words[0]
+// a lane member's thread names its scope: no fallback to a ticket's project, which drifts
+func areaRequired(flags Flags, verb string) (string, error) {
+	word, err := areaFlag(flags)
+	if err == nil && word == "" {
+		return "", usageFail("a lane member's thread names its scope: --area <word>, one of: "+scopeWords(), "x "+verb+" … --area <word>")
 	}
-	return ""
+	return word, err
 }
 
 func pidAlive(pid int) bool {

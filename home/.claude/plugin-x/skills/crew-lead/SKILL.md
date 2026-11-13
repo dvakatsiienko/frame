@@ -5,11 +5,11 @@ description: Load BEFORE a lane summon, brief, watch or stop — codie, sixth se
 
 # crew-lead — summoning and running a lane crew
 
-you are the coordinator of a lane crew: any clio today, a squad lead later ([FRM-368](https://linear.app/x-com/issue/FRM-368)). «clio» below means whoever coordinates. this skill loads on demand, only when a lane member is summoned or run: a question, a subagent, or a sidecar needs none of it.
+you are the coordinator of a lane crew: any clio today, a squad lead later ([FRM-368](https://linear.app/x-com/issue/FRM-368)). «clio» below means whoever coordinates. this skill loads on demand, only when a lane member is summoned or run.
 
 **the boundary** — this skill owns the watchable members a lane runs: codie, sixth sense, a designer, a probe, a cloud session, each a real session. a subagent of any card, a fork and a worktree-isolated agent are `x:crew-subagent`, open to every member and read first here too. crow and helga are clio's sidecars: their start and revive commands live in `clio:boot`.
 
-a summon reads the four files below before its first brief: summons are a few a day, and a lesson missed at summon time costs a round. a later step (an idle notice, a stop, a commit beside a peer) re-reads the one file it needs. after a compaction this body comes back whole and the files do not, so a step after one re-reads them:
+a summon reads the four files below before its first brief: a lesson missed at summon time costs a round. a later step (an idle notice, a stop, a commit beside a peer) re-reads the one file it needs. after a compaction this body comes back whole and the files do not, so a step after one re-reads them:
 - picking a model, an effort, or summon-vs-reuse → [models.md](models.md)
 - writing a brief, relaying a steer, watching a pr → [briefing.md](briefing.md)
 - an idle notice, a hang, a member to stop → [watching.md](watching.md)
@@ -33,7 +33,7 @@ the split is **disposable vs watchable**, never research vs code.
 - **`claude --bg`**, cc native, no surface: survives a coordinator reset, herdr shows it only by an attach pane; head `cd <repo> && claude --bg`, a quick lane adds `--settings '{"worktree":{"bgIsolation":"none"}}'` before the prompt; facts: [spawn-mechanics.md](references/spawn-mechanics.md) § 5
 - **the surfaces**, one file each, read before a summon on it:
   - **herdr desktop, the default**: [references/surface-herdr-desktop.md](references/surface-herdr-desktop.md) (dima, 2026-11-10: «Herdr's native way is first»; «I want you to summon everyone in Herdr's native way»)
-  - **claude desktop, the backup**: [references/surface-claude-desktop.md](references/surface-claude-desktop.md), the desktop thread; a summon there says why to dima
+  - **claude desktop, the backup**: [references/surface-claude-desktop.md](references/surface-claude-desktop.md), the desktop thread; say why to dima
   - a new harness: its own `surface-<name>.md` and a line here, which also names the default
 - **everyone is summoned in herdr, the mods codie and clio's wings too** (dima, 2026-11-11: «Everyone gets summoned in Herdr. The desktop app fallback was when I was running everyone in the Claude desktop app but now we're in Herdr so everyone is in Herdr»)
   - a mods lane is a quick lane, on main in dima's checkout, never a worktree or a pr, so he sees each mod change live, unless he asks for a stack (it needs prs); its sixth sense is optional, his call per lane (dima, 2026-10-27)
@@ -53,7 +53,7 @@ the split is **disposable vs watchable**, never research vs code.
 
 ## preflight — every summon, in order
 
-the mechanical steps run as one: `x brief summon "<command>"` refuses a skipped one, names its fix.
+the mechanical steps run as one: `x brief summon "<command>" --area <scope word> --apply` refuses a skipped one, names its fix; without `--apply` it only checks.
 
 - 🚫 **a running member's model never switches** (it re-reads the history uncached, model-cards' `/model` line); only on dima's word for that session (2026-10-30: «It is a banned move»); a repeat earns a deny rule
 - **reuse or summon** — an idle member revives by message, context intact; [models.md](models.md) § summon or reuse holds the order; a summon or a parallel lane says why in its brief; one sixth sense a lane, reused; next side lane at «final», a trial
@@ -64,7 +64,7 @@ the mechanical steps run as one: `x brief summon "<command>"` refuses a skipped 
 - **the summon word** — dima's pick of signed chunks in `clio:shape-lane-dispatch` is the summon; no second ask (the contract: clio's `craft-fleet-flow` § lane init). no sealed exit lines in the spec, no summon. codie gets a sixth sense by default; a quick lane's pick says sixth sense yes or no, and dima says himself when he wants none elsewhere. freebies and dima-mode codies get no sixth sense.
 - **the brief file** — written to clio's scratchpad, opening `/x:crew-codie BYT-N <job> coordinator: <clio registry name>`; `x brief check --repo <repo> <file>` passes before the summon; its `wish:` line (or `wish: none`) sits in the first 10 lines. the brief names every live trial whose `fits:` matches the member: each with how the lane uses it, or «trial skipped: <name> — <why>»; sixth sense's argv carries the same names after its four arguments, behind the word `trials:`.
 - **the pr mode** — a side-lane or shift brief says `pr mode: plain` or `pr mode: stacked`; stacked only while the stacked-prs trial runs, for 2+ dependent parts, its brief naming `docs/test-drive/stacked-prs.md`; once a lower layer is verified clean, the next ones go as plain prs on main
-- **the argv** — the base `claude` line, literal, `-n` before the prompt, the prompt before `--remote-control` (the flag once ate a 1.5 kB brief); each runs through `x brief summon '<line>'` first:
+- **the argv** — the base `claude` line, literal, `-n` before the prompt, the prompt before `--remote-control`; each runs through `x brief summon '<line>' --area <scope word>` first, then with `--apply`:
   - the surface's head comes first (`hc run … --` on herdr, its file)
   - side lane: `… claude -n '🌗 🔧 <area> | BYT-N' --model opus --effort medium "$(cat <brief file>)" --remote-control`
   - quick lane on main: the same line with `-n '⚡ 🔧 <area> | BYT-N'`
@@ -73,7 +73,7 @@ the mechanical steps run as one: `x brief summon "<command>"` refuses a skipped 
   - quick-lane sixth sense, on codie's «final»: the same line with `-n '⚡ 🔎 <area> | main'` and `main:<base sha>` in place of the pr url, plus `final: <head sha>` before `spec:`
   - `spec:` is the lane's spec path, so sixth sense grades the spec's exit lines; it comes after the four arguments, before `trials:`
   - the loop is `x:crew-dna` § the pr pair; a summon note never says «report to me only», which overrides that loop
-- **names** — `<mode> <role emoji> <area word> | <ticket or pr>`, no member word and no lane number (`⚡ 🔧 mods | FRM-574`, `🌗 🔎 cli | #161`; dima, PK-378); the mode leads: `🌗` a side lane, `⚡` a quick lane, `🌘` a shift (`clio:shift`). roles: `🔧` codie, `🔎` sixth sense, `🎨` designer, else its kind: `🔬` research, `🧪` probe, `☁️` cloud; clio, wings, crow, helga unchanged. the area word: `cli`, `mods`, `herdr`, an app's name. a lane's unit is its ticket, a shift's its shift name, and a shift member pings only when fully done or on a 🪜 escalate. `-n` is the registry name, typed for every child, probes and cloud sessions included; `--remote-control <name>` labels only the rc card. a brief names a member by its registry name, never a session id. a rename moves the record (`x lane dispatch --apply --session <sid>`), the tab and, while idle, cc's name: `env -u HC_TERMINAL_ID hc send <t> '/rename <name>'`; the `Agent` tool's `name` bans emoji, colons and spaces.
+- **names** — `<mode> <role emoji> <area word> | <ticket or pr>`, no member word and no lane number (`⚡ 🔧 mods | FRM-574`, `🌗 🔎 cli | #161`; dima, PK-378); the mode leads: `🌗` a side lane, `⚡` a quick lane, `🌘` a shift (`clio:shift`). roles: `🔧` codie, `🔎` sixth sense, `🎨` designer, else its kind: `🔬` research, `🧪` probe, `☁️` cloud; clio, wings, crow, helga unchanged. the area word is the lane's `--area` scope from `x/go/scopes.json`, never the ticket's project (`⚡ 🐕 strays | chores`). a lane's unit is its ticket, a shift's its shift name, and a shift member pings only when fully done or on a 🪜 escalate. `-n` is the registry name x draws, typed for every child; `--remote-control <name>` labels only the rc card. a brief names a member by its registry name, never a session id. `x lane dispatch --apply --session <sid> --area <word>` scopes the record, `x thread rename '<display or sid>' '<name>'` moves every place; the `Agent` tool's `name` bans emoji, colons and spaces.
 - **ticket** — pass the id; the id rides the branch name and the pr body, never a closing keyword. clio verifies, then closes it at its land (`craft-fleet-flow` stage 8) by `clio:pm` `references/closing.md` (landed), the closing word in the body, named to dima.
 - **identity** — the brief carries what `x:crew-codie` names: the codie token, the done-comment cap of § 6. dima on uncapped ones: «comments are poems for me».
 - **the glide** — the lane's 🛼 glide card links the member the turn it is summoned (orbit op `glide`, act `link`, role `codie` or `sixth-sense`, `session` = the member's session id, `x:herdr`'s recipe; a `--bg` one prints it); the next siesta or the halt ends it ([watching.md](watching.md)).

@@ -1,11 +1,14 @@
 package main
 
 import (
+	"cmp"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -23,41 +26,167 @@ func hcBin() string {
 	return "hc"
 }
 
+// herdrAppBin is the herdr window's cli a tab rename speaks through; X_HERDR_APP points a test at a fake, and under X_TEST
+// without it there is none, so no test reaches the live window
+func herdrAppBin() string {
+	if bin := os.Getenv("X_HERDR_APP"); bin != "" {
+		return bin
+	}
+	if os.Getenv("X_TEST") != "" {
+		return ""
+	}
+	return "herdr-app"
+}
+
+// renameTab gives the herdr tab holding a terminal its name: the tab id from `herdr-app ls`, one made by terminal.keep
+// when the terminal sits in none; the row says whether it took, with the exact commands left when it did not
+func renameTab(terminal, name string) ordered {
+	row := ordered{{"place", "herdr tab"}}
+	bin := herdrAppBin()
+	if terminal == "" {
+		return append(row, kv{"renamed", false}, kv{"command", "none: no herdr terminal holds the thread, so it has no tab"}, kv{"isAbsent", true})
+	}
+	rename := func(tab string) string {
+		return "herdr-app do tab.rename " + quote(`{"id":"`+tab+`","name":`+marshal(name)+`}`)
+	}
+	if bin == "" {
+		return append(row, kv{"renamed", false}, kv{"command", rename("<tab>")}, kv{"error", "no herdr-app to ask"})
+	}
+	listed, err := exec.Command(bin, "ls").Output()
+	var window struct {
+		Spaces []struct {
+			Tabs []struct {
+				ID        string `json:"id"`
+				Terminals []struct {
+					Terminal string `json:"terminal"`
+				} `json:"terminals"`
+			} `json:"tabs"`
+		} `json:"spaces"`
+	}
+	if err != nil || json.Unmarshal(listed, &window) != nil {
+		return append(row, kv{"renamed", false}, kv{"command", rename("<tab>")}, kv{"error", "herdr-app ls did not answer"})
+	}
+	tab := ""
+	for _, space := range window.Spaces {
+		for _, candidate := range space.Tabs {
+			if slices.ContainsFunc(candidate.Terminals, func(t struct {
+				Terminal string `json:"terminal"`
+			}) bool {
+				return t.Terminal == terminal
+			}) {
+				tab = candidate.ID
+			}
+		}
+	}
+	if tab == "" {
+		keep := `{"terminal":"` + terminal + `","place":"tab"}`
+		out, err := exec.Command(bin, "do", "terminal.keep", keep).Output()
+		var kept struct {
+			Tab string `json:"tab"`
+		}
+		if err != nil || json.Unmarshal(out, &kept) != nil || kept.Tab == "" {
+			return append(row, kv{"renamed", false}, kv{"command", "herdr-app do terminal.keep " + quote(keep) + ", then " + rename("<tab>")}, kv{"error", "the terminal got no tab"})
+		}
+		tab = kept.Tab
+	}
+	if out, err := exec.Command(bin, "do", "tab.rename", `{"id":"`+tab+`","name":`+marshal(name)+`}`).CombinedOutput(); err != nil {
+		return append(row, kv{"renamed", false}, kv{"command", rename(tab)}, kv{"error", strings.TrimSpace(string(out))})
+	}
+	return append(row, kv{"renamed", true}, kv{"command", rename(tab)})
+}
+
 // renameThread gives a live session the display its record now draws: typed as a /rename into its herdr terminal when
-// that terminal sits idle, or handed back as the exact command when it is busy or out of reach. a slash command typed
-// from inside a herdr thread arrives wrapped in an <hc from> tag and never runs, so the send drops HC_TERMINAL_ID
-func renameThread(sid, display string) ordered {
+// that terminal sits idle, or handed back as the exact command when it is busy or out of reach. with a wait, a busy
+// terminal or a draft in its box is retried until the deadline, then reads pending
+func renameThread(sid, display string, wait time.Duration) ordered {
+	deadline := time.Now().Add(wait)
+	for {
+		row, isBlocked := renameOnce(sid, display)
+		if !isBlocked || wait <= 0 {
+			return row
+		}
+		if time.Now().After(deadline) {
+			return append(row, kv{"pending", true})
+		}
+		time.Sleep(renamePoll())
+	}
+}
+
+// how long a thread rename waits for an idle terminal; X_RENAME_WAIT (seconds) shortens it under X_TEST only
+func renameWait() time.Duration {
+	if seconds, err := strconv.ParseFloat(os.Getenv("X_RENAME_WAIT"), 64); err == nil && os.Getenv("X_TEST") != "" {
+		return time.Duration(seconds * float64(time.Second))
+	}
+	return 30 * time.Second
+}
+
+func renamePoll() time.Duration {
+	if os.Getenv("X_TEST") != "" {
+		return 20 * time.Millisecond
+	}
+	return time.Second
+}
+
+// one try: the row, and whether only the thread's busy state or draft stood in the way, so a later try may land. a slash command
+// typed from inside a herdr thread arrives wrapped in an <hc from> tag and never runs, so the send drops HC_TERMINAL_ID
+func renameOnce(sid, display string) (ordered, bool) {
 	row := ordered{{"session", sid}, {"display", display}}
 	terminal, idle := herdrTerminalOf(sessionPid(sid))
 	if terminal == "" {
-		return append(row, kv{"renamed", false}, kv{"command", "/rename " + display + " in the thread's own chat: no herdr terminal holds it"})
+		return append(row, kv{"renamed", false}, kv{"command", "/rename " + display + " in the thread's own chat: no herdr terminal holds it"}), false
 	}
 	command := "env -u HC_TERMINAL_ID hc send " + terminal + " " + quote("/rename "+display)
 	if !idle {
-		return append(row, kv{"renamed", false}, kv{"command", command})
+		return append(row, kv{"renamed", false}, kv{"command", command}), true
 	}
 	// a send waits out a typing pause, then lands in the box after the draft: dima's half-typed prompt would carry it
 	if !isInputBoxEmpty(terminal) {
-		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"why", "its input box holds text, or did not read"})
+		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"why", "its input box holds text, or did not read"}), true
 	}
 	send := exec.Command(hcBin(), "send", terminal, "/rename "+display)
 	send.Env = slices.DeleteFunc(os.Environ(), func(pair string) bool { return len(pair) > 15 && pair[:15] == "HC_TERMINAL_ID=" })
 	if out, err := send.CombinedOutput(); err != nil {
-		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"error", string(out)})
+		return append(row, kv{"renamed", false}, kv{"command", command}, kv{"error", string(out)}), false
 	}
-	return append(row, kv{"renamed", true}, kv{"command", command})
+	return append(row, kv{"renamed", true}, kv{"command", command}), false
 }
 
-// a rename on dima's word: the record's title, behind summon's caller gate, then the live thread's own /rename; a later
-// refresh keeps the title, since the record carries it
+// the record a rename means: a session id, else the one thread drawing that display; a display two threads draw is refused
+func threadToRename(threads []thread, key string) (int, error) {
+	isNamed := func(t thread) bool { return t.Role != "" && !t.Fallback }
+	if i := slices.IndexFunc(threads, func(t thread) bool { return t.SessionID == key && isNamed(t) }); i >= 0 {
+		return i, nil
+	}
+	var held []int
+	for i, t := range threads {
+		if isNamed(t) && threadDisplay(t) == key {
+			held = append(held, i)
+		}
+	}
+	switch len(held) {
+	case 0:
+		return -1, &Fail{Refused: true, Msg: key + " is no session id or display with a record to rename: x brief summon gives one", Next: "x thread list"}
+	case 1:
+		return held[0], nil
+	}
+	ids := []string{}
+	for _, i := range held {
+		ids = append(ids, threads[i].SessionID)
+	}
+	return -1, &Fail{Refused: true, Msg: "«" + key + "» is the display of " + plural(len(ids), "thread") + ": " + strings.Join(ids, ", ") + ". rename one by its session id", Next: "x thread rename " + ids[0] + " " + quote("<name>")}
+}
+
+// a rename on dima's word, by session id or display: the record's title, behind summon's caller gate, then the herdr tab
+// and the live thread's own /rename; a later refresh keeps the title, since the record carries it. every place is said,
+// and any place that did not take the name fails the verb with its exact command
 func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
-	sid, title := args[0], strings.TrimSpace(args[1])
+	key, title := args[0], strings.TrimSpace(args[1])
 	if title == "" {
-		return nil, usageFail("an empty name draws nothing", "x thread rename <sid> '<name>'")
+		return nil, usageFail("an empty name draws nothing", "x thread rename <sid or display> '<name>'")
 	}
 	// a newline would end the /rename typed into the thread and send the rest as a prompt
 	if strings.ContainsFunc(title, unicode.IsControl) {
-		return nil, usageFail("a name holds no newline or control character", "x thread rename <sid> '<name>'")
+		return nil, usageFail("a name holds no newline or control character", "x thread rename <sid or display> '<name>'")
 	}
 	if err := coordinatorOnly("x thread rename"); err != nil {
 		return nil, err
@@ -76,11 +205,12 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 		unlock()
 		return nil, &Fail{Msg: err.Error(), Next: "jq . " + quote(path)}
 	}
-	i := slices.IndexFunc(store.Threads, func(t thread) bool { return t.SessionID == sid && t.Role != "" && !t.Fallback })
-	if i < 0 {
+	i, err := threadToRename(store.Threads, key)
+	if err != nil {
 		unlock()
-		return nil, &Fail{Refused: true, Msg: sid + " has no record to rename: x brief summon gives one", Next: "x thread list"}
+		return nil, err
 	}
+	sid := store.Threads[i].SessionID
 	store.Threads[i].Title = title
 	drawNames(&store.Threads[i])
 	err = writeThreadStore(path, time.Now(), store.Threads)
@@ -88,8 +218,48 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 	if err != nil {
 		return nil, &Fail{Msg: "the thread store was not written: " + err.Error(), Next: "x thread list"}
 	}
+	terminal, _ := herdrTerminalOf(sessionPid(sid))
+	places := []ordered{{{"place", "record"}, {"renamed", true}}, renameTab(terminal, title), renameThread(sid, title, renameWait())}
+	taken, left, next := []string{}, []string{}, ""
+	for _, row := range places {
+		place, command, isRenamed, isAbsent, isPending := "", "", false, false, false
+		for _, field := range row {
+			switch field.key {
+			case "place":
+				place, _ = field.value.(string)
+			case "command":
+				command, _ = field.value.(string)
+			case "renamed":
+				isRenamed, _ = field.value.(bool)
+			case "isAbsent":
+				isAbsent, _ = field.value.(bool)
+			case "pending":
+				isPending, _ = field.value.(bool)
+			}
+		}
+		switch {
+		case isRenamed:
+			taken = append(taken, cmp.Or(place, "cc name"))
+		case isAbsent:
+		default:
+			label := cmp.Or(place, "cc name")
+			if isPending {
+				label += " (pending: busy past the wait)"
+			}
+			left = append(left, label+": "+command)
+			next = cmp.Or(next, command)
+		}
+	}
 	r.Done(sid+" is "+title, "")
-	return renameThread(sid, title), nil
+	// the claude apps' card is not read from here: if it still shows the old name, dima renames it by hand to this one
+	card := "the claude apps' card, if it still shows the old name: rename it there to the name in the block"
+	if r.human {
+		fmt.Printf("%s\n\n📋 **copy → claude app card** 📋\n\n```\n%s\n```\n\n✂️ **end** ✂️\n", card, title)
+	}
+	if len(left) > 0 {
+		return nil, &Fail{Msg: sid + " is " + title + " in " + strings.Join(taken, ", ") + ", not yet in " + strings.Join(left, "; "), Next: next}
+	}
+	return ordered{{"session", sid}, {"display", title}, {"places", places}, {"card", ordered{{"say", card}, {"name", title}}}}, nil
 }
 
 // the pid the session registry holds for a live session id; 0 when none

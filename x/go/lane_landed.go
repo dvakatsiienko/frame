@@ -1310,6 +1310,8 @@ func laneLanded(r *Run, args []string, flags Flags, planned any) (any, error) {
 			return nil, err
 		}
 	}
+	// the unit follows the lane's life: a chunk that merged leaves its thread's name with no ticket until the next dispatch
+	_ = r.Step("thread", "the thread record's ticket "+plan.id, func() (string, error) { return clearThreadTicket(plan.id) })
 	if plan.specDir != "" {
 		if err := r.Step("archive", "the spec dir into .scratch/"+archived, func() (string, error) {
 			if exists(plan.archive) {
@@ -1398,4 +1400,34 @@ func holdsAFile(dir string) bool {
 		return nil
 	})
 	return found || err != nil && !errors.Is(err, fs.ErrNotExist)
+}
+
+// clearThreadTicket takes a landed ticket off each thread record that names it, so its display drops the unit; best effort,
+// since a merged lane stands whatever its store says
+func clearThreadTicket(id string) (string, error) {
+	path := threadStorePath()
+	if path == "" {
+		return "no thread store", nil
+	}
+	unlock, err := lockThreadStore(path)
+	if err != nil {
+		return "", err
+	}
+	defer unlock()
+	store, err := readThreadStore(path)
+	if err != nil {
+		return "", err
+	}
+	cleared := 0
+	for i := range store.Threads {
+		if store.Threads[i].Ticket == id {
+			store.Threads[i].Ticket = ""
+			drawNames(&store.Threads[i])
+			cleared++
+		}
+	}
+	if cleared == 0 {
+		return "no record names it", nil
+	}
+	return plural(cleared, "record") + " cleared", writeThreadStore(path, time.Now(), store.Threads)
 }

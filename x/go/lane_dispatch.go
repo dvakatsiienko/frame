@@ -28,7 +28,6 @@ type dispatchMark struct {
 type dispatchTicket struct {
 	ID    string         `json:"id"`
 	Marks []dispatchMark `json:"marks"`
-	area  string
 	uuid  string
 	input map[string]any
 }
@@ -53,7 +52,6 @@ type dispatchLookup struct {
 		Description *string                     `json:"description"`
 		State       struct{ Name, Type string } `json:"state"`
 		Delegate    *named                      `json:"delegate"`
-		Project     *named                      `json:"project"`
 		Labels      connection[idName]          `json:"labels"`
 		Team        struct {
 			States connection[idName] `json:"states"`
@@ -73,13 +71,21 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		return nil, err
 	}
 	session, lane := flagString(flags, "session"), flagString(flags, "lane")
+	// a dispatch that names a thread gives its record a scope; one that names none writes no record
+	if session != "" || flagString(flags, "sixth-sense") != "" {
+		if _, err := areaRequired(flags, "lane dispatch"); err != nil {
+			return nil, err
+		}
+	} else if _, err := areaFlag(flags); err != nil {
+		return nil, err
+	}
 	mark := dispatchNote{quick: flags["quick"] == true, sixthSense: flagString(flags, "sixth-sense")}
 	r.Open("as " + actor)
 	plan := dispatchPlan{Tickets: []dispatchTicket{}}
 	for _, id := range args {
 		var found dispatchLookup
 		if err := r.Step("read "+id, "its labels, state, delegate and sign", func() (string, error) {
-			data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { id identifier description state { name type } delegate { name } project { name }
+			data, _, err := gql(actor, `query($id: String!) { issue(id: $id) { id identifier description state { name type } delegate { name }
 				labels(first: 100) { nodes { id name } } team { states { nodes { id name } } } }
 				users(filter: { name: { eqIgnoreCase: "codie" } }) { nodes { id name } } }`, map[string]any{"id": id})
 			if err != nil {
@@ -154,9 +160,6 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 	}
 
 	ticket := dispatchTicket{ID: id, uuid: issue.ID, input: map[string]any{}}
-	if issue.Project != nil {
-		ticket.area = projectArea(issue.Project.Name)
-	}
 	mark := func(name string, missing bool, detail string) {
 		status := "set"
 		if missing {
@@ -342,12 +345,13 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		kind = "quick"
 	}
 	renames := []ordered{}
+	area, _ := areaFlag(flags)
 	for _, named := range [][2]string{{"codie", flagString(flags, "session")}, {"sixth-sense", flagString(flags, "sixth-sense")}} {
 		role, sid := named[0], named[1]
 		if sid == "" {
 			continue
 		}
-		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: kind, Ticket: plan.Tickets[0].ID, Area: plan.Tickets[0].area}
+		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: kind, Ticket: plan.Tickets[0].ID, Area: area}
 		if err := writeThreadRecord(record, time.Now(), false); err != nil {
 			if fail, isFail := errors.AsType[*Fail](err); isFail {
 				return nil, fail
@@ -355,7 +359,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 			return nil, &Fail{Msg: "the thread record of " + sid + " was not written: " + err.Error(), Next: "x thread list"}
 		}
 		// the live name follows the record, so the registry and x's display stay one string
-		renames = append(renames, renameThread(sid, threadDisplay(record)))
+		renames = append(renames, renameThread(sid, threadDisplay(record), 0))
 	}
 	r.Done("dispatched; left by hand: the glide link", plan.Window)
 	if len(renames) == 0 {

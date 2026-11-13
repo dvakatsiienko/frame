@@ -291,7 +291,7 @@ func TestBriefSummonFromACodieIsRefused(t *testing.T) {
 	store := filepath.Join(t.TempDir(), "threads.json")
 	env := asCaller(t, []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store}, "")
 
-	got := xIn(t, w.repo, env, "brief", "summon", sixthArgv(w, " spec: .scratch/cli-lane-8/spec.md"))
+	got := xIn(t, w.repo, env, "brief", "summon", "--apply", "--area", "cli", sixthArgv(w, " spec: .scratch/cli-lane-8/spec.md"))
 
 	written, _ := readThreadStore(store)
 	if got.code != 1 || !strings.Contains(got.stdout, "only the coordinator or dima") || len(written.Threads) != 0 {
@@ -310,7 +310,7 @@ func TestAFallbackSeatWritesNoRecord(t *testing.T) {
 	write(t, seat, `{"v":1,"threads":[{"sessionId":"sid-caller","role":"coordinator","fallback":true}]}`)
 	env = append(env, "X_CALLER_THREADS="+seat)
 
-	got := xIn(t, w.repo, env, "brief", "summon", "--role", "coordinator", "--session", "sid-caller")
+	got := xIn(t, w.repo, env, "brief", "summon", "--apply", "--role", "coordinator", "--session", "sid-caller")
 
 	written, _ := readThreadStore(store)
 	if got.code != 1 || !strings.Contains(got.stdout, "only the coordinator or dima") || len(written.Threads) != 0 {

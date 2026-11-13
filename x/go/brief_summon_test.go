@@ -55,9 +55,15 @@ func (w summonWorld) brief(t *testing.T, text string, stamped bool) string {
 // the summon reads its ticket's project from linear for the display's area word: a fake answers `cli`
 func (w summonWorld) summon(t *testing.T, command string, env ...string) ran {
 	t.Helper()
+	return w.summonWith(t, command, []string{"--apply", "--area", "cli"}, env...)
+}
+
+// summonWith runs the summon with the given flags after the command; none is a check, which writes no record
+func (w summonWorld) summonWith(t *testing.T, command string, flags []string, env ...string) ran {
+	t.Helper()
 	server := newFakeLinear(t, func(gqlCall) string { return `{"data":{"issue":{"project":{"name":"cli"}}}}` })
 	base := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + server.URL}
-	return xIn(t, w.repo, asCaller(t, append(base, env...), "coordinator"), "brief", "summon", command)
+	return xIn(t, w.repo, asCaller(t, append(base, env...), "coordinator"), append([]string{"brief", "summon", command}, flags...)...)
 }
 
 // a bytes checkout is known by its essentials script; this one fails every app
@@ -71,11 +77,11 @@ func (w summonWorld) bytesHome(t *testing.T) string {
 }
 
 func codieArgv(repo, brief string) string {
-	return "cd " + repo + " && claude --bg -n '🌗 🔧 codie: FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
+	return "cd " + repo + " && claude --bg -n '🌗 🔧 cli | FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
 }
 
 func sixthArgv(w summonWorld, tail string) string {
-	return "cd " + w.repo + " && claude --bg -n '🌗 🔎 sixth sense: #7' --model opus --effort medium '/x:crew-sixth-sense FRM-1 https://github.com/o/r/pull/7 codie clio" + tail + " trials: tdd' --remote-control"
+	return "cd " + w.repo + " && claude --bg -n '🌗 🔎 cli | FRM-1' --model opus --effort medium '/x:crew-sixth-sense FRM-1 https://github.com/o/r/pull/7 codie clio" + tail + " trials: tdd' --remote-control"
 }
 
 func TestBriefSummonPassesACommandThatMeetsEveryStep(t *testing.T) {
@@ -85,7 +91,10 @@ func TestBriefSummonPassesACommandThatMeetsEveryStep(t *testing.T) {
 		command func(t *testing.T, w summonWorld) string
 	}{
 		{"a codie brief", func(t *testing.T, w summonWorld) string { return codieArgv(w.repo, w.brief(t, goodBrief, true)) }},
-		{"a sixth sense argv with spec:", func(_ *testing.T, w summonWorld) string { return sixthArgv(w, " spec: .scratch/lane-1/spec.md") }},
+		{"a sixth sense argv with spec:", func(_ *testing.T, w summonWorld) string {
+			// no codie record holds its lane, so its display carries no mode mark
+			return strings.Replace(sixthArgv(w, " spec: .scratch/lane-1/spec.md"), "🌗 🔎", "🔎", 1)
+		}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -136,7 +145,7 @@ func TestBriefSummonRefusesABriefThatSkipsAStep(t *testing.T) {
 		}, nil},
 		{"the prompt after --remote-control", "argv", func(t *testing.T, w summonWorld) string {
 			brief := w.brief(t, goodBrief, true)
-			return "cd " + w.repo + " && claude --bg -n '🌗 🔧 codie: FRM-1' --remote-control \"$(cat " + brief + ")\""
+			return "cd " + w.repo + " && claude --bg -n '🌗 🔧 cli | FRM-1' --remote-control \"$(cat " + brief + ")\""
 		}, nil},
 		{"a summon home without its trust key", "trust", func(t *testing.T, w summonWorld) string {
 			write(t, filepath.Join(w.home, ".claude.json"), `{"projects":{}}`)
@@ -165,7 +174,7 @@ func TestBriefSummonRefusesABriefThatSkipsAStep(t *testing.T) {
 
 // herdrArgv is the herdr-native summon line x:crew-lead § preflight names
 func herdrArgv(repo, brief string) string {
-	return "hc run --bg --no-parent --no-notify --name codie --cwd " + repo + " -- claude -n '🌗 🔧 codie: FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
+	return "hc run --bg --no-parent --no-notify --name codie --cwd " + repo + " -- claude -n '🌗 🔧 cli | FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
 }
 
 func TestBriefSummonFromAHerdrThreadWantsTheHcRunLine(t *testing.T) {
@@ -245,13 +254,13 @@ func TestBriefSummonAddsTheSessionIDAfterTheClaudeItRuns(t *testing.T) {
 	t.Parallel()
 	w := newSummonWorld(t)
 	brief := w.brief(t, goodBrief, true)
-	command := "hc run --bg --no-parent --no-notify --name 'the claude codie' --cwd " + w.repo + " -- claude -n '🌗 🔧 codie: FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
+	command := "hc run --bg --no-parent --no-notify --name 'the claude codie' --cwd " + w.repo + " -- claude -n '🌗 🔧 cli | FRM-1' --model opus --effort medium \"$(cat " + brief + ")\" --remote-control"
 
 	got := w.summon(t, command, "HC_TERMINAL_ID=t9")
 
 	sid, _ := got.data["sessionId"].(string)
 	display, _ := got.data["display"].(string)
-	want := strings.Replace(strings.Replace(command, "-n '🌗 🔧 codie: FRM-1'", "-n '"+display+"'", 1), "-- claude ", "-- claude --session-id "+sid+" ", 1)
+	want := strings.Replace(strings.Replace(command, "-n '🌗 🔧 cli | FRM-1'", "-n '"+display+"'", 1), "-- claude ", "-- claude --session-id "+sid+" ", 1)
 	if got.code != 0 || got.data["argv"] != want {
 		t.Fatalf("exit %d argv %v, want %q:\n%s", got.code, got.data["argv"], want, got.stdout)
 	}
@@ -314,11 +323,11 @@ func TestBriefSummonWritesTheThreadRecordUnderItsSessionID(t *testing.T) {
 func (w summonWorld) summonStanding(t *testing.T, caller string, env []string, args ...string) ran {
 	t.Helper()
 	base := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID="}
-	return xIn(t, w.repo, asCaller(t, append(base, env...), caller), append([]string{"brief", "summon"}, args...)...)
+	return xIn(t, w.repo, asCaller(t, append(base, env...), caller), append([]string{"brief", "summon", "--apply"}, args...)...)
 }
 
-func paneArgv(w summonWorld) string {
-	return "hc run --bg --no-parent --no-notify --name boot --cwd " + w.repo + " -- claude -n 'any name' --model opus 'boot'"
+func paneArgv(w summonWorld, name string) string {
+	return "hc run --bg --no-parent --no-notify --name boot --cwd " + w.repo + " -- claude -n '" + name + "' --model opus 'boot'"
 }
 
 func TestBriefSummonStartsEachStandingRoleUnderItsPrettyName(t *testing.T) {
@@ -334,7 +343,7 @@ func TestBriefSummonStartsEachStandingRoleUnderItsPrettyName(t *testing.T) {
 			w := newSummonWorld(t)
 			env := []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + t.TempDir()}
 
-			got := w.summonStanding(t, "coordinator", env, "--role", c.role, paneArgv(w))
+			got := w.summonStanding(t, "coordinator", env, "--role", c.role, paneArgv(w, c.want))
 			sid, _ := got.data["sessionId"].(string)
 			show := xIn(t, t.TempDir(), env, "thread", "show", sid)
 
@@ -383,7 +392,7 @@ func TestBriefSummonGivesAStandingRoleOnlyFromTheCoordinator(t *testing.T) {
 			write(t, store, `{"v":1,"threads":[{"sessionId":"sid-real-clio","role":"coordinator"}]}`)
 			env := []string{"X_THREADS=" + store, "X_SESSIONS=" + sessions}
 
-			pane := w.summonStanding(t, c.caller, env, "--role", "coordinator", paneArgv(w))
+			pane := w.summonStanding(t, c.caller, env, "--role", "coordinator", paneArgv(w, "any name"))
 			record := w.summonStanding(t, c.caller, env, "--role", "wing:1", "--session", "sid-fork")
 
 			written, _ := readThreadStore(store)
@@ -407,7 +416,7 @@ func TestBriefSummonRecordsAForkAsAWingOnlyFromTheCoordinator(t *testing.T) {
 	env := []string{"X_THREADS=" + store, "X_SESSIONS=" + sessions}
 	// the fork is x's caller, its registry file on the test's pid; no record, so the gate reads no role
 	write(t, filepath.Join(sessions, strconv.Itoa(os.Getpid())+".json"), `{"sessionId":"sid-fork"}`)
-	self := xIn(t, w.repo, append(env, "HOME="+w.home), "brief", "summon", "--role", "wing:2", "--session", "sid-fork")
+	self := xIn(t, w.repo, append(env, "HOME="+w.home), "brief", "summon", "--apply", "--role", "wing:2", "--session", "sid-fork")
 	write(t, filepath.Join(sessions, "fork.json"), fmt.Sprintf(`{"sessionId":"sid-fork","pid":%d}`, os.Getpid()))
 
 	byClio := w.summonStanding(t, "coordinator", env, "--role", "wing:2", "--session", "sid-fork")
@@ -431,7 +440,7 @@ func TestBriefSummonReadsTheCoordinatorAcrossAClear(t *testing.T) {
 	write(t, callers, fmt.Sprintf(`{"v":1,"threads":[{"sessionId":"sid-before-clear","pid":%d,"procStart":%q,"role":"coordinator"}]}`, os.Getpid(), ownProcStart(t)))
 	env := []string{"HOME=" + w.home, "X_SESSIONS=" + sessions, "X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_CALLER_THREADS=" + callers}
 
-	got := xIn(t, w.repo, env, "brief", "summon", "--role", "wing:1", "--session", "sid-fork")
+	got := xIn(t, w.repo, env, "brief", "summon", "--apply", "--role", "wing:1", "--session", "sid-fork")
 
 	if got.code != 0 {
 		t.Fatalf("exit %d, want the coordinator found by her pid and start:\n%s", got.code, got.stdout)
@@ -449,7 +458,7 @@ func TestBriefSummonReadsATornRegistryFileAsNoCoordinator(t *testing.T) {
 	write(t, callers, `{"v":1,"threads":[{"sessionId":"sid-clio","role":"coordinator"}]}`)
 	env := []string{"HOME=" + w.home, "X_SESSIONS=" + sessions, "X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_CALLER_THREADS=" + callers}
 
-	got := xIn(t, w.repo, env, "brief", "summon", "--role", "wing:1", "--session", "sid-fork")
+	got := xIn(t, w.repo, env, "brief", "summon", "--apply", "--role", "wing:1", "--session", "sid-fork")
 
 	if got.code != 1 || !strings.Contains(got.stdout, "only the coordinator or dima") {
 		t.Fatalf("exit %d, want the coordinator's refusal:\n%s", got.code, got.stdout)
@@ -491,7 +500,7 @@ func TestBriefSummonFromDimasTerminalRecordsALiveSession(t *testing.T) {
 	write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
 	env := []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}
 
-	got := scriptX(t, env, "brief", "summon", "--role", "coordinator", "--session", "sid-other")
+	got := scriptX(t, env, "brief", "summon", "--apply", "--role", "coordinator", "--session", "sid-other")
 
 	written, _ := readThreadStore(store)
 	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Role != "coordinator" {
@@ -506,7 +515,7 @@ func TestBriefSummonUnderScriptReadsTheMemberAboveIt(t *testing.T) {
 	write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
 	env := asCaller(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}, "codie")
 
-	got := scriptX(t, env, "brief", "summon", "--role", "coordinator", "--session", "sid-other")
+	got := scriptX(t, env, "brief", "summon", "--apply", "--role", "coordinator", "--session", "sid-other")
 
 	written, _ := readThreadStore(store)
 	if got.code != 1 || !strings.Contains(got.out, "only the coordinator or dima") || len(written.Threads) != 0 {
@@ -527,11 +536,11 @@ func TestTheBackfillLetsAClioStartedBeforeTheMergeSummonAgain(t *testing.T) {
 	write(t, filepath.Join(dimas, "clio.json"), live)
 	env := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store}
 	asClio := func() ran {
-		return xIn(t, w.repo, append(env, "X_SESSIONS="+hers), "brief", "summon", codieArgv(w.repo, brief))
+		return xIn(t, w.repo, append(env, "X_SESSIONS="+hers), "brief", "summon", "--apply", "--area", "cli", codieArgv(w.repo, brief))
 	}
 
 	before := asClio()
-	backfill := scriptX(t, append(env, "X_SESSIONS="+dimas), "brief", "summon", "--role", "coordinator", "--session", "sid-clio")
+	backfill := scriptX(t, append(env, "X_SESSIONS="+dimas), "brief", "summon", "--apply", "--role", "coordinator", "--session", "sid-clio")
 	after := asClio()
 
 	if before.code != 1 || backfill.code != 0 || after.code != 0 {
@@ -560,7 +569,8 @@ func TestThreadRenameSticksAcrossARefresh(t *testing.T) {
 	if byCodie.code != 1 || !strings.Contains(byCodie.stdout, "only the coordinator or dima") {
 		t.Errorf("a codie's rename: exit %d, want the coordinator's refusal:\n%s", byCodie.code, byCodie.stdout)
 	}
-	if byClio.code != 0 || show.data["display"] != "🌌 nova" || show.data["role"] != "wing" || show.data["roleName"] != "🦉🪽 clio: wing 2" {
+	// no herdr terminal holds the fixture thread, so its cc name is the one place left: the verb fails, the record has taken it
+	if byClio.code != 1 || !strings.Contains(byClio.stdout, "not yet in cc name") || show.data["display"] != "🌌 nova" || show.data["role"] != "wing" || show.data["roleName"] != "🦉🪽 clio: wing 2" {
 		t.Fatalf("exit %d, after a refresh x thread show %v, want «🌌 nova», still a wing, its role's name kept:\n%s", byClio.code, show.data, byClio.stdout)
 	}
 }
@@ -603,7 +613,7 @@ func TestBriefSummonGivesNoCoordinatorRecordToABareHerdrPane(t *testing.T) {
 			write(t, filepath.Join(sessions, "clio.json"), fmt.Sprintf(`{"sessionId":"sid-clio","pid":%d}`, os.Getpid()))
 			write(t, store, `{"v":1,"threads":[`+c.record+`]}`)
 
-			got := scriptX(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store, "HC_TERMINAL_ID=t9"}, "brief", "summon", "--role", c.role, "--session", "sid-other")
+			got := scriptX(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store, "HC_TERMINAL_ID=t9"}, "brief", "summon", "--apply", "--role", c.role, "--session", "sid-other")
 
 			if got.code != c.code {
 				t.Fatalf("exit %d, want %d:\n%s", got.code, c.code, got.out)
@@ -665,13 +675,13 @@ func TestBriefSummonRoleFlagTakesOnlyAStandingRole(t *testing.T) {
 	t.Parallel()
 	w := newSummonWorld(t)
 	for _, args := range [][]string{
-		{"--role", "bogus", paneArgv(w)},
-		{"--role", "codie", paneArgv(w)},
-		{"--role", "wing", paneArgv(w)},
-		{"--role", "wing:0", paneArgv(w)},
-		{"--role", "adviser:2", paneArgv(w)},
+		{"--role", "bogus", paneArgv(w, "any name")},
+		{"--role", "codie", paneArgv(w, "any name")},
+		{"--role", "wing", paneArgv(w, "any name")},
+		{"--role", "wing:0", paneArgv(w, "any name")},
+		{"--role", "adviser:2", paneArgv(w, "any name")},
 		{"--session", "sid-1"},
-		{"--role", "adviser", "--session", "sid-1", paneArgv(w)},
+		{"--role", "adviser", "--session", "sid-1", paneArgv(w, "any name")},
 	} {
 		if got := w.summonStanding(t, "coordinator", nil, args...); got.code != 2 {
 			t.Errorf("%v: exit %d, want a usage refusal:\n%s", args, got.code, got.stdout)
@@ -679,19 +689,37 @@ func TestBriefSummonRoleFlagTakesOnlyAStandingRole(t *testing.T) {
 	}
 }
 
-// FRM-579 security review: a linear project name reaches the printed argv, so a shell word in it draws no area
-func TestAProjectNameWithShellWordsDrawsNoArea(t *testing.T) {
+// FRM-579 security review: an area word reaches the printed argv, so only a word of scopes.json passes (FRM-600)
+func TestBriefSummonTakesNoAreaThatIsNotAScope(t *testing.T) {
 	t.Parallel()
-	for name, want := range map[string]string{
-		"cli lane":               "cli",
-		"Mods":                   "mods",
-		"x';touch${IFS}pwned;'#": "",
-		"Dima's Lab":             "",
-		"$(id)":                  "",
-	} {
-		if got := projectArea(name); got != want {
-			t.Errorf("projectArea(%q) = %q, want %q", name, got, want)
-		}
+	for i, area := range []string{"x';touch${IFS}pwned;'#", "Dima's Lab", "$(id)", "Mods", "stray", "fleet"} {
+		// the name is no word: a test dir takes the test's name, so a subtest is named by its number
+		t.Run("area "+strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			store := filepath.Join(t.TempDir(), "threads.json")
+
+			got := w.summonWith(t, codieArgv(w.repo, w.brief(t, goodBrief, true)), []string{"--apply", "--area", area}, "X_THREADS="+store, "X_SESSIONS="+t.TempDir())
+
+			written, _ := readThreadStore(store)
+			if got.code != 2 || !strings.Contains(got.stdout, "one of: chords, cli, herdr, mods, speak, strays, trophy-sys") || len(written.Threads) != 0 {
+				t.Errorf("exit %d, records %+v, want a usage refusal naming the table's words:\n%s", got.code, written.Threads, got.stdout)
+			}
+		})
+	}
+}
+
+// FRM-600: a lane member names its scope, and no project word stands in
+func TestBriefSummonWantsAScopeForALaneMember(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	store := filepath.Join(t.TempDir(), "threads.json")
+
+	got := w.summonWith(t, codieArgv(w.repo, w.brief(t, goodBrief, true)), []string{"--apply"}, "X_THREADS="+store, "X_SESSIONS="+t.TempDir())
+
+	written, _ := readThreadStore(store)
+	if got.code != 2 || !strings.Contains(got.stdout, "names its scope: --area <word>") || len(written.Threads) != 0 {
+		t.Errorf("exit %d, records %+v, want a usage refusal asking for --area:\n%s", got.code, written.Threads, got.stdout)
 	}
 }
 
@@ -701,5 +729,224 @@ func TestBriefSummonSchemaShowsThePaneShape(t *testing.T) {
 	got := xIn(t, t.TempDir(), nil, "schema", "brief summon")
 	if strings.Contains(got.stdout, "claude --bg") || !strings.Contains(got.stdout, "hc run --bg --no-parent") {
 		t.Fatalf("summon's schema, want the hc run shape and no claude --bg:\n%s", got.stdout)
+	}
+}
+
+// FRM-600 exit 2: the command's own -n must be the name x draws; --area is what moves the area word
+func TestBriefSummonRefusesANameThatIsNotTheDrawnOne(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, typed string
+		extra       []string
+		want        string
+	}{
+		{"a name typed by hand", "🌗 🔧 codie: FRM-1", nil, "x draws «🌗 🔧 cli | FRM-1»"},
+		{"the project word when an area is given", "🌗 🔧 cli | FRM-1", []string{"--area", "strays"}, "x draws «🌗 🐕 strays | chores»"},
+		{"the drawn name", "🌗 🔧 cli | FRM-1", nil, ""},
+		{"the drawn name of an area", "🌗 🐕 strays | chores", []string{"--area", "strays"}, ""},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			brief := w.brief(t, goodBrief, true)
+			command := strings.Replace(codieArgv(w.repo, brief), "🌗 🔧 cli | FRM-1", c.typed, 1)
+
+			got := w.summonWith(t, command, append([]string{"--apply", "--area", "cli"}, c.extra...), "X_THREADS="+filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS="+t.TempDir())
+
+			if c.want == "" {
+				if got.code != 0 {
+					t.Fatalf("exit %d, want the summon to pass:\n%s", got.code, got.stdout)
+				}
+				return
+			}
+			if got.code != 1 || !strings.Contains(got.stdout, "-n names «"+c.typed+"»") || !strings.Contains(got.stdout, c.want) || !strings.Contains(got.next, "x brief summon") {
+				t.Errorf("exit %d next %q, want a refusal naming both names:\n%s", got.code, got.next, got.stdout)
+			}
+		})
+	}
+}
+
+// FRM-600 exit 3: a check prints the argv and writes no record; the --apply that follows records the id the check printed
+func TestBriefSummonCheckWritesNoRecordAndApplyRecordsItsPrintedID(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	env := []string{"X_THREADS=" + store, "X_SESSIONS=" + t.TempDir()}
+	command := codieArgv(w.repo, w.brief(t, goodBrief, true))
+
+	check := w.summonWith(t, command, []string{"--area", "cli"}, env...)
+	var planned struct {
+		Plan struct{ Argv, SessionID string } `json:"plan"`
+	}
+	_ = json.Unmarshal([]byte(check.stdout), &planned)
+	afterCheck, _ := readThreadStore(store)
+	applied := w.summon(t, command, env...)
+	afterApply, _ := readThreadStore(store)
+
+	if check.code != 4 || planned.Plan.SessionID == "" || !strings.Contains(planned.Plan.Argv, "--session-id "+planned.Plan.SessionID+" ") {
+		t.Fatalf("a check: exit %d, want 4 printing an argv with its session id:\n%s", check.code, check.stdout)
+	}
+	if len(afterCheck.Threads) != 0 {
+		t.Errorf("a check wrote %+v", afterCheck.Threads)
+	}
+	if applied.code != 0 || len(afterApply.Threads) != 1 || afterApply.Threads[0].SessionID != planned.Plan.SessionID || applied.data["argv"] != planned.Plan.Argv {
+		t.Errorf("--apply: exit %d, records %+v, want the one record under the printed id %s and the printed argv:\n%s", applied.code, afterApply.Threads, planned.Plan.SessionID, applied.stdout)
+	}
+}
+
+// FRM-600 exit 4: one rename moves the record, the herdr tab and the cc name; a display resolves to its session id
+type renameWorld struct {
+	env                []string
+	store, hcLog, tabs string
+}
+
+// renameFixture plants a live quick codie on herdr terminal t9 and fake hc and herdr-app clis that log what they are told;
+// herdrFails makes the fake window refuse a tab.rename, noTab leaves the terminal in no tab, and the thread reads working for
+// its first busy hc get calls
+func renameFixture(t *testing.T, records string, herdrFails, noTab bool, busy int) renameWorld {
+	t.Helper()
+	const rule = "────────────────────────────────────────"
+	sessions, bin := t.TempDir(), t.TempDir()
+	w := renameWorld{store: filepath.Join(t.TempDir(), "threads.json"), hcLog: filepath.Join(bin, "hc.log"), tabs: filepath.Join(bin, "herdr.log")}
+	write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
+	write(t, w.store, records)
+	write(t, filepath.Join(bin, "screen.txt"), "❯ an old prompt\n\n● an answer\n\n"+rule+"\n❯ \n"+rule+"\n  the status line\n")
+	write(t, filepath.Join(bin, "hc"), fmt.Sprintf(`#!/bin/sh
+case "$1" in
+ls) echo '{"terminals":[{"address":"t9","agent":"claude-code"}]}' ;;
+get) n=$(cat %s 2>/dev/null || echo 0); echo $((n+1)) > %s; state=done; [ "$n" -lt %d ] && state=working; echo '{"pid":%d,"status":{"state":"'$state'"}}' ;;
+read) cat %s ;;
+send) echo "send $2 $3" >> %s ;;
+esac
+`, filepath.Join(bin, "gets"), filepath.Join(bin, "gets"), busy, os.Getpid(), filepath.Join(bin, "screen.txt"), w.hcLog))
+	tab := `[{"id":"tbA","terminals":[{"terminal":"t9"}]}]`
+	if noTab {
+		tab = `[]`
+	}
+	write(t, filepath.Join(bin, "herdr-app"), fmt.Sprintf(`#!/bin/sh
+case "$1 $2" in
+"ls ") echo '{"spaces":[{"tabs":%s}]}' ;;
+"do terminal.keep") echo "keep $3" >> %s; echo '{"tab":"tbNew"}' ;;
+"do tab.rename") echo "rename $3" >> %s; [ "%t" = true ] && { echo window refused >&2; exit 1; }; echo '{}' ;;
+esac
+`, tab, w.tabs, w.tabs, herdrFails))
+	for _, name := range []string{"hc", "herdr-app"} {
+		if err := os.Chmod(filepath.Join(bin, name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	w.env = []string{"X_SESSIONS=" + sessions, "X_THREADS=" + w.store, "X_HC=" + filepath.Join(bin, "hc"), "X_HERDR_APP=" + filepath.Join(bin, "herdr-app"), "HC_TERMINAL_ID=t3b"}
+	return w
+}
+
+const quickCodie = `{"sessionId":"s1","role":"codie","lane":"chores","laneKind":"quick","ticket":"FRM-1","area":"strays"}`
+
+func TestThreadRenameMovesTheRecordTheTabAndTheCcName(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, key string
+		noTab     bool
+	}{
+		{"by display name", "⚡ 🐕 strays | chores", false},
+		{"by session id", "s1", false},
+		{"a terminal in no tab gets one first", "s1", true},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, c.noTab, 0)
+
+			got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "rename", c.key, "⚡ 🐕 strays | renamed")
+
+			written, _ := readThreadStore(w.store)
+			sent, _ := os.ReadFile(w.hcLog)
+			tabs, _ := os.ReadFile(w.tabs)
+			if card, _ := got.data["card"].(map[string]any); card["name"] != "⚡ 🐕 strays | renamed" {
+				t.Errorf("the card block %v, want the full new name for the claude apps' card", got.data["card"])
+			}
+			if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Title != "⚡ 🐕 strays | renamed" {
+				t.Fatalf("exit %d, records %+v, want the title taken:\n%s", got.code, written.Threads, got.stdout)
+			}
+			if string(sent) != "send t9 /rename ⚡ 🐕 strays | renamed\n" {
+				t.Errorf("hc was told %q, want the cc /rename", sent)
+			}
+			wantTab := `rename {"id":"tbA","name":"⚡ 🐕 strays | renamed"}` + "\n"
+			if c.noTab {
+				wantTab = `keep {"terminal":"t9","place":"tab"}` + "\n" + `rename {"id":"tbNew","name":"⚡ 🐕 strays | renamed"}` + "\n"
+			}
+			if string(tabs) != wantTab {
+				t.Errorf("herdr-app was told %q, want %q", tabs, wantTab)
+			}
+		})
+	}
+}
+
+func TestThreadRenameRefusesADisplayTwoThreadsDraw(t *testing.T) {
+	t.Parallel()
+	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`,`+strings.Replace(quickCodie, `"s1"`, `"s2"`, 1)+`]}`, false, false, 0)
+
+	got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "rename", "⚡ 🐕 strays | chores", "⚡ 🐕 strays | renamed")
+
+	written, _ := readThreadStore(w.store)
+	tabs, _ := os.ReadFile(w.tabs)
+	if got.code != 1 || !strings.Contains(got.stdout, "s1, s2") || written.Threads[0].Title != "" || len(tabs) != 0 {
+		t.Errorf("exit %d, titles %q, herdr %q, want a refusal naming both ids and no change:\n%s", got.code, written.Threads[0].Title, tabs, got.stdout)
+	}
+}
+
+func TestThreadRenameFailsNamingThePlaceThatDidNotTakeTheName(t *testing.T) {
+	t.Parallel()
+	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, true, false, 0)
+
+	got := xIn(t, t.TempDir(), asCaller(t, w.env, "coordinator"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+
+	written, _ := readThreadStore(w.store)
+	if got.code != 1 || !strings.Contains(got.stdout, "not yet in herdr tab") || !strings.Contains(got.next, "herdr-app do tab.rename") || written.Threads[0].Title != "⚡ 🐕 strays | renamed" {
+		t.Errorf("exit %d next %q, want a failure naming the herdr tab and its command, the record renamed:\n%s", got.code, got.next, got.stdout)
+	}
+}
+
+// the caller gate stands: a codie renames nothing, dima's own terminal does
+func TestThreadRenameKeepsItsCallerGate(t *testing.T) {
+	t.Parallel()
+	// two worlds: the codie's caller file registers this test process as a claude, which dima's own terminal has none of
+	codie := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 0)
+	dima := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 0)
+
+	byCodie := xIn(t, t.TempDir(), asCaller(t, codie.env, "codie"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+	byDima := scriptX(t, dima.env, "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+
+	refused, _ := readThreadStore(codie.store)
+	renamed, _ := readThreadStore(dima.store)
+	if byCodie.code != 1 || !strings.Contains(byCodie.stdout, "only the coordinator or dima") || refused.Threads[0].Title != "" || byDima.code != 0 || renamed.Threads[0].Title != "⚡ 🐕 strays | renamed" {
+		t.Errorf("a codie: exit %d, title %q; dima's terminal: exit %d, title %q:\n%s\n%s", byCodie.code, refused.Threads[0].Title, byDima.code, renamed.Threads[0].Title, byCodie.stdout, byDima.out)
+	}
+}
+
+// FRM-600 / dima's o15: a busy thread takes its /rename once it is idle; past the deadline the rename reads pending
+func TestThreadRenameWaitsForAnIdleThread(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name     string
+		busy     int
+		wantCode int
+	}{
+		{"busy for three reads, then idle", 3, 0},
+		{"busy past the deadline", 100000, 1},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, c.busy)
+
+			got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_RENAME_WAIT=0.5"), "coordinator"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+
+			sent, _ := os.ReadFile(w.hcLog)
+			wantSent := "send t9 /rename ⚡ 🐕 strays | renamed\n"
+			if c.wantCode != 0 {
+				wantSent = ""
+			}
+			if got.code != c.wantCode || string(sent) != wantSent || (c.wantCode != 0 && !strings.Contains(got.stdout, "pending")) {
+				t.Errorf("exit %d, hc was told %q, want exit %d and %q (pending when it never idled):\n%s", got.code, sent, c.wantCode, wantSent, got.stdout)
+			}
+		})
 	}
 }

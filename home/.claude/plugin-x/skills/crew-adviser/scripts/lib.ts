@@ -353,7 +353,7 @@ export function summonAdviser(args: string[]): {
 } {
     const run = spawnSync(
         'x',
-        ['brief', 'summon', '--role', 'adviser', ...args, '--json'],
+        ['brief', 'summon', '--role', 'adviser', ...args, '--apply', '--json'],
         { cwd: STATE_DIR, encoding: 'utf8' },
     );
     try {

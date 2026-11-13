@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -877,5 +878,31 @@ func TestLandedPrintsNoWarnLineForAQuickLaneThatAddedNoRule(t *testing.T) {
 
 	if out := linesOf(envelope); strings.Contains(out, "warn-only") {
 		t.Errorf("no rule of this ticket, no line:\n%s", out)
+	}
+}
+
+// FRM-600 exit 5: a landed chunk takes its ticket off its thread's name, and the readers still read the record
+func TestLandedClearsTheTicketOffTheThreadsName(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	w.laneBranch(t, "codie/FRM-1-x")
+	store, sessions := filepath.Join(t.TempDir(), "threads.json"), t.TempDir()
+	write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"side","area":"mods","ticket":"FRM-1","display":"🌗 🔧 mods | FRM-1"},{"sessionId":"s2","role":"codie","laneKind":"side","area":"cli","ticket":"FRM-2","display":"🌗 🔧 cli | FRM-2"}]}`)
+	write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
+	w.env = append(w.env, "X_THREADS="+store, "X_SESSIONS="+sessions)
+
+	got := w.landedAfterMerge(t, "--apply")
+
+	written, _ := readThreadStore(store)
+	shown := map[string]string{}
+	for _, th := range written.Threads {
+		shown[th.SessionID] = th.Display + "|" + th.Ticket
+	}
+	if shown["s1"] != "🌗 🔧 mods|" || shown["s2"] != "🌗 🔧 cli | FRM-2|FRM-2" {
+		t.Errorf("exit %d, records %v, want FRM-1 off s1's name and FRM-2 left on s2's:\n%s", got.code, shown, got.stdout)
+	}
+	if show := xIn(t, t.TempDir(), []string{"X_THREADS=" + store, "X_SESSIONS=" + sessions}, "thread", "show", "s1"); show.data["display"] != "🌗 🔧 mods" || show.data["role"] != "codie" {
+		t.Errorf("x thread show reads %v, want the cleared name and the role kept", show.data)
 	}
 }

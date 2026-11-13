@@ -305,6 +305,11 @@
                 }
             ],
             "flags": {
+                "area": {
+                    "description": "the lane's scope word the thread record draws, e.g. cli, mods, strays; none keeps the ticket's linear project word",
+                    "type": "string",
+                    "value": "word"
+                },
                 "lane": {
                     "description": "the lane name the 🚀 line records, e.g. cli-3",
                     "type": "string",
@@ -357,7 +362,14 @@
             "name": "lane landed",
             "needsApply": true,
             "purpose": "print a merged lane's after-merge chores, met or red; --apply ticks its closing slice, archives the spec, decamps trees",
-            "steps": ["ticket", "read", "closing", "archive", "decamp"],
+            "steps": [
+                "ticket",
+                "read",
+                "closing",
+                "thread",
+                "archive",
+                "decamp"
+            ],
             "touches": [
                 "~/.claude/sessions/ — who sits in a tree, read",
                 "~/.local/state/x/lanes/<feature>/lane-plan.md — its closing slice read, ticked on --apply",
@@ -366,7 +378,8 @@
                 "linear — the ticket's W-lines and comments (the look card), read",
                 "<frame main checkout>/.scratch/<feature>/ — moved into .scratch/_archive/ once every chunk merged",
                 "<frame main checkout>/docs/test-drive/review-rounds.md — read",
-                "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped"
+                "<lane repo>/.claude/worktrees/<tree> — a lane or verify tree clean by the root rule, decamped",
+                "~/.claude/shelf/threads.json — the landed ticket cleared off each record that names it, written"
             ]
         },
         {
@@ -699,6 +712,11 @@
                 }
             ],
             "flags": {
+                "area": {
+                    "description": "the lane's scope word its display draws, e.g. cli, mods, strays; none keeps the ticket's linear project word",
+                    "type": "string",
+                    "value": "word"
+                },
                 "role": {
                     "description": "a standing role, for a thread no lane brief starts: coordinator, wing:<n>, adviser or copyist",
                     "type": "string",
@@ -711,7 +729,8 @@
                 }
             },
             "name": "brief summon",
-            "purpose": "check a summon command against the mechanical preflight steps and print its argv; never launches a session",
+            "needsApply": true,
+            "purpose": "check a summon command's preflight steps and print its argv; --apply records the thread, a check never does",
             "steps": [
                 "argv",
                 "role",
@@ -730,7 +749,7 @@
                 "ps — the age of each claude bg-spare, read",
                 "a bytes home's script/apps-essentials.ts --app <app> — the app's essentials, run",
                 "~/.claude/sessions/ — the registry, read for --session and the caller's session",
-                "~/.claude/shelf/threads.json — the thread record under the minted or --session id, written"
+                "~/.claude/shelf/threads.json — the thread record under the printed or --session id, written by --apply only"
             ]
         },
         {
@@ -1204,7 +1223,7 @@
         {
             "args": [
                 {
-                    "description": "the session id of a thread with a record",
+                    "description": "the session id or the display name of a thread with a record",
                     "name": "id"
                 },
                 {
@@ -1214,9 +1233,10 @@
             ],
             "name": "thread rename",
             "needsApply": false,
-            "purpose": "rename a recorded thread on dima's word: its record keeps the name, and its herdr terminal gets the /rename",
+            "purpose": "rename a recorded thread on dima's word, by session id or display: its record, herdr tab and cc name take the name",
             "touches": [
                 "~/.claude/shelf/threads.json — the record's title, written ($X_THREADS in tests)",
+                "herdr-app — the thread's tab, renamed (a terminal with none gets one by terminal.keep)",
                 "hc — the thread's herdr terminal, sent /rename when idle"
             ]
         },
