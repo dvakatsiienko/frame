@@ -177,8 +177,10 @@ const CLAUDE = `${home()}/.claude`;
 // accent: a key of ACCENTS; mine (your messages): "bubble", "box", "tint" or "bar"; bg: the theme color
 // behind the messages, or a "#rrggbb"; fg: the text color, "theme" or a "#rrggbb";
 // space: "tight", "normal" or "roomy" between them.
-// how long the picker flashes once a reply first ran at his mid-turn pick
-const APPLIED_FLASH_MS = 1000;
+// once a reply first ran at his pick, the picker flashes orange this long, the search marks' amber (dima, 22:26: «an
+// orange color, for 1 or 2 seconds»)
+const APPLIED_FLASH_MS = 2000;
+const APPLIED_FLASH = '#f59e0b';
 const LOOK = 'chat.look';
 // replies: Claude's messages in earlier turns stay "open" (only the work between them folds) or "folded".
 const LOOK_DEFAULT = {
@@ -2423,9 +2425,8 @@ export default class ClaudeChat extends View {
             .cursor_pointer()
             .text_size(px(12))
             .text_color(pending ? t.accent : t.muted)
-            .when(isApplied, (el) =>
-                el.bg(fade(t.accent, '33')).text_color(t.foreground),
-            )
+            // solid, so it reads at a glance: his 22:24 try missed the faint tint
+            .when(isApplied, (el) => el.bg(APPLIED_FLASH).text_color('#ffffff'))
             .hover((s) => s.bg(t.hover).text_color(t.foreground))
             .child(pickerLabel(model, effort, pending))
             .child(
@@ -2601,7 +2602,7 @@ export default class ClaudeChat extends View {
                     i === at ? (isPending ? t.accent : t.foreground) : t.muted,
                 )
                 .when(i === at && isApplied, (el) =>
-                    el.bg(fade(t.accent, '33')),
+                    el.bg(APPLIED_FLASH).text_color('#ffffff'),
                 )
                 .when(i === at, (el) => el.font_semibold())
                 .child(effortWord(level));
