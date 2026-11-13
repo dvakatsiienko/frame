@@ -696,3 +696,47 @@ test('with 💨 herdr joins off, the state file draws no joins', async ($, on) =
     await s.clock.advance(12_000);
     expect(s.read(A)?.joins).toBeNull();
 });
+
+// sixth sense round 1 on 853e3898: prompt.submit fires when a prompt is queued, before its turn runs (engine.md)
+test('a prompt queued behind a running turn carries no joins: that turn ends with them waiting', async ($, on) => {
+    const s = await session($, on);
+    await say($, 'turn A');
+    s.files.set(JOINS, row('j1', 'first') + row('j2', 'second'));
+    await say($, 'queued B');
+    await endTurn($);
+    expect([said(s), s.read(A)?.joins]).toEqual([
+        [],
+        { joined: [], push: [], waiting: ['j1', 'j2'] },
+    ]);
+});
+
+test('an Esc on a turn with a prompt queued behind it hands the joins in once, at the next tool step', async ($, on) => {
+    const s = await session($, on);
+    await say($, 'turn A');
+    s.files.set(JOINS, row('j1', 'first') + row('j2', 'second'));
+    await say($, 'queued B');
+    await endTurn($, true);
+    const first = await step($);
+    const again = await step($);
+    await endTurn($);
+    expect([
+        said(s).length,
+        first.includes('«first»\n«second»'),
+        again.includes('«first»'),
+        s.read(A)?.joins,
+    ]).toEqual([
+        0,
+        true,
+        false,
+        { joined: ['j1', 'j2'], push: [], waiting: [] },
+    ]);
+});
+
+test('a hand-back keeps a line this side could not read, as herdr wrote it', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, `${row('j1', 'ok')}{"id":"j2","text":"half\n`);
+    await $.session.end({ reason: 'other', sessionId: A } as never);
+    expect(s.files.get(BACK)).toBe(
+        `${row('j1', 'ok')}{"id":"j2","text":"half\n`,
+    );
+});

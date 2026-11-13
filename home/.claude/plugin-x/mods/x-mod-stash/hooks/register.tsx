@@ -4268,8 +4268,17 @@ async function handBackJoins($: EngineInterface, home: string, sid: string) {
     const lock = `${file}.lock`;
     if ((await $.process.run(['mkdir', lock])).exitCode !== 0) return false;
     try {
-        const { done, rows } = await joinsOf($, home, sid);
-        const back = rows.filter((r) => !done.includes(r.id));
+        // every line no turn joined goes back as herdr wrote it, a line this side could not read included
+        const { done } = await joinsOf($, home, sid);
+        const text = await $.fs.read(file).catch(() => '');
+        const joined = new Set(
+            joinRows(text)
+                .filter((r) => done.includes(r.id))
+                .map((r) => r.line),
+        );
+        const back = text
+            .split('\n')
+            .filter((line) => line.trim() && !joined.has(line));
         if (back.length) {
             const dir = `${home}/.claude/shelf/${JOINS_DIR}/back`;
             await $.process.run(['mkdir', '-p', dir]);
@@ -4277,7 +4286,7 @@ async function handBackJoins($: EngineInterface, home: string, sid: string) {
             await writeWhole(
                 $,
                 `${dir}/${sid}.jsonl`,
-                `${kept}${back.map((r) => `${r.line}\n`).join('')}`,
+                `${kept}${back.map((line) => `${line}\n`).join('')}`,
             );
         }
         await $.process.run(['rm', '-f', file]);
@@ -7276,6 +7285,8 @@ export const register: Register = (on) => {
             (DIMA_ORIGINS as readonly string[]).includes(e.origin?.kind ?? '');
         if (isUser && BACK_AT_MAC.test(e.text))
             await $.state.set(MOBILE, false).catch(() => undefined);
+        // prompt.submit fires when a prompt is queued (engine.md): one queued behind a running turn is no turn of its own yet
+        const isQueued = isBusy;
         await startTurn($, e.text, isUser);
         // the clock rides every prompt, so a reply's 📄 stamp copies it instead of guessing
         const at = new Date(await $.clock.now());
@@ -7337,10 +7348,12 @@ export const register: Register = (on) => {
                 : undefined;
         // held member pings ride the next prompt of any origin, once (quiet comms)
         const quiet = await quietLocked(() => quietTake($));
-        // herdr's joins ride any turn but the keep-hot ping, in the order written (FRM-584)
-        const joins = pinged
-            ? []
-            : await joinsLocked(() => takeJoins($)).catch(() => []);
+        // herdr's joins ride any turn but the keep-hot ping, in the order written (FRM-584); a prompt queued behind a
+        // running turn takes none, since that turn's end would stamp them before the prompt runs: its tool steps take them
+        const joins =
+            pinged || isQueued
+                ? []
+                : await joinsLocked(() => takeJoins($)).catch(() => []);
         const gapNotes = isOwner ? await takeGapNotes($).catch(() => []) : [];
         // 🐦‍🔥 a board asked this session for a second wind: the note rides this turn, whatever started it
         const costHint =

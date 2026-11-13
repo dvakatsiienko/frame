@@ -753,6 +753,8 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - then the state file's `joins` reads each id `waiting` until the turn that took it completes, then `joined`; an Esc or an error ends that turn and the rows join the next one again; an idle thread starts no turn for a join
   - and a row whose text starts with `/` is never joined: it reads `push`, for herdr to push (clio's call 6)
   - and a thread that ends (any end, `/clear` included) or is killed (the 15th-poll sweep) hands the rows it never joined back: their lines move to `~/.claude/shelf/herdr-joins/back/<sid>.jsonl` as herdr wrote them, under the same lock, and the join file goes; a lock held elsewhere leaves the dead thread's state file for the next sweep, and an ended thread's refused hand-back is retried at every sweep (`join-owed:<sid>`); one hand-back that throws never stops the sweep for the rest
+  - and a prompt queued behind a running turn takes no join (cc runs its hook at queue time): the running turn's tool steps or the queued prompt's own take them, so no turn's end stamps a row it never carried, and an Esc hands none in twice
+  - and a hand-back keeps every line no turn joined, a line this side could not read included, as herdr wrote it
   - and the ids a thread joined are kept whole while it lives, so a thread past 500 joins never hands an old one in again; a tool step takes its joins after every step that could fail
   - and with 🎛️ `💨 herdr joins` off, `joins` is null in the state file: herdr pushes instead
   - makes: `joins: {joined, waiting, push}` in `herdr-state/<sid>.json`; `herdr-joins/back/<sid>.jsonl`
