@@ -109,18 +109,18 @@ export function readsAfter(reads, queue, op) {
 
 /**
  * when Claude Code read his message: the read whose words and send time match its row (cc stamps a mid-turn row with
- * its enqueue time); a message sent while the thread was idle never waited and has no queue record, so its own row is
- * the read (clio's transcript, 14:15–14:18); a mid-turn row whose pick-up was never read has none
- * @param {Read[]} reads @param {string} text @param {number} at @param {boolean} [isMidTurn]
+ * its enqueue time); a row with no queue record, an idle send above all (clio's transcript, 14:15–14:18), was read when
+ * it landed, so its own time; null only with no row time
+ * @param {Read[]} reads @param {string} text @param {number} at
  */
-export function readTime(reads, text, at, isMidTurn = true) {
+export function readTime(reads, text, at) {
     const said = words(queuedWords(text));
     const read = reads.find(
         (r) =>
             Math.abs(r.at - at) <= STAMP_SLACK_MS &&
             words(asTyped(queuedWords(r.text))) === said,
     );
-    return read?.readAt ?? (isMidTurn || !at ? null : at);
+    return read?.readAt ?? (at || null);
 }
 
 /** what he typed, out of the wrapper Claude Code puts around a paste @param {string} text */
