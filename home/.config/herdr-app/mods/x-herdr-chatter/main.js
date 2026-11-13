@@ -8649,8 +8649,8 @@ export default class ClaudeChat extends View {
                                                                                     .joining
                                                                                     .state ===
                                                                                 'joined'
-                                                                                  ? '✓'
-                                                                                  : '↗'
+                                                                                  ? '✉️'
+                                                                                  : '📥'
                                                                               : '↑',
                                                                     ),
                                                             ),

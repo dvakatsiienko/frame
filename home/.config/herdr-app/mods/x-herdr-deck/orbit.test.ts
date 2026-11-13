@@ -609,7 +609,7 @@ describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)'
 
     test('the take-back button names the press it takes back', () => {
         expect(pressLabel('replayed').label).toBe('🔁 replayed');
-        expect(pressLabel('ticked').label).toBe('✅ ticked');
+        expect(pressLabel('ticked').label).toBe('📥 queued');
         expect(pressLabel('replayed').tip).toMatch(/^replayed: click again/);
     });
 
@@ -617,9 +617,7 @@ describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)'
         expect(lockedLabel({ ...ask, mark: 'rejected' })).toBe(
             '🔒 replayed, the session took it',
         );
-        expect(lockedLabel({ ...ask, mark: 'accepted' })).toBe(
-            '🔒 ticked, the session took it',
-        );
+        expect(lockedLabel({ ...ask, mark: 'accepted' })).toBe('✉️ joined');
     });
 });
 

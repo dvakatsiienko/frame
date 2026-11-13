@@ -351,15 +351,14 @@ export const pressLabel = (state) =>
               tip: 'replayed: click again to take it back, until a turn takes it',
           }
         : {
-              label: '✅ ticked',
-              tip: 'ticked: click again to take it back, until a turn takes it',
+              label: '📥 queued',
+              tip: 'queued for the thread’s next turn: click again to take it back, until a turn takes it',
           };
 
+// dima's names (FRM-564:W62): 📥 queued waits for the thread's next turn, ✉️ joined is taken into its turn
 /** what a locked ask says: which press the session took @param {Ask} ask */
 export const lockedLabel = (ask) =>
-    ask.mark === 'rejected'
-        ? '🔒 replayed, the session took it'
-        : '🔒 ticked, the session took it';
+    ask.mark === 'rejected' ? '🔒 replayed, the session took it' : '✉️ joined';
 
 /**
  * an ask's id as the deck draws it: every thread numbers its asks on its own, so a wing's reads `w1·o8`, another
