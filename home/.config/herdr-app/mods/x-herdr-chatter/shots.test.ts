@@ -12,8 +12,16 @@ vi.mock('fs/promises', () => ({
     unlink: fs.unlink,
     writeFile: vi.fn(),
 }));
-const { parseShots, shotsAfter, shotsWith, shotsWithout, sweepShots } =
-    await import('./shots.js');
+const {
+    canTakePasted,
+    isPasteGone,
+    parseShots,
+    shotsAfter,
+    shotsWith,
+    shotsWithout,
+    sweepShots,
+} = await import('./shots.js');
+const { boxText } = await import('./queued.js');
 
 describe('parseShots', () => {
     it('reads a store of thread addresses to preview paths', () => {
@@ -95,5 +103,47 @@ describe('sweepShots, previews no thread claims', () => {
         fs.unlink.mockClear();
         await sweepShots({});
         expect(fs.unlink).not.toHaveBeenCalled();
+    });
+});
+
+// Claude Code's screen under its last reply, the prompt box as the throwaway thread drew it (2026-11-13)
+const screen = (box: string) =>
+    [
+        '● ok',
+        '',
+        '─'.repeat(40),
+        `❯ ${box}`,
+        '─'.repeat(40),
+        '  📼 /tmp/p609 • 🦔 no git',
+        '  -- INSERT -- ⏵⏵ bypass permissions on (shift+tab to cycle)',
+    ].join('\n');
+
+describe('isPasteGone', () => {
+    it('reads a prompt emptied in the Terminal view as gone', () => {
+        expect(isPasteGone(boxText(screen('')), 0, 10_000)).toBe(true);
+    });
+    it('keeps a pasted image still in the prompt', () => {
+        expect(isPasteGone(boxText(screen('[Image #1]')), 0, 10_000)).toBe(
+            false,
+        );
+    });
+    it('waits for a fresh paste to reach the prompt', () => {
+        expect(isPasteGone(boxText(screen('')), 9_000, 10_000)).toBe(false);
+    });
+    it('keeps the images while no prompt is on screen', () => {
+        expect(isPasteGone(boxText('● working…'), 0, 10_000)).toBe(false);
+    });
+});
+
+describe('canTakePasted', () => {
+    const at = { isContainer: false, pasted: 1, previews: 1, status: 'idle' };
+    it('takes a pasted image while Claude works', () => {
+        expect(canTakePasted({ ...at, status: 'working' })).toBe(true);
+    });
+    it('keeps it while a question waits', () => {
+        expect(canTakePasted({ ...at, status: 'blocked' })).toBe(false);
+    });
+    it('keeps it while its preview is not saved yet', () => {
+        expect(canTakePasted({ ...at, pasted: 2 })).toBe(false);
     });
 });

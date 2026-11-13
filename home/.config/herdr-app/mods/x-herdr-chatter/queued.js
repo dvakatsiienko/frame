@@ -128,6 +128,27 @@ export const clearKeys = (texts, isNormal) =>
               ) * 2,
           ).fill('ctrl+u');
 
+// What Claude Code's own prompt box holds, read off its screen: the last `❯` line right under a rule, down to the next
+// rule; null when no box is on screen. Its dim suggestion text reads the same, so a caller trusts it only when it
+// matches a prompt already sent.
+/** @param {string} screen @returns {string | null} */
+export function boxText(screen) {
+    const lines = screen.replace(/\r/g, '').split('\n');
+    let open = lines.length - 1;
+    while (
+        open > 0 &&
+        !(lines[open].startsWith('❯') && lines[open - 1].startsWith('─'))
+    )
+        open--;
+    if (open <= 0) return null;
+    const box = [lines[open].slice(1)];
+    for (const l of lines.slice(open + 1)) {
+        if (l.startsWith('─')) break;
+        box.push(l);
+    }
+    return box.join(' ').replace(/\s+/g, ' ').trim();
+}
+
 // the queued messages listed over the quill, the rest counted
 export const QUEUED_SHOWN = 3;
 const STRIP_HEAD = 30;

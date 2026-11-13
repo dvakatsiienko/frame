@@ -76,6 +76,21 @@ export function shotsAfter(store, address, at) {
     };
 }
 
+// a pasted image sits in Claude's own prompt as «[Image #n]» (probed 2026-11-13); a prompt with none left, read once the
+// paste had time to land, was emptied in the Terminal view, so its previews go
+export const PASTE_LANDS_MS = 3000;
+/** @param {string | null} box Claude's prompt, null when it is not on screen @param {number} pastedAt @param {number} now */
+export const isPasteGone = (box, pastedAt, now) =>
+    box != null &&
+    now - pastedAt > PASTE_LANDS_MS &&
+    !/\[Image #\d+\]/.test(box);
+
+// ctrl+u takes the images out of Claude's prompt without stopping its turn (probed 2026-11-13: the next send carried no
+// image); a question's dialog would take the keys, and a paste whose preview is not saved yet has nothing to keep
+/** @param {{ status: string, isContainer: boolean, pasted: number, previews: number }} at */
+export const canTakePasted = ({ status, isContainer, pasted, previews }) =>
+    !isContainer && status !== 'blocked' && pasted <= previews;
+
 // a picture a reply links, as a small square in its file chip (FRM-562): one file per path, remade on each load
 export const THUMBS_DIR = 'data/x-herdr-chatter/thumbs';
 /** @param {string} path */

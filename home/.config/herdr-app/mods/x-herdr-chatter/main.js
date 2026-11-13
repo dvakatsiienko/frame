@@ -94,6 +94,7 @@ import * as ask from './question.js';
 import {
     QUEUED_IDLE_MS,
     QUEUED_SHOWN,
+    boxText,
     claudeQueueAfter,
     clearKeys,
     isHisQueued,
@@ -127,7 +128,9 @@ import {
 } from './settings-store.js';
 import { SETTINGS_WINDOW, settingsWindow } from './settings-window.js';
 import {
+    canTakePasted,
     deleteShots,
+    isPasteGone,
     loadShots,
     saveClipboardShot,
     saveFileShot,
@@ -1104,24 +1107,6 @@ const clip = (s, n = MAX_DETAIL) =>
 const tag = (s, name) =>
     s.match(new RegExp(`<${name}>([\\s\\S]*?)</${name}>`))?.[1]?.trim();
 
-// What Claude Code's own prompt box holds, read off its screen: the last `❯` line right under a rule, down to the next
-// rule. Its dim suggestion text reads the same, so a caller trusts it only when it matches a prompt already sent.
-function boxText(screen) {
-    const lines = screen.replace(/\r/g, '').split('\n');
-    let open = lines.length - 1;
-    while (
-        open > 0 &&
-        !(lines[open].startsWith('❯') && lines[open - 1].startsWith('─'))
-    )
-        open--;
-    if (open <= 0) return '';
-    const box = [lines[open].slice(1)];
-    for (const l of lines.slice(open + 1)) {
-        if (l.startsWith('─')) break;
-        box.push(l);
-    }
-    return box.join(' ').replace(/\s+/g, ' ').trim();
-}
 const flat = (s) => s.replace(/\s+/g, ' ').trim();
 
 // the module's two cards are nested one layer under the quill (PK-384, his 15:02 pick: «both nested cards are below
@@ -2674,7 +2659,8 @@ export default class ClaudeChat extends View {
                         ? await this.tail(address)
                         : null;
                 if (this.address === address) this.screen = screen;
-                if (this.address === address) await this.checkBox(agent);
+                if (this.address === address && (await this.checkBox(agent)))
+                    cx.notify();
             } catch (e) {
                 this.problem = String(e?.message ?? e);
             } finally {
@@ -3516,6 +3502,7 @@ export default class ClaudeChat extends View {
         this.imagesFor = address;
         this.images = (this.images ?? 0) + 1;
         const pastedAt = Date.now();
+        this.pastedAt = pastedAt;
         cx.spawn(async (cx) => {
             await hc([
                 'keys',
@@ -3618,15 +3605,13 @@ export default class ClaudeChat extends View {
     }
 
     // a × on one preview takes that image alone (FRM-562): a dropped picture leaves the files; a pasted one sits in
-    // Claude's prompt, where only Esc Esc takes images out, all of them, so the pasted ones he keeps go along as their
-    // saved copies' paths instead, which Claude reads the same
+    // Claude's prompt, where emptying the prompt takes images out, all of them, so the pasted ones he keeps go along as
+    // their saved copies' paths instead, which Claude reads the same
     /** @param {string} address @param {string} rel @param {import('gpui-kit').Context} cx */
     removeImage(address, rel, cx) {
         const pasted = this.shots[address] ?? [];
         if (pasted.includes(rel)) {
-            // Esc stops a turn and declines a question: never while Claude works or asks
-            const status = this.target()?.status;
-            if (status === 'working' || status === 'blocked') return;
+            if (this.target()?.status === 'blocked') return;
             const kept = pasted.filter((r) => r !== rel);
             this.shots = shotsWithout(this.shots, address);
             this.images = 0;
@@ -3639,7 +3624,14 @@ export default class ClaudeChat extends View {
             for (const [i, r] of kept.entries())
                 this.previews.set(`${address} ${paths[i]}`, r);
             this.keepFiles(address);
-            this.escaping = hc(['keys', address, 'esc', 'esc']);
+            this.escaping = hc([
+                'keys',
+                address,
+                ...clearKeys(
+                    pasted.map(() => '[Image #0]'),
+                    this.leftNormal,
+                ),
+            ]);
             cx.spawn(async () => {
                 await this.escaping;
                 await deleteShots([rel]);
@@ -3674,28 +3666,48 @@ export default class ClaudeChat extends View {
         saveShots(this.shots).catch(() => {});
     }
 
-    // a pasted image can be taken alone only while every one has its preview and Esc can't stop a turn
     /** @param {any} agent */
     canRemoveOne(agent) {
-        return (
-            !this.where?.container &&
-            agent.status !== 'working' &&
-            agent.status !== 'blocked' &&
-            this.pastedCount(agent.address) <=
-                (this.shots[agent.address]?.length ?? 0)
-        );
+        return canTakePasted({
+            isContainer: Boolean(this.where?.container),
+            pasted: this.pastedCount(agent.address),
+            previews: this.shots[agent.address]?.length ?? 0,
+            status: agent.status,
+        });
     }
 
     // A prompt Claude Code put back into its own box (a Stop on a sent message does it) is hidden from this view, and the
     // next send would glue onto it: show it, every 5 s at most, only while Claude is not working, and only when it is the
     // last prompt sent, never its dim suggestion text.
+    // a pasted image taken out of Claude's prompt in the Terminal view takes its preview along: read mid-turn too while
+    // one waits; true when that changed what the box draws
     async checkBox(agent) {
-        if (agent.status === 'working' || Date.now() - (this.boxAt ?? 0) < 5000)
-            return;
+        const isPasted =
+            !this.where?.container && this.pastedCount(agent.address) > 0;
+        if (
+            (agent.status === 'working' && !isPasted) ||
+            Date.now() - (this.boxAt ?? 0) < 5000
+        )
+            return false;
         this.boxAt = Date.now();
         const r = await hc(['read', agent.address]).catch(() => null);
-        if (this.address !== agent.address) return;
-        const text = r?.code === 0 ? boxText(r.stdout) : '';
+        if (this.address !== agent.address) return false;
+        const box = r?.code === 0 ? boxText(r.stdout) : null;
+        this.leftNormal = isVimNormal(
+            r?.stdout ?? '',
+            this.settingsNow()?.editorMode,
+        );
+        const isGone =
+            isPasted &&
+            agent.status !== 'blocked' &&
+            isPasteGone(box, this.pastedAt ?? 0, Date.now());
+        if (isGone) {
+            this.images = 0;
+            this.sentAt.set(agent.address, Date.now());
+            this.forgetShotsBefore(agent.address, Date.now());
+        }
+        if (agent.status === 'working') return isGone;
+        const text = box ?? '';
         const last =
             [...this.items].reverse().find((i) => i.kind === 'user')?.text ??
             '';
@@ -3706,10 +3718,7 @@ export default class ClaudeChat extends View {
             text && !this.leftInBox && !/^Try "/.test(text)
                 ? { address: agent.address, text }
                 : null;
-        this.leftNormal = isVimNormal(
-            r?.stdout ?? '',
-            this.settingsNow()?.editorMode,
-        );
+        return isGone;
     }
 
     // [take it]: the text into the quill, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
@@ -3998,15 +4007,15 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
-    // Esc twice empties Claude's prompt, images and all (not while it's working: Esc stops it).
-    // A dev container's images were never in its prompt: just forget them.
+    // emptying Claude's prompt takes its images out, mid-turn too; a dev container's images were never in its prompt:
+    // just forget them
     dropImages(cx) {
         const address = this.address;
         if (this.where?.container) {
             this.pasted.delete(address);
             return cx.notify();
         }
-        const isPasted = this.pastedCount(address) > 0;
+        const pasted = this.pastedCount(address);
         this.forgetPreviews(address);
         this.files.set(
             address,
@@ -4014,10 +4023,12 @@ export default class ClaudeChat extends View {
         );
         this.images = 0;
         this.forgetShots(address, cx);
-        if (isPasted)
-            cx.spawn(async () => {
-                await hc(['keys', address, 'esc', 'esc']);
-            });
+        if (pasted)
+            this.escaping = hc([
+                'keys',
+                address,
+                ...clearKeys(Array(pasted).fill('[Image #0]'), this.leftNormal),
+            ]);
         cx.notify();
     }
 
@@ -7921,8 +7932,7 @@ export default class ClaudeChat extends View {
                                 )
                                 .when(
                                     Boolean(this.where?.container) ||
-                                        (agent.status !== 'working' &&
-                                            agent.status !== 'blocked') ||
+                                        agent.status !== 'blocked' ||
                                         !this.pastedCount(agent.address),
                                     (el) =>
                                         el.child(
