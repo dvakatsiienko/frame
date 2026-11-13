@@ -276,22 +276,19 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a reply links a file with a `file://` url
   - then a «📂 <name>» row sits under the reply, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder); a web link in the text opens in the browser as before
   - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
-- ⬜ a click on send joins a busy thread's turn (FRM-564)
-  - given a busy thread and text in the quill
-  - when dima clicks send
-  - then a join row lands in the thread's join file, no turn starts, the quill clears, the button shows ↗ while pending and ✓ for ~3 s once the thread's state lists the row joined
-  - and a row listed nowhere a minute after the write, or a write refused, comes back to the quill after his draft, the note saying why
-  - and a picture waiting over the quill joins as its path
-- ⬜ a join into an idle thread waits as a card for its next turn (FRM-564)
-  - given an idle thread and text in the quill
+- ⬜ a click on send marks his words to join the thread's next chance (FRM-564)
+  - given text in the quill, the thread busy or idle
   - when dima clicks send or presses Enter
-  - then the row is written, the quill clears, and a card over the quill reads «Waits for its next turn» with his words
-  - and after a chatter reload the card is drawn again from the join file, the words shown once, never also in the quill
-  - and a second send of the same words writes no second row
+  - then a join row lands in the thread's join file, no turn starts, the words stay in the quill and the button shows ↗
+  - and what he types after the click rides the same row until a turn takes it
+  - and a second click before a turn took it takes the mark off: the row leaves the join file, the words stay, «Not joining»
+  - and once a turn takes the row, its words leave the quill (anything typed after its last write stays), the button shows ✓ for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
+  - and a row listed nowhere a minute after the write, or a write refused, stays in the quill unmarked, the note saying why; after a chatter reload the mark and the words come back once
+  - and a picture waiting over the quill joins as its path
 - ⬜ a 2 s hold on send pushes, its bar filling (FRM-564)
   - given text in the quill
   - when dima holds send
-  - then the button fills from the bottom over 2 s and at 2 s the message pushes: a turn starts, as a send did before joins
+  - then a disc fills the button over 2 s and at 2 s the message pushes, words marked to join taken out of the join file first: a turn starts, as a send did before joins
   - and a release before 2 s joins; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
 - ⬜ a send that cannot join pushes and says why (FRM-564)
   - given a slash command in the quill, or a thread whose join queue is switched off

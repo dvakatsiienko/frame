@@ -9,10 +9,10 @@ import {
     backTexts,
     dropJoin,
     holdSend,
-    isJoinPending,
     joinStatus,
-    pendingJoins,
+    joinedTexts,
     pushReason,
+    retextJoin,
     takeBackJoin,
 } from './joins.js';
 
@@ -119,27 +119,6 @@ describe('where a join stands, read off the thread’s herdr state', () => {
     test('listed nowhere 60 s after the write: not taken', () => {
         expect(joinStatus(joins, 'a3', 0, JOIN_TAKE_MS)).toBe('not taken');
         expect(joinStatus(undefined, 'a3', 0, JOIN_TAKE_MS)).toBe('not taken');
-    });
-});
-
-describe('a join into an idle thread waits as a card, drawn again after a reload', () => {
-    const file =
-        '{"id":"a1","text":"done one"}\n{"id":"a2","text":"wait for me"}\n{"id":"a2","text":"a second row with a1’s id"}\n{"id":"","text":"no id"}\n{"id":"a3","text":"  "}\nnot json\n{"id":"a4","text":"/compact"}\n';
-    const joins = { joined: ['a1'], push: ['a4'], waiting: ['a2'] };
-    test('a reload reads the card back from the join file: the rows the thread still lists as waiting', () => {
-        expect(pendingJoins(file, joins)).toEqual([
-            { id: 'a2', text: 'wait for me' },
-        ]);
-    });
-    test('no state yet, no card: the file alone never says a row waits', () => {
-        expect(pendingJoins(file, undefined)).toEqual([]);
-        expect(pendingJoins('', joins)).toEqual([]);
-    });
-    test('a second click with the same words writes no duplicate row', () => {
-        const rows = pendingJoins(file, joins);
-        expect(isJoinPending(rows, 'wait for me')).toBe(true);
-        expect(isJoinPending(rows, ' wait for me\n')).toBe(true);
-        expect(isJoinPending(rows, 'something new')).toBe(false);
     });
 });
 
@@ -277,6 +256,54 @@ describe('the × on a waiting join takes it back under the lock', () => {
         expect(await takeBackJoin(io, '/j/s1.jsonl', 'a1')).toBe(true);
         expect([files.get('/j/s1.jsonl'), locks.size]).toEqual([
             '{"id":"a2","text":"two"}\n',
+            0,
+        ]);
+    });
+});
+
+describe('a join the thread took shows in the chat as his own message, read off its transcript', () => {
+    const entry = (lines: string[]) => ({
+        attachment: {
+            content: ['now 19:23 UTC+2', ...lines],
+            hookEvent: 'PostToolUse',
+            type: 'hook_additional_context',
+        },
+        type: 'attachment',
+    });
+    test('one join, its lines kept', () => {
+        expect(
+            joinedTexts(
+                entry([
+                    '💨 dima wrote this in herdr while you worked; it joins this turn as his own words:\n«buttn run away fyi:\n/Users/dima/shot.png»',
+                ]),
+            ),
+        ).toEqual(['buttn run away fyi:\n/Users/dima/shot.png']);
+    });
+    test('several joins in one turn, in order', () => {
+        expect(
+            joinedTexts(
+                entry([
+                    '💨 dima wrote these 2, in order, in herdr while you worked; it joins this turn as his own words:\n«say the word alpha»\n«then say the word beta»',
+                ]),
+            ),
+        ).toEqual(['say the word alpha', 'then say the word beta']);
+    });
+    test('any other context line or record is none', () => {
+        expect(joinedTexts(entry(['orbit holds no open ask']))).toEqual([]);
+        expect(joinedTexts({ type: 'user' })).toEqual([]);
+    });
+});
+
+describe('words typed after the click ride the same join until a turn takes it', () => {
+    test('the row keeps its id and place, its text replaced', async () => {
+        const { files, io, locks } = fakeIo();
+        await appendJoin(io, '/j/s1.jsonl', 'a1', 'one');
+        await appendJoin(io, '/j/s1.jsonl', 'a2', 'two');
+        expect(await retextJoin(io, '/j/s1.jsonl', 'a1', 'one, and more')).toBe(
+            true,
+        );
+        expect([files.get('/j/s1.jsonl'), locks.size]).toEqual([
+            '{"id":"a1","text":"one, and more"}\n{"id":"a2","text":"two"}\n',
             0,
         ]);
     });

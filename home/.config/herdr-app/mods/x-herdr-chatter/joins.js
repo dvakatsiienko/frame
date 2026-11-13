@@ -60,6 +60,23 @@ export const appendJoin = (io, path, id, text) =>
         return `${head}${JSON.stringify({ id, text })}\n`;
     });
 
+/** a waiting join's words replaced, its id and place kept @param {JoinIo} io @param {string} path @param {string} id @param {string} text */
+export const retextJoin = (io, path, id, text) =>
+    editJoins(io, path, (was) =>
+        (was ?? '')
+            .split('\n')
+            .map((line) => {
+                try {
+                    return JSON.parse(line)?.id === id
+                        ? JSON.stringify({ id, text })
+                        : line;
+                } catch {
+                    return line;
+                }
+            })
+            .join('\n'),
+    );
+
 /** a waiting join taken back: its row leaves the file @param {JoinIo} io @param {string} path @param {string} id */
 export const takeBackJoin = (io, path, id) =>
     editJoins(io, path, (was) => dropJoin(was ?? '', id));
@@ -86,13 +103,11 @@ export function holdSend(hold, event, now, ms = HOLD_PUSH_MS) {
 }
 
 /**
- * the joins a thread still waits on, read back from its join file: what a reload draws as the card. a row counts only
- * once the thread's state lists it as waiting, so a file with no state behind it draws nothing; an id's first row wins
- * @param {string} file @param {Joins | null | undefined} joins @param {boolean} [isEvery] every row, whatever the state
- * @returns {{ id: string, text: string }[]}
+ * the rows an ended thread handed back that the quill has not taken yet, in send order; an id's first row wins
+ * @param {string} file the `back/<sid>.jsonl` file @param {string[]} taken ids already brought back
+ * @returns {{ ids: string[], texts: string[] }}
  */
-export function pendingJoins(file, joins, isEvery = false) {
-    const waiting = new Set(joins?.waiting ?? []);
+export function backTexts(file, taken) {
     /** @type {Map<string, string>} */
     const rows = new Map();
     for (const line of file.split('\n')) {
@@ -106,26 +121,9 @@ export function pendingJoins(file, joins, isEvery = false) {
         if (typeof id !== 'string' || !id || rows.has(id)) continue;
         if (typeof text === 'string' && text.trim()) rows.set(id, text);
     }
-    return [...rows]
-        .filter(([id]) => isEvery || waiting.has(id))
-        .map(([id, text]) => ({ id, text }));
+    const kept = [...rows].filter(([id]) => !taken.includes(id));
+    return { ids: kept.map(([id]) => id), texts: kept.map(([, t]) => t) };
 }
-
-/**
- * the rows an ended thread handed back that the quill has not taken yet, in send order; an id's first row wins
- * @param {string} file the `back/<sid>.jsonl` file @param {string[]} taken ids already brought back
- * @returns {{ ids: string[], texts: string[] }}
- */
-export function backTexts(file, taken) {
-    const rows = pendingJoins(file, null, true).filter(
-        (r) => !taken.includes(r.id),
-    );
-    return { ids: rows.map((r) => r.id), texts: rows.map((r) => r.text) };
-}
-
-/** these words already wait as a join: a second click writes no second row @param {{ text: string }[]} rows @param {string} text */
-export const isJoinPending = (rows, text) =>
-    rows.some((r) => r.text.trim() === text.trim());
 
 /**
  * where a join stands: «joined», still «waiting» on the thread, «pending» until its state lists it, or «not taken» once
@@ -162,4 +160,30 @@ export function dropJoin(file, id) {
             }
         })
         .join('\n');
+}
+
+// x-mod-stash hands joins into a turn as one model-only context line (orbit.ts `joinRowsText`)
+const JOINED_HEAD =
+    /^💨 dima wrote (?:this|these \d+, in order,) in herdr while you worked; it joins this turn as his own words:\n/;
+
+/**
+ * the joins a transcript record carries, in order: the chat draws each as his own message
+ * @param {any} entry @returns {string[]}
+ */
+export function joinedTexts(entry) {
+    if (
+        entry?.type !== 'attachment' ||
+        entry.attachment?.type !== 'hook_additional_context'
+    )
+        return [];
+    const line = (entry.attachment.content ?? []).find(
+        (/** @type {unknown} */ l) =>
+            typeof l === 'string' && JOINED_HEAD.test(l),
+    );
+    if (!line) return [];
+    const body = line
+        .replace(JOINED_HEAD, '')
+        .replace(/^«/, '')
+        .replace(/»$/, '');
+    return body.split('»\n«');
 }
