@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-12T20:34:00Z'
+updated_date: '2026-11-12T20:59:00Z'
 labels:
   - s
   - clio-main
@@ -16,16 +16,18 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
-- [ ] #2 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, FRM-505 landed
-- [ ] #3 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
-- [ ] #4 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look — on: 2026-11-13
-- [ ] #5 📅 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step — on: 2026-11-13
-- [ ] #6 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
-- [ ] #7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #8 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
-- [ ] #9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f13 today: once the boot chores are solved, grill every pending grill with dima, one by one, in lowtide mode
+- [ ] #2 f5 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step
+- [ ] #3 f12 helga grooms the day’s grill W-lines: prompt-groom.ts --linear 51 reds to 0
+- [ ] #4 f4 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look
+- [ ] #5 f1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
+- [ ] #6 f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
+- [ ] #7 f3 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
+- [ ] #8 f6 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac
+- [ ] #9 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #10 f8 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free
+- [ ] #11 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #12 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -387,4 +389,6 @@ done 2026-11-12 22:34: 📅 FRM-588 dispatch to the herdr codie (effort hotkey +
 done 2026-11-12 22:34: ⏳ autopilot: shape rounds 1–3 into one ticket via clio:shape-idea — waits for: FRM-505 landed (FRM-505 Done)
 
 done 2026-11-12 22:34: ⏳ glide subcard as a read-only view of a member's asks (o67) — waits for: the mods lane after FRM-505 (FRM-505 Done)
+
+done 2026-11-12 22:57: f2 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, FRM-505 landed (FRM-505 Done)
 <!-- SECTION:NOTES:END -->
