@@ -107,6 +107,11 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		}
 		plan.Tickets = append(plan.Tickets, ticket)
 	}
+	if flags["quick"] != true {
+		if err := agreeingLaneKinds(plan.Tickets); err != nil {
+			return nil, err
+		}
+	}
 	// outside every checkout: a .scratch/ in the worktree would keep the tree from its decamp at land
 	// one dir name with codie's lane plan: the spec's feature, else the lane
 	feature := ""
@@ -126,7 +131,7 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	area, _ := areaFlag(flags)
 	for _, named := range [][2]string{{"codie", session}, {"sixth-sense", flagString(flags, "sixth-sense")}} {
 		if named[1] != "" && len(plan.Tickets) > 0 {
-			record := thread{Role: named[0], LaneKind: dispatchLaneKind(flags, plan.Tickets[0]), Area: area, Ticket: plan.Tickets[0].ID}
+			record := thread{Role: named[0], LaneKind: recordLaneKind(dispatchLaneKind(flags, plan.Tickets), named[1]), Area: area, Ticket: plan.Tickets[0].ID}
 			plan.Threads = append(plan.Threads, named[1]+" → "+threadDisplay(record))
 		}
 	}
@@ -354,7 +359,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		}
 	}
 	// the threads it names get their record, so a reader asks x by session id and never parses a name
-	kind := dispatchLaneKind(flags, plan.Tickets[0])
+	kind := dispatchLaneKind(flags, plan.Tickets)
 	renames := []ordered{}
 	area, _ := areaFlag(flags)
 	for _, named := range [][2]string{{"codie", flagString(flags, "session")}, {"sixth-sense", flagString(flags, "sixth-sense")}} {
@@ -362,7 +367,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		if sid == "" {
 			continue
 		}
-		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: kind, Ticket: plan.Tickets[0].ID, Area: area}
+		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: recordLaneKind(kind, sid), Ticket: plan.Tickets[0].ID, Area: area}
 		if err := writeThreadRecord(record, time.Now(), false); err != nil {
 			if fail, isFail := errors.AsType[*Fail](err); isFail {
 				return nil, fail
@@ -379,10 +384,46 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 	return dispatchDone{plan, renames}, nil
 }
 
-// the mode a dispatched thread's name opens with: --quick says it, else the ticket's first lane: line, else side
-func dispatchLaneKind(flags Flags, ticket dispatchTicket) string {
+// the mode a dispatched thread's name opens with: --quick says it, else the tickets' lane: line, "" when none says one
+func dispatchLaneKind(flags Flags, tickets []dispatchTicket) string {
 	if flags["quick"] == true {
 		return "quick"
 	}
-	return cmp.Or(ticket.laneKind, "side")
+	for _, ticket := range tickets {
+		if ticket.laneKind != "" {
+			return ticket.laneKind
+		}
+	}
+	return ""
+}
+
+// a dispatch that names no mode keeps the one its record holds; side only when the record has none either
+func recordLaneKind(kind, sid string) string {
+	if kind != "" {
+		return kind
+	}
+	if store, err := readThreadStore(threadStorePath()); err == nil {
+		for _, t := range store.Threads {
+			if t.SessionID == sid && t.LaneKind != "" {
+				return t.LaneKind
+			}
+		}
+	}
+	return "side"
+}
+
+// one dispatch is one lane, so its tickets' lane: lines name one mode between them; a ticket with none says nothing
+func agreeingLaneKinds(tickets []dispatchTicket) error {
+	var named []string
+	kinds := map[string]bool{}
+	for _, ticket := range tickets {
+		if ticket.laneKind != "" {
+			named = append(named, ticket.ID+": "+ticket.laneKind)
+			kinds[ticket.laneKind] = true
+		}
+	}
+	if len(kinds) > 1 {
+		return usageFail("the lane: lines of these tickets disagree ("+strings.Join(named, ", ")+"): one dispatch is one lane", "x lane dispatch <tickets of one mode> --session <sid> --lane <name>")
+	}
+	return nil
 }

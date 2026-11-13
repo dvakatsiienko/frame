@@ -83,7 +83,9 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	}
 	message, _ := filepath.Abs(msgFile)
 	dry := flags["dry"] == true
-	if repo, _ := flags["repo"].(string); repo != "" {
+	startCwd, _ := os.Getwd()
+	repo, _ := flags["repo"].(string)
+	if repo != "" {
 		if dry {
 			return nil, usageFail("--dry reads this tree's hook, never another repo's", "x lane commit --dry "+msgFile+" -- <paths…>")
 		}
@@ -99,8 +101,14 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	// a path resolves from the cwd, as git resolves a pathspec; every later step reads the root form, and a retry hint keeps
 	// the form the caller typed, since it reruns from the same cwd
 	typedPaths := slices.Clone(paths)
-	if prefix, _ := git("rev-parse", "--show-prefix"); prefix.out != "" {
-		if paths, err = rootPaths(tree, prefix.out, paths); err != nil {
+	prefix := ""
+	if repo != "" {
+		prefix = prefixInside(tree, startCwd)
+	} else if shown, _ := git("rev-parse", "--show-prefix"); shown.ok {
+		prefix = shown.out
+	}
+	if prefix != "" {
+		if paths, err = rootPaths(tree, prefix, paths); err != nil {
 			return nil, err
 		}
 	}
@@ -213,6 +221,12 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	}
 	if err := r.Step("holds", "the paths another session holds", func() (string, error) {
 		if held := heldByOthers(tree, paths); len(held) > 0 {
+			// heldByOthers reads root-form paths; the retry reruns from this cwd, so it names them as typed
+			for i := range held {
+				if at := slices.Index(paths, held[i].named); at >= 0 && at < len(typedPaths) {
+					held[i].named = typedPaths[at]
+				}
+			}
 			return "", heldFail(held, bumpFlag+msgFile, callerPaths)
 		}
 		return "none held by another session", nil
@@ -1477,6 +1491,21 @@ func or(value, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+// prefixInside is where cwd sits under tree, ending in a slash, "" at the root or outside it: with --repo the run enters that
+// repo's root, so the caller's own cwd says whether a typed path reads from a subfolder of it
+func prefixInside(tree, cwd string) string {
+	realTree, errTree := filepath.EvalSymlinks(tree)
+	realCwd, errCwd := filepath.EvalSymlinks(cwd)
+	if errTree != nil || errCwd != nil {
+		return ""
+	}
+	rel, err := filepath.Rel(realTree, realCwd)
+	if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, "../") {
+		return ""
+	}
+	return filepath.ToSlash(rel) + "/"
 }
 
 // rootPaths turns each path the caller typed from a subfolder (prefix, ending in a slash) into its repo-root form, as git

@@ -1136,6 +1136,25 @@ func TestBriefSummonSwitchesPromptSuggestionsOffForALaneMember(t *testing.T) {
 	}
 }
 
+// a --settings value that is no inline json (a settings file) stays, and a second --settings flag carries the key
+func TestBriefSummonAddsASecondSettingsFlagBesideAFilePath(t *testing.T) {
+	t.Parallel()
+	for _, value := range []string{"/tmp/lane-settings.json", "'/tmp/lane settings.json'"} {
+		t.Run(value, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			command := strings.Replace(codieArgv(w.repo, w.brief(t, goodBrief, true)), "--model opus", "--model opus --settings "+value, 1)
+
+			got := w.summon(t, command, "X_THREADS="+filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS="+t.TempDir())
+
+			argv, _ := got.data["argv"].(string)
+			if got.code != 0 || !strings.Contains(argv, "--settings "+value) || strings.Count(argv, "--settings") != 2 || !strings.Contains(argv, `--settings '{"promptSuggestionEnabled":false}'`) {
+				t.Errorf("exit %d, want the file flag kept and one more flag holding the key:\n%s", got.code, argv)
+			}
+		})
+	}
+}
+
 func TestBriefSummonSwitchesPromptSuggestionsOffForCrowAndHelgaOnly(t *testing.T) {
 	t.Parallel()
 	for _, c := range []struct {

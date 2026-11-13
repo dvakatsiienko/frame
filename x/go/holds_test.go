@@ -11,9 +11,15 @@ import (
 // holdsStore plants x-mod-holds' store file: session «other» holds readme.txt, landed or not, with the holder record given
 func holdsStore(t *testing.T, dir string, landed bool, holder any) string {
 	t.Helper()
+	return holdsStoreOf(t, filepath.Join(dir, "readme.txt"), landed, holder)
+}
+
+// holdsStoreOf is holdsStore for any file: session «other» holds the absolute path given
+func holdsStoreOf(t *testing.T, file string, landed bool, holder any) string {
+	t.Helper()
 	store := t.TempDir()
-	key := "hold:other-session-id:" + strings.ToLower(filepath.Join(dir, "readme.txt"))
-	body := map[string]any{key: map[string]any{"at": time.Now().Add(-4 * time.Minute).UnixMilli(), "file": filepath.Join(dir, "readme.txt"), "landed": landed}}
+	key := "hold:other-session-id:" + strings.ToLower(file)
+	body := map[string]any{key: map[string]any{"at": time.Now().Add(-4 * time.Minute).UnixMilli(), "file": file, "landed": landed}}
 	if holder != nil {
 		body["holder:other-session-id"] = holder
 	}

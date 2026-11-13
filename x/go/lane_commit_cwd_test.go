@@ -109,3 +109,46 @@ func TestCommitFromClioTakesItsScriptPath(t *testing.T) {
 		t.Errorf("exit %d, the commit holds %q:\n%s", got.code, committedFiles(t, dir), got.stdout)
 	}
 }
+
+// a retry hint reruns from the same cwd, so it names the paths as typed: the held one leaves, the free one stays
+func TestCommitFromASubfolderNamesTheTypedPathInAHeldRetry(t *testing.T) {
+	t.Parallel()
+	dir := subRepo(t)
+	write(t, filepath.Join(dir, "sub/a.txt"), "two\n")
+	write(t, filepath.Join(dir, "sub/old.txt"), "two\n")
+	store := holdsStoreOf(t, filepath.Join(dir, "sub/a.txt"), false, map[string]any{"idleSince": nil})
+
+	got := xIn(t, filepath.Join(dir, "sub"), []string{"X_HOLDS=" + store, "CLAUDE_CODE_SESSION_ID=mine"}, "lane", "commit", message(t), "--", "a.txt", "old.txt")
+
+	if got.code != 1 || !strings.Contains(got.stdout, "sub/a.txt is held by session other-se") || !strings.Contains(got.stdout, `-- old.txt"`) {
+		t.Errorf("exit %d, want the hold on sub/a.txt and a retry naming only old.txt:\n%s", got.code, got.stdout)
+	}
+}
+
+// --repo with a cwd inside that repo resolves a typed path from the cwd; from outside it, from the repo's root
+func TestCommitWithRepoResolvesPathsFromTheCwdOnlyInsideThatRepo(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, path string
+		isInside   bool
+	}{
+		{"the cwd sits inside the repo", "a.txt", true},
+		{"the cwd sits outside the repo", "sub/a.txt", false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir := subRepo(t)
+			write(t, filepath.Join(dir, "sub/a.txt"), "two\n")
+			cwd := t.TempDir()
+			if c.isInside {
+				cwd = filepath.Join(dir, "sub")
+			}
+
+			got := xIn(t, cwd, nil, "lane", "commit", "--repo", dir, message(t), "--", c.path)
+
+			if got.code != 0 || committedFiles(t, dir) != "M\tsub/a.txt" {
+				t.Errorf("exit %d, the commit holds %q, want M sub/a.txt:\n%s", got.code, committedFiles(t, dir), got.stdout)
+			}
+		})
+	}
+}

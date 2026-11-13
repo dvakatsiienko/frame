@@ -606,7 +606,7 @@ func laneKindFlag(flags Flags) (string, error) {
 
 // withoutPromptSuggestions puts promptSuggestionEnabled: false into the claude call's --settings json: the one flag the
 // command carries, merged into when it has one (a quick lane's worktree setting), added when it has none; a value the
-// command already gave the key stays
+// command already gave the key stays; a --settings file (no inline json) gets a second flag beside it
 func withoutPromptSuggestions(command string) (string, error) {
 	at := claudeCallAt(command)
 	if at == nil {
@@ -631,8 +631,9 @@ func withoutPromptSuggestions(command string) (string, error) {
 		to = len(command)
 	}
 	var settings map[string]any
+	// a value that is no inline json is a settings file: the key rides a second flag, which cc merges
 	if err := json.Unmarshal([]byte(unquoted(command[from:to])), &settings); err != nil {
-		return "", usageFail("the --settings json does not parse: "+err.Error(), "x brief summon … --settings '{…}'")
+		return command[:at[1]] + `--settings '{"` + key + `":false}' ` + command[at[1]:], nil
 	}
 	if _, isSet := settings[key]; isSet {
 		return command, nil
