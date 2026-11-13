@@ -4259,14 +4259,34 @@ async function forgetJoins($: EngineInterface, sid: string) {
     await $.store.delete(JOIN_TAKEN + sid).catch(() => undefined);
     await $.store.delete(JOIN_DONE + sid).catch(() => undefined);
 }
+// a lock dir this old was left by a crash, never by a live writer (both hold it for well under a second): broken and
+// taken. herdr's chatter reads the same age (`JOIN_LOCK_STALE_MS` in x-herdr-chatter's joins.js)
+const JOIN_LOCK_STALE_MS = 30 * 1000;
+async function takeJoinLock($: EngineInterface, lock: string) {
+    if ((await $.process.run(['mkdir', lock])).exitCode === 0) return true;
+    const at = (await $.fs.stat(lock).catch(() => undefined))?.mtimeMs;
+    if (at === undefined || (await $.clock.now()) - at < JOIN_LOCK_STALE_MS)
+        return false;
+    await $.process.run(['rmdir', lock]);
+    return (await $.process.run(['mkdir', lock])).exitCode === 0;
+}
 async function handBackJoins($: EngineInterface, home: string, sid: string) {
     const file = joinsFile(home, sid);
-    if ((await $.fs.read(file).catch(() => undefined)) === undefined) {
+    // no join folder, no joins; otherwise the file is read only under the lock, so a row herdr writes meanwhile goes too
+    const hasDir = await $.fs
+        .exists(`${home}/.claude/shelf/${JOINS_DIR}`)
+        .catch(() => false);
+    if (!hasDir) {
         await forgetJoins($, sid);
         return true;
     }
     const lock = `${file}.lock`;
-    if ((await $.process.run(['mkdir', lock])).exitCode !== 0) return false;
+    if (!(await takeJoinLock($, lock))) return false;
+    if ((await $.fs.read(file).catch(() => undefined)) === undefined) {
+        await $.process.run(['rmdir', lock]);
+        await forgetJoins($, sid);
+        return true;
+    }
     try {
         // every line no turn joined goes back as herdr wrote it, a line this side could not read included
         const { done } = await joinsOf($, home, sid);
@@ -4326,6 +4346,14 @@ async function writeState($: EngineInterface) {
                   push: joins.rows
                       .filter(
                           (r) => isPushOnly(r) && !joins.done.includes(r.id),
+                      )
+                      .map((r) => r.id),
+                  // handed into a running turn, not joined yet: herdr empties its quill on these (FRM-564)
+                  taken: joins.rows
+                      .filter(
+                          (r) =>
+                              joins.taken.includes(r.id) &&
+                              !joins.done.includes(r.id),
                       )
                       .map((r) => r.id),
                   waiting: joins.rows

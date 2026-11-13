@@ -57,17 +57,33 @@ async function session($: Engine, on: On) {
         mtimes.set(e.path, clock.now());
         return { value: undefined };
     });
+    // a folder exists while a file or a dir sits under it
+    on('fs.exists', (_$, e) => ({
+        value:
+            files.has(e.path) ||
+            dirs.has(e.path) ||
+            [...files.keys(), ...dirs].some((p) => p.startsWith(`${e.path}/`)),
+    }));
     on('fs.stat', (_$, e) =>
-        files.has(e.path)
+        dirs.has(e.path)
             ? {
                   value: {
                       isLink: false,
-                      kind: 'file' as const,
-                      mtimeMs: mtimes.get(e.path) ?? 0,
+                      kind: 'dir' as const,
+                      mtimeMs: mtimes.get(e.path) ?? clock.now(),
                       size: 1,
                   },
               }
-            : { deny: 'ENOENT' },
+            : files.has(e.path)
+              ? {
+                    value: {
+                        isLink: false,
+                        kind: 'file' as const,
+                        mtimeMs: mtimes.get(e.path) ?? 0,
+                        size: 1,
+                    },
+                }
+              : { deny: 'ENOENT' },
     );
     on('fs.read', (_$, e) =>
         files.has(e.path)
@@ -116,6 +132,7 @@ async function session($: Engine, on: On) {
             const dir = String(args.at(-1));
             if (args[0] !== '-p' && dirs.has(dir)) return out('', 1);
             dirs.add(dir);
+            mtimes.set(dir, clock.now());
             return out('');
         }
         if (cmd === 'rmdir') {
@@ -536,8 +553,8 @@ test('exit 1: two joins written before a turn land in it in order, once, and rea
         [
             '💨 dima wrote these 2, in order, in herdr while you worked; it joins this turn as his own words:\n«first»\n«second»',
         ],
-        { joined: [], push: [], waiting: ['j1', 'j2'] },
-        { joined: ['j1', 'j2'], push: [], waiting: [] },
+        { joined: [], push: [], taken: ['j1', 'j2'], waiting: ['j1', 'j2'] },
+        { joined: ['j1', 'j2'], push: [], taken: [], waiting: [] },
     ]);
 });
 
@@ -565,7 +582,7 @@ test('exit 1 twins: a broken line, a row with no id and an id written twice each
         [
             '💨 dima wrote these 2, in order, in herdr while you worked; it joins this turn as his own words:\n«one»\n«three»',
         ],
-        { joined: ['j1', 'j3'], push: [], waiting: [] },
+        { joined: ['j1', 'j3'], push: [], taken: [], waiting: [] },
     ]);
 });
 
@@ -576,7 +593,7 @@ test('a slash row is never joined: it waits for herdr to push it', async ($, on)
     await endTurn($);
     expect([said(s), s.read(A)?.joins]).toEqual([
         [],
-        { joined: [], push: ['j1'], waiting: [] },
+        { joined: [], push: ['j1'], taken: [], waiting: [] },
     ]);
 });
 
@@ -591,8 +608,8 @@ test('exit 2: an Esc after the hand-in stamps nothing, and the rows land again a
     await say($);
     expect([said(s).length, after, s.read(A)?.joins]).toEqual([
         2,
-        { joined: [], push: [], waiting: ['j1', 'j2'] },
-        { joined: ['j1', 'j2'], push: [], waiting: [] },
+        { joined: [], push: [], taken: [], waiting: ['j1', 'j2'] },
+        { joined: ['j1', 'j2'], push: [], taken: [], waiting: [] },
     ]);
 });
 
@@ -603,7 +620,7 @@ test('exit 3: a join into an idle thread reads waiting and starts no turn, then 
     const idle = [s.contexts.length, s.read(A)?.joins];
     await say($);
     expect([idle, said(s).length]).toEqual([
-        [0, { joined: [], push: [], waiting: ['j1'] }],
+        [0, { joined: [], push: [], taken: [], waiting: ['j1'] }],
         1,
     ]);
 });
@@ -657,6 +674,19 @@ test('a thread past 500 joins never hands an old one in again', async ($, on) =>
     expect(said(s).map((l) => l.includes('«old»'))).toEqual([false]);
 });
 
+test('a lock a crash left, older than the age herdr reads too, is broken: the rows go back at once', async ($, on) => {
+    const s = await session($, on);
+    s.files.set(JOINS, row('j1', 'waits'));
+    s.dirs.add(`${JOINS}.lock`);
+    s.mtimes.set(`${JOINS}.lock`, s.clock.now() - 30_000);
+    await $.session.end({ reason: 'clear', sessionId: A } as never);
+    expect([
+        s.files.get(BACK),
+        s.files.has(JOINS),
+        s.dirs.has(`${JOINS}.lock`),
+    ]).toEqual([row('j1', 'waits'), false, false]);
+});
+
 test('a hand-back the lock refused at /clear goes back at a later sweep', async ($, on) => {
     const s = await session($, on);
     s.files.set(JOINS, row('j1', 'waits'));
@@ -706,7 +736,7 @@ test('a prompt queued behind a running turn carries no joins: that turn ends wit
     await endTurn($);
     expect([said(s), s.read(A)?.joins]).toEqual([
         [],
-        { joined: [], push: [], waiting: ['j1', 'j2'] },
+        { joined: [], push: [], taken: [], waiting: ['j1', 'j2'] },
     ]);
 });
 
@@ -728,7 +758,7 @@ test('an Esc on a turn with a prompt queued behind it hands the joins in once, a
         0,
         true,
         false,
-        { joined: ['j1', 'j2'], push: [], waiting: [] },
+        { joined: ['j1', 'j2'], push: [], taken: [], waiting: [] },
     ]);
 });
 
