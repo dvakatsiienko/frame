@@ -82,6 +82,7 @@ import {
     EFFORTS,
     effortKey,
     effortWord,
+    pickSeen,
     pickerLabel,
     slideEffort,
 } from './effort.js';
@@ -2301,6 +2302,24 @@ export default class ClaudeChat extends View {
                         await hc(['keys', address, 'enter']);
                         break;
                     }
+                }
+                // mid-turn the pick writes nothing to the transcript until the next reply: the label takes it from
+                // Claude Code's own confirmation on its screen
+                for (let i = 0; i < 8; i++) {
+                    // only the value just picked: an older pick's line can still be on the screen
+                    const seen = pickSeen(kind, await screen());
+                    if (seen === value) {
+                        if (this.address === address) {
+                            if (kind === 'effort')
+                                this.effort = {
+                                    level: seen,
+                                    model: this.modelNow(),
+                                };
+                            else this.model = seen;
+                        }
+                        break;
+                    }
+                    await cx.sleep(200);
                 }
             } catch (e) {
                 this.pending = null;

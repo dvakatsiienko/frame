@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { effortKey, pickerLabel, slideEffort } from './effort.js';
+import { effortKey, pickSeen, pickerLabel, slideEffort } from './effort.js';
 
 describe('effortKey', () => {
     test('a first press opens the popover on the current level', () => {
@@ -97,5 +97,30 @@ describe("the picker trigger reads like shepherdr's (dima's o13)", () => {
 
     test('an unknown part names itself', () => {
         expect(pickerLabel(null, null, null)).toBe('Model · Effort');
+    });
+});
+
+// a pick mid-turn writes nothing to the transcript, so the label read Medium until the next reply (dima, 21:46); Claude
+// Code prints its confirmation on the screen at once (probed 2026-11-13 21:46 on a throwaway thread)
+describe('pickSeen', () => {
+    test('an effort Claude Code confirmed on its screen', () => {
+        expect(
+            pickSeen(
+                'effort',
+                '   Set effort level to high (this session only): Comprehensive implementation',
+            ),
+        ).toBe('high');
+    });
+    test('a model it confirmed', () => {
+        expect(
+            pickSeen(
+                'model',
+                '  Set model to Sonnet 5.5 for this session only',
+            ),
+        ).toBe('Sonnet 5.5');
+    });
+    test('no confirmation yet: nothing', () => {
+        expect(pickSeen('effort', '❯ \n  -- INSERT --')).toBe(null);
+        expect(pickSeen('effort', 'Set effort level to bogus')).toBe(null);
     });
 });
