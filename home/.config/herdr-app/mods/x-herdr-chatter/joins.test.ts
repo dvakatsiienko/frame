@@ -151,14 +151,15 @@ describe('a hold on send: a bar fills over 1 s and pushes; a release before join
             0,
         );
     });
-    test('released before 1 s, it joins and the bar resets', () => {
+    test('a tap, let go before the disc starts, joins', () => {
         expect(
-            holdSend(pressed.hold, 'release', 1000 + HOLD_PUSH_MS - 1),
-        ).toEqual({
-            act: 'join',
-            fill: 0,
-            hold: null,
-        });
+            holdSend(pressed.hold, 'release', 1000 + HOLD_DELAY_MS - 1),
+        ).toEqual({ act: 'join', fill: 0, hold: null });
+    });
+    test('let go once the disc started filling, before it is full: nothing is sent, nothing marked', () => {
+        expect(
+            holdSend(pressed.hold, 'release', 1000 + HOLD_DELAY_MS + 1),
+        ).toEqual({ act: null, fill: 0, hold: null });
     });
     test('cut by focus loss, a blur or a cancelled press: nothing written, the bar resets', () => {
         expect(

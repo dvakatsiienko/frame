@@ -87,7 +87,7 @@ export const HOLD_DELAY_MS = 300;
 export const HOLD_PUSH_MS = 1000;
 
 /**
- * a press on send, step by step: a release before HOLD_PUSH_MS joins, a hold that reaches it pushes once, and a hold
+ * a press on send, step by step: a release before HOLD_DELAY_MS joins, one after it does nothing, a hold that reaches it pushes once, and a hold
  * cut short (focus loss, a blur, the pointer gone) does nothing; `fill` is the bar, 0 to 1
  * @param {{ at: number } | null} hold @param {'press' | 'tick' | 'release' | 'cancel'} event @param {number} now
  * @returns {{ hold: { at: number } | null, act: 'join' | 'push' | null, fill: number }}
@@ -95,7 +95,13 @@ export const HOLD_PUSH_MS = 1000;
 export function holdSend(hold, event, now) {
     if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
-    if (event === 'release') return { act: 'join', fill: 0, hold: null };
+    // a tap joins; a hold he lets go once its disc started is changed mind, nothing sent or marked (dima, 20:05)
+    if (event === 'release')
+        return {
+            act: now - hold.at > HOLD_DELAY_MS ? null : 'join',
+            fill: 0,
+            hold: null,
+        };
     const fill = Math.min(
         1,
         Math.max(0, now - hold.at - HOLD_DELAY_MS) / HOLD_PUSH_MS,

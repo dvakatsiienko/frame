@@ -8510,19 +8510,17 @@ export default class ClaudeChat extends View {
                                                                     .rounded_full()
                                                                     .bg(
                                                                         this
-                                                                            .hold
+                                                                            .hold ||
+                                                                            this.typed?.trim()
                                                                             ? t.solid
-                                                                            : this.typed?.trim()
-                                                                              ? t.accent
-                                                                              : t.raised,
+                                                                            : t.raised,
                                                                     )
                                                                     .text_color(
                                                                         this
-                                                                            .hold
+                                                                            .hold ||
+                                                                            this.typed?.trim()
                                                                             ? t.solid_foreground
-                                                                            : this.typed?.trim()
-                                                                              ? t.background
-                                                                              : t.dim,
+                                                                            : t.dim,
                                                                     )
                                                                     .text_size(
                                                                         px(
@@ -8532,7 +8530,8 @@ export default class ClaudeChat extends View {
                                                                     .font_weight(
                                                                         700,
                                                                     )
-                                                                    // a surface shift, never opacity: an opacity hover keeps the view's spinners rebuilding it
+                                                                    // black with text in the quill (dima, 20:05); a surface shift on hover, never opacity: an opacity hover keeps
+                                                                    // the view's spinners rebuilding it
                                                                     .when(
                                                                         Boolean(
                                                                             this.typed?.trim(),
@@ -8546,7 +8545,7 @@ export default class ClaudeChat extends View {
                                                                                     ) =>
                                                                                         s
                                                                                             .bg(
-                                                                                                t.solid,
+                                                                                                t.muted,
                                                                                             )
                                                                                             .text_color(
                                                                                                 t.solid_foreground,
@@ -8595,7 +8594,7 @@ export default class ClaudeChat extends View {
                                                                             0,
                                                                         (el) =>
                                                                             el.child(
-                                                                                // a disc grows from the centre in the accent: a held button is hovered, its face already the solid colour
+                                                                                // a disc grows from the centre in the accent, over the button's black face
                                                                                 div()
                                                                                     .absolute()
                                                                                     .left(
@@ -8649,8 +8648,24 @@ export default class ClaudeChat extends View {
                                                                                     .joining
                                                                                     .state ===
                                                                                 'joined'
-                                                                                  ? '✉️'
-                                                                                  : '📥'
+                                                                                  ? div()
+                                                                                        .text_size(
+                                                                                            px(
+                                                                                                TEXT.sm,
+                                                                                            ),
+                                                                                        )
+                                                                                        .child(
+                                                                                            '✉️',
+                                                                                        )
+                                                                                  : div()
+                                                                                        .text_size(
+                                                                                            px(
+                                                                                                TEXT.sm,
+                                                                                            ),
+                                                                                        )
+                                                                                        .child(
+                                                                                            '📥',
+                                                                                        )
                                                                               : '↑',
                                                                     ),
                                                             ),
