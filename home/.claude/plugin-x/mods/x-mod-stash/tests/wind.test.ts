@@ -22,6 +22,8 @@ let compactRefusal: string | undefined;
 let ingestRefusal: string | undefined;
 // the engine refuses the mod's own prompt
 let submitRefusal: string | undefined;
+// the store refuses a write to the held store
+let isHeldRefused = false;
 // the context % a step reads live, through $.session.usage
 let fillNow: number | undefined;
 
@@ -60,6 +62,7 @@ function world(
     compactRefusal = undefined;
     ingestRefusal = undefined;
     submitRefusal = undefined;
+    isHeldRefused = false;
     fillNow = undefined;
     const prompts: string[] = [];
     const lines: string[] = [];
@@ -69,6 +72,8 @@ function world(
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
     on('store.set', (_$, e) => {
+        if (isHeldRefused && e.key.startsWith('held:'))
+            return { deny: 'disk full' };
         store.set(e.key, e.value);
         return { value: undefined };
     });
@@ -2022,20 +2027,20 @@ test('the kinds list names each kind once, and every kind says how it reads and 
     ]).toEqual([true, true]);
 });
 
-for (const body of [
-    '',
-    '[ask]',
-    '🪜 [escalate] stuck',
-    '[🪜 escalate] stuck',
-    '[progress] sw done\nfor dima: a or b',
-    '`for dima` in code',
-    '[Ask] a?',
-    '[done',
-    'waiting on dima',
-    '[progress]',
-])
-    test(`a message reads as a kind on the list: ${JSON.stringify(body)}`, () => {
-        expect(KINDS).toContain(messageKind(body));
+for (const [body, kind] of [
+    ['', 'untagged'],
+    ['[ask]', 'ask'],
+    ['🪜 [escalate] stuck', 'escalate'],
+    ['[🪜 escalate] stuck', 'escalate'],
+    ['[progress] sw done\nfor dima: a or b', 'progress'],
+    ['`for dima` in code', 'untagged'],
+    ['[Ask] a?', 'untagged'],
+    ['[done', 'untagged'],
+    ['waiting on dima', 'for-dima'],
+    ['[progress]', 'progress'],
+] as const)
+    test(`a message reads as its kind from the list: ${JSON.stringify(body)} is ${kind}`, () => {
+        expect([messageKind(body), KINDS.includes(kind)]).toEqual([kind, true]);
     });
 
 test('a compact names each held message by its kind from the list', async ($, on) => {
@@ -2151,4 +2156,42 @@ test('a reload re-arms the deadline of a compact-held message', async ($, on) =>
     expect(w.sent).toEqual([
         { text: WAITING_LINE, to: 'uds:/tmp/cc-socks/3.sock' },
     ]);
+});
+
+// wisphunter on f9e633d2: the wind's first message swapped for its note while no store held it
+test("a coordinator's message the held store will not save passes as sent, no wind note", async ($, on) => {
+    const w = receiveWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    isHeldRefused = true;
+    await start($);
+    const r = await fromPeer($, 'next: r6');
+    expect([
+        r.text?.includes('next: r6'),
+        r.text?.includes('held for your second wind'),
+        w.store.has(`wind:${SID}`),
+    ]).toEqual([true, false, false]);
+});
+
+// wisphunter on f9e633d2: a ping held under the session id while the registry name could not be read
+test('a ping held under the session id goes in once the name is back, and the id key goes', async ($, on) => {
+    const w = receiveWorld(on, CLIO, 'coordinator');
+    w.store.set(`held:${SID}`, {
+        messages: [
+            {
+                at: NOW,
+                from: SIXTH,
+                id: 'q1',
+                isQuiet: true,
+                tag: 'progress',
+                text: 'step 2 landed',
+            },
+        ],
+    });
+    await start($);
+    await say($, 'next');
+    await say($, 'and next');
+    expect([
+        w.lines.join('\n').split('step 2 landed').length - 1,
+        w.store.has(`held:${SID}`),
+    ]).toEqual([1, false]);
 });

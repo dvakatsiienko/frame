@@ -1300,7 +1300,8 @@ type HeldMessage = {
     deliveryTest?: string;
 };
 type HeldStore = { isCompacted?: true; messages: HeldMessage[] };
-type HeldKeys = { key: string; steers: string; quiet?: string };
+// bySid: the id key a hold wrote while the registry name could not be read, read and cleared once the name is back
+type HeldKeys = { key: string; steers: string; quiet?: string; bySid?: string };
 
 // a message's id: the same delivery read from two stores is one message
 function heldId(m: { at: number; from: string; text: string }) {
@@ -1319,6 +1320,7 @@ async function heldKeys($: EngineInterface): Promise<HeldKeys | undefined> {
         key: HELD + own,
         steers: STEER_HELD + own,
         ...(sid ? { quiet: QUIET_HELD + sid } : {}),
+        ...(sid && name ? { bySid: HELD + sid } : {}),
     };
 }
 
@@ -1343,6 +1345,11 @@ async function heldStore(
     const own = (await $.store.get(keys.key).catch(() => undefined)) as
         | Partial<HeldStore>
         | undefined;
+    const bySid = keys.bySid
+        ? ((await $.store.get(keys.bySid).catch(() => undefined)) as
+              | Partial<HeldStore>
+              | undefined)
+        : undefined;
     const steers = (await $.store.get(keys.steers).catch(() => undefined)) as
         | { isCompacted?: true; steers?: Omit<HeldMessage, 'id'>[] }
         | undefined;
@@ -1352,6 +1359,7 @@ async function heldStore(
     const seen = new Set<string>();
     const messages = [
         ...(own?.messages ?? []),
+        ...(bySid?.messages ?? []),
         ...(steers?.steers ?? []).map((m) => ({ ...m, id: heldId(m) })),
         ...(Array.isArray(quiet) ? (quiet as QuietPing[]) : [])
             .filter((p) => p.tag !== QUIET_NOTICE)
@@ -1361,7 +1369,7 @@ async function heldStore(
         .sort((a, b) => a.at - b.at);
     return {
         messages,
-        ...(own?.isCompacted || steers?.isCompacted
+        ...(own?.isCompacted || bySid?.isCompacted || steers?.isCompacted
             ? { isCompacted: true as const }
             : {}),
     };
@@ -1378,6 +1386,7 @@ async function saveHeld($: EngineInterface, keys: HeldKeys, held: HeldStore) {
     if (!isSaved) return false;
     await $.store.delete(keys.steers).catch(() => undefined);
     if (keys.quiet) await $.store.delete(keys.quiet).catch(() => undefined);
+    if (keys.bySid) await $.store.delete(keys.bySid).catch(() => undefined);
     return true;
 }
 
@@ -4741,9 +4750,9 @@ async function holdForWind(
     if (typeof context !== 'number' || context < STEER_HOLD_AT)
         return undefined;
     if (was !== undefined && was !== 'asked') return undefined;
-    // the wind first: a message held with no wind behind it would wait for nothing
+    // held first: a note sent in place of a message no store holds would lose it
+    if (!(await holdMessage($, keys, steer))) return undefined;
     await $.store.set(WIND + sid, { at, state: 'writing' } satisfies StashWind);
-    await holdMessage($, keys, steer);
     if (isFirstUntold) armSteerTell($, at, at);
     await load($).catch(() => undefined);
     const open = text.match(/<cross-session-message[^>]*>/)?.[0];
@@ -4770,7 +4779,10 @@ async function takeSteers($: EngineInterface, isOn: IsPartOn) {
             ),
     );
     await tellDelivered($, steers);
-    return steers.map(steerLine);
+    const quiet = steers.filter((m) => m.isQuiet).map(quietPingOf);
+    if (quiet.length)
+        await quietLocked(() => quietFlushed($, quiet)).catch(() => undefined);
+    return [...(quiet.length ? [QUIET_RIDE] : []), ...steers.map(steerLine)];
 }
 
 // a compact's and a wind's messages, read and taken under the one lock, so a prompt and a release racing each other take
@@ -4846,6 +4858,10 @@ async function tellWaiting($: EngineInterface) {
     const sid = await currentId($);
     if (!keys || !sid) return;
     const now = await $.clock.now();
+    // a compact still running is no missed turn: look again once it could have ended
+    const isWindOn = (await partsShown($))('stash.second-wind');
+    if (await isCompactingNow($, sid, isWindOn))
+        return armHeldDeadline($, now + 60_000 - STEER_TELL_MS, now);
     const due = await quietLocked(async () => {
         const kept = await heldStore($, keys);
         const late = kept.messages.filter(
@@ -6945,8 +6961,6 @@ export const register: Register = (on) => {
         });
         await seatDefaults($).catch(() => undefined);
         await armHeldTells($).catch(() => undefined);
-        // a reload drops the release timer: a compact-held list waiting for it goes in once the session is idle
-        armRelease($, COMPACT_SETTLE_MS);
         const panes = await $.ui.panes().catch(() => undefined);
         if (panes?.some((p) => p.id === OLD_BOARD)) {
             await $.ui.close({ id: OLD_BOARD }).catch(() => undefined);
@@ -7006,6 +7020,9 @@ export const register: Register = (on) => {
             pinged = kept.turn.isPinged;
             turnAfk = kept.turn.afk;
         }
+        // a reload drops the release timer: a compact-held list waiting for it goes in once the session is idle; armed after
+        // a mid-turn reload's busy flag is back, so it never submits into a running turn
+        armRelease($, COMPACT_SETTLE_MS);
         await load($);
         await armHot($);
         await armWake($);
