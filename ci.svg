@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="103" height="24" viewBox="0 0 103 24" role="img" aria-label="ci: passing">
+<defs>
+<clipPath id="r"><rect width="103" height="24" rx="4"/></clipPath>
+<pattern id="scan" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="1" fill="#000" opacity=".06"/></pattern>
+</defs>
+<g clip-path="url(#r)">
+<rect width="32" height="24" fill="#1d2021"/>
+<rect x="32" width="71" height="24" fill="#b8bb26"/>
+<rect width="103" height="24" fill="url(#scan)"/>
+</g>
+<g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" text-anchor="middle">
+<text x="16" y="16.5" fill="#ebdbb2">ci</text>
+<text x="67.5" y="16.5" fill="#1d2021" font-weight="700">passing</text>
+</g>
+</svg>
