@@ -3,10 +3,10 @@ id: PK-397
 title: >-
   herdr annotations: f5 mini quill popover on selected reply text, finds its
   context (inbox W1, Q3)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T19:28:00Z'
+updated_date: '2026-11-13T19:29:00Z'
 labels:
   - s
 dependencies: []
@@ -55,4 +55,7 @@ PK-397:W13 (2026-11-13 21:22, dima): this is important: if you attach a lot of s
 PK-397:W14 (2026-11-13 21:22, dima): ideally you would attach to some kind of id. can you attach to a message id or reply id somehow? it must be efficient. ❓
 
 PK-397:W15 (2026-11-13 21:28, dima): my proposal ← okay, how do you propose to tune this number for the cut of the surrounding context? if we test drive it for a week, will you have enough evidence to measure it properly? ❓
+
+ticket: FRM-585
+close: 21:29 PK-397:W1–W15 moved to FRM-585:W3–W17, grilled 21:14–21:28 (o129–o133)
 <!-- SECTION:NOTES:END -->
