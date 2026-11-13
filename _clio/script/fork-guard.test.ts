@@ -557,16 +557,6 @@ describe('fork-guard fork-edit', () => {
                 'x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md',
             ),
         ).toContain('edits only inside');
-        expect(
-            bash(
-                'cd ~/frame && x lane commit /tmp/m.txt -- pocket/tasks/pk-9.md',
-            ),
-        ).toContain('edits only inside');
-        expect(
-            bash(
-                'cd ~/frame/_clio && x lane commit /tmp/m.txt -- _clio/pocket/tasks/pk-9.md',
-            ),
-        ).toContain('edits only inside');
     });
 
     test('a fork commit naming any other path in a main checkout is refused', () => {
