@@ -1,7 +1,6 @@
 ---
 fed-by: recipe refresh-crew-classifier
 when:
-  - { kind: skill, value: quicksilver }
   - { kind: skill, value: typesafe:typesafe-ai }
   - { kind: command, value: pnpm jev: }
   - { kind: import, value: ./lib/jev.ts }

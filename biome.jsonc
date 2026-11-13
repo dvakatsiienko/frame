@@ -9,7 +9,6 @@
     "ignoreUnknown": false,
     "includes": [
       "!**/public/**/*",
-      "!home/.claude/skills/quicksilver", // vendored upstream skill, on vet — never reformatted
       "!home/.claude/plugin-x/lsp/typescript-native", // vendored ts 7 lsp proxy, pinned sha — never reformatted
       "!.claude/worktrees", // coder worktrees carry their own biome.jsonc — a nested root otherwise
       "!assets", // generated readme art: mac.svg keeps ascii spacing under xml:space, a reformat breaks it

@@ -28,5 +28,5 @@ what every reviewer of a frame diff reads first: the local cards, the built-in `
 
 ## paths to skip
 
-- generated or vendored files: the `!` paths in `biome.jsonc` (`assets/`, `brand/`, `logos/marks/`, the vendored quicksilver skill and ts lsp), and `pnpm-lock.yaml`
+- generated or vendored files: the `!` paths in `biome.jsonc` (`assets/`, `brand/`, `logos/marks/`, the vendored ts lsp), and `pnpm-lock.yaml`
 - dated history: `gazette/`, `home/.claude/shelf/flawlog/`, a test-drive's past rounds

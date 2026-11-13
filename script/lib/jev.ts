@@ -13,8 +13,8 @@ export const model = 'jev-1.13.0';
 
 // the spend gate (FRM-308): dima runs jev on the free credit only, $5 a month from the 18th.
 // input tokens are the whole bill (docs.typesafe.ai/models); a model bump without its price
-// here fails the typecheck. the cap leaves $1 for quicksilver and fast-jev-compaction, which
-// call typesafe outside judge() (dima, 2026-10-05)
+// here fails the typecheck. the cap leaves $1 for fast-jev-compaction, which
+// calls typesafe outside judge() (dima, 2026-10-05)
 const usdPerMtok = { 'jev-1.13.0': 0.042 } as const satisfies Record<
     string,
     number
