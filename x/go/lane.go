@@ -96,7 +96,14 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	if err != nil {
 		return nil, err
 	}
-	// paths are written from the root; a cwd that drifted into a subdir would miss them
+	// a path resolves from the cwd, as git resolves a pathspec; every later step reads the root form, and a retry hint keeps
+	// the form the caller typed, since it reruns from the same cwd
+	typedPaths := slices.Clone(paths)
+	if prefix, _ := git("rev-parse", "--show-prefix"); prefix.out != "" {
+		if paths, err = rootPaths(tree, prefix.out, paths); err != nil {
+			return nil, err
+		}
+	}
 	if err := os.Chdir(tree); err != nil {
 		return nil, err
 	}
@@ -116,13 +123,13 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 	}
 	// before all that reads the tree or the index: a git commit holds the shared index lock through its hook, so a stage outside
 	// the turn dies on a peer's, an edit in the wait would skip format and quotes, and a peer's commit moves the HEAD a dry run copies
-	namedPaths := strings.Join(paths, " ")
+	namedPaths := strings.Join(typedPaths, " ")
 	// every retry this run names carries the flag and the caller's own paths, never the manifest the bump adds
 	bumpFlag := ""
 	if bumpName != "" {
 		bumpFlag = "--bump " + bumpName + " "
 	}
-	callerPaths := slices.Clone(paths)
+	callerPaths := slices.Clone(typedPaths)
 	again := strings.TrimSuffix("x lane commit "+bumpFlag+msgFile+" -- "+namedPaths, " -- ")
 	verb := "x lane commit "
 	switch {
@@ -256,7 +263,7 @@ func commit(r *Run, args []string, flags Flags) (_ any, err error) {
 			}
 		}
 		if !isMerging() && ok(git(append([]string{"diff", "--cached", "--quiet", "--"}, paths...)...)) {
-			return "", &Fail{Refused: true, Msg: "nothing staged under those paths — empty diff, no commit",
+			return "", &Fail{Refused: true, Msg: "nothing staged under " + strings.Join(paths, ", ") + " (repo-root paths) — empty diff, no commit",
 				Next: "x lane commit <msg-file> -- <paths that changed>"}
 		}
 		return withWait(waited, fmt.Sprintf("%s: %s", plural(len(present), "path"), strings.Join(present, ", "))), nil
@@ -1470,4 +1477,29 @@ func or(value, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+// rootPaths turns each path the caller typed from a subfolder (prefix, ending in a slash) into its repo-root form, as git
+// resolves a pathspec from the cwd. when the cwd reading carries no change and the root reading does, the call is refused
+// naming both: the caller wrote a root path from a subfolder, and neither reading is picked silently
+func rootPaths(tree, prefix string, paths []string) ([]string, error) {
+	changed := func(path string) bool {
+		status, _ := gitIn(tree, "status", "--porcelain", "--untracked-files=all", "--", path)
+		return status.out != ""
+	}
+	out := make([]string, len(paths))
+	for i, typed := range paths {
+		if filepath.IsAbs(typed) || strings.HasPrefix(typed, ":") {
+			out[i] = typed
+			continue
+		}
+		fromCwd, fromRoot := filepath.ToSlash(filepath.Join(prefix, typed)), filepath.ToSlash(filepath.Clean(typed))
+		if !changed(fromCwd) && fromRoot != fromCwd && changed(fromRoot) {
+			return nil, &Fail{Refused: true,
+				Msg:  typed + " run from " + strings.TrimSuffix(prefix, "/") + "/ reads " + fromCwd + ", which has no change; " + fromRoot + " from the repo root does. a path resolves from the cwd, like git",
+				Next: "x lane commit <msg-file> -- " + fromRoot + " from the repo root, or the path as the cwd sees it"}
+		}
+		out[i] = fromCwd
+	}
+	return out, nil
 }

@@ -75,6 +75,10 @@
 ## lane — git
 
 - ✅ `x lane commit` commits only the named paths and prints the new sha
+- ⬜ `x lane commit` resolves its paths from the cwd, as git resolves a pathspec (FRM-606)
+  - given a changed `sub/a.txt` and the cwd `sub/`, when `x lane commit <msg> -- a.txt` runs, then the commit holds `sub/a.txt`; a deleted `sub/old.txt` commits as a deletion; an absolute path and a cwd entered through a symlink work
+  - given the cwd `sub/`, no change at `sub/AGENTS.md` and a change at the root `AGENTS.md`, when `-- AGENTS.md` runs, then it refuses (exit 1) naming `sub/AGENTS.md` and `AGENTS.md` and commits nothing, never reading either silently; the same when `sub/b.txt` does not exist
+  - given a «nothing staged», then it names each repo-root path it looked at
 - ⬜ a refused `x lane commit` keeps its whole hook log under the state dir
   - makes: `$X_STATE/commit-logs/x-commit-<pid>.log`, mode 0600, the newest 20 kept
   - given a commit its hooks refuse, then the failure names that file beside the hook's own red lines, and the file exists

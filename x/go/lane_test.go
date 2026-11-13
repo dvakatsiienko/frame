@@ -98,21 +98,6 @@ func xIn(t *testing.T, dir string, env []string, args ...string) ran {
 	return ran{code, stdout.String(), envelope.Data, envelope.Next}
 }
 
-func TestCommitReadsPathsFromTheRootInASubdir(t *testing.T) {
-	t.Parallel()
-	dir := repo(t)
-	write(t, filepath.Join(dir, "sub/keep.txt"), "")
-	gitT(t, dir, "add", ".")
-	gitT(t, dir, "commit", "-q", "-m", "sub")
-	write(t, filepath.Join(dir, "readme.txt"), "from a subdir\n")
-
-	got := xIn(t, filepath.Join(dir, "sub"), nil, "lane", "commit", message(t), "--", "readme.txt")
-
-	if got.code != 0 || gitT(t, dir, "status", "--porcelain") != "" {
-		t.Fatalf("exit %d, status %q", got.code, gitT(t, dir, "status", "--porcelain"))
-	}
-}
-
 // lefthook's summary and each runner's own words, from real hook logs and a real timed-out row
 func TestCommitRetriesATimeoutOnlyRedOnce(t *testing.T) {
 	t.Parallel()
