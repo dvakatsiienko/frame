@@ -1497,6 +1497,7 @@ for (const trigger of ['manual', 'auto'] as const)
             true,
             [
                 'held: ☕️ 🔧 codie: mods is compacting; your message joins its next turn',
+                "delivered: your message joined ☕️ 🔧 codie: mods's first turn after its compact",
             ],
             [
                 `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
@@ -1593,6 +1594,105 @@ test("clio's own thread at 🌀 holds a member's [done]", async ($, on) => {
         [
             `🌀 held while this thread compacted, delivered now — ${SIXTH}: [done] final on abc1234`,
         ],
+    ]);
+});
+
+// FRM-597: helga's 13:13 — an auto-compact mid-turn, then idle, and the held message waited 22 min for a prompt
+const heldPrompts = (prompts: string[]) =>
+    prompts.filter((p) => p.includes('🌀 held while this thread compacted'));
+for (const isWindOn of [true, false])
+    test(`a compact mid-turn hands its held message to the idle session within 10 s of the turn's end, once${isWindOn ? '' : ', second wind off'}`, async ($, on) => {
+        const w = sentWorld(on);
+        if (!isWindOn) w.store.set('shown', { 'stash.second-wind': false });
+        inCompact = async () => {
+            await fromPeer($, 'round 9 on abc1234', SIXTH);
+        };
+        await start($);
+        await say($, 'work');
+        await compact($, 'auto');
+        await w.clock.advance(5_000);
+        const midTurn = heldPrompts(w.prompts).length;
+        await endTurn($);
+        await w.clock.advance(10_000);
+        const afterEnd = heldPrompts(w.prompts);
+        await w.clock.advance(20 * 60_000);
+        expect([midTurn, afterEnd, heldPrompts(w.prompts).length]).toEqual([
+            0,
+            [
+                `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
+            ],
+            1,
+        ]);
+    });
+
+test('an idle /compact hands its held message over within 10 s of its end, once', async ($, on) => {
+    const w = sentWorld(on);
+    inCompact = async () => {
+        await fromPeer($, 'round 9 on abc1234', SIXTH);
+    };
+    await start($);
+    await compact($, 'manual');
+    await w.clock.advance(10_000);
+    const first = heldPrompts(w.prompts).length;
+    await say($, 'his next prompt');
+    await w.clock.advance(20 * 60_000);
+    expect([
+        first,
+        heldPrompts(w.prompts).length,
+        compactHeld(w.lines),
+    ]).toEqual([1, 1, []]);
+});
+
+test('two messages and a push held through one compact go in once, in order, and each sender hears held, then delivered', async ($, on) => {
+    const w = sentWorld(on);
+    inCompact = async () => {
+        await fromPeer($, '[ask] a or b?', SIXTH);
+        await fromPeer($, '[done] the gate is green');
+    };
+    await start($);
+    await compact($, 'auto');
+    await w.clock.advance(10_000);
+    await w.clock.advance(20 * 60_000);
+    expect([heldPrompts(w.prompts), w.sent]).toEqual([
+        [
+            [
+                `🌀 held while this thread compacted, delivered now — ${SIXTH}: [ask] a or b?`,
+                `🌀 held while this thread compacted, delivered now — ${CLIO}: [done] the gate is green`,
+            ].join('\n'),
+        ],
+        [
+            {
+                text: 'held: ☕️ 🔧 codie: mods is compacting; your message joins its next turn',
+                to: 'uds:/tmp/cc-socks/3.sock',
+            },
+            {
+                text: 'held: ☕️ 🔧 codie: mods is compacting; your message joins its next turn',
+                to: 'uds:/tmp/cc-socks/1.sock',
+            },
+            {
+                text: "delivered: your message joined ☕️ 🔧 codie: mods's first turn after its compact",
+                to: 'uds:/tmp/cc-socks/3.sock',
+            },
+            {
+                text: "delivered: your message joined ☕️ 🔧 codie: mods's first turn after its compact",
+                to: 'uds:/tmp/cc-socks/1.sock',
+            },
+        ],
+    ]);
+});
+
+test('a prompt inside the settle window takes the held message, and no release follows', async ($, on) => {
+    const w = sentWorld(on);
+    inCompact = async () => {
+        await fromPeer($, 'round 9 on abc1234', SIXTH);
+    };
+    await start($);
+    await compact($, 'manual');
+    await say($, 'his prompt');
+    await w.clock.advance(20 * 60_000);
+    expect([compactHeld(w.lines).length, heldPrompts(w.prompts)]).toEqual([
+        1,
+        [],
     ]);
 });
 

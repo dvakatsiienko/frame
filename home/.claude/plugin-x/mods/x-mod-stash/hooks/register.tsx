@@ -1301,6 +1301,8 @@ const steerLine = (s: HeldSteers['steers'][number]) =>
     s.isCompact
         ? `🌀 held while this thread compacted, delivered now — ${s.from}: ${s.text}`
         : `🐦‍🔥 held for your second wind, delivered now — ${s.from}: ${s.text}`;
+const steerDeliveredLine = (name: string) =>
+    `delivered: your message joined ${name}'s first turn after its compact`;
 // the turn's end lets the engine settle before the compact runs
 const WIND_DELAY_MS = 1_000;
 const QUIET_LOG = 'quiet-log:';
@@ -4566,14 +4568,14 @@ async function holdSteer(
     $: EngineInterface,
     text: string,
 ): Promise<{ consumed: string } | { text: string } | undefined> {
-    if (!(await partsShown($))('stash.second-wind')) return undefined;
     const { body, from } = peerPing(text);
     if (isQuietPause(body)) return undefined;
-    // r5 first: a codie past 55 % turns a coordinator's message into its wind note; what it leaves, a compact holds
-    return (
-        (await holdForWind($, text, body, from)) ??
-        holdForCompact($, text, body, from)
-    );
+    // r5 first: a codie past 55 % turns a coordinator's message into its wind note; what it leaves, a compact holds. the
+    // compact hold is no part of second wind: switched off, a compact still holds (FRM-564:W36 «has to work for everyone»)
+    const wind = (await partsShown($))('stash.second-wind')
+        ? await holdForWind($, text, body, from)
+        : undefined;
+    return wind ?? holdForCompact($, text, body, from);
 }
 
 async function holdForWind(
@@ -4640,13 +4642,44 @@ async function takeSteers($: EngineInterface, isOn: IsPartOn) {
     const key = await steerKey($);
     const sid = await currentId($);
     if (!key || !sid) return [];
-    const kept = await steersOf($, key);
-    if (!kept.steers.length) return [];
     const was = (await windOf($, sid))?.state;
-    if (isOn('stash.second-wind') && isWindAhead(was) && !kept.isCompacted)
-        return [];
-    await $.store.delete(key);
-    return kept.steers.map(steerLine);
+    const steers = await takeHeld(
+        $,
+        key,
+        (kept) =>
+            !(
+                isOn('stash.second-wind') &&
+                isWindAhead(was) &&
+                !kept.isCompacted
+            ),
+    );
+    await tellDelivered($, steers);
+    return steers.map(steerLine);
+}
+
+// read and delete under quiet comms' one lock, so a prompt and a release racing each other take the list once
+function takeHeld(
+    $: EngineInterface,
+    key: string,
+    isDue: (kept: Awaited<ReturnType<typeof steersOf>>) => boolean,
+) {
+    return quietLocked(async () => {
+        const kept = await steersOf($, key);
+        if (!kept.steers.length || !isDue(kept)) return [];
+        await $.store.delete(key);
+        return kept.steers;
+    });
+}
+
+// a sender that heard «held» hears its message went in, so a hold never ends in silence (FRM-597)
+async function tellDelivered($: EngineInterface, steers: HeldSteers['steers']) {
+    const told = new Set(
+        steers.flatMap((s) => (s.isTold && s.reply ? [s.reply] : [])),
+    );
+    if (!told.size) return;
+    const line = steerDeliveredLine((await sessionName($)) ?? 'this session');
+    for (const to of told)
+        await $.session.send({ text: line, to }).catch(() => undefined);
 }
 
 function armSteerTell($: EngineInterface, heldAt: number, now: number) {
@@ -4701,13 +4734,34 @@ async function tellHeldSenders($: EngineInterface) {
 
 // the ingest is the mod's own prompt, which its hooks never see: what the wind held follows it as a turn of its own, so an
 // idle session still reads it (crow's wind, 11-12)
-async function releaseHeldSteers($: EngineInterface) {
+async function releaseHeldSteers(
+    $: EngineInterface,
+    isDue: Parameters<typeof takeHeld>[2] = () => true,
+) {
     const key = await steerKey($);
     if (!key) return;
-    const kept = await steersOf($, key);
-    if (!kept.steers.length) return;
-    await $.store.delete(key);
-    await $.prompt.submit({ text: kept.steers.map(steerLine).join('\n') });
+    const steers = await takeHeld($, key, isDue);
+    if (!steers.length) return;
+    await $.prompt.submit({ text: steers.map(steerLine).join('\n') });
+    await tellDelivered($, steers);
+}
+
+// what a compact held goes in once the session is idle, as a prompt of its own: a session idle after its compact has no
+// next prompt to carry it (FRM-597: helga's auto-compact mid-turn, then 22 min idle); a busy one hands it over at its turn's
+// end, or its next prompt takes it first
+async function releaseIfIdle($: EngineInterface) {
+    if (await quietIsBusy($)) return;
+    await releaseHeldSteers($, (kept) => kept.isCompacted === true);
+}
+
+function armRelease($: EngineInterface, ms: number) {
+    $.clock.after(ms, () =>
+        releaseIfIdle($).catch((err) =>
+            $.ui.log(
+                `x-mod-stash: a held message was not released: ${errorText(err)}`,
+            ),
+        ),
+    );
 }
 
 async function steersOnCompact($: EngineInterface) {
@@ -7077,6 +7131,7 @@ export const register: Register = (on) => {
             saveOrbit($, turnEnded(await currentOrbit($))),
         );
         await windAfterTurn($).catch(() => undefined);
+        armRelease($, WIND_DELAY_MS);
         endedAt = await $.clock.now();
         await $.state.set(ENDED, endedAt).catch(() => undefined);
         await keepTurn($);
@@ -7134,8 +7189,12 @@ export const register: Register = (on) => {
         // cc sends the whole skill list again after a compact (2.1.304), so none is reloaded here; a compact another hook
         // skipped changed nothing
         if (!e.agentId && e.trigger !== 'precompute' && !('skip' in r)) {
+            // a wind's own compact: its ingest is queued behind it, and runWind hands the held messages over after it
+            const wind = compacting ? await windOf($, compacting) : undefined;
+            const isWinds = wind?.state === 'refreshing' && !wind.slug;
             await windOnCompact($).catch(() => undefined);
             await steersOnCompact($).catch(() => undefined);
+            if (!isWinds) armRelease($, COMPACT_SETTLE_MS);
             // the next measure comes only at this turn's end, and a wind's ingest is one long turn: until then the
             // fill from before the compact would stand on the band and every board
             await drawFill($, undefined).catch(() => undefined);
