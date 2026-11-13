@@ -6,7 +6,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread's transcript holds a plugin's message (an orbit tick), a task notice, a synthetic «No response requested.», a command's output (hook lines after a compact, «Set effort level…» after a pick, its colour codes gone, «⌘ » before it) or the compact boundary («🗜 Conversation compacted»)
   - then each draws as one dim line that opens to its whole text on a click, and «System lines: Folded / Hidden / Shown» in ⚙ picks the look, Folded by default
   - and a message he pasted reads as his plain text, the `<pasted_content>` tags gone; a system-reminder with an id attribute goes too
-  - decision: told apart by the entry (its `origin.kind`, a `<synthetic>` model), never by guessing at text
+  - and a command's output pasted inside his own words stays his message, never a system line
+  - decision: told apart by the entry (its `origin.kind`, a `<synthetic>` model, a `compact_boundary` row), and a command's output only by a row Claude Code wrote as that output alone, never by a tag found inside his text
   - not checked: the after shot of his paste in clio's chat, which waits for his view on that tab
 - ⬜ a prompt he types while a turn runs draws in the chat
   - given dima sends a thread a prompt while its turn is still running

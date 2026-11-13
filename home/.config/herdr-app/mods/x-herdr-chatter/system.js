@@ -22,10 +22,11 @@ const SURFACE_NOTE =
  */
 export const cleanTyped = (text) =>
     text
-        // a reminder on its own lines leaves one line break, one inside a line leaves nothing; his own blank lines stay
+        // a reminder leaves the longer run of line breaks around it, so his own blank line stays and none is added
         .replace(
             /(\n*)<system-reminder\b[^>]*>[\s\S]*?<\/system-reminder>(\n*)/g,
-            (_m, before, after) => (before || after ? '\n' : ''),
+            (_m, before, after) =>
+                before.length >= after.length ? before : after,
         )
         .replace(
             /<pasted_content\b[^>]*>([\s\S]*?)<\/pasted_content\b[^>]*>/g,
@@ -63,9 +64,20 @@ export function commandOutputLine(out) {
     return text ? { label: `⌘ ${firstLine(text)}`, text } : null;
 }
 
+const COMMAND_OUTPUT =
+    /^\s*<(local-command-stdout|bash-stdout)>([\s\S]*?)<\/\1>(?:\s*<(local-command-stderr|bash-stderr)>[\s\S]*?<\/\3>)?\s*$/;
+
 /**
- * the system line a transcript row is that the fold missed until FRM-595: the compact boundary, or a slash command's
- * output (`<local-command-stdout>`, `<bash-stdout>`) in a user row; null for every other row
+ * a slash command's or a ! command's output, when it is the whole row as Claude Code writes it; a tag inside his own
+ * words, a paste of one included, is his and gives undefined
+ * @param {string} raw the row's text before any cleaning
+ * @returns {string | undefined}
+ */
+export const commandOutput = (raw) => COMMAND_OUTPUT.exec(raw)?.[2]?.trim();
+
+/**
+ * the system line a transcript row is that the fold missed until FRM-595: the compact boundary, or a row that is only
+ * a command's output; null for every other row
  * @param {any} entry
  * @returns {SystemLine | null}
  */
@@ -73,9 +85,7 @@ export function missedSystemLine(entry) {
     if (entry?.type === 'system' && entry.subtype === 'compact_boundary')
         return COMPACTED_LINE;
     if (entry?.type !== 'user') return null;
-    const raw = textOf(entry.message?.content);
-    const out =
-        tagged(raw, 'local-command-stdout') ?? tagged(raw, 'bash-stdout');
+    const out = commandOutput(textOf(entry.message?.content));
     return out === undefined ? null : commandOutputLine(out);
 }
 

@@ -89,10 +89,15 @@ func renameTab(terminal, name string) ordered {
 		}
 		tab = kept.Tab
 	}
-	if out, err := exec.Command(bin, "do", "tab.rename", `{"id":"`+tab+`","name":`+marshal(name)+`}`).CombinedOutput(); err != nil {
-		return append(row, kv{"renamed", false}, kv{"command", rename(tab)}, kv{"error", strings.TrimSpace(string(out))})
+	// a tab terminal.keep just made stays unknown to a rename for a moment (probe 2026-11-10, thread-tab.ts): retry up to 4 s
+	var out []byte
+	for tries := 20; tries > 0; tries-- {
+		if out, err = exec.Command(bin, "do", "tab.rename", `{"id":"`+tab+`","name":`+marshal(name)+`}`).CombinedOutput(); err == nil {
+			return append(row, kv{"renamed", true}, kv{"command", rename(tab)})
+		}
+		time.Sleep(renamePoll() / 5)
 	}
-	return append(row, kv{"renamed", true}, kv{"command", rename(tab)})
+	return append(row, kv{"renamed", false}, kv{"command", rename(tab)}, kv{"error", strings.TrimSpace(string(out))})
 }
 
 // renameThread gives a live session the display its record now draws: typed as a /rename into its herdr terminal when
@@ -102,20 +107,20 @@ func renameTab(terminal, name string) ordered {
 func renameThread(sid, display string, wait, nudgeAfter time.Duration) ordered {
 	start := time.Now()
 	isNudged := false
+	// a thread that was asked to end its turn is told to resume however the rename ended: landed, failed or timed out
+	finish := func(row ordered) ordered {
+		if isNudged {
+			row = append(row, kv{"nudged", true}, kv{"resumed", tellThread(sid, "resume")})
+		}
+		return row
+	}
 	for {
 		row, blocked := renameOnce(sid, display)
 		if blocked == "" || wait <= 0 {
-			if isNudged && isRenamed(row) {
-				row = append(row, kv{"nudged", true}, kv{"resumed", tellThread(sid, "resume")})
-			}
-			return row
+			return finish(row)
 		}
 		if time.Since(start) > wait {
-			row = append(row, kv{"pending", true})
-			if isNudged {
-				row = append(row, kv{"nudged", true}, kv{"why", "it was asked to end its turn; send «resume» once it is renamed"})
-			}
-			return row
+			return finish(append(row, kv{"pending", true}))
 		}
 		if blocked == "busy" && !isNudged && time.Since(start) >= nudgeAfter {
 			isNudged = tellThread(sid, "end your turn at your next step")
@@ -185,6 +190,12 @@ func renameOnce(sid, display string) (ordered, string) {
 	return append(row, kv{"renamed", true}, kv{"command", command}), ""
 }
 
+// every live place a thread's name sits in besides its record, after the record took it: the herdr tab and cc's name
+func renamePlaces(sid, name string, wait, nudgeAfter time.Duration) []ordered {
+	terminal, _ := herdrTerminalOf(sessionPid(sid))
+	return []ordered{{{"place", "record"}, {"renamed", true}}, renameTab(terminal, name), renameThread(sid, name, wait, nudgeAfter)}
+}
+
 // the record a rename means: a session id, else the one thread drawing that display; a display two threads draw is refused
 func threadToRename(threads []thread, key string) (int, error) {
 	isNamed := func(t thread) bool { return t.Role != "" && !t.Fallback }
@@ -252,9 +263,8 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 	if err != nil {
 		return nil, &Fail{Msg: "the thread store was not written: " + err.Error(), Next: "x thread list"}
 	}
-	terminal, _ := herdrTerminalOf(sessionPid(sid))
 	wait, nudge := renameWait()
-	places := []ordered{{{"place", "record"}, {"renamed", true}}, renameTab(terminal, title), renameThread(sid, title, wait, nudge)}
+	places := renamePlaces(sid, title, wait, nudge)
 	taken, left, next := []string{}, []string{}, ""
 	for _, row := range places {
 		place, command, why, isRenamed, isAbsent, isPending := "", "", "", false, false, false

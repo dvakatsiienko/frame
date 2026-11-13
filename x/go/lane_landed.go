@@ -1418,16 +1418,42 @@ func clearThreadTicket(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	cleared := 0
+	var renamed []thread
 	for i := range store.Threads {
 		if store.Threads[i].Ticket == id {
 			store.Threads[i].Ticket = ""
 			drawNames(&store.Threads[i])
-			cleared++
+			renamed = append(renamed, store.Threads[i])
 		}
 	}
-	if cleared == 0 {
+	if len(renamed) == 0 {
 		return "no record names it", nil
 	}
-	return plural(cleared, "record") + " cleared", writeThreadStore(path, time.Now(), store.Threads)
+	if err := writeThreadStore(path, time.Now(), store.Threads); err != nil {
+		return "", err
+	}
+	// the live thread follows its record through the rename door, with no wait: a landing never holds for an idle thread
+	behind := 0
+	for _, t := range renamed {
+		for _, place := range renamePlaces(t.SessionID, t.Display, 0, 0) {
+			if !placeTook(place) {
+				behind++
+			}
+		}
+	}
+	detail := plural(len(renamed), "record") + " cleared"
+	if behind > 0 {
+		detail += ", " + plural(behind, "live place") + " not renamed: x thread rename " + renamed[0].SessionID + " " + quote(renamed[0].Display)
+	}
+	return detail, nil
+}
+
+// whether a rename row took, or has nothing to take (a thread with no herdr tab)
+func placeTook(row ordered) bool {
+	for _, field := range row {
+		if (field.key == "renamed" || field.key == "isAbsent") && field.value == true {
+			return true
+		}
+	}
+	return false
 }

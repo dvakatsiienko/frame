@@ -717,6 +717,11 @@
                     "type": "string",
                     "value": "word"
                 },
+                "lane-kind": {
+                    "description": "the mode the member's name opens with: side, quick or shift; none keeps the brief's lane: line",
+                    "type": "string",
+                    "value": "kind"
+                },
                 "role": {
                     "description": "a standing role, for a thread no lane brief starts: coordinator, wing:<n>, adviser or copyist",
                     "type": "string",

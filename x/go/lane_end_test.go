@@ -906,3 +906,21 @@ func TestLandedClearsTheTicketOffTheThreadsName(t *testing.T) {
 		t.Errorf("x thread show reads %v, want the cleared name and the role kept", show.data)
 	}
 }
+
+// a landed chunk's live thread follows its record: the tab and cc's name take the cleared name too
+func TestLandedRenamesTheLiveThreadWithItsRecord(t *testing.T) {
+	t.Parallel()
+	w := newMergeWorld(t, "script/foo.ts")
+	w.withPnpm(t, "exit 0")
+	w.laneBranch(t, "codie/FRM-1-x")
+	live := renameFixture(t, `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"side","area":"mods","ticket":"FRM-1"}]}`, false, false, 0)
+	w.env = append(w.env, live.env...)
+
+	got := w.landedAfterMerge(t, "--apply")
+
+	sent, _ := os.ReadFile(live.hcLog)
+	tabs, _ := os.ReadFile(live.tabs)
+	if string(sent) != "send t9 /rename 🌗 🔧 mods\n" || string(tabs) != `rename {"id":"tbA","name":"🌗 🔧 mods"}`+"\n" {
+		t.Errorf("exit %d, hc was told %q and herdr-app %q, want the cleared name sent to both:\n%s", got.code, sent, tabs, got.stdout)
+	}
+}

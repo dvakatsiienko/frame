@@ -811,14 +811,15 @@ func renameFixture(t *testing.T, records string, herdrFails, noTab bool, busy in
 	write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
 	write(t, w.store, records)
 	write(t, filepath.Join(bin, "screen.txt"), "❯ an old prompt\n\n● an answer\n\n"+rule+"\n❯ \n"+rule+"\n  the status line\n")
+	write(t, filepath.Join(bin, "draft.txt"), "❯ an old prompt\n\n● an answer\n\n"+rule+"\n❯ half a prompt\n"+rule+"\n  the status line\n")
 	write(t, filepath.Join(bin, "hc"), fmt.Sprintf(`#!/bin/sh
 case "$1" in
 ls) echo '{"terminals":[{"address":"t9","agent":"claude-code"}]}' ;;
 get) n=$(cat %s 2>/dev/null || echo 0); echo $((n+1)) > %s; state=done; [ "$n" -lt %d ] && state=working; echo '{"pid":%d,"status":{"state":"'$state'"}}' ;;
-read) cat %s ;;
-send) echo "send $2 $3" >> %s ;;
+read) if [ -n "$DRAFT" ]; then cat %s; else cat %s; fi ;;
+send) echo "send $2 $3" >> %s; case "$3" in /rename*) [ -z "$FAIL_RENAME" ] || exit 1 ;; esac ;;
 esac
-`, filepath.Join(bin, "gets"), filepath.Join(bin, "gets"), busy, os.Getpid(), filepath.Join(bin, "screen.txt"), w.hcLog))
+`, filepath.Join(bin, "gets"), filepath.Join(bin, "gets"), busy, os.Getpid(), filepath.Join(bin, "draft.txt"), filepath.Join(bin, "screen.txt"), w.hcLog))
 	tab := `[{"id":"tbA","terminals":[{"terminal":"t9"}]}]`
 	if noTab {
 		tab = `[]`
@@ -827,9 +828,9 @@ esac
 case "$1 $2" in
 "ls ") echo '{"spaces":[{"tabs":%s}]}' ;;
 "do terminal.keep") echo "keep $3" >> %s; echo '{"tab":"tbNew"}' ;;
-"do tab.rename") echo "rename $3" >> %s; [ "%t" = true ] && { echo window refused >&2; exit 1; }; echo '{}' ;;
+"do tab.rename") echo "rename $3" >> %s; n=$(cat %s 2>/dev/null || echo 0); echo $((n+1)) > %s; [ "%t" = true ] && { echo window refused >&2; exit 1; }; [ "$n" -ge "${TAB_FAILS:-0}" ] || { echo not yet >&2; exit 1; }; echo '{}' ;;
 esac
-`, tab, w.tabs, w.tabs, herdrFails))
+`, tab, w.tabs, w.tabs, filepath.Join(bin, "tabs.n"), filepath.Join(bin, "tabs.n"), herdrFails))
 	for _, name := range []string{"hc", "herdr-app"} {
 		if err := os.Chmod(filepath.Join(bin, name), 0o755); err != nil {
 			t.Fatal(err)
@@ -963,7 +964,7 @@ func TestThreadRenameAsksABusyThreadToEndItsTurn(t *testing.T) {
 	}{
 		{"idle at once, nobody is asked", 0, 0, "send t9 /rename " + name + "\n"},
 		{"busy past the nudge, idle after", 15, 0, "send t9 end your turn at your next step\nsend t9 /rename " + name + "\nsend t9 resume\n"},
-		{"busy past the deadline: asked, never resumed by x", 100000, 1, "send t9 end your turn at your next step\n"},
+		{"busy past the deadline: asked, then resumed", 100000, 1, "send t9 end your turn at your next step\nsend t9 resume\n"},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
@@ -972,8 +973,99 @@ func TestThreadRenameAsksABusyThreadToEndItsTurn(t *testing.T) {
 			got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_RENAME_WAIT=1", "X_RENAME_NUDGE=0.1"), "coordinator"), "thread", "rename", "s1", name)
 
 			sent, _ := os.ReadFile(w.hcLog)
-			if got.code != c.wantCode || string(sent) != c.wantSent || (c.wantCode != 0 && !strings.Contains(got.stdout, "«resume»")) {
+			if got.code != c.wantCode || string(sent) != c.wantSent {
 				t.Errorf("exit %d, hc was told %q, want exit %d and %q:\n%s", got.code, sent, c.wantCode, c.wantSent, got.stdout)
+			}
+		})
+	}
+}
+
+// a nudged thread is told to resume however its rename ended: a send that failed, a draft in its box, the deadline
+func TestThreadRenameResumesANudgedThreadWhateverBecameOfTheRename(t *testing.T) {
+	t.Parallel()
+	const name = "⚡ 🐕 strays | renamed"
+	for _, c := range []struct {
+		name, knob, wantSent string
+	}{
+		{"the /rename send fails", "FAIL_RENAME=1", "send t9 end your turn at your next step\nsend t9 /rename " + name + "\nsend t9 resume\n"},
+		{"a draft sits in its box", "DRAFT=1", "send t9 end your turn at your next step\nsend t9 resume\n"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 15)
+
+			got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_RENAME_WAIT=1", "X_RENAME_NUDGE=0.1", c.knob), "coordinator"), "thread", "rename", "s1", name)
+
+			sent, _ := os.ReadFile(w.hcLog)
+			if got.code != 1 || string(sent) != c.wantSent {
+				t.Errorf("exit %d, hc was told %q, want exit 1 and %q:\n%s", got.code, sent, c.wantSent, got.stdout)
+			}
+		})
+	}
+}
+
+// the tab terminal.keep just made may not take its first rename: it retries, never leaving the tab unnamed
+func TestThreadRenameRetriesATabRenameRightAfterAKeep(t *testing.T) {
+	t.Parallel()
+	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, true, 0)
+
+	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "TAB_FAILS=2"), "coordinator"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+
+	tabs, _ := os.ReadFile(w.tabs)
+	renames := strings.Count(string(tabs), "rename {")
+	if got.code != 0 || renames != 3 || strings.Count(string(tabs), "keep {") != 1 {
+		t.Errorf("exit %d, herdr-app was told %q, want one keep and the rename on its third try:\n%s", got.code, tabs, got.stdout)
+	}
+}
+
+// the id of an identical summon line never repeats one cc already ran under, though its record is gone
+func TestBriefSummonSkipsAnIDASessionOrTranscriptHolds(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	sessions := t.TempDir()
+	env := []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + sessions}
+	command := codieArgv(w.repo, w.brief(t, goodBrief, true))
+	idOf := func() string {
+		got := w.summonWith(t, command, []string{"--area", "cli"}, env...)
+		var planned struct {
+			Plan struct{ SessionID string } `json:"plan"`
+		}
+		_ = json.Unmarshal([]byte(got.stdout), &planned)
+		return planned.Plan.SessionID
+	}
+
+	first := idOf()
+	write(t, filepath.Join(sessions, "old.json"), `{"sessionId":"`+first+`"}`)
+	second := idOf()
+	write(t, filepath.Join(w.home, ".claude/projects/-some-dir", second+".jsonl"), "{}\n")
+	third := idOf()
+
+	if first == "" || second == first || third == first || third == second {
+		t.Errorf("ids %q %q %q, want three different: one past a session file, one past a transcript", first, second, third)
+	}
+}
+
+// the mode leads the name from birth: --lane-kind gives it when the brief's lane: line does not
+func TestBriefSummonTakesTheLaneKindFromAFlag(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name, kind, typed string
+		wantCode          int
+	}{
+		{"quick", "quick", "⚡ 🐕 strays | chores", 0},
+		{"side beats nothing", "side", "🌗 🐕 strays | chores", 0},
+		{"a kind that is no mode", "later", "🌗 🐕 strays | chores", 2},
+		{"a name without the mode", "quick", "🐕 strays | chores", 1},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			command := strings.Replace(codieArgv(w.repo, w.brief(t, strings.Replace(goodBrief, "lane: side\n", "", 1), true)), "🌗 🔧 cli | FRM-1", c.typed, 1)
+
+			got := w.summonWith(t, command, []string{"--apply", "--area", "strays", "--lane-kind", c.kind}, "X_THREADS="+filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS="+t.TempDir())
+
+			if got.code != c.wantCode || (c.wantCode == 0 && got.data["display"] != c.typed) {
+				t.Errorf("exit %d display %v, want exit %d and %q:\n%s", got.code, got.data["display"], c.wantCode, c.typed, got.stdout)
 			}
 		})
 	}
