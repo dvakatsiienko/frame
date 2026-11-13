@@ -1513,6 +1513,9 @@ export default class ClaudeChat extends View {
         // Images pasted for a dev container's Claude: their paths in the container, by agent address,
         // sent with the next message (see pasteIntoContainer).
         this.pasted = new Map();
+        // a paste whose png is still being written, by agent address
+        /** @type {Map<string, Promise<string | null>>} */
+        this.pasting = new Map();
         // the pasted pictures waiting in each thread's box, by `<address> files` (see shots.js)
         /** @type {import('./shots.js').ShotStore} */
         this.shots = {};
@@ -1541,8 +1544,14 @@ export default class ClaudeChat extends View {
                         `${address} ${path}`,
                         path.slice(appHome().length + 1),
                     );
-                this.keepFiles(address);
+                this.shots = withWaitingFiles(
+                    this.shots,
+                    address,
+                    this.files.get(address) ?? [],
+                    appHome(),
+                );
             }
+            await saveShots(this.shots).catch(() => {});
             // a dropped picture's preview is kept only while its file waits, in memory: a reload leaves it unclaimed
             await sweepShots(this.shots);
             cx.notify();
@@ -3236,6 +3245,12 @@ export default class ClaudeChat extends View {
     }
 
     send(cx) {
+        const pasting = this.pasting.get(this.address);
+        if (pasting)
+            return cx.spawn(async (cx) => {
+                await pasting;
+                this.send(cx);
+            });
         const text = this.box.value().trim();
         const attached = this.files.get(this.address) ?? [];
         if (
@@ -3485,14 +3500,22 @@ export default class ClaudeChat extends View {
         const address = this.address;
         if (this.where?.container)
             return this.pasteIntoContainer(address, this.where, cx);
+        const saving = saveClipboardShot();
+        // a send pressed while the png is still being written waits for it, or it would leave without the picture
+        this.pasting.set(address, saving);
         cx.spawn(async (cx) => {
-            const rel = await saveClipboardShot();
-            this.pasteNote = rel ? null : 'No image on the clipboard';
-            if (!rel)
+            const rel = await saving;
+            if (this.pasting.get(address) === saving)
+                this.pasting.delete(address);
+            const missing = 'No image on the clipboard';
+            if (rel && this.pasteNote === missing) this.pasteNote = null;
+            if (!rel) {
+                this.pasteNote = missing;
                 cx.timer.after(6000, (cx) => {
-                    this.pasteNote = null;
+                    if (this.pasteNote === missing) this.pasteNote = null;
                     cx.notify();
                 });
+            }
             if (rel) {
                 const path = `${appHome()}/${rel}`;
                 this.files.set(
@@ -7788,7 +7811,10 @@ export default class ClaudeChat extends View {
                                     ),
                                 )
                                 .when(
-                                    images > this.thumbs(agent.address).length,
+                                    this.where?.container
+                                        ? images > 0
+                                        : images >
+                                              this.thumbs(agent.address).length,
                                     (el) =>
                                         el
                                             .child(
