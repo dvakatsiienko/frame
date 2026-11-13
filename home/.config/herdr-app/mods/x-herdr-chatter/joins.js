@@ -15,7 +15,8 @@ export const JOINED_SHOWN_MS = 3000;
 /** @typedef {{ joined?: string[], waiting?: string[], push?: string[] }} Joins */
 /**
  * @typedef {{ lock: (path: string) => Promise<boolean>, unlock: (path: string) => Promise<void>,
- *   read: (path: string) => Promise<string>, write: (path: string, text: string) => Promise<void>,
+ *   read: (path: string) => Promise<string | null>,
+ *   write: (path: string, text: string, expected: string | null) => Promise<unknown>,
  *   sleep: (ms: number) => Promise<void>, now: () => number }} JoinIo
  */
 
@@ -32,9 +33,10 @@ export async function appendJoin(io, path, id, text) {
         await io.sleep(LOCK_RETRY_MS);
     }
     try {
+        // herdr writes only over the text it read, null for a new file
         const was = await io.read(path);
-        const head = was && !was.endsWith('\n') ? `${was}\n` : was;
-        await io.write(path, `${head}${JSON.stringify({ id, text })}\n`);
+        const head = was && !was.endsWith('\n') ? `${was}\n` : (was ?? '');
+        await io.write(path, `${head}${JSON.stringify({ id, text })}\n`, was);
         return true;
     } catch {
         return false;
@@ -44,7 +46,7 @@ export async function appendJoin(io, path, id, text) {
 }
 
 // a hold on send this long pushes instead of joining; a held cmd-enter pushes sooner
-export const HOLD_PUSH_MS = 5000;
+export const HOLD_PUSH_MS = 2000;
 export const KEY_HOLD_PUSH_MS = 500;
 
 /**

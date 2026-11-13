@@ -3455,13 +3455,13 @@ export default class ClaudeChat extends View {
                                 await exec('mkdir', [path]).catch(() => null)
                             )?.code === 0,
                         now: () => Date.now(),
-                        read: async (path) =>
-                            (await readTextFile(path).catch(() => null)) ?? '',
+                        read: (path) => readTextFile(path),
                         sleep: (ms) => cx.sleep(ms),
                         unlock: async (path) => {
                             await exec('rmdir', [path]);
                         },
-                        write: (path, body) => writeTextFile(path, body),
+                        write: (path, body, expected) =>
+                            writeTextFile(path, body, expected),
                     },
                     `${dir}/${sid}.jsonl`,
                     id,
@@ -8434,7 +8434,7 @@ export default class ClaudeChat extends View {
                                                                                 ),
                                                                     )
                                                                     .tooltip(
-                                                                        'Join (Enter), hold 5 s to send',
+                                                                        'Join (Enter), hold 2 s to send',
                                                                     )
                                                                     .overflow_hidden()
                                                                     .on_mouse_down(

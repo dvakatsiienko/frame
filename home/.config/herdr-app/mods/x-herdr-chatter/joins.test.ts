@@ -27,15 +27,22 @@ function fakeIo({ isLockHeld = false, isWriteRefused = false } = {}) {
                 return true;
             },
             now: () => clock,
-            read: async (path: string) => files.get(path) ?? '',
+            read: async (path: string) => files.get(path) ?? null,
             sleep: async (ms: number) => {
                 clock += ms;
             },
             unlock: async (path: string) => {
                 locks.delete(path);
             },
-            write: async (path: string, text: string) => {
+            // herdr's writeTextFile: written only over the text it was read as, null for a new file
+            write: async (
+                path: string,
+                text: string,
+                expected: string | null,
+            ) => {
                 if (isWriteRefused) throw new Error('refused');
+                if ((files.get(path) ?? null) !== expected)
+                    throw new Error('stale');
                 files.set(path, text);
             },
         },
@@ -110,9 +117,9 @@ describe('a join into an idle thread waits as a card, drawn again after a reload
     });
 });
 
-describe('a hold on send: a bar fills over 5 s and pushes; a release before joins; a cut hold does nothing', () => {
+describe('a hold on send: a bar fills over 2 s and pushes; a release before joins; a cut hold does nothing', () => {
     const pressed = holdSend(null, 'press', 1000);
-    test('held to 5 s, it pushes once, the bar full', () => {
+    test('held to 2 s, it pushes once, the bar full', () => {
         const half = holdSend(pressed.hold, 'tick', 1000 + HOLD_PUSH_MS / 2);
         expect(half).toEqual({ act: null, fill: 0.5, hold: pressed.hold });
         const full = holdSend(half.hold, 'tick', 1000 + HOLD_PUSH_MS);
@@ -122,7 +129,7 @@ describe('a hold on send: a bar fills over 5 s and pushes; a release before join
             holdSend(full.hold, 'release', 1000 + HOLD_PUSH_MS + 50).act,
         ).toBeNull();
     });
-    test('released before 5 s, it joins and the bar resets', () => {
+    test('released before 2 s, it joins and the bar resets', () => {
         expect(
             holdSend(pressed.hold, 'release', 1000 + HOLD_PUSH_MS - 1),
         ).toEqual({

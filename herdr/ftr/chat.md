@@ -288,11 +288,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then the row is written, the quill clears, and a card over the quill reads «Waits for its next turn» with his words
   - and after a chatter reload the card is drawn again from the join file, the words shown once, never also in the quill
   - and a second send of the same words writes no second row
-- ⬜ a 5 s hold on send pushes, its bar filling (FRM-564)
+- ⬜ a 2 s hold on send pushes, its bar filling (FRM-564)
   - given text in the quill
   - when dima holds send
-  - then the button fills from the bottom over 5 s and at 5 s the message pushes: a turn starts, as a send did before joins
-  - and a release before 5 s joins; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
+  - then the button fills from the bottom over 2 s and at 2 s the message pushes: a turn starts, as a send did before joins
+  - and a release before 2 s joins; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
 - ⬜ a send that cannot join pushes and says why (FRM-564)
   - given a slash command in the quill, or a thread whose join queue is switched off
   - when dima clicks send
