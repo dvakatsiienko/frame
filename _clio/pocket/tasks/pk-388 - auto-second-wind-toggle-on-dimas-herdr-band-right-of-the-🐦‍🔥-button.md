@@ -4,7 +4,7 @@ title: auto second wind toggle on dima's herdr band, right of the second-wind bu
 status: open
 assignee: []
 created_date: '2026-11-13T11:13:00Z'
-updated_date: '2026-11-13T14:49:00Z'
+updated_date: '2026-11-13T17:57:00Z'
 labels:
   - s
 dependencies: []
@@ -25,4 +25,13 @@ PK-388:W3 (2026-11-13 16:48, dima): 1. ability to enable/disable
 PK-388:W4 (2026-11-13 16:48, dima): 2. ability to tweak thresholds
 
 PK-388:W5 (2026-11-13 16:48, dima): 3. ability to tweak a message that beind told to thread via nudge
+
+PK-388:W6 (2026-11-13 19:56, dima): q2: on/off second wind. ❓
+
+PK-388:W7 (2026-11-13 19:56, dima): is there any nudge setting for «second wind» (not auto)? if yes, i want this message in settings too. ❓
+
+PK-388:W8 (2026-11-13 19:56, dima): second wind: auto. in settings too: on/off + nudge text (steers).
+
+PK-388:W9 (2026-11-13 19:56, dima): Q3: nudge text mirrored/synced into my settings. i want to see what's there and steer it. i know it is important to be in good shape, that's why i ask for it in my textbox.
+→ 19:57 W6–W9 answered in main clio's thread 19:57: a plain 🐦‍🔥 press does send a note; round 2 asks o107 (one settings group, every text) and o108 (full editable note, red hint, reset)
 <!-- SECTION:NOTES:END -->
