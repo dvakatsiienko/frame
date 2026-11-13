@@ -105,12 +105,19 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then the row above the quill shows the spinner, what Claude Code says it does, and the time since his prompt in whole minutes («<1 min», «4 min», «1 h 05 min»)
   - and it redraws once a minute, only while the shown thread works; a slash command or an interruption never restarts it
   - decision: whole minutes, never seconds: each redraw rebuilds the chat and drops a text selection in progress (review, 00:05)
-- ⬜ effort switches while a turn runs
+- ⬜ effort and model switch while a turn runs
   - given a thread at work, a reply streaming
-  - when dima picks another effort in the quill's effort menu
-  - then Claude Code sets it for this session at once, and the menu shows the new level
-  - and the model menu still waits for the turn to end; neither opens while the thread asks him something
-  - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56)
+  - when dima picks another effort or model in the quill
+  - then Claude Code sets it for this session at once, the turn runs on, and the next reply uses the pick
+  - and neither opens while the thread asks him something
+  - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56); `/model` mid-stream, «Set model to Sonnet 5.5 for this session only», the next reply `claude-sonnet-5-5` (2026-11-13)
+- ⬜ ⌘⇧E picks the effort
+  - given the Chat view shows a thread
+  - when dima presses ⌘⇧E
+  - then a popover titled «Effort» opens over the quill: five stops on one track, low to max, the current one filled
+  - and ← → slide the pick, a second ⌘⇧E (or Enter) closes it and applies, Esc closes it with nothing changed
+  - and a thread asking him something gets no popover, a note says to answer first
+  - decision: a popover, not a cycle: one press to look, arrows to pick, the key again to apply (dima's sketch, 2026-11-13 14:01)
 - ⬜ the effort shows the thread's live value
   - given a thread's last reply ran at an effort
   - then the quill's effort reads that value, past the default in settings

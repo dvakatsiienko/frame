@@ -2165,14 +2165,11 @@ export default class ClaudeChat extends View {
 
     // The model and effort dropdowns at the right of the quill: the trigger shows the current one
     // (or "Opus 5.5…" while a pick lands), the list opens upward with the current one ticked.
-    // A model pick waits for Claude to wait for you: mid-turn it would queue behind the turn. Effort
-    // switches mid-turn too: Claude Code opens /effort while a reply streams and sets it at once
-    // (probed 2026-11-11 on Haiku 5.5: «Set effort level to high (this session only)»).
-    // Never while it asks: keys would answer the question.
+    // Both switch mid-turn: Claude Code opens /model and /effort while a reply streams and sets them at once, the turn
+    // runs on and the next reply uses the pick (/effort probed 2026-11-11; /model 2026-11-13, Haiku 5.5 → Sonnet 5.5,
+    // «Set model to Sonnet 5.5 for this session only» while working). Never while it asks: keys would answer the question.
     dropdown(t, agent, kind) {
-        const ready =
-            agent.status !== 'blocked' &&
-            (kind === 'effort' || agent.status !== 'working');
+        const ready = agent.status !== 'blocked';
         const now = kind === 'model' ? this.modelNow() : this.effortNow();
         const p =
             this.pending?.address === this.address && this.pending.kind === kind
@@ -2374,7 +2371,7 @@ export default class ClaudeChat extends View {
                     .child(
                         ready
                             ? 'This session only'
-                            : 'Can change once Claude stops',
+                            : 'Can change once you answer Claude',
                     ),
             );
     }
