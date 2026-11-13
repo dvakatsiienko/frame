@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T15:50:00Z'
+updated_date: '2026-11-13T16:06:00Z'
 labels:
   - s
 dependencies: []
@@ -165,4 +165,10 @@ PK-400:W79 (2026-11-13 17:46, dima): Currently it holds sessions, orbit, and gli
 PK-400:W80 (2026-11-13 17:46, dima): But the deck as it is, I think this term should stay, because I even have a button that goes to the deck.
 PK-400:W81 (2026-11-13 17:46, dima): so Herdr Codie can optimize Herdr code to make block juggling easier? ❓
 PK-400:W82 (2026-11-13 17:46, dima): maybe he can create some helper script or mini tool that will allow you to juggle easily? ❓
+
+18:06 groomed by helga, folded:
+PK-400:W83 (2026-11-13 17:56, dima, o70): deck: orbit on top, phases on bot.
+PK-400:W84 (2026-11-13 17:56, dima, o70): left side: antenna top, glide bot.
+PK-400:W85 (2026-11-13 17:57, dima): q: deck is a good name for right side.
+PK-400:W86 (2026-11-13 17:57, dima): how to name left side then? ❓
 <!-- SECTION:NOTES:END -->
