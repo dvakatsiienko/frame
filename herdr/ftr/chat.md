@@ -114,10 +114,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ ⌘⇧E picks the effort
   - given the Chat view shows a thread
   - when dima presses ⌘⇧E
-  - then a popover titled «Effort» opens over the quill: five stops on one track, low to max, the current one filled
-  - and ← → slide the pick, a second ⌘⇧E (or Enter) closes it and applies, Esc closes it with nothing changed
+  - then a slider titled «Effort» opens over the quill: one thumb on a line with five small stops, low to max, resting on the current level
+  - and ← → slide the thumb, a click on a stop or a second ⌘⇧E (or Enter) closes it and applies, Esc closes it with nothing changed
   - and a thread asking him something gets no popover, a note says to answer first
-  - decision: a popover, not a cycle: one press to look, arrows to pick, the key again to apply (dima's sketch, 2026-11-13 14:01)
+  - decision: a popover, not a cycle: one press to look, arrows to pick, the key again to apply (dima's sketch, 2026-11-13 14:01); one thumb that slides, the stops only where it lands (14:17)
 - ⬜ the effort shows the thread's live value
   - given a thread's last reply ran at an effort
   - then the quill's effort reads that value, past the default in settings

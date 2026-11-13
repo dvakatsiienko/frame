@@ -29,6 +29,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
   - then the deck draws it as written, never dropped as html
+- ⬜ «🛎️ tick all» on a thread's asks, and ⌘⇧K
+  - makes: one tick line per ask it takes in that thread's ticks file, the same as a plain tick
+  - given a thread with open asks on the deck
+  - when dima clicks «🛎️ tick all ⌘⇧K» on its head, or presses ⌘⇧K while the Chat view shows that thread
+  - then every open plain ask of that thread reads ✅ ticked with its pick, each with its own untick; another thread's asks stay open
+  - and a guarded ask stays open and says «needs your own press»; a thread with nothing to take draws no button
+  - decision: never a guarded ask, those stay one click each: a keyed command is any shell's (clio's call, 2026-11-13)
 - ⬜ one-click 🛎️ on a guarded ask
   - makes: one press line in the thread's ticks file, the same as a plain tick
   - given the stash marks the ask `isGated` (a sign, a merge, a ⚠️ or a quoted command)
