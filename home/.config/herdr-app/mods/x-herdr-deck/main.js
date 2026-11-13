@@ -338,15 +338,10 @@ export default class Deck extends View {
                 if (!ask || ask.mark || Date.now() - press.at > SENT_MS)
                     this.sent.delete(key);
             }
-            /** @param {Row} s @param {Ask} ask */
-            const pendingOf = (s, ask) =>
-                this.sent.get(`${s.sid}:${ask.id}`)?.verdict ??
-                s.pending.get(ask.id);
             for (const key of this.steers.keys()) {
                 const s = this.rows.find((r) => r.sid === key.split(':')[0]);
                 const ask = askOf(key);
-                if (!s || !ask || !hasSteerBox(ask, pendingOf(s, ask)))
-                    this.steers.delete(key);
+                if (!s || !ask || !hasSteerBox(ask)) this.steers.delete(key);
             }
             // a sent steer stays stored, and shown, until the turn takes its press or the ask leaves
             for (const s of this.rows)
@@ -355,11 +350,7 @@ export default class Deck extends View {
             for (const s of this.rows)
                 for (const ask of s.asks) {
                     const key = `${s.sid}:${ask.id}`;
-                    if (
-                        ask.id &&
-                        hasSteerBox(ask, pendingOf(s, ask)) &&
-                        !this.steers.has(key)
-                    )
+                    if (ask.id && hasSteerBox(ask) && !this.steers.has(key))
                         // herdr documents InputState.new for init or a handler; a refusal here costs the box, never
                         // the reload that redraws the whole deck
                         this.makeSteerBox(key);
@@ -589,7 +580,6 @@ export default class Deck extends View {
                 },
                 s.taken,
             );
-            this.steers.delete(key);
         } catch (err) {
             this.sent.delete(key);
             this.pressError = `${ask.id} not sent: ${err instanceof Error ? err.message : err}`;
@@ -634,7 +624,6 @@ export default class Deck extends View {
                 (id) => this.steers.get(`${s.sid}:${id}`)?.value(),
                 at,
             );
-            for (const a of takes) this.steers.delete(`${s.sid}:${a.id}`);
         } catch (err) {
             for (const a of takes) this.sent.delete(`${s.sid}:${a.id}`);
             this.pressError = `tick all not sent: ${err instanceof Error ? err.message : err}`;
