@@ -796,8 +796,8 @@ func TestBriefSummonCheckWritesNoRecordAndApplyRecordsItsPrintedID(t *testing.T)
 
 // FRM-600 exit 4: one rename moves the record, the herdr tab and the cc name; a display resolves to its session id
 type renameWorld struct {
-	env                []string
-	store, hcLog, tabs string
+	env                         []string
+	store, hcLog, tabs, lockLog string
 }
 
 // renameFixture plants a live quick codie on herdr terminal t9 and fake hc and herdr-app clis that log what they are told;
@@ -807,7 +807,7 @@ func renameFixture(t *testing.T, records string, herdrFails, noTab bool, busy in
 	t.Helper()
 	const rule = "────────────────────────────────────────"
 	sessions, bin := t.TempDir(), t.TempDir()
-	w := renameWorld{store: filepath.Join(t.TempDir(), "threads.json"), hcLog: filepath.Join(bin, "hc.log"), tabs: filepath.Join(bin, "herdr.log")}
+	w := renameWorld{store: filepath.Join(t.TempDir(), "threads.json"), hcLog: filepath.Join(bin, "hc.log"), tabs: filepath.Join(bin, "herdr.log"), lockLog: filepath.Join(bin, "lock.log")}
 	write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
 	write(t, w.store, records)
 	write(t, filepath.Join(bin, "screen.txt"), "❯ an old prompt\n\n● an answer\n\n"+rule+"\n❯ \n"+rule+"\n  the status line\n")
@@ -816,10 +816,10 @@ func renameFixture(t *testing.T, records string, herdrFails, noTab bool, busy in
 case "$1" in
 ls) echo '{"terminals":[{"address":"t9","agent":"claude-code"}]}' ;;
 get) n=$(cat %s 2>/dev/null || echo 0); echo $((n+1)) > %s; state=done; [ "$n" -lt %d ] && state=working; echo '{"pid":%d,"status":{"state":"'$state'"}}' ;;
-read) if [ -n "$DRAFT" ]; then cat %s; else cat %s; fi ;;
+read) r=$(cat %s 2>/dev/null || echo 0); echo $((r+1)) > %s; if [ -n "$DRAFT" ] && [ "$r" -ge "${DRAFT_AFTER:-0}" ]; then cat %s; else cat %s; fi ;;
 send) echo "send $2 $3" >> %s; case "$3" in /rename*) [ -z "$FAIL_RENAME" ] || exit 1 ;; esac ;;
 esac
-`, filepath.Join(bin, "gets"), filepath.Join(bin, "gets"), busy, os.Getpid(), filepath.Join(bin, "draft.txt"), filepath.Join(bin, "screen.txt"), w.hcLog))
+`, filepath.Join(bin, "gets"), filepath.Join(bin, "gets"), busy, os.Getpid(), filepath.Join(bin, "reads"), filepath.Join(bin, "reads"), filepath.Join(bin, "draft.txt"), filepath.Join(bin, "screen.txt"), w.hcLog))
 	tab := `[{"id":"tbA","terminals":[{"terminal":"t9"}]}]`
 	if noTab {
 		tab = `[]`
@@ -828,9 +828,14 @@ esac
 case "$1 $2" in
 "ls ") echo '{"spaces":[{"tabs":%s}]}' ;;
 "do terminal.keep") echo "keep $3" >> %s; echo '{"tab":"tbNew"}' ;;
-"do tab.rename") echo "rename $3" >> %s; n=$(cat %s 2>/dev/null || echo 0); echo $((n+1)) > %s; [ "%t" = true ] && { echo window refused >&2; exit 1; }; [ "$n" -ge "${TAB_FAILS:-0}" ] || { echo not yet >&2; exit 1; }; echo '{}' ;;
+"do tab.rename") python3 -c 'import fcntl,sys
+f=open(sys.argv[1]+".lock","a")
+try:
+    fcntl.flock(f,fcntl.LOCK_EX|fcntl.LOCK_NB); print("free")
+except OSError:
+    print("held")' "$X_THREADS" >> %s; echo "rename $3" >> %s; n=$(cat %s 2>/dev/null || echo 0); echo $((n+1)) > %s; [ "%t" = true ] && { echo window refused >&2; exit 1; }; [ "$n" -ge "${TAB_FAILS:-0}" ] || { echo not yet >&2; exit 1; }; echo '{}' ;;
 esac
-`, tab, w.tabs, w.tabs, filepath.Join(bin, "tabs.n"), filepath.Join(bin, "tabs.n"), herdrFails))
+`, tab, w.tabs, w.lockLog, w.tabs, filepath.Join(bin, "tabs.n"), filepath.Join(bin, "tabs.n"), herdrFails))
 	for _, name := range []string{"hc", "herdr-app"} {
 		if err := os.Chmod(filepath.Join(bin, name), 0o755); err != nil {
 			t.Fatal(err)
@@ -985,20 +990,22 @@ func TestThreadRenameResumesANudgedThreadWhateverBecameOfTheRename(t *testing.T)
 	t.Parallel()
 	const name = "⚡ 🐕 strays | renamed"
 	for _, c := range []struct {
-		name, knob, wantSent string
+		name, wantSent, wantSay string
+		knobs                   []string
 	}{
-		{"the /rename send fails", "FAIL_RENAME=1", "send t9 end your turn at your next step\nsend t9 /rename " + name + "\nsend t9 resume\n"},
-		{"a draft sits in its box", "DRAFT=1", "send t9 end your turn at your next step\nsend t9 resume\n"},
+		{"the /rename send fails", "send t9 end your turn at your next step\nsend t9 /rename " + name + "\nsend t9 resume\n", "", []string{"FAIL_RENAME=1"}},
+		{"a draft sits in its box all along: nobody is nudged", "", "", []string{"DRAFT=1"}},
+		{"a draft appears after the nudge: resume is left to send", "send t9 end your turn at your next step\n", "«resume» left to send: env -u HC_TERMINAL_ID hc send t9 resume", []string{"DRAFT=1", "DRAFT_AFTER=1"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 15)
 
-			got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "X_RENAME_WAIT=1", "X_RENAME_NUDGE=0.1", c.knob), "coordinator"), "thread", "rename", "s1", name)
+			got := xIn(t, t.TempDir(), asCaller(t, append(w.env, append([]string{"X_RENAME_WAIT=1", "X_RENAME_NUDGE=0.1"}, c.knobs...)...), "coordinator"), "thread", "rename", "s1", name)
 
 			sent, _ := os.ReadFile(w.hcLog)
-			if got.code != 1 || string(sent) != c.wantSent {
-				t.Errorf("exit %d, hc was told %q, want exit 1 and %q:\n%s", got.code, sent, c.wantSent, got.stdout)
+			if got.code != 1 || string(sent) != c.wantSent || !strings.Contains(got.stdout, c.wantSay) {
+				t.Errorf("exit %d, hc was told %q, want exit 1, %q and %q in:\n%s", got.code, sent, c.wantSent, c.wantSay, got.stdout)
 			}
 		})
 	}
@@ -1068,5 +1075,31 @@ func TestBriefSummonTakesTheLaneKindFromAFlag(t *testing.T) {
 				t.Errorf("exit %d display %v, want exit %d and %q:\n%s", got.code, got.data["display"], c.wantCode, c.typed, got.stdout)
 			}
 		})
+	}
+}
+
+// the rename retries only a tab terminal.keep just made; a tab that was there refuses once and the verb says so
+func TestThreadRenameDoesNotRetryATabThatWasAlreadyThere(t *testing.T) {
+	t.Parallel()
+	w := renameFixture(t, `{"v":1,"threads":[`+quickCodie+`]}`, false, false, 0)
+
+	got := xIn(t, t.TempDir(), asCaller(t, append(w.env, "TAB_FAILS=2"), "coordinator"), "thread", "rename", "s1", "⚡ 🐕 strays | renamed")
+
+	tabs, _ := os.ReadFile(w.tabs)
+	if got.code != 1 || strings.Count(string(tabs), "rename {") != 1 {
+		t.Errorf("exit %d, herdr-app was told %q, want one rename try and a failure:\n%s", got.code, tabs, got.stdout)
+	}
+}
+
+// a standing role draws its whole display from roles.json: a scope or a lane kind for it is refused, never ignored
+func TestBriefSummonRefusesALaneKindOrAreaOnAStandingRole(t *testing.T) {
+	t.Parallel()
+	w := newSummonWorld(t)
+	for _, flag := range [][]string{{"--lane-kind", "quick"}, {"--area", "cli"}} {
+		got := w.summonStanding(t, "coordinator", []string{"X_THREADS=" + filepath.Join(t.TempDir(), "threads.json"), "X_SESSIONS=" + t.TempDir()}, append([]string{"--role", "adviser", paneArgv(w, "🐦‍⬛ crow")}, flag...)...)
+
+		if got.code != 2 || !strings.Contains(got.stdout, "a standing role draws its whole display") {
+			t.Errorf("%v: exit %d, want a usage refusal:\n%s", flag, got.code, got.stdout)
+		}
 	}
 }

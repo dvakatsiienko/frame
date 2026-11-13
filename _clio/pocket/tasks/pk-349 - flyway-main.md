@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T13:01:00Z'
+updated_date: '2026-11-13T13:42:00Z'
 labels:
   - s
   - clio-main
@@ -432,4 +432,26 @@ PK-349:W45 (2026-11-13 14:04, dima): would a strays lane help from today? ❓
 PK-349:W46 (2026-11-13 14:04, dima): we already have stray lane in fleet or only ticket is created? ❓
 
 done 2026-11-13 15:01: f6 💤 his look at the model and effort pickers in the text box (PK-363:W774) — later: dima at the mac (PK-363 open)
+
+PK-349:W47 (2026-11-13 14:34, dima): fleet wisp. i want to resume speak app.
+
+PK-349:W48 (2026-11-13 14:34, dima): but fleet drifts everywhere. scripts failing, chore fix needed, debt fixes are needed, everything not runs smoothly.
+
+PK-349:W49 (2026-11-13 14:34, dima): hour lost on lanes start. and we need to grill a lot before speak.
+
+PK-349:W50 (2026-11-13 14:34, dima): i want to do speak when all works well. let's focus on stabilization.
+
+PK-349:W51 (2026-11-13 14:34, dima): standing today: hunt fixes to fleet flows. #standing
+
+PK-349:W52 (2026-11-13 14:34, dima): no symptom patches. fix root issues.
+
+PK-349:W53 (2026-11-13 14:50, dima): im back. sup happened? ❓
+
+PK-349:W54 (2026-11-13 14:50, dima): who is herdr | main why tho herdr lanes? ❓
+
+PK-349:W55 (2026-11-13 14:50, dima, o11 steer): whats there? ❓
+
+PK-349:W56 (2026-11-13 14:50, dima): effort seem to work, im checking with erdr lane
+
+PK-349:W57 (2026-11-13 14:53, dima): who owns unified thread name/rename ticket? ❓
 <!-- SECTION:NOTES:END -->

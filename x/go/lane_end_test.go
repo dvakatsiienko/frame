@@ -920,6 +920,10 @@ func TestLandedRenamesTheLiveThreadWithItsRecord(t *testing.T) {
 
 	sent, _ := os.ReadFile(live.hcLog)
 	tabs, _ := os.ReadFile(live.tabs)
+	locks, _ := os.ReadFile(live.lockLog)
+	if string(locks) != "free\n" {
+		t.Errorf("the thread store was %q when the tab was renamed, want free: a refresh waits on that lock", locks)
+	}
 	if string(sent) != "send t9 /rename 🌗 🔧 mods\n" || string(tabs) != `rename {"id":"tbA","name":"🌗 🔧 mods"}`+"\n" {
 		t.Errorf("exit %d, hc was told %q and herdr-app %q, want the cleared name sent to both:\n%s", got.code, sent, tabs, got.stdout)
 	}

@@ -66,7 +66,7 @@ func renameTab(terminal, name string) ordered {
 	if err != nil || json.Unmarshal(listed, &window) != nil {
 		return append(row, kv{"renamed", false}, kv{"command", rename("<tab>")}, kv{"error", "herdr-app ls did not answer"})
 	}
-	tab := ""
+	tab, isKept := "", false
 	for _, space := range window.Spaces {
 		for _, candidate := range space.Tabs {
 			if slices.ContainsFunc(candidate.Terminals, func(t struct {
@@ -87,11 +87,15 @@ func renameTab(terminal, name string) ordered {
 		if err != nil || json.Unmarshal(out, &kept) != nil || kept.Tab == "" {
 			return append(row, kv{"renamed", false}, kv{"command", "herdr-app do terminal.keep " + quote(keep) + ", then " + rename("<tab>")}, kv{"error", "the terminal got no tab"})
 		}
-		tab = kept.Tab
+		tab, isKept = kept.Tab, true
 	}
 	// a tab terminal.keep just made stays unknown to a rename for a moment (probe 2026-11-10, thread-tab.ts): retry up to 4 s
 	var out []byte
-	for tries := 20; tries > 0; tries-- {
+	tries := 1
+	if isKept {
+		tries = 20
+	}
+	for ; tries > 0; tries-- {
 		if out, err = exec.Command(bin, "do", "tab.rename", `{"id":"`+tab+`","name":`+marshal(name)+`}`).CombinedOutput(); err == nil {
 			return append(row, kv{"renamed", true}, kv{"command", rename(tab)})
 		}
@@ -110,7 +114,11 @@ func renameThread(sid, display string, wait, nudgeAfter time.Duration) ordered {
 	// a thread that was asked to end its turn is told to resume however the rename ended: landed, failed or timed out
 	finish := func(row ordered) ordered {
 		if isNudged {
-			row = append(row, kv{"nudged", true}, kv{"resumed", tellThread(sid, "resume")})
+			sent, command := tellThread(sid, "resume")
+			row = append(row, kv{"nudged", true}, kv{"resumed", sent})
+			if !sent {
+				row = append(row, kv{"resumeCommand", command})
+			}
 		}
 		return row
 	}
@@ -123,7 +131,7 @@ func renameThread(sid, display string, wait, nudgeAfter time.Duration) ordered {
 			return finish(append(row, kv{"pending", true}))
 		}
 		if blocked == "busy" && !isNudged && time.Since(start) >= nudgeAfter {
-			isNudged = tellThread(sid, "end your turn at your next step")
+			isNudged, _ = tellThread(sid, "end your turn at your next step")
 		}
 		time.Sleep(renamePoll())
 	}
@@ -138,10 +146,18 @@ func isRenamed(row ordered) bool {
 	return false
 }
 
-// a plain message to a thread's herdr terminal, as one member writes to another; whether it was sent
-func tellThread(sid, text string) bool {
+// a plain message to a thread's herdr terminal, as one member writes to another: whether it was sent, and the exact
+// command that sends it. a message waits for an empty input box, or it would join dima's draft and send it
+func tellThread(sid, text string) (bool, string) {
 	terminal, _ := herdrTerminalOf(sessionPid(sid))
-	return terminal != "" && exec.Command(hcBin(), "send", terminal, text).Run() == nil
+	if terminal == "" {
+		return false, ""
+	}
+	command := "env -u HC_TERMINAL_ID hc send " + terminal + " " + quote(text)
+	if !isInputBoxEmpty(terminal) {
+		return false, command
+	}
+	return exec.Command(hcBin(), "send", terminal, text).Run() == nil, command
 }
 
 // how long a thread rename waits for an idle terminal, and how long before it asks the thread to end its turn;
@@ -267,7 +283,7 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 	places := renamePlaces(sid, title, wait, nudge)
 	taken, left, next := []string{}, []string{}, ""
 	for _, row := range places {
-		place, command, why, isRenamed, isAbsent, isPending := "", "", "", false, false, false
+		place, command, why, resumeCommand, isRenamed, isAbsent, isPending := "", "", "", "", false, false, false
 		for _, field := range row {
 			switch field.key {
 			case "place":
@@ -280,9 +296,16 @@ func threadRenameRun(r *Run, args []string, _ Flags) (any, error) {
 				isAbsent, _ = field.value.(bool)
 			case "why":
 				why, _ = field.value.(string)
+			case "resumeCommand":
+				resumeCommand, _ = field.value.(string)
 			case "pending":
 				isPending, _ = field.value.(bool)
 			}
+		}
+		// a nudged thread whose «resume» met a draft in its box is left for the caller to send
+		if resumeCommand != "" {
+			left = append(left, "«resume» left to send: "+resumeCommand)
+			next = cmp.Or(next, resumeCommand)
 		}
 		switch {
 		case isRenamed:
