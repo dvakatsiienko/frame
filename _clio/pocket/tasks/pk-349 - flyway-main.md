@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T13:42:00Z'
+updated_date: '2026-11-13T13:51:00Z'
 labels:
   - s
   - clio-main
@@ -454,4 +454,18 @@ PK-349:W55 (2026-11-13 14:50, dima, o11 steer): whats there? ❓
 PK-349:W56 (2026-11-13 14:50, dima): effort seem to work, im checking with erdr lane
 
 PK-349:W57 (2026-11-13 14:53, dima): who owns unified thread name/rename ticket? ❓
+
+PK-349:W58 (2026-11-13 15:49, dima): What I also want to fix is our grilling because I want those questions covered each time we grill.
+
+PK-349:W59 (2026-11-13 15:49, dima): You should print:
+
+PK-349:W60 (2026-11-13 15:49, dima): what it is
+
+PK-349:W61 (2026-11-13 15:49, dima): why we have it
+
+PK-349:W62 (2026-11-13 15:49, dima): what we want out of it
+
+PK-349:W63 (2026-11-13 15:49, dima): what it buys
+
+PK-349:W64 (2026-11-13 15:49, dima): Also we should always pick a name for a thing we create, especially if it is a new mod or even a feature name
 <!-- SECTION:NOTES:END -->
