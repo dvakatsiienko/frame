@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T14:04:00Z'
+updated_date: '2026-11-13T14:22:00Z'
 labels:
   - s
 dependencies: []
@@ -46,4 +46,76 @@ PK-400:W7 (2026-11-13 15:48, dima): x-herdr-agents — the agents list, in your 
 PK-400:W8 (2026-11-13 15:48, dima): the one i plan to rename to «x-herdr—antenna».
 
 16:04 📌 PK-400:W7 quotes clio's own list line that his «←» answered; his words are the «←» part, the «? ❓» on it is helga's, not his
+
+PK-400:W9 (2026-11-13 15:16, dima, wing 1): can you ensure this thread record stays flexible and covers its other uses (x summon etc), architecturally? ❓
+
+PK-400:W10 (2026-11-13 15:16, dima, wing 1): a rename changes the scope or the ticket and redraws the name everywhere:
+
+PK-400:W11 (2026-11-13 15:16, dima, wing 1): cc's own name, in a plain terminal too
+
+PK-400:W12 (2026-11-13 15:16, dima, wing 1): the herdr tab
+
+PK-400:W13 (2026-11-13 15:16, dima, wing 1): the claude desktop and mobile apps, through cc's name (to be tested)
+
+PK-400:W14 (2026-11-13 15:16, dima, wing 1): who verifies stray lane? ❓
+
+PK-400:W15 (2026-11-13 15:31, dima, wing 1): quick question about lane name. glide is actually also have names messy a little. for example now:
+
+PK-400:W16 (2026-11-13 15:31, dima, wing 1): mods lane 7 — ... → mods — ...
+
+PK-400:W17 (2026-11-13 15:31, dima, wing 1): herdr lane 2 - pickers, tick all, slash menu → herdr - pickers, tick all, slash menu
+
+PK-400:W18 (2026-11-13 15:31, dima, wing 1): strays lane ... → strays
+
+PK-400:W19 (2026-11-13 15:31, dima, wing 1): simpler, clearer naming. is it worth to combine with thread record or glide is separate stuff? ❓
+
+PK-400:W20 (2026-11-13 15:31, dima, wing 1): also remind — glide is very tied to to-spec skill artifact so it reads out of spec and builds its content out of it? if we throw away to-spec, glide breaks? ❓
+
+PK-400:W21 (2026-11-13 15:54, dima, wing 1): So essentially, Codie is instructed to build his plan and he can build a plan even without a spec.
+
+PK-400:W22 (2026-11-13 15:54, dima, wing 1): Spec just helps him, right? ❓
+
+PK-400:W23 (2026-11-13 15:54, dima, wing 1): If spec is not passed then Codie creates his plan by himself without a spec and that becomes Glide? ❓
+
+PK-400:W24 (2026-11-13 15:54, dima, wing 1): Side question: Can you take a look at an overall problem with naming and see what's currently happening with the thread-naming tactic that you use, overall glide behavior setup, its mechanism, and its clarity of naming too? ❓
+
+PK-400:W25 (2026-11-13 15:54, dima, wing 1): Think about how to make the overall UX better for me so it is kind of smooth.
+
+PK-400:W26 (2026-11-13 15:54, dima, wing 1): Consider the question I've just asked so far today and my asks to fix thread names and Glide.
+
+PK-400:W27 (2026-11-13 15:54, dima, wing 1): As you can see from my requests I want clarity in the vision of what's happening, who is currently present, who does what, etc.
+
+PK-400:W28 (2026-11-13 15:54, dima, wing 1): and propose how to have stuff to work unified, and smooth. and maybe even some additional behavior or feature to improve my ux? ❓
+
+PK-400:W29 (2026-11-13 15:54, dima, wing 1): who verifies tray lane? ❓
+
+PK-400:W30 (2026-11-13 16:13, dima, wing 1): That is why I created an item in the inbox about unifying the agents list and the session list: in my mind it's essentially the same thing and it is duplicated
+
+PK-400:W31 (2026-11-13 16:13, dima, wing 1): I like all ideas but before grilling take a look in my inbox and at what my clio folded today about my wishes, and take a look at my Herdr setup overall.
+
+PK-400:W32 (2026-11-13 16:13, dima, wing 1): Take a shot and let's grill the big picture.
+
+PK-400:W33 (2026-11-13 16:13, dima, wing 1): I want everything to be consistent and unified with a good architecture for everything so no, 20 doors to do everything.
+
+PK-400:W34 (2026-11-13 16:13, dima, wing 1): I want a good UX so let's grill a revamp.
+
+PK-400:W35 (2026-11-13 16:13, dima, wing 1): Along with this fix ensure you take a shot at my Herdr A and think about how to improve my UX.
+
+PK-400:W36 (2026-11-13 16:13, dima, wing 1): I want everything to be very readable, clear, and easy to understand what's happening
+
+PK-400:W37 (2026-11-13 16:13, dima, wing 1): o19: still relevant? ❓
+
+PK-400:W38 (2026-11-13 16:13, dima, wing 1): also i do not really like how w1•o19 looks, i like o19, its easier to refer to id this way.
+
+PK-400:W39 (2026-11-13 16:13, dima, wing 1): i have an ask to have orbit v2 (planned to grill with clio), and some other grills that probably related on what we about to gril.
+
+PK-400:W40 (2026-11-13 16:13, dima, wing 1): it is worth to combine all of it how do you think? what is realted? ❓
+
+PK-400:W41 (2026-11-13 16:13, dima, wing 1): propose efficient planning big picture grill.
+
+PK-400:W42 (2026-11-13 16:13, dima, wing 1): and tell where to do the grilling better - with you or with main clio? consult with main clio. ❓
+
+PK-400:W43 (2026-11-13 16:13, dima, wing 1): im stuck reading replies across clio and wing 1. #comms-bottleneck-yellow-flag.
+
+PK-400:W44 (2026-11-13 16:13, dima, wing 1): (does not means that we should rush decisions because if it).
 <!-- SECTION:NOTES:END -->
