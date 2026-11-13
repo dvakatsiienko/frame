@@ -141,3 +141,4 @@ Ticket: none
 - 2026-11-13 18:37 wing 1 · ~53k tokens · 1 high, 1 medium, 0 low · highs real: y · acted: high to main for FRM-611, medium fixed (FRM-600 sign line marked inference)
 - 2026-11-13 19:34 wing 1 · 78k tokens · 0 high, 3 medium, 2 low · acted: the gate narrowed to a lone close (proven red twice), the o30 steer logged, FRM-621's sign asked in orbit
 - 2026-11-13 20:20 wing 1 · 56k tokens · 0 high, 2 medium, 2 low · acted: the hazards line's failed commit retried (a guard-ticket format), its section moved to «the shared working tree»
+- 2026-11-13 21:26 wing 1 · 80k tokens · 1 high, 6 medium, 1 low · high real: y (a rollback sha that would have reverted six weeks of x, never run) · acted: fixed, 3 mediums folded, 2 rule lines asked, 1 kept
