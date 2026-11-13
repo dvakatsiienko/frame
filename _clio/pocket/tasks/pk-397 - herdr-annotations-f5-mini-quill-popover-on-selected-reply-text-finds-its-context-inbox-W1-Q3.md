@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T11:41:00Z'
+updated_date: '2026-11-13T19:22:00Z'
 labels:
   - s
 dependencies: []
@@ -46,4 +46,11 @@ raw drop (2026-11-13 inbox, dima): - style it similar to my main quill, or cook 
 raw drop (2026-11-13 inbox, dima): - top7 how to name this part? quill-mini?
 
 raw drop (2026-11-13 inbox, dima): #clio #codie #grill
+
+PK-397:W9 (2026-11-13 21:22, dima): mini quill → quill mini.
+PK-397:W10 (2026-11-13 21:22, dima): annotate in a context menu: as a fallback aside from F5, can i have annotate via the context menu (right click over selected text)?
+PK-397:W11 (2026-11-13 21:22, dima): Q4 context ← this is important, but a question more for you. when my annotations reach you, you should be able to tell where they came from. you yourself need to tune how much context around an annotation you need to place it properly, and think and consult with codie, crow and wing 1 on how to attach context in a smart way. also tell me how my annotations reach you.
+PK-397:W12 (2026-11-13 21:22, dima): are they written into your context, into your thread history, counted as a message, and sent to you on each later turn (i.e. they become part of the thread history), right? ❓
+PK-397:W13 (2026-11-13 21:22, dima): this is important: if you attach a lot of surrounding context to my annotations, they will pollute your thread history, so they shouldn't be too big. i will do a lot of annotations, often on the same message: maybe up to 7–10 in the most annotatable cases; sometimes a few, sometimes one, but a long, detailed message (a grill, for example) i can annotate a lot, like 10 per thread.
+PK-397:W14 (2026-11-13 21:22, dima): ideally you would attach to some kind of id. can you attach to a message id or reply id somehow? it must be efficient. ❓
 <!-- SECTION:NOTES:END -->
