@@ -363,3 +363,34 @@ for (const [key, label, cost] of [
         ]).toEqual([undefined, true, false]);
     });
 }
+
+// FRM-583 rider W37: a wind number the notice-below-wind rule refuses says why where it was typed, never nothing
+const REASON = 'the notice line (70) must sit below the wind line (65)';
+const shows = async (view: Awaited<ReturnType<typeof pane>>, text: string) =>
+    (await view.findAll({ type: 'Text' })).some((t) =>
+        (t.text ?? '').includes(text),
+    );
+for (const kind of ['change', 'submit'] as const)
+    test(`a wind number the rule refuses, on ${kind}, shows the rule's reason under its field, the stored value kept`, async ($, on) => {
+        const { store } = world(on);
+        store.set('wind-notice', 55);
+        await band($);
+        const view = await pane($);
+        await view.input({ key: 'knob:wind-notice', kind, text: '70' });
+        expect([store.get('wind-notice'), await shows(view, REASON)]).toEqual([
+            55,
+            true,
+        ]);
+    });
+
+test('a wind number the rule allows saves as before and clears the reason', async ($, on) => {
+    const { store } = world(on);
+    await band($);
+    const view = await pane($);
+    await view.input({ key: 'knob:wind-notice', kind: 'change', text: '70' });
+    await view.input({ key: 'knob:wind-notice', kind: 'change', text: '50' });
+    expect([
+        store.get('wind-notice'),
+        await shows(view, 'must sit below'),
+    ]).toEqual([50, false]);
+});
