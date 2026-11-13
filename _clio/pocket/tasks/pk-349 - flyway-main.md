@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T20:06:00Z'
+updated_date: '2026-11-13T20:08:00Z'
 labels:
   - s
   - clio-main
@@ -22,10 +22,9 @@ ordinal: 1000
 - [ ] #4 f1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
 - [ ] #5 f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
 - [ ] #6 f14 today: stabilize the fleet flows, root fixes only (dima 14:34); speak waits until all runs smoothly
-- [ ] #7 f3 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets
-- [ ] #8 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #9 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #10 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #7 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #8 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #9 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -507,4 +506,6 @@ done 2026-11-13 22:01: f16 FRM-564 closed record: decided and done test brought 
 done 2026-11-13 22:01: f15 FRM-585 body: decided + done test match the quill-mini grill — on: 2026-11-16 (FRM-585 Todo)
 
 done 2026-11-13 22:06: f8 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free (PK-358 open)
+
+done 2026-11-13 22:08: f3 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets (PK-363 done)
 <!-- SECTION:NOTES:END -->

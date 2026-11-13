@@ -4,7 +4,7 @@ title: 'herder: explore a full move off the desktop app, mvp probe'
 status: done
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-13T20:08:00Z'
+updated_date: '2026-11-13T20:18:00Z'
 labels:
   - m
   - clio-main
@@ -2180,4 +2180,6 @@ PK-363:W1166 (2026-11-12 02:28, dima): is this a protection against a verifier e
 
 ticket: FRM-616
 close: 22:08 PK-363:W1–W1166 moved to FRM-616 (his o143 tick, 22:06)
+
+close: 22:18 PK-363's lines live in FRM-616, and the 49 already homed earlier in FRM-562, FRM-564, FRM-565, FRM-566, FRM-563, FRM-552, FRM-368, FRM-561, FRM-558, FRM-592, FRM-577 (FRM-616 holds pointer stubs to them)
 <!-- SECTION:NOTES:END -->
