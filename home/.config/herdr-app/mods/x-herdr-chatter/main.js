@@ -2318,6 +2318,7 @@ export default class ClaudeChat extends View {
             .child(
                 div()
                     .text_size(px(12))
+                    .font_semibold()
                     .text_color(t.foreground)
                     .child('Effort'),
             )
@@ -2337,15 +2338,13 @@ export default class ClaudeChat extends View {
                         h_flex().justify_between().children(EFFORTS.map(stop)),
                     ),
             )
-            .child(
-                div()
-                    .text_size(px(10.5))
-                    .text_color(t.dim)
-                    .child(
-                        ready
-                            ? '← → pick, ⌘⇧E applies, Esc closes. This session only.'
-                            : 'Can change once you answer Claude',
-                    ),
+            .when(!ready, (el) =>
+                el.child(
+                    div()
+                        .text_size(px(10.5))
+                        .text_color(t.dim)
+                        .child('Can change once you answer Claude'),
+                ),
             );
     }
 
