@@ -27,6 +27,7 @@ function main(home: string, since: string) {
         script(scripts, 'flyway homes', 'flyway-done', ['PK-349', '--check']),
         wishCover(home, scripts, since),
         orbitDrift(home),
+        dispatchQueue(home),
         script(scripts, 'close net', 'close-net', []),
         script(scripts, 'blueprint drift', 'blueprint-drift', [
             '--since',
@@ -343,6 +344,44 @@ function orbitDrift(home: string) {
     };
 }
 
+// a signed chunk whose sign drifted and that no lane runs yet: it needs its re-sign before the next dispatch; a linear
+// failure reads «not checked» in a 🟡 line, never red
+function dispatchQueue(home: string) {
+    const name = 'dispatch queue';
+    const tickets: SignedTicket[] = [];
+    for (const team of ['FRM', 'BYT']) {
+        const out = spawnSync(
+            path.join(home, '.local/bin/x'),
+            ['linear', 'list', '--team', team, '--label', 'signed'],
+            { encoding: 'utf8', timeout: RUN_TIMEOUT_MS },
+        );
+        const found = (parsed(out.stdout ?? '').data as { tickets?: unknown })
+            ?.tickets;
+        if (out.status !== 0 || !Array.isArray(found))
+            return {
+                exit: 0,
+                name,
+                output: `🟡 x linear list --team ${team} failed, the queue is not checked`,
+            };
+        tickets.push(...(found as SignedTicket[]));
+    }
+    const drifted = tickets.filter(
+        (t) => t.sign !== 'match' && t.stateType !== 'started',
+    );
+    return {
+        exit: drifted.length ? 1 : 0,
+        name,
+        output: drifted.length
+            ? drifted
+                  .map(
+                      (t) =>
+                          `${t.id} (${t.sign}) — re-sign or a ✏️ changed line before dispatch`,
+                  )
+                  .join('\n')
+            : `${tickets.length} signed chunks, all match`,
+    };
+}
+
 // every retro on disk is pending: a fold trashes its files, so what is left waits for this siesta (step 2.7). pending is a
 // job, never a red: while dima is afk they wait, and a red would become a high that holds the afk close
 function retros(home: string) {
@@ -436,5 +475,7 @@ if (import.meta.main) {
 }
 
 /* Types */
+
+type SignedTicket = { id: string; sign: string; stateType: string };
 
 type Section = { exit: number; name: string; output: string; status?: string };

@@ -677,7 +677,8 @@ describe('--day', () => {
             },
         });
         expect(out.stdout).toContain('o5 — no groom: this board steer');
-        expect(out.stdout).not.toContain('o4');
+        // the fixture's random temp dir can hold «o4», so the check reads the steer ids, never the whole line
+        expect(out.stdout).not.toMatch(/🔴 o4\b/);
     });
 
     test('a steer of another day is not checked', () => {

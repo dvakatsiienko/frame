@@ -29,19 +29,18 @@ they ship with each herdr update and are the truth for the installed version: sy
 
 ## recipes
 
-**start a member in a pane** — a wing, the mods codie, a thread that outlives the window (summon probe, 2026-11-09, `~/frame/.scratch/herdr-summon-probe/findings.md`; `-n` with `--remote-control` together ran 2026-11-10, the cli sixth sense)
+**start a member in a pane** — a wing, the mods codie, a thread that outlives the window (`~/frame/.scratch/herdr-summon-probe/findings.md`)
 
 ```sh
 hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<registry name>' --model <model> --effort medium "<its first task>" --remote-control
 ```
 
-- this is every member's summon door; a lane member's first task is `"$(cat <brief file>)"`, its argv per role and its preflight (`x brief summon '<the line>'`) in `x:crew-lead`
+- this is every member's summon door; a wing's line carries no prompt, so the desktop row keeps its `-n` title, and its task goes by `SendMessage` once it lists in `ListAgents` (a send to a booting agent can be dropped); a lane member's line carries its brief, `"$(cat <brief file>)"`, its argv per role and its preflight (`x brief summon '<the line>'`) in `x:crew-lead`
 - 📌 then its tab, the same turn (a `--no-parent` thread has none, so herdr's agents list skips it): `herdr-app do terminal.keep '{"terminal":"<t>","place":"tab"}'` returns the tab id, then `herdr-app do tab.rename '{"id":"<tab>","name":"<registry name>"}'` (`scripts/thread-tab.ts` runs both, the proof `terminal.keep` returns the tab); dima's standing ask (11-11 00:06, via main): both `do` calls need no new word. done when `herdr-app ls` shows the tab by its registry name
 
 - 📌 the cc `-n` is its name for `ListAgents` and `threadOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live threads
 - its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends
 - stop it with `hc kill <t>`; a `claude --bg` member runs unchanged from a herdr thread, `claude attach <id>` opens it in a pane, `claude stop <id>` ends it
-- the first task rides in `run`: a send to a booting agent can be dropped (`hc --skill`, «Delegate a task»)
 - `--no-parent`: by default a terminal started from inside another dies with its parent's program
 - `--no-notify`: by default hc types notes about the child into the parent's prompt
 - `--keep` is not a restart: it puts a shell where a lost program was and never re-runs `claude`
