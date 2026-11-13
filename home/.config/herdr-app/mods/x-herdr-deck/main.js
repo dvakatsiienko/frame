@@ -147,6 +147,8 @@ async function sessions(shelf) {
 
 // with no key-up seen, a submit this close to the last one is the held key's repeat (his first repeat at 150 ms)
 const STEER_KEY_REPEAT_MS = 180;
+// a key-down and the submit it makes land this close together
+const STEER_DOWN_PAIR_MS = 60;
 
 // a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
 /** @param {string} key */
@@ -681,11 +683,21 @@ export default class Deck extends View {
     // Enter in a steer box is 🛎️, cmd-enter 🔁, as the buttons beside it (steerKeyPress); a held key's repeats act once
     /** @param {Context} cx @param {string} key @param {boolean} isCmd */
     steerKey(cx, key, isCmd) {
-        const now = Date.now();
+        const at = Date.now();
+        // a beat later, so the key-down of this very press has landed whichever way herdr orders the two
+        cx.timer.after(1, (cx) => this.steerKeyAct(cx, key, isCmd, at));
+    }
+
+    // the key-down's own held flag says a repeat, exactly, ⌘ down or not; with none seen, a key-up or a gap does
+    /** @param {Context} cx @param {string} key @param {boolean} isCmd @param {number} at */
+    steerKeyAct(cx, key, isCmd, at) {
+        const down = this.steerDown;
         const isRepeat =
-            !this.isSteerKeyUp &&
-            now - (this.steerKeyAt ?? 0) < STEER_KEY_REPEAT_MS;
-        this.steerKeyAt = now;
+            down && Math.abs(at - down.at) < STEER_DOWN_PAIR_MS
+                ? down.isHeld
+                : !this.isSteerKeyUp &&
+                  at - (this.steerKeyAt ?? 0) < STEER_KEY_REPEAT_MS;
+        this.steerKeyAt = at;
         if (isRepeat) return;
         this.isSteerKeyUp = false;
         for (const s of this.rows)
@@ -865,6 +877,13 @@ export default class Deck extends View {
                                         )
                                         // a let-go key ends a press, so the next Enter acts however soon; ⌘ let go
                                         // ends a cmd-enter, whose Enter key-up macOS never sends
+                                        .on_key_down((e) => {
+                                            if (e.key === 'enter')
+                                                this.steerDown = {
+                                                    at: Date.now(),
+                                                    isHeld: Boolean(e.is_held),
+                                                };
+                                        })
                                         .on_key_up((e) => {
                                             if (e.key === 'enter')
                                                 this.isSteerKeyUp = true;

@@ -749,3 +749,28 @@ describe('a press draws as sent until the shelf agrees with it, so a fast run of
         ).toBe(true);
     });
 });
+
+describe("a press switches over the stash's mark at once: a read tick takes cmd-enter's replay (dima, 20:59)", () => {
+    test('a replay sent over an accepted mark draws replayed', () => {
+        expect(
+            tickState({ ...ask, isLocked: false, mark: 'accepted' }, 'replay'),
+        ).toBe('replayed');
+    });
+    test('a tick sent over a replay mark draws ticked', () => {
+        expect(
+            tickState({ ...ask, isLocked: false, mark: 'rejected' }, 'tick'),
+        ).toBe('ticked');
+    });
+    test('cmd-enter on a read tick replays', () => {
+        expect(
+            steerKeyPress(
+                tickState(
+                    { ...ask, isLocked: false, mark: 'accepted' },
+                    undefined,
+                ),
+                true,
+                false,
+            ),
+        ).toBe('replay');
+    });
+});

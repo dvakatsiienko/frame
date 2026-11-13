@@ -311,9 +311,12 @@ export function inListOrder(rows, pids) {
  */
 export function tickState(ask, sent) {
     if (ask.isLocked) return 'locked';
+    // his press outranks the stash's mark, which answers an older one
     if (sent === 'untick') return 'open';
-    if (ask.mark === 'accepted' || sent === 'tick') return 'ticked';
-    if (ask.mark || sent === 'replay') return 'replayed';
+    if (sent === 'tick') return 'ticked';
+    if (sent === 'replay') return 'replayed';
+    if (ask.mark === 'accepted') return 'ticked';
+    if (ask.mark) return 'replayed';
     return 'open';
 }
 
