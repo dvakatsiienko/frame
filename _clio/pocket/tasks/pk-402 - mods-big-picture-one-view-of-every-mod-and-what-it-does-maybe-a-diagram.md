@@ -1,10 +1,10 @@
 ---
 id: PK-402
 title: 'mods big picture: one view of every mod and what it does, maybe a diagram'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T13:28:00Z'
-updated_date: '2026-11-13T13:28:00Z'
+updated_date: '2026-11-13T13:49:00Z'
 labels:
   - s
 dependencies: []
@@ -28,4 +28,6 @@ PK-402:W6 (2026-11-13 15:27, dima): for now - print me a list.
 
 <!-- SECTION:NOTES:BEGIN -->
 15:28 kept here: no linear ticket owns a mods map; the first answer, a printed list, went out 15:28
+
+15:49 ticket: FRM-611 — close: moved to linear as «mods big picture for dima» (dima's tools, no milestone, his 15:48 word); W2–W6 renumbered FRM-611:W1–W5
 <!-- SECTION:NOTES:END -->
