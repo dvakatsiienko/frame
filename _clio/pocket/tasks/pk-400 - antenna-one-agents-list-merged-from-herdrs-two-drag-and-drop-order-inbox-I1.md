@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T15:08:00Z'
+updated_date: '2026-11-13T15:33:00Z'
 labels:
   - s
 dependencies: []
@@ -122,4 +122,32 @@ PK-400:W44 (2026-11-13 16:13, dima, wing 1): (does not means that we should rush
 relayed by the herdr codie 17:05: dima 17:01 in its chat — «can you stick glide to bottom? … it sticks to bot by default, and scrolls if orbit grows too far.» → the revamp grill's right-column question (Q1); codie: ~20 lines in x-herdr-deck main.js ~1071, sessions + orbit scroll, glide pinned under
 
 17:08 dima (main thread): during revamp: consult with wing 1 on rename tool too, it is also part of a bigger probem we have. every single pece from today and maybe other places i did not considered because i do not see whats under the hood should be considered, let's shake arch a little.
+
+17:33 groomed by helga, folded:
+PK-400:W45 (2026-11-13 17:08, dima): during revamp: consult with wing 1 on rename tool too, it is also part of a bigger problem we have.
+PK-400:W46 (2026-11-13 17:08, dima): every single piece from today and maybe other places i did not consider because i do not see what's under the hood should be considered, let's shake arch a little.
+PK-400:W48 (2026-11-13 17:32, dima): overall: did you consult with herdr codie on this grill? ❓
+PK-400:W49 (2026-11-13 17:32, dima): (i think he can actually help with it because he's inside and provide actual ideas and info on how well everything is running in herdr).
+PK-400:W50 (2026-11-13 17:32, dima): Q1: yes, i want it unified.
+PK-400:W51 (2026-11-13 17:32, dima): but what i do not know right now: where to have it? ❓
+PK-400:W52 (2026-11-13 17:32, dima): remove from list to left and have it in deck (right), or reverse? ❓
+PK-400:W53 (2026-11-13 17:32, dima): other remove frees up space.
+PK-400:W54 (2026-11-13 17:32, dima): and i want to plan upfront with what to fill that space.
+PK-400:W55 (2026-11-13 17:32, dima): imo: left sidebar currently slightly narrower than deck (i keep deck wider for orbit).
+PK-400:W56 (2026-11-13 17:32, dima): so block layout question opens (currently blurry because all parts are raw and lots of planned not build yet).
+PK-400:W57 (2026-11-13 17:32, dima): 💡my idea was to move glide to the left.
+PK-400:W58 (2026-11-13 17:32, dima): and stick to bot.
+PK-400:W59 (2026-11-13 17:32, dima): (not sure because it will shrink then horizontally).
+PK-400:W60 (2026-11-13 17:32, dima): propose how to layout everything.
+PK-400:W61 (2026-11-13 17:32, dima): what i certain with is to have orbit to the right.
+PK-400:W62 (2026-11-13 17:32, dima): decided. ✓
+PK-400:W63 (2026-11-13 17:32, dima): so for antenna i'd do this:
+PK-400:W64 (2026-11-13 17:32, dima): 1. first revamp it: take best parts for both existing lists, draw refined shape in both places - i see where it looks better.
+PK-400:W65 (2026-11-13 17:32, dima): evaluate how much free space it have in left and in right (if i decide to extend it in future).
+PK-400:W66 (2026-11-13 17:32, dima): q2. how flexible the solution is? ❓
+PK-400:W67 (2026-11-13 17:32, dima): if i move back to c desktop app or run fleet in plain terminal without «head» like desktop app - will it work there too? ❓
+PK-400:W68 (2026-11-13 17:32, dima): i want flexible.
+PK-400:W69 (2026-11-13 17:32, dima): if i decide to change framework to something else than herdr.
+PK-400:W70 (2026-11-13 17:32, dima): q4. yes, wing 1 often prints ids in orbit like w44•o14, i do not like it i like clean ids.
+PK-400:W71 (2026-11-13 17:32, dima): and want unified system.
 <!-- SECTION:NOTES:END -->
