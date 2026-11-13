@@ -44,6 +44,18 @@ export const pages = [
                 ],
             },
             {
+                heading: 'replies',
+                rows: [
+                    {
+                        control: { kind: 'toggle' },
+                        default: true,
+                        key: 'chatter.showMore',
+                        title: 'Show more',
+                        why: 'a long reply of an earlier turn shows its first lines and a Show more; off, every reply reads whole',
+                    },
+                ],
+            },
+            {
                 heading: 'measure',
                 rows: [
                     {

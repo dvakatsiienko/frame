@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
-import { resolvedRows, rowValue, settingsText } from './settings-store.js';
+import { settingRows } from './settings-model.js';
+import {
+    resolvedRows,
+    rowValue,
+    settingsText,
+    storedRows,
+} from './settings-store.js';
 
 /** @type {any} */
 const toggle = { control: { kind: 'toggle' }, default: true, key: 'a.toggle' };
@@ -110,5 +116,25 @@ describe('a restart', () => {
                 settingsText([toggle, stepper], '{"v":1,"rows":{"a.step":75}}'),
             ).rows,
         ).toEqual({ 'a.step': 75, 'a.toggle': true });
+    });
+});
+
+describe('the Show more switch (FRM-607)', () => {
+    const showMore = (text: string | null) =>
+        resolvedRows(settingRows, storedRows(settingsText(settingRows, text)))[
+            'chatter.showMore'
+        ];
+
+    test('a settings file written before the switch reads it on', () => {
+        expect(showMore('{"v":1,"rows":{"chatter.meter.ctx.warn":70}}')).toBe(
+            true,
+        );
+    });
+
+    test('turned off, it reads off after a restart', () => {
+        const off = settingsText(settingRows, null, {
+            'chatter.showMore': false,
+        });
+        expect(showMore(off)).toBe(false);
     });
 });

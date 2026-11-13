@@ -174,6 +174,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: the fold waits for his next message, so a reply never collapses while he reads it (review, 00:54)
   - proof: a probe thread's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
   - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
+- 🧭 a «Show more» switch in herdr's settings turns the fold off (FRM-607)
+  - given «Show more» off in Settings › Chatter › replies
+  - when a reply past about 40 lines lands in an earlier turn
+  - then it reads whole, no «Show more» under it; turned back on, the same reply folds again at once
+  - and a settings file written before the switch reads it on, and his pick holds across a herdr reload
 - ⬜ one settings window, a page per mod (FRM-566)
   - makes: `~/.claude/shelf/herdr-settings/settings.json`, `{v, rows}`: every row's value, defaults included, written at the chatter's start and on each change
   - when dima presses 🎛️ in the chat band

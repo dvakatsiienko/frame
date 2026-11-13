@@ -83,7 +83,7 @@ import {
     pickerLabel,
     slideEffort,
 } from './effort.js';
-import { foldBlocks } from './fold.js';
+import { replyFold } from './fold.js';
 import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 import { rejoin } from './joined.js';
 import { listLines, withMarkers } from './lists.js';
@@ -6027,7 +6027,10 @@ export default class ClaudeChat extends View {
             if (item.kind === 'claude' && !this.markIn(id)) {
                 const all = this.blocksOf(item);
                 // a long reply shows its first lines, then Show more; a search hit or the newest shows whole
-                const fold = at < lastMine ? foldBlocks(all, perLine) : null;
+                const fold = replyFold(all, perLine, {
+                    isEarlierTurn: at < lastMine,
+                    isShowMoreOn: settingValue('chatter.showMore') !== false,
+                });
                 // by thread and transcript line: a position-based key repeats in another thread or after a /clear
                 const openKey = `${this.address}|${item.uuid ?? key}`;
                 const isOpen = Boolean(fold) && this.longOpen.has(openKey);

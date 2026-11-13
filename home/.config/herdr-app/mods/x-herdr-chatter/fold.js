@@ -89,3 +89,12 @@ export function foldBlocks(blocks, perLine) {
     }
     return { hidden: Math.max(1, total - used), shown };
 }
+
+/**
+ * how a reply in the chat folds: only in an earlier turn, and only while his «Show more» switch is on (FRM-607); a reply
+ * of the turn he reads now never folds, since one folding while a newer one lands would collapse under his eyes
+ * @param {Block[]} blocks @param {number} perLine
+ * @param {{ isEarlierTurn: boolean, isShowMoreOn: boolean }} at
+ */
+export const replyFold = (blocks, perLine, { isEarlierTurn, isShowMoreOn }) =>
+    isEarlierTurn && isShowMoreOn ? foldBlocks(blocks, perLine) : null;
