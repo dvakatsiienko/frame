@@ -1,13 +1,13 @@
 ---
-name: lowtide-lanes-checkup
+name: lowtide-peek-lanes
 description: >-
-  lowtide: load when dima asks where lanes stand or how their chunk plan reads — «checkup where we at»,
+  lowtide: load when dima asks where lanes stand or how their chunk plan reads — «peek lanes», «checkup where we at»,
   «lanes checkup», «what's left
   for cli / mods / herdr», «map the lanes», «inventory», «where are we with <lane>», «the lanes roadmap»,
   «reorder the chunks», «optimize the order» — main or a wing, over the lanes he names or every running one.
 ---
 
-# /clio:lowtide-lanes-checkup — the lanes' chunk plan, clean, reorderable
+# /clio:lowtide-peek-lanes — the lanes' chunk plan, clean, reorderable
 
 dima, 2026-11-12 17:35 (PK-380:W42): «i often ask stuff like this, e.g. «checkup where we are at», over a selected set of lanes.» dima, PK-387 (2026-11-12): «when i ask for a checkup i want an easy-to-read, clean report on a set of lanes i pick»; «to see the plan and potentially reorder it». the shapes live in [shapes.md](../lowtide/references/shapes.md), the reorder in [chunk-order.md](../lowtide/references/chunk-order.md).
 

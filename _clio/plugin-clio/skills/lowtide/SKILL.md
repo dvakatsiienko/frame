@@ -5,7 +5,7 @@ description: lowtide, the hunt — load when dima says «lowtide», «low tide»
 
 # 🦪 lowtide — the chores cleared before a big step
 
-lowtide is the family that hunts and fixes gaps and inefficiencies in our plans (PK-387:W18–W22): `lowtide` the hunt, `lowtide-triage` the flyway prep, `lowtide-lanes-checkup` the chunk plan, `lowtide-cuts` what stays, `lowtide-flyway-sync` a flyway matched to the live state; their shared shapes: [shapes.md](references/shapes.md).
+lowtide is the family that hunts and fixes gaps and inefficiencies in our plans (PK-387:W18–W22): `lowtide` the hunt, `lowtide-triage` the flyway prep, `lowtide-peek-lanes` the chunk plan, `lowtide-cuts` what stays, `lowtide-flyway-sync` a flyway matched to the live state; their shared shapes: [shapes.md](references/shapes.md).
 
 dima, 2026-10-20, folded: «before we move to something bigger, like the speak v2 revival, close every chore that would otherwise stay parked forever if i didn't ask — small, medium or big. i often find myself explaining this to you: during the memory sweep the pocket grew while we kept folding other useful stuff.»
 
