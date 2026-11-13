@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-13T11:15:00Z'
+updated_date: '2026-11-13T11:57:00Z'
 labels:
   - s
   - clio-wing-1
@@ -20,19 +20,18 @@ ordinal: 1001
 - [ ] #2 f3 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40)
 - [ ] #3 f4 agent-desktop test drive beside computer-use (o106), Accessibility by his hand
 - [ ] #4 f5 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict
-- [ ] #5 f2 ⏳ FRM-551 vm reads: stopped by main's halt tonight, started by the 11-13 boot — waits for: the 11-13 boot
-- [ ] #6 f6 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
-- [ ] #7 f7 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
-- [ ] #8 f8 📅 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop — on: 2026-11-14
-- [ ] #9 f9 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
-- [ ] #10 f10 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
-- [ ] #11 f11 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #12 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #13 f13 💤 PK-300 one complete measuring solution — later: dima 11-11
-- [ ] #14 f14 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
-- [ ] #15 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #16 f16 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #17 f17 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #5 f6 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
+- [ ] #6 f7 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
+- [ ] #7 f8 📅 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop — on: 2026-11-14
+- [ ] #8 f9 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
+- [ ] #9 f10 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #10 f11 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
+- [ ] #11 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #12 f13 💤 PK-300 one complete measuring solution — later: dima 11-11
+- [ ] #13 f14 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
+- [ ] #14 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #15 f16 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #16 f17 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -652,4 +651,6 @@ PK-346:W89 (2026-11-12 22:47, dima): I will ask my main clio for another review 
 PK-346:W90 (2026-11-12 22:47, dima): another problem is comms, which I want to solve in a graceful way, not by fixing symptoms but by fixing the root of the problem.
 PK-346:W91 (2026-11-12 22:47, dima): you stay parked and clio will ask you for consultation later.
 PK-346:W92 (2026-11-12 22:47, dima): your job is to think thoroughly about both problems and propose a good solution.
+
+done 2026-11-13 13:57: f2 ⏳ FRM-551 vm reads: stopped by main's halt tonight, started by the 11-13 boot — waits for: the 11-13 boot (FRM-551 Done)
 <!-- SECTION:NOTES:END -->
