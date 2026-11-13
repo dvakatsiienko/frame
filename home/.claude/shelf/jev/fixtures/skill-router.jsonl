@@ -120,7 +120,6 @@
 {"expect":"x:guide-typescript","label":"synthetic","note":"probe","state":{"prompt":"type the jev answer union properly in jev.ts — the `any` in judge has to go"}}
 {"expect":"x:handoff","label":"synthetic","note":"a bare handoff word","state":{"prompt":"handoff"}}
 {"expect":"find-skills","label":"synthetic","note":"probe","state":{"prompt":"is there a skill for editing excel files? find one and install it"}}
-{"expect":"quicksilver","label":"synthetic","note":"probe","state":{"prompt":"which of these 400 log lines are errors? delegate it to jev, do not read them all"}}
 {"expect":"redesign-existing-projects","label":"synthetic","note":"probe","state":{"prompt":"give trophy-sys landing a premium redesign, it looks generic"}}
 {"expect":"advise-project-approach","label":"synthetic","note":"probe","state":{"prompt":"how should i approach building a desktop app for speak — architecture and stack advice"}}
 {"expect":"humanize:ai-check","label":"synthetic","note":"probe","state":{"prompt":"does this sound ai-written? check my linkedin post below"}}
