@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T13:51:00Z'
+updated_date: '2026-11-13T14:04:00Z'
 labels:
   - s
   - clio-main
@@ -468,4 +468,12 @@ PK-349:W62 (2026-11-13 15:49, dima): what we want out of it
 PK-349:W63 (2026-11-13 15:49, dima): what it buys
 
 PK-349:W64 (2026-11-13 15:49, dima): Also we should always pick a name for a thing we create, especially if it is a new mod or even a feature name
+
+PK-349:W65 (2026-11-13 15:59, dima): Grills now open with your four lines:
+
+PK-349:W66 (2026-11-13 15:59, dima): maybe move into some of lowtide skill? or which other skill fits best? ❓
+
+PK-349:W67 (2026-11-13 15:59, dima): maybe we forget using shape-idea with me? ❓
+
+PK-349:W68 (2026-11-13 15:59, dima): i suppose we already have all of that in that skill? or new skill needed? ❓
 <!-- SECTION:NOTES:END -->

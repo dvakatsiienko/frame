@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T13:51:00Z'
+updated_date: '2026-11-13T14:04:00Z'
 labels:
   - s
 dependencies: []
@@ -44,4 +44,6 @@ raw drop (2026-11-13 inbox, dima): #clio #codie #grill
 PK-400:W7 (2026-11-13 15:48, dima): x-herdr-agents — the agents list, in your own order or by space? ❓
 
 PK-400:W8 (2026-11-13 15:48, dima): the one i plan to rename to «x-herdr—antenna».
+
+16:04 📌 PK-400:W7 quotes clio's own list line that his «←» answered; his words are the «←» part, the «? ❓» on it is helga's, not his
 <!-- SECTION:NOTES:END -->
