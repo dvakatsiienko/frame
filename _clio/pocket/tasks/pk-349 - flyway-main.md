@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T11:21:00Z'
+updated_date: '2026-11-13T12:30:00Z'
 labels:
   - s
   - clio-main
@@ -392,4 +392,42 @@ done 2026-11-12 22:34: ⏳ glide subcard as a read-only view of a member's asks 
 done 2026-11-12 22:57: f2 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, FRM-505 landed (FRM-505 Done)
 
 done 2026-11-13 13:21: f5 FRM-483: SessionStart:compact p95 for 11-11..11-13, under 5 s or one more step (FRM-483 Done)
+
+PK-349:W28 (2026-11-13 12:57, dima): i cannot start you in herdr after the recent updates.
+
+PK-349:W29 (2026-11-13 12:57, dima): how do i fix the alias so i can start you? ❓
+
+PK-349:W30 (2026-11-13 13:03, dima): summon wing 1 and park it, speak app starts slightly later
+
+PK-349:W31 (2026-11-13 13:08, dima): main clio nearest day plan: sequentially grill all pending grills with me right after boot chores are solved in /clio:lowtide mode (grills are hunts)
+
+PK-349:W32 (2026-11-13 13:15, dima): i see, why then is the thread name not properly set up? ❓
+
+PK-349:W33 (2026-11-13 13:15, dima): we have dual-drift-thread-naming issue now? ❓
+
+PK-349:W34 (2026-11-13 13:15, dima): cc native thread name vs herdr specific thread name? ❓
+
+PK-349:W35 (2026-11-13 13:36, dima): why you do not start herdr and mods lanes? ❓
+
+PK-349:W36 (2026-11-13 13:36, dima): why helga is parked for 21m and you still wait her? ❓
+
+PK-349:W37 (2026-11-13 13:47, dima): it is really not good.
+
+PK-349:W38 (2026-11-13 13:47, dima): yesterday i spent 3 hours in second half of the day, clearing every single tail and asked you multiple times if both lanes are ready to be dispatched today with no hikkups.
+
+PK-349:W39 (2026-11-13 13:47, dima): why you do not have simpe validation script and ensures it? ❓
+
+PK-349:W40 (2026-11-13 13:47, dima): you told everything is ready.
+
+PK-349:W41 (2026-11-13 13:47, dima): start mods and herdr lanes!
+
+PK-349:W42 (2026-11-13 13:54, dima): fix it.
+
+PK-349:W43 (2026-11-13 14:01, dima): starting form today, would stray lane be useful? ❓
+
+PK-349:W44 (2026-11-13 14:01, dima): remind - we built start lane spec or only shaped the ticket? ❓
+
+PK-349:W45 (2026-11-13 14:04, dima): would a strays lane help from today? ❓
+
+PK-349:W46 (2026-11-13 14:04, dima): we already have stray lane in fleet or only ticket is created? ❓
 <!-- SECTION:NOTES:END -->
