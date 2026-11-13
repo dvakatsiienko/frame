@@ -147,3 +147,4 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-13 · FRM-610, herdr-lane-2, the status in the bottom bar: clean · dima pressed Stop live (16:26)
 - 2026-11-13 · FRM-609, herdr-lane-2, a pasted image leaves the chip: clean so far at round 2 · a probe overwrote his clipboard (hazard line in the done comment)
 - 2026-11-13 · FRM-613, herdr-lane-2, paste by path + click to open: clean at round 2 · the blind critic ran late; its Finder-copy finding was real (an icon saved as a picture), fixed
+- 2026-11-13 · FRM-584, mods-lane-7 quick lane on main (aa2c7d89..5d5df412), the join queue: clean at round 2 · codie's wisphunter found 5 before review; sixth sense round 1 caught a queued prompt taking the joins (stamped early, handed in twice on Esc), fixed at one cause; 2 P2s ride FRM-564's riders
