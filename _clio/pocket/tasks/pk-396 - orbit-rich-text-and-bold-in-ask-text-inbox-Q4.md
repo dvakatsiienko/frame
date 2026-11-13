@@ -24,4 +24,6 @@ ticket: FRM-616
 close: 2026-11-13 19:17 — shaped into FRM-616 (herdr ux revamp)
 
 close: every W-line moved to FRM-616's wish block (FRM-616:W1–W122, each marked «from PK-N:Wn»)
+
+close: W1 moved to FRM-616
 <!-- SECTION:NOTES:END -->
