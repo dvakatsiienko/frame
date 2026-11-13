@@ -51,12 +51,13 @@ the same guarantees as a halt, minus the goodbye. dima's spec: as few steps as p
   dropped topic is reachable, never remembered
 - the codie roster with ids and status
 - the orbit asks as they last stood (orbit itself survives the compact in the mod's state)
-- **his chat lines since the last report**, each with its answer or «open»: `node ~/frame/_clio/script/chat-lines.ts --since-stamp` prints his typed lines and orbit steers since the last `📄 last report` stamp; an «open» line becomes a first-act, and the pickup answers each
+- **his chat lines since the last report**, each with its answer or «open», under the CST heading `## his lines`, at every checkpoint, the night's last too: `node ~/frame/_clio/script/chat-lines.ts --since-stamp` prints his typed lines and orbit steers since the last `📄 last report` stamp; an «open» line becomes a first-act, and the pickup answers each
+- **his «now», «tonight», «today» stay his**: such a line is carried in his words, as a first-act above any wind-down line; only his word moves it to a later day (11-13 22:14 «take care of this now» left checkpoint-4 as «Monday»)
 - **a running recipe** (a memory sweep above all): META first-act 1 is its re-entry rule, «read `recipes/<name>/recipe.md` whole and follow its re-entry»; it also names the brief the recipe was born from, and a step that needs its own session names that session
 
 ## 3.5 the CST check — before the op
 
-`wishkeeper` 🐬 reads the CST draft against the live state: every open orbit ask, every chat line of his since the last report, every open pocket item, every unfinished groom-list line and each member's queue is present; nothing done is carried as open; a step that needs a fresh session says so as a first-act. each finding is folded into the CST before it is saved.
+`wishkeeper` 🐬 reads the CST draft against the live state, at every checkpoint (a weekly window past 90 % narrows the read to `## his lines` and the open asks, never skips it): every open orbit ask, every chat line of his since the last report, every open pocket item, every unfinished groom-list line and each member's queue is present; nothing done is carried as open; a step that needs a fresh session says so as a first-act. each finding is folded into the CST before it is saved.
 
 ## 4. the second-wind op
 
@@ -67,5 +68,5 @@ handoffs, reminders).
 
 ## completion criterion
 
-the CST's `# D` names every drop with its file, the CST is in the store, the codie roster is stopped or
+the CST's `# D` names every drop with its file, its `## his lines` lists every line since the last report, the CST is in the store, the codie roster is stopped or
 carried on purpose, the after-pickup ask is in orbit, and the `second-wind` op is the last act.

@@ -21,3 +21,4 @@ Ticket: none
 - mods lane 6, FRM-519 14i + 14c — estimate ~01:45 · real 00:29 (2093f838) · landed; room left, so it took 14j, 14d, 14h on slice mode (dima 00:48), last 9c528815 at ~01:45, parked on handoff mods-lane-6-frm519-3 · on time
 - herdr lane after part B: slice mode took step 11, two wisps, FRM-563, the click-through fix, last f5fc3751 at 01:42, parked on handoff herdr-lane-15 · inside the window
 - done test, round 1: every lane landed and parked inside the window (ends ~02:20), none stopped before his word · every estimate ran long, the opposite of W1127's fear; slice mode (his 00:48) turned the spare time into work
+- 2026-11-13 round 2 · window 21:23 → halt ~23:30 · mods: est 21:55, parked 21:53 (landed), stopped 22:24 on his word · herdr: est 22:05, parked 22:40, slice mode ran to 22:34 on his chat fixes · tails: 3 put to monday, all overridden by him
