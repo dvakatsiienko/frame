@@ -75,6 +75,7 @@ import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { readableBackground } from './contrast.js';
 import { importOldDrafts } from './drafts.js';
+import { EFFORTS, effortKey, slideEffort } from './effort.js';
 import { foldBlocks } from './fold.js';
 import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 import { rejoin } from './joined.js';
@@ -558,7 +559,6 @@ const MODELS = [
     ['haiku', 'Haiku 5.5'],
     ['fable', 'Fable 5.2'],
 ];
-const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 // "claude-opus-5-5" → "Opus 5.5"; a display name stays as it is.
 const modelLabel = (m) => {
     const id = /^claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?:-\d{6,})?$/.exec(
@@ -1695,6 +1695,21 @@ export default class ClaudeChat extends View {
                     keystroke: 'escape',
                 })),
             );
+            // ← → slide the effort popover, Enter applies, Esc closes it (the quill is "ChatEffort" while it is open).
+            cx.bind_keys(
+                ['Input', 'Textarea', 'TextArea'].flatMap((box) =>
+                    [
+                        ['left', 'x_herdr_chatter_effort_left'],
+                        ['right', 'x_herdr_chatter_effort_right'],
+                        ['enter', 'x_herdr_chatter_effort_apply'],
+                        ['escape', 'x_herdr_chatter_effort_close'],
+                    ].map(([keystroke, action]) => ({
+                        action,
+                        context: `ChatEffort > ${box}`,
+                        keystroke,
+                    })),
+                ),
+            );
             // Tab in an empty quill takes Claude Code's suggestion (the quill is "ChatGhost" then).
             cx.bind_keys(
                 ['Input', 'Textarea', 'TextArea'].map((box) => ({
@@ -1704,6 +1719,11 @@ export default class ClaudeChat extends View {
                 })),
             );
         } catch {}
+        // the last ⌘⇧E press seen: one made before this load never opens the popover
+        /** @type {number | null} */
+        this.effortAsk = shared('chat.effort') ?? null;
+        /** @type {import('./effort.js').EffortPopover | null} */
+        this.effortPop = null;
         // Search (Ctrl+F, or the header's magnifier): findQ is the query in use (typing settles for
         // 150 ms first, since a redraw rebuilds every message), findList its hits oldest first
         // ({ item, id }: id = the row's), findAt the current one. seek: the row to scroll to.
@@ -2098,6 +2118,39 @@ export default class ClaudeChat extends View {
         });
     }
 
+    // ⌘⇧E: opens the effort popover on the shown thread's level, or closes it and applies the stop picked
+    /** @param {any} cx */
+    effortPress(cx) {
+        const agent = this.target();
+        if (!agent) return;
+        const isBlocked = agent.status === 'blocked';
+        const r = effortKey(
+            this.drop === 'effort' ? this.effortPop : null,
+            this.effortNow(),
+            isBlocked,
+        );
+        this.effortPop = r.popover;
+        this.drop = r.popover ? 'effort' : null;
+        this.pickNote = isBlocked ? 'Answer Claude first, then pick' : null;
+        if (r.apply) this.pick('effort', r.apply, agent.address, cx);
+        this.box.focus();
+        cx.notify();
+    }
+
+    /** @param {'left' | 'right'} way @param {any} cx */
+    effortSlide(way, cx) {
+        if (this.drop !== 'effort' || !this.effortPop) return;
+        this.effortPop = slideEffort(this.effortPop, way);
+        cx.notify();
+    }
+
+    /** @param {any} cx */
+    effortClose(cx) {
+        this.drop = null;
+        this.effortPop = null;
+        cx.notify();
+    }
+
     // Whether the pick in flight has landed (the transcript names it) or timed out.
     settlePick() {
         const p = this.pending;
@@ -2195,39 +2248,133 @@ export default class ClaudeChat extends View {
                 )
                 .child(value);
         return Popover.new(`drop-${kind}`)
-            .anchor('bottom_right')
+            .anchor(kind === 'effort' ? 'bottom_left' : 'bottom_right')
             .open(open)
             .on_open_change((o, cx) => {
                 this.drop = o ? kind : null;
+                this.effortPop =
+                    o && kind === 'effort'
+                        ? effortKey(null, now, false).popover
+                        : null;
                 this.pickNote = null;
                 cx.notify();
             })
             .trigger(trigger)
             .content(
-                v_flex()
-                    .w(kind === 'model' ? 190 : 230)
-                    .p(4)
-                    .gap(1)
-                    .mb(6)
-                    .rounded(8)
-                    .bg(t.popover)
-                    .border(1)
-                    .border_color(t.border)
-                    .children(options.map(row))
+                kind === 'effort'
+                    ? this.effortTrack(t, agent, ready, now)
+                    : this.modelList(t, options, row, ready),
+            );
+    }
+
+    // the effort popover, dima's 14:01 sketch: a title, five stops on one track, the picked one filled, the thread's
+    // own level ringed; a click applies at once, the keys move the pick and ⌘⇧E or Enter applies it
+    /** @param {any} t @param {any} agent @param {boolean} ready @param {string | null} now */
+    effortTrack(t, agent, ready, now) {
+        const at = this.effortPop?.at ?? EFFORTS.indexOf(now ?? '');
+        const stop = (/** @type {string} */ level, /** @type {number} */ i) =>
+            v_flex()
+                .id(`effort-stop-${level}`)
+                .w(52)
+                .gap(6)
+                .items_center()
+                .when(ready && level !== now, (el) =>
+                    el.cursor_pointer().on_click((_e, cx) => {
+                        this.drop = null;
+                        this.effortPop = null;
+                        this.pick('effort', level, agent.address, cx);
+                        this.box.focus();
+                    }),
+                )
+                .child(
+                    div()
+                        .size(20)
+                        .rounded(6)
+                        .border(level === now ? 2 : 1)
+                        .border_color(
+                            i === at
+                                ? t.accent
+                                : level === now
+                                  ? t.foreground
+                                  : t.border,
+                        )
+                        .bg(i === at ? t.accent : t.popover)
+                        .when(ready && i !== at, (el) =>
+                            el.hover((s) => s.bg(t.hover)),
+                        ),
+                )
+                .child(
+                    div()
+                        .text_size(px(11.5))
+                        .text_color(i === at ? t.foreground : t.muted)
+                        .child(level),
+                );
+        return v_flex()
+            .w(300)
+            .p(12)
+            .gap(10)
+            .mb(6)
+            .rounded(8)
+            .bg(t.popover)
+            .border(1)
+            .border_color(t.border)
+            .child(
+                div()
+                    .text_size(px(12))
+                    .text_color(t.foreground)
+                    .child('Effort'),
+            )
+            .child(
+                div()
+                    .relative()
                     .child(
                         div()
-                            .px(8)
-                            .pt(6)
-                            .pb(2)
-                            .text_size(px(10.5))
-                            .text_color(t.dim)
-                            .child(
-                                !ready
-                                    ? 'Can change once Claude stops'
-                                    : kind === 'effort'
-                                      ? 'This session only. Mid-chat, the next reply re-reads the history.'
-                                      : 'This session only',
-                            ),
+                            .absolute()
+                            .top(9)
+                            .left(26)
+                            .right(26)
+                            .h(2)
+                            .bg(t.border),
+                    )
+                    .child(
+                        h_flex().justify_between().children(EFFORTS.map(stop)),
+                    ),
+            )
+            .child(
+                div()
+                    .text_size(px(10.5))
+                    .text_color(t.dim)
+                    .child(
+                        ready
+                            ? '← → pick, ⌘⇧E applies, Esc closes. This session only.'
+                            : 'Can change once you answer Claude',
+                    ),
+            );
+    }
+
+    /** @param {any} t @param {string[]} options @param {(value: string) => any} row @param {boolean} ready */
+    modelList(t, options, row, ready) {
+        return v_flex()
+            .w(190)
+            .p(4)
+            .gap(1)
+            .mb(6)
+            .rounded(8)
+            .bg(t.popover)
+            .border(1)
+            .border_color(t.border)
+            .children(options.map(row))
+            .child(
+                div()
+                    .px(8)
+                    .pt(6)
+                    .pb(2)
+                    .text_size(px(10.5))
+                    .text_color(t.dim)
+                    .child(
+                        ready
+                            ? 'This session only'
+                            : 'Can change once Claude stops',
                     ),
             );
     }
@@ -7121,6 +7268,13 @@ export default class ClaudeChat extends View {
             cx.timer.after(50, () => this.box.focus());
         this.seen = seen;
         if (seen != null) this.quillAsk = quillAsk;
+        // ⌘⇧E the same way; a press older than 2 s (the chat sat hidden) is dropped, never opened late
+        const effortAsk = shared('chat.effort') ?? null;
+        if (seen != null && effortAsk !== this.effortAsk) {
+            this.effortAsk = effortAsk;
+            if (Date.now() - effortAsk < 2000)
+                cx.timer.after(0, (cx) => this.effortPress(cx));
+        }
         const look = chatLook();
         const root = v_flex()
             .size_full()
@@ -7646,17 +7800,24 @@ export default class ClaudeChat extends View {
                                                 ),
                                             ),
                                         )
-                                        .when(Boolean(menu), (el) =>
-                                            el.key_context('ChatSlash'),
+                                        .when(this.drop === 'effort', (el) =>
+                                            el.key_context('ChatEffort'),
+                                        )
+                                        .when(
+                                            Boolean(menu) &&
+                                                this.drop !== 'effort',
+                                            (el) => el.key_context('ChatSlash'),
                                         )
                                         .when(
                                             !menu &&
+                                                this.drop !== 'effort' &&
                                                 agent.status === 'working' &&
                                                 !this.stuck,
                                             (el) => el.key_context('ChatStop'),
                                         )
                                         .when(
                                             !menu &&
+                                                this.drop !== 'effort' &&
                                                 isWaitingOnHim(agent) &&
                                                 Boolean(
                                                     this.ghostFor(
@@ -7672,6 +7833,24 @@ export default class ClaudeChat extends View {
                                         .on_action(
                                             'x_herdr_chatter_ghost_take',
                                             (_e, cx) => this.takeGhost(cx),
+                                        )
+                                        .on_action(
+                                            'x_herdr_chatter_effort_left',
+                                            (_e, cx) =>
+                                                this.effortSlide('left', cx),
+                                        )
+                                        .on_action(
+                                            'x_herdr_chatter_effort_right',
+                                            (_e, cx) =>
+                                                this.effortSlide('right', cx),
+                                        )
+                                        .on_action(
+                                            'x_herdr_chatter_effort_apply',
+                                            (_e, cx) => this.effortPress(cx),
+                                        )
+                                        .on_action(
+                                            'x_herdr_chatter_effort_close',
+                                            (_e, cx) => this.effortClose(cx),
                                         )
                                         .on_action(
                                             'x_herdr_chatter_menu_down',

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { keysWithOurs, rebind } from './hotkeys.js';
+import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 
 const ours = [
     { action: 'x-herdr-chatter.focus', key: 'cmd-k', title: 'Focus the quill' },
@@ -159,5 +159,20 @@ describe('rebind', () => {
     test('a key herdr reads its own way is refused: plain letters and bare ctrl-letters go to the program', () => {
         expect(rebind(his, 'cmd-e', 'd')).toEqual({ refused: 'typing' });
         expect(rebind(his, 'cmd-e', 'ctrl-c')).toEqual({ refused: 'typing' });
+    });
+});
+
+describe('the x-herdr keys', () => {
+    test('the effort key lands on cmd-shift-e beside cmd-k and cmd-e, through the status bar', () => {
+        const { keys, refused } = keysWithOurs(
+            { global: { 'cmd-shift-d': 'pane.split:down' } },
+            OUR_KEYS,
+        );
+        expect(refused).toEqual([]);
+        expect(keys.global).toMatchObject({
+            'cmd-e': 'x-herdr-status.deck',
+            'cmd-k': 'x-herdr-status.quill',
+            'cmd-shift-e': 'x-herdr-status.effort',
+        });
     });
 });

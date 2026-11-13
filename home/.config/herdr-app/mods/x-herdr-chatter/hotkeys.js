@@ -18,6 +18,11 @@ export const OUR_KEYS = [
         key: 'cmd-e',
         title: 'Show or hide the deck',
     },
+    {
+        action: 'x-herdr-status.effort',
+        key: 'cmd-shift-e',
+        title: 'Pick the effort',
+    },
 ];
 /** @typedef {OurKey & { takenBy: string }} Refused */
 

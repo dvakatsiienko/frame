@@ -665,7 +665,7 @@ export default class WorkspaceStatus extends View {
         cx.spawn(async () => {
             for (;;) {
                 const command = await nextCommand();
-                if (command === 'quill') {
+                if (command === 'quill' || command === 'effort') {
                     const chat = blockOf(
                         (c) => c?.mod === 'x-herdr-chatter' && c.props?.stack,
                     );
@@ -674,7 +674,7 @@ export default class WorkspaceStatus extends View {
                             child: chat.content.props.self,
                             stack: chat.content.props.stack,
                         });
-                    setShared('chat.quill', Date.now());
+                    setShared(`chat.${command}`, Date.now());
                 } else if (command === 'deck') {
                     const deck = blockOf(
                         (c) => c?.mod === 'x-herdr-deck' && !c.props?.view,
