@@ -120,7 +120,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread at work, a reply streaming
   - when dima picks another effort or model in the quill
   - then Claude Code sets it for this session at once, the turn runs on, and the next reply uses the pick
-  - and the quill's picker reads the new value once Claude Code's picker closed on the press, and keeps it while the running turn still answers at the old one: Claude Code runs a mid-turn effort from the next turn and writes nothing to the transcript (FRM-588:W7, dima 21:57; clio's replies ran at low from her next turn, 21:55)
+  - and a pick on its way reads in the accent, «Medium…», on the quill's label and inside the popover alike (the slider's level, the model's ✓), until a reply runs at it: Claude Code applies a mid-turn effort from its next request and writes no line for it (FRM-588:W7, dima 21:57 and 22:09; clio's 22:09:17 request ran at high inside a running turn)
   - and a pick in vim's normal mode presses `i` first, and a pick whose picker never opened leaves nothing in Claude's prompt (FRM-588:W6)
   - and the picker opens neither by click nor by ⌘⇧E while the thread asks him something, and a pick made before the question came never types into it: a note says to answer first
   - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56); `/model` mid-stream, «Set model to Sonnet 5.5 for this session only», the next reply `claude-sonnet-5-5` (2026-11-13)

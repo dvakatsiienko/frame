@@ -2377,7 +2377,11 @@ export default class ClaudeChat extends View {
         const p = this.pending;
         if (!p || p.address !== this.address) return;
         const now = p.kind === 'model' ? this.model : this.effortNow();
-        if (now === p.value) this.pending = null;
+        // a pick Claude Code took stays «pending» in the accent until a reply runs at it: its next request, mid-turn
+        // too (clio's 22:09:17 request ran at high inside a running turn)
+        const isTaken = p.kind === 'effort' && this.effort?.isPicked;
+        if (now === p.value && !isTaken) this.pending = null;
+        else if (isTaken && now === p.value) return;
         else if (Date.now() > p.until) {
             this.pending = null;
             this.pickNote = 'No change seen: look at the Terminal';
@@ -2396,6 +2400,9 @@ export default class ClaudeChat extends View {
         const effort = this.effortNow();
         const pending =
             this.pending?.address === this.address ? this.pending : null;
+        // a pick on its way shows inside the popover too, in the accent the quill's label wears (dima, 22:09)
+        const shownModel = pending?.kind === 'model' ? pending.value : model;
+        const shownEffort = pending?.kind === 'effort' ? pending.value : effort;
         const open = this.drop === 'pick';
         const trigger = h_flex()
             .id('drop-pick-trigger')
@@ -2445,9 +2452,14 @@ export default class ClaudeChat extends View {
                             this.box.focus();
                         }),
                 )
-                .when(value !== model && !ready, (el) => el.text_color(t.dim))
+                .when(value !== shownModel && !ready, (el) =>
+                    el.text_color(t.dim),
+                )
+                .when(value === shownModel && pending?.kind === 'model', (el) =>
+                    el.text_color(t.accent),
+                )
                 .child(div().flex_1().child(value))
-                .when(value === model, (el) =>
+                .when(value === shownModel, (el) =>
                     el.child(div().flex_none().text_color(t.accent).child('✓')),
                 );
         const title = (/** @type {string} */ text) =>
@@ -2465,7 +2477,7 @@ export default class ClaudeChat extends View {
                 const isOpen = o && ready;
                 this.drop = isOpen ? 'pick' : null;
                 this.effortPop = isOpen
-                    ? effortKey(null, effort, false).popover
+                    ? effortKey(null, shownEffort, false).popover
                     : null;
                 this.pickNote =
                     o && !ready ? 'Answer Claude first, then pick' : null;
@@ -2508,15 +2520,23 @@ export default class ClaudeChat extends View {
                     .child(
                         div()
                             .px(8)
-                            .child(this.effortTrack(t, agent, ready, effort)),
+                            .child(
+                                this.effortTrack(
+                                    t,
+                                    agent,
+                                    ready,
+                                    shownEffort,
+                                    pending?.kind === 'effort',
+                                ),
+                            ),
                     ),
             );
     }
 
     // the effort slider (dima, 14:01 and 14:17): one thumb slides along a line and lands on five small stops, the line
     // filled up to it; a click on a stop applies at once, ← → move the thumb and ⌘⇧E or Enter applies, Esc closes
-    /** @param {any} t @param {any} agent @param {boolean} ready @param {string | null} now */
-    effortTrack(t, agent, ready, now) {
+    /** @param {any} t @param {any} agent @param {boolean} ready @param {string | null} now @param {boolean} [isPending] */
+    effortTrack(t, agent, ready, now, isPending = false) {
         const at = Math.max(
             0,
             this.effortPop?.at ?? EFFORTS.indexOf(now ?? ''),
@@ -2565,7 +2585,9 @@ export default class ClaudeChat extends View {
                 .flex()
                 .justify_center()
                 .text_size(px(11))
-                .text_color(i === at ? t.foreground : t.muted)
+                .text_color(
+                    i === at ? (isPending ? t.accent : t.foreground) : t.muted,
+                )
                 .when(i === at, (el) => el.font_semibold())
                 .child(effortWord(level));
         return v_flex()
