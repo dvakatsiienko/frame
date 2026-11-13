@@ -50,14 +50,14 @@ export function pickerLabel(model, effort, pending) {
 }
 
 /**
- * the pick Claude Code confirmed on its screen, «Set effort level to high (this session only)» or «Set model to Sonnet
- * 5.5 for this session only»: mid-turn it writes neither to the transcript, so the label takes it from here
- * @param {'effort' | 'model'} kind @param {string} screen @returns {string | null}
+ * a pick Claude Code took: its picker closed on the press and no «switch?» question waits; mid-turn it prints no
+ * confirmation and writes nothing to the transcript, and it runs the pick from the next turn (clio, 21:55)
+ * @param {'effort' | 'model'} kind @param {string} screen
  */
-export function pickSeen(kind, screen) {
-    if (kind === 'effort') {
-        const level = /Set effort level to (\w+)/.exec(screen)?.[1];
-        return level && EFFORTS.includes(level) ? level : null;
-    }
-    return /Set model to (.+?) for this session/.exec(screen)?.[1] ?? null;
+export function pickTaken(kind, screen) {
+    if (/Yes, switch|Switch model\?|Change effort level\?/.test(screen))
+        return false;
+    return kind === 'effort'
+        ? !/Faster[\s\S]*Smarter/.test(screen)
+        : !/Select model/.test(screen);
 }

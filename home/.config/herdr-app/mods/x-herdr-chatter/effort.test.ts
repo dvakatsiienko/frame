@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { effortKey, pickSeen, pickerLabel, slideEffort } from './effort.js';
+import { effortKey, pickTaken, pickerLabel, slideEffort } from './effort.js';
 
 describe('effortKey', () => {
     test('a first press opens the popover on the current level', () => {
@@ -100,27 +100,32 @@ describe("the picker trigger reads like shepherdr's (dima's o13)", () => {
     });
 });
 
-// a pick mid-turn writes nothing to the transcript, so the label read Medium until the next reply (dima, 21:46); Claude
-// Code prints its confirmation on the screen at once (probed 2026-11-13 21:46 on a throwaway thread)
-describe('pickSeen', () => {
-    test('an effort Claude Code confirmed on its screen', () => {
+// a pick mid-turn writes nothing to the transcript, and mid-turn Claude Code prints no confirmation either: clio's
+// replies ran at low from her next turn while the label read Medium (dima, 21:57). The pick is taken once its picker
+// closed on the press, or its line confirms it
+describe('pickTaken', () => {
+    const working = '✻ Sautéing… (4s)\n❯ \n  -- INSERT --';
+    test('the effort picker closed on the press: taken', () => {
+        expect(pickTaken('effort', working)).toBe(true);
+    });
+    test('the effort picker still open: not yet', () => {
         expect(
-            pickSeen(
+            pickTaken(
                 'effort',
-                '   Set effort level to high (this session only): Comprehensive implementation',
+                '   Effort\n  Faster        Smarter\n  low  medium',
             ),
-        ).toBe('high');
+        ).toBe(false);
     });
-    test('a model it confirmed', () => {
+    test('the model list still open: not yet; closed: taken', () => {
+        expect(pickTaken('model', '  Select model\n ❯ 1. Default')).toBe(false);
+        expect(pickTaken('model', working)).toBe(true);
+    });
+    test('Claude asking to confirm the switch: not yet', () => {
         expect(
-            pickSeen(
-                'model',
-                '  Set model to Sonnet 5.5 for this session only',
+            pickTaken(
+                'effort',
+                'Change effort level?\n ❯ 1. Yes, switch to low',
             ),
-        ).toBe('Sonnet 5.5');
-    });
-    test('no confirmation yet: nothing', () => {
-        expect(pickSeen('effort', '❯ \n  -- INSERT --')).toBe(null);
-        expect(pickSeen('effort', 'Set effort level to bogus')).toBe(null);
+        ).toBe(false);
     });
 });

@@ -82,7 +82,7 @@ import {
     EFFORTS,
     effortKey,
     effortWord,
-    pickSeen,
+    pickTaken,
     pickerLabel,
     slideEffort,
 } from './effort.js';
@@ -2303,19 +2303,18 @@ export default class ClaudeChat extends View {
                         break;
                     }
                 }
-                // mid-turn the pick writes nothing to the transcript until the next reply: the label takes it from
-                // Claude Code's own confirmation on its screen
+                // mid-turn the pick writes nothing to the transcript and Claude Code runs it from the next turn: the label
+                // takes it once the picker closed on the press
                 for (let i = 0; i < 8; i++) {
-                    // only the value just picked: an older pick's line can still be on the screen
-                    const seen = pickSeen(kind, await screen());
-                    if (seen === value) {
+                    if (pickTaken(kind, await screen())) {
                         if (this.address === address) {
                             if (kind === 'effort')
                                 this.effort = {
-                                    level: seen,
+                                    isPicked: true,
+                                    level: value,
                                     model: this.modelNow(),
                                 };
-                            else this.model = seen;
+                            else this.model = value;
                         }
                         break;
                     }
@@ -3295,7 +3294,13 @@ export default class ClaudeChat extends View {
                 if (into === this && /^claude-/.test(d.message?.model ?? ''))
                     this.model = modelLabel(d.message.model);
                 // the effort the reply ran at, as Claude Code stamps it on the row: the thread's live value, past any default
-                if (into === this && EFFORTS.includes(d.effort))
+                // a pick he made mid-turn outranks the stamps of the turn still running at the old effort, until a reply
+                // runs at it (Claude Code applies it from the next turn)
+                if (
+                    into === this &&
+                    EFFORTS.includes(d.effort) &&
+                    !(this.effort?.isPicked && this.effort.level !== d.effort)
+                )
                     this.effort = { level: d.effort, model: this.modelNow() };
                 for (const b of content ?? []) {
                     if (b.type === 'text' && b.text.trim())
