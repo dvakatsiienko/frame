@@ -357,6 +357,19 @@ export function askLabel(thread, id) {
 }
 
 /**
+ * a key in an ask's steer box: Enter is 🛎️, cmd-enter 🔁, each pressed a second time taking its press back (dima,
+ * 20:34); a guarded ask's tick stays his click, as no key reaches an unlocking press
+ * @param {ReturnType<typeof tickState>} state @param {boolean} isCmd @param {boolean} isGated
+ * @returns {'tick' | 'replay' | 'untick' | null}
+ */
+export function steerKeyPress(state, isCmd, isGated) {
+    if (state === 'locked') return null;
+    if (isCmd) return state === 'replayed' ? 'untick' : 'replay';
+    if (state === 'ticked') return 'untick';
+    return isGated ? null : 'tick';
+}
+
+/**
  * an ask keeps its steer box, holding his steer, until a turn takes the press (dima's W63, W70: «steer stays»)
  * @param {Ask} ask
  */

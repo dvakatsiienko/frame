@@ -58,6 +58,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when he clicks ✅ ticked again
   - then the ask draws open at once, its steer box and 🛎️ tick back, and his next tick lands on the first click (his hand, 14:57)
   - decision: a tick after an untick is a plain new press, never a drop of the old lines; the drop ate his first click
+- ⬜ keys in a steer box tick and replay
+  - given dima's focus in an ask's steer box
+  - when he presses Enter, or cmd-enter
+  - then Enter acts as 🛎️ and cmd-enter as 🔁, his steer riding the press; the same key again takes that press back; a held key acts once
+  - and Enter never ticks a guarded ask: that word stays his click
+  - decision: dima, 20:34 (FRM-564:W75)
 - ✅ an ask id names its thread
   - given main clio and wing 1 both have an o8 open
   - then the deck reads `o8` for main, `w1·o8` for wing 1, and `codie·o1` for any other thread (shot 1508)

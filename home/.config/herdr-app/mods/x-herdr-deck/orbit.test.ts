@@ -21,6 +21,7 @@ import {
     runningThreads,
     savePress,
     stateOfPid,
+    steerKeyPress,
     threadFacts,
     tickAll,
     tickAllTakes,
@@ -696,5 +697,27 @@ describe("«tick all» ticks one thread's open asks (FRM-589)", () => {
             await tickAll(shelf(files), 't', rows, 'Z', none, none, 1),
         ).toEqual([]);
         expect(files).toEqual({});
+    });
+});
+
+describe('Enter in a steer box ticks, cmd-enter replays, each a second time takes it back (dima, 20:34)', () => {
+    test('Enter ticks an open or replayed ask, and takes a tick back', () => {
+        expect(steerKeyPress('open', false, false)).toBe('tick');
+        expect(steerKeyPress('replayed', false, false)).toBe('tick');
+        expect(steerKeyPress('ticked', false, false)).toBe('untick');
+    });
+    test('cmd-enter replays an open or ticked ask, and takes a replay back', () => {
+        expect(steerKeyPress('open', true, false)).toBe('replay');
+        expect(steerKeyPress('ticked', true, false)).toBe('replay');
+        expect(steerKeyPress('replayed', true, false)).toBe('untick');
+    });
+    test('a key never ticks a guarded ask: that word is his click alone', () => {
+        expect(steerKeyPress('open', false, true)).toBeNull();
+        expect(steerKeyPress('ticked', false, true)).toBe('untick');
+        expect(steerKeyPress('open', true, true)).toBe('replay');
+    });
+    test('a locked ask takes no key', () => {
+        expect(steerKeyPress('locked', false, false)).toBeNull();
+        expect(steerKeyPress('locked', true, false)).toBeNull();
     });
 });

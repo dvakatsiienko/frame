@@ -42,6 +42,7 @@ import {
     runningThreads,
     savePress,
     stateOfPid,
+    steerKeyPress,
     threadFacts,
     tickAll,
     tickAllTakes,
@@ -142,6 +143,9 @@ async function sessions(shelf) {
         },
     );
 }
+
+// a held Enter repeats every ~150 ms: within this, a submit is the same press
+const STEER_KEY_REPEAT_MS = 400;
 
 // a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
 /** @param {string} key */
@@ -639,10 +643,36 @@ export default class Deck extends View {
                 value: keptSteer(key),
             });
             box.on('change', () => keepSteer(key, box.value()));
+            box.on('submit', (e, cx) =>
+                this.steerKey(cx, key, Boolean(e.secondary)),
+            );
             this.steers.set(key, box);
         } catch (err) {
             this.pressError = `steer box not made: ${err instanceof Error ? err.message : err}`;
         }
+    }
+
+    // Enter in a steer box is 🛎️, cmd-enter 🔁, as the buttons beside it (steerKeyPress); a held key's repeats act once
+    /** @param {Context} cx @param {string} key @param {boolean} isCmd */
+    steerKey(cx, key, isCmd) {
+        const now = Date.now();
+        if (now - (this.steerKeyAt ?? 0) < STEER_KEY_REPEAT_MS) return;
+        this.steerKeyAt = now;
+        for (const s of this.rows)
+            for (const ask of s.asks) {
+                if (`${s.sid}:${ask.id}` !== key) continue;
+                const sent =
+                    this.sent.get(key)?.verdict ?? s.pending.get(ask.id);
+                const act = steerKeyPress(
+                    tickState(ask, sent),
+                    isCmd,
+                    Boolean(ask.isGated),
+                );
+                if (act === 'untick')
+                    cx.spawn((cx) => this.unpress(cx, s, ask));
+                else if (act) cx.spawn((cx) => this.press(cx, s, ask, act));
+                return;
+            }
     }
 
     // his second click on a ticked or replayed ask takes it back until a turn took it: a press the stash has not read
@@ -744,7 +774,7 @@ export default class Deck extends View {
                                         ? 'queued for its next turn: click to take it back'
                                         : ask.isGated
                                           ? 'tick: your word for this guarded action, it runs once within 2 h'
-                                          : 'tick: good to go, the session takes the pick',
+                                          : 'tick: good to go, the session takes the pick (Enter in the steer box)',
                                     (cx) =>
                                         cx.spawn((cx) =>
                                             state === 'ticked'
@@ -765,7 +795,7 @@ export default class Deck extends View {
                                     labels.replay,
                                     state === 'replayed'
                                         ? 'queued for its next turn: click to take it back'
-                                        : 'replay: another round, with your steer',
+                                        : 'replay: another round, with your steer (⌘ Enter in the steer box)',
                                     (cx) =>
                                         cx.spawn((cx) =>
                                             state === 'replayed'
