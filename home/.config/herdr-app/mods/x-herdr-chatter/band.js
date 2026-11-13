@@ -42,6 +42,18 @@ export function stateLine({ isWorking, isBlocked, isStuck, msg, wait }) {
     return wait || 'Idle';
 }
 
+// what the status in the text box's bottom bar draws beside its line (FRM-610): a spinner or an idle ring, the turn
+// clock, and Stop, which a stuck turn hides since Esc cannot stop a background task
+/** @param {{ status: string, isStuck: boolean, hasTurnAt: boolean }} at */
+export function stateParts({ status, isStuck, hasTurnAt }) {
+    const isWorking = status === 'working';
+    return {
+        hasClock: isWorking && hasTurnAt,
+        hasStop: isWorking && !isStuck,
+        mark: isWorking ? 'spinner' : 'ring',
+    };
+}
+
 // a meter's lit cells: any use lights one, so 1 % never reads as empty
 /** @param {number | null} pct @param {number} cells @returns {number} */
 export const meterCells = (pct, cells) =>

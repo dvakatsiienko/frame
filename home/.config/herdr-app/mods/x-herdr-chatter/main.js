@@ -67,6 +67,7 @@ import {
     pendingOf,
     pressLine,
     stateLine,
+    stateParts,
     withPress,
 } from './band.js';
 import { splitBlocks, withPrompt } from './blocks.js';
@@ -6784,17 +6785,6 @@ export default class ClaudeChat extends View {
     stateCard(t, agent) {
         const pid = this.where?.container ? null : this.where?.pid;
         const b = bandOf(shared(THREADS_KEY), pid, Date.now());
-        const isWorking = agent.status === 'working';
-        const report = isWorking
-            ? terminals().find((x) => x.address === agent.address)?.report
-            : null;
-        const line = stateLine({
-            isBlocked: agent.status === 'blocked',
-            isStuck: isWorking && this.stuck,
-            isWorking,
-            msg: typeof report === 'object' ? report?.msg : null,
-            wait: b.wait,
-        });
         /** @param {string} id @param {string} name @param {number | null} pct @param {number} warnAt */
         const meter = (id, name, pct, warnAt) => {
             const fill = b.isStale
@@ -6841,55 +6831,6 @@ export default class ClaudeChat extends View {
                 ),
             )
             .child(
-                h_flex()
-                    .h(px(22))
-                    .gap(8)
-                    .items_center()
-                    .min_w(0)
-                    .text_size(px(TEXT.sm))
-                    .text_color(t.muted)
-                    .child(
-                        isWorking
-                            ? svg('mods/workspace-chrome/spinner.svg')
-                                  .size(12)
-                                  .flex_none()
-                                  .text_color(t.working)
-                                  .spin(900)
-                            : div()
-                                  .size(px(10))
-                                  .flex_none()
-                                  .rounded_full()
-                                  .border(1)
-                                  .border_color(t.dim),
-                    )
-                    .child(
-                        div()
-                            .id('state-line')
-                            .flex_1()
-                            .min_w(0)
-                            .truncate()
-                            .text_color(isWorking ? t.foreground : t.muted)
-                            .tooltip(line)
-                            .child(line),
-                    )
-                    .when(isWorking && Boolean(this.turnAt), (el) =>
-                        el.child(
-                            div()
-                                .flex_none()
-                                .text_color(t.dim)
-                                .font_family(this.mono())
-                                .child(turnClock(Date.now() - this.turnAt)),
-                        ),
-                    )
-                    .when(isWorking && !this.stuck, (el) =>
-                        el.child(
-                            button(t, px, 'stop', 'Stop', (_e, cx) =>
-                                this.stop(cx),
-                            ),
-                        ),
-                    ),
-            )
-            .child(
                 v_flex()
                     .gap(3)
                     // ctx above week (dima, 21:00: «move ctx meter over the week»)
@@ -6912,7 +6853,75 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // the module's lower card: + on the left, the band's buttons on the right
+    // the thread's state, its turn clock and Stop: one row in the control card, between + and the band (dima, 15:36: «try»)
+    /** @param {any} t @param {any} agent */
+    stateRow(t, agent) {
+        const pid = this.where?.container ? null : this.where?.pid;
+        const b = bandOf(shared(THREADS_KEY), pid, Date.now());
+        const isWorking = agent.status === 'working';
+        const parts = stateParts({
+            hasTurnAt: Boolean(this.turnAt),
+            isStuck: this.stuck,
+            status: agent.status,
+        });
+        const report = isWorking
+            ? terminals().find((x) => x.address === agent.address)?.report
+            : null;
+        const line = stateLine({
+            isBlocked: agent.status === 'blocked',
+            isStuck: isWorking && this.stuck,
+            isWorking,
+            msg: typeof report === 'object' ? report?.msg : null,
+            wait: b.wait,
+        });
+        return h_flex()
+            .h(px(22))
+            .gap(8)
+            .items_center()
+            .min_w(0)
+            .text_size(px(TEXT.sm))
+            .text_color(t.muted)
+            .child(
+                parts.mark === 'spinner'
+                    ? svg('mods/workspace-chrome/spinner.svg')
+                          .size(12)
+                          .flex_none()
+                          .text_color(t.working)
+                          .spin(900)
+                    : div()
+                          .size(px(10))
+                          .flex_none()
+                          .rounded_full()
+                          .border(1)
+                          .border_color(t.dim),
+            )
+            .child(
+                div()
+                    .id('state-line')
+                    .flex_1()
+                    .min_w(0)
+                    .truncate()
+                    .text_color(isWorking ? t.foreground : t.muted)
+                    .tooltip(line)
+                    .child(line),
+            )
+            .when(parts.hasClock, (el) =>
+                el.child(
+                    div()
+                        .flex_none()
+                        .text_color(t.dim)
+                        .font_family(this.mono())
+                        .child(turnClock(Date.now() - this.turnAt)),
+                ),
+            )
+            .when(parts.hasStop, (el) =>
+                el.child(
+                    button(t, px, 'stop', 'Stop', (_e, cx) => this.stop(cx)),
+                ),
+            );
+    }
+
+    // the module's lower card: + on the left, the thread's state, the band's buttons on the right
     /** @param {any} t @param {any} agent */
     controlCard(t, agent) {
         return nestedCard(t, 'bottom')
@@ -6923,7 +6932,7 @@ export default class ClaudeChat extends View {
             .when(!this.where?.container, (el) =>
                 el.child(this.attachButton(t)),
             )
-            .child(div().flex_1())
+            .child(this.stateRow(t, agent).flex_1())
             .child(this.bandChips(t));
     }
 

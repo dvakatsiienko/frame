@@ -11,6 +11,7 @@ import {
     pendingOf,
     pressLine,
     stateLine,
+    stateParts,
     withPress,
 } from './band.js';
 
@@ -341,6 +342,27 @@ describe('the state card over the quill (PK-384)', () => {
         expect(stateLine({ isStuck: true, isWorking: true })).toMatch(
             /background task/,
         );
+    });
+});
+
+describe('the status in the text box’s bottom bar (FRM-610)', () => {
+    test('an idle thread draws a ring, no clock, no Stop', () => {
+        expect(
+            stateParts({ hasTurnAt: false, isStuck: false, status: 'idle' }),
+        ).toEqual({ hasClock: false, hasStop: false, mark: 'ring' });
+    });
+
+    test('a working thread spins, its turn clock and Stop beside the line', () => {
+        expect(
+            stateParts({ hasTurnAt: true, isStuck: false, status: 'working' }),
+        ).toEqual({ hasClock: true, hasStop: true, mark: 'spinner' });
+    });
+
+    test('a stuck turn hides Stop, which would do nothing', () => {
+        expect(
+            stateParts({ hasTurnAt: true, isStuck: true, status: 'working' })
+                .hasStop,
+        ).toBe(false);
     });
 });
 

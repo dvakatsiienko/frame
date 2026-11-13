@@ -139,6 +139,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then right of «wait» sit 🐦‍🔥 🔥 ⏰ 💨 🔓 🎛️ 🚦, emoji only, each word leading its tooltip (dima, 21:02); filled when on, 🔓 red when on
   - and 🚦 shows and hides the deck by herdr's `layout.toggle` on its block, no layout file write (proof 2102: 9 threads before, hidden and after; his click «board confirmed to work»)
   - and 🔓 reads the override store `x` reads; its click waits on the mods codie's proof row; 🎛️ waits on the settings view: greyed, the reason on hover
+- 🧭 a thread's status sits in the text box's bottom bar (FRM-610)
+  - given a thread working, then between + and the band's buttons a spinner, what it does, its turn clock and Stop; at the narrowest pane the line truncates and the buttons stay whole
+  - given a thread idle, then the bar reads «○ Idle» (or its wait line), and the meters card above has no status row
+  - and a stuck turn hides Stop and says why in the line
+  - decision: dima's 15:36 «try», kept on his tick (o33, 15:42)
 - ⬜ wind, hot, waker and AFK pressed from the band (FRM-568)
   - makes: one line `{at, button, on, sid?}` per press in `~/.claude/shelf/band-presses/band.jsonl`, lines older than a day trimmed
   - given a thread's tab in the Chat view and its state file in `~/.claude/shelf/herdr-state/`
