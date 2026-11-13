@@ -300,8 +300,9 @@ func standingGate(verb string, record thread) error {
 	if table, err := readProcessTable(); err == nil && len(callerChain(table, powerSessionsDir())) > 0 {
 		return nil
 	}
-	// dima, 15:47: while no coordinator record is live, his herdr layout still starts clio, warned
-	if store, err := readThreadStore(powerThreadStorePath()); err == nil && !slices.ContainsFunc(store.Threads, func(t thread) bool {
+	// dima, 15:47: while no coordinator record is live, his herdr layout still starts clio, warned; a dead clio's
+	// record a halt left behind is none, or the next morning's start is refused
+	if store, err := readThreadStore(powerThreadStorePath()); err == nil && !slices.ContainsFunc(joinThreads(time.Now(), store.Threads), func(t thread) bool {
 		return t.Role == "coordinator" && !t.Fallback
 	}) {
 		fmt.Fprintln(os.Stderr, "x: a herdr terminal gets a coordinator's record while no live thread holds one (the pane fallback)")

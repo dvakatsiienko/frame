@@ -584,20 +584,23 @@ func TestARoleTableRenameMovesTheDisplayNotThePower(t *testing.T) {
 func TestBriefSummonGivesNoCoordinatorRecordToABareHerdrPane(t *testing.T) {
 	t.Parallel()
 	// dima, 15:47: the pane fallback lets his layout start clio only while no coordinator record is live; a name-seated
-	// clio is no record, and a wing's record is no coordinator's, so main's start still passes beside a live wing
+	// clio is no record, and a wing's record is no coordinator's, so main's start still passes beside a live wing; a dead
+	// clio's record left by a halt is none
 	const (
 		clio     = `{"sessionId":"sid-clio","role":"coordinator"}`
 		fallback = `{"sessionId":"sid-clio","role":"coordinator","fallback":true}`
 		wing     = `{"sessionId":"sid-wing","role":"wing","wing":1}`
+		dead     = `{"sessionId":"sid-gone","pid":1,"procStart":"Mon Jan 1 00:00:00 2024","role":"coordinator"}`
 	)
 	for _, c := range []struct {
 		role, record string
 		code         int
-	}{{"coordinator", clio, 1}, {"wing:2", clio, 1}, {"adviser", clio, 0}, {"coordinator", fallback, 0}, {"coordinator", wing, 0}} {
+	}{{"coordinator", clio, 1}, {"wing:2", clio, 1}, {"adviser", clio, 0}, {"coordinator", fallback, 0}, {"coordinator", wing, 0}, {"coordinator", dead, 0}} {
 		t.Run(fmt.Sprint(c.role, c.record), func(t *testing.T) {
 			t.Parallel()
 			sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
 			write(t, filepath.Join(sessions, "other.json"), fmt.Sprintf(`{"sessionId":"sid-other","pid":%d}`, os.Getpid()))
+			write(t, filepath.Join(sessions, "clio.json"), fmt.Sprintf(`{"sessionId":"sid-clio","pid":%d}`, os.Getpid()))
 			write(t, store, `{"v":1,"threads":[`+c.record+`]}`)
 
 			got := scriptX(t, []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store, "HC_TERMINAL_ID=t9"}, "brief", "summon", "--role", c.role, "--session", "sid-other")
