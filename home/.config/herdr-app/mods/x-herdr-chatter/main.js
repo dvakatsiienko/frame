@@ -4348,17 +4348,19 @@ export default class ClaudeChat extends View {
                     : typedOf(item),
             ).selectable(true);
             const fork = Boolean(item.before && this.agentNow);
+            // his time sits under his words, dim: a lazy-list row fires no hover, so its tooltip never showed (two
+            // looks of his, 15:51 and 16:27)
+            const timeJSX = div()
+                .px(2)
+                .text_size(px(TEXT.xs))
+                .text_color(t.dim)
+                .child(details ?? '');
             // the fork's press lands by where it was (clickRow): its column is the row's last FORK_W px
-            // his time also sits on this column: a full-width look has no other strip beside his words, and a bubble
-            // that fills a narrow pane leaves the strip on its left no width
             const forkJSX = h_flex()
                 .w(FORK_W)
                 .flex_none()
                 .self_stretch()
                 .justify_end()
-                .when(Boolean(details), (el) =>
-                    el.id(`me-fork-at-${i}`).tooltip(details),
-                )
                 .when(fork, (el) =>
                     el.child(
                         div()
@@ -4389,28 +4391,25 @@ export default class ClaudeChat extends View {
                             .flex_1()
                             .min_w(0)
                             .justify_end()
-                            // his time shows on a hover over the empty strip left of his bubble: the selectable
-                            // words take the hover, so a tooltip on the bubble fired only over its padding
-                            .when(Boolean(details), (el) =>
-                                el.child(
-                                    div()
-                                        .id(`me-at-${i}`)
-                                        .flex_1()
-                                        .self_stretch()
-                                        .tooltip(details),
-                                ),
-                            )
                             .child(
-                                div()
-                                    .max_w(this.bubbleW)
-                                    .px(12)
-                                    .py(8)
-                                    .rounded(12)
-                                    .bg(fade(t.accent, '33'))
-                                    .border(1)
-                                    .border_color(fade(t.accent, '4d'))
-                                    .text_color(t.foreground)
-                                    .child(words),
+                                v_flex()
+                                    .items_end()
+                                    .gap(2)
+                                    .child(
+                                        div()
+                                            .max_w(this.bubbleW)
+                                            .px(12)
+                                            .py(8)
+                                            .rounded(12)
+                                            .bg(fade(t.accent, '33'))
+                                            .border(1)
+                                            .border_color(fade(t.accent, '4d'))
+                                            .text_color(t.foreground)
+                                            .child(words),
+                                    )
+                                    .when(Boolean(details), (el) =>
+                                        el.child(timeJSX),
+                                    ),
                             ),
                     )
                     .child(forkJSX);
@@ -4441,7 +4440,16 @@ export default class ClaudeChat extends View {
                         .w_full()
                         .gap(8)
                         .items_center()
-                        .child(div().flex_1().min_w(0).child(words))
+                        .child(
+                            v_flex()
+                                .flex_1()
+                                .min_w(0)
+                                .gap(2)
+                                .child(words)
+                                .when(Boolean(details), (el) =>
+                                    el.child(timeJSX),
+                                ),
+                        )
                         .child(forkJSX),
                 );
         }

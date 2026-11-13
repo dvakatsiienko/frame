@@ -272,13 +272,15 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then a «📂 <name>» row sits under the reply, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder); a web link in the text opens in the browser as before
   - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
 - ⬜ a message tells when it was sent and whether it arrived
-  - given a message in the chat
-  - when dima hovers the empty space beside it: left of his bubble, right of a reply's, or a reply's dot strip
-  - then a tooltip reads its send time on his clock, a date before it from an earlier day, and for his own message «received» once its row is in the transcript («15:03 · received»); a reply reads its time alone
+  - given his message in the chat
+  - then a small dim line under it reads its send time on his clock, a date before it from an earlier day, and «received» once its row is in the transcript («15:03 · received»)
   - and a message still in the queued strip reads «15:10 · queued» on hover, «received» once its row lands
-  - decision: a native tooltip, not a hover line: a hover that redraws rebuilds every message and drops a selection; it bends «a tooltip only on an action with no text», since the details are nowhere in view (clio 15:18, put to dima as an assumption)
-  - decision: the hover sits beside the words, never on them: a selectable TextView takes the hover, so a tooltip on his bubble fired only over its padding (dima, 15:51: «no, i don't see a tooltip»)
-  - not checked: the tooltip showing inside a lazy-list row (herdr-app#598), his hover
+  - decision: always shown, not on hover: a tooltip inside a lazy-list row never showed for him, beside his bubble (15:51) or on its strip (16:27: «no, i do not see it»); a row's renderer takes no handlers ([herdr-app#598](https://github.com/herdrdev/herdr-app/issues/598)); clio's fallback, 16:27
+- 🐞 a reply shows its send time on hover
+  - given a reply in the chat
+  - when dima hovers the empty space right of its bubble, or its dot strip
+  - then a tooltip reads its send time
+  - not checked, likely broken the same way: its tooltip sits inside a lazy-list row too
 - ⬜ a reply answers one message
   - given a message in the chat
   - when dima right-clicks it and picks Reply
