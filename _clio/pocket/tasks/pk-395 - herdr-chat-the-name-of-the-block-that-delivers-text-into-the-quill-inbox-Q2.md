@@ -4,7 +4,7 @@ title: 'herdr chat: the name of the block that delivers text into the quill (inb
 status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T20:38:00Z'
+updated_date: '2026-11-13T20:39:00Z'
 labels:
   - s
 dependencies: []
@@ -27,4 +27,6 @@ close: the draft block deleted on his o147 tick
 22:38 close: W1 done (named, then deleted on o147), W2 dropped (the block is gone), W3 done (copy block is the one door)
 
 close: PK-395:W1 done, PK-395:W2 dropped, PK-395:W3 done — the draft block deleted on o147, the copy block is the one door
+
+close: PK-395:W2 done by deletion on his o147 tick, no name needed
 <!-- SECTION:NOTES:END -->
