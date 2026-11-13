@@ -74,18 +74,11 @@ export function foldBlocks(blocks, perLine) {
         if (lines[i] <= left) {
             shown.push(b);
             used += lines[i];
-        }
-        // a prompt card is never cut: it fills his quill whole, so it shows whole or waits for Show more
-        else if (b.kind !== 'prompt') {
+        } else {
             shown.push(cutBlock(b, left, perLine));
             used += left;
         }
         left -= lines[i];
-    }
-    // a reply that opens with a card taller than the fold shows that card whole: never a reply of only «Show more»
-    if (!shown.length) {
-        shown.push(blocks[0]);
-        used = lines[0];
     }
     return { hidden: Math.max(1, total - used), shown };
 }

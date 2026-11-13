@@ -1,13 +1,11 @@
-// a reply cut into blocks: prose stays markdown, a fenced block becomes a code block with a copy button, and a fence
-// under a «📋 copy → this thread» ribbon becomes a prompt card that fills the quill of the thread he reads; a ribbon
-// naming anywhere else (a terminal, another thread, the next session) keeps its fence a copy block, since the card's
-// click can only fill this quill (dima, 2026-11-12 01:37). the ribbons and the ✂️ end line are the fleet's own frame
+// a reply cut into blocks: prose stays markdown, a fenced block becomes a code block with a copy button, whatever its
+// 📋 ribbon names: a block he copies goes anywhere, so none fills the quill (dima's o147 tick, 2026-11-13 22:22). the
+// ribbons and the ✂️ end line are the fleet's own frame, never drawn
 
-/** @typedef {{ kind: 'text', text: string } | { kind: 'code', lang: string, text: string, isClosed: boolean, full?: string } | { kind: 'prompt', to: string, text: string }} Block */
+/** @typedef {{ kind: 'text', text: string } | { kind: 'code', lang: string, text: string, isClosed: boolean, full?: string }} Block */
 
-const RIBBON = /^📋\s*\*\*copy\s*→\s*(.+?)\*\*\s*📋\s*$/;
+const RIBBON = /^📋\s*\*\*copy\s*→\s*.+?\*\*\s*📋\s*$/;
 const END = /^✂️\s*\*\*end\*\*\s*✂️\s*$/;
-const THIS_THREAD = /^this (thread|session)$/i;
 const FENCE = /^\s*(```|~~~)\s*([\w+-]*)\s*$/;
 
 /**
@@ -19,8 +17,6 @@ export function splitBlocks(text) {
     const blocks = [];
     /** @type {string[]} */
     let prose = [];
-    /** @type {string | null} */
-    let ribbon = null;
     const flush = () => {
         const body = prose.join('\n').trim();
         if (body) blocks.push({ kind: 'text', text: body });
@@ -29,16 +25,13 @@ export function splitBlocks(text) {
     const lines = text.split('\n');
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        const toAt = RIBBON.exec(line);
-        if (toAt) {
+        if (RIBBON.test(line)) {
             flush();
-            ribbon = toAt[1].trim();
             continue;
         }
         if (END.test(line)) continue;
         const open = FENCE.exec(line);
         if (!open) {
-            if (line.trim()) ribbon = null;
             prose.push(line);
             continue;
         }
@@ -52,21 +45,13 @@ export function splitBlocks(text) {
             }
             body.push(lines[i]);
         }
-        const code = body.join('\n');
-        const to = ribbon;
-        ribbon = null;
-        if (to && THIS_THREAD.test(to) && isClosed)
-            blocks.push({ kind: 'prompt', text: code, to });
-        else blocks.push({ isClosed, kind: 'code', lang: open[2], text: code });
+        blocks.push({
+            isClosed,
+            kind: 'code',
+            lang: open[2],
+            text: body.join('\n'),
+        });
     }
     flush();
     return blocks;
 }
-
-/**
- * his quill after a prompt card's click: what he typed stays, a blank line, then the prompt, unsent
- * @param {string} was
- * @param {string} prompt
- */
-export const withPrompt = (was, prompt) =>
-    was.trim() ? `${was.trimEnd()}\n\n${prompt}` : prompt;

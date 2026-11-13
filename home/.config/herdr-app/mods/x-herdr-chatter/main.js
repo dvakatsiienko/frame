@@ -71,7 +71,7 @@ import {
     stateParts,
     withPress,
 } from './band.js';
-import { splitBlocks, withPrompt } from './blocks.js';
+import { splitBlocks } from './blocks.js';
 import { viewSwitch } from './chatter-header.js';
 import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
@@ -198,7 +198,7 @@ const HEX = /^#[0-9a-f]{6}$/i;
 /**
  * a row of the chat's list (rowsOf): its key is the list's and its press's
  * @typedef {{ key: string, kind: 'earlier' | 'turn' | 'item' | 'detail' | 'part' | 'file' | 'fold', id?: string | number,
- *   item?: any, x?: any, mine?: boolean, part?: 'text' | 'codehead' | 'code' | 'prompt', b?: any, isFirst?: boolean,
+ *   item?: any, x?: any, mine?: boolean, part?: 'text' | 'codehead' | 'code', b?: any, isFirst?: boolean,
  *   isLast?: boolean, label?: string, path?: string, hidden?: number, isOpen?: boolean, openKey?: string }} Row
  */
 // Ready-made picks beside the hex boxes: dark and light backgrounds, and text for either.
@@ -6322,7 +6322,7 @@ export default class ClaudeChat extends View {
     }
 
     // The rows the list shows, each with the key the list and its press report: a turn's fold, a message, a tool and
-    // its opened detail, and a reply cut into blocks when it holds code or a prompt card.
+    // its opened detail, and a reply cut into blocks when it holds code.
     /** @param {any[]} listed @param {any} sub @returns {Row[]} */
     rowsOf(listed, sub) {
         /** @type {Row[]} */
@@ -6411,7 +6411,7 @@ export default class ClaudeChat extends View {
                             rows.push({
                                 ...at,
                                 key: `${key}:${k}`,
-                                part: b.kind === 'text' ? 'text' : 'prompt',
+                                part: 'text',
                             });
                     });
                     if (blocks.length) rows[rows.length - 1].isLast = true;
@@ -6688,9 +6688,6 @@ export default class ClaudeChat extends View {
             cx.write_to_clipboard(row.b.full ?? row.b.text);
             this.copied = { at: Date.now(), key };
             cx.timer.after(1600, (cx) => cx.notify());
-        } else if (row.part === 'prompt') {
-            this.box.set_value(withPrompt(this.box.value(), row.b.text));
-            this.box.focus();
         } else if (row.kind === 'detail' || row.kind === 'part') return;
         else if (item.kind === 'user') {
             const { pad } = this.rowSpace();
@@ -6727,8 +6724,8 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
-    // A reply as one row: whole, or with a search's marks, which span its blocks. A reply with code or a prompt card is
-    // cut into rows instead (rowsOf), so the copy and the card take a press of their own.
+    // A reply as one row: whole, or with a search's marks, which span its blocks. A reply with code is cut into
+    // rows instead (rowsOf), so the copy takes a press of its own.
     replyBody(_t, item, i) {
         const text = this.markIn(i)
             ? markMarkdown(item.text, this.marks.re, this.markIn(i))
@@ -6748,7 +6745,7 @@ export default class ClaudeChat extends View {
         return item.blocks;
     }
 
-    // One block of a reply cut into rows: prose, a code block's head (the language and the copy) or body, a prompt card.
+    // One block of a reply cut into rows: prose, or a code block's head (the language and the copy) or body.
     replyPart(t, row) {
         const { b, part } = row;
         // a reply cut into rows shows its time under its last one, as a whole reply does under itself (FRM-594)
@@ -6765,13 +6762,6 @@ export default class ClaudeChat extends View {
                     `${this.pre}md-${row.key}`,
                     unlinkFiles(b.text),
                 ).selectable(true),
-                row.isFirst,
-                time,
-            );
-        if (part === 'prompt')
-            return this.claudeLook(
-                t,
-                this.promptCard(t, b, row.key),
                 row.isFirst,
                 time,
             );
@@ -6829,29 +6819,6 @@ export default class ClaudeChat extends View {
                           ).selectable(true),
                       );
         return this.claudeLook(t, box, false, time);
-    }
-
-    /** @param {Theme} t @param {{ to: string, text: string }} b @param {string} key */
-    promptCard(t, b, key) {
-        return v_flex()
-            .id(`prompt-${key}`)
-            .w_full()
-            .gap(4)
-            .p(10)
-            .rounded(10)
-            .border(1)
-            .border_color(t.accent)
-            .cursor_pointer()
-            .hover((s) => s.bg(t.hover))
-            .child(
-                h_flex()
-                    .text_size(px(11))
-                    .text_color(t.accent)
-                    .child(`📋 prompt → ${b.to}`)
-                    .child(div().flex_1())
-                    .child('click to put it in your box'),
-            )
-            .child(div().text_size(px(13)).child(b.text));
     }
 
     // ---- the right-click menu

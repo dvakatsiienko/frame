@@ -44,7 +44,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ the chat scrolls smoothly in a long thread (FRM-562)
   - given a thread with every loaded message in its chat
   - when dima flings it with the trackpad
-  - then herdr's own list scrolls it and draws only the messages on screen; a wheel step redraws nothing, and every press in a message (fork, the right-click menu, a fold, copy, a prompt card, a 📂 file) still works
+  - then herdr's own list scrolls it and draws only the messages on screen; a wheel step redraws nothing, and every press in a message (fork, the right-click menu, a fold, copy, a 📂 file) still works
   - decision: herdr's lazy list with each row's height measured out of sight (after shepherdr's chat): the old column drew all 60 rows every frame and redrew the mod on every wheel event; before, his 8 s fling spent 16.3 % of herdr's main thread drawing (21:27)
   - decision: a list row may hold no handler (a link handler inside one blanks the whole list, probe 21:23), so a press acts by the row it landed on, and the fork by where across the row
   - not checked: the fling after, by his hand
@@ -188,7 +188,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then its first ~24 lines show, and «▾ Show more · N more lines» under them; only those lines are laid out
   - when dima presses Show more
   - then the reply opens whole where it is, «▴ Show less» under it; Show less folds it and brings its start back into view
-  - and the replies after his last message never fold, a search hit shows whole, a cut code block still copies its whole text, a prompt card is never cut
+  - and the replies after his last message never fold, a search hit shows whole, a cut code block still copies its whole text
   - decision: the fold waits for his next message, so a reply never collapses while he reads it (review, 00:54)
   - proof: a probe thread's turn with three reports and two tools, before «▸ 2 tools · 2 messages» and the last report only, after all three reports (shots 17:45); clio's session: 83 more replies drawn across its 32 turns, 18 at most in one
   - decision: one settings row, «Earlier replies: Open / Folded», default Open (clio's ok on dima's «i see no list», 17:41); the old «Earlier turns: Fold / Show» row goes
@@ -254,12 +254,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a reply holds a closed fence
   - when dima clicks ⧉ copy at the code block's top right
   - then the label reads ✓ copied for a moment and a paste gives the command (his hand, 16:04)
-  - and a fence still streaming draws no copy button; only a fence under «📋 copy → this thread» (or «this session») makes a prompt card, since its click fills the quill he reads; under any other ribbon («copy → herdr terminal», another thread, «next session») it stays a copy block
-- ⬜ a prompt card fills the quill
-  - given a reply holds a fence under a «📋 copy → this thread» ribbon
-  - when dima clicks the card
-  - then the prompt lands in his quill after what he typed, one blank line between, unsent, and the quill takes the keyboard
-  - decision: in-message cards on our own column, his pick a (15:50): herdr's lazy list drops any row with its own handler (herdr-app#894)
+  - and a fence still streaming draws no copy button; a fence under any 📋 ribbon, «copy → this thread» included, is a copy block, never a card that fills the quill
+  - decision: the prompt card that filled his quill is gone; a copy block carries anything he moves elsewhere (his o147 tick, 22:22)
 - ✅ the / menu lists every skill the thread can load
   - given the thread's folder enables a plugin through the user, project or local settings
   - when dima types «/» and part of a name

@@ -48,32 +48,6 @@ describe('foldBlocks', () => {
         expect(cut.full).toBe(code);
         expect(cut.text.split('\n')).toHaveLength(FOLD_SHOWN - 4 - 2);
     });
-    it('never cuts a prompt card', () => {
-        const fold = foldBlocks(
-            [
-                { kind: 'text', text: prose(20) },
-                { kind: 'prompt', text: prose(30), to: 'clio' },
-            ],
-            60,
-        );
-        expect(fold?.shown).toEqual([{ kind: 'text', text: prose(20) }]);
-    });
-    it('shows an opening card taller than the fold whole', () => {
-        const card = { kind: 'prompt' as const, text: prose(30), to: 'clio' };
-        const fold = foldBlocks([card, { kind: 'text', text: prose(30) }], 60);
-        expect(fold?.shown).toEqual([card]);
-        expect(fold?.hidden).toBe(30);
-    });
-    it('counts the lines a skipped card leaves out', () => {
-        const fold = foldBlocks(
-            [
-                { kind: 'text', text: prose(20) },
-                { kind: 'prompt', text: prose(30), to: 'clio' },
-            ],
-            60,
-        );
-        expect(fold?.hidden).toBe(30);
-    });
     it('drops the blocks past the shown lines', () => {
         const fold = foldBlocks(
             [
