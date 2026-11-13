@@ -1,10 +1,10 @@
 ---
 id: PK-387
 title: 'lanes-checkup reshaped: a pretty fixed reply for chosen lanes'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-12T16:01:00Z'
-updated_date: '2026-11-12T16:25:00Z'
+updated_date: '2026-11-13T20:08:00Z'
 labels:
   - s
 dependencies: []
@@ -56,4 +56,7 @@ PK-387:W30 (2026-11-12 18:24, dima) for an efficient, optimized flow (sanity): t
 PK-387:W31 (2026-11-12 18:24, dima) the most-wanted and most-useful chunks go first, in any area.
 PK-387:W32 (2026-11-12 18:24, dima) always weigh the correction: tiny chunks can still go first; ideally tiny chunks are found and merged into other tiny or smaller ones, which saves ci rounds.
 PK-387:W33 (2026-11-12 18:24, dima) overall i want a chunk sequence ordering strategy in general. propose how to have it: another skill leaf with these rules? whenever i ask to review what we planned for chunks, we have a way to optimize the order and see how to get the chunks faster (for example by merging smaller ones).
+
+ticket: FRM-626
+close: 22:08 PK-387:W1–W33 done by FRM-626 (lowtide-peek-lanes + lowtide-peek-chunk), closed 21:30 on his «chunks approved»
 <!-- SECTION:NOTES:END -->
