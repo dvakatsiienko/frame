@@ -88,6 +88,7 @@ import {
 import { replyFold } from './fold.js';
 import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 import { rejoin } from './joined.js';
+import { JOINED_SHOWN_MS, JOINS_DIR, appendJoin, joinStatus } from './joins.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
 import { withPlainPaste } from './paste.js';
@@ -827,6 +828,8 @@ async function bandStates(pid) {
         thread: thread
             ? {
                   hot: thread.hot ?? null,
+                  // x-mod-stash's join queue: null when switched off, so a click pushes (FRM-564)
+                  joins: thread.joins ?? null,
                   sid: thread.sid,
                   wind: thread.wind ?? null,
               }
@@ -3276,6 +3279,24 @@ export default class ClaudeChat extends View {
             cx.timer.after(600, (cx) => this.tick(cx));
             return cx.notify();
         }
+        // a busy thread takes the words into its running turn, a picture as its path: no new turn starts (FRM-564)
+        const sid = this.states?.thread?.sid;
+        if (
+            this.target()?.status === 'working' &&
+            !text.startsWith('/') &&
+            !this.where?.container &&
+            !this.replies.get(address) &&
+            sid &&
+            this.states?.thread?.joins
+        ) {
+            const words = [text, ...attached.map(promptPath)]
+                .filter(Boolean)
+                .join('\n');
+            this.forgetPreviews(address, true);
+            this.files.delete(address);
+            this.keepFiles(address);
+            return this.join(address, sid, words, cx);
+        }
         // A dev container's pasted images go as their paths in the container, after the text.
         const files = this.where?.container
             ? (this.pasted.get(address) ?? [])
@@ -3329,6 +3350,81 @@ export default class ClaudeChat extends View {
         // These open a menu or a screen in Claude's terminal: show it there.
         if (OPENS.has(text.slice(1))) this.toTerminal(address);
         cx.notify();
+    }
+
+    // one row in the thread's join file, under the lock dir x-mod-stash takes too; a refused write gives the text back
+    /** @param {string} address @param {string} sid @param {string} text @param {import('gpui-kit').Context} cx */
+    join(address, sid, text, cx) {
+        const id = newUuid();
+        const dir = `${home()}/${JOINS_DIR}`;
+        this.joining = { address, at: Date.now(), id, state: 'pending', text };
+        cx.spawn(async (cx) => {
+            const made = await exec('mkdir', ['-p', dir]).catch(() => null);
+            const isWritten =
+                made?.code === 0 &&
+                (await appendJoin(
+                    {
+                        lock: async (path) =>
+                            (
+                                await exec('mkdir', [path]).catch(() => null)
+                            )?.code === 0,
+                        now: () => Date.now(),
+                        read: async (path) =>
+                            (await readTextFile(path).catch(() => null)) ?? '',
+                        sleep: (ms) => cx.sleep(ms),
+                        unlock: async (path) => {
+                            await exec('rmdir', [path]);
+                        },
+                        write: (path, body) => writeTextFile(path, body),
+                    },
+                    `${dir}/${sid}.jsonl`,
+                    id,
+                    text,
+                ));
+            if (!isWritten)
+                this.joinBack(text, 'Not joined, back in the box', cx);
+            cx.notify();
+        });
+        cx.notify();
+    }
+
+    // where the click's join stands, from the thread's state: «joined» for a moment, or the text back once no turn took it
+    /** @param {import('gpui-kit').Context} cx */
+    settleJoin(cx) {
+        const j = this.joining;
+        if (!j || j.state === 'joined') return false;
+        const state = joinStatus(
+            this.states?.thread?.joins,
+            j.id,
+            j.at,
+            Date.now(),
+        );
+        if (state === 'joined') {
+            this.joining = { ...j, state };
+            cx.timer.after(JOINED_SHOWN_MS, (cx) => {
+                if (this.joining?.id === j.id) this.joining = null;
+                cx.notify();
+            });
+            return true;
+        }
+        if (state === 'not taken') {
+            this.joinBack(j.text, 'Not taken, back in the box', cx);
+            return true;
+        }
+        return false;
+    }
+
+    // a join no turn took: its words come back to the quill, after anything typed since, and the note says why
+    /** @param {string} text @param {string} note @param {import('gpui-kit').Context} cx */
+    joinBack(text, note, cx) {
+        this.joining = null;
+        const typed = this.box.value();
+        this.box.set_value(typed ? `${typed}\n${text}` : text);
+        this.pasteNote = note;
+        cx.timer.after(6000, (cx) => {
+            if (this.pasteNote === note) this.pasteNote = null;
+            cx.notify();
+        });
     }
 
     // one record of Claude Code's queue: his send shows as queued from here on, read, never guessed
@@ -6677,6 +6773,7 @@ export default class ClaudeChat extends View {
                     this.states = next;
                     cx.notify();
                 }
+                if (this.settleJoin(cx)) cx.notify();
                 if (this.settlePresses()) cx.notify();
             } finally {
                 this.statesBusy = false;
@@ -8076,7 +8173,18 @@ export default class ClaudeChat extends View {
                                                                               .spin(
                                                                                   900,
                                                                               )
-                                                                        : '↑',
+                                                                        : this
+                                                                                .joining
+                                                                                ?.address ===
+                                                                            this
+                                                                                .address
+                                                                          ? this
+                                                                                .joining
+                                                                                .state ===
+                                                                            'joined'
+                                                                              ? '✓'
+                                                                              : '↗'
+                                                                          : '↑',
                                                                 ),
                                                         ),
                                                 ),

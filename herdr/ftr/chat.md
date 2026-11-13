@@ -276,6 +276,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a reply links a file with a `file://` url
   - then a «📂 <name>» row sits under the reply, its whole path on hover, and a click opens it in its app (a png in Preview, a folder in Finder); a web link in the text opens in the browser as before
   - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
+- ⬜ a click on send joins a busy thread's turn (FRM-564)
+  - given a busy thread and text in the quill
+  - when dima clicks send
+  - then a join row lands in the thread's join file, no turn starts, the quill clears, the button shows ↗ while pending and ✓ for ~3 s once the thread's state lists the row joined
+  - and a row listed nowhere a minute after the write, or a write refused, comes back to the quill after his draft, the note saying why
+  - and a picture waiting over the quill joins as its path
 - ⬜ a message tells when it was sent and when Claude read it
   - given a message in the chat
   - then a small dim line under it holds one state and its own time, on his clock, a date before it from an earlier day: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue (at a tool round or the turn's end; a row with no queue record, an idle send above all, at its own time); a reply reads its time alone, under its last part when it is cut into parts
