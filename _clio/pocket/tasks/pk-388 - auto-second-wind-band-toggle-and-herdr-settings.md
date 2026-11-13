@@ -35,5 +35,5 @@ PK-388:W7 (2026-11-13 19:56, dima): is there any nudge setting for «second wind
 PK-388:W8 (2026-11-13 19:56, dima): second wind: auto. in settings too: on/off + nudge text (steers).
 
 PK-388:W9 (2026-11-13 19:56, dima): Q3: nudge text mirrored/synced into my settings. i want to see what's there and steer it. i know it is important to be in good shape, that's why i ask for it in my textbox.
-→ 19:57 W6–W9 answered in main clio's thread 19:57: a plain 🐦‍🔥 press does send a note; round 2 asks o107 (one settings group, every text) and o108 (full editable note, red hint, reset)
+→ 19:57 W6–W9 answered in main clio's thread 19:57: a plain second wind press does send a note; round 2 asks o107 (one settings group, every text) and o108 (full editable note, red hint, reset)
 <!-- SECTION:NOTES:END -->
