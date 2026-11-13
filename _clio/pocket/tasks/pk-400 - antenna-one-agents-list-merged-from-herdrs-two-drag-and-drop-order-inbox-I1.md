@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T16:06:00Z'
+updated_date: '2026-11-13T16:07:00Z'
 labels:
   - s
 dependencies: []
@@ -171,4 +171,25 @@ PK-400:W83 (2026-11-13 17:56, dima, o70): deck: orbit on top, phases on bot.
 PK-400:W84 (2026-11-13 17:56, dima, o70): left side: antenna top, glide bot.
 PK-400:W85 (2026-11-13 17:57, dima): q: deck is a good name for right side.
 PK-400:W86 (2026-11-13 17:57, dima): how to name left side then? ❓
+
+18:07 groomed by helga, folded:
+PK-400:W87 (2026-11-13 18:06, dima): wish: better, clearer, more visible representation of when you are mid-turn and your activity (tool calls, what you are doing atm).
+PK-400:W88 (2026-11-13 18:06, dima): left col: let's name it «sidebar» for now.
+PK-400:W89 (2026-11-13 18:06, dima): mast — no, do not like it.
+PK-400:W90 (2026-11-13 18:06, dima): i like dock. it pairs with deck | dock.
+PK-400:W91 (2026-11-13 18:06, dima): but it is not really a dock, so let's have it named «sidebar». boring but 100% hit.
+PK-400:W92 (2026-11-13 18:06, dima): let's do naming shaking a little. so confusions in future are killed. let's define the names.
+PK-400:W93 (2026-11-13 18:06, dima): stuff i shown in ss — not mods? ❓
+PK-400:W94 (2026-11-13 18:06, dima): my entire composer sits inside chatter mod (that covers the messages list, and composer itself)? ❓
+PK-400:W95 (2026-11-13 18:06, dima): our pattern for names is x-herdr-* — for mods.
+PK-400:W96 (2026-11-13 18:06, dima): how to have good solid naming system for inner parts of a mod? ❓
+PK-400:W97 (2026-11-13 18:06, dima): simple plain names? or some prefix is needed? ❓
+PK-400:W98 (2026-11-13 18:06, dima): name the whole thing where i write messages from — my ideas are dock or composer.
+PK-400:W99 (2026-11-13 18:06, dima): i like dock — shorter, it is really kinda a dock, composer is long and popmusic.
+PK-400:W100 (2026-11-13 18:06, dima): the band — top nested card, where my meters are.
+PK-400:W101 (2026-11-13 18:06, dima): quill — is a main textbox in dock.
+PK-400:W102 (2026-11-13 18:06, dima): bot nested card — not named, do not know how (it was born just yesterday).
+PK-400:W103 (2026-11-13 18:06, dima): i still not sure how to layout all parts.
+PK-400:W104 (2026-11-13 18:06, dima): i asked codie to move agent progress here and buttons too.
+PK-400:W105 (2026-11-13 18:06, dima): you can propose how to optimize.
 <!-- SECTION:NOTES:END -->
