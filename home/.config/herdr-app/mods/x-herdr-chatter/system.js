@@ -22,13 +22,15 @@ const SURFACE_NOTE =
  */
 export const cleanTyped = (text) =>
     text
-        .replace(/<system-reminder\b[^>]*>[\s\S]*?<\/system-reminder>/g, '')
+        // a reminder on its own lines leaves one line break, one inside a line leaves nothing; his own blank lines stay
+        .replace(
+            /(\n*)<system-reminder\b[^>]*>[\s\S]*?<\/system-reminder>(\n*)/g,
+            (_m, before, after) => (before || after ? '\n' : ''),
+        )
         .replace(
             /<pasted_content\b[^>]*>([\s\S]*?)<\/pasted_content\b[^>]*>/g,
             '$1',
         )
-        // a stripped reminder leaves its line breaks: never more than one blank line where it was
-        .replace(/\n{3,}/g, '\n\n')
         .trim();
 
 /** @param {unknown} content */
@@ -59,6 +61,22 @@ export function commandOutputLine(out) {
     // biome-ignore lint/suspicious/noControlCharactersInRegex: the escape is what a terminal colour code starts with
     const text = out.replace(/\x1b\[[0-9;]*m/g, '').trim();
     return text ? { label: `⌘ ${firstLine(text)}`, text } : null;
+}
+
+/**
+ * the system line a transcript row is that the fold missed until FRM-595: the compact boundary, or a slash command's
+ * output (`<local-command-stdout>`, `<bash-stdout>`) in a user row; null for every other row
+ * @param {any} entry
+ * @returns {SystemLine | null}
+ */
+export function missedSystemLine(entry) {
+    if (entry?.type === 'system' && entry.subtype === 'compact_boundary')
+        return COMPACTED_LINE;
+    if (entry?.type !== 'user') return null;
+    const raw = textOf(entry.message?.content);
+    const out =
+        tagged(raw, 'local-command-stdout') ?? tagged(raw, 'bash-stdout');
+    return out === undefined ? null : commandOutputLine(out);
 }
 
 /** the compact boundary Claude Code writes when a conversation is compacted @type {SystemLine} */

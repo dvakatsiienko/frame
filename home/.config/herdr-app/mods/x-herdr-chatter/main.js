@@ -140,12 +140,11 @@ import {
 import { loadableSkills, menuMatches } from './skills.js';
 import { wholeLines } from './slice.js';
 import {
-    COMPACTED_LINE,
     SYSTEM_MODES,
     cleanTyped,
-    commandOutputLine,
     dropImageMarks,
     midTurnPrompt,
+    missedSystemLine,
     systemDraw,
     systemLine,
 } from './system.js';
@@ -3002,7 +3001,7 @@ export default class ClaudeChat extends View {
                 into.items.push({
                     id: d.uuid,
                     kind: 'system',
-                    ...COMPACTED_LINE,
+                    .../** @type {any} */ (missedSystemLine(d)),
                 });
             if (
                 d.type === 'attachment' &&
@@ -3054,7 +3053,7 @@ export default class ClaudeChat extends View {
                         ? this.lastReply.uuid
                         : undefined;
                 if (typeof content === 'string')
-                    this.said(content, into, before, d.timestamp);
+                    this.said(content, into, before, d.timestamp, d);
                 else
                     for (const b of dropImageMarks(content ?? [])) {
                         if (b.type === 'tool_result') {
@@ -3077,9 +3076,13 @@ export default class ClaudeChat extends View {
                                 }
                             }
                         } else if (b.type === 'text')
-                            this.said(b.text, into, before, d.timestamp);
+                            this.said(b.text, into, before, d.timestamp, d);
                         else if (b.type === 'image')
-                            into.items.push({ kind: 'user', text: '🖼 image' });
+                            into.items.push({
+                                at: d.timestamp ?? null,
+                                kind: 'user',
+                                text: '🖼 image',
+                            });
                     }
             } else if (d.type === 'assistant') {
                 // Where a fork made at the next message of yours starts from (see fork).
@@ -3116,18 +3119,20 @@ export default class ClaudeChat extends View {
 
     // What the person typed, or what Claude Code put in their turn (slash commands, ! commands).
     // `at`: the row's stamp, the send time his message shows on hover (FRM-594)
-    /** @param {any} raw @param {any} [into] @param {any} [before] @param {string | null} [at] */
-    said(raw, into = this, before = undefined, at = null) {
+    /** @param {any} raw @param {any} [into] @param {any} [before] @param {string | null} [at] @param {any} [entry] */
+    said(raw, into = this, before = undefined, at = null, entry = null) {
         const text = cleanTyped(raw);
         if (!text || text.startsWith('<local-command-caveat>')) return;
         const command = tag(text, 'command-name');
         if (command)
             return into.items.push({
+                at,
                 kind: 'user',
                 text: `${command} ${tag(text, 'command-args') ?? ''}`.trim(),
             });
         const bash = tag(text, 'bash-input');
-        if (bash) return into.items.push({ kind: 'user', text: `! ${bash}` });
+        if (bash)
+            return into.items.push({ at, kind: 'user', text: `! ${bash}` });
         const out =
             tag(text, 'local-command-stdout') ?? tag(text, 'bash-stdout');
         if (out !== undefined && into === this) {
@@ -3138,16 +3143,20 @@ export default class ClaudeChat extends View {
                 this.effort = { level: effort[1], model: this.modelNow() };
         }
         // a command's output (hook lines after a compact, «Set effort level…» after a pick) folds as a system line
-        const output = out === undefined ? null : commandOutputLine(out);
-        if (out !== undefined)
+        if (out !== undefined) {
+            const output = missedSystemLine({
+                message: { content: text },
+                type: 'user',
+            });
             return (
                 output &&
                 into.items.push({
-                    id: `out-${at ?? into.items.length}`,
+                    id: entry?.uuid ?? `out-${at}`,
                     kind: 'system',
                     ...output,
                 })
             );
+        }
         if (text.startsWith('[Request interrupted'))
             return into.items.push({ kind: 'note', text: 'Interrupted' });
         // a message another terminal typed in with `hc send`: its words, under who sent it
@@ -4420,16 +4429,9 @@ export default class ClaudeChat extends View {
                 .py(4)
                 .text_size(px(12))
                 .text_color(t.dim)
-                .when(Boolean(item.mono), (el) =>
-                    el
-                        .font_family(this.mono())
-                        .rounded(6)
-                        .bg(t.surface)
-                        .child(clip(item.text, 1500)),
-                )
-                .when(!item.mono, (el) =>
-                    el.flex().justify_center().child(`— ${item.text} —`),
-                );
+                .flex()
+                .justify_center()
+                .child(`— ${item.text} —`);
         }
         if (AGENT_TOOLS.has(item.name)) return this.subCard(t, item, i);
         if (item.name === 'AskUserQuestion') return ask.asked(t, px, item);
@@ -6382,20 +6384,35 @@ export default class ClaudeChat extends View {
     // One block of a reply cut into rows: prose, a code block's head (the language and the copy) or body, a prompt card.
     replyPart(t, row) {
         const { b, part } = row;
+        // a reply cut into rows shows its time on its first one, as a whole reply does (FRM-594)
+        const time = row.isFirst
+            ? messageDetails(
+                  { at: row.item?.at ?? null, isMine: false, isQueued: false },
+                  Date.now(),
+              )
+            : null;
+        const withTime = (/** @type {any} */ el) =>
+            time
+                ? div()
+                      .id(`reply-part-at-${row.key}`)
+                      .w_full()
+                      .tooltip(time)
+                      .child(el)
+                : el;
         if (part === 'text')
-            return this.claudeLook(
-                t,
-                TextView.markdown(
-                    `${this.pre}md-${row.key}`,
-                    unlinkFiles(b.text),
-                ).selectable(true),
-                row.isFirst,
+            return withTime(
+                this.claudeLook(
+                    t,
+                    TextView.markdown(
+                        `${this.pre}md-${row.key}`,
+                        unlinkFiles(b.text),
+                    ).selectable(true),
+                    row.isFirst,
+                ),
             );
         if (part === 'prompt')
-            return this.claudeLook(
-                t,
-                this.promptCard(t, b, row.key),
-                row.isFirst,
+            return withTime(
+                this.claudeLook(t, this.promptCard(t, b, row.key), row.isFirst),
             );
         const isCopied =
             this.copied?.key === row.key && Date.now() - this.copied.at < 1500;
@@ -7411,7 +7428,7 @@ export default class ClaudeChat extends View {
         // Each item with its index, which its row ids use; tool calls left out if hidden (not sub-agents).
         const visible = ([item]) =>
             look.tools === 'show' ||
-            ['user', 'claude', 'note'].includes(item.kind) ||
+            ['user', 'claude', 'note', 'system'].includes(item.kind) ||
             AGENT_TOOLS.has(item.name) ||
             item.name === 'AskUserQuestion' ||
             isRelay(item);

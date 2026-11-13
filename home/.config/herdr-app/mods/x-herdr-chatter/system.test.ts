@@ -6,6 +6,7 @@ import {
     commandOutputLine,
     dropImageMarks,
     midTurnPrompt,
+    missedSystemLine,
     systemDraw,
     systemLine,
 } from './system.js';
@@ -196,15 +197,41 @@ describe('a prompt he typed while a turn ran draws like any other', () => {
 // missed, drawn whole: a slash command's stdout (hook output after a compact, «Set effort level…» after a pick) and the
 // compact boundary. never drawn, so nothing to fold: system rows (turn durations, stop-hook summaries, idle notices),
 // hook attachments, a command's caveat, the compact summary. fixtures here are written by hand in each kind's shape
-const missed = {
-    compact: COMPACTED_LINE,
-    effortSet: commandOutputLine(
-        'Set effort level to high (this session only): Claude takes more care',
-    ),
-    hookOutput: commandOutputLine(
-        '\u001b[2mCompacted (ctrl+o to see full summary)\u001b[22m\nPreCompact [command hook 1] completed successfully',
-    ),
+const rows = {
+    bashOutput: {
+        message: {
+            content: [
+                {
+                    text: '<bash-stdout>two files changed</bash-stdout>',
+                    type: 'text',
+                },
+            ],
+        },
+        type: 'user',
+    },
+    compact: {
+        content: 'Conversation compacted',
+        subtype: 'compact_boundary',
+        type: 'system',
+    },
+    effortSet: {
+        message: {
+            content:
+                '<local-command-stdout>Set effort level to high (this session only): Claude takes more care</local-command-stdout>',
+        },
+        type: 'user',
+    },
+    hookOutput: {
+        message: {
+            content:
+                '<local-command-stdout>\u001b[2mCompacted (ctrl+o to see full summary)\u001b[22m\nPreCompact [command hook 1] completed successfully</local-command-stdout>',
+        },
+        type: 'user',
+    },
 };
+const missed = Object.fromEntries(
+    Object.entries(rows).map(([k, row]) => [k, missedSystemLine(row)]),
+);
 
 describe('a row he never typed folds with the rest (FRM-595)', () => {
     test("a command's output folds to its first line, colour codes gone, the whole output kept", () => {
@@ -225,10 +252,28 @@ describe('a row he never typed folds with the rest (FRM-595)', () => {
         expect(COMPACTED_LINE.label).toBe('🗜 Conversation compacted');
     });
 
-    test('folded: each missed kind sits in one row he can open; his own text beside it is no system row', () => {
-        for (const line of Object.values(missed))
-            expect(systemDraw('fold', line ? 'system' : 'none')).toBe('folded');
+    test('each missed row kind is a system line: one row he can open while folded', () => {
+        for (const [kind, line] of Object.entries(missed))
+            expect(line, kind).toMatchObject({ label: expect.any(String) });
+        expect(missed.compact).toEqual(COMPACTED_LINE);
+        expect(missed.bashOutput?.label).toBe('⌘ two files changed');
+        expect(systemDraw('fold', 'system')).toBe('folded');
+    });
+
+    test('his own row is no missed system line, and draws whole', () => {
+        const mine = {
+            message: { content: 'ship it' },
+            origin: { kind: 'human' },
+            type: 'user',
+        };
+        expect(missedSystemLine(mine)).toBeNull();
         expect(systemDraw('fold', 'user')).toBe('whole');
+    });
+
+    test('a code block he pasted keeps its blank lines', () => {
+        expect(cleanTyped('def a():\n    pass\n\n\ndef b():\n    pass')).toBe(
+            'def a():\n    pass\n\n\ndef b():\n    pass',
+        );
     });
 
     test('hidden: none draws; shown: each draws whole', () => {
