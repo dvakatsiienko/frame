@@ -250,7 +250,7 @@ describe('a row he never typed folds with the rest (FRM-595)', () => {
     });
 
     test('the compact boundary is a system line', () => {
-        expect(COMPACTED_LINE.label).toBe('🗜 Conversation compacted');
+        expect(COMPACTED_LINE.label).toBe('📦 Conversation compacted');
     });
 
     test('each missed row kind is a system line: one row he can open while folded', () => {
