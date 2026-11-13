@@ -4325,14 +4325,15 @@ export default class ClaudeChat extends View {
             ).selectable(true);
             const fork = Boolean(item.before && this.agentNow);
             // the fork's press lands by where it was (clickRow): its column is the row's last FORK_W px
-            // a full-width look has no strip beside his words but this column, so his time sits on it there
+            // his time also sits on this column: a full-width look has no other strip beside his words, and a bubble
+            // that fills a narrow pane leaves the strip on its left no width
             const forkJSX = h_flex()
                 .w(FORK_W)
                 .flex_none()
                 .self_stretch()
                 .justify_end()
-                .when(mine !== 'bubble' && Boolean(details), (el) =>
-                    el.id(`me-at-${i}`).tooltip(details),
+                .when(Boolean(details), (el) =>
+                    el.id(`me-fork-at-${i}`).tooltip(details),
                 )
                 .when(fork, (el) =>
                     el.child(
@@ -6862,7 +6863,7 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // the thread's state, its turn clock and Stop: one row in the control card, between + and the band (dima, 15:36: «try»)
+    // the thread's state and its turn clock: one row in the control card, between + and Stop (dima, 15:36: «try»)
     /** @param {any} t @param {any} agent */
     stateRow(t, agent) {
         const pid = this.where?.container ? null : this.where?.pid;
@@ -6926,14 +6927,22 @@ export default class ClaudeChat extends View {
                             .child(turnClock(Date.now() - this.turnAt)),
                     ),
                 )
-                .when(parts.hasStop, (el) =>
-                    el.child(
-                        button(t, px, 'stop', 'Stop', (_e, cx) =>
-                            this.stop(cx),
-                        ),
-                    ),
-                )
         );
+    }
+
+    // Stop sits beside the state row, never in it: the row clips in a narrow pane, and Stop must stay pressable
+    /** @param {any} t @param {any} agent */
+    stopButton(t, agent) {
+        const { hasStop } = stateParts({
+            hasTurnAt: Boolean(this.turnAt),
+            isStuck: this.stuck,
+            status: agent.status,
+        });
+        return hasStop
+            ? button(t, px, 'stop', 'Stop', (_e, cx) =>
+                  this.stop(cx),
+              ).flex_none()
+            : null;
     }
 
     // the module's lower card: + on the left, the thread's state, the band's buttons on the right
@@ -6948,6 +6957,7 @@ export default class ClaudeChat extends View {
                 el.child(this.attachButton(t)),
             )
             .child(this.stateRow(t, agent).flex_1())
+            .children([this.stopButton(t, agent)].filter(Boolean))
             .child(this.bandChips(t));
     }
 
@@ -7930,7 +7940,7 @@ export default class ClaudeChat extends View {
                     .when(Boolean(menu), (el) => el.child(menu))
                     // While the menu is open, ↑ ↓ Tab Esc are its keys (bound in init); ← → Home End close
                     // it (the caret would leave the word with no change event), and the next press moves.
-                    // the module: the state card, then the control card painted under the quill (column-reverse paints
+                    // the module: the meters card, then the control card painted under the quill (column-reverse paints
                     // the quill last). only the text card sits in the quill's focus scope (send and the picker in its corner, clear of the text); the cards' buttons stay out
                     // of it, so no click or render ever moves his caret (his 15:24: «i cannot type into texbox»)
                     .child(
