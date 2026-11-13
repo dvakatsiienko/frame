@@ -577,6 +577,7 @@ async function startHelga() {
     const settings = JSON.stringify({
         autoCompactWindow: 130000,
         env: { CLAUDE_CODE_DISABLE_CLAUDE_MDS: '1' },
+        promptSuggestionEnabled: false,
         worktree: { bgIsolation: 'none' },
     });
     const isPane = process.env.CLIO_SIDECAR_PANE === '1';
