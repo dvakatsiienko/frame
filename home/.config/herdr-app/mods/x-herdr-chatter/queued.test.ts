@@ -364,3 +364,31 @@ describe('a slash command typed into Claude Code for a picker', () => {
         ]);
     });
 });
+
+// his 22:31 cmd-enter with a picture: Claude Code wrote his words and an image block, the path gone from the text, so a
+// send kept as the whole message never matched its row and drew twice
+describe('a pushed message with a picture or a quote leaves the waiting list at its row', () => {
+    test('matched on his words, not the whole message', () => {
+        const at = Date.parse('2026-11-13T20:31:20Z');
+        const sent = {
+            at,
+            said: 'just switched from low to med mid-turn',
+            text: 'just switched from low to med mid-turn\n/Users/dima/Desktop/shot.jpg',
+        };
+        expect(
+            queuedAfterRow(
+                [sent],
+                'just switched from low to med mid-turn',
+                at + 400,
+            ),
+        ).toEqual([]);
+    });
+    test('a waiting row shows his words, never the picture path', () => {
+        const at = Date.parse('2026-11-13T20:31:20Z');
+        expect(
+            waitingRows([
+                { at, isRecorded: false, said: 'hi', text: 'hi\n/p.jpg' },
+            ]).map((r) => r.item.text),
+        ).toEqual(['hi']);
+    });
+});

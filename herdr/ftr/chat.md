@@ -17,6 +17,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a prompt pushed while a turn runs shows at once as his message, «sent» until the turn takes it
   - given dima pushes a thread a message while its turn is still running
   - then it draws at once at the log's end as his own message reading «sent», and «read» once Claude Code's own queue records it taken
+  - and a message carrying a picture or a quote draws once: the row shows his words, and the transcript's row replaces it (dima, 22:31: «message was duped»)
   - and a thread that sat idle 5 s with the message never in its transcript drops it
   - decision: no Queued strip and no «Send now» over the quill (dima, 19:37: «queued messages go to a Queued section I don't want»)
   - decision: queued and joined are read from Claude Code's `queue-operation` records (enqueue, remove, dequeue, popAll), never guessed from his text
@@ -121,7 +122,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima picks another effort or model in the quill
   - then Claude Code sets it for this session at once, the turn runs on, and the next reply uses the pick
   - and a pick on its way reads in the accent, «Medium…», on the quill's label and inside the popover alike (the slider's level, the model's ✓), until a reply runs at it: Claude Code applies a mid-turn effort from its next request and writes no line for it (FRM-588:W7, dima 21:57 and 22:09; clio's 22:09:17 request ran at high inside a running turn)
-  - and the moment a reply first runs at his effort, the label and the slider's level flash solid orange for 2 s, then read plain: that reply's request is the first one sent at it (dima, 22:20 and 22:26); a pick made after a turn's last request stays blue until the next turn's first request
+  - and the moment a reply first runs at his effort, the label and the slider's level flash solid orange for 2 s, then read plain: that reply's request is the first one sent at it (dima, 22:20 and 22:26); a pick made after a turn's last request reads plain once the turn ends, since the next turn starts at it (22:31)
   - and a pick in vim's normal mode presses `i` first, and a pick whose picker never opened leaves nothing in Claude's prompt (FRM-588:W6)
   - and the picker opens neither by click nor by ⌘⇧E while the thread asks him something, and a pick made before the question came never types into it: a note says to answer first
   - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56); `/model` mid-stream, «Set model to Sonnet 5.5 for this session only», the next reply `claude-sonnet-5-5` (2026-11-13)

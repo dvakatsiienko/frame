@@ -76,3 +76,11 @@ export function effortAfterStamp(effort, stamp) {
         return { isApplied: false, isPicked: true, level: effort.level };
     return { isApplied: isPicked, isPicked: false, level: stamp };
 }
+
+/**
+ * a pick Claude Code took still waits for a request to run at it: only while the thread works; once the turn ended no
+ * request runs at the old effort again, so the pick settles (dima, 22:31: «stuck again»)
+ * @param {boolean} isTaken @param {string | undefined} status
+ */
+export const isPickWaiting = (isTaken, status) =>
+    isTaken && (status === 'working' || status === 'blocked');

@@ -83,6 +83,7 @@ import {
     effortAfterStamp,
     effortKey,
     effortWord,
+    isPickWaiting,
     pickTaken,
     pickerLabel,
     slideEffort,
@@ -2385,8 +2386,12 @@ export default class ClaudeChat extends View {
         // a pick Claude Code took stays «pending» in the accent until a reply runs at it: its next request, mid-turn
         // too (clio's 22:09:17 request ran at high inside a running turn)
         const isTaken = p.kind === 'effort' && this.effort?.isPicked;
-        if (now === p.value && !isTaken) this.pending = null;
-        else if (isTaken && now === p.value) return;
+        if (isTaken && now === p.value) {
+            if (isPickWaiting(true, this.target()?.status)) return;
+            // the turn ended before a request ran at it: it holds, and the next turn starts at it
+            this.effort = { ...this.effort, isPicked: false };
+            this.pending = null;
+        } else if (now === p.value) this.pending = null;
         else if (Date.now() > p.until) {
             this.pending = null;
             this.pickNote = 'No change seen: look at the Terminal';
@@ -3683,7 +3688,7 @@ export default class ClaudeChat extends View {
         if (!idle && text)
             this.queued.set(address, [
                 ...(this.queued.get(address) ?? []),
-                { at: Date.now(), text: message },
+                { at: Date.now(), said: text, text: message },
             ]);
         // the send button spins until hc hands the message over
         this.sendingTo = address;

@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
     effortAfterStamp,
     effortKey,
+    isPickWaiting,
     pickTaken,
     pickerLabel,
     slideEffort,
@@ -169,5 +170,20 @@ describe('effortAfterStamp', () => {
             isPicked: true,
             level: 'high',
         });
+    });
+});
+
+// his 22:31 try: medium picked mid-turn after the turn's last request; the turn ended at low and the label stayed blue,
+// though no request will ever run at low again
+describe('isPickWaiting', () => {
+    test('taken while the thread works: it waits for the next request', () => {
+        expect(isPickWaiting(true, 'working')).toBe(true);
+    });
+    test('taken and the turn ended: nothing runs at the old one any more, it settles', () => {
+        expect(isPickWaiting(true, 'idle')).toBe(false);
+        expect(isPickWaiting(true, 'done')).toBe(false);
+    });
+    test('not taken: nothing waits', () => {
+        expect(isPickWaiting(false, 'working')).toBe(false);
     });
 });

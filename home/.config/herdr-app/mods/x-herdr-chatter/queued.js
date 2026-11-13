@@ -2,7 +2,7 @@
 // round; the quill is empty by then, so it read as lost (dima, 17:20: «yes it confused me and i want it fixed»). each
 // one shows as queued until its row reaches the transcript
 
-/** @typedef {{ at: number, text: string }} Queued */
+/** @typedef {{ at: number, text: string, said?: string }} Queued */
 
 // past this, a thread idle with the message never in its transcript has dropped it: the chip goes, the turn's own rows stand
 export const QUEUED_IDLE_MS = 5000;
@@ -33,7 +33,9 @@ const asTyped = (text) => {
 export function queuedAfterRow(queued, text, at) {
     const row = words(asTyped(text));
     const i = queued.findIndex(
-        (q) => at >= q.at - STAMP_SLACK_MS && row.includes(words(q.text)),
+        (q) =>
+            at >= q.at - STAMP_SLACK_MS &&
+            row.includes(words(q.said ?? q.text)),
     );
     return i < 0 ? queued : queued.filter((_, n) => n !== i);
 }
@@ -195,12 +197,13 @@ export function boxText(screen) {
 // takes over once Claude Code reads one
 // keyed by its words and how many waiting before it share them: its stamp moves when Claude Code records it, its place
 // when an earlier one is taken, and a new key remeasures the row
-/** @param {{ at: number, text: string, isRecorded: boolean }[]} waiting */
+/** @param {{ at: number, text: string, said?: string, isRecorded: boolean }[]} waiting */
 export function waitingRows(waiting) {
     /** @type {Map<string, number>} */
     const seen = new Map();
     return waiting.map((q, n) => {
-        const text = queuedWords(q.text);
+        // his words: a picture's path or a quote rides the message, never the row
+        const text = queuedWords(q.said ?? q.text);
         const twin = seen.get(text) ?? 0;
         seen.set(text, twin + 1);
         return {
