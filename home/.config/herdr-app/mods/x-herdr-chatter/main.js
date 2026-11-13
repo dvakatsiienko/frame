@@ -4359,12 +4359,19 @@ export default class ClaudeChat extends View {
                             .flex_1()
                             .min_w(0)
                             .justify_end()
+                            // his time shows on a hover over the empty strip left of his bubble: the selectable
+                            // words take the hover, so a tooltip on the bubble fired only over its padding
+                            .when(Boolean(details), (el) =>
+                                el.child(
+                                    div()
+                                        .id(`me-at-${i}`)
+                                        .flex_1()
+                                        .self_stretch()
+                                        .tooltip(details),
+                                ),
+                            )
                             .child(
                                 div()
-                                    .id(`me-bubble-${i}`)
-                                    .when(Boolean(details), (el) =>
-                                        el.tooltip(details),
-                                    )
                                     .max_w(this.bubbleW)
                                     .px(12)
                                     .py(8)

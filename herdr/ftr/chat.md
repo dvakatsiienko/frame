@@ -267,10 +267,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: a link inside a list row can't take a click (no handler there, and TextView opens no file://), so each file gets its own row (dima's o81 «ok», 21:39); a link click inside the text waits on [herdr-app#894](https://github.com/herdrdev/herdr-app/issues/894)
 - ⬜ a message tells when it was sent and whether it arrived
   - given a message in the chat
-  - when dima hovers it
+  - when dima hovers the empty space beside it: left of his bubble, right of a reply's, or a reply's dot strip
   - then a tooltip reads its send time on his clock, a date before it from an earlier day, and for his own message «received» once its row is in the transcript («15:03 · received»); a reply reads its time alone
   - and a message still in the queued strip reads «15:10 · queued» on hover, «received» once its row lands
   - decision: a native tooltip, not a hover line: a hover that redraws rebuilds every message and drops a selection; it bends «a tooltip only on an action with no text», since the details are nowhere in view (clio 15:18, put to dima as an assumption)
+  - decision: the hover sits beside the words, never on them: a selectable TextView takes the hover, so a tooltip on his bubble fired only over its padding (dima, 15:51: «no, i don't see a tooltip»)
   - not checked: the tooltip showing inside a lazy-list row (herdr-app#598), his hover
 - ⬜ a reply answers one message
   - given a message in the chat
