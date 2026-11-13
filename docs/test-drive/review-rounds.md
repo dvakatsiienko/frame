@@ -138,3 +138,4 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 
 ## verdict
 - 2026-11-12 · frame#172, FRM-572 chunk 2 (cli wisps): clean at 3 rounds · wishkeeper found 1 high (a UTC lock stamp read every live holder as gone), sixth sense round 2 found 1 P1 (a `ps` that did not run read as gone); both fixed, red-proven · ci reviewer: not named
+- 2026-11-13 · FRM-600, strays-lane quick lane on main (e4d0413e..2ffc37c6), one naming door: no sixth sense; main clio's wisphunter read twice · round 1 found 7 (a nudged member never resumed, clio's and crow's starts refused by the name check, a reused session id), round 2 found 2 (a resume typed into a draft, the store lock held through the renames); my live runs found 3 (no mode emoji at summon, the first tab rename racing terminal.keep, cc's grey suggestion read as a draft → suggestions off for members, dima's o22)
