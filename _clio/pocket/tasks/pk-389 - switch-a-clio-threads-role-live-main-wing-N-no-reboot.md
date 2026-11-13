@@ -4,7 +4,7 @@ title: switch a clio thread's role live (main, wing N), no reboot
 status: done
 assignee: []
 created_date: '2026-11-13T11:21:00Z'
-updated_date: '2026-11-13T11:51:00Z'
+updated_date: '2026-11-13T12:05:00Z'
 labels:
   - s
 dependencies: []
@@ -28,4 +28,6 @@ PK-389:W4 grill it today, right after all the herdr topics are grilled. (wing 1 
 close: shaped by wing 1 (grill rounds 1–2, plan critic folded), filed as FRM-596; its wish block carries W1–W3
 
 close: (13:51) W1 moved → FRM-596:W1; W2 moved → FRM-596:W2; W3 moved → FRM-596:W3 (answered: main's 13:12 fix); W4 done (grilled today, 13:33–13:42)
+
+14:05 clio: x brief summon names a lane by its ticket's project (🔧 fleet | FRM-588) and drops the ⚡ mode; dima wants every lane named by its scope (herdr, mods). today fixed by hand with x thread rename + thread-tab.ts; the cc name still needs /rename while idle. the verb grilled here takes the area at summon.
 <!-- SECTION:NOTES:END -->
