@@ -22,11 +22,11 @@ live in `x:notes`, copied by hand into the cloud chat leaf `/topics/obsidian.md`
 ## the shared working tree
 
 - **a parallel agent in a repo with a repo-wide commit gate writes to scratch until it compiles, then moves in** — per-path ownership does not hold against a per-repo typecheck hook: a coder's own subagent dropped a half-compiled `.ts` into the tree and blocked the coder's commits for two rounds (2026-09-22). guard: `script/index-run.sh` in frame (the gates run on a private copy that sees only the commit, so a peer's staged file never reds yours — FRM-367, PK-97) and `x lane commit` waits out a peer's index lock; none in bytes until its index copy lands
+- **an x/go change committed in main's checkout is live for every session at once**: the shim builds the working tree, so it lands before any read or push; one that changes a shared path or state is timed by its commit (FRM-621 moved the mods-edit scratch under a working codie, 2026-11-13: `docs/knowledge/fleet-stories/x-live-on-commit/story.md`). guard: none · FRM-624
 
 ## the bash sandbox
 
 - **a worktree-isolated session runs git only through `x lane <verb>`** (commit, push, pr-open, merge-main, unlock): cc's own isolation check refuses git it cannot prove targets the tree, and no mod can lift it (FRM-356). any other text naming git or `eval` (`.git.x` in jq, `gh --jq`, an agent-browser `eval`) goes into a scratch script, run by path. guard: `x lane <verb>`
-- **an x/go change committed in main's checkout is live for every session at once**: the shim builds the working tree, so it lands before any read or push; one that changes a shared path or state is timed by its commit (FRM-621 moved the mods-edit scratch under a working codie, 2026-11-13: `docs/knowledge/fleet-stories/x-live-on-commit/story.md`). guard: none · FRM-624
 
 ## node
 
