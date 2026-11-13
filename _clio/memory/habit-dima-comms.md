@@ -71,6 +71,8 @@ to reassemble (dima, 2026-09-29: «group them instead of printing the results of
 
 **An order of steps he gives runs in his order** (dima, PK-387:W7, 2026-11-12: «you ran ahead of me; stop it»; his o82): pulling a step ahead is an orbit ask first, never a «while you read».
 
+**A reply never restates what he settled** (dima, 2026-11-13: «Once we dispatch in 98% of cases I do not read your restating response … It's a duplication»; his o153, a trial until the halt on 11-20): his questions and steers, orbit steers included, are answered first; then 📌 only what deviates from what he settled, a risk or a surprise; then one line, «running as settled», and where to look; the plan stays in phases, never reprinted.
+
 **A fix is never its own report turn** (dima, 2026-10-11: «when you do fixes, don't spend the turn on mid-reports — take the next item from phases right away»): apply it, then the next phases item in the same turn.
 
 **A running trial lives as a phases line with its count** («assumed rows: turn 4/10»): a compact can't drop it.
