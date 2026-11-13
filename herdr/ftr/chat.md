@@ -14,15 +14,14 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then it draws as his message at the place he sent it, a shot or a paste in it too, marked no differently
   - and a peer's message or a task notice queued the same way does not draw as his
   - decision: Claude Code writes such a prompt as a `queued_command` attachment with `origin.kind` human, never a user entry; the chat reads it as one
-- ⬜ a prompt sent while a turn runs shows as queued until the turn takes it
-  - given dima sends a thread a message while its turn is still running
-  - then a strip over the log's bottom edge reads «Queued, joins this turn» and lists each queued message on its own line, three at most and «+n more» past them, the log never moving
-  - and a line leaves the moment Claude Code's own queue records it taken, where it draws as his message
-  - and a thread that sat idle 5 s with the message never in its transcript drops the line
-  - and «Send now» at the strip's top presses Claude Code's own Ctrl+Enter when its screen offers «ctrl+enter to send now», «Sending…» meanwhile; offered nothing, it says «Claude takes it at its next step» for 4 s
+- ⬜ a prompt pushed while a turn runs shows at once as his message, «sent» until the turn takes it
+  - given dima pushes a thread a message while its turn is still running
+  - then it draws at once at the log's end as his own message reading «sent», and «read» once Claude Code's own queue records it taken
+  - and a thread that sat idle 5 s with the message never in its transcript drops it
+  - decision: no Queued strip and no «Send now» over the quill (dima, 19:37: «queued messages go to a Queued section I don't want»)
   - decision: queued and joined are read from Claude Code's `queue-operation` records (enqueue, remove, dequeue, popAll), never guessed from his text
   - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the quill empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
-  - and a press on the strip («Send now», «Take it», a ×) is the strip's alone: the message under it never forks
+  - and a press on «Still in Claude's box» («Take it», «Send as is») is the strip's alone: the message under it never forks
 - ⬜ a queued message comes back to the quill with its × (FRM-563)
   - decision: hidden behind `IS_UNDO_SEND_ON` since his 01:39 «looks ugly, and half baked»; its look goes to the look grill
   - decision: the lost re-send was Claude Code's vim normal mode: ↑ there leaves the cursor on the last character, ctrl+u leaves it, and the re-send glued onto it («plum» queued as «plumm»); the chat presses `i` before ↑ (probed 2026-11-12)
@@ -224,6 +223,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given he scrolled up in a thread's chat
   - when a reply, a tool line, a peer or plugin line, a turn end, a store change, a resize or a reload of the mod arrives
   - then the text he reads stays where it is; only his scroll to the end or a click on the «↓ Newest» pill brings him back to following
+  - and a row he reads that a relay or a redraw replaced leaves him where he is, never at the newest; only a thread he comes back to whose row is gone opens at its newest (W83, 21:16: «i scroll myself»)
   - and the pill counts what arrived since he left the bottom: «↓ 3 new messages»
   - and each thread keeps its place across a tab switch, and across a reload of the mod (by the message's transcript id)
   - decision: «following» is a state he enters and leaves by his own scroll or click, never set by a redraw; the wheel only flips it (rows.js)
@@ -282,6 +282,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then a join row lands in the thread's join file, no turn starts, the words stay in the quill and the button shows 📥 (queued)
   - and what he types after the click rides the same row until a turn takes it
   - and a second click before a turn took it takes the mark off: the row leaves the join file, the words stay
+  - and each thread keeps its own mark: marking words in another thread leaves this one's waiting
+  - decision: one mark per thread, never one at a time (clio's call on W44, 21:16)
   - and once a turn takes the row, its words leave the quill in the same frame the chat draws them (anything typed after its last write stays), the button shows ✉️ (joined) for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
   - and a row listed nowhere a minute after the write, or a write refused, stays in the quill unmarked, the note saying why; after a chatter reload the mark and the words come back once
   - and a picture waiting over the quill joins as its path and stays over the quill, as the words do, until a turn takes it; one dropped or removed while the words wait rides or leaves the same row
@@ -310,7 +312,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a message tells when it was sent and when Claude read it
   - given a message in the chat
   - then a small dim line under it holds one state and its own time, on his clock, a date before it from an earlier day: his own message reads «sent 14:45» while Claude Code holds it, «read 14:46» once it took it off its queue (at a tool round or the turn's end; a row with no queue record, an idle send above all, at its own time); a reply reads its time alone, under its last part when it is cut into parts
-  - and a message still in the queued strip reads «sent 15:10» on hover
+  - and a pushed message Claude Code still holds reads «sent 15:10» at the log's end
   - decision: one state, one time (his 17:16 shot: «only one state — sent or read. sent turns to read once reached an agent»); the time is the shown state's own, so it never needs a second; «read» replaced «received», which showed the send time and looked instant though the turn took the message seconds later
   - decision: always shown, not on hover: a tooltip inside a lazy-list row never showed for him, beside his bubble (15:51) or on its strip (16:27: «no, i do not see it»); a row's renderer takes no handlers ([herdr-app#598](https://github.com/herdrdev/herdr-app/issues/598)); clio's fallback, 16:27
 - ⬜ a reply answers one message

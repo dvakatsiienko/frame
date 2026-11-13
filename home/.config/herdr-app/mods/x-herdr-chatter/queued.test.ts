@@ -8,11 +8,11 @@ import {
     isVimNormal,
     queuedAfterIdle,
     queuedAfterRow,
-    queuedStripCover,
     queuedWords,
     readTime,
     readsAfter,
     sendArgs,
+    waitingRows,
 } from './queued.js';
 
 const SENT = Date.parse('2026-11-11T15:01:50.84Z');
@@ -169,12 +169,39 @@ describe('the words of a queued message', () => {
     });
 });
 
-describe('the strip over the log', () => {
-    test('one queued message covers its line, the header and the gap', () => {
-        expect(queuedStripCover(1)).toBe(30 + 24 + 6 + 6);
+describe('a send waiting for the turn shows in the chat as his message', () => {
+    const at = Date.parse('2026-11-13T21:20:00Z');
+    test('each waiting send is his row, its words out of the paste wrapper, marked waiting', () => {
+        expect(
+            waitingRows([
+                { at, isRecorded: true, text: 'fix the crow emoji' },
+                {
+                    at: at + 1,
+                    isRecorded: false,
+                    text: '<pasted_content id="36e3">\nhi there\n</pasted_content>',
+                },
+            ]).map((r) => [
+                r.kind,
+                r.mine,
+                r.item.kind,
+                r.item.text,
+                r.item.isWaiting,
+            ]),
+        ).toEqual([
+            ['item', true, 'user', 'fix the crow emoji', true],
+            ['item', true, 'user', 'hi there', true],
+        ]);
     });
-    test('past three, the rest are one counted line', () => {
-        expect(queuedStripCover(5)).toBe(30 + 3 * 24 + 18 + 6 + 6);
+    test('its key holds while it waits, and two sends of one text stay two rows', () => {
+        const once = { at, isRecorded: false, text: 'ok' };
+        const keys = waitingRows([once, { ...once }]).map((r) => r.key);
+        expect(new Set(keys).size).toBe(2);
+        expect(waitingRows([once, { ...once }]).map((r) => r.key)).toEqual(
+            keys,
+        );
+    });
+    test('nothing waiting draws no row', () => {
+        expect(waitingRows([])).toEqual([]);
     });
 });
 

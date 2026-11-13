@@ -106,7 +106,6 @@ import { withPlainPaste } from './paste.js';
 import * as ask from './question.js';
 import {
     QUEUED_IDLE_MS,
-    QUEUED_SHOWN,
     boxText,
     claudeQueueAfter,
     clearKeys,
@@ -114,17 +113,18 @@ import {
     isVimNormal,
     queuedAfterIdle,
     queuedAfterRow,
-    queuedStripCover,
     queuedWords,
     readTime,
     readsAfter,
     sendArgs,
+    waitingRows,
 } from './queued.js';
 import { relayIn, relayLine } from './relay.js';
 import {
     LEFT_STRIP_COVER,
     SETTLED_READS,
     fileLinks,
+    followAfterLostRow,
     followAfterWheel,
     isPressUnderStrip,
     isRowClipped,
@@ -1207,25 +1207,35 @@ const sendMark = (emoji) =>
 // 150 ms), and between repeats (his are 15 ms apart); macOS sends no key-up for a key let go while ⌘ is down
 const KEY_SILENCE_MS = 250;
 const KEY_REPEAT_SILENCE_MS = 80;
-// the words marked to join, kept across a reload so the quill and the row stay one
-const MARKED = 'joins:marked';
-/** @param {object | null} mark */
-function keepMark(mark) {
+// the words marked to join, one per thread, kept across a reload so each quill and its row stay one
+const MARKED = 'joins:marks';
+/** @param {Map<string, Mark>} marks */
+function keepMarks(marks) {
+    const pending = [...marks.values()]
+        .filter((m) => m.state === 'pending')
+        .map(({ written, ...m }) => m);
     try {
-        mark
-            ? localStorage.setItem(MARKED, JSON.stringify(mark))
+        pending.length
+            ? localStorage.setItem(MARKED, JSON.stringify(pending))
             : localStorage.removeItem(MARKED);
     } catch {}
 }
-/** @returns {Mark | null} */
-function keptMark() {
+/** @returns {Map<string, Mark>} */
+function keptMarks() {
     try {
-        const kept = JSON.parse(localStorage.getItem(MARKED) ?? 'null');
-        return typeof kept?.id === 'string' && kept.state === 'pending'
-            ? kept
-            : null;
+        const kept = JSON.parse(localStorage.getItem(MARKED) ?? '[]');
+        return new Map(
+            (Array.isArray(kept) ? kept : [])
+                .filter(
+                    (m) =>
+                        typeof m?.id === 'string' &&
+                        typeof m.address === 'string' &&
+                        m.state === 'pending',
+                )
+                .map((m) => [m.address, m]),
+        );
     } catch {
-        return null;
+        return new Map();
     }
 }
 // the hold's delay and length, his two settings rows
@@ -1681,7 +1691,8 @@ export default class ClaudeChat extends View {
         this.idleSince = new Map();
         this.box = TextareaState.new({});
         this.box.set_auto_grow(1, 8);
-        this.joining = keptMark();
+        /** @type {Map<string, Mark>} each thread's marked words, by agent address */
+        this.joinings = keptMarks();
         /** @type {Set<string>} ids the transcript shows a turn took */
         this.tookIds = new Set();
         cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
@@ -1711,7 +1722,7 @@ export default class ClaudeChat extends View {
         // A redraw rebuilds every message, so typing redraws only for the / menu, the one thing
         // that depends on what's typed (the quill draws its own text).
         this.box.on('change', (_e, cx) => {
-            if (this.joining?.state === 'pending') {
+            if (this.markOf()?.state === 'pending') {
                 this.retextTask?.cancel();
                 // an emptied quill takes the mark off: the row leaves the join file, 📥 goes (dima, 20:28)
                 if (!this.box.value().trim()) this.unmark(cx);
@@ -1977,10 +1988,16 @@ export default class ClaudeChat extends View {
             ? null
             : (kept.anchor ?? stored?.anchor ?? null);
         const uuid = kept.items ? null : (stored?.uuid ?? null);
-        /** @type {{ how: 'top' | 'center', key: string, uuid?: string | null, until: number } | null} */
+        /** @type {{ how: 'top' | 'center', isRestore?: boolean, key: string, uuid?: string | null, until: number } | null} */
         this.anchor =
             anchor || uuid
-                ? { how: 'top', key: anchor, until: Date.now() + 8000, uuid }
+                ? {
+                      how: 'top',
+                      isRestore: true,
+                      key: anchor,
+                      until: Date.now() + 8000,
+                      uuid,
+                  }
                 : null;
         if (!this.anchor) this.follow = true;
         this.reanchor = Boolean(this.anchor);
@@ -2964,7 +2981,7 @@ export default class ClaudeChat extends View {
                 } else if (text) {
                     this.ingest(text);
                     // a take the transcript just showed clears the quill now, not at the next state read
-                    if (this.joining && this.tookIds?.has(this.joining.id))
+                    if (this.tookIds?.has(this.markOf()?.id))
                         this.settleJoin(cx);
                     this.pos = end;
                     if (more) this.again = true;
@@ -3169,9 +3186,10 @@ export default class ClaudeChat extends View {
             for (const text of joinedTexts(d)) {
                 into.items.push({ at: d.timestamp, kind: 'user', text });
                 // the turn took the marked words: the transcript says so before the stash's next state write
-                if (into === this && this.joining?.text === text) {
+                const mark = this.markOf();
+                if (into === this && mark?.text === text) {
                     this.tookIds ??= new Set();
-                    this.tookIds.add(this.joining.id);
+                    this.tookIds.add(mark.id);
                 }
             }
             d = midTurnPrompt(d) ?? d;
@@ -3527,17 +3545,15 @@ export default class ClaudeChat extends View {
             // the words stay in the quill untouched, the caret where it was (W71), marked, and the pictures over it, until
             // a turn takes them (dima, 20:55): what he types next rides the same join
             // a second click while the words wait takes the mark off: their row leaves the join file, the words stay
-            const j = this.joining;
-            if (j?.address === address && j.state === 'pending')
+            // each thread keeps its own mark: one waiting in another thread stays (clio's call on W44, 21:16)
+            if (this.markOf(address)?.state === 'pending')
                 return this.unmark(cx);
-            // one mark at a time: a mark left in another thread takes its row back first, its words staying in that quill
-            if (j?.state === 'pending') this.unmark(cx);
             return this.join(address, sid, words, text, extra, cx);
         }
         // a push of words still marked to join: their row leaves the join file first, and a row a turn took already is
         // never pushed again
-        const marked = this.joining;
-        if (marked?.address === address && marked.state === 'pending')
+        const marked = this.markOf(address);
+        if (marked?.state === 'pending')
             return cx.spawn(async (cx) => {
                 await marked.written;
                 const isBack = await takeBackJoin(
@@ -3546,8 +3562,7 @@ export default class ClaudeChat extends View {
                     marked.id,
                 );
                 if (!isBack) return this.say('It joined the turn first', cx);
-                if (this.joining?.id === marked.id) this.joining = null;
-                keepMark(null);
+                this.dropMark(marked.id);
                 this.send(cx, isPush);
             });
         clearQuill();
@@ -3607,6 +3622,25 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
+    /** the thread's marked words @param {string} [address] @returns {Mark | null} */
+    markOf(address = this.address) {
+        return this.joinings.get(address) ?? null;
+    }
+
+    /** @param {Mark} mark */
+    setMark(mark) {
+        this.joinings.set(mark.address, mark);
+        keepMarks(this.joinings);
+    }
+
+    // by id: a late answer never drops the mark that replaced it
+    /** @param {string} id */
+    dropMark(id) {
+        for (const [address, m] of this.joinings)
+            if (m.id === id) this.joinings.delete(address);
+        keepMarks(this.joinings);
+    }
+
     // one row in the thread's join file, under the lock dir x-mod-stash takes too; a refused write gives the text back
     /**
      * @param {string} address @param {string} sid @param {string} text the row's words @param {string} said the quill's
@@ -3615,8 +3649,8 @@ export default class ClaudeChat extends View {
     join(address, sid, text, said, extra, cx) {
         const id = newUuid();
         const dir = `${home()}/${JOINS_DIR}`;
-        /** @type {Mark | null} */
-        this.joining = {
+        /** @type {Mark} */
+        const mark = {
             address,
             at: Date.now(),
             extra,
@@ -3628,9 +3662,10 @@ export default class ClaudeChat extends View {
         };
         /** @type {(isWritten: boolean) => void} */
         let landed = () => {};
-        this.joining.written = new Promise((r) => {
+        mark.written = new Promise((r) => {
             landed = r;
         });
+        this.setMark(mark);
         cx.spawn(async (cx) => {
             const made = await exec('mkdir', ['-p', dir]).catch(() => null);
             const isWritten =
@@ -3638,10 +3673,9 @@ export default class ClaudeChat extends View {
                 (await appendJoin(joinIo(cx), `${dir}/${sid}.jsonl`, id, text));
             landed(isWritten);
             if (!isWritten) {
-                if (this.joining?.id === id) this.joining = null;
+                this.dropMark(id);
                 this.say('Not joined, still in the box', cx);
             } else {
-                if (this.joining?.id === id) keepMark(this.joining);
                 // words typed while the row was on its way ride it now
                 this.retext(cx);
                 const sids = joinedSids().filter((k) => k.sid !== sid);
@@ -3664,7 +3698,7 @@ export default class ClaudeChat extends View {
     // where the click's join stands, from the thread's state: «joined» for a moment, or the text back once no turn took it
     /** @param {import('gpui-kit').Context} cx */
     settleJoin(cx) {
-        const j = this.joining;
+        const j = this.markOf();
         // only the state of the thread the join went to says where it stands
         if (
             !j ||
@@ -3686,8 +3720,7 @@ export default class ClaudeChat extends View {
             this.tookIds?.has(j.id)
         ) {
             // joined first: the quill's change handler must not read the emptied quill as his unmark
-            keepMark(null);
-            this.joining = { ...j, state: 'joined' };
+            this.setMark({ ...j, state: 'joined' });
             // the pictures it took leave with its words; one dropped after the last write stays
             const files = this.files.get(this.address) ?? [];
             const left = files.filter((p) => !j.extra.includes(promptPath(p)));
@@ -3706,14 +3739,13 @@ export default class ClaudeChat extends View {
                 keepDraft(this.address, rest);
             }
             cx.timer.after(JOINED_SHOWN_MS, (cx) => {
-                if (this.joining?.id === j.id) this.joining = null;
+                this.dropMark(j.id);
                 cx.notify();
             });
             return true;
         }
         if (state === 'not taken') {
-            this.joining = null;
-            keepMark(null);
+            this.dropMark(j.id);
             // its row leaves the file too, so a stash that comes back never hands it in a second time
             cx.spawn((cx) =>
                 takeBackJoin(
@@ -3745,18 +3777,15 @@ export default class ClaudeChat extends View {
                 )) ?? '';
             const back = backTexts(file, k.taken);
             // the marked words came back with the rest: they are in the quill already
-            const marked = this.joining;
-            const isMarkedBack = Boolean(
-                marked && back.ids.includes(marked.id),
+            const marked = [...this.joinings.values()].find((m) =>
+                back.ids.includes(m.id),
             );
+            const isMarkedBack = Boolean(marked);
             const ids = back.ids;
             const texts = back.texts.filter(
                 (_, n) => !isMarkedBack || back.ids[n] !== marked?.id,
             );
-            if (isMarkedBack) {
-                this.joining = null;
-                keepMark(null);
-            }
+            if (marked) this.dropMark(marked.id);
             // re-read, so a sid join() saved meanwhile stays
             const others = joinedSids().filter((o) => o.sid !== k.sid);
             if (isEnded && !ids.length) {
@@ -3778,8 +3807,8 @@ export default class ClaudeChat extends View {
     // the marked words as the quill holds them now, written over the same row while no turn took it
     /** @param {import('gpui-kit').Context} cx */
     retext(cx) {
-        const j = this.joining;
-        if (!j || j.state !== 'pending' || j.address !== this.address) return;
+        const j = this.markOf();
+        if (j?.state !== 'pending') return;
         const said = this.box.value().trim();
         const extra = (this.files.get(this.address) ?? []).map(promptPath);
         const text = [said, ...extra].filter(Boolean).join('\n');
@@ -3792,9 +3821,9 @@ export default class ClaudeChat extends View {
                 j.id,
                 text,
             );
-            if (!isWritten || this.joining?.id !== j.id) return;
-            this.joining = { ...this.joining, extra, said, text };
-            keepMark(this.joining);
+            const now = this.joinings.get(j.address);
+            if (!isWritten || now?.id !== j.id) return;
+            this.setMark({ ...now, extra, said, text });
             cx.notify();
         });
     }
@@ -3802,12 +3831,11 @@ export default class ClaudeChat extends View {
     // the mark taken off the quill's words: their row leaves the join file unless a turn took it first
     /** @param {import('gpui-kit').Context} cx */
     unmark(cx) {
-        const j = this.joining;
+        const j = this.markOf();
         if (!j) return;
         if (this.states?.thread?.joins?.taken?.includes(j.id))
             return this.say('It joined the turn first', cx);
-        this.joining = null;
-        keepMark(null);
+        this.dropMark(j.id);
         cx.spawn(async (cx) => {
             // the append first: a take-back that won the lock before it would drop nothing, then the row would join
             await j.written;
@@ -3817,21 +3845,10 @@ export default class ClaudeChat extends View {
                 j.id,
             );
             if (!isTaken) this.say('Still joining, try again', cx);
-            if (!isTaken && !this.joining) this.joining = j;
+            if (!isTaken && !this.joinings.has(j.address)) this.setMark(j);
             cx.notify();
         });
         cx.notify();
-    }
-
-    // a join no turn took: its words come back to the quill, after anything typed since, and the note says why
-    /** @param {string} text @param {string} note @param {import('gpui-kit').Context} cx */
-    joinBack(text, note, cx) {
-        this.joining = null;
-        const typed = this.box.value();
-        this.box.set_value(typed ? `${typed}\n${text}` : text);
-        this.typed = this.box.value();
-        keepDraft(this.address, this.typed);
-        this.say(note, cx);
     }
 
     // a few words beside the quill for 6 s: why a send went the way it did
@@ -4177,137 +4194,6 @@ export default class ClaudeChat extends View {
         );
     }
 
-    // [take it]: the text into the quill, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
-    // stops Claude (proven on a throwaway thread: full, empty and mid-turn). [send as is]: Enter on Claude's own box.
-    // Send now on a message waiting in Claude Code's own queue: its Ctrl+Enter takes it at once, mid-turn, pressed only
-    // when its screen offers «ctrl+enter to send now» (on an empty prompt the key does something else). After
-    // shepherdr's steerNow (core/send.js, MIT).
-    sendNow(cx) {
-        const address = this.address;
-        this.steering = true;
-        cx.notify();
-        cx.spawn(async (cx) => {
-            let isPressed = false;
-            for (let i = 0; i < 4 && !isPressed; i++) {
-                await cx.sleep(i ? 300 : 150);
-                const r = await hc(['read', address, '--lines', '40']).catch(
-                    () => null,
-                );
-                if (/ctrl\+enter to send now/i.test(r?.stdout ?? '')) {
-                    await hc(['keys', address, 'ctrl+enter']);
-                    isPressed = true;
-                }
-            }
-            this.steering = isPressed
-                ? null
-                : 'Claude takes it at its next step';
-            cx.notify();
-            if (isPressed) return;
-            await cx.sleep(4000);
-            this.steering = null;
-            cx.notify();
-        });
-    }
-
-    // what he sent while the thread works, one line each with its cross, over the log's bottom edge so the transcript
-    // never moves when it comes or goes
-    /** @param {any} t @param {{ at: number, text: string, isRecorded: boolean }[]} queued */
-    queuedStrip(t, queued) {
-        const shown = queued.slice(0, QUEUED_SHOWN);
-        const more = queued.length - shown.length;
-        const lineH = 24;
-        // the gap above the quill is the cover's last 6 px
-        const height = queuedStripCover(queued.length) - 6;
-        const lineJSX = shown.map((q, i) => {
-            return h_flex()
-                .id(`queued-${i}`)
-                .h(lineH)
-                .gap(8)
-                .items_center()
-                .child(
-                    div()
-                        .id(`queued-words-${i}`)
-                        .flex_1()
-                        .min_w(0)
-                        .truncate()
-                        .text_color(t.foreground)
-                        .tooltip(
-                            messageDetails(
-                                { at: q.at, isMine: true, isQueued: true },
-                                Date.now(),
-                            ) ?? 'queued',
-                        )
-                        .child(queuedWords(q.text).replace(/\s+/g, ' ')),
-                )
-                .child(
-                    IS_UNDO_SEND_ON && q.isRecorded && !this.steering
-                        ? div()
-                              .id(`queued-x-${i}`)
-                              .size(px(18))
-                              .flex()
-                              .flex_none()
-                              .items_center()
-                              .justify_center()
-                              .rounded_full()
-                              .text_color(t.muted)
-                              .cursor_pointer()
-                              .hover((s) =>
-                                  s.bg(t.hover).text_color(t.foreground),
-                              )
-                              .tooltip('Take it back into the quill')
-                              .on_click((_e, cx) => this.pullQueued(q.text, cx))
-                              .child('×')
-                        : div().size(px(18)).flex_none(),
-                );
-        });
-        return v_flex()
-            .absolute()
-            .left(10)
-            .right(10)
-            .top(-(height + 6))
-            .px(10)
-            .pb(4)
-            .rounded(8)
-            .bg(t.raised)
-            .border(1)
-            .border_color(t.border)
-            .text_size(px(12))
-            .text_color(t.muted)
-            .child(
-                h_flex()
-                    .h(30)
-                    .gap(8)
-                    .items_center()
-                    .child(
-                        div()
-                            .flex_1()
-                            .child(
-                                queued.length > 1
-                                    ? `Queued, ${queued.length} join this turn`
-                                    : 'Queued, joins this turn',
-                            ),
-                    )
-                    .child(
-                        this.steering
-                            ? div()
-                                  .flex_none()
-                                  .text_color(t.dim)
-                                  .child(
-                                      this.steering === true
-                                          ? 'Sending…'
-                                          : this.steering,
-                                  )
-                            : button(t, px, 'send-now', 'Send now', (_e, cx) =>
-                                  this.sendNow(cx),
-                              ),
-                    ),
-            )
-            .children(lineJSX)
-            .when(more > 0, (el) =>
-                el.child(div().h(18).child(`+${more} more`)),
-            );
-    }
-
     // The cross on a queued message: ↑ in Claude Code's empty prompt pulls every queued message of his into its input
     // (its one door, probed 2026-11-12), one popAll record each, so the input is emptied, the one he crossed goes to
     // his quill and the others pulled are sent again in their order. Pressed only while its screen offers «up to edit
@@ -4437,6 +4323,8 @@ export default class ClaudeChat extends View {
         await say(isPulled ? null : 'It joined the turn first');
     }
 
+    // [take it]: the text into the quill, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
+    // stops Claude (proven on a throwaway thread: full, empty and mid-turn). [send as is]: Enter on Claude's own box.
     takeLeft(cx) {
         const text = this.leftInBox,
             address = this.address;
@@ -4747,12 +4635,12 @@ export default class ClaudeChat extends View {
         if (isRelay(item)) return this.relayRow(t, item);
         const mine = chatLook().mine;
         if (item.kind === 'user') {
-            // a row in the transcript is a message Claude Code received; one still queued sits in the strip
+            // a row in the transcript is a message Claude Code received; a waiting one (waitingRows) reads «sent»
             const details = messageDetails(
                 {
                     at: item.at ?? null,
                     isMine: true,
-                    isQueued: false,
+                    isQueued: Boolean(item.isWaiting),
                     readAt: readTime(
                         this.reads.get(this.address) ?? [],
                         item.text,
@@ -6033,10 +5921,13 @@ export default class ClaudeChat extends View {
                 this.scroll.scroll_to_item(at, this.anchor.how);
             } else if (Date.now() > this.anchor.until) {
                 // his row never came (a /clear, a trimmed transcript): the newest, never another thread's offset
+                const isNewest = followAfterLostRow(this.anchor);
                 this.reanchor = false;
                 this.anchor = null;
-                this.follow = true;
-                this.stick = true;
+                if (isNewest) {
+                    this.follow = true;
+                    this.stick = true;
+                }
             }
         }
         if (this.anchor && !this.reanchor && Date.now() > this.anchor.until)
@@ -6567,6 +6458,7 @@ export default class ClaudeChat extends View {
             )
                 rows.push({ id, item, key: `${key}:detail`, kind: 'detail' });
         }
+        if (!sub) rows.push(...waitingRows(this.waiting(this.address)));
         this.flat = rows;
         return rows;
     }
@@ -7967,15 +7859,10 @@ export default class ClaudeChat extends View {
         }
         this.agentWorking = agent.status === 'working';
         this.settleQueued(agent.status, cx);
-        const queued = this.waiting(this.address);
         const isLeftShown =
             Boolean(this.leftInBox) && agent.status !== 'working';
         // how far a strip covers the log's bottom: a press there is the strip's, never the row's under it
-        this.stripCover = isLeftShown
-            ? LEFT_STRIP_COVER
-            : queued.length
-              ? queuedStripCover(queued.length)
-              : 0;
+        this.stripCover = isLeftShown ? LEFT_STRIP_COVER : 0;
         // A row's height holds only at the width and look it was measured at.
         /** @type {string} */
         const fit = `${Math.round(this.viewW ?? 0)}|${look.size}|${look.space}|${look.width}|${look.tools}|${look.replies}|${look.mine}|${look.font}|${look.system}`;
@@ -8004,7 +7891,6 @@ export default class ClaudeChat extends View {
         const boxShape = [
             agent.status === 'blocked',
             images > 0,
-            queued.length > 0,
             isLeftShown,
             Boolean(chips),
             Boolean(this.pasteNote),
@@ -8186,9 +8072,6 @@ export default class ClaudeChat extends View {
                     .bg(t.background)
                     .relative()
                     // over the log's bottom edge, so the transcript never moves when it comes or goes
-                    .when(queued.length > 0 && !isLeftShown, (el) =>
-                        el.child(this.queuedStrip(t, queued)),
-                    )
                     .when(isLeftShown, (el) =>
                         el.child(
                             h_flex()
@@ -8661,13 +8544,8 @@ export default class ClaudeChat extends View {
                                                                               .spin(
                                                                                   900,
                                                                               )
-                                                                        : this
-                                                                                .joining
-                                                                                ?.address ===
-                                                                            this
-                                                                                .address
-                                                                          ? this
-                                                                                .joining
+                                                                        : this.markOf()
+                                                                          ? this.markOf()
                                                                                 .state ===
                                                                             'joined'
                                                                               ? sendMark(

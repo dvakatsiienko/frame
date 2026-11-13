@@ -183,19 +183,19 @@ export function boxText(screen) {
     return box.join(' ').replace(/\s+/g, ' ').trim();
 }
 
-// the queued messages listed over the quill, the rest counted
-export const QUEUED_SHOWN = 3;
-const STRIP_HEAD = 30;
-const STRIP_LINE = 24;
-const STRIP_MORE = 18;
-const STRIP_FOOT = 6;
-// the strip floats this far above the quill
-const STRIP_GAP = 6;
-
-/** how far up from the log's bottom the queued strip covers it, its gap included @param {number} count */
-export const queuedStripCover = (count) =>
-    STRIP_HEAD +
-    Math.min(count, QUEUED_SHOWN) * STRIP_LINE +
-    (count > QUEUED_SHOWN ? STRIP_MORE : 0) +
-    STRIP_FOOT +
-    STRIP_GAP;
+// his sends waiting for the turn, drawn at the log's end as his own rows in their «sent» state; the transcript's row
+// takes over once Claude Code reads one
+/** @param {{ at: number, text: string, isRecorded: boolean }[]} waiting */
+export const waitingRows = (waiting) =>
+    waiting.map((q, n) => ({
+        id: `waiting-${n}`,
+        item: {
+            at: q.at,
+            isWaiting: true,
+            kind: /** @type {'user'} */ ('user'),
+            text: queuedWords(q.text),
+        },
+        key: `waiting:${q.at}:${n}`,
+        kind: /** @type {'item'} */ ('item'),
+        mine: true,
+    }));

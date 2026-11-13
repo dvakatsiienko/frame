@@ -88,6 +88,13 @@ export function followAfterWheel(follow, dy, isAtEnd) {
 }
 
 /**
+ * following the newest once a held row is gone: only a thread he came back to (a /clear, a trimmed transcript) goes to
+ * the newest; mid-thread he stays where he reads, whatever lands (dima, 21:16: «i scroll myself»)
+ * @param {{ isRestore?: boolean }} anchor
+ */
+export const followAfterLostRow = (anchor) => Boolean(anchor.isRestore);
+
+/**
  * the nearest of his messages starting above the view's first row, or -1
  * @param {{ mine?: boolean }[]} rows
  * @param {number} start the first row on screen

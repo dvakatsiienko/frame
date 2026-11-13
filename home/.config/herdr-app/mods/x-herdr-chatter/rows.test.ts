@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
-import { queuedStripCover } from './queued.js';
 import {
     LEFT_STRIP_COVER,
     MAX_ROW_PX,
     MEASURE_MAX,
     MEASURE_NEW,
     fileLinks,
+    followAfterLostRow,
     followAfterWheel,
     isPressUnderStrip,
     isRowClipped,
@@ -192,9 +192,6 @@ describe('a row clips only while its size is not its own height', () => {
 });
 
 describe('a press under a strip over the log is the strip’s, never the row’s', () => {
-    test('a press on Send now or a ×, inside the queued strip, never forks the row under it', () => {
-        expect(isPressUnderStrip(580, 600, queuedStripCover(1))).toBe(true);
-    });
     test('a press on Take it, inside «Still in Claude’s box», never forks the row under it', () => {
         expect(isPressUnderStrip(580, 600, LEFT_STRIP_COVER)).toBe(true);
     });
@@ -258,5 +255,14 @@ describe('a home path and its full form are one file', () => {
         expect(
             fileLinks('see ~/a/x.png and /Users/dima/a/x.png', '/Users/dima'),
         ).toEqual([{ label: 'x.png', path: '/Users/dima/a/x.png' }]);
+    });
+});
+
+describe('a held row that vanished never moves him to the newest unless he came back to the thread', () => {
+    test('reading mid-thread, a row that changed under him leaves him where he is (dima, 21:16)', () => {
+        expect(followAfterLostRow({ isRestore: false })).toBe(false);
+    });
+    test('back to a thread whose row is gone (a /clear, a trimmed transcript): the newest', () => {
+        expect(followAfterLostRow({ isRestore: true })).toBe(true);
     });
 });
