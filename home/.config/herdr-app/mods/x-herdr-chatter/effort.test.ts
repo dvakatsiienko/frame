@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
-import { effortKey, pickTaken, pickerLabel, slideEffort } from './effort.js';
+import {
+    effortAfterStamp,
+    effortKey,
+    pickTaken,
+    pickerLabel,
+    slideEffort,
+} from './effort.js';
 
 describe('effortKey', () => {
     test('a first press opens the popover on the current level', () => {
@@ -127,5 +133,41 @@ describe('pickTaken', () => {
                 'Change effort level?\n ❯ 1. Yes, switch to low',
             ),
         ).toBe(false);
+    });
+});
+
+// clio's 22:09 turn: requests at medium, then his pick of high, the next request at high mid-turn (22:09:17)
+describe('effortAfterStamp', () => {
+    const picked = { isPicked: true, level: 'high' };
+    test('a reply still at the old effort keeps his pick, not applied yet', () => {
+        expect(effortAfterStamp(picked, 'medium')).toEqual({
+            isApplied: false,
+            isPicked: true,
+            level: 'high',
+        });
+    });
+    test('the first reply at his pick: applied, the pick settled', () => {
+        expect(effortAfterStamp(picked, 'high')).toEqual({
+            isApplied: true,
+            isPicked: false,
+            level: 'high',
+        });
+    });
+    test('no pick: the stamp is the effort, nothing flashes', () => {
+        expect(
+            effortAfterStamp({ isPicked: false, level: 'low' }, 'medium'),
+        ).toEqual({ isApplied: false, isPicked: false, level: 'medium' });
+        expect(effortAfterStamp(null, 'max')).toEqual({
+            isApplied: false,
+            isPicked: false,
+            level: 'max',
+        });
+    });
+    test('a stamp that is no effort changes nothing', () => {
+        expect(effortAfterStamp(picked, 'bogus')).toEqual({
+            isApplied: false,
+            isPicked: true,
+            level: 'high',
+        });
     });
 });

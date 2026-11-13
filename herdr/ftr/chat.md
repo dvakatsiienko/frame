@@ -121,6 +121,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima picks another effort or model in the quill
   - then Claude Code sets it for this session at once, the turn runs on, and the next reply uses the pick
   - and a pick on its way reads in the accent, «Medium…», on the quill's label and inside the popover alike (the slider's level, the model's ✓), until a reply runs at it: Claude Code applies a mid-turn effort from its next request and writes no line for it (FRM-588:W7, dima 21:57 and 22:09; clio's 22:09:17 request ran at high inside a running turn)
+  - and the moment a reply first runs at his mid-turn effort, the label and the slider's level flash in the accent for 1 s, then read plain: that reply's request is the first one sent at it (dima, 22:20)
   - and a pick in vim's normal mode presses `i` first, and a pick whose picker never opened leaves nothing in Claude's prompt (FRM-588:W6)
   - and the picker opens neither by click nor by ⌘⇧E while the thread asks him something, and a pick made before the question came never types into it: a note says to answer first
   - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56); `/model` mid-stream, «Set model to Sonnet 5.5 for this session only», the next reply `claude-sonnet-5-5` (2026-11-13)

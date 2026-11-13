@@ -61,3 +61,18 @@ export function pickTaken(kind, screen) {
         ? !/Faster[\s\S]*Smarter/.test(screen)
         : !/Select model/.test(screen);
 }
+
+/**
+ * the effort after a reply's stamp: his pick holds over replies still at the old effort; the first reply at it is the
+ * moment it applied (mid-turn: the next request, clio's 22:09:17), the pick then settled
+ * @param {{ isPicked?: boolean, level: string } | null} effort @param {unknown} stamp
+ * @returns {{ isApplied: boolean, isPicked: boolean, level: string | null }}
+ */
+export function effortAfterStamp(effort, stamp) {
+    const isPicked = Boolean(effort?.isPicked);
+    if (typeof stamp !== 'string' || !EFFORTS.includes(stamp))
+        return { isApplied: false, isPicked, level: effort?.level ?? null };
+    if (isPicked && effort.level !== stamp)
+        return { isApplied: false, isPicked: true, level: effort.level };
+    return { isApplied: isPicked, isPicked: false, level: stamp };
+}

@@ -80,6 +80,7 @@ import { messageDetails } from './details.js';
 import { importOldDrafts } from './drafts.js';
 import {
     EFFORTS,
+    effortAfterStamp,
     effortKey,
     effortWord,
     pickTaken,
@@ -176,6 +177,8 @@ const CLAUDE = `${home()}/.claude`;
 // accent: a key of ACCENTS; mine (your messages): "bubble", "box", "tint" or "bar"; bg: the theme color
 // behind the messages, or a "#rrggbb"; fg: the text color, "theme" or a "#rrggbb";
 // space: "tight", "normal" or "roomy" between them.
+// how long the picker flashes once a reply first ran at his mid-turn pick
+const APPLIED_FLASH_MS = 1000;
 const LOOK = 'chat.look';
 // replies: Claude's messages in earlier turns stay "open" (only the work between them folds) or "folded".
 const LOOK_DEFAULT = {
@@ -2404,6 +2407,10 @@ export default class ClaudeChat extends View {
         const shownModel = pending?.kind === 'model' ? pending.value : model;
         const shownEffort = pending?.kind === 'effort' ? pending.value : effort;
         const open = this.drop === 'pick';
+        // the moment a reply first ran at his pick: the label and the slider's level flash for a second
+        const isApplied =
+            this.applied?.address === this.address &&
+            Date.now() - this.applied.at < APPLIED_FLASH_MS;
         const trigger = h_flex()
             .id('drop-pick-trigger')
             .flex_none()
@@ -2416,6 +2423,9 @@ export default class ClaudeChat extends View {
             .cursor_pointer()
             .text_size(px(12))
             .text_color(pending ? t.accent : t.muted)
+            .when(isApplied, (el) =>
+                el.bg(fade(t.accent, '33')).text_color(t.foreground),
+            )
             .hover((s) => s.bg(t.hover).text_color(t.foreground))
             .child(pickerLabel(model, effort, pending))
             .child(
@@ -2527,6 +2537,7 @@ export default class ClaudeChat extends View {
                                     ready,
                                     shownEffort,
                                     pending?.kind === 'effort',
+                                    isApplied,
                                 ),
                             ),
                     ),
@@ -2535,8 +2546,8 @@ export default class ClaudeChat extends View {
 
     // the effort slider (dima, 14:01 and 14:17): one thumb slides along a line and lands on five small stops, the line
     // filled up to it; a click on a stop applies at once, ← → move the thumb and ⌘⇧E or Enter applies, Esc closes
-    /** @param {any} t @param {any} agent @param {boolean} ready @param {string | null} now @param {boolean} [isPending] */
-    effortTrack(t, agent, ready, now, isPending = false) {
+    /** @param {any} t @param {any} agent @param {boolean} ready @param {string | null} now @param {boolean} [isPending] @param {boolean} [isApplied] */
+    effortTrack(t, agent, ready, now, isPending = false, isApplied = false) {
         const at = Math.max(
             0,
             this.effortPop?.at ?? EFFORTS.indexOf(now ?? ''),
@@ -2585,8 +2596,12 @@ export default class ClaudeChat extends View {
                 .flex()
                 .justify_center()
                 .text_size(px(11))
+                .rounded(4)
                 .text_color(
                     i === at ? (isPending ? t.accent : t.foreground) : t.muted,
+                )
+                .when(i === at && isApplied, (el) =>
+                    el.bg(fade(t.accent, '33')),
                 )
                 .when(i === at, (el) => el.font_semibold())
                 .child(effortWord(level));
@@ -3035,6 +3050,12 @@ export default class ClaudeChat extends View {
                     this.again = true;
                 } else if (text) {
                     this.ingest(text);
+                    if (this.appliedTimer) {
+                        this.appliedTimer = false;
+                        cx.timer.after(APPLIED_FLASH_MS + 50, (cx) =>
+                            cx.notify(),
+                        );
+                    }
                     // a take the transcript just showed clears the quill now, not at the next state read
                     if (this.tookIds?.has(this.markOf()?.id))
                         this.settleJoin(cx);
@@ -3316,14 +3337,25 @@ export default class ClaudeChat extends View {
                 if (into === this && /^claude-/.test(d.message?.model ?? ''))
                     this.model = modelLabel(d.message.model);
                 // the effort the reply ran at, as Claude Code stamps it on the row: the thread's live value, past any default
-                // a pick he made mid-turn outranks the stamps of the turn still running at the old effort, until a reply
-                // runs at it (Claude Code applies it from the next turn)
-                if (
-                    into === this &&
-                    EFFORTS.includes(d.effort) &&
-                    !(this.effort?.isPicked && this.effort.level !== d.effort)
-                )
-                    this.effort = { level: d.effort, model: this.modelNow() };
+                // a pick he made mid-turn outranks the stamps of the requests still running at the old effort; the first
+                // reply stamped with it is the moment it applied, flashed on the picker (dima, 22:20)
+                if (into === this && EFFORTS.includes(d.effort)) {
+                    const next = effortAfterStamp(this.effort, d.effort);
+                    if (next.isApplied && !this.readingEarlier) {
+                        this.applied = {
+                            address: this.address,
+                            at: Date.now(),
+                            level: next.level,
+                        };
+                        // a redraw when the flash ends, whatever the thread does then
+                        this.appliedTimer = true;
+                    }
+                    this.effort = {
+                        isPicked: next.isPicked,
+                        level: next.level,
+                        model: this.modelNow(),
+                    };
+                }
                 for (const b of content ?? []) {
                     if (b.type === 'text' && b.text.trim())
                         into.items.push({
