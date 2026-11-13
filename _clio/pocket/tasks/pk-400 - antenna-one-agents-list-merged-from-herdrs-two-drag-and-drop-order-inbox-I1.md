@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T15:40:00Z'
+updated_date: '2026-11-13T15:50:00Z'
 labels:
   - s
 dependencies: []
@@ -158,4 +158,11 @@ PK-400:W74 (2026-11-13 17:40, dima): 1. how hard it is today to move blocks betw
 PK-400:W75 (2026-11-13 17:40, dima): 2. can anything be done to make block juggling easier, smoother, cheaper? ❓
 PK-400:W76 (2026-11-13 17:40, dima): and if yes, how to set it as default part of product.md and herdr rules, as default architectural rule - flexible block juggling? ❓
 PK-400:W77 (2026-11-13 17:40, dima): (i'll ask to juggle a lot i think, because all pieces are raw i A/B test a lot)
+
+17:50 groomed by helga, folded:
+PK-400:W78 (2026-11-13 17:46, dima): I think the deck shouldn't be fully dissolved, because it's kind of a container that describes what's to the right.
+PK-400:W79 (2026-11-13 17:46, dima): Currently it holds sessions, orbit, and glide, and after the move it will hold only glide for now.
+PK-400:W80 (2026-11-13 17:46, dima): But the deck as it is, I think this term should stay, because I even have a button that goes to the deck.
+PK-400:W81 (2026-11-13 17:46, dima): so Herdr Codie can optimize Herdr code to make block juggling easier? ❓
+PK-400:W82 (2026-11-13 17:46, dima): maybe he can create some helper script or mini tool that will allow you to juggle easily? ❓
 <!-- SECTION:NOTES:END -->
