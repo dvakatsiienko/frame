@@ -386,7 +386,9 @@ export async function startCrow(arm: Arm, isPane = false) {
     copyRules();
     const stash = stashModOf(userPluginDirs());
     const minted = isPane
-        ? summonAdviser([`cd ${STATE_DIR} && claude -n crow 'start'`])
+        ? summonAdviser([
+              `cd ${STATE_DIR} && claude -n '${SESSION_NAME}' 'start'`,
+          ])
         : undefined;
     const claudeArgv = [
         ...(minted ? ['--session-id', minted.sessionId] : []),

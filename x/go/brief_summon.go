@@ -235,6 +235,10 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	kind, err := laneKindFlag(flags)
+	if err != nil {
+		return nil, err
+	}
 	record := thread{Role: role, Area: area}
 	if words := strings.Fields(first); len(words) > 1 && ticketArg.MatchString(words[1]) {
 		record.Ticket = words[1]
@@ -245,6 +249,8 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 	if m := laneKindLine.FindStringSubmatch(text); m != nil {
 		record.LaneKind = m[1]
 	}
+	// the flag outranks the brief's lane: line, so the name is right from birth when the brief names none
+	record.LaneKind = cmp.Or(kind, record.LaneKind)
 	// a sixth sense's inline argv names no lane kind: it takes its lane's, from the codie record of the same lane
 	if record.LaneKind == "" && record.Lane != "" {
 		if store, err := readThreadStore(threadStorePath()); err == nil {
@@ -385,7 +391,8 @@ func summonArgv(command string, record thread) (string, thread, error) {
 var sessionIDFlag = regexp.MustCompile(`--session-id\s+([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`)
 
 // the id a command's thread runs under: the one it carries, else a uuid derived from its text, the next free one when
-// a record already holds it, so a check and the --apply that follows it print the same id and a repeated summon gets its own
+// a record, a live session file or a transcript already holds it, so a check and the --apply that follows it print the
+// same id and a repeated summon, an identical morning line included, gets its own
 func summonSessionID(command string) string {
 	if m := sessionIDFlag.FindStringSubmatch(command); m != nil {
 		return m[1]
@@ -403,10 +410,24 @@ func summonSessionID(command string) string {
 		b := sum[:16]
 		b[6] = b[6]&0x0f | 0x40
 		b[8] = b[8]&0x3f | 0x80
-		if id := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:]); !held[id] {
+		if id := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:]); !held[id] && !hasSessionTrace(id) {
 			return id
 		}
 	}
+}
+
+// a session id cc already ran under leaves a registry file or a transcript, though its record is long gone
+func hasSessionTrace(id string) bool {
+	if transcripts, _ := filepath.Glob(filepath.Join(projectsDir(), "*", id+".jsonl")); len(transcripts) > 0 {
+		return true
+	}
+	files, _ := filepath.Glob(filepath.Join(sessionsDir(), "*.json"))
+	for _, file := range files {
+		if raw, err := os.ReadFile(file); err == nil && bytes.Contains(raw, []byte(id)) {
+			return true
+		}
+	}
+	return false
 }
 
 // a shell word without the quotes that held it
@@ -558,3 +579,12 @@ func claudeCallAt(command string) []int {
 }
 
 var bgFlag = regexp.MustCompile(`\s--bg(?:\s|$)`)
+
+// --lane-kind: the mode the summoned member's name opens with, side (🌗), quick (⚡) or shift (🌘)
+func laneKindFlag(flags Flags) (string, error) {
+	kind := flagString(flags, "lane-kind")
+	if _, isKnown := laneKindMark[kind]; kind != "" && !isKnown {
+		return "", usageFail(kind+" is no lane kind: side, quick or shift", "x brief summon … --lane-kind quick")
+	}
+	return kind, nil
+}
