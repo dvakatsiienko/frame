@@ -4325,10 +4325,15 @@ export default class ClaudeChat extends View {
             ).selectable(true);
             const fork = Boolean(item.before && this.agentNow);
             // the fork's press lands by where it was (clickRow): its column is the row's last FORK_W px
+            // a full-width look has no strip beside his words but this column, so his time sits on it there
             const forkJSX = h_flex()
                 .w(FORK_W)
                 .flex_none()
+                .self_stretch()
                 .justify_end()
+                .when(mine !== 'bubble' && Boolean(details), (el) =>
+                    el.id(`me-at-${i}`).tooltip(details),
+                )
                 .when(fork, (el) =>
                     el.child(
                         div()
@@ -4385,8 +4390,6 @@ export default class ClaudeChat extends View {
                     )
                     .child(forkJSX);
             return div()
-                .id(`me-box-${i}`)
-                .when(Boolean(details), (el) => el.tooltip(details))
                 .w_full()
                 .px(12)
                 .py(8)
@@ -6786,10 +6789,9 @@ export default class ClaudeChat extends View {
         return isChanged;
     }
 
-    // the module's top card (PK-384): what the turn does, its clock and Stop, or, idle, the wait line; under it the
-    // context and week meters, wordless, their numbers in a tooltip
-    /** @param {any} t @param {any} agent */
-    stateCard(t, agent) {
+    // the module's top card (PK-384): the context and week meters, wordless, their numbers in a tooltip
+    /** @param {any} t */
+    stateCard(t) {
         const pid = this.where?.container ? null : this.where?.pid;
         const b = bandOf(shared(THREADS_KEY), pid, Date.now());
         /** @param {string} id @param {string} name @param {number | null} pct @param {number} warnAt */
@@ -6881,51 +6883,57 @@ export default class ClaudeChat extends View {
             msg: typeof report === 'object' ? report?.msg : null,
             wait: b.wait,
         });
-        return h_flex()
-            .h(px(22))
-            .gap(8)
-            .items_center()
-            .min_w(0)
-            .text_size(px(TEXT.sm))
-            .text_color(t.muted)
-            .child(
-                parts.mark === 'spinner'
-                    ? svg('mods/workspace-chrome/spinner.svg')
-                          .size(12)
-                          .flex_none()
-                          .text_color(t.working)
-                          .spin(900)
-                    : div()
-                          .size(px(10))
-                          .flex_none()
-                          .rounded_full()
-                          .border(1)
-                          .border_color(t.dim),
-            )
-            .child(
-                div()
-                    .id('state-line')
-                    .flex_1()
-                    .min_w(0)
-                    .truncate()
-                    .text_color(isWorking ? t.foreground : t.muted)
-                    .tooltip(line)
-                    .child(line),
-            )
-            .when(parts.hasClock, (el) =>
-                el.child(
+        return (
+            h_flex()
+                .h(px(22))
+                .gap(8)
+                .items_center()
+                .min_w(0)
+                // in a narrow pane the line truncates first; past that the row clips, never drawing over the band
+                .overflow_hidden()
+                .text_size(px(TEXT.sm))
+                .text_color(t.muted)
+                .child(
+                    parts.mark === 'spinner'
+                        ? svg('mods/workspace-chrome/spinner.svg')
+                              .size(12)
+                              .flex_none()
+                              .text_color(t.working)
+                              .spin(900)
+                        : div()
+                              .size(px(10))
+                              .flex_none()
+                              .rounded_full()
+                              .border(1)
+                              .border_color(t.dim),
+                )
+                .child(
                     div()
-                        .flex_none()
-                        .text_color(t.dim)
-                        .font_family(this.mono())
-                        .child(turnClock(Date.now() - this.turnAt)),
-                ),
-            )
-            .when(parts.hasStop, (el) =>
-                el.child(
-                    button(t, px, 'stop', 'Stop', (_e, cx) => this.stop(cx)),
-                ),
-            );
+                        .id('state-line')
+                        .flex_1()
+                        .min_w(0)
+                        .truncate()
+                        .text_color(isWorking ? t.foreground : t.muted)
+                        .tooltip(line)
+                        .child(line),
+                )
+                .when(parts.hasClock, (el) =>
+                    el.child(
+                        div()
+                            .flex_none()
+                            .text_color(t.dim)
+                            .font_family(this.mono())
+                            .child(turnClock(Date.now() - this.turnAt)),
+                    ),
+                )
+                .when(parts.hasStop, (el) =>
+                    el.child(
+                        button(t, px, 'stop', 'Stop', (_e, cx) =>
+                            this.stop(cx),
+                        ),
+                    ),
+                )
+        );
     }
 
     // the module's lower card: + on the left, the thread's state, the band's buttons on the right
@@ -8135,7 +8143,7 @@ export default class ClaudeChat extends View {
                                                 ),
                                         ),
                                 )
-                                .child(this.stateCard(t, agent)),
+                                .child(this.stateCard(t)),
                         ),
                     ),
             );
