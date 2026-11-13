@@ -2031,6 +2031,15 @@ export default class ClaudeChat extends View {
     // also save it as the default for new sessions (Claude 2.1.318, 2026-11-05). The header says
     // "Switching…" until the transcript shows the change (`pending`), or after 12 s that it didn't.
     pick(kind, value, address, cx) {
+        // keys typed into a question would answer it, and a second pick would mix its keys into the first one's picker
+        const isBlocked =
+            agents().find((a) => a.address === address)?.status === 'blocked';
+        if (isBlocked || this.pending?.address === address) {
+            this.pickNote = isBlocked
+                ? 'Answer Claude first, then pick'
+                : 'One switch at a time: wait for this one to land';
+            return cx.notify();
+        }
         this.drop = null;
         this.pending = { address, kind, until: Date.now() + 12000, value };
         this.pickNote = null;
@@ -2129,7 +2138,10 @@ export default class ClaudeChat extends View {
         const isBlocked = agent.status === 'blocked';
         const r = effortKey(
             this.drop === 'pick' ? this.effortPop : null,
-            this.effortNow(),
+            this.pending?.address === agent.address &&
+                this.pending.kind === 'effort'
+                ? this.pending.value
+                : this.effortNow(),
             isBlocked,
         );
         this.effortPop = r.popover;
@@ -2261,8 +2273,10 @@ export default class ClaudeChat extends View {
             .anchor('bottom_left')
             .open(open)
             .on_open_change((o, cx) => {
-                this.drop = o ? 'pick' : null;
-                this.effortPop = o
+                // a thread asking him something opens nothing: a pick would type into its question
+                const isOpen = o && ready;
+                this.drop = isOpen ? 'pick' : null;
+                this.effortPop = isOpen
                     ? effortKey(null, effort, false).popover
                     : null;
                 this.pickNote =
@@ -7454,7 +7468,8 @@ export default class ClaudeChat extends View {
                     e.keystroke === 'escape' &&
                     agent.status === 'working' &&
                     !this.stuck &&
-                    !menu
+                    !menu &&
+                    this.drop !== 'pick'
                 ) {
                     cx.stop_propagation();
                     this.stop(cx);

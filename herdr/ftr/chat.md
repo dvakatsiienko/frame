@@ -109,12 +109,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread at work, a reply streaming
   - when dima picks another effort or model in the quill
   - then Claude Code sets it for this session at once, the turn runs on, and the next reply uses the pick
-  - and neither opens while the thread asks him something
+  - and the picker opens neither by click nor by ⌘⇧E while the thread asks him something, and a pick made before the question came never types into it: a note says to answer first
   - proof: a throwaway Haiku thread took `/effort` mid-stream, «Set effort level to high (this session only)» (23:56); `/model` mid-stream, «Set model to Sonnet 5.5 for this session only», the next reply `claude-sonnet-5-5` (2026-11-13)
 - ⬜ ⌘⇧E picks the effort
   - given the Chat view shows a thread
   - when dima presses ⌘⇧E
-  - then a slider titled «Effort» opens over the quill: one thumb on a line with five small stops, low to max, resting on the current level
+  - then the quill's one picker opens, «Opus 5.5 · medium ⌄»: the «Model» list over the «Effort» slider, one thumb on a line with five small stops, low to max, resting on the current level
+  - and ⌘⇧E again applies only a stop the thumb moved to; a pick still landing refuses a second one until it lands
   - and ← → slide the thumb, a click on a stop or a second ⌘⇧E (or Enter) closes it and applies, Esc closes it with nothing changed
   - and a thread asking him something gets no popover, a note says to answer first
   - decision: a popover, not a cycle: one press to look, arrows to pick, the key again to apply (dima's sketch, 2026-11-13 14:01); one thumb that slides, the stops only where it lands (14:17)

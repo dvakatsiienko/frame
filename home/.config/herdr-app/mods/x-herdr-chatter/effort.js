@@ -3,7 +3,7 @@
 
 export const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 
-/** @typedef {{ at: number }} EffortPopover */
+/** @typedef {{ at: number, from: number }} EffortPopover the stop picked, and the one it opened on */
 
 /**
  * @param {EffortPopover | null} popover @param {string | null} current @param {boolean} isBlocked
@@ -13,14 +13,17 @@ export function effortKey(popover, current, isBlocked) {
     if (isBlocked) return { apply: null, popover: null };
     if (!popover) {
         const at = EFFORTS.indexOf(current ?? '');
-        return { apply: null, popover: { at: at < 0 ? 1 : at } };
+        const from = at < 0 ? 1 : at;
+        return { apply: null, popover: { at: from, from } };
     }
-    const picked = EFFORTS[popover.at];
-    return { apply: picked === current ? null : picked, popover: null };
+    // a thumb never moved applies nothing, an unknown level included: it opened on medium as a place to start
+    const isMoved =
+        popover.at !== popover.from && EFFORTS[popover.at] !== current;
+    return { apply: isMoved ? EFFORTS[popover.at] : null, popover: null };
 }
 
 /** @param {EffortPopover} popover @param {'left' | 'right'} way @returns {EffortPopover} */
 export function slideEffort(popover, way) {
     const at = popover.at + (way === 'right' ? 1 : -1);
-    return { at: Math.min(EFFORTS.length - 1, Math.max(0, at)) };
+    return { ...popover, at: Math.min(EFFORTS.length - 1, Math.max(0, at)) };
 }

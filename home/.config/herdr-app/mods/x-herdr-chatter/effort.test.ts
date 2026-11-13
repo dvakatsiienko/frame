@@ -6,19 +6,19 @@ describe('effortKey', () => {
     test('a first press opens the popover on the current level', () => {
         expect(effortKey(null, 'high', false)).toEqual({
             apply: null,
-            popover: { at: 2 },
+            popover: { at: 2, from: 2 },
         });
     });
 
     test('a second press closes it and applies the picked level', () => {
-        expect(effortKey({ at: 3 }, 'medium', false)).toEqual({
+        expect(effortKey({ at: 3, from: 1 }, 'medium', false)).toEqual({
             apply: 'xhigh',
             popover: null,
         });
     });
 
     test('a second press on the current level closes it with nothing to apply', () => {
-        expect(effortKey({ at: 1 }, 'medium', false)).toEqual({
+        expect(effortKey({ at: 1, from: 1 }, 'medium', false)).toEqual({
             apply: null,
             popover: null,
         });
@@ -34,8 +34,19 @@ describe('effortKey', () => {
     test('an unknown current level opens on medium', () => {
         expect(effortKey(null, null, false)).toEqual({
             apply: null,
-            popover: { at: 1 },
+            popover: { at: 1, from: 1 },
         });
+    });
+
+    test('an unknown level with the thumb never moved applies nothing', () => {
+        const open = effortKey(null, null, false).popover;
+        expect(effortKey(open, null, false).apply).toBeNull();
+    });
+
+    test('a thumb slid away and back applies nothing', () => {
+        const open = effortKey(null, 'high', false).popover;
+        const back = slideEffort(slideEffort(open, 'right'), 'left');
+        expect(effortKey(back, 'high', false).apply).toBeNull();
     });
 });
 
@@ -50,7 +61,13 @@ describe('slideEffort', () => {
     });
 
     test('the track stops at its ends, never wraps', () => {
-        expect(slideEffort({ at: 4 }, 'right')).toEqual({ at: 4 });
-        expect(slideEffort({ at: 0 }, 'left')).toEqual({ at: 0 });
+        expect(slideEffort({ at: 4, from: 2 }, 'right')).toEqual({
+            at: 4,
+            from: 2,
+        });
+        expect(slideEffort({ at: 0, from: 2 }, 'left')).toEqual({
+            at: 0,
+            from: 2,
+        });
     });
 });
