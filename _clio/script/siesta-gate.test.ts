@@ -317,6 +317,30 @@ describe('the siesta comes due', () => {
         expect(stop(home, input)).toBeUndefined();
     });
 
+    test.each([
+        [
+            'two ticket closes',
+            [
+                'x linear set FRM-9 --state Done',
+                'x linear set FRM-8 --state Done',
+            ],
+        ],
+        ['a landed lane', ['x lane landed FRM-9 --pr 161 --apply']],
+    ])('%s within 30 min of the stamp makes it due', (_name, commands) => {
+        const home = fixtureHome();
+        writeFileSync(
+            join(home, '.local/state/clio/siesta-last'),
+            `${stamp(new Date(Date.now() - 10 * 60_000))}\n`,
+        );
+        const input = stopInput(home);
+        for (const command of commands)
+            appendFileSync(
+                input.transcript_path,
+                `\n${JSON.stringify({ message: { content: [{ input: { command }, name: 'Bash', type: 'tool_use' }] }, timestamp: new Date().toISOString(), type: 'assistant' })}`,
+            );
+        expect(said(stop(home, input))).toContain('ticket close(s) or sign(s)');
+    });
+
     test('a ticket close before the stamp makes none due', () => {
         const home = fixtureHome();
         const input = stopInput(home);

@@ -45,8 +45,10 @@ const LIVE_PINGS_WAIT_MS = 60 * 60_000;
 // memory, rule and skill text weighs by count; a skill's code file is code, and counts only toward the 15 (FRM-491 re-sign, 11-11)
 const MEMORY_TEXT = /(^|\/)(memory|rules|skills)\/.*\.md$/;
 const MEMORY_TEXT_DUE = 3;
-// a ticket closed or signed by clio is a batch of its own, read off her transcript; inside 30 min of the last siesta it rides the next one (dima's o28)
+// a ticket closed or signed by clio is a batch of its own, read off her transcript; a lone close or sign inside 30 min of
+// the last siesta rides the next one, a landed lane never waits (dima's o28)
 const LONE_TICKET_WAIT_MS = 30 * 60_000;
+const LANE_LANDED = /\bx lane landed\b/;
 const TICKET_MOVE =
     /\bx linear set\b[^\n]*--state[ =]['"]?(Done|Canceled)\b|\bticket-sign\.ts\s+\S+\s+(signed|re-signed)\b|\bx lane landed\b[^\n]*--apply\b/;
 
@@ -300,13 +302,16 @@ function dueReasons(
     const from = closedAt > since ? closedAt : since;
     const files = clioFiles(home, from, thread);
     const memoryText = files.filter((f) => MEMORY_TEXT.test(f)).length;
-    const ticketMoves = transcriptRows(transcriptPath)
+    const moves = transcriptRows(transcriptPath)
         .filter((r) => new Date(r.timestamp ?? 0).getTime() > from.getTime())
         .flatMap((r) => toolUses([r]))
-        .filter(
-            (u) =>
-                u.name === 'Bash' && TICKET_MOVE.test(u.input?.command ?? ''),
-        ).length;
+        .map((u) => (u.name === 'Bash' ? (u.input?.command ?? '') : ''))
+        .filter((command) => TICKET_MOVE.test(command));
+    const isLoneClose =
+        moves.length === 1 &&
+        !LANE_LANDED.test(moves[0] ?? '') &&
+        Date.now() - since.getTime() < LONE_TICKET_WAIT_MS;
+    const ticketMoves = isLoneClose ? 0 : moves.length;
     const live = state.live_pings.filter(after);
     const isLiveDue =
         live.length >= LIVE_PINGS_DUE ||
@@ -319,9 +324,7 @@ function dueReasons(
         memoryText >= MEMORY_TEXT_DUE
             ? `${memoryText} memory, rule or skill text files of clio's`
             : '',
-        ticketMoves && Date.now() - since.getTime() >= LONE_TICKET_WAIT_MS
-            ? `${ticketMoves} ticket close(s) or sign(s)`
-            : '',
+        ticketMoves ? `${ticketMoves} ticket close(s) or sign(s)` : '',
         pings.length ? `${pings.length} member done ping(s)` : '',
     ].filter(Boolean);
 }
