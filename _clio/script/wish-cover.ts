@@ -120,9 +120,12 @@ export function missingText(
     const joined = drafts.join('\n');
     const body = normalize(joined);
     const lines = wishLines(item, homes);
+    // an id a W-line's own words mention («moved here as its W14») rides the verbatim copy, never cites
+    const quoted = citedIds([...lines.values()].join('\n'));
     return [...citedIds(joined, homes)].flatMap((id): [string, string][] => {
         const text = lines.get(id);
-        if (text === undefined) return [[id, '(no such W-line in the item)']];
+        if (text === undefined)
+            return quoted.has(id) ? [] : [[id, '(no such W-line in the item)']];
         if (text === '') return [[id, '']];
         return body.includes(normalize(text)) ? [] : [[id, text]];
     });

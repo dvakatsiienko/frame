@@ -154,6 +154,13 @@ describe('wish-cover', () => {
         ]);
     });
 
+    test('an id inside a copied W-line is its words, not a cite', () => {
+        const moved = '- W1 can rows fold? (moved here as its W17)';
+        expect(
+            missingText(moved, ['W1 can rows fold? (moved here as its W17)']),
+        ).toEqual([]);
+    });
+
     test('a «moved to linear:» line links a pocket item to its ticket', () => {
         const items: [string, string][] = [
             ['pk-7 - a.md', 'moved to linear: FRM-366, a live input'],
