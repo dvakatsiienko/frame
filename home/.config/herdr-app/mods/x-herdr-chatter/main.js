@@ -100,6 +100,7 @@ import {
     joinStatus,
     pendingJoins,
     pushReason,
+    takeBackJoin,
 } from './joins.js';
 import { listLines, withMarkers } from './lists.js';
 import { agents, inRender, panes, terminals } from './live.js';
@@ -1167,6 +1168,35 @@ const meterBar = (t, pct, fill) => {
             ),
         );
 };
+// the join file's doors in herdr: a mkdir lock dir, its age from macOS stat, a write over the text it read
+/** @param {import('gpui-kit').Context} cx @returns {import('./joins.js').JoinIo} */
+function joinIo(cx) {
+    return {
+        lock: async (path) =>
+            (await exec('mkdir', [path]).catch(() => null))?.code === 0,
+        // macOS stat: the lock dir's modified time, in seconds
+        lockAge: async (path) => {
+            const r = await exec('stat', ['-f', '%m', path]).catch(() => null);
+            const at = Number(r?.stdout?.trim());
+            return r?.code === 0 && at ? Date.now() - at * 1000 : null;
+        },
+        now: () => Date.now(),
+        read: (path) => readTextFile(path),
+        sleep: (ms) => cx.sleep(ms),
+        unlock: async (path) => {
+            await exec('rmdir', [path]);
+        },
+        write: (path, body, expected) => writeTextFile(path, body, expected),
+    };
+}
+// herdr's window answers only inside a call it made; a timer tick may get a throw, read as «still active»
+function isWindowActive() {
+    try {
+        return window.is_window_active() !== false;
+    } catch {
+        return true;
+    }
+}
 // the threads his joins went to, and the rows each handed back that the quill already took, kept across a reload until
 // the thread ended and its rows came back
 const JOINED_SIDS = 'joins:sids';
@@ -3311,7 +3341,7 @@ export default class ClaudeChat extends View {
         if (!this.hold) return;
         const r = holdSend(
             this.hold,
-            event === 'tick' && !window.is_window_active() ? 'cancel' : event,
+            event === 'tick' && !isWindowActive() ? 'cancel' : event,
             Date.now(),
             this.holdMs,
         );
@@ -3449,37 +3479,7 @@ export default class ClaudeChat extends View {
             const made = await exec('mkdir', ['-p', dir]).catch(() => null);
             const isWritten =
                 made?.code === 0 &&
-                (await appendJoin(
-                    {
-                        lock: async (path) =>
-                            (
-                                await exec('mkdir', [path]).catch(() => null)
-                            )?.code === 0,
-                        // macOS stat: the lock dir's modified time, in seconds
-                        lockAge: async (path) => {
-                            const r = await exec('stat', [
-                                '-f',
-                                '%m',
-                                path,
-                            ]).catch(() => null);
-                            const at = Number(r?.stdout?.trim());
-                            return r?.code === 0 && at
-                                ? Date.now() - at * 1000
-                                : null;
-                        },
-                        now: () => Date.now(),
-                        read: (path) => readTextFile(path),
-                        sleep: (ms) => cx.sleep(ms),
-                        unlock: async (path) => {
-                            await exec('rmdir', [path]);
-                        },
-                        write: (path, body, expected) =>
-                            writeTextFile(path, body, expected),
-                    },
-                    `${dir}/${sid}.jsonl`,
-                    id,
-                    text,
-                ));
+                (await appendJoin(joinIo(cx), `${dir}/${sid}.jsonl`, id, text));
             if (!isWritten)
                 this.joinBack(text, 'Not joined, back in the box', cx);
             else {
@@ -3582,6 +3582,35 @@ export default class ClaudeChat extends View {
             this.say(`Back from ${k.name}: it ended before joining`, cx);
             cx.notify();
         }
+    }
+
+    // the × on a waiting join: its row leaves the join file and the words come back to the quill, unless a turn took it
+    /** @param {{ id: string, text: string }} r @param {import('gpui-kit').Context} cx */
+    takeBack(r, cx) {
+        const joins = this.states?.thread?.joins;
+        const sid = this.states?.thread?.sid;
+        if (
+            !sid ||
+            joins?.taken?.includes(r.id) ||
+            joins?.joined?.includes(r.id)
+        )
+            return this.say('It joined the turn first', cx);
+        cx.spawn(async (cx) => {
+            const isTaken = await takeBackJoin(
+                joinIo(cx),
+                `${home()}/${JOINS_DIR}/${sid}.jsonl`,
+                r.id,
+            );
+            if (!isTaken) return this.say('Not taken back, try again', cx);
+            if (this.joining?.id === r.id) this.joining = null;
+            if (this.joinRows)
+                this.joinRows = {
+                    ...this.joinRows,
+                    rows: this.joinRows.rows.filter((x) => x.id !== r.id),
+                };
+            this.joinBack(r.text, 'Taken back', cx);
+            cx.notify();
+        });
     }
 
     // his joins waiting on a thread: the file's rows, then the click still being written
@@ -4109,15 +4138,37 @@ export default class ClaudeChat extends View {
             .child(h_flex().h(30).items_center().child(head))
             .children(
                 shown.map((r) =>
-                    div()
+                    h_flex()
                         .id(`join-${r.id}`)
                         .h(24)
-                        .flex()
+                        .gap(8)
                         .items_center()
-                        .min_w(0)
-                        .truncate()
-                        .text_color(t.foreground)
-                        .child(r.text.replace(/\s+/g, ' ')),
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w(0)
+                                .truncate()
+                                .text_color(t.foreground)
+                                .child(r.text.replace(/\s+/g, ' ')),
+                        )
+                        .child(
+                            div()
+                                .id(`join-x-${r.id}`)
+                                .size(px(18))
+                                .flex()
+                                .flex_none()
+                                .items_center()
+                                .justify_center()
+                                .rounded_full()
+                                .text_color(t.muted)
+                                .cursor_pointer()
+                                .hover((s) =>
+                                    s.bg(t.hover).text_color(t.foreground),
+                                )
+                                .tooltip('Take it back into the quill')
+                                .on_click((_e, cx) => this.takeBack(r, cx))
+                                .child('×'),
+                        ),
                 ),
             )
             .when(more > 0, (el) =>

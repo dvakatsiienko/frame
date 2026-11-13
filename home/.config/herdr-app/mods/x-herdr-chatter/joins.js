@@ -7,6 +7,9 @@ export const JOINS_DIR = '.claude/shelf/herdr-joins';
 // how long a click waits for a lock the stash holds before it gives the text back
 const LOCK_WAIT_MS = 2000;
 const LOCK_RETRY_MS = 100;
+// a lock dir this old was left by a crash, never by a live writer (both hold it for well under a second): broken and
+// taken. x-mod-stash's hand-back reads the same age (`JOIN_LOCK_STALE_MS` in its register.tsx)
+export const JOIN_LOCK_STALE_MS = 30 * 1000;
 // a row the thread's state lists nowhere this long after the write was never taken: the stash is off or gone
 export const JOIN_TAKE_MS = 60 * 1000;
 // how long the button reads «joined»
@@ -15,28 +18,33 @@ export const JOINED_SHOWN_MS = 3000;
 /** @typedef {{ joined?: string[], waiting?: string[], push?: string[] }} Joins */
 /**
  * @typedef {{ lock: (path: string) => Promise<boolean>, unlock: (path: string) => Promise<void>,
+ *   lockAge: (path: string) => Promise<number | null>,
  *   read: (path: string) => Promise<string | null>,
  *   write: (path: string, text: string, expected: string | null) => Promise<unknown>,
  *   sleep: (ms: number) => Promise<void>, now: () => number }} JoinIo
  */
 
 /**
- * one join row appended under the lock dir: true once written; false when the lock stays held past ~2 s or the write
+ * the join file rewritten under the lock dir: true once written; false when the lock stays held past ~2 s or the write
  * fails, nothing written then
- * @param {JoinIo} io @param {string} path @param {string} id @param {string} text
+ * @param {JoinIo} io @param {string} path @param {(was: string | null) => string} edit
  */
-export async function appendJoin(io, path, id, text) {
+async function editJoins(io, path, edit) {
     const lock = `${path}.lock`;
     const until = io.now() + LOCK_WAIT_MS;
     while (!(await io.lock(lock))) {
+        const age = await io.lockAge(lock);
+        if (age !== null && age >= JOIN_LOCK_STALE_MS) {
+            await io.unlock(lock).catch(() => {});
+            continue;
+        }
         if (io.now() >= until) return false;
         await io.sleep(LOCK_RETRY_MS);
     }
     try {
         // herdr writes only over the text it read, null for a new file
         const was = await io.read(path);
-        const head = was && !was.endsWith('\n') ? `${was}\n` : (was ?? '');
-        await io.write(path, `${head}${JSON.stringify({ id, text })}\n`, was);
+        await io.write(path, edit(was), was);
         return true;
     } catch {
         return false;
@@ -44,6 +52,17 @@ export async function appendJoin(io, path, id, text) {
         await io.unlock(lock).catch(() => {});
     }
 }
+
+/** one join row appended @param {JoinIo} io @param {string} path @param {string} id @param {string} text */
+export const appendJoin = (io, path, id, text) =>
+    editJoins(io, path, (was) => {
+        const head = was && !was.endsWith('\n') ? `${was}\n` : (was ?? '');
+        return `${head}${JSON.stringify({ id, text })}\n`;
+    });
+
+/** a waiting join taken back: its row leaves the file @param {JoinIo} io @param {string} path @param {string} id */
+export const takeBackJoin = (io, path, id) =>
+    editJoins(io, path, (was) => dropJoin(was ?? '', id));
 
 // a hold on send this long pushes instead of joining; a held cmd-enter pushes sooner
 export const HOLD_PUSH_MS = 2000;
@@ -129,4 +148,18 @@ export function pushReason(text, joins) {
     if (text.startsWith('/')) return 'Sent: a slash command starts a turn';
     if (!joins) return 'Sent: joins are off for this thread';
     return null;
+}
+
+/** the join file without one id's rows, every other line as written @param {string} file @param {string} id */
+export function dropJoin(file, id) {
+    return file
+        .split('\n')
+        .filter((line) => {
+            try {
+                return JSON.parse(line)?.id !== id;
+            } catch {
+                return true;
+            }
+        })
+        .join('\n');
 }

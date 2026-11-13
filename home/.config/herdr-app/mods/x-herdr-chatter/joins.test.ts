@@ -2,19 +2,26 @@ import { describe, expect, test } from 'vitest';
 
 import {
     HOLD_PUSH_MS,
+    JOIN_LOCK_STALE_MS,
     JOIN_TAKE_MS,
     KEY_HOLD_PUSH_MS,
     appendJoin,
     backTexts,
+    dropJoin,
     holdSend,
     isJoinPending,
     joinStatus,
     pendingJoins,
     pushReason,
+    takeBackJoin,
 } from './joins.js';
 
 // a join file and its lock dir in memory, on a fake clock
-function fakeIo({ isLockHeld = false, isWriteRefused = false } = {}) {
+function fakeIo({
+    isLockHeld = false,
+    isWriteRefused = false,
+    lockAgeMs = 0,
+} = {}) {
     const files = new Map<string, string>();
     const locks = new Set<string>(isLockHeld ? ['/j/s1.jsonl.lock'] : []);
     let clock = 0;
@@ -26,6 +33,8 @@ function fakeIo({ isLockHeld = false, isWriteRefused = false } = {}) {
                 locks.add(path);
                 return true;
             },
+            lockAge: async (path: string) =>
+                locks.has(path) ? lockAgeMs : null,
             now: () => clock,
             read: async (path: string) => files.get(path) ?? null,
             sleep: async (ms: number) => {
@@ -70,6 +79,23 @@ describe('a click joins: one row in the thread’s join file, under its lock (FR
         expect(await appendJoin(io, '/j/s1.jsonl', 'a1', 'x')).toBe(false);
         expect(io.now()).toBeGreaterThanOrEqual(2000);
         expect(io.now()).toBeLessThan(2500);
+        expect(files.size).toBe(0);
+    });
+    test('a lock a crash left, older than the age both sides agree on, is broken and the row written', async () => {
+        const { files, io, locks } = fakeIo({
+            isLockHeld: true,
+            lockAgeMs: JOIN_LOCK_STALE_MS,
+        });
+        expect(await appendJoin(io, '/j/s1.jsonl', 'a1', 'x')).toBe(true);
+        expect(files.get('/j/s1.jsonl')).toBe('{"id":"a1","text":"x"}\n');
+        expect(locks.size).toBe(0);
+    });
+    test('a lock younger than that age is waited on, never broken', async () => {
+        const { files, io } = fakeIo({
+            isLockHeld: true,
+            lockAgeMs: JOIN_LOCK_STALE_MS - 1,
+        });
+        expect(await appendJoin(io, '/j/s1.jsonl', 'a1', 'x')).toBe(false);
         expect(files.size).toBe(0);
     });
     test('a refused write answers false and lets the lock go', async () => {
@@ -224,5 +250,34 @@ describe('cmd-enter: a tap joins, a hold of ~500 ms pushes once', () => {
                 KEY_HOLD_PUSH_MS,
             ).act,
         ).toBeNull();
+    });
+});
+
+describe('a waiting join taken back: its row leaves the file, the others stay as written', () => {
+    test('only that id goes', () => {
+        expect(
+            dropJoin(
+                '{"id":"a1","text":"one"}\n{"id":"a2","text":"two"}\nnot json\n',
+                'a1',
+            ),
+        ).toBe('{"id":"a2","text":"two"}\nnot json\n');
+    });
+    test('an id not in the file changes nothing', () => {
+        expect(dropJoin('{"id":"a2","text":"two"}\n', 'a1')).toBe(
+            '{"id":"a2","text":"two"}\n',
+        );
+    });
+});
+
+describe('the × on a waiting join takes it back under the lock', () => {
+    test('its row leaves the join file, the lock let go', async () => {
+        const { files, io, locks } = fakeIo();
+        await appendJoin(io, '/j/s1.jsonl', 'a1', 'one');
+        await appendJoin(io, '/j/s1.jsonl', 'a2', 'two');
+        expect(await takeBackJoin(io, '/j/s1.jsonl', 'a1')).toBe(true);
+        expect([files.get('/j/s1.jsonl'), locks.size]).toEqual([
+            '{"id":"a2","text":"two"}\n',
+            0,
+        ]);
     });
 });
