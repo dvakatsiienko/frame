@@ -26,7 +26,7 @@ a card is an h2 heading and two plain lines: no fence (a fence means «copy me»
 
 ## 2 · the grill
 
-load `mattpocock-skills:grilling` and run its ❓ round as written — the frontier only, no shape of our own (`habit-dima-comms` § grill) — whole in the reply and as orbit asks (dima, 2026-10-10: «grills print as usual in a response, orbit only sends my reply»). orbit is the only answer door: no pre-filled answer fence in the reply (reply-check blocks one).
+load `mattpocock-skills:grilling` and run its ❓ round as written — the frontier only, no shape of our own beyond his four-line opener (`habit-dima-comms` § grill) — whole in the reply and as orbit asks (dima, 2026-10-10: «grills print as usual in a response, orbit only sends my reply»). orbit is the only answer door: no pre-filled answer fence in the reply (reply-check blocks one).
 
 - **single mode is the default**: one chunk per grill, the chunks one after another, ten tickets are ten grills in a row (dima, 2026-10-23: «if we prep chunks like this, 5 at once, each chunk loses precision»)
 - **fast mode, on his word «fast»**: many chunks prepped at once, speed traded for precision but still leaning to precision. first a triage prints, one line per chunk with its reason, and he may move any: a chunk fits fast only when it needs no decision of his beyond the § 3 fields; the rest go to single mode after. a fast chunk is still fully groomed: i run the grilling skill on it myself, ask its questions and answer them, and its body is complete before the sign
