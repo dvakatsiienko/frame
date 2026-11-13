@@ -1,6 +1,6 @@
-// Screenshots pasted into the quill, shown above it until sent. Claude Code reads the clipboard
-// itself on its paste key; a copy saved here is only the preview, kept per thread in shots.json
-// so a chat reload still shows what waits in Claude's prompt.
+// Pictures waiting over the quill until sent. A pasted screenshot is saved here as a png and goes the way a dropped
+// picture does, by its path (FRM-613): never into Claude's own prompt, so × edits only our list. The png is its own
+// preview, kept per thread in shots.json, so a chat reload still shows what waits.
 import { mkdir, readFile, readdir, unlink, writeFile } from 'fs/promises';
 import { appHome, exec } from 'herdr';
 
@@ -42,55 +42,37 @@ export function parseShots(text) {
     }
 }
 
-/** @param {ShotStore} store @param {string} address @param {string} rel @returns {ShotStore} */
-export const shotsWith = (store, address, rel) => ({
-    ...store,
-    [address]: [...(store[address] ?? []), rel],
-});
-
-/** @param {ShotStore} store @param {string} address @returns {ShotStore} */
-export function shotsWithout(store, address) {
-    const { [address]: _gone, ...rest } = store;
-    return rest;
-}
-
 // a preview's paste time, from its name (saveClipboardShot writes shot-<ms>.png)
 /** @param {string} rel */
-export const shotTime = (rel) => Number(/shot-(\d+)\.png$/.exec(rel)?.[1] ?? 0);
+const shotTime = (rel) => Number(/shot-(\d+)\.png$/.exec(rel)?.[1] ?? 0);
 
 /**
- * a thread's previews pasted after `at` (his prompt that took the older ones), and the ones that go
- * @param {ShotStore} store @param {string} address @param {number} at
- * @returns {{ store: ShotStore, gone: string[] }}
+ * the store after a thread's waiting files change: the ones in our own dir (a pasted png) under `<address> files`, so
+ * a reload brings them back and the sweep spares them; a file dropped from elsewhere stays out
+ * @param {ShotStore} store @param {string} address @param {string[]} files @param {string} home
+ * @returns {ShotStore}
  */
-export function shotsAfter(store, address, at) {
-    const list = store[address] ?? [];
-    const kept = list.filter((rel) => shotTime(rel) > at);
-    if (kept.length === list.length) return { gone: [], store };
-    const gone = list.filter((rel) => !kept.includes(rel));
-    return {
-        gone,
-        store: kept.length
-            ? { ...store, [address]: kept }
-            : shotsWithout(store, address),
-    };
+export function withWaitingFiles(store, address, files, home) {
+    const own = `${home}/`;
+    const kept = files
+        .filter((p) => p.startsWith(own))
+        .map((p) => p.slice(own.length));
+    const key = `${address} files`;
+    const { [key]: _old, ...rest } = store;
+    return kept.length ? { ...rest, [key]: kept } : rest;
 }
 
-// a pasted image sits in Claude's own prompt as «[Image #n]» (probed 2026-11-13); a prompt seen holding one, then read
-// with none left, was emptied in the Terminal view, so its previews go. one never seen may still be on its way: a big
-// screenshot takes Claude a while to read off the clipboard
-const IMAGE_MARK = /\[Image #\d+\]/;
-/** @param {string | null} box Claude's prompt, null when it is not on screen */
-export const isPasteSeen = (box) => box != null && IMAGE_MARK.test(box);
-/** @param {string | null} box @param {boolean} wasSeen */
-export const isPasteGone = (box, wasSeen) =>
-    wasSeen && box != null && !IMAGE_MARK.test(box);
-
-// ctrl+u takes the images out of Claude's prompt without stopping its turn (probed 2026-11-13: the next send carried no
-// image); a question's dialog would take the keys, and a paste whose preview is not saved yet has nothing to keep
-/** @param {{ status: string, isContainer: boolean, pasted: number, previews: number }} at */
-export const canTakePasted = ({ status, isContainer, pasted, previews }) =>
-    !isContainer && status !== 'blocked' && pasted <= previews;
+/**
+ * each thread's waiting files as paths, read back from the store
+ * @param {ShotStore} store @param {string} home @returns {[string, string[]][]}
+ */
+export const waitingFiles = (store, home) =>
+    Object.entries(store)
+        .filter(([key]) => key.endsWith(' files'))
+        .map(([key, rels]) => [
+            key.slice(0, -' files'.length),
+            rels.map((r) => `${home}/${r}`),
+        ]);
 
 // a picture a reply links, as a small square in its file chip (FRM-562): one file per path, remade on each load
 export const THUMBS_DIR = 'data/x-herdr-chatter/thumbs';

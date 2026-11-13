@@ -74,14 +74,16 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given dima pasted a screenshot into a thread's box and has not sent it
   - when the chat reloads
   - then the image is still waiting with the next message, shown by its 56 px preview above the quill
-  - and a send or Remove takes the preview away with the image
-  - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355); FRM-562 part B saves a preview copy beside Claude's own paste
-- ⬜ a pasted image leaves when he removes it, in either view (FRM-609)
-  - given dima pasted an image with cmd+v, which sits in Claude Code's own prompt as `[Image #n]`
-  - when he clicks its × or Remove, while Claude works too
-  - then the preview goes and the next send carries no image
-  - and when he empties Claude's prompt in the Terminal view, the Chat view's preview goes within 5 s
-  - decision: ctrl+u empties the prompt instead of Esc Esc, which stopped the turn, so × and Remove hid while Claude worked; a question on screen still hides them, its dialog would take the keys
+  - and a send or its × takes the preview away with the image
+  - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355)
+- ⬜ a pasted image goes the way a dropped one does, by its path (FRM-613)
+  - makes: the clipboard's image as `~/.config/herdr-app/data/x-herdr-chatter/shots/shot-<ms>.png`
+  - given dima pastes an image with cmd+v
+  - then its preview waits over the quill and nothing is typed into Claude Code's own prompt
+  - and its × takes it at once, mid-turn too, and the next send carries no image
+  - and a send puts its path after his text, and Claude reads it
+  - decision: one path for paste and drop (dima's o49, 16:38); it replaces ctrl+v into Claude's prompt, whose × had to empty that prompt and lagged when he emptied it in the Terminal view (FRM-609)
+  - decision: the clipboard is read, never written (FRM-612)
 - ⬜ the shared keys carry the x-herdr name
   - given the chat, the status bar and the agents list share `chat.look`, `chat.subs`, `chat.containers`
   - then each key is `x-herdr-chatter.*`, read by every mod under its new name, and «zoo» appears nowhere

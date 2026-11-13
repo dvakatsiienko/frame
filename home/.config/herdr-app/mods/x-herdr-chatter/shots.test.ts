@@ -12,17 +12,9 @@ vi.mock('fs/promises', () => ({
     unlink: fs.unlink,
     writeFile: vi.fn(),
 }));
-const {
-    canTakePasted,
-    isPasteGone,
-    isPasteSeen,
-    parseShots,
-    shotsAfter,
-    shotsWith,
-    shotsWithout,
-    sweepShots,
-} = await import('./shots.js');
-const { boxText } = await import('./queued.js');
+const { parseShots, sweepShots, waitingFiles, withWaitingFiles } = await import(
+    './shots.js'
+);
 
 describe('parseShots', () => {
     it('reads a store of thread addresses to preview paths', () => {
@@ -46,37 +38,29 @@ describe('parseShots', () => {
     });
 });
 
-describe('the store per thread', () => {
-    it('adds a paste after the thread’s earlier ones', () => {
-        expect(shotsWith({ t1: ['a.png'] }, 't1', 'b.png')).toEqual({
-            t1: ['a.png', 'b.png'],
+describe('a pasted image waits as a file', () => {
+    const rel = 'data/x-herdr-chatter/shots/shot-1000.png';
+    const path = `/app/${rel}`;
+    it('keeps a pasted png in the thread’s waiting files', () => {
+        expect(withWaitingFiles({}, 't1', [path], '/app')).toEqual({
+            't1 files': [rel],
         });
     });
-    it('clears one thread and keeps the others', () => {
-        expect(shotsWithout({ t1: ['a.png'], t2: ['b.png'] }, 't1')).toEqual({
-            t2: ['b.png'],
+    it('leaves a file dropped from elsewhere out of the store', () => {
+        expect(
+            withWaitingFiles({}, 't1', ['/Users/d/a.png', path], '/app'),
+        ).toEqual({ 't1 files': [rel] });
+    });
+    it('drops it from the store once × takes it', () => {
+        const store = { 't1 files': [rel], 't2 files': ['x.png'] };
+        expect(withWaitingFiles(store, 't1', [], '/app')).toEqual({
+            't2 files': ['x.png'],
         });
     });
-});
-
-describe('shotsAfter', () => {
-    const a = 'data/x-herdr-chatter/shots/shot-1000.png';
-    const b = 'data/x-herdr-chatter/shots/shot-3000.png';
-    it('drops the previews his prompt at that time took', () => {
-        expect(shotsAfter({ t1: [a, b] }, 't1', 2000)).toEqual({
-            gone: [a],
-            store: { t1: [b] },
-        });
-    });
-    it('clears the thread when every preview went', () => {
-        expect(shotsAfter({ t1: [a], t2: [b] }, 't1', 2000)).toEqual({
-            gone: [a],
-            store: { t2: [b] },
-        });
-    });
-    it('keeps the same store when nothing is older', () => {
-        const store = { t1: [b] };
-        expect(shotsAfter(store, 't1', 2000).store).toBe(store);
+    it('brings it back as its path after a reload', () => {
+        expect(
+            waitingFiles({ 't1 files': [rel], t2: ['old.png'] }, '/app'),
+        ).toEqual([['t1', [path]]]);
     });
 });
 
@@ -104,51 +88,5 @@ describe('sweepShots, previews no thread claims', () => {
         fs.unlink.mockClear();
         await sweepShots({});
         expect(fs.unlink).not.toHaveBeenCalled();
-    });
-});
-
-// Claude Code's screen under its last reply, the prompt box as the throwaway thread drew it (2026-11-13)
-const screen = (box: string) =>
-    [
-        '● ok',
-        '',
-        '─'.repeat(40),
-        `❯ ${box}`,
-        '─'.repeat(40),
-        '  📼 /tmp/p609 • 🦔 no git',
-        '  -- INSERT -- ⏵⏵ bypass permissions on (shift+tab to cycle)',
-    ].join('\n');
-
-describe('isPasteGone', () => {
-    it('reads a prompt emptied in the Terminal view as gone', () => {
-        expect(isPasteGone(boxText(screen('')), true)).toBe(true);
-    });
-    it('keeps a pasted image still in the prompt', () => {
-        expect(isPasteGone(boxText(screen('[Image #1]')), true)).toBe(false);
-    });
-    it('waits until the prompt has shown the paste', () => {
-        expect(isPasteGone(boxText(screen('')), false)).toBe(false);
-    });
-    it('keeps the images while no prompt is on screen', () => {
-        expect(isPasteGone(boxText('● working…'), true)).toBe(false);
-    });
-});
-
-describe('isPasteSeen', () => {
-    it('sees a pasted image in the prompt', () => {
-        expect(isPasteSeen(boxText(screen('look [Image #2]')))).toBe(true);
-    });
-});
-
-describe('canTakePasted', () => {
-    const at = { isContainer: false, pasted: 1, previews: 1, status: 'idle' };
-    it('takes a pasted image while Claude works', () => {
-        expect(canTakePasted({ ...at, status: 'working' })).toBe(true);
-    });
-    it('keeps it while a question waits', () => {
-        expect(canTakePasted({ ...at, status: 'blocked' })).toBe(false);
-    });
-    it('keeps it while its preview is not saved yet', () => {
-        expect(canTakePasted({ ...at, pasted: 2 })).toBe(false);
     });
 });

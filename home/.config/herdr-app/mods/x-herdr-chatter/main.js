@@ -128,19 +128,15 @@ import {
 } from './settings-store.js';
 import { SETTINGS_WINDOW, settingsWindow } from './settings-window.js';
 import {
-    canTakePasted,
     deleteShots,
-    isPasteGone,
-    isPasteSeen,
     loadShots,
     saveClipboardShot,
     saveFileShot,
     saveLinkThumb,
     saveShots,
-    shotsAfter,
-    shotsWith,
-    shotsWithout,
     sweepShots,
+    waitingFiles,
+    withWaitingFiles,
 } from './shots.js';
 import { loadableSkills, menuMatches } from './skills.js';
 import { wholeLines } from './slice.js';
@@ -1516,11 +1512,9 @@ export default class ClaudeChat extends View {
         // Images pasted for a dev container's Claude: their paths in the container, by agent address,
         // sent with the next message (see pasteIntoContainer).
         this.pasted = new Map();
-        // previews of the screenshots waiting in each thread's Claude prompt (see shots.js)
+        // the pasted pictures waiting in each thread's box, by `<address> files` (see shots.js)
         /** @type {import('./shots.js').ShotStore} */
         this.shots = {};
-        // when each thread last sent, so a preview saved after the send it rode never shows
-        this.sentAt = new Map();
         // files picked with + or dropped on the quill, by agent address, sent as paths with the next message
         /** @type {Map<string, string[]>} */
         this.files = new Map();
@@ -1535,17 +1529,18 @@ export default class ClaudeChat extends View {
         // the message a reply answers, by agent address: shown above the quill, sent quoted before the text
         this.replies = new Map();
         cx.spawn(async (cx) => {
-            this.shots = await loadShots();
-            for (const [key, rels] of Object.entries(this.shots)) {
-                if (!key.endsWith(' files')) continue;
-                const address = key.slice(0, -' files'.length);
-                const paths = rels.map((r) => `${appHome()}/${r}`);
+            const waiting = waitingFiles(await loadShots(), appHome());
+            for (const [address, paths] of waiting) {
                 this.files.set(
                     address,
                     withFiles(this.files.get(address) ?? [], paths),
                 );
-                for (const [i, r] of rels.entries())
-                    this.previews.set(`${address} ${paths[i]}`, r);
+                for (const path of paths)
+                    this.previews.set(
+                        `${address} ${path}`,
+                        path.slice(appHome().length + 1),
+                    );
+                this.keepFiles(address);
             }
             // a dropped picture's preview is kept only while its file waits, in memory: a reload leaves it unclaimed
             await sweepShots(this.shots);
@@ -2660,8 +2655,7 @@ export default class ClaudeChat extends View {
                         ? await this.tail(address)
                         : null;
                 if (this.address === address) this.screen = screen;
-                if (this.address === address && (await this.checkBox(agent)))
-                    cx.notify();
+                if (this.address === address) await this.checkBox(agent);
             } catch (e) {
                 this.problem = String(e?.message ?? e);
             } finally {
@@ -3032,10 +3026,7 @@ export default class ClaudeChat extends View {
                     !/^\s*(?:<[\w-]+>|\[Request interrupted)/.test(said)
                 ) {
                     const at = Date.parse(d.timestamp ?? '');
-                    if (at) {
-                        this.turnAt = at;
-                        this.forgetShotsBefore(this.address, at);
-                    }
+                    if (at) this.turnAt = at;
                 }
                 // The reply before this message: a fork "before this message" resumes up to it.
                 const before =
@@ -3263,8 +3254,6 @@ export default class ClaudeChat extends View {
             cx.timer.after(600, (cx) => this.tick(cx));
             return cx.notify();
         }
-        this.images = 0;
-        this.forgetShots(address, cx);
         // A dev container's pasted images go as their paths in the container, after the text.
         const files = this.where?.container
             ? (this.pasted.get(address) ?? [])
@@ -3283,7 +3272,6 @@ export default class ClaudeChat extends View {
         ]
             .filter(Boolean)
             .join('\n');
-        // Pasted images are already in Claude's prompt: Enter alone sends them.
         const idle = this.target()?.status === 'idle';
         if (!idle && text)
             this.queued.set(address, [
@@ -3294,8 +3282,6 @@ export default class ClaudeChat extends View {
         this.sendingTo = address;
         cx.spawn(async (cx) => {
             try {
-                // a × that emptied Claude's prompt finishes first, or its Esc would wipe or stop this send
-                await this.escaping;
                 if (idle) await this.leaveMenu(address, cx);
                 const r = await hc(
                     message
@@ -3490,46 +3476,33 @@ export default class ClaudeChat extends View {
             );
     }
 
-    // A paste with no text (an image): Claude reads the clipboard itself on its paste-image key
-    // (Alt+V on Windows, Ctrl+V elsewhere) and puts "[Image #n]" in its prompt, ahead of what
-    // we send. Typing "[Image #n]" ourselves would only send the words.
+    // A paste with no text (an image) goes the way a dropped picture does (FRM-613): the clipboard saved as a png in our
+    // own dir, sent as its path with the next message. It never enters Claude's own prompt, so × edits only our list,
+    // and the png is its own preview. The clipboard is read, never written.
     pasteImage(cx) {
         if (!this.address) return;
         const address = this.address;
         if (this.where?.container)
             return this.pasteIntoContainer(address, this.where, cx);
-        // the count belongs to the thread it was pasted into: another thread's box shows none of it
-        if (this.imagesFor !== address) this.images = 0;
-        this.imagesFor = address;
-        this.images = (this.images ?? 0) + 1;
-        const pastedAt = Date.now();
-        this.pasteSeen = null;
-        // the prompt is read every half second until it shows the image, so a removal in the Terminal view right after
-        // the paste still reads as one at the next poll
         cx.spawn(async (cx) => {
-            for (let i = 0; i < 30 && this.pasteSeen !== address; i++) {
-                await cx.sleep(500);
-                const r = await hc(['read', address]).catch(() => null);
-                if (isPasteSeen(r?.code === 0 ? boxText(r.stdout) : null))
-                    this.pasteSeen = address;
-            }
-        });
-        cx.spawn(async (cx) => {
-            await hc([
-                'keys',
-                address,
-                /^win/.test(os.platform()) ? 'alt+v' : 'ctrl+v',
-            ]);
             const rel = await saveClipboardShot();
-            if (!rel) return;
-            // a send that left before the preview was saved took this image along: no preview for it
-            if ((this.sentAt.get(address) ?? 0) >= pastedAt)
-                return deleteShots([rel]);
-            this.shots = shotsWith(this.shots, address, rel);
-            await saveShots(this.shots);
+            this.pasteNote = rel ? null : 'No image on the clipboard';
+            if (!rel)
+                cx.timer.after(6000, (cx) => {
+                    this.pasteNote = null;
+                    cx.notify();
+                });
+            if (rel) {
+                const path = `${appHome()}/${rel}`;
+                this.files.set(
+                    address,
+                    withFiles(this.files.get(address) ?? [], [path]),
+                );
+                this.previews.set(`${address} ${path}`, rel);
+                this.keepFiles(address);
+            }
             cx.notify();
         });
-        cx.notify();
     }
 
     // A dev container's Claude runs on Linux with no clipboard (no X or Wayland, no xclip), so its
@@ -3579,24 +3552,11 @@ export default class ClaudeChat extends View {
         });
     }
 
-    // How many images wait to go with the next message: in Claude's prompt, or (dev container)
-    // as files we hold.
+    // How many images wait to go with the next message: files we hold, or (dev container) paths in the container.
     imageCount(address) {
         return this.where?.container
             ? (this.pasted.get(address)?.length ?? 0)
-            : Math.max(
-                  this.pastedCount(address) +
-                      this.droppedImages(address).length,
-                  this.thumbs(address).length,
-              );
-    }
-
-    /** images pasted into this thread's Claude prompt @param {string} address */
-    pastedCount(address) {
-        return Math.max(
-            this.imagesFor === address ? (this.images ?? 0) : 0,
-            this.shots[address]?.length ?? 0,
-        );
+            : this.droppedImages(address).length;
     }
 
     /** pictures dropped or picked for this thread, sent as their paths @param {string} address @returns {string[]} */
@@ -3604,51 +3564,17 @@ export default class ClaudeChat extends View {
         return (this.files.get(address) ?? []).filter(isImagePath);
     }
 
-    // the previews over the quill: pasted screenshots, then dropped pictures, one row for both
+    // the previews over the quill, pasted and dropped pictures in one row
     /** @param {string} address @returns {string[]} */
     thumbs(address) {
-        return [
-            ...(this.shots[address] ?? []),
-            ...this.droppedImages(address)
-                .map((p) => this.previews.get(`${address} ${p}`))
-                .filter(Boolean),
-        ];
+        return this.droppedImages(address)
+            .map((p) => this.previews.get(`${address} ${p}`))
+            .filter(Boolean);
     }
 
-    // a × on one preview takes that image alone (FRM-562): a dropped picture leaves the files; a pasted one sits in
-    // Claude's prompt, where emptying the prompt takes images out, all of them, so the pasted ones he keeps go along as
-    // their saved copies' paths instead, which Claude reads the same
+    // a × on one preview takes that image alone (FRM-562): it leaves the files, its preview with it
     /** @param {string} address @param {string} rel @param {import('gpui-kit').Context} cx */
     removeImage(address, rel, cx) {
-        const pasted = this.shots[address] ?? [];
-        if (pasted.includes(rel)) {
-            if (this.target()?.status === 'blocked') return;
-            const kept = pasted.filter((r) => r !== rel);
-            this.shots = shotsWithout(this.shots, address);
-            this.images = 0;
-            this.sentAt.set(address, Date.now());
-            const paths = kept.map((r) => `${appHome()}/${r}`);
-            this.files.set(
-                address,
-                withFiles(this.files.get(address) ?? [], paths),
-            );
-            for (const [i, r] of kept.entries())
-                this.previews.set(`${address} ${paths[i]}`, r);
-            this.keepFiles(address);
-            this.escaping = hc([
-                'keys',
-                address,
-                ...clearKeys(
-                    pasted.map(() => '[Image #0]'),
-                    this.leftNormal,
-                ),
-            ]);
-            cx.spawn(async () => {
-                await this.escaping;
-                await deleteShots([rel]);
-            });
-            return cx.notify();
-        }
         const path = this.droppedImages(address).find(
             (p) => this.previews.get(`${address} ${p}`) === rel,
         );
@@ -3663,60 +3589,27 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
-    // the pasted images a × turned into files, kept in the store under `<address> files`, so a reload brings them back
-    // and the sweep spares them
     /** @param {string} address */
     keepFiles(address) {
-        const own = `${appHome()}/`;
-        const kept = (this.files.get(address) ?? [])
-            .filter((p) => p.startsWith(own))
-            .map((p) => p.slice(own.length));
-        const key = `${address} files`;
-        const { [key]: _old, ...rest } = this.shots;
-        this.shots = kept.length ? { ...rest, [key]: kept } : rest;
+        this.shots = withWaitingFiles(
+            this.shots,
+            address,
+            this.files.get(address) ?? [],
+            appHome(),
+        );
         saveShots(this.shots).catch(() => {});
-    }
-
-    /** @param {any} agent */
-    canRemoveOne(agent) {
-        return canTakePasted({
-            isContainer: Boolean(this.where?.container),
-            pasted: this.pastedCount(agent.address),
-            previews: this.shots[agent.address]?.length ?? 0,
-            status: agent.status,
-        });
     }
 
     // A prompt Claude Code put back into its own box (a Stop on a sent message does it) is hidden from this view, and the
     // next send would glue onto it: show it, every 5 s at most, only while Claude is not working, and only when it is the
     // last prompt sent, never its dim suggestion text.
-    // a pasted image taken out of Claude's prompt in the Terminal view takes its preview along: read mid-turn too while
-    // one waits; true when that changed what the box draws
     async checkBox(agent) {
-        const isPasted =
-            !this.where?.container && this.pastedCount(agent.address) > 0;
-        if (
-            (agent.status === 'working' && !isPasted) ||
-            Date.now() - (this.boxAt ?? 0) < 5000
-        )
-            return false;
+        if (agent.status === 'working' || Date.now() - (this.boxAt ?? 0) < 5000)
+            return;
         this.boxAt = Date.now();
         const r = await hc(['read', agent.address]).catch(() => null);
-        if (this.address !== agent.address) return false;
-        const box = r?.code === 0 ? boxText(r.stdout) : null;
-        if (isPasteSeen(box)) this.pasteSeen = agent.address;
-        const isGone =
-            isPasted &&
-            agent.status !== 'blocked' &&
-            isPasteGone(box, this.pasteSeen === agent.address);
-        if (isGone) {
-            if (this.imagesFor === agent.address) this.images = 0;
-            this.pasteSeen = null;
-            this.sentAt.set(agent.address, Date.now());
-            this.forgetShotsBefore(agent.address, Date.now());
-        }
-        if (agent.status === 'working') return isGone;
-        const text = box ?? '';
+        if (this.address !== agent.address) return;
+        const text = (r?.code === 0 ? boxText(r.stdout) : null) ?? '';
         const last =
             [...this.items].reverse().find((i) => i.kind === 'user')?.text ??
             '';
@@ -3731,7 +3624,6 @@ export default class ClaudeChat extends View {
             r?.stdout ?? '',
             this.settingsNow()?.editorMode,
         );
-        return isGone;
     }
 
     // [take it]: the text into the quill, Claude's box emptied with ctrl+u, one per line, a key that neither exits nor
@@ -4020,28 +3912,19 @@ export default class ClaudeChat extends View {
         cx.notify();
     }
 
-    // emptying Claude's prompt takes its images out, mid-turn too; a dev container's images were never in its prompt:
-    // just forget them
+    // every waiting picture goes: our own files, or a dev container's paths
     dropImages(cx) {
         const address = this.address;
         if (this.where?.container) {
             this.pasted.delete(address);
             return cx.notify();
         }
-        const pasted = this.pastedCount(address);
         this.forgetPreviews(address);
         this.files.set(
             address,
             (this.files.get(address) ?? []).filter((p) => !isImagePath(p)),
         );
-        this.images = 0;
-        this.forgetShots(address, cx);
-        if (pasted)
-            this.escaping = hc([
-                'keys',
-                address,
-                ...clearKeys(Array(pasted).fill('[Image #0]'), this.leftNormal),
-            ]);
+        this.keepFiles(address);
         cx.notify();
     }
 
@@ -4172,31 +4055,6 @@ export default class ClaudeChat extends View {
                         ),
                 ),
             );
-    }
-
-    /** a send or a Remove takes the screenshots out of Claude's prompt: their previews go too */
-    forgetShots(address, cx) {
-        this.sentAt.set(address, Date.now());
-        const gone = this.shots[address];
-        if (!gone) return;
-        this.shots = shotsWithout(this.shots, address);
-        cx.spawn(async () => {
-            await saveShots(this.shots);
-            await deleteShots(gone);
-        });
-    }
-
-    // his prompt in the transcript took every screenshot pasted before it, wherever he sent it from (the
-    // Terminal view, a Stop that emptied Claude's prompt): those previews go
-    /** @param {string | null} address @param {number} at */
-    forgetShotsBefore(address, at) {
-        if (!address) return;
-        const { gone, store } = shotsAfter(this.shots, address, at);
-        if (!gone.length) return;
-        this.shots = store;
-        saveShots(store)
-            .then(() => deleteShots(gone))
-            .catch(() => {});
     }
 
     // A copy of this conversation in a new tab of the same space: `claude --resume <id> --fork-session`
@@ -7876,52 +7734,39 @@ export default class ClaudeChat extends View {
                                             .border(1)
                                             .border_color(t.border)
                                             .child(image(rel).size_full())
-                                            .when(
-                                                !(
-                                                    this.shots[agent.address] ??
-                                                    []
-                                                ).includes(rel) ||
-                                                    this.canRemoveOne(agent),
-                                                (el) =>
-                                                    el.child(
-                                                        div()
-                                                            .id(`thumb-x-${i}`)
-                                                            .absolute()
-                                                            .top(3)
-                                                            .right(3)
-                                                            .size(px(18))
-                                                            .flex()
-                                                            .items_center()
-                                                            .justify_center()
-                                                            .rounded_full()
-                                                            .bg(t.background)
-                                                            .border(1)
-                                                            .border_color(
-                                                                t.border,
-                                                            )
-                                                            .text_size(
-                                                                px(TEXT.sm),
-                                                            )
-                                                            .text_color(t.muted)
-                                                            .cursor_pointer()
-                                                            .hover((s) =>
-                                                                s.text_color(
-                                                                    t.foreground,
-                                                                ),
-                                                            )
-                                                            .tooltip(
-                                                                'Remove this image',
-                                                            )
-                                                            .on_click(
-                                                                (_e, cx) =>
-                                                                    this.removeImage(
-                                                                        agent.address,
-                                                                        rel,
-                                                                        cx,
-                                                                    ),
-                                                            )
-                                                            .child('×'),
-                                                    ),
+                                            .child(
+                                                div()
+                                                    .id(`thumb-x-${i}`)
+                                                    .absolute()
+                                                    .top(3)
+                                                    .right(3)
+                                                    .size(px(18))
+                                                    .flex()
+                                                    .items_center()
+                                                    .justify_center()
+                                                    .rounded_full()
+                                                    .bg(t.background)
+                                                    .border(1)
+                                                    .border_color(t.border)
+                                                    .text_size(px(TEXT.sm))
+                                                    .text_color(t.muted)
+                                                    .cursor_pointer()
+                                                    .hover((s) =>
+                                                        s.text_color(
+                                                            t.foreground,
+                                                        ),
+                                                    )
+                                                    .tooltip(
+                                                        'Remove this image',
+                                                    )
+                                                    .on_click((_e, cx) =>
+                                                        this.removeImage(
+                                                            agent.address,
+                                                            rel,
+                                                            cx,
+                                                        ),
+                                                    )
+                                                    .child('×'),
                                             ),
                                     ),
                                 )
@@ -7950,27 +7795,17 @@ export default class ClaudeChat extends View {
                                         .child(
                                             this.where?.container
                                                 ? 'copied into the container, sent with your message'
-                                                : this.pastedCount(
-                                                        agent.address,
-                                                    )
-                                                  ? "in Claude's prompt, sent with your message"
-                                                  : 'sent with your message',
+                                                : 'sent with your message',
                                         ),
                                 )
-                                .when(
-                                    Boolean(this.where?.container) ||
-                                        agent.status !== 'blocked' ||
-                                        !this.pastedCount(agent.address),
-                                    (el) =>
-                                        el.child(
-                                            button(
-                                                t,
-                                                px,
-                                                'drop-images',
-                                                'Remove',
-                                                (_e, cx) => this.dropImages(cx),
-                                            ),
-                                        ),
+                                .child(
+                                    button(
+                                        t,
+                                        px,
+                                        'drop-images',
+                                        'Remove',
+                                        (_e, cx) => this.dropImages(cx),
+                                    ),
                                 ),
                         ),
                     )
