@@ -42,4 +42,6 @@ answered 18:11 and 18:19 (wing 1): Theo's diagram is agent-written html publishe
 
 18:31 ticket: FRM-611
 close: folded into FRM-611 as W31–W46 by main clio 18:31 (one home, one grill)
+
+18:31 close: PK-403:W1–W16 moved → FRM-611:W31–W46
 <!-- SECTION:NOTES:END -->
