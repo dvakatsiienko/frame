@@ -2126,12 +2126,12 @@ export default class ClaudeChat extends View {
         if (!agent) return;
         const isBlocked = agent.status === 'blocked';
         const r = effortKey(
-            this.drop === 'effort' ? this.effortPop : null,
+            this.drop === 'pick' ? this.effortPop : null,
             this.effortNow(),
             isBlocked,
         );
         this.effortPop = r.popover;
-        this.drop = r.popover ? 'effort' : null;
+        this.drop = r.popover ? 'pick' : null;
         this.pickNote = isBlocked ? 'Answer Claude first, then pick' : null;
         if (r.apply) this.pick('effort', r.apply, agent.address, cx);
         this.focusEffort(cx);
@@ -2142,13 +2142,13 @@ export default class ClaudeChat extends View {
     // the slider's element exists only after the render that opens it
     /** @param {any} cx */
     focusEffort(cx) {
-        if (this.drop !== 'effort') return this.box.focus();
+        if (this.drop !== 'pick') return this.box.focus();
         cx.timer.after(16, () => this.effortKeys.focus());
     }
 
     /** @param {'left' | 'right'} way @param {any} cx */
     effortSlide(way, cx) {
-        if (this.drop !== 'effort' || !this.effortPop) return;
+        if (this.drop !== 'pick' || !this.effortPop) return;
         this.effortPop = slideEffort(this.effortPop, way);
         cx.notify();
     }
@@ -2172,23 +2172,23 @@ export default class ClaudeChat extends View {
         }
     }
 
-    // The model and effort dropdowns at the right of the quill: the trigger shows the current one
-    // (or "Opus 5.5…" while a pick lands), the list opens upward with the current one ticked.
+    // the quill's one picker, shepherdr's shape (dima's o10 pick, 2026-11-13): «Opus 5.5 · medium ⌄», its popover the
+    // model list over the effort slider; ⌘⇧E opens it with ← → on the effort. A part shows «…» while its pick lands.
     // Both switch mid-turn: Claude Code opens /model and /effort while a reply streams and sets them at once, the turn
     // runs on and the next reply uses the pick (/effort probed 2026-11-11; /model 2026-11-13, Haiku 5.5 → Sonnet 5.5,
     // «Set model to Sonnet 5.5 for this session only» while working). Never while it asks: keys would answer the question.
-    dropdown(t, agent, kind) {
+    /** @param {any} t @param {any} agent */
+    picker(t, agent) {
         const ready = agent.status !== 'blocked';
-        const now = kind === 'model' ? this.modelNow() : this.effortNow();
-        const p =
+        const model = this.modelNow();
+        const effort = this.effortNow();
+        const pendingOf = (/** @type {string} */ kind) =>
             this.pending?.address === this.address && this.pending.kind === kind
-                ? this.pending
+                ? `${this.pending.value}…`
                 : null;
-        const open = this.drop === kind;
-        const options =
-            kind === 'model' ? MODELS.map(([, label]) => label) : EFFORTS;
+        const open = this.drop === 'pick';
         const trigger = h_flex()
-            .id(`drop-${kind}-trigger`)
+            .id('drop-pick-trigger')
             .flex_none()
             .gap(4)
             .px(6)
@@ -2198,79 +2198,121 @@ export default class ClaudeChat extends View {
             .when(open, (el) => el.bg(t.hover))
             .cursor_pointer()
             .text_size(px(12))
-            .text_color(p ? t.accent : t.muted)
+            .text_color(this.pending ? t.accent : t.muted)
             .hover((s) => s.bg(t.hover).text_color(t.foreground))
-            .tooltip(
-                kind === 'model'
-                    ? 'Model (this session only)'
-                    : 'Effort (this session only)',
-            )
             .child(
-                p
-                    ? `${p.value}…`
-                    : (now ?? (kind === 'model' ? 'Model' : 'Effort')),
+                `${pendingOf('model') ?? model ?? 'Model'} · ${pendingOf('effort') ?? effort ?? 'Effort'}`,
             )
             .child(
                 svg('mods/workspace-chrome/chevron-down.svg')
                     .size(12)
                     .text_color(t.dim),
             );
-        const row = (value) =>
+        const row = (/** @type {string} */ value) =>
             h_flex()
-                .id(`drop-${kind}-${value}`)
+                .id(`drop-model-${value}`)
                 .gap(8)
                 .px(8)
                 .h(26)
                 .items_center()
                 .rounded(5)
                 .text_size(px(12.5))
-                .when(value === now, (el) =>
+                .when(value === model, (el) =>
                     el.text_color(t.foreground).bg(t.selected),
                 )
-                .when(value !== now && ready, (el) =>
+                .when(value !== model && ready, (el) =>
                     el
                         .cursor_pointer()
                         .text_color(t.muted)
                         .hover((s) => s.bg(t.hover).text_color(t.foreground))
                         .on_click((_e, cx) => {
-                            this.drop = null;
+                            this.effortClose(cx);
                             // a model switch mid-conversation drops the hot cache: it asks first
-                            if (kind === 'model' && this.flat?.length)
+                            if (this.flat?.length)
                                 this.askModel = {
                                     address: agent.address,
                                     value,
                                 };
-                            else this.pick(kind, value, agent.address, cx);
+                            else this.pick('model', value, agent.address, cx);
                             this.box.focus();
                         }),
                 )
-                .when(value !== now && !ready, (el) => el.text_color(t.dim))
+                .when(value !== model && !ready, (el) => el.text_color(t.dim))
                 .child(
                     div()
                         .w(12)
                         .flex_none()
                         .text_color(t.accent)
-                        .child(value === now ? '✓' : ''),
+                        .child(value === model ? '✓' : ''),
                 )
                 .child(value);
-        return Popover.new(`drop-${kind}`)
-            .anchor(kind === 'effort' ? 'bottom_left' : 'bottom_right')
+        const title = (/** @type {string} */ text) =>
+            div()
+                .px(8)
+                .text_size(px(12))
+                .font_semibold()
+                .text_color(t.foreground)
+                .child(text);
+        return Popover.new('drop-pick')
+            .anchor('bottom_left')
             .open(open)
             .on_open_change((o, cx) => {
-                this.drop = o ? kind : null;
-                this.effortPop =
-                    o && kind === 'effort'
-                        ? effortKey(null, now, false).popover
-                        : null;
+                this.drop = o ? 'pick' : null;
+                this.effortPop = o
+                    ? effortKey(null, effort, false).popover
+                    : null;
                 this.pickNote = null;
-                if (kind === 'effort') this.focusEffort(cx);
+                this.focusEffort(cx);
                 cx.notify();
             })
             .trigger(trigger)
             .content(
-                kind === 'effort'
-                    ? this.effortTrack(t, agent, ready, now)
-                    : this.modelList(t, options, row, ready),
+                v_flex()
+                    .id('pick-pop')
+                    .track_focus(this.effortKeys)
+                    .key_context('ChatEffort')
+                    .on_action('x_herdr_chatter_effort_left', (_e, cx) =>
+                        this.effortSlide('left', cx),
+                    )
+                    .on_action('x_herdr_chatter_effort_right', (_e, cx) =>
+                        this.effortSlide('right', cx),
+                    )
+                    .on_action('x_herdr_chatter_effort_apply', (_e, cx) =>
+                        this.effortPress(cx),
+                    )
+                    .on_action('x_herdr_chatter_effort_close', (_e, cx) => {
+                        this.effortClose(cx);
+                        this.box.focus();
+                    })
+                    .p(4)
+                    .pt(10)
+                    .pb(10)
+                    .gap(1)
+                    .mb(6)
+                    .rounded(10)
+                    .bg(t.popover)
+                    .border(1)
+                    .border_color(t.border)
+                    .shadow_md()
+                    .child(title('Model').pb(6))
+                    .children(MODELS.map(([, label]) => row(label)))
+                    .child(div().mx(8).my(8).h(1).bg(t.border))
+                    .child(title('Effort').pb(6))
+                    .child(
+                        div()
+                            .px(8)
+                            .child(this.effortTrack(t, agent, ready, effort)),
+                    )
+                    .when(!ready, (el) =>
+                        el.child(
+                            div()
+                                .px(8)
+                                .pt(8)
+                                .text_size(px(10.5))
+                                .text_color(t.dim)
+                                .child('Can change once you answer Claude'),
+                        ),
+                    ),
             );
     }
 
@@ -2327,38 +2369,7 @@ export default class ClaudeChat extends View {
                 .when(i === at, (el) => el.font_semibold())
                 .child(level);
         return v_flex()
-            .id('effort-pop')
-            .track_focus(this.effortKeys)
-            .key_context('ChatEffort')
-            .on_action('x_herdr_chatter_effort_left', (_e, cx) =>
-                this.effortSlide('left', cx),
-            )
-            .on_action('x_herdr_chatter_effort_right', (_e, cx) =>
-                this.effortSlide('right', cx),
-            )
-            .on_action('x_herdr_chatter_effort_apply', (_e, cx) =>
-                this.effortPress(cx),
-            )
-            .on_action('x_herdr_chatter_effort_close', (_e, cx) => {
-                this.effortClose(cx);
-                this.box.focus();
-            })
-            .p(12)
-            .pb(10)
-            .gap(8)
-            .mb(6)
-            .rounded(10)
-            .bg(t.popover)
-            .border(1)
-            .border_color(t.border)
-            .shadow_md()
-            .child(
-                div()
-                    .text_size(px(12))
-                    .font_semibold()
-                    .text_color(t.foreground)
-                    .child('Effort'),
-            )
+            .gap(6)
             .child(
                 div()
                     .relative()
@@ -2402,41 +2413,8 @@ export default class ClaudeChat extends View {
                             .spring('left'),
                     ),
             )
-            .child(div().relative().w(width).h(16).children(EFFORTS.map(label)))
-            .when(!ready, (el) =>
-                el.child(
-                    div()
-                        .text_size(px(10.5))
-                        .text_color(t.dim)
-                        .child('Can change once you answer Claude'),
-                ),
-            );
-    }
-
-    /** @param {any} t @param {string[]} options @param {(value: string) => any} row @param {boolean} ready */
-    modelList(t, options, row, ready) {
-        return v_flex()
-            .w(190)
-            .p(4)
-            .gap(1)
-            .mb(6)
-            .rounded(8)
-            .bg(t.popover)
-            .border(1)
-            .border_color(t.border)
-            .children(options.map(row))
             .child(
-                div()
-                    .px(8)
-                    .pt(6)
-                    .pb(2)
-                    .text_size(px(10.5))
-                    .text_color(t.dim)
-                    .child(
-                        ready
-                            ? 'This session only'
-                            : 'Can change once you answer Claude',
-                    ),
+                div().relative().w(width).h(16).children(EFFORTS.map(label)),
             );
     }
 
@@ -6869,8 +6847,7 @@ export default class ClaudeChat extends View {
             .when(!this.where?.container, (el) =>
                 el.child(this.attachButton(t)),
             )
-            .child(this.dropdown(t, agent, 'model'))
-            .child(this.dropdown(t, agent, 'effort'))
+            .child(this.picker(t, agent))
             .child(div().flex_1())
             .child(this.bandChips(t));
     }
