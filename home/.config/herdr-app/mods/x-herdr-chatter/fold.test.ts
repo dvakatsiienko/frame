@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { FOLD_SHOWN, foldBlocks, wrapLines } from './fold.js';
+import { FOLD_SHOWN, foldBlocks, replyFold, wrapLines } from './fold.js';
 
 const prose = (n: number) =>
     Array.from({ length: n }, (_, i) => `line ${i + 1}`).join('\n');
@@ -83,5 +83,26 @@ describe('foldBlocks', () => {
             60,
         );
         expect(fold?.shown).toHaveLength(1);
+    });
+});
+
+describe('replyFold (FRM-607)', () => {
+    const long = [{ kind: 'text' as const, text: prose(100) }];
+
+    it('folds a long reply of an earlier turn while Show more is on', () => {
+        expect(
+            replyFold(long, 60, { isEarlierTurn: true, isShowMoreOn: true })
+                ?.hidden,
+        ).toBe(100 - FOLD_SHOWN);
+    });
+    it('draws a long reply whole while Show more is off', () => {
+        expect(
+            replyFold(long, 60, { isEarlierTurn: true, isShowMoreOn: false }),
+        ).toBeNull();
+    });
+    it('draws a reply of the turn he reads now whole', () => {
+        expect(
+            replyFold(long, 60, { isEarlierTurn: false, isShowMoreOn: true }),
+        ).toBeNull();
     });
 });
