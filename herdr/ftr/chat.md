@@ -294,6 +294,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima holds send or Enter
   - then after a short pause (100 ms, so a tap never shows it) a disc fills the button over 1 s and then the message pushes; Settings › Chatter › send sets both, words marked to join taken out of the join file first: a turn starts, as a send did before joins
   - and a release before the disc starts joins, one after it sends nothing and marks nothing, Enter acting on its release, its repeats typing no newlines; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
+  - decision: a let-go after the disc starts sends nothing: «a started hold that you abort means you changed your mind» (dima's o127, 21:23)
 - ⬜ cmd-enter in the quill sends at once (FRM-564)
   - given text in the focused quill
   - when dima presses cmd-enter

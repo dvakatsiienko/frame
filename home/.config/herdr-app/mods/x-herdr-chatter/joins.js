@@ -122,7 +122,7 @@ export function holdSend(
     };
     if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
-    // a tap joins; a hold he lets go once its disc started is changed mind, nothing sent or marked (dima, 20:05)
+    // a tap joins; a hold he lets go once its disc started is changed mind, nothing sent or marked (dima's o127, 21:23)
     if (event === 'release')
         return {
             act: now - hold.at > timing.delay ? null : 'join',
