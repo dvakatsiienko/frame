@@ -1413,9 +1413,9 @@ func clearThreadTicket(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer unlock()
 	store, err := readThreadStore(path)
 	if err != nil {
+		unlock()
 		return "", err
 	}
 	var renamed []thread
@@ -1427,9 +1427,13 @@ func clearThreadTicket(id string) (string, error) {
 		}
 	}
 	if len(renamed) == 0 {
+		unlock()
 		return "no record names it", nil
 	}
-	if err := writeThreadStore(path, time.Now(), store.Threads); err != nil {
+	err = writeThreadStore(path, time.Now(), store.Threads)
+	// the store is free before any slow call: every refresh and hook waits on this lock
+	unlock()
+	if err != nil {
 		return "", err
 	}
 	// the live thread follows its record through the rename door, with no wait: a landing never holds for an idle thread

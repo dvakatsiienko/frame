@@ -101,6 +101,9 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 		home, _ = os.Getwd()
 	}
 	if standing.Role != "" {
+		if flagString(flags, "lane-kind") != "" || flagString(flags, "area") != "" {
+			return nil, usageFail("--lane-kind and --area name a lane member's thread; a standing role draws its whole display from roles.json", "x brief summon --role "+flagString(flags, "role")+" …")
+		}
 		return summonStandingPlan(r, command, words[claude:], home, standing)
 	}
 	argv := words[claude:]
