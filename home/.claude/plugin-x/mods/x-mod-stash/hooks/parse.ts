@@ -364,12 +364,6 @@ export function roundLine(count: number, untold?: string) {
 export const capLine = (lane: string, count: number, from: string) =>
     `[escalate] round ${count} of ${lane}, past the cap of ${ROUND_CAP}, from ${from}: ask dima «go on, or stop the lane»`;
 
-// a lane member's title past its chunk: the ticket after its last « | » becomes the plan's; a title with none stays
-export function chunkTitle(title: string, ticket: string) {
-    const m = title.match(/^(.*\|\s*)((?:FRM|BYT)-\d+)\s*$/);
-    return m && m[2] !== ticket ? `${m[1]}${ticket}` : undefined;
-}
-
 // the quiet ledger's count of one member's sends to clio: `sh -c LEDGER_SENDS <home> <session id> <address regex>`
 // prints the timestamp of each SendMessage call whose `to` names her; a call its result answered `success:false`
 // (unreachable, refused by a plugin, a dead socket) never reached her, so it is left out

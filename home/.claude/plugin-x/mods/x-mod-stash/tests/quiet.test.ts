@@ -43,6 +43,8 @@ function world(
         whileSending = async (): Promise<void> => {},
         // files a dir lists beyond the registry's, with their mtime
         listed = {} as Record<string, { mtimeMs: number; name: string }[]>,
+        // files that are there but refuse a read
+        unreadable = [] as string[],
     } = {},
 ) {
     for (const p of peers)
@@ -107,11 +109,13 @@ function world(
         return { value: undefined };
     });
     on('fs.read', (_$, e) =>
-        e.path === `/home/.claude/sessions/${PID}.json`
-            ? { value: JSON.stringify({ name, pid: PID, sessionId: SID }) }
-            : e.path in files
-              ? { value: files[e.path] ?? '' }
-              : { deny: 'no such file' },
+        unreadable.includes(e.path)
+            ? { deny: 'EACCES' }
+            : e.path === `/home/.claude/sessions/${PID}.json`
+              ? { value: JSON.stringify({ name, pid: PID, sessionId: SID }) }
+              : e.path in files
+                ? { value: files[e.path] ?? '' }
+                : { deny: 'no such file' },
     );
     on('env.get', (_$, e) => ({
         value: isTestChild && e.name === 'X_MODS_TEST_CHILD' ? '1' : '/home',
@@ -3175,16 +3179,22 @@ function roundWorld(
     {
         files = {} as Record<string, string>,
         greenlit,
+        isMvRefused = false,
         name = ROUND_CODIE,
         plan,
         record = {} as Record<string, unknown>,
         refusal,
         role = 'codie',
         sent,
+        threads = [],
+        unreadable = [],
     }: {
         files?: Record<string, string>;
-        // the steps above the plan's «## not greenlit» heading; all of them when unset
+        // the steps above the plan's «## not greenlit» heading, the rest held by x; all of them when unset
         greenlit?: number;
+        // a write the shell's mv refuses
+        isMvRefused?: boolean;
+        unreadable?: string[];
         name?: string;
         plan?: { done: boolean; ticket?: string; text: string }[];
         record?: Record<string, unknown>;
@@ -3192,48 +3202,64 @@ function roundWorld(
         refusal?: string;
         role?: string;
         sent?: Record<string, unknown>;
+        // more of x's records, beside this codie's and clio's
+        threads?: Record<string, unknown>[];
     } = {},
 ) {
-    const all: Record<string, string> = { ...thread(role, record), ...files };
-    if (plan) {
-        const lines = plan.map(
-            (s, i) =>
-                `- [${s.done ? 'x' : ' '}] ${String(i + 1).padStart(2, '0')} · ${s.ticket ?? ''} ${s.text}`,
-        );
-        if (greenlit !== undefined)
-            lines.splice(greenlit, 0, '', '## not greenlit', '');
-        all[`${PLAN_DIR}/lane-plan.md`] =
-            `# lane plan\n\n${lines.join('\n')}\n`;
-    }
+    const base = JSON.parse(thread(role, record)[THREADS_FILE] ?? '{}') as {
+        threads: unknown[];
+    };
+    const all: Record<string, string> = {
+        [THREADS_FILE]: JSON.stringify({
+            ...base,
+            threads: [...base.threads, ...threads],
+        }),
+        ...files,
+    };
+    // x's answer to plan-steps, which a test may change: undefined is x failing; each change is a new mtime
+    const planNow = {
+        steps: plan?.map((s, i) =>
+            greenlit !== undefined && i >= greenlit ? { ...s, held: true } : s,
+        ),
+    };
+    const listed: Record<string, { mtimeMs: number; name: string }[]> = plan
+        ? { [PLAN_DIR]: [{ mtimeMs: planAt++, name: 'lane-plan.md' }] }
+        : {};
+    const setPlan = (steps: typeof plan) => {
+        planNow.steps = steps;
+        listed[PLAN_DIR] = [{ mtimeMs: planAt++, name: 'lane-plan.md' }];
+    };
     const w = world(on, {
         files: all,
-        listed: plan
-            ? { [PLAN_DIR]: [{ mtimeMs: planAt++, name: 'lane-plan.md' }] }
-            : {},
+        listed,
         name,
         peers: [CLIO],
         run: (argv) => {
             if (argv[0] === 'mv') {
                 const [, , from, to] = argv;
-                if (from === undefined || to === undefined) return 1;
+                if (isMvRefused || from === undefined || to === undefined)
+                    return 1;
                 all[to] = all[from] ?? '';
                 delete all[from];
                 return 0;
             }
             if (argv[0] === 'x' && argv[2] === 'plan-steps')
-                return JSON.stringify({ data: { steps: plan } });
+                return planNow.steps
+                    ? JSON.stringify({ data: { steps: planNow.steps } })
+                    : 1;
             return undefined;
         },
+        unreadable,
         ...(sent ? { sent } : {}),
     });
-    on('classic.UserPromptSubmit', () => ({}));
+    on('fs.exists', (_$, e) => ({ value: e.path in all }));
     const told: { text: string; to: unknown }[] = [];
     on('session.send', (_$, e) => {
         if (refusal) return { isDelivered: false, reason: refusal };
         told.push({ text: e.text, to: e.to });
         return { isDelivered: true };
     });
-    return { ...w, files: all, told };
+    return { ...w, files: all, setPlan, told };
 }
 // the shelf file's rounds, each without its time
 const roundsIn = (files: Record<string, string>) =>
@@ -3340,7 +3366,7 @@ test('a send that went nowhere is no round', async ($, on) => {
     expect(w.files[ROUNDS_FILE]).toBeUndefined();
 });
 
-test('no round is read from or written to the private store', async ($, on) => {
+test('no round is written to the private store', async ($, on) => {
     const w = roundWorld(on);
     await start($);
     await send($, ROUND_SENSE, 'round 1 on abc12345');
@@ -3390,18 +3416,81 @@ test('a next chunk in the lane plan starts its own count at 1, with no cap line'
     ]);
 });
 
-test("a step under the plan's «not greenlit» heading is no chunk yet", async ($, on) => {
-    const w = roundWorld(on, {
-        greenlit: 2,
-        name: '⚡ 🔧 mods | FRM-9',
-        plan: PLAN_NEXT,
-    });
+test("a step x holds under the plan's «not greenlit» heading is no chunk yet", async ($, on) => {
+    const w = roundWorld(on, { greenlit: 2, plan: PLAN_NEXT });
     await start($);
     await send($, ROUND_SENSE, 'round 1 on ccccccc');
-    expect([
-        Object.keys(roundsIn(w.files)),
-        (await titled($)).sessionTitle,
-    ]).toEqual([[LANE], undefined]);
+    expect(Object.keys(roundsIn(w.files))).toEqual([LANE]);
+});
+
+test("a plan x cannot read for a moment keeps its last chunk, never the summon's ticket", async ($, on) => {
+    const w = roundWorld(on, { plan: PLAN_NEXT });
+    await start($);
+    await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    w.setPlan(undefined);
+    await send($, ROUND_SENSE, 'round 2 on ddddddd');
+    expect(Object.keys(roundsIn(w.files))).toEqual(['mods-lane-5 | FRM-10']);
+});
+
+test('a round file that does not parse moves aside and the count starts over', async ($, on) => {
+    const w = roundWorld(on, { files: { [ROUNDS_FILE]: '{"rounds": [torn' } });
+    await start($);
+    const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    expect([w.files[`${ROUNDS_FILE}.bad`], kept(w), roundLines(r)]).toEqual([
+        '{"rounds": [torn',
+        { count: 1, shas: ['ccccccc'] },
+        [],
+    ]);
+});
+
+test('a round file that is there but will not read is never written over', async ($, on) => {
+    const w = roundWorld(on, {
+        files: { [ROUNDS_FILE]: 'kept' },
+        unreadable: [ROUNDS_FILE],
+    });
+    await start($);
+    const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    expect([w.files[ROUNDS_FILE], roundLines(r)]).toEqual([
+        'kept',
+        [
+            'round 1 on ccccccc not counted (the round file would not read): resend the same line to count it',
+        ],
+    ]);
+});
+
+test('a resend of a round past the cap says nothing and tells clio nothing again', async ($, on) => {
+    const w = roundWorld(on);
+    await start($);
+    await sendRounds($, 4);
+    const r = await send($, ROUND_SENSE, 'round 4 on abcdef3');
+    expect([roundLines(r), w.told.length]).toEqual([[], 1]);
+});
+
+test('an entry missing its shas reads as none', async ($, on) => {
+    const w = roundWorld(on, {
+        files: {
+            [ROUNDS_FILE]: JSON.stringify({
+                rounds: { [LANE]: { count: 2 } },
+                v: 1,
+            }),
+        },
+    });
+    await start($);
+    await send($, ROUND_SENSE, 'round 3 on ccccccc');
+    expect(kept(w)).toEqual({ count: 3, shas: ['ccccccc'] });
+});
+
+test('a round that could not be written tells the sender to resend it', async ($, on) => {
+    const w = roundWorld(on, { isMvRefused: true });
+    await start($);
+    const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    expect([w.files[ROUNDS_FILE], roundLines(r), r.result.success]).toEqual([
+        undefined,
+        [
+            'round 1 on ccccccc not counted (mv failed): resend the same line to count it',
+        ],
+        true,
+    ]);
 });
 
 test("with no lane plan the count keys on x's record's ticket", async ($, on) => {
@@ -3558,6 +3647,67 @@ test('round 4 tells the coordinator the lane and the count, once, and warns the 
     ]);
 });
 
+// a wing that runs the lane by its glide card hears the line, not main clio
+const WING = {
+    hostSessionId: 'local_wing',
+    name: '🦉🪽 clio: wing 2',
+    pid: 71,
+    sessionId: 'wing-sid',
+};
+const wingLane = (over: Record<string, unknown> = {}) => ({
+    '/home/.claude/shelf/lanes.json': JSON.stringify({
+        lanes: [
+            {
+                current: 0,
+                history: [],
+                id: 'l1',
+                items: [{ done: false, text: 'the round store' }],
+                members: { codie: SID },
+                movedAt: 0,
+                runner: WING.name,
+                title: 'mods lane 5',
+                ...over,
+            },
+        ],
+    }),
+});
+for (const [why, lanes, peer, to] of [
+    ['a live wing runs its card', wingLane(), true, WING.sessionId],
+    ['the card is ended', wingLane({ endedAt: 1 }), true, CLIO.sessionId],
+    ["the card's wing is gone", wingLane(), false, CLIO.sessionId],
+    [
+        'the card links another codie',
+        wingLane({ members: { codie: 'other-sid' } }),
+        true,
+        CLIO.sessionId,
+    ],
+] as const)
+    test(`past the cap the line goes to ${to === WING.sessionId ? 'the wing' : 'main clio'}: ${why}`, async ($, on) => {
+        const w = roundWorld(on, {
+            files: {
+                ...lanes,
+                ...(peer
+                    ? {
+                          [`/home/.claude/sessions/${WING.pid}.json`]:
+                              JSON.stringify(WING),
+                      }
+                    : {}),
+            },
+            threads: peer
+                ? [
+                      {
+                          pid: WING.pid,
+                          sessionId: WING.sessionId,
+                          ...recordOf(WING.name),
+                      },
+                  ]
+                : [],
+        });
+        await start($);
+        await sendRounds($, 4);
+        expect(w.told.map((t) => t.to)).toEqual([to]);
+    });
+
 test('each round past the cap tells the coordinator again', async ($, on) => {
     const w = roundWorld(on);
     await start($);
@@ -3619,51 +3769,11 @@ test('the past-the-cap line still fires across a compact and a reload, read from
     ]);
 });
 
-/* a member's title follows its chunk (FRM-504 exit 4) */
-
-const titled = ($: Engine) =>
-    $.classic.UserPromptSubmit({
-        hook_event_name: 'UserPromptSubmit',
-        prompt: 'go',
-    } as never) as Promise<{ sessionTitle?: string }>;
-
-for (const [role, name, want] of [
-    ['codie', '⚡ 🔧 mods | FRM-9', '⚡ 🔧 mods | FRM-10'],
-    ['sixth-sense', '⚡ 🔎 mods | FRM-9', '⚡ 🔎 mods | FRM-10'],
-    ['codie', '🌗 🔧 mods |FRM-9', '🌗 🔧 mods |FRM-10'],
-] as const)
-    test(`a ${role} «${name}» whose plan moved on is titled «${want}»`, async ($, on) => {
-        roundWorld(on, { name, plan: PLAN_NEXT, role });
-        await start($);
-        expect((await titled($)).sessionTitle).toBe(want);
-    });
-
-for (const [why, over] of [
-    ['its title already names the chunk', { name: '⚡ 🔧 mods | FRM-10' }],
-    ['its title names no ticket', { name: '⚡ 🔧 mods' }],
-    ['no lane plan', { plan: undefined }],
-    ['the coordinator', { name: '🦉 clio', role: 'coordinator' }],
-    ['every step done', { plan: PLAN_NEXT.map((s) => ({ ...s, done: true })) }],
-] as const)
-    test(`no title is set: ${why}`, async ($, on) => {
-        roundWorld(on, {
-            name: '⚡ 🔧 mods | FRM-9',
-            plan: PLAN_NEXT,
-            ...over,
-        } as never);
-        await start($);
-        expect((await titled($)).sessionTitle).toBeUndefined();
-    });
-
-test('🎛️ rounds switched off: no count, no coordinator line, no title', async ($, on) => {
-    const w = roundWorld(on, { name: '⚡ 🔧 mods | FRM-9', plan: PLAN_NEXT });
+test('🎛️ rounds switched off: no count, no coordinator line', async ($, on) => {
+    const w = roundWorld(on, { plan: PLAN_NEXT });
     w.store.set('shown', { 'stash.rounds': false });
     await start($);
     for (let i = 0; i < 4; i++)
         await send($, ROUND_SENSE, `round ${i + 1} on abcdef${i}`);
-    expect([
-        w.files[ROUNDS_FILE],
-        w.told,
-        (await titled($)).sessionTitle,
-    ]).toEqual([undefined, [], undefined]);
+    expect([w.files[ROUNDS_FILE], w.told]).toEqual([undefined, []]);
 });

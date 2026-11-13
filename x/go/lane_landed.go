@@ -1136,12 +1136,15 @@ var (
 	stepTicket   = regexp.MustCompile(`\b(?:FRM|BYT)-\d+\b`)
 	// a trailing note in parens still reads as the closer: «reviewed and closed (round 2)»
 	closingStep = regexp.MustCompile(`\b(?:reviewed and closed|closes)(?:\s+\(.*\))?$`)
+	notGreenlit = regexp.MustCompile(`(?i)^## not greenlit\b`)
 )
 
 var stepTextPast = regexp.MustCompile(`^\s*[:·—–-]?\s+(\S.*)$`)
 
 type planStep struct {
-	Done   bool   `json:"done"`
+	Done bool `json:"done"`
+	// a step under the plan's «## not greenlit» heading: drawn, but no chunk a member is on yet
+	Held   bool   `json:"held,omitempty"`
 	Text   string `json:"text"`
 	Ticket string `json:"ticket,omitempty"`
 }
@@ -1150,12 +1153,16 @@ type planStep struct {
 // separator, since the card draws that id as its link
 func planStepsOf(plan string) []planStep {
 	steps := []planStep{}
+	held := false
 	for line := range strings.Lines(plan) {
+		if notGreenlit.MatchString(line) {
+			held = true
+		}
 		m := planStepLine.FindStringSubmatch(strings.TrimRight(line, "\n"))
 		if m == nil {
 			continue
 		}
-		step := planStep{Done: m[1] != " ", Text: m[2], Ticket: stepTicket.FindString(m[2])}
+		step := planStep{Done: m[1] != " ", Held: held, Text: m[2], Ticket: stepTicket.FindString(m[2])}
 		if rest, ok := strings.CutPrefix(m[2], step.Ticket); ok && step.Ticket != "" {
 			if past := stepTextPast.FindStringSubmatch(rest); past != nil {
 				step.Text = past[1]

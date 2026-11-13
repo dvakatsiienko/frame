@@ -36,6 +36,35 @@ func TestLanePlanStepsReadsTheStepsTheCardDraws(t *testing.T) {
 	}
 }
 
+// a step under «## not greenlit» is held: x-mod-stash keys a lane's round count on the first open step that is not
+func TestLanePlanStepsHoldsTheStepsUnderNotGreenlit(t *testing.T) {
+	t.Parallel()
+	plan := strings.Join([]string{
+		"# lane plan",
+		"## FRM-588",
+		"- [x] 01 · FRM-588 the build",
+		"- [ ] 02 · FRM-588 reviewed and closed",
+		"## not greenlit (clio 19:12)",
+		"- [ ] 03 · FRM-605 the replay",
+		"## notes",
+		"- [ ] 04 · FRM-606 still held",
+	}, "\n")
+	file := filepath.Join(t.TempDir(), "lane-plan.md")
+	write(t, file, plan)
+
+	got := xIn(t, t.TempDir(), nil, "lane", "plan-steps", file)
+
+	want := []any{
+		map[string]any{"done": true, "text": "the build", "ticket": "FRM-588"},
+		map[string]any{"done": false, "text": "reviewed and closed", "ticket": "FRM-588"},
+		map[string]any{"done": false, "held": true, "text": "the replay", "ticket": "FRM-605"},
+		map[string]any{"done": false, "held": true, "text": "still held", "ticket": "FRM-606"},
+	}
+	if got.code != 0 || !reflect.DeepEqual(got.data["steps"], want) {
+		t.Fatalf("exit %d, steps %v\nwant %v\n%s", got.code, got.data["steps"], want, got.stdout)
+	}
+}
+
 func TestLanePlanStepsNamesAPlanThatIsNotThere(t *testing.T) {
 	t.Parallel()
 	got := xIn(t, t.TempDir(), nil, "lane", "plan-steps", "/no/such/lane-plan.md")
