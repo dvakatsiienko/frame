@@ -11,7 +11,7 @@ dima, 2026-10-10: a siesta should be useful with the least noise — once we kic
 ## when
 
 - a codie's, sixth sense's or designer's `[done]` or `final` lands; a progress line never
-- clio closes, cancels or signs a ticket, or lands a lane (`siesta-gate.ts` reads the commands)
+- clio closes, cancels or signs a ticket, or lands a lane (`siesta-gate.ts` reads them); a lone one inside 30 min of the last siesta waits
 - 15 files of clio's since the last siesta, or 3 memory, rule or skill text files (`.md`; a skill's code file counts only toward the 15) (the Stop hook's «🌤️ siesta due»); a memory sweep: `recipes/nurture-memory/recipe.md` § the run
 - dima says «siesta»
 - a lane he steers live (a piece of its name on a line of `~/.local/state/clio/live-lanes`) batches its bare `[done]`s: three, or the oldest an hour old; its «final» beside a sha still counts at once (dima's tick, 2026-11-10)

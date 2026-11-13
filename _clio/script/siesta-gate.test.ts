@@ -303,6 +303,20 @@ describe('the siesta comes due', () => {
         expect(stop(home, input)).toBeUndefined();
     });
 
+    test('a ticket close within 30 min of the stamp makes none due', () => {
+        const home = fixtureHome();
+        writeFileSync(
+            join(home, '.local/state/clio/siesta-last'),
+            `${stamp(new Date(Date.now() - 10 * 60_000))}\n`,
+        );
+        const input = stopInput(home);
+        appendFileSync(
+            input.transcript_path,
+            `\n${JSON.stringify({ message: { content: [{ input: { command: 'x linear set FRM-9 --state Done' }, name: 'Bash', type: 'tool_use' }] }, timestamp: new Date().toISOString(), type: 'assistant' })}`,
+        );
+        expect(stop(home, input)).toBeUndefined();
+    });
+
     test('a ticket close before the stamp makes none due', () => {
         const home = fixtureHome();
         const input = stopInput(home);

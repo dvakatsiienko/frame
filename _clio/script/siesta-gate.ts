@@ -45,7 +45,8 @@ const LIVE_PINGS_WAIT_MS = 60 * 60_000;
 // memory, rule and skill text weighs by count; a skill's code file is code, and counts only toward the 15 (FRM-491 re-sign, 11-11)
 const MEMORY_TEXT = /(^|\/)(memory|rules|skills)\/.*\.md$/;
 const MEMORY_TEXT_DUE = 3;
-// a ticket closed or signed by clio is a batch of its own, read off her transcript
+// a ticket closed or signed by clio is a batch of its own, read off her transcript; inside 30 min of the last siesta it rides the next one (dima's o28)
+const LONE_TICKET_WAIT_MS = 30 * 60_000;
 const TICKET_MOVE =
     /\bx linear set\b[^\n]*--state[ =]['"]?(Done|Canceled)\b|\bticket-sign\.ts\s+\S+\s+(signed|re-signed)\b|\bx lane landed\b[^\n]*--apply\b/;
 
@@ -318,7 +319,9 @@ function dueReasons(
         memoryText >= MEMORY_TEXT_DUE
             ? `${memoryText} memory, rule or skill text files of clio's`
             : '',
-        ticketMoves ? `${ticketMoves} ticket close(s) or sign(s)` : '',
+        ticketMoves && Date.now() - since.getTime() >= LONE_TICKET_WAIT_MS
+            ? `${ticketMoves} ticket close(s) or sign(s)`
+            : '',
         pings.length ? `${pings.length} member done ping(s)` : '',
     ].filter(Boolean);
 }
