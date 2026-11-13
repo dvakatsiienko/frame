@@ -46,6 +46,16 @@ export const withFiles = (list, added) => [
 /** @param {string} path */
 export const isImagePath = (path) => /[^/]\.(png|jpe?g|gif|webp)$/i.test(path);
 
+/**
+ * a click on a preview over the quill opens its picture in macOS Preview: the file that waits, never a dropped
+ * picture's small preview copy
+ * @param {string[]} files @param {(path: string) => string | undefined} previewOf @param {string} rel
+ */
+export function openInPreview(files, previewOf, rel) {
+    const path = files.find((p) => previewOf(p) === rel);
+    if (path) exec('open', ['-a', 'Preview', path]).catch(() => {});
+}
+
 /** @param {string} path */
 export const fileName = (path) => path.split('/').filter(Boolean).pop() ?? path;
 

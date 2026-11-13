@@ -1,8 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('herdr', () => ({ exec: vi.fn() }));
-const { fileName, isImagePath, pickedPaths, promptPath, withFiles } =
-    await import('./attach.js');
+const exec = vi.hoisted(() => vi.fn(async () => ({ code: 0 })));
+vi.mock('herdr', () => ({ exec }));
+const {
+    fileName,
+    isImagePath,
+    openInPreview,
+    pickedPaths,
+    promptPath,
+    withFiles,
+} = await import('./attach.js');
 
 describe('pickedPaths', () => {
     it('reads one path a line', () => {
@@ -81,5 +88,33 @@ describe('isImagePath, a dropped file that shows as a picture', () => {
             '/a/scan.tiff',
         ])
             expect(isImagePath(p)).toBe(false);
+    });
+});
+
+describe('openInPreview, a click on a preview over the quill', () => {
+    const previews: Record<string, string> = {
+        '/Users/d/big.jpg': 'data/shots/shot-2.png',
+        '/app/data/shots/shot-1.png': 'data/shots/shot-1.png',
+    };
+    const files = Object.keys(previews);
+    const previewOf = (p: string) => previews[p];
+    it('opens a pasted png in Preview', () => {
+        exec.mockClear();
+        openInPreview(files, previewOf, 'data/shots/shot-1.png');
+        expect(exec.mock.calls).toEqual([
+            ['open', ['-a', 'Preview', '/app/data/shots/shot-1.png']],
+        ]);
+    });
+    it('opens a dropped picture itself, never its small preview', () => {
+        exec.mockClear();
+        openInPreview(files, previewOf, 'data/shots/shot-2.png');
+        expect(exec.mock.calls).toEqual([
+            ['open', ['-a', 'Preview', '/Users/d/big.jpg']],
+        ]);
+    });
+    it('opens nothing for a preview no file waits behind', () => {
+        exec.mockClear();
+        openInPreview(files, previewOf, 'data/shots/shot-9.png');
+        expect(exec).not.toHaveBeenCalled();
     });
 });

@@ -82,6 +82,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then its preview waits over the quill and nothing is typed into Claude Code's own prompt
   - and its × takes it at once, mid-turn too, and the next send carries no image
   - and a send puts its path after his text, and Claude reads it
+  - and a click on a pasted or dropped picture's preview opens it in macOS Preview, a dropped one as itself, never its small preview copy
   - decision: one path for paste and drop (dima's o49, 16:38); it replaces ctrl+v into Claude's prompt, whose × had to empty that prompt and lagged when he emptied it in the Terminal view (FRM-609)
   - decision: the clipboard is read, never written (FRM-612)
   - decision: the preview row holds the previews alone, no caption and no Remove: each × takes its own (FRM-609, his 16:40 shot: «delete description, i know what it does»); Remove stays only beside a «🖼 N images» count with no previews, a dev container's

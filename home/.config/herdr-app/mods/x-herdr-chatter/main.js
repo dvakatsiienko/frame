@@ -47,6 +47,7 @@ import {
 import {
     fileName,
     isImagePath,
+    openInPreview,
     pickFiles,
     promptPath,
     withFiles,
@@ -7733,6 +7734,20 @@ export default class ClaudeChat extends View {
                                             .bg(t.raised)
                                             .border(1)
                                             .border_color(t.border)
+                                            .cursor_pointer()
+                                            .tooltip('Open in Preview')
+                                            .on_click(() =>
+                                                openInPreview(
+                                                    this.files.get(
+                                                        agent.address,
+                                                    ) ?? [],
+                                                    (p) =>
+                                                        this.previews.get(
+                                                            `${agent.address} ${p}`,
+                                                        ),
+                                                    rel,
+                                                ),
+                                            )
                                             .child(image(rel).size_full())
                                             .child(
                                                 div()
@@ -7759,13 +7774,15 @@ export default class ClaudeChat extends View {
                                                     .tooltip(
                                                         'Remove this image',
                                                     )
-                                                    .on_click((_e, cx) =>
+                                                    // × is its own press: the click never opens the picture too
+                                                    .on_click((_e, cx) => {
+                                                        cx.stop_propagation();
                                                         this.removeImage(
                                                             agent.address,
                                                             rel,
                                                             cx,
-                                                        ),
-                                                    )
+                                                        );
+                                                    })
                                                     .child('×'),
                                             ),
                                     ),
