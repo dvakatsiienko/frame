@@ -578,3 +578,40 @@ func TestDispatchRefusesAThreadWithNoScopeFromTheTable(t *testing.T) {
 		})
 	}
 }
+
+// FRM-600: the thread's mode follows the ticket's own lane: line, whatever the record held before
+func TestDispatchDrawsTheModeOfTheTicketsLaneLine(t *testing.T) {
+	t.Parallel()
+	const rule = "────────────────────────────────────────"
+	above := strings.Replace(dispatchAbove, "lane: side", "lane: quick", 1)
+	server := dispatchServer(t, dispatchState{body: signedBody(above, "", above) + "\n⸻ 🪪 stamp — please keep 🙏", state: "Todo", labels: []string{"agent", "signed"}})
+	sessions, store, bin := t.TempDir(), filepath.Join(t.TempDir(), "threads.json"), t.TempDir()
+	log := filepath.Join(bin, "hc.log")
+	write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
+	write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie","laneKind":"side","area":"strays"}]}`)
+	write(t, filepath.Join(bin, "screen.txt"), "❯ an old prompt\n\n● an answer\n\n"+rule+"\n❯ \n"+rule+"\n  the status line\n")
+	write(t, filepath.Join(bin, "hc"), fmt.Sprintf(`#!/bin/sh
+case "$1" in
+ls) echo '{"terminals":[{"address":"t9","agent":"claude-code"}]}' ;;
+get) echo '{"pid":%d,"status":{"state":"done"}}' ;;
+read) cat %s ;;
+send) echo "send $2 $3" >> %s ;;
+esac
+`, os.Getpid(), filepath.Join(bin, "screen.txt"), log))
+	if err := os.Chmod(filepath.Join(bin, "hc"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc")}, "coordinator")
+
+	envelope, plan := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", "strays")
+	_, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--lane", "chores", "--area", "strays", "--apply")
+
+	written, _ := readThreadStore(store)
+	sent, _ := os.ReadFile(log)
+	if plan.code != 4 || !strings.Contains(jsonOf(envelope["plan"]), "s1 → ⚡ 🐕 strays | chores") {
+		t.Errorf("a dry run: exit %d, want the plan to say «s1 → ⚡ 🐕 strays | chores»:\n%s", plan.code, plan.stdout)
+	}
+	if got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Display != "⚡ 🐕 strays | chores" || written.Threads[0].LaneKind != "quick" || string(sent) != "send t9 /rename ⚡ 🐕 strays | chores\n" {
+		t.Errorf("exit %d, records %+v, hc was told %q, want ⚡ in the record and the rename:\n%s", got.code, written.Threads, sent, got.stdout)
+	}
+}

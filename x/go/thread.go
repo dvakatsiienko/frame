@@ -428,8 +428,10 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		live := store.Threads[i]
 		record.Pid, record.ProcStart, record.Name, record.Cwd = live.Pid, live.ProcStart, live.Name, live.Cwd
 		if record.Lane == "" {
-			record.Lane, record.LaneKind = live.Lane, live.LaneKind
+			record.Lane = live.Lane
 		}
+		// a kind the call named (a dispatch reads it off the ticket) outranks the record's old one
+		record.LaneKind = cmp.Or(record.LaneKind, live.LaneKind)
 		record.Area, record.Title = cmp.Or(record.Area, live.Area), cmp.Or(record.Title, live.Title)
 		store.Threads = slices.Delete(store.Threads, i, i+1)
 	}

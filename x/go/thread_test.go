@@ -201,8 +201,8 @@ func TestThreadRecordKeepsTheLiveFields(t *testing.T) {
 	}
 	written, _ := readThreadStore(store)
 	got := written.Threads[0]
-	if got.Pid != 42 || got.ProcStart == "" || got.Name != "live name" || got.Cwd != "/w" || got.Lane != "cli lane 8" || got.LaneKind != "side" || got.Ticket != "FRM-570" {
-		t.Fatalf("record %+v, want the live pid, start, name, cwd and the lane kept beside the new ticket", got)
+	if got.Pid != 42 || got.ProcStart == "" || got.Name != "live name" || got.Cwd != "/w" || got.Lane != "cli lane 8" || got.LaneKind != "quick" || got.Ticket != "FRM-570" {
+		t.Fatalf("record %+v, want the live pid, start, name, cwd and the lane kept, and the kind the call named (FRM-600)", got)
 	}
 }
 

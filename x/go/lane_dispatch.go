@@ -30,6 +30,8 @@ type dispatchTicket struct {
 	Marks []dispatchMark `json:"marks"`
 	uuid  string
 	input map[string]any
+	// the mode of the ticket's first lane: line, "" when it has none
+	laneKind string
 }
 
 type dispatchPlan struct {
@@ -37,6 +39,8 @@ type dispatchPlan struct {
 	Slices  string           `json:"slices,omitempty"`
 	Glide   string           `json:"glide"`
 	Window  string           `json:"window"`
+	// the names the threads it names will draw, so a dry run shows the mode and the scope before any write
+	Threads []string `json:"threads,omitempty"`
 }
 
 // an applied dispatch: its plan, and what became of each named thread's live name
@@ -119,6 +123,13 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 	if feature != "" {
 		plan.Slices = home(filepath.Join(stateDir(), "lanes", feature, "issues")) + "/ — codie's to-tickets slices"
 	}
+	area, _ := areaFlag(flags)
+	for _, named := range [][2]string{{"codie", session}, {"sixth-sense", flagString(flags, "sixth-sense")}} {
+		if named[1] != "" && len(plan.Tickets) > 0 {
+			record := thread{Role: named[0], LaneKind: dispatchLaneKind(flags, plan.Tickets[0]), Area: area, Ticket: plan.Tickets[0].ID}
+			plan.Threads = append(plan.Threads, named[1]+" → "+threadDisplay(record))
+		}
+	}
 	plan.Glide = "orbit glide, act link, role codie, session " + cmp.Or(session, "<sid>") + " — clio's call, x never calls orbit"
 	plan.Window = fiveHourWindow()
 	return plan, nil
@@ -160,6 +171,9 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 	}
 
 	ticket := dispatchTicket{ID: id, uuid: issue.ID, input: map[string]any{}}
+	if m := laneKindLine.FindStringSubmatch(body); m != nil {
+		ticket.laneKind = m[1]
+	}
 	mark := func(name string, missing bool, detail string) {
 		status := "set"
 		if missing {
@@ -340,10 +354,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		}
 	}
 	// the threads it names get their record, so a reader asks x by session id and never parses a name
-	kind := "side"
-	if flags["quick"] == true {
-		kind = "quick"
-	}
+	kind := dispatchLaneKind(flags, plan.Tickets[0])
 	renames := []ordered{}
 	area, _ := areaFlag(flags)
 	for _, named := range [][2]string{{"codie", flagString(flags, "session")}, {"sixth-sense", flagString(flags, "sixth-sense")}} {
@@ -366,4 +377,12 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		return plan, nil
 	}
 	return dispatchDone{plan, renames}, nil
+}
+
+// the mode a dispatched thread's name opens with: --quick says it, else the ticket's first lane: line, else side
+func dispatchLaneKind(flags Flags, ticket dispatchTicket) string {
+	if flags["quick"] == true {
+		return "quick"
+	}
+	return cmp.Or(ticket.laneKind, "side")
 }
