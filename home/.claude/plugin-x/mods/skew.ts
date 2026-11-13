@@ -30,12 +30,18 @@ export function eventsOf(types: string) {
 export const versionOf = (types: string) =>
     types.match(/^\/\/ Written by Claude Code (\d+\.\d+\.\d+)\./)?.[1];
 
-// `claude plugin validate` prints «<module> hooks: a, b{door=x}, c»; the matcher in braces is not the event
+// `claude plugin validate` prints «<module> hooks: a, b{door=x}, c (default matcher key: k)»; neither the matcher in
+// braces nor the note in parens (cc 2.1.323) is the event
 export function hookedEvents(validate: string) {
     const out = new Set<string>();
     for (const m of validate.matchAll(/❯ \S+ hooks: (.+)$/gm))
-        for (const part of (m[1] as string).split(/,\s*(?![^{]*\})/))
-            out.add(part.replace(/\{.*\}$/, '').trim());
+        for (const part of (m[1] as string).split(/,\s*(?![^{]*\})(?![^(]*\))/))
+            out.add(
+                part
+                    .replace(/\s*\(.*\)$/, '')
+                    .replace(/\{.*\}$/, '')
+                    .trim(),
+            );
     return out;
 }
 
