@@ -2,11 +2,11 @@
 
 wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
-- ⬜ a plain ask's tick is a toggle: 🛎️ → ✅ → 🔒
+- ⬜ a plain ask's tick is a toggle: 🛎️ → 📥 → ✉️
   - given dima ticked a plain ask and its thread has not taken the press yet
-  - when he clicks its ✅ ticked
-  - then the press leaves the ticks file and 🛎️ tick shows again; once the thread takes it, the ask reads «🔒 ticked, the session took it» (shot 1936)
-  - and a press waiting on an idle thread stays ✅ however long it waits; 🔒 shows only once the published ask is locked, which a turn does, never the stash's 4 s read of the press (his hand-test, 20:52)
+  - when he clicks its 📥
+  - then the press leaves the ticks file and 🛎️ tick shows again; once the thread takes it, the button reads ✉️
+  - and a press waiting on an idle thread stays 📥 however long it waits; ✉️ shows only once the published ask is locked, which a turn does, never the stash's 4 s read of the press (his hand-test, 20:52)
   - and his second click takes a tick back until a turn takes it, gated asks too: a press the stash has not read leaves the ticks file, one it has read gets an untick line (`{id, verdict: "untick", at}`) the stash answers by dropping the mark; «↩︎ unticking» shows until it has (dima: «ticked and able to untick until you actually receive them»)
   - not checked: the stash's side of the untick line, the mods codie's, not landed yet
   - decision: a gated ask keeps its one-way press until the mods lane's tick fixes settle (clio, 19:34)
@@ -25,7 +25,11 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread has an open ask
   - when dima types in its steer field and clicks 🔁 replay
   - then the thread's next turn reads another round with his steer
-  - and the button reads «🔁 replayed», and his second click takes it back until a turn takes it, the ask open again with its steer box, the same door as a tick's; once a turn took it, «🔒 replayed, the session took it» (PK-386, dima 14:54: «it locks and i cannot undo»)
+  - and the button reads 📥, and his second click takes it back until a turn takes it, the ask open again with its steer box, the same door as a tick's; once a turn took it, ✉️ (PK-386, dima 14:54: «it locks and i cannot undo»)
+- ⬜ a delivered ask keeps its buttons and its steer
+  - given a turn took dima's 🛎️ or 🔁 press
+  - then both buttons stay, still and faded, the taken one reading ✉️, and the steer box stays with his words, no longer editable, until the ask leaves the deck
+  - decision: dima, 21:03
 - ✅ ask text keeps a literal `<word>`
   - given an ask, a pick or a waiting-on line holds `<target>` outside a code span
   - then the deck draws it as written, never dropped as html

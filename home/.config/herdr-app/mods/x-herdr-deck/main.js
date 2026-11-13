@@ -28,7 +28,6 @@ import {
     asksOf,
     byName,
     dropPress,
-    hasSteerBox,
     hotOf,
     hotPressLine,
     hotPresses,
@@ -357,16 +356,16 @@ export default class Deck extends View {
             for (const key of this.steers.keys()) {
                 const s = this.rows.find((r) => r.sid === key.split(':')[0]);
                 const ask = askOf(key);
-                if (!s || !ask || !hasSteerBox(ask)) this.steers.delete(key);
+                // his steer stays, stored and shown, until the ask leaves (dima, 21:03)
+                if (!s || !ask) {
+                    this.steers.delete(key);
+                    keepSteer(key, '');
+                }
             }
-            // a sent steer stays stored, and shown, until the turn takes its press or the ask leaves
-            for (const s of this.rows)
-                for (const ask of s.asks)
-                    if (ask.isLocked) keepSteer(`${s.sid}:${ask.id}`, '');
             for (const s of this.rows)
                 for (const ask of s.asks) {
                     const key = `${s.sid}:${ask.id}`;
-                    if (ask.id && hasSteerBox(ask) && !this.steers.has(key))
+                    if (ask.id && !this.steers.has(key))
                         // herdr documents InputState.new for init or a handler; a refusal here costs the box, never
                         // the reload that redraws the whole deck
                         this.makeSteerBox(key);
@@ -761,7 +760,7 @@ export default class Deck extends View {
         const steer = this.steers.get(key);
         const state = tickState(ask, sent);
         const isLocked = state === 'locked';
-        const labels = pressLabel(state);
+        const labels = pressLabel(state, ask.mark);
         // tick is the main act, so it is the one filled button
         /** @param {string} id @param {string} label @param {string} tip @param {(cx: Context) => void} onClick @param {boolean} [isPrimary] */
         const button = (id, label, tip, onClick, isPrimary = false) =>
@@ -778,10 +777,19 @@ export default class Deck extends View {
                 .text_size(SIZE.secondary)
                 .text_color(isPrimary ? t.solid_foreground : t.foreground)
                 .when(isPrimary, (el) => el.font_semibold())
-                .cursor_pointer()
-                .hover((st) => (isPrimary ? st.opacity(0.85) : st.bg(t.hover)))
-                .tooltip(tip)
-                .on_click((_e, cx) => onClick(cx))
+                // delivered: both stay, still, the taken one reading ✉️ (dima, 21:03)
+                .when(isLocked, (el) =>
+                    el.opacity(0.6).tooltip('joined: the session took it'),
+                )
+                .when(!isLocked, (el) =>
+                    el
+                        .cursor_pointer()
+                        .hover((st) =>
+                            isPrimary ? st.opacity(0.85) : st.bg(t.hover),
+                        )
+                        .tooltip(tip)
+                        .on_click((_e, cx) => onClick(cx)),
+                )
                 .child(label);
         // an ask is a card: the section head carries the 🪐, the bold id leads
         return (
@@ -804,7 +812,7 @@ export default class Deck extends View {
                         ),
                     ),
                 )
-                .when(Boolean(ask.id) && !isLocked, (el) =>
+                .when(Boolean(ask.id), (el) =>
                     el.child(
                         h_flex()
                             .gap(8)
@@ -871,7 +879,10 @@ export default class Deck extends View {
                                         .border_1()
                                         .border_color(t.border)
                                         .bg(t.surface)
-                                        .cursor_text()
+                                        .when(isLocked, (el) => el.opacity(0.6))
+                                        .when(!isLocked, (el) =>
+                                            el.cursor_text(),
+                                        )
                                         .on_mouse_down('left', (_e, cx) =>
                                             cx.stop_propagation(),
                                         )
@@ -892,11 +903,19 @@ export default class Deck extends View {
                                             if (!e.modifiers.platform)
                                                 this.isSteerKeyUp = true;
                                         })
+                                        // delivered: the steer stays as words, no longer editable
                                         .child(
-                                            Input.new(steer)
-                                                .w_full()
-                                                .text_size(SIZE.secondary)
-                                                .text_color(t.foreground),
+                                            isLocked
+                                                ? div()
+                                                      .w_full()
+                                                      .truncate()
+                                                      .text_size(SIZE.secondary)
+                                                      .text_color(t.muted)
+                                                      .child(steer.value())
+                                                : Input.new(steer)
+                                                      .w_full()
+                                                      .text_size(SIZE.secondary)
+                                                      .text_color(t.foreground),
                                         ),
                                 ),
                             ),
@@ -911,16 +930,6 @@ export default class Deck extends View {
                                 .text_color(t.muted)
                                 .child('needs your own press'),
                         ),
-                )
-                // a press a turn took, tick or replay alike: ✉️ joined (dima's W63–W67)
-                .when(isLocked, (el) =>
-                    el.child(
-                        div()
-                            .text_size(SIZE.secondary)
-                            .text_color(t.muted)
-                            .tooltip('joined: the session took it')
-                            .child('✉️'),
-                    ),
                 )
         );
     }

@@ -7,7 +7,6 @@ import {
     asksOf,
     byName,
     canTakeBack,
-    hasSteerBox,
     hotOf,
     hotPressLine,
     hotPresses,
@@ -399,19 +398,6 @@ describe('his second click writes the door that still reaches the thread', () =>
 });
 
 describe('a tick after an untick (dima, 14:51: «the very next tick lands»)', () => {
-    test('an unticked ask draws its steer box though the stash still holds the tick mark', () => {
-        expect(hasSteerBox({ ...ask, mark: 'accepted' })).toBe(true);
-    });
-
-    test('a pressed ask keeps its steer box, holding his steer, until a turn takes it (W63, W70)', () => {
-        expect([
-            hasSteerBox(ask),
-            hasSteerBox({ ...ask, mark: 'accepted' }),
-            hasSteerBox({ ...ask, mark: 'rejected' }),
-            hasSteerBox({ ...ask, isLocked: true, mark: 'accepted' }),
-        ]).toEqual([true, true, true, false]);
-    });
-
     test('a tick pressed after an untick is a new press line, never a drop of the old ones', () => {
         const text = [
             JSON.stringify({ at: 2, id: 'o5', verdict: 'tick' }),
@@ -600,6 +586,17 @@ describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)'
         expect(pressLabel('open')).toEqual({ replay: '🔁', tick: '🛎️' });
         expect(pressLabel('ticked')).toEqual({ replay: '🔁', tick: '📥' });
         expect(pressLabel('replayed')).toEqual({ replay: '📥', tick: '🛎️' });
+    });
+
+    test('once delivered, the pressed button reads ✉️ and both stay (dima, 21:03)', () => {
+        expect(pressLabel('locked', 'accepted')).toEqual({
+            replay: '🔁',
+            tick: '✉️',
+        });
+        expect(pressLabel('locked', 'rejected')).toEqual({
+            replay: '✉️',
+            tick: '🛎️',
+        });
     });
 });
 

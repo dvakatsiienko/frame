@@ -347,13 +347,27 @@ export const canTakeBack = (state) =>
     state === 'ticked' || state === 'replayed';
 
 /**
- * the two buttons' emojis (dima's W63–W67): each stays until a turn takes the press, the pressed one reading 📥 queued
- * @param {ReturnType<typeof tickState>} state
+ * the two buttons' emojis (dima's W63–W67, 21:03): both stay, the pressed one reading 📥 queued, then ✉️ once a turn
+ * took it, by the stash's mark of what was taken
+ * @param {ReturnType<typeof tickState>} state @param {Ask['mark']} [mark]
  */
-export const pressLabel = (state) => ({
-    replay: state === 'replayed' ? '📥' : '🔁',
-    tick: state === 'ticked' ? '📥' : '🛎️',
-});
+export function pressLabel(state, mark) {
+    const taken = mark === 'accepted' ? 'tick' : 'replay';
+    return {
+        replay:
+            state === 'replayed'
+                ? '📥'
+                : state === 'locked' && taken === 'replay'
+                  ? '✉️'
+                  : '🔁',
+        tick:
+            state === 'ticked'
+                ? '📥'
+                : state === 'locked' && taken === 'tick'
+                  ? '✉️'
+                  : '🛎️',
+    };
+}
 
 /**
  * an ask's id as the deck draws it: every thread numbers its asks on its own, so a wing's reads `w1·o8`, another
@@ -380,12 +394,6 @@ export function steerKeyPress(state, isCmd, isGated) {
     if (state === 'ticked') return 'untick';
     return isGated ? null : 'tick';
 }
-
-/**
- * an ask keeps its steer box, holding his steer, until a turn takes the press (dima's W63, W70: «steer stays»)
- * @param {Ask} ask
- */
-export const hasSteerBox = (ask) => !ask.isLocked;
 
 // twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
 // reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)
