@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-13T16:18:00Z'
-updated_date: '2026-11-13T16:19:00Z'
+updated_date: '2026-11-13T16:31:00Z'
 labels:
   - s
   - clio-wing-1
@@ -37,4 +37,6 @@ PK-403:W14 (2026-11-13 18:10, dima): something was off with our comms in design 
 PK-403:W15 (2026-11-13 18:18, dima): So post plan is useful for cases where, for example, I would use Anthropic models and some other models (e.g., a zoo of models).
 PK-403:W16 (2026-11-13 18:18, dima): In that case it would be useful because everyone could use the same door to post artifacts, because only Anthropic models (e.g., yourself) can post to your artifact door? ❓
 answered 18:11 and 18:19 (wing 1): Theo's diagram is agent-written html published at postplan.dev; postplan publishes, it does not draw, and is worth a test drive only once a non-Anthropic model joins; no earlier ticket held this wish (linear FRM + BYT and the pocket searched); the bytes app is design-loupe, built because the Claude Design canvas lets only a person open a comment. the pick (his o27): shape with clio:shape-idea after main's herdr ux revamp grill — candidates: agent-drawn html pages (Artifacts) plus a design-loupe-style comment loop, blueprints. not FRM-441 (a board for x-changedetector, another outcome).
+
+18:31 held: 2026-11-13 — FRM-611 main folds W1–W16 (FRM-611 already holds the wireframe wish, W22–W24); closes with ticket: FRM-611 once folded
 <!-- SECTION:NOTES:END -->
