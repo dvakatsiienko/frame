@@ -1,10 +1,10 @@
 ---
 id: PK-399
 title: 'orbit v2 with smart asks: shots and option ticks, critique first (inbox W3)'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T16:39:00Z'
+updated_date: '2026-11-13T17:17:00Z'
 labels:
   - s
 dependencies: []
@@ -47,4 +47,7 @@ PK-399:W8 (2026-11-13 18:37, dima): yes, it is a way for me to reply to your req
 PK-399:W9 (2026-11-13 18:37, dima): 💡wish: ability to attach images or files to orbit ask.
 PK-399:W10 (2026-11-13 18:37, dima): q4: I actually meant something different. I meant an ability to have some interactivity right inside the chatter (e.g., where messages arrive).
 PK-399:W11 (2026-11-13 18:37, dima): is it possible to have some buttons inside the chatter where messages flow? Theoretically? ❓
+
+ticket: FRM-616
+close: 2026-11-13 19:17 — shaped into FRM-616 (herdr ux revamp)
 <!-- SECTION:NOTES:END -->

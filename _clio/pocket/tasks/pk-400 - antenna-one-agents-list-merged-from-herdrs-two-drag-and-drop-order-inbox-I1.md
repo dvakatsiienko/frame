@@ -3,10 +3,10 @@ id: PK-400
 title: >-
   antenna: one agents list merged from herdr's two, drag and drop order (inbox
   I1)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-13T11:38:00Z'
-updated_date: '2026-11-13T16:39:00Z'
+updated_date: '2026-11-13T17:17:00Z'
 labels:
   - s
 dependencies: []
@@ -199,4 +199,7 @@ PK-400:W107 (2026-11-13 18:15, dima): would it be good to domain model it? ❓
 PK-400:W108 (2026-11-13 18:15, dima): if yes - tell herdr codie to domain model at a good point.
 PK-400:W109 (2026-11-13 18:15, dima): yes, dock is only what quill is and two nested cards on top and bot (top is band, bot is ledge).
 PK-400:W110 (2026-11-13 18:15, dima): x-herdr-status is on the very top, with vscode shortcut.
+
+ticket: FRM-616
+close: 2026-11-13 19:17 — shaped into FRM-616 (herdr ux revamp)
 <!-- SECTION:NOTES:END -->
