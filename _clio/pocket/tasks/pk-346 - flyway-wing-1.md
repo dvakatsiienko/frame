@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-13T16:06:00Z'
+updated_date: '2026-11-13T16:09:00Z'
 labels:
   - s
   - clio-wing-1
@@ -20,7 +20,7 @@ ordinal: 1001
 - [ ] #2 f3 speak v2 with dima, wing 1 runs it; FRM-497 meter 120 → 60 fps rides it (dima 17:40)
 - [ ] #3 f4 agent-desktop test drive beside computer-use (o106), Accessibility by his hand
 - [ ] #4 f5 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict
-- [ ] #5 f18 today's halt retro: the strays lane measured — today vs a full Opus 5.5 lane or an Opus 5.5 medium stray; the Sonnet 5.5 pick per job; did its specs suit Sonnet 5.5 (dima 18:06)
+- [ ] #5 f18 halt retro today: measure the strays lane — model pick, spec shape for Sonnet 5.5 (dima 18:06)
 - [ ] #6 f6 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
 - [ ] #7 f7 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
 - [ ] #8 f8 📅 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop — on: 2026-11-14
@@ -654,4 +654,6 @@ PK-346:W91 (2026-11-12 22:47, dima): you stay parked and clio will ask you for c
 PK-346:W92 (2026-11-12 22:47, dima): your job is to think thoroughly about both problems and propose a good solution.
 
 done 2026-11-13 13:57: f2 ⏳ FRM-551 vm reads: stopped by main's halt tonight, started by the 11-13 boot — waits for: the 11-13 boot (FRM-551 Done)
+
+18:09 f18 detail (dima 18:06): at today's halt retro, measure how useful the strays lane was today; compare against a full-scale lane on Opus 5.5, and against a stray run on Opus 5.5 medium; judge whether the model pick fit each job; judge whether the strays specs had the right shape for Sonnet 5.5 (it wants very clear, well-scoped specs: mechanical work plus a little reasoning, not as good as Opus)
 <!-- SECTION:NOTES:END -->
