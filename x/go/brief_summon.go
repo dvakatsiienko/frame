@@ -606,7 +606,7 @@ func laneKindFlag(flags Flags) (string, error) {
 
 // withoutPromptSuggestions puts promptSuggestionEnabled: false into the claude call's --settings json: the one flag the
 // command carries, merged into when it has one (a quick lane's worktree setting), added when it has none; a value the
-// command already gave the key stays; a --settings file (no inline json) gets a second flag beside it
+// command already gave the key stays; a --settings file is read and merged into the one inline flag that replaces it
 func withoutPromptSuggestions(command string) (string, error) {
 	at := claudeCallAt(command)
 	if at == nil {
@@ -630,15 +630,24 @@ func withoutPromptSuggestions(command string) (string, error) {
 	} else {
 		to = len(command)
 	}
-	var settings map[string]any
-	// a value that is no inline json is a settings file: the key rides a second flag, which cc merges
-	if err := json.Unmarshal([]byte(unquoted(command[from:to])), &settings); err != nil {
-		return command[:at[1]] + `--settings '{"` + key + `":false}' ` + command[at[1]:], nil
+	// a value not opening with { is a settings file: its json is read and merged into the one inline flag that replaces it
+	value := unquoted(command[from:to])
+	raw := []byte(value)
+	if !strings.HasPrefix(strings.TrimSpace(value), "{") {
+		var err error
+		if raw, err = os.ReadFile(value); err != nil {
+			return "", usageFail("the --settings file "+value+" does not read: "+err.Error(), "x brief summon … --settings '{…}'")
+		}
 	}
-	if _, isSet := settings[key]; isSet {
+	var settings map[string]any
+	if err := json.Unmarshal(raw, &settings); err != nil {
+		return "", usageFail("the --settings json "+value+" does not parse: "+err.Error(), "x brief summon … --settings '{…}'")
+	}
+	if _, isSet := settings[key]; !isSet {
+		settings[key] = false
+	} else if strings.HasPrefix(strings.TrimSpace(value), "{") {
 		return command, nil
 	}
-	settings[key] = false
 	merged, _ := json.Marshal(settings)
 	return command[:from] + quote(string(merged)) + command[to:], nil
 }
