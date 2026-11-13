@@ -192,13 +192,21 @@ describe('a send waiting for the turn shows in the chat as his message', () => {
             ['item', true, 'user', 'hi there', true],
         ]);
     });
-    test('its key holds while it waits, and two sends of one text stay two rows', () => {
+    test('two sends of one text stay two rows', () => {
         const once = { at, isRecorded: false, text: 'ok' };
         const keys = waitingRows([once, { ...once }]).map((r) => r.key);
         expect(new Set(keys).size).toBe(2);
-        expect(waitingRows([once, { ...once }]).map((r) => r.key)).toEqual(
-            keys,
-        );
+    });
+    test('its key holds while it waits: an earlier one taken, or its own record landing, never re-keys it', () => {
+        const first = { at, isRecorded: true, text: 'first' };
+        const second = { at: at + 5, isRecorded: false, text: 'second' };
+        const [, kept] = waitingRows([first, second]).map((r) => r.key);
+        expect(waitingRows([second]).map((r) => r.key)).toEqual([kept]);
+        expect(
+            waitingRows([{ ...second, at: at + 9, isRecorded: true }]).map(
+                (r) => r.key,
+            ),
+        ).toEqual([kept]);
     });
     test('nothing waiting draws no row', () => {
         expect(waitingRows([])).toEqual([]);

@@ -22,8 +22,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: queued and joined are read from Claude Code's `queue-operation` records (enqueue, remove, dequeue, popAll), never guessed from his text
   - decision: Claude Code holds a mid-turn message until the turn's next tool round, and the quill empties at once, so his 17:01 paste to wing 1 read as lost (dima, 17:20)
   - and a press on «Still in Claude's box» («Take it», «Send as is») is the strip's alone: the message under it never forks
-- ⬜ a queued message comes back to the quill with its × (FRM-563)
-  - decision: hidden behind `IS_UNDO_SEND_ON` since his 01:39 «looks ugly, and half baked»; its look goes to the look grill
+- 🧭 a queued message comes back to the quill with its × (FRM-563)
+  - decision: the hidden × and its pull went with the Queued strip (FRM-564); FRM-563 builds the undo on his waiting row, after his 01:39 «looks ugly, and half baked»
   - decision: the lost re-send was Claude Code's vim normal mode: ↑ there leaves the cursor on the last character, ctrl+u leaves it, and the re-send glued onto it («plum» queued as «plumm»); the chat presses `i` before ↑ (probed 2026-11-12)
   - given a thread mid-turn holds his queued messages
   - when dima clicks × on one before it joins
@@ -282,7 +282,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then a join row lands in the thread's join file, no turn starts, the words stay in the quill and the button shows 📥 (queued)
   - and what he types after the click rides the same row until a turn takes it
   - and a second click before a turn took it takes the mark off: the row leaves the join file, the words stay
-  - and each thread keeps its own mark: marking words in another thread leaves this one's waiting
+  - and each thread keeps its own mark: marking words in another thread leaves this one's waiting, and a mark settles (taken, or «not taken» after a minute) from its thread's state whether that thread is open or not
   - decision: one mark per thread, never one at a time (clio's call on W44, 21:16)
   - and once a turn takes the row, its words leave the quill in the same frame the chat draws them (anything typed after its last write stays), the button shows ✉️ (joined) for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
   - and a row listed nowhere a minute after the write, or a write refused, stays in the quill unmarked, the note saying why; after a chatter reload the mark and the words come back once
@@ -294,7 +294,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when dima holds send or Enter
   - then after a short pause (100 ms, so a tap never shows it) a disc fills the button over 1 s and then the message pushes; Settings › Chatter › send sets both, words marked to join taken out of the join file first: a turn starts, as a send did before joins
   - and a release before the disc starts joins, one after it sends nothing and marks nothing, Enter acting on its release, its repeats typing no newlines; a pointer that leaves the button or a window that loses focus cuts the hold: nothing is sent and the bar resets
-  - decision: a let-go after the disc starts sends nothing: «a started hold that you abort means you changed your mind» (dima's o127, 21:23)
+  - decision: a let-go after the disc starts sends nothing, a started hold he aborts being a changed mind (his o127 tick on clio's pick, 21:23)
 - ⬜ cmd-enter in the quill sends at once (FRM-564)
   - given text in the focused quill
   - when dima presses cmd-enter

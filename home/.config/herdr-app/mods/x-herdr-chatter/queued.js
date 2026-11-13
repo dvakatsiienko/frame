@@ -185,17 +185,27 @@ export function boxText(screen) {
 
 // his sends waiting for the turn, drawn at the log's end as his own rows in their «sent» state; the transcript's row
 // takes over once Claude Code reads one
+// keyed by its words and how many waiting before it share them: its stamp moves when Claude Code records it, its place
+// when an earlier one is taken, and a new key remeasures the row
 /** @param {{ at: number, text: string, isRecorded: boolean }[]} waiting */
-export const waitingRows = (waiting) =>
-    waiting.map((q, n) => ({
-        id: `waiting-${n}`,
-        item: {
-            at: q.at,
-            isWaiting: true,
-            kind: /** @type {'user'} */ ('user'),
-            text: queuedWords(q.text),
-        },
-        key: `waiting:${q.at}:${n}`,
-        kind: /** @type {'item'} */ ('item'),
-        mine: true,
-    }));
+export function waitingRows(waiting) {
+    /** @type {Map<string, number>} */
+    const seen = new Map();
+    return waiting.map((q, n) => {
+        const text = queuedWords(q.text);
+        const twin = seen.get(text) ?? 0;
+        seen.set(text, twin + 1);
+        return {
+            id: `waiting-${n}`,
+            item: {
+                at: q.at,
+                isWaiting: true,
+                kind: /** @type {'user'} */ ('user'),
+                text,
+            },
+            key: `waiting:${twin}:${text}`,
+            kind: /** @type {'item'} */ ('item'),
+            mine: true,
+        };
+    });
+}
