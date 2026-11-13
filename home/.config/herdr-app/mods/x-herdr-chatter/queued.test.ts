@@ -4,6 +4,7 @@ import {
     QUEUED_IDLE_MS,
     claudeQueueAfter,
     clearKeys,
+    commandKeys,
     isHisQueued,
     isVimNormal,
     queuedAfterIdle,
@@ -336,5 +337,30 @@ describe('when Claude Code read a message of his', () => {
     });
     test('a row with no time has no read time', () => {
         expect(readTime([], 'ok', 0)).toBeNull();
+    });
+});
+
+describe('a slash command typed into Claude Code for a picker', () => {
+    test('vim normal mode gets an i first, or the words sit in the box and Enter opens nothing (dima, 21:37)', () => {
+        expect(commandKeys('/effort', true)).toEqual([
+            'i',
+            '/',
+            'e',
+            'f',
+            'f',
+            'o',
+            'r',
+            't',
+        ]);
+    });
+    test('insert mode, or vim off, types it as is', () => {
+        expect(commandKeys('/model', false)).toEqual([
+            '/',
+            'm',
+            'o',
+            'd',
+            'e',
+            'l',
+        ]);
     });
 });

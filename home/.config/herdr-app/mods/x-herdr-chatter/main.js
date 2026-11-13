@@ -109,6 +109,7 @@ import {
     boxText,
     claudeQueueAfter,
     clearKeys,
+    commandKeys,
     isHisQueued,
     isVimNormal,
     queuedAfterIdle,
@@ -2211,7 +2212,11 @@ export default class ClaudeChat extends View {
                 (await hc(['read', address])).stdout.replace(/\r/g, '');
             // Types the command, waits for its picker (`ready` tests the screen), then `keys`.
             const inPicker = async (command, ready, what) => {
-                await hc(['keys', address, ...command.split('')]);
+                const isNormal = isVimNormal(
+                    await screen(),
+                    this.settingsNow()?.editorMode,
+                );
+                await hc(['keys', address, ...commandKeys(command, isNormal)]);
                 await hc(['keys', address, 'enter']);
                 for (let i = 0; i < 20; i++) {
                     await cx.sleep(150);

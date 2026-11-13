@@ -147,6 +147,14 @@ export const sendArgs = (address, text, flags = []) => [
 export const isVimNormal = (screen, editorMode) =>
     editorMode === 'vim' && !screen.includes('-- INSERT --');
 
+// a command typed into Claude Code's prompt: vim's normal mode takes the keys as motions and Enter there opens nothing,
+// so `i` goes first (dima's effort pick, 21:37, proven on a throwaway thread)
+/** @param {string} command @param {boolean} isNormal */
+export const commandKeys = (command, isNormal) => [
+    ...(isNormal ? ['i'] : []),
+    ...command.split(''),
+];
+
 // keys that empty Claude Code's prompt holding `texts`: ctrl+u twice a line, a key that neither exits nor stops Claude.
 // vim's normal mode keeps its cursor on the last character, where ctrl+u leaves it and the next send glues onto it
 // (probed 2026-11-12: «plum» pulled and re-sent was queued as «plumm»): there the whole text goes, then back to insert
