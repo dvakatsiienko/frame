@@ -1105,7 +1105,7 @@ test('held pings ride the next prompt as one hidden block, once', async ($, on) 
     await say($, 'and now?');
     expect([first, held(w)]).toEqual([
         expect.stringMatching(
-            /2 held member pings.*☕️ 🔧 codie: mods: step 2 landed\n.*🔎 sixth sense: step 3 landed$/s,
+            /2 held member pings.*☕️ 🔧 codie: mods \(progress\): step 2 landed\n.*🔎 sixth sense \(progress\): step 3 landed$/s,
         ),
         [],
     ]);
@@ -2148,7 +2148,7 @@ test('a glued [progress] message reads without its tag once held', async ($, on)
     await start($);
     await fromAppText($, gluedPrompt(message('[progress] step 2 landed')));
     await say($, 'status?');
-    expect(held(w).join('\n')).toContain(`${MEMBER}: step 2 landed`);
+    expect(held(w).join('\n')).toContain(`${MEMBER} (progress): step 2 landed`);
 });
 
 test('a push and an untagged message at once: the push stays in the prompt', async ($, on) => {
@@ -2171,7 +2171,7 @@ test('a push and an untagged message at once: the untagged one rides as held', a
         $,
         gluedPrompt(message('[ask] a or b?'), message('step 2 landed', 'B')),
     );
-    expect(held(w).join('\n')).toContain('B: step 2 landed');
+    expect(held(w).join('\n')).toContain('B (untagged): step 2 landed');
 });
 
 test('a push and an untagged message at once log a line apiece', async ($, on) => {

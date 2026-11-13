@@ -106,6 +106,10 @@ _Avoid_: prompt rewriter, polish
 the one store a session keeps every message that waits for it in, whatever holds it (a compact, a wind, quiet comms): `held:<registry name>`, one entry per message id, so a message held for two reasons goes in once; each reason releases its own (FRM-583).
 _Avoid_: steer-held list, quiet-held list, the two stores
 
+**Message kind**:
+what a slipstream message is, from the one list in `hooks/quiet.ts` (`MESSAGE_KINDS`): ask, done, escalate, progress, for-dima, untagged, and the mod's own held and joined lines; each says how it reads and what it does, and every held message goes in named by its kind after its sender (FRM-583).
+_Avoid_: tag (the quiet log's stored word), message type, category
+
 **Glued prompt**:
 the desktop's one `sdk` prompt holding the app's reminders and a member's message together, which reaches clio past `session.receive`; each of its blocks is held or pushed alone, and any typed words keep it whole.
 _Avoid_: merged prompt, combined notice

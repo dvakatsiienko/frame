@@ -31,6 +31,60 @@ export const quietKindHeld = (kind: string) =>
     `${SLIPSTREAMED} [${kind}] is switched off, so resending changes nothing`;
 const REPLY_MS = 30 * 60_000;
 
+// the one list of slipstream message kinds (FRM-583, FRM-564:W22): every hold names a held message by its kind from here,
+// and a kind not on it is no kind; `reads` is how a message is classified as it, `does` what it does
+export const MESSAGE_KINDS = [
+    {
+        does: "a question for the receiver: starts clio's turn",
+        kind: 'ask',
+        reads: 'opens with [ask], an emoji before it allowed',
+    },
+    {
+        does: "a finished chunk or job: starts clio's turn",
+        kind: 'done',
+        reads: 'opens with [done]',
+    },
+    {
+        does: "a block that climbs a rung: starts clio's turn",
+        kind: 'escalate',
+        reads: 'opens with [escalate] or [🪜 escalate]',
+    },
+    {
+        does: "a step landed: waits for clio's next turn",
+        kind: 'progress',
+        reads: 'opens with [progress]',
+    },
+    {
+        does: "needs dima: starts clio's turn, whatever its tag",
+        kind: 'for-dima',
+        reads: 'no push tag, names dima in words: «for dima», «waiting on dima»',
+    },
+    {
+        does: "a receipt, a steer or an answer: waits for clio's next turn, unless it answers her",
+        kind: 'untagged',
+        reads: 'none of the above',
+    },
+    {
+        does: "the mod's own line to a sender: its message waits for the receiver's next turn",
+        kind: 'held',
+        reads: 'sent by x-mod-stash, never by a member',
+    },
+    {
+        does: "the mod's own line to a sender: its held message went in",
+        kind: 'joined',
+        reads: 'sent by x-mod-stash, never by a member',
+    },
+] as const;
+export type MessageKind = (typeof MESSAGE_KINDS)[number]['kind'];
+
+// a held message's kind: its quiet tag when quiet comms read one (a [progress] tag leaves its text), else its words
+export function messageKind(body: string, tag?: string): MessageKind {
+    const read = tag ?? quietTag(body);
+    if (read === 'ask' || read === 'done' || read === 'escalate') return read;
+    if (read === 'progress') return 'progress';
+    return quietPush(body) === 'for-dima' ? 'for-dima' : 'untagged';
+}
+
 export function quietTag(body: string) {
     if (PROGRESS_TAG.test(body)) return 'progress';
     const tag = body.match(PUSH_TAG)?.[1];

@@ -1,6 +1,7 @@
 import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
+import { MESSAGE_KINDS, messageKind } from '../hooks/quiet.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // 🐦‍🔥 second wind, the asked session's side (todo 16): the note rides its next turn, a cancel takes it back, and the
@@ -1305,7 +1306,7 @@ test("clio's message to a codie past 55 % becomes the wind note, and joins the f
         undefined,
         [],
         [
-            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: next: r6, then 12b',
+            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio (untagged): next: r6, then 12b',
         ],
     ]);
 });
@@ -1336,8 +1337,8 @@ test('a second message while one is held waits unseen, and both join after the c
         true,
         1,
         [
-            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: one',
-            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: two',
+            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio (untagged): one',
+            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio (untagged): two',
         ],
     ]);
 });
@@ -1394,7 +1395,7 @@ test('a wind dima takes back hands the held message over at the next turn', asyn
     w.store.set(`wind:${SID}`, { at: NOW, state: 'cancelled' });
     await say($, 'his prompt');
     expect(delivered(w.lines)).toEqual([
-        '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: next: r6',
+        '🐦‍🔥 held for your second wind, delivered now — 🦉 clio (untagged): next: r6',
     ]);
 });
 
@@ -1451,7 +1452,7 @@ test('second wind switched off mid-hold hands the held message over at the next 
     w.store.set('shown', { 'stash.second-wind': false });
     await say($, 'his prompt');
     expect(delivered(w.lines)).toEqual([
-        '🐦‍🔥 held for your second wind, delivered now — 🦉 clio: next: r6',
+        '🐦‍🔥 held for your second wind, delivered now — 🦉 clio (untagged): next: r6',
     ]);
 });
 
@@ -1471,7 +1472,9 @@ test('a refused wind keeps the message held until the compact', async ($, on) =>
     await say($, 'the ingest', 'skill');
     expect([before, delivered(w.lines)]).toEqual([
         [],
-        ['🐦‍🔥 held for your second wind, delivered now — 🦉 clio: next: r6'],
+        [
+            '🐦‍🔥 held for your second wind, delivered now — 🦉 clio (untagged): next: r6',
+        ],
     ]);
 });
 
@@ -1514,7 +1517,7 @@ for (const trigger of ['manual', 'auto'] as const)
                 "delivered: your message joined ☕️ 🔧 codie: mods's first turn after its compact",
             ],
             [
-                `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
+                `🌀 held while this thread compacted, delivered now — ${SIXTH} (untagged): round 9 on abc1234`,
             ],
         ]);
     });
@@ -1543,7 +1546,7 @@ test('a message held during a wind follows the ingest as a prompt of its own, so
         w.store.has(STORE),
     ]).toEqual([
         [
-            `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
+            `🌀 held while this thread compacted, delivered now — ${SIXTH} (untagged): round 9 on abc1234`,
         ],
         false,
     ]);
@@ -1562,7 +1565,7 @@ test("a coordinator's push to a codie under 55 % mid-compact is held too", async
     expect([r.consumed !== undefined, compactHeld(w.lines)]).toEqual([
         true,
         [
-            `🌀 held while this thread compacted, delivered now — ${CLIO}: [done] the gate is green`,
+            `🌀 held while this thread compacted, delivered now — ${CLIO} (done): [done] the gate is green`,
         ],
     ]);
 });
@@ -1590,8 +1593,8 @@ test('a session at 🌀 holds every message until the compact, in the order sent
         true,
         [],
         [
-            `🌀 held while this thread compacted, delivered now — ${SIXTH}: [ask] a or b?`,
-            `🐦‍🔥 held for your second wind, delivered now — ${CLIO}: for dima: look at #9`,
+            `🌀 held while this thread compacted, delivered now — ${SIXTH} (ask): [ask] a or b?`,
+            `🐦‍🔥 held for your second wind, delivered now — ${CLIO} (for-dima): for dima: look at #9`,
         ],
     ]);
 });
@@ -1606,7 +1609,7 @@ test("clio's own thread at 🌀 holds a member's [done]", async ($, on) => {
     expect([r.consumed !== undefined, compactHeld(w.lines)]).toEqual([
         true,
         [
-            `🌀 held while this thread compacted, delivered now — ${SIXTH}: [done] final on abc1234`,
+            `🌀 held while this thread compacted, delivered now — ${SIXTH} (done): [done] final on abc1234`,
         ],
     ]);
 });
@@ -1633,7 +1636,7 @@ for (const isWindOn of [true, false])
         expect([midTurn, afterEnd, heldPrompts(w.prompts).length]).toEqual([
             0,
             [
-                `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
+                `🌀 held while this thread compacted, delivered now — ${SIXTH} (untagged): round 9 on abc1234`,
             ],
             1,
         ]);
@@ -1670,8 +1673,8 @@ test('two messages and a push held through one compact go in once, in order, and
     expect([heldPrompts(w.prompts), w.sent]).toEqual([
         [
             [
-                `🌀 held while this thread compacted, delivered now — ${SIXTH}: [ask] a or b?`,
-                `🌀 held while this thread compacted, delivered now — ${CLIO}: [done] the gate is green`,
+                `🌀 held while this thread compacted, delivered now — ${SIXTH} (ask): [ask] a or b?`,
+                `🌀 held while this thread compacted, delivered now — ${CLIO} (done): [done] the gate is green`,
             ].join('\n'),
         ],
         [
@@ -1983,7 +1986,7 @@ test('a start with a compact-held list and no turn running releases it', async (
     await start($);
     await w.clock.advance(5_000);
     expect(heldPrompts(w.prompts)).toEqual([
-        `🌀 held while this thread compacted, delivered now — ${SIXTH}: round 9 on abc1234`,
+        `🌀 held while this thread compacted, delivered now — ${SIXTH} (untagged): round 9 on abc1234`,
     ]);
 });
 
@@ -1999,4 +2002,83 @@ test('a refused release tries again, so an idle session with no next prompt stil
     submitRefusal = undefined;
     await w.clock.advance(60_000);
     expect(heldPrompts(w.prompts).length).toBe(1);
+});
+
+// FRM-583 exit 1: every hold names a held message's kind from the one list
+const KINDS: readonly string[] = MESSAGE_KINDS.map((k) => k.kind);
+const kindsIn = (text: string) =>
+    [...text.matchAll(/ \(([\w-]+)\): /g)].map((m) => m[1] ?? '');
+const TWINS = [
+    ['round 9 on abc1234', 'untagged'],
+    ['[progress] step 2 landed', 'progress'],
+    ['for dima: a or b', 'for-dima'],
+    ['[ask] a or b?', 'ask'],
+] as const;
+
+test('the kinds list names each kind once, and every kind says how it reads and what it does', () => {
+    expect([
+        new Set(KINDS).size === KINDS.length,
+        MESSAGE_KINDS.every((k) => k.reads.length > 0 && k.does.length > 0),
+    ]).toEqual([true, true]);
+});
+
+for (const body of [
+    '',
+    '[ask]',
+    '🪜 [escalate] stuck',
+    '[🪜 escalate] stuck',
+    '[progress] sw done\nfor dima: a or b',
+    '`for dima` in code',
+    '[Ask] a?',
+    '[done',
+    'waiting on dima',
+    '[progress]',
+])
+    test(`a message reads as a kind on the list: ${JSON.stringify(body)}`, () => {
+        expect(KINDS).toContain(messageKind(body));
+    });
+
+test('a compact names each held message by its kind from the list', async ($, on) => {
+    const w = sentWorld(on);
+    inCompact = async () => {
+        for (const [body] of TWINS) await fromPeer($, body, SIXTH);
+    };
+    await start($);
+    await compact($, 'manual');
+    await w.clock.advance(10_000);
+    const kinds = kindsIn(heldPrompts(w.prompts).join('\n'));
+    expect([kinds, kinds.every((k) => KINDS.includes(k))]).toEqual([
+        TWINS.map(([, kind]) => kind),
+        true,
+    ]);
+});
+
+test("a wind's held message names its kind from the list", async ($, on) => {
+    const w = sentWorld(on);
+    w.store.set(`context:${SID}`, 62);
+    await start($);
+    await fromPeer($, 'next: r6');
+    await fromPeer($, '[progress] the gate is green');
+    w.store.set('shown', { 'stash.second-wind': false });
+    await say($, 'his prompt');
+    expect(kindsIn(delivered(w.lines).join('\n'))).toEqual([
+        'untagged',
+        'progress',
+    ]);
+});
+
+test('quiet comms name each held ping by its kind, a push kind switched off kept as its kind', async ($, on) => {
+    const w = sentWorld(on, CLIO, 'coordinator');
+    w.store.set('quiet-ask', false);
+    await start($);
+    for (const [body] of TWINS) await fromPeer($, body, SIXTH);
+    await say($, 'next');
+    expect(
+        kindsIn(
+            w.lines
+                .filter((l) => l.startsWith('🤫 quiet comms'))
+                .join('\n')
+                .replaceAll(/^- \d\d:\d\d /gm, ' '),
+        ),
+    ).toEqual(['untagged', 'progress', 'ask']);
 });

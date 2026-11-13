@@ -96,6 +96,7 @@ import {
     isQuietPause,
     isQuietQuestion,
     isQuietRefusal,
+    messageKind,
     quietGlued,
     quietHeldText,
     quietIdleNotices,
@@ -1403,12 +1404,14 @@ const steerTellLine = (name: string, context: unknown) =>
     `your message to ${name} is held: it is at ${typeof context === 'number' ? `${Math.round(context)} %` : `past ${STEER_HOLD_AT} %`} and has not wound`;
 const steerHoldNote = (from: string, context: number) =>
     `🐦‍🔥 ${from}'s message is held for your second wind: your context reads ${Math.round(context)} %, past ${STEER_HOLD_AT} %. ${WIND_WORDS} finish the step you are on, then ${WIND_HOW} the held message joins your first turn after the pickup.`;
-const steerLine = (s: HeldMessage) =>
-    s.isQuiet
-        ? `🤫 held by quiet comms, delivered now — ${s.from}: ${s.text}`
-        : s.isCompact
-          ? `🌀 held while this thread compacted, delivered now — ${s.from}: ${s.text}`
-          : `🐦‍🔥 held for your second wind, delivered now — ${s.from}: ${s.text}`;
+// each held message names its kind from the one list (FRM-583), after its sender
+const steerLine = (s: HeldMessage) => {
+    const who = `${s.from} (${messageKind(s.text, s.tag)}): ${s.text}`;
+    if (s.isQuiet) return `🤫 held by quiet comms, delivered now — ${who}`;
+    return s.isCompact
+        ? `🌀 held while this thread compacted, delivered now — ${who}`
+        : `🐦‍🔥 held for your second wind, delivered now — ${who}`;
+};
 const steerDeliveredLine = (name: string) =>
     `delivered: your message joined ${name}'s first turn after its compact`;
 // the turn's end lets the engine settle before the compact runs
@@ -1940,7 +1943,7 @@ export const quietNote = (held: QuietPing[]) =>
         `🤫 quiet comms: ${held.length} held member ping${held.length === 1 ? '' : 's'}; read them, act only if one changes the plan, never relay them to dima.`,
         ...held.map(
             (p) =>
-                `- ${new Date(p.at).toTimeString().slice(0, 5)} ${p.from}: ${p.text}`,
+                `- ${new Date(p.at).toTimeString().slice(0, 5)} ${p.from} (${messageKind(p.text, p.tag)}): ${p.text}`,
         ),
     ].join('\n');
 
