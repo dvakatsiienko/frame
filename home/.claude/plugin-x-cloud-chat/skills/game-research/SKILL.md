@@ -17,6 +17,7 @@ his rules live in project memory; this skill is the order. read the leaves it na
 
 - one fact → `WebSearch` standard, one confirming page through the mac fetch
 - anything bigger (a state, a «why», a «what is it», a comparison, several games) → load `x-cloud-chat:research` and run all its lanes: exa + parallel detached on the mac under `~/.local/share/research-lanes/games/<date>-<slug>/`, plus an opus subagent as the source lane on the primary pages; the brief carries his context (taste leaves, setup), the synthesis is mine
+  - a game he might play: the lanes' and the subagent's brief asks by name for trophies the game gives no way to track (§ 3 🕵️)
   - the subagent reads through the mac fetch only: its prompt names the desktop commander tool, and `~/.local/share/web-bot-blocked-fetch/<game>/` exists before it starts (a missing folder fails every fetch)
 - bot-blocked page (psnprofiles, wikis) → `pnpm -C ~/frame --silent web-bot-blocked:fetch "<url>" --out <file>` on the mac (`firelink` § 2)
 
@@ -42,3 +43,4 @@ his rules live in project memory; this skill is the order. read the leaves it na
 - a verdict or wish of his → the memory leaf that owns it, dated, his words
 - the reply: verdict, three to five reasons, the file attached
 - a game he might play: the file and the reply carry a «🕵️ track from day one» line, each untrackable trophy named with what to log, or «none found» said plainly; `game-seed` turns it into a checklist tab
+- he picks the game, asks for his doc or says he starts it → load `x-cloud-chat:game-seed` next, in this thread; a research doc is never a seed done

@@ -1,6 +1,6 @@
 ---
 name: game-seed
-description: load when dima picks his next game, or says «seed», «set up», «prep» or «start» a game — before writing its project files or his dima-<game> doc.
+description: load when dima picks his next game, says «seed», «set up», «prep» or «start» a game, or asks for his doc or file for a game he is starting — in any thread, before writing its project files or his dima-<game> doc.
 ---
 
 # game-seed — seed a game before he presses start
@@ -13,7 +13,7 @@ the rules behind each step: memory `game-seed-framework`, `trophy-sources`, `gam
 
 - mac link first (`connect_device` if `start_process` is missing, end the turn)
 - `firelink` tracker: owned, platform, ps4 vs ps5 list. a never-launched psn game is a bare `CUSA` id with no trophy list yet
-- `grep -ril "<game>" /mnt/project-files/games/`: research may already exist
+- `grep -ril "<game>" /mnt/project-files/games/`: research may already exist; none with its 🕵️ line → run `x-cloud-chat:game-research` + `x-cloud-chat:research` first, in this thread
 
 ## 2. the trophy truth
 
@@ -43,3 +43,4 @@ the rules behind each step: memory `game-seed-framework`, `trophy-sources`, `gam
 
 - memory `games-queue-now`: the pick, platform, doc url
 - the reply or the 🎮 thread opener (memory `threads-setup`): his doc + `dima-games-inbox` linked and attached, then a short pre-start brief
+- 📌 the reply names every 🕵️ surprise trophy and what to log from day one, or says «none found»; the 🚀 main block alone is not enough, he has to see it
