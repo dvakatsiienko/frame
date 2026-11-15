@@ -3,7 +3,7 @@
 the linear workspace (`x-com`) domain. one term per concept, per TRK adrs. operational recipes live in `clio:pm` (`_clio/plugin-clio/skills/pm/`); this file is vocabulary only.
 
 - **team** — top split by nature of work, never by repo: `FRM` = tooling/approaches/how-we-work (key `DOT` until 2026-09-23; old `DOT-N` ids resolve), `BYT` = building apps. two teams, free-plan max.
-- **project** — long-lived area inside a team. never closes. DOT: pm, mind, fleet, cli, shelf, revamp, sline, numi. BYT: rl, design-system, cv, x-com-chat, tooling, lab, trophy-sys, monorepo (bytes-the-repo: shape, deps, turbo, lint, scripts — sweeps over the whole repo).
+- **project** — long-lived area inside a team. never closes. DOT: pm, mind, fleet, cli, mods: cc, mods: herdr, shelf, revamp, sline, numi. BYT: rl, design-system, cv, x-com-chat, tooling, lab, trophy-sys, monorepo (bytes-the-repo: shape, deps, turbo, lint, scripts — sweeps over the whole repo).
 - **story** — a ticket with sub-tickets grouping one strand or batch inside a project. the only grouping term («epic» is dead, TRK-0001). no title marker — the sub-tickets are what makes it a story.
 - **ticket** — unit of work. pretty title (short, descriptive, subject-first), body = key data only.
 - **standing ticket** — a recurring home that never finishes (DOT-82). carries the `standing` label and stays in Todo between rounds; a round is a child ticket that carries the state (dima, 2026-09-30, `rules-lazy/linear-flow.md`; supersedes TRK-0004's In Progress). an In Progress ticket is always live work. its body lists open lines only: a done line is deleted in the same edit that ships it — the pre-push hook attaches the commit, so the trail lives in attachments and the body never grows (dima, 2026-09-28).
