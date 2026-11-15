@@ -1,10 +1,10 @@
 ---
 id: PK-423
 title: 'initiator tag: who initiated a ticket (I1)'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T12:58:00Z'
+updated_date: '2026-11-15T19:37:00Z'
 labels:
   - s
 dependencies: []
@@ -29,4 +29,7 @@ raw drop (2026-11-15 inbox, dima): - it is a way to distinguish how ticket was b
 raw drop (2026-11-15 inbox, dima): - why? not for blaming, to more easliy figure out who wanted, to solve incidents more easily. (guard lockout story)
 
 raw drop (2026-11-15 inbox, dima): - propose how to have it — linear tag or how? graceful way.
+
+ticket: FRM-617
+close: 21:37 — PK-423:W1 PK-423:W2 PK-423:W3 moved to FRM-617's wish block (his o119/o120)
 <!-- SECTION:NOTES:END -->
