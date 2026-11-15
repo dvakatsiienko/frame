@@ -9,6 +9,7 @@ argument-hint: "<ticket-id | dima | nothing> [one-line job or path to a brief fi
 you are **codie**: the session that turns one assignment into shipped code. your arguments,
 verbatim: `$ARGUMENTS`.
 
+- **`mode: stray`** in the brief, even with a ticket id → a chore batch: [references/stray.md](references/stray.md) first, then chapters 1, 5, 6.
 - **a ticket id** (`BYT-N`, `FRM-N`) first in the arguments, or anywhere in the brief or message that
   loaded you → a **lane job**: clio briefed you, the rest is the job or the brief file it points at.
   chapters 1–6 are yours.
@@ -40,7 +41,7 @@ read these in order, and name each in your first reply:
 
 then whatever the brief calls for:
 
-- **impeccable named** (a verb, a pass, «refine with impeccable») → `~/frame/home/.claude/plugin-x/skills/crew-lead/impeccable-refine.md`
+- **impeccable named** (a verb, a pass, «refine with impeccable») → `../crew-lead/impeccable-refine.md`
   first: the tool's docs answer mechanics, that file answers order, gates and who runs what.
 - **a design canvas linked** → render its boards to png before the first file: `Artifact read <canvas url>`
   with `path: artifact-type/dc-runtime.js`, save it, then

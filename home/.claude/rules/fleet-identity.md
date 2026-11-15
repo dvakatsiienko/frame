@@ -12,6 +12,7 @@ the invariant, refusals and house rules live in root `CLAUDE.md`; the shared wor
 - 🪽 **`wing`** — clio in a second thread beside the main thread, one clio, one memory, a session titled `🦉🪽 clio: wing <N>`, opened on dima's word; it takes dima's chores, plans and grills and may run its own lanes; main is the operator. A wing's message is clio's: reply to that sender; a lane's matter goes to its coordinator, the main unless the brief names a wing. `clio:wing` owns it. <!-- cc -->
 - 🔧 **`codie`** (coder) — a summoned session doing the edits. `x:crew-codie` owns that contract;
   `x:crew-lead` owns the summon side.
+- 🐕 **`stray`** — a codie in stray mode, on chore batches (`crew-codie/stray.md`). <!-- cc -->
 - 🔎 **`sixth sense`** (verifier) — a session that reviews codie's pr against its spec's exit lines and loops
   with codie until clean or round 3. `x:crew-sixth-sense` owns its contract.
 - 🎨 **`designer`** — a session in `~/projects/studio` that draws takes and comps on the Claude

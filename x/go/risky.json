@@ -75,6 +75,7 @@
         "docs/test-drive/skill-named-load.md",
         "docs/test-drive/spec-pipeline.md",
         "docs/test-drive/stacked-prs.md",
+        "docs/test-drive/stray-lane.md",
         "docs/test-drive/stryker.md",
         "docs/test-drive/system-checkup-cadence.md",
         "docs/test-drive/ts-lsp.md",

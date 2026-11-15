@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-21
+until: 2026-11-19
 dies-when: the verdict line below is written
 ---
 
@@ -8,7 +8,7 @@ dies-when: the verdict line below is written
 
 Ticket: FRM-586
 
-**test card:** we believe a parked chore codie solves the flyways' small code chores the day they appear, cheaper than a summon each · we test it by sending it every brief-sized code chore any clio thread holds, for 7 days · we measure per chore: minutes from brief to verified [done], reworks, slips, the model, and summons paid (target: 1 a day, the first chore's) · we're right if 80 % of chores land verified with no rework and no day pays a second summon
+**test card:** we believe a parked chore codie solves the flyways' small code chores the day they appear, cheaper than a summon each · we test it by sending it every brief-sized code chore any clio thread holds, for 7 days · we measure per chore (dima's four, FRM-627 o87): performance (minutes from brief to verified [done], rounds), errors and misses by source (codie's code, the brief, the contract: a rule `references/stray.md` lacked, or a lane-only rule followed by mistake, o94), useful work (landed or reverted), cost (tokens × the card price), plus the model and summons paid (target: 1 a day, the first chore's) · we're right if 80 % of chores land verified with no rework and no day pays a second summon
 
 **kill rule:** two chores in one day that need the feeder to redo the work, or two clios' briefs clashing in one file.
 

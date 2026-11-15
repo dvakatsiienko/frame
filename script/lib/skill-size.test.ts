@@ -22,7 +22,8 @@ const skills = skillDirs.flatMap((dir) =>
 // crew-dna rides every member's step 0, so the dna and the role skills it slimmed hold tighter caps
 const crewCaps = {
     'crew-adviser': 12_000,
-    'crew-codie': 12_000,
+    // +150: the stray mode branch, FRM-627, dima o90
+    'crew-codie': 12_150,
     'crew-designer': 12_000,
     'crew-dna': 7_000,
     'crew-lead': 12_000,
