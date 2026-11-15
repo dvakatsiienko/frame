@@ -22,7 +22,7 @@ raw drop (2026-11-15 inbox, dima): ⏳ x-herdr-layout → iTrout, my idea for a 
 
 PK-426:W2 (2026-11-15 14:52, dima): only this (the layout) becomes iTrout? or the whole setup? ❓
 
-PK-426:W3 (2026-11-15 o11, dima): i invented iTrout randomly, it is not established name and i can change my mind.
+PK-426:W3 (2026-11-15 14:52, dima, o11 steer): i invented iTrout randomly, it is not established name and i can change my mind.
 
 note (helga): o11 not located in ~/.local/state/clio/prompts/ (no match for «invented iTrout»); W3 text is from clio's 15:05 message
 

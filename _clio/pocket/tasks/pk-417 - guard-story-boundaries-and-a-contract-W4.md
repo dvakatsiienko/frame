@@ -1,10 +1,10 @@
 ---
 id: PK-417
 title: 'guard story: boundaries and a contract (W4)'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T12:26:00Z'
-updated_date: '2026-11-15T13:47:00Z'
+updated_date: '2026-11-15T14:09:00Z'
 labels:
   - s
 dependencies: []
@@ -55,4 +55,6 @@ raw drop (2026-11-15 inbox, dima): 3. then apply in a good place in memory (tell
 raw drop (2026-11-15 inbox, dima): 4. or instead - find what caused to you lean towards guarding everytihng and locking out. maybe its simpler just to remove some parts?
 
 PK-417:W14 (2026-11-15 15:35, dima): how does auto mode work: blocking or a hint? if it stops and waits for my approval it doesn't work for me; the guard's whole idea is non-blocking: even a refused command refuses but does not block you.
+
+close: 16:09 PK-417:W1–W14 done — the guard contract, his o17 ✓ and 16:01 «my words always override», heads x-mod-guard/FTR.md; auto mode answered (3/20 stop → not for him)
 <!-- SECTION:NOTES:END -->
