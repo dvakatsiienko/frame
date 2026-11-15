@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-15T14:18:00Z'
+updated_date: '2026-11-15T14:25:00Z'
 labels:
   - s
   - clio-main
@@ -694,4 +694,20 @@ PK-349:W170 (2026-11-15 16:01, dima): on this comms fix i want a balanced soluti
 PK-349:W171 (2026-11-15 16:01, dima): a member's done starts your turn only for planned work that doesn't include me; anything you rely on me for (planning, grills, my questions, a revisit) waits until i'm at the keyboard watching your chat. never start any grills without me present. (→ FRM-630)
 
 PK-349:W172 (2026-11-15 16:01, dima): auto mode stopping after 3 or 20 blocks doesn't work for me. i want the guard useful (no destructive stuff) but never blocking you, and easily overridden via orbit or via words: my words always override the guard. (→ PK-417)
+
+PK-349:W173 (2026-11-15 16:25, dima): the Terminals layout's tabs look prettier than my current ones (borrowed from zoo, likely vibe-coded); borrow them until tabs merge into antenna, and try if they beat mine; they don't switch tabs on mouse-wheel scroll, which i don't want. (→ PK-424)
+
+PK-349:W174 (2026-11-15 16:25, dima): before tabs merge into antenna, codie reviews the Terminals tabs against my current tabs and tells which is better. (→ PK-424)
+
+PK-349:W175 (2026-11-15 16:25, dima): the comms log should also make your own reply history leaner: why keep a message history full of data that hurts my attention? (→ FRM-630)
+
+PK-349:W176 (2026-11-15 16:25, dima): each incident properly described with its surrounding context: how it appeared, why, when, where, how, and who took part; filled from my plain words or from the planned mod's button. (→ FRM-630)
+
+PK-349:W177 (2026-11-15 16:25, dima): you fold into the log by hand, no scripts needed, like today's incident. (→ FRM-630)
+
+PK-349:W178 (2026-11-15 16:25, dima): processed at the halt by default, but i'm tired then and comms need a sharp mind: by severity a case is raised to immediate or to a siesta. (→ FRM-630)
+
+PK-349:W179 (2026-11-15 16:25, dima): the mod is only a mechanical door for me; the fold into the log stays agentic, since each case needs its context explained thoughtfully, not copy-paste? ❓ (→ FRM-630)
+
+PK-349:W180 (2026-11-15 16:25, dima): at 55 % ctx you should get the auto second wind heads-up: do you see it, what does it say? (→ PK-349)
 <!-- SECTION:NOTES:END -->

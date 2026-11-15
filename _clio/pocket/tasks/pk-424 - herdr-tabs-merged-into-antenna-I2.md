@@ -4,7 +4,7 @@ title: herdr tabs merged into antenna (I2)
 status: open
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T14:17:00Z'
+updated_date: '2026-11-15T14:25:00Z'
 labels:
   - s
 dependencies: []
@@ -35,4 +35,8 @@ PK-424:W7 (2026-11-15 14:52, dima): command+T creates a terminal tab in antenna.
 note (helga): source ~/.local/state/clio/prompts/2026-11-15.md:84 (14:52 block); no 14:52 groom file in grooms/. only dima's own lines taken; clio's replies in the same paste skipped.
 
 PK-424:W8 (2026-11-15 15:46, dima): ctrl+J works; the stashed tray terminal may beat a dedicated tab for my one-off use; i'll test it soon and decide tab or tray.
+
+PK-349:W173 (2026-11-15 16:25, dima): the Terminals layout's tabs look prettier than my current ones (borrowed from zoo, likely vibe-coded); borrow them until tabs merge into antenna, and try if they beat mine; they don't switch tabs on mouse-wheel scroll, which i don't want. (→ PK-424)
+
+PK-349:W174 (2026-11-15 16:25, dima): before tabs merge into antenna, codie reviews the Terminals tabs against my current tabs and tells which is better. (→ PK-424)
 <!-- SECTION:NOTES:END -->
