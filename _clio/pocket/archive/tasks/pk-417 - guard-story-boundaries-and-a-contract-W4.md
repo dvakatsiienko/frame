@@ -61,6 +61,5 @@ close: 16:09 PK-417:W1–W14 done — the guard contract, his o17 ✓ and 16:01 
 PK-417:W15 (2026-11-15 16:01, dima): auto mode stopping after 3 or 20 blocks doesn't work for me. i want the guard useful (no destructive stuff) but never blocking you, and easily overridden via orbit or via words: my words always override the guard.
 
 reopened 16:17: the close missed W15 (wishkeeper 16:17); open until his word on the brake exception
-<!-- SECTION:NOTES:END -->
-
 close: 18:49 PK-417:W15 → FRM-631 (his 16:43 word: «i want my operator override to override the brake»); FTR.md line 12 points there
+<!-- SECTION:NOTES:END -->
