@@ -9,16 +9,44 @@ if (process.argv.length > 2) {
     process.exit(2);
 }
 
-const address = findPaneTerminal(path.join(homedir(), '.local/state/helga'));
-if (!address) {
-    console.log('no helga pane live');
+const cwd = path.join(homedir(), '.local/state/helga');
+
+// a pane helga is a herdr terminal; a --bg one (a groom booted her without the pane setting) is a cc background session
+const address = findPaneTerminal(cwd);
+const listed = spawnSync('claude', ['agents', '--json'], { encoding: 'utf8' });
+const bgIds: string[] =
+    listed.status === 0
+        ? JSON.parse(listed.stdout)
+              .filter(
+                  (agent: BackgroundAgent) =>
+                      agent.kind === 'background' && agent.cwd === cwd,
+              )
+              .map((agent: BackgroundAgent) => agent.sessionId.slice(0, 8))
+        : [];
+
+if (!address && bgIds.length === 0) {
+    console.log('no helga live');
     process.exit(0);
 }
-const killed = spawnSync('hc', ['kill', address], { encoding: 'utf8' });
-if (killed.status !== 0) {
-    console.error(
-        `hc kill ${address} failed: ${(killed.stderr || killed.stdout).trim()}`,
-    );
-    process.exit(1);
+const stops: [string, string[]][] = [
+    ...(address ? [['hc', ['kill', address]] as [string, string[]]] : []),
+    ...bgIds.map((id): [string, string[]] => ['claude', ['stop', id]]),
+];
+for (const [cmd, cmdArgs] of stops) {
+    const run = spawnSync(cmd, cmdArgs, { encoding: 'utf8' });
+    if (run.status !== 0) {
+        console.error(
+            `${cmd} ${cmdArgs.join(' ')} failed: ${(run.stderr || run.stdout).trim()}`,
+        );
+        process.exit(1);
+    }
+    console.log(`helga stopped (${cmd} ${cmdArgs.join(' ')})`);
 }
-console.log(`helga stopped (herdr terminal ${address})`);
+
+/* Types */
+
+interface BackgroundAgent {
+    cwd: string;
+    kind: string;
+    sessionId: string;
+}

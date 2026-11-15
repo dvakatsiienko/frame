@@ -1,5 +1,5 @@
 // FRM-418: a prompt of dima's is groomed before it is folded, and a fold with no groom reds
-// usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down, print the chore brief
+// usage: node prompt-groom.ts <HH:MM|oN> [--date YYYY-MM-DD] [--transcript <jsonl>] [--by-hand]   cut the raw prompt (or orbit steer oN, FRM-451), start helga if down unless --by-hand, print the chore brief
 //        node prompt-groom.ts --next <PK-N|FRM-N|BYT-N>      print the home's next full wish id, <home>:W1 for an empty home (PK-312, PK-338)
 //        node prompt-groom.ts --move <PK-N> <FRM-N|BYT-N> <W-id…>   print the wishes renumbered into the ticket's series and the pocket's «moved:» line (o98); writes nothing
 //        node prompt-groom.ts --no-wish <HH:MM|HH:MM ×N|oN> '<why>'     write today's no-wish line for a prompt minute or an orbit steer, one call (dima's o76)
@@ -974,7 +974,8 @@ if (import.meta.main) {
         mkdirSync(groomDir, { recursive: true });
         const rawFile = groomFile(day, hhmm, 'raw');
         writeFileSync(rawFile, `${raw}\n`);
-        if (!helgaUp()) await startHelga();
+        // --by-hand: clio grooms it herself, so a stopped helga stays stopped
+        if (!args.includes('--by-hand') && !helgaUp()) await startHelga();
         console.log(
             isSteer
                 ? `prompt-groom: dima's ${day} ${hhmm} steer, raw text in ${rawFile}; groom it into numbered W-lines stamped «(${day} <HH:MM>, dima, ${hhmm} steer)», first number from «prompt-groom.ts --next <home>», written to ${groomFile(day, hhmm, 'groomed')}`
