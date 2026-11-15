@@ -21,9 +21,9 @@ ordinal: 1001
 - [ ] #3 f4 agent-desktop test drive beside computer-use (o106), Accessibility by his hand
 - [ ] #4 f5 FRM-407 fresh-eyes: its trial round on speak v2's first screen pr, then the verdict
 - [ ] #5 f18 halt retro today: measure the strays lane — model pick, spec shape for Sonnet 5.5 (dima 18:06)
-- [ ] #6 f6 📅 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed — on: 2026-11-14
-- [ ] #7 f7 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-14
-- [ ] #8 f8 📅 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop — on: 2026-11-14
+- [ ] #6 f6 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed
+- [ ] #7 f7 FRM-516 crow per thread: the week's read (W15, W21), then close
+- [ ] #8 f8 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop
 - [ ] #9 f9 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
 - [ ] #10 f10 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
 - [ ] #11 f11 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
