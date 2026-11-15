@@ -9,9 +9,9 @@
 
 - decision: the guard stands in for the permission prompt that bypass mode removed, nothing more; cc's auto mode is not it, since it stops and asks after 3 blocks in a row or 20 in all
 - decision: it refuses only work lost for good; a refusal never stops the session: the agent gets its door and carries on
-- decision: his word overrides it: one orbit tick, or his typed words
+- 🧭 his words always override it (his 16:01: «my words always override the guard»): today one orbit tick runs a refused command once and `operator override all|prs|off` lifts the floor; the brake stays on under all, an exception waiting for his word
 - decision: it never guards a process (a sign, a merge, proof of his word) and never fences clio's own slips
-- decision: a new refusal needs a real incident and a kill date; a hint is free
+- decision: a new refusal needs a real incident, his signed word and a kill date; a hint is free
 
 ## every Bash call
 
