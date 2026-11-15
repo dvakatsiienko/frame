@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-15T15:11:00Z'
+updated_date: '2026-11-15T16:07:00Z'
 labels:
   - s
   - clio-main
@@ -26,9 +26,11 @@ ordinal: 1000
 - [ ] #8 f18 monday herdr order (o172, 00:21): FRM-628 → FRM-563 → FRM-625 herdr half → 585 → 587 → 569 → 567 → 582 → 580
 - [ ] #9 f19 designer interview for herdr (FRM-591) — later: dima says when (o173)
 - [ ] #10 f20 monday mods order +4 (o176): after FRM-602 → FRM-571, FRM-590, FRM-608, FRM-612 → then FRM-617
-- [ ] #11 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #12 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #13 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #11 f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51)
+- [ ] #12 f21 📅 FRM-600 naming door: summon via x brief summon --apply, read the name, dima confirms on mobile — on: 2026-11-16
+- [ ] #13 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #14 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #15 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-15T15:10:00Z'
-updated_date: '2026-11-15T15:44:00Z'
+updated_date: '2026-11-15T16:41:00Z'
 labels:
   - s
 dependencies: []
@@ -24,4 +24,8 @@ PK-432:W2 (2026-11-15 17:28, dima): in chatter some tool-call folds unfold and s
 PK-432:W3 (2026-11-15 17:28, dima): i like the emojis on the relay folds; give the tool-calls fold a nice emoji too, maybe 🛠️, so it is easy to tell apart.
 
 PK-432:W4 (2026-11-15 17:28, dima): proceed.
+
+PK-432:W2 (2026-11-15 17:28, dima): correction to tool calls part in chatter. some of tool calls unfolds, but some are not.
+PK-432:W3 (2026-11-15 17:28, dima): i also like emojies (like in relay folds), and want some nice emoji for your tool calls fold unfold maybe 🛠️ for example. so it is distinguishable.
+fix 18:41: W2–W3 → the groomed text above (my 17:28 fold went in before the groom)
 <!-- SECTION:NOTES:END -->
