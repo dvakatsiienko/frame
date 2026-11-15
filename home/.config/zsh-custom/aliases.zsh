@@ -24,7 +24,8 @@ alias fpsoff='/bin/launchctl setenv MTL_HUD_ENABLED 0'  # …and off
 
 # shell + editor
 alias rezsh='exec zsh'
-alias ezsh='nvim ~/.zshrc'
+alias ezsh='nvim ~/frame/home/.zshrc'                # ~/.zshrc is a stub that sources this
+alias erex='nvim ~/frame/home/.config/rex/init.lua'
 alias ealiases='nvim ~/.config/zsh-custom/aliases.zsh'
 alias evim='nvim ~/.vimrc'
 alias code='cursor'                           # the vscode cask's /opt/homebrew/bin/code shadows cursor's on PATH
