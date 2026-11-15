@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-15T14:44:00Z'
+updated_date: '2026-11-15T15:00:00Z'
 labels:
   - s
   - clio-main
@@ -718,4 +718,8 @@ PK-349:W182 (2026-11-15 16:43, dima): why keep the merge brake? my old ask to no
 PK-349:W183 (2026-11-15 16:43, dima): so anything slipstreamed from any surface lands in one special field of your history, meant for mid-turn messages? ❓
 
 PK-349:W184 (2026-11-15 16:43, dima): when we agree on a plan, reply «the plan is in, i now proceed», no restatement; did you log the restating case in the comms log? ❓
+
+PK-349:W1000 (2026-11-15 16:57, dima): tell me when you create a knowledge place for comms-log, i want to peek; yes, a machine-optimized version and a version for me.
+
+PK-349:W1001 (2026-11-15 16:57, dima): print a rough shape of what your messages look like under the hood with a slipstreamed note and without one; i want to see the shape.
 <!-- SECTION:NOTES:END -->
