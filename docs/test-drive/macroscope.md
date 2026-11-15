@@ -14,10 +14,12 @@ dima, 2026-11-15 23:11: «/clio:shape-test-drive yourself for macroscope, 1w …
 **kill rule:** a week's spend past $50, a card charge, or 3 reviews in a row with only noise
 
 📌 the setup (2026-11-15):
-- workspace: frame + bytes linked, auto-refill off (dima), a monthly limit set, detection mode Budget
-- ⚠️ **Status (commit summaries, $0.05 a commit) must be off on frame**: frame landed 1,736 commits on main in the last 7 days (`git rev-list --count --since='7 days ago' origin/main`), ≈ $87 a week, the whole credit
-- bytes evergreen prs: excluded through Skip PRs by Author (renovate) or reviewed by hand mention only
-- no brew formula or tap exists (`brew search macroscope`, 2026-11-15); the cli comes from `prassoai/macroscope-local`'s `install.sh --tools none --no-path` into `~/.local/bin/macroscope`, then an interactive sign-in by dima
+- read back after a reload in agent-browser, 2026-11-15 23:2x:
+  - frame, bytes: Correctness always, Budget, Status off, Check Run Agents never, Approvability never, draft prs off, auto-merge of its fix prs off, Skip PRs by Author `renovate[bot]` + `x-renovate[bot]`
+  - the other 8 linked repos (studio, chatbot, …): Correctness manual only, Check Run Agents and Approvability never
+  - billing: auto-refill off (dima), monthly workspace limit $100, CLI monthly $10, Murmur $0, per-review $10, per-PR $50
+- ⚠️ **Status (commit summaries, $0.05 a commit) stays off on frame**: frame landed 1,736 commits on main in the last 7 days (`git rev-list --count --since='7 days ago' origin/main`), ≈ $87 a week, the whole credit
+- no brew formula or tap exists (`brew search macroscope`, 2026-11-15); the cli is `prassoai/macroscope-local`'s `install.sh --tools none --no-path`: `~/.local/bin/macroscope`, no Claude plugin, no shell edits; signed in as dvakatsiienko (`macroscope me`)
 - credit: $100 welcome credit (pr reviews), 1,000 agent credits a month, about $10, reset monthly (cli reviews)
 
 ## stress list
