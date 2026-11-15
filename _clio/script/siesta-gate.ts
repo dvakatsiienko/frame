@@ -422,10 +422,15 @@ function stoppedSidecarsWithoutCst(transcriptPath?: string) {
     const commands = toolUses(transcriptRows(transcriptPath)).map((c) =>
         c.name === 'Bash' ? (c.input?.command ?? '') : '',
     );
-    const stopAt = commands.findLastIndex((c) => /\bcrow:stop\b/.test(c));
+    const runs = (verb: string) =>
+        new RegExp(`(^|[;&]\\s*)pnpm\\b[^;&|]*\\bcrow:${verb}\\b`);
+    const stopAt = commands.findLastIndex((c) => runs('stop').test(c));
+    const after = commands.slice(stopAt);
     return (
         stopAt >= 0 &&
-        !commands.slice(stopAt).some((c) => /\bx handoff write\b/.test(c))
+        !after.some(
+            (c) => runs('start').test(c) || /\bx handoff write\b/.test(c),
+        )
     );
 }
 

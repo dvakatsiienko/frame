@@ -15,9 +15,21 @@ last run 2026-11-05, steamac 1.9.12. raw: `~/.local/share/steamac/traces-keep/`,
 - launch through `~/Desktop/steam-fx-safe.app`
 - in game: 1920x1080, all max, sliders 100/100/100, x16. keep them: each change feeds new shaders
 - the freeze cause, leading read, not closed: first-time Metal shader compiles, fading as the cache fills; of 2 long frames only one coincides with its compiles (the other is 5 s off), and a stall capture fits. new areas should freeze again: the open try below settles it
-- 1.9.9 unpinned games from 5 of 8 vCPUs, likely the hitch drop (inference). in-app updates may relaunch without the caps (inference); `steamac-update.sh` may be redundant since 1.9.11
+- 1.9.9 unpinned games from 5 of 8 vCPUs, likely the hitch drop (inference). the 1.9.13 relaunch of 11-07 19:20 ran with no caps (`ps eww`: no `MESA_KK_COMPILE_THREADS`, no `--cmdline`), so after an in-app update he quits the vm and restarts through the safe app (his pick, 11-07: the launcher's automatic checks stay on; no setting saves the gpu cap)
+- `/home` 99 % full, 1.5 GB free, 11-07
 - Highball's gta iv copy, 24 GB, stays until he says otherwise, his tick: nothing uninstalled without his word
-- left on: `metalHUD` saved ON in steamac (`Ctrl+Cmd+P`); Metal HUD and DXVK async on in Highball's bottle
+- left on: Metal HUD and DXVK async in Highball's bottle
+
+## the Steam unlink, read 2026-11-07
+
+- Rockstar publishes no reply time; reported unlink waits run about 1 day to weeks, and no report has both a completed unlink and a working relink
+- the live [Steam article](https://support.rockstargames.com/articles/1UjsMnPSkIDsNXlF8LRbKO) (2026-03-10) demands written confirmation of «being unable to play Rockstar Games titles on your Steam account»; the [policy](https://support.rockstargames.com/articles/2oNIpiDc3LQizEOPSmPUHn) (2026-02-04) adds a cooldown agents cannot bypass
+- no Rockstar rule on two open tickets; a third ticket has no documented gain
+- filed 2026-11-03 16:31 EST: #38253769 and #38254010, both Ongoing, no agent reply by 11-07; the 11-06 mail only echoes his own comment on #38254010
+- the note on both lacks the article's written confirmation; a draft waits on dima
+- double-m Gmail and the Rockstar dashboard read through his signed-in Safari tabs: `osascript`, `text of tab`, `source of tab`
+- no himalaya door to the double-m account: dima dropped it on 11-15 (its config and its 1Password item `gmail-himalaya-imagnumm` deleted); himalaya reads only his main gmail
+- raw lanes: `~/.local/share/research-lanes/rockstar-support/2026-11-07-unlink-delay/`, outside git
 
 ## the numbers, old vm
 
@@ -36,6 +48,7 @@ last run 2026-11-05, steamac 1.9.12. raw: `~/.local/share/steamac/traces-keep/`,
 
 - 120 Hz judder: unsolved, only a 60 Hz monitor cleared it. `--refresh 120` in the guest gave nothing
 - settle the cause on the old vm: drive a new area with `MESA_KK_DEBUG=compiles`, see whether freezes return with library compiles
+- when he's in the mood to measure: add `MESA_KK_DEBUG=syncs` (new in 1.9.13) to that drive; it fits the `drm_syncobj` waits in the stall capture (inference), and whether the two flags combine is unchecked
 - a cloud route, unchecked: Boosteroid lists gta iv, €7.49+
 - Highball, when he wants it: mode DXVK on Wine 11 r29 is set. black lines: first «Wine's own Direct3D», then a Wine 10 engine with the DXVK 3.1 macOS fork, then mtld3d. check Video Mode first, a fresh bottle may be low-res
 - FEX caches, low priority while shader compiles lead: Proton Experimental (ARM64) has a FEX disk cache; `FEX_DYNAMICL1CACHE=0 FEX_DISABLEL2CACHE=0`; `FEX_MULTIBLOCK=0`. all untested here

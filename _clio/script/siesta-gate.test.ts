@@ -1467,4 +1467,25 @@ describe('a halt that stopped crow writes its CST', () => {
         );
         expect(said(out) ?? '').not.toContain('CST');
     });
+    test('a crow restart is no halt', () => {
+        const home = fixtureHome();
+        const out = stop(
+            home,
+            bashTranscript(
+                home,
+                'pnpm -C ~/frame crow:stop',
+                'pnpm -C ~/frame crow:start opus --pane',
+            ),
+        );
+        expect(said(out) ?? '').not.toContain('CST');
+    });
+
+    test('a command only naming crow:stop is no halt', () => {
+        const home = fixtureHome();
+        const out = stop(
+            home,
+            bashTranscript(home, "rg -n 'crow:stop' main.md"),
+        );
+        expect(said(out) ?? '').not.toContain('CST');
+    });
 });
