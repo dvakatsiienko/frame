@@ -1,10 +1,10 @@
 ---
 id: PK-358
 title: rex settings walkthrough, two items at a time, shown live
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-15T12:57:00Z'
+updated_date: '2026-11-15T13:46:00Z'
 labels:
   - s
   - clio-main
@@ -108,4 +108,6 @@ kept: 2026-11-15 — worked today: his inbox Q2 asks these rex questions answere
 PK-358:W13 (2026-11-15 inbox, dima): a few days ago i left questions about rex (settings chores). they were never answered, or i missed them.
 
 PK-358:W14 (2026-11-15 inbox, dima): task: find that pocket or linear ticket with the rex questions and answer them properly.
+
+close: 15:46 PK-358:W1–W14 done — dima 15:46 «mark as solved»: answered in thread 13:47–14:17 (tint, contrast, palette, startup command, cmd+shift+k clear); the unverified rows (match backgrounds, extended palette, P3) stay his to try
 <!-- SECTION:NOTES:END -->

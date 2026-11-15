@@ -4,7 +4,7 @@ title: 👍🏼👎🏼 feedback feature for my messages (X1)
 status: open
 assignee: []
 created_date: '2026-11-15T12:26:00Z'
-updated_date: '2026-11-15T12:57:00Z'
+updated_date: '2026-11-15T13:07:00Z'
 labels:
   - s
 dependencies: []
@@ -69,4 +69,10 @@ raw drop (2026-11-15 inbox, dima): - also should properly state how i graded
 raw drop (2026-11-15 inbox, dima): - verbatims are maybe. but they should be groomed. optimization is also possible (turn my overall feedback in well structured, deduped spec of what is want from our comms and what i do not want) — i think verbatims should still be there for drifts checks. and sanity checks.
 
 raw drop (2026-11-15 inbox, dima): - so overall shape should be compacted, and well structured. and scalable.
+
+PK-413:W12 (2026-11-15 inbox, dima): turn my overall feedback into a well structured, deduped spec of what i want and do not want from our comms; verbatims stay for drift and sanity checks.
+
+PK-413:W13 (2026-11-15 inbox, dima): where and how is my feedback stored: folded into a log, or it joins your messages (reaches you right away)? ❓
+
+fix 15:07: W10 → W13 (join my messages → joins your messages (reaches you right away))
 <!-- SECTION:NOTES:END -->

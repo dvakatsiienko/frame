@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-15T13:00:00Z'
+updated_date: '2026-11-15T13:07:00Z'
 labels:
   - m
 dependencies: []
@@ -117,4 +117,16 @@ raw drop (2026-11-15 inbox, dima): propose what else doors/tools/api's are neede
 raw drop (2026-11-15 inbox, dima): analyze architecturally where and how to fit this into mods and herdr — low quality builds are not allowed, i want clear architecture. consult with mods coder and herdr coder
 
 raw drop (2026-11-15 inbox, dima): my «hq» app. if i would already had it at this point (it is planned), i would want those numbers in my dashboard view too, i am certain. so that's why i want a proper, high quality build of this feature, with best «measure angle» answered — measure from inside, or outside? and where to store numbers, so herdr can render them, and my future hq app could also render it with no issues. high performance is a requirement.
+
+PK-300:W1528 (2026-11-15 inbox, dima): stat measure in native cc mod: how many times, from start to finish, certain events fired (for example keep-hot triggers).
+
+fix 15:07: W1518 → W1528 (count wording: how many times, from start to finish, certain events fired)
+
+PK-300:W1529 (2026-11-15 inbox, dima): stat measure: how much time threads are parked; roughly measured; render it in the lower band of the deck or another neat place for quick live stats.
+
+fix 15:07: W1518 → W1529 (parked-time stat as its own line)
+
+PK-300:W1530 (2026-11-15 inbox, dima): start delta: the logger is always active (raw stats, e.g. for a last month), but the «from today» delta counter is set via tool on boot (you set it), so the deck band shows numbers only from today (for now). later we build a «last week» delta.
+
+fix 15:07: W1525 → W1530 (restores «(you set it)» for the start delta and the later «last week» delta)
 <!-- SECTION:NOTES:END -->

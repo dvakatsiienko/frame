@@ -4,7 +4,7 @@ title: 'old rockstar and gmail accounts: archive or delete (Q1)'
 status: done
 assignee: []
 created_date: '2026-11-15T12:26:00Z'
-updated_date: '2026-11-15T12:59:00Z'
+updated_date: '2026-11-15T13:07:00Z'
 labels:
   - s
 dependencies: []
@@ -39,4 +39,6 @@ raw drop (2026-11-15 inbox, dima): 1. ✅ old (imagnumm.satellite@gmail.com) roc
 close: 14:55 answered in thread
 
 close: 14:59 PK-406:W1–W9 done: answered in thread 13:4x–14:52
+
+note on W3 (helga): (?) «disconnect imagnum…» is likely the old imagnumm account — ask dima
 <!-- SECTION:NOTES:END -->

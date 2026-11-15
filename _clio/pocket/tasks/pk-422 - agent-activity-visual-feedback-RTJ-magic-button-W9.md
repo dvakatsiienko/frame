@@ -4,7 +4,7 @@ title: agent activity visual feedback, RTJ magic button (W9)
 status: open
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T12:58:00Z'
+updated_date: '2026-11-15T13:07:00Z'
 labels:
   - s
 dependencies: []
@@ -45,4 +45,8 @@ raw drop (2026-11-15 inbox, dima): 3. so make a cool, robust animation
 raw drop (2026-11-15 inbox, dima): 4. make it in a way so features makes sense close to each other — agent activity and «magic button»
 
 raw drop (2026-11-15 inbox, dima): 5. for example: add "on fire" effect magic button when you midtrun. or just sparkles. or glow. (ideas)
+
+PK-422:W8 (2026-11-15 inbox, dima): i want very high-grade «agent activity» visual feedback in the deck, the part that shows your activity when you are mid-turn.
+
+fix 15:07: W1 → W8 (shows my activity → shows your activity, clio's mid-turn activity)
 <!-- SECTION:NOTES:END -->
