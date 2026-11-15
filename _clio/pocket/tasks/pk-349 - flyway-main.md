@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-15T14:12:00Z'
+updated_date: '2026-11-15T14:18:00Z'
 labels:
   - s
   - clio-main
@@ -682,4 +682,16 @@ PK-349:W97 (2026-11-15 13:30, dima): no tails left — i want open next week cle
 PK-349:W98 (2026-11-15 13:30, dima): all unclear queries are clarified and grilled over if needed.
 
 PK-349:W99 (2026-11-15 13:30, dima): process the inbox sequentially. start with smaller, simpler stuff; bigger parts after.
+
+PK-349:W167 (2026-11-15 15:46, dima): let's craft my herdr setup as an iTrout-branded gallery item. (→ PK-426)
+
+PK-349:W168 (2026-11-15 15:46, dima): i want skills to expand properly; a skill that doesn't expand when sent from herdr is really not good. (→ PK-429)
+
+PK-349:W169 (2026-11-15 15:46, dima): ctrl+J works; the stashed tray terminal may beat a dedicated tab for my one-off use; i'll test it soon and decide tab or tray. (→ PK-424)
+
+PK-349:W170 (2026-11-15 16:01, dima): on this comms fix i want a balanced solution: you don't block yourself by asking me to confirm everything, and you don't run away from me either. (→ FRM-630)
+
+PK-349:W171 (2026-11-15 16:01, dima): a member's done starts your turn only for planned work that doesn't include me; anything you rely on me for (planning, grills, my questions, a revisit) waits until i'm at the keyboard watching your chat. never start any grills without me present. (→ FRM-630)
+
+PK-349:W172 (2026-11-15 16:01, dima): auto mode stopping after 3 or 20 blocks doesn't work for me. i want the guard useful (no destructive stuff) but never blocking you, and easily overridden via orbit or via words: my words always override the guard. (→ PK-417)
 <!-- SECTION:NOTES:END -->
