@@ -4,7 +4,7 @@ title: rex settings walkthrough, two items at a time, shown live
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-15T11:33:00Z'
+updated_date: '2026-11-15T12:57:00Z'
 labels:
   - s
   - clio-main
@@ -104,4 +104,8 @@ close: 22:05 PK-358:W1–W12 kept here, linked from wing 1's flyway as a 💤 li
 kept: 2026-11-13 — reopened: dima's 22:04 «keep them linked in wing 1 flyway, mark as 💤» needs a live item behind the line
 
 kept: 2026-11-15 — worked today: his inbox Q2 asks these rex questions answered, batch 1 (13:33)
+
+PK-358:W13 (2026-11-15 inbox, dima): a few days ago i left questions about rex (settings chores). they were never answered, or i missed them.
+
+PK-358:W14 (2026-11-15 inbox, dima): task: find that pocket or linear ticket with the rex questions and answer them properly.
 <!-- SECTION:NOTES:END -->
