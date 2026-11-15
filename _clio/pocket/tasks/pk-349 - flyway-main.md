@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T20:08:00Z'
+updated_date: '2026-11-13T22:25:00Z'
 labels:
   - s
   - clio-main
@@ -22,9 +22,13 @@ ordinal: 1000
 - [ ] #4 f1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
 - [ ] #5 f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
 - [ ] #6 f14 today: stabilize the fleet flows, root fixes only (dima 14:34); speak waits until all runs smoothly
-- [ ] #7 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #8 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #9 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #7 f17 monday mods order (o171, 00:21): FRM-625 + decamp rider → FRM-504 → FRM-555 → FRM-602 → FRM-617
+- [ ] #8 f18 monday herdr order (o172, 00:21): FRM-628 → FRM-563 → FRM-625 herdr half → 585 → 587 → 569 → 567 → 582 → 580
+- [ ] #9 f19 designer interview for herdr (FRM-591) — later: dima says when (o173)
+- [ ] #10 f20 monday mods order +4 (o176): after FRM-602 → FRM-571, FRM-590, FRM-608, FRM-612 → then FRM-617
+- [ ] #11 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #12 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #13 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
