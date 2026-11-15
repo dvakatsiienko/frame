@@ -27,6 +27,7 @@ alias rezsh='exec zsh'
 alias ezsh='nvim ~/.zshrc'
 alias ealiases='nvim ~/.config/zsh-custom/aliases.zsh'
 alias evim='nvim ~/.vimrc'
+alias code='cursor'                           # the vscode cask's /opt/homebrew/bin/code shadows cursor's on PATH
 
 # git vibe — dima's hands; the words mirror ~/.claude/rules/fleet-vibe.md (a test keeps them in sync)
 alias grab='git add .'
