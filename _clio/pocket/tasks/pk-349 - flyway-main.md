@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-15T14:25:00Z'
+updated_date: '2026-11-15T14:44:00Z'
 labels:
   - s
   - clio-main
@@ -710,4 +710,12 @@ PK-349:W178 (2026-11-15 16:25, dima): processed at the halt by default, but i'm 
 PK-349:W179 (2026-11-15 16:25, dima): the mod is only a mechanical door for me; the fold into the log stays agentic, since each case needs its context explained thoughtfully, not copy-paste? ❓ (→ FRM-630)
 
 PK-349:W180 (2026-11-15 16:25, dima): at 55 % ctx you should get the auto second wind heads-up: do you see it, what does it say? (→ PK-349)
+
+PK-349:W181 (2026-11-15 16:43, dima): i expected the comms log readable for me, in markdown in the knowledge folder beside the cpu story; why jsonl, is it more efficient for you, how much worse is markdown? ❓
+
+PK-349:W182 (2026-11-15 16:43, dima): why keep the merge brake? my old ask to not merge without me is obsolete: i can't review prs at our pace. can it be softened? i want my operator override to override the brake. ❓
+
+PK-349:W183 (2026-11-15 16:43, dima): so anything slipstreamed from any surface lands in one special field of your history, meant for mid-turn messages? ❓
+
+PK-349:W184 (2026-11-15 16:43, dima): when we agree on a plan, reply «the plan is in, i now proceed», no restatement; did you log the restating case in the comms log? ❓
 <!-- SECTION:NOTES:END -->
