@@ -2,6 +2,8 @@
 
 the x marketplace lists x-mod-stash, the one worth sharing; the others stay local, run from source only.
 
+load `x:guide-code` and `x:guide-typescript` before the first edit.
+
 ## the doors
 
 - a mod runs from source: `CLAUDE_CODE_PLUGIN_DIRS` in `~/.claude/settings.json` `env` names each mod folder (plus `CLAUDE_CODE_PLUGIN_DIR_WATCH=1` for desktop-born sessions), so a save reloads it at the end of the turn, no bump, no `/reload-plugins`; the installed `<mod>@x` stays disabled. a new mod joins that list. proof: `claude -p --debug-file <f> ok` prints `hooks module <mod>@inline loaded`; the env reaches only sessions started after the edit
