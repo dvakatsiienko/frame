@@ -5,6 +5,14 @@
 - makes: lines name what a feature leaves behind — a file, a take, a clipboard item
 - decision: lines record a choice and its reason
 
+## the contract (dima's ✓, o17 + 16:01, 2026-11-15)
+
+- decision: the guard stands in for the permission prompt that bypass mode removed, nothing more; cc's auto mode is not it, since it stops and asks after 3 blocks in a row or 20 in all
+- decision: it refuses only work lost for good; a refusal never stops the session: the agent gets its door and carries on
+- decision: his word overrides it: one orbit tick, or his typed words
+- decision: it never guards a process (a sign, a merge, proof of his word) and never fences clio's own slips
+- decision: a new refusal needs a real incident and a kill date; a hint is free
+
 ## every Bash call
 
 - ✅ only the floor is refused, each with its door (FRM-581: 68 rules → 11)
