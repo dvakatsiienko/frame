@@ -10,8 +10,35 @@ Ticket: none
 
 dima, 2026-11-15 23:11: «/clio:shape-test-drive yourself for macroscope, 1w … I'm actually mostly interested in the CLI code review because it's faster and there's no need to wait for CI». research: [macroscope.md](../research/macroscope.md); the probe was pocket PK-436.
 
-**test card:** we believe a macroscope review catches real bugs sixth sense misses, cheaper and sooner than a pr round · we test it by the cli on every quick-lane chunk's commits (mods, herdr) and the github app on every side-lane pr in frame and bytes · we measure findings (real / noise), the ones sixth sense also found, seconds, $ per review, against sixth sense's round on the same diff · we're right if ≥1 real finding sixth sense missed per 5 reviews, ≤1 noise finding per review, and the week's spend stays under $25
-**kill rule:** a week's spend past $50, a card charge, or 3 reviews in a row with only noise
+**the main question** (dima, 23:45): do we fit the free tier — 1,000 agent credits a month (about $10) for the cli, the $100 welcome credit for the pr reviews? «if the quota runs out in, for example, a week, it won't work for us, because our habits will drift too hard … if not, we just delete it. otherwise i actually like macroscope»; greptile and coderabbit showed nothing outstanding so far.
+
+**test card:** we believe macroscope reviews fit the free tier at our real pace and catch real bugs codie's own review and sixth sense miss · we test it by the cli on every codie review request (quick and side lanes), and the github app on every side-lane pr in frame and bytes · we measure $ per review and the month's projected burn against the 1,000 credits, findings (real / noise), the overlap with codie's review and sixth sense, seconds · we're right if the projected month stays inside the free credits and ≥1 real finding the others missed per 5 reviews, ≤1 noise finding per review
+**kill rule:** the free agent credits projected to run out before the month ends, a card charge, or 3 reviews in a row with only noise
+
+## how codie uses it (manual, no skill wiring; dima, 23:45)
+
+- whenever codie asks for its usual code review, it also starts `macroscope codereview --base <base sha> --mode budget --raw` beside it, non-blocking and outside its per-chunk review quota
+- in frame it passes `--isolate=false`: the isolated temp worktree would hold git-crypt ciphertext (inference, the first round proves it)
+- it compares right away and reports: findings total, real / noise, found also by its own review or sixth sense, found only by macroscope, seconds
+- clio reads Settings → Billing → current spend before and after each round, the round's $ is the delta; the round line lands here
+- the coderabbit comparison is the point: codie has said coderabbit often finds nothing, or only nits, or what was already found ([coderabbit.md](coderabbit.md))
+
+## the pr review in ci
+
+- already live, no setting to enable: the github app reviews every non-draft pr opened or pushed in frame and bytes (Correctness «always run», Budget); renovate prs skipped
+- first pr round after 2–3 cli rounds: FRM-632 or FRM-633, or cap v2 with a wing if dima starts it
+
+## later: custom checks (check run agents), the idea dima liked most
+
+markdown files in `.macroscope/check-run-agents/`, each an ai check on every pr with its own prompt, model and budget; billed as model cost + 5 % on the agent meter. only after the free-tier answer. borrows from t3code's `.macroscope/` (read 2026-11-15, [tree](https://github.com/pingdotgg/t3code/tree/main/.macroscope)):
+- `conclusion: neutral` — a check informs, never blocks a merge
+- `include` / `exclude` globs scope a check to its files; `input: incremental` reviews only the new push
+- `maxBudgetPerRun` / `maxBudgetPerPR` per check ($1–5 / $5–25 there); a cheap model at `reasoning: low`
+- the rules live in a repo doc the check points at (`docs/internals/testing.md`), so authors and the check read one source
+- «make the entire final response exactly `All clear`» when nothing is found — no filler comments
+- `ignore.md` replaces the built-in ignore list, so it copies the defaults first, then adds its own
+- `approvability.md`: a pr that adds or widens a lint or type-checker suppression is never auto-approvable
+- our candidates: the ftr line and glossary word a change needs (today `x lane gate`), README still true after a change, a lint suppression added without a reason
 
 📌 the setup (2026-11-15):
 - read back after a reload in agent-browser, 2026-11-15 23:2x:
