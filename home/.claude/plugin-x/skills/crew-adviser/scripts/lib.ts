@@ -341,7 +341,9 @@ export function findPaneTerminal(cwd: string): string | undefined {
             listed.stdout,
         );
         return terminals.find(
-            (terminal) => terminal.agent === 'claude' && terminal.cwd === cwd,
+            // herdr names the agent «claude-code» since 0.1.16, «claude» before
+            (terminal) =>
+                terminal.agent?.startsWith('claude') && terminal.cwd === cwd,
         )?.address;
     } catch {}
 }
