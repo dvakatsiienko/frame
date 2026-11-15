@@ -1,10 +1,10 @@
 ---
 id: PK-417
 title: 'guard story: boundaries and a contract (W4)'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T12:26:00Z'
-updated_date: '2026-11-15T14:17:00Z'
+updated_date: '2026-11-15T15:23:00Z'
 labels:
   - s
 dependencies: []
