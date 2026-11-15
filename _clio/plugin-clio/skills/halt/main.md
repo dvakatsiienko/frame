@@ -129,7 +129,7 @@ run `/clio:gazette` — its wire gate stops for dima's literal answer. the CST a
 right after the post, the pocket prunes: every `done` item the post carried is filed with `backlog task archive <id>` (pocket-check lets a done item stay listed through its day, then reds it).
 
 ## phase 5 — handoff CST 📬
-**mandatory, never skipped.** the CST is the ONLY
+**mandatory, never skipped** — the Stop gate blocks a turn that stopped crow with no CST written after (`siesta-gate.ts`). the CST is the ONLY
 continuity — an unwritten one loses the run.
 auto-save via the handoff store (`/x:handoff` writes, `/x:handoff-ingest` reads). ask once,
 before writing, whether the work continues here or in a fresh thread — a CST followed by more

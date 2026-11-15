@@ -1425,3 +1425,46 @@ describe('every clio on its own stamp', () => {
         expect(siesta(home).pings).toHaveLength(1);
     });
 });
+
+describe('a halt that stopped crow writes its CST', () => {
+    const bashTranscript = (home: string, ...commands: string[]) => {
+        const file = join(home, 'halt.jsonl');
+        const rows = commands.map((command) => ({
+            message: {
+                content: [
+                    { input: { command }, name: 'Bash', type: 'tool_use' },
+                ],
+            },
+            type: 'assistant',
+        }));
+        writeFileSync(file, rows.map((r) => JSON.stringify(r)).join('\n'));
+        return {
+            session_id: SID,
+            stop_hook_active: false,
+            transcript_path: file,
+        };
+    };
+
+    test('crow stopped and no handoff written blocks the stop', () => {
+        const home = fixtureHome();
+        const out = stop(
+            home,
+            bashTranscript(home, 'pnpm -C ~/frame crow:stop'),
+        );
+        expect(out).toMatchObject({ decision: 'block' });
+        expect(said(out)).toContain('CST');
+    });
+
+    test('a handoff written after the stop lets it end', () => {
+        const home = fixtureHome();
+        const out = stop(
+            home,
+            bashTranscript(
+                home,
+                'pnpm -C ~/frame crow:stop',
+                'x handoff write --audience clio --slug a-halt < cst.md',
+            ),
+        );
+        expect(said(out) ?? '').not.toContain('CST');
+    });
+});

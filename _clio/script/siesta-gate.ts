@@ -109,8 +109,13 @@ export function stop(home: string, input: StopInput) {
         checks.push(
             '⏱️ a lane member got «resume» with no 5h window read this turn — read it before the next one',
         );
+    const isCstOwed = stoppedSidecarsWithoutCst(input.transcript_path);
+    if (isCstOwed)
+        checks.push(
+            '📬 the halt stopped crow and no CST followed — write it now (`clio:halt` phase 5, `x handoff write`)',
+        );
     // FRM-495: his `?` lines left unanswered · FRM-494: a member-woken turn that printed
-    const isBlock = gate.isBlocking && isSiestaNudged;
+    const isBlock = gate.isBlocking && (isSiestaNudged || isCstOwed);
     writeSiesta(home, state, thread);
     if (!checks.length) return undefined;
     const line = checks.join('; ');
@@ -410,6 +415,18 @@ function unreadResumes(transcriptPath?: string) {
                 /^\s*resume\b/i.test(u.input?.message ?? ''),
         )
         .map((u) => u.id ?? '?');
+}
+
+// the halt stops crow right before its CST (halt main.md phase 5): a stop with no write after it lost the run (11-14 00:25)
+function stoppedSidecarsWithoutCst(transcriptPath?: string) {
+    const commands = toolUses(transcriptRows(transcriptPath)).map((c) =>
+        c.name === 'Bash' ? (c.input?.command ?? '') : '',
+    );
+    const stopAt = commands.findLastIndex((c) => /\bcrow:stop\b/.test(c));
+    return (
+        stopAt >= 0 &&
+        !commands.slice(stopAt).some((c) => /\bx handoff write\b/.test(c))
+    );
 }
 
 function loadedSiesta(transcriptPath?: string) {

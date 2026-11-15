@@ -126,12 +126,10 @@ the board, one message, short lines, **no queries here — pure assembly**:
 
 ## mini mode — `/clio:boot mini`
 
-the late-night boot: dima has one or two surgical asks, not a session. same silence, one opening
-message, **no cst ingest, no pocket parse** — the inbox stays his file.
+the light boot: no cst ingest, no lanes. same silence, one opening message; the inbox is parsed only on his ask (item 2).
 
 1. healthcheck (step 1, unchanged)
-2. inbox: read only, propose the order of what he names; an item done in this session gets a ✅
-   in place. nothing copied into the pocket, nothing folded
+2. inbox: optional. untouched by default: read only, his named items ordered, a done one ✅ in place, nothing copied or folded. his prompt asks to process it → step 3 runs whole (helga's prep, every item a pocket item) and step 8's wishkeeper reads the parse before the board (dima, 2026-11-15: «if asked to process inbox, full proper process, including wishkeeper»)
 3. merge monitor — only when codie with an open `codie/*` or `coder/*` pr is alive (step 4's monitor line)
 4. open renovate count (step 4's last line; the digest waits for his word)
 5. stuck reminders (step 5)
