@@ -1,10 +1,10 @@
 ---
 id: PK-431
 title: 'linear: cc mods and herdr mods as their own projects, with their milestones'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T14:59:00Z'
-updated_date: '2026-11-15T16:21:00Z'
+updated_date: '2026-11-15T17:53:00Z'
 labels:
   - s
 dependencies: []
@@ -31,4 +31,6 @@ PK-431:W6 (2026-11-15 o43, dima): maybe «mods: cc» and «mods: hedr»? or some
 PK-431:W7 (2026-11-15 17:36, dima, o43 steer): maybe «mods: cc» and «mods: herdr»? or some parts of our system relies on plain «mods» or «herdr»? i like lean names but i also like clear names (easy to spot what they are about), and i like patterns ❓ fix 17:54: W6 → W7 (stamp o43 → 17:36, o43 steer; typo hedr → herdr)
 
 PK-431:W8 (2026-11-15 18:20, dima): Removing them as a nested issue and moving them as a plain issue is a solution but how would it actually be solved in a native Linear way? ❓ I see, for example, the "Show sub-issues" toggle. And I have it enabled because it allows me to see more granularly but if I disabled it completely then it hides 555 and 517 completely as well. Is there a way in Linear to help with the issues, one level at a time, and see the full list in a simpler way? ❓ I treat this behavior, like when I disable the "Show sub-issues" toggle and those issues, 555 and 617, are gone completely, as incorrect. I don't like this.
+
+close: 19:53 PK-431:W1–W8 done — projects mods: cc and mods: herdr built, lane order in linear manual sort (his o43–o53, o61), nested sub-issues hidden
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-15T16:07:00Z'
+updated_date: '2026-11-15T17:24:00Z'
 labels:
   - s
   - clio-main
@@ -22,15 +22,13 @@ ordinal: 1000
 - [ ] #4 f1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
 - [ ] #5 f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
 - [ ] #6 f14 today: stabilize the fleet flows, root fixes only (dima 14:34); speak waits until all runs smoothly
-- [ ] #7 f17 monday mods order (o171, 00:21): FRM-625 + decamp rider → FRM-504 → FRM-555 → FRM-602 → FRM-617
-- [ ] #8 f18 monday herdr order (o172, 00:21): FRM-628 → FRM-563 → FRM-625 herdr half → 585 → 587 → 569 → 567 → 582 → 580
-- [ ] #9 f19 designer interview for herdr (FRM-591) — later: dima says when (o173)
-- [ ] #10 f20 monday mods order +4 (o176): after FRM-602 → FRM-571, FRM-590, FRM-608, FRM-612 → then FRM-617
-- [ ] #11 f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51)
-- [ ] #12 f21 📅 FRM-600 naming door: summon via x brief summon --apply, read the name, dima confirms on mobile — on: 2026-11-16
-- [ ] #13 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #14 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #15 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #7 f19 designer interview for herdr (FRM-591) — later: dima says when (o173)
+- [ ] #8 f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51)
+- [ ] #9 f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
+- [ ] #10 f21 📅 FRM-600 naming door: summon via x brief summon --apply, read the name, dima confirms on mobile — on: 2026-11-16
+- [ ] #11 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #12 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #13 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -732,4 +730,10 @@ PK-349:W1003 (2026-11-15 17:10, dima): can we solve PK-431 (mods and herdr as th
 PK-349:W1004 (2026-11-15 17:10, dima, o36 steer): the mods' names shouldn't be tied to the layout name: x-itrout-* would kill their reuse in another layout; x-herdr-* exists to tell herdr mods from cc mods. ❓
 
 PK-349:W1005 (2026-11-15 17:10, dima): how do we make this change when i'm outside of herdr, if we code herdr in herdr? ❓
+
+done 2026-11-15 19:24: f17 monday mods order (o171, 00:21): FRM-625 + decamp rider → FRM-504 → FRM-555 → FRM-602 → FRM-617 (FRM-625 Todo, FRM-504 Todo, FRM-555 Todo, FRM-602 Todo, FRM-617 Todo)
+
+done 2026-11-15 19:24: f18 monday herdr order (o172, 00:21): FRM-628 → FRM-563 → FRM-625 herdr half → 585 → 587 → 569 → 567 → 582 → 580 (FRM-628 Todo, FRM-563 Todo, FRM-625 Todo)
+
+done 2026-11-15 19:24: f20 monday mods order +4 (o176): after FRM-602 → FRM-571, FRM-590, FRM-608, FRM-612 → then FRM-617 (FRM-602 Todo, FRM-571 Todo, FRM-590 Todo, FRM-608 Todo, FRM-612 Todo, FRM-617 Todo)
 <!-- SECTION:NOTES:END -->
