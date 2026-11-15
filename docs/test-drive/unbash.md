@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-22
+until: 2026-11-24
 dies-when: the verdict line below is written
 fits: codie (mods)
 ---

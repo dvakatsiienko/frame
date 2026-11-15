@@ -1,6 +1,6 @@
 ---
 status: frozen
-until: 2026-11-14
+until: 2026-11-16
 ---
 
 # jev compaction — fast-jev-compaction on clio checkpoints, vs the built-in summary

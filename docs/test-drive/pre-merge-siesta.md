@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-18
+until: 2026-11-20
 dies-when: the verdict line below is written
 fits: clio
 ---
@@ -144,3 +144,9 @@ Ticket: none
 - 2026-11-13 20:28 · main · 86k tokens · 1 high, 6 medium, 2 low · high real: y · acted: all but the hazards rule (asked)
 - 2026-11-13 20:54 · main · 94k tokens · 1 high, 3 medium, 4 low · high real: y · acted: all
 - 2026-11-13 21:26 wing 1 · 80k tokens · 1 high, 6 medium, 1 low · high real: y (a rollback sha that would have reverted six weeks of x, never run) · acted: fixed, 3 mediums folded, 2 rule lines asked, 1 kept
+- 2026-11-13 21:30 · main · 124k tokens · 2 high, 6 medium, 2 low · high real: y · acted: reopen + plan fix; board drift waits dima's postpone
+- 2026-11-13 21:50 · main · 51k tokens · 0 high, 4 medium, 1 low · high real: n/a · acted: fixture row, FRM-621 due; FRM-564/585 bodies to monday
+- 2026-11-13 22:37 · 60k tokens · 1 high, 2 medium, 1 low · highs real y · acted: all three
+- 2026-11-13 23:27 · 69k tokens · 0 high, 1 medium, 1 low · highs real n/a · acted: the medium
+- 2026-11-13 23:56 · 39k tokens · 1 high, 1 medium, 1 low · highs real y · acted: high + medium
+- 2026-11-14 00:24 · 66k tokens · 1 high, 2 medium, 2 low · highs real y · acted: all
