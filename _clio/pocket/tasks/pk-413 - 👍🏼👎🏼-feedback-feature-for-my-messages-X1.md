@@ -78,4 +78,6 @@ fix 15:07: W10 → W13 (join my messages → joins your messages (reaches you ri
 
 ticket: FRM-585
 close: 21:20 — W-lines copied verbatim into FRM-585's wish block (his 21:19: the inbox should read solved)
+
+close: PK-413:W1 PK-413:W2 PK-413:W3 PK-413:W4 PK-413:W5 PK-413:W6 PK-413:W7 PK-413:W8 PK-413:W9 PK-413:W10 PK-413:W11 PK-413:W12 PK-413:W13 moved to FRM-585's wish block
 <!-- SECTION:NOTES:END -->

@@ -36,4 +36,6 @@ raw drop (2026-11-15 inbox, dima): 2. which most useful memory pieces to save in
 
 ticket: FRM-629
 close: 21:20 — W-lines copied verbatim into FRM-629's wish block (his 21:19: the inbox should read solved)
+
+close: PK-421:W1 PK-421:W2 PK-421:W3 PK-421:W4 PK-421:W5 PK-421:W6 moved to FRM-629's wish block
 <!-- SECTION:NOTES:END -->

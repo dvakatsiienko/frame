@@ -42,4 +42,6 @@ PK-349:W174 (2026-11-15 16:25, dima): before tabs merge into antenna, codie revi
 
 ticket: FRM-618
 close: 21:20 — W-lines copied verbatim into FRM-618's wish block (his 21:19: the inbox should read solved)
+
+close: PK-424:W1 PK-424:W2 PK-424:W3 PK-424:W4 PK-424:W5 PK-424:W6 PK-424:W7 PK-424:W8 moved to FRM-618's wish block
 <!-- SECTION:NOTES:END -->

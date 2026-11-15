@@ -59,4 +59,6 @@ note 21:12: grill and sign right away (his 21:11, o110)
 
 ticket: FRM-585
 close: 21:20 — W-lines copied verbatim into FRM-585's wish block (his 21:19: the inbox should read solved)
+
+close: PK-422:W1 PK-422:W2 PK-422:W3 PK-422:W4 PK-422:W5 PK-422:W6 PK-422:W7 PK-422:W8 PK-422:W9 PK-422:W10 PK-422:W11 PK-422:W12 PK-422:W13 moved to FRM-585's wish block
 <!-- SECTION:NOTES:END -->
