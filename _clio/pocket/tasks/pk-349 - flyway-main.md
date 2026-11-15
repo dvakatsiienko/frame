@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-15T15:00:00Z'
+updated_date: '2026-11-15T15:11:00Z'
 labels:
   - s
   - clio-main
@@ -722,4 +722,12 @@ PK-349:W184 (2026-11-15 16:43, dima): when we agree on a plan, reply «the plan 
 PK-349:W1000 (2026-11-15 16:57, dima): tell me when you create a knowledge place for comms-log, i want to peek; yes, a machine-optimized version and a version for me.
 
 PK-349:W1001 (2026-11-15 16:57, dima): print a rough shape of what your messages look like under the hood with a slipstreamed note and without one; i want to see the shape.
+
+PK-349:W1002 (2026-11-15 17:10, dima): docs/knowledge/cpu-overload.md and fleet-stories/cpu-overload: drift or a dupe? comms-log.md may move to fleet stories as a folder, since it will grow; is the jsonl copy needed for easier duckdb queries? ❓
+
+PK-349:W1003 (2026-11-15 17:10, dima): can we solve PK-431 (mods and herdr as their own linear projects) now? i'm confused about the scopes of mods, cli and herdr; most of all i want to see the order of chunks we plan to execute, and tweak it myself, best in linear itself, as dedicated projects for cc mods and herdr mods. ❓
+
+PK-349:W1004 (2026-11-15 17:10, dima, o36 steer): the mods' names shouldn't be tied to the layout name: x-itrout-* would kill their reuse in another layout; x-herdr-* exists to tell herdr mods from cc mods. ❓
+
+PK-349:W1005 (2026-11-15 17:10, dima): how do we make this change when i'm outside of herdr, if we code herdr in herdr? ❓
 <!-- SECTION:NOTES:END -->
