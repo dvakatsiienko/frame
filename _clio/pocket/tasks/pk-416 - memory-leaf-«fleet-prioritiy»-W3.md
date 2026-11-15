@@ -1,10 +1,10 @@
 ---
 id: PK-416
 title: memory leaf «fleet-prioritiy» (W3)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T12:26:00Z'
-updated_date: '2026-11-15T13:07:00Z'
+updated_date: '2026-11-15T15:20:00Z'
 labels:
   - s
 dependencies: []
@@ -81,4 +81,6 @@ raw drop (2026-11-15 inbox, dima): 3. create initial priority
 PK-416:W13 (2026-11-15 inbox, dima): why i want speak app, chords and sys before the cv: the designer. we created designs for atelier (i like it) and speak app (not finished; i think i like it, waiting for a live proof). but the flow is still clunky, and i had comms issues with design steers (the reason design-lopue was created). so the designer flow needs steering and tweaking.
 
 fix 15:07: W9 → W13 (scope: why i want speak app, chords and sys before the cv)
+
+close: 17:20 PK-416:W1–W13 done — memory/dima-fleet-priority.md born on his o14–o16 ticks (commit ab116fce), the roadmap hands «what's next» to it
 <!-- SECTION:NOTES:END -->
