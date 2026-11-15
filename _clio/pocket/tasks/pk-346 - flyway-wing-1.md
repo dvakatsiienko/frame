@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-13T20:05:00Z'
+updated_date: '2026-11-15T15:24:00Z'
 labels:
   - s
   - clio-wing-1
@@ -34,8 +34,7 @@ ordinal: 1001
 - [ ] #16 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
 - [ ] #17 f16 💤 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
 - [ ] #18 f17 💤 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #19 f20 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima, his vet
-- [ ] #20 f21 💤 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
+- [ ] #19 f21 💤 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -659,4 +658,6 @@ PK-346:W92 (2026-11-12 22:47, dima): your job is to think thoroughly about both 
 done 2026-11-13 13:57: f2 ⏳ FRM-551 vm reads: stopped by main's halt tonight, started by the 11-13 boot — waits for: the 11-13 boot (FRM-551 Done)
 
 18:09 f18 detail (dima 18:06): at today's halt retro, measure how useful the strays lane was today; compare against a full-scale lane on Opus 5.5, and against a stray run on Opus 5.5 medium; judge whether the model pick fit each job; judge whether the strays specs had the right shape for Sonnet 5.5 (it wants very clear, well-scoped specs: mechanical work plus a little reasoning, not as good as Opus)
+
+done 2026-11-15 17:24: f20 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima, his vet (PK-358 done)
 <!-- SECTION:NOTES:END -->
