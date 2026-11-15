@@ -109,6 +109,10 @@ export function stop(home: string, input: StopInput) {
         checks.push(
             '⏱️ a lane member got «resume» with no 5h window read this turn — read it before the next one',
         );
+    if (ranAheadOfDima(input.transcript_path))
+        checks.push(
+            "🙋 this turn began on a member's or a job's event and opened one of dima's items (an orbit ask, a grill round): his items wait for his prompt or his tick on the orbit «next:» ask (habit-dima-comms)",
+        );
     const isCstOwed = stoppedSidecarsWithoutCst(input.transcript_path);
     if (isCstOwed)
         checks.push(
@@ -415,6 +419,27 @@ function unreadResumes(transcriptPath?: string) {
                 /^\s*resume\b/i.test(u.input?.message ?? ''),
         )
         .map((u) => u.id ?? '?');
+}
+
+// a hint, never a block (FRM-630, his o21 «a balanced fix»): an event that is not his prompt opened an item that needs him
+function ranAheadOfDima(transcriptPath?: string) {
+    const turn = thisTurn(transcriptPath);
+    const opener = turn[0]?.message?.content;
+    const text =
+        typeof opener === 'string'
+            ? opener
+            : Array.isArray(opener)
+              ? opener.map((c) => c.text ?? '').join('\n')
+              : '';
+    if (!/<task-notification>|<cross-session-message/.test(text)) return false;
+    return toolUses(turn).some(
+        (c) =>
+            (c.name === 'mcp__x-mod-stash__orbit' &&
+                /"op":"add"/.test(JSON.stringify(c.input ?? {}))) ||
+            /grill-\d+-proposal\.md/.test(
+                c.input?.file_path ?? c.input?.command ?? '',
+            ),
+    );
 }
 
 // the halt stops crow right before its CST (halt main.md phase 5): a stop with no write after it lost the run (11-14 00:25)
@@ -754,6 +779,7 @@ type TranscriptRow = {
                       to?: string;
                   };
                   name?: string;
+                  text?: string;
                   type: string;
               }[];
     };
