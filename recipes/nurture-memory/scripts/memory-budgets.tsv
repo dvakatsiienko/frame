@@ -7,6 +7,7 @@ _clio/memory/_reminders.md	20700	2026-11-12: +150 the 30-day lane size re-run (d
 _clio/memory/_roadmap.md	550	2026-10-23 raised: generated; milestone names now say their outcome in words (dima's o23)
 _clio/memory/craft-fleet-flow.md	10250	+200 2026-11-12: the halt flush, his o181 tick (flyway pointer lines, siesta flyway freebie, parked member next chunk, look-card proof). +600 2026-11-10: reuse before summon, sequential by default, his clauses whole after wishkeeper's high (dima o111, 00:01, 00:07). +150 2026-11-09: stage 8 names the wishkeeper comment door (FRM-548 exit 5, signed). +200 2026-11-07: main the operator, a wing's own lanes, PK-351:W45. +200 2026-11-07: the override's merge path, stage 8 (FRM-524, his o9, o11); 2026-11-06 raised: a chore handed that turn (his o10); his word, lanes main and the rest a side channel; +100 2026-11-04: its three named waits, per lane close trigger (wishkeeper); 2026-11-04: the close at clean (dima, 11:01: the trigger was the merge turn, a quick lane has none); 2026-11-03 raised: a quick lane's codie pushes its own head (dima, shift grill); 2026-10-27: clio drives the side lane, a round-3 stop is info (dima o60); 2026-10-23: lane init's one contract home (PK-263, dima o75), the rules moved here from the skills; +150 2026-10-27: one lane over one area may take several milestones (dima o67); +100 2026-10-30: stage 8 calls x lane landed (#120 wiring); +350 2026-11-01: a hot-area chunk joins the queue, a landed chunk closes in the merge turn (dima's 14:38 steers); 2026-11-01 round 6: the siesta stamp, two closes a turn, the smart-fit merge rule
 _clio/memory/craft-pm.md	11650	+250 2026-11-06: full wish ids, what stays bare, how a bare id reads (dima o64); +150 2026-11-06: a wish id's shape, his tick o63; +150 2026-11-04: clio tags a session-wide line by hand (dima o20); +100 2026-11-02: the revive try before a cut (dima o63 Q4); +750 2026-11-02: ⚖️ worth it — wishes, new surface never a freebie, the kill side (dima o42–o49); +150 2026-11-01: «do everything, ask me a round» in the pace contract (W1007, flush); 2026-10-27: the milestone guard went live, dima's informative fallback kept (FRM-417); 2026-10-25: ☘️ almost-freebie in the freebie rule (dima o77); 2026-10-23: «shape-idea or not» per wish (o91) + milestone = lane (o97); +150 2026-10-27: a fork's asks fold (FRM-462)
+_clio/memory/dima-fleet-priority.md	1300	seed 2026-11-15, today's size + 15 %
 _clio/memory/dima-strategy-branches.md	3800	seed 2026-10-16, today's size + 15 %
 _clio/memory/dima-strategy.md	4400	+100 2026-11-15: the two lines that hand «what's next» to dima-fleet-priority (PK-416, his o14–o16)
 _clio/memory/habit-capability-tips.md	2000	seed 2026-10-16; raised 2026-10-28 for dima's browser-pane rule (web clicking is mine)
@@ -37,16 +38,16 @@ _clio/plugin-clio/skills/evergreen/references/read.md	11000	seed 2026-10-19, its
 _clio/plugin-clio/skills/evergreen/references/weekly-lanes.md	1800	seed 2026-10-16, its size + 15 %
 _clio/plugin-clio/skills/evergreen/SKILL.md	4900	2026-11-12: groomed back to its size + 15 % (11-10 halt); +150 2026-11-04: the signing check after brew; seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/flawlog/SKILL.md	4400	seed 2026-10-16, today's size + 15 %
-_clio/plugin-clio/skills/lowtide-flyway-sync/SKILL.md	2650	+450 2026-11-12: the halt flush, his o181 tick (flyway pointer lines, siesta flyway freebie, parked member next chunk, look-card proof). +150 2026-11-12: step 2 runs flyway-done --check, the home read by command (dima o45); +100 2026-11-12: renamed into the lowtide family, its name line (PK-387); +50 2026-11-11: «seat» → «thread», 2 B a hit (dima 19:43); seed 2026-11-11, its size + 15 %
 _clio/plugin-clio/skills/gazette/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
 _clio/plugin-clio/skills/halt/SKILL.md	1555	2026-11-07: the halt split by thread, PK-351:W55
-_clio/plugin-clio/skills/lowtide-peek-lanes/SKILL.md	3800	seed 2026-11-12, its size + 15 %; renamed 2026-11-13 (FRM-626)
-_clio/plugin-clio/skills/lowtide-peek-chunk/SKILL.md	3100	seed 2026-11-13, its size + 15 % (FRM-626)
 _clio/plugin-clio/skills/lowtide-cuts/SKILL.md	4900	+1500 2026-11-09: renamed (PK-367), the filter test and when it runs joined (PK-367:W2, W3, dima's o36–o38); seed 2026-11-06, its size + 15 %
+_clio/plugin-clio/skills/lowtide-flyway-sync/SKILL.md	2650	+450 2026-11-12: the halt flush, his o181 tick (flyway pointer lines, siesta flyway freebie, parked member next chunk, look-card proof). +150 2026-11-12: step 2 runs flyway-done --check, the home read by command (dima o45); +100 2026-11-12: renamed into the lowtide family, its name line (PK-387); +50 2026-11-11: «seat» → «thread», 2 B a hit (dima 19:43); seed 2026-11-11, its size + 15 %
+_clio/plugin-clio/skills/lowtide-peek-chunk/SKILL.md	3100	seed 2026-11-13, its size + 15 % (FRM-626)
+_clio/plugin-clio/skills/lowtide-peek-lanes/SKILL.md	3800	seed 2026-11-12, its size + 15 %; renamed 2026-11-13 (FRM-626)
 _clio/plugin-clio/skills/lowtide-triage/SKILL.md	3600	seed 2026-11-07: any clio splits the pile across lanes (dima, PK-352), its size + 8 %; 2026-11-11 +200: the someday and scope filter, the hunt's filter line (dima o32)
-_clio/plugin-clio/skills/lowtide/SKILL.md	3250	+450 2026-11-12: the lowtide family line (PK-387); 2026-11-07: +900 many clio lanes, batches, the proposal card, a handover (dima, PK-352); seed 2026-10-20, its size + 15 %
 _clio/plugin-clio/skills/lowtide/references/chunk-order.md	2300	seed 2026-11-12, its size + 15 % (PK-387:W28–W33)
 _clio/plugin-clio/skills/lowtide/references/shapes.md	1800	seed 2026-11-12, its size + 15 % (PK-387:W23, W25)
+_clio/plugin-clio/skills/lowtide/SKILL.md	3250	+450 2026-11-12: the lowtide family line (PK-387); 2026-11-07: +900 many clio lanes, batches, the proposal card, a handover (dima, PK-352); seed 2026-10-20, its size + 15 %
 _clio/plugin-clio/skills/pm/references/body.md	6500	+200 2026-11-15: the wordless-ticket marker and agent-born.ts (dima's o9). +200 2026-11-02: the 🔌 fleet wired line (dima o63); +250 2026-11-02: the worth section's format (dima o45, wishkeeper E);2026-10-28: +100 the weekly pass split the ticket ↔ spec rule; 2026-10-23: the 🎯 done test + the ## signed block (PK-263); +100 2026-10-27: the ↩️ line in the block (FRM-462); +150 2026-10-27: the re-sign pending line (dima o66)
 _clio/plugin-clio/skills/pm/references/closing.md	2250	2026-11-04: the close at clean (dima, 11:01: the trigger was the merge turn, a quick lane has none); +50 2026-11-02: a milestone's last close runs the kill side (retro, dima o90); +150 2026-11-02: ⚖️ worth it + 🔌 fleet wired, wishkeeper folds; +150 2026-11-02: a landed close sees the 🔌 fleet wired call (dima o63 Q2); 2026-10-27: the close test reads the wish W-lines and the milestone count (slice b, dima o46); +100 2026-11-01: the landed auto-close case (dima, «no hanged tickets»); 2026-11-01 round 6: the siesta stamp, two closes a turn, the smart-fit merge rule; round 7: a landed close runs the close test; round 8: the ↩️ path for an unmet line or a failed look, the halt exception
 _clio/plugin-clio/skills/pm/references/workspace.md	2700	seed 2026-10-16, its size + 15 %
@@ -109,6 +110,7 @@ home/.claude/plugin-x/skills/firelink/references/steamac.md	8500	seed 2026-11-02
 home/.claude/plugin-x/skills/firelink/references/web-bot-blocked-fetch.md	2800	seed 2026-11-02, its size + 15 %
 home/.claude/plugin-x/skills/firelink/SKILL.md	9900	bumped 2026-11-06: the wait line labelled (o54), the vm's two safety rules, his tick, a perf run's exception; 2026-11-02: game pages became the fourth door, gotchas kept resident (dima picked the bump)
 home/.claude/plugin-x/skills/github-contrib/SKILL.md	9000	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/guide-code/references/review-lessons.md	3900	seed 2026-11-15, its size + 15 %
 home/.claude/plugin-x/skills/guide-code/SKILL.md	4300	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-conventions/SKILL.md	1700	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-go/SKILL.md	6000	seed 2026-10-16, today's size + 15 %
@@ -122,6 +124,7 @@ home/.claude/plugin-x/skills/herdr/SKILL.md	7500	+200 2026-11-11: the dead-clio 
 home/.claude/plugin-x/skills/mobile-mode/SKILL.md	2100	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/notes/SKILL.md	5600	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/research/SKILL.md	5200	2026-10-21: the wish-cover line (PK-240, a pocket-born brief cites its W-lines); before: 5000, dima's cloud-chat-test adds
+home/.claude/plugin-x/skills/review-mess-hunt/SKILL.md	4100	seed 2026-11-15, its size + 15 %
 home/.claude/plugin-x/skills/rex/references/lua.md	2700	seed 2026-11-09, its size + 15 % (dima PK-363:W61)
 home/.claude/plugin-x/skills/rex/SKILL.md	5000	+800 2026-11-09: run it or prefill it in his tab, one recipe (dima PK-363:W37), and the Lua pointer (W61); seed 2026-11-06, its size + 15 %
 home/.claude/plugin-x/skills/step-by-step/SKILL.md	2400	seed 2026-10-16, today's size + 15 %
@@ -168,4 +171,3 @@ schedule/AGENTS.md	2700	seed 2026-10-16, today's size + 15 %
 speak/AGENTS.md	3100	seed 2026-10-16, today's size + 15 %
 x/AGENTS.md	10800	seed 2026-10-16, today's size + 15 %; 2026-10-23 +300 B: the cli lanes' verify-recipe line (halt flush o197); 2026-10-30 +200 B: the git archive adequacy line (FRM-467 sixth sense retro); 2026-11-05 +200 B: lane commit's timeout retry (FRM-470); 2026-11-06 +300 B: lane commit --dry (FRM-473); 2026-11-13 +200 B: the main checkout runs the pushed x, X_DEV=1 for one's own (FRM-624, the fleet-wired line)
 x/go/AGENTS.md	6300	2026-11-10: +300 the by-hand go run takes the vm doors, never a bare go test (dima o103, FRM-557's rider), on a file 106 B over already; 2026-11-07 raised: dima's PK-328:W30, the test cost gotchas; seed 2026-10-16
-_clio/memory/dima-fleet-priority.md	1300	seed 2026-11-15, today's size + 15 %

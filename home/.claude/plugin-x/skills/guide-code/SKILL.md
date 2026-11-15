@@ -60,6 +60,10 @@ their head.
 - **A test that spawns a paid or networked script runs a copy with the spender stubbed**, never the
   real path.
 
+## state, time and events
+
+code that holds state, waits on time or reads events (keys, watchers, polls) reads [review-lessons.md](references/review-lessons.md) first: one owner per fact, settle on an answer never a timeout, a fake-clock row per timing window.
+
 ## a trap that costs hours
 
 - **a UI order lives in an array, never in object keys.** a formatter's key sort (biome) reorders an
