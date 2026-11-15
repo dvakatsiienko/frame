@@ -4,7 +4,7 @@ title: x-herdr-layout renamed to iTrout (I4)
 status: open
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T15:10:00Z'
+updated_date: '2026-11-15T15:19:00Z'
 labels:
   - s
 dependencies: []
@@ -35,4 +35,6 @@ fix 15:47: W3 → W4 (W3 carries no prompt stamp; W4 is the same line stamped 14
 PK-426:W5 (2026-11-15 15:46, dima): let's craft my herdr setup as an iTrout-branded gallery item.
 
 PK-426:W6 (2026-11-15 15:35, dima): i want the iTrout rename complete in all places at once; that's why i asked for the blast radius.
+
+PK-426:W7 (2026-11-15 17:18, dima): yes, iTrout. and i want a pretty, branded screenshot for it: the layout has no thumbnail image today, and i want a pretty one.
 <!-- SECTION:NOTES:END -->
