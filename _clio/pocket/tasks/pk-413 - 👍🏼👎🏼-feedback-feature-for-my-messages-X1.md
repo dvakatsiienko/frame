@@ -1,10 +1,10 @@
 ---
 id: PK-413
 title: 👍🏼👎🏼 feedback feature for my messages (X1)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T12:26:00Z'
-updated_date: '2026-11-15T13:07:00Z'
+updated_date: '2026-11-15T19:20:00Z'
 labels:
   - s
 dependencies: []
@@ -75,4 +75,7 @@ PK-413:W12 (2026-11-15 inbox, dima): turn my overall feedback into a well struct
 PK-413:W13 (2026-11-15 inbox, dima): where and how is my feedback stored: folded into a log, or it joins your messages (reaches you right away)? ❓
 
 fix 15:07: W10 → W13 (join my messages → joins your messages (reaches you right away))
+
+ticket: FRM-585
+close: 21:20 — W-lines copied verbatim into FRM-585's wish block (his 21:19: the inbox should read solved)
 <!-- SECTION:NOTES:END -->

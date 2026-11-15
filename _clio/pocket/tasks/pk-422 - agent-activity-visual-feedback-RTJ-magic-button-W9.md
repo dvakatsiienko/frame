@@ -1,10 +1,10 @@
 ---
 id: PK-422
 title: agent activity visual feedback, RTJ magic button (W9)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T19:12:00Z'
+updated_date: '2026-11-15T19:20:00Z'
 labels:
   - s
 dependencies: []
@@ -56,4 +56,7 @@ PK-422:W11 (2026-11-15 21:11, dima): i don't know herdr's capabilities well enou
 PK-422:W12 (2026-11-15 21:11, dima): concern: the conditional Stop button sits on the far right beside the second wind (phoenix) button; moved next to the magic button, Stop would sit beside it, probably not the best.
 PK-422:W13 (2026-11-15 21:11, dima): i'm unsure of my own request and want your suggestion and the design decision, raised before the designer gets everything, so there is less to unwind with the designer. (his shot 21:08: the «○ Idle» row under the box, «your activity. where to move it? so it's close to magic button?»)
 note 21:12: grill and sign right away (his 21:11, o110)
+
+ticket: FRM-585
+close: 21:20 — W-lines copied verbatim into FRM-585's wish block (his 21:19: the inbox should read solved)
 <!-- SECTION:NOTES:END -->

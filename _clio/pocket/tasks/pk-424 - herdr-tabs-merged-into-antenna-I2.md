@@ -1,10 +1,10 @@
 ---
 id: PK-424
 title: herdr tabs merged into antenna (I2)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T14:25:00Z'
+updated_date: '2026-11-15T19:20:00Z'
 labels:
   - s
 dependencies: []
@@ -39,4 +39,7 @@ PK-424:W8 (2026-11-15 15:46, dima): ctrl+J works; the stashed tray terminal may 
 PK-349:W173 (2026-11-15 16:25, dima): the Terminals layout's tabs look prettier than my current ones (borrowed from zoo, likely vibe-coded); borrow them until tabs merge into antenna, and try if they beat mine; they don't switch tabs on mouse-wheel scroll, which i don't want. (→ PK-424)
 
 PK-349:W174 (2026-11-15 16:25, dima): before tabs merge into antenna, codie reviews the Terminals tabs against my current tabs and tells which is better. (→ PK-424)
+
+ticket: FRM-618
+close: 21:20 — W-lines copied verbatim into FRM-618's wish block (his 21:19: the inbox should read solved)
 <!-- SECTION:NOTES:END -->
