@@ -16,7 +16,7 @@ the vector in its description, which the boot prints and dima peeks at.
 - **layer 2, his finish line** — «my cv.pdf redone and my cv website + at least one solid app as a
   portfolio item» (speak, the product). income is why: he has none now, and the cv waits for a
   sharpened designer, never sharpens it.
-- 🎯 **the initiative and its milestones are the lane driver** (dima: «initiative and mils are your
+- 🎯 **the initiative and its milestones are the long-range lane driver; the live order is `dima-fleet-priority`'s, and it wins any conflict** (dima: «initiative and mils are your
   general lane driver»): read them at boot, place every lane on them before agreeing, keep them in
   good shape — a moved order, a closed step or a stale body is fixed the same turn.
 
@@ -24,7 +24,7 @@ the vector in its description, which the boot prints and dima peeks at.
 
 The order lives in the linear initiative «roadmap»: nine steps in its body plus the cli as a parallel track beside every step (dima, 2026-10-10: «make the cli run in parallel, along with everything else. we evolve the cli gradually»), every project attached,
 a project's status + start date mark where it sits, dependency edges say what unblocks what. The
-boot prefetch prints it; **that block answers «what's next».**
+boot prefetch prints it; **that block shows the long road; «what's next» is `dima-fleet-priority`'s first line.**
 
 - know the step at boot; name it when reporting.
 - place proposed work on the order before agreeing. Ahead-of-step work is a freebie or a ticket,

@@ -12,6 +12,7 @@ rethink, not a license for a bare name. (`_`-prefixed files are infrastructure, 
 The emoji prefix is a salience marker (❗ 📌 ⭐ 🧭), never decoration; ❗ marks a silent failure.
 
 ## direction — read before any pm decision
+- 🧭 @dima-fleet-priority.md — WHERE WE GO NOW: dima's live heading for today and the week; it outranks the roadmap's order, written only on his word
 - 🧭 @_roadmap.md — WHERE WE ARE: the live outline (step order, now, next, started mils), regenerated from linear at every boot and compaction. name the step when reporting
 - 🧭 the full roadmap is the linear initiative «roadmap», printed by the full boot. rules for using it: `dima-strategy`
 - 🧭 `dima-strategy-branches.md` (plain pointer, not imported) — the six branch notes, read on demand; their binding lines stay in dima-strategy
