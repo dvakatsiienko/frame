@@ -1,10 +1,10 @@
 ---
 id: PK-419
 title: 'herdr cuts: what can go (W6)'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T12:57:00Z'
+updated_date: '2026-11-15T16:06:00Z'
 labels:
   - s
 dependencies: []
@@ -39,4 +39,7 @@ raw drop (2026-11-15 inbox, dima): 3. i opened hedr-app in vscode and now see a 
 raw drop (2026-11-15 inbox, dima): 4. /Users/dima/.config/herdr-app/mods ← which are builtins and which came from zoo, shepardr?
 
 raw drop (2026-11-15 inbox, dima): 1. am i free to cut anything i do not want? how herdr-app future update reacts to cuts i do to the app?
+
+ticket: FRM-632
+close: 18:06 PK-419:W1–W6 → FRM-632:W1–W6 (his o47 tick: the cuts ticket, top of mods: herdr)
 <!-- SECTION:NOTES:END -->
