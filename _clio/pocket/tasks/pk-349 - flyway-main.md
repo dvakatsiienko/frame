@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-13T22:25:00Z'
+updated_date: '2026-11-15T14:12:00Z'
 labels:
   - s
   - clio-main
@@ -512,4 +512,174 @@ done 2026-11-13 22:01: f15 FRM-585 body: decided + done test match the quill-min
 done 2026-11-13 22:06: f8 💤 PK-358 rex settings walkthrough, two at a time, shown live — later: dima when free (PK-358 open)
 
 done 2026-11-13 22:08: f3 ⏳ PK-363 herdr move: closes once wish-cover covers its tickets — waits for: the herdr tickets (PK-363 done)
+
+PK-349:W151 (2026-11-15 14:52, dima): the swap to shepherdr's chat or a split of ours: add it to the grill list, i want it solved. (→ FRM-616)
+
+PK-349:W152 (2026-11-15 14:52, dima, o11 steer): i invented iTrout randomly, it is not an established name and i can change my mind. (→ PK-426)
+
+PK-349:W165 (2026-11-15 15:35, dima, o16 steer): let's see where we are after a few days, then sys vs the cv; i have another query about cv.pdf and the cv website. (→ dima-fleet-priority, PK-425)
+
+PK-349:W166 (2026-11-15 15:35, dima, o17 steer): okay, it is clear. ✓ (the guard contract) (→ PK-417)
+
+PK-349:W100 (2026-11-15 13:30, dima): i want to see progress of what we covered in the inbox: mark unprocessed inbox questions/asks with ⏳, and processed/answered ones with ✅ (only today, so i keep track of where we are).
+
+PK-349:W101 (2026-11-15 13:30, dima): my cv topic solved.
+
+PK-349:W102 (2026-11-15 13:30, dima): previously you told me there are pending grills waiting:
+
+PK-349:W103 (2026-11-15 13:30, dima): 1. FRM-630: grading my messages from the chat (tonight's idea)
+
+PK-349:W104 (2026-11-15 13:30, dima): 2. FRM-627: the crew-stray skill, with its contract in one place
+
+PK-349:W105 (2026-11-15 13:30, dima): 3. FRM-629: the mess hunt, a review skill plus how we stop making the mess
+
+PK-349:W106 (2026-11-15 13:30, dima): 4. FRM-615: action buttons in chat messages, which kinds earn one
+
+PK-349:W107 (2026-11-15 13:30, dima): 5. FRM-616: the herdr UX revamp. It's big, and touches what FRM-628 hardens.
+
+PK-349:W108 (2026-11-15 13:30, dima): 6. FRM-611: the mods big picture for you
+
+PK-349:W109 (2026-11-15 13:30, dima): 7. FRM-614: wireframes, a drawing tool we talk through with comments
+
+PK-349:W110 (2026-11-15 13:30, dima): ↑ solve them all
+
+PK-349:W111 (2026-11-15 13:40, dima): where is inbox-helga? (helga's version of the inbox), in obsidian? ❓
+
+PK-349:W112 (2026-11-15 13:40, dima): move all test-drives 2+ days — yesterday there was no activity, and today we only plan and chat.
+
+PK-349:W113 (2026-11-15 13:40, dima): you are panicking. 5% of usage is plenty of room for planning with no side lane; i think we're going to make it.
+
+PK-349:W114 (2026-11-15 13:40, dima): why did you ingest (delete) your handoff? ❓
+
+PK-349:W115 (2026-11-15 13:40, dima): i asked to keep it intact. it should wait for monday. today's scope is only partially related to the content of your own handoff. bring it back if you can.
+
+PK-349:W116 (2026-11-15 13:44, dima): side q: crow has a list of files printed into the chatter (crow boot).
+
+PK-349:W117 (2026-11-15 13:44, dima): why are those files (with the folder icon) printed that way? ❓
+
+PK-349:W118 (2026-11-15 13:44, dima): how does that work? anytime an agent reads a memory file, does it get output into the chatter? or does crow decide to show them in the chatter manually? ❓
+
+PK-349:W119 (2026-11-15 14:08, dima): wisp? it is a bad one. i don't want to have wisps like this.
+
+PK-349:W120 (2026-11-15 14:08, dima): is handoff restored precisely? ❓
+
+PK-349:W121 (2026-11-15 14:08, dima): another wisp? or does boot mini not assume inbox parsing? ❓
+
+PK-349:W122 (2026-11-15 14:08, dima): if it does not assume it, it is correct.
+
+PK-349:W123 (2026-11-15 14:08, dima): but when i ask you to still process the inbox, the parse should be a proper one. make inbox processing optional for boot mini, but if asked to process the inbox: a full proper process of it, including wishkeeper.
+
+PK-349:W124 (2026-11-15 14:08, dima): i'm going to archive imagnumm.satellite@gmail.com from my 1p.
+
+PK-349:W125 (2026-11-15 14:08, dima): what is «gmail-himalaya-imagnumm»? ❓
+
+PK-349:W126 (2026-11-15 14:08, dima): dev vault. is it still needed? ❓
+
+PK-349:W127 (2026-11-15 14:08, dima): i do not need it. delete it fully, and all himalaya entries. my himalaya points only to my main gmail: imagnum.satellite@gmail.com.
+
+PK-349:W128 (2026-11-15 14:08, dima): rex tint with theme — if off, it kinda disables the theme entirely. that's why it is confusing to me.
+
+PK-349:W129 (2026-11-15 14:08, dima): i can't understand the purpose of it. my theme is gruvbox light.
+
+PK-349:W130 (2026-11-15 14:08, dima): clarification about skill expansion in the screenshot.
+
+PK-349:W131 (2026-11-15 14:08, dima): @file: it expands into your ctx like a string? ❓
+
+PK-349:W132 (2026-11-15 14:08, dima): and @file does not survive the compaction by design? ❓
+
+PK-349:W133 (2026-11-15 14:08, dima): x-herdr-chatter/main.js: i didn't like what i saw in this file.
+
+PK-349:W134 (2026-11-15 14:08, dima): i thought we moved off the zoo team. the zoo layout is clunky, basic, and I suppose poorly implemented. we made the wrong choice: we started our herdr setup based on zoo. i thought we cleaned out and deleted all the redundant zoo parts and started to build our own.
+
+PK-349:W135 (2026-11-15 14:08, dima): we also borrowed a better version of the chatter from shepardr, which has a much better-built chatter. so why do we still have a zoo-based chatter tail while the better chatter from shepardr is still parked? ❓
+
+PK-349:W136 (2026-11-15 14:08, dima): how did it appear, so that the chatter is so large? is the zoo version that large from the start, or is it the result of new features folded into the chatter? ❓
+
+PK-349:W137 (2026-11-15 14:08, dima): either way, it must be properly split into good, meaningful parts.
+
+PK-349:W138 (2026-11-15 14:08, dima): why does typescript show 465 errors in the chatter only? herdr does not get proper typechecking? ❓
+
+PK-349:W139 (2026-11-15 14:08, dima): we previously agreed to have herdr type-checked.
+
+PK-349:W140 (2026-11-15 14:08, dima): trace it and log it, so my wish about whole-textblock select on triple-click works (wish fulfilled). the current selection is off: only a partial piece of the text block gets selected via triple LMB.
+
+PK-349:W141 (2026-11-15 14:08, dima): addition to my «tabs merge into antenna» idea: i found one counter-argument case, a terminal tab. if tabs go away, how do i then access the terminal right in herdr? ❓
+
+PK-349:W142 (2026-11-15 14:08, dima): currently it is accessible via CMD+T. ctrl-T (the mini-terminal at the bottom) does not work atm. why, btw? ❓
+
+PK-349:W143 (2026-11-15 14:09, dima): btw, do images reach you properly? ❓
+
+PK-349:W144 (2026-11-15 14:09, dima): testing if the magic button works after slipstream features were added to the quill.
+
+PK-349:W145 (2026-11-15 14:08, dima, o4): yes. plus - if a prompted skill survuves compaction. attaches to your ctx after compact? ❓
+
+PK-349:W146 (2026-11-15 14:08, dima, o5): let's probe on cmd+shift+k to see if it works
+
+PK-349:W147 (2026-11-15 14:52, dima): the tabs on top duplicate the agents list; i want the terminal ability kept, but not a whole tabs section just for it — can antenna on the left hold agent rows and terminal rows, cmd+1..n switching rows, cmd+T creating a terminal row? (→ PK-424)
+
+PK-349:W148 (2026-11-15 14:52, dima): only the layout becomes iTrout, or the whole setup? can you draw a small diagram of herdr's parts with their names? (→ PK-426)
+
+PK-349:W149 (2026-11-15 14:52, dima): in slipstream mode attached images don't reach you like a plain prompt's; why, is it a tech limit, how bad is it, is it worth more effort?
+
+PK-349:W150 (2026-11-15 14:52, dima): how do i reach my rex config? an alias like erex next to ealiases, ezsh; and fix ezsh so it points to the source file.
+
+PK-349:W153 (2026-11-15 15:09, dima): stop. why did you run away without me? i'm still writing my reply to your 14:55 message; why did you start a grill without seeing any activity from my side? (→ FRM-630)
+
+PK-349:W154 (2026-11-15 15:12, dima): i ticked because i approved the plan, not to have it processed without me; a plan i approve means we process its steps one by one, never 10 pages of output at once. (→ FRM-630:W12)
+
+PK-349:W155 (2026-11-15 15:12, dima): you may not go over the plan while you see no sign of activity from me: no reply means i'm slowly writing or busy. wait for my full reply, then we move on. (→ FRM-630:W12)
+
+PK-349:W156 (2026-11-15 15:12, dima): once my questions are solved, we park and solve you running away from me: you describe cleanly what caused it, and we think of a solid guardrail. (→ FRM-630)
+
+PK-349:W157 (2026-11-15 15:15, dima): log this as a comms problem: i wrote my reply for ~15 min and you went ahead; even today, no lane running, it is too fast for me; it multiplies with lanes and a wing. (→ FRM-630:W9–W11)
+
+PK-349:W158 (2026-11-15 15:35, dima): tabs: the + menu and the files and changes viewers move to x-herdr-chatter-header? (→ FRM-616)
+
+PK-349:W159 (2026-11-15 15:35, dima): i want the iTrout rename complete in all places at once; that's why i asked for the blast radius. (→ PK-426)
+
+PK-349:W160 (2026-11-15 15:35, dima): a third of our scope is initiated by you: how do you not forget a quick check on it? a helper script to get that data fast, and a triage tour someday. (→ PK-423)
+
+PK-349:W161 (2026-11-15 15:35, dima): how does auto mode work: blocking or a hint? if it stops and waits for my approval, it doesn't work for me; the guard's whole idea is non-blocking: even a refused command refuses but does not block you. (→ PK-417)
+
+PK-349:W162 (2026-11-15 15:35, dima): my reply took ~34 min; my pace is much slower than your paging. don't make me a turtle either: no confirmation on every turn.
+
+PK-349:W163 (2026-11-15 15:35, dima): grills and planning go as dedicated threads, one at a time; small questions may batch, 2–3 items at most; parts that need me go at my pace, mechanical parts of yours as fast as you like. (→ FRM-630)
+
+PK-349:W164 (2026-11-15 15:35, dima): never a turn i spend saying «next»: when we solve one thing i want to see the follow-ups right away and say «go item 2». today i can't see your plan: phases are hidden in herdr's sessions and not sharp enough. (→ FRM-630)
+
+PK-349:W82 (2026-11-15 13:30, dima): /clio:boot mini version. today we do planning only — everything planned on thursday, plus the handoff plan, is to be resumed on monday.
+
+PK-349:W83 (2026-11-15 13:30, dima): i asked lots of stuff in the inbox — let's plan only today.
+
+PK-349:W84 (2026-11-15 13:30, dima): you can read handoff if you want (to remember what we planned), do not ingest handoff — it's for monday.
+
+PK-349:W85 (2026-11-15 13:30, dima): you can parse the inbox, but the focus is not just to fold it, but to process it instead.
+
+PK-349:W86 (2026-11-15 13:30, dima): i have lots of planning-related questions and asks, so let's plan effectively.
+
+PK-349:W87 (2026-11-15 13:30, dima): who to summon: helga, crow. that's it for now.
+
+PK-349:W88 (2026-11-15 13:30, dima): if someone will be needed — a stray, or a quick lane somewhere — propose it first.
+
+PK-349:W89 (2026-11-15 13:30, dima): i've asked quite a lot of planning-type questions and asks. the weekly is 95%, let's spend the remainder on processing the inbox: answer all my questions, and the asks too, after.
+
+PK-349:W90 (2026-11-15 13:30, dima): let's properly shape and plan out everything, so monday continues as planned.
+
+PK-349:W91 (2026-11-15 13:30, dima): my plan: speak app v2 → chords → sysy → cv. probably won't work as i planned it (too long builds).
+
+PK-349:W92 (2026-11-15 13:30, dima): along with other inbox topics, let's process my cv.pdf topic.
+
+PK-349:W93 (2026-11-15 13:30, dima): format now: all data for today must be verified.
+
+PK-349:W94 (2026-11-15 13:30, dima): no lanes planned yet. let's spend effort on solving my inbox:
+
+PK-349:W95 (2026-11-15 13:30, dima): answer all my questions.
+
+PK-349:W96 (2026-11-15 13:30, dima): i want the inbox processed fully — shaped and signed into tickets.
+
+PK-349:W97 (2026-11-15 13:30, dima): no tails left — i want open next week clean.
+
+PK-349:W98 (2026-11-15 13:30, dima): all unclear queries are clarified and grilled over if needed.
+
+PK-349:W99 (2026-11-15 13:30, dima): process the inbox sequentially. start with smaller, simpler stuff; bigger parts after.
 <!-- SECTION:NOTES:END -->
