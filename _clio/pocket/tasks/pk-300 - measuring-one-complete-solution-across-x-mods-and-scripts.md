@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-15T19:12:00Z'
+updated_date: '2026-11-15T19:22:00Z'
 labels:
   - m
 dependencies: []
@@ -131,4 +131,6 @@ PK-300:W1530 (2026-11-15 inbox, dima): start delta: the logger is always active 
 fix 15:07: W1525 → W1530 (restores «(you set it)» for the start delta and the later «last week» delta)
 
 PK-300 (2026-11-15 21:11, dima, for this ticket, not answered yet): how do we measure cli verbs properly: through x's own internals measuring itself, or from outside? e.g. how many times a certain verb was used? (21:12)
+
+PK-300:W1531 (2026-11-15 21:11, dima): how to measure cli verbs properly: via the verb's own internals, or from outside (for example, how many times a certain verb was used)? fold into the «complete measurement solution» ticket; do not answer now. ❓
 <!-- SECTION:NOTES:END -->
