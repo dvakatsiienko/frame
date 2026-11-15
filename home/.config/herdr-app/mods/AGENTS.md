@@ -38,7 +38,6 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 
 ## never
 
-- change a layout while a thread holds focus: it dies (herdr-app#861)
 - read a cc mod's private store: draw from its file in `~/.claude/shelf/`
 - key an unlocking button (sign, merge, delete): any shell reaches a key
 - restart or kill a live thread for a proof: a throwaway one, killed after
