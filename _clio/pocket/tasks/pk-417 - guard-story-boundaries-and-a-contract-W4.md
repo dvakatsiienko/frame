@@ -1,10 +1,10 @@
 ---
 id: PK-417
 title: 'guard story: boundaries and a contract (W4)'
-status: done
+status: open
 assignee: []
 created_date: '2026-11-15T12:26:00Z'
-updated_date: '2026-11-15T14:09:00Z'
+updated_date: '2026-11-15T14:17:00Z'
 labels:
   - s
 dependencies: []
@@ -57,4 +57,8 @@ raw drop (2026-11-15 inbox, dima): 4. or instead - find what caused to you lean 
 PK-417:W14 (2026-11-15 15:35, dima): how does auto mode work: blocking or a hint? if it stops and waits for my approval it doesn't work for me; the guard's whole idea is non-blocking: even a refused command refuses but does not block you.
 
 close: 16:09 PK-417:W1–W14 done — the guard contract, his o17 ✓ and 16:01 «my words always override», heads x-mod-guard/FTR.md; auto mode answered (3/20 stop → not for him)
+
+PK-417:W15 (2026-11-15 16:01, dima): auto mode stopping after 3 or 20 blocks doesn't work for me. i want the guard useful (no destructive stuff) but never blocking you, and easily overridden via orbit or via words: my words always override the guard.
+
+reopened 16:17: the close missed W15 (wishkeeper 16:17); open until his word on the brake exception
 <!-- SECTION:NOTES:END -->

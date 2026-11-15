@@ -4,7 +4,7 @@ title: x-herdr-layout renamed to iTrout (I4)
 status: open
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T13:47:00Z'
+updated_date: '2026-11-15T14:17:00Z'
 labels:
   - s
 dependencies: []
@@ -31,4 +31,6 @@ PK-426:W4 (2026-11-15 14:52, dima, o11 steer): i invented iTrout randomly, it is
 fix 15:09: W3 → W4 (o11 steer arrived with his 14:52 prompt, stamped per clio)
 
 fix 15:47: W3 → W4 (W3 carries no prompt stamp; W4 is the same line stamped 14:52, o11 steer)
+
+PK-426:W5 (2026-11-15 15:46, dima): let's craft my herdr setup as an iTrout-branded gallery item.
 <!-- SECTION:NOTES:END -->
