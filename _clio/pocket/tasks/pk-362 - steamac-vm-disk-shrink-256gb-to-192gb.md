@@ -4,7 +4,7 @@ title: 'steamac vm disk: shrink 256gb to 192gb'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-13T20:06:00Z'
+updated_date: '2026-11-15T11:33:00Z'
 labels:
   - s
 dependencies: []
@@ -58,4 +58,6 @@ typo above: «fstraps» reads «fstrims».
 close: 22:06 PK-362:W1–W8 kept here, linked from wing 1's flyway as a 💤 line (dima 22:04: «keep them linked in wing 1 flyway, mark as 💤, i'll tell when»)
 
 kept: 2026-11-13 — reopened: dima's 22:04 «keep them linked in wing 1 flyway, mark as 💤» needs a live item behind the line
+
+kept: 2026-11-15 — his vet, «i tell when» (wing 2 flyway), watch fxgl/steamac#91 (13:33)
 <!-- SECTION:NOTES:END -->

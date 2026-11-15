@@ -4,7 +4,7 @@ title: rex settings walkthrough, two items at a time, shown live
 status: open
 assignee: []
 created_date: '2026-11-09T12:37:00Z'
-updated_date: '2026-11-13T20:06:00Z'
+updated_date: '2026-11-15T11:33:00Z'
 labels:
   - s
   - clio-main
@@ -102,4 +102,6 @@ kept: 2026-11-12 — 💤 his own choice, the walkthrough when he is free (flywa
 close: 22:05 PK-358:W1–W12 kept here, linked from wing 1's flyway as a 💤 line (dima 22:04: «keep them linked in wing 1 flyway, mark as 💤, i'll tell when»)
 
 kept: 2026-11-13 — reopened: dima's 22:04 «keep them linked in wing 1 flyway, mark as 💤» needs a live item behind the line
+
+kept: 2026-11-15 — worked today: his inbox Q2 asks these rex questions answered, batch 1 (13:33)
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-13T20:06:00Z'
+updated_date: '2026-11-15T11:33:00Z'
 labels:
   - m
 dependencies: []
@@ -43,4 +43,6 @@ kept: 2026-11-12 — still dima's prio 1 measuring item, waits for a free main-l
 close: 22:05 PK-300:W1–W1 kept here, linked from wing 1's flyway as a 💤 line (dima 22:04: «keep them linked in wing 1 flyway, mark as 💤, i'll tell when»)
 
 kept: 2026-11-13 — reopened: dima's 22:04 «keep them linked in wing 1 flyway, mark as 💤» needs a live item behind the line
+
+kept: 2026-11-15 — worked today: wish 7 (stat measure) folds into it, batch 7 (13:33)
 <!-- SECTION:NOTES:END -->
