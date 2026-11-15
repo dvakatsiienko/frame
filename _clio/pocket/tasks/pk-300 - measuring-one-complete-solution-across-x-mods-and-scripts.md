@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-15T13:07:00Z'
+updated_date: '2026-11-15T19:12:00Z'
 labels:
   - m
 dependencies: []
@@ -129,4 +129,6 @@ fix 15:07: W1518 → W1529 (parked-time stat as its own line)
 PK-300:W1530 (2026-11-15 inbox, dima): start delta: the logger is always active (raw stats, e.g. for a last month), but the «from today» delta counter is set via tool on boot (you set it), so the deck band shows numbers only from today (for now). later we build a «last week» delta.
 
 fix 15:07: W1525 → W1530 (restores «(you set it)» for the start delta and the later «last week» delta)
+
+PK-300 (2026-11-15 21:11, dima, for this ticket, not answered yet): how do we measure cli verbs properly: through x's own internals measuring itself, or from outside? e.g. how many times a certain verb was used? (21:12)
 <!-- SECTION:NOTES:END -->

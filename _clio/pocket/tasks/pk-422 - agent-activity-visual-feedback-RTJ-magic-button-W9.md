@@ -4,7 +4,7 @@ title: agent activity visual feedback, RTJ magic button (W9)
 status: open
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T13:07:00Z'
+updated_date: '2026-11-15T19:12:00Z'
 labels:
   - s
 dependencies: []
@@ -49,4 +49,11 @@ raw drop (2026-11-15 inbox, dima): 5. for example: add "on fire" effect magic bu
 PK-422:W8 (2026-11-15 inbox, dima): i want very high-grade «agent activity» visual feedback in the deck, the part that shows your activity when you are mid-turn.
 
 fix 15:07: W1 → W8 (shows my activity → shows your activity, clio's mid-turn activity)
+
+PK-422:W9 (2026-11-15 21:11, dima): my wish from the inbox still holds: i want your activity shown more beautifully, and unified with the magic button for the reasons in the inbox; whenever you are active i want it more visible, but not too much.
+PK-422:W10 (2026-11-15 21:11, dima): the magic button makes sense to press while you are mid-turn, so the two features may sit close to each other and even share some styles.
+PK-422:W11 (2026-11-15 21:11, dima): i don't know herdr's capabilities well enough, or how far agent activity can be customized; today it is bare and boring, and if it can't be made customizable enough, i'd keep it as it is.
+PK-422:W12 (2026-11-15 21:11, dima): concern: the conditional Stop button sits on the far right beside the 🐦‍🔥 second wind button; moved next to the magic button, Stop would sit beside it, probably not the best.
+PK-422:W13 (2026-11-15 21:11, dima): i'm unsure of my own request and want your suggestion and the design decision, raised before the designer gets everything, so there is less to unwind with the designer. (his shot 21:08: the «○ Idle» row under the box, «your activity. where to move it? so it's close to magic button?»)
+note 21:12: grill and sign right away (his 21:11, o110)
 <!-- SECTION:NOTES:END -->
