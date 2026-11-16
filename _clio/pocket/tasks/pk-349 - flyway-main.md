@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T14:52:00Z'
+updated_date: '2026-11-16T15:30:00Z'
 labels:
   - s
   - clio-main
@@ -25,14 +25,12 @@ ordinal: 1000
 - [ ] #7 f19 designer interview for herdr (FRM-591) — later: dima says when (o173)
 - [ ] #8 f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51)
 - [ ] #9 f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
-- [ ] #10 f21 FRM-600 naming door: summon via x brief summon --apply, read the name, dima confirms on mobile
-- [ ] #11 f24 herdr foundation: the shape-idea round with dima on the proposal (PK-444) — waits for: dima o28
-- [ ] #12 f25 second-wind store chunk: seal it, then dima's sign (a re-sign of FRM-625)
-- [ ] #13 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
-- [ ] #14 f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15)
-- [ ] #15 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #16 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #17 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #10 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
+- [ ] #11 f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15)
+- [ ] #12 f29 new chat: one shaped ticket from round 1 and the borrow ledger, then his sign (PK-444)
+- [ ] #13 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #14 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #15 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -803,4 +801,16 @@ groomed prompt 16:51:
 PK-349:W1033 (2026-11-16 16:46, dima): Re "why the mods lane parked (its naming fix finished, its next chunk waits on your seal and sign)": then sign and seal? Why is the mods lane parked? Let it move.
 PK-349:W1034 (2026-11-16 16:46, dima): Re "the weekly usage is burning fast": as planned, I have 1 fable usage reset; that's why I asked for the fable 5.2 / opus 5.5 split today. My plan is to have 100% fable usage, reset, and then move on with opus 5.5 for everyone.
 PK-349:W1035 (2026-11-16 16:46, dima): Do not worry, just act efficiently; it is your job.
+
+done 2026-11-16 17:22: f25 second-wind store chunk: seal it, then dima's sign (a re-sign of FRM-625) (FRM-625 Todo)
+
+done 2026-11-16 17:22: f24 herdr foundation: the shape-idea round with dima on the proposal (PK-444) — waits for: dima o28 (PK-444 open)
+
+done 2026-11-16 17:26: f21 FRM-600 naming door: summon via x brief summon --apply, read the name, dima confirms on mobile (FRM-600 Done)
+
+PK-349:W1036 (2026-11-16 17:09, dima): what mods lane is doing? and its /clio:lowtide-peek-chunk pls
+raw drop (2026-11-16, dima, herdr-typed): what mods lane is doing? and its /clio:lowtide-peek-chunk pls
+
+PK-349:W1037 (2026-11-16 17:14, dima): then, while everyone is running and bottleneck is solved - whats on your flyway? let's solve tails, gradually. what was postponed because of chaos? inbox? any other tails? reminder? your wish dated reminders as for today? i remmeber two - wish check and some other. i want all tails solved today so i can start speak app v2 tomorrow with wing.
+raw drop (2026-11-16, dima, herdr-typed): then, while everyone is running and bottleneck is solved - whats on your flyway? let's solve tails, gradually. what was postponed because of chaos? inbox? any other tails? reminder? your wish dated reminders as for today? i remmeber two - wish check and some other. i want all tails solved today so i can start speak app v2 tomorrow with wing.
 <!-- SECTION:NOTES:END -->

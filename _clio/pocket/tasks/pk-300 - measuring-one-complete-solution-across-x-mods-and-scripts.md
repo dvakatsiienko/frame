@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-15T19:22:00Z'
+updated_date: '2026-11-16T15:30:00Z'
 labels:
   - m
 dependencies: []
@@ -133,4 +133,10 @@ fix 15:07: W1525 → W1530 (restores «(you set it)» for the start delta and th
 PK-300 (2026-11-15 21:11, dima, for this ticket, not answered yet): how do we measure cli verbs properly: through x's own internals measuring itself, or from outside? e.g. how many times a certain verb was used? (21:12)
 
 PK-300:W1531 (2026-11-15 21:11, dima): how to measure cli verbs properly: via the verb's own internals, or from outside (for example, how many times a certain verb was used)? fold into the «complete measurement solution» ticket; do not answer now. ❓
+
+PK-300:W1532 (2026-11-16 17:21, dima): Yesterday I asked for a feature in inbox to have stats in my band somehow: the measured quantity of how many second wins were done today. Also these stats of how many messages I've sent via push and via slipstream mode, stuff like this, where my ticket about this is folded. Do you still remember my ask? As far as I remember we didn't discuss it properly. Most importantly the door for measures: how to properly measure them from inside the mods (all these stats) or from outside via some tracking solution like DuckDB
+raw drop (2026-11-16, dima, herdr-typed): Yesterday I asked for a feature in inbox to have stats in my band somehow: the measured quantity of how many second wins were done today. Also these stats of how many messages I've sent via push and via slipstream mode, stuff like this, where my ticket about this is folded. Do you still remember my ask? As far as I remember we didn't discuss it properly. Most importantly the door for measures: how to properly measure them from inside the mods (all these stats) or from outside via some tracking solution like DuckDB
+
+PK-300:W1533 (2026-11-16 17:24, dima): so we did not grilled it? let's then grill whenever you can. worth checking how telemetry can help. we have telemetry but do not use it at all it is parked. i assume it is useful but we do not have any flow to get gains out from it. It is strange for me that we didn't grill this one and missed it. What else isn't grilled? What else is missed?
+raw drop (2026-11-16, dima, herdr-typed): so we did not grilled it? let's then grill whenever you can. worth checking how telemetry can help. we have telemetry but do not use it at all it is parked. i assume it is useful but we do not have any flow to get gains out from it. It is strange for me that we didn't grill this one and missed it. What else isn't grilled? What else is missed?
 <!-- SECTION:NOTES:END -->

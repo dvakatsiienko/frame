@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T15:20:00Z'
+updated_date: '2026-11-16T15:30:00Z'
 labels:
   - m
 dependencies: []
@@ -266,4 +266,11 @@ PK-444:W114 (2026-11-16 17:12, dima, shot «name is about tabs actually?»): i l
 groomed prompt 16:57:
 PK-444:W100 (2026-11-16 16:57, dima, shot «show more button is implemented much better than in our version. (i have it disabled currently in settings) = borrow.»): «Show more» on a long message.
 PK-444:W101 (2026-11-16 16:57, dima, shot «latest pill too. we currently have zoo's crap one»): the «Latest» pill that jumps to the newest message.
+
+groomed prompt 17:17:
+PK-444:W115 (2026-11-16 17:17, dima): why forever? we cannot just rename?
+PK-444:W116 (2026-11-16 17:17, dima): ok proceed efficiently as your propose. i want good tabs and clear name for it, and crap deleted in the end. go
+
+PK-444:W117 (2026-11-16 17:25, dima): BTW: is herdr codie lane moves via properly written spec? i worry about chaotic moves we do now. i want his plan properly specced and well structured and synced with glide
+raw drop (2026-11-16, dima, herdr-typed): BTW: is herdr codie lane moves via properly written spec? i worry about chaotic moves we do now. i want his plan properly specced and well structured and synced with glide
 <!-- SECTION:NOTES:END -->
