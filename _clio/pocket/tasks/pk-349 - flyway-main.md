@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T20:55:00Z'
+updated_date: '2026-11-16T20:57:00Z'
 labels:
   - s
   - clio-main
@@ -986,4 +986,9 @@ PK-349:W1143 (2026-11-16 22:49, dima): so on your side, are all tails solved?
 PK-349:W1144 (2026-11-16 22:53, dima): he wants all tails that are closable now solved. Everything gated behind some date or any other blocker is not included.
 PK-349:W1145 (2026-11-16 22:53, dima): he wants all tails solved that do not wait on anything.
 PK-349:W1146 (2026-11-16 22:53, dima, herdr-typed): when the mods lane is done, fully merge it and stop it fully.
+
+PK-349:W1147 (2026-11-16 22:58, dima, herdr-typed): let the herdr lane move meanwhile. it is more granular and can stop almost at any time, and it is faster, so while it moves we finish the planning.
+PK-349:W1148 (2026-11-16 22:58, dima, herdr-typed): first, speak app v2 fully planned.
+PK-349:W1149 (2026-11-16 22:58, dima, herdr-typed): second, peek the lanes for herdr, mods and cli: ensure they are in good shape and everything is planned properly. herdr scope is settled after today's chat switch.
+PK-349:W1150 (2026-11-16 22:58, dima, herdr-typed): third, then halt.
 <!-- SECTION:NOTES:END -->
