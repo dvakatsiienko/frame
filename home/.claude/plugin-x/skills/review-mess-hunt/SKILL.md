@@ -14,11 +14,9 @@ what counts: real mess first (state with several owners, timers settling instead
 1. **pin the base.** record `git rev-parse HEAD` of the area's repo; every finding points at that sha. done: the sha is in the brief of every reader.
 2. **name the area and the case.** the area is a folder or a set of files; the case is the pain that brought the hunt (the lane's tickets, the wisps, dima's words). done: one brief file holds both, read by every reader.
 3. **pick the readers.** the baseline, each read-only:
-   - the lane's codie as **architect**: root-cause the case, then every place of the same shape
-   - its sixth sense as **tester**, when one is present and parked: every state, hostile order and hollow test
-   - one blind **wisphunter** card: bugs with a failure scenario
-   - the set stays open: any parked member (the stray codie, a spare sixth sense) joins for a fuller picture
-   - past ~5,000 lines the area splits, one architect per part, one wisphunter over all; for really big code, more wisphunters or a second codie
+   - three `messhunter` cards, one per angle, each brief naming the area, the case, the pinned sha, its angle and its findings file: **architect** (root-cause the case, then every place of the same shape), **tester** (every state, hostile order and hollow test), **bug hunter** (bugs with a failure scenario)
+   - a parked member joins for a fuller picture, never instead of a card: the lane's codie as a second architect, its sixth sense as a second tester, the stray codie
+   - past ~5,000 lines the area splits, one architect per part, one bug hunter over all, each at `effort: high`
 
    done: each reader named with its angle, and `x:crew-subagent` loaded before a card spawns.
 4. **read.** every reader reads at the pinned sha in parallel and writes one file: findings as `path:line`, the failure scenario, a fix in one line, and a grade (fix now · ticket · drop); «not checked» names what it skipped. done: every reader's file exists.

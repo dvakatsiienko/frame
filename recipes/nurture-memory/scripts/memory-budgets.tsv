@@ -74,6 +74,7 @@ gmail/AGENTS.md	2100	seed 2026-10-16, today's size + 15 %
 home/.claude/agents/fresh-eyes.md	2600	seed 2026-10-21, its size + 15 %
 home/.claude/agents/helper-lite.md	2400	seed 2026-10-16, its size + 15 %
 home/.claude/agents/helper.md	1900	seed 2026-10-16, its size + 15 %
+home/.claude/agents/messhunter.md	3500	seed 2026-11-16, its size + 15 %
 home/.claude/agents/researcher.md	2100	seed 2026-10-16, its size + 15 %
 home/.claude/agents/retro.md	2350	2026-11-10: +550 the weekly retro's rubric (score, cost-to-dima first, ≥3 sightings, the missing guard, a ready diff), dima's o105 go
 home/.claude/agents/scout.md	2300	2026-10-19: the scout shaping (dima's ticks o25–o29) — a proactive trigger and a map answer contract; its size + 15 %
@@ -154,7 +155,7 @@ home/.claude/rules/fleet-doors.md	2500	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-flow.md	2650	+50 2026-11-07: his 3 wing lines, PK-351. seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-hazards-files.md	1600	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-hazards.md	7700	seed 2026-10-16, today's size + 15 %
-home/.claude/rules/fleet-identity.md	4650	+50 2026-11-07: his 3 wing lines, PK-351. seed 2026-10-16, today's size + 15 %; 2026-11-15 +50 B: the stray clause under codie (dima o95)
+home/.claude/rules/fleet-identity.md	4800	+150 2026-11-16: the messhunter card line (dima o83). +50 2026-11-07: his 3 wing lines, PK-351. seed 2026-10-16, today's size + 15 %; 2026-11-15 +50 B: the stray clause under codie (dima o95)
 home/.claude/rules/fleet-mods.md	4800	+300 2026-11-12: second wind runs itself, FRM-505 habit line (his o175 tick). seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-output-format.md	14900	seed 2026-10-16, today's size + 15 %
 home/.claude/rules/fleet-tooling.md	7200	2026-11-10: +200 desktop checks read the a11y tree first, dima's o105 go
