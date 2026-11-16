@@ -1,10 +1,10 @@
 ---
 id: PK-441
 title: 'mess hunt: a subagent card instead of the skill? weigh it'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T17:42:00Z'
+updated_date: '2026-11-16T22:27:00Z'
 labels:
   - s
 dependencies: []
@@ -60,4 +60,6 @@ PK-441:W19 (2026-11-16 19:23, dima): now i'm confused. propose how to solve all 
 19:41 his 19:29 and 19:37 lines (the badge is free: retro wears 🦡; the rename is the stray's chore):
 PK-441:W20 (2026-11-16 19:29, dima): ⭐⭐⭐⭐⭐ 🦝 messhunter: y. nice, but is raccoon already taken by the retro card, or is that different?
 PK-441:W21 (2026-11-16 19:37, dima): x:review-mess-hunt → x:review-messhunt ?
+
+00:27 closed: the 🦝 messhunter card and x:review-messhunt landed (ls agents/, skills/); left open by my miss
 <!-- SECTION:NOTES:END -->

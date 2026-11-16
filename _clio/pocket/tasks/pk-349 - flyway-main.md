@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T22:04:00Z'
+updated_date: '2026-11-16T22:11:00Z'
 labels:
   - s
   - clio-main
@@ -22,18 +22,16 @@ ordinal: 1000
 - [ ] #4 f1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
 - [ ] #5 f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
 - [ ] #6 f14 today: stabilize the fleet flows, root fixes only (dima 14:34); speak waits until all runs smoothly
-- [ ] #7 f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51)
-- [ ] #8 f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
-- [ ] #9 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
-- [ ] #10 f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15)
-- [ ] #11 f29 new chat: one shaped ticket from round 1 and the borrow ledger, then his sign (PK-444)
-- [ ] #12 f30 grill 1: stats counter (PK-300): shape, grill, plan right away (his 17:36 order)
-- [ ] #13 f31 grill 2: mess hunt as a card (PK-441): shape, grill, implement in place
-- [ ] #14 f32 grill 3: lighten linear (PK-442): shape, grill, implement in place
-- [ ] #15 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #16 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #17 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #18 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #7 f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
+- [ ] #8 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
+- [ ] #9 f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15)
+- [ ] #10 f30 grill 1: stats counter (PK-300): shape, grill, plan right away (his 17:36 order)
+- [ ] #11 f31 grill 2: mess hunt as a card (PK-441): shape, grill, implement in place
+- [ ] #12 f32 grill 3: lighten linear (PK-442): shape, grill, implement in place
+- [ ] #13 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #14 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #15 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #16 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1011,4 +1009,8 @@ PK-349:W1160 (2026-11-16 23:23, dima, o141 steer): yes, but memory-pass is not w
 PK-349:W1161 (2026-11-16 23:30, dima, herdr-typed): tick 1: I ran the command from my home folder, which has no GitHub repo, so x refused it before anything happened. That still used up the tick. where are you now? I thought you were in frame/_clio, which is a git repo.
 
 PK-349:W1162 (2026-11-17 00:02, dima): tell me where you are. do you see the SW notice?
+
+done 2026-11-17 00:11: f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51) (FRM-621 Todo, FRM-631 In Progress)
+
+done 2026-11-17 00:11: f29 new chat: one shaped ticket from round 1 and the borrow ledger, then his sign (PK-444) (PK-444 open)
 <!-- SECTION:NOTES:END -->
