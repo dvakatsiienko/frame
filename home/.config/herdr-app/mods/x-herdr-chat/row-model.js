@@ -1,6 +1,11 @@
 // the row model: transcript lines in, the thread's rows out. a row keeps its object for as long as it lives, and its
 // `version` grows only when its own text does, so the list redraws and measures only the rows an update names.
 // drawn so far: his messages, replies and one line per tool call; every other line waits for its own slice.
+// a message he sent while the thread works waits in Claude Code's queue: it is his last row, waiting, until a turn
+// takes it and its own transcript line replaces it.
+
+import { joinedTexts } from './joins.js';
+import { claudeQueueAfter, isHisQueued, queuedWords } from './queued.js';
 
 /**
  * @typedef {object} Row
@@ -11,10 +16,13 @@
  * @property {number} version 1 at birth, one more each time the text changes
  * @property {string | null} replyId the reply's message id: more text of the same message joins this row
  * @property {string[]} tools the names of the tool calls a tool row folds, in order
+ * @property {boolean} isWaiting his message in Claude Code's queue, no turn has taken it yet
  */
 
 // a conversation line opens with this key; api requests, snapshots and modes open with "type" and are never parsed
 const CONVERSATION = '{"parentUuid"';
+// Claude Code's queue records open with their type
+const QUEUE_RECORD = '{"type":"queue-operation"';
 // a user line that is not his words: a command's echo or output, a task notice, an interruption note
 const NOT_HIS_WORDS = /^\s*(?:<[\w-]+>|\[Request interrupted)/;
 
@@ -39,23 +47,28 @@ function rowsOf(line) {
         return [];
     }
     if (!isRecord(entry)) return [];
-    const { message } = entry;
-    if (!isRecord(message)) return [];
     if (entry.isSidechain || entry.isMeta || entry.isCompactSummary) return [];
     const id = textOf(entry.uuid);
     if (!id) return [];
-    const { content } = message;
-    const blocks = (Array.isArray(content) ? content : []).filter(isRecord);
-    /** @param {Row['kind']} kind @param {string} text @returns {Row} */
-    const row = (kind, text) => ({
+    const message = isRecord(entry.message) ? entry.message : {};
+    /** @param {Row['kind']} kind @param {string} text @param {string} [rowId] @returns {Row} */
+    const row = (kind, text, rowId = id) => ({
         at: textOf(entry.timestamp) || null,
-        id,
+        id: rowId,
+        isWaiting: false,
         kind,
         replyId: kind === 'reply' ? textOf(message.id) || null : null,
         text,
         tools: kind === 'tool' ? [text] : [],
         version: 1,
     });
+    // words that joined a turn (the magic send) are his messages, one row each
+    if (entry.type === 'attachment')
+        return joinedTexts(entry).map((text, n) =>
+            row('mine', text, n ? `${id}#${n}` : id),
+        );
+    const { content } = message;
+    const blocks = (Array.isArray(content) ? content : []).filter(isRecord);
     if (entry.type === 'user') {
         const said =
             typeof content === 'string'
@@ -113,6 +126,11 @@ export function createRowModel() {
     const rows = [];
     /** the row each transcript line was folded into, by the line's uuid @type {Map<string, Row>} */
     const rowOfLine = new Map();
+    /** Claude Code's queue, as its records in the transcript leave it @type {import('./queued.js').Queued[]} */
+    let queue = [];
+    /** the row of each message of his in the queue: the last rows, in queue order @type {Map<import('./queued.js').Queued, Row>} */
+    let waiting = new Map();
+    let waitingSerial = 0;
 
     /**
      * @param {string[]} lines
@@ -138,9 +156,54 @@ export function createRowModel() {
     }
 
     return {
-        /** new lines, at the thread's end @param {string[]} lines */
+        /**
+         * new lines, at the thread's end
+         * @param {string[]} lines
+         * @returns {{ changed: string[], removed: number }} the ids of the rows added or grown, and how many left
+         */
         add(lines) {
-            return { changed: [...fold(lines, rows)] };
+            // the waiting rows step aside, so a line folds into the transcript's own last row
+            rows.length -= waiting.size;
+            /** @type {Set<string>} */
+            const changed = new Set();
+            for (const line of lines) {
+                if (!line.startsWith(QUEUE_RECORD)) {
+                    for (const id of fold([line], rows)) changed.add(id);
+                    continue;
+                }
+                try {
+                    queue = claudeQueueAfter(queue, JSON.parse(line));
+                } catch {
+                    // half a record: it never arrives whole, the reader hands over complete lines only
+                }
+            }
+            const had = waiting;
+            waiting = new Map();
+            for (const queued of queue) {
+                if (!isHisQueued(queued.text)) continue;
+                let row = had.get(queued);
+                if (!row) {
+                    row = {
+                        at: queued.at
+                            ? new Date(queued.at).toISOString()
+                            : null,
+                        id: `waiting-${++waitingSerial}`,
+                        isWaiting: true,
+                        kind: 'mine',
+                        replyId: null,
+                        text: queuedWords(queued.text),
+                        tools: [],
+                        version: 1,
+                    };
+                    changed.add(row.id);
+                }
+                waiting.set(queued, row);
+            }
+            rows.push(...waiting.values());
+            const removed = [...had.keys()].filter(
+                (queued) => !waiting.has(queued),
+            ).length;
+            return { changed: [...changed], removed };
         },
         /** a page from above what is loaded @param {string[]} lines */
         addEarlier(lines) {
@@ -171,6 +234,8 @@ export function createRowModel() {
         clear() {
             rows.length = 0;
             rowOfLine.clear();
+            queue = [];
+            waiting = new Map();
         },
         /** where the row holding the transcript line `id` sits, -1 when it is not loaded @param {string} id */
         indexOf(id) {

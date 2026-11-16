@@ -655,16 +655,18 @@ export default class Chat extends View {
         const id = `${pre}${row.id}@${row.version}`;
         if (row.kind === 'mine')
             return column(
-                h_flex()
+                v_flex()
                     .w_full()
-                    .justify_end()
+                    .items_end()
+                    .gap(2)
                     .child(
                         div()
                             .max_w(most)
                             .px(12)
                             .py(8)
                             .rounded(12)
-                            .bg(tint(t.accent, '33'))
+                            // a waiting message is his bubble, paler until a turn takes it
+                            .bg(tint(t.accent, row.isWaiting ? '1a' : '33'))
                             .border(1)
                             .border_color(tint(t.accent, '4d'))
                             .child(
@@ -673,6 +675,15 @@ export default class Chat extends View {
                                     typedMarkdown(row.text),
                                 ).selectable(true),
                             ),
+                    )
+                    .when(row.isWaiting, (el) =>
+                        el.child(
+                            div()
+                                .px(4)
+                                .text_size(12)
+                                .text_color(t.muted)
+                                .child('Waiting for the turn'),
+                        ),
                     ),
             );
         return column(
@@ -812,8 +823,8 @@ export default class Chat extends View {
         }
         const hadError = this.error !== null;
         this.error = null;
-        if (this.model.add(lines).changed.length || isRestart || hadError)
-            cx.notify();
+        const { changed, removed } = this.model.add(lines);
+        if (changed.length || removed || isRestart || hadError) cx.notify();
     }
 
     /**

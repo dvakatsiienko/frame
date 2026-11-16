@@ -82,7 +82,7 @@ describe('which transcript lines become rows', () => {
         ],
     ])('%s draws no row', (_name, line) => {
         const model = createRowModel();
-        expect(model.add([line])).toEqual({ changed: [] });
+        expect(model.add([line])).toEqual({ changed: [], removed: 0 });
         expect(model.rows).toEqual([]);
     });
 
@@ -184,7 +184,7 @@ describe('an update touches only the rows that changed', () => {
         const model = createRowModel();
         const line = mine('once');
         model.add([line]);
-        expect(model.add([line])).toEqual({ changed: [] });
+        expect(model.add([line])).toEqual({ changed: [], removed: 0 });
         expect(model.rows.length).toBe(1);
     });
 });
@@ -252,5 +252,159 @@ describe('earlier pages and a restart', () => {
         model.clear();
         expect(model.rows).toEqual([]);
         expect(model.add([line]).changed.length).toBe(1);
+    });
+});
+
+// Claude Code's queue records and x-mod-stash's joined-words line, as each is written to the transcript
+const queueOp = (
+    operation: string,
+    content?: string,
+    at = '2026-11-16T16:45:40.000Z',
+) => {
+    const rest = JSON.stringify({
+        operation,
+        timestamp: at,
+        ...(content === undefined ? {} : { content }),
+    });
+    // its type first, as Claude Code writes it: a formatter sorts an object's keys
+    return `{"type":"queue-operation",${rest.slice(1)}`;
+};
+const joined = (...texts: string[]) => {
+    serial += 1;
+    const head =
+        texts.length === 1
+            ? '💨 dima wrote this in herdr while you worked; it joins this turn as his own words:\n'
+            : `💨 dima wrote these ${texts.length}, in order, in herdr while you worked; it joins this turn as his own words:\n`;
+    const rest = JSON.stringify({
+        attachment: {
+            content: [`${head}«${texts.join('»\n«')}»`],
+            type: 'hook_additional_context',
+        },
+        isSidechain: false,
+        timestamp: '2026-11-16T16:45:41.000Z',
+        type: 'attachment',
+        uuid: `u-${serial}`,
+    });
+    return `{"parentUuid":"p-${serial}",${rest.slice(1)}`;
+};
+const waiting = (model: ReturnType<typeof createRowModel>) =>
+    model.rows.filter((row) => row.isWaiting).map((row) => row.text);
+
+describe('a message sent while the thread works waits at the list’s end', () => {
+    test('it shows as his row, waiting, from the moment Claude Code queues it', () => {
+        const model = createRowModel();
+        model.add([mine('start'), reply('working on it')]);
+        model.add([queueOp('enqueue', 'also the tests')]);
+        expect(shown(model)).toEqual([
+            'mine: start',
+            'reply: working on it',
+            'mine: also the tests',
+        ]);
+        expect(waiting(model)).toEqual(['also the tests']);
+    });
+
+    test('rows that land after it go above it: it stays last', () => {
+        const model = createRowModel();
+        model.add([mine('start'), queueOp('enqueue', 'also the tests')]);
+        model.add([reply('still working'), tool('Bash')]);
+        expect(shown(model).at(-1)).toBe('mine: also the tests');
+        expect(shown(model)).toHaveLength(4);
+    });
+
+    test('a reply that grows under a waiting row still grows its own row', () => {
+        const model = createRowModel();
+        model.add([reply('one', 'msg-a'), queueOp('enqueue', 'wait')]);
+        model.add([reply('two', 'msg-a')]);
+        expect(shown(model)).toEqual(['reply: one\n\ntwo', 'mine: wait']);
+    });
+
+    test('once a tool round takes it, its transcript row replaces it', () => {
+        const model = createRowModel();
+        model.add([mine('start'), queueOp('enqueue', 'also the tests')]);
+        const { removed } = model.add([
+            queueOp('remove', 'also the tests'),
+            mine('also the tests'),
+        ]);
+        expect(removed).toBe(1);
+        expect(shown(model)).toEqual(['mine: start', 'mine: also the tests']);
+        expect(waiting(model)).toEqual([]);
+    });
+
+    test('a turn’s end takes his oldest waiting message first', () => {
+        const model = createRowModel();
+        model.add([
+            queueOp('enqueue', 'first'),
+            queueOp('enqueue', 'second', '2026-11-16T16:45:50.000Z'),
+            queueOp('dequeue'),
+        ]);
+        expect(waiting(model)).toEqual(['second']);
+    });
+
+    test('pulled back out of Claude’s prompt, it leaves', () => {
+        const model = createRowModel();
+        model.add([queueOp('enqueue', 'never mind')]);
+        model.add([queueOp('popAll', 'never mind')]);
+        expect(model.rows).toHaveLength(0);
+    });
+
+    test('a task notice or another thread’s message in the queue is no row of his', () => {
+        const model = createRowModel();
+        model.add([
+            queueOp('enqueue', '<task-notification>done</task-notification>'),
+            queueOp('enqueue'),
+        ]);
+        expect(model.rows).toHaveLength(0);
+    });
+
+    test('a waiting row that stays keeps its object, and only a new one is reported changed', () => {
+        const model = createRowModel();
+        model.add([queueOp('enqueue', 'first')]);
+        const [first] = model.rows;
+        const { changed } = model.add([
+            queueOp('enqueue', 'second', '2026-11-16T16:45:50.000Z'),
+        ]);
+        expect(model.rows[0]).toBe(first);
+        expect(changed).toEqual([model.rows[1]?.id]);
+    });
+
+    test('two waiting messages with the same words are two rows', () => {
+        const model = createRowModel();
+        model.add([queueOp('enqueue', 'go'), queueOp('enqueue', 'go')]);
+        expect(new Set(model.rows.map((row) => row.id)).size).toBe(2);
+    });
+
+    test('clear forgets what waited', () => {
+        const model = createRowModel();
+        model.add([queueOp('enqueue', 'first')]);
+        model.clear();
+        model.add([mine('fresh')]);
+        expect(shown(model)).toEqual(['mine: fresh']);
+    });
+});
+
+describe('words that joined a turn are his messages', () => {
+    test('one joined message is one row of his', () => {
+        const model = createRowModel();
+        model.add([reply('working'), joined('also the tests')]);
+        expect(shown(model)).toEqual([
+            'reply: working',
+            'mine: also the tests',
+        ]);
+    });
+
+    test('several joined at once are one row each, in order, each found by its own id', () => {
+        const model = createRowModel();
+        model.add([joined('first', 'second')]);
+        expect(shown(model)).toEqual(['mine: first', 'mine: second']);
+        const [a, b] = model.rows;
+        expect(a?.id).not.toBe(b?.id);
+        expect(model.indexOf(b?.id ?? '')).toBe(1);
+    });
+
+    test('another hook’s context line is no row', () => {
+        const model = createRowModel();
+        const line = joined('x').replace('💨 dima wrote this', 'note:');
+        model.add([line]);
+        expect(model.rows).toHaveLength(0);
     });
 });
