@@ -419,6 +419,22 @@ describe('🍃 second wind auto sits right of 🐦‍🔥 (FRM-625)', () => {
         });
     });
 
+    test('with auto second wind switched off for the fleet, 🍃 is not on the band', () => {
+        expect(
+            bandButtons({ ...base, autoWind: true, hasAutoWind: false }).map(
+                (b) => b.key,
+            ),
+        ).toEqual([
+            'wind',
+            'hot',
+            'waker',
+            'afk',
+            'override',
+            'settings',
+            'board',
+        ]);
+    });
+
     test('with no thread, or before the door answered, it stays greyed', () => {
         expect(leaf({ ...base, autoWind: null }).isLive).toBe(false);
         expect(leaf({ ...base, autoWind: true, thread: null }).isLive).toBe(

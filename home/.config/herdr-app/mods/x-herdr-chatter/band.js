@@ -248,7 +248,7 @@ export const autoWindFlipped = (all, sid, on, at) =>
  * is live; each draws as its emoji alone, its tooltip its name and no press explanation (dima, 23:08). wind, hot, waker
  * and AFK read on from what the stash wrote; a press it has not answered yet shows the state it asked for
  * 🍃 reads its key through the stash's own door (`autoWind`), so it stays greyed until that door answered
- * @param {{ isDeckShown: boolean, override: Override, thread?: ThreadState | null, fleet?: FleetState | null, pending?: Pending, autoWind?: boolean | null }} state
+ * @param {{ isDeckShown: boolean, override: Override, thread?: ThreadState | null, fleet?: FleetState | null, pending?: Pending, autoWind?: boolean | null, hasAutoWind?: boolean }} state
  * @returns {BandButton[]}
  */
 export function bandButtons({
@@ -258,6 +258,7 @@ export function bandButtons({
     fleet = null,
     pending = {},
     autoWind = null,
+    hasAutoWind = true,
 }) {
     const asked = pending.wind;
     const wind = asked ? (asked.on ? 'asked' : null) : (thread?.wind ?? null);
@@ -310,36 +311,46 @@ export function bandButtons({
             word,
         };
     };
-    return [
-        pressable('wind', WIND_EMOJI[wind] ?? '🐦‍🔥', 'wind'),
-        {
-            emoji: '🍃',
-            isLive: Boolean(thread) && autoWind !== null,
-            isOn: autoWind === true,
-            key: 'auto',
-            tip: 'second wind auto',
-            word: 'second wind auto',
-        },
-        pressable('hot', '🔥', 'hot'),
-        pressable('waker', '⏰', 'waker'),
-        pressable('afk', '💨', 'AFK'),
-        pressable('override', '🔓', 'override'),
-        {
-            emoji: '🎛️',
-            isLive: true,
-            key: 'settings',
-            tip: 'settings',
-            word: 'settings',
-        },
-        {
-            emoji: '🚦',
-            isLive: true,
-            isOn: isDeckShown,
-            key: 'board',
-            tip: 'deck',
-            word: 'deck',
-        },
-    ].map((b) => ({ isLive: false, isOn: false, isPending: false, ...b }));
+    return (
+        [
+            pressable('wind', WIND_EMOJI[wind] ?? '🐦‍🔥', 'wind'),
+            {
+                emoji: '🍃',
+                isLive: Boolean(thread) && autoWind !== null,
+                isOn: autoWind === true,
+                key: 'auto',
+                tip: 'second wind auto',
+                word: 'second wind auto',
+            },
+            pressable('hot', '🔥', 'hot'),
+            pressable('waker', '⏰', 'waker'),
+            pressable('afk', '💨', 'AFK'),
+            pressable('override', '🔓', 'override'),
+            {
+                emoji: '🎛️',
+                isLive: true,
+                key: 'settings',
+                tip: 'settings',
+                word: 'settings',
+            },
+            {
+                emoji: '🚦',
+                isLive: true,
+                isOn: isDeckShown,
+                key: 'board',
+                tip: 'deck',
+                word: 'deck',
+            },
+        ]
+            // with auto second wind off for the fleet no thread's 🍃 does anything, so it leaves the band, as on the cc band
+            .filter((b) => hasAutoWind || b.key !== 'auto')
+            .map((b) => ({
+                isLive: false,
+                isOn: false,
+                isPending: false,
+                ...b,
+            }))
+    );
 }
 
 /**

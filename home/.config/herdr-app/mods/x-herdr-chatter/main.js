@@ -7458,6 +7458,8 @@ export default class ClaudeChat extends View {
                         this.autoWinds.get(this.states?.thread?.sid ?? '')
                             ?.on ?? null,
                     fleet: this.states?.fleet,
+                    hasAutoWind:
+                        settingValue('stash.second-wind-auto') !== false,
                     isDeckShown: this.deckShown(),
                     override: this.override ?? { isOn: false },
                     pending: this.pendingNow(),

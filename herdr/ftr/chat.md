@@ -158,6 +158,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a thread's tab in the Chat view, then 🍃 sits right of 🐦‍🔥, its hover «second wind auto», filled while that thread's key reads on
   - when dima clicks it, then the key flips through the door and the button shows what the door reads back; a failed write says so in a toast and the button keeps its state
   - and it stays greyed until the door answered for the shown thread; a press on the cc band shows here within a minute
+  - given «Auto second wind» off in settings, then 🍃 is not on the band at all, as on the cc band
   - decision: the door, never the press file — the spec's line; the key is asked on a new thread and once a minute, since no shelf file carries it yet
 - 🧭 a thread's status sits in the text box's bottom bar (FRM-610)
   - given a thread working, then between + and the band's buttons a spinner, what it does, its turn clock and Stop; at the narrowest pane the line and clock clip, while Stop and the band's buttons stay whole
@@ -215,7 +216,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - makes: the rows `stash.second-wind`, `stash.second-wind-auto`, `stash.wind.notice`, `stash.wind.must` and the three note rows `stash.wind.text.press`, `.notice`, `.at` in `settings.json`, which x-mod-stash reads; herdr is a second editor, the truth stays in the mod
   - given the group, then it holds Second wind and Auto second wind as switches, Notice at and Wind at as steppers
   - when he sets a notice line at or above the wind line, then the row says «🛑 not saved: the notice line (N) must sit below the wind line (M)» and the stored value stays
-  - given its three note boxes (on a 🐦‍🔥 press, at the notice line, at the wind line), then each shows its full text: his row, else the default from `~/.claude/shelf/second-wind-defaults.json`
+  - given its three note boxes, each titled by the path it serves («When I press 🐦‍🔥», «Auto: at the notice line», «Auto: at the wind line, the ask»), then each shows its full text: his row, else the default from `~/.claude/shelf/second-wind-defaults.json`
   - when he edits a note and presses Save, then the text lands in its row; the default saved unchanged leaves the row empty, and «Reset to default» empties it
   - and a note that lost the word `second-wind` or `handoff` gets a red line under its box and still saves
   - decision: a note saves on its button, never per key: a half-typed note must not reach a thread
