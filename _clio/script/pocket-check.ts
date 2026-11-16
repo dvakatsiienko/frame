@@ -639,6 +639,78 @@ export function auditAgainstHead(
     return problems;
 }
 
+// an open item named in a commit newer than its last write: the work landed, the item did not close
+// the pocket hook commits every write, so an item file's last commit time is its newest note
+export function closeOnDone(
+    tasks: Task[],
+    root: string,
+    env: NodeJS.ProcessEnv = process.env,
+): string[] {
+    // no repo around the pocket (a copy under test) means no history to name
+    const git = (args: string[]) => {
+        try {
+            return execFileSync(
+                'git',
+                [
+                    '-c',
+                    'core.quotepath=false',
+                    'log',
+                    '--since=14.days',
+                    ...args,
+                ],
+                {
+                    cwd: root,
+                    encoding: 'utf8',
+                    env,
+                    maxBuffer: 64 * 1024 * 1024,
+                    stdio: ['ignore', 'pipe', 'ignore'],
+                },
+            );
+        } catch {
+            return '';
+        }
+    };
+    // newest first, so the first sighting of a file is its last write
+    const lastWrite = new Map<string, number>();
+    let at = 0;
+    for (const line of git([
+        '--relative',
+        '--name-only',
+        '--format=%ct',
+        '--',
+        'pocket/tasks/',
+    ])
+        .split('\n')
+        .filter(Boolean))
+        if (/^\d+$/.test(line)) at = Number(line);
+        else if (!lastWrite.has(line.replace(/^.*\//, '')))
+            lastWrite.set(line.replace(/^.*\//, ''), at);
+    const commits = git(['--format=%H%x1f%ct%x1f%s%x1f%b%x1e'])
+        .split('\x1e')
+        .map((record) => record.trim().split('\x1f'))
+        .filter(([sha, , subject]) => sha && !subject?.startsWith('📜 pocket:'))
+        .map(([sha = '', ct = '', subject = '', body = '']) => ({
+            at: Number(ct),
+            sha,
+            subject,
+            text: `${subject}\n${body}`,
+        }));
+    return tasks.flatMap(({ name, text }) => {
+        const { id, status, title } = frontmatter(text).scalars;
+        if (!id || status !== 'open' || title?.startsWith('flyway:')) return [];
+        const named = new RegExp(`\\b${id}\\b`, 'i');
+        const since = lastWrite.get(name) ?? 0;
+        const hit = commits.find(
+            (commit) => commit.at > since && named.test(commit.text),
+        );
+        return hit
+            ? [
+                  `${id}: named in ${hit.sha.slice(0, 7)} «${hit.subject}» — close it, or add a note on why it stays`,
+              ]
+            : [];
+    });
+}
+
 // HEAD's pocket as the audit reads it: both name lists, and every blob from one `git cat-file --batch`
 export function headFromGit(
     root: string,
@@ -817,6 +889,7 @@ if (import.meta.main) {
             readDir(join(root, 'pocket', 'archive', 'tasks')),
             head,
         ),
+        ...closeOnDone(tasks, root),
     );
     if (problems.length === 0) {
         console.log(`pocket: ${tasks.length} tasks, all checks green`);
