@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T19:21:00Z'
+updated_date: '2026-11-16T19:22:00Z'
 labels:
   - s
   - clio-main
@@ -937,4 +937,6 @@ PK-349:W1116 (2026-11-16 20:55, dima): auto-second-wind nudge: he thought you ge
 PK-349:W1117 (2026-11-16 20:55, dima): scope: what is the state of the scope now? Save the plan, since they planned a lot and he spent half an hour on what to borrow from herdr. Make sure everything survives and fix the data loss: nothing may be deleted in an unrecoverable state. All tails must be solved (tails*). Which grills are not completed for today, and what other tails remain? Are the chat probes with herdr codie done, or more?
 
 PK-349:W1118 (2026-11-16 20:59, dima): order of work: 1) orbit asks front-loaded, grill after SW (not done yet); 2) lighten linear pass over the three lanes; 3) re-judge the 13 herdr tickets against the new chat, for his tick. Everything else in parallel. Tell him when to probe chat with herdr codie.
+
+PK-349:W1119 (2026-11-16 21:08, dima): let's grill whenever you can, and solve all tails. While solving tails, outline the place for the halt: what would be a good meaningful part to finish and stop, ideally at once for the mods lane and the herdr lane? As for now, they move; only plan when they stop.
 <!-- SECTION:NOTES:END -->
