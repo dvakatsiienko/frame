@@ -414,7 +414,6 @@ async function syncForeground() {
         } catch {}
     }
 }
-syncForeground();
 // "Claude (dev container)" in the + menu (herdr's `new-menu`), switched in the ⚙ popup: on = this
 // computer's programs.json has the entry, so that file is the setting. On by default (the user's
 // choice 2026-11-02; the space's folder must hold the .devcontainer, the standard VS Code layout): the first run
