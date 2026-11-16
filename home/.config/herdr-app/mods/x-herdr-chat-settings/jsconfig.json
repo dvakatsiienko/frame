@@ -1,0 +1,19 @@
+{
+    "// why": [
+        "ours, never herdr's default: herdr writes a jsconfig.json only where none exists.",
+        "`strictNullChecks` is on here, unlike in herdr's default. a view keeps its state in fields",
+        "declared with their type on the class, so nothing reads as possibly-undefined by accident.",
+        "`pnpm herdr-mods:typecheck` checks every mod whose file turns this on, at each commit."
+    ],
+    "compilerOptions": {
+        "checkJs": true,
+        "lib": ["ES2022"],
+        "module": "ES2022",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "noUncheckedIndexedAccess": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "target": "ES2022"
+    }
+}
