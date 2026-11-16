@@ -33,6 +33,7 @@ function run(...args: string[]) {
             CLIO_TAILS_DIR: dir,
             CLIO_TAILS_TODAY: '2026-11-16',
         },
+        timeout: 10_000,
     });
     return { code: out.status, err: out.stderr, out: out.stdout };
 }
