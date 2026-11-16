@@ -39,7 +39,7 @@ export const armList = ['opus', 'fable'] as const;
 export const modeList = ['day', 'systematic', 'decision'] as const;
 
 export const armModels = {
-    fable: 'claude-fable-5-1',
+    fable: 'claude-fable-5-2',
     opus: 'claude-opus-5-5',
 } as const satisfies Record<Arm, string>;
 
