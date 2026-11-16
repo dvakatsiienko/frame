@@ -18,5 +18,5 @@ Adopted from Dima's inbox ask, option b of two he approved: **announce-always, g
 
 - **add → read the whole file → groom** (`x:author-memory` § how it is written); the report names what got cut, or why nothing could be
 - **a line enters a skill only** when it holds for every lane, no guard or test can enforce it, and it has no home yet; a one-lane stumble stays in its retro, an enforceable one becomes a guard or a test
-- **per-lane retros are paused** (dima, 2026-11-07: «Each retro produces more stuff to do, so currently we are creating more work than we solve»): one weekly retro card, at most 3 lines become work, the rest die (`clio:boot`); a file already filed waits for it
+- **per-lane retros are paused** (dima, 2026-11-07: «Each retro produces more stuff to do, so currently we are creating more work than we solve»): one `weekly-retro` card at the Tuesday boot, at most 3 lines become work, the rest die (`clio:boot`); a file already filed waits for it
 - **at most 5 memory proposals per flush** reach dima; the rest print as counts
