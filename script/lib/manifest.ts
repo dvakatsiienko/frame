@@ -62,6 +62,7 @@ export const noLink = new Map<string, keyof typeof noLinkReasons>([
     ['.config/herdr-app/mods/AGENTS.md', 'readInRepo'],
     ['.config/herdr-app/mods/x-herdr-deck', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-agents', 'landedByCopy'],
+    ['.config/herdr-app/mods/x-herdr-chat', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-chatter', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-chatter-header', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-status', 'landedByCopy'],
