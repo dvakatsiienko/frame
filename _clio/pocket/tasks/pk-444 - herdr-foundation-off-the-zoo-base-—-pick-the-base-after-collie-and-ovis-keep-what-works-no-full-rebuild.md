@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T15:30:00Z'
+updated_date: '2026-11-16T15:42:00Z'
 labels:
   - m
 dependencies: []
@@ -273,4 +273,11 @@ PK-444:W116 (2026-11-16 17:17, dima): ok proceed efficiently as your propose. i 
 
 PK-444:W117 (2026-11-16 17:25, dima): BTW: is herdr codie lane moves via properly written spec? i worry about chaotic moves we do now. i want his plan properly specced and well structured and synced with glide
 raw drop (2026-11-16, dima, herdr-typed): BTW: is herdr codie lane moves via properly written spec? i worry about chaotic moves we do now. i want his plan properly specced and well structured and synced with glide
+
+PK-444:W118 (2026-11-16 17:38, dima): egg basket ui: "wow i like egg basket ui MUCH better. AB SS for your look." (A/B screenshots of the look, asked of the herdr lane)
+PK-444:W119 (2026-11-16 17:38, dima): ctx meters in band: ask codie to polish it, it currently looks off, make it pretty and beautiful.
+raw drop (2026-11-16 17:38, dima, herdr-typed): wow i like egg basket ui MUCH better. AB SS for your look.
+what off: ctx meters in band (ask codie to polish it, it currently looks off, make it pretty and beautfiul. i now switch back to my m
+/Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794843417547.png
+/Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794843430906.png
 <!-- SECTION:NOTES:END -->

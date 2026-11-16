@@ -4,7 +4,7 @@ title: 'mess hunt: a subagent card instead of the skill? weigh it'
 status: open
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T15:38:00Z'
+updated_date: '2026-11-16T15:44:00Z'
 labels:
   - s
 dependencies: []
@@ -36,4 +36,6 @@ PK-441:W5 (2026-11-16 14:46, dima): my request about the herdr new explore surfa
 
 PK-441:W6 (2026-11-16 17:36, dima): mess hunt as a card: shape, grill, implement in place.
 PK-441:W7 (2026-11-16 17:36, dima): mess hunt flush: is the herdr mess hunt plan still valid and relevant? when to revisit: after egg basket is merged as main layout and migration is finished?
+
+17:44 dima 17:44 on the herdr mess hunt's fix list: «let's review after egg-basket moves to my iTrout» (his main layout, «itrout» for brevity; «and we have a rename task btw»): no split now, no fix from that list before the swap; re-read it then, so nothing is paid twice
 <!-- SECTION:NOTES:END -->
