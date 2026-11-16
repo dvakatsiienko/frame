@@ -1,10 +1,10 @@
 ---
 id: PK-438
 title: 'oladki recipe: finish it in obsidian from the cc thread transcript'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-16T12:09:00Z'
-updated_date: '2026-11-16T12:14:00Z'
+updated_date: '2026-11-16T13:00:00Z'
 labels:
   - xs
 dependencies: []
@@ -31,4 +31,8 @@ PK-438:W3 (2026-11-16 14:05, dima): do not resume it, its cache is cold. stop pu
 PK-438:W4 (2026-11-16 14:05, dima): instead, read its transcript and finish the recipe in obsidian.
 
 raw drop (2026-11-16 14:05, dima): 5. yesterday night i started «💻 cc» thread asking for oladki recipe. it stopped at almost last step, by folding my steer about cream oladki version. it saved a draft and stopped. the last cut is there /Users/dima/frame/_clio/oladki-draft.md. do not resume it - its cache is cold. stop put. instead - read its transcript and finish the recipe in obsidian.
+
+close: 15:00 — the note cooking/pan – оладки.md was already whole (the cream section landed before the thread's limit); the empty draft trashed on his o3 tick
+
+close: PK-438:W1 done (the cc thread found and named), PK-438:W2 done (the draft read: empty), PK-438:W3 done (not resumed; its transcript read), PK-438:W4 done (the recipe is whole in obsidian, cream section after milk)
 <!-- SECTION:NOTES:END -->
