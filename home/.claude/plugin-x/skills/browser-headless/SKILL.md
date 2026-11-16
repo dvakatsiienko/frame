@@ -55,6 +55,17 @@ caps), so a drag-and-drop view needs its own checks for those.
 - 🚫 no playwright/puppeteer for a check — by decision: ~700 ms cold start, a pinned browser cache,
   nothing the verbs above miss (an app may ship one for its own output, as atelier's shots do). A flaky element wants `wait <sel>` then the action, never a script.
 
+## the fleet Chrome — any page behind a sign-in (macroscope billing)
+
+a second Chrome with its own profile and debug port; it pops no approval dialog and never takes dima's focus. `--auto-connect` to his own Chrome is no longer used.
+
+```bash
+curl -sf http://127.0.0.1:9333/json/version || open -g -na "Google Chrome" --args --remote-debugging-port=9333 --user-data-dir="$HOME/.local/state/fleet-chrome" --no-first-run --no-default-browser-check
+agent-browser --cdp 9333 <verb>
+```
+
+- the `curl` says whether it is up; a sign-in there is dima's hand, once per site, kept by the profile
+
 ## hazards — measured on a chart app, 2026-09-03
 
 - **`press <key>` reaches every window-level key handler, not only the focused element** — inside a
