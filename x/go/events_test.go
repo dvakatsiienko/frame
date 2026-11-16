@@ -103,7 +103,7 @@ func TestEventsFoldCountsOneIDOncePerKind(t *testing.T) {
 	line := func(kind string) string {
 		return fmt.Sprintf(`{"v":1,"at":"2026-11-16T10:00:00.000+02:00","kind":%q,"sid":"a","id":"turn-7"}`, kind) + "\n"
 	}
-	got := eventsFold([]byte(line("park.end")+line("wake.turn")+line("park.end")), "2026-11-16", nil)
+	got := eventsFold([]byte(line("park.end")+line("wake.turn")+line("park.end")), "2026-11-16", nil, nil)
 	if got.Events != 2 || got.Kinds["park.end"].N != 1 || got.Kinds["wake.turn"].N != 1 {
 		t.Errorf("one turn id under two kinds counts %d events, want one a kind", got.Events)
 	}
@@ -295,7 +295,7 @@ func TestEventsFoldSkipsAndCountsALineThatDoesNotParseAlone(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			got := eventsFold([]byte(good+"\n"+c.line+"\n"), "2026-11-16", nil)
+			got := eventsFold([]byte(good+"\n"+c.line+"\n"), "2026-11-16", nil, nil)
 			if got.Events != 1 || got.Skipped != 1 || got.Lines != 2 {
 				t.Errorf("events %d skipped %d lines %d, want 1 1 2", got.Events, got.Skipped, got.Lines)
 			}
@@ -351,7 +351,7 @@ func TestEventsFoldAddsNoTimeForAParkLineOutOfOrder(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			thread := eventsFold([]byte(c.lines), "2026-11-16", nil).Threads["a"]
+			thread := eventsFold([]byte(c.lines), "2026-11-16", nil, nil).Threads["a"]
 			if thread.ParkedS != c.want || (thread.ParkOpenAt != "") != c.open {
 				t.Errorf("parked %d s, open %q; want %d s, open %v", thread.ParkedS, thread.ParkOpenAt, c.want, c.open)
 			}
@@ -484,5 +484,56 @@ func TestEventsTodayAndDayReadOnlyTheThreadsAsked(t *testing.T) {
 				t.Errorf("ping.sent counts %v over %d threads, want %v: %s", n, len(threads), c.want, got.stdout)
 			}
 		})
+	}
+}
+
+func TestEventsParkAcrossMidnightCountsOnBothDays(t *testing.T) {
+	t.Parallel()
+	late := eventsAt(23, 50)
+	yesterday := late.Format(eventsDay)
+	cases := []struct {
+		name      string
+		end       time.Duration
+		read      time.Duration
+		wantFirst float64
+		wantToday float64
+	}{
+		{"ended ten minutes into the next day", 20 * time.Minute, 40 * time.Minute, 600, 600},
+		{"still open an hour into the next day", 0, 70 * time.Minute, 600, 3600},
+		{"still open two days on, a day with no file between", 0, 48*time.Hour + 40*time.Minute, 600, 1800},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir := filepath.Join(t.TempDir(), "events")
+			eventsRun(t, dir, late, "log", "park.start", "sid=night", "id=turn-1")
+			if c.end > 0 {
+				eventsRun(t, dir, late.Add(c.end), "log", "park.end", "sid=night", "id=turn-2")
+			}
+			now := late.Add(c.read)
+			if parked := parkedOf(t, eventsRun(t, dir, now, "day", yesterday), "night"); parked != c.wantFirst {
+				t.Errorf("the day the park opened counts %v s, want %v: to its last second", parked, c.wantFirst)
+			}
+			if parked := parkedOf(t, eventsRun(t, dir, now, "today"), "night"); parked != c.wantToday {
+				t.Errorf("today counts %v s, want %v: from midnight", parked, c.wantToday)
+			}
+			eventsRun(t, dir, now, "log", "hot.ping", "sid=other", "id=ping-1")
+			if parked := parkedOf(t, eventsRun(t, dir, now, "today"), "night"); parked != c.wantToday {
+				t.Errorf("after a later event grew the day file, today counts %v s, want %v", parked, c.wantToday)
+			}
+			if parked := parkedOf(t, eventsRun(t, dir, now, "day", now.Format(eventsDay)), "night"); parked != c.wantToday {
+				t.Errorf("events day of today counts %v s, want %v", parked, c.wantToday)
+			}
+		})
+	}
+}
+
+func TestEventsTodaySumsTheFailedLogsModsReport(t *testing.T) {
+	t.Parallel()
+	dir, at := filepath.Join(t.TempDir(), "events"), eventsAt(12, 0)
+	eventsRun(t, dir, at, "log", "log.failed", "sid=a", "id=stash:1", "n=3")
+	eventsRun(t, dir, at, "log", "log.failed", "sid=b", "id=guard:1", "n=2")
+	if got := eventsRun(t, dir, at, "today"); got.data["failed"] != 5.0 {
+		t.Errorf("two reports of 3 and 2 failed logs read %v, want 5", got.data["failed"])
 	}
 }

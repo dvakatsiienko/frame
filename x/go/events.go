@@ -28,6 +28,8 @@ const (
 	eventsSlugCap  = 48
 	eventsAtLayout = "2006-01-02T15:04:05.000Z07:00"
 	eventsDay      = "2006-01-02"
+	// how many earlier day files a day reads for a park still open at its first second
+	eventsCarryDays = 7
 )
 
 var (
@@ -200,12 +202,14 @@ type eventsSnapshot struct {
 	Failed  int                         `json:"failed"`
 	Kinds   map[string]*eventsKindCount `json:"kinds"`
 	Threads map[string]*eventsThread    `json:"threads"`
+	// the parks open at the day's first second, read once when the day's first snapshot is built
+	Carry map[string]string `json:"carry,omitempty"`
 }
 
 // a pure fold of a day's lines: the first line of an id counts, a line that does not parse alone is skipped and counted;
-// `only` keeps the events of those threads
-func eventsFold(raw []byte, day string, only []string) *eventsSnapshot {
-	snapshot := &eventsSnapshot{V: eventsVersion, Day: day, Bytes: int64(len(raw)), Kinds: map[string]*eventsKindCount{}, Threads: map[string]*eventsThread{}}
+// `only` keeps the events of those threads, `carry` the parks earlier days left open (a thread's id to its start's stamp)
+func eventsFold(raw []byte, day string, only []string, carry map[string]string) *eventsSnapshot {
+	snapshot := &eventsSnapshot{V: eventsVersion, Day: day, Bytes: int64(len(raw)), Kinds: map[string]*eventsKindCount{}, Threads: map[string]*eventsThread{}, Carry: carry}
 	seen, parks := map[string]bool{}, map[string][]parkLine{}
 	for text := range bytes.SplitSeq(raw, []byte("\n")) {
 		if len(bytes.TrimSpace(text)) == 0 {
@@ -267,6 +271,18 @@ func eventsFold(raw []byte, day string, only []string) *eventsSnapshot {
 			}
 		}
 	}
+	// a park an earlier day left open is this day's from its first second: its end here counts from midnight
+	dayStart, _ := time.ParseInLocation(eventsDay, day, time.Local)
+	for sid, stamp := range carry {
+		at, err := time.Parse(eventsAtLayout, stamp)
+		if err != nil || len(only) > 0 && !slices.Contains(only, sid) {
+			continue
+		}
+		parks[sid] = append(parks[sid], parkLine{at, stamp, true})
+		if snapshot.Threads[sid] == nil {
+			snapshot.Threads[sid] = &eventsThread{Kinds: map[string]int{}}
+		}
+	}
 	// two writers can append against their stamps' order, so a thread's parks pair by stamp, never by line
 	for sid, lines := range parks {
 		slices.SortStableFunc(lines, func(a, b parkLine) int { return a.at.Compare(b.at) })
@@ -277,7 +293,7 @@ func eventsFold(raw []byte, day string, only []string) *eventsSnapshot {
 			case line.isStart && open == nil:
 				open = &line
 			case !line.isStart && open != nil:
-				thread.ParkedS += int64(line.at.Sub(open.at).Seconds())
+				thread.ParkedS += int64(line.at.Sub(laterOf(open.at, dayStart)).Seconds())
 				open = nil
 			}
 		}
@@ -286,6 +302,36 @@ func eventsFold(raw []byte, day string, only []string) *eventsSnapshot {
 		}
 	}
 	return snapshot
+}
+
+func laterOf(a, b time.Time) time.Time {
+	if a.After(b) {
+		return a
+	}
+	return b
+}
+
+// the parks open at a day's first second: each thread's last park line in the newest earlier day file that holds one,
+// a week back at most, kept when it is a start
+func eventsCarry(dir, day string) map[string]string {
+	start, err := time.ParseInLocation(eventsDay, day, time.Local)
+	if err != nil {
+		return nil
+	}
+	carry, settled := map[string]string{}, map[string]bool{}
+	for back := 1; back <= eventsCarryDays; back++ {
+		raw, _ := eventsRead(eventsDayFile(dir, start.AddDate(0, 0, -back).Format(eventsDay)))
+		for sid, thread := range eventsFold(raw, "", nil, nil).Threads {
+			if settled[sid] || thread.Kinds["park.start"]+thread.Kinds["park.end"] == 0 {
+				continue
+			}
+			settled[sid] = true
+			if thread.ParkOpenAt != "" {
+				carry[sid] = thread.ParkOpenAt
+			}
+		}
+	}
+	return carry
 }
 
 type parkLine struct {
@@ -324,7 +370,11 @@ func eventsRebuild(dir, day string) (*eventsSnapshot, error) {
 			return &kept, nil
 		}
 	}
-	snapshot := eventsFold(raw, day, nil)
+	carry := kept.Carry
+	if kept.V != eventsVersion || kept.Day != day {
+		carry = eventsCarry(dir, day)
+	}
+	snapshot := eventsFold(raw, day, nil, carry)
 	encoded, err := json.Marshal(snapshot)
 	if err != nil {
 		return nil, err
@@ -379,17 +429,20 @@ func eventsShow(r *Run, day string, now time.Time, flags Flags, isToday bool) (a
 		if err != nil {
 			return nil, &Fail{Msg: "the day file was not read: " + err.Error(), Next: "ls -la " + quote(dir)}
 		}
-		snapshot = eventsFold(raw, day, only)
+		snapshot = eventsFold(raw, day, only, eventsCarry(dir, day))
 	}
-	until := now
-	if start, err := time.ParseInLocation(eventsDay, day, time.Local); err == nil && start.AddDate(0, 0, 1).Before(now) {
-		until = start.AddDate(0, 0, 1)
+	until, dayStart := now, now
+	if start, err := time.ParseInLocation(eventsDay, day, time.Local); err == nil {
+		dayStart = start
+		if start.AddDate(0, 0, 1).Before(now) {
+			until = start.AddDate(0, 0, 1)
+		}
 	}
 	threads := map[string]any{}
 	for sid, thread := range snapshot.Threads {
 		parked := thread.ParkedS
 		open, err := time.Parse(eventsAtLayout, thread.ParkOpenAt)
-		if err == nil && until.After(open) {
+		if open = laterOf(open, dayStart); err == nil && until.After(open) {
 			parked += int64(until.Sub(open).Seconds())
 		}
 		threads[sid] = map[string]any{"kinds": thread.Kinds, "n": thread.N, "park_open": err == nil, "parked_s": parked}

@@ -843,7 +843,7 @@
   - decision: no mod calls it yet; the call sites are the ticket's second piece
 - ⬜ `x events today` and `x events day <yyyy-mm-dd>` print a day's counts per kind and per thread (FRM-639)
   - given a day's lines, then each kind prints its count, split per value of every word field (`wind.taken` by `mod` and by `dima`), and each thread (`sid`) its count per kind
-  - given `park.start` and `park.end` lines of one thread, then its parked time is the sum of the pairs, paired by stamp, never by line order; a park still open counts up to now, or to the end of a day that is over; an end with no start and a second start before an end add no time
+  - given `park.start` and `park.end` lines of one thread, then its parked time is the sum of the pairs, paired by stamp, never by line order; a park still open counts up to now, or to the end of a day that is over; a park an earlier day left open (its start within a week) counts on each later day from midnight, with or without a line of its own that day; an end with no start and a second start before an end add no time
   - given `log.failed` lines, then `failed` is the sum of their `n`; a line that does not parse alone is skipped and counted in `skipped`
   - given `today.json` built on another day, or a day file larger than the size the snapshot records, then `events today` rebuilds it first; `events day` folds the day's lines and writes nothing
   - given `--sid <id>` (comma-joined or repeated for several, the wings), then only those threads' events are counted, folded from the day's lines; a thread with no event prints empty counts
