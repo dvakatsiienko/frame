@@ -17,6 +17,7 @@ import {
     checking,
     closeOverlay,
     exec,
+    hc,
     home,
     props,
     readTextFile,
@@ -31,8 +32,10 @@ import { createDrafts } from './draft.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { createPlace } from './place.js';
+import { sendArgs } from './queued.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
+import { addressIn, submitted } from './send.js';
 import { transcriptPath } from './thread.js';
 import { typedMarkdown } from './typed.js';
 
@@ -134,6 +137,10 @@ export default class Chat extends View {
     /** the quill: herdr draws its text itself, so a key typed in it draws nothing of ours @type {import('gpui-base').TextareaState | null} */
     box = null;
     drafts = createDrafts(localStorage);
+    /** where a message to the shown thread goes: its herdr address @type {string | null} */
+    address = null;
+    /** why his last message did not go, said over the quill until his next one does @type {string | null} */
+    unsent = null;
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
     wake = () => {};
@@ -146,6 +153,9 @@ export default class Chat extends View {
         const box = TextareaState.new({});
         box.set_auto_grow(1, 8);
         box.on('change', () => this.drafts.keep(this.file, box.value()));
+        box.on('submit', (event, cx) =>
+            this.submit(box, event.shift === true, cx),
+        );
         this.box = box;
         // a check draws one frame and must read no thread
         if (checking()) return;
@@ -226,9 +236,17 @@ export default class Chat extends View {
                     .text_color(t.muted)
                     .child(this.error ?? this.emptyLine()),
             );
-        return this.file && this.box
-            ? root.child(this.quill(this.box, t))
-            : root;
+        if (!this.file || !this.box) return root;
+        if (this.unsent)
+            root.child(
+                div()
+                    .px(32)
+                    .pb(6)
+                    .text_size(12)
+                    .text_color(t.muted)
+                    .child(this.unsent),
+            );
+        return root.child(this.quill(this.box, t));
     }
 
     /**
@@ -558,6 +576,8 @@ export default class Chat extends View {
         this.heights.clear();
         this.reader = null;
         this.file = null;
+        this.address = null;
+        this.unsent = null;
         this.showDraft();
         this.error = null;
         this.isRead = false;
@@ -578,6 +598,15 @@ export default class Chat extends View {
             this.file = file;
             this.showDraft();
             cx.notify();
+            const claude = await exec('ps', [
+                'eww',
+                '-o',
+                'command=',
+                '-p',
+                String(pid),
+            ]);
+            if (pid !== this.pid) return;
+            this.address = addressIn(claude.stdout);
             const reader = createReader(doorTo(file));
             this.reader = reader;
             const dir = file.slice(0, file.lastIndexOf('/'));
@@ -631,6 +660,44 @@ export default class Chat extends View {
         this.error = null;
         if (this.model.add(lines).changed.length || isRestart || hadError)
             cx.notify();
+    }
+
+    /**
+     * Enter in the quill: his text goes to the thread shown, as its Claude's next prompt, or waits in its queue while
+     * it works. a message that did not go comes back to the quill
+     * @param {import('gpui-base').TextareaState} box
+     * @param {boolean} isShift
+     * @param {Context} cx
+     */
+    submit(box, isShift, cx) {
+        const { box: after, text } = submitted(box.value(), isShift);
+        if (after === null) return;
+        const { address, file } = this;
+        if (text && !address) {
+            box.set_value(text);
+            this.unsent = 'This thread does not run in herdr: nothing was sent';
+            cx.notify();
+            return;
+        }
+        box.set_value(after);
+        if (!text || !address) return;
+        cx.spawn(async (cx) => {
+            const sent = await hc(sendArgs(address, text)).catch(
+                (/** @type {unknown} */ error) => ({
+                    code: 1,
+                    stderr: String(error),
+                }),
+            );
+            if (this.file !== file) return;
+            const hadNote = this.unsent !== null;
+            this.unsent =
+                sent.code === 0
+                    ? null
+                    : `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`;
+            // his words come back unless he has typed on
+            if (sent.code !== 0 && !box.value()) box.set_value(text);
+            if (hadNote || this.unsent) cx.notify();
+        });
     }
 
     /** the quill holds the shown thread's draft, the caret after it; no thread, an empty quill */
