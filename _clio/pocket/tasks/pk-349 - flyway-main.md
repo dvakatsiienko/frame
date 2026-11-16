@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T20:35:00Z'
+updated_date: '2026-11-16T20:42:00Z'
 labels:
   - s
   - clio-main
@@ -973,4 +973,9 @@ PK-349:W1134 (2026-11-16 22:01, dima): refresh the mods lane glide.
 
 PK-349:W1135 (2026-11-16 22:31, dima): it is getting late. Run /clio:wind-down for both lanes, with a 1h budget.
 PK-349:W1136 (2026-11-16 22:31, dima): hunt the tails: do one more round of tails solving, then tell what is pending.
+
+PK-349:W1137 (2026-11-16 22:40, dima): you were switched from Fable 5.2 medium to Opus 5.5 medium, because he reached 100% Fable usage. He used 1 reset, 2 left.
+PK-349:W1138 (2026-11-16 22:40, dima): from now on, no Fable 5.2 unless he says so.
+PK-349:W1139 (2026-11-16 22:40, dima): proceed with a plan. He now goes to switch everyone else from Fable to Opus.
+PK-349:W1140 (2026-11-16 22:40, dima, herdr-typed): tell him if he missed someone in the switch from Fable 5.2 to Opus.
 <!-- SECTION:NOTES:END -->
