@@ -25,42 +25,62 @@ describe('the thread a message goes to is the one its Claude runs in', () => {
 
 describe('Enter acts on what he typed, Shift+Enter keeps writing', () => {
     test('Enter is a click on send, with the text as it was before Enter’s line break', () => {
-        expect(submitted('ship it\n', 'ship it', {})).toEqual({
+        expect(submitted('ship it\n', ['ship it'], {})).toEqual({
             act: 'click',
+            caret: 7,
             text: 'ship it',
         });
     });
 
     test('cmd+Enter sends now', () => {
-        expect(submitted('ship it\n', 'ship it', { secondary: true }).act).toBe(
-            'push',
-        );
+        expect(
+            submitted('ship it\n', ['ship it'], { secondary: true }).act,
+        ).toBe('push');
     });
 
     test('Enter with the caret inside the text sends the text unbroken', () => {
-        expect(submitted('ship\n it', 'ship it', {}).text).toBe('ship it');
+        expect(submitted('ship\n it', ['ship it'], {}).text).toBe('ship it');
+    });
+
+    test('the break is found whether or not its own change was seen before the submit', () => {
+        expect(submitted('ship\n it', ['ship\n it', 'ship it'], {}).text).toBe(
+            'ship it',
+        );
+        expect(submitted('ship\n it', ['ship it', 'ship i'], {}).text).toBe(
+            'ship it',
+        );
+    });
+
+    test('his caret stays where he pressed Enter', () => {
+        expect(submitted('ship\n it', ['ship it'], {}).caret).toBe(4);
+        expect(submitted('\nship it', ['ship it'], {}).caret).toBe(0);
+        expect(submitted('  ship\n it', ['  ship it'], {}).caret).toBe(4);
     });
 
     test('a message of several lines goes whole', () => {
-        expect(submitted('one\n\ntwo\n', 'one\n\ntwo', {}).text).toBe(
+        expect(submitted('one\n\ntwo\n', ['one\n\ntwo'], {}).text).toBe(
             'one\n\ntwo',
         );
     });
 
     test('with no change seen before it, Enter still drops its own line break', () => {
-        expect(submitted('pasted\n', '', {}).text).toBe('pasted');
+        expect(submitted('pasted\n', [''], {}).text).toBe('pasted');
     });
 
     test('Shift+Enter does nothing and leaves the quill as typed', () => {
-        expect(submitted('one\n', 'one', { shift: true })).toEqual({
+        expect(submitted('one\n', ['one'], { shift: true })).toEqual({
             act: null,
+            caret: 0,
             text: null,
         });
     });
 
     test('Enter in an empty quill does nothing and leaves no blank line', () => {
-        expect(submitted('\n', '', {})).toEqual({ act: null, text: '' });
-        expect(submitted('  \n\n', '  \n', {})).toEqual({
+        expect(submitted('\n', [''], {})).toMatchObject({
+            act: null,
+            text: '',
+        });
+        expect(submitted('  \n\n', ['  \n'], {})).toMatchObject({
             act: null,
             text: '',
         });

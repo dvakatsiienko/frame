@@ -46,7 +46,7 @@ import { createPlace } from './place.js';
 import { sendArgs } from './queued.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
-import { addressIn, submitted } from './send.js';
+import { SUBMIT_REST_MS, addressIn, submitted } from './send.js';
 import { transcriptPath } from './thread.js';
 import { typedMarkdown } from './typed.js';
 
@@ -222,6 +222,19 @@ export default class Chat extends View {
     lastKeyAt = 0;
     /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
     typedNow = '';
+    lastSubmitAt = 0;
+    // [DEBUG-typing] what the send path did, in order, for the look
+    /** @type {unknown[]} */
+    events = [];
+
+    /** @param {string} what @param {unknown} [more] */
+    log(what, more) {
+        this.events = [
+            ...this.events.slice(-150),
+            [Date.now() % 100000, what, more],
+        ];
+        localStorage.setItem('debug:events', JSON.stringify(this.events));
+    }
     typedBefore = '';
     /** one more at each thread opened: a state watch of an earlier opening ends */
     stateTurn = 0;
@@ -237,9 +250,13 @@ export default class Chat extends View {
         const box = TextareaState.new({});
         box.set_auto_grow(1, 8);
         box.on('change', (_event, cx) => {
-            this.typedBefore = this.typedNow;
-            this.typedNow = box.value();
-            this.drafts.keep(this.file, this.typedNow);
+            const now = box.value();
+            // a change told twice is one change
+            if (now !== this.typedNow) {
+                this.typedBefore = this.typedNow;
+                this.typedNow = now;
+            }
+            this.drafts.keep(this.file, now);
             // [DEBUG-typing]
             this.typing.keys += 1;
             this.typing.lastKeyAt = Date.now();
@@ -247,14 +264,24 @@ export default class Chat extends View {
             this.typedUnderMark(box, cx);
         });
         box.on('submit', (event, cx) => {
-            const { act, text } = submitted(
+            const { act, caret, text } = submitted(
                 box.value(),
-                this.typedBefore,
+                [this.typedNow, this.typedBefore],
                 event,
             );
             if (text === null) return;
-            // Enter's line break leaves; the words stay until they are sent or a turn takes them
+            // Enter's line break leaves, his caret stays; the words stay until they are sent or a turn takes them
             box.set_value(text);
+            box.set_selected_range({ end: caret, start: caret });
+            const at = Date.now();
+            const isRepeat = at - this.lastSubmitAt < SUBMIT_REST_MS;
+            this.lastSubmitAt = at;
+            this.log('submit', {
+                act,
+                isRepeat,
+                was: [this.typedNow, this.typedBefore],
+            });
+            if (isRepeat) return;
             if (act === 'push') this.push(box, cx);
             else if (act === 'click') this.click(box, cx);
         });
@@ -694,10 +721,17 @@ export default class Chat extends View {
                             .px(12)
                             .py(8)
                             .rounded(12)
-                            // a waiting message is his bubble, paler until a turn takes it
-                            .bg(tint(t.accent, row.isWaiting ? '1a' : '33'))
+                            // a waiting message is an outline of his bubble, its words dim, until a turn takes it
+                            .bg(
+                                row.isWaiting
+                                    ? t.background
+                                    : tint(t.accent, '33'),
+                            )
                             .border(1)
-                            .border_color(tint(t.accent, '4d'))
+                            .border_color(
+                                tint(t.accent, row.isWaiting ? '99' : '4d'),
+                            )
+                            .when(row.isWaiting, (el) => el.opacity(0.6))
                             .child(
                                 TextView.markdown(
                                     id,
@@ -923,6 +957,7 @@ export default class Chat extends View {
         cx.notify();
         cx.spawn(async (cx) => {
             const { act, note } = await answer;
+            this.log('clicked', { act, note });
             if (this.file !== file) return;
             if (act === 'push') return this.send(box, text, note, cx);
             // a mark no turn takes in a minute comes off by itself
@@ -947,6 +982,7 @@ export default class Chat extends View {
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
         cx.spawn(async (cx) => {
             const why = await this.magic.release(file, this.joins);
+            this.log('push', { why });
             if (this.file !== file) return;
             if (why) return this.say(why, cx);
             this.send(box, text, null, cx);
@@ -973,6 +1009,7 @@ export default class Chat extends View {
                     stderr: String(error),
                 }),
             );
+            this.log('sent', { address, code: sent.code });
             if (sent.code === 0) return;
             // his words come back unless he has typed on: to the quill, or to the draft of a thread he left
             if (this.file !== file) {
@@ -1026,6 +1063,7 @@ export default class Chat extends View {
         // an empty quill has nothing to send: no hold, no disc
         if (!box.value().trim() || !this.file) return;
         this.cancelHold();
+        this.log('press', this.timing);
         this.hold = holdSend(null, 'press', Date.now(), this.timing).hold;
         this.holdTask = cx.timer.every(33, (later) =>
             this.holdStep(box, 'tick', later),
@@ -1039,6 +1077,7 @@ export default class Chat extends View {
      */
     holdStep(box, event, cx) {
         if (!this.hold) return;
+        if (event !== 'tick') this.log('hold', event);
         // a window that lost focus cuts the hold, as a pointer that left the button does
         const step = holdSend(
             this.hold,
@@ -1049,6 +1088,8 @@ export default class Chat extends View {
         this.hold = step.hold;
         this.holdFill = step.hold ? step.fill : 0;
         if (!step.hold) this.cancelHold();
+        if (step.act || !step.hold)
+            this.log('holdEnd', { act: step.act, fill: step.fill });
         if (step.act === 'push') this.push(box, cx);
         else if (step.act === 'join') this.click(box, cx);
         cx.notify();
