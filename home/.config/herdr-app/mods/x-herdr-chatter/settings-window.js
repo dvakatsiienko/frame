@@ -7,7 +7,8 @@ import { closeOverlay } from 'herdr';
 import { pages, rowWords } from './settings-model.js';
 import { noteHint, noteStored } from './settings-store.js';
 
-export const SETTINGS_WINDOW = { height: 680, width: 960 };
+// a share of herdr's window, so it fills most of any size (dima, 2026-11-16 22:56: «just buy more space for me»)
+export const SETTINGS_WINDOW = { height: 0.88, width: 0.86 };
 
 /** @typedef {import('./settings-model.js').Row} Row */
 /** @typedef {import('./settings-model.js').Page} Page */
