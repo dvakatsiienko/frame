@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T21:42:00Z'
+updated_date: '2026-11-16T22:04:00Z'
 labels:
   - s
   - clio-main
@@ -1009,4 +1009,6 @@ PK-349:W1159 (2026-11-16 23:23, dima): brake test: passed live. so will it work 
 PK-349:W1160 (2026-11-16 23:23, dima, o141 steer): yes, but memory-pass is not weekly, I think, for now. I have too many chores. weekly-retro is ok, let's have it. when? let's have in on tuesday, at the boot. you start it on boot each tuesday and print interesting results along with the boot message, as well as action-item proposals.
 
 PK-349:W1161 (2026-11-16 23:30, dima, herdr-typed): tick 1: I ran the command from my home folder, which has no GitHub repo, so x refused it before anything happened. That still used up the tick. where are you now? I thought you were in frame/_clio, which is a git repo.
+
+PK-349:W1162 (2026-11-17 00:02, dima): tell me where you are. do you see the SW notice?
 <!-- SECTION:NOTES:END -->
