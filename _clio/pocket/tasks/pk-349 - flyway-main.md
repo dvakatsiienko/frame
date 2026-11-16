@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T17:42:00Z'
+updated_date: '2026-11-16T18:26:00Z'
 labels:
   - s
   - clio-main
@@ -897,4 +897,20 @@ PK-349:W1065 (2026-11-16 19:23, dima): ❓ what is o79?
 19:41 his 19:39 lines (answered 19:42, the tails list):
 PK-349:W1066 (2026-11-16 19:39, dima): stray can do just in case fyi.
 PK-349:W1067 (2026-11-16 19:39, dima): after i reopen herdr (after cleanup) — what tails are left? what not solved so far?
+
+20:26 his 19:48–20:17 lines, groomed by helga:
+PK-349:W1068 (2026-11-16 19:48, dima): agent-idea label: you, written without the hyphen.
+PK-349:W1069 (2026-11-16 19:48, dima): crew-pm board redraw: helper-lite?
+PK-349:W1070 (2026-11-16 19:48, dima): one audit red and the crow-wake ✨ wisp: do it; is it stray?
+PK-349:W1071 (2026-11-16 19:48, dima): two test gates over their time budget: solve.
+PK-349:W1072 (2026-11-16 19:48, dima): fleet-Chrome boot: why is it needed; keep it if useful; explain what it does.
+PK-349:W1073 (2026-11-16 19:48, dima): herdr-typed text reaching the prompts file (new hook): what is it, how to solve; rescued by hand all day.
+PK-349:W1074 (2026-11-16 19:48, dima): 22+ unsigned tickets: why did they drift to unsigned when yesterday everything was signed? Solve all for a pristine picture in the plan.
+PK-349:W1075 (2026-11-16 19:48, dima): grill 3 (lighten linear) and grill 4 (orbit asks front-loaded): solve today.
+PK-349:W1096 (2026-11-16 19:52, dima): 21 unsigned Todo tickets: do not read and sort them now; do not unfold someday.
+PK-349:W1097 (2026-11-16 19:54, dima): someday is not needed: only tails that are not someday; do everything else that is closer.
+PK-349:W1098 (2026-11-16 19:54, dima): everything pristine and signed only in Herdr Lane, cli Lane and Mods Lane for now.
+PK-349:W1099 (2026-11-16 19:54, dima): proceed; do not process long-shelved someday (out of scope).
+PK-349:W1100 (2026-11-16 19:55, dima): go grills whenever you have a free spot.
+PK-349:W1101 (2026-11-16 20:17, dima): orbit fix: dima's one-word note; ask what it means before acting.
 <!-- SECTION:NOTES:END -->

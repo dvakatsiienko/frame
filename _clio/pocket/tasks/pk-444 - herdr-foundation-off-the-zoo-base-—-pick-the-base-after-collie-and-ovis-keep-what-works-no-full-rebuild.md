@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T17:27:00Z'
+updated_date: '2026-11-16T18:26:00Z'
 labels:
   - m
 dependencies: []
@@ -342,4 +342,9 @@ PK-444:W142 (2026-11-16 18:50, dima, herdr-typed): tell when and how first, then
 PK-444:W143 (2026-11-16 18:50, dima, herdr-typed): seems like the typing test passed? confirm if it is.
 
 19:27 PK-444:W138 moved to FRM-638:W53 (the fps line lives in the ticket now)
+
+20:26 his 19:48–20:17 lines, groomed by helga:
+PK-444:W164 (2026-11-16 19:55, dima): herdr codie: proceeds? (dima is in herdr now).
+PK-444:W165 (2026-11-16 20:17, dima): herdr unsigned: designer interview later; ux revamp umbrella and auto second wind reviewed after grills.
+PK-444:W166 (2026-11-16 20:17, dima): herdr scope drifted after leaving zoo; borrows auto-resolve some plans. Card per ticket with evidence, then one list: absorbed, unchanged, dead.
 <!-- SECTION:NOTES:END -->
