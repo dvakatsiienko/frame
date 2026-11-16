@@ -111,8 +111,8 @@ function join(upper, lower) {
 export function createRowModel() {
     /** @type {Row[]} */
     const rows = [];
-    /** @type {Set<string>} */
-    const seen = new Set();
+    /** the row each transcript line was folded into, by the line's uuid @type {Map<string, Row>} */
+    const rowOfLine = new Map();
 
     /**
      * @param {string[]} lines
@@ -123,13 +123,14 @@ export function createRowModel() {
         /** @type {Set<string>} */
         const changed = new Set();
         for (const next of lines.flatMap(rowsOf)) {
-            if (seen.has(next.id)) continue;
-            seen.add(next.id);
+            if (rowOfLine.has(next.id)) continue;
             const last = into.at(-1);
             if (last && join(last, next)) {
+                rowOfLine.set(next.id, last);
                 changed.add(last.id);
                 continue;
             }
+            rowOfLine.set(next.id, next);
             into.push(next);
             changed.add(next.id);
         }
@@ -160,6 +161,8 @@ export function createRowModel() {
                         version: first.version + 1,
                     });
                     page.pop();
+                    for (const [line, row] of rowOfLine)
+                        if (row === last) rowOfLine.set(line, first);
                 }
             }
             rows.unshift(...page);
@@ -167,7 +170,12 @@ export function createRowModel() {
         },
         clear() {
             rows.length = 0;
-            seen.clear();
+            rowOfLine.clear();
+        },
+        /** where the row holding the transcript line `id` sits, -1 when it is not loaded @param {string} id */
+        indexOf(id) {
+            const row = rowOfLine.get(id);
+            return row ? rows.indexOf(row) : -1;
         },
         /** the thread's rows, oldest first; the same array and the same row objects across updates */
         rows: /** @type {readonly Row[]} */ (rows),

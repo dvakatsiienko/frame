@@ -230,6 +230,21 @@ describe('earlier pages and a restart', () => {
         expect(model.rows[0]).toBe(run);
     });
 
+    test('a row is found by any transcript line it folds, wherever the loaded tail began', () => {
+        const lines = [tool('Read'), tool('Bash'), tool('Bash'), mine('ok')];
+        const ids = lines.map((line) => JSON.parse(line).uuid as string);
+        const whole = createRowModel();
+        whole.add(lines);
+        // the same thread, its tail cut inside the run of tool calls
+        const tail = createRowModel();
+        tail.add(lines.slice(2));
+        expect(ids.map((id) => whole.indexOf(id))).toEqual([0, 0, 0, 1]);
+        expect(ids.map((id) => tail.indexOf(id))).toEqual([-1, -1, 0, 1]);
+        tail.addEarlier(lines.slice(0, 2));
+        expect(ids.map((id) => tail.indexOf(id))).toEqual([0, 0, 0, 1]);
+        expect(whole.indexOf('gone')).toBe(-1);
+    });
+
     test('clear empties the thread for a file read again from its start', () => {
         const model = createRowModel();
         const line = mine('again');

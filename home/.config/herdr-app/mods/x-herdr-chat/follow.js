@@ -48,6 +48,75 @@ export function placeIndex(rows, placeId) {
 }
 
 /**
+ * how far into the first message on screen he is after a wheel step: the step is the list's movement in px (measured
+ * by hand, 2026-11-16), kept inside the message, since the drawn range says which message is first
+ * @param {number} offset px of the first message hidden above the view
+ * @param {number} dy the wheel's delta, positive up
+ * @param {number} height the first message's height
+ */
+export function offsetAfterWheel(offset, dy, height) {
+    return Math.min(Math.max(0, height - 1), Math.max(0, offset - dy));
+}
+
+/**
+ * the same, once the list drew a range: a new first message below the old one starts at its top, one above it is
+ * entered at its bottom, and the same one keeps what the wheel counted. this is where the wheel's drift ends
+ * @param {number} offset
+ * @param {number} wasStart the first row drawn before
+ * @param {number} start the first row drawn now
+ * @param {number[]} sizes
+ */
+export function offsetAfterRange(offset, wasStart, start, sizes) {
+    if (start > wasStart) return 0;
+    if (start < wasStart) return Math.max(0, (sizes[start] ?? 1) - 1);
+    return offset;
+}
+
+/**
+ * the list can only bring an item's top to the view's top, so a place inside a message is restored by cutting that
+ * message into two items at the place: the second one's top is the place
+ * @param {readonly { id: string }[]} rows
+ * @param {number[]} sizes every row's height, in order
+ * @param {{ id: string, offset: number }} place the message and the px of it above the view
+ * @returns {{ sizes: number[], seekAt: number, cut: { at: number, offset: number } | null }} the sizes to hand the
+ *   list, the item to bring to the top, and the row that was cut
+ */
+export function splitAtPlace(rows, sizes, place) {
+    const at = placeIndex(rows, place.id);
+    const height = sizes[at] ?? 0;
+    const offset = Math.round(place.offset);
+    if (at < 0 || offset <= 0 || offset >= height)
+        return { cut: null, seekAt: at, sizes };
+    return {
+        cut: { at, offset },
+        seekAt: at + 1,
+        sizes: [
+            ...sizes.slice(0, at),
+            offset,
+            height - offset,
+            ...sizes.slice(at + 1),
+        ],
+    };
+}
+
+/**
+ * a saved place read back: the message and the px of it above the view
+ * @param {string | null | undefined} text what the place was saved as
+ * @returns {{ id: string, offset: number } | null}
+ */
+export function placeOf(text) {
+    if (!text) return null;
+    if (!text.startsWith('{')) return { id: text, offset: 0 };
+    try {
+        const { id, offset } = JSON.parse(text);
+        if (typeof id !== 'string' || !id) return null;
+        return { id, offset: typeof offset === 'number' ? offset : 0 };
+    } catch {
+        return null;
+    }
+}
+
+/**
  * the rows a dragged selection scrolls the list by: none while the pointer is inside the list, one row up or down
  * once it reaches an edge
  * @param {number} y the pointer, in the list's coordinates

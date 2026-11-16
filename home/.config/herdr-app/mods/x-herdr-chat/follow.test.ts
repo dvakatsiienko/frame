@@ -4,7 +4,11 @@ import {
     edgeScrollStep,
     followAfterWheel,
     isAtTrueEnd,
+    offsetAfterRange,
+    offsetAfterWheel,
     placeIndex,
+    placeOf,
+    splitAtPlace,
 } from './follow.js';
 
 describe('the wheel only flips following the newest', () => {
@@ -104,4 +108,91 @@ describe('a dragged text selection scrolls the list only at its edge', () => {
         expect(edgeScrollStep(500, list)).toBe(1);
         expect(edgeScrollStep(540, list)).toBe(1);
     });
+});
+
+describe('how far into the first message on screen he has read', () => {
+    test('a wheel step moves it by the step, and never out of the message', () => {
+        expect(offsetAfterWheel(170, -30, 400)).toBe(200);
+        expect(offsetAfterWheel(170, 30, 400)).toBe(140);
+        expect(offsetAfterWheel(10, 50, 400)).toBe(0);
+        expect(offsetAfterWheel(390, -50, 400)).toBe(399);
+    });
+
+    test('a message scrolled fully away leaves the next one at its top', () => {
+        expect(
+            offsetAfterRange(399, 4, 5, [100, 100, 100, 100, 400, 250]),
+        ).toBe(0);
+    });
+
+    test('scrolling back up into a message enters it at its bottom', () => {
+        expect(offsetAfterRange(0, 5, 4, [100, 100, 100, 100, 400, 250])).toBe(
+            399,
+        );
+    });
+
+    test('the same first message keeps what the wheel counted', () => {
+        expect(
+            offsetAfterRange(170, 4, 4, [100, 100, 100, 100, 400, 250]),
+        ).toBe(170);
+    });
+});
+
+describe('a place inside a message is restored to the pixel, not to the message top', () => {
+    const rows = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+    const sizes = [100, 400, 250];
+
+    test('the message is cut in two list items at the place, and the second is what goes to the top', () => {
+        expect(splitAtPlace(rows, sizes, { id: 'b', offset: 170 })).toEqual({
+            cut: { at: 1, offset: 170 },
+            seekAt: 2,
+            sizes: [100, 170, 230, 250],
+        });
+    });
+
+    test('170 pt into a 400 pt message: the rows above the view sum to its top plus 170, never to its top', () => {
+        const split = splitAtPlace(rows, sizes, { id: 'b', offset: 170 });
+        const above = split.sizes
+            .slice(0, split.seekAt)
+            .reduce((sum, size) => sum + size, 0);
+        expect(above).toBe(100 + 170);
+    });
+
+    test('a place at a message top, or past its end, needs no cut', () => {
+        expect(splitAtPlace(rows, sizes, { id: 'b', offset: 0 })).toEqual({
+            cut: null,
+            seekAt: 1,
+            sizes,
+        });
+        expect(
+            splitAtPlace(rows, sizes, { id: 'b', offset: 400 }).cut,
+        ).toBeNull();
+    });
+
+    test('a message that is not loaded is nowhere', () => {
+        expect(splitAtPlace(rows, sizes, { id: 'gone', offset: 50 })).toEqual({
+            cut: null,
+            seekAt: -1,
+            sizes,
+        });
+    });
+});
+
+describe('the saved place is read back as a message and the px into it', () => {
+    test('what was saved comes back whole', () => {
+        expect(placeOf(JSON.stringify({ id: 'b', offset: 170 }))).toEqual({
+            id: 'b',
+            offset: 170,
+        });
+    });
+
+    test('a place saved as a bare message id opens at that message top', () => {
+        expect(placeOf('u-123')).toEqual({ id: 'u-123', offset: 0 });
+    });
+
+    test.each([null, '', '{"offset":3}', '{"id":7}', '{broken'])(
+        '%j is no place',
+        (text) => {
+            expect(placeOf(text)).toBeNull();
+        },
+    );
 });

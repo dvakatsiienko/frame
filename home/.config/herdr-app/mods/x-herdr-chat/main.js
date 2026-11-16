@@ -24,7 +24,15 @@ import {
 } from 'herdr';
 
 import { splitBlocks } from './blocks.js';
-import { followAfterWheel, isAtTrueEnd, placeIndex } from './follow.js';
+import {
+    followAfterWheel,
+    isAtTrueEnd,
+    offsetAfterRange,
+    offsetAfterWheel,
+    placeIndex,
+    placeOf,
+    splitAtPlace,
+} from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
@@ -116,8 +124,15 @@ export default class Chat extends View {
     viewH = 0;
     /** bumped when the width changes: rich text laid out for the old width is never reused */
     widthGen = 0;
-    /** a message to bring to the top once it is among the rows @type {string | null} */
-    seek = null;
+    /** the px of the first message on screen that sit above the view */
+    offset = 0;
+    /**
+     * a place held to the pixel: its message is drawn as two list items cut at the place, since the list can only bring
+     * an item's top to the view's top. it lasts until his next scroll step @type {{ id: string, offset: number } | null}
+     */
+    cut = null;
+    /** the held place is asked of the list before the next frame */
+    isSeekDue = false;
     /** the first message on screen while he reads mid-thread; none while following @type {string | null} */
     place = null;
     /** until then a drawn range is his own scroll, and names his place */
@@ -245,20 +260,40 @@ export default class Chat extends View {
         );
         this.sizes = sizes;
         const pre = `w${this.widthGen}-`;
+        const split = this.cut
+            ? splitAtPlace(rows, sizes, this.cut)
+            : { cut: null, seekAt: -1, sizes };
+        const cutAt = split.cut?.at ?? -1;
+        const cutOffset = split.cut?.offset ?? 0;
         // his place, or the newest: asked of the list before the frame that draws these rows
-        const seekAt = placeIndex(rows, this.seek);
-        if (seekAt >= 0) {
-            this.scroll.scroll_to_item(seekAt, 'top');
-            this.seek = null;
+        if (this.isSeekDue && this.cut) {
+            this.isSeekDue = false;
+            if (split.seekAt >= 0)
+                this.scroll.scroll_to_item(split.seekAt, 'top');
+            else this.cut = null;
         } else if (this.follow) this.scroll.scroll_to_bottom();
+        /** the row a list item draws: past a cut row every item sits one further @param {number} i */
+        const rowAt = (i) => (cutAt >= 0 && i > cutAt ? i - 1 : i);
         const list = v_virtual_list(
             'chat-rows',
-            rows.length,
-            sizes,
-            (i) => rows[i]?.id ?? `gone-${i}`,
-            (range, cx) => {
+            split.sizes.length,
+            split.sizes,
+            (i) => {
+                const id = rows[rowAt(i)]?.id ?? `gone-${i}`;
+                if (i === cutAt) return `${id}#above`;
+                return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
+            },
+            (drawn, cx) => {
+                const range = {
+                    end: rowAt(Math.max(drawn.start, drawn.end - 1)) + 1,
+                    start: rowAt(drawn.start),
+                };
+                const wasStart = this.range?.start ?? range.start;
                 this.range = range;
-                if (!this.follow && Date.now() < this.wheelUntil) {
+                // the list drew from the cut: he is exactly at his place
+                if (cutAt >= 0 && drawn.start === cutAt + 1)
+                    this.offset = cutOffset;
+                else if (!this.follow && Date.now() < this.wheelUntil) {
                     // a step down that reached the end follows again, read from the range that step drew
                     if (
                         this.isLastWheelDown &&
@@ -267,15 +302,44 @@ export default class Chat extends View {
                         this.follow = true;
                         this.place = null;
                         cx.notify();
-                    } else this.place = rows[range.start]?.id ?? null;
+                    } else {
+                        this.place = rows[range.start]?.id ?? null;
+                        this.offset = offsetAfterRange(
+                            this.offset,
+                            wasStart,
+                            range.start,
+                            sizes,
+                        );
+                    }
                 }
-                return rows.slice(range.start, range.end).map((row, j) =>
-                    div()
+                const items = [];
+                for (let i = drawn.start; i < drawn.end; i++) {
+                    const row = rows[rowAt(i)];
+                    if (!row) continue;
+                    const box = div()
                         .relative()
                         .w_full()
-                        .h(sizes[range.start + j] ?? 1)
-                        .child(this.row(row, t, pre)),
-                );
+                        .h(split.sizes[i] ?? 1);
+                    if (i === cutAt)
+                        items.push(
+                            box
+                                .overflow_hidden()
+                                .child(this.row(row, t, `${pre}a-`)),
+                        );
+                    else if (cutAt >= 0 && i === cutAt + 1)
+                        items.push(
+                            box.overflow_hidden().child(
+                                div()
+                                    .absolute()
+                                    .top(-cutOffset)
+                                    .left(0)
+                                    .w_full()
+                                    .child(this.row(row, t, `${pre}b-`)),
+                            ),
+                        );
+                    else items.push(box.child(this.row(row, t, pre)));
+                }
+                return items;
             },
         )
             .track_scroll(this.scroll)
@@ -294,7 +358,7 @@ export default class Chat extends View {
                     this.widthGen += 1;
                     this.heights.clear();
                     // every height is guessed again: his place is brought back as the real ones arrive
-                    this.seek = this.place;
+                    this.holdPlace();
                 }
                 this.viewH = height;
                 cx.notify();
@@ -309,6 +373,16 @@ export default class Chat extends View {
                 );
                 this.wheelUntil = Date.now() + WHEEL_REST_MS;
                 if (dy) this.isLastWheelDown = dy < 0;
+                // his own step ends a held place: the two halves are one row again, at the same height
+                const hadCut = this.cut !== null;
+                this.cut = null;
+                this.isSeekDue = false;
+                this.offset = offsetAfterWheel(
+                    this.offset,
+                    dy,
+                    this.sizes[this.range?.start ?? -1] ?? 1,
+                );
+                if (hadCut) cx.notify();
                 if (this.follow) this.place = null;
                 this.savePlaceSoon(cx);
                 if (this.follow !== was) cx.notify();
@@ -378,8 +452,8 @@ export default class Chat extends View {
                                     // a row above his place changed height: the place is brought back to the top,
                                     // or the list, which keeps its offset in px, would slide it away
                                     const at = placeIndex(rows, this.place);
-                                    if (at > 0 && rows.indexOf(row) < at)
-                                        this.seek = this.place;
+                                    if (at >= 0 && rows.indexOf(row) <= at)
+                                        this.holdPlace();
                                     cx.notify();
                                 })
                                 .child(this.row(row, t, pre)),
@@ -497,7 +571,9 @@ export default class Chat extends View {
         this.isRead = false;
         this.follow = true;
         this.place = null;
-        this.seek = null;
+        this.cut = null;
+        this.isSeekDue = false;
+        this.offset = 0;
         this.range = null;
         cx.notify();
         if (pid === null) return;
@@ -580,12 +656,13 @@ export default class Chat extends View {
      * @param {Context} cx
      */
     async restorePlace(reader, cx) {
-        const placeId =
-            this.file && localStorage.getItem(this.placeKey(this.file));
-        if (!placeId) return;
+        const place = placeOf(
+            this.file && localStorage.getItem(this.placeKey(this.file)),
+        );
+        if (!place) return;
         for (
             let page = 0;
-            placeIndex(this.model.rows, placeId) < 0 &&
+            this.model.indexOf(place.id) < 0 &&
             reader.hasEarlier() &&
             page < PLACE_PAGES;
             page++
@@ -594,11 +671,21 @@ export default class Chat extends View {
             if (this.reader !== reader) return;
             this.model.addEarlier(lines);
         }
-        if (placeIndex(this.model.rows, placeId) < 0) return;
+        // the saved line may sit inside a folded row: the place is that row
+        const row = this.model.rows[this.model.indexOf(place.id)];
+        if (!row) return;
         this.follow = false;
-        this.place = placeId;
-        this.seek = placeId;
+        this.place = row.id;
+        this.offset = place.offset;
+        this.holdPlace();
         cx.notify();
+    }
+
+    /** his place is asked of the list again, to the pixel: after a reload, a new width, or a height that changed above it */
+    holdPlace() {
+        if (!this.place || this.follow) return;
+        this.cut = { id: this.place, offset: this.offset };
+        this.isSeekDue = true;
     }
 
     /**
@@ -614,7 +701,11 @@ export default class Chat extends View {
             if (this.lastWheelAt !== at || !file || this.file !== file) return;
             if (this.follow || !this.place)
                 localStorage.removeItem(this.placeKey(file));
-            else localStorage.setItem(this.placeKey(file), this.place);
+            else
+                localStorage.setItem(
+                    this.placeKey(file),
+                    JSON.stringify({ id: this.place, offset: this.offset }),
+                );
         });
     }
 }
