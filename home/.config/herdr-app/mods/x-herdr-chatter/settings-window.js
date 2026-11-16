@@ -4,7 +4,7 @@ import { Textarea, h_flex, v_flex } from 'gpui-base';
 import { div } from 'gpui-kit';
 import { closeOverlay } from 'herdr';
 
-import { pages } from './settings-model.js';
+import { pages, rowWords } from './settings-model.js';
 import { noteHint, noteStored } from './settings-store.js';
 
 export const SETTINGS_WINDOW = { height: 500, width: 760 };
@@ -185,10 +185,11 @@ function content(t, w, page) {
 
 /** @param {any} t @param {WindowState} w @param {Row} r @param {number} i */
 function row(t, w, r, i) {
+    const words = rowWords(r, w.values);
     const title = h_flex()
         .gap(8)
         .items_center()
-        .child(div().text_size(13).text_color(t.foreground).child(r.title));
+        .child(div().text_size(13).text_color(t.foreground).child(words.title));
     const label = v_flex()
         .flex_1()
         .min_w(0)
@@ -201,7 +202,7 @@ function row(t, w, r, i) {
                       .text_size(12)
                       .text_color(t.blocked)
                       .child(w.notes[r.key])
-                : div().text_size(12).text_color(t.muted).child(r.why),
+                : div().text_size(12).text_color(t.muted).child(words.why),
         );
     // a list of options reads top to bottom under its title; a single control sits at the right
     const isList = r.control.kind === 'checks' || r.control.kind === 'text';

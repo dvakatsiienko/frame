@@ -216,9 +216,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: the window lives in the chatter: a herdr mod cannot import a sibling mod's file, and only a mod placed at start can write every default (clio, 19:28)
 - ⬜ a «🐦‍🔥 second wind» group on the settings window's Claude Code mods page (FRM-625)
   - makes: the rows `stash.second-wind`, `stash.second-wind-auto`, `stash.wind.notice`, `stash.wind.must` and the three note rows `stash.wind.text.press`, `.notice`, `.at` in `settings.json`, which x-mod-stash reads; herdr is a second editor, the truth stays in the mod
-  - given the group, then it holds Second wind and Auto second wind as switches, Notice at and Wind at as steppers
+  - given the group, then it holds Second wind and Auto second wind as switches, «Heads-up at» and «Second wind at» as steppers, each row with one short line under its title
   - when he sets a notice line at or above the wind line, then the row says «🛑 not saved: the notice line (N) must sit below the wind line (M)» and the stored value stays
-  - given its three note boxes, each titled by the path it serves («When I press 🐦‍🔥», «Auto: at the notice line», «Auto: at the wind line, the ask»), then each shows its full text: his row, else the default from the stash's store `~/.claude/shelf/second-wind.json`
+  - given its three note boxes in the order a thread meets them, each titled by when the thread reads it, with the live number of its line («At 55 % context: the heads-up», «At 65 % context: the must», «When you press 🐦‍🔥»; dima, 2026-11-16 20:51: «a lot of text but tell nothing», he typed into the wrong box), then each shows its full text: his row, else the default from the stash's store `~/.claude/shelf/second-wind.json`
   - when he edits a note and presses Save, then the text lands in its row; the default saved unchanged leaves the row empty, and «Reset to default» empties it
   - and a note that lost the word `second-wind` or `handoff` gets a red line under its box and still saves
   - decision: a note saves on its button, never per key: a half-typed note must not reach a thread

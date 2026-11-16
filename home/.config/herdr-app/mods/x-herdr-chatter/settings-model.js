@@ -131,14 +131,14 @@ export const pages = [
                         default: true,
                         key: 'stash.second-wind',
                         title: 'Second wind',
-                        why: 'a thread can refresh its context onto its own handoff; off, 🐦‍🔥 is gone everywhere',
+                        why: 'Threads can refresh their context. Off: 🐦‍🔥 is gone everywhere.',
                     },
                     {
                         control: { kind: 'toggle' },
                         default: true,
                         key: 'stash.second-wind-auto',
                         title: 'Auto second wind',
-                        why: 'threads are told and asked by themselves at the two lines below; each thread’s 🍃 can still opt out',
+                        why: 'Threads get the two messages below by themselves. A thread’s 🍃 opts it out.',
                     },
                     {
                         control: {
@@ -150,8 +150,8 @@ export const pages = [
                         },
                         default: 55,
                         key: 'stash.wind.notice',
-                        title: 'Notice at',
-                        why: 'how full a thread’s context gets before it hears a second wind is coming',
+                        title: 'Heads-up at',
+                        why: 'How full a thread’s context is when it gets the heads-up.',
                     },
                     {
                         control: {
@@ -163,29 +163,29 @@ export const pages = [
                         },
                         default: 65,
                         key: 'stash.wind.must',
-                        title: 'Wind at',
-                        why: 'how full it gets before the thread is asked for its second wind',
-                    },
-                    {
-                        control: { kind: 'text', needs: WIND_WORDS },
-                        default: '',
-                        key: 'stash.wind.text.press',
-                        title: 'When I press 🐦‍🔥',
-                        why: 'what a thread reads when you press its 🐦‍🔥; the auto path never uses it, and written here the coordinator reads it too',
+                        title: 'Second wind at',
+                        why: 'How full it is when the thread must take its second wind.',
                     },
                     {
                         control: { kind: 'text', needs: WIND_WORDS },
                         default: '',
                         key: 'stash.wind.text.notice',
-                        title: 'Auto: at the notice line',
-                        why: 'what a thread reads by itself when it crosses «Notice at»; {fill} and {wind} become its numbers',
+                        title: 'At {at:stash.wind.notice} % context: the heads-up',
+                        why: 'What the thread reads then. {fill} = its context now, {wind} = the {at:stash.wind.must} % line.',
                     },
                     {
                         control: { kind: 'text', needs: WIND_WORDS },
                         default: '',
                         key: 'stash.wind.text.at',
-                        title: 'Auto: at the wind line, the ask',
-                        why: 'what a thread reads by itself when it crosses «Wind at»; written here, the coordinator reads it too, in place of her own',
+                        title: 'At {at:stash.wind.must} % context: the must',
+                        why: 'What the thread reads then. Clio’s threads read it too.',
+                    },
+                    {
+                        control: { kind: 'text', needs: WIND_WORDS },
+                        default: '',
+                        key: 'stash.wind.text.press',
+                        title: 'When you press 🐦‍🔥',
+                        why: 'What the thread reads then. Clio’s threads read it too.',
                     },
                 ],
             },
@@ -225,3 +225,22 @@ export const pages = [
 export const settingRows = pages.flatMap((p) =>
     p.groups.flatMap((g) => g.rows),
 );
+
+/**
+ * a row's title and one-line why as he reads them: `{at:<key>}` becomes that row's value now, so a title can say
+ * «At 55 % context» and follow its stepper
+ * @param {Row} row
+ * @param {Record<string, unknown>} values the stored values by key
+ * @returns {{ title: string, why: string }}
+ */
+export function rowWords(row, values) {
+    const rows = pages.flatMap((page) => page.groups.flatMap((g) => g.rows));
+    /** @param {string} text */
+    const fill = (text) =>
+        text.replace(/\{at:([\w.-]+)\}/g, (_all, key) =>
+            String(
+                values[key] ?? rows.find((r) => r.key === key)?.default ?? '?',
+            ),
+        );
+    return { title: fill(row.title), why: fill(row.why) };
+}
