@@ -36,12 +36,16 @@ import {
 } from 'herdr';
 
 import {
+    AUTO_WIND_DOOR,
     DECK_BLOCK,
     OVERRIDE_STORE,
     PRESS_DIR,
     PRESS_FILE,
     STATE_DIR,
     THREADS_KEY,
+    autoWind,
+    autoWindAfterRead,
+    autoWindFlipped,
     bandButtons,
     bandOf,
     meterCells,
@@ -123,6 +127,11 @@ const PLACE_PAGES = 8;
 // a meter's cells, as the old chat drew them
 const METER_CELLS = 48;
 const CHIP_SIZE = 26;
+// a 🍃 pressed on the cc band reaches no file herdr watches: the shown thread's key is asked again this often, and a
+// read that failed this soon, never a minute of grey; a door that hangs (a lock, a prompt) ends at its timeout
+const AUTO_WIND_MS = 60 * 1000;
+const AUTO_WIND_RETRY_MS = 10 * 1000;
+const AUTO_WIND_DOOR_MS = 10 * 1000;
 // the picker's label flashes this long once a reply first ran at his pick
 const APPLIED_FLASH_MS = 2000;
 // a pick that shows no change by then says so
@@ -260,6 +269,19 @@ async function appendPress(line) {
     }
 }
 
+/** x-mod-stash's door for a session's 🍃, run in frame where `pnpm mods:set` lives @param {string[]} args */
+async function autoWindDoor(args) {
+    const out = await exec('pnpm', [...AUTO_WIND_DOOR, ...args], {
+        cwd: `${home()}/frame`,
+        timeout: AUTO_WIND_DOOR_MS,
+    });
+    if (out.code !== 0)
+        throw new Error(
+            out.stderr.trim() || out.stdout.trim() || 'mods:set failed',
+        );
+    return out.stdout;
+}
+
 /** whether his layout shows the deck's block; a layout without it reads as shown, so 🚦 offers a hide */
 function isDeckShown() {
     /** @param {any} node @returns {any} */
@@ -385,6 +407,13 @@ export default class Chat extends View {
     isPressWatched = false;
     /** Stop was pressed and the turn still works: a background task Esc cannot stop */
     isStuck = false;
+    /** each thread's 🍃 as the stash's door last read it, by session @type {Map<string, import('./band.js').AutoWind>} */
+    autoWinds = new Map();
+    /** one flip and one read in flight per thread: a click during a read still flips */
+    autoWindFlipping = new Set();
+    autoWindReading = new Set();
+    /** auto second wind on for the fleet: his settings row; off, 🍃 leaves the band */
+    hasAutoWind = true;
     /** the model and effort the shown thread runs at, as its transcript tells them */
     runsAt = NO_RUNS_AT;
     /** Claude's settings.json: the model and effort a session starts on @type {import('./picker.js').ClaudeSettings} */
@@ -651,8 +680,13 @@ export default class Chat extends View {
             now,
         );
         return {
-            // 🍃 joins with its own door (step 84)
-            buttons: bandButtons({ ...state, hasAutoWind: false, pending }),
+            buttons: bandButtons({
+                ...state,
+                autoWind:
+                    this.autoWinds.get(this.bandThread?.sid ?? '')?.on ?? null,
+                hasAutoWind: this.hasAutoWind,
+                pending,
+            }),
             meters: bandOf(shared(THREADS_KEY), this.pid, now),
         };
     }
@@ -664,6 +698,8 @@ export default class Chat extends View {
      */
     ageBand(cx) {
         this.watchPresses(cx);
+        // 🍃 asks a program, so it runs beside the file reads and never holds them
+        cx.spawn((cx) => this.readAutoWind(cx));
         this.pressed = pressesWaiting(
             this.pressed,
             {},
@@ -702,6 +738,65 @@ export default class Chat extends View {
                 JSON.stringify(this.drawnNow(Date.now())) !== this.bandKey
             )
                 cx.notify();
+        });
+    }
+
+    /** the shown thread's 🍃 as the door reads it: asked on a new thread, then every AUTO_WIND_MS @param {Context} cx */
+    async readAutoWind(cx) {
+        const sid = this.bandThread?.sid;
+        if (!sid || !this.hasAutoWind || this.autoWindReading.has(sid)) return;
+        const last = this.autoWinds.get(sid);
+        const wait = last?.on === null ? AUTO_WIND_RETRY_MS : AUTO_WIND_MS;
+        if (last && Date.now() - last.at < wait) return;
+        this.autoWindReading.add(sid);
+        const flips = last?.flips ?? 0;
+        try {
+            /** @type {boolean | null} */
+            let on = null;
+            try {
+                on = await autoWind(autoWindDoor, sid);
+            } catch (error) {
+                console.log(
+                    `second wind auto: the door did not answer: ${error}`,
+                );
+            }
+            this.autoWinds = autoWindAfterRead(
+                this.autoWinds,
+                sid,
+                on,
+                flips,
+                Date.now(),
+            );
+            cx.notify();
+        } finally {
+            this.autoWindReading.delete(sid);
+        }
+    }
+
+    /** 🍃 flips through the stash's door, and shows what the door then reads, never the click's own guess @param {import('./band.js').BandButton} btn @param {Context} cx */
+    flipAutoWind(btn, cx) {
+        const sid = this.bandThread?.sid;
+        if (!sid || this.autoWindFlipping.has(sid)) return;
+        this.autoWindFlipping.add(sid);
+        cx.spawn(async (cx) => {
+            try {
+                const on = await autoWind(autoWindDoor, sid, !btn.isOn);
+                this.autoWinds = autoWindFlipped(
+                    this.autoWinds,
+                    sid,
+                    on,
+                    Date.now(),
+                );
+            } catch (error) {
+                notify({
+                    body: String(error),
+                    level: 'error',
+                    title: 'second wind auto: the flip was not written',
+                });
+            } finally {
+                this.autoWindFlipping.delete(sid);
+            }
+            cx.notify();
         });
     }
 
@@ -1456,6 +1551,10 @@ export default class Chat extends View {
             openOverlay(SETTINGS_OVERLAY);
             return;
         }
+        if (btn.key === 'auto') {
+            this.flipAutoWind(btn, cx);
+            return;
+        }
         const key = /** @type {import('./band.js').PressKey} */ (btn.key);
         if (!['wind', 'hot', 'waker', 'afk', 'override'].includes(key)) return;
         const sid = this.bandThread?.sid ?? null;
@@ -2036,6 +2135,7 @@ export default class Chat extends View {
             ctx: Number(settings?.['chatter.meter.ctx.warn'] ?? 60),
             week: Number(settings?.['chatter.meter.week.warn'] ?? 80),
         };
+        this.hasAutoWind = settings?.['stash.second-wind-auto'] !== false;
         /** @param {string} path */
         const readJson = (path) =>
             readTextFile(path)
@@ -2065,6 +2165,8 @@ export default class Chat extends View {
             ) {
                 this.fleet = fleet;
                 this.bandThread = band.thread;
+                // a thread newly shown asks its 🍃 now, not at the next tick
+                cx.spawn((cx) => this.readAutoWind(cx));
                 cx.notify();
             }
             this.settle(cx);
