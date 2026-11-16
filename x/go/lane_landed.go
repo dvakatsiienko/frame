@@ -1118,7 +1118,8 @@ func treeDirt(tree, main string, selves []string, mergedHead string) string {
 		switch {
 		case !ahead.ok:
 			reasons = append(reasons, "git rev-list failed")
-		case ahead.out != "":
+		// commits on no remote that origin/main holds by a squash are landed: nothing would be lost (PK-404)
+		case ahead.out != "" && !onMain(main, strings.SplitN(ahead.out, "\n", 2)[0]):
 			reasons = append(reasons, plural(len(strings.Split(ahead.out, "\n")), "commit")+" on no remote")
 		}
 	}
