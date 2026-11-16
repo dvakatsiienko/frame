@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T19:27:00Z'
+updated_date: '2026-11-16T19:32:00Z'
 labels:
   - s
 dependencies: []
@@ -77,4 +77,6 @@ PK-439:W14 (2026-11-16 21:17, dima): let's land this grill, then see where we ar
 PK-439:W15 (2026-11-16 21:09, dima, o109 steer): optimize the orbit rebalance with performance in mind. He wants the list to trim the message history, so only efficient moves, and say what each move is.
 
 PK-439:W16 (2026-11-16 21:09, dima, o109 steer): mods orbit settings in herdr: he wants text boxes for orbit like the ones for Second Wind, to steer the orbit text he receives. Can orbit texts be tweaked in SM the same way?
+
+ticket: FRM-640 (21:32): the orbit rebalance and his text boxes moved there; the grill's steer line landed in fleet-mods.md; re-measure reminder 11-23.
 <!-- SECTION:NOTES:END -->
