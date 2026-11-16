@@ -1053,8 +1053,8 @@ func quotesKept(message, msgFile string, paths []string) (string, error) {
 	if raw, _ := os.ReadFile(message); quotesShown.Match(raw) {
 		return "quotes: shown — " + summary[1] + " gone quotes passed", nil
 	}
-	return "", &Fail{Refused: true, Msg: "a quote of dima's changed or went; show him each line, then add «quotes: shown» to the message:\n" + checked.out,
-		Next: "x lane commit " + msgFile + " -- <paths>, its message carrying quotes: shown"}
+	return "", &Fail{Refused: true, Msg: "a quote of dima's changed or went; show him each line, then add a line holding only quotes: shown to the message file:\n" + checked.out,
+		Next: "printf '\\nquotes: shown\\n' >> " + msgFile + " && x lane commit " + msgFile + " -- <paths>"}
 }
 
 // a pnpm or turbo typecheck/test call on a run line; a comment or a `mods:test` never matches

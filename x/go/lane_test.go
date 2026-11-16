@@ -493,6 +493,18 @@ func TestCommitStopsAChangedQuoteOfDimas(t *testing.T) {
 	}
 }
 
+func TestCommitQuoteRefusalNamesTheLineTheCheckAccepts(t *testing.T) {
+	t.Parallel()
+	_, got := quotedRules(t, "📜 rules: reword\n")
+
+	var envelope struct{ Error, Next string }
+	_ = json.Unmarshal([]byte(got.stdout), &envelope)
+
+	if !strings.Contains(envelope.Error, "a line holding only quotes: shown") || !strings.Contains(envelope.Next, `printf '\nquotes: shown\n' >> `) {
+		t.Fatalf("exit %d, want the refusal to name the bare line and its next to print the printf that adds it\n%s", got.code, got.stdout)
+	}
+}
+
 func TestCommitTakesAChangedQuoteOnceShown(t *testing.T) {
 	t.Parallel()
 	dir, got := quotedRules(t, "📜 rules: reword\n\nquotes: shown\n")
