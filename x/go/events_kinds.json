@@ -16,11 +16,8 @@
             "name": "hot.ping"
         },
         {
-            "fields": {
-                "via": { "enum": ["push", "slipstream"] },
-                "while": { "enum": ["idle", "working"] }
-            },
-            "gist": "dima's send from quill, and whether the thread was working at the send",
+            "fields": { "via": { "enum": ["push", "slipstream"] } },
+            "gist": "dima's send from quill",
             "id": "the message id",
             "name": "quill.send"
         },

@@ -35,6 +35,8 @@ var (
 	eventID   = regexp.MustCompile(`^[A-Za-z0-9._:-]{1,96}$`)
 	eventSlug = regexp.MustCompile(`^[a-z0-9._-]+$`)
 	eventInt  = regexp.MustCompile(`^[0-9]{1,7}$`)
+	// a key that is no field name is never echoed: a refusal names only what passed this
+	eventKey = regexp.MustCompile(`^[a-z_]{1,16}$`)
 	// the keys every line carries; a fold never splits a count by them
 	eventCoreKeys = []string{"at", "kind", "sid", "id"}
 )
@@ -111,17 +113,17 @@ func eventLine(args []string, now time.Time) ([]byte, error) {
 	}
 	at := slices.IndexFunc(eventKinds, func(k eventKind) bool { return k.Name == args[0] })
 	if at < 0 {
-		return nil, fmt.Errorf("%q is no event kind", clip(args[0], 16))
+		return nil, fmt.Errorf("the first word is no event kind")
 	}
 	kind := eventKinds[at]
 	given := map[string]string{}
-	for _, pair := range args[1:] {
+	for n, pair := range args[1:] {
 		key, value, found := strings.Cut(pair, "=")
-		if !found || key == "" {
-			return nil, fmt.Errorf("%q is no key=value", clip(pair, 16))
+		if !found || !eventKey.MatchString(key) {
+			return nil, fmt.Errorf("word %d is no key=value", n+2)
 		}
 		if _, twice := given[key]; twice {
-			return nil, fmt.Errorf("%s is given twice", clip(key, 16))
+			return nil, fmt.Errorf("%s is given twice", key)
 		}
 		given[key] = value
 	}
@@ -139,7 +141,7 @@ func eventLine(args []string, now time.Time) ([]byte, error) {
 		}
 		field, known := kind.Fields[key]
 		if !known {
-			return nil, fmt.Errorf("%s takes no field %q", kind.Name, clip(key, 16))
+			return nil, fmt.Errorf("%s takes no field %s", kind.Name, key)
 		}
 		value, err := field.encode(key, given[key])
 		if err != nil {
@@ -158,7 +160,7 @@ func (f eventField) encode(key, value string) (string, error) {
 	switch {
 	case f.Enum != nil:
 		if !slices.Contains(f.Enum, value) {
-			return "", fmt.Errorf("%s is one of %s, not %q", key, strings.Join(f.Enum, ", "), clip(value, 16))
+			return "", fmt.Errorf("%s is one of %s", key, strings.Join(f.Enum, ", "))
 		}
 	case f.Slug:
 		if len(value) > eventsSlugCap || !eventSlug.MatchString(value) {
@@ -167,7 +169,7 @@ func (f eventField) encode(key, value string) (string, error) {
 	default:
 		n, err := strconv.Atoi(value)
 		if !eventInt.MatchString(value) || err != nil || n < *f.Min || n > *f.Max {
-			return "", fmt.Errorf("%s is a whole number from %d to %d, not %q", key, *f.Min, *f.Max, clip(value, 16))
+			return "", fmt.Errorf("%s is a whole number from %d to %d", key, *f.Min, *f.Max)
 		}
 		return strconv.Itoa(n), nil
 	}
@@ -204,7 +206,7 @@ type eventsSnapshot struct {
 // `only` keeps the events of those threads
 func eventsFold(raw []byte, day string, only []string) *eventsSnapshot {
 	snapshot := &eventsSnapshot{V: eventsVersion, Day: day, Bytes: int64(len(raw)), Kinds: map[string]*eventsKindCount{}, Threads: map[string]*eventsThread{}}
-	seen := map[string]bool{}
+	seen, parks := map[string]bool{}, map[string][]parkLine{}
 	for text := range bytes.SplitSeq(raw, []byte("\n")) {
 		if len(bytes.TrimSpace(text)) == 0 {
 			continue
@@ -224,10 +226,11 @@ func eventsFold(raw []byte, day string, only []string) *eventsSnapshot {
 			snapshot.Skipped++
 			continue
 		}
-		if seen[id] || len(only) > 0 && !slices.Contains(only, sid) {
+		// kinds share an origin (a turn id ends one park and starts the next), so an id is unique inside its kind
+		if seen[kind+"\x00"+id] || len(only) > 0 && !slices.Contains(only, sid) {
 			continue
 		}
-		seen[id] = true
+		seen[kind+"\x00"+id] = true
 		snapshot.Events++
 		count := snapshot.Kinds[kind]
 		if count == nil {
@@ -256,22 +259,39 @@ func eventsFold(raw []byte, day string, only []string) *eventsSnapshot {
 		thread.N++
 		thread.Kinds[kind]++
 		switch kind {
-		case "park.start":
-			if thread.ParkOpenAt == "" {
-				thread.ParkOpenAt = stamp
-			}
-		case "park.end":
-			if open, err := time.Parse(eventsAtLayout, thread.ParkOpenAt); err == nil && !at.Before(open) {
-				thread.ParkedS += int64(at.Sub(open).Seconds())
-			}
-			thread.ParkOpenAt = ""
+		case "park.start", "park.end":
+			parks[sid] = append(parks[sid], parkLine{at, stamp, kind == "park.start"})
 		case "log.failed":
 			if n, isNumber := line["n"].(float64); isNumber {
 				snapshot.Failed += int(n)
 			}
 		}
 	}
+	// two writers can append against their stamps' order, so a thread's parks pair by stamp, never by line
+	for sid, lines := range parks {
+		slices.SortStableFunc(lines, func(a, b parkLine) int { return a.at.Compare(b.at) })
+		thread := snapshot.Threads[sid]
+		var open *parkLine
+		for _, line := range lines {
+			switch {
+			case line.isStart && open == nil:
+				open = &line
+			case !line.isStart && open != nil:
+				thread.ParkedS += int64(line.at.Sub(open.at).Seconds())
+				open = nil
+			}
+		}
+		if open != nil {
+			thread.ParkOpenAt = open.stamp
+		}
+	}
 	return snapshot
+}
+
+type parkLine struct {
+	at      time.Time
+	stamp   string
+	isStart bool
 }
 
 func eventsRead(path string) ([]byte, error) {
@@ -299,7 +319,8 @@ func eventsRebuild(dir, day string) (*eventsSnapshot, error) {
 	}
 	var kept eventsSnapshot
 	if old, err := os.ReadFile(eventsSnapshotFile(dir)); err == nil && json.Unmarshal(old, &kept) == nil {
-		if kept.V == eventsVersion && kept.Day == day && kept.Bytes >= int64(len(raw)) {
+		// a writer that took its clock before midnight never puts yesterday back over today's snapshot
+		if kept.V == eventsVersion && (kept.Day > day || kept.Day == day && kept.Bytes >= int64(len(raw))) {
 			return &kept, nil
 		}
 	}
@@ -313,7 +334,8 @@ func eventsRebuild(dir, day string) (*eventsSnapshot, error) {
 		return nil, err
 	}
 	_, err = temp.Write(append(encoded, '\n'))
-	if err = errors.Join(err, temp.Close()); err == nil {
+	// a temp file is born private; every reader of the shelf reads the snapshot
+	if err = errors.Join(err, temp.Chmod(0o644), temp.Close()); err == nil {
 		err = os.Rename(temp.Name(), eventsSnapshotFile(dir))
 	}
 	if err != nil {
@@ -326,19 +348,19 @@ func eventsRebuild(dir, day string) (*eventsSnapshot, error) {
 
 func eventsToday(r *Run, _ []string, flags Flags) (any, error) {
 	now := clock().Local()
-	return eventsShow(r, now.Format(eventsDay), now, flags)
+	return eventsShow(r, now.Format(eventsDay), now, flags, true)
 }
 
 func eventsDayRun(r *Run, args []string, flags Flags) (any, error) {
 	if _, err := time.Parse(eventsDay, args[0]); err != nil {
-		return nil, usageFail(strconv.Quote(clip(args[0], 16))+" is no day, a day reads yyyy-mm-dd", "x events today")
+		return nil, usageFail("the date is no day, a day reads yyyy-mm-dd", "x events today")
 	}
-	return eventsShow(r, args[0], clock().Local(), flags)
+	return eventsShow(r, args[0], clock().Local(), flags, false)
 }
 
-// today reads through the snapshot, so the file the band reads is fresh after any read; another day is folded from its
-// lines, and so is a read of some threads (--sid). an open park counts up to now, or to the end of a day that is over
-func eventsShow(r *Run, day string, now time.Time, flags Flags) (any, error) {
+// `today` reads through the snapshot, so the file the band reads is fresh after it; `day` folds its day's lines and
+// writes nothing, and so does a read of some threads (--sid). an open park counts up to now, or to the end of a day that is over
+func eventsShow(r *Run, day string, now time.Time, flags Flags, isToday bool) (any, error) {
 	dir := eventsDir()
 	if dir == "" {
 		return nil, &Fail{Msg: "no events folder to read", Next: "set X_EVENTS under X_TEST"}
@@ -348,7 +370,7 @@ func eventsShow(r *Run, day string, now time.Time, flags Flags) (any, error) {
 		only = strings.Split(sids, ",")
 	}
 	var snapshot *eventsSnapshot
-	if _, err := os.Stat(dir); err == nil && day == now.Format(eventsDay) && only == nil {
+	if _, err := os.Stat(dir); err == nil && isToday && only == nil {
 		if snapshot, err = eventsRebuild(dir, day); err != nil {
 			return nil, &Fail{Msg: "the snapshot was not rebuilt: " + err.Error(), Next: "ls -la " + quote(dir)}
 		}

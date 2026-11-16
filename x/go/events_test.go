@@ -98,6 +98,17 @@ func TestEventsLogWritesOneLineAndTodayCountsItOnce(t *testing.T) {
 	}
 }
 
+func TestEventsFoldCountsOneIDOncePerKind(t *testing.T) {
+	t.Parallel()
+	line := func(kind string) string {
+		return fmt.Sprintf(`{"v":1,"at":"2026-11-16T10:00:00.000+02:00","kind":%q,"sid":"a","id":"turn-7"}`, kind) + "\n"
+	}
+	got := eventsFold([]byte(line("park.end")+line("wake.turn")+line("park.end")), "2026-11-16", nil)
+	if got.Events != 2 || got.Kinds["park.end"].N != 1 || got.Kinds["wake.turn"].N != 1 {
+		t.Errorf("one turn id under two kinds counts %d events, want one a kind", got.Events)
+	}
+}
+
 func TestEventsLogRefusesWhatTheKindsListDoesNotAllow(t *testing.T) {
 	t.Parallel()
 	ids := []string{"sid=abc", "id=one"}
@@ -106,7 +117,12 @@ func TestEventsLogRefusesWhatTheKindsListDoesNotAllow(t *testing.T) {
 		args  []string
 		names string
 	}{
-		{"a kind outside the registry", append([]string{"wind.blown"}, ids...), "wind.blown"},
+		{"a kind outside the registry", append([]string{"wind.blown"}, ids...), "no event kind"},
+		{"a kind that is his words", append([]string{"please fix it"}, ids...), "no event kind"},
+		{"a bare word that is his words", append([]string{"hot.ping", "please fix it"}, ids...), "word 2 is no key=value"},
+		{"a key that is his words", append([]string{"hot.ping", "please fix it=1"}, ids...), "key=value"},
+		{"an enum value over several lines", append([]string{"wind.taken", "by=please\nfix it\nnow"}, ids...), "dima, mod"},
+		{"a number that is his words", append([]string{"wind.taken", "pct=please fix it"}, ids...), "0 to 100"},
 		{"a field outside the kind's list", append([]string{"hot.ping", "pct=5"}, ids...), "pct"},
 		{"a value outside its enum", append([]string{"wind.taken", "by=clio"}, ids...), "dima, mod"},
 		{"a slug over its cap", append([]string{"guard.refusal", "rule=" + strings.Repeat("a", 49)}, ids...), "rule"},
@@ -134,7 +150,7 @@ func TestEventsLogRefusesWhatTheKindsListDoesNotAllow(t *testing.T) {
 			if !strings.Contains(got.stdout, c.names) {
 				t.Errorf("the refusal does not name %q: %s", c.names, got.stdout)
 			}
-			if strings.Contains(got.stdout, "rm -rf") || strings.Contains(got.stdout, "please fix it") {
+			if strings.Contains(got.stdout, "rm -rf") || strings.Contains(got.stdout, "fix it") || strings.Contains(got.stdout, "wind.blown") {
 				t.Errorf("the refusal echoes the refused text: %s", got.stdout)
 			}
 			if lines := eventsLines(t, dir, at); lines != nil {
@@ -329,6 +345,8 @@ func TestEventsFoldAddsNoTimeForAParkLineOutOfOrder(t *testing.T) {
 		{"a second start before an end keeps the first", line("park.start", "1", 0) + line("park.start", "2", 3) + line("park.end", "3", 5), 300, false},
 		{"an end resent under its id counts once", line("park.start", "1", 0) + line("park.end", "2", 5) + line("park.end", "2", 9), 300, false},
 		{"a start with no end stays open", line("park.start", "1", 0), 0, true},
+		{"an end appended before its start pairs by stamp", line("park.start", "1", 0) + line("park.start", "3", 9) + line("park.end", "2", 5), 300, true},
+		{"a turn id ends one park and starts the next", line("park.start", "t1", 0) + line("park.end", "t2", 5) + line("park.start", "t2", 6) + line("park.end", "t3", 8), 420, false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -362,6 +380,43 @@ func TestEventsDayIsTheRotation(t *testing.T) {
 	}
 	if got := eventsRun(t, dir, early, "today"); kindCount(t, got, "ask.open") != 1 || got.data["events"] != 1.0 {
 		t.Errorf("events today shows %s", got.stdout)
+	}
+}
+
+func TestEventsDayOfTodayWritesNothing(t *testing.T) {
+	t.Parallel()
+	dir, at := filepath.Join(t.TempDir(), "events"), eventsAt(12, 0)
+	eventsRun(t, dir, at, "log", "hot.ping", "sid=a", "id=1")
+	planted := []byte(`{"v":1,"day":"planted"}`)
+	if err := os.WriteFile(eventsSnapshotFile(dir), planted, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if got := eventsRun(t, dir, at, "day", at.Format(eventsDay)); got.data["events"] != 1.0 {
+		t.Fatalf("events day of today shows %s", got.stdout)
+	}
+	if now, _ := os.ReadFile(eventsSnapshotFile(dir)); !bytes.Equal(now, planted) {
+		t.Errorf("events day rewrote the snapshot: %s", now)
+	}
+}
+
+func TestEventsRebuildOfAnEarlierDayKeepsTodaysSnapshot(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	line := `{"v":1,"at":"2026-11-16T23:59:59.900+02:00","kind":"hot.ping","sid":"a","id":"1"}` + "\n"
+	if err := os.WriteFile(eventsDayFile(dir, "2026-11-16"), []byte(line), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := eventsRebuild(dir, "2026-11-17"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := eventsRebuild(dir, "2026-11-16"); err != nil {
+		t.Fatal(err)
+	}
+	if got := eventsSnapshotOf(t, dir); got.Day != "2026-11-17" {
+		t.Errorf("a writer that took its clock before midnight put %s back over the next day's snapshot", got.Day)
+	}
+	if info, err := os.Stat(eventsSnapshotFile(dir)); err != nil || info.Mode().Perm() != 0o644 {
+		t.Errorf("the snapshot's mode is %v, want 0644 so every reader of the shelf reads it", info.Mode().Perm())
 	}
 }
 

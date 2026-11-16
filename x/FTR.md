@@ -835,15 +835,15 @@
 - ⬜ `x events log <kind> sid=… id=… [key=value…]` appends one event line and rebuilds the snapshot (FRM-639)
   - makes: one line in `~/.claude/shelf/events/<local day>.jsonl`, `{v, at, kind, sid, id, …the kind's fields}`, and `~/.claude/shelf/events/today.json`
   - given a kind from the kinds list with its `sid` and `id`, when it runs, then the day file gains exactly one line under 4 KB that parses alone, written in one append; the stamp and the day are x's clock, the local calendar day
-  - given a kind outside the kinds list, a field the kind does not list, a word outside its enum, a number outside its range, a slug or an id over its cap or holding a space, a key given twice or no `sid` or `id`, then it exits 2, names what it refused without echoing the value whole, and writes nothing
-  - given the same `id` logged twice, then the day file holds two lines and every count holds one
-  - given writers in parallel, then every line still parses alone and `today.json` equals a fold of the lines: the rebuild runs under one lock, temp then rename, and a rebuild from fewer bytes of the same day never replaces a newer snapshot
+  - given a kind outside the kinds list, a field the kind does not list, a word outside its enum, a number outside its range, a slug or an id over its cap or holding a space, a key given twice or no `sid` or `id`, then it exits 2, names the field or the word's place and never echoes a refused value or key, and writes nothing
+  - given the same `id` logged twice under one kind, then the day file holds two lines and every count holds one; two kinds may share an id (a turn id ends one park and starts the next), each counted
+  - given writers in parallel, then every line still parses alone and `today.json` equals a fold of the lines: the rebuild runs under one lock, temp then rename, and a rebuild from fewer bytes of the same day, or of an earlier day, never replaces a newer snapshot
   - `x schema events log` prints the kinds list with each kind's fields and where its `id` comes from
   - decision: no caller passes a time or free text; a field is a whole number in a range, a word from an enum or a slug, so no line can carry a command, a path or his words (FRM-639, the blind critic)
   - decision: no mod calls it yet; the call sites are the ticket's second piece
 - ⬜ `x events today` and `x events day <yyyy-mm-dd>` print a day's counts per kind and per thread (FRM-639)
   - given a day's lines, then each kind prints its count, split per value of every word field (`wind.taken` by `mod` and by `dima`), and each thread (`sid`) its count per kind
-  - given `park.start` and `park.end` lines of one thread, then its parked time is the sum of the pairs; a park still open counts up to now, or to the end of a day that is over; an end with no start and a second start before an end add no time
+  - given `park.start` and `park.end` lines of one thread, then its parked time is the sum of the pairs, paired by stamp, never by line order; a park still open counts up to now, or to the end of a day that is over; an end with no start and a second start before an end add no time
   - given `log.failed` lines, then `failed` is the sum of their `n`; a line that does not parse alone is skipped and counted in `skipped`
   - given `today.json` built on another day, or a day file larger than the size the snapshot records, then `events today` rebuilds it first; `events day` folds the day's lines and writes nothing
   - given `--sid <id>` (comma-joined or repeated for several, the wings), then only those threads' events are counted, folded from the day's lines; a thread with no event prints empty counts
