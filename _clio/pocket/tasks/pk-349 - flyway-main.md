@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T19:41:00Z'
+updated_date: '2026-11-16T19:56:00Z'
 labels:
   - s
   - clio-main
@@ -944,4 +944,20 @@ done 2026-11-16 21:32: f33 grill 4: orbit asks front-loaded (PK-439): shape, gri
 PK-349:W1120 (2026-11-16 21:33, dima): solve now what is solvable. Tonight his list: the lighten linear build (nested check, collectors groomed); the orbit ticket; the chat settings ticket; PK-423's lines out of FRM-617; the unsigned Todo list for the three lanes; the mods 🔧 codie's rider. Do everything you can without him, tell him when all is done, and say what is left (tails). Meanwhile the herdr lane should move.
 
 PK-349:W1121 (2026-11-16 21:33, dima): work for stray, small and mine: the crew-pm board re-check; the zoo story read against its sources; an upstream note to herdr; the two gates over budget; five lines he still has to verify. Can crew-redraw go via helper-lite?
+
+PK-349:W1122 (2026-11-16 21:43, dima): are there any S or XS chunks left for the mods lane after this orbit small part? If yes, tell it to do them while the tails leftovers are solved.
+
+PK-349:W1123 (2026-11-16 21:04, dima, o104 steer): no parks yet. Park only after all tails are solved on your side. Meanwhile no one is parked, so no time is wasted.
+
+PK-349:W1124 (2026-11-16 21:54, dima): S and XS for the mods lane after orbit: two, both signed and queued. FRM-621: each session gets its own mods scratch copy (XS). Then FRM-602: a lane's card opens itself (S). The name-drift ticket is size M and stays for tomorrow. Tell the mods lane to do the S and XS.
+
+PK-349:W1125 (2026-11-16 21:54, dima): the 13 herdr tickets: where do they get ticked? Include the iTrout clash and the 4 nested breaches. Are all herdr scope questions solved? Everything drifted after today's big move, so is the scope safe, settled, and signed?
+
+PK-349:W1126 (2026-11-16 21:54, dima): one layout save in egg-basket. Tell codie to do it if he does not halt earlier.
+
+PK-349:W1127 (2026-11-16 21:54, dima): where do the two upstream note drafts go (herdr's scroll, Claude Code's store)? He thought you would tell him. Decide where they go and post them. If a decision is needed from him, list the options.
+
+PK-349:W1128 (2026-11-16 21:54, dima): tonight, mine: 7 collector lines to check; recover your 16:01 and 16:02 lines; one commit you were never told about (it ignored shelf runtime files and tracked three flawlogs); one old audit is red. Do everything, solve everything.
+
+PK-349:W1129 (2026-11-16 21:54, dima): print the tails leftovers as bullet lists; he finds that easier to read.
 <!-- SECTION:NOTES:END -->
