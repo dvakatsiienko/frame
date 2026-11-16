@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T20:02:00Z'
+updated_date: '2026-11-16T20:28:00Z'
 labels:
   - m
 dependencies: []
@@ -392,4 +392,8 @@ PK-444:W191 (2026-11-16 22:00, dima, o118 steer): are you sure the flush is actu
 PK-444:W192 (2026-11-16 22:00, dima, o118 steer): are you sure the flush is actually well sharpened and precise? after this flush my herdr scope will be correct and the one that i want, right? ❓
 
 renumber (22:02, clio): the W191 line above carried no clock stamp; it is PK-444:W192, stamped.
+
+PK-444:W193 (2026-11-16 22:15, dima): the emoji reactions shot (FRM-582): the hover row and the first set of four no longer fit the borrowed picker, and how a click reaches the thread is not written anywhere. Does he see the small grey emoji icon (shepardr borrow)? Does it reach the thread via emoji, and does it work? Or does he ask about something else?
+
+PK-444:W194 (2026-11-16 22:15, dima): solve the 4 incomplete herdr tickets and sign them. Tell what is off with each, ask him what each should be made complete, list what is missing, and propose your own idea for completing each. Then solve and sign.
 <!-- SECTION:NOTES:END -->

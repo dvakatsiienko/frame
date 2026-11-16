@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T19:56:00Z'
+updated_date: '2026-11-16T20:28:00Z'
 labels:
   - s
   - clio-main
@@ -960,4 +960,14 @@ PK-349:W1127 (2026-11-16 21:54, dima): where do the two upstream note drafts go 
 PK-349:W1128 (2026-11-16 21:54, dima): tonight, mine: 7 collector lines to check; recover your 16:01 and 16:02 lines; one commit you were never told about (it ignored shelf runtime files and tracked three flawlogs); one old audit is red. Do everything, solve everything.
 
 PK-349:W1129 (2026-11-16 21:54, dima): print the tails leftovers as bullet lists; he finds that easier to read.
+
+PK-349:W1130 (2026-11-16 22:01, dima): do everything. Ten collector lines are real open work and stay in their tickets; three of them need a test run, a stray chore after the brake.
+
+PK-349:W1131 (2026-11-16 22:01, dima): two test gates are over budget. Tomorrow's numbers.
+
+PK-349:W1132 (2026-11-16 22:01, dima): a small verb to correct a thread record's lane. A decision, not urgent.
+
+PK-349:W1133 (2026-11-16 22:01, dima): the two extra note rows in the settings window, once the mods chunk adds them.
+
+PK-349:W1134 (2026-11-16 22:01, dima): refresh the mods lane glide.
 <!-- SECTION:NOTES:END -->
