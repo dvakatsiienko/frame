@@ -10,7 +10,7 @@ it runs over any ticket: a safety-net re-grill after `clio:shape-idea`, the real
 
 ## 0 · read what is settled
 
-read the ticket's wish block and its `decided` section before the first question. every question cites the W-lines it settles; the round is written to its proposal file first, `.scratch/<ticket>/grill-<n>-proposal.md`, where the wish-cover hook reds a W-line it lost.
+read the ticket's wish block and its `decided` section before the first question. every question cites the W-lines it settles, one on his UI today a file or a shot; an ask for his hands shows the place and numbered steps; the round is written to its proposal file first, `.scratch/<ticket>/grill-<n>-proposal.md`, where the wish-cover hook reds a W-line it lost.
 
 then the open children of the app's `🌠 <app> wishes` parent ticket: one that rides along — a trial, a test drive, a «carry into the next touch» — joins the chunk or is named in the grill. a small UI ask goes the `craft-fleet-flow` freebie way (dima, 2026-10-11: «keep this trial reminding me to run a coder on applicable apps»).
 
