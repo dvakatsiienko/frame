@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T16:22:00Z'
+updated_date: '2026-11-16T16:36:00Z'
 labels:
   - m
 dependencies: []
@@ -312,4 +312,12 @@ PK-444:W128 (2026-11-16 18:16, dima): ❓ why did glide for herdr disappear?
 PK-444:W129 (2026-11-16 18:16, dima): approved: the scroll fix. "nice! like. approved." (clio's paraphrase before dima's words, not dima's: "follow the bottom now comes back only at the true end or by your click, and the pill is a small quiet ↓ at the right edge; every reload that wiped the reading place and jumped to the newest is fixed too.")
 
 18:22 the new chat's ticket is FRM-638 (52 W-lines copied from here, renumbered; the plan critic's five folded); this item stays open for the road, the layout names, the light theme and the end step
+
+PK-444:W130 (2026-11-16 17:53, dima): i vote for efficiency, with no rush. i want everything efficient and optimized, a plan that lets dima have what he wants with the «see far» strategy. (clio's line before dima's ←: "➡️ The tabs and the frame are ready now, so they could move to itrout ahead of the chat, if you'd rather not wait. Say so and I plan it as its own small step.")
+
+correction to PK-444:W123 (2026-11-16 17:55, dima): the W123 line is a third-person rewrite. dima's own words (spelling fixed, from 2026-11-16-1755h.raw.md): "Tell Codie to fix it so nothing scrolls the chatter without me. Only I scroll the chatter, or the chatter scrolls when I click on that button, the newest or something like this." His reason, in his words: "you type and send me messages faster than I am able to process them".
+
+PK-444:W131 (2026-11-16 18:35, dima): fps shows 120. something drops it up to 40fps, even 13, 11 worst. observation: when i do not scroll, the fps meter number gets very low; then i scroll and it resets to 120fps.
+PK-444:W132 (2026-11-16 18:35, dima): tell when i can have the fps meter removed: it distracts me. (herdr-typed, no raw file; from clio's message)
+PK-444:W133 (2026-11-16 18:35, dima): thumbnail is confirmed for x-herdr-layout, not for egg basket.
 <!-- SECTION:NOTES:END -->

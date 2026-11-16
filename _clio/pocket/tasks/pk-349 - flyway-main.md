@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T16:18:00Z'
+updated_date: '2026-11-16T16:36:00Z'
 labels:
   - s
   - clio-main
@@ -867,4 +867,16 @@ raw drop (2026-11-16, dima, herdr-typed): what else to solve? with you, while ev
 
 groomed prompt 18:17 (dima, herdr-typed; no raw file, quoted as written):
 PK-349:W1053 (2026-11-16 18:17, dima): ❓ what does herdr codie wait for? 7min parked
+
+PK-349:W1054 (2026-11-16 17:43, dima): wish-loss audit: if it is a weekly check, then okay. make it efficient: can helper or helper-lite cards do it? during the kickboot, clio does the wish-list audit herself and tells dima the result in the opening message each Monday, with action items on how to fix drifted parts. dima does not have to be asked. (clio's heading before dima's ←: "Wish-loss audit")
+
+PK-349:W1055 (2026-11-16 17:43, dima): empty wakes: also weekly? then the same strategy, and can they be combined to count everything at once? if yes, fix the habits this way so next Monday it is optimized. (clio's heading before dima's ←: "Empty wakes")
+
+PK-349:W1056 (2026-11-16 17:43, dima): herdr mess hunt plan: verify somehow what is still relevant to fix and what is not. dima does not want double work. (clio's line before dima's ←: "The herdr mess hunt plan: your read is right, and my take is an inference, since I have not re-read the fix list this turn.")
+
+PK-349:W1057 (2026-11-16 17:43, dima): review the mess hunt after egg basket moves to itrout (dima's name for his main layout, for brevity). there is a rename task too.
+
+correction to PK-349:W1051 (2026-11-16 17:46, dima): the W1051 line opens with clio's own 17:45 reply, not dima's words. clio's part is everything before the «←» ("Both weekly counts move into the Monday boot … action items for anything drifted."). dima's own words are what follows the «←»: "clarification on what i want by «drifted hunt» — e.g. When numbers do not show good results, I expect you to propose how to make them show and fix them so numbers will show good results on the next audit".
+
+PK-349:W1058 (2026-11-16 18:21, dima): proceed with grill and move herdr codie. (herdr-typed, no raw file; from clio's message)
 <!-- SECTION:NOTES:END -->
