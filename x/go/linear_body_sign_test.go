@@ -13,7 +13,7 @@ import (
 // linear's save as the fake rewrites it: a number per ordered item, and the escapes a save adds (`_` and `~`, never twice)
 var (
 	signedItem   = regexp.MustCompile(`(?m)^\d+\. `)
-	savedEscapes = regexp.MustCompile("([^\\\\])([_~])")
+	savedEscapes = regexp.MustCompile(`([^\\])([_~])`)
 )
 
 // renumbered writes an ordered list as 1, 1+n, 1+2n …: n 1 is linear's renumbering, a larger n a save that moves every time

@@ -137,15 +137,6 @@ func renameThread(sid, display string, wait, nudgeAfter time.Duration) ordered {
 	}
 }
 
-func isRenamed(row ordered) bool {
-	for _, field := range row {
-		if field.key == "renamed" {
-			return field.value == true
-		}
-	}
-	return false
-}
-
 // a plain message to a thread's herdr terminal, as one member writes to another: whether it was sent, and the exact
 // command that sends it. a message waits for an empty input box, or it would join dima's draft and send it
 func tellThread(sid, text string) (bool, string) {
