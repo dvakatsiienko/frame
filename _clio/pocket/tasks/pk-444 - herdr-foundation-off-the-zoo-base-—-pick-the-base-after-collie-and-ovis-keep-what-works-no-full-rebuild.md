@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T16:52:00Z'
+updated_date: '2026-11-16T17:27:00Z'
 labels:
   - m
 dependencies: []
@@ -340,4 +340,6 @@ PK-444:W141 (2026-11-16 18:50, dima, herdr-typed): probe again: correctly?
 PK-444:W142 (2026-11-16 18:50, dima, herdr-typed): tell when and how first, then measure (dima's words after the ← in clio's typing-measure line).
 
 PK-444:W143 (2026-11-16 18:50, dima, herdr-typed): seems like the typing test passed? confirm if it is.
+
+19:27 PK-444:W138 moved to FRM-638:W53 (the fps line lives in the ticket now)
 <!-- SECTION:NOTES:END -->

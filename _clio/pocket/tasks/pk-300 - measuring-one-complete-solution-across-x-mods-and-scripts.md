@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-16T16:53:00Z'
+updated_date: '2026-11-16T17:27:00Z'
 labels:
   - m
 dependencies: []
@@ -227,4 +227,6 @@ PK-300:W1562 (2026-11-16 18:50, dima, herdr-typed): so the logger solution is pr
 PK-300:W1563 (2026-11-16 18:50, dima, o68): not a new lane, we already have two lanes running. who can do this? mods lane (existing, reusing)? and today or tomorrow? it is getting late. how much time will it take, 6 hours or 1-2 hours? i have about 2 hours, if it is done in 2 hours.
 
 correction to PK-300:W1548 (2026-11-16 18:50, dima): for my band - likely not. too noisy. let's have it initially though. i'll see how noisy it is. show me how much time review count went over the set bar. question, not a wish: i thought we build a mechanized protection?
+
+19:27 PK-300:W1563 moved to FRM-639:W44 (the o68 steer lives in the ticket now)
 <!-- SECTION:NOTES:END -->
