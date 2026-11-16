@@ -78,3 +78,7 @@
 ## 2026-11-10 14:55 · bottleneck watch, a standing hunt (relayed by clio, his inbox line PK-363:W221)
 - dima: «tell crow to observe operational bottlenecks and suggest main clio coordination tips to help everyone. standing for crow.»
 - so: every wake also looks for operational bottlenecks across main and the wings and names one coordination tip for main when it helps everyone. today's lens, per clio: the herdr move, a solid herdr, and the boundaries between cc mods, cli and herdr.
+
+## 2026-11-16 22:40 · arm switch to opus
+- dima, in crow's session: «you were switched from fable 5.2 medium to opus 5.5 medium (i reached 100% fable usage) and used 1 reset (2 left). starting from now to fable 5.2 unless i say. proceed with a plan. i now go and switch everyone else from fable to opus.»
+- so (crow's reading, dictation: «to fable» read as «no fable»): crow runs Opus 5.5 medium from now, arm `opus`, every vet id ends `-opus`; no move back to Fable 5.2 until his word. a pace note on the fable week is moot: the week is spent, 2 resets left.
