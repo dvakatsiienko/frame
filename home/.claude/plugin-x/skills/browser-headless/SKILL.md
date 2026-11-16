@@ -57,10 +57,11 @@ caps), so a drag-and-drop view needs its own checks for those.
 
 ## the fleet Chrome — any page behind a sign-in (macroscope billing)
 
-a second Chrome with its own profile and debug port; it pops no approval dialog and never takes dima's focus. `--auto-connect` to his own Chrome is no longer used.
+a second Chrome with its own profile and debug port; observed 2026-11-16 on one mac: no approval dialog, focus stays with dima. `--auto-connect` to his own Chrome is no longer used.
 
 ```bash
 curl -sf http://127.0.0.1:9333/json/version || open -g -na "Google Chrome" --args --remote-debugging-port=9333 --user-data-dir="$HOME/.local/state/fleet-chrome" --no-first-run --no-default-browser-check
+for i in $(seq 1 20); do curl -sf http://127.0.0.1:9333/json/version >/dev/null && break; sleep 0.5; done
 agent-browser --cdp 9333 <verb>
 ```
 
