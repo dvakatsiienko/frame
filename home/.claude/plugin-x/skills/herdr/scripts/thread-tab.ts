@@ -1,4 +1,6 @@
 import { spawnSync } from 'node:child_process';
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 // a `hc run --no-parent` thread starts paneless, and herdr's agents list skips it until it has a tab. the window learns
 // of a new terminal ~0.2 s after hc run returns, and the tab keep makes stays unknown to a rename for a moment more
@@ -10,6 +12,12 @@ export function keepThreadInTab(terminal: string, name: string) {
     if (tab) retry(['tab.rename', { id: tab, name }]);
     if (tab && was && was !== tab) retry(['tab.select', { id: was }]);
     return tab ?? null;
+}
+
+export function parseThreadTabArgs(argv: string[]) {
+    const [terminal, name, ...rest] = argv;
+    if (!terminal || !name || rest.length > 0) return null;
+    return { name, terminal };
 }
 
 function focusedTab(): string | null {
@@ -28,4 +36,21 @@ function retry([command, args]: [string, Record<string, string>]) {
         Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200);
     }
     return null;
+}
+
+if (
+    process.argv[1] &&
+    realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+    const args = parseThreadTabArgs(process.argv.slice(2));
+    if (!args) {
+        console.error("usage: node thread-tab.ts <terminal> '<name>'");
+        process.exit(2);
+    }
+    const tab = keepThreadInTab(args.terminal, args.name);
+    if (!tab) {
+        console.error(`no tab came back for terminal ${args.terminal}`);
+        process.exit(1);
+    }
+    console.log(tab);
 }
