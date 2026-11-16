@@ -10,11 +10,18 @@ if curl -sf -m 2 "$url" >/dev/null 2>&1; then
   exit 0
 fi
 
-# chrome leaves a SingletonLock symlink («host-pid») in a profile it runs, and after a crash or reboot a stale one: only a live pid counts
+# chrome leaves a SingletonLock symlink («host-pid») in a profile it runs, and after a crash or reboot a stale one:
+# the lock is live only when its host is this one and its pid is a Chrome now; anything else is stale and the start goes on
 if [ -L "$profile/SingletonLock" ]; then
-  pid=$(readlink "$profile/SingletonLock" | sed 's/.*-//')
-  if kill -0 "$pid" 2>/dev/null; then
-    echo "fleet chrome: running without the debug port, quit it and rerun" >&2
+  lock=$(readlink "$profile/SingletonLock")
+  pid=${lock##*-}
+  if [ "${lock%-*}" = "$(hostname)" ] && ps -p "$pid" -o comm= 2>/dev/null | grep -q "Google Chrome"; then
+    # a loaded machine can miss the first answer
+    if curl -sf -m 2 "$url" >/dev/null 2>&1; then
+      echo "fleet chrome: already up"
+      exit 0
+    fi
+    echo "fleet chrome: port 9333 did not answer while a Chrome holds the profile, quit it and rerun" >&2
     exit 1
   fi
 fi
