@@ -38,6 +38,7 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 - this is every member's summon door; a wing starts by `~/frame/_clio/script/clio-start.sh wing <N> '<first prompt>'`, the prompt before `--remote-control`; a lane member's line carries its brief, `"$(cat <brief file>)"`, its argv per role and its preflight (`x brief summon '<the line>'`) in `x:crew-lead`
 - 📌 then its tab, the same turn (a `--no-parent` thread has none, so herdr's agents list skips it): `node scripts/thread-tab.ts <t> '<registry name>'` prints the tab id (it runs `terminal.keep`, then `tab.rename`; exit 1 and one line when no tab came back); both calls need no new word from dima. done when `herdr-app ls` shows the tab by its registry name
 - 📌 the cc `-n` is its name for `ListAgents` and `threadOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live threads
+- a probe started by a plain `hc run` stays unrecorded in `x thread list`, known by its `-n` alone: a record gives a role and its powers
 - its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends
 - stop it with `hc kill <t>`; a `claude --bg` member runs unchanged from a herdr thread, `claude attach <id>` opens it in a pane, `claude stop <id>` ends it
 - `--no-parent`: by default a terminal started from inside another dies with its parent's program
