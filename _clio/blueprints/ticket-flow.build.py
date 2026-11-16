@@ -216,7 +216,7 @@ BANDS = [
             ("land", 5, 0, "clio", "🔀 land", "clio merges by the pr-flow gate, after wishkeeper's read; a self-edit waits for dima unless his sign pre-approved it", "fleet-flow stage 8"),
             ("w-merge", 5, 1, "clio", "🔀 a self-edit's door", "his sign pre-approved → x lane merge-auto --apply; his typed word → --dima-ok added; the brake is his word each time", "fleet-flow stage 8"),
             ("look", 4, 1, "dima", "🙋‍♂️ the look card", "what, where, try, proven, not checked; a shot for anything rendered", "how-you-work.md · fleet-flow stage 9"),
-            ("modes", 3, 1, "file", "🔀 plain or stacked prs", "plain is the default; a stack is on trial, for 2+ dependent parts, one ci review per layer; a layer merges on his pre-approval, else it is held", "pr-flow.md · x/AGENTS.md · BYT-98"),
+            ("modes", 3, 1, "file", "🔀 plain or stacked prs", "plain by default; a stack is on trial for 2+ dependent parts, one ci review per layer; a layer merges on his pre-approval, else held", "pr-flow.md · x/AGENTS.md · BYT-98"),
         ],
         [
             ("kinds", "cut", "R", "L", ""), ("cut", "slices", "R", "L", ""), ("slices", "build", "R", "L", ""),
@@ -228,7 +228,7 @@ BANDS = [
         "b9", "🏁 9 — the end: how does a ticket close and leave?",
         "pm references/closing.md · craft-pm § the ask-guard · clio:halt phases 0, 1.5, 3.5, 4.5 · pocket-check.ts",
         [
-            ("sweep", 0, 0, "script", "⚙️ the lingering sweep", "close-net.ts, siesta and halt: landed with open asks → Todo + a ↩️ line; else a glide step, needs human, a blocker or a ⏰ due:; a built ticket in Todo and a failed read red", "clio:halt phase 0"),
+            ("sweep", 0, 0, "script", "⚙️ the lingering sweep", "close-net.ts at siesta and halt: landed with open asks → Todo + a ↩️ line; else a glide step, needs human, a blocker or a ⏰ due:; a built Todo ticket and a failed read red", "clio:halt phase 0"),
             ("list", 1, 0, "clio", "🦉 «closable, because …»", "auto-close: stale, dupe, a freebie done in place, landed; the rest wait for his word", "pm references/closing.md"),
             ("guard", 2, 0, "dima", "🙋‍♂️ the ask-guard", "each ask of his printed with its destination; no verdict, no close", "closing.md · craft-pm § the ask-guard"),
             ("closed", 3, 0, "clio", "🎫 closed, a closing word", "in the body; the milestone's count read the same turn", "closing.md · craft-pm § milestones first"),

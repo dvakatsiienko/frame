@@ -403,6 +403,58 @@ retro (14:43 on):
 - 2026-11-09 · prompt-groom · yes · 0 · PK-363 23:07 groom, W157 to W174
 - 2026-11-10 · prompt-groom · yes · 0 · PK-375 00:27 groom, W1 to W20
 - 2026-11-10 · prompt-groom · yes · 0 · 2026-11-10 02:20 groom, FRM-544:W5 to W6 and FRM-504:W46 to W48
+- 2026-11-11 · prompt-groom · 1 · 0 · PK-363 W822-W891, 5 raw prompts (13:30, 00:38, 00:54, 00:56, 00:57); every sentence mapped; 17 ❓ asks; kept as written: 'watchkeeper' (00:56), '[Image #54]'; fixed slips: falbe→fable, cladue-design→claude-design, cooms→comms
+- 2026-11-11 · prompt-groom · 1 · 0 · PK-363 W893-W924, 14:04 raw prompt; 12 ❓ asks; 0056 groomed file had W889 corrected on disk (watchkeeper→wishkeeper), kept as is
+- 2026-11-11 · prompt-groom · 1 · 0 · PK-363 W925-W935, 14:32 raw prompt; 6 ❓ asks; no joined emoji; 1404 groomed file changed on disk, kept as is
+- 2026-11-11 · prompt-groom · 1 · 0 · PK-363 W936-W937, 14:33 raw prompt; 1 ❓ ask; screenshot named in the prompt is not in the raw file, not groomed
+- 2026-11-11 · prompt-groom · 1 · 0 · PK-363 W938-W944, 14:51 raw prompt; 0 ❓ asks; context lines from clio's reply kept as parenthetical, not his words
+- 2026-11-11 · prompt-groom · yes · 0 · 15:02 groom: /Users/dima/.local/state/clio/grooms/2026-11-11-1502.groomed.md, PK-363 W945-W951, folded into PK-363, pocket-check green
+- 2026-11-11 · prompt-groom · yes · 0 · 15:10 groom: /Users/dima/.local/state/clio/grooms/2026-11-11-1510.groomed.md, PK-363 W952-W957, standing-rule line W955, folded into PK-363, pocket-check green
+- 2026-11-11 · prompt-groom · yes · 0 · 15:29 groom: /Users/dima/.local/state/clio/grooms/2026-11-11-1529.groomed.md, PK-363 W958-W964, folded into PK-363, pocket-check green
+- 2026-11-11 · prompt-groom · yes · 0 · 16:09 groom: /Users/dima/.local/state/clio/grooms/2026-11-11-1609.groomed.md, PK-363 W965-W977, folded into PK-363, pocket-check green; 'priven' read as 'proven'
+- 2026-11-11 · prompt-groom · yes · 0 · 1622 groomed W978-W989 folded into PK-363; pocket-check green
+- 2026-11-11 · prompt-groom · yes · 0 · 1652 groomed W990-W991 folded into PK-363; pocket-check green
+- 2026-11-11 · prompt-groom · yes · 0 · 1655 groomed W992-W993 folded into PK-363; pocket-check green
+- 2026-11-11 · prompt-groom · yes · 0 · 1710 groomed PK-377 (memory by surface) W1-W12; pocket-check green
+- 2026-11-11 · prompt-groom · yes · 0 · o31 o32 o35 o36 groomed to PK-377 W13-W17; W18-W21 repeats. pocket-check still red at 17:55 on a note line 'W18–W21 repeat W13–W17' (bare id, no stamp), not written by helga
+- 2026-11-11 · prompt-groom · yes · 0 · 17:51 prompt (PK-377 W23-W30) and o38/o39/o41 steers (W31-W33) groomed; W31 joined emoji fixed in place by clio; pocket-check green
+- 2026-11-12 · inbox-prep · yes · 0 · inbox-helga.md written; 5 items, 7 asks; inbox-prep-check coverage 57/57 exit 0
+- 2026-11-12 · prompt-groom · yes · 0 · 03:03 prompt groomed to FRM-505: W1949 herdr codie spam, W1950 silent comms question; output 2026-11-12-0303.groomed.md
+- 2026-11-12 · prompt-groom · yes · 0 · 14:00 prompt groomed: PK-384:W11 to W14 chatterbox lines; output 2026-11-12-1400.groomed.md
+- 2026-11-12 · prompt-groom · yes · 0 · 14:09 wisp groomed: FRM-562:W59 images via dnd vs copypaste, no preview on dnd; output 2026-11-12-1409.groomed.md
+- 2026-11-12 · prompt-groom · yes · 0 · 14:27 prompt groomed to PK-384:W15-W19 plus raw drops; notes appended via --append-notes (guard refused --notes); undo: remove appended block from PK-384 notes
+- 2026-11-12 · prompt-groom · yes · 0 · 14:38 prompt groomed: FRM-562:W60 to groomed file only, PK-384:W20-W22 appended via --append-notes with raw drops q1-q3; glide-miss line skipped per clio. undo: remove appended block from PK-384 notes
+- 2026-11-12 · prompt-groom · yes · 0 · 14:52 prompt groomed: FRM-562:W61-W62 and FRM-563:W5 to the groomed file only; questions and confirmations left for clio. no PK-384 notes touched. undo: delete the groomed file
+- 2026-11-12 · prompt-groom · yes · 0 · o6 to PK-384:W23, o7 to PK-384:W24, 14:54 orbit replay wisp to PK-386:W1; notes appended via --append-notes with raw drops; o6/o7 stamps date-only since no time given. undo: drop the appended blocks from PK-384 and PK-386 notes, delete the three groomed files
+- 2026-11-12 · prompt-groom · yes · 0 · 15:03 prompt groomed: PK-384:W25 appended to PK-384 notes with raw drop; FRM-562:W63-W64 to groomed file only. undo: drop the appended block from PK-384 notes, delete the 15:03 groomed file
+- 2026-11-12 · prompt-groom · yes · 0 · 15:07 batch groomed to FRM-562:W65-W68 in the groomed file only; W66-W68 read from the shot via clio's brief, the shot itself not opened by helga. undo: delete the 15:07 groomed file
+- 2026-11-12 · prompt-groom · yes · 0 · 15:30 prompt groomed: FRM-562:W69 to the groomed file only; sign-door complaint left out per clio. undo: delete the 15:30 groomed file
+- 2026-11-12 · prompt-groom · yes · 0 · 15:58 prompt groomed: PK-380:W5-W13 and PK-384:W26-W27 to notes via --append-notes with raw drops; the rename lines overlap the 'keep names' line, both kept. undo: drop the 15:58 blocks from PK-380 and PK-384 notes, delete the 15:58 groomed file
+- 2026-11-12 · prompt-groom · yes · 0 · 16:03 groom: PK-380:W14 already in notes with the same words, nothing appended. o23 noted without a W-line. o24 left without a W-line, unclear what it asks. undo: delete the 16:03 groomed file
+- 2026-11-12 · prompt-groom · yes · 0 · 16:17 groom: PK-380:W16 (o29, from clio's quoted text: prompt-groom.ts found no o29 steer in the transcript), W17-W18 (16:17 prompt). appended to PK-380 notes. codie ctx nudges and the picture remark: no lines. undo: drop the 16:17 blocks from PK-380 notes, delete the o29 and 16:17 groomed files
+- 2026-11-12 · prompt-groom · yes · 0 · 16:39 batch: 16:20 PK-380:W19, 16:23 PK-380:W20, o34 PK-380:W21 (text from clio's brief; no steer in transcript), 16:39 FRM-566:W12-W13 in the groomed file only (FRM-566 is not in the local backlog, so no notes append; the same as earlier FRM-562 lines). shot not opened. o29 confirmed as PK-380:W16. undo: drop the 16:39 blocks from PK-380 notes, delete the four groomed files
+- 2026-11-12 · prompt-groom · yes · 0 · wing 1 batch, PK-346. 1707 -> W46 'so you're parked?', W47 'cli went to main fully?', W48 'what is your plan?', W49 'what can you do?', W50 'what i want now: all tails must be solved, all solvable flyways items, solve.', W51 'flyways clean of done items.', W52 'then analyze why flyways got cluttered...'. 1711 -> W53 'i want flio flyway clean too.', W54 'propose how to have it clean.', W55 'who solves main, or can you? main clio is busy...'. Files: grooms/wing-1/2026-11-12-1707.groomed.md and 2026-11-12-1711.groomed.md. Groomed files only, no notes append, no commit. undo: delete the two groomed files
+- 2026-11-12 · prompt-groom · yes · 0 · wing 1 prompt, PK-346. 1619 -> W56 'can you raise the quiet comms bar slightly? replies are too short now. for main clio too.', W57 'what next can you solve?', W58 '/clio:low-tide-triage' (slash command, its own line as written), W59 'my main complaint right now: both flyways, yours and min's, have 29 items each...propose a gradual way...and do /clio:flyway-sync.', W60 'make flyways pretty.'. File: grooms/wing-1/2026-11-12-1619.groomed.md. Groomed file only, no notes append, no commit. undo: delete that groomed file
+- 2026-11-13 · inbox-prep · 1 · 0 · inbox-helga.md written; check-inbox-prep coverage 54/54 exit 0; asks numbered in file order 1-9; inbox.md not touched
+- 2026-11-13 · prompt-groom · 0 · 0 · consult 1 sent to clio (msg 4120af5c): home and first id missing from brief; prompt-groom.ts --next clio fails, output not written
+- 2026-11-13 · prompt-groom · 1 · 0 · 12:57 groomed PK-349 W28-W29, question W29 flagged; band and grill lines absent from raw, consult sent to clio
+- 2026-11-13 · prompt-groom · 1 · 0 · 12:58 raw is a pasted x thread list screen with no words of dima's; 0 W-lines, context-only note in groomed file; prompt-groom.ts writes nothing, --no-wish changed no output
+- 2026-11-13 · prompt-groom · 1 · 0 · 13:08 PK-349 W31 (grill day plan); 13:12 PK-389 W5; 13:13 PK-389 W6 question with quoted greet text kept verbatim; 13:15 PK-349 W32-W34, three questions; 13:19 PK-389 W7-W13, pasted context lines above arrows not groomed; 2 images in 13:15 not text; 🤦 reaction after arrow has no W-line
+- 2026-11-13 · prompt-groom · 1 · 0 · 13:03 boot lines from clio: PK-349 W30 (summon wing 1), PK-388 W1 (band auto-second-wind); no raw file, groomed from clio's message
+- 2026-11-13 · prompt-groom · 1 · 0 · 12:58 skipped per clio; earlier groomed file is context-only, 0 W-lines, safe to delete if clio wants it gone
+- 2026-11-13 · groom · 3 · 0 · three grooms written: 1815 (PK-400 W106-110, #ops W51), 1820 (#ops W52-56), 1837 (PK-399 W5-11, #ops W57-66); no rework
+- 2026-11-13 · commit · 1 · 0 · effortLevel hunk commit 4c94f3fd via temp index; neuroarxiv line left uncommitted
+- 2026-11-13 · groom · 3 · 0 · wing-1 2308/2312/2320 groomed: 3 files, 11+6+4 lines, questions marked; o39 crew-stary steer not in 2320 raw, not folded
+- 2026-11-15 · prompt-groom · 1 · 0 · PK-349 W82-W110, 29 lines; every raw sentence mapped; no questions in raw, none marked ❓; 'weak' read as 'week'
+- 2026-11-15 · prompt-groom · 1 · 0 · 13:40 PK-349 W111-W115, 5 lines; handoff question and keep-intact-until-Monday instruction groomed as said; questions marked
+- 2026-11-15 · prompt-groom · 1 · 0 · 13:44 PK-349 W116-W118, 3 lines; crow boot file-list question groomed; 2 questions marked
+- 2026-11-15 · prompt-groom · 1 · 0 · 14:08 PK-349 W119-W142, 24 lines; questions marked, no wish folded in; arrow and quoted lines kept verbatim
+- 2026-11-15 · prompt-groom · 1 · 0 · 14:09 PK-349 W143-W144, 2 lines; image-delivery question marked; magic-button test line kept as said
+- 2026-11-15 · inbox-prep · 0 · 1 · inbox-helga.md written at 14:20, 48 asks; first check 102/106 (four quote blocks not verbatim), four exact-line edits, check exit 0 at 106/106; inbox.md md5 2c3130038cc877b0945dd56d7a4a548c unchanged
+- 2026-11-15 · prompt-groom · 1 · 0 · 14:08 steers o4 and o5 (raw prompt files, no stamp in name) groomed as PK-349 W145 and W146 with clio's stamp, 2 lines; W145 question marked; inbox-prep already exit 0 at 106/106
+- 2026-11-16 · prompt-groom · 1 · 0 · PK-349/PK-436/PK-new-oladki/PK-new-herdr-tools groomed to 24 W-lines; --next failed for two new labels, used W1 fallback as clio said
+- 2026-11-16 · inbox-prep · 1 · 0 · inbox-helga.md whole-file write, 12 asks, check-inbox-prep 35/35 exit 0; no commit
+- 2026-11-16 · pocket-write · 1 · 0 · PK-349 +7, PK-437 +13, PK-438 +4 appended; PK-436 archived, its 2 lines moved to PK-349 W1011-W1012; raw drops PK-437 x8, PK-438 x1; prompt-groom --day green 14:14
 
 ## rounds
 

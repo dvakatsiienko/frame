@@ -246,7 +246,8 @@
     "cc-plugin-you-should-know@builtin": false,
     "show-me@skills": true,
     "mattpocock-skills@mattpocock": true,
-    "x-cloud-chat@x-com": false
+    "x-cloud-chat@x-com": false,
+    "neuroarxiv@neuroarxiv": true
   },
   "extraKnownMarketplaces": {
     "x": {
