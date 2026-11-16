@@ -537,3 +537,34 @@ func TestEventsTodaySumsTheFailedLogsModsReport(t *testing.T) {
 		t.Errorf("two reports of 3 and 2 failed logs read %v, want 5", got.data["failed"])
 	}
 }
+
+func TestEventsCarryTakesEachThreadsLastParkLine(t *testing.T) {
+	t.Parallel()
+	line := func(day int, kind, id string) string {
+		return fmt.Sprintf(`{"v":1,"at":"2026-11-%02dT10:00:00.000+02:00","kind":%q,"sid":"a","id":%q}`, day, kind, id) + "\n"
+	}
+	cases := []struct {
+		name string
+		days map[int]string
+		open bool
+	}{
+		{"a park closed on a later earlier day carries nothing", map[int]string{13: line(13, "park.start", "1"), 15: line(15, "park.end", "2")}, false},
+		{"a day with no park line passes to the day before it", map[int]string{14: line(14, "park.start", "1"), 15: line(15, "hot.ping", "2")}, true},
+		{"a park opened the day before carries", map[int]string{15: line(15, "park.start", "1")}, true},
+		{"a park opened over a week back carries nothing", map[int]string{8: line(8, "park.start", "1")}, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			dir := t.TempDir()
+			for day, lines := range c.days {
+				if err := os.WriteFile(eventsDayFile(dir, fmt.Sprintf("2026-11-%02d", day)), []byte(lines), 0o644); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if carry := eventsCarry(dir, "2026-11-16"); (carry["a"] != "") != c.open {
+				t.Errorf("the 16th opens with the carry %v, want an open park: %v", carry, c.open)
+			}
+		})
+	}
+}
