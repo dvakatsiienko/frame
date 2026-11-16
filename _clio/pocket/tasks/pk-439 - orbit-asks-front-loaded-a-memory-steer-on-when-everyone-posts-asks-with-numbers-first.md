@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T12:17:00Z'
+updated_date: '2026-11-16T15:38:00Z'
 labels:
   - s
 dependencies: []
@@ -65,4 +65,6 @@ raw drop (2026-11-16 inbox, dima): - this is idea, i did not measured and not ve
 raw drop (2026-11-16 inbox, dima): - before implementation - i want details and numbers of how you and everyone uses orbit. are asks put just randomly? is there is any agreeemnt? if no, a small steer won't hurt, i think?
 
 raw drop (2026-11-16 inbox, dima): - and actually tell - why you tend to post asks at the end of a turn - is there is a reason for that?
+
+PK-439:W11 (2026-11-16 17:36, dima): orbit asks front-loaded: shape, grill, sign; plan when.
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:16:00Z'
-updated_date: '2026-11-16T12:17:00Z'
+updated_date: '2026-11-16T15:38:00Z'
 labels:
   - s
 dependencies: []
@@ -77,4 +77,6 @@ raw drop (2026-11-16 inbox, dima): 2. analyze if my idea holds - are those stand
 raw drop (2026-11-16 inbox, dima): 3. nested sub-issues - worth it? are they good? are you able to properly mainatain them and get useful gains of having them? i was noticing you not always taking care of nested tickets gracefully.
 
 raw drop (2026-11-16 inbox, dima): 4. i'd like to know data and numbers before we make a decision for a change. a while idea is to lighten linear, not just move stuff. propose improvement that will lighten.
+
+PK-442:W16 (2026-11-16 17:36, dima): lighten linear: shape, grill, implement in place.
 <!-- SECTION:NOTES:END -->

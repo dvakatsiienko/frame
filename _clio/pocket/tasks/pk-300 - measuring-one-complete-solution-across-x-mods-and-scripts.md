@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-16T15:30:00Z'
+updated_date: '2026-11-16T15:38:00Z'
 labels:
   - m
 dependencies: []
@@ -139,4 +139,6 @@ raw drop (2026-11-16, dima, herdr-typed): Yesterday I asked for a feature in inb
 
 PK-300:W1533 (2026-11-16 17:24, dima): so we did not grilled it? let's then grill whenever you can. worth checking how telemetry can help. we have telemetry but do not use it at all it is parked. i assume it is useful but we do not have any flow to get gains out from it. It is strange for me that we didn't grill this one and missed it. What else isn't grilled? What else is missed?
 raw drop (2026-11-16, dima, herdr-typed): so we did not grilled it? let's then grill whenever you can. worth checking how telemetry can help. we have telemetry but do not use it at all it is parked. i assume it is useful but we do not have any flow to get gains out from it. It is strange for me that we didn't grill this one and missed it. What else isn't grilled? What else is missed?
+
+PK-300:W1534 (2026-11-16 17:36, dima): stats counter (tail grill from yesterday): shape, grill, and plan right away.
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T15:30:00Z'
+updated_date: '2026-11-16T15:38:00Z'
 labels:
   - s
   - clio-main
@@ -813,4 +813,42 @@ raw drop (2026-11-16, dima, herdr-typed): what mods lane is doing? and its /clio
 
 PK-349:W1037 (2026-11-16 17:14, dima): then, while everyone is running and bottleneck is solved - whats on your flyway? let's solve tails, gradually. what was postponed because of chaos? inbox? any other tails? reminder? your wish dated reminders as for today? i remmeber two - wish check and some other. i want all tails solved today so i can start speak app v2 tomorrow with wing.
 raw drop (2026-11-16, dima, herdr-typed): then, while everyone is running and bottleneck is solved - whats on your flyway? let's solve tails, gradually. what was postponed because of chaos? inbox? any other tails? reminder? your wish dated reminders as for today? i remmeber two - wish check and some other. i want all tails solved today so i can start speak app v2 tomorrow with wing.
+
+PK-349:W1038 (2026-11-16 17:36, dima): solve all mechanical tails and smaller stuff first, then grills and shapes in this order, implementing each after its grill if not blocked; no tails left.
+PK-349:W1039 (2026-11-16 17:36, dima): stats counter (tail grill from yesterday): shape, grill, and plan right away. -> PK-300:W1534.
+PK-349:W1040 (2026-11-16 17:36, dima): mess hunt as a card: shape, grill, implement in place. -> PK-441:W6.
+PK-349:W1041 (2026-11-16 17:36, dima): lighten linear: shape, grill, implement in place. -> PK-442:W16.
+PK-349:W1042 (2026-11-16 17:36, dima): orbit asks front-loaded: shape, grill, sign; plan when. -> PK-439:W11.
+PK-349:W1043 (2026-11-16 17:36, dima): chat emoji reactions: review how it changes now that base ftr can be borrowed from shepardr. -> PK-405:W1.
+PK-349:W1044 (2026-11-16 17:36, dima): designer interview for herdr: as soon as no crap is left in herdr and most FTR is implemented, so the designer has what to draw from.
+PK-349:W1045 (2026-11-16 17:36, dima): the cv: plan right after speak app v2 is done. -> PK-425:W6.
+PK-349:W1046 (2026-11-16 17:36, dima): our own drawing tool: wireframing? if yes, later, not today. -> PK-434:W2.
+PK-349:W1047 (2026-11-16 17:36, dima): gates naming, helga on Sonnet, tilde, your own sounds: later, no capacity now.
+PK-349:W1048 (2026-11-16 17:36, dima): mess hunt flush: is the herdr mess hunt plan still valid and relevant? when to revisit: after egg basket is merged as main layout and migration is finished? -> PK-441:W7.
+PK-349:W1049 (2026-11-16 17:36, dima): wish-loss audit: why this audit? one-off check after the id-marking flow, or regular? when finished, are wishes saved reliably? can it be solved now?
+PK-349:W1050 (2026-11-16 17:36, dima): wish-loss audit + empty waks: are the result numbers good or not?
+raw drop (2026-11-16 17:36, dima):
+aisde from lanes, yout: first, solve all mechanical tails and smaller stuff.
+
+then grills, shapes where needed in this order, after each grilll - implement if not blocked. no tails left.
+Not grilled yet, found in the pocket and the flyways:
+- stats counter (tail grill from yesterday) — shape, grill, and plan when right away.
+  - mess hunt as a card ← shape grill and implement in place
+  - lighten linear ← shape grill and implement in place
+  - orbit asks front-loaded ← ← shape grill and sign, plan when
+  - chat emoji reactions ← review how it changes now when we can borrow base ftr from shepardr
+  - the 🎨 designer interview for herdr ← ass soon as i have no crap in herdr and most of FTR is implemented so designer have what to draw from
+  - the cv ← i plan it right after speak app v2 is done
+  - our own drawing tool ← wireframing? if yes - later, not today.
+  - gates naming ← later
+  - 🎀 helga on Sonnet ← later
+  - tilde ← later
+  - your own sounds ← later
+all laters - i do not have capacity now.
+
+mess hunt flush ← A few days ago we implemented the first mass hunt over the Herdr and found a lot of anti-patterns but I assume we found them based on the current creepy zoo areas. What to do with that plan now? Is it still valid and relevant? When to revisit it? After our egg basket is merged as my main layout and migration is finished? 
+
+Wish-loss audit ← why we have this audit? it is one-off check after our new flow of grooming and marking my wishes with IDS? or regular wish-loss audit? i see you keep reminding about it but it never goes away. when it will be finished, and my wishes are saved reliably? can you solve now?
+
+Wish-loss audit + empty waks: so result numbers are good or not?
 <!-- SECTION:NOTES:END -->

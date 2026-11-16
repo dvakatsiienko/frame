@@ -4,7 +4,7 @@ title: 'cv: web app, pdf, ATS readability (I3)'
 status: open
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-16T12:50:00Z'
+updated_date: '2026-11-16T15:38:00Z'
 labels:
   - s
 dependencies: []
@@ -33,4 +33,6 @@ raw drop (2026-11-15 inbox, dima): - tell how AST works
 PK-425:W4 (2026-11-15 15:35, dima, o16 steer): let's see where we are after a few days, then sys vs the cv; i have another query about cv.pdf and the cv website.
 
 PK-425:W5 (2026-11-16 14:50, dima): yes, i mistaken. fix AST to ATS. (ATS = applicant tracking systems; W2 and W3 above mean ATS)
+
+PK-425:W6 (2026-11-16 17:36, dima): the cv: plan right after speak app v2 is done.
 <!-- SECTION:NOTES:END -->

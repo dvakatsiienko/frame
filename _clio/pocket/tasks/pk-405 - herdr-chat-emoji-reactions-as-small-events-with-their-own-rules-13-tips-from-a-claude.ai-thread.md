@@ -5,8 +5,8 @@ title: >-
   a claude.ai thread
 status: open
 assignee: []
-created_date: "2026-11-14T19:16:00Z"
-updated_date: '2026-11-14T19:21:00Z'
+created_date: '2026-11-14T19:16:00Z'
+updated_date: '2026-11-16T15:38:00Z'
 labels:
   - s
 dependencies: []
@@ -14,10 +14,10 @@ priority: later
 type: task
 ordinal: 105000
 ---
+
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-
 dima's ask (stuff project, 🎮 against the storm ✦ 1, 2026-11-14): save the emoji-reaction tips for herdr chat with the fleet, written by a claude.ai project thread that has reactions built in.
 dima describes: i ask cloud thread to tell you tips about how to implement emojieable messages in herdr properly (tips and trick) - we have ticket planned for it.
 
@@ -39,3 +39,9 @@ core: treat a reaction as a small event with its own rules, not as a message.
 
 start with 2, 3 and 5: they are the parts that are hard to add later.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+PK-405:W1 (2026-11-16 17:36, dima): chat emoji reactions: review how it changes now that base ftr can be borrowed from shepardr.
+<!-- SECTION:NOTES:END -->
