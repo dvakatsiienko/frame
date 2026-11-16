@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T14:56:00Z'
+updated_date: '2026-11-16T15:20:00Z'
 labels:
   - m
 dependencies: []
@@ -176,4 +176,94 @@ PK-444:W84 (2026-11-16 16:49, dima): Permissions: borrow, but do proper names. F
 groomed prompt 16:56: PK-444:W85 (2026-11-16 16:52, dima): Tool calls are questionable: when I open the tool calls history, a whole huge pile of actions pops out at me.
 PK-444:W86 (2026-11-16 16:52, dima): I want them slightly more nested: opening the list of tool calls should show it unfolded first; then I fold out each tool call one by one to peek into it, instead of all tool calls being described and folded out at once.
 PK-444:W87 (2026-11-16 16:52, dima): So it is a partial borrow. In the current chapter 2, calls don't work at all, so probably borrow, but adjust.
+
+groomed prompt 16:
+
+groomed prompt 16:
+
+groomed prompt 16:
+
+groomed prompt 16:
+
+groomed prompt 16:
+
+groomed prompt 16:
+
+groomed prompt 16:
+
+groomed prompt 16:
+
+groomed prompt 16:
+
+groomed prompt 16:
+
+groomed prompt 17:
+
+groomed prompt 17:
+
+groomed prompt 17:
+
+groomed prompt 17:
+
+groomed prompt 17:
+
+groomed prompt 17:
+
+groomed prompt 16:47:
+PK-444:W88 (2026-11-16 16:47, dima, shot «borrow»): the button row under a bubble (time, reply, copy, redo, react), arrow at the row.
+PK-444:W89 (2026-11-16 16:47, dima, shot «borrow emojies? are they solid build? if you think its worth it - borrow. and planned chunk shrinks - why build from scratch?»): emoji picker and reactions.
+PK-444:W90 (2026-11-16 16:47, dima, shot «why build from scratch?»): on a solid part.
+
+groomed prompt 16:49:
+PK-444:W91 (2026-11-16 16:49, dima, shot «agent activity = borrow»): the agent activity line.
+
+groomed prompt 16:50:
+PK-444:W92 (2026-11-16 16:50, dima, shot «reply to message = borrow»): reply to a message (the ↩ under a bubble, and the quoted strip above the text box).
+
+groomed prompt 16:52:
+PK-444:W93 (2026-11-16 16:52, dima, shot «image previews = borrow!»): image previews in a sent message (two thumbnails under the message).
+PK-444:W94 (2026-11-16 16:52, dima, shot «nice idea with indicator of image attach»): the «1 image» attach indicator on a message.
+
+groomed prompt 16:53:
+PK-444:W95 (2026-11-16 16:53, dima, shot «borrow»): the image chip in the composer (thumbnail with its × in the text box).
+PK-444:W96 (2026-11-16 16:53, dima, shot «after i clicked on image preview in shepardr composer small image preview (that i attached to a message) = borrow»): the in-app image viewer (toolbar: zoom out, zoom level, zoom in, copy, open outside, open folder, close; arrows left and right; «2 / 2»).
+
+groomed prompt 16:55:
+PK-444:W97 (2026-11-16 16:55, dima, shot «another part of your tool call history. not sure what it does. just borrow for now - i see if it useful. borrow.»): the running tool call's own card (the command, its output box, a Stop button under it).
+
+groomed prompt 16:56:
+PK-444:W98 (2026-11-16 16:56, dima): image preview — After I drag and drop or copy-paste an image into the composer in Shepherder composer and click on that preview, it opens that preview in a mini screen right in the Shepherder view. Borrowed this full feature end to end. It works nicely and seems to be useful so let's have it. It also allows opening an image in-app like macOS Preview. I wanted to be opening an image in Cleanshot Annotate instead and also have the button that opens a Finder folder with that image. Keep that, it's useful
+PK-444:W99 (2026-11-16 16:56, dima): I keep exploring Herdr for borrows. Ensure that everything that I post to you right now is not lost and ask Wishkeeper to also see if nothing is not lost. Everything should be folded and planned for new chatter and also consult with Crow. Crow may also help identify if nothing is missed
+
+groomed prompt 16:58:
+PK-444:W103 (2026-11-16 16:58, dima, shot «what is it? i just pressed»): the ↺ rewind button under a bubble.
+
+groomed prompt 16:58:
+PK-444:W104 (2026-11-16 16:58, dima): what is rewind btn in shepardr?
+
+groomed prompt 17:00:
+PK-444:W105 (2026-11-16 17:00, dima, shot «missing ctx menu after RMB is clicked entirely.»): verify - does shepardr missing the RMB ctx menu completely? if yes - FYI. we have planned annotation (quill mini) around it. if nothing present - we build our own.
+
+groomed prompt 17:01:
+PK-444:W106 (2026-11-16 17:01, dima): shepardr settings looks cleaner than ours current. why? ours was based on zoo? let's have our settings prettier too. borrow best parts. (shape, look)
+
+groomed prompt 17:04:
+PK-444:W107 (2026-11-16 17:04, dima): im back in my layout. shepardr probing is done. i did not read almost any mesage you replied to me, while was posting screenshots to borrow.
+PK-444:W108 (2026-11-16 17:04, dima): tell what i missed and where everyone at. why mods lane is parked for 26m/42m?
+PK-444:W109 (2026-11-16 17:04, dima): also — i switched to my layout but chatter now stuck on shepardrs. how to fix? bring my chatter (current) so i can use slipstream and see my band
+
+groomed prompt 17:07:
+PK-444:W110 (2026-11-16 17:07, dima): scrolling wisp: what NOT to borrow. 1. i select piece of your reply via LMB 2. slightly drag top 3. chatter fully scrols along with slighly moved mouse pointer - bad, should not.
+
+groomed prompt 17:09:
+PK-444:W111 (2026-11-16 17:09, dima): good i now on my own chatter with my band.
+PK-444:W112 (2026-11-16 17:09, dima): chatter - what else to keep in merged shape - rich text formatting (bolds etc)
+PK-444:W113 (2026-11-16 17:09, dima): so let's proceed - where we at? where everyone at? i think bottleneck mostly solved? hedr codie assembles basket now? i saw new tabs - they are better. drag n drop still sucks. what our next moves?
+
+groomed prompt 17:12:
+PK-444:W114 (2026-11-16 17:12, dima, shot «name is about tabs actually?»): i like your x-herdr-tab-pills proposal but why not just x-herdr-tabs? i think it would not collide? or it will?
+
+groomed prompt 16:57:
+PK-444:W100 (2026-11-16 16:57, dima, shot «show more button is implemented much better than in our version. (i have it disabled currently in settings) = borrow.»): «Show more» on a long message.
+PK-444:W101 (2026-11-16 16:57, dima, shot «latest pill too. we currently have zoo's crap one»): the «Latest» pill that jumps to the newest message.
 <!-- SECTION:NOTES:END -->
