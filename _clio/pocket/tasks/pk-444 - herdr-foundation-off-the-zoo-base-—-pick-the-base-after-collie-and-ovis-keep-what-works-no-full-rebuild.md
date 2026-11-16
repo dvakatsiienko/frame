@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T19:21:00Z'
+updated_date: '2026-11-16T20:02:00Z'
 labels:
   - m
 dependencies: []
@@ -380,4 +380,16 @@ PK-444:W186 (2026-11-16 21:01, dima): so shepherdr borrows are solved and surviv
 PK-444:W184 (2026-11-16 21:04, dima): question for later: «drag and drop still sucks»: which drag fails? Drag-n-drop for tabs (top) and the agents list (left). All drag-and-drop in herdr is very basic: no visual indicator while dragging. It works mechanically, but gives too little feedback that a drop is happening. A known herdr limitation, so not worth much effort if it works as it is.
 
 PK-444:W187 (2026-11-16 21:17, dima): question: are the chat settings from zoo, from herdr native, or from shepherdr?
+
+PK-444:W188 (2026-11-16 21:47, dima): after the mods lane finishes the orbit change we just made, herdr does its part, so it is done right away.
+
+PK-444:W189 (2026-11-16 22:00, dima): the 13 herdr tickets: what to do with them, and does he sign them?
+
+PK-444:W190 (2026-11-16 22:00, dima): the FRM-633 iTrout rename clashes with today's road as written. His reading: his current egg-basket becomes iTrout, and later a new egg-basket is created as the proper kitchen-sink. He does not see the problem; explain it.
+
+PK-444:W191 (2026-11-16 22:00, dima, o118 steer): are you sure the flush is actually well sharpened and precise? After this flush, my herdr scope will be correct and the one that I want, right?
+
+PK-444:W192 (2026-11-16 22:00, dima, o118 steer): are you sure the flush is actually well sharpened and precise? after this flush my herdr scope will be correct and the one that i want, right? ❓
+
+renumber (22:02, clio): the W191 line above carried no clock stamp; it is PK-444:W192, stamped.
 <!-- SECTION:NOTES:END -->
