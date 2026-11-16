@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T13:03:00Z'
+updated_date: '2026-11-16T13:09:00Z'
 labels:
   - m
 dependencies: []
@@ -49,4 +49,22 @@ PK-444:W11 (2026-11-16 14:58, dima): the chatter is the worst part: I want a goo
 PK-444:W12 (2026-11-16 14:58, dima): solve the architecture and overall approach first: what we are building, where, and what it outputs. Then do the cuts with herdr coding, to keep only the good features on the good foundation.
 
 PK-444:W13 (2026-11-16 14:58, dima): explore collie and ovis before we move on. I will then say what I like in each, and we get a better borrow selection.
+
+PK-444:W14 (2026-11-16 15:07, dima): can we swap the chatter to a better one, and build from there? The idea, in steps:
+
+PK-444:W15 (2026-11-16 15:07, dima): step 1: we install ovis and collie to explore and grade them. I also click them around, grade them, and tell what I like from there.
+
+PK-444:W16 (2026-11-16 15:07, dima): step 2: everyone evaluates what is the best on each surface: shepherdr, collie, ovis.
+
+PK-444:W17 (2026-11-16 15:07, dima): step 3: everyone proposes the best parts to borrow from.
+
+PK-444:W18 (2026-11-16 15:07, dima): step 4: everyone proposes which surface has the best chatter.
+
+PK-444:W19 (2026-11-16 15:07, dima): step 5: we switch the chatter and keep the old (current) chatter.
+
+PK-444:W20 (2026-11-16 15:07, dima): step 6: then stabilize the new chatter: cut what is not needed, and pull back from the old, current and zoo chatter everything codie already built into it.
+
+PK-444:W21 (2026-11-16 15:07, dima): step 7: then see where we are.
+
+PK-444:W22 (2026-11-16 15:07, dima): I could still agree with the idea of using a better-built herdr layout as the base and continuing from there. It would be simpler to have a solidly built layout and just cut or trim it to what I actually want, rather than fixing the pile of zoo leftovers as we do now.
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T13:08:00Z'
+updated_date: '2026-11-16T13:09:00Z'
 labels:
   - s
 dependencies: []
@@ -39,4 +39,8 @@ PK-445:W6 (2026-11-16 14:58, dima): is it possible to remove "permission request
 PK-445:W7 (2026-11-16 14:58, dima): is it possible to do that so my focus is not switched to Chrome, so you do your stuff in my browser while I type in herdr?
 
 15:08: built on his «do now»: a second Chrome, `open -g -na 'Google Chrome' --args --remote-debugging-port=9333 --user-data-dir=~/.local/state/fleet-chrome`; `agent-browser --cdp 9333` attaches with no approval dialog (verified: url and title read back). macroscope redirected to GitHub sign-in: his hand once (orbit). still open: does it survive a reboot (a launchd job or a line in the boot), and a line in x:browser-headless
+
+PK-445:W8 (2026-11-16 15:07, dima): where to see macroscope billing? Did you measure?
+
+PK-445:W9 (2026-11-16 15:07, dima): do it now. Mods codie blocked?
 <!-- SECTION:NOTES:END -->

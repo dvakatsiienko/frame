@@ -4,7 +4,7 @@ title: 'collie + ovis: research, install, probe with dima; a mods view on ios'
 status: open
 assignee: []
 created_date: '2026-11-16T12:09:00Z'
-updated_date: '2026-11-16T12:51:00Z'
+updated_date: '2026-11-16T13:21:00Z'
 labels:
   - m
 dependencies: []
@@ -65,4 +65,6 @@ raw drop (2026-11-16 14:05, dima): i saw some of them can bring mods to ios? her
 raw drop (2026-11-16 14:05, dima): do this at a good point.
 
 PK-437:W14 (2026-11-16 14:18, dima): as researcher, compare shepardr and those two i asked for against the zoo herdr layout (the one we started with)
+
+15:21: ovis 0.5.4 installed on his o18 tick (script read first, run from the read copy with OVIS_RUNTIME=herdr-core OVIS_NO_OPEN=1 OVIS_TELEMETRY=0): ~/.local/share/ovis, an `ovis` command in ~/.local/bin, a login service ~/Library/LaunchAgents/sh.ovis.server.plist, listening on 127.0.0.1:7317 only; tailscale not running, so nothing served outside the mac; uninstall: not read yet
 <!-- SECTION:NOTES:END -->
