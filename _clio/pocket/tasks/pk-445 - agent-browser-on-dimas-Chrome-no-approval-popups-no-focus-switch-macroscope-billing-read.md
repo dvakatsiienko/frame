@@ -3,10 +3,10 @@ id: PK-445
 title: >-
   agent-browser on dima's Chrome: no approval popups, no focus switch
   (macroscope billing read)
-status: open
+status: done
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T13:34:00Z'
+updated_date: '2026-11-16T22:32:00Z'
 labels:
   - s
 dependencies: []
@@ -51,4 +51,6 @@ PK-445:W11 (2026-11-16 15:10, dima): i signed in to macro in your chrome profile
 PK-445:W12 (2026-11-16 15:10, dima): macroscope: proceed with more measures. More review rounds show the real picture. I think during today we see the picture.
 
 PK-445:W13 (2026-11-16 15:10, dima): chrome profile: ok, keep it and use as a habit.
+
+00:32 close: PK-445:W1, W8, W9, W11, W12 done — macroscope billing read in the fleet Chrome (agent-browser --cdp 9333 reads app.macroscope.com/…/settings/billing, verified 00:3x), rounds and the mid-drive read logged in docs/test-drive/macroscope.md (his o140 keep), the verdict waits for the trial's end there; W2–W7 done — the fleet Chrome replaced --auto-connect: no approval popup, focus stays with dima (browser-headless SKILL.md § the fleet Chrome); W10, W13 done — the profile keeps sign-ins and is the habit door (same section, pnpm fleet-chrome:start, port 9333 listening)
 <!-- SECTION:NOTES:END -->
