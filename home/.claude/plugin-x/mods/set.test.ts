@@ -238,6 +238,20 @@ test('a takeover another waiter is in the middle of is left to it', () => {
     expect(existsSync(lock)).toBe(true);
 });
 
+test('a guard file a dead takeover left goes too, so the stale lock is still taken over and the write lands', () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'set-dead.')), 'store.json');
+    writeFileSync(path, '{}');
+    for (const left of [`${path}.lock`, `${path}.lock.takeover`]) {
+        writeFileSync(left, '1');
+        utimesSync(left, 0, 0);
+    }
+    changeStore(path, (s) => ({ ...s, hot: 1 }));
+    expect([
+        JSON.parse(readFileSync(path, 'utf8')),
+        existsSync(`${path}.lock.takeover`),
+    ]).toEqual([{ hot: 1 }, false]);
+});
+
 test('a store lock held past the wait refuses the door in one line, exit 1, never a stack or a spin', () => {
     const home = mkdtempSync(join(tmpdir(), 'set-held.'));
     const dir = join(home, '.claude/plugins/store');
