@@ -913,4 +913,6 @@ PK-349:W1098 (2026-11-16 19:54, dima): everything pristine and signed only in He
 PK-349:W1099 (2026-11-16 19:54, dima): proceed; do not process long-shelved someday (out of scope).
 PK-349:W1100 (2026-11-16 19:55, dima): go grills whenever you have a free spot.
 PK-349:W1101 (2026-11-16 20:17, dima): orbit fix: dima's one-word note; ask what it means before acting.
+
+20:26 FRM-621:W1 (2026-11-16 20:17, dima): scratch-copy fix: sign it. (homed here: FRM-621 has no wish block; signed 20:18 on this word)
 <!-- SECTION:NOTES:END -->
