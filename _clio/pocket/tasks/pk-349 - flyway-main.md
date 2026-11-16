@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T20:58:00Z'
+updated_date: '2026-11-16T21:02:00Z'
 labels:
   - s
   - clio-main
@@ -994,4 +994,7 @@ PK-349:W1150 (2026-11-16 22:58, dima, herdr-typed): third, then halt.
 done 2026-11-16 22:57: f34 chat emoji reactions (PK-405): review against shepherdr base features (PK-405 done)
 
 regroom 22:58 (clio, wishkeeper's siesta read): W1138 «from now on, no Fable 5.2 unless he says so» is clio's reading of his raw «starting from now to fable 5.2 unless i say» (context, not dima's words); his 22:49 confirms it: «no fable 5.2 unless i say from now on». W1141 opened with clio's own quoted line; his words start at his ←: «fable resets 2/3. no fable 5.2 unless i say from now on. (only designer is agreed fable 5.2 medium (or high when i say))». W1137–W1142 recast his first person as he/him; his first person stands in the raw (grooms/2026-11-16-2240.raw.md, 2249.raw.md).
+
+PK-349:W1151 (2026-11-16 23:01, dima, herdr-typed): bad. today the mods lane had enough chances to test macroscope. tell the herdr lane to do code review now, and pick a good cadence to measure macro today.
+PK-349:W1152 (2026-11-16 23:01, dima, herdr-typed): tell the herdr codie to use macro and measure it, and log it.
 <!-- SECTION:NOTES:END -->
