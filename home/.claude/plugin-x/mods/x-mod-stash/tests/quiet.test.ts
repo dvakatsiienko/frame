@@ -16,6 +16,8 @@ const SID = 'q1q1q1q1-clio';
 const EVEN = new Date(2026, 9, 12, 15, 0).getTime();
 const ODD = new Date(2026, 9, 13, 15, 0).getTime();
 const MIN = 60_000;
+// the poll this file asks for through X_STASH_POLL_MS: 5× fewer ticks than the live 4 s over its hours of mock time
+const POLL = 20_000;
 
 const PID = 4242;
 
@@ -123,7 +125,12 @@ function world(
                 : { deny: 'no such file' },
     );
     on('env.get', (_$, e) => ({
-        value: isTestChild && e.name === 'X_MODS_TEST_CHILD' ? '1' : '/home',
+        value:
+            e.name === 'X_STASH_POLL_MS'
+                ? String(POLL)
+                : isTestChild && e.name === 'X_MODS_TEST_CHILD'
+                  ? '1'
+                  : '/home',
     }));
     on('ui.log', (_$, e) => {
         logged.push(String(e.text));
@@ -1433,7 +1440,7 @@ function relayWorld(on: On, delivered = true) {
 test("a parked crow wake goes to her session from clio's poll, and is marked sent", async ($, on) => {
     const w = relayWorld(on);
     await start($);
-    await w.clock.advance(5000);
+    await w.clock.advance(POLL);
     expect([w.sent, JSON.parse(w.files[RELAY] ?? '{}').isSent]).toEqual([
         [{ text: 'wake w1 · day · read the last 30 steps', to: CROW_SID }],
         true,
@@ -1443,15 +1450,15 @@ test("a parked crow wake goes to her session from clio's poll, and is marked sen
 test('a wake that does not go out stays parked for the next poll', async ($, on) => {
     const w = relayWorld(on, false);
     await start($);
-    await w.clock.advance(5000);
+    await w.clock.advance(POLL);
     expect(w.files[RELAY]).toBe(WAKE);
 });
 
 test('a wake already sent goes out once', async ($, on) => {
     const w = relayWorld(on);
     await start($);
-    await w.clock.advance(5000);
-    await w.clock.advance(5000);
+    await w.clock.advance(POLL);
+    await w.clock.advance(POLL);
     expect(w.sent.length).toBe(1);
 });
 

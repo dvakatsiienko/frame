@@ -7684,8 +7684,13 @@ export const register: Register = (on) => {
                 );
         if (!isPolling) {
             isPolling = true;
+            // a test's seam: a slower poll, read once, so a test over hours of mock time crosses fewer ticks; never a faster one
+            const asked = Number(
+                await $.env.get('X_STASH_POLL_MS').catch(() => undefined),
+            );
+            const pollMs = asked >= POLL_MS ? asked : POLL_MS;
             const tick = () =>
-                $.clock.after(POLL_MS, async () => {
+                $.clock.after(pollMs, async () => {
                     await takeHerdrRows($).catch(() => undefined);
                     await syncWindStore($).catch(() => undefined);
                     // an open board's view carries the tick's clock, so its «ago» times move on their own

@@ -12,9 +12,15 @@ const HOUR = 60 * MIN;
 const NOW = new Date(2026, 10, 3, 14, 0).getTime();
 const METER = '/home/.claude/shelf/cc-usage-window.json';
 const WATCH = { [`pace:${SID}`]: { since: NOW } };
-const POLL = 5_000;
+// the poll this file asks for through X_STASH_POLL_MS: 5× fewer ticks than the live 4 s
+const POLL = 20_000;
 
-function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
+function world(
+    on: On,
+    initial: Record<string, unknown> = {},
+    now = NOW,
+    poll = POLL,
+) {
     const clock = mock.clock(on, { now });
     const store = new Map<string, unknown>(Object.entries(initial));
     const files: Record<string, string> = {
@@ -59,7 +65,9 @@ function world(on: On, initial: Record<string, unknown> = {}, now = NOW) {
     on('command.run', () => ({ text: '' }));
     on('ui.log', () => ({ value: undefined }));
     on('session.receive', (_$, e) => ({ text: e.text }));
-    on('env.get', () => ({ value: '/home' }));
+    on('env.get', (_$, e) => ({
+        value: e.name === 'X_STASH_POLL_MS' ? String(poll) : '/home',
+    }));
     on('fs.read', (_$, e) =>
         e.path in files
             ? { value: files[e.path] ?? '' }
@@ -1203,16 +1211,48 @@ test('a registry row named after the start arms at the first turn end', async ($
     ]);
 });
 
-test('a dead target revived after 20 polls gets one line', async ($, on) => {
+test('a dead target revived after 5 polls gets one line', async ($, on) => {
     const w = world(on, WATCH);
     w.state.isRefused = true;
     w.meter(46, LEFT);
     await start($);
-    await w.clock.advance(20 * POLL);
+    await w.clock.advance(5 * POLL);
     const dead = w.turns.length;
     w.state.isRefused = false;
-    await w.clock.advance(5 * POLL);
+    await w.clock.advance(2 * POLL);
     expect([dead, rungs(w)]).toEqual([0, ['park']]);
+});
+
+/* the poll a test asks for */
+
+test('a poll asked slower than 4 s is kept: no line before it, one at it', async ($, on) => {
+    const w = world(on, WATCH);
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(POLL - 1);
+    const early = rungs(w);
+    await w.clock.advance(1);
+    expect([early, rungs(w)]).toEqual([[], ['park']]);
+});
+
+test('a poll asked faster than 4 s is refused: the live 4 s stands', async ($, on) => {
+    const w = world(on, WATCH, NOW, 1_000);
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(3_999);
+    const early = rungs(w);
+    await w.clock.advance(1);
+    expect([early, rungs(w)]).toEqual([[], ['park']]);
+});
+
+test('a poll that is no number keeps the live 4 s', async ($, on) => {
+    const w = world(on, WATCH, NOW, Number.NaN);
+    w.meter(46, LEFT);
+    await start($);
+    await w.clock.advance(3_999);
+    const early = rungs(w);
+    await w.clock.advance(1);
+    expect([early, rungs(w)]).toEqual([[], ['park']]);
 });
 
 /* beside the quiet gate */
