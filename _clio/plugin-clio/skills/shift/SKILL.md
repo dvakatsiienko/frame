@@ -60,7 +60,7 @@ dima, 2026-11-03: «to keep everyone's cache hot and never let it go cold, any t
 - `pnpm shift:checkup` in `~/frame` — every compaction guard red+green, spare age, `📡 watch-pr`, each with its why; any 🔴 = no shift
 - a bytes app in the plan passes `apps:essentials`
 - write `status: running`, `afk:` (on/off at the start), the members and each lane's merge rule into the plan file; no weekly budget line: the week is his, the ladder paces
-- `/clio:shift` itself sets `operator-override prs`, `by: shift` (FRM-524): every pr chunk lands with him fully afk, a self-edit or a re-signed chunk too; his hold and the brake still stop it
+- `/clio:shift` itself sets `operator-override prs`, `by: shift` (FRM-524): every pr chunk lands with him fully afk, a self-edit or a re-signed chunk too; his hold and the brake still stop it (a shift's grant never lifts the brake; only his typed word or band press does, FRM-631)
 - every live member's 🔥 on (§ hot caches); a wing parks with the shift, its wishes queue on its branch until the end; `pnpm -C ~/frame mods:set pace on`, which also turns the ⏰ waker on and notes what it found
 - one message to dima: mode, members, when the report lands. **from here the shift is on.**
 
