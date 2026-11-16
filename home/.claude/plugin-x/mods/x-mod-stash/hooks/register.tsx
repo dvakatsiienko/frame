@@ -2448,12 +2448,19 @@ async function capTold(
     const threads = (await threadRecords($)).filter(
         (t) => t.pid !== undefined && t.sessionId !== sid,
     );
+    const name = await sessionName($);
     let wing: ThreadRecord | undefined;
     for (const card of await readLanes($)) {
         const { runner } = card;
         const codie = card.members.codie;
         if (card.endedAt || !runner || !codie) continue;
-        if ((await successorOf($, codie)) !== sid) continue;
+        // a card keeps its codie by registry name, by the id its link resolved, or (an old card) by id alone
+        const linked = card.linkedIds?.codie;
+        const isMine =
+            (linked && (await successorOf($, linked)) === sid) ||
+            (await successorOf($, codie)) === sid ||
+            (!linked && memberKey(codie) === memberKey(name ?? ''));
+        if (!isMine) continue;
         wing ??= threads.find(
             (t) => t.role === WING_ROLE && bare(runnerOf(t)) === bare(runner),
         );
@@ -2462,7 +2469,7 @@ async function capTold(
     if (!lead?.sessionId) return 'no live coordinator';
     const sent = await $.session
         .send({
-            text: capLine(lane, count, (await sessionName($)) ?? sid),
+            text: capLine(lane, count, name ?? sid),
             to: { sessionId: lead.sessionId },
         })
         .catch((err) => ({

@@ -3954,6 +3954,31 @@ for (const [why, lanes, peer, to] of [
         true,
         CLIO.sessionId,
     ],
+    // a real card keeps its codie by registry name (sixth sense, FRM-504 exit 2)
+    [
+        'the card names its codie as the registry does',
+        wingLane({ members: { codie: ROUND_CODIE } }),
+        true,
+        WING.sessionId,
+    ],
+    [
+        'the card names its codie by a name it has since left, linked by id',
+        wingLane({
+            linkedIds: { codie: SID },
+            members: { codie: '⚡ 🔧 codie: mods lane 5 | FRM-1' },
+        }),
+        true,
+        WING.sessionId,
+    ],
+    [
+        'the card names another codie, linked by another id',
+        wingLane({
+            linkedIds: { codie: 'other-sid' },
+            members: { codie: '⚡ 🔧 codie: herdr | FRM-2' },
+        }),
+        true,
+        CLIO.sessionId,
+    ],
 ] as const)
     test(`past the cap the line goes to ${to === WING.sessionId ? 'the wing' : 'main clio'}: ${why}`, async ($, on) => {
         const w = roundWorld(on, {
