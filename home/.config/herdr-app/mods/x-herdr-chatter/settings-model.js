@@ -171,7 +171,7 @@ export const pages = [
                         default: '',
                         key: 'stash.wind.text.press',
                         title: 'When I press 🐦‍🔥',
-                        why: 'what a thread reads when you press its 🐦‍🔥; the auto path never uses this one',
+                        why: 'what a thread reads when you press its 🐦‍🔥; the auto path never uses it, and written here the coordinator reads it too',
                     },
                     {
                         control: { kind: 'text', needs: WIND_WORDS },
