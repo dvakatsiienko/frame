@@ -25,12 +25,23 @@ import {
     shared,
     theme,
     watchFolder,
+    writeTextFile,
 } from 'herdr';
 
 import { splitBlocks } from './blocks.js';
 import { createDrafts } from './draft.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
+import { ICONS } from './icons.js';
+import {
+    HOLD_DELAY_MS,
+    HOLD_PUSH_MS,
+    JOINED_SHOWN_MS,
+    JOINS_DIR,
+    JOIN_TAKE_MS,
+    holdSend,
+} from './joins.js';
+import { createMagic } from './magic.js';
 import { createPlace } from './place.js';
 import { sendArgs } from './queued.js';
 import { createReader } from './reader.js';
@@ -55,6 +66,55 @@ const PLACE_SAVE_MS = 600;
 const SETTLE_MS = 120;
 // earlier pages read at most this many times while looking for the message he was reading
 const PLACE_PAGES = 8;
+// x-mod-stash writes each thread's state here, its joins among it, one file per session
+const STATE_DIR = '.claude/shelf/herdr-state';
+// his settings, kept by the old chat's settings window until the new one moves in
+const SETTINGS_FILE = '.claude/shelf/herdr-settings/settings.json';
+// under a mark, the join row is rewritten this long after his last key
+const RETEXT_MS = 400;
+const SEND_SIZE = 28;
+const NOT_IN_HERDR = 'This thread does not run in herdr: nothing was sent';
+
+/** the join file's doors in herdr: a mkdir lock dir, its age from macOS stat, a write over the text it read */
+/** @type {import('./joins.js').JoinIo} */
+const joinIo = {
+    lock: async (path) =>
+        (await exec('mkdir', [path]).catch(() => null))?.code === 0,
+    lockAge: async (path) => {
+        const out = await exec('stat', ['-f', '%m', path]).catch(() => null);
+        const at = Number(out?.stdout.trim());
+        return out?.code === 0 && at ? Date.now() - at * 1000 : null;
+    },
+    now: () => Date.now(),
+    read: (path) => readTextFile(path),
+    sleep: async (ms) => {
+        await exec('sleep', [String(ms / 1000)]);
+    },
+    unlock: async (path) => {
+        await exec('rmdir', [path]);
+    },
+    write: (path, body, expected) => writeTextFile(path, body, expected),
+};
+
+const newId = () =>
+    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) =>
+        (c === 'x'
+            ? Math.floor(Math.random() * 16)
+            : Math.floor(Math.random() * 4) + 8
+        ).toString(16),
+    );
+
+/** the thread's session, which names its state and join files @param {string} file its transcript */
+const sidOf = (file) => file.slice(file.lastIndexOf('/') + 1, -'.jsonl'.length);
+
+/** herdr's window answers only inside a call it made; a timer tick may get a throw, read as «still active» */
+function isWindowActive() {
+    try {
+        return window.is_window_active() !== false;
+    } catch {
+        return true;
+    }
+}
 
 /** a theme colour made see-through @param {Color} color @param {string} alpha two hex digits @returns {Color} */
 const tint = (color, alpha) => `#${color.slice(1, 7)}${alpha}`;
@@ -139,8 +199,27 @@ export default class Chat extends View {
     drafts = createDrafts(localStorage);
     /** where a message to the shown thread goes: its herdr address @type {string | null} */
     address = null;
-    /** why his last message did not go, said over the quill until his next one does @type {string | null} */
-    unsent = null;
+    /** what the quill says about his last send: why it did not go, or why it went as a push @type {string | null} */
+    note = null;
+    /** the marks of the magic send: words waiting in the quill to join a turn */
+    magic = createMagic({
+        dir: `${home()}/${JOINS_DIR}`,
+        io: joinIo,
+        newId,
+        store: localStorage,
+    });
+    /** what the shown thread's state lists of its joins; null: joins are off for it @type {import('./magic.js').Joins | null} */
+    joins = null;
+    /** the pending wait for a change in the threads' state folder @type {import('herdr').FolderWatch | null} */
+    stateWatch = null;
+    /** a press on send under way @type {{ at: number } | null} */
+    hold = null;
+    holdFill = 0;
+    /** @type {{ cancel: () => void } | null} */
+    holdTask = null;
+    /** how long a hold takes to push: his two settings rows */
+    timing = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS };
+    lastKeyAt = 0;
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
     wake = () => {};
@@ -152,10 +231,22 @@ export default class Chat extends View {
     init(_props, cx) {
         const box = TextareaState.new({});
         box.set_auto_grow(1, 8);
-        box.on('change', () => this.drafts.keep(this.file, box.value()));
-        box.on('submit', (event, cx) =>
-            this.submit(box, event.shift === true, cx),
-        );
+        box.on('change', (_event, cx) => {
+            this.drafts.keep(this.file, box.value());
+            this.typedUnderMark(box, cx);
+        });
+        box.on('submit', (event, cx) => {
+            const { box: after, text } = submitted(
+                box.value(),
+                event.shift === true,
+            );
+            if (after === null) return;
+            // Enter's line break leaves; the words stay until they are sent or a turn takes them
+            box.set_value(text ?? '');
+            // cmd+Enter sends now, a turn starting; Enter is a click on send
+            if (event.secondary) this.push(box, cx);
+            else this.click(box, cx);
+        });
         this.box = box;
         // a check draws one frame and must read no thread
         if (checking()) return;
@@ -237,14 +328,14 @@ export default class Chat extends View {
                     .child(this.error ?? this.emptyLine()),
             );
         if (!this.file || !this.box) return root;
-        if (this.unsent)
+        if (this.note)
             root.child(
                 div()
                     .px(32)
                     .pb(6)
                     .text_size(12)
                     .text_color(t.muted)
-                    .child(this.unsent),
+                    .child(this.note),
             );
         return root.child(this.quill(this.box, t));
     }
@@ -265,14 +356,72 @@ export default class Chat extends View {
                 div()
                     .w_full()
                     .max_w(COLUMN)
+                    .relative()
                     .px(14)
-                    .py(12)
+                    .pt(12)
+                    // the send button sits in the card's bottom right corner, the text keeps clear of it
+                    .pb(SEND_SIZE + 12)
                     .rounded(12)
                     .bg(t.background)
                     .border(1)
                     .border_color(t.border)
-                    .child(Textarea.new(box)),
+                    .child(Textarea.new(box))
+                    .child(this.sendButton(box, t)),
             );
+    }
+
+    /**
+     * a click marks the quill's words to join the thread's turn, a hold sends them now
+     * @param {import('gpui-base').TextareaState} box
+     * @param {Theme} t
+     */
+    sendButton(box, t) {
+        const mark = this.magic.markOf(this.file);
+        const icon = !mark
+            ? ICONS.sendRest
+            : mark.state === 'joined'
+              ? ICONS.sendTaken
+              : ICONS.sendReady;
+        return div()
+            .id('chat-send')
+            .absolute()
+            .right(8)
+            .bottom(8)
+            .size(SEND_SIZE)
+            .rounded(SEND_SIZE / 2)
+            .flex()
+            .items_center()
+            .justify_center()
+            .overflow_hidden()
+            .bg(t.raised)
+            .text_size(13)
+            .cursor_pointer()
+            .hover((style) => style.bg(t.border))
+            .tooltip(
+                mark?.state === 'pending'
+                    ? 'Take it back (Enter), hold to send now'
+                    : 'Join the turn (Enter), hold to send now (⌘Enter)',
+            )
+            .on_mouse_down('left', (_event, cx) => this.press(box, cx))
+            .on_mouse_up('left', (_event, cx) =>
+                this.holdStep(box, 'release', cx),
+            )
+            .on_hover((isOver, cx) => {
+                if (!isOver) this.holdStep(box, 'cancel', cx);
+            })
+            .when(this.holdFill > 0, (el) =>
+                // a disc grows from the centre while the hold runs
+                el.child(
+                    div()
+                        .absolute()
+                        .left((SEND_SIZE / 2) * (1 - this.holdFill))
+                        .top((SEND_SIZE / 2) * (1 - this.holdFill))
+                        .size(SEND_SIZE * this.holdFill)
+                        .rounded(SEND_SIZE / 2)
+                        .bg(t.accent),
+                ),
+            )
+            .child(div().relative().child(icon));
     }
 
     /** what the view says while it has no row to draw */
@@ -407,7 +556,7 @@ export default class Chat extends View {
                         .bg(t.raised)
                         .text_color(t.muted)
                         .tooltip('Go to the newest')
-                        .child('↓')
+                        .child(ICONS.newest)
                         .on_click((_event, cx) => {
                             this.at.newest();
                             if (this.file)
@@ -577,7 +726,11 @@ export default class Chat extends View {
         this.reader = null;
         this.file = null;
         this.address = null;
-        this.unsent = null;
+        this.note = null;
+        this.joins = null;
+        this.stateWatch?.cancel();
+        this.stateWatch = null;
+        this.cancelHold();
         this.showDraft();
         this.error = null;
         this.isRead = false;
@@ -607,6 +760,7 @@ export default class Chat extends View {
             ]);
             if (pid !== this.pid) return;
             this.address = addressIn(claude.stdout);
+            cx.spawn((cx) => this.watchState(file, cx));
             const reader = createReader(doorTo(file));
             this.reader = reader;
             const dir = file.slice(0, file.lastIndexOf('/'));
@@ -663,24 +817,111 @@ export default class Chat extends View {
     }
 
     /**
-     * Enter in the quill: his text goes to the thread shown, as its Claude's next prompt, or waits in its queue while
-     * it works. a message that did not go comes back to the quill
-     * @param {import('gpui-base').TextareaState} box
-     * @param {boolean} isShift
+     * the shown thread's state, read at each change of the state folder: its joins settle the quill's mark
+     * @param {string} file the thread's transcript
      * @param {Context} cx
      */
-    submit(box, isShift, cx) {
-        const { box: after, text } = submitted(box.value(), isShift);
-        if (after === null) return;
-        const { address, file } = this;
-        if (text && !address) {
-            box.set_value(text);
-            this.unsent = 'This thread does not run in herdr: nothing was sent';
-            cx.notify();
-            return;
+    async watchState(file, cx) {
+        const dir = `${home()}/${STATE_DIR}`;
+        const settings = await readTextFile(`${home()}/${SETTINGS_FILE}`)
+            .then((text) => JSON.parse(text ?? 'null')?.rows)
+            .catch(() => null);
+        if (this.file !== file) return;
+        this.timing = {
+            delay: Number(
+                settings?.['chatter.send.holdDelay'] ?? HOLD_DELAY_MS,
+            ),
+            push: Number(settings?.['chatter.send.holdPush'] ?? HOLD_PUSH_MS),
+        };
+        while (this.file === file) {
+            // armed before the read, so a change during it is never missed
+            const watch = watchFolder(dir);
+            this.stateWatch = watch;
+            const state = await readTextFile(`${dir}/${sidOf(file)}.json`)
+                .then((text) => JSON.parse(text ?? 'null'))
+                .catch(() => null);
+            if (this.file !== file) return;
+            this.joins = state?.joins ?? null;
+            this.settle(cx);
+            await watch;
         }
-        box.set_value(after);
-        if (!text || !address) return;
+    }
+
+    /** the mark of the shown thread against its state: taken by a turn, or by none in a minute @param {Context} cx */
+    settle(cx) {
+        const { box, file } = this;
+        if (!box || !file) return;
+        const settled = this.magic.settle(file, this.joins, box.value());
+        if (!settled) return;
+        if (settled.quill !== null) box.set_value(settled.quill);
+        this.note = settled.note;
+        // the taken mark shows for a moment, then the button rests
+        if (!settled.note)
+            cx.timer.after(JOINED_SHOWN_MS, (later) => {
+                this.magic.forget(settled.id);
+                later.notify();
+            });
+        cx.notify();
+    }
+
+    /**
+     * a click on send, or Enter: the quill's words are marked to join the thread's turn, or the mark is taken off; a
+     * thread that takes no joins, or a slash command, gets them as a plain send
+     * @param {import('gpui-base').TextareaState} box
+     * @param {Context} cx
+     */
+    click(box, cx) {
+        const { file } = this;
+        const text = box.value().trim();
+        if (!text || !file) return;
+        if (!this.address) return this.say(NOT_IN_HERDR, cx);
+        const answer = this.magic.click(file, sidOf(file), text, this.joins);
+        cx.notify();
+        cx.spawn(async (cx) => {
+            const { act, note } = await answer;
+            if (this.file !== file) return;
+            if (act === 'push') return this.send(box, text, note, cx);
+            // a mark no turn takes in a minute comes off by itself
+            if (act === 'marked')
+                cx.timer.after(JOIN_TAKE_MS + 500, (later) =>
+                    this.settle(later),
+                );
+            this.say(note, cx);
+        });
+    }
+
+    /**
+     * a hold on send, or cmd+Enter: the quill's words go now and a turn starts; words marked to join leave the join
+     * file first, so they never go twice
+     * @param {import('gpui-base').TextareaState} box
+     * @param {Context} cx
+     */
+    push(box, cx) {
+        const { file } = this;
+        const text = box.value().trim();
+        if (!text || !file) return;
+        if (!this.address) return this.say(NOT_IN_HERDR, cx);
+        cx.spawn(async (cx) => {
+            const why = await this.magic.release(file);
+            if (this.file !== file) return;
+            if (why) return this.say(why, cx);
+            this.send(box, text, null, cx);
+        });
+    }
+
+    /**
+     * the words leave the quill for the thread shown, as its Claude's next prompt, or wait in its queue while it
+     * works. a message that did not go comes back to the quill
+     * @param {import('gpui-base').TextareaState} box
+     * @param {string} text
+     * @param {string | null} note why it went this way
+     * @param {Context} cx
+     */
+    send(box, text, note, cx) {
+        const { address, file } = this;
+        if (!address) return;
+        box.set_value('');
+        this.say(note, cx);
         cx.spawn(async (cx) => {
             const sent = await hc(sendArgs(address, text)).catch(
                 (/** @type {unknown} */ error) => ({
@@ -688,16 +929,87 @@ export default class Chat extends View {
                     stderr: String(error),
                 }),
             );
-            if (this.file !== file) return;
-            const hadNote = this.unsent !== null;
-            this.unsent =
-                sent.code === 0
-                    ? null
-                    : `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`;
+            if (this.file !== file || sent.code === 0) return;
             // his words come back unless he has typed on
-            if (sent.code !== 0 && !box.value()) box.set_value(text);
-            if (hadNote || this.unsent) cx.notify();
+            if (!box.value()) box.set_value(text);
+            this.say(
+                `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,
+                cx,
+            );
         });
+    }
+
+    /** @param {string | null} note @param {Context} cx */
+    say(note, cx) {
+        this.note = note;
+        cx.notify();
+    }
+
+    /**
+     * he typed under a mark: once his keys rest, the join row carries the quill's words; an emptied quill unmarks
+     * @param {import('gpui-base').TextareaState} box
+     * @param {Context} cx
+     */
+    typedUnderMark(box, cx) {
+        const { file } = this;
+        if (this.magic.markOf(file)?.state !== 'pending' || !file) return;
+        const at = Date.now();
+        this.lastKeyAt = at;
+        cx.timer.after(RETEXT_MS, (later) => {
+            if (this.lastKeyAt !== at || this.file !== file) return;
+            later.spawn(async (cx) => {
+                const isChanged = await this.magic.typed(
+                    file,
+                    box.value().trim(),
+                    this.joins,
+                );
+                if (isChanged) cx.notify();
+            });
+        });
+    }
+
+    /**
+     * a press on send starts the hold: a release before its delay is a click, a hold to its end pushes
+     * @param {import('gpui-base').TextareaState} box
+     * @param {Context} cx
+     */
+    press(box, cx) {
+        // an empty quill has nothing to send: no hold, no disc
+        if (!box.value().trim() || !this.file) return;
+        this.cancelHold();
+        this.hold = holdSend(null, 'press', Date.now(), this.timing).hold;
+        this.holdTask = cx.timer.every(33, (later) =>
+            this.holdStep(box, 'tick', later),
+        );
+    }
+
+    /**
+     * @param {import('gpui-base').TextareaState} box
+     * @param {'tick' | 'release' | 'cancel'} event
+     * @param {Context} cx
+     */
+    holdStep(box, event, cx) {
+        if (!this.hold) return;
+        // a window that lost focus cuts the hold, as a pointer that left the button does
+        const step = holdSend(
+            this.hold,
+            event === 'tick' && !isWindowActive() ? 'cancel' : event,
+            Date.now(),
+            this.timing,
+        );
+        this.hold = step.hold;
+        this.holdFill = step.hold ? step.fill : 0;
+        if (!step.hold) this.cancelHold();
+        if (step.act === 'push') this.push(box, cx);
+        else if (step.act === 'join') this.click(box, cx);
+        cx.notify();
+    }
+
+    cancelHold() {
+        this.holdTask?.cancel();
+        this.holdTask = null;
+        this.hold = null;
+        this.holdFill = 0;
     }
 
     /** the quill holds the shown thread's draft, the caret after it; no thread, an empty quill */
