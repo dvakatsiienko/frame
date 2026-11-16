@@ -60,4 +60,6 @@ markdown files in `.macroscope/check-run-agents/`, each an ai check on every pr 
 
 ## rounds
 
+- 2026-11-16 15:11–15:13 · cli, budget, `--base f9ce0aff --raw --isolate=false`, run by the mods codie (FRM-504 fix + FRM-634; the herdr codie's FRM-625 commits rode in: it read f9ce0aff..aa8b0123) · 124 s, exit 0, 67 of 67 code objects · findings 2, real 2, noise 0; 1 found only by macroscope (`x-mod-stash/hooks/register.tsx:7066`, a baseline never written, introduced by a review fix after both wisphunter reads), 1 in the herdr codie's code (`x-herdr-chatter/main.js:7118`, a thread switch keeps the old thread's 🍃 state), unjudged by its owner yet · cost: billing before (15:10) balance $100.00, spend $0.00; usage tab after (15:16) 257.5 agent credits = $2.58; the balance line still read $100.00 / $0.00 («usage data may be delayed by a few minutes»); credits before the round were not read, taken as 0 from the $0.00 spend (inference) · the free tier's 1,000 cli credits a month ≈ 3.9 rounds of this size
+
 ## verdict
