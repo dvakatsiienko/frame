@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T16:36:00Z'
+updated_date: '2026-11-16T17:07:00Z'
 labels:
   - s
   - clio-main
@@ -879,4 +879,10 @@ PK-349:W1057 (2026-11-16 17:43, dima): review the mess hunt after egg basket mov
 correction to PK-349:W1051 (2026-11-16 17:46, dima): the W1051 line opens with clio's own 17:45 reply, not dima's words. clio's part is everything before the «←» ("Both weekly counts move into the Monday boot … action items for anything drifted."). dima's own words are what follows the «←»: "clarification on what i want by «drifted hunt» — e.g. When numbers do not show good results, I expect you to propose how to make them show and fix them so numbers will show good results on the next audit".
 
 PK-349:W1058 (2026-11-16 18:21, dima): proceed with grill and move herdr codie. (herdr-typed, no raw file; from clio's message)
+
+PK-349:W1059 (2026-11-16 18:50, dima, herdr-typed): where do you need me now, and what is next to solve? i want to solve all possible tails of yours today, so tomorrow i can calmly resume speak app v2. with a wing, while you do the herdr lane and the mods/cli lane.
+
+19:07 his 19:01–19:03 lines, both answered in the 19:06 reply (the tail round is orbit o76; the mods lane takes FRM-612, then the events call sites):
+PK-349:W1060 (2026-11-16 19:01, dima): ❓ after this, propose another round of tail hunting. what next to solve? (your side)
+PK-349:W1061 (2026-11-16 19:03, dima): ❓ what do the mods lane do after its current cli-related chunk?
 <!-- SECTION:NOTES:END -->

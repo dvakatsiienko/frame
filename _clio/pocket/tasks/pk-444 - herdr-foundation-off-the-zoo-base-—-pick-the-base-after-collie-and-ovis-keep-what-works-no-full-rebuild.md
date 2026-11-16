@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T16:36:00Z'
+updated_date: '2026-11-16T16:52:00Z'
 labels:
   - m
 dependencies: []
@@ -320,4 +320,24 @@ correction to PK-444:W123 (2026-11-16 17:55, dima): the W123 line is a third-per
 PK-444:W131 (2026-11-16 18:35, dima): fps shows 120. something drops it up to 40fps, even 13, 11 worst. observation: when i do not scroll, the fps meter number gets very low; then i scroll and it resets to 120fps.
 PK-444:W132 (2026-11-16 18:35, dima): tell when i can have the fps meter removed: it distracts me. (herdr-typed, no raw file; from clio's message)
 PK-444:W133 (2026-11-16 18:35, dima): thumbnail is confirmed for x-herdr-layout, not for egg basket.
+
+PK-444:W134 (2026-11-16 18:39, dima): i am writing from shepardr; same symptoms. fps 120 on scroll, down to 11 when i do not scroll. any chat action, even text select, bumps fps up to about 60; scrolling bumps it the most, up to 120.
+
+PK-444:W135 (2026-11-16 18:39, dima): even the mouse pointer moving over the bubbles in chat boosts fps, depending on how hard i move it. is this data enough? you told another measure is needed with codie.
+
+PK-444:W136 (2026-11-16 18:43, dima): i was scrolling wildly, not the way you told me; the overlay hidden notes from you i could not read.
+
+PK-444:W137 (2026-11-16 18:50, dima, herdr-typed): tell when i can have the fps meter removed; it distracts me.
+
+PK-444:W138 (2026-11-16 18:50, dima, herdr-typed): can i have good fps all the time? i feel the fps drop is real, only hidden because the chat does not scroll. i feel low fps while i type in quill.
+
+PK-444:W139 (2026-11-16 18:50, dima, herdr-typed): do you need me for this (o67), or is it an under-the-hood measure?
+
+PK-444:W140 (2026-11-16 18:50, dima, herdr-typed): i did the probe scrolling. did i do it correctly?
+
+PK-444:W141 (2026-11-16 18:50, dima, herdr-typed): probe again: correctly?
+
+PK-444:W142 (2026-11-16 18:50, dima, herdr-typed): tell when and how first, then measure (dima's words after the ← in clio's typing-measure line).
+
+PK-444:W143 (2026-11-16 18:50, dima, herdr-typed): seems like the typing test passed? confirm if it is.
 <!-- SECTION:NOTES:END -->
