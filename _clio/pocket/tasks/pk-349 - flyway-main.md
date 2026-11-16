@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T21:02:00Z'
+updated_date: '2026-11-16T21:16:00Z'
 labels:
   - s
   - clio-main
@@ -997,4 +997,8 @@ regroom 22:58 (clio, wishkeeper's siesta read): W1138 «from now on, no Fable 5.
 
 PK-349:W1151 (2026-11-16 23:01, dima, herdr-typed): bad. today the mods lane had enough chances to test macroscope. tell the herdr lane to do code review now, and pick a good cadence to measure macro today.
 PK-349:W1152 (2026-11-16 23:01, dima, herdr-typed): tell the herdr codie to use macro and measure it, and log it.
+
+PK-349:W1153 (2026-11-16 23:13, dima): empty-wakes and my silent-comms weekly habit confuse me. can we make a name pattern so all weekly checks are named weekly-*? so empty-wakes → weekly-empty-wakes? find all of them like this and rename them, or propose a better name.
+PK-349:W1154 (2026-11-16 23:13, dima): evergreen stays evergreen (it is self-descriptive).
+PK-349:W1155 (2026-11-16 23:14, dima, herdr-typed): macroscope usage: what is the mid-test-drive verdict? does macroscope work for me or not? will I be able to use macro on the free tier for a month, or does the free quota die in a week?
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T21:02:00Z'
+updated_date: '2026-11-16T21:16:00Z'
 labels:
   - m
 dependencies: []
@@ -400,4 +400,7 @@ PK-444:W194 (2026-11-16 22:15, dima): solve the 4 incomplete herdr tickets and s
 PK-444:W195 (2026-11-16 23:01, dima, herdr-typed): what is the empty-wakes reminder? do you need me?
 PK-444:W196 (2026-11-16 23:01, dima, herdr-typed): what do you want from me for me to have the light theme?
 PK-444:W197 (2026-11-16 23:01, dima, herdr-typed): how can the herdr codie do two probes? can he do it now?
+
+PK-444:W199 (2026-11-16 23:13, dima, o136 steer, on the herdr scroll probe): go now, and when done, say in your reply that it is done.
+PK-444:W198 (2026-11-16 23:13, dima, o137 steer): ask codie to create a good, pleasant, beautiful light theme as the initial implementation. when we do a design round for herdr, we will create another proper palette via the designer.
 <!-- SECTION:NOTES:END -->
