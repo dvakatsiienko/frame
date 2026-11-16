@@ -248,15 +248,21 @@ describe('a proposal clio writes', () => {
         return path;
     }
 
-    test('wakes crow with a proposal line', async () => {
-        const fixture = home();
-        const path = proposal(fixture);
-        const { first } = crow(fixture.socket);
-        await hook(fixture, { path, tool: 'Write' });
-        expect(await first).toMatch(
-            new RegExp(` · mode decision · .* · proposal ${path}$`),
-        );
-    });
+    test.each([false, true])(
+        'wakes crow with a proposal line, relative %s',
+        async (relative) => {
+            const fixture = home();
+            const path = proposal(fixture);
+            const { first } = crow(fixture.socket);
+            await hook(fixture, {
+                path: relative ? path.replace(`${fixture.dir}/`, '') : path,
+                tool: 'Write',
+            });
+            expect(await first).toMatch(
+                new RegExp(` · mode decision · .* · proposal ${path}$`),
+            );
+        },
+    );
 
     test('a wake that cannot reach crow leaves a failed line in harvest.log', async () => {
         const fixture = home();

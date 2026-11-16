@@ -1187,8 +1187,9 @@ export function proposalOf(
     command?: string,
     cwd?: string,
 ): Decision | undefined {
+    // a relative file_path stands where the call's cwd stands; the packet reads the file from the hook's own cwd
     if ((tool === 'Write' || tool === 'Edit') && path && PROPOSAL.test(path))
-        return { kind: 'proposal', path };
+        return { kind: 'proposal', path: cwd ? resolve(cwd, path) : path };
     // a heredoc or tee writes the proposal from Bash: its target follows the redirect
     if (tool === 'Bash' && command) {
         const target = [
