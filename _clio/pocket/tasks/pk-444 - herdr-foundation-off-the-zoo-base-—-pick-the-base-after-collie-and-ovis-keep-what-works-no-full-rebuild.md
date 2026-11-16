@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T15:59:00Z'
+updated_date: '2026-11-16T16:03:00Z'
 labels:
   - m
 dependencies: []
@@ -301,4 +301,6 @@ chatter wisp ( i write from egg basket) — something resets shatter view to ver
 also «newest» — cut to «↓» and make it smaller and out of cetner, make it less noisy.
 The efficient «see far» road is to move nothing into the old layout at all: you start living in egg-basket, and it becomes itrout by a rename at the end. ← keen idea. i like. ok i then live in egg basket, which becomes itrout later.
 can i have then egg basket to support light theme too? i want both theme light and dark. currently i have «light theme» selected but it shows dark theme.(not urgent, features first)
+
+18:03 W123 and W124 (the chat scroll wisp) moved → FRM-637:W1, W2; the herdr codie builds it, greenlit 18:00
 <!-- SECTION:NOTES:END -->
