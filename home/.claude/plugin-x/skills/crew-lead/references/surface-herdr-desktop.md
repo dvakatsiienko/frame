@@ -19,7 +19,7 @@ herdr is where every thread runs today: clio main and its wings, codie, sixth se
 ## stop
 
 - by its terminal id, `hc kill <t>`, never a bare close: a close with no target ends dima's focused thread
-- never a layout save or switch while a thread holds focus: it kills that thread (herdr-app#861, `herdr/PRODUCT.md`)
+- a layout switch is safe since the 11-10 fix and stays dima's hand (`herdr/PRODUCT.md`)
 
 ## when herdr is down
 
