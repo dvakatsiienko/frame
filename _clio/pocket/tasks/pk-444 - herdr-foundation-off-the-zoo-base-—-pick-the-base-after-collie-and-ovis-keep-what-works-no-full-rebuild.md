@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T14:35:00Z'
+updated_date: '2026-11-16T14:56:00Z'
 labels:
   - m
 dependencies: []
@@ -127,4 +127,53 @@ PK-444:W47 (2026-11-16 16:36, dima, o29 steer): Pull only clean, decided feature
 16:34 the 15:40 «fyi how ovis looks» line was groomed twice as W41; its second copy is renumbered W47 (wish-cover's own fix), no word changed.
 
 16:35 o29 refolded from helga's groom as W46 and W47; the twice-groomed 15:40 line is W48. round 1 of the new-chat shape-idea: .scratch/herdr/grill-1-proposal.md.
+
+groomed prompt 16:51:
+PK-444:W49 (2026-11-16 16:07, dima): ovis: I do not like it. It does not have mods, and it is not better than c desktop app.
+PK-444:W50 (2026-11-16 16:07, dima): If there is nothing to borrow from it, uninstall it completely and clean all tails.
+
+groomed prompt 16:51:
+PK-444:W51 (2026-11-16 16:13, dima): [Image #3] tell what you think about collie.
+
+groomed prompt 16:51:
+PK-444:W52 (2026-11-16 16:27, dima): Re "cuts first, then shepherdr": so what, then? We borrow the final borrow map, and we borrow only the chatter from Shepherder (e.g. replace our current chatter with Shepherder's and move from there).
+PK-444:W53 (2026-11-16 16:27, dima): The right question, the done question mark, is done after the cuts. So now we do the cuts.
+PK-444:W54 (2026-11-16 16:27, dima): What about tabs? Who has the best tabs, Shepherder or terminals? I think, while we make decisions here, Herdr, Codie can replace tabs. Meanwhile?
+PK-444:W55 (2026-11-16 16:27, dima): Do now, 1: propose the borrowing map, final.
+PK-444:W56 (2026-11-16 16:27, dima): Do now, 2: bring back the cuts view. I want a clear picture of what we have, what to cut and why, and a diagram with shown areas (what is what and where, what goes and what stays), clean. You already showed that diagram in a message, but I was overloaded, and now I dedicate my attention to the cuts. Let's prioritize it so codie is unblocked.
+PK-444:W57 (2026-11-16 16:27, dima): Proceed.
+PK-444:W58 (2026-11-16 16:27, dima): Re "the chat swap is not a plain swap" (Shepherdr's chat file is about 4,600 lines and pulls in about 45 of its own files, including tasks, voice and secrets): propose here, I'm struggling to pick without knowing the under-the-hood details.
+PK-444:W59 (2026-11-16 16:27, dima): Can we utilize egg-basket? Maybe create a new chatter, pull in the best Shepherdr parts (omitting the specific parts we do not use), merge it with our decided FTRs from the current crap chatter, and when done replace my crap chatter with the new one from egg-basket = migration done? Propose; you are a CTO and architect.
+
+groomed prompt 16:51:
+PK-444:W60 (2026-11-16 16:46, dima): Re "shepherdr: only chat parts, nothing of its tasks, coordinator, voice or service": maybe message bubbles too? It has nice ones.
+PK-444:W61 (2026-11-16 16:46, dima): Ask codie to compare chat bubbles: where are they better?
+PK-444:W62 (2026-11-16 16:46, dima): Let me peek into shepardr view again; I confirm after this message.
+PK-444:W63 (2026-11-16 16:46, dima): Re "flockbook: two things under the hood (its row-height test and its fake herdr)": ok.
+PK-444:W64 (2026-11-16 16:46, dima): Re "2. every thread, in your own order": so we build from scratch, or is there a solid agents list to start with (shepardr, herdr native)? Or from scratch, or via the egg-basket idea?
+PK-444:W65 (2026-11-16 16:46, dima): 4. Tab bar: delete zoo crap and wire Terminals version.
+PK-444:W66 (2026-11-16 16:46, dima): Files and Changes buttons, and + moves to x-herdr-chatter-header (in egg-basket).
+PK-444:W67 (2026-11-16 16:46, dima): Re "6. thread's top row, Chat | Terminal switch": this is what we currently have as x-herdr-chatter-header; it stays, and let's have it with the same name in the new version in egg-basket.
+PK-444:W68 (2026-11-16 16:46, dima): 7. New chatter in egg-basket, no crap! SOLID. It is my main view where I read, so it must be pristine and fast.
+PK-444:W69 (2026-11-16 16:46, dima): Re "9. quick terminal's head row (ctrl-j)": can you explain what this role does?
+PK-444:W70 (2026-11-16 16:46, dima): I want a quick terminal to pop out via Control+J; I'm not sure about this quick terminal head role from Zoo, and I don't see anything useful coming from it.
+PK-444:W71 (2026-11-16 16:46, dima): Does it allow multiple tabs in that pop-out? If yes, and only this is deleted, it's better to create a new one if I ever want it.
+PK-444:W72 (2026-11-16 16:46, dima): Re "10. the quick terminal itself": useful via ctrl+j.
+PK-444:W73 (2026-11-16 16:46, dima): Help me solve herdr efficiently. I want to start speak app v2 after herdr is solved and all tails are solved.
+PK-444:W74 (2026-11-16 16:46, dima): Re "worth taking: the frame as the skeleton (about 90 lines, no mod code) and its colours (11 lines)": do.
+PK-444:W75 (2026-11-16 16:46, dima): Re "small: two restraint edits to our thread header": do.
+PK-444:W76 (2026-11-16 16:46, dima): Re "taking the frame loses the quick-terminal tray and the sidebar's logo, search and Settings rows, unless we place them again": let's do; I'll tell if I miss something.
+PK-444:W77 (2026-11-16 16:46, dima): Re "quick-terminal tray": the one that opens via ctrl+j? I do not want it deleted; it's useful.
+PK-444:W78 (2026-11-16 16:46, dima): Re "a second playground layout, opened by your hand, not written yet, wants a name first": probe, I want to look; propose a name.
+PK-444:W79 (2026-11-16 16:46, dima): Re "q1, Moves: everything you proposed plus": bubbles.
+PK-444:W80 (2026-11-16 16:46, dima): Re "bubbles": it has interactive buttons below chat bubbles, like copy message (some of our planned chunks are auto solved after this).
+PK-444:W81 (2026-11-16 16:46, dima): And overall, scan everything we planned for herdr and see what we can just borrow already built (only if the build is solid).
+
+groomed prompt 16:56: PK-444:W82 (2026-11-16 16:49, dima): Model picker: tell codie to take the best parts from shepardr's model picker and merge them into ours gracefully.
+PK-444:W83 (2026-11-16 16:49, dima): Not needed for now: model search; fast mode.
+PK-444:W84 (2026-11-16 16:49, dima): Permissions: borrow, but do proper names. Full access = bypass permissions.
+
+groomed prompt 16:56: PK-444:W85 (2026-11-16 16:52, dima): Tool calls are questionable: when I open the tool calls history, a whole huge pile of actions pops out at me.
+PK-444:W86 (2026-11-16 16:52, dima): I want them slightly more nested: opening the list of tool calls should show it unfolded first; then I fold out each tool call one by one to peek into it, instead of all tool calls being described and folded out at once.
+PK-444:W87 (2026-11-16 16:52, dima): So it is a partial borrow. In the current chapter 2, calls don't work at all, so probably borrow, but adjust.
 <!-- SECTION:NOTES:END -->

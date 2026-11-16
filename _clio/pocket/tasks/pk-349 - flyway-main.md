@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T14:22:00Z'
+updated_date: '2026-11-16T14:52:00Z'
 labels:
   - s
   - clio-main
@@ -798,4 +798,9 @@ PK-349:W1031 (2026-11-16 15:55, dima): This is true but this only works when som
 PK-349:W1032 (2026-11-16 15:55, dima): coordinate properly across everyone. i want all issues fixed, no tails left.
 
 done 2026-11-16 16:22: f27 agent-idea label: create it, clio:pm's create step, PK-423's lines out of FRM-617 (o15) (PK-423 done, FRM-617 Todo)
+
+groomed prompt 16:51:
+PK-349:W1033 (2026-11-16 16:46, dima): Re "why the mods lane parked (its naming fix finished, its next chunk waits on your seal and sign)": then sign and seal? Why is the mods lane parked? Let it move.
+PK-349:W1034 (2026-11-16 16:46, dima): Re "the weekly usage is burning fast": as planned, I have 1 fable usage reset; that's why I asked for the fable 5.2 / opus 5.5 split today. My plan is to have 100% fable usage, reset, and then move on with opus 5.5 for everyone.
+PK-349:W1035 (2026-11-16 16:46, dima): Do not worry, just act efficiently; it is your job.
 <!-- SECTION:NOTES:END -->
