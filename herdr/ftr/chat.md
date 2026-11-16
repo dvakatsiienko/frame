@@ -78,6 +78,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355)
 - ⬜ a pasted image goes the way a dropped one does, by its path (FRM-613)
   - makes: the clipboard's image as `~/.config/herdr-app/data/x-herdr-chatter/shots/shot-<ms>.png`
+  - and that file is his shot: the chat never deletes it, sent or taken out of the box; only a scaled copy the chat made of a dropped picture is removed
+  - decision: no cleanup at load. the one that removed every unclaimed shot older than an hour took five of his shots on 2026-11-16 (clio, his word relayed 20:53: a shot he took is his file, kept until his word)
   - given dima pastes an image with cmd+v
   - then its preview waits over the quill and nothing is typed into Claude Code's own prompt
   - and its × takes it at once, mid-turn too, and the next send carries no image

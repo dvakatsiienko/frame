@@ -1,7 +1,7 @@
 // Pictures waiting over the quill until sent. A pasted screenshot is saved here as a png and goes the way a dropped
 // picture does, by its path (FRM-613): never into Claude's own prompt, so × edits only our list. The png is its own
 // preview, kept per thread in shots.json, so a chat reload still shows what waits.
-import { mkdir, readFile, readdir, unlink, writeFile } from 'fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'fs/promises';
 import { appHome, exec } from 'herdr';
 
 // image() loads from the app's own directory, so the previews live under it
@@ -50,13 +50,9 @@ export function parseShots(text) {
     }
 }
 
-// a preview's paste time, from its name (readClipboard writes shot-<ms>.png)
-/** @param {string} rel */
-const shotTime = (rel) => Number(/shot-(\d+)\.png$/.exec(rel)?.[1] ?? 0);
-
 /**
  * the store after a thread's waiting files change: the ones in our own dir (a pasted png) under `<address> files`, so
- * a reload brings them back and the sweep spares them; a file dropped from elsewhere stays out
+ * a reload brings them back; a file dropped from elsewhere stays out
  * @param {ShotStore} store @param {string} address @param {string[]} files @param {string} home
  * @returns {ShotStore}
  */
@@ -137,29 +133,27 @@ export async function saveFileShot(path, at) {
     return r?.code === 0 ? rel : null;
 }
 
-// the preview files this chat saved: never anything outside SHOTS_DIR
+/**
+ * the previews that are copies this chat made, safe to remove: a dropped picture's scaled copy. a pasted picture is its
+ * own preview, the only file of a shot he took, and is never among them: it stays until his word (five of his shots
+ * were lost on 2026-11-16 to a sweep that removed them at each load of the mod)
+ * @param {{ path: string, rel: string | null | undefined }[]} pictures each picture waiting in a box and its preview
+ * @param {string} home the app dir
+ * @returns {string[]}
+ */
+export function previewCopies(pictures, home) {
+    return pictures.flatMap(({ path, rel }) =>
+        rel && path !== `${home}/${rel}` ? [rel] : [],
+    );
+}
+
+// removes preview copies this chat made (see previewCopies): never anything outside SHOTS_DIR
 /** @param {string[]} rels */
-export async function deleteShots(rels) {
+export async function deletePreviewCopies(rels) {
     await Promise.all(
         rels
             .filter((rel) => rel.startsWith(`${SHOTS_DIR}/shot-`))
             .map((rel) => unlink(`${appHome()}/${rel}`).catch(() => {})),
-    );
-}
-
-// previews no thread claims: a dropped picture's preview left by a reload
-/** @param {ShotStore} store */
-export async function sweepShots(store) {
-    const kept = new Set(Object.values(store).flat());
-    const names = await readdir(`${appHome()}/${SHOTS_DIR}`).catch(
-        /** @returns {string[]} */ () => [],
-    );
-    // a fresh one is spared: a send queued in Claude Code reads its paths later
-    const fresh = Date.now() - 60 * 60 * 1000;
-    await deleteShots(
-        names
-            .map((n) => `${SHOTS_DIR}/${n}`)
-            .filter((rel) => !kept.has(rel) && shotTime(rel) < fresh),
     );
 }
 

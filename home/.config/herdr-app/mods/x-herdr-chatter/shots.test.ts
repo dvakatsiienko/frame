@@ -3,22 +3,17 @@ import { platform } from 'node:os';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('herdr', () => ({ appHome: () => '/app', exec: vi.fn() }));
-const fs = vi.hoisted(() => ({
-    readdir: vi.fn(),
-    unlink: vi.fn(async () => {}),
-}));
 vi.mock('fs/promises', () => ({
     mkdir: vi.fn(),
     readFile: vi.fn(),
-    readdir: fs.readdir,
-    unlink: fs.unlink,
+    unlink: vi.fn(),
     writeFile: vi.fn(),
 }));
 const {
     MAC_CLIPBOARD_IMAGE,
     clipboardRead,
     parseShots,
-    sweepShots,
+    previewCopies,
     waitingFiles,
     withWaitingFiles,
 } = await import('./shots.js');
@@ -71,30 +66,27 @@ describe('a pasted image waits as a file', () => {
     });
 });
 
-describe('sweepShots, previews no thread claims', () => {
-    it('deletes an old unclaimed preview, keeps every claimed and every fresh one', async () => {
-        fs.readdir.mockResolvedValueOnce([
-            'shot-1.png',
-            'shot-2.png',
-            'shot-3.png',
-            `shot-${Date.now()}.png`,
-            'notes.txt',
-        ]);
-        fs.unlink.mockClear();
-        await sweepShots({
-            t1: ['data/x-herdr-chatter/shots/shot-1.png'],
-            t2: ['data/x-herdr-chatter/shots/shot-3.png'],
-        });
-        expect(fs.unlink.mock.calls).toEqual([
-            ['/app/data/x-herdr-chatter/shots/shot-2.png'],
-        ]);
+describe('previewCopies, which previews may be removed', () => {
+    const pasted = 'data/x-herdr-chatter/shots/shot-1.png';
+    const copy = 'data/x-herdr-chatter/shots/shot-2.png';
+
+    it('a pasted picture is his shot and is never removed, however old', () => {
+        expect(
+            previewCopies([{ path: `/app/${pasted}`, rel: pasted }], '/app'),
+        ).toEqual([]);
     });
 
-    it('deletes nothing when the folder is missing', async () => {
-        fs.readdir.mockRejectedValueOnce(new Error('ENOENT'));
-        fs.unlink.mockClear();
-        await sweepShots({});
-        expect(fs.unlink).not.toHaveBeenCalled();
+    it("a dropped picture's scaled copy is removed, its file is not named", () => {
+        expect(
+            previewCopies(
+                [
+                    { path: '/Users/dima/Desktop/a.png', rel: copy },
+                    { path: `/app/${pasted}`, rel: pasted },
+                    { path: '/Users/dima/Desktop/b.png', rel: null },
+                ],
+                '/app',
+            ),
+        ).toEqual([copy]);
     });
 });
 

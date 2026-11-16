@@ -158,13 +158,13 @@ import {
 } from './settings-store.js';
 import { SETTINGS_WINDOW, settingsWindow } from './settings-window.js';
 import {
-    deleteShots,
+    deletePreviewCopies,
     loadShots,
+    previewCopies,
     readClipboard,
     saveFileShot,
     saveLinkThumb,
     saveShots,
-    sweepShots,
     waitingFiles,
     withWaitingFiles,
 } from './shots.js';
@@ -1765,8 +1765,6 @@ export default class ClaudeChat extends View {
                 );
             }
             await saveShots(this.shots).catch(() => {});
-            // a dropped picture's preview is kept only while its file waits, in memory: a reload leaves it unclaimed
-            await sweepShots(this.shots);
             cx.notify();
         });
         // what he sent while the thread worked, by agent address, until its row reaches the transcript (see queued.js)
@@ -3778,7 +3776,7 @@ export default class ClaudeChat extends View {
             ? (this.pasted.get(address) ?? [])
             : [];
         this.pasted.delete(address);
-        this.forgetPreviews(address, true);
+        this.forgetPreviews(address);
         this.files.delete(address);
         this.keepFiles(address);
         const replyTo = this.replies.get(address);
@@ -4384,7 +4382,7 @@ export default class ClaudeChat extends View {
         );
         this.keepFiles(address);
         this.retext(cx);
-        deleteShots([rel]);
+        deletePreviewCopies(previewCopies([{ path, rel }], appHome()));
         cx.notify();
     }
 
@@ -4496,7 +4494,7 @@ export default class ClaudeChat extends View {
                         !this.files.get(address)?.includes(p) ||
                         this.previews.get(key)
                     )
-                        await deleteShots([rel]);
+                        await deletePreviewCopies([rel]);
                     else this.previews.set(key, rel);
                 }
                 cx.notify();
@@ -4506,18 +4504,15 @@ export default class ClaudeChat extends View {
 
     // previews of pictures that no longer wait in this thread's box
     /** @param {string} address */
-    // a pasted image turned into a file is its own preview: once sent, Claude still has to read it, so it stays until
-    // the next load's sweep
-    /** @param {string} address @param {boolean} [isSent] */
-    forgetPreviews(address, isSent = false) {
-        const gone = this.droppedImages(address)
-            .map((p) => {
-                const rel = this.previews.get(`${address} ${p}`);
-                this.previews.delete(`${address} ${p}`);
-                return isSent && p === `${appHome()}/${rel}` ? null : rel;
-            })
-            .filter(Boolean);
-        if (gone.length) deleteShots(gone);
+    // a pasted image turned into a file is its own preview and his shot: it stays on disk, sent or taken out
+    /** @param {string} address */
+    forgetPreviews(address) {
+        const pictures = this.droppedImages(address).map((path) => {
+            const rel = this.previews.get(`${address} ${path}`);
+            this.previews.delete(`${address} ${path}`);
+            return { path, rel };
+        });
+        deletePreviewCopies(previewCopies(pictures, appHome()));
     }
 
     // + at the left of the quill's lower card: the mac's own picker, several files at once
