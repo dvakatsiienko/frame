@@ -237,11 +237,9 @@ func TestShimFiveShellsAtOnceStartOneBuild(t *testing.T) {
 	var wg sync.WaitGroup
 	results := make([]shimRun, 5)
 	for i := range results {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			results[i] = w.run(t, w.base, "GO_SLEEP=1")
-		}()
+		})
 	}
 	wg.Wait()
 	waitFor(t, w.stamp(), w.pushedTree(t))
