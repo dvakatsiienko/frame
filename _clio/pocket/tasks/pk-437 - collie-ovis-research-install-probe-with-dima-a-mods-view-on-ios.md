@@ -4,7 +4,7 @@ title: 'collie + ovis: research, install, probe with dima; a mods view on ios'
 status: open
 assignee: []
 created_date: '2026-11-16T12:09:00Z'
-updated_date: '2026-11-16T12:14:00Z'
+updated_date: '2026-11-16T12:51:00Z'
 labels:
   - m
 dependencies: []
@@ -63,4 +63,6 @@ raw drop (2026-11-16 14:05, dima): i also want them installed and quickly probe 
 raw drop (2026-11-16 14:05, dima): i saw some of them can bring mods to ios? herdr ios app is good but only shows terminal view - our mods are not shown there. i want mods view in ios app.
 
 raw drop (2026-11-16 14:05, dima): do this at a good point.
+
+PK-437:W14 (2026-11-16 14:18, dima): as researcher, compare shepardr and those two i asked for against the zoo herdr layout (the one we started with)
 <!-- SECTION:NOTES:END -->

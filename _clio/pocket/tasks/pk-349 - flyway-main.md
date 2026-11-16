@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T12:14:00Z'
+updated_date: '2026-11-16T12:53:00Z'
 labels:
   - s
   - clio-main
@@ -750,4 +750,18 @@ PK-349:W1010 (2026-11-16 14:05, dima): before that (and after herdr codie takes 
 PK-349:W1011 (2026-11-16 14:05, dima): we are measuring macroscope for code review: i want precise data on tool quality, and to know if we can use its free quota for a month.
 
 PK-349:W1012 (2026-11-16 14:05, dima): is it enough, or does it burn in a week? ❓
+
+PK-349:W1013 (2026-11-16 14:18, dima): stell lanes to pickup handoff and finish what they started (from handoff)
+
+PK-349:W1014 (2026-11-16 14:18, dima): shepardr. i am at mobile device now. do not see orbit
+
+PK-349:W1015 (2026-11-16 14:18, dima): idea to not forget macroscope: add it as a spec in each today chunk or slice. macroscope review is a spec requirement, along with the eval.
+
+PK-349:W1016 (2026-11-16 14:18, dima): also the boot was quite long. tell why. (not rush)
+
+PK-349:W1017 (2026-11-16 14:51, dima, o8 steer): first, herdr cuts, then collie and ovis, then two inbox asks
+
+PK-349:W1018 (2026-11-16 14:51, dima, o9 steer): ok, and it should be universal and flexible: support any lane and any project. and you should have a fixed habit to solve all tails at halt. you always tend to fold todos for your boot, which leads to 15-minute boots. all tails must be solved before halt, so the boot is smooth.
+
+correction to W1013, helga per clio 14:52: 'stell' is 'tell'. Read as: tell lanes to pick up the handoff and finish what they started.
 <!-- SECTION:NOTES:END -->
