@@ -52,6 +52,8 @@ export function createPlace() {
     let isAtEnd = false;
     /** a place held to the pixel until his next step @type {{ id: string, offset: number } | null} */
     let cut = null;
+    /** after a look change, how far into the held message he was as a share of its height: a rewrap moves its px @type {number | null} */
+    let share = null;
     let isSeekDue = false;
     /** the list was sent to its end, so the next frame can land the held place at the top */
     let isLifted = false;
@@ -137,6 +139,7 @@ export function createPlace() {
             follow = true;
             id = null;
             cut = null;
+            share = null;
             isSeekDue = false;
             isLifted = false;
         },
@@ -152,6 +155,13 @@ export function createPlace() {
          * @returns {Plan}
          */
         plan(rows, sizes, viewH) {
+            if (cut && share !== null) {
+                const at = placeIndex(rows, cut.id);
+                if (at >= 0) {
+                    offset = Math.round(share * (sizes[at] ?? 0));
+                    cut = { id: cut.id, offset };
+                }
+            }
             const split = cut
                 ? splitAtPlace(rows, sizes, cut)
                 : { cut: null, seekAt: -1, sizes };
@@ -166,6 +176,7 @@ export function createPlace() {
                     // the held message is not among the rows
                     isSeekDue = false;
                     cut = null;
+                    share = null;
                 } else if (!isLifted && needsLift(range, rowAt(split.seekAt))) {
                     isLifted = true;
                     ask = 'lift';
@@ -196,6 +207,7 @@ export function createPlace() {
         reset() {
             follow = true;
             id = null;
+            share = null;
             offset = 0;
             top = 0;
             range = null;
@@ -211,7 +223,34 @@ export function createPlace() {
             follow = false;
             id = rowId;
             offset = px;
+            share = null;
             hold();
+        },
+        /**
+         * a look change, before its rows take their new heights: his place is held as a share of its message, and a
+         * message that leaves the list (a tool call hidden) hands the place to the next one still shown
+         * @param {readonly Row[]} rows the rows drawn so far
+         * @param {number[]} sizes their heights so far
+         * @param {readonly Row[]} shown the rows drawn after the change
+         * @returns {boolean} whether there was a place to hold
+         */
+        restyle(rows, sizes, shown) {
+            read(rows, sizes);
+            if (follow || !id) return false;
+            if (cut) offset = cut.offset;
+            const at = placeIndex(rows, id);
+            const isShown = (/** @type {Row | undefined} */ row) =>
+                row !== undefined && shown.some((s) => s.id === row.id);
+            if (!isShown(rows[at])) {
+                const next = rows.slice(at + 1).find(isShown);
+                if (!next) return false;
+                id = next.id;
+                offset = 0;
+            }
+            const height = sizes[placeIndex(rows, id)] ?? 0;
+            share = height > 0 ? offset / height : 0;
+            cut = null;
+            return hold();
         },
         get top() {
             return top;
@@ -242,6 +281,7 @@ export function createPlace() {
             // his own step ends a held place: the two halves are one row again, at the same height
             const hadCut = cut !== null;
             cut = null;
+            share = null;
             isSeekDue = false;
             top = topAfterWheel(top, dy, sizes, viewH);
             if (follow) id = null;

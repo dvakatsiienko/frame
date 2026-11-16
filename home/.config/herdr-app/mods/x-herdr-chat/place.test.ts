@@ -74,6 +74,14 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
             }
             frame();
         },
+        /** tool calls hidden: a row leaves the list, his place held first, as the view does */
+        hide(index: number) {
+            const shown = rows.filter((_, i) => i !== index);
+            place.restyle(rows, sizes, shown);
+            rows.splice(index, 1);
+            sizes = sizes.filter((_, i) => i !== index);
+            frame();
+        },
         /** time passes with no wheel step */
         idle(ms: number) {
             now += ms;
@@ -106,8 +114,7 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
         },
         /** a look change: every row takes a new height at once, his place is held first, as the view does */
         restyle(height: (size: number) => number) {
-            place.read(rows, sizes);
-            place.hold();
+            place.restyle(rows, sizes, rows);
             sizes = sizes.map(height);
             frame();
         },
@@ -122,6 +129,16 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
             for (const [i, size] of sizes.entries()) {
                 if (top + size > scrollTop)
                     return { id: `r${i}`, offset: scrollTop - top };
+                top += size;
+            }
+            return { id: 'none', offset: 0 };
+        },
+        /** the first row on screen and the px of it above the view, by the rows' own ids */
+        truthById() {
+            let top = 0;
+            for (const [i, size] of sizes.entries()) {
+                if (top + size > scrollTop)
+                    return { id: rows[i]?.id, offset: scrollTop - top };
                 top += size;
             }
             return { id: 'none', offset: 0 };
@@ -195,6 +212,30 @@ describe('the kept place against the true one', () => {
         const before = sim.truth();
         sim.restyle(height);
         expect(sim.truth().id).toBe(before.id);
+        expect(sim.isFollowing()).toBe(false);
+    });
+
+    test('a rewrap keeps him on the same line: how far into the message he is scales with its height', () => {
+        const sim = createSim(thread());
+        readInto(sim, 400, 4);
+        sim.restyle((size) => size / 2);
+        expect(sim.truth()).toEqual({ id: `r${REPLY}`, offset: 200 });
+    });
+
+    test('the rewrapped height known only later still lands him on the same line', () => {
+        const sim = createSim(thread());
+        readInto(sim, 400, 4);
+        // the new height is a guess first, the measured one arrives after
+        sim.restyle((size) => size / 2);
+        sim.measure(REPLY, 600);
+        expect(sim.truth()).toEqual({ id: `r${REPLY}`, offset: 300 });
+    });
+
+    test('tool calls hidden while a tool call is the top row: the next message he sees takes its place', () => {
+        const sim = createSim(thread());
+        sim.restore({ id: `r${TOOL}`, offset: 10 });
+        sim.hide(TOOL);
+        expect(sim.truthById()).toEqual({ id: `r${REPLY}`, offset: 0 });
         expect(sim.isFollowing()).toBe(false);
     });
 

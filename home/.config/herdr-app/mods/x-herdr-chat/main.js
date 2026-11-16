@@ -64,6 +64,10 @@ const BUBBLE_SHARE = 0.8;
 const ROW_PAD = { normal: 6, roomy: 10, tight: 3 };
 // the ui font, as the old chat drew it
 const SANS = '.AppleSystemUIFont';
+
+/** the rows the list draws: the model's, less tool calls when he hides them @param {readonly Row[]} rows @param {import('./look.js').Look} look */
+const shownOf = (rows, look) =>
+    look.tools === 'hide' ? rows.filter((row) => row.kind !== 'tool') : rows;
 // his reading place is saved this long after his last scroll step
 const PLACE_SAVE_MS = 600;
 // how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
@@ -313,15 +317,17 @@ export default class Chat extends View {
             look.space,
             look.tools,
         ].join('|');
+        const rows = shownOf(this.model.rows, look);
         if (this.lookKey && lookKey !== this.lookKey) {
-            // every row takes a new height at once: his place is read first, then held while they land
-            this.readPlace();
+            // every row takes a new height at once: his place is held as a share of its message while they land
             this.widthGen += 1;
+            if (this.at.restyle(this.shownRows, this.sizes, rows))
+                this.settleUntil = Date.now() + SETTLE_MS;
             this.heights.clear();
-            this.holdPlace();
         }
         this.look = look;
         this.lookKey = lookKey;
+        this.shownRows = rows;
         const root = v_flex()
             .size_full()
             .min_h(0)
@@ -354,11 +360,6 @@ export default class Chat extends View {
                             .on_click(() => closeOverlay(overlay)),
                     ),
             );
-        const rows =
-            look.tools === 'hide'
-                ? this.model.rows.filter((row) => row.kind !== 'tool')
-                : this.model.rows;
-        this.shownRows = rows;
         if (rows.length) {
             if (this.error)
                 root.child(
@@ -1147,9 +1148,16 @@ export default class Chat extends View {
             this.model.addEarlier(lines);
         }
         // the saved line may sit inside a folded row: the place is that row
-        const row = this.model.rows[this.model.indexOf(place.id)];
+        const at = this.model.indexOf(place.id);
+        const row = this.model.rows[at];
         if (!row) return;
-        this.at.restore(row.id, place.offset);
+        // a row he hides now (a tool call) hands the place to the next one shown
+        const shown = shownOf(this.model.rows, this.look);
+        const next = shown.includes(row)
+            ? row
+            : this.model.rows.slice(at + 1).find((r) => shown.includes(r));
+        if (!next) return;
+        this.at.restore(next.id, next === row ? place.offset : 0);
         this.settleUntil = Date.now() + SETTLE_MS;
         cx.notify();
     }
