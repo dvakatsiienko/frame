@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+    needsLift,
     pinToRow,
     placeIndex,
     topOf as rowTop,
@@ -27,6 +28,7 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
     // the view's own state, named as in main.js
     const view = {
         cut: null as { id: string; offset: number } | null,
+        isLifted: false,
         isSeekDue: false,
         offset: 0,
         place: null as string | null,
@@ -56,38 +58,75 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
             : { cut: null, seekAt: -1, sizes };
         const cutAt = split.cut?.at ?? -1;
         const cutOffset = split.cut?.offset ?? 0;
-        let seekAt = -1;
-        if (view.isSeekDue && view.cut) {
-            view.isSeekDue = false;
-            if (split.seekAt >= 0) seekAt = split.seekAt;
-            else view.cut = null;
-        }
-        // the list keeps its px when its sizes change; an asked item's top goes to the view's top
-        itemSizes = [...split.sizes];
-        if (seekAt >= 0) scrollTop = topOf(itemSizes, seekAt);
-        clamp();
         const rowAt = (i: number) => (cutAt >= 0 && i > cutAt ? i - 1 : i);
-        const drawnStart = firstItem();
-        const range = { end: rows.length, start: rowAt(drawnStart) };
-        view.range = range;
-        if (cutAt >= 0 && drawnStart === cutAt + 1)
-            view.top = rowTop(sizes, cutAt) + cutOffset;
-        const pinned = pinToRow(view.top, range.start, sizes);
+        let seekAt = -1;
+        let isLifting = false;
+        if (view.isSeekDue && view.cut) {
+            if (split.seekAt < 0) {
+                view.isSeekDue = false;
+                view.cut = null;
+            } else if (
+                !view.isLifted &&
+                needsLift(view.range, rowAt(split.seekAt))
+            ) {
+                view.isLifted = true;
+                isLifting = true;
+            } else {
+                view.isSeekDue = false;
+                view.isLifted = false;
+                seekAt = split.seekAt;
+            }
+        }
+        // the list keeps its px when its sizes change
+        itemSizes = [...split.sizes];
+        if (isLifting) scrollTop = Number.MAX_SAFE_INTEGER;
+        clamp();
+        // an asked item: its top goes to the view's top only from above the view; from below it stops at the view's
+        // bottom, and one on screen stays put (seen in his window, 2026-11-16)
+        if (seekAt >= 0) {
+            const itemTop = topOf(itemSizes, seekAt);
+            const itemBottom = itemTop + (itemSizes[seekAt] ?? 0);
+            if (itemTop < scrollTop) scrollTop = itemTop;
+            else if (itemBottom > scrollTop + viewH)
+                scrollTop = itemBottom - viewH;
+        }
+        clamp();
+        // herdr calls the row callback twice a frame: first for row 0 alone, which it measures the width by (seen in
+        // his window, 2026-11-16), then for the rows on screen
+        for (const drawnStart of [0, firstItem()]) {
+            view.range = { end: rows.length, start: rowAt(drawnStart) };
+            if (view.cut && split.seekAt >= 0 && drawnStart === split.seekAt)
+                view.top = rowTop(sizes, rowAt(split.seekAt)) + cutOffset;
+        }
+    }
+
+    // the lift asked for one more frame
+    const settle = () => {
+        while (view.isSeekDue) frame();
+    };
+
+    /** main.js `readPlace`: the place from the rows the list drew last */
+    function readPlace() {
+        if (view.cut || !view.range) return;
+        const pinned = pinToRow(view.top, view.range.start, sizes);
         view.top = pinned.top;
         view.offset = pinned.offset;
-        view.place = rows[range.start]?.id ?? null;
+        view.place = rows[view.range.start]?.id ?? null;
     }
 
     return {
         /** a row got its real height; the measurer holds the place when the row sits at or above it */
         measure(index: number, height: number) {
+            readPlace();
             sizes = sizes.map((size, i) => (i === index ? height : size));
             const at = placeIndex(rows, view.place);
             if (at >= 0 && index <= at && view.place) {
                 view.cut = { id: view.place, offset: view.offset };
                 view.isSeekDue = true;
+                view.isLifted = false;
             }
             frame();
+            settle();
         },
         /** a scroll that reaches the list but not the view's wheel handler (seen in the second probe: 94 rows, 0 steps) */
         moveUnseen(px: number) {
@@ -100,10 +139,15 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
             view.offset = place.offset;
             view.cut = { ...place };
             view.isSeekDue = true;
+            view.isLifted = false;
             frame();
+            settle();
         },
         /** what the save timer would write now */
-        saved: () => ({ id: view.place, offset: view.offset }),
+        saved() {
+            readPlace();
+            return { id: view.place, offset: view.offset };
+        },
         /** the first row on screen and the px of it above the view */
         truth() {
             let top = 0;
@@ -116,6 +160,7 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
         },
         /** his wheel step: main.js's handler with the range of the frame before, then the list moves, then a frame */
         wheel(dy: number) {
+            readPlace();
             view.cut = null;
             view.isSeekDue = false;
             view.top = topAfterWheel(view.top, dy / zoom, sizes, viewH);
@@ -163,7 +208,9 @@ describe('the kept place against the true one', () => {
     test('a scroll the wheel never reported still names the message on screen, at most its height from the line', () => {
         const sim = createSim(thread());
         sim.restore({ id: `r${TOOL}`, offset: 0 });
-        sim.moveUnseen(433);
+        // his own step first: a place held since a reload stays the place until he moves
+        sim.wheel(-1);
+        sim.moveUnseen(432);
         expect(sim.truth()).toEqual({ id: `r${REPLY}`, offset: 405 });
         expect(sim.saved()).toEqual({ id: `r${REPLY}`, offset: 0 });
     });
@@ -190,6 +237,27 @@ describe('the kept place against the true one', () => {
         sim.restore({ id: `r${REPLY}`, offset: 0 });
         for (let moved = 0; moved < 400; moved += 10) sim.wheel(-10);
         expect(sim.saved()).toEqual(sim.truth());
+    });
+
+    test('after a reload every height is a guess: the place comes back once the real heights arrive', () => {
+        // the reply is guessed at 200 px, shorter than the 405 px he was into it
+        const guessed = thread().map((size, i) => (i === REPLY ? 200 : size));
+        const sim = createSim(guessed);
+        sim.restore({ id: `r${REPLY}`, offset: 405 });
+        sim.measure(1, 520);
+        sim.measure(REPLY, 800);
+        expect(sim.truth()).toEqual({ id: `r${REPLY}`, offset: 405 });
+        expect(sim.saved()).toEqual({ id: `r${REPLY}`, offset: 405 });
+    });
+
+    test('a place below the view, or already on screen, still lands at the top', () => {
+        const sim = createSim(thread());
+        // the list sits at its start; the reply is below the view
+        sim.restore({ id: `r${REPLY}`, offset: 405 });
+        expect(sim.truth()).toEqual({ id: `r${REPLY}`, offset: 405 });
+        // one row above gets its real height: the reply is on screen when it is asked for again
+        sim.measure(1, 320);
+        expect(sim.truth()).toEqual({ id: `r${REPLY}`, offset: 405 });
     });
 
     test('one step up from a restored place inside the reply', () => {

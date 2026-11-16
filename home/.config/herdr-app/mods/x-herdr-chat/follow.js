@@ -90,6 +90,17 @@ export function pinToRow(top, start, sizes) {
 }
 
 /**
+ * the list brings an asked item's top to the view's top only when that item sits above the view: one below it stops
+ * at the view's bottom, one on screen stays where it is (seen in his window, 2026-11-16). so a place not above the view
+ * is asked for in two frames: the list goes to its end first
+ * @param {Range | null | undefined} range the rows the list drew last
+ * @param {number} row the row to bring to the top
+ */
+export function needsLift(range, row) {
+    return !range || row >= range.start;
+}
+
+/**
  * the list can only bring an item's top to the view's top, so a place inside a message is restored by cutting that
  * message into two items at the place: the second one's top is the place
  * @param {readonly { id: string }[]} rows

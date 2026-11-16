@@ -4,6 +4,7 @@ import {
     edgeScrollStep,
     followAfterWheel,
     isAtTrueEnd,
+    needsLift,
     pinToRow,
     placeIndex,
     placeOf,
@@ -133,6 +134,21 @@ describe('how far the list is scrolled, counted from his wheel and held to the r
 
     test("a count below the first row drawn is brought to that row's last px", () => {
         expect(pinToRow(900, 4, sizes)).toEqual({ offset: 399, top: 799 });
+    });
+});
+
+describe('when the list must go to its end before it can land a place at the top', () => {
+    test('a place above the view lands at once', () => {
+        expect(needsLift({ end: 12, start: 8 }, 3)).toBe(false);
+    });
+
+    test('a place on screen or below the view goes by the end first', () => {
+        expect(needsLift({ end: 12, start: 8 }, 8)).toBe(true);
+        expect(needsLift({ end: 12, start: 8 }, 20)).toBe(true);
+    });
+
+    test('with nothing drawn yet it goes by the end first', () => {
+        expect(needsLift(null, 3)).toBe(true);
     });
 });
 
