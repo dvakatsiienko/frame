@@ -300,7 +300,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a click on send marks his words to join the thread's next chance (FRM-564)
   - given text in the quill, the thread busy or idle
   - when dima clicks send or presses Enter
-  - then a join row lands in the thread's join file, no turn starts, the words stay in the quill and the button shows 📥 (queued)
+  - then a join row lands in the thread's join file, no turn starts, the words stay in the quill and the button shows 🍕 (ready to join; 📥 until 2026-11-16, whose white blended with the white button)
   - and what he types after the click rides the same row until a turn takes it
   - and a second click before a turn took it takes the mark off: the row leaves the join file, the words stay
   - and each thread keeps its own mark: marking words in another thread leaves this one's waiting, and a mark settles (taken, or «not taken» after a minute) from its thread's state whether that thread is open or not
