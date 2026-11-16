@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T20:28:00Z'
+updated_date: '2026-11-16T20:35:00Z'
 labels:
   - s
   - clio-main
@@ -970,4 +970,7 @@ PK-349:W1132 (2026-11-16 22:01, dima): a small verb to correct a thread record's
 PK-349:W1133 (2026-11-16 22:01, dima): the two extra note rows in the settings window, once the mods chunk adds them.
 
 PK-349:W1134 (2026-11-16 22:01, dima): refresh the mods lane glide.
+
+PK-349:W1135 (2026-11-16 22:31, dima): it is getting late. Run /clio:wind-down for both lanes, with a 1h budget.
+PK-349:W1136 (2026-11-16 22:31, dima): hunt the tails: do one more round of tails solving, then tell what is pending.
 <!-- SECTION:NOTES:END -->
