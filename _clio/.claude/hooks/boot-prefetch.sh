@@ -243,6 +243,8 @@ fi
 # a project-scope plugin starts no monitors (code.claude.com/docs/en/plugins/loading, «Background monitors do not load»), so the boot arms both every time; n8n's ci rows above are the record, watch-ci is the wake, until an n8n → mod bridge lands
 watches=$(ps -ax -o command | grep -c '[w]atch-pr.sh --watch\|[w]atch-ci.sh --watch' || true)
 echo "watches: $watches of 2 running — the boot arms the missing ones (watch-once.sh), as every boot does"
+# the fleet Chrome (port 9333) does not survive a reboot: start it when silent, a no-op when up (PK-445)
+echo "$(timeout 25 pnpm -C "$HOME/frame" --silent fleet-chrome:start 2>&1 | tail -1)"
 
 if [ -z "${COMPACT:-}" ]; then
 echo "-- app essentials (bytes/script/apps-essentials.ts, BYT-111; 🔴 = a gap to fold into today) --"
