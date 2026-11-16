@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T17:37:00Z'
+updated_date: '2026-11-16T17:42:00Z'
 labels:
   - s
   - clio-main
@@ -893,4 +893,8 @@ PK-349:W1064 (2026-11-16 19:23, dima): ensure all trash cleaned. (clio's line be
 PK-349:W1065 (2026-11-16 19:23, dima): ❓ what is o79?
 
 19:37 PK-349:W1056 and W1057 moved to PK-441:W8 and W9 (the mess hunt lines live there)
+
+19:41 his 19:39 lines (answered 19:42, the tails list):
+PK-349:W1066 (2026-11-16 19:39, dima): stray can do just in case fyi.
+PK-349:W1067 (2026-11-16 19:39, dima): after i reopen herdr (after cleanup) — what tails are left? what not solved so far?
 <!-- SECTION:NOTES:END -->

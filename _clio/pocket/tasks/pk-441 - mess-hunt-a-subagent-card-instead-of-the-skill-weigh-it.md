@@ -4,7 +4,7 @@ title: 'mess hunt: a subagent card instead of the skill? weigh it'
 status: open
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T17:37:00Z'
+updated_date: '2026-11-16T17:42:00Z'
 labels:
   - s
 dependencies: []
@@ -56,4 +56,8 @@ PK-441:W18 (2026-11-16 19:23, dima): on the other hand, the wisphunter spec woul
 PK-441:W19 (2026-11-16 19:23, dima): now i'm confused. propose how to solve all of this efficiently.
 
 19:37 decided on his ticks (19:29): o80 a small new card standing on wisphunter's card, differences only, wisphunter gains one clause; o81 Opus 5.5 medium, memory-less, read-only, one card with the angle in its brief; o82 the name and badge 🦝 messhunter; o83 one line in rules/fleet-identity.md plus x:crew-subagent and the mess hunt skill. built 9a2ea76d; the probe: its first call read wisphunter's card. PK-441:W8 and W9 are this item's; their twins PK-349:W1056–W1057 carry a moved note
+
+19:41 his 19:29 and 19:37 lines (the badge is free: retro wears 🦡; the rename is the stray's chore):
+PK-441:W20 (2026-11-16 19:29, dima): ⭐⭐⭐⭐⭐ 🦝 messhunter: y. nice, but is raccoon already taken by the retro card, or is that different?
+PK-441:W21 (2026-11-16 19:37, dima): x:review-mess-hunt → x:review-messhunt ?
 <!-- SECTION:NOTES:END -->
