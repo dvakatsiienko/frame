@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T13:58:00Z'
+updated_date: '2026-11-16T14:21:00Z'
 labels:
   - m
 dependencies: []
@@ -117,4 +117,6 @@ PK-444:W43 (2026-11-16 15:55, dima): no, don't like it. (flockbook)
 PK-444:W44 (2026-11-16 15:55, dima): where did you see them? in my chrome opened tabs? ok, the verdict is useful. but I keep them open for a different reason - the look. if under the hood is carp, ensure this verdict is folded. but the look is still nice (waits
 
 PK-444:W45 (2026-11-16 15:55, dima): link pls. its herdr builtin or custom?
+
+16:21 from PK-437 at its close: his want «i want a mods view in the ios app» (PK-437:W10–W12) stays open here: no tool mirrors a herdr mod (collie and ovis both uninstalled 11-16, his verdicts); the door left is his own hq app or a data store any app draws, see .scratch/herdr/foundation-proposal.md § 1.
 <!-- SECTION:NOTES:END -->

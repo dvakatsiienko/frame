@@ -1,10 +1,10 @@
 ---
 id: PK-437
 title: 'collie + ovis: research, install, probe with dima; a mods view on ios'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-16T12:09:00Z'
-updated_date: '2026-11-16T14:19:00Z'
+updated_date: '2026-11-16T14:21:00Z'
 labels:
   - m
 dependencies: []
@@ -95,4 +95,6 @@ PK-437:W25 (2026-11-16 15:55, dima): ovis: i installed on mobile. i now test dri
 16:08 ovis: his final verdict (16:07) is no: no mods, not better than the Claude desktop app. uninstalled: ovis stop, launchctl bootout sh.ovis.server, then to the Trash: the plist, ~/.local/bin/ovis, ~/.local/share/ovis, ~/.config/ovis, ~/.local/state/ovis, ~/Library/Logs/Ovis, ~/.config/herdr-web-ui. left for his hand: his own ovis add process in a Rex tab, the iOS app.
 
 16:19 collie: his verdict «meh», no iOS without tailscale; his tick: uninstalled whole (collie uninstall, collie unlink, trash of ~/.local/share/collie, ~/.config/collie, ~/.local/state/collie). exploration done (his 16:17); borrow ideas go to .scratch/herdr/foundation-proposal.md.
+
+16:21 close: exploration done (dima 16:17 «exploration is done»). ovis: no, uninstalled. collie: «meh», no iOS without tailscale, uninstalled on his tick. borrow ideas → .scratch/herdr/foundation-proposal.md (PK-444); the iOS mods view want → PK-444's notes.
 <!-- SECTION:NOTES:END -->
