@@ -5,6 +5,7 @@ import {
     clioIdOf,
     numberSetting,
     partKeysOf,
+    withAutoWind,
     withHot,
     withPace,
     withPart,
@@ -122,4 +123,23 @@ test("the hot door writes any session's 🔥 the way its chip does", () => {
         { 'hot:s1': { since: 5 }, other: 1 },
         { 'hot:s1': { off: true }, other: 1 },
     ]);
+});
+
+test("the second-wind-auto door writes any session's 🍃 the way its band button does", () => {
+    const off = withAutoWind({ other: 1 }, 's1', 'off', 5);
+    expect([off, withAutoWind(off, 's1', 'on', 6)]).toEqual([
+        { other: 1, 'second-wind-auto:s1': { at: 5, on: false } },
+        { other: 1, 'second-wind-auto:s1': { at: 6, on: true } },
+    ]);
+});
+
+test("a 🍃 turned off through the door takes back the mod's pending ask, and keeps one dima pressed", () => {
+    const off = (wind: Record<string, unknown>) =>
+        'wind:s1' in withAutoWind({ 'wind:s1': wind }, 's1', 'off', 5);
+    expect([
+        off({ at: 1, by: 'mod', state: 'asked' }),
+        off({ at: 1, by: 'mod', state: 'writing' }),
+        off({ at: 1, by: 'mod', state: 'refreshing' }),
+        off({ at: 1, state: 'asked' }),
+    ]).toEqual([false, false, true, true]);
 });

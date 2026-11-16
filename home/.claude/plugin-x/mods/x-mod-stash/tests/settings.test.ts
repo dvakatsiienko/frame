@@ -20,6 +20,12 @@ function world(on: On) {
     });
     on('session.id', () => ({ value: SID }));
     on('env.get', () => ({ value: '/home' }));
+    const files: Record<string, string> = {};
+    on('fs.read', (_$, e) =>
+        e.path in files
+            ? { value: files[e.path] ?? '' }
+            : { deny: 'no such file' },
+    );
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
     on('session.repo', () => ({ value: null }));
     on('session.append', (_$, e, next) => {
@@ -40,7 +46,7 @@ function world(on: On) {
         closed.push(e.id);
         return { value: undefined };
     });
-    return { appended, clock, closed, opened, store };
+    return { appended, clock, closed, files, opened, store };
 }
 
 async function band($: Engine) {
@@ -404,4 +410,71 @@ test('a wind number the rule allows saves as before and clears the reason', asyn
         store.get('wind-notice'),
         await shows(view, 'must sit below'),
     ]).toEqual([50, false]);
+});
+
+// FRM-634 exit 3: herdr's settings rows are a second editor of the 🎛️ store, taken in at the next poll
+const HERDR_SETTINGS = '/home/.claude/shelf/herdr-settings/settings.json';
+const herdrRows = (rows: Record<string, unknown>) =>
+    JSON.stringify({ rows, v: 1 });
+
+test('the wind and notice lines herdr wrote are the 🎛️ lines after one poll', async ($, on) => {
+    const { clock, files, store } = world(on);
+    await band($);
+    files[HERDR_SETTINGS] = herdrRows({
+        'stash.wind.must': 70,
+        'stash.wind.notice': 50,
+    });
+    await clock.advance(4000);
+    expect([store.get('wind-at'), store.get('wind-notice')]).toEqual([70, 50]);
+});
+
+test('the second wind switches herdr turned off are off in 🎛️ after one poll', async ($, on) => {
+    const { clock, files, store } = world(on);
+    await band($);
+    files[HERDR_SETTINGS] = herdrRows({
+        'stash.second-wind': false,
+        'stash.second-wind-auto': false,
+    });
+    await clock.advance(4000);
+    expect(store.get('shown')).toEqual({
+        'stash.second-wind': false,
+        'stash.second-wind-auto': false,
+    });
+});
+
+test('a herdr notice line at or above the wind line is never taken', async ($, on) => {
+    const { clock, files, store } = world(on);
+    await band($);
+    files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.notice': 70 });
+    await clock.advance(4000);
+    expect(store.get('wind-notice')).toBeUndefined();
+});
+
+test('a herdr line out of range or not a number is never taken', async ($, on) => {
+    const { clock, files, store } = world(on);
+    await band($);
+    files[HERDR_SETTINGS] = herdrRows({
+        'stash.second-wind': 'off',
+        'stash.wind.must': 95,
+        'stash.wind.notice': 'soon',
+    });
+    await clock.advance(4000);
+    expect([
+        store.get('wind-at'),
+        store.get('wind-notice'),
+        store.get('shown'),
+    ]).toEqual([undefined, undefined, undefined]);
+});
+
+test('a 🎛️ edit after a herdr edit stays until herdr edits that row again', async ($, on) => {
+    const { clock, files, store } = world(on);
+    await band($);
+    files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.must': 70 });
+    await clock.advance(4000);
+    store.set('wind-at', 60);
+    await clock.advance(4000);
+    const kept = store.get('wind-at');
+    files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.must': 75 });
+    await clock.advance(4000);
+    expect([kept, store.get('wind-at')]).toEqual([60, 75]);
 });

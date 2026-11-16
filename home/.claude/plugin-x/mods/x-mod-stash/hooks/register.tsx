@@ -1265,14 +1265,53 @@ type FillMark = {
     windAt?: number;
     overrun?: true;
 };
-const fillNotice = (fill: number, windAt: number) =>
-    `🐦‍🔥 context at ${fill} %: a second wind is coming. ${windAt} % is the upper boundary, where the mod asks for it; nothing is urgent. do not compact now: plan your nearest steps so you finish the meaningful part you are in, commit it, solve its tails, write your handoff with x:handoff (or \`x handoff write\` where that skill is missing), then take the wind through ${ORBIT_TOOL} op second-wind. never mid-build or mid-step.`;
+const FILL_NOTICE = `🐦‍🔥 context at {fill} %: a second wind is coming. {wind} % is the upper boundary, where the mod asks for it; nothing is urgent. do not compact now: plan your nearest steps so you finish the meaningful part you are in, commit it, solve its tails, write your handoff with x:handoff (or \`x handoff write\` where that skill is missing), then take the wind through ${ORBIT_TOOL} op second-wind. never mid-build or mid-step.`;
 const fillPropose = (fill: number, windAt: number) =>
     `🐦‍🔥 second wind due at ${fill} %: past the ${windAt} % boundary, and this thread's 🍃 second wind auto is off: propose the wind to dima in orbit at your next good stop, never take it yourself.`;
-const windNoteAuto = (windAt: number) =>
-    `🐦‍🔥 second wind: the mod asks you for it, your context is past ${windAt} %: a must, never a rush. finish the step you are on and commit it, nothing interrupts it; never wind mid-build. then ${WIND_HOW}`;
-const windNoteAutoOwner = (windAt: number) =>
-    `🐦‍🔥 second wind: the mod asks you to checkpoint, your context is past ${windAt} %: a must, never a rush. finish the topic you are on whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
+const WIND_NOTE_AUTO = `🐦‍🔥 second wind: the mod asks you for it, your context is past {wind} %: a must, never a rush. finish the step you are on and commit it, nothing interrupts it; never wind mid-build. then ${WIND_HOW}`;
+const WIND_NOTE_AUTO_OWNER = `🐦‍🔥 second wind: the mod asks you to checkpoint, your context is past {wind} %: a must, never a rush. finish the topic you are on whole first: every lane and agent it started lands, its findings fold, the distill, the print, the log and the commit; a topic is never split across a compact. take nothing new after it. then run clio:checkpoint, tell the fleet, and put your «right after the pickup I'd do X» ask into orbit. then ${WIND_HOW}`;
+// the three notes dima may rewrite, each in its herdr settings row; an empty row is the default here (FRM-634). `{fill}`
+// and `{wind}` take the thread's fill and the wind line
+export const WIND_TEXTS = {
+    at: { of: WIND_NOTE_AUTO, row: 'stash.wind.text.at' },
+    notice: { of: FILL_NOTICE, row: 'stash.wind.text.notice' },
+    press: { of: WIND_NOTE, row: 'stash.wind.text.press' },
+} as const;
+// one text per kind, fleet-wide: his row wins for every thread, the coordinator's own default only where he wrote none
+async function windText(
+    $: EngineInterface,
+    kind: keyof typeof WIND_TEXTS,
+    n: { fill?: number; wind?: number } = {},
+    ownerText?: string,
+) {
+    const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
+    const row = await herdrRow($, home, WIND_TEXTS[kind].row);
+    const text =
+        typeof row === 'string' && row.trim()
+            ? row
+            : (ownerText ?? WIND_TEXTS[kind].of);
+    return text
+        .replaceAll('{fill}', String(n.fill ?? ''))
+        .replaceAll('{wind}', String(n.wind ?? ''));
+}
+// herdr shows each note's default from this shelf file, never from the mod's code or store (FRM-634 exit 2)
+async function writeWindDefaults($: EngineInterface) {
+    const home = await $.env.get('HOME');
+    if (!home) return;
+    const path = `${home}/.claude/shelf/second-wind-defaults.json`;
+    const text = `${JSON.stringify(
+        {
+            at: WIND_TEXTS.at.of,
+            notice: WIND_TEXTS.notice.of,
+            press: WIND_TEXTS.press.of,
+            v: 1,
+        },
+        null,
+        2,
+    )}\n`;
+    if ((await $.fs.read(path).catch(() => undefined)) !== text)
+        await $.fs.write(path, text);
+}
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
 const ingestBy = (slug: string) =>
@@ -1872,19 +1911,21 @@ async function quietSilentMembers($: EngineInterface, now: number) {
 // silence, shift or not, since nobody else will; a busy turn or a refused wake asks again at the next read (PK-351:W44)
 // herdr's settings rows (`~/.claude/shelf/herdr-settings/settings.json`, `{ rows, v }`), written by herdr alone: the one
 // reader, called at each poll, so an edit there counts at the next read
-async function herdrRow($: EngineInterface, home: string, key: string) {
+async function herdrRows($: EngineInterface, home: string) {
     const raw = await $.fs
         .read(`${home}/.claude/shelf/herdr-settings/settings.json`)
         .catch(() => undefined);
     try {
         const { rows } = JSON.parse(raw ?? '') as { rows?: unknown };
         return rows && typeof rows === 'object'
-            ? (rows as Record<string, unknown>)[key]
-            : undefined;
+            ? (rows as Record<string, unknown>)
+            : {};
     } catch {
-        return undefined;
+        return {};
     }
 }
+const herdrRow = async ($: EngineInterface, home: string, key: string) =>
+    (await herdrRows($, home))[key];
 // herdr's «lane idle alarm after» row, in minutes; empty or unreadable is the 10 min line (FRM-605 exit 4, dima's o125)
 export function parkedWakeMs(row: unknown) {
     const minutes =
@@ -4766,8 +4807,8 @@ async function pressWind($: EngineInterface, sid: string) {
 }
 
 // 🍃 second-wind-auto, per session (W1909–W1918, his ticks o38, o40): a press writes `{ on, at }`; unpressed, every
-// thread is on and the coordinator's off; 💨 afk on or a shift turn hers on at read time, never by a write, and a press
-// after the override's start wins until the next one
+// thread is on, the coordinator's too (FRM-634, his tick); 💨 afk on or a shift turn a coordinator's pressed-off one on at
+// read time, never by a write, and a press after the override's start wins until the next one
 async function isAutoWind($: EngineInterface) {
     if (!(await partsShown($))('stash.second-wind-auto')) return false;
     const sid = await currentId($);
@@ -4787,7 +4828,7 @@ async function isAutoWind($: EngineInterface) {
     );
     const since = starts.length ? Math.max(...starts) : undefined;
     if (since !== undefined && (!pressed || pressed.at < since)) return true;
-    return pressed?.on ?? false;
+    return pressed?.on ?? true;
 }
 
 // a band press: the session's own key, and an off takes back the mod's pending ask, never one dima pressed
@@ -4847,7 +4888,7 @@ async function takeFill($: EngineInterface, fill: number | undefined) {
     } else if (fill >= noticeAt && mark.noticed === undefined) {
         mark.noticed = turnNo;
         mark.windAt = windAt;
-        line = fillNotice(fill, windAt);
+        line = await windText($, 'notice', { fill, wind: windAt });
     } else if (
         fill >= windAt &&
         mark.asked === undefined &&
@@ -4905,10 +4946,13 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
             state: 'writing',
         } satisfies StashWind);
         if (was.by === 'mod')
-            return (isOwner ? windNoteAutoOwner : windNoteAuto)(
-                await readNumber($, 'wind-at'),
+            return windText(
+                $,
+                'at',
+                { wind: await readNumber($, 'wind-at') },
+                isOwner ? WIND_NOTE_AUTO_OWNER : undefined,
             );
-        return isOwner ? WIND_NOTE_OWNER : WIND_NOTE;
+        return windText($, 'press', {}, isOwner ? WIND_NOTE_OWNER : undefined);
     }
     if (was.state === 'refused') {
         await $.store.delete(WIND + sid);
@@ -6974,6 +7018,47 @@ async function openBoard($: EngineInterface) {
     await $.ui.open({ closeOnEscape: true, id: BOARD, title: '🚦 board' });
 }
 
+// herdr is a second editor of the 🎛️ store, never a second store (FRM-634 exit 3, FRM-625:W10): a row herdr changed since
+// the last poll is written into the store, so the last edit wins on either side and a deleted herdr changes nothing. a
+// line the notice-below-wind rule refuses is not marked seen, so it lands once its pair has moved
+const HERDR_SEEN = 'herdr-seen';
+const HERDR_SWITCH_ROWS = [
+    'stash.second-wind',
+    'stash.second-wind-auto',
+] as const;
+const HERDR_NUMBER_ROWS = [
+    ['stash.wind.must', 'wind-at'],
+    ['stash.wind.notice', 'wind-notice'],
+] as const;
+async function takeHerdrRows($: EngineInterface) {
+    const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
+    const rows = await herdrRows($, home);
+    const was = (await $.store.get(HERDR_SEEN).catch(() => undefined)) as
+        | Record<string, unknown>
+        | undefined;
+    const seen = { ...was };
+    for (const part of HERDR_SWITCH_ROWS) {
+        const isOn = rows[part];
+        if (typeof isOn !== 'boolean' || isOn === seen[part]) continue;
+        const now = shownOf(await $.store.get(SHOWN).catch(() => undefined));
+        await $.store.set(SHOWN, { ...now, [part]: isOn });
+        seen[part] = isOn;
+    }
+    for (const [row, name] of HERDR_NUMBER_ROWS) {
+        const n = numberOf(rows[row], NUMBERS[name].range);
+        if (n === undefined || n === seen[row]) continue;
+        const lines = {
+            'wind-at': await readNumber($, 'wind-at'),
+            'wind-notice': await readNumber($, 'wind-notice'),
+        };
+        if (windPairRefusal(lines, name, n)) continue;
+        await $.store.set(NUMBERS[name].key, n);
+        seen[row] = n;
+    }
+    if (JSON.stringify(seen) !== JSON.stringify(was ?? {}))
+        await $.store.set(HERDR_SEEN, seen);
+}
+
 // every control names itself on hover; the card stays on the control's row, since a one-row site clips the rest
 // re-read before the write: another session may have flipped a part since this one's poll
 async function flipPart($: EngineInterface, key: string) {
@@ -7365,6 +7450,7 @@ export const register: Register = (on) => {
             return undefined;
         });
         await seatDefaults($).catch(() => undefined);
+        await writeWindDefaults($).catch(() => undefined);
         await armHeldTells($).catch(() => undefined);
         const panes = await $.ui.panes().catch(() => undefined);
         if (panes?.some((p) => p.id === OLD_BOARD)) {
@@ -7464,6 +7550,7 @@ export const register: Register = (on) => {
             isPolling = true;
             const tick = () =>
                 $.clock.after(POLL_MS, async () => {
+                    await takeHerdrRows($).catch(() => undefined);
                     // an open board's view carries the tick's clock, so its «ago» times move on their own
                     await load($);
                     await followHot($).catch(() => undefined);

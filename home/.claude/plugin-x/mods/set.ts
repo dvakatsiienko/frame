@@ -1,5 +1,6 @@
 // pnpm mods:set <key> <value> [session id] — writes one x-mod-stash setting into its store, no reload: the next poll reads it.
 // `hot [<session id> [on|off]]` reads or writes any session's 🔥, the door its chip uses (FRM-505)
+// `second-wind-auto [<session id> [on|off]]` reads or writes any session's 🍃, the door its band button uses (FRM-634)
 // `pace on|end` is the pace watch and ⏰ waker for a shift, `pace off` a written off, clio's registry row by default; a number key is a 🎛️ row; `part <key> on|off` a 🎛️ switch, global, bare `part` lists them
 import { execFileSync } from 'node:child_process';
 import { globSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -56,6 +57,30 @@ export function withHot(
         [HOT + sessionId]: verb === 'on' ? { since: now } : { off: true },
     };
 }
+
+const AUTO_WIND = 'second-wind-auto:';
+const WIND = 'wind:';
+
+// the band's 🍃 writes `{ on, at }`; an off takes back the mod's own pending ask, never one dima pressed
+export function withAutoWind(
+    store: Record<string, unknown>,
+    sessionId: string,
+    verb: 'off' | 'on',
+    now: number,
+) {
+    const { [WIND + sessionId]: wind, ...rest } = store;
+    const ask = wind as { by?: string; state?: string } | undefined;
+    const isModAsk =
+        ask?.by === 'mod' && (ask.state === 'asked' || ask.state === 'writing');
+    return {
+        ...(verb === 'off' && isModAsk ? rest : store),
+        [AUTO_WIND + sessionId]: { at: now, on: verb === 'on' },
+    };
+}
+
+// unpressed, every thread's 🍃 is on
+const isAutoWindOn = (v: unknown) =>
+    (v as { on?: boolean } | undefined)?.on ?? true;
 
 const isHotOn = (v: unknown) =>
     typeof v === 'object' && v !== null && !('off' in v);
@@ -184,13 +209,47 @@ function main([key, value, id]: string[]) {
         console.log(`🔥 ${value} ${id}, its next poll takes it`);
         return 0;
     }
+    if (key === 'second-wind-auto') {
+        if (!path) {
+            console.error('no x-mod-stash store');
+            return 1;
+        }
+        const store = JSON.parse(readFileSync(path, 'utf8'));
+        if (value === undefined) {
+            for (const k of Object.keys(store).filter((k) =>
+                k.startsWith(AUTO_WIND),
+            ))
+                console.log(
+                    `${k.slice(AUTO_WIND.length)} ${isAutoWindOn(store[k]) ? 'on' : 'off'}`,
+                );
+            return 0;
+        }
+        if (id === undefined) {
+            console.log(
+                `${value} ${isAutoWindOn(store[AUTO_WIND + value]) ? 'on' : 'off'}`,
+            );
+            return 0;
+        }
+        if (id !== 'on' && id !== 'off') {
+            console.error(
+                'usage: pnpm mods:set second-wind-auto [<session id> [on|off]]',
+            );
+            return 2;
+        }
+        writeFileSync(
+            path,
+            JSON.stringify(withAutoWind(store, value, id, Date.now())),
+        );
+        console.log(`🍃 ${value} ${id}, its next turn reads it`);
+        return 0;
+    }
     const isPace =
         key === 'pace' &&
         (value === 'on' || value === 'off' || value === 'end');
     const n = key && value ? numberSetting(key, value) : undefined;
     if (!isPace && n === undefined) {
         console.error(
-            `usage: pnpm mods:set pace on|off|end [session id] | pnpm mods:set part [<key> on|off] | pnpm mods:set hot [<session id> [on|off]] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
+            `usage: pnpm mods:set pace on|off|end [session id] | pnpm mods:set part [<key> on|off] | pnpm mods:set hot [<session id> [on|off]] | pnpm mods:set second-wind-auto [<session id> [on|off]] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
         );
         return 2;
     }

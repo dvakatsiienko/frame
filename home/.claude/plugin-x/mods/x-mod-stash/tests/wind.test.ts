@@ -68,6 +68,7 @@ function world(
     const lines: string[] = [];
     const commands: string[] = [];
     const appended: string[] = [];
+    const writes: string[] = [];
     const clock = mock.clock(on, { now: NOW });
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
@@ -129,6 +130,11 @@ function world(
             ? { value: files[e.path] ?? '' }
             : { deny: 'no such file' },
     );
+    on('fs.write', (_$, e) => {
+        writes.push(e.path);
+        files[e.path] = e.text;
+        return { value: undefined };
+    });
     on('fs.list', (_$, e) => ({
         value:
             e.path === '/home/.claude/sessions'
@@ -206,7 +212,16 @@ function world(
             if (c.type === 'text') appended.push(String(c.text));
         return next(e);
     });
-    return { appended, clock, commands, lines, prompts, store };
+    return {
+        appended,
+        clock,
+        commands,
+        files,
+        lines,
+        prompts,
+        store,
+        writes,
+    };
 }
 
 const start = ($: Engine) =>
@@ -432,6 +447,92 @@ async function turnAt($: Engine, w: ReturnType<typeof world>, fill: number) {
     await say($);
 }
 
+// FRM-634: dima's own text for each of the three notes sits in herdr's settings rows; an empty row is the mod's default
+const HERDR_SETTINGS = '/home/.claude/shelf/herdr-settings/settings.json';
+const herdrRows = (rows: Record<string, unknown>) =>
+    JSON.stringify({ rows, v: 1 });
+
+test("a 🐦‍🔥 press reads dima's press note from its row", async ($, on) => {
+    const w = world(on);
+    w.files[HERDR_SETTINGS] = herdrRows({
+        'stash.wind.text.press': 'my press note: handoff, then second-wind',
+    });
+    await start($);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+    await say($);
+    expect(w.lines.filter((l) => l.includes('second-wind'))).toEqual([
+        'my press note: handoff, then second-wind',
+    ]);
+});
+
+test('a notice crossing reads the notice row, with the fill and the wind line in it', async ($, on) => {
+    const w = world(on);
+    w.files[HERDR_SETTINGS] = herdrRows({
+        'stash.wind.text.notice': 'ctx {fill} of {wind}: second-wind soon',
+    });
+    await start($);
+    await turnAt($, w, 56);
+    expect(w.lines.filter((l) => l.includes('second-wind'))).toEqual([
+        'ctx 56 of 65: second-wind soon',
+    ]);
+});
+
+test("a wind line crossing reads the mod's ask from its row", async ($, on) => {
+    const w = world(on);
+    w.files[HERDR_SETTINGS] = herdrRows({
+        'stash.wind.text.at': 'past {wind}: handoff, then second-wind',
+    });
+    await start($);
+    await turnAt($, w, 56);
+    await turnAt($, w, 66);
+    expect(w.lines.filter((l) => l.startsWith('past'))).toEqual([
+        'past 65: handoff, then second-wind',
+    ]);
+});
+
+const WIND_DEFAULTS = '/home/.claude/shelf/second-wind-defaults.json';
+
+test('a start writes the three default notes where herdr reads them, placeholders kept', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const { at, notice, press } = JSON.parse(w.files[WIND_DEFAULTS] ?? '{}');
+    expect(
+        [
+            [at, 'past {wind} %'],
+            [notice, 'context at {fill} %'],
+            [press, 'dima asked you to refresh'],
+        ].map(([text, part]) => String(text).includes(String(part))),
+    ).toEqual([true, true, true]);
+});
+
+test('a start that finds its defaults already written writes no file again', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await start($);
+    expect(w.writes.filter((p) => p === WIND_DEFAULTS)).toHaveLength(1);
+});
+
+test('a blank text row keeps the default of each note', async ($, on) => {
+    const w = world(on);
+    w.files[HERDR_SETTINGS] = herdrRows({
+        'stash.wind.text.at': '',
+        'stash.wind.text.notice': '  ',
+        'stash.wind.text.press': 7,
+    });
+    await start($);
+    await turnAt($, w, 56);
+    await turnAt($, w, 66);
+    w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
+    await say($);
+    expect(
+        [
+            /^🐦‍🔥 context at 56 %.*65 % is the upper boundary/,
+            /^🐦‍🔥 second wind: the mod asks you for it, your context is past 65 %/,
+            /^🐦‍🔥 second wind: dima asked you to refresh/,
+        ].map((note) => w.lines.filter((l) => note.test(l)).length),
+    ).toEqual([1, 1, 1]);
+});
+
 test('past 55 % a session hears once that 65 % is the upper boundary', async ($, on) => {
     const w = world(on);
     await start($);
@@ -571,22 +672,25 @@ test("dima's take-back holds until the fill drops under 65 %, then the next cros
     ).toHaveLength(2);
 });
 
-test("the coordinator's thread is 🍃 off by default: no notice and no ask", async ($, on) => {
+// FRM-634, dima's tick: a coordinator's 🍃 is on until pressed off, as every thread's
+test("the coordinator's thread is 🍃 on by default: the notice at 55 %, the mod's ask at 65 %", async ($, on) => {
     const w = world(on, '🦉 clio', undefined, undefined, 'coordinator');
     await start($);
-    for (const fill of [70, 70]) await turnAt($, w, fill);
-    expect([noticesOf(w.lines), w.store.has(`wind:${SID}`)]).toEqual([
-        [],
-        false,
+    for (const fill of [56, 70]) await turnAt($, w, fill);
+    expect([noticesOf(w.lines).length, w.store.has(`wind:${SID}`)]).toEqual([
+        1,
+        true,
     ]);
 });
 
-// 🍃 second-wind-auto (W1909–W1918): on for every thread, off for the coordinator's; 💨 afk or a shift turn hers on
+// 🍃 second-wind-auto (W1909–W1918): on for every thread until pressed; 💨 afk or a shift turn a coordinator's pressed-off one on
 const AUTO = `second-wind-auto:${SID}`;
 const proposals = (lines: string[]) =>
     lines.filter((l) => l.includes('propose the wind to dima'));
 const coordinator = (on: On) =>
     world(on, '🦉 clio', undefined, undefined, 'coordinator');
+// her 🍃 pressed off before the test's clock starts
+const PRESSED_OFF = { at: NOW - 1, on: false };
 const band = ($: Engine) =>
     $.ui.mount({
         component: 'AbovePrompt',
@@ -616,6 +720,7 @@ test('🍃 off draws no notice and no ask', async ($, on) => {
 
 test("the coordinator's thread with 🍃 off hears one line at 65 %, proposing the wind to dima", async ($, on) => {
     const w = coordinator(on);
+    w.store.set(AUTO, PRESSED_OFF);
     await start($);
     for (const fill of [56, 70, 71]) await turnAt($, w, fill);
     expect([proposals(w.lines).length, w.store.has(`wind:${SID}`)]).toEqual([
@@ -626,17 +731,22 @@ test("the coordinator's thread with 🍃 off hears one line at 65 %, proposing t
 
 test("💨 afk on turns the coordinator's 🍃 on at read time, and afk off shows the stored value again", async ($, on) => {
     const w = coordinator(on);
+    w.store.set(AUTO, PRESSED_OFF);
     w.store.set('afk', { at: NOW, on: true });
     await start($);
     await turnAt($, w, 56);
     w.store.set('afk', { at: NOW + 1, on: false });
     await turnAt($, w, 40);
     await turnAt($, w, 56);
-    expect([noticesOf(w.lines).length, w.store.has(AUTO)]).toEqual([1, false]);
+    expect([noticesOf(w.lines).length, w.store.get(AUTO)]).toEqual([
+        1,
+        PRESSED_OFF,
+    ]);
 });
 
 test("a shift turns the coordinator's 🍃 on, and its end turns it back", async ($, on) => {
     const w = coordinator(on);
+    w.store.set(AUTO, PRESSED_OFF);
     w.store.set(`pace:${SID}`, { since: NOW });
     await start($);
     await turnAt($, w, 56);
@@ -698,6 +808,7 @@ test('🍃 flipped on past both lines still gives the notice first and the ask a
 
 test('💨 afk on past the line the coordinator was proposed at still gives her the notice, then the ask a turn later', async ($, on) => {
     const w = coordinator(on);
+    w.store.set(AUTO, PRESSED_OFF);
     await start($);
     await turnAt($, w, 70);
     w.store.set('afk', { at: NOW + 1, on: true });
@@ -739,6 +850,7 @@ test('🍃 switched off in 🎛️ gives the coordinator no propose line', async
 
 test("a shift, then afk on, then afk off keeps the coordinator's 🍃 on while the shift lasts", async ($, on) => {
     const w = coordinator(on);
+    w.store.set(AUTO, PRESSED_OFF);
     w.store.set(`pace:${SID}`, { since: NOW });
     await start($);
     await turnAt($, w, 56);
