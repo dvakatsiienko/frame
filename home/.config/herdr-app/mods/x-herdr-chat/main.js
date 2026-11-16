@@ -41,6 +41,7 @@ import {
     JOIN_TAKE_MS,
     holdSend,
 } from './joins.js';
+import { LOOK_KEY, lookOf } from './look.js';
 import { createMagic } from './magic.js';
 import { createPlace } from './place.js';
 import { sendArgs } from './queued.js';
@@ -56,9 +57,13 @@ import { typedMarkdown } from './typed.js';
 // the theme colours this file reads, each present in every herdr theme
 /** @typedef {Record<'accent' | 'background' | 'border' | 'dim' | 'foreground' | 'muted' | 'raised', Color>} Theme */
 
-// the widest a line of text reads well, and the share of it a bubble may take
-const COLUMN = 760;
+// the readable column of a narrow look (the old chat's), and the share of the column a bubble may take
+const NARROW = 820;
 const BUBBLE_SHARE = 0.8;
+// the room above and below each row, per spacing
+const ROW_PAD = { normal: 6, roomy: 10, tight: 3 };
+// the ui font, as the old chat drew it
+const SANS = '.AppleSystemUIFont';
 // his reading place is saved this long after his last scroll step
 const PLACE_SAVE_MS = 600;
 // how long after a held place was last asked for the list stays unseen: its landing takes two frames, and a
@@ -181,8 +186,14 @@ export default class Chat extends View {
     at = createPlace();
     width = 0;
     viewH = 0;
-    /** bumped when the width changes: rich text laid out for the old width is never reused */
+    /** bumped when the width or the look changes: rich text laid out for the old one is never reused */
     widthGen = 0;
+    /** his chat look (look.js), read each render */
+    look = lookOf(null);
+    /** the look's parts that move rows, as last drawn: a change holds his place */
+    lookKey = '';
+    /** the rows the list draws: the model's, less tool calls he hides @type {readonly Row[]} */
+    shownRows = [];
     /** until then the list is not shown: a held place is still landing as real heights arrive */
     settleUntil = 0;
     /** the pending wait for a change in the transcript's folder @type {import('herdr').FolderWatch | null} */
@@ -294,12 +305,34 @@ export default class Chat extends View {
             this.pid = pid;
             this.wake();
         }
+        const look = lookOf(shared(LOOK_KEY));
+        const lookKey = [
+            look.size,
+            look.font,
+            look.width,
+            look.space,
+            look.tools,
+        ].join('|');
+        if (this.lookKey && lookKey !== this.lookKey) {
+            // every row takes a new height at once: his place is read first, then held while they land
+            this.readPlace();
+            this.widthGen += 1;
+            this.heights.clear();
+            this.holdPlace();
+        }
+        this.look = look;
+        this.lookKey = lookKey;
         const root = v_flex()
             .size_full()
             .min_h(0)
             .bg(t.background)
             .text_color(t.foreground)
-            .text_size(13);
+            .text_size(look.size)
+            .font_family(
+                look.font === 'mono'
+                    ? String(settings().font_family ?? 'JetBrains Mono')
+                    : SANS,
+            );
         const overlay = props()?.overlay;
         if (overlay)
             root.child(
@@ -321,7 +354,11 @@ export default class Chat extends View {
                             .on_click(() => closeOverlay(overlay)),
                     ),
             );
-        const { rows } = this.model;
+        const rows =
+            look.tools === 'hide'
+                ? this.model.rows.filter((row) => row.kind !== 'tool')
+                : this.model.rows;
+        this.shownRows = rows;
         if (rows.length) {
             if (this.error)
                 root.child(
@@ -372,7 +409,7 @@ export default class Chat extends View {
             .child(
                 div()
                     .w_full()
-                    .max_w(COLUMN)
+                    .max_w(this.column())
                     .relative()
                     .px(14)
                     .pt(12)
@@ -458,7 +495,7 @@ export default class Chat extends View {
     list(rows, t, cx) {
         const zoom = Number(settings().zoom) || 1;
         const sizes = this.heights.sizes(rows, (row) =>
-            guessHeight(row, this.width || COLUMN),
+            guessHeight(row, Math.min(this.width || NARROW, this.column())),
         );
         this.sizes = sizes;
         const pre = `w${this.widthGen}-`;
@@ -549,7 +586,7 @@ export default class Chat extends View {
             .on_scroll_wheel((event, cx) => {
                 const step = this.at.wheel(
                     (event.delta?.y ?? 0) / zoom,
-                    this.model.rows,
+                    this.shownRows,
                     this.sizes,
                     this.viewH,
                     Date.now(),
@@ -597,7 +634,7 @@ export default class Chat extends View {
             .absolute()
             .top(0)
             .left(0)
-            .w(this.width || COLUMN)
+            .w(this.width || NARROW)
             .h(0)
             .overflow_hidden()
             .opacity(0)
@@ -650,9 +687,9 @@ export default class Chat extends View {
                 .child(
                     div()
                         .w_full()
-                        .max_w(COLUMN + 36)
+                        .max_w(this.column() + 36)
                         .px(18)
-                        .py(6)
+                        .py(ROW_PAD[this.look.space] ?? ROW_PAD.normal)
                         .child(el),
                 );
         if (row.kind === 'tool')
@@ -667,7 +704,9 @@ export default class Chat extends View {
             );
         const most = Math.max(
             240,
-            Math.floor(Math.min(this.width || COLUMN, COLUMN) * BUBBLE_SHARE),
+            Math.floor(
+                Math.min(this.width || NARROW, this.column()) * BUBBLE_SHARE,
+            ),
         );
         const id = `${pre}${row.id}@${row.version}`;
         if (row.kind === 'mine')
@@ -1117,7 +1156,14 @@ export default class Chat extends View {
 
     /** his place, read from the rows the list drew last; never inside the list's row callback (see place.js) */
     readPlace() {
-        this.at.read(this.model.rows, this.sizes);
+        this.at.read(this.shownRows, this.sizes);
+    }
+
+    /** the widest a row or the quill draws: a readable column when narrow, the list's own width when full */
+    column() {
+        return this.look.width === 'narrow'
+            ? NARROW
+            : Math.max(this.width, NARROW);
     }
 
     /** his place is asked of the list again, to the pixel: after a new width; unseen while it lands */
