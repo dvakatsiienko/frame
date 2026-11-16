@@ -718,7 +718,7 @@
                     "value": "word"
                 },
                 "lane-kind": {
-                    "description": "the mode the member's name opens with: side, quick or shift; none keeps the brief's lane: line",
+                    "description": "the mode the member's name opens with: side, quick or shift; none reads the ticket's lane: line, then the brief's",
                     "type": "string",
                     "value": "kind"
                 },

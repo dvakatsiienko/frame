@@ -175,10 +175,7 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 		return dispatchTicket{}, &Fail{Refused: true, Msg: id + " carries neither the signed label nor a 🚀 dispatched line: its sign is missing", Next: "x linear read " + id}
 	}
 
-	ticket := dispatchTicket{ID: id, uuid: issue.ID, input: map[string]any{}}
-	if m := laneKindLine.FindStringSubmatch(body); m != nil {
-		ticket.laneKind = m[1]
-	}
+	ticket := dispatchTicket{ID: id, uuid: issue.ID, laneKind: laneKindOf(body), input: map[string]any{}}
 	mark := func(name string, missing bool, detail string) {
 		status := "set"
 		if missing {

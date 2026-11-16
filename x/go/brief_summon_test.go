@@ -23,6 +23,8 @@ import (
 // trusts the summon home, and a state dir for brief stamps
 type summonWorld struct {
 	frame, home, state, repo string
+	// the body linear answers for the summon's ticket
+	ticket string
 }
 
 func newSummonWorld(t *testing.T) summonWorld {
@@ -54,7 +56,7 @@ func (w summonWorld) brief(t *testing.T, text string, stamped bool) string {
 	return path
 }
 
-// the summon reads its ticket's project from linear for the display's area word: a fake answers `cli`
+// the summon reads its ticket's body from linear for the lane: line: a fake answers w.ticket
 func (w summonWorld) summon(t *testing.T, command string, env ...string) ran {
 	t.Helper()
 	return w.summonWith(t, command, []string{"--apply", "--area", "cli"}, env...)
@@ -63,7 +65,10 @@ func (w summonWorld) summon(t *testing.T, command string, env ...string) ran {
 // summonWith runs the summon with the given flags after the command; none is a check, which writes no record
 func (w summonWorld) summonWith(t *testing.T, command string, flags []string, env ...string) ran {
 	t.Helper()
-	server := newFakeLinear(t, func(gqlCall) string { return `{"data":{"issue":{"project":{"name":"cli"}}}}` })
+	description, _ := json.Marshal(w.ticket)
+	server := newFakeLinear(t, func(gqlCall) string {
+		return `{"data":{"issue":{"id":"uuid-1","description":` + string(description) + `}}}`
+	})
 	base := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + server.URL}
 	return xIn(t, w.repo, asCaller(t, append(base, env...), "coordinator"), append([]string{"brief", "summon", command}, flags...)...)
 }
@@ -536,7 +541,8 @@ func TestTheBackfillLetsAClioStartedBeforeTheMergeSummonAgain(t *testing.T) {
 	live := fmt.Sprintf(`{"sessionId":"sid-clio","pid":%d}`, os.Getpid())
 	write(t, filepath.Join(hers, strconv.Itoa(os.Getpid())+".json"), live)
 	write(t, filepath.Join(dimas, "clio.json"), live)
-	env := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store}
+	server := newFakeLinear(t, func(gqlCall) string { return `{"data":{"issue":{"id":"uuid-1","description":""}}}` })
+	env := []string{"HOME=" + w.home, "X_STATE=" + w.state, "X_FRAME_ROOT=" + w.frame, "HC_TERMINAL_ID=", "X_THREADS=" + store, "X_KEYS=" + linearKeys(t), "X_LINEAR_URL=" + server.URL}
 	asClio := func() ran {
 		return xIn(t, w.repo, append(env, "X_SESSIONS="+hers), "brief", "summon", "--apply", "--area", "cli", codieArgv(w.repo, brief))
 	}
@@ -1051,6 +1057,67 @@ func TestBriefSummonSkipsAnIDASessionOrTranscriptHolds(t *testing.T) {
 
 	if first == "" || second == first || third == first || third == second {
 		t.Errorf("ids %q %q %q, want three different: one past a session file, one past a transcript", first, second, third)
+	}
+}
+
+// a member is born with its ticket's mode: the ticket's lane: line outranks the brief's and a stale lane record
+func TestBriefSummonTakesTheLaneKindFromItsTicket(t *testing.T) {
+	t.Parallel()
+	sideLane := `{"v":1,"threads":[{"sessionId":"s1","role":"codie","lane":"lane-1","laneKind":"side","ticket":"FRM-9","area":"cli"}]}`
+	for _, c := range []struct {
+		name, ticket, flag, want string
+		isSixthSense             bool
+	}{
+		{"a quick ticket's codie, its brief saying side", "lane: quick\nrepo: frame\n", "", "⚡ 🔧 cli | FRM-1", false},
+		{"a quick ticket's sixth sense, its lane's codie recorded side", "lane: quick\n", "", "⚡ 🔎 cli | FRM-1", true},
+		{"a shift ticket's sixth sense", "lane: shift\n", "", "🌘 🔎 cli | FRM-1", true},
+		{"--lane-kind outranks the ticket", "lane: quick\n", "shift", "🌘 🔧 cli | FRM-1", false},
+		{"a ticket naming no mode leaves the brief's", "## wish\n", "", "🌗 🔧 cli | FRM-1", false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			w.ticket = c.ticket
+			store := filepath.Join(t.TempDir(), "threads.json")
+			write(t, store, sideLane)
+			command := strings.Replace(codieArgv(w.repo, w.brief(t, goodBrief, true)), "🌗 🔧 cli | FRM-1", c.want, 1)
+			if c.isSixthSense {
+				command = strings.Replace(sixthArgv(w, " spec: .scratch/lane-1/spec.md"), "🌗 🔎 cli | FRM-1", c.want, 1)
+			}
+
+			flags := []string{"--apply", "--area", "cli"}
+			if c.flag != "" {
+				flags = append(flags, "--lane-kind", c.flag)
+			}
+
+			got := w.summonWith(t, command, flags, "X_THREADS="+store, "X_SESSIONS="+t.TempDir())
+
+			if got.code != 0 || got.data["display"] != c.want {
+				t.Errorf("exit %d display %v, want exit 0 and %q:\n%s", got.code, got.data["display"], c.want, got.stdout)
+			}
+		})
+	}
+}
+
+// a ticket linear does not answer for leaves the name without its mode: the summon refuses and names the flag
+func TestBriefSummonRefusesWhenItsTicketsLaneKindIsUnread(t *testing.T) {
+	t.Parallel()
+	unknown := newFakeLinear(t, func(gqlCall) string { return `{"data":{"issue":null}}` })
+	for _, c := range []struct{ name, url string }{
+		{"linear down", "http://127.0.0.1:1"},
+		{"a ticket linear does not know", unknown.URL},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			store := filepath.Join(t.TempDir(), "threads.json")
+
+			got := w.summon(t, codieArgv(w.repo, w.brief(t, goodBrief, true)), "X_THREADS="+store, "X_SESSIONS="+t.TempDir(), "X_LINEAR_URL="+c.url)
+
+			if got.code != 1 || !strings.Contains(got.stdout, "--area cli --lane-kind <side|quick|shift> --apply") || exists(store) {
+				t.Errorf("exit %d, want 1 with a next that runs as printed and no record:\n%s", got.code, got.stdout)
+			}
+		})
 	}
 }
 

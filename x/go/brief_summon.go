@@ -261,12 +261,22 @@ func briefSummonPlan(r *Run, args []string, flags Flags) (any, error) {
 	if m := laneSpecDir.FindStringSubmatch(text); m != nil {
 		record.Lane = m[1]
 	}
-	if m := laneKindLine.FindStringSubmatch(text); m != nil {
-		record.LaneKind = m[1]
+	// the ticket's lane: line is the mode, the one lane dispatch reads, so a member is born with the name its
+	// dispatch would draw; --lane-kind says it for a thread with no ticket, or one whose ticket names none
+	if kind == "" && record.Ticket != "" {
+		if err := r.Step("lane kind", "the lane: line of "+record.Ticket, func() (string, error) {
+			kind, err = ticketLaneKind(flags, record.Ticket)
+			return cmp.Or(kind, "none named"), err
+		}); err != nil {
+			next := "x brief summon " + quote(command) + " --area " + area + " --lane-kind <side|quick|shift>"
+			if flags["apply"] == true {
+				next += " --apply"
+			}
+			return nil, &Fail{Msg: record.Ticket + "'s lane: line was not read, so the name has no mode: " + err.Error(), Next: next}
+		}
 	}
-	// the flag outranks the brief's lane: line, so the name is right from birth when the brief names none
-	record.LaneKind = cmp.Or(kind, record.LaneKind)
-	// a sixth sense's inline argv names no lane kind: it takes its lane's, from the codie record of the same lane
+	record.LaneKind = cmp.Or(kind, laneKindOf(text))
+	// a sixth sense's inline argv names no lane kind: with none on its ticket it takes its lane's, from the codie record
 	if record.LaneKind == "" && record.Lane != "" {
 		if store, err := readThreadStore(threadStorePath()); err == nil {
 			for _, t := range store.Threads {
@@ -595,6 +605,27 @@ func claudeCallAt(command string) []int {
 }
 
 var bgFlag = regexp.MustCompile(`\s--bg(?:\s|$)`)
+
+// laneKindOf is the one reader of a lane: line, a ticket's or a brief's: side, quick or shift, "" when it names none
+func laneKindOf(text string) string {
+	if m := laneKindLine.FindStringSubmatch(text); m != nil {
+		return m[1]
+	}
+	return ""
+}
+
+// the mode a ticket's own lane: line names, read as the caller's linear actor
+func ticketLaneKind(flags Flags, id string) (string, error) {
+	actor, err := actorOf(flags)
+	if err != nil {
+		return "", err
+	}
+	issue, err := fetchBody(actor, id)
+	if err != nil || issue.Description == nil {
+		return "", err
+	}
+	return laneKindOf(*issue.Description), nil
+}
 
 // --lane-kind: the mode the summoned member's name opens with, side (🌗), quick (⚡) or shift (🌘)
 func laneKindFlag(flags Flags) (string, error) {
