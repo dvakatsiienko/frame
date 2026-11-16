@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T19:21:00Z'
+updated_date: '2026-11-16T19:27:00Z'
 labels:
   - s
 dependencies: []
@@ -73,4 +73,8 @@ PK-439:W12 (2026-11-16 21:17, dima): orbit: where does the orbit contract sit no
 PK-439:W13 (2026-11-16 21:17, dima): q1: he does not want to rush or force this steer; it is only a recommendation. The sooner you post an ask into orbit, the sooner he can tick it, and his tick can reach you in the same turn you ask. Calm pace, no rush, but asks you can post sooner are never postponed to the end of the turn.
 
 PK-439:W14 (2026-11-16 21:17, dima): let's land this grill, then see where we are, then plan the halt. Tell him when the grill has landed. Then run /clio:lowtide-peek-chunk on herdr + mods.
+
+PK-439:W15 (2026-11-16 21:09, dima, o109 steer): optimize the orbit rebalance with performance in mind. He wants the list to trim the message history, so only efficient moves, and say what each move is.
+
+PK-439:W16 (2026-11-16 21:09, dima, o109 steer): mods orbit settings in herdr: he wants text boxes for orbit like the ones for Second Wind, to steer the orbit text he receives. Can orbit texts be tweaked in SM the same way?
 <!-- SECTION:NOTES:END -->
