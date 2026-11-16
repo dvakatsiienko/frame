@@ -324,7 +324,9 @@ export default class Chat extends View {
                 if (!this.follow) {
                     // a step down that reached the end follows again, read from the range that step drew. no redraw
                     // is asked for here, herdr refuses one inside this callback: the ↓ leaves at the next draw
+                    // never while a place is held: its landing sends the list to its end for one frame
                     if (
+                        !this.cut &&
                         this.isLastWheelDown &&
                         Date.now() < this.wheelUntil &&
                         isAtTrueEnd(sizes, range, this.viewH)
@@ -394,6 +396,9 @@ export default class Chat extends View {
                 cx.notify();
             })
             .on_scroll_wheel((event, cx) => {
+                // between the two frames of a landing the list sits at its end: a step taken there would end the
+                // held place with the list still down there
+                if (this.isLifted) return;
                 const was = this.follow;
                 const dy = event.delta?.y ?? 0;
                 this.follow = followAfterWheel(
@@ -486,7 +491,13 @@ export default class Chat extends View {
                                     // a row above his place changed height: the place is brought back to the top,
                                     // or the list, which keeps its offset in px, would slide it away
                                     const at = placeIndex(rows, this.place);
-                                    if (at >= 0 && rows.indexOf(row) <= at)
+                                    // not during his own scroll: a landing would blink the list under his fingers,
+                                    // and he is moving anyway
+                                    if (
+                                        at >= 0 &&
+                                        rows.indexOf(row) <= at &&
+                                        Date.now() >= this.wheelUntil
+                                    )
                                         this.holdPlace();
                                     cx.notify();
                                 })
@@ -673,6 +684,12 @@ export default class Chat extends View {
             this.heights.clear();
             this.place = null;
             this.follow = true;
+            // nothing of the old rows may steer the new ones: a held place, a landing under way, the rows drawn
+            this.cut = null;
+            this.isSeekDue = false;
+            this.isLifted = false;
+            this.range = null;
+            this.top = 0;
         }
         const hadError = this.error !== null;
         this.error = null;
@@ -747,13 +764,15 @@ export default class Chat extends View {
      */
     savePlaceSoon(cx) {
         const at = Date.now();
-        const { file } = this;
+        const { file, reader } = this;
         this.lastWheelAt = at;
         let seen = '';
         /** @param {Context} later */
         const save = (later) => {
             // only his last step counts, and only for the thread it was made in
+            // nor for an earlier opening of the same thread: its place may not be restored yet
             if (this.lastWheelAt !== at || !file || this.file !== file) return;
+            if (this.reader !== reader) return;
             this.readPlace();
             // a glide moves the list on with no wheel step: the place is saved once two reads in a row agree
             const now = `${this.place}@${Math.round(this.top)}`;
