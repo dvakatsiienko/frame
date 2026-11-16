@@ -68,7 +68,7 @@ function world(
     const lines: string[] = [];
     const commands: string[] = [];
     const appended: string[] = [];
-    const writes: string[] = [];
+    const moves: string[] = [];
     const clock = mock.clock(on, { now: NOW });
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
@@ -87,6 +87,13 @@ function world(
     on('env.get', () => ({ value: '/home' }));
     on('process.run', (_$, e) => {
         const isPeek = e.argv[1] === 'handoff' && e.argv[2] === 'peek';
+        // writeWhole's rename
+        if (e.argv[0] === 'mv') {
+            const [from = '', to = ''] = e.argv.slice(2);
+            moves.push(to);
+            files[to] = files[from] ?? '';
+            delete files[from];
+        }
         return {
             value: {
                 exitCode: isPeek && !handoffs.includes(e.argv[3] ?? '') ? 1 : 0,
@@ -131,7 +138,6 @@ function world(
             : { deny: 'no such file' },
     );
     on('fs.write', (_$, e) => {
-        writes.push(e.path);
         files[e.path] = e.text;
         return { value: undefined };
     });
@@ -218,9 +224,9 @@ function world(
         commands,
         files,
         lines,
+        moves,
         prompts,
         store,
-        writes,
     };
 }
 
@@ -455,13 +461,14 @@ const herdrRows = (rows: Record<string, unknown>) =>
 test("a 🐦‍🔥 press reads dima's press note from its row", async ($, on) => {
     const w = world(on);
     w.files[HERDR_SETTINGS] = herdrRows({
-        'stash.wind.text.press': 'my press note: handoff, then second-wind',
+        'stash.wind.text.press':
+            'my press note at {fill} of {wind}: handoff, then second-wind',
     });
     await start($);
     w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
-    await say($);
+    await turnAt($, w, 30);
     expect(w.lines.filter((l) => l.includes('second-wind'))).toEqual([
-        'my press note: handoff, then second-wind',
+        'my press note at 30 of 65: handoff, then second-wind',
     ]);
 });
 
@@ -509,7 +516,7 @@ test('a start that finds its defaults already written writes no file again', asy
     const w = world(on);
     await start($);
     await start($);
-    expect(w.writes.filter((p) => p === WIND_DEFAULTS)).toHaveLength(1);
+    expect(w.moves.filter((p) => p === WIND_DEFAULTS)).toHaveLength(1);
 });
 
 test('a blank text row keeps the default of each note', async ($, on) => {

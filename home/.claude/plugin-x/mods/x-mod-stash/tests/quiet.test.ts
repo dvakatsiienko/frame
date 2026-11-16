@@ -3979,6 +3979,16 @@ for (const [why, lanes, peer, to] of [
         true,
         CLIO.sessionId,
     ],
+    // a resume under a new id leaves the linked one behind: the name still finds the card
+    [
+        'the card names its codie as the registry does, linked by an id it left',
+        wingLane({
+            linkedIds: { codie: 'left-sid' },
+            members: { codie: ROUND_CODIE },
+        }),
+        true,
+        WING.sessionId,
+    ],
 ] as const)
     test(`past the cap the line goes to ${to === WING.sessionId ? 'the wing' : 'main clio'}: ${why}`, async ($, on) => {
         const w = roundWorld(on, {

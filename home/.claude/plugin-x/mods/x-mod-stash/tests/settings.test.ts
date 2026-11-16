@@ -419,6 +419,7 @@ const herdrRows = (rows: Record<string, unknown>) =>
 
 test('the wind and notice lines herdr wrote are the 🎛️ lines after one poll', async ($, on) => {
     const { clock, files, store } = world(on);
+    store.set('herdr-seen', {});
     await band($);
     files[HERDR_SETTINGS] = herdrRows({
         'stash.wind.must': 70,
@@ -430,6 +431,7 @@ test('the wind and notice lines herdr wrote are the 🎛️ lines after one poll
 
 test('the second wind switches herdr turned off are off in 🎛️ after one poll', async ($, on) => {
     const { clock, files, store } = world(on);
+    store.set('herdr-seen', {});
     await band($);
     files[HERDR_SETTINGS] = herdrRows({
         'stash.second-wind': false,
@@ -444,6 +446,7 @@ test('the second wind switches herdr turned off are off in 🎛️ after one pol
 
 test('a herdr notice line at or above the wind line is never taken', async ($, on) => {
     const { clock, files, store } = world(on);
+    store.set('herdr-seen', {});
     await band($);
     files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.notice': 70 });
     await clock.advance(4000);
@@ -452,6 +455,7 @@ test('a herdr notice line at or above the wind line is never taken', async ($, o
 
 test('a herdr line out of range or not a number is never taken', async ($, on) => {
     const { clock, files, store } = world(on);
+    store.set('herdr-seen', {});
     await band($);
     files[HERDR_SETTINGS] = herdrRows({
         'stash.second-wind': 'off',
@@ -468,6 +472,7 @@ test('a herdr line out of range or not a number is never taken', async ($, on) =
 
 test('a 🎛️ edit after a herdr edit stays until herdr edits that row again', async ($, on) => {
     const { clock, files, store } = world(on);
+    store.set('herdr-seen', {});
     await band($);
     files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.must': 70 });
     await clock.advance(4000);
@@ -477,4 +482,45 @@ test('a 🎛️ edit after a herdr edit stays until herdr edits that row again',
     files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.must': 75 });
     await clock.advance(4000);
     expect([kept, store.get('wind-at')]).toEqual([60, 75]);
+});
+
+test('rows found at a first poll, with nothing seen yet, are noted and write nothing', async ($, on) => {
+    const { clock, files, store } = world(on);
+    store.set('wind-at', 70);
+    await band($);
+    files[HERDR_SETTINGS] = herdrRows({
+        'stash.second-wind': false,
+        'stash.wind.must': 65,
+    });
+    await clock.advance(4000);
+    files[HERDR_SETTINGS] = herdrRows({
+        'stash.second-wind': false,
+        'stash.wind.must': 66,
+    });
+    await clock.advance(4000);
+    expect([store.get('wind-at'), store.get('shown')]).toEqual([66, undefined]);
+});
+
+test('both lines lowered in herdr at once land together', async ($, on) => {
+    const { clock, files, store } = world(on);
+    store.set('herdr-seen', {});
+    await band($);
+    files[HERDR_SETTINGS] = herdrRows({
+        'stash.wind.must': 45,
+        'stash.wind.notice': 40,
+    });
+    await clock.advance(4000);
+    expect([store.get('wind-at'), store.get('wind-notice')]).toEqual([45, 40]);
+});
+
+test('a herdr line the rule refused never lands later over a 🎛️ edit', async ($, on) => {
+    const { clock, files, store } = world(on);
+    store.set('herdr-seen', {});
+    await band($);
+    files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.notice': 70 });
+    await clock.advance(4000);
+    store.set('wind-notice', 60);
+    store.set('wind-at', 75);
+    await clock.advance(4000);
+    expect(store.get('wind-notice')).toBe(60);
 });

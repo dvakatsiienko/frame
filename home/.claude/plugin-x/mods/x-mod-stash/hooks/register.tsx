@@ -1281,7 +1281,7 @@ export const WIND_TEXTS = {
 async function windText(
     $: EngineInterface,
     kind: keyof typeof WIND_TEXTS,
-    n: { fill?: number; wind?: number } = {},
+    n: { fill?: number; wind?: number },
     ownerText?: string,
 ) {
     const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
@@ -1291,8 +1291,8 @@ async function windText(
             ? row
             : (ownerText ?? WIND_TEXTS[kind].of);
     return text
-        .replaceAll('{fill}', String(n.fill ?? ''))
-        .replaceAll('{wind}', String(n.wind ?? ''));
+        .replaceAll('{fill}', String(n.fill ?? '{fill}'))
+        .replaceAll('{wind}', String(n.wind ?? '{wind}'));
 }
 // herdr shows each note's default from this shelf file, never from the mod's code or store (FRM-634 exit 2)
 async function writeWindDefaults($: EngineInterface) {
@@ -1310,7 +1310,7 @@ async function writeWindDefaults($: EngineInterface) {
         2,
     )}\n`;
     if ((await $.fs.read(path).catch(() => undefined)) !== text)
-        await $.fs.write(path, text);
+        await writeWhole($, path, text);
 }
 const WIND_CANCELLED =
     '🐦‍🔥 second wind cancelled: dima took the refresh back. carry on; no handoff needed for it.';
@@ -2495,12 +2495,13 @@ async function capTold(
         const { runner } = card;
         const codie = card.members.codie;
         if (card.endedAt || !runner || !codie) continue;
-        // a card keeps its codie by registry name, by the id its link resolved, or (an old card) by id alone
+        // a card keeps its codie by registry name, by the id its link resolved, or (an old card) by id alone; the id
+        // or the name, as the parked wake reads a member: a resume under a new id leaves the linked one behind
         const linked = card.linkedIds?.codie;
         const isMine =
             (linked && (await successorOf($, linked)) === sid) ||
             (await successorOf($, codie)) === sid ||
-            (!linked && memberKey(codie) === memberKey(name ?? ''));
+            memberKey(codie) === memberKey(name ?? '');
         if (!isMine) continue;
         wing ??= threads.find(
             (t) => t.role === WING_ROLE && bare(runnerOf(t)) === bare(runner),
@@ -4945,14 +4946,14 @@ async function takeWind($: EngineInterface, isOwner: boolean) {
             ...(was.by ? { by: was.by } : {}),
             state: 'writing',
         } satisfies StashWind);
-        if (was.by === 'mod')
-            return windText(
-                $,
-                'at',
-                { wind: await readNumber($, 'wind-at') },
-                isOwner ? WIND_NOTE_AUTO_OWNER : undefined,
-            );
-        return windText($, 'press', {}, isOwner ? WIND_NOTE_OWNER : undefined);
+        const fill = await $.store.get(CONTEXT + sid).catch(() => undefined);
+        const n = {
+            fill: typeof fill === 'number' ? fill : undefined,
+            wind: await readNumber($, 'wind-at'),
+        };
+        return was.by === 'mod'
+            ? windText($, 'at', n, isOwner ? WIND_NOTE_AUTO_OWNER : undefined)
+            : windText($, 'press', n, isOwner ? WIND_NOTE_OWNER : undefined);
     }
     if (was.state === 'refused') {
         await $.store.delete(WIND + sid);
@@ -7019,8 +7020,10 @@ async function openBoard($: EngineInterface) {
 }
 
 // herdr is a second editor of the 🎛️ store, never a second store (FRM-634 exit 3, FRM-625:W10): a row herdr changed since
-// the last poll is written into the store, so the last edit wins on either side and a deleted herdr changes nothing. a
-// line the notice-below-wind rule refuses is not marked seen, so it lands once its pair has moved
+// the last poll is written into the store, so the last edit wins on either side and a deleted herdr changes nothing. with
+// no `herdr-seen` yet (a first poll, a reset store) the rows are only noted: nothing says they are newer than the 🎛️
+// values. the two lines are judged as the pair herdr shows, and a refused pair is seen too, so it never lands later
+// over a 🎛️ edit
 const HERDR_SEEN = 'herdr-seen';
 const HERDR_SWITCH_ROWS = [
     'stash.second-wind',
@@ -7040,21 +7043,26 @@ async function takeHerdrRows($: EngineInterface) {
     for (const part of HERDR_SWITCH_ROWS) {
         const isOn = rows[part];
         if (typeof isOn !== 'boolean' || isOn === seen[part]) continue;
+        seen[part] = isOn;
+        if (!was) continue;
         const now = shownOf(await $.store.get(SHOWN).catch(() => undefined));
         await $.store.set(SHOWN, { ...now, [part]: isOn });
-        seen[part] = isOn;
     }
-    for (const [row, name] of HERDR_NUMBER_ROWS) {
+    const lines = {
+        'wind-at': await readNumber($, 'wind-at'),
+        'wind-notice': await readNumber($, 'wind-notice'),
+    };
+    const fresh = HERDR_NUMBER_ROWS.flatMap(([row, name]) => {
         const n = numberOf(rows[row], NUMBERS[name].range);
-        if (n === undefined || n === seen[row]) continue;
-        const lines = {
-            'wind-at': await readNumber($, 'wind-at'),
-            'wind-notice': await readNumber($, 'wind-notice'),
-        };
-        if (windPairRefusal(lines, name, n)) continue;
-        await $.store.set(NUMBERS[name].key, n);
+        return n === undefined || n === seen[row] ? [] : [{ n, name, row }];
+    });
+    for (const { n, name, row } of fresh) {
         seen[row] = n;
+        lines[name] = n;
     }
+    if (was && !windPairRefusal(lines, 'wind-at', lines['wind-at']))
+        for (const { n, name } of fresh)
+            await $.store.set(NUMBERS[name].key, n);
     if (JSON.stringify(seen) !== JSON.stringify(was ?? {}))
         await $.store.set(HERDR_SEEN, seen);
 }
