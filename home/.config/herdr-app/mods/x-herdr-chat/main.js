@@ -85,8 +85,11 @@ import { createMagic } from './magic.js';
 import {
     MODELS,
     NO_RUNS_AT,
+    PERMISSIONS,
     effortNow,
     modelNow,
+    permissionIn,
+    permissionOf,
     pickIn,
     runsAtAfter,
 } from './picker.js';
@@ -427,6 +430,10 @@ export default class Chat extends View {
     effortPop = null;
     /** a model switch waiting on his yes: it drops the thread's cache @type {string | null} */
     askModel = null;
+    /** the thread's permission mode, read off its screen when the picker opens @type {string | null} */
+    permission = null;
+    /** a permission change on its way @type {string | null} */
+    permissionAsked = null;
     /** the open picker holds the keyboard, so ← → reach the slider @type {import('gpui-kit').FocusHandle | null} */
     pickKeys = null;
 
@@ -1181,6 +1188,7 @@ export default class Chat extends View {
                     : null;
                 this.pickNote =
                     isOpen && !ready ? 'Answer Claude first, then pick' : null;
+                if (this.isPickOpen) this.readPermission(cx);
                 this.focusPick(cx);
                 cx.notify();
             })
@@ -1234,8 +1242,100 @@ export default class Chat extends View {
                                     isApplied,
                                 ),
                             ),
-                    ),
+                    )
+                    .child(div().mx(8).my(8).h(1).bg(t.border))
+                    .child(title('Permissions'))
+                    .child(this.permissionRow(t, ready)),
             );
+    }
+
+    /** the thread's permission mode as he would pick it: one segment each, the live one filled @param {Theme} t @param {boolean} ready */
+    permissionRow(t, ready) {
+        return h_flex()
+            .px(8)
+            .gap(4)
+            .children(
+                PERMISSIONS.map(({ id, label }) => {
+                    const isOn =
+                        id === (this.permissionAsked ?? this.permission);
+                    return div()
+                        .id(`chat-permission-${id}`)
+                        .px(8)
+                        .h(24)
+                        .flex()
+                        .items_center()
+                        .rounded(6)
+                        .border(1)
+                        .border_color(isOn ? t.accent : t.border)
+                        .bg(isOn ? t.selected : t.popover)
+                        .text_size(11.5)
+                        .text_color(
+                            isOn
+                                ? this.permissionAsked
+                                    ? t.accent
+                                    : t.foreground
+                                : t.muted,
+                        )
+                        .when(ready && !isOn && !this.permissionAsked, (el) =>
+                            el
+                                .cursor_pointer()
+                                .hover((style) =>
+                                    style.bg(t.hover).text_color(t.foreground),
+                                )
+                                .on_click((_event, cx) =>
+                                    this.pickPermission(id, label, cx),
+                                ),
+                        )
+                        .child(label);
+                }),
+            );
+    }
+
+    /** the mode line at the foot of the thread's screen, read when the picker opens @param {Context} cx */
+    readPermission(cx) {
+        const { address } = this;
+        if (!address) return;
+        cx.spawn(async (cx) => {
+            const out = await hc(['read', address]).catch(() => null);
+            if (this.address !== address || !out) return;
+            this.permission = permissionOf(out.stdout.replace(/\r/g, ''));
+            cx.notify();
+        });
+    }
+
+    /**
+     * Shift+Tab in the thread until its mode line reads the mode picked: it applies live, mid-turn too (probed
+     * 2026-11-17), so nothing restarts
+     * @param {string} mode @param {string} label @param {Context} cx
+     */
+    pickPermission(mode, label, cx) {
+        const { address } = this;
+        if (!address || this.permissionAsked) return;
+        this.permissionAsked = mode;
+        cx.notify();
+        cx.spawn(async (cx) => {
+            try {
+                const now = await permissionIn(mode, {
+                    keys: async (keys) => {
+                        await hc(['keys', address, ...keys]);
+                    },
+                    screen: async () =>
+                        (await hc(['read', address])).stdout.replace(/\r/g, ''),
+                    sleep: (ms) => cx.sleep(ms),
+                });
+                if (this.address !== address) return;
+                this.permission = now;
+                if (now !== mode)
+                    this.pickNote = `${label} is not in this thread's Shift+Tab cycle`;
+            } catch (error) {
+                if (this.address === address)
+                    this.pickNote =
+                        error instanceof Error ? error.message : String(error);
+            } finally {
+                if (this.address === address) this.permissionAsked = null;
+                cx.notify();
+            }
+        });
     }
 
     /** @param {'left' | 'right'} way @param {Context} cx */
@@ -2012,6 +2112,8 @@ export default class Chat extends View {
         this.pending = null;
         this.pickNote = null;
         this.askModel = null;
+        this.permission = null;
+        this.permissionAsked = null;
         this.closePick();
         this.stateWatch?.cancel();
         this.stateWatch = null;
