@@ -14,6 +14,8 @@ export type Context = {
     home?: string;
     // the session is clio's: it cleans its fleet's scratch trees and branches on its own
     isClio?: boolean;
+    // the session is a lane member's (a codie, a sixth sense, a stray, a probe): it never writes dima's clipboard
+    isMember?: boolean;
     // the call holds this session until it ends: no run_in_background
     isForeground?: boolean;
     // the trees looked up and found safe to drop: no `.scratch/`, no commit only their HEAD reaches
@@ -724,7 +726,7 @@ const STDIN_PATHS = new Set([
 ]);
 // what a feeder writes to a shell's stdin: echo's words past its flags, each printf operand alone and together (its format
 // fills them in), a heredoc body
-function printed(f: Peeled): string[] {
+export function printed(f: Peeled): string[] {
     const texts = f.args.map((a) => a.text);
     if (f.name === 'echo') {
         const at = texts.findIndex((t) => !/^-[neE]+$/.test(t));
@@ -754,7 +756,7 @@ function printfText([format = '', ...rest]: string[]) {
         .replaceAll('\\0', '\n');
 }
 // the strings a command's `<<<` hands its stdin, joined or a word apart
-const herestrings = (texts: string[]) =>
+export const herestrings = (texts: string[]) =>
     texts.flatMap((t, i) =>
         t === '<<<'
             ? [texts[i + 1] ?? '']

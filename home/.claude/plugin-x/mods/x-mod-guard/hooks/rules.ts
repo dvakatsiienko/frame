@@ -1,3 +1,4 @@
+import { clipboard } from './rules/clipboard.ts';
 import {
     type Command,
     type Context,
@@ -305,7 +306,10 @@ export function refusals(
         const persisted = persistedAlias(c);
         if (persisted) aliases.set(...persisted);
         const judge = (cmd: Command) =>
-            floor(cmd) ?? herdrClose(cmd, ctx) ?? hazard(cmd, ctx);
+            floor(cmd) ??
+            herdrClose(cmd, ctx) ??
+            hazard(cmd, ctx) ??
+            clipboard(cmd, ctx);
         let found = judge(c);
         // a lifted rule hides every rule behind it, so the command is judged again without the lifted part
         let rest = c;

@@ -686,4 +686,25 @@ export const ESCAPES: readonly Row[] = [
             `${shell} <<EOF\nrm -rf x\nEOF`,
         ],
     ),
+    // a member's pasteboard write (FRM-612): the table's world is a codie by its 🔧 name
+    ['refused', 'clipboard', 'pbcopy at a pipeline end', 'printf x | pbcopy'],
+    [
+        'refused',
+        'clipboard',
+        'pbcopy behind x as',
+        'date | x as codie -- pbcopy',
+    ],
+    ['refused', 'clipboard', 'pbcopy in an eval', `eval 'date | pbcopy'`],
+    [
+        'refused',
+        'clipboard',
+        'pbcopy in a find -exec',
+        'find . -name a.txt -exec pbcopy {} ;',
+    ],
+    [
+        'refused',
+        'clipboard',
+        'pbcopy in a command substitution',
+        'echo "$(date | pbcopy)"',
+    ],
 ];

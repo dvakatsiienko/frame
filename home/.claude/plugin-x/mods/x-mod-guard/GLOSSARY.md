@@ -21,7 +21,7 @@ The safe way to do what the refused command meant — `trash`, `git stash push -
 _Avoid_: fix, alternative, suggestion
 
 **Floor command**:
-A command the fleet floor (invariant 8) never runs unasked, and the only kind x-mod-guard refuses: `rm`, a kill by pattern, a git discard or rewrite, a gate or hooks bypass, a herdr close of a live seat, a raw merge, a whole-tree stash over a held file, a machine change, a remote delete.
+A command the fleet floor (invariant 8) never runs unasked, and the only kind x-mod-guard refuses: `rm`, a kill by pattern, a git discard or rewrite, a gate or hooks bypass, a herdr close of a live seat, a raw merge, a whole-tree stash over a held file, a machine change, a remote delete, a pasteboard write from a lane member's session.
 _Avoid_: dangerous command, destructive op
 
 **Target**:

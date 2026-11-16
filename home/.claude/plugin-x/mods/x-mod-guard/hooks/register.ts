@@ -1,5 +1,6 @@
 import type { EngineInterface, Register, ToolCallResult } from 'claude-code';
 
+import { CLIPBOARD } from './rules/clipboard.ts';
 import type { Context, Refusal } from './rules/command.ts';
 import { TRASH, commandsDeep, tickedRest } from './rules/command.ts';
 import { stashSweep, stashSweeps } from './rules/floor.ts';
@@ -116,6 +117,30 @@ async function registryEntry($: EngineInterface, sid: string) {
         } catch {}
     }
     return undefined;
+}
+
+// a lane member by either sign: its thread record's role, or a member badge in its registry name; a record or a row
+// that does not read is no sign
+const MEMBER_ROLES = new Set(['codie', 'sixth-sense', 'probe']);
+const MEMBER_NAME = /🔧|🔎|🐕|^\s*probe/i;
+async function isMemberSession($: EngineInterface, home: string | undefined) {
+    const sid = await $.session.id().catch(() => undefined);
+    if (!sid) return false;
+    const raw = await $.fs
+        .read(`${home}/.claude/shelf/threads.json`)
+        .catch(() => '');
+    try {
+        const { threads } = JSON.parse(raw) as { threads?: unknown };
+        const own = Array.isArray(threads)
+            ? threads.find((t: { sessionId?: unknown }) => t?.sessionId === sid)
+            : undefined;
+        if (
+            MEMBER_ROLES.has((own as { role?: string } | undefined)?.role ?? '')
+        )
+            return true;
+    } catch {}
+    const name = await sessionName($, sid).catch(() => undefined);
+    return name !== undefined && MEMBER_NAME.test(name);
 }
 
 async function sessionName($: EngineInterface, sid: string) {
@@ -927,7 +952,16 @@ async function judge($: EngineInterface, typed: string) {
         isClio: isUnder(root, `${home}/frame/_clio`),
         jobDir: await $.env.get('CLAUDE_JOB_DIR'),
     };
-    const ctx = { ...base, ...(await lookUp($, command, cwd, base)) };
+    // the member lookup runs only for a line the clipboard rule would stop
+    const isMember =
+        refusals(command, cwd, { ...base, isMember: true }).some(
+            (r) => r.rule === CLIPBOARD,
+        ) && (await isMemberSession($, home));
+    const ctx = {
+        ...base,
+        isMember,
+        ...(await lookUp($, command, cwd, base)),
+    };
     const sweep = await stashOver($, command, cwd, ctx);
     const merged = rawMergeRefused(rawMerges(typed, cwd));
     const stops = [
