@@ -3,10 +3,10 @@ id: PK-442
 title: >-
   lighten linear: one project per area, standing collector tickets, sub-issues,
   ≤2 mils a project; numbers first
-status: open
+status: done
 assignee: []
 created_date: '2026-11-16T12:16:00Z'
-updated_date: '2026-11-16T18:44:00Z'
+updated_date: '2026-11-16T22:32:00Z'
 labels:
   - s
 dependencies: []
@@ -83,4 +83,6 @@ PK-442:W16 (2026-11-16 17:36, dima): lighten linear: shape, grill, implement in 
 20:44 his 20:17 round 1 answers and 20:25 lines (round 2 ticked o100: collectors groomed, milestones by want, nesting kept honest by a check; three lanes now):
 PK-442:W17 (2026-11-16 20:25, dima): milestone balance: most wanted goes into the first milestone always; additional milestones hold the least wanted and nice-to-haves, so most wanted first, least wanted last. Clio asked whether to update the habit; dima says yes.
 PK-442:W18 (2026-11-16 20:25, dima): linear cap: pricing pages still say 250 on the free plan, we sit at 275 and creating works. Linear's agent and Linear's pricing page both say 250 holds; dima asks how we have more than 250.
+
+00:32 close: verified 2026-11-17. W4–W6, W17 done: craft-pm § milestones first, «a project's first milestone holds what he wants most» (no cap, his round 1). W7, W10, W14 done: nesting kept, the nested check lives in script/siesta-checks.ts § nested tickets (o100); its one red left is FRM-634 vs FRM-625, both Done. W9, W13 done: collectors stay, groomed 11-16 21:36 (FRM-572, FRM-304; herdr has none), the groom habit written into clio:pm § app stash pairs. W8 done: one project per area written there too. W1, W2 dropped: collectors stay (his 20:17 answer). W3, W12 dropped: no new labels (his tick). W11, W15 done: the round-1 numbers. W16 done: shaped, grilled, implemented in place. W18 answered to him with a labelled guess (275 held, creating works, cause unknown).
 <!-- SECTION:NOTES:END -->

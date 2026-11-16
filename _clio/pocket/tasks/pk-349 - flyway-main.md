@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T22:28:00Z'
+updated_date: '2026-11-16T22:32:00Z'
 labels:
   - s
   - clio-main
@@ -26,11 +26,10 @@ ordinal: 1000
 - [ ] #8 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
 - [ ] #9 f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15)
 - [ ] #10 f30 grill 1: stats counter (PK-300): shape, grill, plan right away (his 17:36 order)
-- [ ] #11 f32 grill 3: lighten linear (PK-442): shape, grill, implement in place
-- [ ] #12 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #13 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #14 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #15 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #11 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #12 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #13 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #14 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1014,4 +1013,6 @@ done 2026-11-17 00:11: f22 monday strays lane: FRM-621 cherry-pick then FRM-631 
 done 2026-11-17 00:11: f29 new chat: one shaped ticket from round 1 and the borrow ledger, then his sign (PK-444) (PK-444 open)
 
 done 2026-11-17 00:28: f31 grill 2: mess hunt as a card (PK-441): shape, grill, implement in place (PK-441 done)
+
+done 2026-11-17 00:32: f32 grill 3: lighten linear (PK-442): shape, grill, implement in place (PK-442 done)
 <!-- SECTION:NOTES:END -->
