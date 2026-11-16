@@ -134,12 +134,12 @@ const WRITERS = [
         `python3 -c "import os; os.system('pbcopy < a.txt')"`,
     ],
     [
-        'pbcopy inside a node execSync',
-        `node -e "require('child_process').execSync('pbcopy')"`,
+        'pbcopy inside a node exec',
+        `node -e "require('child_process').exec('pbcopy')"`,
     ],
     [
         'pbcopy inside a node --eval',
-        `node --eval "require('child_process').execSync('pbcopy')"`,
+        `node --eval "require('child_process').exec('pbcopy')"`,
     ],
     ['pbcopy inside a bun -e', `bun -e "Bun.spawn(['pbcopy'])"`],
     [
