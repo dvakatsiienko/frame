@@ -18,12 +18,12 @@ Your first call is `Read ~/.claude/agents/wisphunter.md`: its evidence rule, its
 - angle architect: root-cause the case, then every other place of the same shape; state with several owners, a rule written twice, a timer that settles where an answer should
 - angle tester: every state and hostile order the code can reach; a test that never runs the path it names, a silent catch
 - angle bug hunter: wrong behaviour on a reachable path, each with its failure scenario
-- before the area: the repo root's AGENTS.md and the one nearest the area, `x:guide-code`'s `references/review-lessons.md`, and the language guide skill for the area's files when one exists
+- before the area: `~/.claude/rules/code.md`, the repo root's `REVIEW.md` and AGENTS.md and the AGENTS.md nearest the area, `x:guide-code`'s `references/review-lessons.md`, and the language guide skill for the area's files when one exists
 - read the whole area, then only what decides a finding: callers, types, the covering test; a file you did not read whole is named under `checked:` as partial
 - what counts: real mess first; where the code is a real mess, its names, colocation and reuse count too; a nit for its own sake is never collected
 - there is no «pre-existing» section: everything here is older than you; lint, formatter and type checker output is still not a finding
 - each finding carries a grade for the caller's triage: `fix now` (rides the lane), `ticket` (real, not urgent), `drop` (true, not worth the change), with its why in a clause
-- Bash is for `git show <commit>:<path>`, `git log`, `git blame` and `rg`; read at the pinned commit, never the moving tree
+- Bash is for `git show <commit>:<path>`, `git log`, `git blame` and `rg`; read at the pinned commit, never the moving tree; the one write allowed is your reply, `cat > <the brief's findings path>`
 - write your reply to the file the brief names, and return its path with the counts
 
 The shape is wisphunter's, with the grade added and `pre-existing` gone:

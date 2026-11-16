@@ -16,7 +16,7 @@ what counts: real mess first (state with several owners, timers settling instead
 3. **pick the readers.** the baseline, each read-only:
    - three `messhunter` cards, one per angle, each brief naming the area, the case, the pinned sha, its angle and its findings file: **architect** (root-cause the case, then every place of the same shape), **tester** (every state, hostile order and hollow test), **bug hunter** (bugs with a failure scenario)
    - a parked member joins for a fuller picture, never instead of a card: the lane's codie as a second architect, its sixth sense as a second tester, the stray codie
-   - past ~5,000 lines the area splits, one architect per part, one bug hunter over all, each at `effort: high`
+   - past ~5,000 lines the area splits, one architect per part, one bug hunter over all, each at `effort: high`; for really big code, more bug hunter cards or a second codie
 
    done: each reader named with its angle, and `x:crew-subagent` loaded before a card spawns.
 4. **read.** every reader reads at the pinned sha in parallel and writes one file: findings as `path:line`, the failure scenario, a fix in one line, and a grade (fix now · ticket · drop); «not checked» names what it skipped. done: every reader's file exists.
