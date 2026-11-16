@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-15T17:24:00Z'
+updated_date: '2026-11-16T12:14:00Z'
 labels:
   - s
   - clio-main
@@ -736,4 +736,18 @@ done 2026-11-15 19:24: f17 monday mods order (o171, 00:21): FRM-625 + decamp rid
 done 2026-11-15 19:24: f18 monday herdr order (o172, 00:21): FRM-628 → FRM-563 → FRM-625 herdr half → 585 → 587 → 569 → 567 → 582 → 580 (FRM-628 Todo, FRM-563 Todo, FRM-625 Todo)
 
 done 2026-11-15 19:24: f20 monday mods order +4 (o176): after FRM-602 → FRM-571, FRM-590, FRM-608, FRM-612 → then FRM-617 (FRM-602 Todo, FRM-571 Todo, FRM-590 Todo, FRM-608 Todo, FRM-612 Todo, FRM-617 Todo)
+
+PK-349:W1006 (2026-11-16 14:05, dima): as planned, don't forget to set everyone we agreed on as fable.
+
+PK-349:W1007 (2026-11-16 14:05, dima): start the mods lane right away.
+
+PK-349:W1008 (2026-11-16 14:05, dima): start the herdr lane right away too.
+
+PK-349:W1009 (2026-11-16 14:05, dima): then, with you: i have two inbox asks, ideas and proposals pending. they need to be properly taken care of, one by one.
+
+PK-349:W1010 (2026-11-16 14:05, dima): before that (and after herdr codie takes care of a cleanup cut, which wants my attention), i have two more asks (important).
+
+PK-349:W1011 (2026-11-16 14:05, dima): we are measuring macroscope for code review: i want precise data on tool quality, and to know if we can use its free quota for a month.
+
+PK-349:W1012 (2026-11-16 14:05, dima): is it enough, or does it burn in a week? ❓
 <!-- SECTION:NOTES:END -->
