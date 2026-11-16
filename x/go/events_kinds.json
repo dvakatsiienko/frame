@@ -1,0 +1,107 @@
+{
+    "kinds": [
+        {
+            "fields": {
+                "by": { "enum": ["dima", "mod"] },
+                "pct": { "max": 100, "min": 0 }
+            },
+            "gist": "a second wind taken, with the context percent at the wind",
+            "id": "the wind's stamp",
+            "name": "wind.taken"
+        },
+        {
+            "fields": {},
+            "gist": "a keep-hot ping fired",
+            "id": "the ping's stamp",
+            "name": "hot.ping"
+        },
+        {
+            "fields": {
+                "via": { "enum": ["push", "slipstream"] },
+                "while": { "enum": ["idle", "working"] }
+            },
+            "gist": "dima's send from quill, and whether the thread was working at the send",
+            "id": "the message id",
+            "name": "quill.send"
+        },
+        {
+            "fields": {
+                "pick": { "enum": ["tick", "replay"] },
+                "steer": { "enum": ["yes", "no"] }
+            },
+            "gist": "an orbit tick or replay that joined a turn; steer says whether the steer box held text",
+            "id": "the ask id plus its round",
+            "name": "orbit.slipstream"
+        },
+        {
+            "fields": { "via": { "enum": ["push", "held"] } },
+            "gist": "a member's ping to its coordinator",
+            "id": "the message id",
+            "name": "ping.sent"
+        },
+        {
+            "fields": { "result": { "enum": ["empty", "worked"] } },
+            "gist": "a turn the stash started; empty ran no tool call and answered short",
+            "id": "the turn id",
+            "name": "wake.turn"
+        },
+        {
+            "fields": {
+                "lane": { "slug": true },
+                "n": { "max": 99, "min": 1 },
+                "over_s": { "max": 604800, "min": 0 }
+            },
+            "gist": "a sixth sense round counted, with the seconds past the cap of three",
+            "id": "the lane plus the round",
+            "name": "review.round"
+        },
+        {
+            "fields": { "rule": { "slug": true } },
+            "gist": "the guard refused a command; the rule's name, never the command",
+            "id": "the tool call id",
+            "name": "guard.refusal"
+        },
+        {
+            "fields": { "type": { "slug": true } },
+            "gist": "an Agent card spawned",
+            "id": "the tool call id",
+            "name": "card.spawn"
+        },
+        {
+            "fields": {},
+            "gist": "an orbit ask opened",
+            "id": "the ask id",
+            "name": "ask.open"
+        },
+        {
+            "fields": { "wait_s": { "max": 604800, "min": 0 } },
+            "gist": "an orbit ask ticked, with the seconds it waited",
+            "id": "the ask id plus its round",
+            "name": "ask.tick"
+        },
+        {
+            "fields": {},
+            "gist": "a thread went idle with nothing running",
+            "id": "the turn id that ended",
+            "name": "park.start"
+        },
+        {
+            "fields": {},
+            "gist": "a thread's park ended",
+            "id": "the turn id that started",
+            "name": "park.end"
+        },
+        {
+            "fields": { "n": { "max": 9999, "min": 1 } },
+            "gist": "a mod reports event logs that did not land",
+            "id": "the mod plus its report stamp",
+            "name": "log.failed"
+        },
+        {
+            "fields": { "result": { "enum": ["card", "skip"] } },
+            "gist": "a siesta opened, with a card or skipped",
+            "id": "the siesta's stamp",
+            "name": "siesta.open"
+        }
+    ]
+}

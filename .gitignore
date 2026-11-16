@@ -35,6 +35,8 @@ home/.claude/shelf/herdr-state/
 home/.claude/shelf/band-presses/
 # x-mod-stash's second-wind store: the five wind texts and the applied values, rewritten at a poll (FRM-634)
 home/.claude/shelf/second-wind.json
+# x's event log: a day file an event day, and today's snapshot (FRM-639)
+home/.claude/shelf/events/
 # runtime state the mods and x write; herdr-joins holds dima's typed text
 home/.claude/shelf/herdr-joins/
 home/.claude/shelf/herdr-settings/

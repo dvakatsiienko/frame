@@ -586,11 +586,62 @@
             "mode": "pipe",
             "next": "x knowledge list",
             "status": "usage"
+        },
+        {
+            "argv": ["events", "log", "hot.ping", "sid=fixture-1", "id=ping:1"],
+            "cwd": "{world}/repo",
+            "data": { "events": 1 },
+            "env": { "X_EVENTS": "{world}/events" },
+            "exit": 0,
+            "id": "events-log-json",
+            "matrix": "events: one line an event",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "after": "events-log-json",
+            "argv": ["events", "today"],
+            "cwd": "{world}/repo",
+            "data": { "events": 1, "failed": 0 },
+            "env": { "X_EVENTS": "{world}/events" },
+            "exit": 0,
+            "id": "events-today-json",
+            "mode": "pipe",
+            "status": "ok"
+        },
+        {
+            "argv": [
+                "events",
+                "log",
+                "hot.melted",
+                "sid=fixture-1",
+                "id=ping:1"
+            ],
+            "cwd": "{world}/repo",
+            "env": { "X_EVENTS": "{world}/events" },
+            "exit": 2,
+            "id": "events-log-unknown-kind",
+            "mode": "pipe",
+            "next": "x schema events log",
+            "status": "usage"
+        },
+        {
+            "argv": ["events", "day", "yesterday"],
+            "cwd": "{world}/repo",
+            "env": { "X_EVENTS": "{world}/events" },
+            "exit": 2,
+            "id": "events-day-no-date",
+            "mode": "pipe",
+            "next": "x events today",
+            "status": "usage"
         }
     ],
     "data": {
         "brief check": "{ brief, checked, repo, sha256, stamp, unchecked } — on a miss: failed, the error lists each line, kind and name",
         "completion": "{ shell, script }",
+        "events day": "{ day, events, failed, file, kinds, lines, skipped, snapshot, threads } — as events today, folded from that day's lines; an open park counts to the day's end",
+        "events log": "{ day, events, file, line } — line is the json object appended; events is today's count after it",
+        "events today": "{ day, events, failed, file, kinds: { <kind>: { n, by: { <field>: { <word>: n } } } }, lines, skipped, snapshot, threads: { <sid>: { n, kinds, parked_s, park_open } } }",
         "handoff delete": "{ deleted: [{ name, slug }] } — every file named, shared ones too, went to the macos trash",
         "handoff ingest": "{ name, slug, kept, body } — the file is deleted unless shared (kept: true)",
         "handoff list": "{ root, entries: [{ name, slug, audience, lane, author, shared, age, stale, bytes, runId }], others: [same] } — newest first; `others` holds what --for <audience> filtered out, [] without --for",

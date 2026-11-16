@@ -70,8 +70,15 @@ func familiesBoard() string {
 		}
 		b.rows = append(b.rows, columns(widths, cells...)...)
 	}
+	// a narrow board past one screen gives up its two blank rows before any family
+	if isNarrow() && len(b.rows)+4 > overviewRows {
+		b.padRows = false
+	}
 	return b.String()
 }
+
+// the screen the bare overview fits at 80 columns
+const overviewRows = 30
 
 // today's table: every verb with its purpose and what it takes, grouped by family
 func tableBoard(members []Verb) string {

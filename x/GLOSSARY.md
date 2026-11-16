@@ -36,7 +36,7 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 
 ## the trace and what it counts
 
-- **trace** — the one line x writes when a call exits: verb, flag names, caller, time, exit and error kind, never a value ([X-0004](docs/adr/X-0004-local-trace-names-never-values.md)). avoid: log, event
+- **trace** — the one line x writes when a call exits: verb, flag names, caller, time, exit and error kind, never a value ([X-0004](docs/adr/X-0004-local-trace-names-never-values.md)). avoid: log; never an **event**
 - **span** — the days from the first counted trace to the last, both included; never the window asked for
 - **shape** — what a raw-door query asks for, without a word of its text: the operation kind and its top-level fields (`mutation issueArchive`)
 - **head** — what a Bash command runs, past a leading `cd`, variable setup and wrappers: the tool's name, plus its verb for the tools that have one (`git commit`, `pnpm test`), or an interpreter with its script. not git's HEAD: a pr's newest commit is its **pr head**. avoid: command name
@@ -46,6 +46,15 @@ thing is built lives in `AGENTS.md`, why it was chosen in `docs/adr/` (`X-nnnn`)
 - **codie turn** — one assistant message in codie's transcript, summed over every codie session of a ticket. 📌 `fleet-vibe` calls this unit a step; the name stays because clio's pm skill writes the size lines in it
 - **size** — a ticket's estimate as the fleet says it: XS, S or M, for linear's 1, 2, 3. XS and S each have a **size line** in codie turns (XS under 80, S under 400); M has none
 - **size miss** — a closed ticket whose codie turns reached its size line
+
+## events
+
+- **event** — one thing that happened in the fleet, logged as one line by `x events log`: a second wind, a keep-hot ping, a park. not a **trace**, which is x's own line about a verb call
+- **kind** — an event's dotted name, family first (`wind.taken`), from the **kinds list**
+- **kinds list** — the closed list of kinds in `x/go/events_kinds.json`, each with the fields it takes; anything outside it is refused
+- **day file** — `~/.claude/shelf/events/<local day>.jsonl`, a day's event lines; the day is the rotation
+- **snapshot** — `~/.claude/shelf/events/today.json`, today's counts rebuilt whole from the day file; what a display reads with no spawn
+- **parked time** — the seconds a thread sat between a `park.start` and its `park.end`, an open park counted up to now
 
 ## lanes and reviews
 

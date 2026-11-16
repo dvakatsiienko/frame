@@ -132,7 +132,11 @@ func (arg ArgSpec) Usage() string {
 // the whole schema of a verb, the shape `x schema` prints
 func (v Verb) Schema() ordered {
 	schema := ordered{{"args", v.Args}, {"exits", ordered{{"confirm", 4}, {"failed", 1}, {"ok", 0}, {"usage", 2}}},
-		{"flags", v.Flags}, {"name", v.Name}, {"needsApply", v.NeedsApply}, {"purpose", v.Purpose}}
+		{"flags", v.Flags}}
+	if v.Name == "events log" {
+		schema = append(schema, kv{"kinds", eventKinds})
+	}
+	schema = append(schema, kv{"name", v.Name}, kv{"needsApply", v.NeedsApply}, kv{"purpose", v.Purpose})
 	if v.Replaces != nil {
 		schema = append(schema, kv{"replaces", v.Replaces})
 	}

@@ -74,6 +74,11 @@
             "name": "gate"
         },
         {
+            "example": "x events today",
+            "gist": "the fleet's event log, one line an event",
+            "name": "events"
+        },
+        {
             "example": "x schema lane --level short",
             "gist": "the registry as json",
             "name": "schema"
@@ -1417,6 +1422,67 @@
             "name": "schema",
             "needsApply": false,
             "purpose": "print the json schema of a verb or a family — the same entry that dispatches it"
+        },
+        {
+            "args": [
+                {
+                    "description": "a kind from the closed list, dotted: wind.taken",
+                    "name": "kind"
+                },
+                {
+                    "description": "sid=<session id> id=<derived from the event's origin>, then the kind's own fields as key=value",
+                    "isOptional": true,
+                    "isVariadic": true,
+                    "name": "fields"
+                }
+            ],
+            "name": "events log",
+            "needsApply": false,
+            "purpose": "append one event line to today's file and rebuild the snapshot; an unlisted kind, field or value is refused",
+            "touches": [
+                "~/.claude/shelf/events/<day>.jsonl — one line appended ($X_EVENTS in tests)",
+                "~/.claude/shelf/events/today.json — the snapshot, rebuilt"
+            ]
+        },
+        {
+            "args": [],
+            "flags": {
+                "sid": {
+                    "description": "only these threads' events: a session id, comma-joined or repeated for several",
+                    "repeats": true,
+                    "type": "string",
+                    "value": "id"
+                }
+            },
+            "name": "events today",
+            "needsApply": false,
+            "purpose": "print today's counts per kind and per thread, parked time and failed logs, off a fresh snapshot",
+            "touches": [
+                "~/.claude/shelf/events/<day>.jsonl — read ($X_EVENTS in tests)",
+                "~/.claude/shelf/events/today.json — the snapshot, rebuilt when the day file grew"
+            ]
+        },
+        {
+            "args": [
+                {
+                    "description": "the local day, yyyy-mm-dd",
+                    "name": "date"
+                }
+            ],
+            "flags": {
+                "sid": {
+                    "description": "only these threads' events: a session id, comma-joined or repeated for several",
+                    "repeats": true,
+                    "type": "string",
+                    "value": "id"
+                }
+            },
+            "name": "events day",
+            "needsApply": false,
+            "purpose": "print one kept day's counts per kind and per thread, folded from its lines",
+            "touches": [
+                "~/.claude/shelf/events/<day>.jsonl — read ($X_EVENTS in tests)"
+            ]
         },
         {
             "args": [
