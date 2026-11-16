@@ -96,5 +96,5 @@ PK-437:W25 (2026-11-16 15:55, dima): ovis: i installed on mobile. i now test dri
 
 16:19 collie: his verdict «meh», no iOS without tailscale; his tick: uninstalled whole (collie uninstall, collie unlink, trash of ~/.local/share/collie, ~/.config/collie, ~/.local/state/collie). exploration done (his 16:17); borrow ideas go to .scratch/herdr/foundation-proposal.md.
 
-16:21 close: exploration done (dima 16:17 «exploration is done»). ovis: no, uninstalled. collie: «meh», no iOS without tailscale, uninstalled on his tick. borrow ideas → .scratch/herdr/foundation-proposal.md (PK-444); the iOS mods view want → PK-444's notes.
+close: 16:21 — exploration done (dima 16:17 «exploration is done»). ovis: no, uninstalled. collie: «meh», no iOS without tailscale, uninstalled on his tick. borrow ideas → .scratch/herdr/foundation-proposal.md (PK-444); the iOS mods view want → PK-444's notes.
 <!-- SECTION:NOTES:END -->
