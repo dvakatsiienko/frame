@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T15:48:00Z'
+updated_date: '2026-11-16T15:59:00Z'
 labels:
   - m
 dependencies: []
@@ -282,4 +282,23 @@ what off: ctx meters in band (ask codie to polish it, it currently looks off, ma
 /Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794843430906.png
 
 17:48 correction to W118's gloss (wishkeeper): «AB SS for your look» are his two A/B shots given to clio for her look; he asked nothing of the herdr lane there
+
+groomed prompt 17:52 (herdr-typed lines 17:47, 17:50):
+PK-444:W120 (2026-11-16 17:47, dima): when does egg-basket move to itrout? (from the 17:47 line; see PK-349:W1052)
+PK-444:W121 (2026-11-16 17:50, dima): layout picker in settings: pretty thumbnails for the themes, listed as two first: first itrout, second egg basket. names are not kebabs: "🍣 iTrout" and "🧺 egg basket" (itrout is not here yet, planned). the parenthetical "➡️ The tabs and the frame are ready now, so they could move to itrout ahead of the chat, if you'd rather not wait" is clio's line, not dima's words.
+raw drop (2026-11-16, dima, herdr-typed): layout picker in settings - can i have pretty thumbnails for my themes? and listed as two first in the list? first - itrout, second egg basked? and names here are not kebabs. "🍣 iTrout" lowercase "🧺 egg basket". (itrouted is not here yet, planned)
+
+17:59 decided (his o48 tick and 17:55 words «keen idea. i like. ok i then live in egg basket, which becomes itrout later»): egg-basket is his daily layout from now; nothing moves into the old layout; new chat slices land in egg-basket; at the end the file is renamed once and the zoo layout and folders go on his word. names: «🍣 itrout» and «🧺 egg basket» only in settings, kebab under the hood (his 17:55): herdr's picker shows the file name and has no display field (the codie's read of frame/settings/main.js:316), so this needs an answer. light theme for egg-basket: both themes wanted, not urgent, features first. chat wisp 17:55 (nothing scrolls the chat but him; «newest» → «↓», smaller, off centre): sent to the herdr codie, plan first
+
+groomed prompt 17:55 (herdr-typed):
+PK-444:W122 (2026-11-16 17:55, dima): names only in settings, kebab under the hood: "🍣 itrout" and "🧺 egg basket" listed first, itrout on top, each with a real thumbnail (today egg-basket shows an empty dark tile and the own layout shows none). (clio's paraphrase before dima's ←, not dima's words: "What you asked, as I read your shot: ...")
+PK-444:W123 (2026-11-16 17:55, dima): chat wisp: nothing scrolls the chat without dima. something resets the chat view to the very bottom each time a message arrives; dima reads mid-thread and must scroll back to find his place. only dima scrolls the chat, or it scrolls when he clicks the newest button. codie to fix. (its own line, the chat wisp)
+PK-444:W124 (2026-11-16 17:55, dima): chat wisp: the "newest" button is cut to "↓", made smaller, moved off centre, less noisy. (its own line, the chat wisp)
+PK-444:W125 (2026-11-16 17:55, dima): he lives in egg basket, which becomes itrout later by a rename at the end; nothing moves into the old layout. (clio's line before dima's ←, not dima's words: "The efficient «see far» road is to move nothing into the old layout at all...")
+PK-444:W126 (2026-11-16 17:55, dima): egg basket supports light theme as well as dark. today "light theme" is selected and it shows dark. not urgent, features first.
+raw drop (2026-11-16 17:55, dima, herdr-typed): What you asked, as I read your shot: «🍣 itrout» and «🧺 egg basket» as the names instead of the kebab ones, both listed first with itrout on top, and a real thumbnail for each. Today egg-basket shows an empty dark tile and your own layout shows none. ← only in settings, under the hood - kebab.
+chatter wisp ( i write from egg basket) — something resets shatter view to very bot each time — I often read your messages mid-thread because you type and send me messages faster than I am able to process them. Often when something arrives in your thread, it scrolls the chatter view to the very bottom so I need to scroll to the top again and find the place where I was reading. It distracts. Tell Codie to fix it so nothing scrolls the chatter without me. Only I scroll the text, the chatter, or the chatter scrolls when I click on that button, the newest or something like this.
+also «newest» — cut to «↓» and make it smaller and out of cetner, make it less noisy.
+The efficient «see far» road is to move nothing into the old layout at all: you start living in egg-basket, and it becomes itrout by a rename at the end. ← keen idea. i like. ok i then live in egg basket, which becomes itrout later.
+can i have then egg basket to support light theme too? i want both theme light and dark. currently i have «light theme» selected but it shows dark theme.(not urgent, features first)
 <!-- SECTION:NOTES:END -->

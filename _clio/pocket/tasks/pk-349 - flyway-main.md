@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T15:42:00Z'
+updated_date: '2026-11-16T15:53:00Z'
 labels:
   - s
   - clio-main
@@ -22,17 +22,17 @@ ordinal: 1000
 - [ ] #4 f1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
 - [ ] #5 f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
 - [ ] #6 f14 today: stabilize the fleet flows, root fixes only (dima 14:34); speak waits until all runs smoothly
-- [ ] #7 f19 designer interview for herdr (FRM-591) — later: dima says when (o173)
-- [ ] #8 f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51)
-- [ ] #9 f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
-- [ ] #10 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
-- [ ] #11 f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15)
-- [ ] #12 f29 new chat: one shaped ticket from round 1 and the borrow ledger, then his sign (PK-444)
-- [ ] #13 f30 grill 1: stats counter (PK-300): shape, grill, plan right away (his 17:36 order)
-- [ ] #14 f31 grill 2: mess hunt as a card (PK-441): shape, grill, implement in place
-- [ ] #15 f32 grill 3: lighten linear (PK-442): shape, grill, implement in place
-- [ ] #16 f33 grill 4: orbit asks front-loaded (PK-439): shape, grill, sign, plan when
-- [ ] #17 f34 chat emoji reactions (PK-405): review against shepherdr base features
+- [ ] #7 f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51)
+- [ ] #8 f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
+- [ ] #9 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
+- [ ] #10 f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15)
+- [ ] #11 f29 new chat: one shaped ticket from round 1 and the borrow ledger, then his sign (PK-444)
+- [ ] #12 f30 grill 1: stats counter (PK-300): shape, grill, plan right away (his 17:36 order)
+- [ ] #13 f31 grill 2: mess hunt as a card (PK-441): shape, grill, implement in place
+- [ ] #14 f32 grill 3: lighten linear (PK-442): shape, grill, implement in place
+- [ ] #15 f33 grill 4: orbit asks front-loaded (PK-439): shape, grill, sign, plan when
+- [ ] #16 f34 chat emoji reactions (PK-405): review against shepherdr base features
+- [ ] #17 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #18 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
 - [ ] #19 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 - [ ] #20 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
@@ -856,4 +856,12 @@ mess hunt flush ← A few days ago we implemented the first mass hunt over the H
 Wish-loss audit ← why we have this audit? it is one-off check after our new flow of grooming and marking my wishes with IDS? or regular wish-loss audit? i see you keep reminding about it but it never goes away. when it will be finished, and my wishes are saved reliably? can you solve now?
 
 Wish-loss audit + empty waks: so result numbers are good or not?
+
+done 2026-11-16 17:49: f19 designer interview for herdr (FRM-591) — later: dima says when (o173) (FRM-591 Todo)
+
+groomed prompt 17:52 (herdr-typed lines 17:46, 17:47, 17:50):
+PK-349:W1051 (2026-11-16 17:46, dima): drifted hunt, clarified: both weekly counts move into the Monday boot. no card and no ask needed: each is one script run of a few seconds. every Monday the opening message carries both, numbers first, then action items for anything drifted. when the numbers do not show good results, propose how to make them show and fix them, so the next audit shows good results.
+PK-349:W1052 (2026-11-16 17:47, dima): what else to solve, with you, while everyone is advancing? when does egg-basket move to itrout? -> PK-444:W120.
+raw drop (2026-11-16, dima, herdr-typed): Both weekly counts move into the Monday boot. No card and no ask needed: each is one script run of a few seconds. Every Monday the opening message carries both, numbers first, then the action items for anything drifted. <- clarification on what i want by "drifted hunt" — e.g. When numbers do not show good results, I expect you to propose how to make them show and fix them so numbers will show good results on the next audit
+raw drop (2026-11-16, dima, herdr-typed): what else to solve? with you, while everyone advancing? when egg-basket moves to itrout?
 <!-- SECTION:NOTES:END -->
