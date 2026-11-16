@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T20:57:00Z'
+updated_date: '2026-11-16T20:58:00Z'
 labels:
   - s
   - clio-main
@@ -30,11 +30,10 @@ ordinal: 1000
 - [ ] #12 f30 grill 1: stats counter (PK-300): shape, grill, plan right away (his 17:36 order)
 - [ ] #13 f31 grill 2: mess hunt as a card (PK-441): shape, grill, implement in place
 - [ ] #14 f32 grill 3: lighten linear (PK-442): shape, grill, implement in place
-- [ ] #15 f34 chat emoji reactions (PK-405): review against shepherdr base features
-- [ ] #16 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #17 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #18 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #19 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #15 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #16 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #17 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #18 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -991,4 +990,8 @@ PK-349:W1147 (2026-11-16 22:58, dima, herdr-typed): let the herdr lane move mean
 PK-349:W1148 (2026-11-16 22:58, dima, herdr-typed): first, speak app v2 fully planned.
 PK-349:W1149 (2026-11-16 22:58, dima, herdr-typed): second, peek the lanes for herdr, mods and cli: ensure they are in good shape and everything is planned properly. herdr scope is settled after today's chat switch.
 PK-349:W1150 (2026-11-16 22:58, dima, herdr-typed): third, then halt.
+
+done 2026-11-16 22:57: f34 chat emoji reactions (PK-405): review against shepherdr base features (PK-405 done)
+
+regroom 22:58 (clio, wishkeeper's siesta read): W1138 «from now on, no Fable 5.2 unless he says so» is clio's reading of his raw «starting from now to fable 5.2 unless i say» (context, not dima's words); his 22:49 confirms it: «no fable 5.2 unless i say from now on». W1141 opened with clio's own quoted line; his words start at his ←: «fable resets 2/3. no fable 5.2 unless i say from now on. (only designer is agreed fable 5.2 medium (or high when i say))». W1137–W1142 recast his first person as he/him; his first person stands in the raw (grooms/2026-11-16-2240.raw.md, 2249.raw.md).
 <!-- SECTION:NOTES:END -->
