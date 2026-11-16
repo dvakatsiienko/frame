@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T13:48:00Z'
+updated_date: '2026-11-16T13:58:00Z'
 labels:
   - s
   - clio-main
@@ -788,4 +788,8 @@ PK-349:W1028 (2026-11-16 15:40, dima): not tomorrow, solve everything now. You a
 PK-349:W1029 (2026-11-16 15:40, dima): question: do you need a stray lane? From today, would stray lane help you with chores you solved yourself? Are there any pending chores good for stray lane? If yes, propose when stray lane would fit.
 
 PK-349:W1030 (2026-11-16 15:40, dima): unpark mods lane, let it do something.
+
+PK-349:W1031 (2026-11-16 15:55, dima): This is true but this only works when some small stuff is pending to be solved. As for now you have a whole bunch of tails pending. This is not the case when stray is useless. When a lot of tails pile up it is a good sign to summon a stray lane.
+
+PK-349:W1032 (2026-11-16 15:55, dima): coordinate properly across everyone. i want all issues fixed, no tails left.
 <!-- SECTION:NOTES:END -->

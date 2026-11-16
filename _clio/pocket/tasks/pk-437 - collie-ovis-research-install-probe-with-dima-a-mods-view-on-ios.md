@@ -4,7 +4,7 @@ title: 'collie + ovis: research, install, probe with dima; a mods view on ios'
 status: open
 assignee: []
 created_date: '2026-11-16T12:09:00Z'
-updated_date: '2026-11-16T13:48:00Z'
+updated_date: '2026-11-16T14:05:00Z'
 labels:
   - m
 dependencies: []
@@ -87,4 +87,8 @@ PK-437:W22 (2026-11-16 15:40, dima): i do not have tailscale and no plans for it
 PK-437:W23 (2026-11-16 15:40, dima): let's do the ovis mobile probe right now and decide.
 
 PK-437:W24 (2026-11-16 15:40, dima): when we test collie same as ovis?
+
+PK-437:W25 (2026-11-16 15:55, dima): ovis: i installed on mobile. i now test drive it. initial verdict: it does not pass initial tests - it does not have orbit. the UI is nice but i have the same in the claude desktop app. most likely goes. for now - parked, until i finalize my decision.
+
+16:05 collie installed for his look: v1.28.4 via its read install script, launchd herdr.collie, 127.0.0.1:8787 only, COLLIE_MUX=herdr-core, telemetry and the Keychain login read off, no tailscale front door. left: his collie pair, his word on collie hooks install claude (edits ~/.claude/settings.json), his verdict. uninstall: collie uninstall, collie unlink, then the three trees.
 <!-- SECTION:NOTES:END -->

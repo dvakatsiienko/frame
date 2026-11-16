@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T13:49:00Z'
+updated_date: '2026-11-16T13:58:00Z'
 labels:
   - m
 dependencies: []
@@ -111,4 +111,10 @@ PK-444:W41 (2026-11-16 15:40, dima): fyi how ovis looks for me and how my herdr 
 PK-444:W42 (2026-11-16 15:40, dima): what researcher found? any other solid herdr builds worth to look at?
 
 PK-444:W41 (2026-11-16 15:40, dima): fyi how ovis looks for me and how my herdr desktop app looks with the current setup. /Users/dima/Desktop/screenshots/CleanShot 2026-11-16 at 15.33.33.jpg /Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794836032497.png
+
+PK-444:W43 (2026-11-16 15:55, dima): no, don't like it. (flockbook)
+
+PK-444:W44 (2026-11-16 15:55, dima): where did you see them? in my chrome opened tabs? ok, the verdict is useful. but I keep them open for a different reason - the look. if under the hood is carp, ensure this verdict is folded. but the look is still nice (waits
+
+PK-444:W45 (2026-11-16 15:55, dima): link pls. its herdr builtin or custom?
 <!-- SECTION:NOTES:END -->
