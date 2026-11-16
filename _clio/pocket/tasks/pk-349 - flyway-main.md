@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T21:16:00Z'
+updated_date: '2026-11-16T21:25:00Z'
 labels:
   - s
   - clio-main
@@ -1001,4 +1001,10 @@ PK-349:W1152 (2026-11-16 23:01, dima, herdr-typed): tell the herdr codie to use 
 PK-349:W1153 (2026-11-16 23:13, dima): empty-wakes and my silent-comms weekly habit confuse me. can we make a name pattern so all weekly checks are named weekly-*? so empty-wakes → weekly-empty-wakes? find all of them like this and rename them, or propose a better name.
 PK-349:W1154 (2026-11-16 23:13, dima): evergreen stays evergreen (it is self-descriptive).
 PK-349:W1155 (2026-11-16 23:14, dima, herdr-typed): macroscope usage: what is the mid-test-drive verdict? does macroscope work for me or not? will I be able to use macro on the free tier for a month, or does the free quota die in a week?
+
+PK-349:W1156 (2026-11-16 23:23, dima): the launchd jobs (macOS's background-service files) should stay in frame's schedule/, the way atelier already runs from bytes. That's your «collocate» against a written rule, so it's an ask.
+PK-349:W1157 (2026-11-16 23:23, dima): yes, it's a trade-off. I usually want everything collocated, but for our launch disk I think we keep them collocated in one place, at least for now. I'm not sure about this, and I may change my mind, but for this let's keep the launchd jobs all in one place.
+PK-349:W1158 (2026-11-16 23:23, dima): tell me your own opinion. is it worth having launchd collocated, or does it not matter too much? maybe just have launchd collocated with the apps instead?
+PK-349:W1159 (2026-11-16 23:23, dima): brake test: passed live. so will it work if I am AFK? are you able to merge without me with operator override ON?
+PK-349:W1160 (2026-11-16 23:23, dima, o141 steer): yes, but memory-pass is not weekly, I think, for now. I have too many chores. weekly-retro is ok, let's have it. when? let's have in on tuesday, at the boot. you start it on boot each tuesday and print interesting results along with the boot message, as well as action-item proposals.
 <!-- SECTION:NOTES:END -->
