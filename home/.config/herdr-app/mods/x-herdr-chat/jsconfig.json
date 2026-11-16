@@ -11,6 +11,7 @@
         "module": "ES2022",
         "moduleResolution": "bundler",
         "noEmit": true,
+        "noUncheckedIndexedAccess": true,
         "strict": true,
         "strictNullChecks": true,
         "target": "ES2022"

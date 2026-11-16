@@ -6,12 +6,15 @@
  * @typedef {object} FileDoor
  * @property {() => Promise<number | null>} sizeOf the file's size in bytes, null while it does not exist
  * @property {(from: number, max: number) => Promise<string>} read at most `max` bytes from byte `from`, decoded
- * @property {(at: number) => Promise<number>} lineStartAt the first byte after the first newline at or after `at`
+ * @property {(at: number) => Promise<number>} lineStartAt the byte after the first newline at or after byte `at`; the
+ *   file's size when no newline follows
  */
 
 /** @typedef {{ lines: string[], isRestart: boolean }} NewLines */
 
 const DEFAULT_SLICE = 4 * 1024 * 1024;
+// herdr's exec hands back 8 MiB at most: no read asks for more than this, and a line longer than it is skipped
+const DEFAULT_MAX_READ = 6 * 1024 * 1024;
 
 /** the bytes `text` takes as UTF-8, counted here: herdr's runtime has no TextEncoder @param {string} text */
 export function utf8Length(text) {
@@ -30,9 +33,13 @@ function linesOf(text) {
 
 /**
  * @param {FileDoor} door
- * @param {{ slice?: number }} [options] `slice`: the most bytes one read asks for, and the size of a page
+ * @param {{ slice?: number, maxRead?: number }} [options] `slice`: the bytes one read asks for, and the size of a page;
+ *   `maxRead`: the most a read may grow to for one long line
  */
-export function createReader(door, { slice = DEFAULT_SLICE } = {}) {
+export function createReader(
+    door,
+    { slice = DEFAULT_SLICE, maxRead = DEFAULT_MAX_READ } = {},
+) {
     /** the first byte not handed on yet; null before the first read */
     let pos = /** @type {number | null} */ (null);
     /** the first byte ever handed on: what lies above it is an earlier page */
@@ -68,7 +75,20 @@ export function createReader(door, { slice = DEFAULT_SLICE } = {}) {
             if (!cut) {
                 // no whole line in this read: a half-written one waits, a line longer than the read is asked for whole
                 if (at + max >= size) break;
-                max *= 2;
+                if (max < maxRead) {
+                    max = Math.min(max * 2, maxRead);
+                    continue;
+                }
+                // longer than any read may be: skipped once it has ended, so the lines after it are never held back
+                const next = await door.lineStartAt(at);
+                const hasEnded =
+                    next > at &&
+                    (next < size ||
+                        (next === size &&
+                            (await door.read(size - 1, 1)) === '\n'));
+                if (!hasEnded) break;
+                at = next;
+                max = slice;
                 continue;
             }
             const whole = text.slice(0, cut);

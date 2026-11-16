@@ -11,6 +11,8 @@ const MEASURE_NEW = 30;
 const MEASURE_MAX = 60;
 // rows around the view measured again each frame: rich text can lay out a frame after it first draws
 const AROUND = 2;
+// how far from the view a frame looks for rows never measured: a far row keeps its guess until he comes near
+const REACH = 200;
 
 const TOOL_ROW_PX = 28;
 const LINE_PX = 21;
@@ -88,7 +90,8 @@ export function createHeights() {
             const order = new Set();
             for (
                 let step = 0;
-                order.size < MEASURE_NEW && step <= rows.length;
+                order.size < MEASURE_NEW &&
+                step <= Math.min(rows.length, REACH);
                 step++
             )
                 for (const i of step ? [near - step, near + step] : [near]) {

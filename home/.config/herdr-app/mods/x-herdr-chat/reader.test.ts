@@ -123,6 +123,25 @@ describe('the transcript reader hands on only complete new lines', () => {
         expect(first).toEqual(lines.slice(-first.length));
     });
 
+    test('a whole line longer than the most one read may ask for is skipped, and the lines after it arrive', async () => {
+        const file = fakeFile(`${line(1)}\n`);
+        const reader = createReader(file.door, { maxRead: 256, slice: SLICE });
+        await reader.readNew();
+        file.append(`{"t":"${'x'.repeat(2000)}"}\n${line(2)}\n`);
+        expect((await reader.readNew()).lines).toEqual([line(2)]);
+        expect(Math.max(...file.reads.map((r) => r.to - r.from))).toBe(256);
+    });
+
+    test('a line past that size still being written waits, and is skipped once it ends', async () => {
+        const file = fakeFile(`${line(1)}\n`);
+        const reader = createReader(file.door, { maxRead: 256, slice: SLICE });
+        await reader.readNew();
+        file.append(`{"t":"${'x'.repeat(2000)}`);
+        expect((await reader.readNew()).lines).toEqual([]);
+        file.append(`"}\n${line(2)}\n`);
+        expect((await reader.readNew()).lines).toEqual([line(2)]);
+    });
+
     test('a transcript past 4 MB opens at its tail, and one appended line costs one read from the old end', async () => {
         const row = `{"t":"${'x'.repeat(1000)}"}`;
         const file = fakeFile(`${Array(5000).fill(row).join('\n')}\n`);

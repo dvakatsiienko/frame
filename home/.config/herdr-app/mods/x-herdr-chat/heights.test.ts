@@ -82,6 +82,15 @@ describe('what is measured in one frame', () => {
         expect(order.length).toBe(30);
     });
 
+    test('the look for unmeasured rows stops a few screens from the view', () => {
+        const heights = createHeights();
+        const all = rows(10_000);
+        for (const r of all.slice(1)) heights.record(r, 40);
+        expect(
+            heights.toMeasure(all, { end: 5010, start: 5000 }).map((r) => r.id),
+        ).not.toContain('r0');
+    });
+
     test('a thread of 10,000 measured rows asks for the screen only', () => {
         const heights = createHeights();
         const all = rows(10_000);

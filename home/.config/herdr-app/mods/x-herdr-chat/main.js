@@ -44,9 +44,15 @@ const BUBBLE_SHARE = 0.8;
 const PLACE_SAVE_MS = 600;
 // earlier pages read at most this many times while looking for the message he was reading
 const PLACE_PAGES = 8;
+// a drawn range this soon after a wheel step is his own scroll
+const WHEEL_REST_MS = 200;
 
 /** a theme colour made see-through @param {Color} color @param {string} alpha two hex digits @returns {Color} */
 const tint = (color, alpha) => `#${color.slice(1, 7)}${alpha}`;
+
+/** @param {unknown} error */
+const readError = (error) =>
+    `This thread's transcript could not be read: ${error instanceof Error ? error.message : String(error)}`;
 
 /** @param {string} program @param {string[]} args */
 async function run(program, args) {
@@ -63,21 +69,18 @@ async function run(program, args) {
  */
 const doorTo = (file) => ({
     lineStartAt: async (at) =>
-        at <= 0
-            ? 0
-            : at -
-              1 +
-              Number(
-                  (
-                      await run('sh', [
-                          '-c',
-                          'tail -c +"$1" "$2" | head -n 1 | wc -c',
-                          'sh',
-                          String(at),
-                          file,
-                      ])
-                  ).trim(),
-              ),
+        at +
+        Number(
+            (
+                await run('sh', [
+                    '-c',
+                    'tail -c +"$1" "$2" | head -n 1 | wc -c',
+                    'sh',
+                    String(at + 1),
+                    file,
+                ])
+            ).trim(),
+        ),
     read: (from, max) =>
         run('sh', [
             '-c',
@@ -115,6 +118,13 @@ export default class Chat extends View {
     widthGen = 0;
     /** a message to bring to the top once it is among the rows @type {string | null} */
     seek = null;
+    /** the first message on screen while he reads mid-thread; none while following @type {string | null} */
+    place = null;
+    /** until then a drawn range is his own scroll, and names his place */
+    wheelUntil = 0;
+    isLastWheelDown = false;
+    /** the pending wait for a change in the transcript's folder @type {import('herdr').FolderWatch | null} */
+    watch = null;
     /** @type {number[]} */
     sizes = [];
     lastWheelAt = 0;
@@ -202,6 +212,16 @@ export default class Chat extends View {
                     .text_color(t.muted)
                     .child(this.error ?? this.emptyLine()),
             );
+        if (this.error)
+            root.child(
+                div()
+                    .px(12)
+                    .py(4)
+                    .text_size(12)
+                    .text_color(t.muted)
+                    .bg(t.raised)
+                    .child(this.error),
+            );
         return root.child(this.list(rows, t));
     }
 
@@ -236,8 +256,19 @@ export default class Chat extends View {
             rows.length,
             sizes,
             (i) => rows[i]?.id ?? `gone-${i}`,
-            (range) => {
+            (range, cx) => {
                 this.range = range;
+                if (!this.follow && Date.now() < this.wheelUntil) {
+                    // a step down that reached the end follows again, read from the range that step drew
+                    if (
+                        this.isLastWheelDown &&
+                        isAtTrueEnd(sizes, range, this.viewH)
+                    ) {
+                        this.follow = true;
+                        this.place = null;
+                        cx.notify();
+                    } else this.place = rows[range.start]?.id ?? null;
+                }
                 return rows.slice(range.start, range.end).map((row, j) =>
                     div()
                         .relative()
@@ -262,17 +293,23 @@ export default class Chat extends View {
                     this.width = width;
                     this.widthGen += 1;
                     this.heights.clear();
+                    // every height is guessed again: his place is brought back as the real ones arrive
+                    this.seek = this.place;
                 }
                 this.viewH = height;
                 cx.notify();
             })
             .on_scroll_wheel((event, cx) => {
                 const was = this.follow;
+                const dy = event.delta?.y ?? 0;
                 this.follow = followAfterWheel(
                     was,
-                    event.delta?.y ?? 0,
+                    dy,
                     isAtTrueEnd(this.sizes, this.range, this.viewH),
                 );
+                this.wheelUntil = Date.now() + WHEEL_REST_MS;
+                if (dy) this.isLastWheelDown = dy < 0;
+                if (this.follow) this.place = null;
                 this.savePlaceSoon(cx);
                 if (this.follow !== was) cx.notify();
             })
@@ -294,6 +331,11 @@ export default class Chat extends View {
                         .child('↓')
                         .on_click((_event, cx) => {
                             this.follow = true;
+                            this.place = null;
+                            if (this.file)
+                                localStorage.removeItem(
+                                    this.placeKey(this.file),
+                                );
                             cx.notify();
                         }),
                 ),
@@ -327,12 +369,18 @@ export default class Chat extends View {
                                 .on_size_change((size, cx) => {
                                     const zoom = Number(settings().zoom) || 1;
                                     if (
-                                        this.heights.record(
+                                        !this.heights.record(
                                             row,
                                             size.height / zoom,
                                         )
                                     )
-                                        cx.notify();
+                                        return;
+                                    // a row above his place changed height: the place is brought back to the top,
+                                    // or the list, which keeps its offset in px, would slide it away
+                                    const at = placeIndex(rows, this.place);
+                                    if (at > 0 && rows.indexOf(row) < at)
+                                        this.seek = this.place;
+                                    cx.notify();
                                 })
                                 .child(this.row(row, t, pre)),
                         ),
@@ -439,6 +487,8 @@ export default class Chat extends View {
      * @param {Context} cx
      */
     async open(pid, cx) {
+        this.watch?.cancel();
+        this.watch = null;
         this.model.clear();
         this.heights.clear();
         this.reader = null;
@@ -446,6 +496,8 @@ export default class Chat extends View {
         this.error = null;
         this.isRead = false;
         this.follow = true;
+        this.place = null;
+        this.seek = null;
         this.range = null;
         cx.notify();
         if (pid === null) return;
@@ -464,21 +516,36 @@ export default class Chat extends View {
             cx.notify();
             const reader = createReader(doorTo(file));
             this.reader = reader;
+            const dir = file.slice(0, file.lastIndexOf('/'));
+            const name = file.slice(dir.length + 1);
+            // the wait is armed before each read, so a line written while one runs is never missed
+            let watch = watchFolder(dir);
+            this.watch = watch;
             await this.pull(reader, cx);
             this.isRead = true;
             cx.notify();
             await this.restorePlace(reader, cx);
-            const dir = file.slice(0, file.lastIndexOf('/'));
-            const name = file.slice(dir.length + 1);
             while (this.reader === reader) {
-                const changed = await watchFolder(dir);
+                const changed = await watch;
                 if (this.reader !== reader) return;
-                if (changed.some((path) => path === dir || path.endsWith(name)))
+                watch = watchFolder(dir);
+                this.watch = watch;
+                if (
+                    !changed.some((path) => path === dir || path.endsWith(name))
+                )
+                    continue;
+                // one failed read says so and keeps watching: the next change reads again
+                try {
                     await this.pull(reader, cx);
+                } catch (error) {
+                    if (this.reader !== reader) return;
+                    this.error = readError(error);
+                    cx.notify();
+                }
             }
         } catch (error) {
             if (pid !== this.pid) return;
-            this.error = `This thread's transcript could not be read: ${error instanceof Error ? error.message : String(error)}`;
+            this.error = readError(error);
             cx.notify();
         }
     }
@@ -493,8 +560,13 @@ export default class Chat extends View {
         if (isRestart) {
             this.model.clear();
             this.heights.clear();
+            this.place = null;
+            this.follow = true;
         }
-        if (this.model.add(lines).changed.length || isRestart) cx.notify();
+        const hadError = this.error !== null;
+        this.error = null;
+        if (this.model.add(lines).changed.length || isRestart || hadError)
+            cx.notify();
     }
 
     /** @param {string} file */
@@ -524,6 +596,7 @@ export default class Chat extends View {
         }
         if (placeIndex(this.model.rows, placeId) < 0) return;
         this.follow = false;
+        this.place = placeId;
         this.seek = placeId;
         cx.notify();
     }
@@ -534,13 +607,14 @@ export default class Chat extends View {
      */
     savePlaceSoon(cx) {
         const at = Date.now();
+        const { file } = this;
         this.lastWheelAt = at;
         cx.timer.after(PLACE_SAVE_MS, () => {
-            if (this.lastWheelAt !== at || !this.file) return;
-            const first = this.model.rows[this.range?.start ?? -1];
-            if (this.follow || !first)
-                localStorage.removeItem(this.placeKey(this.file));
-            else localStorage.setItem(this.placeKey(this.file), first.id);
+            // only his last step counts, and only for the thread it was made in
+            if (this.lastWheelAt !== at || !file || this.file !== file) return;
+            if (this.follow || !this.place)
+                localStorage.removeItem(this.placeKey(file));
+            else localStorage.setItem(this.placeKey(file), this.place);
         });
     }
 }

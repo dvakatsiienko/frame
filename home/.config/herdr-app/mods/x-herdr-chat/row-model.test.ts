@@ -209,8 +209,12 @@ describe('earlier pages and a restart', () => {
         const model = createRowModel();
         const first = reply('first part', 'msg-a');
         model.add([reply('second part', 'msg-a')]);
+        const [drawn] = model.rows;
         model.addEarlier([first]);
         expect(shown(model)).toEqual(['reply: first part\n\nsecond part']);
+        // the row takes the id of its true first line: the place saved while it was loaded whole is found again
+        expect(model.rows[0]).toBe(drawn);
+        expect(drawn?.id).toBe(JSON.parse(first).uuid);
     });
 
     test('a run of tool calls cut by the page edge is one line again', () => {
