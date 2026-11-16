@@ -36,8 +36,7 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 ```
 
 - this is every member's summon door; a wing starts by `~/frame/_clio/script/clio-start.sh wing <N> '<first prompt>'`, the prompt before `--remote-control`; a lane member's line carries its brief, `"$(cat <brief file>)"`, its argv per role and its preflight (`x brief summon '<the line>'`) in `x:crew-lead`
-- 📌 then its tab, the same turn (a `--no-parent` thread has none, so herdr's agents list skips it): `herdr-app do terminal.keep '{"terminal":"<t>","place":"tab"}'` returns the tab id, then `herdr-app do tab.rename '{"id":"<tab>","name":"<registry name>"}'` (`scripts/thread-tab.ts` runs both, the proof `terminal.keep` returns the tab); dima's standing ask (11-11 00:06, via main): both `do` calls need no new word. done when `herdr-app ls` shows the tab by its registry name
-
+- 📌 then its tab, the same turn (a `--no-parent` thread has none, so herdr's agents list skips it): `herdr-app do terminal.keep '{"terminal":"<t>","place":"tab"}'` returns the tab id, then `herdr-app do tab.rename '{"id":"<tab>","name":"<registry name>"}'` (`scripts/thread-tab.ts` runs both, the proof `terminal.keep` returns the tab); both calls need no new word from dima. done when `herdr-app ls` shows the tab by its registry name
 - 📌 the cc `-n` is its name for `ListAgents` and `threadOf` (`🦉🪽 clio: wing <N>` makes a wing; `SendMessage` by it, inference); herdr's `--name` and `--label` only tag the pane; `hc ls --json` lists the live threads
 - its session id: the `~/.claude/sessions/<pid>.json` of the pid `hc get <t> --json` reports; its idle notice lands when your own turn ends
 - stop it with `hc kill <t>`; a `claude --bg` member runs unchanged from a herdr thread, `claude attach <id>` opens it in a pane, `claude stop <id>` ends it
@@ -62,12 +61,12 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building' | base64)"
 ```
 
-**map his window** — `uv run -q --with pillow python -I scripts/window-map.py <out.png>`: a fresh shot, each part boxed and named (`scripts/window-map.json`)
+**map his window** — `uv run -q --with pillow python -I scripts/window-map.py <out.png>`: shoots the window as it is, each part boxed and named (`scripts/window-map.json`); the boxes fit the tray and the Changes panel open, so dima opens both first
 
 ## traps
 
 - 📌 a bare `overlay.close`, `tab.close` or `pane.close` kills dima's focused thread; a probe closes itself, `closeOverlay(props().overlay)`; a second `mod.open` of a dialog opens a copy
-- a layout switch is safe since the 11-10 fix and stays dima's hand (`herdr/PRODUCT.md`)
+- a layout switch is safe (`herdr/PRODUCT.md`); it stays dima's hand
 - 📌 `hc send` always presses Enter; `hc keys` is the only prefill, with the limits above
 - 📌 `hc send --force` types into a blocked program and may answer its permission dialog: never into a thread waiting on dima
 - `hc get` changes nothing and shows no screen; the screen is `hc read`
@@ -91,7 +90,6 @@ the rest: `~/.config/herdr-app/keys.json`.
 
 - dima's daily terminal, a prefill with any character, Lua automation → rex (`x:rex`)
 - threads side by side with their status read by a script, a custom panel or board → herdr
-- both speak OSC 7501 and render through ghostty's core
 
 ## what herdr costs a session
 

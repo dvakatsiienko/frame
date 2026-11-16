@@ -1,6 +1,6 @@
 # The window map: a shot of dima's herdr window with every part boxed, numbered and named, the legend under it.
 # usage: uv run -q --with pillow python -I window-map.py <out.png> [shot.png]
-# with no shot it takes a fresh one: the tray and the Files panel open for the shot and close after.
+# with no shot it shoots the window as it is, touching no layout; the boxes fit the window with the tray and the Changes panel open.
 # the parts and their boxes live in window-map.json beside this file; a moved block means new boxes there.
 import json
 import subprocess
@@ -14,20 +14,9 @@ HERE = Path(__file__).resolve().parent
 ORDER = ["ours", "herdr"]
 
 
-def herdr(*args):
-    subprocess.run(["herdr-app", *args], check=True, capture_output=True)
-
-
 def fresh_shot():
     path = Path(tempfile.mkdtemp()) / "shot.png"
-    for block in ("tray", "panel"):
-        herdr("do", "layout.toggle", json.dumps({"id": block}))
-    try:
-        subprocess.run(["sleep", "2"], check=True)
-        herdr("shot", str(path))
-    finally:
-        for block in ("tray", "panel"):
-            herdr("do", "layout.toggle", json.dumps({"id": block}))
+    subprocess.run(["herdr-app", "shot", str(path)], check=True, capture_output=True)
     return path
 
 

@@ -29,5 +29,6 @@ Ticket: FRM-586
 - 2026-11-13 · FRM-621 mods edit per session · 5 min → [done], but its x commit on main went live for every session at once (the shim built the working tree): reverted in 3 min, nothing lost · the root became FRM-624 (story: docs/knowledge/fleet-stories/x-live-on-commit)
 - 2026-11-13 · FRM-624 x runs the pushed build, built in its own worktree on crow's catch · 29 min, wisphunter 5 fixed, critic 5 folded · clean; the lane's first worktree chore
 - 2026-11-16 · FRM-586 batch 1, chore 1: the herdr stale layout trap, two skill lines (herdr `SKILL.md`, `surface-herdr-desktop.md`) from main clio (Sonnet 5.5 medium, parked codie) · ~4 min, `rg 861` over the skills prints nothing · clean; brief miss: the third home is `herdr/docs/adr/0001-one-block-one-mod.md:8`, not under `_clio/`
+- 2026-11-16 · FRM-586 batch 1, chore 2: window-map recipe, the 12 boxes copied in, the script shoots as it is (no `layout.toggle`), the recipe line · ~12 min, layout file `shasum` dbefdaf1… before and after, exit 0 · partial: «draw only visible parts» not done, it needs a visibility read and per-state boxes (the tray's state sits in no file and no `herdr-app` command; hiding the tray or panel moves the chat box too), named to main clio
 
 ## verdict

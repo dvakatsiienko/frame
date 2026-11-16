@@ -1,7 +1,7 @@
 {
-    "// why": "the parts of dima's herdr window, boxed on the window map; boxes are px in a 1600-wide copy of a shot of his layout at his window size, with the tray and the Files panel open. a moved block means new boxes.",
+    "// why": "the parts of dima's herdr window, boxed on the window map; boxes are px in a 1600-wide copy of a shot of his layout at his window size, with the tray and the Changes panel open (the script shoots the window as it is, so open both first). a moved block means new boxes.",
     "kindLabels": {
-        "herdr": "herdr's own",
+        "herdr": "shipped (herdr's own)",
         "ours": "ours"
     },
     "kinds": {
@@ -11,113 +11,117 @@
     "notShown": [
         {
             "kind": "ours",
-            "name": "x-herdr-layout.json",
+            "name": "hidden strip",
+            "today": "x-herdr-deck (view: seat)",
+            "what": "thread strip above the chat, hidden in the layout"
+        },
+        {
+            "kind": "herdr",
+            "name": "pops up",
+            "today": "confirm, menu, picker, pane",
+            "what": "dialogs and menus your parts open"
+        },
+        {
+            "kind": "ours",
+            "name": "layout file",
             "today": "x-herdr-layout.json",
-            "what": "layout file: what sits where, and the look"
+            "what": "what sits where, and the look"
         }
     ],
     "parts": [
         {
-            "boxes": [[2, 2, 223, 38], [2, 818, 223, 873]],
+            "boxes": [[2, 2, 231, 37], [2, 818, 231, 873]],
             "kind": "herdr",
             "n": 1,
-            "name": "stays herdr's",
+            "name": "box 1 chrome",
             "today": "workspace-chrome",
-            "what": "window chrome: logo, search, settings"
+            "what": "sidebar top and foot: logo, search, Settings"
         },
         {
-            "boxes": [[4, 42, 221, 300]],
-            "kind": "herdr",
+            "boxes": [[3, 45, 231, 720]],
+            "kind": "ours",
             "n": 2,
-            "name": "stays herdr's",
+            "name": "box 2 agents",
+            "today": "x-herdr-agents",
+            "what": "every thread, in your own order"
+        },
+        {
+            "boxes": [[3, 728, 231, 790]],
+            "kind": "herdr",
+            "n": 3,
+            "name": "box 3 spaces",
             "today": "spaces",
             "what": "spaces: your project folders"
         },
         {
-            "boxes": [[4, 306, 221, 812]],
-            "kind": "ours",
-            "n": 3,
-            "name": "x-herdr-agents",
-            "today": "x-herdr-agents",
-            "what": "every agent, grouped by state"
-        },
-        {
-            "boxes": [[228, 2, 935, 34]],
+            "boxes": [[235, 2, 1010, 33], [1036, 2, 1164, 33]],
             "kind": "ours",
             "n": 4,
-            "name": "x-herdr-tabs",
+            "name": "box 4 tabs",
             "today": "x-herdr-tabs",
-            "what": "tabs: one per thread"
+            "what": "tab bar, with Files and Changes buttons"
         },
         {
-            "boxes": [[937, 4, 958, 32]],
+            "boxes": [[1012, 4, 1034, 31]],
             "kind": "herdr",
             "n": 5,
-            "name": "herdr's own (since 11-10)",
+            "name": "box 5 plus menu",
             "today": "new-menu",
-            "what": "+ menu: open a new tab"
+            "what": "+ : open a new tab or agent"
         },
         {
-            "boxes": [[232, 42, 770, 146]],
+            "boxes": [[242, 43, 847, 69]],
             "kind": "ours",
             "n": 6,
-            "name": "part of x-herdr-deck",
-            "today": "x-herdr-deck (view: seat)",
-            "what": "thread strip: ctx, week, its asks"
+            "name": "box 6 thread header",
+            "today": "x-herdr-chatter-header",
+            "what": "thread's top row, Chat | Terminal switch"
         },
         {
-            "boxes": [[234, 147, 770, 168]],
+            "boxes": [[242, 71, 847, 592]],
             "kind": "ours",
             "n": 7,
-            "name": "x-herdr-chatter-header (tabs: -header-tabs)",
-            "today": "x-herdr-chatter + x-herdr-chatter-header",
-            "what": "thread's top row (both views), with its Chat | Terminal tabs"
-        },
-        {
-            "boxes": [[234, 170, 770, 592]],
-            "kind": "ours",
-            "n": 8,
-            "name": "x-herdr-chatter",
+            "name": "box 7 chat",
             "today": "x-herdr-chatter",
-            "what": "the Chat view: read and talk"
+            "what": "the Chat view: read and write"
         },
         {
-            "boxes": [[962, 4, 1088, 32], [778, 42, 1088, 596]],
+            "boxes": [[856, 43, 1160, 592]],
             "kind": "herdr",
-            "n": 9,
-            "name": "stays herdr's",
+            "n": 8,
+            "name": "box 8 side panel",
             "today": "files, changes",
             "what": "Files and Changes panel"
         },
         {
-            "boxes": [[226, 603, 1090, 627]],
+            "boxes": [[235, 603, 1166, 626]],
             "kind": "ours",
-            "n": 10,
-            "name": "x-herdr-terminal-header (in x-herdr-terminal)",
+            "n": 9,
+            "name": "box 9 tray header",
             "today": "x-herdr-terminal-header",
-            "what": "the tray head row (ctrl-j)"
+            "what": "quick terminal's head row (ctrl-j)"
         },
         {
-            "boxes": [[226, 629, 1090, 848]],
+            "boxes": [[235, 628, 1166, 850]],
             "kind": "herdr",
-            "n": 11,
-            "name": "stays herdr's",
-            "today": "herdr terminal",
-            "what": "the tray's terminal itself"
+            "n": 10,
+            "name": "box 10 tray terminal",
+            "today": "(herdr terminal, no mod)",
+            "what": "the quick terminal itself"
         },
         {
-            "boxes": [[226, 851, 1092, 874]],
+            "boxes": [[235, 853, 1166, 874]],
+            "kind": "ours",
+            "n": 11,
+            "name": "box 11 status bar",
+            "today": "x-herdr-status",
+            "what": "status bar: branch, Folder, VS Code"
+        },
+        {
+            "boxes": [[1170, 2, 1598, 874]],
             "kind": "ours",
             "n": 12,
-            "name": "x-herdr-status",
-            "today": "x-herdr-status",
-            "what": "status bar: branch, folder, commands"
-        },
-        {
-            "boxes": [[1096, 2, 1598, 873]],
-            "kind": "ours",
-            "n": 13,
-            "name": "x-herdr-deck (renamed last)",
+            "name": "box 12 deck",
             "today": "x-herdr-deck",
             "what": "right column: threads, orbit, glide"
         }
