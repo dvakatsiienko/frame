@@ -1,7 +1,7 @@
 // the siesta's mechanical checks in one run before the wishkeeper spawn (FRM-496): its output joins the brief, so
 // wishkeeper spends its read on judgment, never on re-running a script
 // usage: node siesta-checks.ts --since <siesta-last stamp, or HH:MM today> — exits 0 when every section passes
-import { spawnSync } from 'node:child_process';
+import { type SpawnSyncReturns, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
@@ -18,6 +18,11 @@ const MIN_RUNS = 3;
 // red past budget × 1.25, and never for a step whose whole-second rows wobble by a second or two
 const BUDGET_SLACK = 1.25;
 const BUDGET_FLOOR_S = 2;
+// the projects whose nesting is kept honest, and the state types that count as closed
+const NESTED_PROJECTS = /herdr|mods|cli/i;
+const CLOSED_TYPES = ['completed', 'canceled'];
+// a capped page must not look complete: nestedTickets follows pageInfo until hasNextPage is false
+const NESTED_QUERY = `query($after: String) { issues(first: 100, after: $after, filter: { team: { key: { eq: "FRM" } }, or: [{ parent: { null: false } }, { children: { length: { gt: 0 } } }] }) { pageInfo { hasNextPage endCursor } nodes { identifier state { name type } projectMilestone { id name } parent { identifier } project { name } } } }`;
 
 function main(home: string, since: string) {
     const scripts = path.join(home, 'frame/_clio/script');
@@ -28,6 +33,7 @@ function main(home: string, since: string) {
         wishCover(home, scripts, since),
         orbitDrift(home),
         dispatchQueue(home),
+        nestedTickets(home),
         script(scripts, 'close net', 'close-net', []),
         script(scripts, 'blueprint drift', 'blueprint-drift', [
             '--since',
@@ -382,6 +388,91 @@ function dispatchQueue(home: string) {
     };
 }
 
+// nesting stays only while it is kept honest (dima, PK-442); a linear failure reads «not checked» in a 🟡 line, never red
+function nestedTickets(home: string) {
+    const name = 'nested tickets';
+    const tickets: NestedTicket[] = [];
+    let after: string | null = null;
+    do {
+        const out: SpawnSyncReturns<string> = spawnSync(
+            path.join(home, '.local/bin/x'),
+            [
+                'linear',
+                'api',
+                '--vars',
+                JSON.stringify({ after }),
+                NESTED_QUERY,
+            ],
+            { encoding: 'utf8', timeout: RUN_TIMEOUT_MS },
+        );
+        const issues: NestedPage | undefined = (
+            parsed(out.stdout ?? '').data as { issues?: NestedPage } | undefined
+        )?.issues;
+        if (out.status !== 0 || !issues?.nodes)
+            return {
+                exit: 0,
+                name,
+                output: '🟡 x linear api failed, the nested tickets are not checked',
+            };
+        tickets.push(
+            ...issues.nodes.map((n) => ({
+                id: n.identifier,
+                milestone: n.projectMilestone,
+                parentId: n.parent?.identifier ?? null,
+                project: n.project?.name ?? null,
+                stateName: n.state.name,
+                stateType: n.state.type,
+            })),
+        );
+        after = issues.pageInfo.hasNextPage ? issues.pageInfo.endCursor : null;
+    } while (after);
+    const { breaches, children, parents } = nestedBreaches(tickets);
+    return {
+        exit: breaches.length ? 1 : 0,
+        name,
+        output: breaches.length
+            ? breaches.join('\n')
+            : `🟢 nested tickets: ${parents} parents, ${children} children, all honest`,
+    };
+}
+
+// the three rules of an honest nesting, over plain tickets: a ticket outside the nested projects is ignored, and so is a
+// child whose parent is
+export function nestedBreaches(all: NestedTicket[]) {
+    const tickets = all.filter((t) => NESTED_PROJECTS.test(t.project ?? ''));
+    const byId = new Map(tickets.map((t) => [t.id, t]));
+    const kids = new Map<string, NestedTicket[]>();
+    for (const t of tickets) {
+        if (t.parentId && byId.has(t.parentId))
+            kids.set(t.parentId, [...(kids.get(t.parentId) ?? []), t]);
+    }
+    const isClosed = (t: NestedTicket) => CLOSED_TYPES.includes(t.stateType);
+    const breaches: string[] = [];
+    for (const [parentId, children] of kids) {
+        const parent = byId.get(parentId);
+        if (!parent) continue;
+        if (!isClosed(parent) && children.every(isClosed))
+            breaches.push(
+                `🔴 ${parent.id}: every child is closed, the parent is still ${parent.stateName}: close it or name what is left`,
+            );
+        for (const child of children) {
+            if (isClosed(parent) && !isClosed(child))
+                breaches.push(
+                    `🔴 ${child.id}: open under closed parent ${parent.id}: move it out or close it`,
+                );
+            if (parent.milestone && child.milestone?.id !== parent.milestone.id)
+                breaches.push(
+                    `🔴 ${child.id}: milestone «${child.milestone?.name ?? 'none'}» differs from parent ${parent.id}'s «${parent.milestone.name}»`,
+                );
+        }
+    }
+    return {
+        breaches,
+        children: [...kids.values()].flat().length,
+        parents: kids.size,
+    };
+}
+
 // every retro on disk is pending: a fold trashes its files, so what is left waits for this siesta (step 2.7). pending is a
 // job, never a red: while dima is afk they wait, and a red would become a high that holds the afk close
 function retros(home: string) {
@@ -477,5 +568,25 @@ if (import.meta.main) {
 /* Types */
 
 type SignedTicket = { id: string; sign: string; stateType: string };
+
+export type NestedTicket = {
+    id: string;
+    milestone: { id: string; name: string } | null;
+    parentId: string | null;
+    project: string | null;
+    stateName: string;
+    stateType: string;
+};
+
+type NestedPage = {
+    nodes?: {
+        identifier: string;
+        parent: { identifier: string } | null;
+        project: { name: string } | null;
+        projectMilestone: { id: string; name: string } | null;
+        state: { name: string; type: string };
+    }[];
+    pageInfo: { endCursor: string | null; hasNextPage: boolean };
+};
 
 type Section = { exit: number; name: string; output: string; status?: string };

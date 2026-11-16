@@ -11,6 +11,8 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { gitEnv } from '../../script/lib/git-fixture.ts';
+import type { NestedTicket } from './siesta-checks.ts';
+import { nestedBreaches } from './siesta-checks.ts';
 
 const SID = 's-clio';
 const CHECKS = [
@@ -122,6 +124,7 @@ describe('siesta-checks', () => {
             '## wish-cover',
             '## orbit drift',
             '## dispatch queue',
+            '## nested tickets',
             '## close net',
             '## blueprint drift',
             '## helper count',
@@ -447,6 +450,102 @@ describe('siesta-checks', () => {
         expect(section(run(home).stdout, 'gates drift')).toMatch(
             /· not checked\n/,
         );
+    });
+
+    describe('nested tickets', () => {
+        const mile = (id: string) => ({ id, name: `m-${id}` });
+        const ticket = (over: Partial<NestedTicket>): NestedTicket => ({
+            id: 'FRM-1',
+            milestone: mile('a'),
+            parentId: null,
+            project: 'mods: herdr',
+            stateName: 'In Progress',
+            stateType: 'started',
+            ...over,
+        });
+        const done = { stateName: 'Done', stateType: 'completed' };
+
+        test('a parent still open while every child is closed reds', () => {
+            const { breaches } = nestedBreaches([
+                ticket({ id: 'FRM-1' }),
+                ticket({ id: 'FRM-2', parentId: 'FRM-1', ...done }),
+            ]);
+            expect(breaches).toEqual([
+                '🔴 FRM-1: every child is closed, the parent is still In Progress: close it or name what is left',
+            ]);
+        });
+
+        test('an open child under a closed parent reds', () => {
+            const { breaches } = nestedBreaches([
+                ticket({ id: 'FRM-1', ...done }),
+                ticket({ id: 'FRM-2', parentId: 'FRM-1' }),
+            ]);
+            expect(breaches).toEqual([
+                '🔴 FRM-2: open under closed parent FRM-1: move it out or close it',
+            ]);
+        });
+
+        test('a child whose milestone differs from its parent reds', () => {
+            const { breaches } = nestedBreaches([
+                ticket({ id: 'FRM-1' }),
+                ticket({
+                    id: 'FRM-2',
+                    milestone: mile('b'),
+                    parentId: 'FRM-1',
+                }),
+            ]);
+            expect(breaches).toEqual([
+                "🔴 FRM-2: milestone «m-b» differs from parent FRM-1's «m-a»",
+            ]);
+        });
+
+        test('a child with no milestone under a parent with one reds', () => {
+            const { breaches } = nestedBreaches([
+                ticket({ id: 'FRM-1' }),
+                ticket({ id: 'FRM-2', milestone: null, parentId: 'FRM-1' }),
+            ]);
+            expect(breaches).toEqual([
+                "🔴 FRM-2: milestone «none» differs from parent FRM-1's «m-a»",
+            ]);
+        });
+
+        test('an honest nesting is green and counts its parents and children', () => {
+            expect(
+                nestedBreaches([
+                    ticket({ id: 'FRM-1' }),
+                    ticket({ id: 'FRM-2', parentId: 'FRM-1' }),
+                    ticket({ id: 'FRM-3', parentId: 'FRM-1', ...done }),
+                ]),
+            ).toEqual({ breaches: [], children: 2, parents: 1 });
+        });
+
+        test('a canceled child counts as closed', () => {
+            const { breaches } = nestedBreaches([
+                ticket({ id: 'FRM-1' }),
+                ticket({
+                    id: 'FRM-2',
+                    parentId: 'FRM-1',
+                    stateName: 'Canceled',
+                    stateType: 'canceled',
+                }),
+            ]);
+            expect(breaches).toHaveLength(1);
+            expect(breaches[0]).toContain('every child is closed');
+        });
+
+        test('a ticket outside the three projects is ignored', () => {
+            expect(
+                nestedBreaches([
+                    ticket({ id: 'FRM-1', project: 'apps: web' }),
+                    ticket({
+                        id: 'FRM-2',
+                        parentId: 'FRM-1',
+                        project: 'apps: web',
+                        ...done,
+                    }),
+                ]),
+            ).toEqual({ breaches: [], children: 0, parents: 0 });
+        });
     });
 
     describe('gate budget', () => {
