@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import type { FleetState, ThreadState } from './band.js';
 import {
+    PENDING_MS,
     STALE_MS,
     autoWind,
     autoWindAfterRead,
@@ -14,6 +15,7 @@ import {
     overrideOf,
     pendingOf,
     pressLine,
+    pressesWaiting,
     stateLine,
     stateParts,
     statesShown,
@@ -533,5 +535,56 @@ describe('🍃 second wind auto sits right of 🐦‍🔥 (FRM-625)', () => {
         expect(autoWindOf('s2 on\n', 's1')).toBeNull();
         expect(autoWindOf('', 's1')).toBeNull();
         expect(autoWindOf('s1 maybe\n', 's1')).toBeNull();
+    });
+});
+
+describe('a press waits until the state reads it', () => {
+    const now = 1_000_000;
+    const read = bandButtons({
+        fleet: { afk: { at: null, on: true }, waker: { at: null, on: false } },
+        isDeckShown: true,
+        override: { isOn: false },
+        thread: { hot: null, wind: null },
+    });
+
+    test('a press the state already reads waits no more', () => {
+        expect(
+            pressesWaiting(
+                { afk: { at: now - 1000, on: true } },
+                {},
+                read,
+                now,
+            ),
+        ).toEqual({});
+    });
+
+    test("the newer of the band's press and the file's wins", () => {
+        expect(
+            pressesWaiting(
+                { hot: { at: now - 3000, on: true } },
+                { hot: { at: now - 1000, on: false } },
+                read,
+                now,
+            ),
+        ).toEqual({});
+        expect(
+            pressesWaiting(
+                { hot: { at: now - 1000, on: true } },
+                { hot: { at: now - 3000, on: false } },
+                read,
+                now,
+            ),
+        ).toEqual({ hot: { at: now - 1000, on: true } });
+    });
+
+    test('a press the stash never answered waits no more after its wait', () => {
+        expect(
+            pressesWaiting(
+                { waker: { at: now - PENDING_MS, on: true } },
+                {},
+                read,
+                now,
+            ),
+        ).toEqual({});
     });
 });

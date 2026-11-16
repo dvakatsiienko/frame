@@ -355,6 +355,31 @@ export function bandButtons({
 }
 
 /**
+ * the presses still waiting on the stash: the band's own and the press file's, the newest per button, less each one
+ * the state already reads and each past its wait, so the deck's press and the band's draw the same
+ * @param {Pending} own @param {Pending} fromFile
+ * @param {BandButton[]} read the buttons as the state alone reads them
+ * @param {number} now
+ * @returns {Pending}
+ */
+export function pressesWaiting(own, fromFile, read, now) {
+    /** @type {Pending} */
+    const merged = { ...fromFile };
+    for (const [key, p] of Object.entries(own)) {
+        const k = /** @type {PressKey} */ (key);
+        if (!merged[k] || p.at > merged[k].at) merged[k] = p;
+    }
+    /** @type {Pending} */
+    const left = {};
+    for (const [key, p] of Object.entries(merged)) {
+        const b = read.find((x) => x.key === key);
+        if (b && b.isOn !== p.on && now - p.at < PENDING_MS)
+            left[/** @type {PressKey} */ (key)] = p;
+    }
+    return left;
+}
+
+/**
  * the presses not yet answered, read from the press file itself, so a press on the deck or on any band draws here
  * too: per button the newest line, wind and hot only for this thread
  * @param {string | null} text

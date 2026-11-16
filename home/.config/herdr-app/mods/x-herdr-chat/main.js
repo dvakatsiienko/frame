@@ -19,8 +19,12 @@ import {
     exec,
     hc,
     home,
+    layout,
+    notify,
+    openOverlay,
     props,
     readTextFile,
+    run as runCommand,
     settings,
     shared,
     theme,
@@ -28,6 +32,23 @@ import {
     writeTextFile,
 } from 'herdr';
 
+import {
+    DECK_BLOCK,
+    OVERRIDE_STORE,
+    PRESS_DIR,
+    PRESS_FILE,
+    STATE_DIR,
+    THREADS_KEY,
+    bandButtons,
+    bandOf,
+    meterCells,
+    meterTip,
+    overrideOf,
+    pendingOf,
+    pressLine,
+    pressesWaiting,
+    withPress,
+} from './band.js';
 import { splitBlocks } from './blocks.js';
 import { createDrafts } from './draft.js';
 import { placeOf } from './follow.js';
@@ -55,7 +76,7 @@ import { typedMarkdown } from './typed.js';
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('./row-model.js').Row} Row */
 // the theme colours this file reads, each present in every herdr theme
-/** @typedef {Record<'accent' | 'background' | 'border' | 'dim' | 'foreground' | 'muted' | 'raised', Color>} Theme */
+/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'dim' | 'foreground' | 'muted' | 'raised' | 'selected', Color>} Theme */
 
 // the readable column of a narrow look (the old chat's), and the share of the column a bubble may take
 const NARROW = 820;
@@ -77,8 +98,20 @@ const PLACE_SAVE_MS = 600;
 const SETTLE_MS = 120;
 // earlier pages read at most this many times while looking for the message he was reading
 const PLACE_PAGES = 8;
-// x-mod-stash writes each thread's state here, its joins among it, one file per session
-const STATE_DIR = '.claude/shelf/herdr-state';
+// a meter's cells, as the old chat drew them
+const METER_CELLS = 48;
+const CHIP_SIZE = 26;
+// the operator override changes with no event herdr watches, and a deck that stopped publishing changes nothing: the
+// band's facts that age are read again this often
+const BAND_AGE_MS = 5000;
+// the old chat's settings window, opened as it opens it until the new one moves in
+const SETTINGS_OVERLAY = {
+    height: 0.74,
+    kind: /** @type {const} */ ('dialog'),
+    mod: 'x-herdr-chatter',
+    props: { settingsWindow: 'chatter' },
+    width: 0.6,
+};
 // his settings, kept by the old chat's settings window until the new one moves in
 const SETTINGS_FILE = '.claude/shelf/herdr-settings/settings.json';
 // under a mark, the join row is rewritten this long after his last key
@@ -176,6 +209,67 @@ const doorTo = (file) => ({
     },
 });
 
+/**
+ * one press appended to the band press file with herdr's compare-and-swap write: a file changed since the read is read
+ * again, so no other press is lost
+ * @param {import('./band.js').PressLine} line
+ */
+async function appendPress(line) {
+    await run('mkdir', ['-p', `${home()}/${PRESS_DIR}`]);
+    const path = `${home()}/${PRESS_FILE}`;
+    for (let tries = 2; ; tries--) {
+        const text = await readTextFile(path).catch(() => null);
+        try {
+            return await writeTextFile(
+                path,
+                withPress(text, line, line.at),
+                text,
+            );
+        } catch (error) {
+            if (tries <= 1) throw error;
+        }
+    }
+}
+
+/** whether his layout shows the deck's block; a layout without it reads as shown, so 🚦 offers a hide */
+function isDeckShown() {
+    /** @param {any} node @returns {any} */
+    const find = (node) => {
+        if (node?.id === DECK_BLOCK) return node;
+        for (const child of node?.children ?? []) {
+            const found = find(child);
+            if (found) return found;
+        }
+        return null;
+    };
+    return !find(layout())?.hidden;
+}
+
+/**
+ * a meter as a row of matte cells in a recessed rail, the lit ones in one colour (the old chat's, PK-384)
+ * @param {Theme} t @param {number | null} pct @param {Color} fill
+ */
+const meterBar = (t, pct, fill) => {
+    const lit = meterCells(pct, METER_CELLS);
+    return h_flex()
+        .h(9)
+        .p(2)
+        .gap(2)
+        .rounded(4)
+        .bg(t.background)
+        .border(1)
+        .border_color(t.border)
+        .children(
+            Array.from({ length: METER_CELLS }, (_, i) =>
+                div()
+                    .flex_1()
+                    .h_full()
+                    .rounded(1)
+                    .bg(i < lit ? fill : t.border),
+            ),
+        );
+};
+
 export default class Chat extends View {
     scroll = VirtualListScrollHandle.new();
     model = createRowModel();
@@ -238,6 +332,8 @@ export default class Chat extends View {
     holdTask = null;
     /** how long a hold takes to push: his two settings rows */
     timing = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS };
+    /** how full a meter gets before it warns: his two settings rows, their defaults until read */
+    meterWarn = { ctx: 60, week: 80 };
     lastKeyAt = 0;
     /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
     typedNow = '';
@@ -245,6 +341,19 @@ export default class Chat extends View {
     typedBefore = '';
     /** one more at each thread opened: a state watch of an earlier opening ends */
     stateTurn = 0;
+    /** the shown thread's band facts, as the stash wrote them @type {(import('./band.js').ThreadState & { sid: string }) | null} */
+    bandThread = null;
+    /** the fleet's afk and waker, as the stash wrote them @type {import('./band.js').FleetState | null} */
+    fleet = null;
+    /** the band press file, which the deck's presses reach too @type {string | null} */
+    pressText = null;
+    /** this band's own presses, until the state reads them @type {import('./band.js').Pending} */
+    pressed = {};
+    /** @type {import('./band.js').Override} */
+    override = { isOn: false };
+    /** the band as last drawn: a tick that finds it changed draws again */
+    bandKey = '';
+    isPressWatched = false;
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
     wake = () => {};
@@ -286,6 +395,8 @@ export default class Chat extends View {
         this.box = box;
         // a check draws one frame and must read no thread
         if (checking()) return;
+        this.ageBand(cx);
+        cx.timer.every(BAND_AGE_MS, (later) => this.ageBand(later));
         cx.spawn(async (cx) => {
             for (;;) {
                 const woken = new Promise((resolve) => {
@@ -400,7 +511,252 @@ export default class Chat extends View {
                     .text_color(t.muted)
                     .child(this.note),
             );
-        return root.child(this.quill(this.box, t));
+        return root
+            .child(this.band(this.bandNow(Date.now()), t))
+            .child(this.quill(this.box, t));
+    }
+
+    /**
+     * the band as it draws now: its buttons, the thread's meters, and whether the deck still reads the thread
+     * @param {number} now
+     */
+    bandNow(now) {
+        const state = {
+            fleet: this.fleet,
+            isDeckShown: isDeckShown(),
+            override: this.override,
+            thread: this.bandThread,
+        };
+        const pending = pressesWaiting(
+            this.pressed,
+            pendingOf(this.pressText, this.bandThread?.sid, now),
+            bandButtons(state),
+            now,
+        );
+        return {
+            // 🍃 joins with its own door (step 84)
+            buttons: bandButtons({ ...state, hasAutoWind: false, pending }),
+            meters: bandOf(shared(THREADS_KEY), this.pid, now),
+        };
+    }
+
+    /**
+     * the facts that age with no event: the override's store is read again, and the band draws again once a stale
+     * deck, a press past its wait or the override changed what it shows
+     * @param {Context} cx
+     */
+    ageBand(cx) {
+        this.watchPresses(cx);
+        this.pressed = pressesWaiting(
+            this.pressed,
+            {},
+            bandButtons({
+                fleet: this.fleet,
+                isDeckShown: true,
+                override: this.override,
+                thread: this.bandThread,
+            }),
+            Date.now(),
+        );
+        cx.spawn(async (cx) => {
+            const text = await readTextFile(
+                `${home()}/${OVERRIDE_STORE}`,
+            ).catch(() => null);
+            let store = null;
+            try {
+                store = JSON.parse(text ?? 'null');
+            } catch {}
+            this.override = overrideOf(store, Date.now());
+            if (JSON.stringify(this.bandNow(Date.now())) !== this.bandKey)
+                cx.notify();
+        });
+    }
+
+    /** a press on the deck or another band shows here at once; a folder not made yet is watched from the next tick @param {Context} cx */
+    watchPresses(cx) {
+        if (this.isPressWatched) return;
+        this.isPressWatched = true;
+        cx.spawn(async (cx) => {
+            try {
+                for (;;) {
+                    const watch = watchFolder(`${home()}/${PRESS_DIR}`);
+                    this.pressText = await readTextFile(
+                        `${home()}/${PRESS_FILE}`,
+                    ).catch(() => null);
+                    cx.notify();
+                    await watch;
+                }
+            } catch {
+                this.isPressWatched = false;
+            }
+        });
+    }
+
+    /**
+     * the band over the quill: the context and week meters, their numbers beside them, and the band's buttons
+     * @param {ReturnType<Chat['bandNow']>} now
+     * @param {Theme} t
+     */
+    band({ buttons, meters }, t) {
+        this.bandKey = JSON.stringify({ buttons, meters });
+        /** @param {string} name @param {number | null} pct @param {number} warnAt */
+        const meter = (name, pct, warnAt) =>
+            h_flex()
+                .id(`chat-meter-${name}`)
+                .gap(8)
+                .items_center()
+                .tooltip(
+                    meters.isStale
+                        ? 'The deck has not read this thread for over 2 minutes'
+                        : meterTip(name, pct),
+                )
+                .child(
+                    div()
+                        .w(20)
+                        .flex_none()
+                        .text_size(12)
+                        .text_color(t.dim)
+                        .child(name === 'ctx' ? '🧠' : '🗓'),
+                )
+                .child(
+                    div()
+                        .flex_1()
+                        .child(
+                            meterBar(
+                                t,
+                                pct,
+                                meters.isStale
+                                    ? t.dim
+                                    : pct != null && pct >= warnAt
+                                      ? t.blocked
+                                      : t.accent,
+                            ),
+                        ),
+                )
+                .child(
+                    div()
+                        .w(36)
+                        .flex_none()
+                        .flex()
+                        .justify_end()
+                        .text_size(12)
+                        .text_color(t.dim)
+                        .child(pct == null ? '—' : `${Math.round(pct)}%`),
+                );
+        return h_flex()
+            .id('chat-band-row')
+            .w_full()
+            .flex_none()
+            .justify_center()
+            .px(18)
+            .pb(6)
+            .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
+            .child(
+                h_flex()
+                    .w_full()
+                    .max_w(this.column())
+                    .gap(14)
+                    .items_center()
+                    .child(
+                        v_flex()
+                            .flex_1()
+                            .min_w(0)
+                            .gap(3)
+                            // ctx above week (dima: «move ctx meter over the week»)
+                            .child(
+                                meter(
+                                    'ctx',
+                                    meters.context,
+                                    this.meterWarn.ctx,
+                                ),
+                            )
+                            .child(
+                                meter('week', meters.week, this.meterWarn.week),
+                            ),
+                    )
+                    .child(
+                        h_flex()
+                            .flex_none()
+                            .gap(4)
+                            .children(
+                                buttons.map((btn) => this.bandChip(btn, t)),
+                            ),
+                    ),
+            );
+    }
+
+    /**
+     * one chip: plain off, the accent's edge and tint on, 🔓 on loud red; a button whose press herdr cannot prove is
+     * greyed, and a live one is a click, never a key (a keyed command is any shell's)
+     * @param {import('./band.js').BandButton} btn
+     * @param {Theme} t
+     */
+    bandChip(btn, t) {
+        const isOverride = btn.key === 'override';
+        const edge = btn.isOn ? (isOverride ? t.blocked : t.accent) : t.border;
+        return div()
+            .id(`chat-band-${btn.key}`)
+            .size(CHIP_SIZE)
+            .flex_none()
+            .flex()
+            .items_center()
+            .justify_center()
+            .rounded(6)
+            .border(1)
+            .border_color(edge)
+            .bg(btn.isOn ? (isOverride ? t.blocked : t.selected) : t.background)
+            .text_size(13)
+            .tooltip(btn.tip)
+            .when(!btn.isLive, (el) => el.opacity(0.4).cursor_not_allowed())
+            .when(btn.isLive, (el) =>
+                el
+                    .cursor_pointer()
+                    .hover((style) =>
+                        style.border_color(btn.isOn ? edge : t.muted),
+                    )
+                    .on_click((_event, cx) => this.pressBand(btn, cx)),
+            )
+            .child(btn.emoji);
+    }
+
+    /**
+     * 🚦 and 🎛️ act at once; wind, hot, waker, AFK and 🔓 write a press the stash answers, the state it asks for
+     * shown until then
+     * @param {import('./band.js').BandButton} btn
+     * @param {Context} cx
+     */
+    pressBand(btn, cx) {
+        if (btn.key === 'board') {
+            runCommand('layout.toggle', { id: DECK_BLOCK });
+            cx.notify();
+            return;
+        }
+        if (btn.key === 'settings') {
+            openOverlay(SETTINGS_OVERLAY);
+            return;
+        }
+        const key = /** @type {import('./band.js').PressKey} */ (btn.key);
+        if (!['wind', 'hot', 'waker', 'afk', 'override'].includes(key)) return;
+        const sid = this.bandThread?.sid ?? null;
+        if ((key === 'wind' || key === 'hot') && !sid) return;
+        const at = Date.now();
+        const on = !btn.isOn;
+        this.pressed = { ...this.pressed, [key]: { at, on } };
+        cx.notify();
+        cx.spawn(async (cx) => {
+            try {
+                await appendPress(pressLine(key, on, sid, at));
+            } catch (error) {
+                const { [key]: _dropped, ...rest } = this.pressed;
+                this.pressed = rest;
+                notify({
+                    body: String(error),
+                    level: 'error',
+                    title: `${btn.word}: the press was not written`,
+                });
+            }
+            cx.notify();
+        });
     }
 
     /**
@@ -821,6 +1177,9 @@ export default class Chat extends View {
         this.address = null;
         this.note = null;
         this.joins = null;
+        // no button shows or presses a thread no longer on screen; the fleet's facts stay
+        this.bandThread = null;
+        this.pressed = {};
         this.stateWatch?.cancel();
         this.stateWatch = null;
         this.stateTurn += 1;
@@ -930,15 +1289,41 @@ export default class Chat extends View {
             ),
             push: Number(settings?.['chatter.send.holdPush'] ?? HOLD_PUSH_MS),
         };
+        this.meterWarn = {
+            ctx: Number(settings?.['chatter.meter.ctx.warn'] ?? 60),
+            week: Number(settings?.['chatter.meter.week.warn'] ?? 80),
+        };
+        /** @param {string} path */
+        const readJson = (path) =>
+            readTextFile(path)
+                .then((text) => JSON.parse(text ?? 'null'))
+                .catch(() => null);
+        const sid = sidOf(file);
         while (this.stateTurn === turn) {
             // armed before the read, so a change during it is never missed
             const watch = watchFolder(dir);
             this.stateWatch = watch;
-            const state = await readTextFile(`${dir}/${sidOf(file)}.json`)
-                .then((text) => JSON.parse(text ?? 'null'))
-                .catch(() => null);
+            const [state, fleet] = await Promise.all([
+                readJson(`${dir}/${sid}.json`),
+                readJson(`${dir}/fleet.json`),
+            ]);
             if (this.stateTurn !== turn) return;
             this.joins = state?.joins ?? null;
+            const band = {
+                fleet,
+                thread: state
+                    ? { hot: state.hot ?? null, sid, wind: state.wind ?? null }
+                    : null,
+            };
+            // every thread's state shares the folder: only a change of this band's facts draws again
+            if (
+                JSON.stringify(band) !==
+                JSON.stringify({ fleet: this.fleet, thread: this.bandThread })
+            ) {
+                this.fleet = fleet;
+                this.bandThread = band.thread;
+                cx.notify();
+            }
             this.settle(cx);
             await watch;
         }
