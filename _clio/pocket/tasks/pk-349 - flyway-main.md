@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T19:32:00Z'
+updated_date: '2026-11-16T19:41:00Z'
 labels:
   - s
   - clio-main
@@ -940,4 +940,8 @@ PK-349:W1118 (2026-11-16 20:59, dima): order of work: 1) orbit asks front-loaded
 PK-349:W1119 (2026-11-16 21:08, dima): let's grill whenever you can, and solve all tails. While solving tails, outline the place for the halt: what would be a good meaningful part to finish and stop, ideally at once for the mods lane and the herdr lane? As for now, they move; only plan when they stop.
 
 done 2026-11-16 21:32: f33 grill 4: orbit asks front-loaded (PK-439): shape, grill, sign, plan when (PK-439 done)
+
+PK-349:W1120 (2026-11-16 21:33, dima): solve now what is solvable. Tonight his list: the lighten linear build (nested check, collectors groomed); the orbit ticket; the chat settings ticket; PK-423's lines out of FRM-617; the unsigned Todo list for the three lanes; the mods 🔧 codie's rider. Do everything you can without him, tell him when all is done, and say what is left (tails). Meanwhile the herdr lane should move.
+
+PK-349:W1121 (2026-11-16 21:33, dima): work for stray, small and mine: the crew-pm board re-check; the zoo story read against its sources; an upstream note to herdr; the two gates over budget; five lines he still has to verify. Can crew-redraw go via helper-lite?
 <!-- SECTION:NOTES:END -->
