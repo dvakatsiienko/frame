@@ -1,10 +1,10 @@
 ---
 id: PK-425
-title: 'cv: web app, pdf, AST readability (I3)'
+title: 'cv: web app, pdf, ATS readability (I3)'
 status: open
 assignee: []
 created_date: '2026-11-15T12:27:00Z'
-updated_date: '2026-11-15T13:47:00Z'
+updated_date: '2026-11-16T12:50:00Z'
 labels:
   - s
 dependencies: []
@@ -31,4 +31,6 @@ raw drop (2026-11-15 inbox, dima): - pdf and cv overall must be easily readable 
 raw drop (2026-11-15 inbox, dima): - tell how AST works
 
 PK-425:W4 (2026-11-15 15:35, dima, o16 steer): let's see where we are after a few days, then sys vs the cv; i have another query about cv.pdf and the cv website.
+
+PK-425:W5 (2026-11-16 14:50, dima): yes, i mistaken. fix AST to ATS. (ATS = applicant tracking systems; W2 and W3 above mean ATS)
 <!-- SECTION:NOTES:END -->
