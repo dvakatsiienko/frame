@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T18:44:00Z'
+updated_date: '2026-11-16T19:04:00Z'
 labels:
   - m
 dependencies: []
@@ -368,4 +368,6 @@ PK-444:W180 (2026-11-16 19:50, dima, herdr-typed, filed late): side chat: after 
 PK-444:W181 (2026-11-16 20:43, dima): screenshots: dima took all shots with CleanShot X; they live in the CleanShot history (Command+Shift+7). He dragged the ones from the shepherdr thread into his screenshot shelf (the vorssaint shelf), which holds 13 shots. The mapping of shots to his messages is lost, so he cannot tell which shot went with which message.
 PK-444:W182 (2026-11-16 20:43, dima): solve the screenshot mapping: ask helper-lite to read all the screenshots and report the current state.
 PK-444:W183 (2026-11-16 20:43, dima): were all his wishes recovered? Important: he does not want us to build the wrong thing again.
+
+PK-444:W181 (2026-11-16 21:04, dima): drag and drop, answering which drag fails: the tabs on top and the agents list on the left. all drag and drops in herdr currently suck: very basic, no visual indicator that an item is being dragged. it works mechanically, so it is not critical, just bad ux. it is a well-known herdr limitation, so probably not a thing to spend much effort on if it just works.
 <!-- SECTION:NOTES:END -->
