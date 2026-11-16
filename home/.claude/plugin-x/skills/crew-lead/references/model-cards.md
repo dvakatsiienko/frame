@@ -26,8 +26,10 @@ so · **[community]** a practitioner pattern · **[measured]** we ran it · **[?
 - **never**: an unchecked inference stated as fact — it drops its own doubts **[vendor]**; a frontend with no design direction falls back on stock styles **[vendor]**.
 - **numbers**: CursorBench 4.0 52.5 % medium · 57.8 % max (Cursor) **[bench]**; AA index 51 medium, 85 tok/s **[bench]**; 16 of 18 research reports passed a sourcing grade **[vendor]**.
 
-## fable-5.1 — `claude-fable-5-1` · the escalation
+## fable-5.2 — `claude-fable-5-2` · the escalation
 
+- **version**: 5.2 is the current id (the harness's model list, 2026-11-15); the price and numbers below were read on 5.1 and are not rechecked for 5.2.
+- **fable weeks** (dima, 2026-11-15, three promo resets): codies and the designer run fable 5.2, sixth sense stays opus 5.5 for model mixing; the live rule is `_clio/memory/_reminders.md`.
 - **price**: $10 / $50, cache reads $0.25 (0.025×). 1M / 128K. 2.5× opus per token, and slower. **[vendor]**
 - **effort**: `high` API default; for design «not lower than medium, maybe high» **[dima]**.
 - **pick for**: what Dima reads where flavour matters, verdict-shaped deliverables, design spreads, a job opus measurably missed. «opus picks pragmatically, fable = flavour» **[dima]**. never spawned without his word.
