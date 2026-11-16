@@ -3,7 +3,7 @@ id: PK-439
 title: >-
   orbit asks front-loaded: a memory steer on when everyone posts asks, with
   numbers first
-status: open
+status: done
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
 updated_date: '2026-11-16T19:32:00Z'
@@ -79,4 +79,6 @@ PK-439:W15 (2026-11-16 21:09, dima, o109 steer): optimize the orbit rebalance wi
 PK-439:W16 (2026-11-16 21:09, dima, o109 steer): mods orbit settings in herdr: he wants text boxes for orbit like the ones for Second Wind, to steer the orbit text he receives. Can orbit texts be tweaked in SM the same way?
 
 ticket: FRM-640 (21:32): the orbit rebalance and his text boxes moved there; the grill's steer line landed in fleet-mods.md; re-measure reminder 11-23.
+
+close: 2026-11-16 the grill landed (the rule line, o106–o108), the mod's rebalance lives in FRM-640.
 <!-- SECTION:NOTES:END -->
