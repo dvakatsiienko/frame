@@ -60,12 +60,12 @@ caps), so a drag-and-drop view needs its own checks for those.
 a second Chrome with its own profile and debug port; observed 2026-11-16 on one mac: no approval dialog, focus stays with dima. `--auto-connect` to his own Chrome is no longer used.
 
 ```bash
-curl -sf http://127.0.0.1:9333/json/version || open -g -na "Google Chrome" --args --remote-debugging-port=9333 --user-data-dir="$HOME/.local/state/fleet-chrome" --no-first-run --no-default-browser-check
-for i in $(seq 1 20); do curl -sf http://127.0.0.1:9333/json/version >/dev/null && break; sleep 0.5; done
+pnpm -C ~/frame fleet-chrome:start
 agent-browser --cdp 9333 <verb>
 ```
 
-- the `curl` says whether it is up; a sign-in there is dima's hand, once per site, kept by the profile
+- `fleet-chrome:start` (`script/fleet-chrome-start.sh`) is the door after a reboot: it starts the Chrome only when `curl -sf http://127.0.0.1:9333/json/version` says it is down, waits up to 15 s for the port, never touches a running one
+- a sign-in there is dima's hand, once per site, kept by the profile
 
 ## hazards — measured on a chart app, 2026-09-03
 

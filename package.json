@@ -110,6 +110,7 @@
         "fleet-hazards:check": "node ./script/fleet-hazards-check.ts",
         "git-crypt-rename:check": "node ./script/git-crypt-rename-check.ts",
         "git-slim": "./script/git-slim.sh",
+        "fleet-chrome:start": "./script/fleet-chrome-start.sh",
         "shift:checkup": "node ./script/shift-checkup.ts",
         "helga:stop": "node ./home/.claude/plugin-x/skills/crew-helga/scripts/stop.ts"
     },
