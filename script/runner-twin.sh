@@ -58,7 +58,8 @@ home=$(mktemp -d "${TMPDIR:-/tmp}/runner-twin-home.XXXXXX")
 # go's module cache in the fake home is read-only, and rm needs its dirs writable
 trap 'chmod -R u+w "$home"; rm -rf "$tmp" "$home"' EXIT
 
-git clone -q --no-local --no-checkout "$repo" "$tmp/frame"
+# --shared reads the objects in place: a --no-local clone packed and copied the whole 450 MB object store, ~20 s of the twin
+git clone -q --shared --no-checkout "$repo" "$tmp/frame"
 git -C "$tmp/frame" checkout -q "$(git -C "$repo" rev-parse "$sha")"
 for dir in . $(sed -n 's/^  - //p' "$repo/pnpm-workspace.yaml"); do
     [ -d "$repo/$dir/node_modules" ] && ln -s "$repo/$dir/node_modules" "$tmp/frame/$dir/node_modules"
