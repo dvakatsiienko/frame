@@ -807,7 +807,7 @@ export default class Deck extends View {
                     el.child(
                         prose(
                             `pick-${i}-${j}`,
-                            `pick: ${ask.pick}`,
+                            ask.pick ?? '',
                             t.muted,
                             SIZE.secondary,
                         ),
