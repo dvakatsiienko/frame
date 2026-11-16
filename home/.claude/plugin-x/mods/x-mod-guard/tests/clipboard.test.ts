@@ -149,6 +149,25 @@ const WRITERS = [
     ['pbcopy inside a perl system', `perl -e 'system("pbcopy")'`],
     ['pbcopy inside a perl -lE', `perl -lE 'system("pbcopy")'`],
     ['pbcopy inside a ruby popen', `ruby -e 'IO.popen("pbcopy", "w") {}'`],
+    ['pbcopy inside a ruby -we', `ruby -we 'system("pbcopy")'`],
+    ['pbcopy inside an awk program', `awk 'BEGIN { system("pbcopy < a") }'`],
+    [
+        'pbcopy inside a deno eval',
+        `deno eval "new Deno.Command('pbcopy').spawn()"`,
+    ],
+    ['pbcopy inside a lua -e', `lua -e 'os.execute("pbcopy < a")'`],
+    ['pbcopy inside an expect -c', `expect -c 'spawn pbcopy'`],
+    ['pbcopy inside an Rscript -e', `Rscript -e 'system("pbcopy < a")'`],
+    ['pbcopy inside a julia -e', "julia -e 'run(`pbcopy`)'"],
+    ['pbcopy inside an elixir -e', `elixir -e 'System.cmd("pbcopy", [])'`],
+    ['pbcopy inside a gawk program', `gawk 'BEGIN { system("pbcopy < a") }'`],
+    ['a bare word after a program flag', 'ruby -e pbcopy'],
+    ['pbcopy inside a php -r', `php -r 'shell_exec("pbcopy < a");'`],
+    ['pbcopy inside a tclsh heredoc', 'tclsh <<EOF\nexec pbcopy << x\nEOF'],
+    [
+        'a runner program that only names the word',
+        `python3 -c 'print("use pbcopy to copy")'`,
+    ],
     [
         'swift -e naming NSPasteboard',
         `swift -e 'import AppKit; NSPasteboard.general.clearContents()'`,
@@ -199,6 +218,13 @@ const READERS = [
     ['a python program with no pasteboard', `python3 -c 'print(1)'`],
     ['a python file whose name holds the word', 'python3 NSPasteboard.py'],
     ['a swift build', 'swift build'],
+    ['an awk program with no pasteboard', `awk '{ print $1 }' pbcopy.txt`],
+    [
+        'a python script by path with the word as a flag value',
+        'python3 tool.py --tool pbcopy',
+    ],
+    ['a sed program naming the word', `sed 's/pbcopy/x/' notes.md`],
+    ['a jq program naming the word', `jq '.pbcopy = 1' a.json`],
     ['a node program with no pasteboard', `node -e 'console.log(1)'`],
     ['a node script whose argument is the word', 'node tool.js pbcopy'],
     ['a perl program naming a longer word', `perl -e 'print "pbcopying"'`],
@@ -299,4 +325,18 @@ test('a session with an empty id has no member sign, so the line runs', async ($
     const { ran } = world(on, { ...CODIE, hasNoId: true });
     const { deny } = await bash($, 'printf x | pbcopy');
     expect([deny, ran]).toEqual([undefined, ['printf x | pbcopy']]);
+});
+
+test('a refused runner program also names the way on for one that only names the word', async ($, on) => {
+    world(on, CODIE);
+    const { deny } = await bash($, `python3 -c 'print("use pbcopy to copy")'`);
+    expect(deny).toContain(
+        'a program that only names the word: drop the word, or write the program to a file',
+    );
+});
+
+test('a refused pbcopy names only the door', async ($, on) => {
+    world(on, CODIE);
+    const { deny } = await bash($, 'printf x | pbcopy');
+    expect(deny).not.toContain('only names the word');
 });

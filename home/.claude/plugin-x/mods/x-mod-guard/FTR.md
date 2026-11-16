@@ -149,7 +149,7 @@
   - proof: tests/escapes.test.ts
 - ✅ a lane member's session can't write dima's clipboard (FRM-612; kill date 2026-12-16, weighed by its refusals in the guard's store)
   - given a session that is a lane member's by either sign: its record in `~/.claude/shelf/threads.json` has role `codie`, `sixth-sense` or `probe`, or its registry name carries 🔧, 🔎 or 🐕 or starts with «probe»
-  - when its Bash or Monitor call runs `pbcopy` as an executed word (a pipeline end, by its path, behind `env`, `command` or `xargs`, inside `sh -c`, after `&&` or `;`, a line of a heredoc fed to a shell), an `osascript` whose script (`-e`, a heredoc, a `<<<` string, a pipe) names `clipboard`, `NSPasteboard` or `pbcopy` or presses a key with `command down`, an inline program of `python` (`-c`), `swift`, `ruby` (`-e`), `perl` (`-e`, `-E`), `node`, `bun` or `deno` (`-e`, `-p`, `--eval`, `--print`) naming `NSPasteboard` or the word `pbcopy`, or `hc keys` / `hc send` with a word that is cmd+v or cmd+c
+  - when its Bash or Monitor call runs `pbcopy` as an executed word (a pipeline end, by its path, behind `env`, `command` or `xargs`, inside `sh -c`, after `&&` or `;`, a line of a heredoc fed to a shell), an `osascript` whose script (`-e`, a heredoc, a `<<<` string, a pipe) names `clipboard`, `NSPasteboard` or `pbcopy` or presses a key with `command down`, a program written on the line for a script runner (`python`, `ruby`, `perl`, `node`, `bun`, `deno`, `swift`, `awk`, `lua`, `php`, `tclsh`, `expect`, `Rscript`, `julia`, `elixir`; whatever flag, subcommand, heredoc or pipe carries it) naming `NSPasteboard` or the word `pbcopy`, or `hc keys` / `hc send` with a word that is cmd+v or cmd+c
   - then nothing runs (rule `clipboard`), the door: «write a fixture file, or ask your coordinator»; his tick and the off switch open it as they open the floor
   - given the same member and a command that only reads or names the pasteboard (`pbpaste`, `rg pbcopy`, `echo 'use pbcopy'`, a heredoc fed to `cat`, `man pbcopy`, an `hc send` whose text names the keys), then it runs
   - given a session with neither sign (a coordinator's or a wing's record, dima's own thread), then every one of those commands runs unchanged
@@ -157,6 +157,7 @@
   - decision: the member lookup runs only for a line the rule would stop, so no other Bash call pays a read
   - 📌 not read, four named limits: a writer inside a script run by path or a `pnpm` verb; a command held in a variable the shell builds at run time; an OSC 52 escape printed to the terminal; keystrokes through computer use
   - 📌 both signs are files any seat can write (the thread record, a `/rename`): the rule keeps a mistake out, never a seat that hides its sign
+  - decision: a runner's program that only names the word (`python3 -c 'print("use pbcopy")'`) is refused too: one rule over every runner's program is cheaper than reading each language, and a list per runner and flag leaked a hole a round (sixth sense, rounds 1–2)
   - 📌 `osascript` naming the clipboard is refused even when it only reads it: `pbpaste` is the read door
   - proof: tests/clipboard.test.ts (every writer refused for a codie and run for a coordinator, the readers, each sign, the want line); tests/escapes.ts «clipboard» rows
 - ✅ a worktree session whose shell left its tree is pointed back

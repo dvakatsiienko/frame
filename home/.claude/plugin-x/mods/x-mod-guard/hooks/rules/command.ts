@@ -756,7 +756,7 @@ function printfText([format = '', ...rest]: string[]) {
         .replaceAll('\\0', '\n');
 }
 // the strings a command's `<<<` hands its stdin, joined or a word apart
-export const herestrings = (texts: string[]) =>
+const herestrings = (texts: string[]) =>
     texts.flatMap((t, i) =>
         t === '<<<'
             ? [texts[i + 1] ?? '']
