@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T18:26:00Z'
+updated_date: '2026-11-16T18:35:00Z'
 labels:
   - m
 dependencies: []
@@ -347,4 +347,20 @@ PK-444:W143 (2026-11-16 18:50, dima, herdr-typed): seems like the typing test pa
 PK-444:W164 (2026-11-16 19:55, dima): herdr codie: proceeds? (dima is in herdr now).
 PK-444:W165 (2026-11-16 20:17, dima): herdr unsigned: designer interview later; ux revamp umbrella and auto second wind reviewed after grills.
 PK-444:W166 (2026-11-16 20:17, dima): herdr scope drifted after leaving zoo; borrows auto-resolve some plans. Card per ticket with evidence, then one list: absorbed, unchanged, dead.
+
+20:35 his herdr-typed lines of the day that were never filed (found by the 20:33 backfill diff, groomed by helga):
+PK-444:W167 (2026-11-16, dima, herdr-typed): do not forget! if researcher still running (ask researcher to compare shepard and those two i asked for against zoo herdr layout, one we started with)
+PK-444:W168 (2026-11-16, dima, herdr-typed): a little history: we moved to herdr from the Claude desktop app as our main coding place a week ago; before moving i asked for a research starting point, you proposed Zoo and said it is good, and we started with Zoo.
+PK-444:W169 (2026-11-16, dima, herdr-typed): the previous mess hunt probably drew so much negative feedback for exactly this reason: Zoo is poorly written.
+PK-444:W170 (2026-11-16, dima, herdr-typed): now codie has to fix a lot, and even TypeScript is broken under the hood; i do not like it.
+PK-444:W171 (2026-11-16, dima, herdr-typed): i looked in herdr gallery; the UI (look) is meh. if anything to borrow from under the hood (and other parts have nothing better), propose what to pull; otherwise discard. (flockbook: B. The cleanest chat written as a mod, small tested files; you have not seen it yet.)
+PK-444:W172 (2026-11-16, dima, herdr-typed): the plan: 1. best ideas from collie and ovis and how to apply them; 2. revisit what we have, exploration is done; 3. all borrow surfaces, what we pull from and when; 4. next actions: cuts, borrows from shepardr or swaps, moving to shepardr as base instead of pulling on top of zoo. Herdr lane is stuck: cuts now or after shepardr rewiring?
+PK-444:W173 (2026-11-16, dima, herdr-typed): tabs look better in the terminals layout; i just AB tested against shepardr, so let's borrow tabs from terminals layout.
+PK-444:W174 (2026-11-16, dima, herdr-typed): what else to borrow from terminals? frame? ask herdr codie to inspect.
+PK-444:W175 (2026-11-16, dima, herdr-typed): but this old zoo's one will die? (the collision: x-herdr-tabs is the folder of the tab bar you use now, the zoo-derived one, and your layout points at that name; two mods cannot share a folder)
+PK-444:W176 (2026-11-16, dima, herdr-typed): tell when. (speed measure needs Apple's overlay and a herdr restart; it can ride your next restart, which also closes the old cuts ticket)
+PK-444:W177 (2026-11-16, dima, herdr-typed): o66: tell when how.
+PK-444:W178 (2026-11-16, dima, herdr-typed): what is it? i do not understand, explain in simple way. (the side panel in egg-basket: one state for all spaces, or per space)
+PK-444:W179 (2026-11-16, dima, herdr-typed): i keep herdr open.
+PK-444:W180 (2026-11-16, dima, herdr-typed): side chat: after reload, seems drifted.
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T18:26:00Z'
+updated_date: '2026-11-16T18:35:00Z'
 labels:
   - s
   - clio-main
@@ -915,4 +915,20 @@ PK-349:W1100 (2026-11-16 19:55, dima): go grills whenever you have a free spot.
 PK-349:W1101 (2026-11-16 20:17, dima): orbit fix: dima's one-word note; ask what it means before acting.
 
 20:26 FRM-621:W1 (2026-11-16 20:17, dima): scratch-copy fix: sign it. (homed here: FRM-621 has no wish block; signed 20:18 on this word)
+
+20:35 his herdr-typed lines of the day that were never filed (found by the 20:33 backfill diff, groomed by helga):
+PK-349:W1102 (2026-11-16, dima, herdr-typed): fully prep collie after SW and lead the mods lane; i go brew coffee and test ovis from mobile.
+PK-349:W1103 (2026-11-16, dima, herdr-typed): i think ideas are good, but how to apply them to our system in a graceful way, and are they truly useful for us? (ovis fallen off. collie most likely goes too. Worth borrowing, as ideas from its source, the uninstall loses nothing)
+PK-349:W1104 (2026-11-16, dima, herdr-typed): undo-send clarification: you said undo-send is implemented and asked me to summon Probe Wind Haiku to test it, but herdr codie confirmed it is not implemented. Why did you say it is implemented, and why is probe wind parked?
+PK-349:W1105 (2026-11-16, dima, herdr-typed): cleanup done items in pocket and refresh your flyway to actual state; undo-send was my miss, no rush, let's move efficiently. (undo-send)
+PK-349:W1106 (2026-11-16, dima, herdr-typed): why is the mods lane parked?
+PK-349:W1107 (2026-11-16, dima, herdr-typed): quick q: does auto second wind work for crow too?
+PK-349:W1108 (2026-11-16, dima, herdr-typed): o69: ok, do it, but do not interrupt what the mods lane is doing right now; let it finish, graceful switch, nothing dropped mid-done.
+PK-349:W1109 (2026-11-16, dima, herdr-typed): do it, or propose how. (a rule line of mine claims a halt check not built yet: reword it)
+PK-349:W1110 (2026-11-16, dima, herdr-typed): what is it? (the map recipe's stated limit)
+PK-349:W1111 (2026-11-16, dima, herdr-typed): is any work for stray lane pending?
+PK-349:W1112 (2026-11-16, dima, herdr-typed): o77: what is it about? clarify what i mean by «main prompt steer».
+PK-349:W1113 (2026-11-16, dima, herdr-typed): i close herdr right now and you do the cleanup; i am ready now.
+PK-349:W1114 (2026-11-16, dima, herdr-typed): codie does the cleanup.
+PK-349:W1115 (2026-11-16, dima, herdr-typed): or now? (tails) while i wait.
 <!-- SECTION:NOTES:END -->
