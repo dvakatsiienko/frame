@@ -5,9 +5,19 @@
 // (the Chat / Terminal stack), and then a Claude agent's row ends in the Chat | Terminal switch. Click: focus the pane.
 import { h_flex } from 'gpui-base';
 import { View, div, image, svg } from 'gpui-kit';
-import { home, panes, props, run, theme } from 'herdr';
+import {
+    home,
+    layout,
+    openOverlay,
+    panes,
+    props,
+    run,
+    shared,
+    theme,
+} from 'herdr';
 
-import { viewSwitch } from './chatter-header.js';
+import { tabBarButtons, viewSwitch } from './chatter-header.js';
+import { findNode, folderBeside, panelsEnabled } from './header-rules.js';
 
 /** @param {any} p @param {number} size @param {any} color */
 function icon(p, size, color) {
@@ -98,7 +108,7 @@ export default class ChatterHeader extends View {
                         .flex_1()
                         .truncate()
                         .text_color(t.dim)
-                        .child(folder(p.cwd)),
+                        .child(folderBeside(name, folder(p.cwd))),
                 )
                 .when(st === 'working', (el) =>
                     el.child(
@@ -174,6 +184,23 @@ export default class ChatterHeader extends View {
                                 },
                             ),
                         ),
+                )
+                .when(Boolean(props()?.tabBarButtons), (el) =>
+                    el.child(
+                        tabBarButtons(t, {
+                            body: findNode(layout(), 'panel-body'),
+                            enabled: panelsEnabled(shared('workspace.panels')),
+                            openNewMenu: () =>
+                                openOverlay({
+                                    height: 512,
+                                    kind: 'popup',
+                                    mod: 'new-menu',
+                                    width: 250,
+                                }),
+                            panel: findNode(layout(), 'panel'),
+                            run,
+                        }),
+                    ),
                 )
                 // the chat shows the tab's focused Claude: focus this one first
                 .when(

@@ -36,3 +36,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ✅ crow's 🐦‍⬛ draws whole
   - given a session name holds an emoji with a zero-width joiner, which cc's registry stores as a space
   - then the agents list and the deck draw 🐦‍⬛, 🐦‍🔥 and 🙋‍♂️ as one glyph (shot 1416)
+- ⬜ a pane's header prints its folder once (x-herdr-chatter-header, FRM-635)
+  - given a pane whose title already holds its folder, as a shell's does
+  - then the folder is not printed a second time after the title; an agent's pane still shows its folder
+  - and a click anywhere on the row focuses the pane, as before
+- 🧭 the thread header holds +, Files and Changes where the layout asks for them (FRM-635)
+  - given a layout block that sets `tabBarButtons` on the thread header (the playground `egg-basket` does, his own layout does not)
+  - then the row ends in + (the new-tab menu), Files and Changes; a press on the shown panel hides it, a press on the other shows it
+  - and a panel he switched off in herdr's settings gets no button
+  - decision: the buttons moved out of the tab bar so the tab bar can be herdr's pills (dima, 2026-11-16: «Files and Changes buttons, and + moves to x-herdr-chatter-header»)
+  - not checked: built in the Terminal view's row; the Chat view's row follows in the same chunk
