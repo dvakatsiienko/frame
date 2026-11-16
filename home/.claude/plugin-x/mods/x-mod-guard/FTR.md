@@ -151,6 +151,7 @@
   - given a session that is a lane member's by either sign: its record in `~/.claude/shelf/threads.json` has role `codie`, `sixth-sense` or `probe`, or its registry name carries 🔧, 🔎 or 🐕 or starts with «probe»
   - when its Bash or Monitor call runs `pbcopy` as an executed word (a pipeline end, by its path, behind `env`, `command` or `xargs`, inside `sh -c`, after `&&` or `;`, a line of a heredoc fed to a shell), an `osascript` whose script (`-e`, a heredoc, a `<<<` string, a pipe) names `clipboard`, `NSPasteboard` or `pbcopy` or presses a key with `command down`, a program written on the line for a script runner (`python`, `ruby`, `perl`, `node`, `bun`, `deno`, `swift`, `awk`, `lua`, `php`, `tclsh`, `expect`, `Rscript`, `julia`, `elixir`; whatever flag, subcommand, heredoc or pipe carries it) naming `NSPasteboard` or the word `pbcopy`, or `hc keys` / `hc send` with a word that is cmd+v or cmd+c
   - then nothing runs (rule `clipboard`), the door: «write a fixture file, or ask your coordinator»; his tick and the off switch open it as they open the floor
+  - given the same member, when it calls the tool `mcp__computer-use__write_clipboard`, then the call is refused by the tool's name with the same door; his tick on an ask quoting that name runs it once, the off switch runs it with a warning (crow's catch: 15 member sessions were offered the tool in 14 days, one called it)
   - given the same member and a command that only reads or names the pasteboard (`pbpaste`, `rg pbcopy`, `echo 'use pbcopy'`, a heredoc fed to `cat`, `man pbcopy`, an `hc send` whose text names the keys), then it runs
   - given a session with neither sign (a coordinator's or a wing's record, dima's own thread), then every one of those commands runs unchanged
   - decision: a record or a registry row that does not read is no sign, so the command runs: the rule keeps a member's mistake out, and never locks dima's own thread out of his clipboard (clio's yes, 2026-11-16)
@@ -160,7 +161,7 @@
   - 📌 both signs are files any seat can write (the thread record, a `/rename`): the rule keeps a mistake out, never a seat that hides its sign
   - decision: a runner's program that only names the word (`python3 -c 'print("use pbcopy")'`) is refused too: one rule over every runner's program is cheaper than reading each language, and a list per runner and flag leaked a hole a round (sixth sense, rounds 1–2)
   - 📌 `osascript` naming the clipboard is refused even when it only reads it: `pbpaste` is the read door
-  - proof: tests/clipboard.test.ts (every writer refused for a codie and run for a coordinator, the readers, each sign, the want line); tests/escapes.ts «clipboard» rows
+  - proof: tests/clipboard.test.ts (every writer refused for a codie and run for a coordinator, the readers, each sign, the want line, the computer-use tool by its name); tests/escapes.ts «clipboard» rows
 - ✅ a worktree session whose shell left its tree is pointed back
   - given a session rooted under `<repo>/.claude/worktrees/` whose shell cwd sits outside that tree (a `cd ~/frame && …` left it in main)
   - when its Bash or Monitor call is refused (by x-mod-guard or beneath it) or fails

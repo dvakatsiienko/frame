@@ -1,6 +1,6 @@
 import type { EngineInterface, Register, ToolCallResult } from 'claude-code';
 
-import { CLIPBOARD } from './rules/clipboard.ts';
+import { CLIPBOARD, CLIPBOARD_TOOL, clipboardTool } from './rules/clipboard.ts';
 import type { Context, Refusal } from './rules/command.ts';
 import { TRASH, commandsDeep, tickedRest } from './rules/command.ts';
 import { stashSweep, stashSweeps } from './rules/floor.ts';
@@ -1000,7 +1000,87 @@ function unjudgedStop(typed: string): Refusal | undefined {
 }
 const JUDGE_MS = 2000;
 
+// a spend lives as long as its tick, never a count: the 51st spend once revived the 1st's word
+async function spend($: EngineInterface, spends: string[]) {
+    if (!spends.length) return;
+    const { value: spent = [] } = await $.state.get(SPENT);
+    const now = await $.clock.now();
+    await $.state.set(SPENT, [
+        ...spent.filter((k) => now - spentAt(k) <= TICK_MS),
+        ...spends,
+    ]);
+}
+// a call that failed never spends his word: the retry passes on it
+async function unspend($: EngineInterface, spends: string[]) {
+    if (!spends.length) return;
+    const { value: held = [] } = await $.state.get(SPENT);
+    await $.state.set(
+        SPENT,
+        held.filter((k) => !spends.includes(k)),
+    );
+}
+
 export const register: Register = (on) => {
+    // a member's call of computer use's pasteboard writer: the clipboard rule by the tool's name, his tick on an ask
+    // quoting that name and the off switch open it as they open the floor; no member sign, or one that does not read, runs
+    on(
+        'tool.call',
+        { tool: new RegExp(`^${CLIPBOARD_TOOL}$`) },
+        async ($, e, next) => {
+            const master = await masterOverride($).catch(() => undefined);
+            const home = await $.env.get('HOME').catch(() => undefined);
+            if (!(await isMemberSession($, home).catch(() => false)))
+                return next(e);
+            const stop = clipboardTool();
+            const spends: string[] = [];
+            const tick = master
+                ? undefined
+                : await tickFor(
+                      $,
+                      CLIPBOARD_TOOL,
+                      quotesCommand(CLIPBOARD_TOOL),
+                      spends,
+                  ).catch(() => undefined);
+            const event = {
+                command: CLIPBOARD_TOOL,
+                rule: stop.rule,
+                target: CLIPBOARD_TOOL,
+            };
+            if (!master && !tick) {
+                await record($, {
+                    ...event,
+                    door: stop.door,
+                    kind: 'refused',
+                    why: stop.why,
+                });
+                return { deny: message(stop) };
+            }
+            await record($, {
+                ...event,
+                door: master
+                    ? `operator-override ${master.scope}, by ${master.by} at ${master.at}`
+                    : `dima's tick on ${tick?.id}`,
+                kind: master ? 'warned' : 'escaped',
+                why: master ? stop.why : (tick?.text ?? ''),
+            });
+            if (master)
+                await overrideLogPass(
+                    $,
+                    master,
+                    `let through: ${CLIPBOARD_TOOL}`,
+                ).catch(() => undefined);
+            await spend($, spends);
+            const result = await next(e);
+            if (result.deny !== undefined || result.isError)
+                await unspend($, spends);
+            return master
+                ? withContext(result, [
+                      `x-mod-guard: operator-override is on, so this ran past the floor (rule ${stop.rule}): ${stop.why}`,
+                  ])
+                : result;
+        },
+    );
+
     // a Monitor's command is a shell command too
     on('tool.call', { tool: /^(Bash|Monitor)$/ }, async ($, e, next) => {
         // the input is the model's: a command that is not a string is the tool's to refuse
@@ -1146,24 +1226,10 @@ export const register: Register = (on) => {
                     `x-mod-guard: ran on dima's tick ${tick?.id}: ${targets}`,
                 );
         }
-        // a spend lives as long as its tick, never a count: the 51st spend once revived the 1st's word
-        if (spends.length) {
-            const { value: spent = [] } = await $.state.get(SPENT);
-            const now = await $.clock.now();
-            await $.state.set(SPENT, [
-                ...spent.filter((k) => now - spentAt(k) <= TICK_MS),
-                ...spends,
-            ]);
-        }
+        await spend($, spends);
         const result = await next(run !== typed ? { ...e, command: run } : e);
-        // a call that failed never spends his word: the retry passes on it
-        if ((result.deny !== undefined || result.isError) && spends.length) {
-            const { value: held = [] } = await $.state.get(SPENT);
-            await $.state.set(
-                SPENT,
-                held.filter((k) => !spends.includes(k)),
-            );
-        }
+        if (result.deny !== undefined || result.isError)
+            await unspend($, spends);
         if (result.deny !== undefined)
             return {
                 deny: ISOLATED.test(result.deny)

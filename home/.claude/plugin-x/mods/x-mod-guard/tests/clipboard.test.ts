@@ -340,3 +340,54 @@ test('a refused pbcopy names only the door', async ($, on) => {
     const { deny } = await bash($, 'printf x | pbcopy');
     expect(deny).not.toContain('only names the word');
 });
+
+// computer use's pasteboard writer is a tool, refused for a member by its name; the harness runs nothing
+const TOOL = 'mcp__computer-use__write_clipboard';
+const toolCall = ($: Engine) =>
+    $.tool.call({ text: 'x', tool: TOOL } as unknown as Parameters<
+        Engine['tool']['call']
+    >[0]);
+
+test("a member's call of the computer-use clipboard tool is refused naming the door", async ($, on) => {
+    const { ran } = world(on, CODIE);
+    const { deny } = await toolCall($);
+    expect(deny).toContain(DOOR);
+    expect(ran).toEqual([]);
+});
+
+test("a coordinator's call of the computer-use clipboard tool runs", async ($, on) => {
+    const { ran } = world(on, COORDINATOR);
+    const { deny } = await toolCall($);
+    expect([deny, ran.length]).toEqual([undefined, 1]);
+});
+
+test('a session with no member sign runs the computer-use clipboard tool', async ($, on) => {
+    const { ran } = world(on, { ...CODIE, hasNoId: true });
+    const { deny } = await toolCall($);
+    expect([deny, ran.length]).toEqual([undefined, 1]);
+});
+
+test("his tick on an ask quoting the tool's name runs a member's call once", async ($, on) => {
+    const { ran } = world(on, CODIE);
+    on('state.get', (_$, e, next) =>
+        e.plugin === 'x-mod-stash' && e.key === 'ticks'
+            ? {
+                  value: {
+                      value: [
+                          {
+                              at: 1_000_000,
+                              id: 'o1',
+                              targets: [TOOL],
+                              text: `go: \`${TOOL}\``,
+                          },
+                      ],
+                      version: 1,
+                  },
+              }
+            : next(e),
+    );
+    const first = await toolCall($);
+    const second = await toolCall($);
+    expect([first.deny, ran.length]).toEqual([undefined, 1]);
+    expect(second.deny).toContain(DOOR);
+});

@@ -16,6 +16,9 @@ const refused = (target: string, isProgram = false): Refusal => ({
     targets: [target],
     why: "a member session never writes dima's clipboard: a probe's write cost him his own text (FRM-612)",
 });
+// computer use's own pasteboard writer: a tool, so no command line names it and the member is refused by its name
+export const CLIPBOARD_TOOL = 'mcp__computer-use__write_clipboard';
+export const clipboardTool = () => refused(CLIPBOARD_TOOL);
 // a word of the line that is code, never a file name or a flag: it holds a space, a bracket, a quote or a `;` `=`
 const CODE = /[\s()[\]{}'"`;=]/;
 // any runner's flag that takes a program as its next word, alone or closing a cluster (`-c`, `-Ic`, `-lE`, `-r`, `-p`)
