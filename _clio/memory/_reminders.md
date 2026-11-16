@@ -1,7 +1,7 @@
 # reminders — dima's standing hooks
 
 Store contract: the `clio:remind` skill. Both tiers die only when Dima drops them; a 🦉 one of mine dies once its day passed and its check ran.
-⏰ 🦉 the empty-wakes re-count, a day after FRM-501 round 3 lands (his o78): `docs/test-drive/gate-speed/empty-wakes.md` holds the reads; one line to dima, read by class; FRM-512 is cancelled (his o58: «ok but do not forget!», the idea in its closing word); restored 11-12: the 15:55 verdict's classifier skipped cross-session rows, re-count with one that reads them — due: 2026-11-14 · ✅ re-counted 2026-11-16 (49 machine wakes, 7 did nothing; the round is in the log); the line leaves on dima's word
+⏰ 🦉 the empty-wakes count, weekly from the Monday boot beside the wish-loss audit (`clio:boot` § 4, dima 2026-11-16); born from his o78 and his o58 «ok but do not forget!»; first round 11-16: 49 machine wakes, 7 did nothing — due: 2026-11-23
 
 ## legend
 
