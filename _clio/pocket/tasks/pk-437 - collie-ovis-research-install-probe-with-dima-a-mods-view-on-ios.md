@@ -4,7 +4,7 @@ title: 'collie + ovis: research, install, probe with dima; a mods view on ios'
 status: open
 assignee: []
 created_date: '2026-11-16T12:09:00Z'
-updated_date: '2026-11-16T13:34:00Z'
+updated_date: '2026-11-16T13:48:00Z'
 labels:
   - m
 dependencies: []
@@ -81,4 +81,10 @@ PK-437:W19 (2026-11-16 15:10, dima): ovis comes down to two points.
 PK-437:W20 (2026-11-16 15:10, dima): 1. can it allow easy access to the fleet via mobile device? if not, it goes.
 
 PK-437:W21 (2026-11-16 15:10, dima): 2. can we still borrow from it, given that it is web-based? point 1 wins, if it works well from a mobile device. I suppose I still will not see my mods there? e.g. orbit is not present even on desktop.
+
+PK-437:W22 (2026-11-16 15:40, dima): i do not have tailscale and no plans for it. how to make ovis work on my mobile?
+
+PK-437:W23 (2026-11-16 15:40, dima): let's do the ovis mobile probe right now and decide.
+
+PK-437:W24 (2026-11-16 15:40, dima): when we test collie same as ovis?
 <!-- SECTION:NOTES:END -->

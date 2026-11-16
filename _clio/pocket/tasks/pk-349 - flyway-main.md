@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T13:34:00Z'
+updated_date: '2026-11-16T13:48:00Z'
 labels:
   - s
   - clio-main
@@ -780,4 +780,12 @@ PK-349:W1024 (2026-11-16 14:58, dima): halt fix: how to solve? Yes, fix. The fix
 PK-349:W1025 (2026-11-16 15:10, dima): if macroscope is measured, can the mods lane resume now?
 
 PK-349:W1026 (2026-11-16 15:10, dima): when can the mods lane be resumed?
+
+PK-349:W1027 (2026-11-16 15:40, dima): stray lane will be needed today. Go start the stray lane (sonnet 5.5, medium); mods codie does the mods. What's next for mods? But first, eval complexity: can sonnet 5.5 actually solve them? If yes, stray. If not, do as you proposed.
+
+PK-349:W1028 (2026-11-16 15:40, dima): not tomorrow, solve everything now. You are proposing postponing of tails the same way. You today booted for 15m because of tails from yesterday. Why? Does something from memory steer you into this direction? What?
+
+PK-349:W1029 (2026-11-16 15:40, dima): question: do you need a stray lane? From today, would stray lane help you with chores you solved yourself? Are there any pending chores good for stray lane? If yes, propose when stray lane would fit.
+
+PK-349:W1030 (2026-11-16 15:40, dima): unpark mods lane, let it do something.
 <!-- SECTION:NOTES:END -->

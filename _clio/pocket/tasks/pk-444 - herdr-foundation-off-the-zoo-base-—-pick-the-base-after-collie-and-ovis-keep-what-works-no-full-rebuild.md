@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T13:40:00Z'
+updated_date: '2026-11-16T13:49:00Z'
 labels:
   - m
 dependencies: []
@@ -101,4 +101,14 @@ PK-444:W37 (2026-11-16 15:10, dima): and tabs?
 PK-444:W38 (2026-11-16 15:10, dima): I see, but from my tests shepherdr's chatter is much quicker and very fluent. The FPS was 60 at least when I was testing.
 
 15:40: the map of this call, kept across any second wind: _clio/.scratch/herdr/foundation-state.md (his order, his verdicts so far, the evidence by file, what is on hold)
+
+PK-444:W39 (2026-11-16 15:40, dima): you can add followup clarification questions for researcher while he's still researching.
+
+PK-444:W40 (2026-11-16 15:40, dima): in the current context you contain a lot of useful and important information about steers related to Herdr and problems with zoo. I don't like when you decide to second wind. Ensure that you do not forget my architectural asks about Herdr. It is important. Everything related to all these: shepherder, collie, and zoo cuts.
+
+PK-444:W41 (2026-11-16 15:40, dima): fyi how ovis looks for me and how my herdr desktop app looks with the current setup. /Users/dima/Desktop/screenshots/CleanShot\ 2026-11-16\ at\ 15.33.33.jpg /Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794836032497.png
+
+PK-444:W42 (2026-11-16 15:40, dima): what researcher found? any other solid herdr builds worth to look at?
+
+PK-444:W41 (2026-11-16 15:40, dima): fyi how ovis looks for me and how my herdr desktop app looks with the current setup. /Users/dima/Desktop/screenshots/CleanShot 2026-11-16 at 15.33.33.jpg /Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794836032497.png
 <!-- SECTION:NOTES:END -->
