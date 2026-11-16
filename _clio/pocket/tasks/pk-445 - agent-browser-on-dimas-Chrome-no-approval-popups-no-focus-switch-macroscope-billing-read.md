@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T13:09:00Z'
+updated_date: '2026-11-16T13:34:00Z'
 labels:
   - s
 dependencies: []
@@ -43,4 +43,12 @@ PK-445:W7 (2026-11-16 14:58, dima): is it possible to do that so my focus is not
 PK-445:W8 (2026-11-16 15:07, dima): where to see macroscope billing? Did you measure?
 
 PK-445:W9 (2026-11-16 15:07, dima): do it now. Mods codie blocked?
+
+PK-445:W10 (2026-11-16 15:10, dima): do I need to sign in to all stuff each time from scratch in this Chrome profile? It would be good to have authenticated state preserved there.
+
+PK-445:W11 (2026-11-16 15:10, dima): i signed in to macro in your chrome profile. proceed.
+
+PK-445:W12 (2026-11-16 15:10, dima): macroscope: proceed with more measures. More review rounds show the real picture. I think during today we see the picture.
+
+PK-445:W13 (2026-11-16 15:10, dima): chrome profile: ok, keep it and use as a habit.
 <!-- SECTION:NOTES:END -->

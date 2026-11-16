@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T13:03:00Z'
+updated_date: '2026-11-16T13:34:00Z'
 labels:
   - s
   - clio-main
@@ -776,4 +776,8 @@ PK-349:W1022 (2026-11-16 14:46, dima): let's do the wish-loss audit and the empt
 PK-349:W1023 (2026-11-16 14:46, dima): mods lane will have its verifier?
 
 PK-349:W1024 (2026-11-16 14:58, dima): halt fix: how to solve? Yes, fix. The fix is that check for any lane and any project, plus the first chunk left summon-ready.
+
+PK-349:W1025 (2026-11-16 15:10, dima): if macroscope is measured, can the mods lane resume now?
+
+PK-349:W1026 (2026-11-16 15:10, dima): when can the mods lane be resumed?
 <!-- SECTION:NOTES:END -->

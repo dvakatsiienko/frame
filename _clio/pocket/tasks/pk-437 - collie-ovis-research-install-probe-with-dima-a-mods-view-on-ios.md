@@ -4,7 +4,7 @@ title: 'collie + ovis: research, install, probe with dima; a mods view on ios'
 status: open
 assignee: []
 created_date: '2026-11-16T12:09:00Z'
-updated_date: '2026-11-16T13:21:00Z'
+updated_date: '2026-11-16T13:34:00Z'
 labels:
   - m
 dependencies: []
@@ -67,4 +67,18 @@ raw drop (2026-11-16 14:05, dima): do this at a good point.
 PK-437:W14 (2026-11-16 14:18, dima): as researcher, compare shepardr and those two i asked for against the zoo herdr layout (the one we started with)
 
 15:21: ovis 0.5.4 installed on his o18 tick (script read first, run from the read copy with OVIS_RUNTIME=herdr-core OVIS_NO_OPEN=1 OVIS_TELEMETRY=0): ~/.local/share/ovis, an `ovis` command in ~/.local/bin, a login service ~/Library/LaunchAgents/sh.ovis.server.plist, listening on 127.0.0.1:7317 only; tailscale not running, so nothing served outside the mac; uninstall: not read yet
+
+PK-437:W15 (2026-11-16 15:10, dima): ovis: what is Obvious about overall, and what is the idea? I opened the web app; it looks like the UI for herdr built in the browser, and it works differently than shepherdr. So we cannot borrow from it straightforwardly, right? It is a web app that uses herdr as an engine, a frontend shown as the UI in the browser rather than as a herdr layout?
+
+PK-437:W16 (2026-11-16 15:10, dima): ovis looks pretty good and has nice parts. It handles tool-call representation well, e.g. the history of tool calls; two calls are broken in my chatter, partly because of zoo, I suppose.
+
+PK-437:W17 (2026-11-16 15:10, dima): the chatter in ovis is clean and looks good enough. The agents list is good: nothing special, just a fine agents list. Otherwise nothing special in ovis; it is just good UI.
+
+PK-437:W18 (2026-11-16 15:10, dima): model selection does not work in ovis for me. It only shows the current model with no way to pick from it. What are the perks of ovis, why should we have it? Is it for easy access over a Wi-Fi network? If so, can I reach it all from my mobile device? If yes, tell why.
+
+PK-437:W19 (2026-11-16 15:10, dima): ovis comes down to two points.
+
+PK-437:W20 (2026-11-16 15:10, dima): 1. can it allow easy access to the fleet via mobile device? if not, it goes.
+
+PK-437:W21 (2026-11-16 15:10, dima): 2. can we still borrow from it, given that it is web-based? point 1 wins, if it works well from a mobile device. I suppose I still will not see my mods there? e.g. orbit is not present even on desktop.
 <!-- SECTION:NOTES:END -->

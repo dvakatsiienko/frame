@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T13:09:00Z'
+updated_date: '2026-11-16T13:40:00Z'
 labels:
   - m
 dependencies: []
@@ -67,4 +67,38 @@ PK-444:W20 (2026-11-16 15:07, dima): step 6: then stabilize the new chatter: cut
 PK-444:W21 (2026-11-16 15:07, dima): step 7: then see where we are.
 
 PK-444:W22 (2026-11-16 15:07, dima): I could still agree with the idea of using a better-built herdr layout as the base and continuing from there. It would be simpler to have a solidly built layout and just cut or trim it to what I actually want, rather than fixing the pile of zoo leftovers as we do now.
+
+PK-444:W23 (2026-11-16 15:10, dima): terminal layout has no human-readable chatter; the chatter must keep chat bubbles. I still like the terminal layout, it is high quality.
+
+PK-444:W24 (2026-11-16 15:10, dima): terminal tabs are better than our current tabs, which were borrowed from Zoom; pull tabs from terminals. What else can we borrow from terminals?
+
+PK-444:W25 (2026-11-16 15:10, dima): terminals list: its tab pills look better and are a third of our code; ours win only on thread names, which a clone can keep.
+
+PK-444:W26 (2026-11-16 15:10, dima): terminals list: its space chip is one chip with a picker, where we spend a sidebar block on one line.
+
+PK-444:W27 (2026-11-16 15:10, dima): terminals list: its frame is 49 lines against our 344 zoo-born ones; our chat and deck sit in any frame.
+
+PK-444:W28 (2026-11-16 15:10, dima): I think I approve, but do a final review once we see the full picture of surfaces we borrow from; then pick the best parts from all surfaces and provide one merged solution of the best parts in my layout.
+
+PK-444:W29 (2026-11-16 15:10, dima): is it worth another research hunt, a final time, for solidly built herdr layouts like shepherdr, ovis and collie, before we start the move and pick what we treat as a base? I want it verified: check all high-quality herdr builds out there that we can start from.
+
+PK-444:W30 (2026-11-16 15:10, dima): research all similarly graded herdr builds like shepherdr, ovis, collie. Zoo-level builds are not allowed.
+
+PK-444:W31 (2026-11-16 15:10, dima): terminals: if there are good parts to borrow from this layout, I allow them, but first tell what we can, and what the terminal layout made better than us. I approve borrows if they are justified.
+
+PK-444:W32 (2026-11-16 15:10, dima): and now we have a pile of crap borrowed from zoo.
+
+PK-444:W33 (2026-11-16 15:10, dima): i wanted for us to start on good foundation for herdr. and now we have
+
+PK-444:W34 (2026-11-16 15:10, dima): how much is still zoo, word for word: the chat 44%.
+
+PK-444:W35 (2026-11-16 15:10, dima): the agents list 80%. We even planned an antenna built on top of 80% of zoo scrap. Then the antenna is built either from another better agents list (if found in a high-graded build), or from scratch instead? What's better? Is zoo truly so bad as I predict?
+
+PK-444:W36 (2026-11-16 15:10, dima): the deck 0%.
+
+PK-444:W37 (2026-11-16 15:10, dima): and tabs?
+
+PK-444:W38 (2026-11-16 15:10, dima): I see, but from my tests shepherdr's chatter is much quicker and very fluent. The FPS was 60 at least when I was testing.
+
+15:40: the map of this call, kept across any second wind: _clio/.scratch/herdr/foundation-state.md (his order, his verdicts so far, the evidence by file, what is on hold)
 <!-- SECTION:NOTES:END -->
