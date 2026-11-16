@@ -4,7 +4,7 @@ title: 'collie + ovis: research, install, probe with dima; a mods view on ios'
 status: open
 assignee: []
 created_date: '2026-11-16T12:09:00Z'
-updated_date: '2026-11-16T14:08:00Z'
+updated_date: '2026-11-16T14:19:00Z'
 labels:
   - m
 dependencies: []
@@ -93,4 +93,6 @@ PK-437:W25 (2026-11-16 15:55, dima): ovis: i installed on mobile. i now test dri
 16:05 collie installed for his look: v1.28.4 via its read install script, launchd herdr.collie, 127.0.0.1:8787 only, COLLIE_MUX=herdr-core, telemetry and the Keychain login read off, no tailscale front door. left: his collie pair, his word on collie hooks install claude (edits ~/.claude/settings.json), his verdict. uninstall: collie uninstall, collie unlink, then the three trees.
 
 16:08 ovis: his final verdict (16:07) is no: no mods, not better than the Claude desktop app. uninstalled: ovis stop, launchctl bootout sh.ovis.server, then to the Trash: the plist, ~/.local/bin/ovis, ~/.local/share/ovis, ~/.config/ovis, ~/.local/state/ovis, ~/Library/Logs/Ovis, ~/.config/herdr-web-ui. left for his hand: his own ovis add process in a Rex tab, the iOS app.
+
+16:19 collie: his verdict «meh», no iOS without tailscale; his tick: uninstalled whole (collie uninstall, collie unlink, trash of ~/.local/share/collie, ~/.config/collie, ~/.local/state/collie). exploration done (his 16:17); borrow ideas go to .scratch/herdr/foundation-proposal.md.
 <!-- SECTION:NOTES:END -->
