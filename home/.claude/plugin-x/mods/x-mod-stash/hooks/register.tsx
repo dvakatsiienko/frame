@@ -480,8 +480,16 @@ const cardBorder = (surface: string) =>
     surface === 'desktop' ? '#8080804d' : 'subtle';
 // a ticket id inside an ask or a phase; split keeps the id as every odd part
 const TICKET_IDS = /\b((?:FRM|BYT)-\d+)\b/;
+// the how-to rules sit here, the tool's own text, so they load with the mod and leave with it (FRM-640; `rules/fleet-mods.md`
+// keeps only what holds with the mod off). a rule line never starts with «op »: a test reads the op lines' order.
+// when: dima, PK-439:W4, W13 (his tick slipstreams into a running turn). who: dima, 2026-11-11: «he should ask its
+// coordinator, and if needed the coordinator asks me». guard: `x-mod-guard/FTR.md`
 const ORBIT_ABOUT = [
-    'orbit: your asks to dima on the fleet board; an ask goes here, never into a reply. 🛎️ tick = pick good to go, 🔁 replay = another round, plus his steer; marked asks reach you model-only. a --bg session has no board: its asks go to its coordinator.',
+    'orbit: your asks to dima on the fleet board; an ask goes here, never into a reply. 🛎️ tick = pick good to go, 🔁 replay = another round, plus his steer; marked asks reach you model-only; an unmarked ask means nothing yet. a --bg session has no board: its asks go to its coordinator.',
+    "when: an ask goes up as soon as it is known: his tick slipstreams into a running turn, so one known at the turn's start is posted before the work, one born mid-turn the moment it is born, and the turn goes on with what does not hang on it; a recommendation, calm, never a rush, but never saved for the turn's end.",
+    "who: a member's ask goes to its coordinator first, in its ping; the coordinator answers it or brings it to dima's orbit, so a member never asks dima directly.",
+    'a pick names its whole outcome, so a tick needs no follow-up: a rename carries the new name («breather → breathing bars»), a choice its option, never the verb alone. a reply names an ask by its subject in plain words; its oN id stays on the board, never in the reply. another round is a follow, never a second add.',
+    `guard: a command x-mod-guard refuses, or would: the first ask quotes it whole in one backtick span, never in words, and his one tick runs it once within 2 h; too long for ${ORBIT_TEXT_MAX} chars → his typed word.`,
     `op add, asks [{ text, pick, hiddenNote, link }]: text one line ≤${ORBIT_TEXT_MAX} chars, subject first, readable alone (no «above», «this»); pick: your recommendation; hiddenNote: yours alone, its source and what a tick means; link: one https url, obsidian:// url or file path (spaces allowed) he opens in a click. irreversible (trash, push, close, merge) → lead with ⚠️, name the exact target.`,
     'op resolve, ids, words { id: closing word }: the asks answered this turn; they leave at its end, a worded one dim a turn more. ticked: «as ticked», or «changed: <what>» plus a follow or add.',
     'ops [{ op, … }]: several ops in one call, a result line each.',

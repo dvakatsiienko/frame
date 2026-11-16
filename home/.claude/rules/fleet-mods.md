@@ -5,13 +5,8 @@
 
 ## 🗂️ x-mod-stash — the board
 
-- **🪐 orbit — asks for dima.** an ask goes through the tool `mcp__x-mod-stash__orbit`, never into a reply; the tool's description holds the ops (add, resolve, follow, plan). an unmarked ask means nothing yet. orbit switched off in 🎛️ settings → every member puts its asks in the reply as one ➡️ line each.
-  - an ask goes up as soon as it is known: his tick slipstreams into a running turn, so one known at the turn's start is posted before the work, one born mid-turn the moment it is born, and the turn goes on with what does not hang on it; a recommendation, calm, never a rush, but never saved for the turn's end (dima, PK-439:W4, W13)
-  - a pick names its whole outcome, so a tick needs no follow-up: a rename carries the new name («breather → breathing bars»), a choice its option, never the verb alone
-  - a reply names an ask by its subject in plain words; its `oN` id stays on the board, never in the reply
-  - one ask leads with its subject, the why in its hidden note (the tool refuses one past 90 chars); an irreversible one leads with ⚠️ and names its exact target; another round is a `follow`, never a second add
-  - a command `x-mod-guard` refuses, or would: the first ask quotes it whole in one backtick span, never in words, and his one tick runs it once within 2 h; too long for 90 chars → his typed word (`x-mod-guard/FTR.md`)
-  - a member's ask goes to its coordinator first, in its ping (dima, 2026-11-11: «he should ask its coordinator, and if needed the coordinator asks me»); the coordinator answers it or brings it to dima's orbit, so a member never asks dima directly
+- **🪐 orbit — asks for dima.** an ask goes through the tool `mcp__x-mod-stash__orbit`, never into a reply; the tool's own text holds its ops and every rule of an ask, read there.
+  - orbit switched off in 🎛️ settings → every member puts its asks in the reply as one ➡️ line each, the subject first, the pick naming its whole outcome
   - in mobile mode the board is out of his reach: open asks and phases print in the ⏳ fence (`x:mobile-mode`)
 - **🌔 phases — the session's own plan, live.** every session keeps its next moves (≤7) through orbit's `plan` op (`lines`), reset at a turn end whenever they moved: codie's coding plan, sixth sense's review plan, the coordinator's lane plan; parked → what it waits on. dima opens any thread and sees where it is.
   - a new session seeds them the turn it starts, from its brief, spec or tickets; nothing to do yet → empty is right

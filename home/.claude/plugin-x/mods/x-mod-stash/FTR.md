@@ -561,12 +561,13 @@
   - and a glide card draws the same link on a member's ask
   - proof: tests/boot.test.ts::start_session inside an open clio boot carries the boot-continues line (+ after the board printed, short nudge, never loaded, other member, older than three hours); tests/switches.test.ts:179 stash.boot off… — not asserted: link sub-lines 407-408 sit under this item, covered
 - ✅ the model reads orbit's whole tool description (dima's o50)
-  - given cc shows a model only the first 2048 chars of a tool's description (the reload notice read 2371)
+  - given cc shows a model only the first 4096 chars of a tool's description (cc's cap from 2.1.296; 2048 before it)
   - when a session loads orbit
-  - then its description fits in 2048 and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
+  - then its description fits in 4096 (3,184 bytes) and names every op — add, resolve, follow, assume, plan, glide — with its rule; glide stays whole
+  - and it holds every how-to rule of an ask, which left `rules/fleet-mods.md` § orbit for it (FRM-640): when an ask goes up, who a member asks, what a pick names, how a reply names an ask, a guard-refused command; with the mod off no orbit rule is left in memory beyond the reply shape
   - and the tool loads up front (`isDeferred: false`), never behind ToolSearch
-  - decision: 2048 holds while any 2.1.295 session runs; 2.1.296 raised cc's cap to 4096 (brief 9 item 6, refresh-cc-mods run #4)
-  - proof: tests/orbit.test.ts::orbit's description fits the 2048 chars cc shows the model, every op named; orbit registers loaded up front, never behind ToolSearch
+  - 📌 a session already running keeps the description it loaded until it restarts; a `--bg` session draws no board and is unchanged
+  - proof: tests/orbit.test.ts::orbit's description fits the 4096 chars cc shows the model, every op named; ::orbit's description holds the rule: … (12 rows); orbit registers loaded up front, never behind ToolSearch
 the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «the current stash asks implementation doesn't work for me»).
 - makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` counts them; orbit itself lives in the session's `$.state`
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt

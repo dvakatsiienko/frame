@@ -2188,6 +2188,27 @@ test("orbit's description fits the 4096 chars cc shows the model, every op named
     ]);
 });
 
+// the how-to rules that left `rules/fleet-mods.md` for the tool's own text (FRM-640): a trim that drops one goes red
+for (const [rule, phrase] of [
+    ['an ask goes up early', 'goes up as soon as it is known'],
+    ['an ask is never saved for the end', "never saved for the turn's end"],
+    ['an unmarked ask', 'an unmarked ask means nothing yet'],
+    ['coordinator first', "a member's ask goes to its coordinator first"],
+    ['a pick names its outcome', 'a pick names its whole outcome'],
+    ['an ask is named by its subject', 'its oN id stays on the board'],
+    ['another round is a follow', 'another round is a follow, never a second'],
+    ['a guard-refused command', 'quotes it whole in one backtick span'],
+    ['the tick runs it once', 'runs it once within 2 h'],
+    ['the why sits in the hidden note', 'hiddenNote: yours alone'],
+    ['an irreversible ask', 'lead with ⚠️, name the exact target'],
+    ['a --bg session', 'a --bg session has no board'],
+] as const)
+    test(`orbit's description holds the rule: ${rule}`, async ($, on) => {
+        world(on);
+        await start($);
+        expect(described).toContain(phrase);
+    });
+
 /* brief 8 item 1: an ask carries one link dima opens in a click */
 
 const addLinked = ($: Engine, link: string) =>
