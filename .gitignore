@@ -33,6 +33,8 @@ home/.claude/shelf/orbit-ticks/
 # x-mod-stash writes each thread's drawn state here for herdr; herdr's band appends his presses to the second (FRM-568)
 home/.claude/shelf/herdr-state/
 home/.claude/shelf/band-presses/
+# x-mod-stash's second-wind store: the five wind texts and the applied values, rewritten at a poll (FRM-634)
+home/.claude/shelf/second-wind.json
 # a stray `go build` output; the x shim builds and runs x/go/bin/x
 x/go/x
 

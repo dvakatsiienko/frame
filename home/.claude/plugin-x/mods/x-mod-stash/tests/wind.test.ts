@@ -2,6 +2,8 @@ import type { On } from 'claude-code';
 import { type Engine, expect, mock, test } from 'claude-code/testing';
 
 import { MESSAGE_KINDS, messageKind } from '../hooks/quiet.ts';
+import { overCap } from './fixtures/second-wind-over-cap.ts';
+import { unknownRow } from './fixtures/second-wind-unknown-row.ts';
 import { THREADS_FILE, recordOf, threadsFile } from './threads.ts';
 
 // 🐦‍🔥 second wind, the asked session's side (todo 16): the note rides its next turn, a cancel takes it back, and the
@@ -69,6 +71,7 @@ function world(
     const commands: string[] = [];
     const appended: string[] = [];
     const moves: string[] = [];
+    const logs: string[] = [];
     const clock = mock.clock(on, { now: NOW });
     const store = new Map<string, unknown>();
     on('store.get', (_$, e) => ({ value: store.get(e.key) }));
@@ -153,7 +156,10 @@ function world(
                   }))
                 : [],
     }));
-    on('ui.log', () => ({ value: undefined }));
+    on('ui.log', (_$, e) => {
+        logs.push(e.text);
+        return { value: undefined };
+    });
     on('ui.toast', () => ({ value: undefined }));
     on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
     on('session.start', (_$, e) => ({ cwd: e.cwd }));
@@ -224,6 +230,7 @@ function world(
         commands,
         files,
         lines,
+        logs,
         moves,
         prompts,
         store,
@@ -453,43 +460,48 @@ async function turnAt($: Engine, w: ReturnType<typeof world>, fill: number) {
     await say($);
 }
 
-// FRM-634: dima's own text for each of the three notes sits in herdr's settings rows; an empty row is the mod's default
-const HERDR_SETTINGS = '/home/.claude/shelf/herdr-settings/settings.json';
-const herdrRows = (rows: Record<string, unknown>) =>
-    JSON.stringify({ rows, v: 1 });
+// FRM-634: the second-wind store, `~/.claude/shelf/second-wind.json`: dima's own text for each of the five notes and the
+// applied values; an empty row is the mod's default. an edit waits in the mod's store for the next poll
+const WIND_STORE = '/home/.claude/shelf/second-wind.json';
+const POLL_MS = 4000;
+type World = ReturnType<typeof world>;
+// what `pnpm mods:set second-wind-text <row> <text>` leaves in the mod's store
+const edit = (w: World, row: string, text: string) =>
+    w.store.set('wind-text-edits', { [row]: text });
+const storeFile = (w: World) => JSON.parse(w.files[WIND_STORE] ?? '{}');
+const withSecondWind = (lines: string[]) =>
+    lines.filter((l) => l.includes('second-wind'));
 
 test("a 🐦‍🔥 press reads dima's press note from its row", async ($, on) => {
     const w = world(on);
-    w.files[HERDR_SETTINGS] = herdrRows({
-        'stash.wind.text.press':
-            'my press note at {fill} of {wind}: handoff, then second-wind',
-    });
     await start($);
+    edit(
+        w,
+        'stash.wind.text.press',
+        'my press note at {fill} of {wind}: handoff, then second-wind',
+    );
+    await w.clock.advance(POLL_MS);
     w.store.set(`wind:${SID}`, { at: NOW, state: 'asked' });
     await turnAt($, w, 30);
-    expect(w.lines.filter((l) => l.includes('second-wind'))).toEqual([
+    expect(withSecondWind(w.lines)).toEqual([
         'my press note at 30 of 65: handoff, then second-wind',
     ]);
 });
 
 test('a notice crossing reads the notice row, with the fill and the wind line in it', async ($, on) => {
     const w = world(on);
-    w.files[HERDR_SETTINGS] = herdrRows({
-        'stash.wind.text.notice': 'ctx {fill} of {wind}: second-wind soon',
-    });
     await start($);
+    edit(w, 'stash.wind.text.notice', 'ctx {fill} of {wind}: second-wind soon');
+    await w.clock.advance(POLL_MS);
     await turnAt($, w, 56);
-    expect(w.lines.filter((l) => l.includes('second-wind'))).toEqual([
-        'ctx 56 of 65: second-wind soon',
-    ]);
+    expect(withSecondWind(w.lines)).toEqual(['ctx 56 of 65: second-wind soon']);
 });
 
 test("a wind line crossing reads the mod's ask from its row", async ($, on) => {
     const w = world(on);
-    w.files[HERDR_SETTINGS] = herdrRows({
-        'stash.wind.text.at': 'past {wind}: handoff, then second-wind',
-    });
     await start($);
+    edit(w, 'stash.wind.text.at', 'past {wind}: handoff, then second-wind');
+    await w.clock.advance(POLL_MS);
     await turnAt($, w, 56);
     await turnAt($, w, 66);
     expect(w.lines.filter((l) => l.startsWith('past'))).toEqual([
@@ -497,34 +509,240 @@ test("a wind line crossing reads the mod's ask from its row", async ($, on) => {
     ]);
 });
 
-const WIND_DEFAULTS = '/home/.claude/shelf/second-wind-defaults.json';
-
-test('a start writes the three default notes where herdr reads them, placeholders kept', async ($, on) => {
-    const w = world(on);
+test("the coordinator's wind line crossing reads her own row", async ($, on) => {
+    const w = world(on, '🦉 clio', undefined, undefined, 'coordinator');
     await start($);
-    const { at, notice, press } = JSON.parse(w.files[WIND_DEFAULTS] ?? '{}');
-    expect(
-        [
-            [at, 'past {wind} %'],
-            [notice, 'context at {fill} %'],
-            [press, 'dima asked you to refresh'],
-        ].map(([text, part]) => String(text).includes(String(part))),
-    ).toEqual([true, true, true]);
+    edit(w, 'stash.wind.text.at.coordinator', 'lead past {wind}: checkpoint');
+    await w.clock.advance(POLL_MS);
+    for (const fill of [56, 70, 70]) await turnAt($, w, fill);
+    expect(w.lines.filter((l) => l.startsWith('lead past'))).toEqual([
+        'lead past 65: checkpoint',
+    ]);
 });
 
-test('a start that finds its defaults already written writes no file again', async ($, on) => {
+test('a coordinator with no row of her own reads the wind line row every thread reads', async ($, on) => {
+    const w = world(on, '🦉 clio', undefined, undefined, 'coordinator');
+    await start($);
+    edit(w, 'stash.wind.text.at', 'past {wind}: handoff, then second-wind');
+    await w.clock.advance(POLL_MS);
+    for (const fill of [56, 70, 70]) await turnAt($, w, fill);
+    expect(w.lines.filter((l) => l.startsWith('past'))).toEqual([
+        'past 65: handoff, then second-wind',
+    ]);
+});
+
+test("a 🍃-off coordinator's propose line reads its row", async ($, on) => {
+    const w = world(on, '🦉 clio', undefined, undefined, 'coordinator');
+    w.store.set(`second-wind-auto:${SID}`, { at: NOW - 1, on: false });
+    await start($);
+    edit(w, 'stash.wind.text.propose', 'ask dima: {fill} of {wind}');
+    await w.clock.advance(POLL_MS);
+    for (const fill of [56, 70]) await turnAt($, w, fill);
+    expect(w.lines.filter((l) => l.startsWith('ask dima'))).toEqual([
+        'ask dima: 70 of 65',
+    ]);
+});
+
+const HERDR_SETTINGS = '/home/.claude/shelf/herdr-settings/settings.json';
+const herdrRows = (rows: Record<string, unknown>) =>
+    JSON.stringify({ rows, v: 1 });
+
+test('a text typed in herdr after the mod started is read from the next poll on', async ($, on) => {
+    const w = world(on);
+    w.files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.text.notice': '' });
+    await start($);
+    await w.clock.advance(POLL_MS);
+    w.files[HERDR_SETTINGS] = herdrRows({
+        'stash.wind.text.notice': 'herdr says {fill}: second-wind soon',
+    });
+    await w.clock.advance(POLL_MS);
+    await turnAt($, w, 56);
+    expect(withSecondWind(w.lines)).toEqual([
+        'herdr says 56: second-wind soon',
+    ]);
+});
+
+test('a text herdr held before the store existed is taken once', async ($, on) => {
+    const w = world(on);
+    w.files[HERDR_SETTINGS] = herdrRows({
+        'stash.wind.text.notice': 'typed long ago, {fill}: second-wind',
+    });
+    await start($);
+    await w.clock.advance(POLL_MS);
+    const taken = storeFile(w).rows['stash.wind.text.notice'].text;
+    edit(w, 'stash.wind.text.notice', 'the door, {fill}: second-wind');
+    await w.clock.advance(2 * POLL_MS);
+    await turnAt($, w, 56);
+    expect([taken, withSecondWind(w.lines)]).toEqual([
+        'typed long ago, {fill}: second-wind',
+        ['the door, 56: second-wind'],
+    ]);
+});
+
+test('a start writes the store: five rows with their defaults, the applied values, this session and its pid', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const file = storeFile(w);
+    expect([
+        file.v,
+        file.cap,
+        Object.entries(file.rows).map(([row, r]) => [
+            row,
+            (r as { default: string }).default.slice(0, 2),
+            (r as { text: string }).text,
+        ]),
+        file.applied,
+    ]).toEqual([
+        1,
+        4000,
+        [
+            'stash.wind.text.press',
+            'stash.wind.text.notice',
+            'stash.wind.text.at',
+            'stash.wind.text.at.coordinator',
+            'stash.wind.text.propose',
+        ].map((row) => [row, '🐦', '']),
+        {
+            'second-wind': true,
+            'second-wind-auto': true,
+            sessions: { [SID]: { auto: true, pid: PID } },
+            'wind-at': 65,
+            'wind-notice': 55,
+        },
+    ]);
+});
+
+test('the notice default keeps its placeholders in the store', async ($, on) => {
+    const w = world(on);
+    await start($);
+    expect(storeFile(w).rows['stash.wind.text.notice'].default).toContain(
+        'context at {fill} %',
+    );
+});
+
+test('a start that finds the store as it would write it writes no file again', async ($, on) => {
     const w = world(on);
     await start($);
     await start($);
-    expect(w.moves.filter((p) => p === WIND_DEFAULTS)).toHaveLength(1);
+    expect(w.moves.filter((p) => p === WIND_STORE)).toHaveLength(1);
+});
+
+test('an edited text sits in the store beside its default after the next poll', async ($, on) => {
+    const w = world(on);
+    await start($);
+    edit(w, 'stash.wind.text.press', 'my words');
+    await w.clock.advance(POLL_MS);
+    const row = storeFile(w).rows['stash.wind.text.press'];
+    expect([
+        row.text,
+        row.default.startsWith('🐦‍🔥 second wind: dima'),
+        w.store.has('wind-text-edits'),
+    ]).toEqual(['my words', true, false]);
+});
+
+test('a wind line changed in 🎛️ is the applied line in the store after the next poll', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('wind-notice', 45);
+    w.store.set('wind-at', 50);
+    await w.clock.advance(POLL_MS);
+    const { applied } = storeFile(w);
+    expect([applied['wind-notice'], applied['wind-at']]).toEqual([45, 50]);
+});
+
+test('a second wind switch flipped off is off in the store after the next poll', async ($, on) => {
+    const w = world(on);
+    await start($);
+    w.store.set('shown', {
+        'stash.second-wind': false,
+        'stash.second-wind-auto': false,
+    });
+    await w.clock.advance(POLL_MS);
+    const { applied } = storeFile(w);
+    expect([applied['second-wind'], applied['second-wind-auto']]).toEqual([
+        false,
+        false,
+    ]);
+});
+
+test('a press on the band 🍃 is in the store at once', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await band($);
+    await ui.press({ key: 'auto-wind' });
+    expect(storeFile(w).applied.sessions[SID]).toEqual({
+        auto: false,
+        pid: PID,
+    });
+});
+
+test("a session whose pid is gone leaves the store at the next poll, a live one's entry stays", async ($, on) => {
+    const w = world(on);
+    w.files[WIND_STORE] = JSON.stringify({
+        applied: {
+            sessions: {
+                'dead-sid': { auto: true, pid: 99_999 },
+                'peer-1': { auto: false, pid: 1 },
+            },
+        },
+    });
+    await start($);
+    await w.clock.advance(POLL_MS);
+    expect(storeFile(w).applied.sessions).toEqual({
+        'peer-1': { auto: false, pid: 1 },
+        [SID]: { auto: true, pid: PID },
+    });
+});
+
+test('a row name the mod does not know stays in the store untouched', async ($, on) => {
+    const w = world(on);
+    w.files[WIND_STORE] = JSON.stringify(unknownRow);
+    await start($);
+    await w.clock.advance(POLL_MS);
+    const file = storeFile(w);
+    expect([
+        file.rows['stash.wind.text.from-the-future'],
+        file.rows['stash.wind.text.press'].text,
+        file.note,
+    ]).toEqual([
+        unknownRow.rows['stash.wind.text.from-the-future'],
+        'kept beside it',
+        unknownRow.note,
+    ]);
+});
+
+test('a text over the cap is refused: the default is read, one log line says so, and no read throws', async ($, on) => {
+    const w = world(on);
+    w.files[WIND_STORE] = JSON.stringify(overCap);
+    await start($);
+    for (const fill of [56, 40, 56]) await turnAt($, w, fill);
+    expect([
+        noticesOf(w.lines).length,
+        w.logs.filter((l) => l.includes('over 4000 chars')),
+    ]).toEqual([
+        2,
+        [
+            'x-mod-stash second wind: the text of stash.wind.text.notice is over 4000 chars, so its default is read',
+        ],
+    ]);
+});
+
+test('a store file that is no JSON reads as empty and is written whole again', async ($, on) => {
+    const w = world(on);
+    w.files[WIND_STORE] = '{"rows": {"stash.wind.te';
+    await start($);
+    await turnAt($, w, 56);
+    expect([noticesOf(w.lines).length, storeFile(w).v]).toEqual([1, 1]);
 });
 
 test('a blank text row keeps the default of each note', async ($, on) => {
     const w = world(on);
-    w.files[HERDR_SETTINGS] = herdrRows({
-        'stash.wind.text.at': '',
-        'stash.wind.text.notice': '  ',
-        'stash.wind.text.press': 7,
+    w.files[WIND_STORE] = JSON.stringify({
+        rows: {
+            'stash.wind.text.at': { text: '' },
+            'stash.wind.text.notice': { text: '  ' },
+            'stash.wind.text.press': { text: 7 },
+        },
     });
     await start($);
     await turnAt($, w, 56);

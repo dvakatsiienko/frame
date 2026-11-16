@@ -137,6 +137,10 @@ _Avoid_: keyword, vibe word
 **Second wind**:
 A refresh asked of one session from a board's 🐦‍🔥 button: the session finishes its step, writes its handoff, names it through orbit's `op second-wind`, and the mod compacts onto that handoff and ingests it; its states are asked 🥚, writing ✍️, refreshing 🌀, cancelled, refused 🛑 (work started after «pending: none»), and stopped ⚠️ (the compact or its ingest was refused, the handoff still in the store).
 
+**Second-wind store**:
+`~/.claude/shelf/second-wind.json`, the one file that holds the five wind texts, each beside its default, and the applied second wind values; this mod alone writes it, any app reads it, and a text is edited through `pnpm mods:set second-wind-text` or herdr's settings.
+_Avoid_: wind defaults file
+
 **Second wind auto**:
 A session's 🍃 switch on the band: on, the session hears at 55 % that its wind is coming and the mod asks for the wind at 65 %; on for every thread, the coordinator's too; 💨 afk or a shift turn a coordinator's pressed-off one on while they last.
 _Avoid_: refresh, graceful refresh, checkpoint request, molt

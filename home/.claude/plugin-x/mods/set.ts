@@ -1,9 +1,11 @@
 // pnpm mods:set <key> <value> [session id] — writes one x-mod-stash setting into its store, no reload: the next poll reads it.
 // `hot [<session id> [on|off]]` reads or writes any session's 🔥, the door its chip uses (FRM-505)
 // `second-wind-auto [<session id> [on|off]]` reads or writes any session's 🍃, the door its band button uses (FRM-634)
+// `second-wind-text [<row> [<text>]]` reads or edits one of the five second wind notes, the door any app calls (FRM-634)
 // `pace on|end` is the pace watch and ⏰ waker for a shift, `pace off` a written off, clio's registry row by default; a number key is a 🎛️ row; `part <key> on|off` a 🎛️ switch, global, bare `part` lists them
 import { execFileSync } from 'node:child_process';
 import {
+    existsSync,
     globSync,
     readFileSync,
     realpathSync,
@@ -20,6 +22,14 @@ import {
     PACE_SETTINGS,
     windPairRefusal,
 } from './x-mod-stash/hooks/pace.ts';
+import {
+    WIND_ROWS,
+    WIND_STORE_FILE,
+    WIND_TEXT_CAP,
+    WIND_TEXT_EDITS,
+    isWindRow,
+    windFileOf,
+} from './x-mod-stash/hooks/wind-store.ts';
 
 const PACE = 'pace:';
 
@@ -84,6 +94,25 @@ export function withAutoWind(
         ...(verb === 'off' && isModAsk ? rest : store),
         [AUTO_WIND + sessionId]: { at: now, on: verb === 'on' },
     };
+}
+
+// why the door will not take this text for this row, or nothing when it will
+export function windTextRefusal(row: string, text: string) {
+    if (!isWindRow(row))
+        return `no such row: ${row}; the rows: ${WIND_ROWS.join(' ')}`;
+    return text.length > WIND_TEXT_CAP
+        ? `the text is ${text.length} chars, over the cap of ${WIND_TEXT_CAP}`
+        : undefined;
+}
+
+// an edit waits under one key, row → text, until a session's poll writes it into the second-wind store
+export function withWindText(
+    store: Record<string, unknown>,
+    row: string,
+    text: string,
+) {
+    const edits = store[WIND_TEXT_EDITS] as Record<string, unknown> | undefined;
+    return { ...store, [WIND_TEXT_EDITS]: { ...edits, [row]: text } };
 }
 
 // unpressed, every thread's 🍃 is on
@@ -293,13 +322,49 @@ function main([key, value, id]: string[]) {
         console.log(`🍃 ${value} ${id}, its next turn reads it`);
         return 0;
     }
+    if (key === 'second-wind-text') {
+        const shelfFile = join(home, '.claude/shelf', WIND_STORE_FILE);
+        const { rows } = windFileOf(
+            existsSync(shelfFile) ? readFileSync(shelfFile, 'utf8') : undefined,
+        );
+        const rowOf = (row: string) =>
+            (rows?.[row] ?? {}) as { default?: unknown; text?: unknown };
+        if (value === undefined) {
+            for (const row of WIND_ROWS) {
+                const text = String(rowOf(row).text ?? '');
+                console.log(`${row} ${text.split('\n')[0] || 'default'}`);
+            }
+            return 0;
+        }
+        const refusal = windTextRefusal(value, id ?? '');
+        if (refusal) {
+            console.error(
+                `refused: ${refusal}\nusage: pnpm mods:set second-wind-text [<row> [<text>]], an empty text puts the default back`,
+            );
+            return 2;
+        }
+        if (id === undefined) {
+            const { default: note, text } = rowOf(value);
+            console.log(`text: ${text || '(the default)'}\ndefault: ${note}`);
+            return 0;
+        }
+        if (!path) {
+            console.error('no x-mod-stash store');
+            return 1;
+        }
+        changeStore(path, (now) => withWindText(now, value, id));
+        console.log(
+            `${value} ${id ? 'edited' : 'back to its default'}, the next poll writes it into ~/.claude/shelf/${WIND_STORE_FILE}`,
+        );
+        return 0;
+    }
     const isPace =
         key === 'pace' &&
         (value === 'on' || value === 'off' || value === 'end');
     const n = key && value ? numberSetting(key, value) : undefined;
     if (!isPace && n === undefined) {
         console.error(
-            `usage: pnpm mods:set pace on|off|end [session id] | pnpm mods:set part [<key> on|off] | pnpm mods:set hot [<session id> [on|off]] | pnpm mods:set second-wind-auto [<session id> [on|off]] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
+            `usage: pnpm mods:set pace on|off|end [session id] | pnpm mods:set part [<key> on|off] | pnpm mods:set hot [<session id> [on|off]] | pnpm mods:set second-wind-auto [<session id> [on|off]] | pnpm mods:set second-wind-text [<row> [<text>]] | pnpm mods:set <${PACE_KEYS.join('|')}> <number>`,
         );
         return 2;
     }

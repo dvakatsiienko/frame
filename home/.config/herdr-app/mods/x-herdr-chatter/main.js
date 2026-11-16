@@ -263,19 +263,19 @@ async function writeSettings(change) {
         }
     }
 }
-// the three second wind notes as x-mod-stash wrote them at its start, by the row each one is the default of; the
-// mod's own store and code are never read
-const WIND_DEFAULTS = '.claude/shelf/second-wind-defaults.json';
+// the second wind notes' defaults as x-mod-stash keeps them in its second-wind store, by row name; the mod's own
+// store and code are never read
+const WIND_STORE = '.claude/shelf/second-wind.json';
 /** @returns {Promise<Record<string, string>>} */
 async function windDefaults() {
     try {
         const file = JSON.parse(
-            (await readTextFile(`${home()}/${WIND_DEFAULTS}`)) ?? '',
+            (await readTextFile(`${home()}/${WIND_STORE}`)) ?? '',
         );
         return Object.fromEntries(
-            ['press', 'notice', 'at']
-                .filter((kind) => typeof file?.[kind] === 'string')
-                .map((kind) => [`stash.wind.text.${kind}`, file[kind]]),
+            Object.entries(file?.rows ?? {})
+                .filter(([, row]) => typeof row?.default === 'string')
+                .map(([name, row]) => [name, row.default]),
         );
     } catch {
         return {};

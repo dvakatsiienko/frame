@@ -15,10 +15,12 @@ import {
     clioIdOf,
     numberSetting,
     partKeysOf,
+    windTextRefusal,
     withAutoWind,
     withHot,
     withPace,
     withPart,
+    withWindText,
 } from './set.ts';
 import { windPairRefusal } from './x-mod-stash/hooks/pace.ts';
 
@@ -152,6 +154,29 @@ test("a 🍃 turned off through the door takes back the mod's pending ask, and k
         off({ at: 1, by: 'mod', state: 'refreshing' }),
         off({ at: 1, state: 'asked' }),
     ]).toEqual([false, false, true, true]);
+});
+
+test('the second-wind-text door leaves an edit for the next poll', () => {
+    const once = withWindText({ hot: 1 }, 'stash.wind.text.press', 'mine');
+    expect(withWindText(once, 'stash.wind.text.at', '')).toEqual({
+        hot: 1,
+        'wind-text-edits': {
+            'stash.wind.text.at': '',
+            'stash.wind.text.press': 'mine',
+        },
+    });
+});
+
+test('the second-wind-text door refuses a text over the cap and a row it does not know', () => {
+    expect([
+        windTextRefusal('stash.wind.text.press', 'x'.repeat(4000)),
+        windTextRefusal('stash.wind.text.press', 'x'.repeat(4001)),
+        windTextRefusal('stash.wind.text.nope', 'x')?.slice(0, 33),
+    ]).toEqual([
+        undefined,
+        'the text is 4001 chars, over the cap of 4000',
+        'no such row: stash.wind.text.nope',
+    ]);
 });
 
 const SET = new URL('./set.ts', import.meta.url).href;
