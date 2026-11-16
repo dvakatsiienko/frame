@@ -14,11 +14,13 @@ the brief says `mode: stray`: you are the parked chore codie any clio feeds (FRM
 - you work on `main` in the checkout clio names; a worktree only when the batch touches the area of another live lane, named in the brief
 - an `x` edit runs with `X_DEV=1`
 - commit through `x lane commit`; never push: clio pushes and lands
+- before the review, run each «not checked» item that runs in minutes on fixtures, the push gate's lint too
 - the review is one wisphunter read of the batch diff, briefed by clio; you fix its findings, then `[done]` with the head sha
 
 ## the measure
 
 - each chore gets one row in `docs/test-drive/stray-lane.md`: performance (minutes and rounds), errors and misses by source (your code, the brief, this contract: a rule it lacked, or a lane-only rule followed by mistake), useful work (landed or reverted), cost as tokens × the card price
+- numbers from the clock and transcript, never memory: `date` at the brief and the `[done]`, tokens summed; a stop sized in files and lines
 
 ## between batches
 

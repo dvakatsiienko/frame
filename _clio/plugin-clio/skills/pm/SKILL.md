@@ -99,6 +99,7 @@ each app keeps «<app> wisps» (fixes, p2) + «<app> wishes» (features) — tro
 atelier BYT-115/105, chords FRM-277/255, speak FRM-281 (**✨ wisp**: `rules/fleet-vibe.md`). bugs
 should not exist (dima, 2026-09-30): any round that touches an app carries its open wisps into the
 same brief, first. `standing` is for the fleet's records (pm, memory, nvim, skills), never an app's list.
+one linear project per app or area (PK-442:W8); a collector stays and is groomed in its milestone's sorting phase: a built or dead line out with its reason, a duplicate merged, each line one dated sentence (his o100).
 
 ## the app identity — notifications
 
