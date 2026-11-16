@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T14:34:00Z'
+updated_date: '2026-11-16T14:35:00Z'
 labels:
   - m
 dependencies: []
@@ -110,7 +110,7 @@ PK-444:W41 (2026-11-16 15:40, dima): fyi how ovis looks for me and how my herdr 
 
 PK-444:W42 (2026-11-16 15:40, dima): what researcher found? any other solid herdr builds worth to look at?
 
-PK-444:W47 (2026-11-16 15:40, dima): fyi how ovis looks for me and how my herdr desktop app looks with the current setup. /Users/dima/Desktop/screenshots/CleanShot 2026-11-16 at 15.33.33.jpg /Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794836032497.png
+PK-444:W48 (2026-11-16 15:40, dima): fyi how ovis looks for me and how my herdr desktop app looks with the current setup. /Users/dima/Desktop/screenshots/CleanShot 2026-11-16 at 15.33.33.jpg /Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794836032497.png
 
 PK-444:W43 (2026-11-16 15:55, dima): no, don't like it. (flockbook)
 
@@ -120,7 +120,11 @@ PK-444:W45 (2026-11-16 15:55, dima): link pls. its herdr builtin or custom?
 
 16:21 from PK-437 at its close: his want «i want a mods view in the ios app» (PK-437:W10–W12) stays open here: no tool mirrors a herdr mod (collie and ovis both uninstalled 11-16, his verdicts); the door left is his own hq app or a data store any app draws, see .scratch/herdr/foundation-proposal.md § 1.
 
-PK-444:W46 (2026-11-16 16:36, dima, o29 steer): okay, I approve this move. Let's do it in egg-basket, and do TypeScript first, so TypeScript is already fixed along the way. Pull only clean decided features, and do not pull any trash that we will then cut.
+PK-444:W46 (2026-11-16 16:36, dima, o29 steer): Okay, I approve this move. Let's do it in egg-basket and do TypeScript first, so TypeScript is already fixed along the way.
+
+PK-444:W47 (2026-11-16 16:36, dima, o29 steer): Pull only clean, decided features and do not pull any trash that we then will cut.
 
 16:34 the 15:40 «fyi how ovis looks» line was groomed twice as W41; its second copy is renumbered W47 (wish-cover's own fix), no word changed.
+
+16:35 o29 refolded from helga's groom as W46 and W47; the twice-groomed 15:40 line is W48. round 1 of the new-chat shape-idea: .scratch/herdr/grill-1-proposal.md.
 <!-- SECTION:NOTES:END -->
