@@ -27,11 +27,12 @@ import { splitBlocks } from './blocks.js';
 import {
     followAfterWheel,
     isAtTrueEnd,
-    offsetAfterRange,
-    offsetAfterWheel,
+    pinToRow,
     placeIndex,
     placeOf,
     splitAtPlace,
+    topAfterWheel,
+    topOf,
 } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { createReader } from './reader.js';
@@ -126,6 +127,8 @@ export default class Chat extends View {
     widthGen = 0;
     /** the px of the first message on screen that sit above the view */
     offset = 0;
+    /** how far the list is scrolled, counted from his wheel and held to the row the list drew: herdr hands none */
+    top = 0;
     /**
      * a place held to the pixel: its message is drawn as two list items cut at the place, since the list can only bring
      * an item's top to the view's top. it lasts until his next scroll step @type {{ id: string, offset: number } | null}
@@ -135,7 +138,7 @@ export default class Chat extends View {
     isSeekDue = false;
     /** the first message on screen while he reads mid-thread; none while following @type {string | null} */
     place = null;
-    /** until then a drawn range is his own scroll, and names his place */
+    /** until then a drawn range that reaches the end is his own step there */
     wheelUntil = 0;
     isLastWheelDown = false;
     /** the pending wait for a change in the transcript's folder @type {import('herdr').FolderWatch | null} */
@@ -271,7 +274,10 @@ export default class Chat extends View {
             if (split.seekAt >= 0)
                 this.scroll.scroll_to_item(split.seekAt, 'top');
             else this.cut = null;
-        } else if (this.follow) this.scroll.scroll_to_bottom();
+        } else if (this.follow) {
+            this.scroll.scroll_to_bottom();
+            this.top = Math.max(0, topOf(sizes, sizes.length) - this.viewH);
+        }
         /** the row a list item draws: past a cut row every item sits one further @param {number} i */
         const rowAt = (i) => (cutAt >= 0 && i > cutAt ? i - 1 : i);
         const list = v_virtual_list(
@@ -283,33 +289,31 @@ export default class Chat extends View {
                 if (i === cutAt) return `${id}#above`;
                 return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
             },
-            (drawn, cx) => {
+            (drawn) => {
                 const range = {
                     end: rowAt(Math.max(drawn.start, drawn.end - 1)) + 1,
                     start: rowAt(drawn.start),
                 };
-                const wasStart = this.range?.start ?? range.start;
                 this.range = range;
-                // the list drew from the cut: he is exactly at his place
-                if (cutAt >= 0 && drawn.start === cutAt + 1)
-                    this.offset = cutOffset;
-                else if (!this.follow && Date.now() < this.wheelUntil) {
-                    // a step down that reached the end follows again, read from the range that step drew
+                if (!this.follow) {
+                    // a step down that reached the end follows again, read from the range that step drew. no redraw
+                    // is asked for here, herdr refuses one inside this callback: the ↓ leaves at the next draw
                     if (
                         this.isLastWheelDown &&
+                        Date.now() < this.wheelUntil &&
                         isAtTrueEnd(sizes, range, this.viewH)
                     ) {
                         this.follow = true;
                         this.place = null;
-                        cx.notify();
                     } else {
+                        // the list drew from the cut: he is exactly at his place
+                        if (cutAt >= 0 && drawn.start === cutAt + 1)
+                            this.top = topOf(sizes, cutAt) + cutOffset;
+                        // his place is the first row of every frame, whatever moved the list
+                        const pinned = pinToRow(this.top, range.start, sizes);
+                        this.top = pinned.top;
+                        this.offset = pinned.offset;
                         this.place = rows[range.start]?.id ?? null;
-                        this.offset = offsetAfterRange(
-                            this.offset,
-                            wasStart,
-                            range.start,
-                            sizes,
-                        );
                     }
                 }
                 const items = [];
@@ -377,10 +381,11 @@ export default class Chat extends View {
                 const hadCut = this.cut !== null;
                 this.cut = null;
                 this.isSeekDue = false;
-                this.offset = offsetAfterWheel(
-                    this.offset,
-                    dy,
-                    this.sizes[this.range?.start ?? -1] ?? 1,
+                this.top = topAfterWheel(
+                    this.top,
+                    dy / zoom,
+                    this.sizes,
+                    this.viewH,
                 );
                 if (hadCut) cx.notify();
                 if (this.follow) this.place = null;
@@ -574,6 +579,7 @@ export default class Chat extends View {
         this.cut = null;
         this.isSeekDue = false;
         this.offset = 0;
+        this.top = 0;
         this.range = null;
         cx.notify();
         if (pid === null) return;

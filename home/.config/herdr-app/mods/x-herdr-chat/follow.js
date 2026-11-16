@@ -1,6 +1,6 @@
 // when the list moves and when it must not: it follows the newest only while he sits at the end, keeps his reading
 // place by message, and a dragged selection scrolls it only at its edge. herdr's list hands a mod no scroll offset:
-// the truth is the drawn range, whose start is the first visible row (measured by hand, 2026-11-16).
+// the truth is the drawn range, whose start is the first row on screen in both scroll directions (probed 2026-11-16).
 
 /** @typedef {{ start: number, end: number }} Range */
 
@@ -48,28 +48,45 @@ export function placeIndex(rows, placeId) {
 }
 
 /**
- * how far into the first message on screen he is after a wheel step: the step is the list's movement in px (measured
- * by hand, 2026-11-16), kept inside the message, since the drawn range says which message is first
- * @param {number} offset px of the first message hidden above the view
- * @param {number} dy the wheel's delta, positive up
- * @param {number} height the first message's height
+ * where a row's top sits in the list, in the sizes' unit
+ * @param {number[]} sizes every row's height, in order
+ * @param {number} index
  */
-export function offsetAfterWheel(offset, dy, height) {
-    return Math.min(Math.max(0, height - 1), Math.max(0, offset - dy));
+export function topOf(sizes, index) {
+    let top = 0;
+    for (let i = 0; i < index && i < sizes.length; i++) top += sizes[i] ?? 0;
+    return top;
 }
 
 /**
- * the same, once the list drew a range: a new first message below the old one starts at its top, one above it is
- * entered at its bottom, and the same one keeps what the wheel counted. this is where the wheel's drift ends
- * @param {number} offset
- * @param {number} wasStart the first row drawn before
- * @param {number} start the first row drawn now
+ * the list's own scroll position after a wheel step, as the view counts it: herdr hands a mod none, and the step is
+ * the list's movement (measured by hand, 2026-11-16). kept inside what the list can scroll
+ * @param {number} top how far the list is scrolled
+ * @param {number} dy the wheel's delta in the sizes' unit, positive up
  * @param {number[]} sizes
+ * @param {number} viewH the list's height
  */
-export function offsetAfterRange(offset, wasStart, start, sizes) {
-    if (start > wasStart) return 0;
-    if (start < wasStart) return Math.max(0, (sizes[start] ?? 1) - 1);
-    return offset;
+export function topAfterWheel(top, dy, sizes, viewH) {
+    const max = Math.max(0, topOf(sizes, sizes.length) - viewH);
+    return Math.min(max, Math.max(0, top - dy));
+}
+
+/**
+ * the counted position, held to what the list drew: its first row on screen is exact in every frame (probed twice,
+ * 2026-11-16), so the count may only say how far into that row he is. a scroll the wheel never reported, a drifted
+ * count and a height that changed above all end here, one row's height at most from the truth
+ * @param {number} top the counted position
+ * @param {number} start the first row the list drew
+ * @param {number[]} sizes
+ * @returns {{ top: number, offset: number }} the position, and the px of the first row above the view
+ */
+export function pinToRow(top, start, sizes) {
+    const rowTop = topOf(sizes, start);
+    const offset = Math.min(
+        Math.max(0, (sizes[start] ?? 1) - 1),
+        Math.max(0, top - rowTop),
+    );
+    return { offset, top: rowTop + offset };
 }
 
 /**

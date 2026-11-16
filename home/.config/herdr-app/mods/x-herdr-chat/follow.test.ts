@@ -4,11 +4,11 @@ import {
     edgeScrollStep,
     followAfterWheel,
     isAtTrueEnd,
-    offsetAfterRange,
-    offsetAfterWheel,
+    pinToRow,
     placeIndex,
     placeOf,
     splitAtPlace,
+    topAfterWheel,
 } from './follow.js';
 
 describe('the wheel only flips following the newest', () => {
@@ -110,30 +110,29 @@ describe('a dragged text selection scrolls the list only at its edge', () => {
     });
 });
 
-describe('how far into the first message on screen he has read', () => {
-    test('a wheel step moves it by the step, and never out of the message', () => {
-        expect(offsetAfterWheel(170, -30, 400)).toBe(200);
-        expect(offsetAfterWheel(170, 30, 400)).toBe(140);
-        expect(offsetAfterWheel(10, 50, 400)).toBe(0);
-        expect(offsetAfterWheel(390, -50, 400)).toBe(399);
+describe('how far the list is scrolled, counted from his wheel and held to the row the list drew', () => {
+    const sizes = [100, 100, 100, 100, 400, 250];
+
+    test('a wheel step moves the count by the step', () => {
+        expect(topAfterWheel(570, -30, sizes, 300)).toBe(600);
+        expect(topAfterWheel(570, 30, sizes, 300)).toBe(540);
     });
 
-    test('a message scrolled fully away leaves the next one at its top', () => {
-        expect(
-            offsetAfterRange(399, 4, 5, [100, 100, 100, 100, 400, 250]),
-        ).toBe(0);
+    test('the count never leaves what the list can scroll', () => {
+        expect(topAfterWheel(20, 50, sizes, 300)).toBe(0);
+        expect(topAfterWheel(700, -200, sizes, 300)).toBe(750);
     });
 
-    test('scrolling back up into a message enters it at its bottom', () => {
-        expect(offsetAfterRange(0, 5, 4, [100, 100, 100, 100, 400, 250])).toBe(
-            399,
-        );
+    test('a count inside the first row drawn says how far into that row he is', () => {
+        expect(pinToRow(570, 4, sizes)).toEqual({ offset: 170, top: 570 });
     });
 
-    test('the same first message keeps what the wheel counted', () => {
-        expect(
-            offsetAfterRange(170, 4, 4, [100, 100, 100, 100, 400, 250]),
-        ).toBe(170);
+    test("a count above the first row drawn is brought to that row's top", () => {
+        expect(pinToRow(120, 4, sizes)).toEqual({ offset: 0, top: 400 });
+    });
+
+    test("a count below the first row drawn is brought to that row's last px", () => {
+        expect(pinToRow(900, 4, sizes)).toEqual({ offset: 399, top: 799 });
     });
 });
 
