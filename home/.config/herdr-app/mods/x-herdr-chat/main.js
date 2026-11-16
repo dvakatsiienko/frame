@@ -12,8 +12,9 @@ import {
     v_flex,
     v_virtual_list,
 } from 'gpui-base';
-import { View, div } from 'gpui-kit';
+import { View, div, svg } from 'gpui-kit';
 import {
+    agents,
     checking,
     closeOverlay,
     exec,
@@ -27,6 +28,7 @@ import {
     run as runCommand,
     settings,
     shared,
+    terminals,
     theme,
     watchFolder,
     writeTextFile,
@@ -47,6 +49,9 @@ import {
     pendingOf,
     pressLine,
     pressesWaiting,
+    stateLine,
+    stateParts,
+    turnClock,
     withPress,
 } from './band.js';
 import { splitBlocks } from './blocks.js';
@@ -76,7 +81,7 @@ import { typedMarkdown } from './typed.js';
 /** @typedef {import('gpui-kit').Context} Context */
 /** @typedef {import('./row-model.js').Row} Row */
 // the theme colours this file reads, each present in every herdr theme
-/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'dim' | 'foreground' | 'muted' | 'raised' | 'selected', Color>} Theme */
+/** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'dim' | 'foreground' | 'muted' | 'raised' | 'selected' | 'working', Color>} Theme */
 
 // the readable column of a narrow look (the old chat's), and the share of the column a bubble may take
 const NARROW = 820;
@@ -354,6 +359,8 @@ export default class Chat extends View {
     /** the band as last drawn: a tick that finds it changed draws again */
     bandKey = '';
     isPressWatched = false;
+    /** Stop was pressed and the turn still works: a background task Esc cannot stop */
+    isStuck = false;
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
     wake = () => {};
@@ -511,9 +518,56 @@ export default class Chat extends View {
                     .text_color(t.muted)
                     .child(this.note),
             );
+        const drawn = this.drawnNow(Date.now());
+        this.bandKey = JSON.stringify(drawn);
         return root
-            .child(this.band(this.bandNow(Date.now()), t))
-            .child(this.quill(this.box, t));
+            .child(this.band(drawn.band, t))
+            .child(this.quill(this.box, t))
+            .child(this.bar(drawn.bar, t));
+    }
+
+    /** the band and the bottom bar as they draw now @param {number} now */
+    drawnNow(now) {
+        const band = this.bandNow(now);
+        return { band, bar: this.barNow(now, band.meters.wait) };
+    }
+
+    /**
+     * the bottom bar as it draws now: a spinner or an idle ring, what the turn does, its clock, and Stop
+     * @param {number} now
+     * @param {string | null} wait what the idle thread waits on, as the deck read it
+     */
+    barNow(now, wait) {
+        const status =
+            agents().find((agent) => agent.address === this.address)?.status ??
+            'idle';
+        const isWorking = status === 'working';
+        const turnAt = this.model.turnAt();
+        const parts = stateParts({
+            hasTurnAt: turnAt !== null,
+            isStuck: this.isStuck,
+            status,
+        });
+        const report = isWorking
+            ? terminals().find((terminal) => terminal.address === this.address)
+                  ?.report
+            : null;
+        return {
+            clock:
+                parts.hasClock && turnAt !== null
+                    ? turnClock(now - turnAt)
+                    : null,
+            hasStop: parts.hasStop && this.address !== null,
+            isWorking,
+            line: stateLine({
+                isBlocked: status === 'blocked',
+                isStuck: isWorking && this.isStuck,
+                isWorking,
+                msg: typeof report === 'object' ? report?.msg : null,
+                wait,
+            }),
+            mark: parts.mark,
+        };
     }
 
     /**
@@ -567,7 +621,7 @@ export default class Chat extends View {
                 store = JSON.parse(text ?? 'null');
             } catch {}
             this.override = overrideOf(store, Date.now());
-            if (JSON.stringify(this.bandNow(Date.now())) !== this.bandKey)
+            if (JSON.stringify(this.drawnNow(Date.now())) !== this.bandKey)
                 cx.notify();
         });
     }
@@ -598,7 +652,6 @@ export default class Chat extends View {
      * @param {Theme} t
      */
     band({ buttons, meters }, t) {
-        this.bandKey = JSON.stringify({ buttons, meters });
         /** @param {string} name @param {number | null} pct @param {number} warnAt */
         const meter = (name, pct, warnAt) =>
             h_flex()
@@ -720,6 +773,110 @@ export default class Chat extends View {
     }
 
     /**
+     * the bar under the quill: the thread's state, its turn clock, and Stop on the far right, which stays pressable
+     * while the line truncates in a narrow window
+     * @param {ReturnType<Chat['barNow']>} now
+     * @param {Theme} t
+     */
+    bar({ clock, hasStop, isWorking, line, mark }, t) {
+        return h_flex()
+            .id('chat-bar-row')
+            .w_full()
+            .flex_none()
+            .justify_center()
+            .px(18)
+            .pb(10)
+            .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
+            .child(
+                h_flex()
+                    .w_full()
+                    .max_w(this.column())
+                    .h(26)
+                    .px(14)
+                    .gap(8)
+                    .items_center()
+                    .text_size(12)
+                    .text_color(t.muted)
+                    .child(
+                        mark === 'spinner'
+                            ? svg('mods/workspace-chrome/spinner.svg')
+                                  .size(12)
+                                  .flex_none()
+                                  .text_color(t.working)
+                                  .spin(900)
+                            : div()
+                                  .size(10)
+                                  .flex_none()
+                                  .rounded_full()
+                                  .border(1)
+                                  .border_color(t.dim),
+                    )
+                    .child(
+                        div()
+                            .id('chat-bar-line')
+                            .flex_1()
+                            .min_w(0)
+                            .truncate()
+                            .text_color(isWorking ? t.foreground : t.muted)
+                            .tooltip(line)
+                            .child(line),
+                    )
+                    .when(clock !== null, (el) =>
+                        el.child(
+                            div()
+                                .flex_none()
+                                .text_color(t.dim)
+                                .child(clock ?? ''),
+                        ),
+                    )
+                    .when(hasStop, (el) =>
+                        el.child(
+                            div()
+                                .id('chat-stop')
+                                .flex_none()
+                                .px(10)
+                                .py(3)
+                                .rounded(6)
+                                .bg(t.raised)
+                                .text_color(t.foreground)
+                                .cursor_pointer()
+                                .hover((style) => style.bg(t.border))
+                                .tooltip(
+                                    "Stop Claude's turn (Esc in the thread)",
+                                )
+                                .child('Stop')
+                                .on_click((_event, cx) => this.stop(cx)),
+                        ),
+                    ),
+            );
+    }
+
+    /**
+     * Stop presses Esc in the thread, never `hc interrupt`: that presses Ctrl+C, and a second one quits Claude. a turn
+     * still working 3 s later runs a background task Esc cannot stop, and the bar says so for a while
+     * @param {Context} cx
+     */
+    stop(cx) {
+        const address = this.address;
+        if (!address) return;
+        cx.spawn(async () => {
+            await hc(['keys', address, 'esc']);
+        });
+        cx.timer.after(3000, (later) => {
+            const isStill =
+                agents().find((agent) => agent.address === address)?.status ===
+                'working';
+            if (!isStill || this.address !== address) return;
+            this.isStuck = true;
+            later.notify();
+            later.timer.after(8000, (after) => {
+                this.isStuck = false;
+                after.notify();
+            });
+        });
+    }
+
+    /**
      * 🚦 and 🎛️ act at once; wind, hot, waker, AFK and 🔓 write a press the stash answers, the state it asks for
      * shown until then
      * @param {import('./band.js').BandButton} btn
@@ -772,7 +929,7 @@ export default class Chat extends View {
                 .flex_none()
                 .justify_center()
                 .px(18)
-                .pb(12)
+                .pb(4)
                 // opened as a window, a press herdr is not told to keep drags it: only the head row moves it
                 .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
                 .child(

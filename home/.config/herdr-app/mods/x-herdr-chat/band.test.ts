@@ -19,6 +19,7 @@ import {
     stateLine,
     stateParts,
     statesShown,
+    turnClock,
     withPress,
 } from './band.js';
 
@@ -586,5 +587,15 @@ describe('a press waits until the state reads it', () => {
                 now,
             ),
         ).toEqual({});
+    });
+});
+
+describe('the turn clock reads in whole minutes', () => {
+    test.each([
+        [20_000, '<1 min'],
+        [4 * 60_000 + 59_000, '4 min'],
+        [65 * 60_000, '1 h 05 min'],
+    ])('%i ms reads «%s»', (ms, line) => {
+        expect(turnClock(ms)).toBe(line);
     });
 });

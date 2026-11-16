@@ -17,6 +17,7 @@ import { claudeQueueAfter, isHisQueued, queuedWords } from './queued.js';
  * @property {string | null} replyId the reply's message id: more text of the same message joins this row
  * @property {string[]} tools the names of the tool calls a tool row folds, in order
  * @property {boolean} isWaiting his message in Claude Code's queue, no turn has taken it yet
+ * @property {boolean} isTurnStart his prompt that started a turn, never words a running turn took in
  */
 
 // a conversation line opens with this key; api requests, snapshots and modes open with "type" and are never parsed
@@ -65,6 +66,7 @@ function rowsOf(line) {
     const row = (kind, text, rowId = id) => ({
         at: textOf(entry.timestamp) || null,
         id: rowId,
+        isTurnStart: false,
         isWaiting: false,
         kind,
         replyId: kind === 'reply' ? textOf(message.id) || null : null,
@@ -94,7 +96,7 @@ function rowsOf(line) {
     if (entry.type === 'user') {
         const said = saidIn(content);
         return said.trim() && !NOT_HIS_WORDS.test(said)
-            ? [row('mine', said)]
+            ? [{ ...row('mine', said), isTurnStart: true }]
             : [];
     }
     if (entry.type !== 'assistant') return [];
@@ -207,6 +209,7 @@ export function createRowModel() {
                             ? new Date(queued.at).toISOString()
                             : null,
                         id: `waiting-${++waitingSerial}`,
+                        isTurnStart: false,
                         isWaiting: true,
                         kind: 'mine',
                         replyId: null,
@@ -263,5 +266,13 @@ export function createRowModel() {
         },
         /** the thread's rows, oldest first; the same array and the same row objects across updates */
         rows: /** @type {readonly Row[]} */ (rows),
+        /** when the newest turn started, in ms: his last prompt; null with none loaded */
+        turnAt() {
+            for (let i = rows.length - 1; i >= 0; i--) {
+                const at = rows[i]?.isTurnStart ? rows[i]?.at : null;
+                if (at) return Date.parse(at) || null;
+            }
+            return null;
+        },
     };
 }

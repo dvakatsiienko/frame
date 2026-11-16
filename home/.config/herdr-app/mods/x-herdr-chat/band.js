@@ -54,6 +54,15 @@ export function stateParts({ status, isStuck, hasTurnAt }) {
     };
 }
 
+/** a running turn's length in whole minutes: «<1 min», «4 min», «1 h 05 min» @param {number} ms */
+export const turnClock = (ms) => {
+    const m = Math.max(0, Math.floor(ms / 60000));
+    if (m < 1) return '<1 min';
+    return m < 60
+        ? `${m} min`
+        : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min`;
+};
+
 // a meter's lit cells: any use lights one, so 1 % never reads as empty
 /** @param {number | null} pct @param {number} cells @returns {number} */
 export const meterCells = (pct, cells) =>

@@ -453,3 +453,23 @@ describe('words that joined a turn are his messages', () => {
         expect(model.rows).toHaveLength(0);
     });
 });
+
+describe('the turn clock starts at his prompt', () => {
+    test('his prompt is when the turn started', () => {
+        const model = createRowModel();
+        model.add([mine('go')]);
+        expect(model.turnAt()).toBe(Date.parse('2026-11-16T16:45:39.060Z'));
+    });
+
+    test('a prompt taken mid-turn keeps the clock running', () => {
+        const model = createRowModel();
+        model.add([mine('go'), reply('working'), taken('also the tests')]);
+        expect(model.turnAt()).toBe(Date.parse('2026-11-16T16:45:39.060Z'));
+    });
+
+    test('a thread with no prompt of his has no turn to time', () => {
+        const model = createRowModel();
+        model.add([reply('hi')]);
+        expect(model.turnAt()).toBeNull();
+    });
+});
