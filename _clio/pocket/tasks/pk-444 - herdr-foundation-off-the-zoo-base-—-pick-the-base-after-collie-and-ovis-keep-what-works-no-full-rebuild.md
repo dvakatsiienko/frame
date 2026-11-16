@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T15:42:00Z'
+updated_date: '2026-11-16T15:48:00Z'
 labels:
   - m
 dependencies: []
@@ -280,4 +280,6 @@ raw drop (2026-11-16 17:38, dima, herdr-typed): wow i like egg basket ui MUCH be
 what off: ctx meters in band (ask codie to polish it, it currently looks off, make it pretty and beautfiul. i now switch back to my m
 /Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794843417547.png
 /Users/dima/.config/herdr-app/data/x-herdr-chatter/shots/shot-1794843430906.png
+
+17:48 correction to W118's gloss (wishkeeper): «AB SS for your look» are his two A/B shots given to clio for her look; he asked nothing of the herdr lane there
 <!-- SECTION:NOTES:END -->
