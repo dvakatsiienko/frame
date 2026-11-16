@@ -89,4 +89,6 @@ PK-442:W18 (2026-11-16 20:25, dima): linear cap: pricing pages still say 250 on 
 close: PK-442:W1–W18 accounted in the line above — W4–W11, W13–W17 done; W1, W2, W3, W12 dropped (collectors stay, no new labels); W18 answered
 
 close: W1 dropped, W2 dropped (collectors stay, dima 2026-11-16 20:17); W3 dropped, W12 dropped (no new labels, dima 2026-11-16 20:17, ticked o100)
+
+close: PK-442:W1 dropped on o100 (collectors stay); PK-442:W2 dropped on o100 (collectors stay); PK-442:W3 dropped on o100 (no new labels); PK-442:W12 dropped on o100 (no new labels)
 <!-- SECTION:NOTES:END -->
