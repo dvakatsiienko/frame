@@ -21,6 +21,7 @@ import {
     runningThreads,
     savePress,
     stateOfPid,
+    steerKeyNote,
     steerKeyPress,
     threadFacts,
     tickAll,
@@ -718,6 +719,23 @@ describe('Enter in a steer box ticks, cmd-enter replays, each a second time take
     test('a locked ask takes no key', () => {
         expect(steerKeyPress('locked', false, false)).toBeNull();
         expect(steerKeyPress('locked', true, false)).toBeNull();
+    });
+});
+
+describe('a key that does nothing says why under the steer box', () => {
+    test('Enter on a guarded ask: it ticks by click only', () => {
+        expect(steerKeyNote('open', false, true)).toBe('Ticks by click only');
+        expect(steerKeyNote('replayed', false, true)).toBe(
+            'Ticks by click only',
+        );
+    });
+    test('a key that acts says nothing', () => {
+        expect(steerKeyNote('open', false, false)).toBeNull();
+        expect(steerKeyNote('ticked', false, true)).toBeNull();
+        expect(steerKeyNote('open', true, true)).toBeNull();
+    });
+    test('a locked ask stays quiet, its lock already shown', () => {
+        expect(steerKeyNote('locked', false, true)).toBeNull();
     });
 });
 

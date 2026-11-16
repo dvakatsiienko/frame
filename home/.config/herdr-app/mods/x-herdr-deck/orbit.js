@@ -395,6 +395,17 @@ export function steerKeyPress(state, isCmd, isGated) {
     return isGated ? null : 'tick';
 }
 
+/**
+ * the line under a steer box when its key did nothing: a guarded ask's tick is his click, never Enter
+ * @param {ReturnType<typeof tickState>} state @param {boolean} isCmd @param {boolean} isGated
+ * @returns {string | null}
+ */
+export function steerKeyNote(state, isCmd, isGated) {
+    return state !== 'locked' && !steerKeyPress(state, isCmd, isGated)
+        ? 'Ticks by click only'
+        : null;
+}
+
 // twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
 // reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)
 /**

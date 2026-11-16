@@ -42,6 +42,7 @@ import {
     runningThreads,
     savePress,
     stateOfPid,
+    steerKeyNote,
     steerKeyPress,
     threadFacts,
     tickAll,
@@ -147,6 +148,8 @@ async function sessions(shelf) {
 
 // with no key-up seen, a submit this close to the last one is the held key's repeat (his first repeat at 150 ms)
 const STEER_KEY_REPEAT_MS = 180;
+// how long a key that did nothing says why under its steer box
+const KEY_NOTE_MS = 3000;
 // a key-down and the submit it makes land this close together
 const STEER_DOWN_PAIR_MS = 60;
 
@@ -255,6 +258,8 @@ export default class Deck extends View {
         // the gated asks a «tick all» passed over, `sid:id`: each says it still needs his own press
         /** @type {Set<string>} */
         this.passedOver = new Set();
+        /** a key in a steer box that did nothing, and why, by ask key @type {Map<string, { text: string, until: number }>} */
+        this.keyNotes = new Map();
         /** @type {number | null} the last ⌘⇧K press seen */
         this.tickAsk = /** @type {number | null} */ (
             shared('deck.tickAll') ?? null
@@ -705,11 +710,17 @@ export default class Deck extends View {
                 if (`${s.sid}:${ask.id}` !== key) continue;
                 const sent =
                     this.sent.get(key)?.verdict ?? s.pending.get(ask.id);
-                const act = steerKeyPress(
-                    tickState(ask, sent),
-                    isCmd,
-                    Boolean(ask.isGated),
-                );
+                const state = tickState(ask, sent);
+                const act = steerKeyPress(state, isCmd, Boolean(ask.isGated));
+                const note = steerKeyNote(state, isCmd, Boolean(ask.isGated));
+                if (note) {
+                    this.keyNotes.set(key, {
+                        text: note,
+                        until: Date.now() + KEY_NOTE_MS,
+                    });
+                    cx.notify();
+                    cx.timer.after(KEY_NOTE_MS + 1, (later) => later.notify());
+                }
                 if (act === 'untick')
                     cx.spawn((cx) => this.unpress(cx, s, ask));
                 else if (act) cx.spawn((cx) => this.press(cx, s, ask, act));
@@ -920,6 +931,14 @@ export default class Deck extends View {
                                         ),
                                 ),
                             ),
+                    ),
+                )
+                .when((this.keyNotes.get(key)?.until ?? 0) > Date.now(), (el) =>
+                    el.child(
+                        div()
+                            .text_size(SIZE.secondary)
+                            .text_color(t.muted)
+                            .child(this.keyNotes.get(key)?.text ?? ''),
                     ),
                 )
                 .when(
