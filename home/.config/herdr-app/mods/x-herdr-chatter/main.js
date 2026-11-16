@@ -72,6 +72,7 @@ import {
     pressLine,
     stateLine,
     stateParts,
+    statesShown,
     withPress,
 } from './band.js';
 import { splitBlocks } from './blocks.js';
@@ -2003,6 +2004,8 @@ export default class ClaudeChat extends View {
     // The draft is written only where it changes (typing, a quote, a completion, a send), under the thread the quill shows:
     // a switch never writes, since the quill it leaves may not hold that thread's draft, and an empty one would erase it.
     reset(address) {
+        // the band's thread facts belong to the thread being left: they go now, never at the next read
+        if (this.states) this.states = statesShown(this.states, false);
         this.leftInBox = null;
         if (this.address) keepScroll(this.address, this.place());
         if (this.address)
@@ -2904,6 +2907,9 @@ export default class ClaudeChat extends View {
         const agent = this.target();
         if ((agent?.address ?? null) !== this.address) {
             this.reset(agent?.address ?? null);
+            // the new thread's band facts are read now, or right after the read in flight for the old one
+            this.statesAgain = true;
+            this.readStates(cx);
             cx.notify();
         }
         this.autoView(agent);
@@ -7184,10 +7190,13 @@ export default class ClaudeChat extends View {
         );
         if (this.statesBusy) return;
         this.statesBusy = true;
+        this.statesAgain = false;
         const pid = this.where?.container ? null : this.where?.pid;
         cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
             try {
-                const next = await bandStates(pid);
+                // a read that lands after the thread changed keeps only the fleet's facts
+                const shown = this.where?.container ? null : this.where?.pid;
+                const next = statesShown(await bandStates(pid), pid === shown);
                 if (JSON.stringify(next) !== JSON.stringify(this.states)) {
                     this.states = next;
                     cx.notify();
@@ -7198,6 +7207,7 @@ export default class ClaudeChat extends View {
                 if (this.settlePresses()) cx.notify();
             } finally {
                 this.statesBusy = false;
+                if (this.statesAgain) this.readStates(cx);
             }
         });
     }

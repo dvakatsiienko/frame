@@ -162,6 +162,17 @@ const WIND_SAY = {
     writing: 'writing its handoff',
 };
 
+/**
+ * the band's states once the shown thread is another one: the fleet's facts stay, the old thread's go, so no button
+ * shows or presses a thread that is no longer on screen
+ * @template {{ thread: unknown, presses: unknown }} S
+ * @param {S} states
+ * @param {boolean} isShown the states were read for the thread shown now
+ * @returns {S}
+ */
+export const statesShown = (states, isShown) =>
+    isShown ? states : { ...states, presses: {}, thread: null };
+
 // x-mod-stash's door for a session's 🍃 key, run in frame: `pnpm --silent mods:set second-wind-auto <sid> [on|off]`
 export const AUTO_WIND_DOOR = ['--silent', 'mods:set', 'second-wind-auto'];
 

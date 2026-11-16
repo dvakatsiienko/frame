@@ -15,6 +15,7 @@ import {
     pressLine,
     stateLine,
     stateParts,
+    statesShown,
     withPress,
 } from './band.js';
 
@@ -459,6 +460,24 @@ describe('🍃 second wind auto sits right of 🐦‍🔥 (FRM-625)', () => {
         };
         expect(await autoWind(deaf, 's1', false)).toBeNull();
         expect(store).toEqual({ s1: false });
+    });
+
+    test("another thread's state never stays on the band once the shown thread changed", () => {
+        const fleet = {
+            afk: { at: 1, on: false },
+            waker: { at: 1, on: true },
+        };
+        const states = {
+            fleet,
+            presses: { wind: { at: 1, on: true } },
+            thread: { hot: { since: 5 }, sid: 'thread-a', wind: 'asked' },
+        };
+        expect(statesShown(states, false)).toEqual({
+            fleet,
+            presses: {},
+            thread: null,
+        });
+        expect(statesShown(states, true)).toBe(states);
     });
 
     test('a read that started before a flip never draws over what the flip read', () => {
