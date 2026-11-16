@@ -245,16 +245,18 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ once he scrolls up, nothing but his own hand moves his view (FRM-562:W18, W19)
   - given he scrolled up in a thread's chat
   - when a reply, a tool line, a peer or plugin line, a turn end, a store change, a resize or a reload of the mod arrives
-  - then the text he reads stays where it is; only his scroll to the end or a click on the «↓ Newest» pill brings him back to following
+  - then the text he reads stays where it is; only his scroll to the end or a click on the «↓» pill brings him back to following
+  - and the end is the conversation's last screen of rows, never «the last row is on screen»: a step down inside a long last reply keeps him reading (dima, 2026-11-16 17:55: «fix it so nothing scrolls the chatter without me»)
+  - and a transcript read again (the first read after a reload, the same session re-read) keeps his place; only another conversation in the thread (a /clear, a resume) opens at its newest
   - and a row he reads that a relay or a redraw replaced leaves him where he is, never at the newest; only a thread he comes back to whose row is gone opens at its newest (W83, 21:16: «i scroll myself»)
-  - and the pill counts what arrived since he left the bottom: «↓ 3 new messages»
+  - and the pill is «↓» alone, small and muted at the view's bottom right; it counts what arrived since he left the bottom: «↓ 3» (his 17:55: «cut to ↓, smaller, out of center, less noisy»)
   - and each thread keeps its place across a tab switch, and across a reload of the mod (by the message's transcript id)
   - decision: «following» is a state he enters and leaves by his own scroll or click, never set by a redraw; the wheel only flips it (rows.js)
-  - not checked: by his hand in his window
+  - not checked: by his hand in his window; a drag of the scrollbar does not leave following (herdr's list hands a mod no scroll offset)
 - ✅ a resize keeps the chat on its newest message
   - given the chat is following, his own scroll at the end
   - when the tray or a panel opens or closes
-  - then the newest message stays in view and no «↓ Newest» shows (shots 17:39, tray and Files open and closed)
+  - then the newest message stays in view and no «↓» shows (shots 17:39, tray and Files open and closed)
 - ⬜ after a reload the caret sits at the draft's end
   - given a draft came back after a reload
   - when dima types on

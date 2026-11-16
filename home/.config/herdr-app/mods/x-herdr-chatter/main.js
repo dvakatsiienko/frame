@@ -134,7 +134,9 @@ import {
     SETTLED_READS,
     fileLinks,
     followAfterLostRow,
+    followAfterReread,
     followAfterWheel,
+    isAtTrueEnd,
     isPressUnderStrip,
     isRowClipped,
     measureOrder,
@@ -2977,10 +2979,17 @@ export default class ClaudeChat extends View {
                         this.relayIds = new Set();
                         this.claudeQueued.delete(address);
                         this.reads.delete(address);
-                        // another conversation in this thread (a /clear, a resume): it starts at its newest
-                        this.follow = true;
-                        this.stick = true;
-                        this.anchor = null;
+                        // another conversation in this thread (a /clear, a resume) starts at its newest; the first
+                        // read after a reload keeps the place reset() restored
+                        const shown = this.session?.sessionId;
+                        this.follow = followAfterReread(
+                            this.follow,
+                            shown,
+                            session.sessionId,
+                        );
+                        this.stick = this.follow;
+                        if (this.follow) this.anchor = null;
+                        this.reanchor = Boolean(this.anchor);
                         this.session = session;
                         this.file = file;
                         this.ensurePluginSkills();
@@ -6101,12 +6110,16 @@ export default class ClaudeChat extends View {
                 .on_mouse_down('left', (e) => {
                     this.pressX = (e.local_position?.x ?? -1) / z;
                     const y = (e.local_position?.y ?? -1) / z;
-                    // ↑ Previous message and ↓ Newest float 10 px in from the top and bottom, centered; the menu covers
-                    // what it is over: a press there is theirs, not the row's under it
+                    // ↑ Previous message floats 10 px in from the top, centered, ↓ at the bottom's right end; the menu
+                    // covers what it is over: a press there is theirs, not the row's under it
                     const isFloat =
                         !this.follow &&
-                        Math.abs(this.pressX - (this.viewW ?? 0) / 2) < 90 &&
-                        ((prev >= 0 && y < 40) || y > (this.viewH ?? 0) - 40);
+                        ((prev >= 0 &&
+                            y < 40 &&
+                            Math.abs(this.pressX - (this.viewW ?? 0) / 2) <
+                                90) ||
+                            (y > (this.viewH ?? 0) - 40 &&
+                                this.pressX > (this.viewW ?? 0) - 90));
                     this.pressFloat =
                         isFloat ||
                         Boolean(this.ctx) ||
@@ -6118,7 +6131,12 @@ export default class ClaudeChat extends View {
                 })
                 .on_scroll_wheel((e, cx) => {
                     this.wheelAt = Date.now();
-                    const isAtEnd = (this.range?.end ?? 0) >= rows.length;
+                    // the list sits under the log's 12 px top pad
+                    const isAtEnd = isAtTrueEnd(
+                        sizes,
+                        this.range,
+                        (this.viewH ?? 0) - 12,
+                    );
                     const follow = followAfterWheel(
                         this.follow,
                         e.delta?.y ?? 0,
@@ -6128,6 +6146,17 @@ export default class ClaudeChat extends View {
                     if (!follow && now - (this.keptAt ?? 0) > 500) {
                         this.keptAt = now;
                         keepScroll(this.address, this.place());
+                    }
+                    // the save above skips steps inside its 500 ms; one late save keeps the row his scroll ended on,
+                    // so a reload brings him back to it
+                    if (!follow && !this.isKeepQueued) {
+                        this.isKeepQueued = true;
+                        cx.spawn(async (/** @type {any} */ cx) => {
+                            await cx.sleep(600);
+                            this.isKeepQueued = false;
+                            if (!this.follow)
+                                keepScroll(this.address, this.place());
+                        });
                     }
                     // his own scroll ends any hold on a row, with no render for it
                     this.anchor = null;
@@ -6192,33 +6221,42 @@ export default class ClaudeChat extends View {
                             ),
                         )
                         .child(
+                            // ↓ back to the newest: small and quiet at the right end, clear of the scrollbar; the
+                            // count shows only while new messages wait
                             h_flex()
+                                .id('newest')
                                 .absolute()
                                 .bottom(10)
-                                .left(0)
-                                .right(0)
+                                .right(16)
+                                .h(px(22))
+                                .min_w(px(22))
+                                .px(px(6))
+                                .gap(px(4))
+                                .items_center()
                                 .justify_center()
-                                .child(
-                                    button(
-                                        t,
-                                        px,
-                                        'newest',
-                                        fresh > 0
-                                            ? `↓ ${fresh} new ${fresh === 1 ? 'message' : 'messages'}`
-                                            : '↓ Newest',
-                                        (_e, cx) => {
-                                            this.follow = true;
-                                            this.stick = true;
-                                            this.anchor = null;
-                                            keepScroll(
-                                                this.address,
-                                                this.place(),
-                                            );
-                                            cx.notify();
-                                        },
-                                        true,
-                                    ),
-                                ),
+                                .rounded_full()
+                                .border_1()
+                                .border_color(t.border)
+                                .bg(t.raised)
+                                .text_size(px(TEXT.sm))
+                                .text_color(t.muted)
+                                .cursor_pointer()
+                                .hover((s) =>
+                                    s.bg(t.hover).text_color(t.foreground),
+                                )
+                                .tooltip(
+                                    fresh > 0
+                                        ? `${fresh} new, go to the newest`
+                                        : 'Go to the newest',
+                                )
+                                .on_click((_e, cx) => {
+                                    this.follow = true;
+                                    this.stick = true;
+                                    this.anchor = null;
+                                    keepScroll(this.address, this.place());
+                                    cx.notify();
+                                })
+                                .child(fresh > 0 ? `↓ ${fresh}` : '↓'),
                         ),
                 )
         );

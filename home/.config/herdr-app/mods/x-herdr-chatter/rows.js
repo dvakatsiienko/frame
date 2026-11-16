@@ -76,16 +76,50 @@ export function measureOrder(keys, heights, sameReads, near) {
 }
 
 /**
- * following the newest after a wheel step: up stops following, down at the list's end follows again
+ * following the newest after a wheel step: up stops following, down at the conversation's end (isAtTrueEnd) follows again
  * @param {boolean} follow
  * @param {number} dy the wheel's delta, positive up
- * @param {boolean} isAtEnd the last row is on screen
+ * @param {boolean} isAtEnd he sits at the end
  */
 export function followAfterWheel(follow, dy, isAtEnd) {
     if (dy > 0) return false;
     if (dy < 0 && isAtEnd) return true;
     return follow;
 }
+
+// how far above the end still counts as sitting at it: about five lines of text
+export const END_SLACK = 100;
+
+/**
+ * he sits at the conversation's end: the rows drawn are its last screen. herdr's list hands a mod no scroll offset,
+ * so the end is read from the drawn range against the stated heights, and holds only where that read is exact to
+ * END_SLACK: the first row of the last screen may hide no more than that above the view (he could be reading that
+ * part), and a last row taller than the view never counts. where the read is not exact, the ↓ pill is the way back
+ * @param {number[]} sizes every row's height, in order
+ * @param {{ start: number, end: number } | null | undefined} range the rows the list drew last
+ * @param {number | null | undefined} viewH the list's height, in the sizes' unit
+ */
+export function isAtTrueEnd(sizes, range, viewH) {
+    if (!range || !viewH || range.end < sizes.length) return false;
+    const last = sizes.length - 1;
+    if (last >= 0 && sizes[last] >= viewH) return false;
+    let firstOfLastScreen = sizes.length;
+    let sum = 0;
+    while (firstOfLastScreen > 0 && sum < viewH)
+        sum += sizes[--firstOfLastScreen];
+    return range.start >= firstOfLastScreen && sum - viewH <= END_SLACK;
+}
+
+/**
+ * following the newest once a thread's transcript is read from its start: only another conversation in the thread (a
+ * /clear, a resume) starts at its newest. the first read after a reload of the mod, and the same session read again,
+ * leave him where he reads
+ * @param {boolean} follow
+ * @param {string | null | undefined} shownSession the session the chat showed, none before its first read
+ * @param {string} session the session read now
+ */
+export const followAfterReread = (follow, shownSession, session) =>
+    shownSession && shownSession !== session ? true : follow;
 
 /**
  * following the newest once a held row is gone: only a thread he came back to (a /clear, a trimmed transcript) goes to

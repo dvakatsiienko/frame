@@ -7,7 +7,9 @@ import {
     MEASURE_NEW,
     fileLinks,
     followAfterLostRow,
+    followAfterReread,
     followAfterWheel,
+    isAtTrueEnd,
     isPressUnderStrip,
     isRowClipped,
     measureOrder,
@@ -104,6 +106,69 @@ describe('the wheel only flips following the newest', () => {
     test('a sideways swipe changes nothing', () => {
         expect(followAfterWheel(true, 0, false)).toBe(true);
         expect(followAfterWheel(false, 0, true)).toBe(false);
+    });
+});
+
+describe('he sits at the end only when the last screen of rows is the one drawn', () => {
+    const ten = Array.from({ length: 10 }, () => 100);
+
+    test('the last screen of rows is drawn: the end', () => {
+        expect(isAtTrueEnd(ten, { end: 10, start: 7 }, 300)).toBe(true);
+    });
+
+    test('the last row is drawn but the view starts a row higher: still reading', () => {
+        expect(isAtTrueEnd(ten, { end: 10, start: 6 }, 300)).toBe(false);
+    });
+
+    test('the last row is not drawn: still reading', () => {
+        expect(isAtTrueEnd(ten, { end: 9, start: 6 }, 300)).toBe(false);
+    });
+
+    test('a last row taller than the view tells nothing: he may read its middle (dima, 17:55)', () => {
+        expect(
+            isAtTrueEnd([100, 100, 100, 900], { end: 4, start: 3 }, 400),
+        ).toBe(false);
+    });
+
+    test('a tall row heads the last screen: the drawn range cannot tell its top from the end, so not the end', () => {
+        expect(isAtTrueEnd([2000, 300], { end: 2, start: 0 }, 400)).toBe(false);
+    });
+
+    test('the row heading the last screen hides a few lines at most: the end', () => {
+        expect(isAtTrueEnd([500, 150, 300], { end: 3, start: 1 }, 400)).toBe(
+            true,
+        );
+    });
+
+    test('no rows at all: the end', () => {
+        expect(isAtTrueEnd([], { end: 0, start: 0 }, 400)).toBe(true);
+    });
+
+    test('a conversation shorter than the view is all at the end', () => {
+        expect(isAtTrueEnd([100, 100], { end: 2, start: 0 }, 600)).toBe(true);
+    });
+
+    test('nothing drawn yet, or no view size: not the end', () => {
+        expect(isAtTrueEnd(ten, null, 300)).toBe(false);
+        expect(isAtTrueEnd(ten, { end: 10, start: 7 }, 0)).toBe(false);
+    });
+});
+
+describe('a transcript read again keeps him where he reads', () => {
+    test('the first read after a reload of the mod keeps the place it restored', () => {
+        expect(followAfterReread(false, null, 's1')).toBe(false);
+    });
+
+    test('the same session read again, mid-thread: he stays', () => {
+        expect(followAfterReread(false, 's1', 's1')).toBe(false);
+    });
+
+    test('the same session read again while following: still following', () => {
+        expect(followAfterReread(true, 's1', 's1')).toBe(true);
+    });
+
+    test('another conversation in the thread (a /clear, a resume) starts at its newest', () => {
+        expect(followAfterReread(false, 's1', 's2')).toBe(true);
     });
 });
 
