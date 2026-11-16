@@ -3,10 +3,10 @@ id: PK-405
 title: >-
   herdr chat: emoji reactions as small events with their own rules, 13 tips from
   a claude.ai thread
-status: open
+status: done
 assignee: []
 created_date: '2026-11-14T19:16:00Z'
-updated_date: '2026-11-16T15:38:00Z'
+updated_date: '2026-11-16T20:57:00Z'
 labels:
   - s
 dependencies: []
@@ -44,4 +44,7 @@ start with 2, 3 and 5: they are the parts that are hard to add later.
 
 <!-- SECTION:NOTES:BEGIN -->
 PK-405:W1 (2026-11-16 17:36, dima): chat emoji reactions: review how it changes now that base ftr can be borrowed from shepardr.
+
+ticket: FRM-582
+close: 22:57 the 13 tips and W1 folded into FRM-582 (his 22:27 «fold everything into a real linear ticket»), clio
 <!-- SECTION:NOTES:END -->
