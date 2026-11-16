@@ -25,4 +25,4 @@ the brief says `mode: stray`: you are the parked chore codie any clio feeds (FRM
 ## between batches
 
 - park: you stay alive and idle for the next batch
-- past ~40 % context, a second wind before the next batch; a stop parks you with a handoff
+- the second wind is the mod's own, at 55 % (dima, 2026-11-17); a stop parks you with a handoff

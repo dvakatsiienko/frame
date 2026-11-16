@@ -1379,6 +1379,7 @@ describe('close on done', () => {
                     GIT_COMMITTER_DATE: `${dayAgo + at} +0000`,
                 },
                 stdio: 'ignore',
+                timeout: 10_000,
             });
         git(0, 'init', '-q');
         writeFileSync(join(tasks, 'pk-443.md'), item.text);
