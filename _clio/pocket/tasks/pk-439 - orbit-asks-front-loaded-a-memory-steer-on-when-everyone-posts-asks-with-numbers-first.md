@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T15:38:00Z'
+updated_date: '2026-11-16T19:21:00Z'
 labels:
   - s
 dependencies: []
@@ -67,4 +67,10 @@ raw drop (2026-11-16 inbox, dima): - before implementation - i want details and 
 raw drop (2026-11-16 inbox, dima): - and actually tell - why you tend to post asks at the end of a turn - is there is a reason for that?
 
 PK-439:W11 (2026-11-16 17:36, dima): orbit asks front-loaded: shape, grill, sign; plan when.
+
+PK-439:W12 (2026-11-16 21:17, dima): orbit: where does the orbit contract sit now, in all places? How does fleet know how and when to use orbit, and where does this grill's steer land? Does the orbit spec have a nudge that tells you to use it, like auto-second-wind? If the contract lives only in fleet-mods.md, is it worth moving the orbit spec into an actual nudge? Why keep the rules far from the orbit mod, when fleet memory is wasted once the mod is disabled? Maybe move the orbit spec into orbit itself, or would that clutter the chat history? He does not know the proper solution and is not sure his proposal is good. He wants to balance the in-resident fleet memory against the mods: a streamlined, efficient, high-performing architecture with no unnecessary overhead. Propose how to have it properly.
+
+PK-439:W13 (2026-11-16 21:17, dima): q1: he does not want to rush or force this steer; it is only a recommendation. The sooner you post an ask into orbit, the sooner he can tick it, and his tick can reach you in the same turn you ask. Calm pace, no rush, but asks you can post sooner are never postponed to the end of the turn.
+
+PK-439:W14 (2026-11-16 21:17, dima): let's land this grill, then see where we are, then plan the halt. Tell him when the grill has landed. Then run /clio:lowtide-peek-chunk on herdr + mods.
 <!-- SECTION:NOTES:END -->

@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T19:05:00Z'
+updated_date: '2026-11-16T19:21:00Z'
 labels:
   - m
 dependencies: []
@@ -372,4 +372,12 @@ PK-444:W183 (2026-11-16 20:43, dima): were all his wishes recovered? Important: 
 PK-444:W181 (2026-11-16 21:04, dima): drag and drop, answering which drag fails: the tabs on top and the agents list on the left. all drag and drops in herdr currently suck: very basic, no visual indicator that an item is being dragged. it works mechanically, so it is not critical, just bad ux. it is a well-known herdr limitation, so probably not a thing to spend much effort on if it just works.
 
 renumber (21:05, clio): the 21:04 drag and drop line above, written as W181, is PK-444:W184; W181 stays the 20:43 screenshots line.
+
+PK-444:W185 (2026-11-16 20:59, dima): the old chat deleted 5 of his shots: cause confirmed, fix written, lands right after his reload look. He asks: what is reload look?
+
+PK-444:W186 (2026-11-16 21:01, dima): so shepherdr borrows are solved and survived? Or does he tell the borrow picks a second time?
+
+PK-444:W184 (2026-11-16 21:04, dima): question for later: «drag and drop still sucks»: which drag fails? Drag-n-drop for tabs (top) and the agents list (left). All drag-and-drop in herdr is very basic: no visual indicator while dragging. It works mechanically, but gives too little feedback that a drop is happening. A known herdr limitation, so not worth much effort if it works as it is.
+
+PK-444:W187 (2026-11-16 21:17, dima): question: are the chat settings from zoo, from herdr native, or from shepherdr?
 <!-- SECTION:NOTES:END -->
