@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T19:04:00Z'
+updated_date: '2026-11-16T19:05:00Z'
 labels:
   - m
 dependencies: []
@@ -370,4 +370,6 @@ PK-444:W182 (2026-11-16 20:43, dima): solve the screenshot mapping: ask helper-l
 PK-444:W183 (2026-11-16 20:43, dima): were all his wishes recovered? Important: he does not want us to build the wrong thing again.
 
 PK-444:W181 (2026-11-16 21:04, dima): drag and drop, answering which drag fails: the tabs on top and the agents list on the left. all drag and drops in herdr currently suck: very basic, no visual indicator that an item is being dragged. it works mechanically, so it is not critical, just bad ux. it is a well-known herdr limitation, so probably not a thing to spend much effort on if it just works.
+
+renumber (21:05, clio): the 21:04 drag and drop line above, written as W181, is PK-444:W184; W181 stays the 20:43 screenshots line.
 <!-- SECTION:NOTES:END -->
