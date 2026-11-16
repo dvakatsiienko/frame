@@ -850,7 +850,7 @@ export default class Chat extends View {
                         .flex_none()
                         .text_size(12)
                         .text_color(t.dim)
-                        .child(name === 'ctx' ? '🧠' : '🗓'),
+                        .child(name === 'ctx' ? '🧠' : '🫙'),
                 )
                 .child(
                     div()

@@ -41,7 +41,7 @@ export const pages = [
                         },
                         default: 80,
                         key: 'chatter.meter.week.warn',
-                        title: '🗓 week turns amber at',
+                        title: '🫙 week turns amber at',
                         why: 'how much of the weekly usage is spent before its bar warns you',
                     },
                 ],

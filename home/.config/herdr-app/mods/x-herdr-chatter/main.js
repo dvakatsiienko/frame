@@ -6809,7 +6809,7 @@ export default class ClaudeChat extends View {
                         .flex_none()
                         .text_size(px(TEXT.sm))
                         .text_color(t.dim)
-                        .child(name === 'ctx' ? '🧠' : '🗓'),
+                        .child(name === 'ctx' ? '🧠' : '🫙'),
                 )
                 .child(
                     div()
