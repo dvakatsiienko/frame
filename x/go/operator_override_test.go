@@ -132,9 +132,6 @@ func TestOverrideStillStopsOnHoldAndBrake(t *testing.T) {
 	}{
 		{"his hold", "held by dima's hold", func(w *mergeWorld) { write(t, holdRecordOf(w), `{"prs":["7"]}`) }},
 		{"a hold record that does not read", "unreadable", func(w *mergeWorld) { write(t, holdRecordOf(w), `not json`) }},
-		{"the brake", "brake on", func(w *mergeWorld) {
-			w.hub.pages[repoPath+"/issues"] = `[{"number":8,"labels":[{"name":"` + brakeLabel + `"}]}]`
-		}},
 		{"a brake that does not read", "the brake did not read", func(w *mergeWorld) { w.hub.pages[repoPath+"/issues"] = serverDown }},
 	}
 	for _, c := range cases {
@@ -149,6 +146,111 @@ func TestOverrideStillStopsOnHoldAndBrake(t *testing.T) {
 				t.Fatalf("exit %d, %d merge calls, want %q in\n%s", got.code, len(merges), c.want, got.stdout)
 			}
 		})
+	}
+}
+
+// the brake under his word or band press is one warning, never a stop; each of its three sources is named (FRM-631)
+func TestOverrideLiftsEachBrakeWithOneWarning(t *testing.T) {
+	t.Parallel()
+	label := func(w *mergeWorld) string {
+		w.hub.pages[repoPath+"/issues"] = `[{"number":8,"labels":[{"name":"` + brakeLabel + `"}]}]`
+		return "label #8: a stack landed a head the gate never read"
+	}
+	cases := []struct {
+		name, store string
+		setup       func(t *testing.T, w *mergeWorld) string
+	}{
+		{"the label", prsOn(), func(_ *testing.T, w *mergeWorld) string { return label(w) }},
+		{"the label, from his band press", `{"prs":{"by":"band","at":"` + overrideAt + `"}}`, func(_ *testing.T, w *mergeWorld) string { return label(w) }},
+		{"this mac's record", prsOn(), func(t *testing.T, w *mergeWorld) string {
+			write(t, filepath.Join(w.state, "merge-brake", "o_r.json"), `{"pr":"8","why":"landed a head unread"}`)
+			return "record #8 landed a head unread"
+		}},
+		{"a revert", prsOn(), func(t *testing.T, w *mergeWorld) string {
+			return "revert " + short(brakeOnFor(t, w)) + " reverts "
+		}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w, store := overrideWorld(t, c.store, "x/go/merge_auto.go")
+			want := c.setup(t, w)
+			w.env = append(w.env, "X_NOW="+brakeNow)
+
+			got := w.run(t, "7", "--apply")
+
+			merges := w.hub.sent("PUT ")
+			if got.code != 0 || len(merges) != 1 {
+				t.Fatalf("exit %d, %d merge calls, want the pr landed past the brake:\n%s", got.code, len(merges), got.stdout)
+			}
+			if brake := envelopeOf(got).Data.Brake; !strings.HasPrefix(brake, want) || strings.Contains(brake, "\n") || strings.Contains(brake, "release") {
+				t.Errorf("brake %q, want one line starting %q, with no release door", brake, want)
+			}
+			if !strings.Contains(merges[0], "Brake-lifted: "+want) {
+				t.Errorf("the squash message names no lifted brake: %s", merges[0])
+			}
+			if line := read(t, filepath.Join(filepath.Dir(store), "operator-override.log")); !strings.Contains(line, "brake lifted: "+want) {
+				t.Errorf("the merge record %q does not carry the lifted brake", line)
+			}
+		})
+	}
+}
+
+// a dry plan has no summary: the decision's json and the brake step's own line carry the warning
+func TestOverrideDryPlanNamesTheLiftedBrake(t *testing.T) {
+	t.Parallel()
+	w, _ := overrideWorld(t, prsOn(), "x/go/merge_auto.go")
+	revert := brakeOnFor(t, w)
+	w.env = append(w.env, "X_NOW="+brakeNow)
+
+	got := w.run(t, "7")
+	board := w.run(t, "7", "--board")
+
+	if merges := w.hub.sent("PUT "); len(merges) != 0 || !strings.Contains(got.stdout, `"brake":"revert `+short(revert)) {
+		t.Fatalf("exit %d, %d merge calls, want the plan's json to name the lifted revert %s:\n%s", got.code, len(merges), short(revert), got.stdout)
+	}
+	if !strings.Contains(board.stdout, "lifted by operator-override prs") {
+		t.Errorf("the brake step's line does not say the brake is lifted:\n%s", board.stdout)
+	}
+}
+
+// what does not lift: no grant of his, and a shift's grant until dima says it does; the refusal reads as at base
+func TestBrakeWithoutALiftingGrantStopsAsAtBase(t *testing.T) {
+	t.Parallel()
+	cases := []struct{ name, store string }{
+		{"no store", ""},
+		{"the off switch's empty store", `{}`},
+		{"an all grant alone", `{"all":{"by":"word","at":"` + overrideAt + `","pid":1,"start":"x"}}`},
+		{"a prs grant past its until", `{"prs":{"by":"word","at":"` + overrideAt + `","until":"2026-10-01T00:00:00Z"}}`},
+		{"a shift's prs grant", `{"prs":{"by":"shift","at":"` + overrideAt + `"}}`},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w, _ := overrideWorld(t, c.store, "x/go/merge_auto.go")
+			revert := brakeOnFor(t, w)
+			w.env = append(w.env, "X_NOW="+brakeNow)
+
+			got := w.run(t, "7", "--apply")
+
+			want := "wait: brake on, needs dima's word — " + short(revert) + " reverts "
+			if merges := w.hub.sent("PUT "); got.code != 1 || len(merges) != 0 || !strings.Contains(envelopeOf(got).Error, want) || got.next != "x lane merge-auto 7" || strings.Contains(got.stdout, "lifted") {
+				t.Fatalf("exit %d, %d merge calls, next %q, want %q and no lifted wording:\n%s", got.code, len(merges), got.next, want, got.stdout)
+			}
+		})
+	}
+}
+
+// the brake check reads the fleet's brake, never the override: it still names the brake under a grant
+func TestBrakeCheckStillNamesTheBrakeUnderTheOverride(t *testing.T) {
+	t.Parallel()
+	w, _ := overrideWorld(t, prsOn(), "script/foo.ts")
+	w.hub.pages[repoPath+"/issues"] = `[{"number":8,"labels":[{"name":"` + brakeLabel + `"}]}]`
+
+	got := xIn(t, t.TempDir(), append(w.env, "X_OVERRIDE_CLONES=o/r="+w.clone), "lane", "merge-auto", "--brake-check", "--json")
+
+	if got.code != 0 || !strings.Contains(got.stdout, "#8") {
+		t.Fatalf("exit %d, want the brake named:\n%s", got.code, got.stdout)
 	}
 }
 
@@ -278,13 +380,16 @@ func overrideCheck(t *testing.T, w *mergeWorld) (ran, overrideCheckReport) {
 func TestOverrideCheckNamesWhatWouldStopEachPr(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
-		name, store, stops string
-		lands              bool
-		setup              func(w *mergeWorld)
+		name, store, stops, brake string
+		lands                     bool
+		setup                     func(w *mergeWorld)
 	}{
 		{name: "on, a self-edit lands", store: prsOn(), lands: true},
 		{name: "on, a held pr names the hold", store: prsOn(), stops: "held by dima's hold", setup: func(w *mergeWorld) { write(t, holdRecordOf(w), `{"prs":["7"]}`) }},
 		{name: "off, a self-edit names his word", stops: "self-edit, needs dima's word"},
+		{name: "on, a braked pr lands and names the brake it lifts", store: prsOn(), lands: true, brake: "label #8", setup: func(w *mergeWorld) {
+			w.hub.pages[repoPath+"/issues"] = `[{"number":8,"labels":[{"name":"` + brakeLabel + `"}]}]`
+		}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -300,6 +405,9 @@ func TestOverrideCheckNamesWhatWouldStopEachPr(t *testing.T) {
 			}
 			if stops := report.Prs[0].Stops; (c.lands && stops != "") || !strings.Contains(stops, c.stops) {
 				t.Errorf("stops %q, want %q", stops, c.stops)
+			}
+			if brake := report.Prs[0].Brake; (c.brake == "") != (brake == "") || !strings.HasPrefix(brake, c.brake) {
+				t.Errorf("brake %q, want one starting %q", brake, c.brake)
 			}
 			if isOn := report.Override != nil && report.Override.By == "word"; isOn != (c.store != "") {
 				t.Errorf("the report's override = %+v, with store %q", report.Override, c.store)

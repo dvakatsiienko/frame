@@ -1969,3 +1969,15 @@ func TestMergeAutoBrakeOutranksAPreApprovedSign(t *testing.T) {
 		t.Fatalf("exit %d, %d merge calls, error %q, want %q over the sign", got.code, len(merges), envelopeOf(got).Error, want)
 	}
 }
+
+// the run and the merge result print the decision's summary: a lifted brake is one more line there
+func TestMergeDecisionSummaryCarriesALiftedBrake(t *testing.T) {
+	t.Parallel()
+	d := &mergeDecision{Checks: []mergeCheck{{Name: "ci", OK: true, Detail: "green"}}, Override: &overrideUsed{Scope: "prs"}, Brake: "revert e4020ab reverts 3c83764"}
+
+	got := d.summary()
+
+	if want := "✓ ci: green\n⚠ brake lifted by operator-override prs: revert e4020ab reverts 3c83764"; got != want {
+		t.Fatalf("summary %q, want %q", got, want)
+	}
+}

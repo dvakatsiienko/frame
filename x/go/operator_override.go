@@ -195,6 +195,7 @@ type overridePr struct {
 	PR    int    `json:"pr"`
 	Title string `json:"title,omitempty"`
 	Stops string `json:"stops,omitempty"`
+	Brake string `json:"brake,omitempty"`
 }
 
 type overrideCheckReport struct {
@@ -249,7 +250,7 @@ func brakeCheckPlan(r *Run) (any, error) {
 		if err := os.Chdir(clone[1]); err != nil {
 			return nil, unread(fmt.Errorf("no clone of %s: %w", clone[0], err))
 		}
-		brake, err := brakeOn(clone[0], "main")
+		brake, _, err := brakeOn(clone[0], "main")
 		if err != nil {
 			return nil, unread(err)
 		}
@@ -292,8 +293,12 @@ func overrideCheckPlan(r *Run) (any, error) {
 			}
 			for _, pr := range open {
 				row := overridePr{Repo: repo, PR: pr.Number, Title: pr.Title}
-				if _, err := mergeAutoPlan(&Run{verb: r.verb}, []string{fmt.Sprint(pr.Number)}, Flags{"repo": repo}); err != nil {
+				planned, err := mergeAutoPlan(&Run{verb: r.verb}, []string{fmt.Sprint(pr.Number)}, Flags{"repo": repo})
+				if err != nil {
 					row.Stops = err.Error()
+				}
+				if d, ok := planned.(*mergeDecision); ok {
+					row.Brake = d.Brake
 				}
 				// github's own refusals, which the door meets only at the merge; mergeable is null while github computes it
 				var shape struct {
@@ -318,6 +323,9 @@ func overrideCheckPlan(r *Run) (any, error) {
 	lines := []string{}
 	for _, row := range report.Prs {
 		said := "lands"
+		if row.Brake != "" {
+			said += ", brake lifted: " + row.Brake
+		}
 		if row.Stops != "" {
 			said = row.Stops
 		}

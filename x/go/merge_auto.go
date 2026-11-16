@@ -50,7 +50,8 @@ type mergeDecision struct {
 	Asks     []string     `json:"asks,omitempty"`
 	Merged   string       `json:"merged,omitempty"`
 	Sign     string       `json:"sign,omitempty"`
-	// set while operator-override prs is on: every check below hold and brake goes unread
+	Brake    string       `json:"brake,omitempty"`
+	// set while operator-override prs is on: every check below the hold goes unread; the brake warns
 	Override *overrideUsed `json:"override,omitempty"`
 	// --override-off's scopes, and whether it clears only a shift's
 	Cleared   []string `json:"cleared,omitempty"`
@@ -411,10 +412,16 @@ func mergeAutoPlan(r *Run, args []string, flags Flags) (plan any, err error) {
 	brake := ""
 	if err := r.Step("brake", "looking for a revert of a merge-auto merge in 7 days", func() (string, error) {
 		var err error
-		brake, err = brakeOn(repo, trunk)
+		var kind string
+		brake, kind, err = brakeOn(repo, trunk)
 		switch {
 		case err != nil:
 			return "", brakeReadFail(err)
+		case brake != "" && liftsBrake(d.Override):
+			// his word or band press reads the brake as a warning: the merge goes on, the brake named once
+			d.Brake = liftedBrake(kind, brake)
+			brake = ""
+			return "on: " + d.Brake + " — lifted by operator-override " + d.Override.Scope, nil
 		case brake != "":
 			return "", notHeld("on: " + brake)
 		}
@@ -622,6 +629,9 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 		}
 		if d.Override != nil {
 			trailers += "\nOperator-override: " + d.Override.Scope + ", by " + d.Override.By + " at " + d.Override.At
+			if d.Brake != "" {
+				trailers += "\nBrake-lifted: " + d.Brake
+			}
 		}
 		// the sha pins the merge to the head the checks read: a push since makes github refuse it
 		status, _, err := ghSend(asDima, http.MethodPut, api+"/pulls/"+d.PR+"/merge", map[string]string{
@@ -653,6 +663,9 @@ func mergeAuto(r *Run, _ []string, _ Flags, plan any) (any, error) {
 	if d.Override != nil {
 		result += "\n" + d.Override.named()
 		what := d.Repo + "#" + d.PR + " at " + short(d.Head)
+		if d.Brake != "" {
+			what += ", brake lifted: " + d.Brake
+		}
 		if d.Merged == "" {
 			what += ", still enqueued"
 		}
@@ -873,6 +886,9 @@ func (d *mergeDecision) summary() string {
 	}
 	if len(d.Risky) > 0 {
 		lines = append(lines, "risky: "+strings.Join(d.Risky, ", "))
+	}
+	if d.Brake != "" {
+		lines = append(lines, "⚠ brake lifted by operator-override "+d.Override.Scope+": "+d.Brake)
 	}
 	return strings.Join(lines, "\n")
 }
@@ -1116,20 +1132,20 @@ func brakeReadFail(err error) error {
 }
 
 // the label, then this mac's record, then reverts; git's revert names the sha, github's revert button only the subject
-func brakeOn(repo, base string) (string, error) {
+func brakeOn(repo, base string) (what, kind string, err error) {
 	api := githubBase() + "/repos/" + repo
 	if labelled, err := brakeLabelled(api); err != nil || labelled != "" {
-		return labelled, err
+		return labelled, "label", err
 	}
 	if recorded, err := brakeRecorded(repo); err != nil || recorded != "" {
-		return recorded, err
+		return recorded, "record", err
 	}
 	if _, err := mustGit("brake", "fetch", "-q", "origin", base); err != nil {
-		return "", err
+		return "", "", err
 	}
 	ours, err := mustGit("brake", "log", "origin/"+base, "--fixed-strings", "--grep="+mergeTrailer, "--format=%H%x00%s")
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	merged := map[string]bool{}
 	for line := range strings.Lines(ours) {
@@ -1139,14 +1155,14 @@ func brakeOn(repo, base string) (string, error) {
 	since := clock().Add(-brakeFor).Format(time.RFC3339)
 	recent, err := mustGit("brake", "log", "origin/"+base, "--since="+since, "--format=%H%x00%B%x1e")
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	for record := range strings.SplitSeq(recent, "\x1e") {
 		sha, message, _ := strings.Cut(strings.TrimSpace(record), "\x00")
 		if match := revertsSha.FindStringSubmatch(message); match != nil {
 			ours, err := mergedByX(api, merged, match[1], "/commits/"+match[1]+"/pulls")
 			if err != nil || ours {
-				return short(sha) + " reverts " + short(match[1]), err
+				return short(sha) + " reverts " + short(match[1]), "revert", err
 			}
 		}
 		if match := revertsSubject.FindStringSubmatch(message); match != nil {
@@ -1156,11 +1172,29 @@ func brakeOn(repo, base string) (string, error) {
 			}
 			ours, err := mergedByX(api, merged, match[1], pr)
 			if err != nil || ours {
-				return short(sha) + " reverts «" + match[1] + "»", err
+				return short(sha) + " reverts «" + match[1] + "»", "revert", err
 			}
 		}
 	}
-	return "", nil
+	return "", "", nil
+}
+
+// what a lifting grant leaves in place of the brake's stop: its source named, its release door left out
+func liftedBrake(kind, what string) string {
+	what, _, _ = strings.Cut(what, "; release once dima looked")
+	switch kind {
+	case "label":
+		num, _, _ := strings.Cut(what, " ")
+		return "label " + num + ": a stack landed a head the gate never read"
+	case "record":
+		return "record " + what
+	}
+	return "revert " + what
+}
+
+// his typed word and his band press lift the brake; a shift's grant does not, until dima says so
+func liftsBrake(used *overrideUsed) bool {
+	return used != nil && (used.By == "word" || used.By == "band")
 }
 
 var prOfSubject = regexp.MustCompile(`\(#(\d+)\)$`)
