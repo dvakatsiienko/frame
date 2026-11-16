@@ -52,6 +52,7 @@ esac
                 PATH: `${dir}:${process.env.PATH}`,
                 STUB_KEEP: keep,
             },
+            timeout: 10_000,
         });
     afterAll(() => rmSync(dir, { force: true, recursive: true }));
 
