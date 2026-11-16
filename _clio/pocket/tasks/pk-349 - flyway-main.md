@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T12:53:00Z'
+updated_date: '2026-11-16T13:03:00Z'
 labels:
   - s
   - clio-main
@@ -764,4 +764,16 @@ PK-349:W1017 (2026-11-16 14:51, dima, o8 steer): first, herdr cuts, then collie 
 PK-349:W1018 (2026-11-16 14:51, dima, o9 steer): ok, and it should be universal and flexible: support any lane and any project. and you should have a fixed habit to solve all tails at halt. you always tend to fold todos for your boot, which leads to 15-minute boots. all tails must be solved before halt, so the boot is smooth.
 
 correction to W1013, helga per clio 14:52: 'stell' is 'tell'. Read as: tell lanes to pick up the handoff and finish what they started.
+
+PK-349:W1019 (2026-11-16 14:46, dima): I do not understand how this is possible. For at least the nearest week, almost every day I tell you and your wing to hunt and close your tails as much as possible before we halt, so the next boot is smooth and easy.
+
+PK-349:W1020 (2026-11-16 14:46, dima): yesterday you left so many tails for today, yet we spent around 4 or 5 hours on planning and tail hunting: a mini session with no lane, only planning, solving grills, and hunting the tails.
+
+PK-349:W1021 (2026-11-16 14:46, dima): I think a fix is needed and I approve. Why is this fix still needed, and why do you propose it, when I have asked for this optimization for so long, every day?
+
+PK-349:W1022 (2026-11-16 14:46, dima): let's do the wish-loss audit and the empty-wakes re-count today, at a good point, important tasks first.
+
+PK-349:W1023 (2026-11-16 14:46, dima): mods lane will have its verifier?
+
+PK-349:W1024 (2026-11-16 14:58, dima): halt fix: how to solve? Yes, fix. The fix is that check for any lane and any project, plus the first chunk left summon-ready.
 <!-- SECTION:NOTES:END -->
