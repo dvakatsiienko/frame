@@ -155,9 +155,9 @@ BANDS = [
         "b6", "✍️ 6 — shaping and the sign: who says yes?",
         "clio:shape-idea · clio:shape-lane · craft-pm § wishes · craft-fleet-flow stages 2–4",
         [
-            ("idea", 0, 0, "clio", "🦉 shape-idea, a pick", "a new app, a feature, a changed product part: want + grill, prior art, the cut, the done test", "clio:shape-idea steps 1–6"),
+            ("idea", 0, 0, "clio", "🦉 shape-idea: every grilled wish", "a new app, a feature, a changed product part: want + grill, prior art, the cut, the done test", "clio:shape-idea steps 1–6"),
             ("out", 1, 0, "file", "📄 one shaped ticket", "wish, decided, the cut as out, the 🎯 done test; no files: PRODUCT.md is born at dispatch", "clio:shape-idea step 7"),
-            ("plain", 2, 0, "clio", "🎫 plain work: a full ticket", "mechanical wishes skip shape-idea, folded straight into a full ticket, never a thin one", "craft-pm § wishes · clio:pm"),
+            ("plain", 2, 0, "clio", "🎫 plain work: a full ticket", "plain, mechanical work skips the grill, folded straight into a full ticket, never a thin one", "craft-pm § wishes · clio:pm"),
             ("prep", 0, 1, "dima", "🙋‍♂️ you start a sign", "you say «prep», «sign» or «next chunk» («fast» for many); the ticket enters shape-lane, a wish signed on the spot folds first", "clio:shape-lane"),
             ("read", 1, 1, "clio", "🦉 read what is settled", "the wish block + decided; each round's proposal file passes the wish-cover hook", "shape-lane § 0"),
             ("card", 2, 1, "file", "📄 the chunk card", "an h2 + two lines: why we have it, what we want out of it", "shape-lane § 1"),
