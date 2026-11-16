@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T14:21:00Z'
+updated_date: '2026-11-16T14:22:00Z'
 labels:
   - s
   - clio-main
@@ -29,7 +29,7 @@ ordinal: 1000
 - [ ] #11 f24 herdr foundation: the shape-idea round with dima on the proposal (PK-444) — waits for: dima o28
 - [ ] #12 f25 second-wind store chunk: seal it, then dima's sign (a re-sign of FRM-625)
 - [ ] #13 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
-- [ ] #14 f27 agent-idea label: create it, clio:pm's create step, PK-423's lines out of FRM-617 (o15)
+- [ ] #14 f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15)
 - [ ] #15 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
 - [ ] #16 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 - [ ] #17 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
@@ -796,4 +796,6 @@ PK-349:W1030 (2026-11-16 15:40, dima): unpark mods lane, let it do something.
 PK-349:W1031 (2026-11-16 15:55, dima): This is true but this only works when some small stuff is pending to be solved. As for now you have a whole bunch of tails pending. This is not the case when stray is useless. When a lot of tails pile up it is a good sign to summon a stray lane.
 
 PK-349:W1032 (2026-11-16 15:55, dima): coordinate properly across everyone. i want all issues fixed, no tails left.
+
+done 2026-11-16 16:22: f27 agent-idea label: create it, clio:pm's create step, PK-423's lines out of FRM-617 (o15) (PK-423 done, FRM-617 Todo)
 <!-- SECTION:NOTES:END -->
