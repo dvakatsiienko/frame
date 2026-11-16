@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T22:53:00Z'
+updated_date: '2026-11-16T23:21:00Z'
 labels:
   - s
   - clio-main
@@ -19,9 +19,8 @@ ordinal: 1000
 - [ ] #1 f12 helga grooms the day’s grill W-lines: prompt-groom.ts --linear 51 reds to 0
 - [ ] #2 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
 - [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #4 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #5 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #6 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #4 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #5 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1037,4 +1036,6 @@ done 2026-11-17 00:36: f38 ⏳ glide subcard as a read-only view of a member’s
 done 2026-11-17 00:41: f41 glide subcard as a read-only view of member asks (o67): one mods ticket, then his sign
 
 done 2026-11-17 00:53: f40 autopilot: shape grill-borrow rounds 1–3 into one ticket via clio:shape-idea, his «shaped» at the end
+
+done 2026-11-17 01:21: f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
 <!-- SECTION:NOTES:END -->
