@@ -524,3 +524,12 @@ test('a herdr line the rule refused never lands later over a 🎛️ edit', asyn
     await clock.advance(4000);
     expect(store.get('wind-notice')).toBe(60);
 });
+
+test('a first herdr edit after a poll that found no row is taken', async ($, on) => {
+    const { clock, files, store } = world(on);
+    await band($);
+    await clock.advance(4000);
+    files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.must': 70 });
+    await clock.advance(4000);
+    expect(store.get('wind-at')).toBe(70);
+});

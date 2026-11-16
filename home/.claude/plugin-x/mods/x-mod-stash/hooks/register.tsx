@@ -7063,7 +7063,8 @@ async function takeHerdrRows($: EngineInterface) {
     if (was && !windPairRefusal(lines, 'wind-at', lines['wind-at']))
         for (const { n, name } of fresh)
             await $.store.set(NUMBERS[name].key, n);
-    if (JSON.stringify(seen) !== JSON.stringify(was ?? {}))
+    // an empty first read is a baseline too: the first row herdr writes after it is an edit
+    if (!was || JSON.stringify(seen) !== JSON.stringify(was))
         await $.store.set(HERDR_SEEN, seen);
 }
 
