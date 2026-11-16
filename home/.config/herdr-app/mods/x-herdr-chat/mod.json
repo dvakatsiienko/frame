@@ -1,1 +1,5 @@
-{ "overlay": { "height": 720, "width": 900 }, "place": "none", "title": "Chat" }
+{
+    "overlay": { "height": 720, "kind": "window", "width": 900 },
+    "place": "none",
+    "title": "Chat"
+}

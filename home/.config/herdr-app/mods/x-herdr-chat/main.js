@@ -401,28 +401,33 @@ export default class Chat extends View {
      * @param {Theme} t
      */
     quill(box, t) {
-        return h_flex()
-            .w_full()
-            .flex_none()
-            .justify_center()
-            .px(18)
-            .pb(12)
-            .child(
-                div()
-                    .w_full()
-                    .max_w(this.column())
-                    .relative()
-                    .px(14)
-                    .pt(12)
-                    // the send button sits in the card's bottom right corner, the text keeps clear of it
-                    .pb(SEND_SIZE + 12)
-                    .rounded(12)
-                    .bg(t.background)
-                    .border(1)
-                    .border_color(t.border)
-                    .child(Textarea.new(box))
-                    .child(this.sendButton(box, t)),
-            );
+        return (
+            h_flex()
+                .id('chat-quill-row')
+                .w_full()
+                .flex_none()
+                .justify_center()
+                .px(18)
+                .pb(12)
+                // opened as a window, a press herdr is not told to keep drags it: only the head row moves it
+                .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
+                .child(
+                    div()
+                        .w_full()
+                        .max_w(this.column())
+                        .relative()
+                        .px(14)
+                        .pt(12)
+                        // the send button sits in the card's bottom right corner, the text keeps clear of it
+                        .pb(SEND_SIZE + 12)
+                        .rounded(12)
+                        .bg(t.background)
+                        .border(1)
+                        .border_color(t.border)
+                        .child(Textarea.new(box))
+                        .child(this.sendButton(box, t)),
+                )
+        );
     }
 
     /**
@@ -565,6 +570,7 @@ export default class Chat extends View {
             .size_full();
         return div()
             .id('chat-list')
+            .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
             .relative()
             .flex_1()
             .min_h(0)
