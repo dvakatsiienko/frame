@@ -64,6 +64,8 @@ const BUBBLE_SHARE = 0.8;
 const ROW_PAD = { normal: 6, roomy: 10, tight: 3 };
 // the ui font, as the old chat drew it
 const SANS = '.AppleSystemUIFont';
+// [TRACE-place] how long after an open the list's asks are traced
+const TRACE_MS = 8000;
 
 /** the rows the list draws: the model's, less tool calls when he hides them @param {readonly Row[]} rows @param {import('./look.js').Look} look */
 const shownOf = (rows, look) =>
@@ -198,6 +200,8 @@ export default class Chat extends View {
     lookKey = '';
     /** the rows the list draws: the model's, less tool calls he hides @type {readonly Row[]} */
     shownRows = [];
+    /** [TRACE-place] the list's asks are traced until then, after an open */
+    traceUntil = 0;
     /** until then the list is not shown: a held place is still landing as real heights arrive */
     settleUntil = 0;
     /** the pending wait for a change in the transcript's folder @type {import('herdr').FolderWatch | null} */
@@ -321,6 +325,10 @@ export default class Chat extends View {
         if (this.lookKey && lookKey !== this.lookKey) {
             // every row takes a new height at once: his place is held as a share of its message while they land
             this.widthGen += 1;
+            this.trace(
+                `look ${this.lookKey} → ${lookKey} place=${JSON.stringify(this.at.place)} held=${this.at.isHeld} rows ${this.shownRows.length} → ${rows.length}`,
+            );
+            this.traceUntil = Date.now() + TRACE_MS;
             if (this.at.restyle(this.shownRows, this.sizes, rows))
                 this.settleUntil = Date.now() + SETTLE_MS;
             this.heights.clear();
@@ -506,6 +514,10 @@ export default class Chat extends View {
         this.sizes = sizes;
         const pre = `w${this.widthGen}-`;
         const plan = this.at.plan(rows, sizes, this.viewH);
+        if (plan.ask && Date.now() < this.traceUntil)
+            this.trace(
+                `plan ask=${plan.ask} seekAt=${plan.seekAt} follow=${this.at.follow} held=${this.at.isHeld}`,
+            );
         const { cutAt, cutOffset, itemSizes, rowAt } = plan;
         // his place, or the newest: asked of the list before the frame that draws these rows
         if (plan.ask === 'lift') {
@@ -1143,6 +1155,10 @@ export default class Chat extends View {
         const place = placeOf(
             this.file && localStorage.getItem(this.placeKey(this.file)),
         );
+        this.trace(
+            `open ${this.file?.slice(-12)} saved=${JSON.stringify(place)} rows=${this.model.rows.length}`,
+        );
+        this.traceUntil = Date.now() + TRACE_MS;
         if (!place) return;
         for (
             let page = 0;
@@ -1158,12 +1174,16 @@ export default class Chat extends View {
         // the saved line may sit inside a folded row: the place is that row
         const at = this.model.indexOf(place.id);
         const row = this.model.rows[at];
+        this.trace(
+            `restore at=${at} kind=${row?.kind} tools=${this.look.tools}`,
+        );
         if (!row) return;
         // a row he hides now (a tool call) hands the place to the next one shown
         const shown = shownOf(this.model.rows, this.look);
         const next = shown.includes(row)
             ? row
             : this.model.rows.slice(at + 1).find((r) => shown.includes(r));
+        this.trace(`restore next=${next?.id.slice(0, 8)}`);
         if (!next) return;
         this.at.restore(next.id, next === row ? place.offset : 0);
         this.settleUntil = Date.now() + SETTLE_MS;
@@ -1173,6 +1193,18 @@ export default class Chat extends View {
     /** his place, read from the rows the list drew last; never inside the list's row callback (see place.js) */
     readPlace() {
         this.at.read(this.shownRows, this.sizes);
+    }
+
+    /** [TRACE-place] one line to the lane's trace file, until the 23:44 «opened at the newest» is caught @param {string} line */
+    trace(line) {
+        const at = new Date().toTimeString().slice(0, 8);
+        exec('/bin/sh', [
+            '-c',
+            'printf "%s\\n" "$1" >> "$2"',
+            'sh',
+            `${at} ${line}`,
+            `${home()}/.local/state/x/lanes/herdr-lane-2/place-trace.log`,
+        ]).catch(() => {});
     }
 
     /** the widest a row or the quill draws: a readable column when narrow, the list's own width when full */
@@ -1216,7 +1248,10 @@ export default class Chat extends View {
                     this.placeKey(file),
                     JSON.stringify(place),
                 );
-            else localStorage.removeItem(this.placeKey(file));
+            else {
+                this.trace('save: following, the saved place is dropped');
+                localStorage.removeItem(this.placeKey(file));
+            }
         };
         cx.timer.after(PLACE_SAVE_MS, save);
     }
