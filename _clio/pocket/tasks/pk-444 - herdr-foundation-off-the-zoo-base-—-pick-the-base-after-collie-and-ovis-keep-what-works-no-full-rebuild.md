@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T16:18:00Z'
+updated_date: '2026-11-16T16:22:00Z'
 labels:
   - m
 dependencies: []
@@ -310,4 +310,6 @@ PK-444:W127 (2026-11-16 18:08, dima): tell codie the zoo state: everything dima 
 groomed prompt 18:16 (dima):
 PK-444:W128 (2026-11-16 18:16, dima): ❓ why did glide for herdr disappear?
 PK-444:W129 (2026-11-16 18:16, dima): approved: the scroll fix. "nice! like. approved." (clio's paraphrase before dima's words, not dima's: "follow the bottom now comes back only at the true end or by your click, and the pill is a small quiet ↓ at the right edge; every reload that wiped the reading place and jumped to the newest is fixed too.")
+
+18:22 the new chat's ticket is FRM-638 (52 W-lines copied from here, renumbered; the plan critic's five folded); this item stays open for the road, the layout names, the light theme and the end step
 <!-- SECTION:NOTES:END -->
