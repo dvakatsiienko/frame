@@ -49,9 +49,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and every colour comes from the theme: the layout's `colors` block sets `chrome`, `selected` and `input` for the tray, the shown pill and its edge
   - decision: a clone of herdr's shipped `terminals-bar`, his pick after an A/B (dima, 2026-11-16: «tabs look better in the Terminals layout»); at his swap word it is renamed `x-herdr-tabs` and the old folder goes
   - not checked: in a shown window; its first look is his own open of the playground
-- 🧭 the thread header holds +, Files and Changes where the layout asks for them (FRM-635)
+- ⬜ the thread header holds +, Files and Changes where the layout asks for them (FRM-635)
   - given a layout block that sets `tabBarButtons` on the thread header (the playground `egg-basket` does, his own layout does not)
   - then the row ends in + (the new-tab menu), Files and Changes; a press on the shown panel hides it, a press on the other shows it
   - and a panel he switched off in herdr's settings gets no button
   - decision: the buttons moved out of the tab bar so the tab bar can be herdr's pills (dima, 2026-11-16: «Files and Changes buttons, and + moves to x-herdr-chatter-header»)
-  - not checked: built in the Terminal view's row; the Chat view's row follows in the same chunk
+  - and both rows draw them: the Terminal view's (x-herdr-chatter-header) and the Chat view's (x-herdr-chatter)
+  - not checked: in a shown window; its first look is his own open of the playground

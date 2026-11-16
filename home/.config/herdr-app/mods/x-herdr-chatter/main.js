@@ -77,7 +77,7 @@ import {
     withPress,
 } from './band.js';
 import { splitBlocks } from './blocks.js';
-import { viewSwitch } from './chatter-header.js';
+import { tabBarButtons, viewSwitch } from './chatter-header.js';
 import { applyChips, codeSpans } from './chips.js';
 import COMMANDS from './commands.js';
 import { readableBackground } from './contrast.js';
@@ -94,6 +94,7 @@ import {
     slideEffort,
 } from './effort.js';
 import { replyFold } from './fold.js';
+import { findNode, panelsEnabled } from './header-rules.js';
 import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
 import { rejoin } from './joined.js';
 import {
@@ -8154,6 +8155,27 @@ export default class ClaudeChat extends View {
                                 .text_size(11)
                                 .text_color(t.accent)
                                 .child(this.forkNote),
+                        ),
+                    )
+                    // the playground's layout asks for the tab bar's old buttons here (`tabBarButtons`), as the Terminal
+                    // view's row draws them
+                    .when(Boolean(props()?.tabBarButtons), (el) =>
+                        el.child(
+                            tabBarButtons(t, {
+                                body: findNode(layout(), 'panel-body'),
+                                enabled: panelsEnabled(
+                                    shared('workspace.panels'),
+                                ),
+                                openNewMenu: () =>
+                                    openOverlay({
+                                        height: 512,
+                                        kind: 'popup',
+                                        mod: 'new-menu',
+                                        width: 250,
+                                    }),
+                                panel: findNode(layout(), 'panel'),
+                                run,
+                            }),
                         ),
                     )
                     .child(
