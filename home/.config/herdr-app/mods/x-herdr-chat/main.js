@@ -1,9 +1,12 @@
-// x-herdr-chat: the Chat view, built new beside x-herdr-chatter (FRM-638). so far it only reads: the thread the old
-// chat shows, drawn as his messages, replies and one line per tool call, in a list that never moves without him.
-// the rules live in their own files, each tested with no herdr: reader.js, row-model.js, heights.js, follow.js.
+// x-herdr-chat: the Chat view, built new beside x-herdr-chatter (FRM-638). it reads the thread the old chat shows,
+// drawn as his messages, replies and one line per tool call, in a list that never moves without him, over the quill,
+// his text box. the rules live in their own files, each tested with no herdr: reader.js, row-model.js, heights.js,
+// follow.js, place.js, draft.js.
 
 import {
     TextView,
+    Textarea,
+    TextareaState,
     VirtualListScrollHandle,
     h_flex,
     v_flex,
@@ -24,6 +27,7 @@ import {
 } from 'herdr';
 
 import { splitBlocks } from './blocks.js';
+import { createDrafts } from './draft.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { createPlace } from './place.js';
@@ -127,6 +131,9 @@ export default class Chat extends View {
     error = null;
     /** the open thread's transcript has been read once */
     isRead = false;
+    /** the quill: herdr draws its text itself, so a key typed in it draws nothing of ours @type {import('gpui-base').TextareaState | null} */
+    box = null;
+    drafts = createDrafts(localStorage);
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
     wake = () => {};
@@ -136,6 +143,10 @@ export default class Chat extends View {
      * @param {import('gpui-kit').AsyncContext} cx
      */
     init(_props, cx) {
+        const box = TextareaState.new({});
+        box.set_auto_grow(1, 8);
+        box.on('change', () => this.drafts.keep(this.file, box.value()));
+        this.box = box;
         // a check draws one frame and must read no thread
         if (checking()) return;
         cx.spawn(async (cx) => {
@@ -180,11 +191,7 @@ export default class Chat extends View {
                     .justify_between()
                     .items_center()
                     .border_color(t.border)
-                    .child(
-                        div()
-                            .text_color(t.muted)
-                            .child('The new chat, read only'),
-                    )
+                    .child(div().text_color(t.muted).child('The new chat'))
                     .child(
                         div()
                             .id('chat-close')
@@ -197,8 +204,20 @@ export default class Chat extends View {
                     ),
             );
         const { rows } = this.model;
-        if (!rows.length)
-            return root.child(
+        if (rows.length) {
+            if (this.error)
+                root.child(
+                    div()
+                        .px(12)
+                        .py(4)
+                        .text_size(12)
+                        .text_color(t.muted)
+                        .bg(t.raised)
+                        .child(this.error),
+                );
+            root.child(this.list(rows, t, _cx));
+        } else
+            root.child(
                 div()
                     .flex_1()
                     .flex()
@@ -207,17 +226,35 @@ export default class Chat extends View {
                     .text_color(t.muted)
                     .child(this.error ?? this.emptyLine()),
             );
-        if (this.error)
-            root.child(
+        return this.file && this.box
+            ? root.child(this.quill(this.box, t))
+            : root;
+    }
+
+    /**
+     * his text box, in the list's column
+     * @param {import('gpui-base').TextareaState} box
+     * @param {Theme} t
+     */
+    quill(box, t) {
+        return h_flex()
+            .w_full()
+            .flex_none()
+            .justify_center()
+            .px(18)
+            .pb(12)
+            .child(
                 div()
-                    .px(12)
-                    .py(4)
-                    .text_size(12)
-                    .text_color(t.muted)
-                    .bg(t.raised)
-                    .child(this.error),
+                    .w_full()
+                    .max_w(COLUMN)
+                    .px(14)
+                    .py(12)
+                    .rounded(12)
+                    .bg(t.background)
+                    .border(1)
+                    .border_color(t.border)
+                    .child(Textarea.new(box)),
             );
-        return root.child(this.list(rows, t, _cx));
     }
 
     /** what the view says while it has no row to draw */
@@ -521,6 +558,7 @@ export default class Chat extends View {
         this.heights.clear();
         this.reader = null;
         this.file = null;
+        this.showDraft();
         this.error = null;
         this.isRead = false;
         this.at.reset();
@@ -538,6 +576,7 @@ export default class Chat extends View {
                 return;
             }
             this.file = file;
+            this.showDraft();
             cx.notify();
             const reader = createReader(doorTo(file));
             this.reader = reader;
@@ -592,6 +631,13 @@ export default class Chat extends View {
         this.error = null;
         if (this.model.add(lines).changed.length || isRestart || hadError)
             cx.notify();
+    }
+
+    /** the quill holds the shown thread's draft, the caret after it; no thread, an empty quill */
+    showDraft() {
+        const text = this.drafts.kept(this.file);
+        this.box?.set_value(text);
+        this.box?.set_selected_range({ end: text.length, start: text.length });
     }
 
     /** @param {string} file */
