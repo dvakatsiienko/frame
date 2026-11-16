@@ -104,6 +104,13 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
             place.restore(saved.id, saved.offset);
             frame();
         },
+        /** a look change: every row takes a new height at once, his place is held first, as the view does */
+        restyle(height: (size: number) => number) {
+            place.read(rows, sizes);
+            place.hold();
+            sizes = sizes.map(height);
+            frame();
+        },
         /** what the save timer would write now */
         saved() {
             place.read(rows, sizes);
@@ -174,6 +181,21 @@ describe('the kept place against the true one', () => {
         sim.moveUnseen(432);
         expect(sim.truth()).toEqual({ id: `r${REPLY}`, offset: 405 });
         expect(sim.saved()).toEqual({ id: `r${REPLY}`, offset: 0 });
+    });
+
+    test.each([
+        ['a bigger text size', (size: number) => Math.round(size * 1.2)],
+        ['a smaller text size', (size: number) => Math.round(size * 0.85)],
+        ['a narrower width', (size: number) => Math.round(size * 1.3)],
+        ['roomier spacing', (size: number) => size + 12],
+        ['another font', (size: number) => Math.round(size * 1.05)],
+    ])('%s: the message he reads stays at the top', (_kind, height) => {
+        const sim = createSim(thread());
+        readInto(sim, 405, 37);
+        const before = sim.truth();
+        sim.restyle(height);
+        expect(sim.truth().id).toBe(before.id);
+        expect(sim.isFollowing()).toBe(false);
     });
 
     test('a row above gets its real height while he reads: the view stays on his line', () => {
