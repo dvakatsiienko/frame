@@ -2,7 +2,7 @@
 // `version` grows only when its own text does, so the list redraws and measures only the rows an update names.
 // drawn so far: his messages, replies and one line per tool call; every other line waits for its own slice.
 // a message he sent while the thread works waits in Claude Code's queue: it is his last row, waiting, until a turn
-// takes it and its own transcript line replaces it.
+// takes it and its own transcript line replaces it: a user line at a turn's start, a queued command mid-turn.
 
 import { joinedTexts } from './joins.js';
 import { claudeQueueAfter, isHisQueued, queuedWords } from './queued.js';
@@ -31,6 +31,16 @@ const isRecord = (value) => typeof value === 'object' && value !== null;
 
 /** @param {unknown} value */
 const textOf = (value) => (typeof value === 'string' ? value : '');
+
+/** his words in a message's content: the string itself, or its first text block @param {unknown} content */
+const saidIn = (content) =>
+    typeof content === 'string'
+        ? content
+        : textOf(
+              (Array.isArray(content) ? content : [])
+                  .filter(isRecord)
+                  .find((block) => block.type === 'text')?.text,
+          );
 
 /**
  * the rows one transcript line draws: none for a line that is not drawn yet
@@ -62,18 +72,27 @@ function rowsOf(line) {
         tools: kind === 'tool' ? [text] : [],
         version: 1,
     });
-    // words that joined a turn (the magic send) are his messages, one row each
-    if (entry.type === 'attachment')
+    if (entry.type === 'attachment') {
+        // a prompt he sent while a turn ran: Claude Code writes it as a queued command, never as a user line; a
+        // peer's message or a task notice queued the same way is not his
+        const queued = isRecord(entry.attachment) ? entry.attachment : {};
+        if (
+            queued.type === 'queued_command' &&
+            isRecord(queued.origin) &&
+            queued.origin.kind === 'human'
+        ) {
+            const said = saidIn(queued.prompt);
+            return said.trim() ? [row('mine', said)] : [];
+        }
+        // words that joined a turn (the magic send) are his messages, one row each
         return joinedTexts(entry).map((text, n) =>
             row('mine', text, n ? `${id}#${n}` : id),
         );
+    }
     const { content } = message;
     const blocks = (Array.isArray(content) ? content : []).filter(isRecord);
     if (entry.type === 'user') {
-        const said =
-            typeof content === 'string'
-                ? content
-                : textOf(blocks.find((block) => block.type === 'text')?.text);
+        const said = saidIn(content);
         return said.trim() && !NOT_HIS_WORDS.test(said)
             ? [row('mine', said)]
             : [];

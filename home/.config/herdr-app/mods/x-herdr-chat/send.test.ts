@@ -23,24 +23,46 @@ describe('the thread a message goes to is the one its Claude runs in', () => {
     });
 });
 
-describe('Enter sends what he typed, Shift+Enter keeps writing', () => {
-    test('Enter sends the text without the line break Enter typed', () => {
-        expect(submitted('ship it\n', false)).toEqual({
-            box: '',
+describe('Enter acts on what he typed, Shift+Enter keeps writing', () => {
+    test('Enter is a click on send, with the text as it was before Enter’s line break', () => {
+        expect(submitted('ship it\n', 'ship it', {})).toEqual({
+            act: 'click',
             text: 'ship it',
         });
     });
 
+    test('cmd+Enter sends now', () => {
+        expect(submitted('ship it\n', 'ship it', { secondary: true }).act).toBe(
+            'push',
+        );
+    });
+
+    test('Enter with the caret inside the text sends the text unbroken', () => {
+        expect(submitted('ship\n it', 'ship it', {}).text).toBe('ship it');
+    });
+
     test('a message of several lines goes whole', () => {
-        expect(submitted('one\n\ntwo\n', false).text).toBe('one\n\ntwo');
+        expect(submitted('one\n\ntwo\n', 'one\n\ntwo', {}).text).toBe(
+            'one\n\ntwo',
+        );
     });
 
-    test('Shift+Enter sends nothing and leaves the quill as typed', () => {
-        expect(submitted('one\n', true)).toEqual({ box: null, text: null });
+    test('with no change seen before it, Enter still drops its own line break', () => {
+        expect(submitted('pasted\n', '', {}).text).toBe('pasted');
     });
 
-    test('Enter in an empty quill sends nothing and leaves no blank line', () => {
-        expect(submitted('\n', false)).toEqual({ box: '', text: null });
-        expect(submitted('  \n\n', false)).toEqual({ box: '', text: null });
+    test('Shift+Enter does nothing and leaves the quill as typed', () => {
+        expect(submitted('one\n', 'one', { shift: true })).toEqual({
+            act: null,
+            text: null,
+        });
+    });
+
+    test('Enter in an empty quill does nothing and leaves no blank line', () => {
+        expect(submitted('\n', '', {})).toEqual({ act: null, text: '' });
+        expect(submitted('  \n\n', '  \n', {})).toEqual({
+            act: null,
+            text: '',
+        });
     });
 });

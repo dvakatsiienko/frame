@@ -15,14 +15,26 @@ export function addressIn(processLine) {
 }
 
 /**
- * what the quill's submit does. the box has typed Enter's line break already: Shift+Enter keeps it, Enter sends the
- * text without it
+ * what the quill's submit does. the box has typed Enter's line break already, at the caret: Shift+Enter keeps it; Enter
+ * acts on the text as it was before the break, cmd+Enter sending it now and Enter alone being a click on send
  * @param {string} value the quill's text at the submit
- * @param {boolean} isShift
- * @returns {{ text: string | null, box: string | null }} the text to send, null for none; what the quill holds
- *   after, null to leave it as typed
+ * @param {string} before the quill's text one change earlier
+ * @param {{ shift?: boolean, secondary?: boolean }} keys
+ * @returns {{ act: 'click' | 'push' | null, text: string | null }} `text`: what the quill holds and sends, null to
+ *   leave it as typed
  */
-export function submitted(value, isShift) {
-    if (isShift) return { box: null, text: null };
-    return { box: '', text: value.trim() || null };
+export function submitted(value, before, keys) {
+    if (keys.shift) return { act: null, text: null };
+    // Enter with the caret inside the text breaks it there: the words as they were are the message
+    const typed = isOneBreakMore(value, before) ? before : value;
+    const text = typed.trim();
+    return { act: text ? (keys.secondary ? 'push' : 'click') : null, text };
+}
+
+/** `value` is `before` with one line break typed into it @param {string} value @param {string} before */
+function isOneBreakMore(value, before) {
+    if (value.length !== before.length + 1) return false;
+    let at = 0;
+    while (at < before.length && value[at] === before[at]) at++;
+    return value[at] === '\n' && value.slice(at + 1) === before.slice(at);
 }

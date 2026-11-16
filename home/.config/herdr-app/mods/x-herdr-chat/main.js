@@ -1,7 +1,7 @@
 // x-herdr-chat: the Chat view, built new beside x-herdr-chatter (FRM-638). it reads the thread the old chat shows,
 // drawn as his messages, replies and one line per tool call, in a list that never moves without him, over the quill,
 // his text box. the rules live in their own files, each tested with no herdr: reader.js, row-model.js, heights.js,
-// follow.js, place.js, draft.js.
+// follow.js, place.js, draft.js, send.js, magic.js.
 
 import {
     TextView,
@@ -220,6 +220,11 @@ export default class Chat extends View {
     /** how long a hold takes to push: his two settings rows */
     timing = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS };
     lastKeyAt = 0;
+    /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
+    typedNow = '';
+    typedBefore = '';
+    /** one more at each thread opened: a state watch of an earlier opening ends */
+    stateTurn = 0;
 
     /** wakes the loop that opens the thread shown: a draw starts no work itself */
     wake = () => {};
@@ -232,20 +237,26 @@ export default class Chat extends View {
         const box = TextareaState.new({});
         box.set_auto_grow(1, 8);
         box.on('change', (_event, cx) => {
-            this.drafts.keep(this.file, box.value());
+            this.typedBefore = this.typedNow;
+            this.typedNow = box.value();
+            this.drafts.keep(this.file, this.typedNow);
+            // [DEBUG-typing]
+            this.typing.keys += 1;
+            this.typing.lastKeyAt = Date.now();
+            localStorage.setItem('debug:typing', JSON.stringify(this.typing));
             this.typedUnderMark(box, cx);
         });
         box.on('submit', (event, cx) => {
-            const { box: after, text } = submitted(
+            const { act, text } = submitted(
                 box.value(),
-                event.shift === true,
+                this.typedBefore,
+                event,
             );
-            if (after === null) return;
+            if (text === null) return;
             // Enter's line break leaves; the words stay until they are sent or a turn takes them
-            box.set_value(text ?? '');
-            // cmd+Enter sends now, a turn starting; Enter is a click on send
-            if (event.secondary) this.push(box, cx);
-            else this.click(box, cx);
+            box.set_value(text);
+            if (act === 'push') this.push(box, cx);
+            else if (act === 'click') this.click(box, cx);
         });
         this.box = box;
         // a check draws one frame and must read no thread
@@ -267,7 +278,25 @@ export default class Chat extends View {
     }
 
     /** @param {Context} _cx */
-    render(_cx) {
+    // [DEBUG-typing] slice 2's typing measure, read from the mod's store file after his look; out at the next landing
+    typing = { draws: 0, keys: 0, lastKeyAt: 0, sumMs: 0, worstMs: 0 };
+
+    /** @param {Context} cx */
+    render(cx) {
+        const at = Date.now();
+        const drawn = this.draw(cx);
+        if (at - this.typing.lastKeyAt < 1000) {
+            const took = Date.now() - at;
+            this.typing.draws += 1;
+            this.typing.sumMs += took;
+            this.typing.worstMs = Math.max(this.typing.worstMs, took);
+            localStorage.setItem('debug:typing', JSON.stringify(this.typing));
+        }
+        return drawn;
+    }
+
+    /** @param {Context} _cx */
+    draw(_cx) {
         const t = /** @type {Theme} */ (theme());
         const shown = /** @type {{ pid?: unknown } | null} */ (
             shared('chat.shown') ?? null
@@ -741,6 +770,7 @@ export default class Chat extends View {
         this.joins = null;
         this.stateWatch?.cancel();
         this.stateWatch = null;
+        this.stateTurn += 1;
         this.cancelHold();
         this.showDraft();
         this.error = null;
@@ -762,16 +792,18 @@ export default class Chat extends View {
             this.file = file;
             this.showDraft();
             cx.notify();
+            // only a send needs the address: a ps that fails leaves the thread readable
             const claude = await exec('ps', [
                 'eww',
                 '-o',
                 'command=',
                 '-p',
                 String(pid),
-            ]);
+            ]).catch(() => null);
             if (pid !== this.pid) return;
-            this.address = addressIn(claude.stdout);
-            cx.spawn((cx) => this.watchState(file, cx));
+            this.address = addressIn(claude?.stdout ?? '');
+            const turn = this.stateTurn;
+            cx.spawn((cx) => this.watchState(file, turn, cx));
             const reader = createReader(doorTo(file));
             this.reader = reader;
             const dir = file.slice(0, file.lastIndexOf('/'));
@@ -830,28 +862,29 @@ export default class Chat extends View {
     /**
      * the shown thread's state, read at each change of the state folder: its joins settle the quill's mark
      * @param {string} file the thread's transcript
+     * @param {number} turn the opening this watch belongs to
      * @param {Context} cx
      */
-    async watchState(file, cx) {
+    async watchState(file, turn, cx) {
         const dir = `${home()}/${STATE_DIR}`;
         const settings = await readTextFile(`${home()}/${SETTINGS_FILE}`)
             .then((text) => JSON.parse(text ?? 'null')?.rows)
             .catch(() => null);
-        if (this.file !== file) return;
+        if (this.stateTurn !== turn) return;
         this.timing = {
             delay: Number(
                 settings?.['chatter.send.holdDelay'] ?? HOLD_DELAY_MS,
             ),
             push: Number(settings?.['chatter.send.holdPush'] ?? HOLD_PUSH_MS),
         };
-        while (this.file === file) {
+        while (this.stateTurn === turn) {
             // armed before the read, so a change during it is never missed
             const watch = watchFolder(dir);
             this.stateWatch = watch;
             const state = await readTextFile(`${dir}/${sidOf(file)}.json`)
                 .then((text) => JSON.parse(text ?? 'null'))
                 .catch(() => null);
-            if (this.file !== file) return;
+            if (this.stateTurn !== turn) return;
             this.joins = state?.joins ?? null;
             this.settle(cx);
             await watch;
@@ -913,7 +946,7 @@ export default class Chat extends View {
         if (!text || !file) return;
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
         cx.spawn(async (cx) => {
-            const why = await this.magic.release(file);
+            const why = await this.magic.release(file, this.joins);
             if (this.file !== file) return;
             if (why) return this.say(why, cx);
             this.send(box, text, null, cx);
@@ -940,8 +973,13 @@ export default class Chat extends View {
                     stderr: String(error),
                 }),
             );
-            if (this.file !== file || sent.code === 0) return;
-            // his words come back unless he has typed on
+            if (sent.code === 0) return;
+            // his words come back unless he has typed on: to the quill, or to the draft of a thread he left
+            if (this.file !== file) {
+                if (file && !this.drafts.kept(file))
+                    this.drafts.keep(file, text);
+                return;
+            }
             if (!box.value()) box.set_value(text);
             this.say(
                 `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,

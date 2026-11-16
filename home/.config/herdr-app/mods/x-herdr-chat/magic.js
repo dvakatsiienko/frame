@@ -26,6 +26,10 @@ import {
 
 const KEPT = 'joins:marks';
 
+/** a turn has the row: taking it, or done with it @param {Joins | null | undefined} joins @param {string} id */
+const isTaken = (joins, id) =>
+    Boolean(joins?.taken?.includes(id) || joins?.joined?.includes(id));
+
 /**
  * @param {object} doors
  * @param {JoinIo} doors.io
@@ -76,19 +80,20 @@ export function createMagic({ io, dir, store, newId }) {
     /** @param {Mark} mark */
     const fileOf = (mark) => `${dir}/${mark.sid}.jsonl`;
 
-    /** @param {Mark} mark @returns {Promise<boolean>} whether its row left the join file */
-    async function takeBack(mark) {
-        await written.get(mark.id);
-        return takeBackJoin(io, fileOf(mark), mark.id);
-    }
-
     /** @param {Mark} mark @param {Joins | null | undefined} joins @returns {Promise<Clicked>} */
     async function unmark(mark, joins) {
-        if (joins?.taken?.includes(mark.id))
+        if (isTaken(joins, mark.id))
             return { act: 'none', note: 'It joined the turn first' };
+        // the row's write is read before the mark goes, which forgets it: the take-back waits for the append it undoes
+        const write = written.get(mark.id);
         drop(mark.id);
-        if (await takeBack(mark)) return { act: 'unmarked', note: null };
-        if (!marks.has(mark.thread)) set(mark);
+        await write;
+        if (await takeBackJoin(io, fileOf(mark), mark.id))
+            return { act: 'unmarked', note: null };
+        if (!marks.has(mark.thread)) {
+            set(mark);
+            if (write) written.set(mark.id, write);
+        }
         return { act: 'none', note: 'Still joining, try again' };
     }
 
@@ -131,12 +136,17 @@ export function createMagic({ io, dir, store, newId }) {
         /**
          * before a push: words still marked to join leave the join file first, so they never go twice
          * @param {string} thread
+         * @param {Joins | null | undefined} joins what the thread's state lists
          * @returns {Promise<string | null>} null: push; else why not
          */
-        async release(thread) {
+        async release(thread, joins) {
             const mark = marks.get(thread);
             if (mark?.state !== 'pending') return null;
-            if (!(await takeBack(mark))) return 'It joined the turn first';
+            // a row a turn took stays in the join file while the thread lives: only the state says it was taken
+            if (isTaken(joins, mark.id)) return 'It joined the turn first';
+            await written.get(mark.id);
+            if (!(await takeBackJoin(io, fileOf(mark), mark.id)))
+                return 'It joined the turn first';
             drop(mark.id);
             return null;
         },
@@ -183,7 +193,7 @@ export function createMagic({ io, dir, store, newId }) {
         async typed(thread, text, joins) {
             const mark = marks.get(thread);
             if (mark?.state !== 'pending' || text === mark.said) return false;
-            if (joins?.taken?.includes(mark.id)) return false;
+            if (isTaken(joins, mark.id)) return false;
             if (!text) return (await unmark(mark, joins)).act === 'unmarked';
             await written.get(mark.id);
             if (!(await retextJoin(io, fileOf(mark), mark.id, text)))

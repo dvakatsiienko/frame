@@ -287,6 +287,23 @@ const joined = (...texts: string[]) => {
     });
     return `{"parentUuid":"p-${serial}",${rest.slice(1)}`;
 };
+// a prompt taken mid-turn, as Claude Code writes it: a queued command, its remove record a few lines later
+const taken = (prompt: string | object[], origin = 'human') => {
+    serial += 1;
+    const rest = JSON.stringify({
+        attachment: {
+            commandMode: 'prompt',
+            origin: { kind: origin },
+            prompt,
+            type: 'queued_command',
+        },
+        isSidechain: false,
+        timestamp: '2026-11-16T16:45:42.000Z',
+        type: 'attachment',
+        uuid: `u-${serial}`,
+    });
+    return `{"parentUuid":"p-${serial}",${rest.slice(1)}`;
+};
 const waiting = (model: ReturnType<typeof createRowModel>) =>
     model.rows.filter((row) => row.isWaiting).map((row) => row.text);
 
@@ -322,8 +339,8 @@ describe('a message sent while the thread works waits at the list’s end', () =
         const model = createRowModel();
         model.add([mine('start'), queueOp('enqueue', 'also the tests')]);
         const { removed } = model.add([
+            taken('also the tests'),
             queueOp('remove', 'also the tests'),
-            mine('also the tests'),
         ]);
         expect(removed).toBe(1);
         expect(shown(model)).toEqual(['mine: start', 'mine: also the tests']);
@@ -379,6 +396,34 @@ describe('a message sent while the thread works waits at the list’s end', () =
         model.clear();
         model.add([mine('fresh')]);
         expect(shown(model)).toEqual(['mine: fresh']);
+    });
+});
+
+describe('a prompt a tool round took mid-turn is his message', () => {
+    test('it is one row of his, by its words', () => {
+        const model = createRowModel();
+        model.add([reply('working'), taken('also the tests')]);
+        expect(shown(model)).toEqual([
+            'reply: working',
+            'mine: also the tests',
+        ]);
+    });
+
+    test('sent with a picture, it reads by its text', () => {
+        const model = createRowModel();
+        model.add([
+            taken([
+                { text: 'look at this', type: 'text' },
+                { source: {}, type: 'image' },
+            ]),
+        ]);
+        expect(shown(model)).toEqual(['mine: look at this']);
+    });
+
+    test('another thread’s message or a task notice queued the same way is no row of his', () => {
+        const model = createRowModel();
+        model.add([taken('<cross-session-message>hi', 'peer')]);
+        expect(model.rows).toHaveLength(0);
     });
 });
 

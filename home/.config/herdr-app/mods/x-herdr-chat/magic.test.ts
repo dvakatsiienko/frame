@@ -238,7 +238,7 @@ describe('a push of words still marked to join', () => {
     test('their row leaves the join file first', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
-        expect(await w.magic.release(THREAD)).toBeNull();
+        expect(await w.magic.release(THREAD, ON)).toBeNull();
         expect(w.rows()).toEqual([]);
         expect(w.magic.markOf(THREAD)).toBeNull();
     });
@@ -246,11 +246,35 @@ describe('a push of words still marked to join', () => {
     test('a row a turn took already is never pushed again', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
-        w.doors.io.write(FILE, '');
-        expect(await w.magic.release(THREAD)).toBe('It joined the turn first');
+        // the stash keeps a taken row in the join file: only the state says a turn has it
+        const taken = { ...ON, taken: ['id-1'] };
+        expect(await w.magic.release(THREAD, taken)).toBe(
+            'It joined the turn first',
+        );
+        expect(w.rows()).toHaveLength(1);
+        expect(w.magic.markOf(THREAD)?.state).toBe('pending');
+    });
+
+    test('a second click that wins the lock before the first row landed still waits for it', async () => {
+        const w = world();
+        // the append's lock is slow to come: the take-back must not run ahead of it
+        const { lock } = w.doors.io;
+        let isFirst = true;
+        w.doors.io.lock = async (path: string) => {
+            if (isFirst) {
+                isFirst = false;
+                await new Promise((resolve) => setTimeout(resolve, 5));
+            }
+            return lock(path);
+        };
+        const first = w.magic.click(THREAD, SID, 'also the tests', ON);
+        const second = w.magic.click(THREAD, SID, 'also the tests', ON);
+        expect((await second).act).toBe('unmarked');
+        await first;
+        expect(w.rows()).toEqual([]);
     });
 
     test('with no mark there is nothing to wait for', async () => {
-        expect(await world().magic.release(THREAD)).toBeNull();
+        expect(await world().magic.release(THREAD, ON)).toBeNull();
     });
 });
