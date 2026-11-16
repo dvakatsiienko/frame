@@ -959,7 +959,12 @@ export default class Chat extends View {
     send(box, text, note, cx) {
         const { address, file } = this;
         if (!address) return;
-        this.setQuill(box, '');
+        // what he typed while a mark was taken back stays: only the words sent leave
+        const now = box.value().trim();
+        this.setQuill(
+            box,
+            now.startsWith(text) ? now.slice(text.length).trimStart() : now,
+        );
         this.say(note, cx);
         cx.spawn(async (cx) => {
             const sent = await hc(sendArgs(address, text)).catch(
@@ -969,13 +974,14 @@ export default class Chat extends View {
                 }),
             );
             if (sent.code === 0) return;
-            // his words come back unless he has typed on: to the quill, or to the draft of a thread he left
+            // his words come back before what he typed since, never lost
+            /** @param {string} typed */
+            const back = (typed) => (typed ? `${text}\n\n${typed}` : text);
             if (this.file !== file) {
-                if (file && !this.drafts.kept(file))
-                    this.drafts.keep(file, text);
+                if (file) this.drafts.keep(file, back(this.drafts.kept(file)));
                 return;
             }
-            if (!box.value()) this.setQuill(box, text);
+            this.setQuill(box, back(box.value()));
             this.say(
                 `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,
                 cx,

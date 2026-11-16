@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T20:28:00Z'
+updated_date: '2026-11-16T21:02:00Z'
 labels:
   - m
 dependencies: []
@@ -396,4 +396,8 @@ renumber (22:02, clio): the W191 line above carried no clock stamp; it is PK-444
 PK-444:W193 (2026-11-16 22:15, dima): the emoji reactions shot (FRM-582): the hover row and the first set of four no longer fit the borrowed picker, and how a click reaches the thread is not written anywhere. Does he see the small grey emoji icon (shepardr borrow)? Does it reach the thread via emoji, and does it work? Or does he ask about something else?
 
 PK-444:W194 (2026-11-16 22:15, dima): solve the 4 incomplete herdr tickets and sign them. Tell what is off with each, ask him what each should be made complete, list what is missing, and propose your own idea for completing each. Then solve and sign.
+
+PK-444:W195 (2026-11-16 23:01, dima, herdr-typed): what is the empty-wakes reminder? do you need me?
+PK-444:W196 (2026-11-16 23:01, dima, herdr-typed): what do you want from me for me to have the light theme?
+PK-444:W197 (2026-11-16 23:01, dima, herdr-typed): how can the herdr codie do two probes? can he do it now?
 <!-- SECTION:NOTES:END -->

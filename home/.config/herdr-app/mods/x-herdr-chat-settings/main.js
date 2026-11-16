@@ -4,8 +4,16 @@
 
 import { Input, InputState, h_flex, v_flex } from 'gpui-base';
 import { View, div } from 'gpui-kit';
-import { setShared, shared, theme } from 'herdr';
+import {
+    appHome,
+    readTextFile,
+    setShared,
+    shared,
+    theme,
+    writeTextFile,
+} from 'herdr';
 
+import { createForeground } from './foreground.js';
 import { LOOK_KEY, SIZE_MAX, SIZE_MIN, lookOf, withChange } from './look.js';
 import { ACCENTS, ROWS } from './rows.js';
 
@@ -25,6 +33,13 @@ const setLook = (change) =>
 export default class ChatSettings extends View {
     /** a box for any colour, per row that takes one @type {Map<string, import('gpui-base').InputState>} */
     hex = new Map();
+    /** «text (all of herdr)»: herdr's own text colour, written only on his change */
+    foreground = createForeground({
+        read: () => readTextFile(`${appHome()}/settings.json`),
+        store: localStorage,
+        write: (text, expected) =>
+            writeTextFile(`${appHome()}/settings.json`, text, expected),
+    });
 
     /**
      * @param {unknown} _props
@@ -45,7 +60,7 @@ export default class ChatSettings extends View {
                     typed.toLowerCase() !==
                         lookOf(shared(LOOK_KEY))[key].toLowerCase()
                 )
-                    setLook({ [key]: typed });
+                    this.pick(key, typed);
             });
             this.hex.set(key, box);
         }
@@ -74,10 +89,11 @@ export default class ChatSettings extends View {
                             .text_color(t.dim)
                             .cursor_pointer()
                             .hover((style) => style.text_color(t.foreground))
-                            .on_click(() => {
+                            .on_click((_event, cx) => {
                                 setShared(LOOK_KEY, null);
                                 for (const box of this.hex.values())
                                     box.set_value('');
+                                cx.spawn(() => this.foreground.reset());
                             })
                             .child('Reset'),
                     ),
@@ -191,7 +207,7 @@ export default class ChatSettings extends View {
                         )
                         .tooltip(name)
                         .on_click(() => {
-                            setLook({ [row.key]: choice });
+                            this.pick(row.key === 'fg' ? 'fg' : 'bg', choice);
                             box?.set_value(HEX.test(choice) ? choice : '');
                         }),
                 ),
@@ -215,6 +231,16 @@ export default class ChatSettings extends View {
                         ),
                 ),
             );
+    }
+
+    /**
+     * a colour row's pick; the text colour also goes into herdr's settings, the whole app's text
+     * @param {'bg' | 'fg'} key
+     * @param {string} colour
+     */
+    pick(key, colour) {
+        setLook({ [key]: colour });
+        if (key === 'fg') this.foreground.change(colour).catch(() => {});
     }
 
     /** @param {Theme} t @param {Element[]} children */
