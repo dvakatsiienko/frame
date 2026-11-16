@@ -216,7 +216,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - makes: the rows `stash.second-wind`, `stash.second-wind-auto`, `stash.wind.notice`, `stash.wind.must` and the three note rows `stash.wind.text.press`, `.notice`, `.at` in `settings.json`, which x-mod-stash reads; herdr is a second editor, the truth stays in the mod
   - given the group, then it holds Second wind and Auto second wind as switches, Notice at and Wind at as steppers
   - when he sets a notice line at or above the wind line, then the row says «🛑 not saved: the notice line (N) must sit below the wind line (M)» and the stored value stays
-  - given its three note boxes, each titled by the path it serves («When I press 🐦‍🔥», «Auto: at the notice line», «Auto: at the wind line, the ask»), then each shows its full text: his row, else the default from `~/.claude/shelf/second-wind-defaults.json`
+  - given its three note boxes, each titled by the path it serves («When I press 🐦‍🔥», «Auto: at the notice line», «Auto: at the wind line, the ask»), then each shows its full text: his row, else the default from the stash's store `~/.claude/shelf/second-wind.json`
   - when he edits a note and presses Save, then the text lands in its row; the default saved unchanged leaves the row empty, and «Reset to default» empties it
   - and a note that lost the word `second-wind` or `handoff` gets a red line under its box and still saves
   - decision: a note saves on its button, never per key: a half-typed note must not reach a thread
@@ -362,3 +362,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when a trackpad's momentum presses past the end, or a reply streams in
   - then nothing redraws for the wheel and the view stays pinned (probe: 157 overscroll events, 0 redraws, 15:02; shot 1605)
   - decision: a row's height comes from the measurer, never from the row drawn in the list: drawing far rows as empty boxes once looped a long message between 12 px and 1285 px and nearly froze herdr in wing 1 (15:26 probe)
+
+- ⬜ the new chat reads a thread, in a list that never moves without him (x-herdr-chat, FRM-638)
+  - given `x-herdr-chat` opened as an overlay (`herdr-app do mod.open '{"name":"x-herdr-chat"}'`; it sits in no layout yet) while the old chat shows a thread
+  - then that thread's transcript is drawn from its tail: his messages as bubbles on the right, replies as bubbles on the left with rich text and code blocks, a run of tool calls as one line that counts them by name (shot `~/.local/state/looks/FRM-638/1901-new-chat-overlay.png`)
+  - and it opens at the newest and follows it only while he sits at the end; a wheel step up stops following, and a small «↓» at the bottom right goes back
+  - and a new line in the transcript changes only its own row; a long transcript opens at its last 4 MB
+  - and after a reload of the mod the message he was reading is on screen again, read in from above when it must be
+  - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why
+  - decision: a new mod beside the old chat, moved in file by file under a strict type check, swapped in once at the end (dima, 2026-11-16 16:36: «pull only clean, decided features»)

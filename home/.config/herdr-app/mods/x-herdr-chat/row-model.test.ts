@@ -136,6 +136,30 @@ describe('an update touches only the rows that changed', () => {
         expect(ask?.version).toBe(1);
     });
 
+    test('tool calls in a row fold into one line that counts them by name', () => {
+        const model = createRowModel();
+        model.add([mine('go'), tool('Bash'), tool('Read')]);
+        const run = model.rows[1];
+        const { changed } = model.add([tool('Bash')]);
+        expect(shown(model)).toEqual([
+            'mine: go',
+            'tool: 3 tool calls: Bash 2, Read 1',
+        ]);
+        expect(changed).toEqual([run?.id]);
+        expect(model.rows[1]).toBe(run);
+        expect(run?.version).toBe(3);
+    });
+
+    test('one tool call alone reads by its name', () => {
+        const model = createRowModel();
+        model.add([tool('Bash'), reply('done'), tool('Read')]);
+        expect(shown(model)).toEqual([
+            'tool: Bash',
+            'reply: done',
+            'tool: Read',
+        ]);
+    });
+
     test('two replies in a row stay two rows', () => {
         const model = createRowModel();
         model.add([reply('one', 'msg-a'), reply('two', 'msg-b')]);
@@ -187,6 +211,19 @@ describe('earlier pages and a restart', () => {
         model.add([reply('second part', 'msg-a')]);
         model.addEarlier([first]);
         expect(shown(model)).toEqual(['reply: first part\n\nsecond part']);
+    });
+
+    test('a run of tool calls cut by the page edge is one line again', () => {
+        const model = createRowModel();
+        const early = [tool('Read'), tool('Bash')];
+        model.add([tool('Bash'), mine('thanks')]);
+        const [run] = model.rows;
+        model.addEarlier(early);
+        expect(shown(model)).toEqual([
+            'tool: 3 tool calls: Bash 2, Read 1',
+            'mine: thanks',
+        ]);
+        expect(model.rows[0]).toBe(run);
     });
 
     test('clear empties the thread for a file read again from its start', () => {

@@ -6,10 +6,11 @@
  * @typedef {object} Row
  * @property {string} id the uuid of the row's first transcript line
  * @property {'mine' | 'reply' | 'tool'} kind
- * @property {string} text his words, the reply's markdown, or the tool's name
+ * @property {string} text his words, the reply's markdown, or the line naming a run of tool calls
  * @property {string | null} at when its line was written, as the transcript stamps it
  * @property {number} version 1 at birth, one more each time the text changes
  * @property {string | null} replyId the reply's message id: more text of the same message joins this row
+ * @property {string[]} tools the names of the tool calls a tool row folds, in order
  */
 
 // a conversation line opens with this key; api requests, snapshots and modes open with "type" and are never parsed
@@ -52,6 +53,7 @@ function rowsOf(line) {
         kind,
         replyId: kind === 'reply' ? textOf(message.id) || null : null,
         text,
+        tools: kind === 'tool' ? [text] : [],
         version: 1,
     });
     if (entry.type === 'user') {
@@ -72,12 +74,39 @@ function rowsOf(line) {
     return [];
 }
 
-/** whether `next` is more text of the reply `row` holds @param {Row | undefined} row @param {Row} next */
-const continues = (row, next) =>
-    row?.kind === 'reply' &&
-    next.kind === 'reply' &&
-    row.replyId !== null &&
-    row.replyId === next.replyId;
+/** one tool call by its name; a run of them counted by name, the most used first @param {string[]} tools */
+function toolLine(tools) {
+    const [only] = tools;
+    if (tools.length === 1 && only) return only;
+    /** @type {Map<string, number>} */
+    const counts = new Map();
+    for (const name of tools) counts.set(name, (counts.get(name) ?? 0) + 1);
+    const byUse = [...counts].sort((a, b) => b[1] - a[1]);
+    return `${tools.length} tool calls: ${byUse.map(([name, count]) => `${name} ${count}`).join(', ')}`;
+}
+
+/**
+ * joins `lower` onto the row above it when both are one thing on screen: more text of the same reply, or tool calls
+ * in a row. the upper row keeps its id and grows a version
+ * @param {Row | undefined} upper
+ * @param {Row} lower
+ * @returns {boolean} whether it joined
+ */
+function join(upper, lower) {
+    if (!upper || upper.kind !== lower.kind) return false;
+    if (upper.kind === 'tool') {
+        upper.tools.push(...lower.tools);
+        upper.text = toolLine(upper.tools);
+    } else if (
+        upper.kind === 'reply' &&
+        upper.replyId !== null &&
+        upper.replyId === lower.replyId
+    )
+        upper.text = `${upper.text}\n\n${lower.text}`;
+    else return false;
+    upper.version += 1;
+    return true;
+}
 
 export function createRowModel() {
     /** @type {Row[]} */
@@ -97,9 +126,7 @@ export function createRowModel() {
             if (seen.has(next.id)) continue;
             seen.add(next.id);
             const last = into.at(-1);
-            if (last && continues(last, next)) {
-                last.text = `${last.text}\n\n${next.text}`;
-                last.version += 1;
+            if (last && join(last, next)) {
                 changed.add(last.id);
                 continue;
             }
@@ -121,11 +148,18 @@ export function createRowModel() {
             fold(lines, page);
             const last = page.at(-1);
             const [first] = rows;
-            // a reply the page edge cut in two: its upper part joins the row already drawn
-            if (last && first && continues(last, first)) {
-                first.text = `${last.text}\n\n${first.text}`;
-                first.version += 1;
-                page.pop();
+            // a reply or a run of tool calls the page edge cut in two: the row already drawn keeps its id and takes
+            // the upper part in
+            if (last && first && last.kind === first.kind) {
+                const lower = { ...first, tools: [...first.tools] };
+                if (join(last, lower)) {
+                    Object.assign(first, {
+                        text: last.text,
+                        tools: last.tools,
+                        version: first.version + 1,
+                    });
+                    page.pop();
+                }
             }
             rows.unshift(...page);
             return { added: page.length };
