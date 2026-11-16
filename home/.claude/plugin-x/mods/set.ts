@@ -176,6 +176,15 @@ const LOCK_WAIT_MS = 5000;
 const LOCK_STALE_MS = 10_000;
 const LOCK_RETRY_MS = 10;
 
+// two waiters may both see one stale lock: only one rename wins, so the loser never removes the winner's fresh lock
+function dropStaleLock(lock: string) {
+    const mine = `${lock}.${process.pid}.stale`;
+    try {
+        renameSync(lock, mine);
+        rmSync(mine, { force: true });
+    } catch {}
+}
+
 // a writer that died holding the lock leaves its file: past LOCK_STALE_MS it is taken over
 function takeLock(lock: string) {
     const deadline = Date.now() + LOCK_WAIT_MS;
@@ -188,16 +197,16 @@ function takeLock(lock: string) {
         }
         const heldSince = statSync(lock, { throwIfNoEntry: false })?.mtimeMs;
         if (heldSince !== undefined && Date.now() - heldSince > LOCK_STALE_MS)
-            rmSync(lock, { force: true });
-        else if (Date.now() > deadline)
+            dropStaleLock(lock);
+        // a stale lock that will not go still meets the deadline and the sleep, so the wait never spins
+        if (Date.now() > deadline)
             throw new Error(`the store is locked: ${lock}`);
-        else
-            Atomics.wait(
-                new Int32Array(new SharedArrayBuffer(4)),
-                0,
-                0,
-                LOCK_RETRY_MS,
-            );
+        Atomics.wait(
+            new Int32Array(new SharedArrayBuffer(4)),
+            0,
+            0,
+            LOCK_RETRY_MS,
+        );
     }
 }
 
@@ -213,9 +222,11 @@ export function changeStore(
     takeLock(lock);
     try {
         const temp = `${real}.${process.pid}.tmp`;
+        // the store's own mode, so a rename never widens who may read it
         writeFileSync(
             temp,
             JSON.stringify(change(JSON.parse(readFileSync(real, 'utf8')))),
+            { mode: statSync(real).mode & 0o777 },
         );
         renameSync(temp, real);
     } finally {
@@ -339,9 +350,7 @@ function main([key, value, id]: string[]) {
         }
         const refusal = windTextRefusal(value, id ?? '');
         if (refusal) {
-            console.error(
-                `refused: ${refusal}\nusage: pnpm mods:set second-wind-text [<row> [<text>]], an empty text puts the default back`,
-            );
+            console.error(`refused: ${refusal}`);
             return 2;
         }
         if (id === undefined) {

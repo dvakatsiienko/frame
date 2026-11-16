@@ -1,9 +1,13 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
+    chmodSync,
+    existsSync,
     mkdtempSync,
     readFileSync,
     readlinkSync,
+    statSync,
     symlinkSync,
+    utimesSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -177,6 +181,71 @@ test('the second-wind-text door refuses a text over the cap and a row it does no
         'the text is 4001 chars, over the cap of 4000',
         'no such row: stash.wind.text.nope',
     ]);
+});
+
+test('the door run with a text over the cap exits 2 with one line naming the cap', () => {
+    const run = spawnSync(
+        process.execPath,
+        [
+            new URL('./set.ts', import.meta.url).pathname,
+            'second-wind-text',
+            'stash.wind.text.at',
+            'x'.repeat(4001),
+        ],
+        {
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                HOME: mkdtempSync(join(tmpdir(), 'set-home.')),
+            },
+        },
+    );
+    expect([run.status, run.stderr]).toEqual([
+        2,
+        'refused: the text is 4001 chars, over the cap of 4000\n',
+    ]);
+});
+
+test("a dead writer's lock is taken over, and the write lands", () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'set-stale.')), 'store.json');
+    writeFileSync(path, '{}');
+    writeFileSync(`${path}.lock`, '1');
+    utimesSync(`${path}.lock`, 0, 0);
+    changeStore(path, (s) => ({ ...s, hot: 1 }));
+    expect([
+        JSON.parse(readFileSync(path, 'utf8')),
+        existsSync(`${path}.lock`),
+    ]).toEqual([{ hot: 1 }, false]);
+});
+
+test('a lock that will not go fails the write at the deadline, never a spin', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'set-held.'));
+    const path = join(dir, 'store.json');
+    writeFileSync(path, '{}');
+    writeFileSync(`${path}.lock`, '1');
+    utimesSync(`${path}.lock`, 0, 0);
+    // a dir without write leave keeps the stale lock where it is
+    chmodSync(dir, 0o500);
+    const started = Date.now();
+    let message = '';
+    try {
+        changeStore(path, (s) => s);
+    } catch (error) {
+        message = String(error);
+    } finally {
+        chmodSync(dir, 0o700);
+    }
+    expect([
+        message.includes('the store is locked'),
+        Date.now() - started >= 5000,
+    ]).toEqual([true, true]);
+}, 15_000);
+
+test('a store written through the door keeps its mode', () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'set-mode.')), 'store.json');
+    writeFileSync(path, '{}', { mode: 0o600 });
+    changeStore(path, (s) => ({ ...s, hot: 1 }));
+    expect(statSync(path).mode & 0o777).toBe(0o600);
 });
 
 const SET = new URL('./set.ts', import.meta.url).href;

@@ -53,8 +53,18 @@ export function windTextOf(file: WindFile, row: WindRow) {
     return text.length > WIND_TEXT_CAP ? { isOverCap: true } : { text };
 }
 
+// a row's text exactly as the file holds it, for telling whether an edit has landed
+export function windRawTextOf(file: WindFile, row: string) {
+    const entry = isRecord(file.rows) ? file.rows[row] : undefined;
+    return isRecord(entry) && typeof entry.text === 'string' ? entry.text : '';
+}
+
 const sessionOf = (v: unknown): WindSession | undefined =>
-    isRecord(v) && typeof v.auto === 'boolean' && typeof v.pid === 'number'
+    isRecord(v) &&
+    typeof v.auto === 'boolean' &&
+    typeof v.pid === 'number' &&
+    Number.isInteger(v.pid) &&
+    v.pid > 0
         ? { auto: v.auto, pid: v.pid }
         : undefined;
 
@@ -97,7 +107,11 @@ export function windFileWith(
         isRecord(file.applied?.sessions) ? file.applied.sessions : {},
     ).flatMap(([sid, v]) => {
         const s = sessionOf(v);
-        return s && !change.gone?.has(s.pid) && sid !== change.self?.sid
+        // this process's pid under another id is its own conversation before a /clear or a /resume
+        return s &&
+            !change.gone?.has(s.pid) &&
+            sid !== change.self?.sid &&
+            s.pid !== change.self?.pid
             ? [[sid, s] as const]
             : [];
     });

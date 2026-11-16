@@ -116,9 +116,11 @@ import {
     WIND_TEXT_CAP,
     WIND_TEXT_EDITS,
     type WindRow,
+    isWindRow,
     windFileOf,
     windFileWith,
     windPidsOf,
+    windRawTextOf,
     windTextOf,
 } from './wind-store.ts';
 
@@ -4452,7 +4454,9 @@ let fleetWritten: string | undefined;
 // whole or not at all: a reader never meets a half-written file
 async function writeWhole($: EngineInterface, path: string, text: string) {
     const cut = path.lastIndexOf('/');
-    const temp = `${path.slice(0, cut)}/.${path.slice(cut + 1)}.tmp`;
+    // the pid in the name: every session writes the second-wind store, and a shared temp would let one session's
+    // rename move another's half-written file into place
+    const temp = `${path.slice(0, cut)}/.${path.slice(cut + 1)}.${proc?.pid ?? 0}.tmp`;
     await $.fs.write(temp, text);
     const r = await $.process.run(['mv', '-f', temp, path]);
     if (r.exitCode !== 0) throw new Error(r.stderr.trim() || 'mv failed');
@@ -7119,6 +7123,8 @@ const windEditsOf = (v: unknown): Record<string, unknown> =>
 // the pids ps no longer prints; ps exits 1 when none is alive, so only its output is read
 async function deadPids($: EngineInterface, pids: number[]) {
     const ps = await $.process.run(['ps', '-o', 'pid=', '-p', pids.join(',')]);
+    // a ps that failed to run says nothing: only a quiet exit with no pid printed means none is alive
+    if (ps.exitCode !== 0 && ps.stderr.trim()) return new Set<number>();
     const alive = new Set(ps.stdout.split('\n').map((s) => Number(s.trim())));
     return new Set(pids.filter((pid) => !alive.has(pid)));
 }
@@ -7165,10 +7171,25 @@ async function syncWindStore($: EngineInterface) {
     )}\n`;
     if (text !== raw) await writeWhole($, path, text);
     if (!Object.keys(edits).length) return;
-    // only what this pass folded leaves the key: an edit written meanwhile waits for the next poll
+    // an edit leaves the key only once a pass reads it back from the file: a session that wrote an older file over it
+    // loses nothing, the next pass folds it again. one no row takes (an unknown row, a text over the cap) leaves at
+    // once, the over-cap one with a log line, since herdr's row has no door to refuse it
+    const isTaken = (row: string, edit: unknown) =>
+        isWindRow(row) &&
+        typeof edit === 'string' &&
+        edit.length <= WIND_TEXT_CAP;
+    for (const [row, edit] of Object.entries(edits))
+        if (isWindRow(row) && typeof edit === 'string' && !isTaken(row, edit))
+            $.ui.log(
+                `x-mod-stash second wind: an edit of ${row} is over ${WIND_TEXT_CAP} chars and was not taken`,
+            );
     const left = Object.entries(
         windEditsOf(await $.store.get(WIND_TEXT_EDITS).catch(() => undefined)),
-    ).filter(([row, text]) => edits[row] !== text);
+    ).filter(
+        ([row, edit]) =>
+            edits[row] !== edit ||
+            (isTaken(row, edit) && windRawTextOf(file, row) !== edit),
+    );
     if (left.length)
         await $.store.set(WIND_TEXT_EDITS, Object.fromEntries(left));
     else await $.store.delete(WIND_TEXT_EDITS);

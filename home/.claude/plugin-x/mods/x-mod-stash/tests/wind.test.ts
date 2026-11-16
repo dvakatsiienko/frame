@@ -633,6 +633,7 @@ test('an edited text sits in the store beside its default after the next poll', 
     edit(w, 'stash.wind.text.press', 'my words');
     await w.clock.advance(POLL_MS);
     const row = storeFile(w).rows['stash.wind.text.press'];
+    await w.clock.advance(POLL_MS);
     expect([
         row.text,
         row.default.startsWith('🐦‍🔥 second wind: dima'),
@@ -676,22 +677,107 @@ test('a press on the band 🍃 is in the store at once', async ($, on) => {
     });
 });
 
-test("a session whose pid is gone leaves the store at the next poll, a live one's entry stays", async ($, on) => {
-    const w = world(on);
+const withSessions = (w: World, sessions: Record<string, unknown>) => {
+    const file = storeFile(w);
     w.files[WIND_STORE] = JSON.stringify({
-        applied: {
-            sessions: {
-                'dead-sid': { auto: true, pid: 99_999 },
-                'peer-1': { auto: false, pid: 1 },
-            },
-        },
+        ...file,
+        applied: { ...file.applied, sessions },
     });
+};
+const OTHERS = {
+    'dead-sid': { auto: true, pid: 99_999 },
+    'peer-1': { auto: false, pid: 1 },
+};
+
+test("a session whose pid is gone leaves the store at a session's first pass, a live one's entry stays", async ($, on) => {
+    const w = world(on);
+    withSessions(w, OTHERS);
     await start($);
-    await w.clock.advance(POLL_MS);
     expect(storeFile(w).applied.sessions).toEqual({
         'peer-1': { auto: false, pid: 1 },
         [SID]: { auto: true, pid: PID },
     });
+});
+
+test('a session whose pid goes later leaves the store within five polls, never at each one', async ($, on) => {
+    const w = world(on);
+    withSessions(w, { 'peer-1': { auto: false, pid: 1 } });
+    await start($);
+    withSessions(w, { ...OTHERS, [SID]: { auto: true, pid: PID } });
+    await w.clock.advance(4 * POLL_MS);
+    const before = Object.keys(storeFile(w).applied.sessions);
+    await w.clock.advance(POLL_MS);
+    expect([before, Object.keys(storeFile(w).applied.sessions)]).toEqual([
+        ['dead-sid', 'peer-1', SID],
+        ['peer-1', SID],
+    ]);
+});
+
+test('an entry with this pid under an older session id, left by a /clear, leaves the store', async ($, on) => {
+    const w = world(on);
+    withSessions(w, { 'before-clear': { auto: false, pid: PID } });
+    await start($);
+    expect(Object.keys(storeFile(w).applied.sessions)).toEqual([SID]);
+});
+
+test('an entry whose pid is no whole positive number is dropped, and the live peers stay', async ($, on) => {
+    const w = world(on);
+    withSessions(w, {
+        hostile: { auto: true, pid: -1 },
+        'peer-1': { auto: false, pid: 1 },
+    });
+    await start($);
+    expect(Object.keys(storeFile(w).applied.sessions)).toEqual(['peer-1', SID]);
+});
+
+test("an edit a peer's older file wrote over is folded again at the next poll", async ($, on) => {
+    const w = world(on);
+    await start($);
+    const older = w.files[WIND_STORE] ?? '';
+    edit(w, 'stash.wind.text.press', 'my words');
+    await w.clock.advance(POLL_MS);
+    w.files[WIND_STORE] = older;
+    await w.clock.advance(POLL_MS);
+    expect(storeFile(w).rows['stash.wind.text.press'].text).toBe('my words');
+});
+
+test('an edit over the cap, as herdr could leave one, is not taken and the log says so', async ($, on) => {
+    const w = world(on);
+    await start($);
+    edit(w, 'stash.wind.text.press', 'x'.repeat(4001));
+    await w.clock.advance(POLL_MS);
+    expect([
+        storeFile(w).rows['stash.wind.text.press'].text,
+        w.store.has('wind-text-edits'),
+        w.logs.filter((l) => l.includes('was not taken')),
+    ]).toEqual([
+        '',
+        false,
+        [
+            'x-mod-stash second wind: an edit of stash.wind.text.press is over 4000 chars and was not taken',
+        ],
+    ]);
+});
+
+test("the coordinator's blank rows keep her defaults: her checkpoint at the wind line, the propose line with 🍃 off", async ($, on) => {
+    const w = world(on, '🦉 clio', undefined, undefined, 'coordinator');
+    w.files[WIND_STORE] = JSON.stringify({
+        rows: {
+            'stash.wind.text.at.coordinator': { text: ' ' },
+            'stash.wind.text.propose': { text: '' },
+        },
+    });
+    await start($);
+    for (const fill of [56, 70, 70]) await turnAt($, w, fill);
+    w.store.set(`second-wind-auto:${SID}`, { at: NOW + 1, on: false });
+    w.store.delete(`fill:${SID}`);
+    await turnAt($, w, 71);
+    expect(
+        [
+            /^🐦‍🔥 second wind: the mod asks you to checkpoint, your context is past 65 %/,
+            /^🐦‍🔥 second wind due at 71 %: past the 65 % boundary/,
+        ].map((note) => w.lines.filter((l) => note.test(l)).length),
+    ).toEqual([1, 1]);
 });
 
 test('a row name the mod does not know stays in the store untouched', async ($, on) => {
