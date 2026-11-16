@@ -156,6 +156,7 @@
   - decision: a record or a registry row that does not read is no sign, so the command runs: the rule keeps a member's mistake out, and never locks dima's own thread out of his clipboard (clio's yes, 2026-11-16)
   - decision: the member lookup runs only for a line the rule would stop, so no other Bash call pays a read
   - 📌 not read, four named limits: a writer inside a script run by path or a `pnpm` verb; a command held in a variable the shell builds at run time; an OSC 52 escape printed to the terminal; keystrokes through computer use
+  - 📌 not read, a fifth limit the build found: a program handed to a runner off the list (`vim -c`, `emacs --eval`, `make`), and a program of one bare word with no program flag before it (`deno eval pbcopy`)
   - 📌 both signs are files any seat can write (the thread record, a `/rename`): the rule keeps a mistake out, never a seat that hides its sign
   - decision: a runner's program that only names the word (`python3 -c 'print("use pbcopy")'`) is refused too: one rule over every runner's program is cheaper than reading each language, and a list per runner and flag leaked a hole a round (sixth sense, rounds 1–2)
   - 📌 `osascript` naming the clipboard is refused even when it only reads it: `pbpaste` is the read door
