@@ -130,6 +130,73 @@ export function entryFor(prompt: string, at: Date) {
     return `## ${hh}:${mm}\n\n${prompt.trim()}\n\n`;
 }
 
+// what dima types in herdr mid-turn reaches the agent but never this hook; the chat app's mod keeps it in a joins file
+export function newJoins(joinsText: string, seen: ReadonlySet<string>) {
+    const known = new Set(seen);
+    const fresh: { id: string; text: string }[] = [];
+    for (const line of joinsText.split('\n')) {
+        try {
+            const { id, text } = JSON.parse(line) as {
+                id?: unknown;
+                text?: unknown;
+            };
+            if (
+                typeof id === 'string' &&
+                typeof text === 'string' &&
+                text.trim() &&
+                !known.has(id)
+            ) {
+                known.add(id);
+                fresh.push({ id, text });
+            }
+        } catch {
+            // a torn or non-JSON line is skipped
+        }
+    }
+    return fresh;
+}
+
+// the first run of a session only marks the old lines seen, so a backfill never lands in today's file; never throws
+function saveHerdrJoins(
+    sessionId: string | undefined,
+    file: string,
+    now: Date,
+) {
+    try {
+        if (!sessionId) return;
+        const seenFile = path.join(
+            rawRoot,
+            '.herdr-joins-seen',
+            `${sessionId}.txt`,
+        );
+        const isFirstRun = !existsSync(seenFile);
+        const joinsFile = path.join(
+            process.env.HERDR_JOINS_DIR ??
+                path.join(process.env.HOME ?? '', '.claude/shelf/herdr-joins'),
+            `${sessionId}.jsonl`,
+        );
+        const seen = isFirstRun
+            ? []
+            : readFileSync(seenFile, 'utf8').split('\n').filter(Boolean);
+        const fresh = existsSync(joinsFile)
+            ? newJoins(readFileSync(joinsFile, 'utf8'), new Set(seen))
+            : [];
+        mkdirSync(path.dirname(seenFile), { recursive: true });
+        if (!isFirstRun && fresh.length > 0) {
+            mkdirSync(path.dirname(file), { recursive: true });
+            appendFileSync(
+                file,
+                fresh
+                    .map((j) => entryFor(`(herdr-typed)\n${j.text}`, now))
+                    .join(''),
+            );
+        }
+        appendFileSync(seenFile, fresh.map((j) => `${j.id}\n`).join(''));
+    } catch {
+        // a hook never throws: a missing or unreadable joins file is silence
+    }
+}
+
 // a thread's turn cannot end while 5 or more prompts or steers wait past 30 minutes for a groom (dima's o76, 2026-11-09)
 export const GROOM_BLOCK_AT = 5;
 export function groomBlock(
@@ -177,10 +244,15 @@ function threadDay(thread: string, now: Date, transcriptPath?: string) {
 
 if (import.meta.main && process.argv[2] === '--stop') {
     const input = JSON.parse(readFileSync(0, 'utf8') || '{}') as {
+        session_id?: string;
         stop_hook_active?: boolean;
         transcript_path?: string;
     };
     const thread = threadOf();
+    if (thread !== undefined) {
+        const now = new Date();
+        saveHerdrJoins(input.session_id, threadDay(thread, now).file, now);
+    }
     if (!input.stop_hook_active && thread !== undefined) {
         const d = threadDay(thread, new Date(), input.transcript_path);
         const reason = groomBlock(
@@ -193,12 +265,22 @@ if (import.meta.main && process.argv[2] === '--stop') {
         if (reason) console.log(JSON.stringify({ decision: 'block', reason }));
     }
 } else if (import.meta.main) {
-    const { prompt = '', transcript_path } = JSON.parse(
-        readFileSync(0, 'utf8') || '{}',
-    ) as { prompt?: string; transcript_path?: string };
+    const {
+        prompt = '',
+        session_id,
+        transcript_path,
+    } = JSON.parse(readFileSync(0, 'utf8') || '{}') as {
+        prompt?: string;
+        session_id?: string;
+        transcript_path?: string;
+    };
     const text = dimasText(prompt);
     // a session that is no clio thread (a plain fork, a sidecar) keeps no log
     const thread = threadOf();
+    if (thread !== undefined) {
+        const now = new Date();
+        saveHerdrJoins(session_id, threadDay(thread, now).file, now);
+    }
     if (text && thread !== undefined) {
         const now = new Date();
         const { file } = threadDay(thread, now);

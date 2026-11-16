@@ -15,6 +15,7 @@ import {
     flywayNudge,
     groomBlock,
     groomNudge,
+    newJoins,
     wingNudge,
 } from './prompt-raw-save.ts';
 import { threadOf } from './session-registry.ts';
@@ -234,6 +235,90 @@ describe('threadOf', () => {
         ['a lane member', '🌗 🔧 codie: cli lane | FRM-383'],
     ])('%s keeps no log', (_kind, name) => {
         expect(threadOf(threadHome(10, { 12: name }), 12)).toBeUndefined();
+    });
+});
+
+describe('newJoins', () => {
+    test('new entries come in file order; seen, torn, non-JSON and empty ones are skipped', () => {
+        const text = [
+            '{"id":"a","text":"one"}',
+            '{"id":"b","text":"seen"}',
+            '{"id":"c","text":"tor',
+            'not json',
+            '{"id":"d","text":"  "}',
+            '{"id":"e","text":"two"}',
+        ].join('\n');
+        expect(newJoins(text, new Set(['b']))).toEqual([
+            { id: 'a', text: 'one' },
+            { id: 'e', text: 'two' },
+        ]);
+    });
+});
+
+describe('the hook saves herdr-typed joins', () => {
+    const fixture = () => {
+        const home = mkdtempSync(join(tmpdir(), 'joins-hook-'));
+        const joins = join(home, 'joins');
+        mkdirSync(joins);
+        const joinsFile = join(joins, 's1.jsonl');
+        const dayFile = join(
+            home,
+            'prompts/wing-3',
+            `${new Date().toLocaleDateString('sv')}.md`,
+        );
+        const run = () =>
+            spawnSync(
+                'node',
+                [join(import.meta.dirname, 'prompt-raw-save.ts'), '--stop'],
+                {
+                    encoding: 'utf8',
+                    env: {
+                        ...process.env,
+                        CLIO_THREAD: 'wing-3',
+                        HERDR_JOINS_DIR: joins,
+                        HOME: home,
+                        PROMPT_GROOM_DIR: join(home, 'grooms'),
+                        PROMPT_RAW_DIR: join(home, 'prompts'),
+                    },
+                    input: JSON.stringify({ session_id: 's1' }),
+                    timeout: 10_000,
+                },
+            );
+        return { dayFile, joinsFile, run };
+    };
+    const first = '{"id":"a","text":"typed in herdr"}\n';
+
+    test('a new entry is appended once, with the herdr-typed mark', () => {
+        const { dayFile, joinsFile, run } = fixture();
+        writeFileSync(joinsFile, '');
+        run();
+        writeFileSync(joinsFile, first);
+        run();
+        run();
+        const day = readFileSync(dayFile, 'utf8');
+        expect(day).toMatch(
+            /^## \d\d:\d\d\n\n\(herdr-typed\)\ntyped in herdr\n\n$/,
+        );
+    });
+
+    test('a torn line is skipped, the next whole one saved', () => {
+        const { dayFile, joinsFile, run } = fixture();
+        writeFileSync(joinsFile, '');
+        run();
+        writeFileSync(joinsFile, `{"id":"x","te\n${first}`);
+        run();
+        const day = readFileSync(dayFile, 'utf8');
+        expect(day).toContain('typed in herdr');
+        expect(day).not.toContain('"te');
+    });
+
+    test('the first run backfills nothing', () => {
+        const { dayFile, joinsFile, run } = fixture();
+        writeFileSync(joinsFile, first);
+        run();
+        expect(existsSync(dayFile)).toBe(false);
+        run();
+        expect(existsSync(dayFile)).toBe(false);
     });
 });
 
