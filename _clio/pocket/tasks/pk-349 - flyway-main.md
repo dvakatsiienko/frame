@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T19:22:00Z'
+updated_date: '2026-11-16T19:32:00Z'
 labels:
   - s
   - clio-main
@@ -30,12 +30,11 @@ ordinal: 1000
 - [ ] #12 f30 grill 1: stats counter (PK-300): shape, grill, plan right away (his 17:36 order)
 - [ ] #13 f31 grill 2: mess hunt as a card (PK-441): shape, grill, implement in place
 - [ ] #14 f32 grill 3: lighten linear (PK-442): shape, grill, implement in place
-- [ ] #15 f33 grill 4: orbit asks front-loaded (PK-439): shape, grill, sign, plan when
-- [ ] #16 f34 chat emoji reactions (PK-405): review against shepherdr base features
-- [ ] #17 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #18 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #19 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #20 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #15 f34 chat emoji reactions (PK-405): review against shepherdr base features
+- [ ] #16 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #17 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #18 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #19 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -939,4 +938,6 @@ PK-349:W1117 (2026-11-16 20:55, dima): scope: what is the state of the scope now
 PK-349:W1118 (2026-11-16 20:59, dima): order of work: 1) orbit asks front-loaded, grill after SW (not done yet); 2) lighten linear pass over the three lanes; 3) re-judge the 13 herdr tickets against the new chat, for his tick. Everything else in parallel. Tell him when to probe chat with herdr codie.
 
 PK-349:W1119 (2026-11-16 21:08, dima): let's grill whenever you can, and solve all tails. While solving tails, outline the place for the halt: what would be a good meaningful part to finish and stop, ideally at once for the mods lane and the herdr lane? As for now, they move; only plan when they stop.
+
+done 2026-11-16 21:32: f33 grill 4: orbit asks front-loaded (PK-439): shape, grill, sign, plan when (PK-439 done)
 <!-- SECTION:NOTES:END -->

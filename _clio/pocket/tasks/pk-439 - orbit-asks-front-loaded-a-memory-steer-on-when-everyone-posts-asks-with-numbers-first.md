@@ -81,4 +81,6 @@ PK-439:W16 (2026-11-16 21:09, dima, o109 steer): mods orbit settings in herdr: h
 ticket: FRM-640 (21:32): the orbit rebalance and his text boxes moved there; the grill's steer line landed in fleet-mods.md; re-measure reminder 11-23.
 
 close: 2026-11-16 the grill landed (the rule line, o106–o108), the mod's rebalance lives in FRM-640.
+
+close: W1 done, W2 done, W3 done, W4 done, W5 done, W6 done, W7 done, W8 done, W9 done, W10 done, W11 done (the grill: numbers.md, the rule line in rules/fleet-mods.md, his o106–o108 ticks); W13 done (the rule line says «a recommendation»); W14 done (the grill landed 21:20, the peek printed); W12 moved, W15 moved, W16 moved (FRM-640's wish block, folded there from his raw words as its W1, W2, W3).
 <!-- SECTION:NOTES:END -->
