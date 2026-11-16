@@ -380,3 +380,13 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and after a reload of the mod the message he was reading is on screen again, read in from above when it must be
   - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why
   - decision: a new mod beside the old chat, moved in file by file under a strict type check, swapped in once at the end (dima, 2026-11-16 16:36: «pull only clean, decided features»)
+
+- ✅ the new chat's quill: he types, sends and joins a turn from it (x-herdr-chat, FRM-638 slice 2)
+  - given the new chat open on a thread, then the quill, a text box, sits under the list in its column and grows with his lines up to eight
+  - when he types, then his draft is kept for that thread: it is back after the chat closes and opens again (his look, 22:42)
+  - when he presses Enter or clicks the send button, then his words are marked to join the thread's turn and stay in the quill, one line, the caret where it was, the button reading 🍕; a second press takes the mark off; once a turn took them they leave the quill and the button reads 😋 for a moment, then 🛎️ again
+  - when he holds the send button or presses cmd+Enter, then the words go now and a turn starts; a slash command, or a thread that takes no joins, is sent that way on a plain press, and a line over the quill says why
+  - when a send is refused, or the thread does not run in herdr, then his words are back in the quill and a line over it says so
+  - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «Waiting for the turn», until the turn takes it; words that joined a turn are drawn as his messages
+  - Shift+Enter breaks the line
+  - decision: until the swap the two chats share no draft and the global keys (cmd-k and the rest) stay the old chat's; the hold's two timings are read from the old chat's settings (clio, 2026-11-16 21:50)
