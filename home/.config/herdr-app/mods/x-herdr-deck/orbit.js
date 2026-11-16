@@ -347,7 +347,7 @@ export const canTakeBack = (state) =>
     state === 'ticked' || state === 'replayed';
 
 /**
- * the two buttons' emojis (dima's W63–W67, 21:03): both stay, the pressed one reading 📥 queued, then ✉️ once a turn
+ * the two buttons' emojis (dima's W63–W67, 21:03): both stay, the pressed one reading 🍕 queued, then ✉️ once a turn
  * took it, by the stash's mark of what was taken
  * @param {ReturnType<typeof tickState>} state @param {Ask['mark']} [mark]
  */
@@ -356,13 +356,13 @@ export function pressLabel(state, mark) {
     return {
         replay:
             state === 'replayed'
-                ? '📥'
+                ? '🍕'
                 : state === 'locked' && taken === 'replay'
                   ? '✉️'
                   : '🔁',
         tick:
             state === 'ticked'
-                ? '📥'
+                ? '🍕'
                 : state === 'locked' && taken === 'tick'
                   ? '✉️'
                   : '🛎️',

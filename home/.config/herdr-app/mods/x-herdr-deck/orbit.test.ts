@@ -583,10 +583,10 @@ describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)'
         expect(tickState({ ...ask, mark: 'rejected' }, 'untick')).toBe('open');
     });
 
-    test('the pressed button reads 📥, the other keeps its emoji', () => {
+    test('the pressed button reads 🍕, the other keeps its emoji', () => {
         expect(pressLabel('open')).toEqual({ replay: '🔁', tick: '🛎️' });
-        expect(pressLabel('ticked')).toEqual({ replay: '🔁', tick: '📥' });
-        expect(pressLabel('replayed')).toEqual({ replay: '📥', tick: '🛎️' });
+        expect(pressLabel('ticked')).toEqual({ replay: '🔁', tick: '🍕' });
+        expect(pressLabel('replayed')).toEqual({ replay: '🍕', tick: '🛎️' });
     });
 
     test('once delivered, the pressed button reads ✉️ and both stay (dima, 21:03)', () => {
