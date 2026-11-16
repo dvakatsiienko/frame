@@ -1,5 +1,5 @@
 {
-    "// why": "the parts of dima's herdr window, boxed on the window map; boxes are px in a 1600-wide copy of a shot of his layout at his window size, with the tray and the Changes panel open (the script shoots the window as it is, so open both first). a moved block means new boxes.",
+    "// why": "the parts of dima's herdr window: each names a node of the shown layout (herdr-app status names it, layouts/<name>.json holds it), its box computed from that tree at the shot's size; a part whose node reads hidden is listed, not drawn. top and height cut a strip off the node's top, in the layout's own points. a new part means a node id here.",
     "kindLabels": {
         "herdr": "shipped (herdr's own)",
         "ours": "ours"
@@ -9,12 +9,6 @@
         "ours": [22, 163, 74]
     },
     "notShown": [
-        {
-            "kind": "ours",
-            "name": "hidden strip",
-            "today": "x-herdr-deck (view: seat)",
-            "what": "thread strip above the chat, hidden in the layout"
-        },
         {
             "kind": "herdr",
             "name": "pops up",
@@ -30,98 +24,77 @@
     ],
     "parts": [
         {
-            "boxes": [[2, 2, 231, 37], [2, 818, 231, 873]],
-            "kind": "herdr",
-            "n": 1,
-            "name": "box 1 chrome",
-            "today": "workspace-chrome",
-            "what": "sidebar top and foot: logo, search, Settings"
-        },
-        {
-            "boxes": [[3, 45, 231, 720]],
             "kind": "ours",
-            "n": 2,
-            "name": "box 2 agents",
+            "n": 1,
+            "name": "box 1 agents",
+            "node": "sidebar",
             "today": "x-herdr-agents",
             "what": "every thread, in your own order"
         },
         {
-            "boxes": [[3, 728, 231, 790]],
-            "kind": "herdr",
-            "n": 3,
-            "name": "box 3 spaces",
-            "today": "spaces",
-            "what": "spaces: your project folders"
-        },
-        {
-            "boxes": [[235, 2, 1010, 33], [1036, 2, 1164, 33]],
             "kind": "ours",
-            "n": 4,
-            "name": "box 4 tabs",
+            "n": 2,
+            "name": "box 2 tabs",
+            "node": "tabs",
             "today": "x-herdr-tabs",
             "what": "tab bar, with Files and Changes buttons"
         },
         {
-            "boxes": [[1012, 4, 1034, 31]],
-            "kind": "herdr",
-            "n": 5,
-            "name": "box 5 plus menu",
-            "today": "new-menu",
-            "what": "+ : open a new tab or agent"
-        },
-        {
-            "boxes": [[242, 43, 847, 69]],
+            "height": 36,
             "kind": "ours",
-            "n": 6,
-            "name": "box 6 thread header",
+            "n": 3,
+            "name": "box 3 thread header",
+            "node": "views",
             "today": "x-herdr-chatter-header",
+            "top": 0,
             "what": "thread's top row, Chat | Terminal switch"
         },
         {
-            "boxes": [[242, 71, 847, 592]],
             "kind": "ours",
-            "n": 7,
-            "name": "box 7 chat",
+            "n": 4,
+            "name": "box 4 chat",
+            "node": "views",
             "today": "x-herdr-chatter",
+            "top": 36,
             "what": "the Chat view: read and write"
         },
         {
-            "boxes": [[856, 43, 1160, 592]],
             "kind": "herdr",
-            "n": 8,
-            "name": "box 8 side panel",
+            "n": 5,
+            "name": "box 5 side panel",
+            "node": "panel",
             "today": "files, changes",
             "what": "Files and Changes panel"
         },
         {
-            "boxes": [[235, 603, 1166, 626]],
             "kind": "ours",
-            "n": 9,
-            "name": "box 9 tray header",
+            "n": 6,
+            "name": "box 6 tray header",
+            "node": "tray-head",
             "today": "x-herdr-terminal-header",
             "what": "quick terminal's head row (ctrl-j)"
         },
         {
-            "boxes": [[235, 628, 1166, 850]],
             "kind": "herdr",
-            "n": 10,
-            "name": "box 10 tray terminal",
+            "n": 7,
+            "name": "box 7 tray terminal",
+            "node": "tray-terms",
             "today": "(herdr terminal, no mod)",
             "what": "the quick terminal itself"
         },
         {
-            "boxes": [[235, 853, 1166, 874]],
             "kind": "ours",
-            "n": 11,
-            "name": "box 11 status bar",
+            "n": 8,
+            "name": "box 8 status bar",
+            "node": "status",
             "today": "x-herdr-status",
             "what": "status bar: branch, Folder, VS Code"
         },
         {
-            "boxes": [[1170, 2, 1598, 874]],
             "kind": "ours",
-            "n": 12,
-            "name": "box 12 deck",
+            "n": 9,
+            "name": "box 9 deck",
+            "node": "deck",
             "today": "x-herdr-deck",
             "what": "right column: threads, orbit, glide"
         }

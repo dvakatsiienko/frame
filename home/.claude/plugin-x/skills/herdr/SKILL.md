@@ -62,7 +62,7 @@ hc run --bg --no-parent --no-notify --name <short> --cwd <dir> -- claude -n '<re
 printf '\e]7501;id=%s:state=%s:msg=%s\e\\' build working "$(printf %s 'building' | base64)"
 ```
 
-**map his window** — `uv run -q --with pillow python -I scripts/window-map.py <out.png>`: shoots the window as it is, each part boxed and named (`scripts/window-map.json`); needs his side panels open; the boxes fit the tray and the Changes panel open: ask dima to open both, wait for his word, then run
+**map his window** — `uv run -q --with pillow python -I scripts/window-map.py <out.png>`: shoots the window as it is, boxes solved from the layout it shows (`scripts/window-map.json` names the parts), a hidden tray or panel listed, never drawn; open nothing for it
 
 ## traps
 
