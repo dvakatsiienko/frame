@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T20:52:00Z'
+updated_date: '2026-11-16T20:55:00Z'
 labels:
   - s
   - clio-main
@@ -982,4 +982,8 @@ PK-349:W1140 (2026-11-16 22:40, dima, herdr-typed): tell him if he missed someon
 PK-349:W1141 (2026-11-16 22:49, dima): the fable reminder now reads "1 of 3 used, Opus 5.5 for everyone unless you say". he read "to fable 5.2 unless i say" as "no Fable from now on unless you say" (wispr). no Fable 5.2 unless he says, from now on.
 PK-349:W1142 (2026-11-16 22:49, dima): only the designer is agreed on Fable 5.2 medium, and high only when he says. Fable resets: 2 of 3 left.
 PK-349:W1143 (2026-11-16 22:49, dima): so on your side, are all tails solved?
+
+PK-349:W1144 (2026-11-16 22:53, dima): he wants all tails that are closable now solved. Everything gated behind some date or any other blocker is not included.
+PK-349:W1145 (2026-11-16 22:53, dima): he wants all tails solved that do not wait on anything.
+PK-349:W1146 (2026-11-16 22:53, dima, herdr-typed): when the mods lane is done, fully merge it and stop it fully.
 <!-- SECTION:NOTES:END -->
