@@ -4,7 +4,7 @@
 // an engine's events come from the types it wrote (its first line names the version), cached per version under
 // $X_STATE/mods-events (else ~/.local/state/x) so a list outlives the tmp dir; a live engine with no list is unchecked,
 // said out loud
-import { spawnSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import {
     existsSync,
     mkdirSync,
@@ -43,6 +43,22 @@ export function hookedEvents(validate: string) {
                     .trim(),
             );
     return out;
+}
+
+// every mod's validate runs at once (one claude start each, ~2 s), the result keeps the mods' order; a failed validate reads no events
+export async function hookedByMod(
+    mods: string[],
+    validate: (mod: string) => Promise<{ isOk: boolean; text: string }>,
+) {
+    const results = await Promise.all(mods.map(validate));
+    const hooked: Record<string, Set<string>> = {};
+    for (const [i, mod] of mods.entries()) {
+        const result = results[i];
+        hooked[mod] = result?.isOk
+            ? hookedEvents(result.text)
+            : new Set<string>();
+    }
+    return hooked;
 }
 
 const semver = (v: string) => v.split('.').map(Number);
@@ -225,18 +241,24 @@ if (import.meta.main) {
             ? new Set(JSON.parse(readFileSync(f, 'utf8')) as string[])
             : undefined;
     }
-    const hooked: Record<string, Set<string>> = {};
-    for (const mod of readdirSync(root).sort()) {
-        if (!existsSync(join(root, mod, '.claude-plugin/plugin.json')))
-            continue;
-        const r = spawnSync('claude', ['plugin', 'validate', join(root, mod)], {
-            encoding: 'utf8',
-        });
-        hooked[mod] =
-            r.status === 0
-                ? hookedEvents(`${r.stdout}${r.stderr}`)
-                : new Set<string>();
-    }
+    const mods = readdirSync(root)
+        .sort()
+        .filter((mod) =>
+            existsSync(join(root, mod, '.claude-plugin/plugin.json')),
+        );
+    const hooked = await hookedByMod(
+        mods,
+        (mod) =>
+            new Promise((done) =>
+                execFile(
+                    'claude',
+                    ['plugin', 'validate', join(root, mod)],
+                    { encoding: 'utf8' },
+                    (err, stdout, stderr) =>
+                        done({ isOk: !err, text: `${stdout}${stderr}` }),
+                ),
+            ),
+    );
     const { isRed, lines } = verdict(hooked, engines, bundle);
     console.log(lines.join('\n'));
     process.exit(isRed ? 1 : 0);

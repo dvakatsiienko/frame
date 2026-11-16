@@ -9,6 +9,7 @@ import {
     byVersion,
     eventsOf,
     floorOf,
+    hookedByMod,
     hookedEvents,
     verdict,
     versionOf,
@@ -63,6 +64,35 @@ describe('the mod side', () => {
                 '  ❯ ./register.tsx hooks: ui.press (default matcher key: plugin, component), ui.render{component=Pane, requestId=x} (default matcher key: plugin), tool.call',
             ),
         ]).toEqual(['ui.press', 'ui.render', 'tool.call']);
+    });
+});
+
+describe('the validates', () => {
+    const line = (events: string) => `  ❯ ./register.tsx hooks: ${events}`;
+
+    it('runs every validate at once and keeps the mods in their order', async () => {
+        const started: string[] = [];
+        const startedAtFinish: number[] = [];
+        const hooked = await hookedByMod(['a', 'b', 'c'], async (mod) => {
+            started.push(mod);
+            await new Promise((done) => setTimeout(done, mod === 'a' ? 30 : 1));
+            startedAtFinish.push(started.length);
+            return { isOk: true, text: line(`${mod}.event`) };
+        });
+
+        expect(startedAtFinish).toEqual([3, 3, 3]);
+        expect(Object.keys(hooked)).toEqual(['a', 'b', 'c']);
+        expect([...(hooked.a ?? [])]).toEqual(['a.event']);
+    });
+
+    it('reads no events off a validate that failed, so the verdict names it', async () => {
+        const hooked = await hookedByMod(['a', 'b'], async (mod) => ({
+            isOk: mod === 'a',
+            text: line('x.event'),
+        }));
+
+        expect([...(hooked.b ?? [])]).toEqual([]);
+        expect([...(hooked.a ?? [])]).toEqual(['x.event']);
     });
 });
 
