@@ -24,7 +24,9 @@ function programs(c: Command, flag: RegExp) {
         ...c.feeders.flatMap(printed),
     ];
 }
-const PASTEBOARD = /clipboard|NSPasteboard/i;
+const PASTEBOARD = /clipboard|NSPasteboard|\bpbcopy\b/i;
+// what a program in any other language names to write it: the class, or `pbcopy` run through its own shell call
+const WRITER = /NSPasteboard|\bpbcopy\b/;
 // a System Events key press with the command key held, in AppleScript or JXA
 const COMMAND_KEY = /\b(?:keystroke|key ?code)\b[^\n]*\bcommand down\b/i;
 const COPY_PASTE = /^(?:cmd|command)\+[cv]$/i;
@@ -32,8 +34,19 @@ const COPY_PASTE = /^(?:cmd|command)\+[cv]$/i;
 const E_FLAG = /^-e$/;
 const C_FLAG = /^-[A-Za-z]*c$/;
 const PYTHON = /^python[\d.]*$/;
+// perl clusters its flags (`-ne`, `-lE`); node, bun and deno also print (`-p`) and spell the flag out
+const PERL_FLAG = /^-[A-Za-z]*[eE]$/;
+const JS_FLAG = /^(?:-e|-p|--eval|--print)$/;
+const INLINE = new Map([
+    ['swift', E_FLAG],
+    ['ruby', E_FLAG],
+    ['perl', PERL_FLAG],
+    ['node', JS_FLAG],
+    ['bun', JS_FLAG],
+    ['deno', JS_FLAG],
+]);
 const inlineFlag = (name: string) =>
-    PYTHON.test(name) ? C_FLAG : name === 'swift' ? E_FLAG : undefined;
+    PYTHON.test(name) ? C_FLAG : INLINE.get(name);
 // what writes the macos pasteboard, in a lane member's session: `pbcopy` run, a script naming the pasteboard, a copy or
 // paste key press. a word only named or read (`rg pbcopy`, `pbpaste`) is no command of that name, so it runs
 export function clipboard(c: Command, ctx: Context): Refusal | undefined {
@@ -47,7 +60,7 @@ export function clipboard(c: Command, ctx: Context): Refusal | undefined {
     )
         return refused('osascript');
     const flag = inlineFlag(c.name);
-    if (flag && programs(c, flag).some((p) => p.includes('NSPasteboard')))
+    if (flag && programs(c, flag).some((p) => WRITER.test(p)))
         return refused(c.name);
     const [verb, ...rest] = c.args.map((w) => w.text);
     if (

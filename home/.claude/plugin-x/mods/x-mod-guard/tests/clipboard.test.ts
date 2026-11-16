@@ -126,6 +126,30 @@ const WRITERS = [
         `python3 -c 'from AppKit import NSPasteboard'`,
     ],
     [
+        'pbcopy inside an osascript do shell script',
+        `osascript -e 'do shell script "pbcopy < /tmp/a"'`,
+    ],
+    [
+        'pbcopy inside a python os.system',
+        `python3 -c "import os; os.system('pbcopy < a.txt')"`,
+    ],
+    [
+        'pbcopy inside a node execSync',
+        `node -e "require('child_process').execSync('pbcopy')"`,
+    ],
+    [
+        'pbcopy inside a node --eval',
+        `node --eval "require('child_process').execSync('pbcopy')"`,
+    ],
+    ['pbcopy inside a bun -e', `bun -e "Bun.spawn(['pbcopy'])"`],
+    [
+        'pbcopy inside a deno --print',
+        `deno --print "new Deno.Command('pbcopy')"`,
+    ],
+    ['pbcopy inside a perl system', `perl -e 'system("pbcopy")'`],
+    ['pbcopy inside a perl -lE', `perl -lE 'system("pbcopy")'`],
+    ['pbcopy inside a ruby popen', `ruby -e 'IO.popen("pbcopy", "w") {}'`],
+    [
         'swift -e naming NSPasteboard',
         `swift -e 'import AppKit; NSPasteboard.general.clearContents()'`,
     ],
@@ -175,6 +199,10 @@ const READERS = [
     ['a python program with no pasteboard', `python3 -c 'print(1)'`],
     ['a python file whose name holds the word', 'python3 NSPasteboard.py'],
     ['a swift build', 'swift build'],
+    ['a node program with no pasteboard', `node -e 'console.log(1)'`],
+    ['a node script whose argument is the word', 'node tool.js pbcopy'],
+    ['a perl program naming a longer word', `perl -e 'print "pbcopying"'`],
+    ['a ruby script whose name holds the word', 'ruby pbcopy.rb'],
     [
         'a python module run whose argument names the class',
         'python3 -m pydoc NSPasteboard',
