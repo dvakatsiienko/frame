@@ -14,8 +14,11 @@ import { describe, expect, test } from 'vitest';
 import {
     citedIds,
     draftSections,
+    followMoved,
     itemsForTicket,
     missingText,
+    movedStub,
+    movedWhole,
     normalize,
     prefixWish,
     repeatedIds,
@@ -483,5 +486,208 @@ describe('the weekly audit', () => {
     ])('a draft «%s» reads as %s', (draft, want) => {
         const got = draftSections(draft);
         expect(got instanceof Map ? 'map' : got).toBe(want);
+    });
+});
+
+describe('a wish that moved', () => {
+    test.each([
+        ['moved → FRM-585:W19', { home: 'FRM-585', id: 'W19' }],
+        ['moved to pk-3:W2 (his tick)', { home: 'PK-3', id: 'W2' }],
+        ['moved -> BYT-7:W1', { home: 'BYT-7', id: 'W1' }],
+        ['moved on from here', null],
+        ['real words that mention moved → FRM-1:W2', null],
+    ])('the stub «%s» reads as %j', (text, want) => {
+        expect(movedStub(text)).toEqual(want);
+    });
+
+    test('a ranged close line names the new home, a plain one none', () => {
+        const ranged =
+            'ticket: FRM-616\nclose: 22:08 PK-363:W1–W1166 moved to FRM-616 (his tick)\n';
+        expect(movedWhole(ranged, 'PK-363')).toBe('FRM-616');
+        expect(movedWhole(ranged, 'PK-364')).toBeUndefined();
+        expect(
+            movedWhole('close: 22:18 PK-363 lines live in FRM-616\n', 'PK-363'),
+        ).toBeUndefined();
+    });
+
+    const there = new Map([['FRM-585:W19', 'the new words']]);
+    const lookup = (home: string, id: string) => there.get(`${home}:${id}`);
+
+    test('a stub whose new home carries the words in the draft is followed', () => {
+        expect(
+            followMoved(
+                [['W1', 'moved → FRM-585:W19']],
+                'the new words',
+                lookup,
+            ),
+        ).toEqual({ rest: [], unchecked: [] });
+    });
+
+    test('a stub whose new words the draft dropped stays red, naming the new line', () => {
+        expect(
+            followMoved([['W1', 'moved → FRM-585:W19']], 'other words', lookup),
+        ).toEqual({
+            rest: [['W1', 'FRM-585:W19 the new words']],
+            unchecked: [],
+        });
+    });
+
+    test.each([
+        ['an unreadable home', 'moved → FRM-9:W1'],
+        ['a line the new home lacks', 'moved → FRM-585:W99'],
+    ])('%s is not re-checked, never green or red', (_name, stub) => {
+        const home = stub.slice(stub.indexOf('→') + 2).split(':')[0];
+        expect(followMoved([['W1', stub]], 'x', lookup)).toEqual({
+            rest: [],
+            unchecked: [home],
+        });
+    });
+
+    test('a stub that is itself a stub stops after one hop', () => {
+        const chain = (home: string, id: string) =>
+            home === 'FRM-585' && id === 'W19'
+                ? 'moved → FRM-700:W1'
+                : undefined;
+        expect(
+            followMoved([['W1', 'moved → FRM-585:W19']], 'x', chain).unchecked,
+        ).toEqual(['FRM-585']);
+    });
+
+    test('a line that is not a stub stays as it was', () => {
+        expect(followMoved([['W2', 'plain words']], 'x', lookup)).toEqual({
+            rest: [['W2', 'plain words']],
+            unchecked: [],
+        });
+    });
+});
+
+describe('the cli on a moved wish, with an x that answers by ticket', () => {
+    const here = import.meta.dirname;
+    const wish = (...lines: string[]) => `## wish\n\n${lines.join('\n')}\n`;
+    const run = (
+        id: string,
+        tickets: Record<string, string>,
+        draft: string,
+        pocket: Record<string, string> = {},
+    ) => {
+        const root = mkdtempSync(join(tmpdir(), 'wish-moved-'));
+        try {
+            mkdirSync(join(root, 'script'));
+            for (const file of [
+                'wish-cover.ts',
+                'flyway-done.ts',
+                'pocket-check.ts',
+                'prompt-groom.ts',
+                'chat-lines.ts',
+                'session-registry.ts',
+            ])
+                copyFileSync(join(here, file), join(root, 'script', file));
+            mkdirSync(join(root, 'pocket', 'tasks'), { recursive: true });
+            mkdirSync(join(root, 'pocket', 'archive', 'tasks'), {
+                recursive: true,
+            });
+            for (const [name, text] of Object.entries(pocket))
+                writeFileSync(join(root, 'pocket', 'tasks', name), text);
+            mkdirSync(join(root, 'bin'));
+            mkdirSync(join(root, 'tickets'));
+            for (const [ticket, body] of Object.entries(tickets))
+                writeFileSync(
+                    join(root, 'tickets', `${ticket}.json`),
+                    JSON.stringify({
+                        data: { tickets: [{ description: body }] },
+                    }),
+                );
+            writeFileSync(
+                join(root, 'bin', 'x'),
+                '#!/bin/sh\nf="$(dirname "$0")/../tickets/$3.json"\n[ -f "$f" ] && cat "$f" || exit 1\n',
+                { mode: 0o755 },
+            );
+            writeFileSync(join(root, 'draft.md'), draft);
+            return spawnSync(
+                process.execPath,
+                [
+                    join(root, 'script', 'wish-cover.ts'),
+                    id,
+                    join(root, 'draft.md'),
+                ],
+                {
+                    encoding: 'utf8',
+                    env: {
+                        ...process.env,
+                        PATH: `${join(root, 'bin')}:${process.env.PATH}`,
+                    },
+                    timeout: 10_000,
+                },
+            );
+        } finally {
+            rmSync(root, { force: true, recursive: true });
+        }
+    };
+
+    test('a stub is followed to its new home and the words are found there', () => {
+        const done = run(
+            'FRM-1',
+            {
+                'FRM-1': wish('* FRM-1:W1 moved → FRM-2:W5'),
+                'FRM-2': wish('* FRM-2:W5 the new words'),
+            },
+            'FRM-1:W1 the new words',
+        );
+        expect(done.status).toBe(0);
+    });
+
+    test('a stub whose new words the draft lacks is red', () => {
+        const done = run(
+            'FRM-1',
+            {
+                'FRM-1': wish('* FRM-1:W1 moved → FRM-2:W5'),
+                'FRM-2': wish('* FRM-2:W5 the new words'),
+            },
+            'FRM-1:W1 reworded',
+        );
+        expect(done.status).toBe(1);
+        expect(done.stdout).toContain('text missing: FRM-2:W5 the new words');
+    });
+
+    test('a stub whose new home cannot be read is the third state, exit 3', () => {
+        const done = run(
+            'FRM-1',
+            { 'FRM-1': wish('* FRM-1:W1 moved → FRM-2:W5') },
+            'FRM-1:W1 anything',
+        );
+        expect(done.status).toBe(3);
+        expect(done.stdout).toContain('moved, not re-checked: FRM-2');
+    });
+
+    test.each([
+        ['a cited line reworded', 'PK-7:W1 reworded words'],
+        ['no line cited', 'plain draft, no cite'],
+    ])(
+        'a pocket item closed whole as moved, %s, is the third state',
+        (_name, draft) => {
+            const done = run('PK-7', {}, draft, {
+                'pk-7 - old.md':
+                    'PK-7:W1 the old words\nclose: 22:08 PK-7:W1–W9 moved to FRM-616 (his tick)\n',
+            });
+            expect(done.status).toBe(3);
+            expect(done.stdout).toContain('moved, not re-checked: FRM-616');
+        },
+    );
+
+    test('a pocket item closed whole as moved that still checks green stays green', () => {
+        const done = run('PK-7', {}, 'PK-7:W1 the old words', {
+            'pk-7 - old.md':
+                'PK-7:W1 the old words\nclose: 22:08 PK-7:W1–W9 moved to FRM-616 (his tick)\n',
+        });
+        expect(done.status).toBe(0);
+    });
+
+    test('a pocket item closed whole as moved is the third state, never a red', () => {
+        const done = run('PK-7', {}, 'PK-7:W1 the old words', {
+            'pk-7 - old.md':
+                'PK-7:W1 the old words\nPK-7:W1 the old words again\nclose: 22:08 PK-7:W1–W9 moved to FRM-616 (his tick)\n',
+        });
+        expect(done.status).toBe(3);
+        expect(done.stdout).toContain('moved, not re-checked: FRM-616');
     });
 });

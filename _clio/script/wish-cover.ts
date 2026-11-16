@@ -136,6 +136,50 @@ export function missingText(
     });
 }
 
+// the stub a wish keeps where a line moved: «moved → FRM-585:W19», the new home and its line
+export function movedStub(text: string) {
+    const match = /^moved\s*(?:→|->|to)\s*((?:PK|FRM|BYT)-\d+):(W\d+)\b/i.exec(
+        text,
+    );
+    return match?.[1] && match[2]
+        ? { home: match[1].toUpperCase(), id: match[2] }
+        : null;
+}
+
+// a pocket item closed whole as «close: … PK-363:W1–W1166 moved to FRM-616»: the new home, which no line-by-line check follows
+export function movedWhole(item: string, id: string) {
+    const own = id.replace(/[^\w-]/g, '');
+    return new RegExp(
+        `^close:.*\\b${own}:W\\d+\\s*[–-]\\s*W\\d+ moved to ((?:PK|FRM|BYT)-\\d+)`,
+        'im',
+    )
+        .exec(item)?.[1]
+        ?.toUpperCase();
+}
+
+// one hop: a cited line that is a stub is checked at its new home; a home or line that cannot be matched is «not re-checked»
+export function followMoved(
+    missing: [string, string][],
+    draft: string,
+    lookup: (home: string, lineId: string) => string | undefined,
+) {
+    const body = normalize(draft);
+    const rest: [string, string][] = [];
+    const unchecked = new Set<string>();
+    for (const [id, text] of missing) {
+        const stub = movedStub(text);
+        if (!stub) {
+            rest.push([id, text]);
+            continue;
+        }
+        const there = lookup(stub.home, stub.id);
+        if (!there || movedStub(there)) unchecked.add(stub.home);
+        else if (!body.includes(normalize(there)))
+            rest.push([id, `${stub.home}:${stub.id} ${there}`]);
+    }
+    return { rest, unchecked: [...unchecked] };
+}
+
 export function uncovered(
     item: string,
     drafts: string[],
@@ -164,6 +208,21 @@ export function itemsForTicket(items: [string, string][], ticket: string) {
             ),
         )
         .map(([file]) => file.split(' - ')[0]?.toUpperCase() ?? file);
+}
+
+// a ticket's wish block read through x, undefined when the read fails
+function linearWish(id: string) {
+    try {
+        const read = JSON.parse(
+            execFileSync('x', ['linear', 'read', id], {
+                encoding: 'utf8',
+                timeout: 15_000,
+            }),
+        );
+        return wishBlock(read.data.tickets[0].description ?? '');
+    } catch {
+        return undefined;
+    }
 }
 
 function readItem(items: [string, string][], id: string) {
@@ -238,6 +297,9 @@ function auditWeek() {
                 [import.meta.filename, id, draft],
                 { encoding: 'utf8', timeout: 60_000 },
             );
+            const home = /moved, not re-checked: (\S+)/.exec(run.stdout)?.[1];
+            if (run.status === 3 && home)
+                return [file, id, `moved, not re-checked: ${home}`];
             return [file, id, run.status === 0 ? 'green' : 'red'];
         });
     });
@@ -245,7 +307,7 @@ function auditWeek() {
     for (const row of rows) console.log(row.join('\t'));
     const red = rows.filter((row) => row[2] === 'red').length;
     console.log(
-        `${rows.length} checked · ${rows.filter((row) => row[2] === 'green').length} green · ${red} red · ${rows.filter((row) => row[1] === 'none').length} wish: none · ${rows.filter((row) => row[1] === '-').length} no wish line`,
+        `${rows.length} checked · ${rows.filter((row) => row[2] === 'green').length} green · ${red} red · ${rows.filter((row) => row[2]?.startsWith('moved, not re-checked')).length} moved, not re-checked · ${rows.filter((row) => row[1] === 'none').length} wish: none · ${rows.filter((row) => row[1] === '-').length} no wish line`,
     );
     process.exit(red > 0 ? 1 : 0);
 }
@@ -308,6 +370,13 @@ if (import.meta.main) {
     const drafts = draftPaths.map((p) =>
         sectionsFor(readFileSync(p, 'utf8'), id),
     );
+    // a moved item replaces a red only: a check that still passes stays green
+    const movedHome = movedWhole(item, id);
+    const stopIfMoved = () => {
+        if (!movedHome) return;
+        console.log(`${id}: moved, not re-checked: ${movedHome}`);
+        process.exit(3);
+    };
     if (wishLines(item, homes).size === 0) {
         console.error(
             isTicket
@@ -318,26 +387,47 @@ if (import.meta.main) {
     }
     const repeated = repeatedIds(item, homes);
     if (repeated.length > 0) {
+        stopIfMoved();
         console.log(
             `✗ ${id}: ${repeated.join(', ')} numbered twice — renumber the joined lines from the block's next free W`,
         );
         process.exit(1);
     }
     if (citedIds(drafts.join('\n'), homes).size === 0) {
+        stopIfMoved();
         console.log(`✗ ${id}: cites no W-line`);
         process.exit(1);
     }
-    const missing = missingText(item, drafts, homes);
+    const linearHomes = new Map<string, string | undefined>();
+    const { rest: missing, unchecked } = followMoved(
+        missingText(item, drafts, homes),
+        drafts.join('\n'),
+        (home, lineId) => {
+            if (!/^(FRM|BYT)-/i.test(home))
+                return wishLines(readItem(items, home) ?? '', [home]).get(
+                    lineId,
+                );
+            if (!linearHomes.has(home)) linearHomes.set(home, linearWish(home));
+            return wishLines(linearHomes.get(home) ?? '', [home]).get(lineId);
+        },
+    );
+    const uncited = all ? uncovered(item, drafts, homes) : [];
+    if (missing.length + uncited.length > 0) stopIfMoved();
     for (const [lineId, text] of missing)
         console.log(
             text === ''
                 ? `✗ ${id}:${lineId} has no text`
                 : `✗ ${id}:${lineId} text missing: ${text.slice(0, 60)}`,
         );
-    const uncited = all ? uncovered(item, drafts, homes) : [];
     for (const [lineId, text] of uncited)
         console.log(`✗ ${id}:${lineId} uncited: ${text.slice(0, 60)}`);
     if (missing.length + uncited.length === 0) {
+        if (unchecked.length > 0) {
+            console.log(
+                `${id}: moved, not re-checked: ${unchecked.join(', ')}`,
+            );
+            process.exit(3);
+        }
         console.log(`${id}: every cited W-line's text is in the drafts`);
         process.exit(0);
     }
