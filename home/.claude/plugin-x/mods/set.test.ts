@@ -198,6 +198,7 @@ test('the door run with a text over the cap exits 2 with one line naming the cap
                 ...process.env,
                 HOME: mkdtempSync(join(tmpdir(), 'set-home.')),
             },
+            timeout: 10_000,
         },
     );
     expect([run.status, run.stderr]).toEqual([
