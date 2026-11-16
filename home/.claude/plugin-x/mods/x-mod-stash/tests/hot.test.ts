@@ -56,24 +56,19 @@ test('a hot session is pinged 50 minutes after its last turn ended', async ($, o
     ]);
 });
 
-// the kit refuses node:os, so no bound here can read the load: this one holds at load 26, where 5 s timed out (FRM-470)
-test(
-    '🔥 switched on while idle counts its 50 minutes from the last turn end',
-    { timeoutMs: 30_000 },
-    async ($, on) => {
-        const s = await started($, on);
-        await endTurn($);
-        await s.clock.advance(17 * MIN);
-        await s.ui.press({ key: 'hot' });
-        await s.clock.advance(32 * MIN);
-        const before = s.pings.length;
-        await s.clock.advance(MIN);
-        expect([before, s.pings]).toEqual([
-            0,
-            [expect.stringContaining('keep-hot ping')],
-        ]);
-    },
-);
+test('🔥 switched on while idle counts its 50 minutes from the last turn end', async ($, on) => {
+    const s = await started($, on);
+    await endTurn($);
+    await s.clock.advance(17 * MIN);
+    await s.ui.press({ key: 'hot' });
+    await s.clock.advance(32 * MIN);
+    const before = s.pings.length;
+    await s.clock.advance(MIN);
+    expect([before, s.pings]).toEqual([
+        0,
+        [expect.stringContaining('keep-hot ping')],
+    ]);
+});
 
 test('a busy session is never pinged', async ($, on) => {
     const s = await hotSession($, on);
@@ -87,6 +82,16 @@ test('a busy session is never pinged', async ($, on) => {
     await s.clock.advance(40 * MIN);
     expect(s.pings).toEqual([]);
 });
+
+// the mod polls every 4 s, about 900 runs in a 60-minute advance: this clock stretches that one wait, so a poll still
+// follows the store inside a minute, in 120 runs
+const POLL_MS = 4000;
+const SLOW_POLL_MS = MIN / 2;
+function slowPoll(on: On) {
+    on('clock.after', { ms: POLL_MS }, (_$, e, next) =>
+        next({ ...e, ms: SLOW_POLL_MS }),
+    );
+}
 
 // mock.store copies its entries; this one is the record itself, so a test writes a key as another process would
 function liveStore(on: On, entries: Record<string, unknown>) {
@@ -109,6 +114,7 @@ async function started(
     store: Record<string, unknown> = {},
     state?: Record<string, unknown>,
 ) {
+    slowPoll(on);
     const clock = mock.clock(on, { now: NOW });
     liveStore(on, store);
     if (state)
