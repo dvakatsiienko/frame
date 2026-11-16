@@ -2,9 +2,11 @@ import { spawn, spawnSync } from 'node:child_process';
 import {
     chmodSync,
     existsSync,
+    mkdirSync,
     mkdtempSync,
     readFileSync,
     readlinkSync,
+    realpathSync,
     statSync,
     symlinkSync,
     utimesSync,
@@ -17,6 +19,7 @@ import { expect, test } from 'vitest';
 import {
     changeStore,
     clioIdOf,
+    dropStaleLock,
     numberSetting,
     partKeysOf,
     windTextRefusal,
@@ -219,28 +222,55 @@ test("a dead writer's lock is taken over, and the write lands", () => {
     ]).toEqual([{ hot: 1 }, false]);
 });
 
-test('a lock that will not go fails the write at the deadline, never a spin', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'set-held.'));
-    const path = join(dir, 'store.json');
-    writeFileSync(path, '{}');
-    writeFileSync(`${path}.lock`, '1');
-    utimesSync(`${path}.lock`, 0, 0);
-    // a dir without write leave keeps the stale lock where it is
+test('a waiter that saw a stale lock leaves the fresh lock another waiter took meanwhile', () => {
+    const lock = join(mkdtempSync(join(tmpdir(), 'set-fresh.')), 'store.lock');
+    writeFileSync(lock, '1');
+    dropStaleLock(lock);
+    expect(existsSync(lock)).toBe(true);
+});
+
+test('a takeover another waiter is in the middle of is left to it', () => {
+    const lock = join(mkdtempSync(join(tmpdir(), 'set-guard.')), 'store.lock');
+    writeFileSync(lock, '1');
+    utimesSync(lock, 0, 0);
+    writeFileSync(`${lock}.takeover`, '2');
+    dropStaleLock(lock);
+    expect(existsSync(lock)).toBe(true);
+});
+
+test('a store lock held past the wait refuses the door in one line, exit 1, never a stack or a spin', () => {
+    const home = mkdtempSync(join(tmpdir(), 'set-held.'));
+    const dir = join(home, '.claude/plugins/store');
+    const store = join(dir, 'x-mod-stash_inline-test.json');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(store, '{}');
+    writeFileSync(`${store}.lock`, '1');
+    utimesSync(`${store}.lock`, 0, 0);
+    // a dir without write leave keeps even a stale lock where it is
     chmodSync(dir, 0o500);
     const started = Date.now();
-    let message = '';
-    try {
-        changeStore(path, (s) => s);
-    } catch (error) {
-        message = String(error);
-    } finally {
-        chmodSync(dir, 0o700);
-    }
+    const run = spawnSync(
+        process.execPath,
+        [new URL('./set.ts', import.meta.url).pathname, 'hot', 'sid', 'on'],
+        {
+            encoding: 'utf8',
+            env: { ...process.env, HOME: home },
+            timeout: 20_000,
+        },
+    );
+    chmodSync(dir, 0o700);
     expect([
-        message.includes('the store is locked'),
+        run.status,
+        run.stderr,
         Date.now() - started >= 5000,
-    ]).toEqual([true, true]);
-}, 15_000);
+        readFileSync(store, 'utf8'),
+    ]).toEqual([
+        1,
+        `refused: the store is locked by another writer: ${realpathSync(store)}.lock\n`,
+        true,
+        '{}',
+    ]);
+}, 30_000);
 
 test('a store written through the door keeps its mode', () => {
     const path = join(mkdtempSync(join(tmpdir(), 'set-mode.')), 'store.json');

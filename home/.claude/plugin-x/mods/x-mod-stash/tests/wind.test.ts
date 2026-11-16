@@ -579,6 +579,18 @@ test('a text herdr held before the store existed is taken once', async ($, on) =
     ]);
 });
 
+test("a blank row at herdr's first read is only noted: a text the door wrote stays", async ($, on) => {
+    const w = world(on);
+    await start($);
+    edit(w, 'stash.wind.text.notice', 'the door, {fill}: second-wind');
+    await w.clock.advance(2 * POLL_MS);
+    w.store.delete('herdr-seen');
+    w.files[HERDR_SETTINGS] = herdrRows({ 'stash.wind.text.notice': '' });
+    await w.clock.advance(2 * POLL_MS);
+    await turnAt($, w, 56);
+    expect(withSecondWind(w.lines)).toEqual(['the door, 56: second-wind']);
+});
+
 test('a start writes the store: five rows with their defaults, the applied values, this session and its pid', async ($, on) => {
     const w = world(on);
     await start($);

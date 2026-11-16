@@ -176,14 +176,30 @@ const LOCK_WAIT_MS = 5000;
 const LOCK_STALE_MS = 10_000;
 const LOCK_RETRY_MS = 10;
 
-// two waiters may both see one stale lock: only one rename wins, so the loser never removes the winner's fresh lock
-function dropStaleLock(lock: string) {
-    const mine = `${lock}.${process.pid}.stale`;
+const isStale = (file: string) => {
+    const since = statSync(file, { throwIfNoEntry: false })?.mtimeMs;
+    return since !== undefined && Date.now() - since > LOCK_STALE_MS;
+};
+
+// two waiters may both see one stale lock, and the second would remove the first one's fresh lock: a takeover runs
+// under its own guard file and looks at the lock again inside it. a guard its dead owner left goes the same way
+export function dropStaleLock(lock: string) {
+    const guard = `${lock}.takeover`;
     try {
-        renameSync(lock, mine);
-        rmSync(mine, { force: true });
-    } catch {}
+        writeFileSync(guard, String(process.pid), { flag: 'wx' });
+    } catch {
+        if (isStale(guard)) rmSync(guard, { force: true });
+        return;
+    }
+    try {
+        if (isStale(lock)) rmSync(lock, { force: true });
+    } finally {
+        rmSync(guard, { force: true });
+    }
 }
+
+// the one failure a caller of the door meets in normal life: its line, never a stack
+export class StoreLocked extends Error {}
 
 // a writer that died holding the lock leaves its file: past LOCK_STALE_MS it is taken over
 function takeLock(lock: string) {
@@ -195,12 +211,12 @@ function takeLock(lock: string) {
         } catch (error) {
             if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
         }
-        const heldSince = statSync(lock, { throwIfNoEntry: false })?.mtimeMs;
-        if (heldSince !== undefined && Date.now() - heldSince > LOCK_STALE_MS)
-            dropStaleLock(lock);
+        if (isStale(lock)) dropStaleLock(lock);
         // a stale lock that will not go still meets the deadline and the sleep, so the wait never spins
         if (Date.now() > deadline)
-            throw new Error(`the store is locked: ${lock}`);
+            throw new StoreLocked(
+                `the store is locked by another writer: ${lock}`,
+            );
         Atomics.wait(
             new Int32Array(new SharedArrayBuffer(4)),
             0,
@@ -406,4 +422,11 @@ function main([key, value, id]: string[]) {
     return 0;
 }
 
-if (import.meta.main) process.exitCode = main(process.argv.slice(2));
+if (import.meta.main)
+    try {
+        process.exitCode = main(process.argv.slice(2));
+    } catch (error) {
+        if (!(error instanceof StoreLocked)) throw error;
+        console.error(`refused: ${error.message}`);
+        process.exitCode = 1;
+    }
