@@ -984,7 +984,9 @@ export default class Chat extends View {
             const why = await this.magic.release(file, this.joins);
             if (this.file !== file) return;
             if (why) return this.say(why, cx);
-            this.send(box, text, null, cx);
+            // the words go as the quill holds them once the row is out: an edit he made meanwhile is what he sends,
+            // and the quill empties, never keeping words that already went
+            this.send(box, box.value().trim() || text, null, cx);
         });
     }
 
