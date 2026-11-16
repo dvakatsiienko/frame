@@ -5,7 +5,7 @@
 /** @typedef {{ start: number, end: number }} Range */
 
 /**
- * following the newest after a wheel step: up stops following, down at the conversation's end (isAtTrueEnd) follows again
+ * following the newest after a wheel step: up stops following, down at the conversation's end (isEndDrawn) follows again
  * @param {boolean} follow
  * @param {number} dy the wheel's delta, positive up
  * @param {boolean} isAtEnd he sits at the end
@@ -16,26 +16,19 @@ export function followAfterWheel(follow, dy, isAtEnd) {
     return follow;
 }
 
-// how far above the end still counts as sitting at it: about five lines of text
-export const END_SLACK = 100;
+// the items the list is handed after the last row, a px each. the list draws from the first item crossing the view's
+// top to two items past the one crossing its bottom (gpui-kit `virtual_list.rs`, `visible_range`; the same counts
+// probed in his window, 2026-11-16), so its drawn range reaches the item count only when no row ends below the view:
+// the list's own scroll is at its maximum, whatever the last row's height
+export const END_MARKS = [1, 1];
 
 /**
- * he sits at the conversation's end: the rows drawn are its last screen. the drawn range runs up to two rows past the
- * last visible one, so its end reaching the row count proves nothing; its start does. the end holds only where that
- * read is exact to END_SLACK: the first row of the last screen may hide no more than that above the view (he could be
- * reading that part), and a last row taller than the view never counts. elsewhere the ↓ pill is the way back
- * @param {number[]} sizes every row's height, in order
- * @param {Range | null | undefined} range the rows the list drew last
- * @param {number | null | undefined} viewH the list's height, in the sizes' unit
+ * he sits at the conversation's end: the list drew its last item, which with END_MARKS means its scroll is at the end
+ * @param {Range | null | undefined} drawn the items the list drew last
+ * @param {number} itemCount the items the list was handed, END_MARKS among them
  */
-export function isAtTrueEnd(sizes, range, viewH) {
-    if (!range || !viewH || range.end < sizes.length) return false;
-    if ((sizes.at(-1) ?? 0) >= viewH) return false;
-    let firstOfLastScreen = sizes.length;
-    let sum = 0;
-    while (firstOfLastScreen > 0 && sum < viewH)
-        sum += sizes[--firstOfLastScreen] ?? 0;
-    return range.start >= firstOfLastScreen && sum - viewH <= END_SLACK;
+export function isEndDrawn(drawn, itemCount) {
+    return !!drawn && drawn.end >= itemCount;
 }
 
 /**

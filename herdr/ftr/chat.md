@@ -369,6 +369,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given `x-herdr-chat` opened as an overlay (`herdr-app do mod.open '{"name":"x-herdr-chat"}'`; it sits in no layout yet) while the old chat shows a thread
   - then that thread's transcript is drawn from its tail: his messages as bubbles on the right, replies as bubbles on the left with rich text and code blocks, a run of tool calls as one line that counts them by name (shot `~/.local/state/looks/FRM-638/1901-new-chat-overlay.png`)
   - and it opens at the newest and follows it only while he sits at the end; a wheel step up stops following, and a small «↓» at the bottom right goes back
+  - and the end is the list's last line, read from the list itself: a step down that reaches it follows again, under a newest reply taller than the view too; a step that stops above it keeps him reading
   - and a new line in the transcript changes only its own row; a long transcript opens at its last 4 MB
   - and after a reload of the mod the message he was reading is on screen again, read in from above when it must be
   - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why

@@ -25,13 +25,23 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
         const max = Math.max(0, topOf(itemSizes, itemSizes.length) - viewH);
         scrollTop = Math.min(max, Math.max(0, scrollTop));
     };
-    const firstItem = () => {
-        let bottom = 0;
-        for (const [i, size] of itemSizes.entries()) {
-            bottom += size;
-            if (bottom > scrollTop) return i;
-        }
-        return itemSizes.length - 1;
+    /** the items the list draws, as its own source has it (gpui-kit `virtual_list.rs`, `visible_range`) */
+    const drawnItems = () => {
+        const firstEndingPast = (edge: number) => {
+            let bottom = 0;
+            for (const [i, size] of itemSizes.entries()) {
+                bottom += size;
+                if (bottom > edge) return i;
+            }
+            return itemSizes.length;
+        };
+        const start = firstEndingPast(scrollTop);
+        const crossing = firstEndingPast(scrollTop + viewH);
+        const end =
+            crossing === itemSizes.length
+                ? itemSizes.length
+                : Math.min(crossing + 2, itemSizes.length);
+        return { end: Math.max(end, start), start };
     };
 
     /** one render and its frame, as main.js `list()` runs them; a lift asks for the next frame at once */
@@ -49,8 +59,8 @@ function createSim(heights: number[], viewH = 600, zoom = 1) {
                 scrollTop = itemBottom - viewH;
             clamp();
         }
-        for (const start of [0, firstItem()])
-            place.drawn({ end: itemSizes.length, start }, plan, viewH, now);
+        for (const drawn of [{ end: 1, start: 0 }, drawnItems()])
+            place.drawn(drawn, plan, now);
         if (plan.ask === 'lift') frame();
     }
     frame();
@@ -229,8 +239,43 @@ describe('nothing moves the view without him', () => {
         const sim = createSim(thread());
         expect(sim.isFollowing()).toBe(true);
         sim.append(120);
-        // 3,048 px of rows in a 600 px view: the last screen starts 2,448 px down; row 7's top is at 2,328
-        expect(sim.truth()).toEqual({ id: 'r7', offset: 120 });
+        // 3,048 px of rows and 2 px of end marks in a 600 px view: the last screen starts 2,450 px down; row 7's top
+        // is at 2,328
+        expect(sim.truth()).toEqual({ id: 'r7', offset: 122 });
+    });
+
+    test('a newest reply taller than the view: steps down to its last line follow again', () => {
+        const sim = createSim([300, 300, 1500]);
+        sim.wheel(400);
+        expect(sim.isFollowing()).toBe(false);
+        for (let moved = 0; moved < 400; moved += 100) sim.wheel(-100);
+        expect(sim.isFollowing()).toBe(true);
+    });
+
+    test('steps down that stop inside a tall newest reply keep him reading', () => {
+        const sim = createSim([300, 300, 1500]);
+        sim.wheel(400);
+        for (let moved = 0; moved < 300; moved += 100) sim.wheel(-100);
+        expect(sim.isFollowing()).toBe(false);
+        sim.append(120);
+        expect(sim.isFollowing()).toBe(false);
+    });
+
+    test('steps down that stop a few lines above the end keep him reading', () => {
+        const sim = createSim(thread());
+        sim.wheel(200);
+        sim.wheel(-150);
+        expect(sim.isFollowing()).toBe(false);
+    });
+
+    test('a flick whose glide reaches the end unseen: his next step down follows', () => {
+        const sim = createSim([300, 300, 1500]);
+        sim.wheel(400);
+        sim.idle(WHEEL_REST_MS);
+        sim.moveUnseen(400);
+        expect(sim.isFollowing()).toBe(false);
+        sim.wheel(-10);
+        expect(sim.isFollowing()).toBe(true);
     });
 
     test('a step up stops following, and a new row then leaves the view where it is', () => {

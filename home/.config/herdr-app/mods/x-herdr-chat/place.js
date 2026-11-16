@@ -3,11 +3,13 @@
 // herdr call: the view hands it the rows, their sizes and what the list drew, and does what `plan` says.
 // what it rests on was probed in his window (2026-11-16): the list's first drawn row is exact in every frame; herdr
 // calls the row callback once more each frame, first, for row 0 alone; a wheel step is the list's movement in px; an
-// asked item lands at the view's top only from above the view; the list keeps its px when sizes change.
+// asked item lands at the view's top only from above the view; the list keeps its px when sizes change; it draws its
+// last item only with its scroll at the end (follow.js END_MARKS).
 
 import {
+    END_MARKS,
     followAfterWheel,
-    isAtTrueEnd,
+    isEndDrawn,
     needsLift,
     pinToRow,
     placeIndex,
@@ -24,7 +26,8 @@ import {
  * @property {'end' | 'lift' | 'seek' | null} ask `end`: go to the newest; `lift`: go to the end now and draw again
  *   at once, the place lands next frame; `seek`: bring item `seekAt` to the top
  * @property {number} seekAt the item a held place is sought by, -1 with none
- * @property {number[]} itemSizes the sizes to hand the list: the rows', a held message cut in two at the place
+ * @property {number[]} itemSizes the sizes to hand the list: the rows', a held message cut in two at the place, then
+ *   END_MARKS
  * @property {number[]} sizes every row's height
  * @property {number} cutAt the row cut in two, -1 with none
  * @property {number} cutOffset the px of that row in its upper item
@@ -45,6 +48,8 @@ export function createPlace() {
     let top = 0;
     /** the rows the list drew last @type {Range | null} */
     let range = null;
+    /** the list's scroll was at its end in the frame it drew last */
+    let isAtEnd = false;
     /** a place held to the pixel until his next step @type {{ id: string, offset: number } | null} */
     let cut = null;
     let isSeekDue = false;
@@ -83,23 +88,23 @@ export function createPlace() {
          * the row callback: what the list drew this frame
          * @param {Range} drawn the items drawn
          * @param {Plan} plan this frame's plan
-         * @param {number} viewH
          * @param {number} now
          */
-        drawn(drawn, plan, viewH, now) {
+        drawn(drawn, plan, now) {
+            const lastRow = Math.max(0, plan.sizes.length - 1);
             range = {
-                end: plan.rowAt(Math.max(drawn.start, drawn.end - 1)) + 1,
-                start: plan.rowAt(drawn.start),
+                end:
+                    Math.min(
+                        lastRow,
+                        plan.rowAt(Math.max(drawn.start, drawn.end - 1)),
+                    ) + 1,
+                start: Math.min(lastRow, plan.rowAt(drawn.start)),
             };
+            isAtEnd = isEndDrawn(drawn, plan.itemSizes.length);
             if (follow) return;
             // a step down that reached the end follows again, read from the range that step drew. never while a place
             // is held: its landing sends the list to its end for one frame
-            if (
-                !cut &&
-                isLastWheelDown &&
-                now < wheelUntil &&
-                isAtTrueEnd(plan.sizes, range, viewH)
-            ) {
+            if (!cut && isLastWheelDown && now < wheelUntil && isAtEnd) {
                 follow = true;
                 id = null;
             } else if (cut && plan.seekAt >= 0 && drawn.start === plan.seekAt)
@@ -177,7 +182,7 @@ export function createPlace() {
                 ask,
                 cutAt,
                 cutOffset: split.cut?.offset ?? 0,
-                itemSizes: split.sizes,
+                itemSizes: [...split.sizes, ...END_MARKS],
                 rowAt,
                 seekAt: cut ? split.seekAt : -1,
                 sizes,
@@ -194,6 +199,7 @@ export function createPlace() {
             offset = 0;
             top = 0;
             range = null;
+            isAtEnd = false;
             cut = null;
             isSeekDue = false;
             isLifted = false;
@@ -229,11 +235,7 @@ export function createPlace() {
                     isIgnored: true,
                 };
             const was = follow;
-            follow = followAfterWheel(
-                was,
-                dy,
-                isAtTrueEnd(sizes, range, viewH),
-            );
+            follow = followAfterWheel(was, dy, isAtEnd);
             wheelUntil = now + WHEEL_REST_MS;
             if (dy) isLastWheelDown = dy < 0;
             read(rows, sizes);

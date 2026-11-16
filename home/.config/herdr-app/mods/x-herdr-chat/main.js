@@ -261,21 +261,25 @@ export default class Chat extends View {
             itemSizes.length,
             itemSizes,
             (i) => {
-                const id = rows[rowAt(i)]?.id ?? `gone-${i}`;
+                const id = rows[rowAt(i)]?.id ?? `end-${i}`;
                 if (i === cutAt) return `${id}#above`;
                 return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
             },
             (drawn) => {
                 // no redraw is asked for in here, herdr refuses one: a ↓ that should leave does so at the next draw
-                this.at.drawn(drawn, plan, this.viewH, Date.now());
+                this.at.drawn(drawn, plan, Date.now());
                 const items = [];
                 for (let i = drawn.start; i < drawn.end; i++) {
                     const row = rows[rowAt(i)];
-                    if (!row) continue;
                     const box = div()
                         .relative()
                         .w_full()
                         .h(itemSizes[i] ?? 1);
+                    // an end mark (follow.js END_MARKS): the list pairs each element with its item, so none is skipped
+                    if (!row) {
+                        items.push(box);
+                        continue;
+                    }
                     if (i === cutAt)
                         items.push(
                             box
