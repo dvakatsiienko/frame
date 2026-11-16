@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T15:53:00Z'
+updated_date: '2026-11-16T16:18:00Z'
 labels:
   - s
   - clio-main
@@ -864,4 +864,7 @@ PK-349:W1051 (2026-11-16 17:46, dima): drifted hunt, clarified: both weekly coun
 PK-349:W1052 (2026-11-16 17:47, dima): what else to solve, with you, while everyone is advancing? when does egg-basket move to itrout? -> PK-444:W120.
 raw drop (2026-11-16, dima, herdr-typed): Both weekly counts move into the Monday boot. No card and no ask needed: each is one script run of a few seconds. Every Monday the opening message carries both, numbers first, then the action items for anything drifted. <- clarification on what i want by "drifted hunt" — e.g. When numbers do not show good results, I expect you to propose how to make them show and fix them so numbers will show good results on the next audit
 raw drop (2026-11-16, dima, herdr-typed): what else to solve? with you, while everyone advancing? when egg-basket moves to itrout?
+
+groomed prompt 18:17 (dima, herdr-typed; no raw file, quoted as written):
+PK-349:W1053 (2026-11-16 18:17, dima): ❓ what does herdr codie wait for? 7min parked
 <!-- SECTION:NOTES:END -->

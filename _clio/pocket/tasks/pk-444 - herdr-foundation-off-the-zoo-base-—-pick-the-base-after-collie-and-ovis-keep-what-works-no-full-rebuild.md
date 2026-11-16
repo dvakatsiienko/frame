@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T16:03:00Z'
+updated_date: '2026-11-16T16:18:00Z'
 labels:
   - m
 dependencies: []
@@ -303,4 +303,11 @@ The efficient «see far» road is to move nothing into the old layout at all: yo
 can i have then egg basket to support light theme too? i want both theme light and dark. currently i have «light theme» selected but it shows dark theme.(not urgent, features first)
 
 18:03 W123 and W124 (the chat scroll wisp) moved → FRM-637:W1, W2; the herdr codie builds it, greenlit 18:00
+
+groomed prompt 18:08 (dima):
+PK-444:W127 (2026-11-16 18:08, dima): tell codie the zoo state: everything dima said about the zoo (crappy, not so crappy now) goes to codie so codie knows what they are solving. wish: dima's herdr system pristine, both under the hood and the UI look he sees.
+
+groomed prompt 18:16 (dima):
+PK-444:W128 (2026-11-16 18:16, dima): ❓ why did glide for herdr disappear?
+PK-444:W129 (2026-11-16 18:16, dima): approved: the scroll fix. "nice! like. approved." (clio's paraphrase before dima's words, not dima's: "follow the bottom now comes back only at the true end or by your click, and the pill is a small quiet ↓ at the right edge; every reload that wiped the reading place and jumped to the newest is fixed too.")
 <!-- SECTION:NOTES:END -->
