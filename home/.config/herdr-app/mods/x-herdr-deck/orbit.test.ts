@@ -589,13 +589,13 @@ describe('a replay can be taken back until a turn takes it (PK-386, dima 14:54)'
         expect(pressLabel('replayed')).toEqual({ replay: '🍕', tick: '🛎️' });
     });
 
-    test('once delivered, the pressed button reads ✉️ and both stay (dima, 21:03)', () => {
+    test('once delivered, the pressed button reads 😋 and both stay (dima, 21:03)', () => {
         expect(pressLabel('locked', 'accepted')).toEqual({
             replay: '🔁',
-            tick: '✉️',
+            tick: '😋',
         });
         expect(pressLabel('locked', 'rejected')).toEqual({
-            replay: '✉️',
+            replay: '😋',
             tick: '🛎️',
         });
     });

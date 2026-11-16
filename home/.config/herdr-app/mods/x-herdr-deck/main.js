@@ -778,7 +778,7 @@ export default class Deck extends View {
                 .text_size(SIZE.secondary)
                 .text_color(isPrimary ? t.solid_foreground : t.foreground)
                 .when(isPrimary, (el) => el.font_semibold())
-                // delivered: both stay, still, the taken one reading ✉️ (dima, 21:03)
+                // delivered: both stay, still, the taken one reading 😋 (dima, 21:03)
                 .when(isLocked, (el) =>
                     el.opacity(0.6).tooltip('joined: the session took it'),
                 )

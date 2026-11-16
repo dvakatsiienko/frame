@@ -305,7 +305,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a second click before a turn took it takes the mark off: the row leaves the join file, the words stay
   - and each thread keeps its own mark: marking words in another thread leaves this one's waiting, and a mark settles (taken, or «not taken» after a minute) from its thread's state whether that thread is open or not
   - decision: one mark per thread, never one at a time (clio's call on W44, 21:16)
-  - and once a turn takes the row, its words leave the quill in the same frame the chat draws them (anything typed after its last write stays), the button shows ✉️ (joined) for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
+  - and once a turn takes the row, its words leave the quill in the same frame the chat draws them (anything typed after its last write stays), the button shows 😋 (joined) for ~3 s, and the chat draws them as his own message, «sent» at the time the turn took them
   - and a row listed nowhere a minute after the write, or a write refused, stays in the quill unmarked, the note saying why; after a chatter reload the mark and the words come back once
   - and a picture waiting over the quill joins as its path and stays over the quill, as the words do, until a turn takes it; one dropped or removed while the words wait rides or leaves the same row
   - and with the quill empty the button keeps its black face, no disabled look: a click, Enter or a hold there does nothing, no disc

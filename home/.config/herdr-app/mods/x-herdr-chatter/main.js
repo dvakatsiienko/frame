@@ -1251,7 +1251,7 @@ function joinIo(cx) {
  *   state: 'pending' | 'joined', text: string, written?: Promise<boolean> }} Mark
  */
 
-// the send button's 🍕 (ready to join) or ✉️, centred in a square the glyph's own height (dima, 20:55: «perfectly centered … tiny little
+// the send button's 🍕 (ready to join) or 😋, centred in a square the glyph's own height (dima, 20:55: «perfectly centered … tiny little
 // smaller»); no line_height: herdr reads px() there as a multiple of the text size and the glyph left the button (21:05)
 /** @param {string} emoji */
 const sendMark = (emoji) =>
@@ -8789,7 +8789,7 @@ export default class ClaudeChat extends View {
                                                                                 .state ===
                                                                             'joined'
                                                                               ? sendMark(
-                                                                                    '✉️',
+                                                                                    '😋',
                                                                                 )
                                                                               : sendMark(
                                                                                     '🍕',
