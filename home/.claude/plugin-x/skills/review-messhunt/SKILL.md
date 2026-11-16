@@ -1,9 +1,9 @@
 ---
-name: review-mess-hunt
-description: Load on «review-mess-hunt», «mess hunt», «hunt the mess», «review the codebase as it stands», and when a lane opens with a mess hunt — a parallel read of code as it is now that ends in one fix list dima ticks. Not for a diff or a pr (that is `/code-review`).
+name: review-messhunt
+description: Load on «review-messhunt», «review-mess-hunt», «mess hunt», «hunt the mess», «review the codebase as it stands», and when a lane opens with a mess hunt — a parallel read of code as it is now that ends in one fix list dima ticks. Not for a diff or a pr (that is `/code-review`).
 ---
 
-# review-mess-hunt — hunt the mess in code as it stands
+# review-messhunt — hunt the mess in code as it stands
 
 a few readers read one area of code in parallel, read-only, each from its own angle; clio merges where they agree, triages, and dima ticks one fix list. it reads the code as it is now, never a delta: a diff stays `/code-review`'s, applying cleanups `/simplify`'s. the want and its decisions: [FRM-629](https://linear.app/x-com/issue/FRM-629).
 

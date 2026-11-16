@@ -1,7 +1,7 @@
 ---
 name: messhunter
 description: >-
-  Use for a mess hunt's read of code as it stands, with no diff — one area, one angle (architect, tester or bug hunter), at a pinned commit, run by `x:review-mess-hunt`. Opus, read-only; returns findings as `path:line` with a failure scenario, a one-line fix and a grade. Not for a diff or a pr (that is wisphunter), writing fixes, running tests or research.
+  Use for a mess hunt's read of code as it stands, with no diff — one area, one angle (architect, tester or bug hunter), at a pinned commit, run by `x:review-messhunt`. Opus, read-only; returns findings as `path:line` with a failure scenario, a one-line fix and a grade. Not for a diff or a pr (that is wisphunter), writing fixes, running tests or research.
 model: opus
 effort: medium
 omitClaudeMd: true
