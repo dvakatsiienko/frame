@@ -7,7 +7,7 @@ import { closeOverlay } from 'herdr';
 import { pages, rowWords } from './settings-model.js';
 import { noteHint, noteStored } from './settings-store.js';
 
-export const SETTINGS_WINDOW = { height: 500, width: 760 };
+export const SETTINGS_WINDOW = { height: 680, width: 960 };
 
 /** @typedef {import('./settings-model.js').Row} Row */
 /** @typedef {import('./settings-model.js').Page} Page */
@@ -32,12 +32,12 @@ export function settingsWindow(t, w) {
 /** @param {any} t @param {WindowState} w @param {string} at */
 function nav(t, w, at) {
     return v_flex()
-        .w(200)
+        .w(224)
         .flex_none()
         .h_full()
         .bg(t.chrome)
-        .p(12)
-        .gap(2)
+        .p(16)
+        .gap(4)
         .child(
             div()
                 .px(8)
@@ -57,7 +57,7 @@ function nav(t, w, at) {
                     .items_center()
                     .gap(8)
                     .px(8)
-                    .py(6)
+                    .py(8)
                     .rounded(6)
                     .cursor_pointer()
                     .when(isOn, (s) => s.bg(t.selected))
@@ -67,7 +67,7 @@ function nav(t, w, at) {
                     .child(
                         div()
                             .flex_1()
-                            .text_size(13)
+                            .text_size(14)
                             .text_color(isOn ? t.foreground : t.muted)
                             .child(p.title),
                     )
@@ -96,16 +96,16 @@ function content(t, w, page) {
         .child(
             v_flex()
                 .flex_1()
-                .gap(2)
+                .gap(4)
                 .child(
                     div()
-                        .text_size(16)
+                        .text_size(18)
                         .font_semibold()
                         .text_color(t.foreground)
                         .child(`${page.icon}  ${page.title}`),
                 )
                 .child(
-                    div().text_size(12).text_color(t.muted).child(page.about),
+                    div().text_size(13).text_color(t.muted).child(page.about),
                 ),
         )
         .when(Boolean(w.overlay), (s) =>
@@ -131,10 +131,10 @@ function content(t, w, page) {
             : page.groups.length
               ? page.groups.map((g) =>
                     v_flex()
-                        .gap(6)
+                        .gap(8)
                         .child(
                             div()
-                                .text_size(11)
+                                .text_size(12)
                                 .text_color(t.dim)
                                 .child(g.heading),
                         )
@@ -177,8 +177,9 @@ function content(t, w, page) {
         .min_w(0)
         .h_full()
         .overflow_y_scroll()
-        .p(20)
-        .gap(18)
+        .px(32)
+        .py(28)
+        .gap(28)
         .child(head)
         .children(body);
 }
@@ -189,26 +190,26 @@ function row(t, w, r, i) {
     const title = h_flex()
         .gap(8)
         .items_center()
-        .child(div().text_size(13).text_color(t.foreground).child(words.title));
+        .child(div().text_size(14).text_color(t.foreground).child(words.title));
     const label = v_flex()
         .flex_1()
         .min_w(0)
-        .gap(2)
+        .gap(4)
         .child(title)
         .child(
             // a row whose effect herdr refused shows why, in place of its why
             w.notes?.[r.key]
                 ? div()
-                      .text_size(12)
+                      .text_size(13)
                       .text_color(t.blocked)
                       .child(w.notes[r.key])
-                : div().text_size(12).text_color(t.muted).child(words.why),
+                : div().text_size(13).text_color(t.muted).child(words.why),
         );
     // a list of options reads top to bottom under its title; a single control sits at the right
     const isList = r.control.kind === 'checks' || r.control.kind === 'text';
-    return (isList ? v_flex().gap(10) : h_flex().items_center().gap(16))
-        .px(14)
-        .py(10)
+    return (isList ? v_flex().gap(12) : h_flex().items_center().gap(24))
+        .px(20)
+        .py(16)
         .when(i > 0, (s) => s.border_t_1().border_color(t.border))
         .child(label)
         .child(control(t, w, r));
@@ -373,15 +374,15 @@ function noteBox(t, w, r, needs) {
             )
             .child(label);
     return v_flex()
-        .gap(6)
+        .gap(8)
         .child(
             div()
                 .rounded(6)
                 .border_1()
                 .border_color(hint ? t.blocked : t.input)
                 .bg(t.background)
-                .p(6)
-                .text_size(12)
+                .p(10)
+                .text_size(13)
                 .child(Textarea.new(box)),
         )
         .when(Boolean(hint), (s) =>
