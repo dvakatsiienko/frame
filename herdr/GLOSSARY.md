@@ -19,6 +19,9 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **settings window** — the one dialog for x-herdr's choices, a page per mod, drawn by x-herdr-chatter from its rows; its values live in `~/.claude/shelf/herdr-settings/settings.json`
 - **settings row** — one choice in the settings window: a key, a title, a one-line why, one control (toggle, checks or stepper) and a default
 - **x-herdr-chatter** — our chat mod, the Chat view itself; copied from zoo's `claude-chat` (FRM-556)
+- **x-herdr-chat** — the new chat, built fresh beside x-herdr-chatter and swapped in once it holds every part (FRM-638); opened as an overlay until then
+- **chat look** — his choices for how the chat reads (text size, font, width, spacing, tool calls, his messages, colours, accent), kept in herdr's shared store under `chat.look`; both chats read it
+- **x-herdr-chat-settings** — the chat settings popover, a herdr mod of its own the chat's ⚙ opens; it edits the chat look
 - **x-herdr-chatter-header** — the whole top row of a thread's pane, in the Chat view and the Terminal view alike: the thread's name and the switch; one row to the eye, drawn by x-herdr-chatter in the Chat view and by the x-herdr-chatter-header mod in the Terminal view, both from one `chatter-header.js`
 - **x-herdr-chatter-header-tabs** — the Chat | Terminal switch inside that row
 - **x-herdr-terminal-header** — the head row of the tray (the bottom quick terminal), part of x-herdr-terminal

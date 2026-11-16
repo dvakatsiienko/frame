@@ -390,3 +390,16 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «Waiting for the turn», until the turn takes it; words that joined a turn are drawn as his messages
   - Shift+Enter breaks the line
   - decision: until the swap the two chats share no draft and the global keys (cmd-k and the rest) stay the old chat's; the hold's two timings are read from the old chat's settings (clio, 2026-11-16 21:50)
+
+- ⬜ the chat settings popover: his chat look in one place (x-herdr-chat-settings, FRM-641)
+  - makes: the chat look in herdr's shared store, `chat.look`; «Text (all of herdr)» also writes `colors.foreground` in herdr's `settings.json`
+  - given the old chat's ⚙ pressed, then a 360 × 556 popover opens over the chat, drawn by `x-herdr-chat-settings`: a «Chat» heading with Reset, then one row per choice (text size, font, width, spacing, tool calls, system lines, earlier replies, your messages, background, text, accent)
+  - when he changes a row, then both chats show it at once, and the popover shows the new value
+  - when he picks a colour for «Text (all of herdr)», then herdr's whole text takes it; Reset puts back the colour herdr had before his first pick
+  - and a herdr reload alone never writes herdr's `settings.json`
+  - decision: the popover is its own mod, one mod per part, its rows as data (`rows.js`) and one typed reader of the store (`look.js`), copied into the new chat and held equal by a test, since a mod cannot import a sibling's file (FRM-641 spec)
+- ⬜ the new chat follows the chat look (x-herdr-chat, FRM-641)
+  - given the new chat open on a thread
+  - when he changes text size, font, width, spacing or tool calls in the chat settings popover
+  - then the new chat redraws in it at once: Narrow keeps rows and the quill in an 820 px column, Full gives them the chat's width; tool calls hidden leave the list
+  - and the message he was reading stays at the top of the view, read on at once
