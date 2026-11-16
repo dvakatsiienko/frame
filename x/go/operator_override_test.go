@@ -409,6 +409,12 @@ func TestOverrideCheckNamesWhatWouldStopEachPr(t *testing.T) {
 			if brake := report.Prs[0].Brake; (c.brake == "") != (brake == "") || !strings.HasPrefix(brake, c.brake) {
 				t.Errorf("brake %q, want one starting %q", brake, c.brake)
 			}
+			if c.brake != "" {
+				board := xIn(t, t.TempDir(), append(w.env, "X_OVERRIDE_CLONES=o/r="+w.clone), "lane", "merge-auto", "--override-check", "--board")
+				if !strings.Contains(board.stdout, "#7: lands, brake lifted: "+c.brake) {
+					t.Errorf("the printed line lacks «lands, brake lifted: %s»:\n%s", c.brake, board.stdout)
+				}
+			}
 			if isOn := report.Override != nil && report.Override.By == "word"; isOn != (c.store != "") {
 				t.Errorf("the report's override = %+v, with store %q", report.Override, c.store)
 			}
