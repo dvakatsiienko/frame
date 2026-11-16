@@ -41,6 +41,7 @@ traps:
 
 - **one executor, one kind, every touch** (the label groups are exclusive, `docs/tracker/GLOSSARY.md` § label): executor `agent` or `human`; a blocker label only while blocked — `needs human` (an agent waits on dima), `needs agent` (dima waits
   on research). a `human` ticket is dima's to start
+- **`agent idea` on every ticket an agent started** (clio's own idea, a member's candidate); a ticket born from a wish of dima's carries none, so the label answers «who wanted this» at an incident (PK-423, FRM-617:W4)
 - **a `clio-wing-<N>` ticket is that wing's** while the label is on: leave it alone until it comes off; a claim, not a lock (dima, 2026-11-06)
 - **priority** p3; p1 only for a real interrupt, its reason and expiry in the body; p2 or p4 only when
   its importance truly differs; **size** XS · S · M naming its closest done ticket (`size: S, like FRM-372`);
