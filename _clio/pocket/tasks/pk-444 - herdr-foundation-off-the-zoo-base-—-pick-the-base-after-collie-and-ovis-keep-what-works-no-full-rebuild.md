@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T18:35:00Z'
+updated_date: '2026-11-16T18:44:00Z'
 labels:
   - m
 dependencies: []
@@ -363,4 +363,9 @@ PK-444:W177 (2026-11-16 19:50, dima, herdr-typed, filed late): o66: tell when ho
 PK-444:W178 (2026-11-16 19:50, dima, herdr-typed, filed late): what is it? i do not understand, explain in simple way. (the side panel in egg-basket: one state for all spaces, or per space)
 PK-444:W179 (2026-11-16 19:50, dima, herdr-typed, filed late): i keep herdr open.
 PK-444:W180 (2026-11-16 19:50, dima, herdr-typed, filed late): side chat: after reload, seems drifted.
+
+20:44 his 20:43 lines (25 pasted shots saved to ~/.local/state/looks/PK-444/shepherdr-shots-2026-11-16; a helper-lite card maps every shot to its line, .scratch/herdr/shots-map.md):
+PK-444:W181 (2026-11-16 20:43, dima): screenshots: dima took all shots with CleanShot X; they live in the CleanShot history (Command+Shift+7). He dragged the ones from the shepherdr thread into his screenshot shelf (the vorssaint shelf), which holds 13 shots. The mapping of shots to his messages is lost, so he cannot tell which shot went with which message.
+PK-444:W182 (2026-11-16 20:43, dima): solve the screenshot mapping: ask helper-lite to read all the screenshots and report the current state.
+PK-444:W183 (2026-11-16 20:43, dima): were all his wishes recovered? Important: he does not want us to build the wrong thing again.
 <!-- SECTION:NOTES:END -->

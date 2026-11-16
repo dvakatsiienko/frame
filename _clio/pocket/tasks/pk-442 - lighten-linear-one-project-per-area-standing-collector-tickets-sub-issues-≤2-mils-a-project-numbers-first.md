@@ -6,7 +6,7 @@ title: >-
 status: open
 assignee: []
 created_date: '2026-11-16T12:16:00Z'
-updated_date: '2026-11-16T15:38:00Z'
+updated_date: '2026-11-16T18:44:00Z'
 labels:
   - s
 dependencies: []
@@ -79,4 +79,8 @@ raw drop (2026-11-16 inbox, dima): 3. nested sub-issues - worth it? are they goo
 raw drop (2026-11-16 inbox, dima): 4. i'd like to know data and numbers before we make a decision for a change. a while idea is to lighten linear, not just move stuff. propose improvement that will lighten.
 
 PK-442:W16 (2026-11-16 17:36, dima): lighten linear: shape, grill, implement in place.
+
+20:44 his 20:17 round 1 answers and 20:25 lines (round 2 ticked o100: collectors groomed, milestones by want, nesting kept honest by a check; three lanes now):
+PK-442:W17 (2026-11-16 20:25, dima): milestone balance: most wanted goes into the first milestone always; additional milestones hold the least wanted and nice-to-haves, so most wanted first, least wanted last. Clio asked whether to update the habit; dima says yes.
+PK-442:W18 (2026-11-16 20:25, dima): linear cap: pricing pages still say 250 on the free plan, we sit at 275 and creating works. Linear's agent and Linear's pricing page both say 250 holds; dima asks how we have more than 250.
 <!-- SECTION:NOTES:END -->
