@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T17:07:00Z'
+updated_date: '2026-11-16T17:26:00Z'
 labels:
   - s
   - clio-main
@@ -885,4 +885,10 @@ PK-349:W1059 (2026-11-16 18:50, dima, herdr-typed): where do you need me now, an
 19:07 his 19:01–19:03 lines, both answered in the 19:06 reply (the tail round is orbit o76; the mods lane takes FRM-612, then the events call sites):
 PK-349:W1060 (2026-11-16 19:01, dima): ❓ after this, propose another round of tail hunting. what next to solve? (your side)
 PK-349:W1061 (2026-11-16 19:03, dima): ❓ what do the mods lane do after its current cli-related chunk?
+
+19:26 his 19:11 and 19:23 lines (answered in the 19:16 and 19:27 replies; the probe stopped 19:24):
+PK-349:W1062 (2026-11-16 19:11, dima): ❓ what to solve next with you? let's start solving. find plus one job for stray and dispatch batch.
+PK-349:W1063 (2026-11-16 19:23, dima): stop probe wind frm-625.
+PK-349:W1064 (2026-11-16 19:23, dima): ensure all trash cleaned. (clio's line before ←: the cuts ticket's closing word overstated; three cuts you ticked are still on disk: the zoo backup, 4 zoo keys, two zoo lines in your layout; they are now listed in the herdr end step)
+PK-349:W1065 (2026-11-16 19:23, dima): ❓ what is o79?
 <!-- SECTION:NOTES:END -->

@@ -4,7 +4,7 @@ title: 'mess hunt: a subagent card instead of the skill? weigh it'
 status: open
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T16:28:00Z'
+updated_date: '2026-11-16T17:26:00Z'
 labels:
   - s
 dependencies: []
@@ -42,4 +42,16 @@ PK-441:W7 (2026-11-16 17:36, dima): mess hunt flush: is the herdr mess hunt plan
 PK-441:W8 (2026-11-16 17:43, dima): mess hunt: verify somehow what is still relevant to fix and what is not. dima does not want double work. (same line as PK-349:W1056)
 
 PK-441:W9 (2026-11-16 17:43, dima): review the mess hunt after egg basket moves to itrout (dima's name for his main layout). there is a rename task too. (same line as PK-349:W1057)
+
+19:26 his o78 steer and 19:23 lines (round 2 is .scratch/mess-hunt/grill-2-proposal.md):
+PK-441:W10 (2026-11-16 19:16, dima, o78 steer): ❓ with the proposed shape, can we then run this hunt with, for example, a verifier too, as a hunt runner? or is it just redundant and a card is better? i was thinking a mess hunt from roles like verifier could bring interesting results, given his aim (his skill).
+PK-441:W11 (2026-11-16 19:23, dima): mess hunt. i rushed the tick. open questions.
+PK-441:W12 (2026-11-16 19:23, dima): ❓ 1. top7 card name: messhunter? and top7 emojis.
+PK-441:W13 (2026-11-16 19:23, dima): 2. its place in fleet identities.
+PK-441:W14 (2026-11-16 19:23, dima): ❓ 3. its card settings: baseline model and effort, baseline memory or memory-less? other useful knobs?
+PK-441:W15 (2026-11-16 19:23, dima): wait, it is actually a sound idea. propose more then, unfold this idea. (clio's line before ←: one thing my question missed (crow caught it): there is a cheaper door, which is to widen the existing 🐆 wisphunter card with a «no diff» brief instead of making a new card; i put that choice in round 2 with the card's name and model)
+PK-441:W16 (2026-11-16 19:23, dima): grill q1. i'm not sure about extending wisphunter capabilities with this messhunter. why? because we use wisphunter very often for its current job, but mess hunting is a rare job. we do it when i feel that something is off under the hood.
+PK-441:W17 (2026-11-16 19:23, dima): i think in the future we won't run it every day either. it will be maybe once a week at least, or even rarer. i wouldn't rush into flooding the wisphunter spec with these mess hunting details.
+PK-441:W18 (2026-11-16 19:23, dima): on the other hand, the wisphunter spec would be a good base for messhunter, because essentially messhunter is wisphunter with an additional precise and good goal. having a wisphunter spec for the messhunter card would also be good.
+PK-441:W19 (2026-11-16 19:23, dima): now i'm confused. propose how to solve all of this efficiently.
 <!-- SECTION:NOTES:END -->
