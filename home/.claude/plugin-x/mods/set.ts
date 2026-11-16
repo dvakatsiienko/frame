@@ -332,7 +332,8 @@ function main([key, value, id]: string[]) {
         if (value === undefined) {
             for (const row of WIND_ROWS) {
                 const text = String(rowOf(row).text ?? '');
-                console.log(`${row} ${text.split('\n')[0] || 'default'}`);
+                const head = text.split('\n')[0]?.slice(0, 80);
+                console.log(`${row} ${head ? `«${head}»` : 'default'}`);
             }
             return 0;
         }
