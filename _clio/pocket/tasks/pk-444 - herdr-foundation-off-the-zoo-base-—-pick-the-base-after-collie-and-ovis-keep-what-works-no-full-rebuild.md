@@ -6,7 +6,7 @@ title: >-
 status: done
 assignee: []
 created_date: '2026-11-16T12:59:00Z'
-updated_date: '2026-11-16T22:32:00Z'
+updated_date: '2026-11-16T22:33:00Z'
 labels:
   - m
 dependencies: []
@@ -405,4 +405,6 @@ PK-444:W199 (2026-11-16 23:13, dima, o136 steer, on the herdr scroll probe): go 
 PK-444:W198 (2026-11-16 23:13, dima, o137 steer): ask codie to create a good, pleasant, beautiful light theme as the initial implementation. when we do a design round for herdr, we will create another proper palette via the designer.
 
 00:32 close: every W-line homed (fork audit 2026-11-17). by id in tickets: 58 → FRM-638, 3 → FRM-637 (done), 1 → FRM-633 (merged into FRM-638). carried by FRM-638's decided/out lines: W2 (shepherdr uninstalled once nothing is left), W12, W14–W18, W21, W22, W28, W52–W58, W66–W68, W70–W77 (quick terminal on ctrl-j kept, the frame taken), W121, W122, W133 (picker names and thumbnails, the end step), W124 (FRM-638:W38), W125, W180 (place kept through a reload), W190 (iTrout, FRM-633 merged). landed: W3, W23–W27, W31, W65, W173–W175 (tabs, FRM-635 done), W116, W118, W119 (band meters, FRM-638 slice 3 step 81), W123, W129 (FRM-637 done), W126, W196, W198 (light theme landed 11-16), W132, W137 (fps overlay off: launchctl getenv MTL_HUD_ENABLED empty). FRM-616/FRM-618: W184 (drag and drop is what the native list brings). FRM-582: W193, W194 (its re-sign after a grill; FRM-591 the design interview, both in the herdr order o162). answered in the 11-16 thread, no build: W1, W4, W5, W7, W8, W13, W29, W30, W33–W37, W39–W43, W45, W48–W51, W69, W78, W115, W117, W120, W127, W128, W130, W131, W134–W136, W139–W143, W164–W172, W176–W179, W181–W183, W185–W189, W191, W192, W195, W197, W199
+
+close: moved by id into FRM-638's wish block: W6 W9 W10 W11 W19 W20 W32 W38 W44 W46 W47 W59 W60 W61 W62 W63 W64 W79 W80 W81 W82 W83 W84 W85 W86 W87 W88 W89 W90 W91 W92 W93 W94 W95 W96 W97 W98 W99 W100 W101 W103 W104 W105 W106 W107 W108 W109 W110 W111 W112 W113 W114 W119 W121 W122 W126 W127 W138 ; W123, W124 → FRM-637 (done); the rest as the audit line above: carried by FRM-638's decided lines W2, W12, W14–W18, W21, W22, W28, W52–W58, W66–W68, W70–W77, W125, W133, W180, W190; landed W3, W23–W27, W31, W65, W116, W118, W129, W132, W137, W173–W175, W196, W198; FRM-616 W184; FRM-582 W193, W194; answered in the 11-16 thread W1, W4, W5, W7, W8, W13, W29, W30, W33–W37, W39–W43, W45, W48–W51, W69, W78, W115, W117, W120, W128, W130, W131, W134–W136, W139–W143, W164–W172, W176–W179, W181–W183, W185–W189, W191, W192, W195, W197, W199
 <!-- SECTION:NOTES:END -->
