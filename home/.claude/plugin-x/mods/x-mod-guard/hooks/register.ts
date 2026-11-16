@@ -880,7 +880,7 @@ async function overrideFlip(
         return `operator-override all is on, by ${ask.by}, ${until ? `until ${until}` : 'until this session ends'}: every floor refusal warns and runs, plain rm and the brake aside; «operator-override off» ends it`;
     return ask.scope === 'off'
         ? "operator-override is off, by dima's typed words"
-        : `operator-override prs is on, by ${ask.by}: x lane merge-auto <pr> --apply lands every pr; the brake still stops it`;
+        : `operator-override prs is on, by ${ask.by}: x lane merge-auto <pr> --apply lands every pr; under dima's own grant its brake is one warning line, a shift's grant still stops at it; a raw merge still stops at the brake`;
 }
 
 // x's --brake-check answers the brake, per repo the line may merge in; a failed read reads as braked
