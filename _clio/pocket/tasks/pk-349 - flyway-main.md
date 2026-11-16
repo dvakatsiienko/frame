@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T22:32:00Z'
+updated_date: '2026-11-16T22:36:00Z'
 labels:
   - s
   - clio-main
@@ -16,20 +16,14 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f13 today: once the boot chores are solved, grill every pending grill with dima, one by one, in lowtide mode
-- [ ] #2 f12 helga grooms the day’s grill W-lines: prompt-groom.ts --linear 51 reds to 0
-- [ ] #3 f4 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look
-- [ ] #4 f1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
-- [ ] #5 f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
-- [ ] #6 f14 today: stabilize the fleet flows, root fixes only (dima 14:34); speak waits until all runs smoothly
-- [ ] #7 f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
-- [ ] #8 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
-- [ ] #9 f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15)
-- [ ] #10 f30 grill 1: stats counter (PK-300): shape, grill, plan right away (his 17:36 order)
-- [ ] #11 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #12 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #13 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #14 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #1 f12 helga grooms the day’s grill W-lines: prompt-groom.ts --linear 51 reds to 0
+- [ ] #2 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
+- [ ] #3 f40 autopilot: shape grill-borrow rounds 1–3 into one ticket via clio:shape-idea, his «shaped» at the end
+- [ ] #4 f41 glide subcard as a read-only view of member asks (o67): one mods ticket, then his sign
+- [ ] #5 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #6 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #7 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #8 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1015,4 +1009,30 @@ done 2026-11-17 00:11: f29 new chat: one shaped ticket from round 1 and the borr
 done 2026-11-17 00:28: f31 grill 2: mess hunt as a card (PK-441): shape, grill, implement in place (PK-441 done)
 
 done 2026-11-17 00:32: f32 grill 3: lighten linear (PK-442): shape, grill, implement in place (PK-442 done)
+
+done 2026-11-17 00:36: f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
+
+done 2026-11-17 00:36: f14 today: stabilize the fleet flows, root fixes only (dima 14:34); speak waits until all runs smoothly
+
+done 2026-11-17 00:36: f28 agent-idea label: create it, clio:pm's create step, the initiator lines out of FRM-617 (o15) (FRM-617 Todo)
+
+done 2026-11-17 00:36: f30 grill 1: stats counter (PK-300): shape, grill, plan right away (his 17:36 order) (PK-300 open)
+
+done 2026-11-17 00:36: f13 today: once the boot chores are solved, grill every pending grill with dima, one by one, in lowtide mode
+
+done 2026-11-17 00:36: f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands (PK-349 open)
+
+done 2026-11-17 00:36: f4 designer day with dima: designer recipe, Fable 5.2 medium, speak v2, herdr look
+
+done 2026-11-17 00:36: f11 autopilot: shape rounds 1–3 into one ticket via clio:shape-idea, the mods lane is free
+
+done 2026-11-17 00:36: f1 glide subcard as a read-only view of a member’s asks (o67), the mods lane after slipstream
+
+00:36 flyway clean (dima 00:34): f23 done (both lanes sorted in linear 00:21–00:27); f14 moved to memory/dima-fleet-priority.md «now»; f28 done (label «agent idea» exists, clio:pm SKILL.md:44, FRM-617 marked o15); f30 done (grill 1 → FRM-639, the rest of PK-300 💤 in wing 1's flyway); f13 done (grills 1–3: FRM-639, PK-441 closed, PK-442 closed; f9/f10 stay 💤); f26 done (beee7962 tails-check, halt phase 1.95; craft-pm line reworded per W1109); f4, f11, f1 re-added with their wait prefixes
+
+done 2026-11-17 00:36: f36 📅 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look — on: 2026-11-17 (FRM-642 Todo)
+
+done 2026-11-17 00:36: f37 ⏳ autopilot: shape rounds 1–3 (herdr/grill-borrow-1..3) into one ticket via clio:shape-idea — waits for: dima
+
+done 2026-11-17 00:36: f38 ⏳ glide subcard as a read-only view of a member’s asks (o67): rule landed, code not; one mods ticket to sign — waits for: dima
 <!-- SECTION:NOTES:END -->
