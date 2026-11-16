@@ -40,6 +40,15 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a pane whose title already holds its folder, as a shell's does
   - then the folder is not printed a second time after the title; an agent's pane still shows its folder
   - and a click anywhere on the row focuses the pane, as before
+- ⬜ the tab bar draws each tab as a pill (x-herdr-tab-pills, FRM-635)
+  - given x-herdr-tab-pills is placed in a layout's top bar (the playground `egg-basket`)
+  - then every tab is a pill with its program's tile, a dot on the tile while its thread works, is blocked or is done, and its name: a thread's own name with its emoji, the member word dropped, whole on hover; any other tab's name and folder
+  - and the shown pill stands out, a hovered one only hints; the space chip at the left opens herdr's picker
+  - and a wheel scroll or a swipe over the bar switches no tab, and a press and drag on a pill never moves the window
+  - and the × on a pill asks first when the tab holds an agent or a shell with a program running in it, and closes an idle shell's tab at once
+  - and every colour comes from the theme: the layout's `colors` block sets `chrome`, `selected` and `input` for the tray, the shown pill and its edge
+  - decision: a clone of herdr's shipped `terminals-bar`, his pick after an A/B (dima, 2026-11-16: «tabs look better in the Terminals layout»); at his swap word it is renamed `x-herdr-tabs` and the old folder goes
+  - not checked: in a shown window; its first look is his own open of the playground
 - 🧭 the thread header holds +, Files and Changes where the layout asks for them (FRM-635)
   - given a layout block that sets `tabBarButtons` on the thread header (the playground `egg-basket` does, his own layout does not)
   - then the row ends in + (the new-tab menu), Files and Changes; a press on the shown panel hides it, a press on the other shows it
