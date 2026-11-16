@@ -1,7 +1,17 @@
-import { readFileSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import {
+    mkdtempSync,
+    readFileSync,
+    readlinkSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { expect, test } from 'vitest';
 
 import {
+    changeStore,
     clioIdOf,
     numberSetting,
     partKeysOf,
@@ -142,4 +152,56 @@ test("a 🍃 turned off through the door takes back the mod's pending ask, and k
         off({ at: 1, by: 'mod', state: 'refreshing' }),
         off({ at: 1, state: 'asked' }),
     ]).toEqual([false, false, true, true]);
+});
+
+const SET = new URL('./set.ts', import.meta.url).href;
+
+// one door writer in its own process: `count` changes, each a new key under `prefix`
+function writer(path: string, prefix: string, count: number) {
+    const child = spawn(process.execPath, [
+        '--input-type=module',
+        '-e',
+        `const { changeStore } = await import(${JSON.stringify(SET)});
+for (let i = 0; i < ${count}; i++) changeStore(${JSON.stringify(path)}, (s) => ({ ...s, ['${prefix}' + i]: i }));`,
+    ]);
+    return new Promise<number | null>((done) => child.on('close', done));
+}
+
+test('two door writers at once lose no change, and a reader never meets a half file', async () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'set-store.')), 'store.json');
+    // big enough that a plain write is seen half done
+    writeFileSync(path, JSON.stringify({ pad: 'x'.repeat(4_000_000) }));
+    let isWriting = true;
+    const exits = Promise.all([
+        writer(path, 'a', 25),
+        writer(path, 'b', 25),
+    ]).finally(() => {
+        isWriting = false;
+    });
+    let halves = 0;
+    while (isWriting) {
+        try {
+            JSON.parse(readFileSync(path, 'utf8'));
+        } catch {
+            halves++;
+        }
+        await new Promise((r) => setTimeout(r, 1));
+    }
+    const { pad: _pad, ...rows } = JSON.parse(readFileSync(path, 'utf8'));
+    expect([await exits, halves, Object.keys(rows).length]).toEqual([
+        [0, 0],
+        0,
+        50,
+    ]);
+});
+
+test('a store reached through a link stays a link after a write', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'set-link.'));
+    writeFileSync(join(dir, 'real.json'), '{}');
+    symlinkSync(join(dir, 'real.json'), join(dir, 'store.json'));
+    changeStore(join(dir, 'store.json'), (s) => ({ ...s, hot: 1 }));
+    expect([
+        readlinkSync(join(dir, 'store.json')),
+        JSON.parse(readFileSync(join(dir, 'real.json'), 'utf8')),
+    ]).toEqual([join(dir, 'real.json'), { hot: 1 }]);
 });

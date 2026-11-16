@@ -475,6 +475,11 @@
 - ✅ `pnpm mods:set second-wind-auto` reads and flips any session's 🍃 (FRM-634 exit 2)
   - given `pnpm mods:set second-wind-auto`, then it lists every session with a press, on or off; `second-wind-auto <session id>` prints one, the stored press, on where nothing was pressed (a coordinator's pressed-off 🍃 under 💨 afk or a shift still prints off: that override is read by the mod at each turn, never stored); `second-wind-auto <session id> on|off` writes the key the way its band button does, an off taking back the mod's pending ask and keeping one dima pressed; herdr's band 🍃 calls this door
   - proof: set.test.ts::the second-wind-auto door writes any session's 🍃 the way its band button does; ::a 🍃 turned off through the door takes back the mod's pending ask, and keeps one dima pressed
+- ✅ every `pnpm mods:set` write of the store is whole and loses no other writer's change (FRM-634 store exit 4)
+  - given two `pnpm mods:set` writers at once (`part`, `hot`, `second-wind-auto`, `pace`, a number) and a reader mid-write, then the store file is always whole JSON and holds both changes: each write holds `<store>.lock` for its read, change and write, writes a temp file beside the store, then renames it; a lock older than 10 s is a dead writer's and is taken over, and a wait past 5 s fails the write
+  - and a store path that is a link is resolved first, so the link stays a link
+  - 📌 the engine's own `$.store.set` writes the same file with no lock and no rename: a mod's write can still land between a door's read and its rename, a limit no door can lift
+  - proof: set.test.ts::two door writers at once lose no change, and a reader never meets a half file; ::a store reached through a link stays a link after a write
 - ✅ dima's own text for each second wind note is what a thread reads (FRM-634 exit 1, FRM-625:W5, W9)
   - given a text row in herdr's settings (`~/.claude/shelf/herdr-settings/settings.json`): `stash.wind.text.press` (a 🐦‍🔥 press), `stash.wind.text.notice` (the notice line), `stash.wind.text.at` (the wind line), when that note fires, then the session reads the row's text, read at that moment; an empty, blank or non-text row is the mod's default
   - and `{fill}` and `{wind}` in a text become the thread's fill and the wind line, in each of the three notes

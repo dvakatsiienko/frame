@@ -3,7 +3,15 @@
 // `second-wind-auto [<session id> [on|off]]` reads or writes any session's 🍃, the door its band button uses (FRM-634)
 // `pace on|end` is the pace watch and ⏰ waker for a shift, `pace off` a written off, clio's registry row by default; a number key is a 🎛️ row; `part <key> on|off` a 🎛️ switch, global, bare `part` lists them
 import { execFileSync } from 'node:child_process';
-import { globSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import {
+    globSync,
+    readFileSync,
+    realpathSync,
+    renameSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -135,6 +143,57 @@ function liveThreads(home: string) {
     }
 }
 
+const LOCK_WAIT_MS = 5000;
+const LOCK_STALE_MS = 10_000;
+const LOCK_RETRY_MS = 10;
+
+// a writer that died holding the lock leaves its file: past LOCK_STALE_MS it is taken over
+function takeLock(lock: string) {
+    const deadline = Date.now() + LOCK_WAIT_MS;
+    for (;;) {
+        try {
+            writeFileSync(lock, String(process.pid), { flag: 'wx' });
+            return;
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+        }
+        const heldSince = statSync(lock, { throwIfNoEntry: false })?.mtimeMs;
+        if (heldSince !== undefined && Date.now() - heldSince > LOCK_STALE_MS)
+            rmSync(lock, { force: true });
+        else if (Date.now() > deadline)
+            throw new Error(`the store is locked: ${lock}`);
+        else
+            Atomics.wait(
+                new Int32Array(new SharedArrayBuffer(4)),
+                0,
+                0,
+                LOCK_RETRY_MS,
+            );
+    }
+}
+
+// every store write of this door: the lock spans the read, the change and the write, so two writers never lose one
+// change; the temp file and the rename keep a reader off a half file; a symlinked path is resolved first, so the link
+// stays a link. the engine's own `$.store.set` writes the same file with neither, which no door can change
+export function changeStore(
+    path: string,
+    change: (store: Record<string, unknown>) => Record<string, unknown>,
+) {
+    const real = realpathSync(path);
+    const lock = `${real}.lock`;
+    takeLock(lock);
+    try {
+        const temp = `${real}.${process.pid}.tmp`;
+        writeFileSync(
+            temp,
+            JSON.stringify(change(JSON.parse(readFileSync(real, 'utf8')))),
+        );
+        renameSync(temp, real);
+    } finally {
+        rmSync(lock, { force: true });
+    }
+}
+
 function newest(pattern: string, cwd: string) {
     return globSync(pattern, { cwd })
         .map((f) => join(cwd, f))
@@ -172,10 +231,7 @@ function main([key, value, id]: string[]) {
             );
             return 2;
         }
-        writeFileSync(
-            path,
-            JSON.stringify(withPart(store, value, id === 'on')),
-        );
+        changeStore(path, (now) => withPart(now, value, id === 'on'));
         console.log(`${value} ${id}, every session's next poll takes it`);
         return 0;
     }
@@ -202,10 +258,7 @@ function main([key, value, id]: string[]) {
             console.error('usage: pnpm mods:set hot [<session id> [on|off]]');
             return 2;
         }
-        writeFileSync(
-            path,
-            JSON.stringify(withHot(store, value, id, Date.now())),
-        );
+        changeStore(path, (now) => withHot(now, value, id, Date.now()));
         console.log(`🔥 ${value} ${id}, its next poll takes it`);
         return 0;
     }
@@ -236,10 +289,7 @@ function main([key, value, id]: string[]) {
             );
             return 2;
         }
-        writeFileSync(
-            path,
-            JSON.stringify(withAutoWind(store, value, id, Date.now())),
-        );
+        changeStore(path, (now) => withAutoWind(now, value, id, Date.now()));
         console.log(`🍃 ${value} ${id}, its next turn reads it`);
         return 0;
     }
@@ -265,18 +315,15 @@ function main([key, value, id]: string[]) {
         console.error(`refused: ${pair}`);
         return 2;
     }
-    writeFileSync(
-        path,
-        JSON.stringify(
-            isPace
-                ? withPace(
-                      store,
-                      sessionId ?? '',
-                      value as 'end' | 'off' | 'on',
-                      Date.now(),
-                  )
-                : { ...store, [key as string]: n },
-        ),
+    changeStore(path, (now) =>
+        isPace
+            ? withPace(
+                  now,
+                  sessionId ?? '',
+                  value as 'end' | 'off' | 'on',
+                  Date.now(),
+              )
+            : { ...now, [key as string]: n },
     );
     console.log(
         `${key} ${value}${sessionId ? `: ${sessionId}` : ''}, its next poll takes it`,
