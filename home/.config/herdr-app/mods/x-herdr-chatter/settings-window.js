@@ -1,10 +1,11 @@
 // the one settings window (FRM-566): a page per mod in the nav, each row a title, a one-line why and one control,
 // drawn from settings-model.js; colours come only from theme(), so it follows herdr's theme picker
-import { h_flex, v_flex } from 'gpui-base';
+import { Textarea, h_flex, v_flex } from 'gpui-base';
 import { div } from 'gpui-kit';
 import { closeOverlay } from 'herdr';
 
 import { pages } from './settings-model.js';
+import { noteHint, noteStored } from './settings-store.js';
 
 export const SETTINGS_WINDOW = { height: 500, width: 760 };
 
@@ -14,7 +15,8 @@ export const SETTINGS_WINDOW = { height: 500, width: 760 };
  * @typedef {{ page: string, values: Record<string, unknown>, overlay: string | undefined,
  *   keys?: { ours: { key: string, title: string, action: string, takenBy: string | null }[], herdr: [string, string][],
  *     capture: any, note: string, recording: string | null, onRecord: (key: string, cx: any) => void, onKey: (keystroke: string, cx: any) => void },
- *   notes?: Record<string, string>, onPage: (id: string, cx: any) => void, onChange: (key: string, value: unknown) => void }} WindowState
+ *   notes?: Record<string, string>, onPage: (id: string, cx: any) => void, onChange: (key: string, value: unknown, cx: any) => void,
+ *   noteBoxes?: Map<string, any>, noteDefaults?: Record<string, string>, onNote?: (key: string, isReset: boolean, cx: any) => void }} WindowState
  */
 
 /** @param {any} t @param {WindowState} w */
@@ -202,7 +204,7 @@ function row(t, w, r, i) {
                 : div().text_size(12).text_color(t.muted).child(r.why),
         );
     // a list of options reads top to bottom under its title; a single control sits at the right
-    const isList = r.control.kind === 'checks';
+    const isList = r.control.kind === 'checks' || r.control.kind === 'text';
     return (isList ? v_flex().gap(10) : h_flex().items_center().gap(16))
         .px(14)
         .py(10)
@@ -230,7 +232,7 @@ function control(t, w, r) {
             .bg(isOn ? t.accent : t.border)
             .cursor_pointer()
             .tooltip(isOn ? 'On · press to turn off' : 'Off · press to turn on')
-            .on_click(() => w.onChange(r.key, !isOn))
+            .on_click((_e, cx) => w.onChange(r.key, !isOn, cx))
             .child(
                 div()
                     .size(16)
@@ -238,6 +240,7 @@ function control(t, w, r) {
                     .bg(isOn ? t.accent_foreground : t.background),
             );
     }
+    if (c.kind === 'text') return noteBox(t, w, r, c.needs);
     if (c.kind === 'checks') {
         const picked = /** @type {string[]} */ (value);
         return v_flex()
@@ -257,13 +260,14 @@ function control(t, w, r) {
                                   ? 'press to leave out'
                                   : 'press to include',
                         )
-                        .on_click(() => {
+                        .on_click((_e, cx) => {
                             if (o.isLocked) return;
                             w.onChange(
                                 r.key,
                                 isOn
                                     ? picked.filter((v) => v !== o.value)
                                     : [...picked, o.value],
+                                cx,
                             );
                         })
                         .child(
@@ -309,8 +313,8 @@ function control(t, w, r) {
                     .cursor_pointer()
                     .hover((x) => x.bg(t.hover).text_color(t.foreground)),
             )
-            .on_click(() => {
-                if (!isOff) w.onChange(r.key, next);
+            .on_click((_e, cx) => {
+                if (!isOff) w.onChange(r.key, next, cx);
             })
             .child(label);
     };
@@ -333,6 +337,72 @@ function control(t, w, r) {
                 .child(`${n}${c.unit}`),
         )
         .child(step(1, `settings-${r.key}-up`, '+'));
+}
+
+// one note in full, editable: Save writes its row, Reset brings the default back; a note that lost a word a thread
+// needs to compact gets a red line under the box and still saves (a warning, never a block)
+/** @param {any} t @param {WindowState} w @param {Row} r @param {string[]} needs */
+function noteBox(t, w, r, needs) {
+    const box = w.noteBoxes?.get(r.key);
+    if (!box) return div();
+    const fallback = w.noteDefaults?.[r.key] ?? '';
+    const text = String(box.value());
+    const stored = typeof w.values[r.key] === 'string' ? w.values[r.key] : '';
+    const isSaved = noteStored(text, fallback) === stored;
+    const isDefault = noteStored(text, fallback) === '';
+    const hint = noteHint(text, needs);
+    /** @param {string} id @param {string} label @param {boolean} isLive @param {boolean} isReset */
+    const act = (id, label, isLive, isReset) =>
+        div()
+            .id(`settings-${r.key}-${id}`)
+            .px(10)
+            .py(4)
+            .rounded(6)
+            .border_1()
+            .border_color(t.border)
+            .text_size(12)
+            .text_color(isLive ? t.foreground : t.dim)
+            .when(isLive, (s) =>
+                s
+                    .cursor_pointer()
+                    .hover((x) => x.bg(t.hover))
+                    .on_click((_e, cx) => w.onNote?.(r.key, isReset, cx)),
+            )
+            .child(label);
+    return v_flex()
+        .gap(6)
+        .child(
+            div()
+                .rounded(6)
+                .border_1()
+                .border_color(hint ? t.blocked : t.input)
+                .bg(t.background)
+                .p(6)
+                .text_size(12)
+                .child(Textarea.new(box)),
+        )
+        .when(Boolean(hint), (s) =>
+            s.child(div().text_size(12).text_color(t.blocked).child(hint)),
+        )
+        .child(
+            h_flex()
+                .items_center()
+                .gap(8)
+                .child(act('save', 'Save', !isSaved, false))
+                .child(act('reset', 'Reset to default', !isDefault, true))
+                .child(
+                    div()
+                        .text_size(11)
+                        .text_color(t.dim)
+                        .child(
+                            !isSaved
+                                ? 'not saved yet'
+                                : isDefault
+                                  ? 'the default'
+                                  : 'your text',
+                        ),
+                ),
+        );
 }
 
 // a key as macOS prints it: cmd-shift-k → ⌘⇧K

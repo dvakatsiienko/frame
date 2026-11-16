@@ -2,10 +2,13 @@
 // mod's file, so the chatter holds every page; settings-store.js keeps their values, settings-window.js draws them.
 // a row joins only once its mod acts on it
 
-/** @typedef {{ kind: 'toggle' } | { kind: 'checks', options: { value: string, label: string, isLocked?: boolean }[] } | { kind: 'stepper', min: number, max: number, step: number, unit: string }} Control */
+/** @typedef {{ kind: 'toggle' } | { kind: 'checks', options: { value: string, label: string, isLocked?: boolean }[] } | { kind: 'stepper', min: number, max: number, step: number, unit: string } | { kind: 'text', needs: string[] }} Control */
 /** @typedef {{ key: string, title: string, why: string, control: Control, default: unknown }} Row */
 /** @typedef {{ heading: string, rows: Row[] }} Group */
 /** @typedef {{ id: string, icon: string, title: string, about: string, groups: Group[] }} Page */
+
+// the words a second wind note must keep, or a thread may never compact: the op's name and the handoff step
+const WIND_WORDS = ['second-wind', 'handoff'];
 
 /** @type {Page[]} */
 export const pages = [
@@ -119,7 +122,92 @@ export const pages = [
     },
     {
         about: 'x-mod-stash inside every Claude Code thread; its own 🎛️ pane keeps working as your fallback',
-        groups: [],
+        groups: [
+            {
+                heading: '🐦‍🔥 second wind',
+                rows: [
+                    {
+                        control: { kind: 'toggle' },
+                        default: true,
+                        key: 'stash.second-wind',
+                        title: 'Second wind',
+                        why: 'a thread can refresh its context onto its own handoff; off, 🐦‍🔥 is gone everywhere',
+                    },
+                    {
+                        control: { kind: 'toggle' },
+                        default: true,
+                        key: 'stash.second-wind-auto',
+                        title: 'Auto second wind',
+                        why: 'threads are told and asked by themselves at the two lines below; each thread’s 🍃 can still opt out',
+                    },
+                    {
+                        control: {
+                            kind: 'stepper',
+                            max: 85,
+                            min: 40,
+                            step: 5,
+                            unit: '%',
+                        },
+                        default: 55,
+                        key: 'stash.wind.notice',
+                        title: 'Notice at',
+                        why: 'how full a thread’s context gets before it hears a second wind is coming',
+                    },
+                    {
+                        control: {
+                            kind: 'stepper',
+                            max: 90,
+                            min: 45,
+                            step: 5,
+                            unit: '%',
+                        },
+                        default: 65,
+                        key: 'stash.wind.must',
+                        title: 'Wind at',
+                        why: 'how full it gets before the thread is asked for its second wind',
+                    },
+                    {
+                        control: { kind: 'text', needs: WIND_WORDS },
+                        default: '',
+                        key: 'stash.wind.text.press',
+                        title: 'Note on a 🐦‍🔥 press',
+                        why: 'what a thread reads when you press its 🐦‍🔥',
+                    },
+                    {
+                        control: { kind: 'text', needs: WIND_WORDS },
+                        default: '',
+                        key: 'stash.wind.text.notice',
+                        title: 'Note at the notice line',
+                        why: 'what a thread reads when it crosses «Notice at»; {fill} and {wind} become its numbers',
+                    },
+                    {
+                        control: { kind: 'text', needs: WIND_WORDS },
+                        default: '',
+                        key: 'stash.wind.text.at',
+                        title: 'Note at the wind line',
+                        why: 'what a thread reads when it crosses «Wind at»; {fill} and {wind} become its numbers',
+                    },
+                ],
+            },
+            {
+                heading: 'lanes',
+                rows: [
+                    {
+                        control: {
+                            kind: 'stepper',
+                            max: 60,
+                            min: 5,
+                            step: 5,
+                            unit: 'min',
+                        },
+                        default: 10,
+                        key: 'stash.park.after',
+                        title: 'Lane idle alarm after',
+                        why: 'how long every member of a lane sits idle before its coordinator hears about it',
+                    },
+                ],
+            },
+        ],
         icon: '🧩',
         id: 'cc',
         title: 'Claude Code mods',

@@ -2,10 +2,14 @@ import { describe, expect, test } from 'vitest';
 
 import { settingRows } from './settings-model.js';
 import {
+    noteHint,
+    noteShown,
+    noteStored,
     resolvedRows,
     rowValue,
     settingsText,
     storedRows,
+    windRefusal,
 } from './settings-store.js';
 
 /** @type {any} */
@@ -136,5 +140,89 @@ describe('the Show more switch (FRM-607)', () => {
             'chatter.showMore': false,
         });
         expect(showMore(off)).toBe(false);
+    });
+});
+
+describe('the 🐦‍🔥 second wind group (FRM-625)', () => {
+    const rows = (text: string) => JSON.parse(text).rows;
+    const lines = { 'stash.wind.must': 65, 'stash.wind.notice': 55 };
+
+    test('the two switches and the two lines are saved to the rows x-mod-stash reads', () => {
+        const text = settingsText(settingRows, null, {
+            'stash.second-wind': false,
+            'stash.second-wind-auto': false,
+            'stash.wind.must': 70,
+            'stash.wind.notice': 50,
+        });
+        expect(rows(text)).toMatchObject({
+            'stash.second-wind': false,
+            'stash.second-wind-auto': false,
+            'stash.wind.must': 70,
+            'stash.wind.notice': 50,
+        });
+    });
+
+    test('a notice line at or above the wind line is refused, in words that name both', () => {
+        expect(windRefusal(lines, { 'stash.wind.notice': 65 })).toBe(
+            '🛑 not saved: the notice line (65) must sit below the wind line (65)',
+        );
+        expect(windRefusal(lines, { 'stash.wind.must': 50 })).toBe(
+            '🛑 not saved: the notice line (55) must sit below the wind line (50)',
+        );
+    });
+
+    test('a notice line below the wind line, or a change to another row, is not refused', () => {
+        expect(windRefusal(lines, { 'stash.wind.notice': 60 })).toBeNull();
+        expect(windRefusal(lines, { 'chatter.showMore': false })).toBeNull();
+    });
+
+    test('a note box shows its row, else the default the stash wrote', () => {
+        expect(noteShown('my text', 'the default')).toBe('my text');
+        expect(noteShown('', 'the default')).toBe('the default');
+        expect(noteShown('  \n', 'the default')).toBe('the default');
+        expect(noteShown(undefined, 'the default')).toBe('the default');
+    });
+
+    test('a note saved as the default, or blank, leaves its row empty', () => {
+        expect(noteStored('the default', 'the default')).toBe('');
+        expect(noteStored('   ', 'the default')).toBe('');
+        expect(noteStored('mine, with a handoff', 'the default')).toBe(
+            'mine, with a handoff',
+        );
+    });
+
+    test('an edited note is saved to its row whole, and a reset empties it', () => {
+        const key = 'stash.wind.text.press';
+        const edited = settingsText(settingRows, null, {
+            [key]: 'line 1\nline 2',
+        });
+        expect(rows(edited)[key]).toBe('line 1\nline 2');
+        expect(
+            rows(settingsText(settingRows, edited, { [key]: '' }))[key],
+        ).toBe('');
+    });
+
+    test('a note missing the word second-wind or handoff gets a hint that names it', () => {
+        const needs = ['second-wind', 'handoff'];
+        expect(
+            noteHint('write a handoff, then op second-wind', needs),
+        ).toBeNull();
+        expect(noteHint('write a handoff', needs)).toBe(
+            'this note no longer says «second-wind»: a thread may not compact',
+        );
+        expect(noteHint('just stop', needs)).toBe(
+            'this note no longer says «second-wind» or «handoff»: a thread may not compact',
+        );
+    });
+
+    test('the lane idle alarm row is saved in minutes, 10 by default', () => {
+        expect(rows(settingsText(settingRows, null))['stash.park.after']).toBe(
+            10,
+        );
+        expect(
+            rows(settingsText(settingRows, null, { 'stash.park.after': 25 }))[
+                'stash.park.after'
+            ],
+        ).toBe(25);
     });
 });

@@ -142,9 +142,12 @@ import { settingRows } from './settings-model.js';
 import {
     SETTINGS_DIR,
     SETTINGS_FILE,
+    noteShown,
+    noteStored,
     resolvedRows,
     settingsText,
     storedRows,
+    windRefusal,
 } from './settings-store.js';
 import { SETTINGS_WINDOW, settingsWindow } from './settings-window.js';
 import {
@@ -254,6 +257,24 @@ async function writeSettings(change) {
         } catch (err) {
             if (tries <= 1) throw err;
         }
+    }
+}
+// the three second wind notes as x-mod-stash wrote them at its start, by the row each one is the default of; the
+// mod's own store and code are never read
+const WIND_DEFAULTS = '.claude/shelf/second-wind-defaults.json';
+/** @returns {Promise<Record<string, string>>} */
+async function windDefaults() {
+    try {
+        const file = JSON.parse(
+            (await readTextFile(`${home()}/${WIND_DEFAULTS}`)) ?? '',
+        );
+        return Object.fromEntries(
+            ['press', 'notice', 'at']
+                .filter((kind) => typeof file?.[kind] === 'string')
+                .map((kind) => [`stash.wind.text.${kind}`, file[kind]]),
+        );
+    } catch {
+        return {};
     }
 }
 // Apple's Metal HUD is a macOS default for herdr's bundle, never our file: its row reads the default at every load
@@ -1590,6 +1611,34 @@ export default class ClaudeChat extends View {
             this.keyCapture = cx.focus_handle();
             cx.spawn(async (cx) => {
                 this.keysFile = (await readKeys()).keys;
+                cx.notify();
+            });
+            // why a row's last change was not saved, by row key; gone at that row's next saved change
+            /** @type {Record<string, string>} */
+            this.settingNotes = {};
+            // a box per note row, made here since a text state is never made while drawing; filled once the
+            // defaults x-mod-stash wrote and the rows are read
+            /** @type {Record<string, string>} */
+            this.noteDefaults = {};
+            /** @type {Map<string, import('gpui-base').TextareaState>} */
+            this.noteBoxes = new Map();
+            for (const r of settingRows) {
+                if (r.control.kind !== 'text') continue;
+                const box = TextareaState.new({});
+                box.set_auto_grow(3, 10);
+                box.on('change', (_e, cx) => cx.notify());
+                this.noteBoxes.set(r.key, box);
+            }
+            cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
+                this.noteDefaults = await windDefaults();
+                await loadSettings().catch(() => {});
+                for (const [key, box] of this.noteBoxes)
+                    box.set_value(
+                        noteShown(
+                            settingValue(key),
+                            this.noteDefaults[key] ?? '',
+                        ),
+                    );
                 cx.notify();
             });
             return;
@@ -7753,7 +7802,19 @@ export default class ClaudeChat extends View {
                     },
                     recording: this.recording,
                 },
-                onChange: (key, value) => {
+                noteBoxes: this.noteBoxes,
+                noteDefaults: this.noteDefaults,
+                notes: this.settingNotes,
+                onChange: (key, value, ecx) => {
+                    const refusal = windRefusal(settingValues(), {
+                        [key]: value,
+                    });
+                    const { [key]: _was, ...notes } = this.settingNotes;
+                    this.settingNotes = refusal
+                        ? { ...notes, [key]: refusal }
+                        : notes;
+                    ecx.notify();
+                    if (refusal) return;
                     (key === 'chatter.metalHud'
                         ? setMetalHud(value === true)
                         : Promise.resolve()
@@ -7763,6 +7824,25 @@ export default class ClaudeChat extends View {
                         .catch((e) =>
                             console.log(`settings: ${e?.message ?? e}`),
                         );
+                },
+                // a note box saves on its button, never per key; reset puts the default back in the box and empties the row
+                onNote: (key, isReset, ecx) => {
+                    const box = this.noteBoxes.get(key);
+                    const fallback = this.noteDefaults[key] ?? '';
+                    if (!box) return;
+                    if (isReset) box.set_value(fallback);
+                    writeSettings({
+                        [key]: isReset ? '' : noteStored(box.value(), fallback),
+                    })
+                        .then(loadSettings)
+                        .catch((e) =>
+                            notify({
+                                body: String(e?.message ?? e),
+                                level: 'error',
+                                title: 'the note was not saved',
+                            }),
+                        );
+                    ecx.notify();
                 },
                 // a click's own cx notifies: the render's cx is spent by the time a click lands (his 21:37 shot)
                 onPage: (id, ecx) => {

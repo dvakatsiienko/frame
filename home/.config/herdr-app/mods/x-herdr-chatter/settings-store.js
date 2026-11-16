@@ -13,6 +13,7 @@ export function rowValue(row, value) {
     const c = row.control;
     if (c.kind === 'toggle')
         return typeof value === 'boolean' ? value : row.default;
+    if (c.kind === 'text') return typeof value === 'string' ? value : '';
     if (c.kind === 'stepper')
         return typeof value === 'number' &&
             value >= c.min &&
@@ -54,4 +55,38 @@ export function settingsText(rows, text, change = {}) {
         if (r.key in change && rowValue(r, change[r.key]) === change[r.key])
             next[r.key] = change[r.key];
     return `${JSON.stringify({ rows: next, v: VERSION }, null, 2)}\n`;
+}
+
+const NOTICE = 'stash.wind.notice';
+const MUST = 'stash.wind.must';
+
+/** why a change to the second wind lines is not saved: x-mod-stash never takes a notice line at or above the wind
+ * line, so the pair is refused here, in words, before it is written
+ * @param {Record<string, unknown>} values @param {Record<string, unknown>} change @returns {string | null} */
+export function windRefusal(values, change) {
+    if (!(NOTICE in change) && !(MUST in change)) return null;
+    const next = { ...values, ...change };
+    const notice = Number(next[NOTICE]);
+    const must = Number(next[MUST]);
+    return notice >= must
+        ? `🛑 not saved: the notice line (${notice}) must sit below the wind line (${must})`
+        : null;
+}
+
+/** what a note box shows: its row, else the default x-mod-stash wrote @param {unknown} stored @param {string} fallback */
+export const noteShown = (stored, fallback) =>
+    typeof stored === 'string' && stored.trim() ? stored : fallback;
+
+/** what a note box saves: an empty row means the mod's default, so the default itself is never copied into a row
+ * @param {string} text @param {string} fallback */
+export const noteStored = (text, fallback) =>
+    !text.trim() || text === fallback ? '' : text;
+
+/** a warning, never a block: the words a second wind note must keep for a thread to compact
+ * @param {string} text @param {string[]} needs @returns {string | null} */
+export function noteHint(text, needs) {
+    const gone = needs.filter((word) => !text.includes(word));
+    return gone.length
+        ? `this note no longer says ${gone.map((w) => `«${w}»`).join(' or ')}: a thread may not compact`
+        : null;
 }
