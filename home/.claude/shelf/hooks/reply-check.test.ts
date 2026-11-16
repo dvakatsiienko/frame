@@ -460,6 +460,40 @@ describe('a checked claim with no evidence call (FRM-429)', () => {
     });
 });
 
+describe('a landed claim with no git read (o185)', () => {
+    const gitRead = (command: string) => turnWith({ calls: [{ input: { command }, name: 'Bash' }], id: 'm1' });
+
+    it.each([
+        'everything is saved.',
+        'both are pushed now.',
+        'it was committed and pushed.',
+        'the fix is pushed.',
+        'the fix is on origin/main.',
+        'it landed on main.',
+    ])('logs «%s» in a turn with no git read', (reply) => {
+        expect(loggedAfter(reply, noCalls)).toContain('landed-unread\t');
+    });
+
+    it.each(['git log --oneline -1', 'git status -sb', 'git branch -r --contains 710bff96', 'x lane push --apply', 'x lane commit m.txt a.ts'])(
+        'passes the claim in a turn that ran «%s»',
+        (command) => {
+            expect(loggedAfter('everything is pushed.', gitRead(command))).toBe('');
+        },
+    );
+
+    it('counts a Bash call that is not a git read as no read', () => {
+        expect(loggedAfter('everything is pushed.', gitRead('ls -la'))).toContain('landed-unread\t');
+    });
+
+    it('passes the claim inside a fence or inline code', () => {
+        expect(loggedAfter('```\neverything is pushed\n```\nsee `it is pushed`.', noCalls)).toBe('');
+    });
+
+    it.each(['it is not pushed yet.', 'nothing is committed.', 'it was never pushed.'])('passes the negated «%s»', (reply) => {
+        expect(loggedAfter(reply, noCalls)).toBe('');
+    });
+});
+
 describe('a grill ask with no printed question (dima o18)', () => {
     const grillAdd = (text: string) => turnWith({ calls: [{ input: { asks: [{ pick: 'a', text }], op: 'add' }, name: 'mcp__x-mod-stash__orbit' }], id: 'm1' });
 

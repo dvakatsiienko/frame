@@ -189,6 +189,23 @@ def unevidenced(path: str, reply: str) -> list[str]:
     return claims_without_evidence(reply, turn_calls(path))
 
 
+# «saved», «pushed», «on main» stated as done needs a git read in the turn (retro 2026-11-16: 9 landed-claims wrong, o185)
+LANDED_CLAIM = re.compile(
+    r"\b(?:is|are|was|were)\s+(?:now\s+)?(?:saved|pushed|committed|landed)\b|\bcommitt?ed and pushed\b|\bis\s+on\s+(?:origin(?:/main)?|main)\b|\blanded\s+on\s+main\b",
+    re.I,
+)
+NEGATED_LANDED = re.compile(r"\b(?:not|never|nothing|n't)\s+(?:\w+\s+){0,2}?(?:saved|pushed|committed|landed|on\s+(?:origin|main))\b", re.I)
+GIT_READ = re.compile(r"\bgit\s+(?:status|log|rev-parse|ls-remote|branch\s+-r)\b|\bx\s+lane\s+(?:push|commit)\b")
+
+
+def landed_unread(path: str, reply: str) -> list[str]:
+    prose = INLINE_CODE.sub("", FENCE.sub("", reply))
+    m = LANDED_CLAIM.search(NEGATED_LANDED.sub("", prose))
+    if not m or any(name == "Bash" and GIT_READ.search(str(args.get("command", ""))) for name, args in turn_calls(path)):
+        return []
+    return [m.group(0).strip().lower()]
+
+
 # an orbit ask added for a grill round (its text names «Q<n>» or a round) with no «❓ **Q<n>**» line in the reply: dima sees the ask
 # on the board but never read the question (dima o18, 2026-10-29)
 # «round» alone is a verifier's or a review's too (the week replay: 31 of ~40 distinct hits), so a round counts beside «grill»
@@ -599,6 +616,7 @@ def main() -> None:
         hits += [("unreached", head) for head in unreached(path, reply)]
         hits += [("empty-promise", said) for said in empty_promises(path, reply)]
         hits += [("unevidenced", said) for said in unevidenced(path, reply)]
+        hits += [("landed-unread", said) for said in landed_unread(path, reply)]
         hits += [("grill-unprinted", head) for head in grill_asks_unprinted(reply, turn_calls(path))]
         lost = lost_round(path, reply)
         hits += [("round-lost", what) for what in lost]
@@ -628,6 +646,8 @@ def main() -> None:
         reminds.append(f"text printed before a tool call never reached dima («{by_rule('unreached')[0]}…») — what he must read goes in the last message")
     for said in by_rule("empty-promise"):
         reminds.append(f"the reply says «{said}» with no {'orbit add' if said == 'proposed in orbit' else 'command'} that turn — a promise lands with its call")
+    if by_rule("landed-unread"):
+        reminds.append(f"«{by_rule('landed-unread')[0]}» with no git read that turn — run `git log` or `git status -sb` before saying it landed")
     if by_rule("empty-reply"):
         reminds.append("the answer sat in a mid-turn block dima never sees — open this reply with it in full")
     if by_rule("wait-on-crow"):
