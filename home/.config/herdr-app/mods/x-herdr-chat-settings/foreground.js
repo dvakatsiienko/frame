@@ -22,7 +22,7 @@ export function createForeground({ read, write, store }) {
     /**
      * herdr's settings with its text colour set, or taken out; a file that changed under the write is read again once
      * @param {(now: string | undefined) => string | undefined} next the colour to hold, from the one there now
-     * @returns {Promise<string | undefined>} the colour there before the write
+     * @returns {Promise<{ isSet: boolean, was?: string }>} whether the colour holds now, and the one there before
      */
     async function setColour(next) {
         for (let tries = 0; tries < 2; tries++) {
@@ -33,16 +33,16 @@ export function createForeground({ read, write, store }) {
                 parsed = JSON.parse(text ?? '{}');
             } catch {
                 // a file he broke by hand is his to fix: never written over
-                return undefined;
+                return { isSet: false };
             }
-            if (!isRecord(parsed)) return undefined;
+            if (!isRecord(parsed)) return { isSet: false };
             const colors = isRecord(parsed.colors) ? { ...parsed.colors } : {};
             const now =
                 typeof colors.foreground === 'string'
                     ? colors.foreground
                     : undefined;
             const wanted = next(now);
-            if (wanted === now) return now;
+            if (wanted === now) return { isSet: true, was: now };
             if (wanted === undefined) delete colors.foreground;
             else colors.foreground = wanted;
             const { colors: _, ...rest } = parsed;
@@ -51,13 +51,23 @@ export function createForeground({ read, write, store }) {
                 : rest;
             try {
                 await write(`${JSON.stringify(settings, null, 2)}\n`, text);
-                return now;
+                return { isSet: true, was: now };
             } catch {
                 // the file changed since it was read: read it again
             }
         }
-        return undefined;
+        return { isSet: false };
     }
+
+    // his picks and Reset run one after another, in the order he made them: a Reset never runs ahead of a pick
+    /** @type {Promise<unknown>} */
+    let queue = Promise.resolve();
+    /** @param {() => Promise<void>} step */
+    const inTurn = (step) => {
+        const run = queue.then(step);
+        queue = run.catch(() => {});
+        return run;
+    };
 
     /** the colour before his first change, as kept: undefined when none was kept, null when there was none */
     function kept() {
@@ -73,25 +83,36 @@ export function createForeground({ read, write, store }) {
 
     return {
         /** his pick on the row: a `#rrggbb`, or `theme` for none of his own @param {string} fg */
-        async change(fg) {
-            const was = await setColour(() => (HEX.test(fg) ? fg : undefined));
-            if (kept() !== undefined) return;
-            try {
-                store.setItem(BEFORE_KEY, JSON.stringify({ foreground: was }));
-            } catch {
-                // with nothing kept, Reset takes his colour out
-            }
+        change(fg) {
+            return inTurn(async () => {
+                const { isSet, was } = await setColour(() =>
+                    HEX.test(fg) ? fg : undefined,
+                );
+                if (!isSet || kept() !== undefined) return;
+                try {
+                    store.setItem(
+                        BEFORE_KEY,
+                        JSON.stringify({ foreground: was }),
+                    );
+                } catch {
+                    // with nothing kept, Reset takes his colour out
+                }
+            });
         },
         /** Reset: the colour from before his first change is back, and nothing is kept any more */
-        async reset() {
-            const before = kept();
-            if (before === undefined) return;
-            await setColour(() => before ?? undefined);
-            try {
-                store.removeItem(BEFORE_KEY);
-            } catch {
-                // a store that refuses keeps the old colour, still right for the next Reset
-            }
+        reset() {
+            return inTurn(async () => {
+                const before = kept();
+                if (before === undefined) return;
+                const { isSet } = await setColour(() => before ?? undefined);
+                // a Reset that could not write keeps the colour from before for the next one
+                if (!isSet) return;
+                try {
+                    store.removeItem(BEFORE_KEY);
+                } catch {
+                    // a store that refuses keeps the old colour, still right for the next Reset
+                }
+            });
         },
     };
 }

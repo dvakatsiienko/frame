@@ -158,7 +158,11 @@ export default class ChatSettings extends View {
                                     style.text_color(t.foreground),
                                 ),
                         )
-                        .on_click(() => setLook({ [row.key]: choice }))
+                        .on_click(() => {
+                            setLook({ [row.key]: choice });
+                            // a surface picked here leaves no hex of his own in the colour box
+                            this.hex.get(row.key)?.set_value('');
+                        })
                         .child(label),
                 ),
             );
