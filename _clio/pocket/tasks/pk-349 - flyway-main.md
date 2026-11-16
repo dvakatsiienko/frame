@@ -25,7 +25,7 @@ ordinal: 1000
 - [ ] #7 f19 designer interview for herdr (FRM-591) — later: dima says when (o173)
 - [ ] #8 f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51)
 - [ ] #9 f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
-- [ ] #10 f21 📅 FRM-600 naming door: summon via x brief summon --apply, read the name, dima confirms on mobile — on: 2026-11-16
+- [ ] #10 f21 FRM-600 naming door: summon via x brief summon --apply, read the name, dima confirms on mobile
 - [ ] #11 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
 - [ ] #12 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
 - [ ] #13 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac

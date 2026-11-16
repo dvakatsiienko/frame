@@ -24,8 +24,8 @@ ordinal: 1001
 - [ ] #6 f6 BYT-132: the week's CI minutes and cache, the first deploy-hook push, then landed
 - [ ] #7 f7 FRM-516 crow per thread: the week's read (W15, W21), then close
 - [ ] #8 f8 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop
-- [ ] #9 f9 📅 FRM-534 kill rule: the week's push reds per kind on test-commit.log — on: 2026-11-16
-- [ ] #10 f10 📅 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks — on: 2026-11-16
+- [ ] #9 f9 FRM-534 kill rule: the week's push reds per kind on test-commit.log
+- [ ] #10 f10 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks
 - [ ] #11 f11 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
 - [ ] #12 f19 📅 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm — on: 2026-11-18
 - [ ] #13 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
