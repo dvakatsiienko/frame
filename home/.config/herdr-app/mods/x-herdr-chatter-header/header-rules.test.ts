@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
     findNode,
     folderBeside,
+    isFirstPaneOfTab,
     isPanelShown,
     panelPress,
     panelsEnabled,
@@ -10,15 +11,21 @@ import {
 
 describe('the folder beside a pane title is printed once', () => {
     test.each([
+        ['a title with no folder in it', 'Claude Code', '~/frame', '~/frame'],
+        ['a title that is the folder', '~/frame', '~/frame', ''],
         [
-            'an agent title with no folder in it',
-            'Claude Code',
+            'a title that names a file in the folder',
+            'vim ~/frame/x.ts',
+            '~/frame',
+            '',
+        ],
+        ['a title that is another path', '/tmp/x', '~/frame', '~/frame'],
+        [
+            'a title that only starts like the folder',
+            'vim ~/frames/x',
             '~/frame',
             '~/frame',
         ],
-        ['a shell title that is the folder', '~/frame', '~/frame', ''],
-        ['a shell title that holds the folder', 'zsh ~/frame', '~/frame', ''],
-        ['a title that is another path', '/tmp/x', '~/frame', ''],
         ['no folder known', 'zsh', '', ''],
     ])('%s', (_name, title, where, shown) => {
         expect(folderBeside(title, where)).toBe(shown);
@@ -56,6 +63,17 @@ describe('Files and Changes toggle the side panel', () => {
 test('a panel he switched off in settings gets no button', () => {
     expect(panelsEnabled(['changes'])).toEqual(['changes']);
     expect(panelsEnabled(undefined)).toEqual(['files', 'changes']);
+});
+
+test('a split tab draws the tab bar buttons in its first pane only', () => {
+    const all = [
+        { pane: 'p1', tab: 'tb1' },
+        { pane: 'p2', tab: 'tb1' },
+        { pane: 'p3', tab: 'tb2' },
+    ];
+    expect(isFirstPaneOfTab(all, 'p1')).toBe(true);
+    expect(isFirstPaneOfTab(all, 'p2')).toBe(false);
+    expect(isFirstPaneOfTab(all, 'p3')).toBe(true);
 });
 
 test('a layout node is found by id at any depth', () => {

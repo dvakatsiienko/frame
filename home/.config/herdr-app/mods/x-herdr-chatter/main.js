@@ -8166,13 +8166,7 @@ export default class ClaudeChat extends View {
                                 enabled: panelsEnabled(
                                     shared('workspace.panels'),
                                 ),
-                                openNewMenu: () =>
-                                    openOverlay({
-                                        height: 512,
-                                        kind: 'popup',
-                                        mod: 'new-menu',
-                                        width: 250,
-                                    }),
+                                openOverlay,
                                 panel: findNode(layout(), 'panel'),
                                 run,
                             }),

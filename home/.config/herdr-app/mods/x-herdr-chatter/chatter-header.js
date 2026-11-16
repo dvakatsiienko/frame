@@ -9,9 +9,9 @@ import { isPanelShown, panelPress } from './header-rules.js';
 // the layout block sets `tabBarButtons`, at the row's right end
 /**
  * @param {any} t
- * @param {{ panel: any, body: any, enabled: string[], run: (command: string, args?: Record<string, unknown>) => void, openNewMenu: () => void }} at
+ * @param {{ panel: any, body: any, enabled: string[], run: (command: string, args?: Record<string, unknown>) => void, openOverlay: (overlay: { height: number, kind: 'popup', mod: string, width: number }) => unknown }} at
  */
-export function tabBarButtons(t, { panel, body, enabled, run, openNewMenu }) {
+export function tabBarButtons(t, { panel, body, enabled, run, openOverlay }) {
     /** @param {string} id @param {string} label @param {string} icon */
     const panelButton = (id, label, icon) => {
         const isOn = isPanelShown(id, panel, body);
@@ -56,7 +56,13 @@ export function tabBarButtons(t, { panel, body, enabled, run, openNewMenu }) {
                 .tooltip('New tab')
                 .on_click((_e, cx) => {
                     cx.stop_propagation();
-                    openNewMenu();
+                    // herdr's own new-tab menu, as the tab bar's + opened it
+                    openOverlay({
+                        height: 512,
+                        kind: 'popup',
+                        mod: 'new-menu',
+                        width: 250,
+                    });
                 })
                 .child('+'),
         )

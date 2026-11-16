@@ -45,7 +45,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then every tab is a pill with its program's tile, a dot on the tile while its thread works, is blocked or is done, and its name: a thread's own name with its emoji, the member word dropped, whole on hover; any other tab's name and folder
   - and the shown pill stands out, a hovered one only hints; the space chip at the left opens herdr's picker
   - and a wheel scroll or a swipe over the bar switches no tab, and a press and drag on a pill never moves the window
-  - and the × on a pill asks first when the tab holds an agent or a shell with a program running in it, and closes an idle shell's tab at once
+  - and the × on a pill asks first when the tab holds anything but an idle shell (an agent, a program started as the tab's own, a shell with a program running in it, or a terminal herdr could not read), and closes an idle shell's tab at once; the × takes a click only while it shows
   - and every colour comes from the theme: the layout's `colors` block sets `chrome`, `selected` and `input` for the tray, the shown pill and its edge
   - decision: a clone of herdr's shipped `terminals-bar`, his pick after an A/B (dima, 2026-11-16: «tabs look better in the Terminals layout»); at his swap word it is renamed `x-herdr-tabs` and the old folder goes
   - not checked: in a shown window; its first look is his own open of the playground
@@ -53,6 +53,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given a layout block that sets `tabBarButtons` on the thread header (the playground `egg-basket` does, his own layout does not)
   - then the row ends in + (the new-tab menu), Files and Changes; a press on the shown panel hides it, a press on the other shows it
   - and a panel he switched off in herdr's settings gets no button
+  - and a split tab draws them once, in its first pane's row
   - decision: the buttons moved out of the tab bar so the tab bar can be herdr's pills (dima, 2026-11-16: «Files and Changes buttons, and + moves to x-herdr-chatter-header»)
   - and both rows draw them: the Terminal view's (x-herdr-chatter-header) and the Chat view's (x-herdr-chatter)
   - not checked: in a shown window; its first look is his own open of the playground

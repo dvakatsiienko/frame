@@ -2,11 +2,17 @@
 // equal by chatter-header.test.ts
 
 /**
- * the folder a pane's row prints after its title: none when the title already holds it (a shell's title is its folder)
+ * the folder a pane's row prints after its title: none when the title already names it, as the title itself or as a
+ * whole path inside it («vim ~/frame/x» in ~/frame); a title that is some other path still gets its folder
  * @param {string} title @param {string} where
  */
 export const folderBeside = (title, where) =>
-    where && !title.includes(where) && !/^[~/]/.test(title) ? where : '';
+    where &&
+    !title
+        .split(/\s+/)
+        .some((word) => word === where || word.startsWith(`${where}/`))
+        ? where
+        : '';
 
 /** @typedef {{ hidden?: boolean, active?: string } | null | undefined} LayoutNode */
 
@@ -33,6 +39,15 @@ export const panelPress = (id, panel, body) =>
  */
 export const panelsEnabled = (stored) =>
     Array.isArray(stored) ? stored.map(String) : ['files', 'changes'];
+
+/**
+ * whether this pane is its tab's first: a split tab draws the tab bar's buttons once, never in every pane's row
+ * @param {{ pane: string, tab: string }[]} all @param {string} pane
+ */
+export function isFirstPaneOfTab(all, pane) {
+    const tab = all.find((p) => p.pane === pane)?.tab;
+    return all.find((p) => p.tab === tab)?.pane === pane;
+}
 
 /**
  * a layout node by its id, anywhere under `node`

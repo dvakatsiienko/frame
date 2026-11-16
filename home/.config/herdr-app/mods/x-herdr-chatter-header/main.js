@@ -17,7 +17,12 @@ import {
 } from 'herdr';
 
 import { tabBarButtons, viewSwitch } from './chatter-header.js';
-import { findNode, folderBeside, panelsEnabled } from './header-rules.js';
+import {
+    findNode,
+    folderBeside,
+    isFirstPaneOfTab,
+    panelsEnabled,
+} from './header-rules.js';
 
 /** @param {any} p @param {number} size @param {any} color */
 function icon(p, size, color) {
@@ -185,22 +190,21 @@ export default class ChatterHeader extends View {
                             ),
                         ),
                 )
-                .when(Boolean(props()?.tabBarButtons), (el) =>
-                    el.child(
-                        tabBarButtons(t, {
-                            body: findNode(layout(), 'panel-body'),
-                            enabled: panelsEnabled(shared('workspace.panels')),
-                            openNewMenu: () =>
-                                openOverlay({
-                                    height: 512,
-                                    kind: 'popup',
-                                    mod: 'new-menu',
-                                    width: 250,
-                                }),
-                            panel: findNode(layout(), 'panel'),
-                            run,
-                        }),
-                    ),
+                .when(
+                    Boolean(props()?.tabBarButtons) &&
+                        isFirstPaneOfTab(panes(), pane),
+                    (el) =>
+                        el.child(
+                            tabBarButtons(t, {
+                                body: findNode(layout(), 'panel-body'),
+                                enabled: panelsEnabled(
+                                    shared('workspace.panels'),
+                                ),
+                                openOverlay,
+                                panel: findNode(layout(), 'panel'),
+                                run,
+                            }),
+                        ),
                 )
                 // the chat shows the tab's focused Claude: focus this one first
                 .when(

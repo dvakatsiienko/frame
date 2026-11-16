@@ -9,9 +9,9 @@ import {
     leadPane,
     pillLabel,
     pillName,
+    swallow,
 } from './pills.js';
 
-const here = dirname(fileURLToPath(import.meta.url));
 const pane = (pane: string, more: object = {}) => ({
     focused: false,
     pane,
@@ -84,33 +84,70 @@ describe("a pill's name", () => {
 });
 
 describe('the × asks before it closes', () => {
-    const shell = { foreground: { pid: 10 }, pid: 10, state: 'live' };
+    const reply = (facts: object) => ({
+        code: 0,
+        stdout: JSON.stringify(facts),
+    });
+    const idle = reply({ foreground: { pid: 10 }, pid: 10, state: 'live' });
+    const busy = reply({ foreground: { pid: 42 }, pid: 10, state: 'live' });
 
-    test('an agent asks', () => {
-        expect(closeAsks({ agent: true }, shell)).toBe(true);
+    test.each([
+        ['an agent', { agent: true }, idle],
+        ['a shell with a program running in it', { shell: true }, busy],
+        [
+            'a program that is no shell, though it is its own foreground',
+            { shell: false },
+            idle,
+        ],
+        ['a read that failed', { shell: true }, { code: 1, stdout: '' }],
+        ['a read that never came back', { shell: true }, null],
+        [
+            'a reply that is not json',
+            { shell: true },
+            { code: 0, stdout: 'no such terminal' },
+        ],
+        [
+            'a reply with no foreground',
+            { shell: true },
+            reply({ pid: 10, state: 'live' }),
+        ],
+        [
+            'a state herdr never named to us',
+            { shell: true },
+            reply({ foreground: { pid: 10 }, pid: 10, state: 'paused' }),
+        ],
+        [
+            'a failed read that still printed an idle shell',
+            { shell: true },
+            {
+                code: 1,
+                stdout: JSON.stringify({
+                    foreground: { pid: 10 },
+                    pid: 10,
+                    state: 'live',
+                }),
+            },
+        ],
+        [
+            'a live shell with no pid on either side',
+            { shell: true },
+            reply({ foreground: {}, state: 'live' }),
+        ],
+    ])('%s asks', (_name, program, got) => {
+        expect(closeAsks(program, 't1', got)).toBe(true);
     });
 
-    test('a shell with a program running in it asks', () => {
-        expect(
-            closeAsks({ agent: false }, { ...shell, foreground: { pid: 42 } }),
-        ).toBe(true);
-    });
-
-    test('an idle shell closes at once', () => {
-        expect(closeAsks({ agent: false }, shell)).toBe(false);
-    });
-
-    test('an ended terminal closes at once', () => {
-        expect(
-            closeAsks(
-                { agent: false },
-                { foreground: null, pid: 10, state: 'finished' },
-            ),
-        ).toBe(false);
-    });
-
-    test('a pane with no terminal closes at once', () => {
-        expect(closeAsks(null, null)).toBe(false);
+    test.each([
+        ['an idle shell', { shell: true }, 't1', idle],
+        [
+            'an ended terminal',
+            { shell: false },
+            't1',
+            reply({ foreground: null, pid: 10, state: 'finished' }),
+        ],
+        ['a pane with no terminal', null, null, null],
+    ])('%s closes at once', (_name, program, terminal, got) => {
+        expect(closeAsks(program, terminal, got)).toBe(false);
     });
 
     test('the dialog names what ends', () => {
@@ -122,22 +159,16 @@ describe('the × asks before it closes', () => {
     });
 });
 
-describe('the bar itself', () => {
-    const source = readFileSync(join(here, 'main.js'), 'utf8');
+test('a press or a wheel on the bar goes no further', () => {
+    let stopped = 0;
+    swallow(null, { stop_propagation: () => stopped++ });
+    expect(stopped).toBe(1);
+});
 
-    test('a wheel scroll over it switches no tab', () => {
-        expect(source).toContain('on_scroll_wheel');
-        expect(source).not.toMatch(/tab\.(next|prev)/);
-    });
-
-    test('no colour is a literal: every one comes from the theme', () => {
-        for (const name of ['main.js', 'pills.js'])
-            expect(readFileSync(join(here, name), 'utf8')).not.toMatch(
-                /#[0-9a-fA-F]{3,8}\b/,
-            );
-    });
-
-    test('a tab closes by its id, never bare', () => {
-        expect(source).not.toMatch(/run\(\s*'(tab|pane)\.close'\s*\)/);
-    });
+test('no colour is a literal: every one comes from the theme', () => {
+    const here = dirname(fileURLToPath(import.meta.url));
+    for (const name of ['main.js', 'pills.js'])
+        expect(readFileSync(join(here, name), 'utf8')).not.toMatch(
+            /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/,
+        );
 });

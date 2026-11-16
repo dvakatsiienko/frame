@@ -44,19 +44,39 @@ export function pillName(tab, terminals, names) {
         : { full: tab.name, isThread: false, label: tab.name };
 }
 
-/** @typedef {{ state?: string, pid?: number, foreground?: { pid?: number } | null }} TerminalFacts as `hc get <t> --json` prints */
+/** @typedef {{ code?: number, stdout?: string } | null | undefined} HcReply what `hc get <t> --json` resolved with */
 
 /**
- * whether closing this pane asks first: an agent always; a shell only while a program runs in it (its foreground
- * process is not the shell itself). an idle shell, an ended terminal and a mod pane close at once
- * @param {{ agent?: boolean } | null | undefined} program
- * @param {TerminalFacts | null | undefined} facts
+ * whether closing this pane asks first. it closes at once only for what is proven harmless: a pane with no terminal,
+ * a terminal `hc` reports ended, or a shell that is its own foreground process (idle). everything else asks: an agent,
+ * a program that is no shell, a shell with a program running in it, and any reply that is not the shape expected
+ * @param {{ agent?: boolean, shell?: boolean } | null | undefined} program
+ * @param {string | null | undefined} terminal
+ * @param {HcReply} got
  */
-export function closeAsks(program, facts) {
-    if (program?.agent) return true;
-    if (facts?.state !== 'live' || !facts.foreground) return false;
-    return facts.foreground.pid !== facts.pid;
+export function closeAsks(program, terminal, got) {
+    if (!terminal) return false;
+    if (program?.agent || got?.code !== 0) return true;
+    /** @type {{ state?: unknown, pid?: unknown, foreground?: { pid?: unknown } | null }} */
+    let facts;
+    try {
+        facts = JSON.parse(got.stdout ?? '');
+    } catch {
+        return true;
+    }
+    if (facts?.state === 'finished') return false;
+    const isIdleShell =
+        facts?.state === 'live' &&
+        program?.shell === true &&
+        typeof facts.pid === 'number' &&
+        facts.foreground?.pid === facts.pid;
+    return !isIdleShell;
 }
+
+// a control in the draggable bar keeps its own press, and the bar swallows a wheel: neither reaches the window or
+// herdr's tab switch
+/** @param {unknown} _e @param {{ stop_propagation(): void }} cx */
+export const swallow = (_e, cx) => cx.stop_propagation();
 
 /**
  * the confirm dialog's words for a tab that asks

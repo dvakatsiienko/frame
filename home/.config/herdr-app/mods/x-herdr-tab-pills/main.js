@@ -18,7 +18,7 @@ import {
     window as win,
 } from 'herdr';
 
-import { closeAsks, closeWords, leadPane, pillName } from './pills.js';
+import { closeAsks, closeWords, leadPane, pillName, swallow } from './pills.js';
 
 // the agents list reads each session name and publishes it here (address → name); one reader, one naming rule
 const NAMES_KEY = 'x-herdr-agents.names';
@@ -87,9 +87,7 @@ function tile(t, p) {
 // window, and a right press there would open the system's window menu).
 /** @param {ReturnType<typeof div>} el */
 function own(el) {
-    return el
-        .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
-        .on_mouse_down('right', (_e, cx) => cx.stop_propagation());
+    return el.on_mouse_down('left', swallow).on_mouse_down('right', swallow);
 }
 
 export default class TabPills extends View {
@@ -104,16 +102,18 @@ export default class TabPills extends View {
     closeTab(tab, name, spaceName, cx) {
         const mine = panes().filter((p) => p.tab === tab.id);
         const agentCount = mine.filter((p) => p.program?.agent).length;
+        this.hovered = null;
         cx.spawn(async () => {
-            let isAsking = agentCount > 0;
+            let isAsking = false;
             for (const p of mine) {
-                if (isAsking || !p.terminal) continue;
-                try {
-                    const got = await hc(['get', p.terminal, '--json']);
-                    isAsking = closeAsks(p.program, JSON.parse(got.stdout));
-                } catch {
-                    isAsking = true;
-                }
+                if (isAsking) break;
+                const got =
+                    p.terminal && !p.program?.agent
+                        ? await hc(['get', p.terminal, '--json']).catch(
+                              () => /** @type {null} */ (null),
+                          )
+                        : null;
+                isAsking = closeAsks(p.program, p.terminal, got);
             }
             if (!isAsking) {
                 run('tab.close', { id: tab.id });
@@ -223,10 +223,13 @@ export default class TabPills extends View {
                         .opacity(isCloseShown ? 1 : 0)
                         .hover((s) => s.bg(t.hover).text_color(t.foreground))
                         .tooltip('Close tab')
-                        .on_click((_e, cx) => {
-                            cx.stop_propagation();
-                            this.closeTab(c, name.label, space.name, cx);
-                        })
+                        // a hidden × takes no click: a press there selects the pill
+                        .when(isCloseShown, (el) =>
+                            el.on_click((_e, cx) => {
+                                cx.stop_propagation();
+                                this.closeTab(c, name.label, space.name, cx);
+                            }),
+                        )
                         .child(
                             svg('mods/x-herdr-tab-pills/close.svg').size(12),
                         ),
@@ -239,7 +242,7 @@ export default class TabPills extends View {
                 .gap(8)
                 .items_center()
                 // a wheel or a swipe over the bar is swallowed here: it never switches a tab
-                .on_scroll_wheel((_e, cx) => cx.stop_propagation())
+                .on_scroll_wheel(swallow)
                 // macOS: the window buttons sit here (the layout's traffic_lights)
                 .when(
                     w?.platform === 'macos' &&
