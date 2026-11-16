@@ -161,3 +161,4 @@ Ticket: none
 | 2026-11-16 16:15 | ~69k | 0 high, 4 medium, 3 low | no high | 3 acted (a tail ticked, FRM-634 its due line, wake turns print nothing), 1 asked (the craft-pm halt clause) |
 | 2026-11-16 16:53 | ~49k | 1 high, 2 medium, 1 low | high real: y | high acted (groomed to PK-444, the star corrected), FRM-632 its due line, the proposal's W-lines asked of helga |
 | 2026-11-16 17:35 | ~101k | 1 high, 2 medium, 3 low | high real: y | high acted (two herdr tabs renamed, FRM-600 closing word corrected, the dispatch-rename drift and W5–W6 into FRM-617), W33 copied verbatim, the mods lane plan lines fixed |
+| 2026-11-16 17:46 | ~101k | 1 high, 6 medium, 3 low | high real: y (still open: the agents list) | high acted (two record displays renamed, FRM-617 its agents-list line), designer condition into FRM-591, W118 gloss corrected, the shelf commit and the flat claim told to dima |
