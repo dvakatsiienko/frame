@@ -48,7 +48,7 @@ floods; no other member prints one.
 
 **A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf.
 
-**An ask that needs his hand names the exact place** — the browser door his surface leaf names, the app, the screen — so his first try lands.
+**An ask that needs his hand names the exact place** — the door, the app, the screen — and numbered steps shown, not in a hidden note (until: FRM-645).
 
 <!-- 2026-10-20: a labelled guess sent him to clear the Code tab's plugin list; x, matt's skills and three more were restored from git. -->
 

@@ -32,6 +32,7 @@ dima's values are standing rules here (PRODUCT.md § the values quotes them). a 
 - `herdr-app check <mod dir>`, `herdr-app status`, `herdr-app shot <png>`, then read the shot
 - edit in frame; `pnpm herdr-mods:land --watch` lands each save `herdr-app check` passes into herdr's folder, live; a link never does
 - a change he can see lands live under `--watch` while he watches (dima 2026-11-17: «the cost of doing the wrong thing is higher»); one that only fixes code lands once at its job's end; «landing now» in the ping
+- a landing restarts the mod and stalls his chats: none for a probe while he types
 - a herdr restart is his hand alone: it can lose his typed prompt
 - commit through `x lane commit` in the background; a new mod's `landedByCopy` line (`script/lib/manifest.ts`) rides its first commit
 - a speed change (scrolling, a redraw) is measured on Apple's Metal HUD over herdr: `defaults write dev.herdr.app MetalForceHudEnabled -bool YES` shows it (`NO` hides it), proven 2026-11-12; herdr's own `show_fps_monitor()` is refused in his window

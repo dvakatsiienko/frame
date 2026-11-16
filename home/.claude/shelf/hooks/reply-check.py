@@ -191,7 +191,7 @@ def unevidenced(path: str, reply: str) -> list[str]:
 
 # «saved», «pushed», «on main» stated as done needs a git read in the turn (retro 2026-11-16: 9 landed-claims wrong, o185)
 LANDED_CLAIM = re.compile(
-    r"\b(?:is|are|was|were)\s+(?:now\s+)?(?:saved|pushed|committed|landed)\b|\bcommitt?ed and pushed\b|\bis\s+on\s+(?:origin(?:/main)?|main)\b|\blanded\s+on\s+main\b",
+    r"\b(?:is|are|was|were)\s+(?:now\s+)?(?:saved|pushed|committed|landed)\b|\bcommitt?ed and pushed\b|\b(?:is|are|was|were)\s+on\s+(?:origin(?:/main)?|main)\b|\blanded\s+on\s+main\b",
     re.I,
 )
 NEGATED_LANDED = re.compile(r"\b(?:not|never|nothing|n't)\s+(?:\w+\s+){0,2}?(?:saved|pushed|committed|landed|on\s+(?:origin|main))\b", re.I)
