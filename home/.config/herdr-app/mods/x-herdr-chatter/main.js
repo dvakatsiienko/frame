@@ -2397,52 +2397,99 @@ export default class ClaudeChat extends View {
                     .size(12)
                     .text_color(t.dim),
             );
+        // shepherdr's menu (his 00:49 ask), with no Switch button (his 00:55): a click applies at once, ← → move the
+        // level and Enter applies it
+        const chosenModel = shownModel;
+        const chosenEffort =
+            EFFORTS[this.effortPop?.at ?? -1] ?? shownEffort ?? null;
         const row = (/** @type {string} */ value) =>
             h_flex()
                 .id(`drop-model-${value}`)
-                .gap(8)
-                .px(8)
-                .h(26)
+                .gap(10)
+                .px(9)
+                .h(31)
                 .items_center()
-                .rounded(5)
-                .text_size(px(12.5))
-                .when(value === model, (el) =>
-                    el.text_color(t.foreground).bg(t.selected),
-                )
-                .when(value !== model && ready, (el) =>
+                .rounded(7)
+                .text_size(px(13))
+                .text_color(value === chosenModel ? t.foreground : t.muted)
+                .when(ready, (el) =>
                     el
                         .cursor_pointer()
-                        .text_color(t.muted)
                         .hover((s) => s.bg(t.hover).text_color(t.foreground))
-                        .on_click((_e, cx) => {
-                            this.effortClose(cx);
-                            // a model switch mid-conversation drops the hot cache: it asks first
-                            if (this.flat?.length)
-                                this.askModel = {
-                                    address: agent.address,
-                                    value,
-                                };
-                            else this.pick('model', value, agent.address, cx);
-                            this.box.focus();
-                        }),
+                        .on_click((_e, cx) =>
+                            value === shownModel
+                                ? this.effortClose(cx)
+                                : this.applyPick(agent, value, null, cx),
+                        ),
                 )
-                .when(value !== shownModel && !ready, (el) =>
-                    el.text_color(t.dim),
-                )
+                .when(!ready, (el) => el.text_color(t.dim))
                 .when(value === shownModel && pending?.kind === 'model', (el) =>
                     el.text_color(t.accent),
                 )
                 .child(div().flex_1().child(value))
-                .when(value === shownModel, (el) =>
-                    el.child(div().flex_none().text_color(t.accent).child('✓')),
+                .child(
+                    div()
+                        .w(14)
+                        .flex_none()
+                        .text_color(t.foreground)
+                        .child(value === chosenModel ? '✓' : ''),
                 );
-        const title = (/** @type {string} */ text) =>
+        const head = (/** @type {string} */ text) =>
             div()
-                .px(8)
-                .text_size(px(12))
-                .font_semibold()
-                .text_color(t.foreground)
+                .px(9)
+                .pt(8)
+                .pb(4)
+                .text_size(px(11))
+                .text_color(t.dim)
                 .child(text);
+        // each level as wide as its word, the room left shared out, the chosen one raised (shepherdr's segments)
+        const levels = h_flex()
+            .mx(4)
+            .my(3)
+            .h(28)
+            .gap(2)
+            .p(2)
+            .rounded(7)
+            .bg(t.selected)
+            .children(
+                EFFORTS.map((level, i) =>
+                    div()
+                        .id(`pick-level-${level}`)
+                        .flex_auto()
+                        .h_full()
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .rounded(5)
+                        .text_size(px(11.5))
+                        .when(level === chosenEffort, (el) =>
+                            el
+                                .bg(t.popover)
+                                .text_color(t.foreground)
+                                .font_weight(500)
+                                .shadow_sm(),
+                        )
+                        .when(level !== chosenEffort, (el) =>
+                            el.text_color(t.muted),
+                        )
+                        .when(ready && level !== chosenEffort, (el) =>
+                            el
+                                .cursor_pointer()
+                                .hover((s) => s.text_color(t.foreground))
+                                .on_click((_e, cx) =>
+                                    level === shownEffort
+                                        ? this.effortClose(cx)
+                                        : this.applyPick(
+                                              agent,
+                                              null,
+                                              level,
+                                              cx,
+                                          ),
+                                ),
+                        )
+                        .child(effortWord(level)),
+                ),
+            );
         return Popover.new('drop-pick')
             .anchor('bottom_right')
             .open(open)
@@ -2471,152 +2518,45 @@ export default class ClaudeChat extends View {
                         this.effortSlide('right', cx),
                     )
                     .on_action('x_herdr_chatter_effort_apply', (_e, cx) =>
-                        this.effortPress(cx),
+                        chosenEffort && chosenEffort !== shownEffort
+                            ? this.applyPick(agent, null, chosenEffort, cx)
+                            : this.effortClose(cx),
                     )
                     .on_action('x_herdr_chatter_effort_close', (_e, cx) => {
                         this.effortClose(cx);
                         this.box.focus();
                     })
-                    .p(4)
-                    .pt(10)
-                    .pb(10)
-                    .gap(1)
-                    .mb(6)
+                    .w(340)
+                    .p(5)
+                    .mb(8)
                     .rounded(10)
                     .bg(t.popover)
                     .border(1)
                     .border_color(t.border)
                     .shadow_md()
-                    .child(title('Model').pb(6))
+                    .child(head('Model'))
                     .children(MODELS.map(([, label]) => row(label)))
-                    .child(div().mx(8).my(8).h(1).bg(t.border))
-                    .child(title('Effort').pb(6))
-                    .child(
-                        div()
-                            .px(8)
-                            .child(
-                                this.effortTrack(
-                                    t,
-                                    agent,
-                                    ready,
-                                    shownEffort,
-                                    pending?.kind === 'effort',
-                                    isApplied,
-                                ),
-                            ),
-                    ),
+                    .child(div().mx(4).my(4).h(1).bg(t.border))
+                    .child(head('Reasoning'))
+                    .child(levels),
             );
     }
 
-    // the effort slider (dima, 14:01 and 14:17): one thumb slides along a line and lands on five small stops, the line
-    // filled up to it; a click on a stop applies at once, ← → move the thumb and ⌘⇧E or Enter applies, Esc closes
-    /** @param {any} t @param {any} agent @param {boolean} ready @param {string | null} now @param {boolean} [isPending] @param {boolean} [isApplied] */
-    effortTrack(t, agent, ready, now, isPending = false, isApplied = false) {
-        const at = Math.max(
-            0,
-            this.effortPop?.at ?? EFFORTS.indexOf(now ?? ''),
-        );
-        const STEP = 46;
-        const EDGE = 14;
-        const x = (/** @type {number} */ i) => EDGE + i * STEP;
-        const width = EDGE * 2 + STEP * (EFFORTS.length - 1);
-        const stop = (/** @type {string} */ level, /** @type {number} */ i) =>
-            div()
-                .id(`effort-stop-${level}`)
-                .absolute()
-                .top(0)
-                .left(x(i) - 12)
-                .size(24)
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                // the hover is an opaque ring over the line, so the line never shows through it (dima, 14:17)
-                .when(ready, (el) =>
-                    el
-                        .cursor_pointer()
-                        .hover((s) =>
-                            s.bg(t.popover).border(1).border_color(t.border),
-                        )
-                        .on_click((_e, cx) => {
-                            this.effortClose(cx);
-                            if (level !== now)
-                                this.pick('effort', level, agent.address, cx);
-                            this.box.focus();
-                        }),
-                )
-                .child(
-                    div()
-                        .size(6)
-                        .rounded_full()
-                        .bg(i < at ? t.accent : t.border),
-                );
-        const label = (/** @type {string} */ level, /** @type {number} */ i) =>
-            div()
-                .absolute()
-                .top(0)
-                .left(x(i) - 22)
-                .w(44)
-                .flex()
-                .justify_center()
-                .text_size(px(11))
-                .rounded(4)
-                .text_color(
-                    i === at ? (isPending ? t.accent : t.foreground) : t.muted,
-                )
-                .when(i === at && isApplied, (el) =>
-                    el.bg(APPLIED_FLASH).text_color('#ffffff'),
-                )
-                .when(i === at, (el) => el.font_semibold())
-                .child(effortWord(level));
-        return v_flex()
-            .gap(6)
-            .child(
-                div()
-                    .relative()
-                    .w(width)
-                    .h(24)
-                    .child(
-                        div()
-                            .absolute()
-                            .top(10)
-                            .left(EDGE)
-                            .w(width - EDGE * 2)
-                            .h(4)
-                            .rounded_full()
-                            .bg(t.border),
-                    )
-                    .child(
-                        div()
-                            .id('effort-fill')
-                            .absolute()
-                            .top(10)
-                            .left(EDGE)
-                            .w(at * STEP)
-                            .h(4)
-                            .rounded_full()
-                            .bg(t.accent)
-                            .spring('width'),
-                    )
-                    .children(EFFORTS.map(stop))
-                    .child(
-                        div()
-                            .id('effort-thumb')
-                            .absolute()
-                            .top(3)
-                            .left(x(at) - 9)
-                            .size(18)
-                            .rounded_full()
-                            .bg(t.accent)
-                            .border(3)
-                            .border_color(t.popover)
-                            .shadow_sm()
-                            .spring('left'),
-                    ),
-            )
-            .child(
-                div().relative().w(width).h(16).children(EFFORTS.map(label)),
-            );
+    // a click in the menu: a model mid-conversation asks first (its cache is lost); with an effort too, the effort goes
+    // once the model landed
+    /** @param {any} agent @param {string | null} model @param {string | null} effort @param {any} cx */
+    applyPick(agent, model, effort, cx) {
+        this.effortClose(cx);
+        this.box.focus();
+        if (model) {
+            this.nextPick = effort
+                ? { address: agent.address, kind: 'effort', value: effort }
+                : null;
+            if (this.flat?.length)
+                this.askModel = { address: agent.address, value: model };
+            else this.pick('model', model, agent.address, cx);
+        } else if (effort) this.pick('effort', effort, agent.address, cx);
+        cx.notify();
     }
 
     // ⌘K: the Chat view comes forward and the caret goes into the quill
@@ -7640,6 +7580,14 @@ export default class ClaudeChat extends View {
         const images = this.imageCount(agent.address);
         const menu = this.menu(t);
         this.settlePick();
+        // the second half of a «Switch to Sonnet 5.5 · High»: its effort goes once the model landed
+        const next = this.nextPick;
+        if (next && !this.pending && next.address === this.address) {
+            this.nextPick = null;
+            cx.timer.after(0, (later) =>
+                this.pick(next.kind, next.value, next.address, later),
+            );
+        }
         // what changes the module's height under the log: a change, or the first frame after a load, keeps the newest
         // reply in view while following (his 15:24: the quill «covers the last reply»)
         const boxShape = [
