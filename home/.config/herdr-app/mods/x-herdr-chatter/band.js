@@ -180,14 +180,39 @@ export function autoWindOf(stdout, sid) {
 }
 
 /**
- * a session's 🍃: with `on` it writes through the door first, and what comes back is always the door's own read
+ * a session's 🍃: with `on` it writes through the door first, and what comes back is always the door's own read.
+ * a failed write rejects; after a write, a failed read-back is unknown (null), since the key did change
  * @param {(args: string[]) => Promise<string>} door runs the door with these arguments, resolves with its stdout
  * @param {string} sid
  * @param {boolean} [on]
+ * @returns {Promise<boolean | null>}
  */
 export async function autoWind(door, sid, on) {
-    if (on !== undefined) await door([sid, on ? 'on' : 'off']);
-    return autoWindOf(await door([sid]), sid);
+    if (on === undefined) return autoWindOf(await door([sid]), sid);
+    await door([sid, on ? 'on' : 'off']);
+    try {
+        return autoWindOf(await door([sid]), sid);
+    } catch {
+        // the key did change: unknown, and the band's next read asks again
+        return null;
+    }
+}
+
+/** @typedef {{ at: number, flips: number, on: boolean | null, sid: string }} AutoWind */
+
+/**
+ * what a finished read leaves behind: a flip made since the read started wins, since the read asked before it
+ * @param {AutoWind | undefined} now
+ * @param {string} sid
+ * @param {boolean | null} on
+ * @param {number} flipsAtStart
+ * @param {number} at
+ * @returns {AutoWind}
+ */
+export function autoWindAfterRead(now, sid, on, flipsAtStart, at) {
+    const flips = now?.flips ?? 0;
+    if (now && now.sid === sid && flips !== flipsAtStart) return now;
+    return { at, flips, on, sid };
 }
 
 /**

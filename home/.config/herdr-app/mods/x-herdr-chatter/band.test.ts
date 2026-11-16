@@ -4,6 +4,7 @@ import type { FleetState, ThreadState } from './band.js';
 import {
     STALE_MS,
     autoWind,
+    autoWindAfterRead,
     autoWindOf,
     bandButtons,
     bandOf,
@@ -438,6 +439,37 @@ describe('🍃 second wind auto sits right of 🐦‍🔥 (FRM-625)', () => {
         expect(await autoWind(door(store), 's1', false)).toBe(false);
         expect(store).toEqual({ s1: false });
         expect(await autoWind(door(store), 's1', true)).toBe(true);
+    });
+
+    test('a flip whose write fails is an error, so the click can say it was not written', async () => {
+        const broken = async () => {
+            throw new Error('no x-mod-stash store');
+        };
+        await expect(autoWind(broken, 's1', false)).rejects.toThrow(
+            'no x-mod-stash store',
+        );
+    });
+
+    test('a flip written whose read-back fails reads unknown, never «not written»', async () => {
+        const store: Record<string, boolean> = {};
+        const working = door(store);
+        const deaf = async (args: string[]) => {
+            if (args.length === 1) throw new Error('read failed');
+            return working(args);
+        };
+        expect(await autoWind(deaf, 's1', false)).toBeNull();
+        expect(store).toEqual({ s1: false });
+    });
+
+    test('a read that started before a flip never draws over what the flip read', () => {
+        const flipped = { at: 2, flips: 1, on: false, sid: 's1' };
+        expect(autoWindAfterRead(flipped, 's1', true, 0, 3)).toBe(flipped);
+        expect(autoWindAfterRead(flipped, 's1', true, 1, 3)).toEqual({
+            at: 3,
+            flips: 1,
+            on: true,
+            sid: 's1',
+        });
     });
 
     test('an answer for another session, or none, reads unknown', () => {

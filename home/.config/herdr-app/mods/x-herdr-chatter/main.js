@@ -62,6 +62,7 @@ import {
     STATE_DIR,
     THREADS_KEY,
     autoWind,
+    autoWindAfterRead,
     bandButtons,
     bandOf,
     meterCells,
@@ -143,11 +144,11 @@ import {
     SETTINGS_DIR,
     SETTINGS_FILE,
     noteShown,
-    noteStored,
+    noteWrite,
     resolvedRows,
+    settingChange,
     settingsText,
     storedRows,
-    windRefusal,
 } from './settings-store.js';
 import { SETTINGS_WINDOW, settingsWindow } from './settings-window.js';
 import {
@@ -878,14 +879,19 @@ async function bandStates(pid) {
 
 // a 🍃 pressed on the cc band reaches no file herdr watches, so the shown thread's key is asked again this often
 const AUTO_WIND_MS = 60 * 1000;
+// a read that failed is asked again this soon, never a minute of grey
+const AUTO_WIND_RETRY_MS = 10 * 1000;
+const AUTO_WIND_DOOR_MS = 10 * 1000;
 
 /**
  * x-mod-stash's door for a session's 🍃, run in frame where `pnpm mods:set` lives
  * @param {string[]} args
  */
 async function autoWindDoor(args) {
+    // a door that hangs (a lock, a prompt) must end: herdr's exec rejects at the timeout
     const r = await exec('pnpm', [...AUTO_WIND_DOOR, ...args], {
         cwd: `${home()}/frame`,
+        timeout: AUTO_WIND_DOOR_MS,
     });
     if (r.code !== 0)
         throw new Error(
@@ -7115,7 +7121,12 @@ export default class ClaudeChat extends View {
         cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
             try {
                 const on = await autoWind(autoWindDoor, sid, !btn.isOn);
-                this.autoWind = { at: Date.now(), on, sid };
+                this.autoWind = {
+                    at: Date.now(),
+                    flips: (this.autoWind?.flips ?? 0) + 1,
+                    on,
+                    sid,
+                };
             } catch (err) {
                 notify({
                     body: String(err),
@@ -7134,15 +7145,32 @@ export default class ClaudeChat extends View {
     async readAutoWind(cx) {
         const sid = this.states?.thread?.sid;
         const last = this.autoWind;
-        if (!sid || this.autoWindBusy) return;
-        if (last?.sid === sid && Date.now() - last.at < AUTO_WIND_MS) return;
-        this.autoWindBusy = true;
+        // its own flag: a click during a read still flips, and the flip's answer outlives the read's
+        if (!sid || this.autoWindReading) return;
+        const wait = last?.on === null ? AUTO_WIND_RETRY_MS : AUTO_WIND_MS;
+        if (last?.sid === sid && Date.now() - last.at < wait) return;
+        this.autoWindReading = true;
+        const flips = last?.flips ?? 0;
         try {
-            const on = await autoWind(autoWindDoor, sid).catch(() => null);
-            this.autoWind = { at: Date.now(), on, sid };
+            /** @type {boolean | null} */
+            let on = null;
+            try {
+                on = await autoWind(autoWindDoor, sid);
+            } catch (err) {
+                console.log(
+                    `second wind auto: the door did not answer: ${err}`,
+                );
+            }
+            this.autoWind = autoWindAfterRead(
+                this.autoWind,
+                sid,
+                on,
+                flips,
+                Date.now(),
+            );
             cx.notify();
         } finally {
-            this.autoWindBusy = false;
+            this.autoWindReading = false;
         }
     }
 
@@ -7150,6 +7178,10 @@ export default class ClaudeChat extends View {
     // in the press file it has not answered yet
     /** @param {import('gpui-kit').Context} cx */
     readStates(cx) {
+        // 🍃 asks a program, so it runs beside the file reads and never holds them
+        cx.spawn((/** @type {import('gpui-kit').Context} */ cx) =>
+            this.readAutoWind(cx),
+        );
         if (this.statesBusy) return;
         this.statesBusy = true;
         const pid = this.where?.container ? null : this.where?.pid;
@@ -7164,7 +7196,6 @@ export default class ClaudeChat extends View {
                 if (await this.settleAway(cx)) cx.notify();
                 await this.readBack(cx);
                 if (this.settlePresses()) cx.notify();
-                await this.readAutoWind(cx);
             } finally {
                 this.statesBusy = false;
             }
@@ -7806,34 +7837,36 @@ export default class ClaudeChat extends View {
                 noteDefaults: this.noteDefaults,
                 notes: this.settingNotes,
                 onChange: (key, value, ecx) => {
-                    const refusal = windRefusal(settingValues(), {
-                        [key]: value,
-                    });
-                    const { [key]: _was, ...notes } = this.settingNotes;
-                    this.settingNotes = refusal
-                        ? { ...notes, [key]: refusal }
-                        : notes;
+                    const { notes, write } = settingChange(
+                        settingValues(),
+                        this.settingNotes,
+                        key,
+                        value,
+                    );
+                    this.settingNotes = notes;
                     ecx.notify();
-                    if (refusal) return;
+                    if (!write) return;
                     (key === 'chatter.metalHud'
                         ? setMetalHud(value === true)
                         : Promise.resolve()
                     )
-                        .then(() => writeSettings({ [key]: value }))
+                        .then(() => writeSettings(write))
                         .then(loadSettings)
                         .catch((e) =>
                             console.log(`settings: ${e?.message ?? e}`),
                         );
                 },
-                // a note box saves on its button, never per key; reset puts the default back in the box and empties the row
+                // a note box saves on its button, never per key
                 onNote: (key, isReset, ecx) => {
                     const box = this.noteBoxes.get(key);
-                    const fallback = this.noteDefaults[key] ?? '';
                     if (!box) return;
-                    if (isReset) box.set_value(fallback);
-                    writeSettings({
-                        [key]: isReset ? '' : noteStored(box.value(), fallback),
-                    })
+                    const { box: text, row } = noteWrite(
+                        String(box.value()),
+                        this.noteDefaults[key] ?? '',
+                        isReset,
+                    );
+                    if (text !== null) box.set_value(text);
+                    writeSettings({ [key]: row })
                         .then(loadSettings)
                         .catch((e) =>
                             notify({

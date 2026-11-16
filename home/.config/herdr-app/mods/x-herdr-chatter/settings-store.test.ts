@@ -5,8 +5,10 @@ import {
     noteHint,
     noteShown,
     noteStored,
+    noteWrite,
     resolvedRows,
     rowValue,
+    settingChange,
     settingsText,
     storedRows,
     windRefusal,
@@ -191,15 +193,54 @@ describe('the 🐦‍🔥 second wind group (FRM-625)', () => {
         );
     });
 
-    test('an edited note is saved to its row whole, and a reset empties it', () => {
+    test('an edited note is saved to its row whole', () => {
         const key = 'stash.wind.text.press';
         const edited = settingsText(settingRows, null, {
             [key]: 'line 1\nline 2',
         });
         expect(rows(edited)[key]).toBe('line 1\nline 2');
-        expect(
-            rows(settingsText(settingRows, edited, { [key]: '' }))[key],
-        ).toBe('');
+    });
+
+    test('a save writes the box to its row and leaves the box alone', () => {
+        expect(noteWrite('mine, with a handoff', 'the default', false)).toEqual(
+            {
+                box: null,
+                row: 'mine, with a handoff',
+            },
+        );
+    });
+
+    test('a reset empties the row and puts the default back in the box', () => {
+        expect(noteWrite('mine, with a handoff', 'the default', true)).toEqual({
+            box: 'the default',
+            row: '',
+        });
+    });
+
+    test('a refused change writes nothing and its row says why', () => {
+        expect(settingChange(lines, {}, 'stash.wind.notice', 65)).toEqual({
+            notes: {
+                'stash.wind.notice':
+                    '🛑 not saved: the notice line (65) must sit below the wind line (65)',
+            },
+            write: null,
+        });
+    });
+
+    test('a saved line clears the refusal on both lines', () => {
+        const notes = {
+            'chatter.other': 'stays',
+            'stash.wind.must': '🛑 not saved: old',
+        };
+        expect(settingChange(lines, notes, 'stash.wind.notice', 50)).toEqual({
+            notes: { 'chatter.other': 'stays' },
+            write: { 'stash.wind.notice': 50 },
+        });
+    });
+
+    test('a blank note box, which means the default, gets no hint', () => {
+        expect(noteHint('', ['second-wind', 'handoff'])).toBeNull();
+        expect(noteHint('  \n', ['second-wind', 'handoff'])).toBeNull();
     });
 
     test('a note missing the word second-wind or handoff gets a hint that names it', () => {

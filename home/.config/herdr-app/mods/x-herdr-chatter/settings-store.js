@@ -73,6 +73,23 @@ export function windRefusal(values, change) {
         : null;
 }
 
+/** one change to a row, judged: what to write (null when refused) and each row's «not saved» line after it; a saved
+ * wind line clears the refusal on both lines, since the pair is valid again
+ * @param {Record<string, unknown>} values @param {Record<string, string>} notes @param {string} key @param {unknown} value
+ * @returns {{ notes: Record<string, string>, write: Record<string, unknown> | null }} */
+export function settingChange(values, notes, key, value) {
+    const refusal = windRefusal(values, { [key]: value });
+    const isLine = key === NOTICE || key === MUST;
+    const rest = Object.fromEntries(
+        Object.entries(notes).filter(
+            ([k]) => k !== key && !(isLine && (k === NOTICE || k === MUST)),
+        ),
+    );
+    return refusal
+        ? { notes: { ...rest, [key]: refusal }, write: null }
+        : { notes: rest, write: { [key]: value } };
+}
+
 /** what a note box shows: its row, else the default x-mod-stash wrote @param {unknown} stored @param {string} fallback */
 export const noteShown = (stored, fallback) =>
     typeof stored === 'string' && stored.trim() ? stored : fallback;
@@ -82,9 +99,19 @@ export const noteShown = (stored, fallback) =>
 export const noteStored = (text, fallback) =>
     !text.trim() || text === fallback ? '' : text;
 
+/** a press of Save or Reset on a note box: what lands in its row, and the text the box takes (null leaves it)
+ * @param {string} text @param {string} fallback @param {boolean} isReset
+ * @returns {{ box: string | null, row: string }} */
+export const noteWrite = (text, fallback, isReset) =>
+    isReset
+        ? { box: fallback, row: '' }
+        : { box: null, row: noteStored(text, fallback) };
+
 /** a warning, never a block: the words a second wind note must keep for a thread to compact
  * @param {string} text @param {string[]} needs @returns {string | null} */
 export function noteHint(text, needs) {
+    // a blank box is the default itself, which keeps every word
+    if (!text.trim()) return null;
     const gone = needs.filter((word) => !text.includes(word));
     return gone.length
         ? `this note no longer says ${gone.map((w) => `«${w}»`).join(' or ')}: a thread may not compact`
