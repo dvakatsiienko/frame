@@ -240,6 +240,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ the meters warn at his levels
   - given «🧠 ctx turns amber at» and «🗓 week turns amber at» in the settings window, 60 % and 80 % by default
   - then each bar turns amber once its share reaches its level
+  - and the groove reads in a dark palette as in a light one: the rail is the page's background with a quiet edge, the unlit cells one step up, no bright line over the bar (dima, 2026-11-16 17:37, on the playground: «looks off, make it pretty»; shots `looks/FRM-635/1737-meters-before-playground.png`, `1742-meters-after-crop.png`)
+  - not checked: the after look in the dark playground, until his next open
 - ⬜ once he scrolls up, nothing but his own hand moves his view (FRM-562:W18, W19)
   - given he scrolled up in a thread's chat
   - when a reply, a tool line, a peer or plugin line, a turn end, a store change, a resize or a reload of the mod arrives

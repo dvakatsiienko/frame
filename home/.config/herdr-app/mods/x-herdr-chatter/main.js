@@ -1198,26 +1198,28 @@ const nestedCard = (t, side) => {
 };
 
 // a meter as a suit readout set in a ceramic groove (PK-384, his AB pick): matte cells, the lit ones in one colour,
-// inside a recessed rail
+// inside a recessed rail. the rail is the page's own background with a quiet edge, the unlit cells one step up from
+// it, so the groove reads in a dark palette too: a `dim` top edge drew as a bright line there and the unlit cells
+// vanished into the card (his 17:37 shot of the playground)
 const METER_CELLS = 48;
 /** @param {any} t @param {number | null} pct @param {any} fill */
 const meterBar = (t, pct, fill) => {
     const lit = meterCells(pct, METER_CELLS);
     return h_flex()
-        .h(px(8))
+        .h(px(9))
         .p(px(2))
         .gap(2)
         .rounded(4)
-        .bg(t.border)
-        .border_t(1)
-        .border_color(t.dim)
+        .bg(t.background)
+        .border(1)
+        .border_color(t.border)
         .children(
             Array.from({ length: METER_CELLS }, (_, i) =>
                 div()
                     .flex_1()
                     .h_full()
                     .rounded(1)
-                    .bg(i < lit ? fill : t.raised),
+                    .bg(i < lit ? fill : t.border),
             ),
         );
 };
