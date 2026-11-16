@@ -144,7 +144,7 @@ import {
     rowSizes,
     unlinkFiles,
 } from './rows.js';
-import { settingRows } from './settings-model.js';
+import { orbitNoteDefaults, settingRows } from './settings-model.js';
 import {
     SETTINGS_DIR,
     SETTINGS_FILE,
@@ -1649,7 +1649,10 @@ export default class ClaudeChat extends View {
                 this.noteBoxes.set(r.key, box);
             }
             cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
-                this.noteDefaults = await windDefaults();
+                this.noteDefaults = {
+                    ...orbitNoteDefaults,
+                    ...(await windDefaults()),
+                };
                 await loadSettings().catch(() => {});
                 for (const [key, box] of this.noteBoxes)
                     box.set_value(

@@ -2940,28 +2940,101 @@ async function wakeForMarks($: EngineInterface) {
             ? held
             : [];
     });
-    if (due.length) void selfSubmit($, joinText(due)).catch(() => undefined);
+    if (due.length)
+        void selfSubmit(
+            $,
+            joinText(due, tickSentence(await orbitTexts($), due.length)),
+        ).catch(() => undefined);
 }
 
 // a plan set this turn counts from the turn's end, so a prompt landing mid-turn would read it as -1
 const planAge = (o: StashOrbit) =>
     o.plan === undefined ? undefined : Math.max(0, o.turns - o.plan.at);
 
-// the per-prompt note that keeps the habit through a compaction; none while orbit is empty
-function orbitReminder(o: StashOrbit, isOn: IsPartOn) {
+// dima's own words for three orbit lines, typed in herdr's settings and read at each nudge, no restart: a blank or
+// missing row, or a settings file that does not read, is the built-in text
+const ORBIT_TEXT_ROWS = {
+    lane: 'stash.orbit.text.lane-stale',
+    plan: 'stash.orbit.text.plan-stale',
+    tick: 'stash.orbit.text.tick',
+} as const;
+type OrbitTexts = Partial<Record<keyof typeof ORBIT_TEXT_ROWS, string>>;
+async function orbitTexts($: EngineInterface): Promise<OrbitTexts> {
+    const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
+    const rows = await herdrRows($, home).catch(
+        (): Record<string, unknown> => ({}),
+    );
+    const typed = (key: string) => {
+        const text = rows[key];
+        return typeof text === 'string' && text.trim()
+            ? text.trim()
+            : undefined;
+    };
+    return {
+        lane: typed(ORBIT_TEXT_ROWS.lane),
+        plan: typed(ORBIT_TEXT_ROWS.plan),
+        tick: typed(ORBIT_TEXT_ROWS.tick),
+    };
+}
+// `{name}` takes the value its line has, `{tool}` the orbit tool's name in every line; a name the line does not know
+// stays as he typed it
+const filled = (text: string, values: Record<string, string | number>) =>
+    text.replace(/\{(\w+)\}/g, (all, name: string) =>
+        name === 'tool'
+            ? ORBIT_TOOL
+            : name in values
+              ? String(values[name])
+              : all,
+    );
+const tickSentence = (texts: OrbitTexts, n: number) =>
+    texts.tick === undefined ? undefined : filled(texts.tick, { n });
+const PLAN_STALE_TEXT = 'stale: set it again';
+const LANE_STALE_TEXT = `lane {id} «{title}» moved nothing for {n} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`;
+
+// what this session was last told of its orbit and its stale lanes, in process memory as `isPrimed` is: the same state
+// adds no line to the next prompt (FRM-640: a sentence on every prompt piled into the history). a compaction, a /clear
+// or a resume drops what was told, so the state prints once again; a value kept by session id would outlive all three
+let toldOrbit: string | undefined;
+const toldStaleLanes = new Set<string>();
+function forgetTold() {
+    toldOrbit = undefined;
+    toldStaleLanes.clear();
+}
+
+// the orbit note of a prompt, only when the state differs from `told`: the open ask ids and whether the plan is unset,
+// set or stale, never its age, which moves every turn; an orbit that never held an ask or a plan says nothing
+function orbitReminder(
+    o: StashOrbit,
+    isOn: IsPartOn,
+    told: string | undefined,
+    staleText = PLAN_STALE_TEXT,
+) {
     const open = o.asks.filter((a) => !a.isResolved);
     const isPhasesOn = isOn('stash.phases');
     const age = isPhasesOn ? planAge(o) : undefined;
-    if (!open.length && age === undefined) return undefined;
+    const state = !isPhasesOn
+        ? 'off'
+        : age === undefined
+          ? 'none'
+          : age >= STALE_TURNS
+            ? 'stale'
+            : 'set';
+    const plan = {
+        none: '; no plan set',
+        off: '',
+        set: '; plan set',
+        stale: `; plan set ${age} turns ago, ${filled(staleText, { n: age ?? 0 })}`,
+    }[state];
+    const key = `${open.map((a) => a.id).join(',')}|${state}`;
+    if (
+        key === told ||
+        (told === undefined && !open.length && age === undefined)
+    )
+        return { key, line: undefined };
     const asks = open.length
         ? `orbit holds ${open.length} open ask${open.length === 1 ? '' : 's'} (${open.map((a) => a.id).join(', ')})`
         : 'orbit holds no open ask';
-    const plan = !isPhasesOn
-        ? ''
-        : age === undefined
-          ? '; no plan set'
-          : `; plan set ${age} turn${age === 1 ? '' : 's'} ago${age >= STALE_TURNS ? ', stale: set it again' : ''}`;
-    return `${asks}${plan}. asks${isPhasesOn ? ' and the plan' : ''} go through ${ORBIT_TOOL}, never into a reply.`;
+    return { key, line: `${asks}${plan}.` };
 }
 
 // the one reply shape while no board reaches dima — 📱 mobile mode, where mods draw nothing, or 🪐 orbit switched off —
@@ -7806,10 +7879,14 @@ export const register: Register = (on) => {
                 });
             });
         const tickets = isUserTurn ? await ticketNote($, e.text) : undefined;
-        const reminder =
-            (await $.state.get(MOBILE)).value || !isOn('stash.orbit')
-                ? noBoardReminder(orbit, isOn)
-                : orbitReminder(orbit, isOn);
+        const texts = await orbitTexts($);
+        // with no board the whole reply shape rides every prompt; the board's return then prints the state once
+        const isNoBoard =
+            (await $.state.get(MOBILE)).value || !isOn('stash.orbit');
+        const told = isNoBoard
+            ? undefined
+            : orbitReminder(orbit, isOn, toldOrbit, texts.plan);
+        const reminder = isNoBoard ? noBoardReminder(orbit, isOn) : told?.line;
         const isFirst = orbit.turns === 0 && !orbit.plan && !isPrimed;
         isPrimed = true;
         // the lanes speak only in clio's thread: a lane stale after LANE_STALE of her turns, and dima's steer on a current step
@@ -7819,11 +7896,21 @@ export const register: Register = (on) => {
             isOwner && isOn('stash.glide') ? await takeLaneMoves($) : [];
         const lanes = isOwner && isOn('stash.glide') ? await readLanes($) : [];
         const live = lanes.filter((l) => !l.endedAt);
-        const laneStale = live
-            .filter((l) => !l.runner && orbit.turns - l.movedAt >= LANE_STALE)
-            .map(
-                (l) =>
-                    `lane ${l.id} «${l.title}» moved nothing for ${orbit.turns - l.movedAt} of your turns, stale: step it or end it through ${ORBIT_TOOL} op glide.`,
+        const staleNow = live.filter(
+            (l) => !l.runner && orbit.turns - l.movedAt >= LANE_STALE,
+        );
+        // a lane is told stale once, and again only after it moved and went stale anew: the move is in the key, since a
+        // turn the mod started itself grows the count with no prompt to clear an id
+        const staleKey = (l: { id: string; movedAt: number }) =>
+            `${l.id}@${l.movedAt}`;
+        const laneStale = staleNow
+            .filter((l) => !toldStaleLanes.has(staleKey(l)))
+            .map((l) =>
+                filled(texts.lane ?? LANE_STALE_TEXT, {
+                    id: l.id,
+                    n: orbit.turns - l.movedAt,
+                    title: l.title,
+                }),
             );
         const laneSteers = isUserTurn ? await takeLaneSteers($, lanes) : [];
         if (isOwner) await dropLaneOrders($);
@@ -7865,7 +7952,9 @@ export const register: Register = (on) => {
                 ...(e.context ?? []),
                 clock,
                 ...(afk && isOn('stash.afk') ? [AWAY_NOTE] : []),
-                ...(marked.length ? [joinText(marked)] : []),
+                ...(marked.length
+                    ? [joinText(marked, tickSentence(texts, marked.length))]
+                    : []),
                 ...(wrong.length ? [wrongText(wrong)] : []),
                 ...(isFirst && isOn('stash.phases') ? [PHASES_START] : []),
                 ...(reminder ? [reminder] : []),
@@ -7884,6 +7973,14 @@ export const register: Register = (on) => {
             ],
             text: hold?.text ?? e.text,
         });
+        // told only once the prompt went on: one another hook dropped leaves the state to tell again
+        if (sent.drop === undefined) {
+            toldOrbit = told?.key;
+            if (isOwner && isOn('stash.glide')) {
+                toldStaleLanes.clear();
+                for (const l of staleNow) toldStaleLanes.add(staleKey(l));
+            }
+        }
         return sent;
     });
 
@@ -8072,6 +8169,7 @@ export const register: Register = (on) => {
             // a wind's own compact: its ingest is queued behind it, and runWind hands the held messages over after it
             const wind = compacting ? await windOf($, compacting) : undefined;
             const isWinds = wind?.state === 'refreshing' && !wind.slug;
+            forgetTold();
             await windOnCompact($).catch(() => undefined);
             await steersOnCompact($).catch(() => undefined);
             if (!isWinds) armRelease($, COMPACT_SETTLE_MS);
@@ -10334,6 +10432,7 @@ export const register: Register = (on) => {
         if (e.reason === 'clear' || e.reason === 'resume') {
             // the process outlives a /clear, so the next conversation is primed again: no session.start fires for it
             isPrimed = false;
+            forgetTold();
             // the process goes on under a new id with no session.start: the next read takes it fresh
             selfId = undefined;
             clearedFrom = e.sessionId;
@@ -10461,7 +10560,13 @@ export const register: Register = (on) => {
             isPing || !isOn('stash.orbit')
                 ? []
                 : await takeMarks($, (o) => o.asks.filter(isFresh));
-        if (fresh.length) notes.push(joinText(fresh));
+        if (fresh.length)
+            notes.push(
+                joinText(
+                    fresh,
+                    tickSentence(await orbitTexts($), fresh.length),
+                ),
+            );
         // a lane steer dima took while clio's turn runs joins it here too, as an orbit mark does
         if (!isPing && isOn('stash.glide') && (await isLaneOwner($))) {
             notes.push(...(await takeLaneMoves($)));

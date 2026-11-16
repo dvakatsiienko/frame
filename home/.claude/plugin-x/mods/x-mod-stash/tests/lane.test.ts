@@ -1084,6 +1084,48 @@ test("a lane that moved nothing for 8 of clio's turns reads stale; a step that m
     );
 });
 
+const staleLines = (w: { contexts: string[][] }) =>
+    (w.contexts.at(-1) ?? []).filter((c) => c.includes('moved nothing'));
+
+test('a stale lane is told once, and again only after it moved and went stale anew', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await create($, { items: [{ text: 'a' }, { text: 'b' }], title: 't' });
+    const told: number[] = [];
+    const turns = async (n: number) => {
+        for (let i = 0; i < n; i++) await endTurn($);
+        await say($, 'go');
+        told.push(staleLines(w).length);
+    };
+    await turns(8);
+    await turns(1);
+    // no prompt lands between the move and the next staleness: the mod's own turns grow the count too
+    await lane($, { act: 'step', current: 1, id: 'l1' });
+    await turns(8);
+    expect(told).toEqual([1, 0, 1]);
+});
+
+test('his text for a stale lane replaces the built-in line, its placeholders filled', async ($, on) => {
+    const w = world(on, {
+        files: {
+            '/home/.claude/shelf/herdr-settings/settings.json': JSON.stringify({
+                rows: {
+                    'stash.orbit.text.lane-stale':
+                        'heron: {id} «{title}» sat {n} turns, use {tool}',
+                },
+                v: 1,
+            }),
+        },
+    });
+    await start($);
+    await create($, { title: 't' });
+    for (let i = 0; i < 8; i++) await endTurn($);
+    await say($, 'go');
+    expect(w.contexts.at(-1)).toContain(
+        'heron: l1 «t» sat 8 turns, use mcp__x-mod-stash__orbit',
+    );
+});
+
 test('with no lane the reminder carries no lane text', async ($, on) => {
     const w = world(on);
     await start($);

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { pages, rowWords } from './settings-model.js';
+import { orbitNoteDefaults, pages, rowWords } from './settings-model.js';
 
 const rowOf = (key: string) => {
     const row = pages
@@ -33,4 +33,48 @@ describe('a second wind note is titled by when its thread reads it', () => {
             'When you press 🐦‍🔥',
         );
     });
+});
+
+describe('the three orbit notes', () => {
+    const keys = [
+        'stash.orbit.text.tick',
+        'stash.orbit.text.plan-stale',
+        'stash.orbit.text.lane-stale',
+    ];
+
+    test('each is a text row on the Claude Code mods page, empty by default, with a built-in line to show', () => {
+        const cc = pages.find((page) => page.id === 'cc');
+        const rows = cc?.groups.flatMap((group) => group.rows) ?? [];
+        expect(
+            keys.map((key) => {
+                const row = rows.find((candidate) => candidate.key === key);
+                return [
+                    row?.control.kind,
+                    row?.default,
+                    !!orbitNoteDefaults[key],
+                ];
+            }),
+        ).toEqual(keys.map(() => ['text', '', true]));
+    });
+
+    test('a placeholder in a why reads as written, never as a row value', () => {
+        expect(rowWords(rowOf('stash.orbit.text.tick'), {}).why).toContain(
+            '{n} = how many asks',
+        );
+    });
+});
+
+// x-mod-stash's second-wind store holds five notes (`WIND_ROWS` in its wind-store.ts): each has its box here
+test('every second wind note the stash keeps has its row on the Claude Code mods page', () => {
+    const cc = pages.find((page) => page.id === 'cc');
+    const keys = (cc?.groups.flatMap((group) => group.rows) ?? [])
+        .filter((row) => row.key.startsWith('stash.wind.text.'))
+        .map((row) => row.key);
+    expect(keys).toEqual([
+        'stash.wind.text.notice',
+        'stash.wind.text.at',
+        'stash.wind.text.at.coordinator',
+        'stash.wind.text.propose',
+        'stash.wind.text.press',
+    ]);
 });

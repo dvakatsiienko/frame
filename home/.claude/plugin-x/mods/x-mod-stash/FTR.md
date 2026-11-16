@@ -479,7 +479,7 @@
   - given two `pnpm mods:set` writers at once (`part`, `hot`, `second-wind-auto`, `pace`, a number) and a reader mid-write, then the store file is always whole JSON and holds both changes: each write holds `<store>.lock` for its read, change and write, writes a temp file beside the store, then renames it; a lock older than 10 s is a dead writer's and is taken over under a guard file (`<store>.lock.takeover`), the lock looked at again inside it, so a waiter never removes the fresh lock another took meanwhile, and a guard older than 10 s is a dead takeover's and goes too; a wait past 5 s refuses the door in one line, «refused: the store is locked by another writer: <lock>», exit 1, a stale lock that will not go included
   - and the store keeps its mode (0600) through the rename
   - and a store path that is a link is resolved first, so the link stays a link
-  - 📌 the engine's own `$.store.set` writes the same file with no lock and no rename: a mod's write can still land between a door's read and its rename, a limit no door can lift
+  - 📌 the engine's own `$.store.set` takes no part in the door's lock: a mod's write can still land between a door's read and its rename, a limit no door can lift. the engine itself replaces the file and keeps two sessions' own keys whole (probed at cc 2.1.325: 400 of 400 kept, the inode changes); only a get-then-set on one shared key loses updates
   - proof: set.test.ts::two door writers at once lose no change, and a reader never meets a half file; ::a store reached through a link stays a link after a write; ::a store written through the door keeps its mode; ::a dead writer's lock is taken over, and the write lands; ::a waiter that saw a stale lock leaves the fresh lock another waiter took meanwhile; ::a takeover another waiter is in the middle of is left to it; ::a guard file a dead takeover left goes too, so the stale lock is still taken over and the write lands; ::a store lock held past the wait refuses the door in one line, exit 1, never a stack or a spin
 - ✅ the second-wind store holds every wind text and the applied values in one file any app reads (FRM-634 store exits 1, 3, 5, FRM-625:W15)
   - makes: `~/.claude/shelf/second-wind.json`, written by this mod alone, whole or not at all, only when it differs
@@ -567,7 +567,7 @@
   - and it holds every how-to rule of an ask, which left `rules/fleet-mods.md` § orbit for it (FRM-640): when an ask goes up, who a member asks, what a pick names, how a reply names an ask, a guard-refused command; with the mod off no orbit rule is left in memory beyond the reply shape
   - and the tool loads up front (`isDeferred: false`), never behind ToolSearch
   - 📌 a session already running keeps the description it loaded until it restarts; a `--bg` session draws no board and is unchanged
-  - proof: tests/orbit.test.ts::orbit's description fits the 4096 chars cc shows the model, every op named; ::orbit's description holds the rule: … (12 rows); orbit registers loaded up front, never behind ToolSearch
+  - proof: tests/orbit.test.ts::orbit's description fits the 4096 chars cc shows the model, every op named; orbit registers loaded up front, never behind ToolSearch
 the session's asks to dima, ticked instead of copy-pasted; one orbit per session, in the board's lower half. it replaced the reply-parsed, cross-thread asks list in the row (dima, 2026-10-10: «the current stash asks implementation doesn't work for me»).
 - makes: one `asks:<session>` key in x-mod-stash's `$.store` holding the session's open asks, so every board's `🪐 n` counts them; orbit itself lives in the session's `$.state`
 - proven live 2026-10-10 in a `pnpm mods:live` terminal session: a real model added two asks and a plan through the tool, both drew in `/board`; a tick then a bare «go on» reached the model, which resolved it; a tick made during a running turn was answered in that same turn and left at its end; a tick that landed after a turn ended rode the next prompt
@@ -751,11 +751,27 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given one call with `ops: [{ op: 'add', … }, { op: 'resolve', … }, { op: 'plan', … }]`, then all three land in order and the result reads one line per op
   - given one op in it is refused, then the result names it «refused — <why>» and the others land; a call whose every op is refused is refused
   - proof: tests/orbit.test.ts::one call carrying an add, a resolve and a plan lands all three; ::a call whose resolve is refused reports per op, the other ops landing; ::a call whose every op is refused is refused
-- ✅ every prompt reminds the session of orbit
-  - given orbit holds open asks or a plan
-  - when any prompt goes to the session
-  - then the session gets a short model-only note: the open asks, the tool to answer with, the plan's age
-  - decision: the contract is mechanical — the reminder and the tool's own text, no new skill (dima, 2026-10-10: «we have too many of them … yagni»)
+- ✅ a prompt tells the session of its orbit only when it changed (FRM-640)
+  - given orbit holds open asks or a plan, when a prompt goes to the session and the open ask ids or the plan's state (not set, set, stale) differ from what this session was last told, then it gets one short model-only note: «orbit holds 1 open ask (o1); plan set.»; a stale plan reads «plan set 3 turns ago, stale: set it again»
+  - given nothing of that changed since its last prompt, then the prompt carries no orbit note; the plan's age alone never counts as a change
+  - given a stale lane in a coordinator's thread, then its line is told once, and again only after the lane moved and went stale anew
+  - given his tick or steer, his plan mark, a lane steer or an assumption sent back, then it joins whole, every time, whatever was told before
+  - given a compaction, a `/clear` or a resume, then the next prompt tells the state once again: what was told lives in process memory, never in a store, which would outlive all three
+  - given 📱 mobile mode or 🪐 orbit switched off, then the no-board line rides every prompt as before, and the board's return tells the state once
+  - and a state counts as told only once its prompt went on: a prompt another hook dropped leaves it to tell again
+  - 📌 a hot reload of the mod restarts the process memory, so the state is told once more after it
+  - decision: no sentence rides every prompt: the rules sit in the tool's own text, and a repeated line piled into the history (dima, FRM-640:W1, W2)
+  - decision: the contract is mechanical — the note and the tool's own text, no new skill (dima, 2026-10-10: «we have too many of them … yagni»)
+  - proof: tests/orbit.test.ts::a prompt after one that told the same asks and plan carries no orbit note; ::a new open ask is told once; ::a resolved ask is told once; ::a plan turned stale is told once, however its age grows; ::his tick joins a prompt whole when nothing else of the orbit changed; ::a compaction tells the orbit state once again, then keeps quiet; ::a clear (a resume) tells the orbit state once again; tests/lane.test.ts::a stale lane is told once, and again only after it moved and went stale anew
+- ✅ three orbit lines are his to reword in herdr's settings (FRM-640)
+  - given a text in one of the rows `stash.orbit.text.tick`, `stash.orbit.text.plan-stale`, `stash.orbit.text.lane-stale` of `~/.claude/shelf/herdr-settings/settings.json` (herdr writes the file, this mod only reads it), when the matching line next fires in any session, then it carries his text: the tick row replaces only the sentence after the fixed prefix «orbit: dima marked N asks.», the plan row the clause after «plan set N turns ago, », the lane row the whole stale-lane line
+  - and `{n}` is filled in all three, `{id}` and `{title}` in the lane row, `{tool}` with the orbit tool's name; a name the row does not know stays as typed
+  - given the row empty or blank, the file missing or not parsing, then the built-in text, never an empty line
+  - and the file is read at each nudge: no restart, no store of this mod's
+  - 📌 the no-board line (📱 mobile mode, 🪐 orbit off) and the tool-step phases nudge keep their own built-in words: the plan row reaches only the prompt note
+  - decision: the tick's prefix stays code: crow finds his ticks by it
+  - 📌 the tool's own description stays code: it loads at session start
+  - proof: tests/orbit.test.ts::his text for the stale plan replaces the built-in clause, {n} its age; ::the stale plan reads the built-in text with … (3 rows); ::his text for a tick replaces only the sentence after the fixed prefix; tests/lane.test.ts::his text for a stale lane replaces the built-in line, its placeholders filled
 
 - ✅ a pick that signs or merges is taken as written (FRM-581)
   - given orbit's `add` or `follow` with a sign or merge verb in its pick, on any text, then it lands: the guard reads no ask's shape any more, so his tick needs none

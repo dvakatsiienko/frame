@@ -1027,10 +1027,10 @@ export const register: Register = (on) => {
         'tool.call',
         { tool: new RegExp(`^${CLIPBOARD_TOOL}$`) },
         async ($, e, next) => {
-            const master = await masterOverride($).catch(() => undefined);
             const home = await $.env.get('HOME').catch(() => undefined);
             if (!(await isMemberSession($, home).catch(() => false)))
                 return next(e);
+            const master = await masterOverride($).catch(() => undefined);
             const stop = clipboardTool();
             const spends: string[] = [];
             const tick = master

@@ -183,9 +183,49 @@ export const pages = [
                     {
                         control: { kind: 'text', needs: WIND_WORDS },
                         default: '',
+                        key: 'stash.wind.text.at.coordinator',
+                        title: 'At {at:stash.wind.must} % context: the must, for Clio',
+                        why: 'What Clio’s threads read then, in place of the must above.',
+                    },
+                    {
+                        control: { kind: 'text', needs: [] },
+                        default: '',
+                        key: 'stash.wind.text.propose',
+                        title: 'Past {at:stash.wind.must} % with a thread’s 🍃 off',
+                        why: 'What the thread reads then: it proposes the wind to you. {fill} = its context now, {wind} = the {at:stash.wind.must} % line.',
+                    },
+                    {
+                        control: { kind: 'text', needs: WIND_WORDS },
+                        default: '',
                         key: 'stash.wind.text.press',
                         title: 'When you press 🐦‍🔥',
                         why: 'What the thread reads then. Clio’s threads read it too.',
+                    },
+                ],
+            },
+            {
+                heading: '🪐 orbit',
+                rows: [
+                    {
+                        control: { kind: 'text', needs: [] },
+                        default: '',
+                        key: 'stash.orbit.text.tick',
+                        title: 'When you tick or steer an ask',
+                        why: 'What the thread reads after «orbit: dima marked N asks.» {n} = how many asks, {tool} = the orbit tool.',
+                    },
+                    {
+                        control: { kind: 'text', needs: [] },
+                        default: '',
+                        key: 'stash.orbit.text.plan-stale',
+                        title: 'When a thread’s plan goes stale',
+                        why: 'What the thread reads once, after «plan set N turns ago». {n} = the turns.',
+                    },
+                    {
+                        control: { kind: 'text', needs: [] },
+                        default: '',
+                        key: 'stash.orbit.text.lane-stale',
+                        title: 'When a lane goes stale',
+                        why: 'What its coordinator reads once. {id} = the lane, {title} = its name, {n} = the turns, {tool} = the orbit tool.',
                     },
                 ],
             },
@@ -220,6 +260,17 @@ export const pages = [
         title: 'Keys',
     },
 ];
+
+// what an orbit note box shows while its row is empty: x-mod-stash's built-in line, copied here since that mod writes
+// no file of defaults for these three; an empty row always means the mod's own text, whatever this copy says
+/** @type {Record<string, string>} */
+export const orbitNoteDefaults = {
+    'stash.orbit.text.lane-stale':
+        'lane {id} «{title}» moved nothing for {n} of your turns, stale: step it or end it through {tool} op glide.',
+    'stash.orbit.text.plan-stale': 'stale: set it again',
+    'stash.orbit.text.tick':
+        'answer each in this reply, then call {tool}: resolve the answered ids, or follow one that needs another round.',
+};
 
 /** @type {Row[]} */
 export const settingRows = pages.flatMap((p) =>

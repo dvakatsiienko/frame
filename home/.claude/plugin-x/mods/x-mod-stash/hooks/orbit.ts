@@ -229,7 +229,10 @@ export const wrongText = (wrong: OrbitAssumption[]) =>
     ].join('\n');
 
 // what the session reads for each marked ask: the mark, the ask, its pick, both steers
-export function joinText(asks: OrbitAsk[]) {
+// the sentence after the fixed prefix «orbit: dima marked N asks.»: crow finds his ticks by that prefix, so only what
+// follows it is his to reword (herdr's settings, FRM-640)
+export const TICK_SENTENCE = `answer each in this reply, then call ${ORBIT_TOOL}: resolve the answered ids, or follow one that needs another round.`;
+export function joinText(asks: OrbitAsk[], sentence = TICK_SENTENCE) {
     const lines = asks.map(
         (a) =>
             `- ${a.id} ${markWord(a.mark)}${a.isHerdrMark ? ' from herdr' : ''}: ${a.text} (your pick: ${a.pick})` +
@@ -237,7 +240,7 @@ export function joinText(asks: OrbitAsk[]) {
             (a.hiddenNote ? ` · your note: «${a.hiddenNote}»` : ''),
     );
     return [
-        `orbit: dima marked ${asks.length === 1 ? 'an ask' : `${asks.length} asks`}. answer each in this reply, then call ${ORBIT_TOOL}: resolve the answered ids, or follow one that needs another round.`,
+        `orbit: dima marked ${asks.length === 1 ? 'an ask' : `${asks.length} asks`}. ${sentence}`,
         ...lines,
     ].join('\n');
 }

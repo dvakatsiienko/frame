@@ -92,7 +92,10 @@ function world(on: On, files: Record<string, string> = {}) {
         isDeferred = e.isDeferred;
         return { value: { tool: `mcp__x-mod-stash__${e.name}` } };
     });
+    // a test flips it to drop the next prompts, as another plugin's hook would
+    const prompts = { isDropped: false };
     on('prompt.submit', (_$, e) => {
+        if (prompts.isDropped) return { drop: 'planted' };
         contexts.push([...(e.context ?? [])]);
         return { text: e.text };
     });
@@ -105,7 +108,7 @@ function world(on: On, files: Record<string, string> = {}) {
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { appended, clock, contexts, panes, store, taps };
+    return { appended, clock, contexts, panes, prompts, store, taps };
 }
 
 const start = ($: Engine) =>
@@ -965,7 +968,16 @@ test('a steer typed on another board while its mark is taken in survives for the
     expect(savedSteer(w.store)).toBe('a swan again');
 });
 
-test('every prompt reminds the session of its open asks and the tool', async ($, on) => {
+/* the orbit note speaks only on a change (FRM-640): the rules sit in the tool's own text, so no sentence rides every prompt */
+
+const orbitNote = (w: { contexts: string[][] }) =>
+    (w.contexts.at(-1) ?? []).filter((c) => c.startsWith('orbit holds'));
+const nextPrompt = async ($: Engine) => {
+    await endTurn($);
+    await say($, 'more');
+};
+
+test("a prompt of any origin names the session's open asks once, with no fixed sentence", async ($, on) => {
     const w = world(on);
     await start($);
     await add($, ['push FRM-1', 'yes']);
@@ -974,8 +986,191 @@ test('every prompt reminds the session of its open asks and the tool', async ($,
         text: 'status?',
         wait: false,
     });
-    expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
-        /orbit holds 1 open ask \(o1\).*mcp__x-mod-stash__orbit/,
+    expect(orbitNote(w)).toEqual(['orbit holds 1 open ask (o1); no plan set.']);
+});
+
+test('a prompt after one that told the same asks and plan carries no orbit note', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'go');
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    await nextPrompt($);
+    const told = orbitNote(w);
+    await nextPrompt($);
+    expect([told, orbitNote(w)]).toEqual([
+        ['orbit holds 1 open ask (o1); plan set.'],
+        [],
+    ]);
+});
+
+test('a state whose prompt was dropped is told with the next prompt', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    w.prompts.isDropped = true;
+    await say($, 'lost');
+    w.prompts.isDropped = false;
+    await say($, 'kept');
+    expect(orbitNote(w)).toEqual(['orbit holds 1 open ask (o1); no plan set.']);
+});
+
+test('a new open ask is told once', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'go');
+    await add($, ['trash the old probe', 'yes']);
+    await nextPrompt($);
+    const told = orbitNote(w);
+    await nextPrompt($);
+    expect([told, orbitNote(w)]).toEqual([
+        ['orbit holds 2 open asks (o1, o2); no plan set.'],
+        [],
+    ]);
+});
+
+test('a resolved ask is told once', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'go');
+    await orbit($, { ids: ['o1'], op: 'resolve' });
+    await nextPrompt($);
+    const told = orbitNote(w);
+    await nextPrompt($);
+    expect([told, orbitNote(w)]).toEqual([
+        ['orbit holds no open ask; no plan set.'],
+        [],
+    ]);
+});
+
+test('a plan turned stale is told once, however its age grows', async ($, on) => {
+    const w = world(on);
+    await start($);
+    await say($, 'go');
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    const notes: string[][] = [];
+    for (let i = 0; i < 6; i++) {
+        await nextPrompt($);
+        notes.push(orbitNote(w));
+    }
+    expect(notes).toEqual([
+        ['orbit holds no open ask; plan set.'],
+        [],
+        [],
+        ['orbit holds no open ask; plan set 3 turns ago, stale: set it again.'],
+        [],
+        [],
+    ]);
+});
+
+test('his tick joins a prompt whole when nothing else of the orbit changed', async ($, on) => {
+    const w = world(on);
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican']);
+    await say($, 'go');
+    await nextPrompt($);
+    await endTurn($);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await say($, 'next');
+    expect([orbitNote(w), joined(w.contexts).length]).toEqual([[], 1]);
+    expect(joined(w.contexts)[0]).toMatch(
+        /^orbit: dima marked an ask\. answer each in this reply, then call mcp__x-mod-stash__orbit.*\n- o1 /,
+    );
+});
+
+for (const reason of ['clear', 'resume'] as const)
+    test(`a ${reason} tells the orbit state once again`, async ($, on) => {
+        const w = world(on);
+        on('session.end', (_$, e) => ({ sessionId: e.sessionId }));
+        await start($);
+        await say($, 'go');
+        await orbit($, { lines: ['now: a'], op: 'plan' });
+        await nextPrompt($);
+        await nextPrompt($);
+        const quiet = orbitNote(w);
+        await endTurn($);
+        await $.session.end({ reason, resume: { id: SID }, sessionId: SID });
+        await say($, 'back');
+        expect([quiet, orbitNote(w)]).toEqual([
+            [],
+            ['orbit holds no open ask; plan set.'],
+        ]);
+    });
+
+test('a compaction tells the orbit state once again, then keeps quiet', async ($, on) => {
+    const w = world(on);
+    on('session.compact', (_$, e) => ({ messages: e.messages }));
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    await say($, 'go');
+    await nextPrompt($);
+    const quiet = orbitNote(w);
+    await endTurn($);
+    await $.session.compact({
+        messages: [{ role: 'user', text: 'hi', toolUses: [] }],
+        trigger: 'auto',
+    } as never);
+    await say($, 'after the compact');
+    const told = orbitNote(w);
+    await nextPrompt($);
+    expect([quiet, told, orbitNote(w)]).toEqual([
+        [],
+        ['orbit holds 1 open ask (o1); no plan set.'],
+        [],
+    ]);
+});
+
+const SETTINGS = '/home/.claude/shelf/herdr-settings/settings.json';
+const typed = (rows: Record<string, string>) => ({
+    [SETTINGS]: JSON.stringify({ rows, v: 1 }),
+});
+const stalePlan = async ($: Engine) => {
+    await start($);
+    await say($, 'go');
+    await orbit($, { lines: ['now: a'], op: 'plan' });
+    for (let i = 0; i < 4; i++) await nextPrompt($);
+};
+
+test('his text for the stale plan replaces the built-in clause, {n} its age', async ($, on) => {
+    const w = world(
+        on,
+        typed({ 'stash.orbit.text.plan-stale': 'heron: {n} turns, {x} kept' }),
+    );
+    await stalePlan($);
+    expect(orbitNote(w)).toEqual([
+        'orbit holds no open ask; plan set 3 turns ago, heron: 3 turns, {x} kept.',
+    ]);
+});
+
+for (const [shape, files] of [
+    ['an emptied box', typed({ 'stash.orbit.text.plan-stale': '  ' })],
+    ['a settings file that does not parse', { [SETTINGS]: '{ "rows": ' }],
+    ['no settings file', {}],
+] as const)
+    test(`the stale plan reads the built-in text with ${shape}`, async ($, on) => {
+        const w = world(on, { ...files });
+        await stalePlan($);
+        expect(orbitNote(w)).toEqual([
+            'orbit holds no open ask; plan set 3 turns ago, stale: set it again.',
+        ]);
+    });
+
+test('his text for a tick replaces only the sentence after the fixed prefix', async ($, on) => {
+    const w = world(
+        on,
+        typed({ 'stash.orbit.text.tick': 'heron {n}: close them with {tool}' }),
+    );
+    await start($);
+    const ui = await board($);
+    await add($, ['name a bird', 'pelican'], ['name a fish', 'cod']);
+    await ui.press({ key: 'orbit:accepted:o1' });
+    await ui.press({ key: 'orbit:accepted:o2' });
+    await say($, 'next');
+    expect(joined(w.contexts)[0]?.split('\n')[0]).toBe(
+        'orbit: dima marked 2 asks. heron 2: close them with mcp__x-mod-stash__orbit',
     );
 });
 
@@ -1177,14 +1372,14 @@ test('only the now lead word reads green', async ($, on) => {
     ]);
 });
 
-test('a prompt that lands mid-turn reads a plan set this turn as 0 turns old', async ($, on) => {
+test('a prompt that lands mid-turn reads a plan set this turn as set, never as stale', async ($, on) => {
     const w = world(on);
     await start($);
     await say($, 'go');
     await orbit($, { lines: ['now: a'], op: 'plan' });
     await say($, 'a steer mid-turn');
     expect((w.contexts.at(-1) ?? []).join('\n')).toMatch(
-        /plan set 0 turns ago/,
+        /orbit holds no open ask; plan set\.$/m,
     );
 });
 
@@ -2187,27 +2382,6 @@ test("orbit's description fits the 4096 chars cc shows the model, every op named
         ['add', 'resolve', 'follow', 'assume', 'plan', 'glide'],
     ]);
 });
-
-// the how-to rules that left `rules/fleet-mods.md` for the tool's own text (FRM-640): a trim that drops one goes red
-for (const [rule, phrase] of [
-    ['an ask goes up early', 'goes up as soon as it is known'],
-    ['an ask is never saved for the end', "never saved for the turn's end"],
-    ['an unmarked ask', 'an unmarked ask means nothing yet'],
-    ['coordinator first', "a member's ask goes to its coordinator first"],
-    ['a pick names its outcome', 'a pick names its whole outcome'],
-    ['an ask is named by its subject', 'its oN id stays on the board'],
-    ['another round is a follow', 'another round is a follow, never a second'],
-    ['a guard-refused command', 'quotes it whole in one backtick span'],
-    ['the tick runs it once', 'runs it once within 2 h'],
-    ['the why sits in the hidden note', 'hiddenNote: yours alone'],
-    ['an irreversible ask', 'lead with ⚠️, name the exact target'],
-    ['a --bg session', 'a --bg session has no board'],
-] as const)
-    test(`orbit's description holds the rule: ${rule}`, async ($, on) => {
-        world(on);
-        await start($);
-        expect(described).toContain(phrase);
-    });
 
 /* brief 8 item 1: an ask carries one link dima opens in a click */
 
