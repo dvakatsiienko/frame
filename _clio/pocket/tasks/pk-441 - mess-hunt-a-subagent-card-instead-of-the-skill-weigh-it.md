@@ -4,7 +4,7 @@ title: 'mess hunt: a subagent card instead of the skill? weigh it'
 status: done
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T22:27:00Z'
+updated_date: '2026-11-16T22:28:00Z'
 labels:
   - s
 dependencies: []
@@ -62,4 +62,6 @@ PK-441:W20 (2026-11-16 19:29, dima): ⭐⭐⭐⭐⭐ 🦝 messhunter: y. nice, b
 PK-441:W21 (2026-11-16 19:37, dima): x:review-mess-hunt → x:review-messhunt ?
 
 00:27 closed: the 🦝 messhunter card and x:review-messhunt landed (ls agents/, skills/); left open by my miss
+
+close: PK-441:W1–W21 done — the card stands on wisphunter's card (W15–W19, o80), Opus 5.5 medium memory-less read-only (W14, o81), name and badge 🦝 messhunter (W12, W20, o82), its place in fleet-identity.md (W13), the skill renamed x:review-messhunt (W21); W1–W11 are the want it built
 <!-- SECTION:NOTES:END -->
