@@ -122,13 +122,18 @@ export function holdSend(
     };
     if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
-    // a tap joins; a hold he lets go once its disc started is changed mind, nothing sent or marked (dima's o127, 21:23)
-    if (event === 'release')
-        return {
-            act: now - hold.at > timing.delay ? null : 'join',
-            fill: 0,
-            hold: null,
-        };
+    // a tap joins; a hold he lets go once its disc started is changed mind, nothing sent or marked (dima's o127, 21:23);
+    // one let go after the disc filled pushes, though no tick saw it full yet
+    if (event === 'release') {
+        const held = now - hold.at;
+        const act =
+            held >= timing.delay + timing.push
+                ? 'push'
+                : held > timing.delay
+                  ? null
+                  : 'join';
+        return { act, fill: 0, hold: null };
+    }
     const fill = Math.min(
         1,
         Math.max(0, now - hold.at - timing.delay) / timing.push,

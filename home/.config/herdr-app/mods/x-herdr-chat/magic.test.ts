@@ -150,6 +150,18 @@ describe('a click on send marks the words to join the turn', () => {
     });
 });
 
+describe('a second click on a mark whose row never landed', () => {
+    test('takes the mark off: there is no row to wait for', async () => {
+        const w = world();
+        w.locks.add(`${FILE}.lock`);
+        const first = w.magic.click(THREAD, SID, 'also the tests', ON);
+        const second = w.magic.click(THREAD, SID, 'also the tests', ON);
+        expect((await second).act).toBe('unmarked');
+        await first;
+        expect(w.magic.markOf(THREAD)).toBeNull();
+    });
+});
+
 describe('what he types on rides the same row', () => {
     test('more words rewrite the row, its id kept', async () => {
         const w = world();

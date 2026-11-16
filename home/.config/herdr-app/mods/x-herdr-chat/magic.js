@@ -87,7 +87,8 @@ export function createMagic({ io, dir, store, newId }) {
         // the row's write is read before the mark goes, which forgets it: the take-back waits for the append it undoes
         const write = written.get(mark.id);
         drop(mark.id);
-        await write;
+        // an append that never landed left no row to take back
+        if ((await write) === false) return { act: 'unmarked', note: null };
         if (await takeBackJoin(io, fileOf(mark), mark.id))
             return { act: 'unmarked', note: null };
         if (!marks.has(mark.thread)) {

@@ -211,6 +211,21 @@ describe('an ended thread hands its unjoined rows back: each comes to the quill 
     });
 });
 
+describe('a hold let go after its disc filled', () => {
+    test('pushes, though no tick saw it full yet', () => {
+        const pressed = holdSend(null, 'press', 0);
+        const ticked = holdSend(
+            pressed.hold,
+            'tick',
+            HOLD_DELAY_MS + HOLD_PUSH_MS - 11,
+        );
+        expect(
+            holdSend(ticked.hold, 'release', HOLD_DELAY_MS + HOLD_PUSH_MS + 1)
+                .act,
+        ).toBe('push');
+    });
+});
+
 describe('a held Enter or cmd-enter: key repeat after the push neither joins nor pushes again', () => {
     test('a tick or a release after the push does nothing', () => {
         const pressed = holdSend(null, 'press', 0);
