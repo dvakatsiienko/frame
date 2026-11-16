@@ -53,4 +53,6 @@ PK-445:W12 (2026-11-16 15:10, dima): macroscope: proceed with more measures. Mor
 PK-445:W13 (2026-11-16 15:10, dima): chrome profile: ok, keep it and use as a habit.
 
 00:32 close: PK-445:W1, W8, W9, W11, W12 done — macroscope billing read in the fleet Chrome (agent-browser --cdp 9333 reads app.macroscope.com/…/settings/billing, verified 00:3x), rounds and the mid-drive read logged in docs/test-drive/macroscope.md (his o140 keep), the verdict waits for the trial's end there; W2–W7 done — the fleet Chrome replaced --auto-connect: no approval popup, focus stays with dima (browser-headless SKILL.md § the fleet Chrome); W10, W13 done — the profile keeps sign-ins and is the habit door (same section, pnpm fleet-chrome:start, port 9333 listening)
+
+close: PK-445:W1–PK-445:W13 done — billing read in the fleet Chrome and logged in docs/test-drive/macroscope.md (W1, W8, W9, W11, W12, his o140 keep); no popup, focus kept, sign-ins kept, the habit door in browser-headless SKILL.md § the fleet Chrome (W2–W7, W10, W13)
 <!-- SECTION:NOTES:END -->

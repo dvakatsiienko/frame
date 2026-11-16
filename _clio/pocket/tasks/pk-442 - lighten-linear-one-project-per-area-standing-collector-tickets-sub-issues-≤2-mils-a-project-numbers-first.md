@@ -85,4 +85,6 @@ PK-442:W17 (2026-11-16 20:25, dima): milestone balance: most wanted goes into th
 PK-442:W18 (2026-11-16 20:25, dima): linear cap: pricing pages still say 250 on the free plan, we sit at 275 and creating works. Linear's agent and Linear's pricing page both say 250 holds; dima asks how we have more than 250.
 
 00:32 close: verified 2026-11-17. W4–W6, W17 done: craft-pm § milestones first, «a project's first milestone holds what he wants most» (no cap, his round 1). W7, W10, W14 done: nesting kept, the nested check lives in script/siesta-checks.ts § nested tickets (o100); its one red left is FRM-634 vs FRM-625, both Done. W9, W13 done: collectors stay, groomed 11-16 21:36 (FRM-572, FRM-304; herdr has none), the groom habit written into clio:pm § app stash pairs. W8 done: one project per area written there too. W1, W2 dropped: collectors stay (his 20:17 answer). W3, W12 dropped: no new labels (his tick). W11, W15 done: the round-1 numbers. W16 done: shaped, grilled, implemented in place. W18 answered to him with a labelled guess (275 held, creating works, cause unknown).
+
+close: PK-442:W1–W18 accounted in the line above — W4–W11, W13–W17 done; W1, W2, W3, W12 dropped (collectors stay, no new labels); W18 answered
 <!-- SECTION:NOTES:END -->
