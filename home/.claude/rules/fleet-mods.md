@@ -6,6 +6,7 @@
 ## 🗂️ x-mod-stash — the board
 
 - **🪐 orbit — asks for dima.** an ask goes through the tool `mcp__x-mod-stash__orbit`, never into a reply; the tool's description holds the ops (add, resolve, follow, plan). an unmarked ask means nothing yet. orbit switched off in 🎛️ settings → every member puts its asks in the reply as one ➡️ line each.
+  - an ask goes up as soon as it is known: his tick slipstreams into a running turn, so one known at the turn's start is posted before the work, one born mid-turn the moment it is born, and the turn goes on with what does not hang on it; calm, never a rush, never saved for the turn's end (dima, PK-439:W4)
   - a pick names its whole outcome, so a tick needs no follow-up: a rename carries the new name («breather → breathing bars»), a choice its option, never the verb alone
   - a reply names an ask by its subject in plain words; its `oN` id stays on the board, never in the reply
   - one ask leads with its subject, the why in its hidden note (the tool refuses one past 90 chars); an irreversible one leads with ⚠️ and names its exact target; another round is a `follow`, never a second add
