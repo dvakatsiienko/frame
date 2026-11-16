@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T13:58:00Z'
+updated_date: '2026-11-16T14:21:00Z'
 labels:
   - s
   - clio-main
@@ -26,9 +26,13 @@ ordinal: 1000
 - [ ] #8 f22 monday strays lane: FRM-621 cherry-pick then FRM-631 brake under override, one quick chunk (o51)
 - [ ] #9 f23 monday lane orders live in linear only: mods: cc and mods: herdr, list view, manual sort (o45)
 - [ ] #10 f21 FRM-600 naming door: summon via x brief summon --apply, read the name, dima confirms on mobile
-- [ ] #11 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
-- [ ] #12 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #13 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #11 f24 herdr foundation: the shape-idea round with dima on the proposal (PK-444) — waits for: dima o28
+- [ ] #12 f25 second-wind store chunk: seal it, then dima's sign (a re-sign of FRM-625)
+- [ ] #13 f26 halt check for tails (PK-349:W1018): build it, show it to dima before it lands
+- [ ] #14 f27 agent-idea label: create it, clio:pm's create step, PK-423's lines out of FRM-617 (o15)
+- [ ] #15 f7 💤 📎 the for-you row on x-herdr-deck (o104) — later: dima, after herdr is stable
+- [ ] #16 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #17 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
