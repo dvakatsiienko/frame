@@ -13,7 +13,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - not checked: the click itself, by his hand
 - ✅ each ask leads with its id, so dima can name it
   - given a thread has an open ask with an id
-  - then the deck reads «🪐 **o36**: <text>», under a head «🪐 orbit: N asks waiting on you», each asker's name bold at the name size (shot 1929)
+  - then the deck reads «🪐 **o36**: <text>», under a head «🪐 orbit: N asks» (dima, 2026-11-16 18:26: «quiter»), each asker's name bold at the name size (shot 1929)
 - ⬜ a plain ask ticks from the deck
   - makes: one press line in `~/.claude/shelf/orbit-ticks/<session id>.jsonl`
   - given a thread has an open ask
@@ -69,6 +69,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - given main clio and wing 1 both have an o8 open
   - then the deck reads `o8` for main, `w1·o8` for wing 1, and `codie·o1` for any other thread (shot 1508)
 - ⬜ no ring on a pressed button, and no tooltip on a steer box
+  - and the tick's tooltip reads «tick: agree», the replay's «replay: another round», no key hint in either: herdr's tooltip takes text alone, so no key icon can be drawn there (dima, 2026-11-16 18:26: «if no cool good-looking icons are possible in tooltips, then remove hotkey suggestions and keep tooltips clean»)
   - given dima presses 🛎️ tick, 🔁 replay or a 🔥 keep-hot button, or hovers a steer box
   - then no blue border flashes while he holds the click, and no tooltip shows over the steer field
   - decision: his word, 14:57: «remove this border entirely for all buttons»; 16:09: the steer boxes lose their tooltips

@@ -826,7 +826,7 @@ export default class Deck extends View {
                                         ? 'queued for its next turn: click to take it back'
                                         : ask.isGated
                                           ? 'tick: your word for this guarded action, it runs once within 2 h'
-                                          : 'tick: good to go, the session takes the pick (Enter in the steer box)',
+                                          : 'tick: agree',
                                     (cx) =>
                                         cx.spawn((cx) =>
                                             state === 'ticked'
@@ -847,7 +847,7 @@ export default class Deck extends View {
                                     labels.replay,
                                     state === 'replayed'
                                         ? 'queued for its next turn: click to take it back'
-                                        : 'replay: another round, with your steer (⌘ Enter in the steer box)',
+                                        : 'replay: another round',
                                     (cx) =>
                                         cx.spawn((cx) =>
                                             state === 'replayed'
@@ -1185,11 +1185,7 @@ export default class Deck extends View {
             .children(rows.map((s, i) => this.session(t, s, i)))
             .when(asks > 0, (el) =>
                 el
-                    .child(
-                        header(
-                            `🪐 orbit: ${count(asks, 'ask', 'asks')} waiting on you`,
-                        ),
-                    )
+                    .child(header(`🪐 orbit: ${count(asks, 'ask', 'asks')}`))
                     .children(this.orbit(t, rows))
                     .when(Boolean(this.pressError), (el2) =>
                         el2.child(
