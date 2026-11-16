@@ -17,6 +17,7 @@ ORDER = ["ours", "herdr"]
 def fresh_shot():
     path = Path(tempfile.mkdtemp()) / "shot.png"
     subprocess.run(["herdr-app", "shot", str(path)], check=True, capture_output=True)
+    print("the boxes assume the tray and the Changes panel open; closed, they land on the wrong parts", file=sys.stderr)
     return path
 
 

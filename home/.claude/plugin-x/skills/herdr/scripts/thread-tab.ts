@@ -1,6 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { realpathSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { pathToFileURL } from 'node:url';
 
 // a `hc run --no-parent` thread starts paneless, and herdr's agents list skips it until it has a tab. the window learns
 // of a new terminal ~0.2 s after hc run returns, and the tab keep makes stays unknown to a rename for a moment more
@@ -40,7 +39,7 @@ function retry([command, args]: [string, Record<string, string>]) {
 
 if (
     process.argv[1] &&
-    realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
+    pathToFileURL(process.argv[1]).href === import.meta.url
 ) {
     const args = parseThreadTabArgs(process.argv.slice(2));
     if (!args) {

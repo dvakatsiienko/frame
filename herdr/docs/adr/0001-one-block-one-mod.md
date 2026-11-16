@@ -6,3 +6,4 @@ dima will A/B the window's parts often, and today moving one is a code change: x
 
 - a mod cannot import a sibling mod's file, so a reader two parts share is copied into each or served as an `x` verb's json
 - a layout save still kills the focused thread (herdr-app#861): a json A/B runs from a throwaway tab until herdr switches layouts safely
+- 2026-11-16: the #861 kill was closed on 11-10, a layout switch keeps every tab alive; `herdr/PRODUCT.md` holds the record
