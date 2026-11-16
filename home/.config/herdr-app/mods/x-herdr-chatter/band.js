@@ -212,19 +212,36 @@ export async function autoWind(door, sid, on) {
 /** @typedef {{ at: number, flips: number, on: boolean | null, sid: string }} AutoWind */
 
 /**
- * what a finished read leaves behind: a flip made since the read started wins, since the read asked before it
- * @param {AutoWind | undefined} now
+ * every thread's 🍃 by session id, after a read of one: a flip of that thread made since the read started wins,
+ * since the read asked before it; no other thread's entry moves
+ * @param {Map<string, AutoWind>} all
  * @param {string} sid
  * @param {boolean | null} on
  * @param {number} flipsAtStart
  * @param {number} at
- * @returns {AutoWind}
+ * @returns {Map<string, AutoWind>}
  */
-export function autoWindAfterRead(now, sid, on, flipsAtStart, at) {
-    const flips = now?.flips ?? 0;
-    if (now && now.sid === sid && flips !== flipsAtStart) return now;
-    return { at, flips, on, sid };
+export function autoWindAfterRead(all, sid, on, flipsAtStart, at) {
+    const flips = all.get(sid)?.flips ?? 0;
+    if (flips !== flipsAtStart) return all;
+    return new Map(all).set(sid, { at, flips, on, sid });
 }
+
+/**
+ * every thread's 🍃 after a flip of one landed: only that thread's entry changes, whichever thread is shown by now
+ * @param {Map<string, AutoWind>} all
+ * @param {string} sid
+ * @param {boolean | null} on what the door read back
+ * @param {number} at
+ * @returns {Map<string, AutoWind>}
+ */
+export const autoWindFlipped = (all, sid, on, at) =>
+    new Map(all).set(sid, {
+        at,
+        flips: (all.get(sid)?.flips ?? 0) + 1,
+        on,
+        sid,
+    });
 
 /**
  * the row right of «wait», in his order (his crop, 20:59; board last, 21:02): only a button whose press herdr can prove

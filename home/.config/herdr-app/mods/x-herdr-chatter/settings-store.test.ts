@@ -10,6 +10,7 @@ import {
     rowValue,
     settingChange,
     settingsText,
+    settledPending,
     storedRows,
     windRefusal,
 } from './settings-store.js';
@@ -202,27 +203,30 @@ describe('the 🐦‍🔥 second wind group (FRM-625)', () => {
     });
 
     test('a save writes the box to its row and leaves the box alone', () => {
-        expect(noteWrite('mine, with a handoff', 'the default', false)).toEqual(
-            {
-                box: null,
-                row: 'mine, with a handoff',
-            },
-        );
+        expect(
+            noteWrite('mine, with a handoff', 'the default', false, true),
+        ).toEqual({
+            box: null,
+            row: 'mine, with a handoff',
+        });
     });
 
     test('a reset empties the row and puts the default back in the box', () => {
-        expect(noteWrite('mine, with a handoff', 'the default', true)).toEqual({
+        expect(
+            noteWrite('mine, with a handoff', 'the default', true, true),
+        ).toEqual({
             box: 'the default',
             row: '',
         });
     });
 
     test('a refused change writes nothing and its row says why', () => {
-        expect(settingChange(lines, {}, 'stash.wind.notice', 65)).toEqual({
+        expect(settingChange(lines, {}, {}, 'stash.wind.notice', 65)).toEqual({
             notes: {
                 'stash.wind.notice':
                     '🛑 not saved: the notice line (65) must sit below the wind line (65)',
             },
+            pending: {},
             write: null,
         });
     });
@@ -232,10 +236,33 @@ describe('the 🐦‍🔥 second wind group (FRM-625)', () => {
             'chatter.other': 'stays',
             'stash.wind.must': '🛑 not saved: old',
         };
-        expect(settingChange(lines, notes, 'stash.wind.notice', 50)).toEqual({
+        expect(
+            settingChange(lines, {}, notes, 'stash.wind.notice', 50),
+        ).toEqual({
             notes: { 'chatter.other': 'stays' },
+            pending: { 'stash.wind.notice': 50 },
             write: { 'stash.wind.notice': 50 },
         });
+    });
+
+    test('a second line pressed before the first one reloaded is judged against it', () => {
+        const first = settingChange(lines, {}, {}, 'stash.wind.notice', 60);
+        expect(
+            settingChange(lines, first.pending, {}, 'stash.wind.must', 60)
+                .write,
+        ).toBeNull();
+    });
+
+    test('a change still waits until the reloaded values show it', () => {
+        const pending = { 'stash.wind.must': 70, 'stash.wind.notice': 60 };
+        expect(
+            settledPending(pending, { ...lines, 'stash.wind.notice': 60 }),
+        ).toEqual({ 'stash.wind.must': 70 });
+    });
+
+    test('a note box pressed before its text was read writes nothing', () => {
+        expect(noteWrite('', 'the default', false, false)).toBeNull();
+        expect(noteWrite('', 'the default', true, false)).toBeNull();
     });
 
     test('a blank note box, which means the default, gets no hint', () => {

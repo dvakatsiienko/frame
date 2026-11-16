@@ -5,6 +5,7 @@ import {
     STALE_MS,
     autoWind,
     autoWindAfterRead,
+    autoWindFlipped,
     autoWindOf,
     bandButtons,
     bandOf,
@@ -481,13 +482,34 @@ describe('🍃 second wind auto sits right of 🐦‍🔥 (FRM-625)', () => {
     });
 
     test('a read that started before a flip never draws over what the flip read', () => {
-        const flipped = { at: 2, flips: 1, on: false, sid: 's1' };
+        const flipped = new Map([
+            ['s1', { at: 2, flips: 1, on: false, sid: 's1' }],
+        ]);
         expect(autoWindAfterRead(flipped, 's1', true, 0, 3)).toBe(flipped);
-        expect(autoWindAfterRead(flipped, 's1', true, 1, 3)).toEqual({
+        expect(autoWindAfterRead(flipped, 's1', true, 1, 3).get('s1')).toEqual({
             at: 3,
             flips: 1,
             on: true,
             sid: 's1',
+        });
+    });
+
+    test("a flip that lands after a switch changes only its own thread's 🍃", () => {
+        const shown = new Map([
+            ['thread-b', { at: 5, flips: 0, on: true, sid: 'thread-b' }],
+        ]);
+        const after = autoWindFlipped(shown, 'thread-a', false, 6);
+        expect(after.get('thread-b')).toEqual({
+            at: 5,
+            flips: 0,
+            on: true,
+            sid: 'thread-b',
+        });
+        expect(after.get('thread-a')).toEqual({
+            at: 6,
+            flips: 1,
+            on: false,
+            sid: 'thread-a',
         });
     });
 

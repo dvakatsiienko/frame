@@ -16,7 +16,7 @@ export const SETTINGS_WINDOW = { height: 500, width: 760 };
  *   keys?: { ours: { key: string, title: string, action: string, takenBy: string | null }[], herdr: [string, string][],
  *     capture: any, note: string, recording: string | null, onRecord: (key: string, cx: any) => void, onKey: (keystroke: string, cx: any) => void },
  *   notes?: Record<string, string>, onPage: (id: string, cx: any) => void, onChange: (key: string, value: unknown, cx: any) => void,
- *   noteBoxes?: Map<string, any>, noteDefaults?: Record<string, string>, onNote?: (key: string, isReset: boolean, cx: any) => void }} WindowState
+ *   noteBoxes?: Map<string, any>, noteDefaults?: Record<string, string>, isNotesReady?: boolean, onNote?: (key: string, isReset: boolean, cx: any) => void }} WindowState
  */
 
 /** @param {any} t @param {WindowState} w */
@@ -344,7 +344,9 @@ function control(t, w, r) {
 /** @param {any} t @param {WindowState} w @param {Row} r @param {string[]} needs */
 function noteBox(t, w, r, needs) {
     const box = w.noteBoxes?.get(r.key);
-    if (!box) return div();
+    // until the row and the default are read the box is empty: nothing to edit or save yet
+    if (!box || !w.isNotesReady)
+        return div().text_size(12).text_color(t.dim).child('reading the note…');
     const fallback = w.noteDefaults?.[r.key] ?? '';
     const text = String(box.value());
     const stored = typeof w.values[r.key] === 'string' ? w.values[r.key] : '';

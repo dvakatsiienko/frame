@@ -74,11 +74,13 @@ export function windRefusal(values, change) {
 }
 
 /** one change to a row, judged: what to write (null when refused) and each row's «not saved» line after it; a saved
- * wind line clears the refusal on both lines, since the pair is valid again
- * @param {Record<string, unknown>} values @param {Record<string, string>} notes @param {string} key @param {unknown} value
- * @returns {{ notes: Record<string, string>, write: Record<string, unknown> | null }} */
-export function settingChange(values, notes, key, value) {
-    const refusal = windRefusal(values, { [key]: value });
+ * wind line clears the refusal on both lines, since the pair is valid again. `pending` holds the changes already
+ * accepted whose write has not been read back yet, so a second press is judged against the first
+ * @param {Record<string, unknown>} values @param {Record<string, unknown>} pending @param {Record<string, string>} notes
+ * @param {string} key @param {unknown} value
+ * @returns {{ notes: Record<string, string>, pending: Record<string, unknown>, write: Record<string, unknown> | null }} */
+export function settingChange(values, pending, notes, key, value) {
+    const refusal = windRefusal({ ...values, ...pending }, { [key]: value });
     const isLine = key === NOTICE || key === MUST;
     const rest = Object.fromEntries(
         Object.entries(notes).filter(
@@ -86,9 +88,23 @@ export function settingChange(values, notes, key, value) {
         ),
     );
     return refusal
-        ? { notes: { ...rest, [key]: refusal }, write: null }
-        : { notes: rest, write: { [key]: value } };
+        ? { notes: { ...rest, [key]: refusal }, pending, write: null }
+        : {
+              notes: rest,
+              pending: { ...pending, [key]: value },
+              write: { [key]: value },
+          };
 }
+
+/** the accepted changes still waiting: one leaves once the reloaded values show it
+ * @param {Record<string, unknown>} pending @param {Record<string, unknown>} values */
+export const settledPending = (pending, values) =>
+    Object.fromEntries(
+        Object.entries(pending).filter(
+            ([key, value]) =>
+                JSON.stringify(values[key]) !== JSON.stringify(value),
+        ),
+    );
 
 /** what a note box shows: its row, else the default x-mod-stash wrote @param {unknown} stored @param {string} fallback */
 export const noteShown = (stored, fallback) =>
@@ -99,13 +115,16 @@ export const noteShown = (stored, fallback) =>
 export const noteStored = (text, fallback) =>
     !text.trim() || text === fallback ? '' : text;
 
-/** a press of Save or Reset on a note box: what lands in its row, and the text the box takes (null leaves it)
- * @param {string} text @param {string} fallback @param {boolean} isReset
- * @returns {{ box: string | null, row: string }} */
-export const noteWrite = (text, fallback, isReset) =>
-    isReset
-        ? { box: fallback, row: '' }
-        : { box: null, row: noteStored(text, fallback) };
+/** a press of Save or Reset on a note box: what lands in its row, and the text the box takes (null leaves it);
+ * nothing at all before the box was filled from its row, or an empty box would be saved over his text
+ * @param {string} text @param {string} fallback @param {boolean} isReset @param {boolean} isReady
+ * @returns {{ box: string | null, row: string } | null} */
+export const noteWrite = (text, fallback, isReset, isReady) =>
+    !isReady
+        ? null
+        : isReset
+          ? { box: fallback, row: '' }
+          : { box: null, row: noteStored(text, fallback) };
 
 /** a warning, never a block: the words a second wind note must keep for a thread to compact
  * @param {string} text @param {string[]} needs @returns {string | null} */

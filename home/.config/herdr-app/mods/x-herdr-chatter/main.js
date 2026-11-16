@@ -63,6 +63,7 @@ import {
     THREADS_KEY,
     autoWind,
     autoWindAfterRead,
+    autoWindFlipped,
     bandButtons,
     bandOf,
     meterCells,
@@ -149,6 +150,7 @@ import {
     resolvedRows,
     settingChange,
     settingsText,
+    settledPending,
     storedRows,
 } from './settings-store.js';
 import { SETTINGS_WINDOW, settingsWindow } from './settings-window.js';
@@ -1627,6 +1629,11 @@ export default class ClaudeChat extends View {
             // defaults x-mod-stash wrote and the rows are read
             /** @type {Record<string, string>} */
             this.noteDefaults = {};
+            // the boxes are filled: before that a Save would write an empty box over his row
+            this.isNotesReady = false;
+            // changes accepted whose write is not read back yet, so a second press is judged against the first
+            /** @type {Record<string, unknown>} */
+            this.settingPending = {};
             /** @type {Map<string, import('gpui-base').TextareaState>} */
             this.noteBoxes = new Map();
             for (const r of settingRows) {
@@ -1646,6 +1653,7 @@ export default class ClaudeChat extends View {
                             this.noteDefaults[key] ?? '',
                         ),
                     );
+                this.isNotesReady = true;
                 cx.notify();
             });
             return;
@@ -1769,6 +1777,13 @@ export default class ClaudeChat extends View {
         /** @type {Map<string, string[]>} */
         this.popped = new Map();
         this.idleSince = new Map();
+        // each thread's 🍃 as the door last read it, by session id, with the flips and reads in flight
+        /** @type {Map<string, import('./band.js').AutoWind>} */
+        this.autoWinds = new Map();
+        /** @type {Set<string>} */
+        this.autoWindFlipping = new Set();
+        /** @type {Set<string>} */
+        this.autoWindReading = new Set();
         this.box = TextareaState.new({});
         this.box.set_auto_grow(1, 8);
         /** @type {Map<string, Mark>} each thread's marked words, by agent address */
@@ -7122,17 +7137,18 @@ export default class ClaudeChat extends View {
     /** @param {import('gpui-kit').Context} cx @param {import('./band.js').BandButton} btn */
     flipAutoWind(cx, btn) {
         const sid = this.states?.thread?.sid;
-        if (!sid || this.autoWindBusy) return;
-        this.autoWindBusy = true;
+        // one flip in flight per thread: a click on another thread meanwhile is its own flip
+        if (!sid || this.autoWindFlipping.has(sid)) return;
+        this.autoWindFlipping.add(sid);
         cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
             try {
                 const on = await autoWind(autoWindDoor, sid, !btn.isOn);
-                this.autoWind = {
-                    at: Date.now(),
-                    flips: (this.autoWind?.flips ?? 0) + 1,
-                    on,
+                this.autoWinds = autoWindFlipped(
+                    this.autoWinds,
                     sid,
-                };
+                    on,
+                    Date.now(),
+                );
             } catch (err) {
                 notify({
                     body: String(err),
@@ -7140,7 +7156,7 @@ export default class ClaudeChat extends View {
                     title: 'second wind auto: the flip was not written',
                 });
             } finally {
-                this.autoWindBusy = false;
+                this.autoWindFlipping.delete(sid);
             }
             cx.notify();
         });
@@ -7150,12 +7166,12 @@ export default class ClaudeChat extends View {
     /** @param {import('gpui-kit').Context} cx */
     async readAutoWind(cx) {
         const sid = this.states?.thread?.sid;
-        const last = this.autoWind;
-        // its own flag: a click during a read still flips, and the flip's answer outlives the read's
-        if (!sid || this.autoWindReading) return;
+        const last = this.autoWinds.get(sid);
+        // its own set: a click during a read still flips, and the flip's answer outlives the read's
+        if (!sid || this.autoWindReading.has(sid)) return;
         const wait = last?.on === null ? AUTO_WIND_RETRY_MS : AUTO_WIND_MS;
-        if (last?.sid === sid && Date.now() - last.at < wait) return;
-        this.autoWindReading = true;
+        if (last && Date.now() - last.at < wait) return;
+        this.autoWindReading.add(sid);
         const flips = last?.flips ?? 0;
         try {
             /** @type {boolean | null} */
@@ -7167,8 +7183,8 @@ export default class ClaudeChat extends View {
                     `second wind auto: the door did not answer: ${err}`,
                 );
             }
-            this.autoWind = autoWindAfterRead(
-                this.autoWind,
+            this.autoWinds = autoWindAfterRead(
+                this.autoWinds,
                 sid,
                 on,
                 flips,
@@ -7176,7 +7192,7 @@ export default class ClaudeChat extends View {
             );
             cx.notify();
         } finally {
-            this.autoWindReading = false;
+            this.autoWindReading.delete(sid);
         }
     }
 
@@ -7439,9 +7455,8 @@ export default class ClaudeChat extends View {
             .children(
                 bandButtons({
                     autoWind:
-                        this.autoWind?.sid === this.states?.thread?.sid
-                            ? (this.autoWind?.on ?? null)
-                            : null,
+                        this.autoWinds.get(this.states?.thread?.sid ?? '')
+                            ?.on ?? null,
                     fleet: this.states?.fleet,
                     isDeckShown: this.deckShown(),
                     override: this.override ?? { isOn: false },
@@ -7830,6 +7845,7 @@ export default class ClaudeChat extends View {
     renderView(cx) {
         if (props()?.settingsWindow)
             return settingsWindow(theme(), {
+                isNotesReady: this.isNotesReady,
                 keys: {
                     ...keysView(this.keysFile),
                     capture: this.keyCapture,
@@ -7847,13 +7863,19 @@ export default class ClaudeChat extends View {
                 noteDefaults: this.noteDefaults,
                 notes: this.settingNotes,
                 onChange: (key, value, ecx) => {
-                    const { notes, write } = settingChange(
+                    this.settingPending = settledPending(
+                        this.settingPending,
                         settingValues(),
+                    );
+                    const { notes, pending, write } = settingChange(
+                        settingValues(),
+                        this.settingPending,
                         this.settingNotes,
                         key,
                         value,
                     );
                     this.settingNotes = notes;
+                    this.settingPending = pending;
                     ecx.notify();
                     if (!write) return;
                     (key === 'chatter.metalHud'
@@ -7862,19 +7884,26 @@ export default class ClaudeChat extends View {
                     )
                         .then(() => writeSettings(write))
                         .then(loadSettings)
-                        .catch((e) =>
-                            console.log(`settings: ${e?.message ?? e}`),
-                        );
+                        .catch((e) => {
+                            // a write that failed is no longer waiting: the row shows the stored value again
+                            const { [key]: _failed, ...rest } =
+                                this.settingPending;
+                            this.settingPending = rest;
+                            console.log(`settings: ${e?.message ?? e}`);
+                        });
                 },
                 // a note box saves on its button, never per key
                 onNote: (key, isReset, ecx) => {
                     const box = this.noteBoxes.get(key);
                     if (!box) return;
-                    const { box: text, row } = noteWrite(
+                    const next = noteWrite(
                         String(box.value()),
                         this.noteDefaults[key] ?? '',
                         isReset,
+                        this.isNotesReady,
                     );
+                    if (!next) return;
+                    const { box: text, row } = next;
                     if (text !== null) box.set_value(text);
                     writeSettings({ [key]: row })
                         .then(loadSettings)
@@ -7894,7 +7923,8 @@ export default class ClaudeChat extends View {
                 },
                 overlay: props().overlay,
                 page: this.settingsPage,
-                values: settingValues(),
+                // an accepted change shows at once, before its write is read back
+                values: { ...settingValues(), ...this.settingPending },
             });
         if (props()?.settings) return this.settingsMenu(theme());
         const t = chatTheme();
