@@ -814,10 +814,10 @@ done 2026-11-16 17:22: f24 herdr foundation: the shape-idea round with dima on t
 done 2026-11-16 17:26: f21 FRM-600 naming door: summon via x brief summon --apply, read the name, dima confirms on mobile (FRM-600 Done)
 
 PK-349:W1036 (2026-11-16 17:09, dima): what mods lane is doing? and its /clio:lowtide-peek-chunk pls
-raw drop (2026-11-16, dima, herdr-typed): what mods lane is doing? and its /clio:lowtide-peek-chunk pls
+raw drop (2026-11-16 19:50, dima, herdr-typed, filed late): what mods lane is doing? and its /clio:lowtide-peek-chunk pls
 
 PK-349:W1037 (2026-11-16 17:14, dima): then, while everyone is running and bottleneck is solved - whats on your flyway? let's solve tails, gradually. what was postponed because of chaos? inbox? any other tails? reminder? your wish dated reminders as for today? i remmeber two - wish check and some other. i want all tails solved today so i can start speak app v2 tomorrow with wing.
-raw drop (2026-11-16, dima, herdr-typed): then, while everyone is running and bottleneck is solved - whats on your flyway? let's solve tails, gradually. what was postponed because of chaos? inbox? any other tails? reminder? your wish dated reminders as for today? i remmeber two - wish check and some other. i want all tails solved today so i can start speak app v2 tomorrow with wing.
+raw drop (2026-11-16 19:50, dima, herdr-typed, filed late): then, while everyone is running and bottleneck is solved - whats on your flyway? let's solve tails, gradually. what was postponed because of chaos? inbox? any other tails? reminder? your wish dated reminders as for today? i remmeber two - wish check and some other. i want all tails solved today so i can start speak app v2 tomorrow with wing.
 
 PK-349:W1038 (2026-11-16 17:36, dima): solve all mechanical tails and smaller stuff first, then grills and shapes in this order, implementing each after its grill if not blocked; no tails left.
 PK-349:W1039 (2026-11-16 17:36, dima): stats counter (tail grill from yesterday): shape, grill, and plan right away. -> PK-300:W1534.
@@ -862,8 +862,8 @@ done 2026-11-16 17:49: f19 designer interview for herdr (FRM-591) — later: dim
 groomed prompt 17:52 (herdr-typed lines 17:46, 17:47, 17:50):
 PK-349:W1051 (2026-11-16 17:46, dima): drifted hunt, clarified: both weekly counts move into the Monday boot. no card and no ask needed: each is one script run of a few seconds. every Monday the opening message carries both, numbers first, then action items for anything drifted. when the numbers do not show good results, propose how to make them show and fix them, so the next audit shows good results.
 PK-349:W1052 (2026-11-16 17:47, dima): what else to solve, with you, while everyone is advancing? when does egg-basket move to itrout? -> PK-444:W120.
-raw drop (2026-11-16, dima, herdr-typed): Both weekly counts move into the Monday boot. No card and no ask needed: each is one script run of a few seconds. Every Monday the opening message carries both, numbers first, then the action items for anything drifted. <- clarification on what i want by "drifted hunt" — e.g. When numbers do not show good results, I expect you to propose how to make them show and fix them so numbers will show good results on the next audit
-raw drop (2026-11-16, dima, herdr-typed): what else to solve? with you, while everyone advancing? when egg-basket moves to itrout?
+raw drop (2026-11-16 19:50, dima, herdr-typed, filed late): Both weekly counts move into the Monday boot. No card and no ask needed: each is one script run of a few seconds. Every Monday the opening message carries both, numbers first, then the action items for anything drifted. <- clarification on what i want by "drifted hunt" — e.g. When numbers do not show good results, I expect you to propose how to make them show and fix them so numbers will show good results on the next audit
+raw drop (2026-11-16 19:50, dima, herdr-typed, filed late): what else to solve? with you, while everyone advancing? when egg-basket moves to itrout?
 
 groomed prompt 18:17 (dima, herdr-typed; no raw file, quoted as written):
 PK-349:W1053 (2026-11-16 18:17, dima): ❓ what does herdr codie wait for? 7min parked
@@ -917,18 +917,18 @@ PK-349:W1101 (2026-11-16 20:17, dima): orbit fix: dima's one-word note; ask what
 20:26 FRM-621:W1 (2026-11-16 20:17, dima): scratch-copy fix: sign it. (homed here: FRM-621 has no wish block; signed 20:18 on this word)
 
 20:35 his herdr-typed lines of the day that were never filed (found by the 20:33 backfill diff, groomed by helga):
-PK-349:W1102 (2026-11-16, dima, herdr-typed): fully prep collie after SW and lead the mods lane; i go brew coffee and test ovis from mobile.
-PK-349:W1103 (2026-11-16, dima, herdr-typed): i think ideas are good, but how to apply them to our system in a graceful way, and are they truly useful for us? (ovis fallen off. collie most likely goes too. Worth borrowing, as ideas from its source, the uninstall loses nothing)
-PK-349:W1104 (2026-11-16, dima, herdr-typed): undo-send clarification: you said undo-send is implemented and asked me to summon Probe Wind Haiku to test it, but herdr codie confirmed it is not implemented. Why did you say it is implemented, and why is probe wind parked?
-PK-349:W1105 (2026-11-16, dima, herdr-typed): cleanup done items in pocket and refresh your flyway to actual state; undo-send was my miss, no rush, let's move efficiently. (undo-send)
-PK-349:W1106 (2026-11-16, dima, herdr-typed): why is the mods lane parked?
-PK-349:W1107 (2026-11-16, dima, herdr-typed): quick q: does auto second wind work for crow too?
-PK-349:W1108 (2026-11-16, dima, herdr-typed): o69: ok, do it, but do not interrupt what the mods lane is doing right now; let it finish, graceful switch, nothing dropped mid-done.
-PK-349:W1109 (2026-11-16, dima, herdr-typed): do it, or propose how. (a rule line of mine claims a halt check not built yet: reword it)
-PK-349:W1110 (2026-11-16, dima, herdr-typed): what is it? (the map recipe's stated limit)
-PK-349:W1111 (2026-11-16, dima, herdr-typed): is any work for stray lane pending?
-PK-349:W1112 (2026-11-16, dima, herdr-typed): o77: what is it about? clarify what i mean by «main prompt steer».
-PK-349:W1113 (2026-11-16, dima, herdr-typed): i close herdr right now and you do the cleanup; i am ready now.
-PK-349:W1114 (2026-11-16, dima, herdr-typed): codie does the cleanup.
-PK-349:W1115 (2026-11-16, dima, herdr-typed): or now? (tails) while i wait.
+PK-349:W1102 (2026-11-16 19:50, dima, herdr-typed, filed late): fully prep collie after SW and lead the mods lane; i go brew coffee and test ovis from mobile.
+PK-349:W1103 (2026-11-16 19:50, dima, herdr-typed, filed late): i think ideas are good, but how to apply them to our system in a graceful way, and are they truly useful for us? (ovis fallen off. collie most likely goes too. Worth borrowing, as ideas from its source, the uninstall loses nothing)
+PK-349:W1104 (2026-11-16 19:50, dima, herdr-typed, filed late): undo-send clarification: you said undo-send is implemented and asked me to summon Probe Wind Haiku to test it, but herdr codie confirmed it is not implemented. Why did you say it is implemented, and why is probe wind parked?
+PK-349:W1105 (2026-11-16 19:50, dima, herdr-typed, filed late): cleanup done items in pocket and refresh your flyway to actual state; undo-send was my miss, no rush, let's move efficiently. (undo-send)
+PK-349:W1106 (2026-11-16 19:50, dima, herdr-typed, filed late): why is the mods lane parked?
+PK-349:W1107 (2026-11-16 19:50, dima, herdr-typed, filed late): quick q: does auto second wind work for crow too?
+PK-349:W1108 (2026-11-16 19:50, dima, herdr-typed, filed late): o69: ok, do it, but do not interrupt what the mods lane is doing right now; let it finish, graceful switch, nothing dropped mid-done.
+PK-349:W1109 (2026-11-16 19:50, dima, herdr-typed, filed late): do it, or propose how. (a rule line of mine claims a halt check not built yet: reword it)
+PK-349:W1110 (2026-11-16 19:50, dima, herdr-typed, filed late): what is it? (the map recipe's stated limit)
+PK-349:W1111 (2026-11-16 19:50, dima, herdr-typed, filed late): is any work for stray lane pending?
+PK-349:W1112 (2026-11-16 19:50, dima, herdr-typed, filed late): o77: what is it about? clarify what i mean by «main prompt steer».
+PK-349:W1113 (2026-11-16 19:50, dima, herdr-typed, filed late): i close herdr right now and you do the cleanup; i am ready now.
+PK-349:W1114 (2026-11-16 19:50, dima, herdr-typed, filed late): codie does the cleanup.
+PK-349:W1115 (2026-11-16 19:50, dima, herdr-typed, filed late): or now? (tails) while i wait.
 <!-- SECTION:NOTES:END -->

@@ -272,7 +272,7 @@ PK-444:W115 (2026-11-16 17:17, dima): why forever? we cannot just rename?
 PK-444:W116 (2026-11-16 17:17, dima): ok proceed efficiently as your propose. i want good tabs and clear name for it, and crap deleted in the end. go
 
 PK-444:W117 (2026-11-16 17:25, dima): BTW: is herdr codie lane moves via properly written spec? i worry about chaotic moves we do now. i want his plan properly specced and well structured and synced with glide
-raw drop (2026-11-16, dima, herdr-typed): BTW: is herdr codie lane moves via properly written spec? i worry about chaotic moves we do now. i want his plan properly specced and well structured and synced with glide
+raw drop (2026-11-16 19:50, dima, herdr-typed, filed late): BTW: is herdr codie lane moves via properly written spec? i worry about chaotic moves we do now. i want his plan properly specced and well structured and synced with glide
 
 PK-444:W118 (2026-11-16 17:38, dima): egg basket ui: "wow i like egg basket ui MUCH better. AB SS for your look." (A/B screenshots of the look, asked of the herdr lane)
 PK-444:W119 (2026-11-16 17:38, dima): ctx meters in band: ask codie to polish it, it currently looks off, make it pretty and beautiful.
@@ -286,7 +286,7 @@ what off: ctx meters in band (ask codie to polish it, it currently looks off, ma
 groomed prompt 17:52 (herdr-typed lines 17:47, 17:50):
 PK-444:W120 (2026-11-16 17:47, dima): when does egg-basket move to itrout? (from the 17:47 line; see PK-349:W1052)
 PK-444:W121 (2026-11-16 17:50, dima): layout picker in settings: pretty thumbnails for the themes, listed as two first: first itrout, second egg basket. names are not kebabs: "🍣 iTrout" and "🧺 egg basket" (itrout is not here yet, planned). the parenthetical "➡️ The tabs and the frame are ready now, so they could move to itrout ahead of the chat, if you'd rather not wait" is clio's line, not dima's words.
-raw drop (2026-11-16, dima, herdr-typed): layout picker in settings - can i have pretty thumbnails for my themes? and listed as two first in the list? first - itrout, second egg basked? and names here are not kebabs. "🍣 iTrout" lowercase "🧺 egg basket". (itrouted is not here yet, planned)
+raw drop (2026-11-16 19:50, dima, herdr-typed, filed late): layout picker in settings - can i have pretty thumbnails for my themes? and listed as two first in the list? first - itrout, second egg basked? and names here are not kebabs. "🍣 iTrout" lowercase "🧺 egg basket". (itrouted is not here yet, planned)
 
 17:59 decided (his o48 tick and 17:55 words «keen idea. i like. ok i then live in egg basket, which becomes itrout later»): egg-basket is his daily layout from now; nothing moves into the old layout; new chat slices land in egg-basket; at the end the file is renamed once and the zoo layout and folders go on his word. names: «🍣 itrout» and «🧺 egg basket» only in settings, kebab under the hood (his 17:55): herdr's picker shows the file name and has no display field (the codie's read of frame/settings/main.js:316), so this needs an answer. light theme for egg-basket: both themes wanted, not urgent, features first. chat wisp 17:55 (nothing scrolls the chat but him; «newest» → «↓», smaller, off centre): sent to the herdr codie, plan first
 
@@ -349,18 +349,18 @@ PK-444:W165 (2026-11-16 20:17, dima): herdr unsigned: designer interview later; 
 PK-444:W166 (2026-11-16 20:17, dima): herdr scope drifted after leaving zoo; borrows auto-resolve some plans. Card per ticket with evidence, then one list: absorbed, unchanged, dead.
 
 20:35 his herdr-typed lines of the day that were never filed (found by the 20:33 backfill diff, groomed by helga):
-PK-444:W167 (2026-11-16, dima, herdr-typed): do not forget! if researcher still running (ask researcher to compare shepard and those two i asked for against zoo herdr layout, one we started with)
-PK-444:W168 (2026-11-16, dima, herdr-typed): a little history: we moved to herdr from the Claude desktop app as our main coding place a week ago; before moving i asked for a research starting point, you proposed Zoo and said it is good, and we started with Zoo.
-PK-444:W169 (2026-11-16, dima, herdr-typed): the previous mess hunt probably drew so much negative feedback for exactly this reason: Zoo is poorly written.
-PK-444:W170 (2026-11-16, dima, herdr-typed): now codie has to fix a lot, and even TypeScript is broken under the hood; i do not like it.
-PK-444:W171 (2026-11-16, dima, herdr-typed): i looked in herdr gallery; the UI (look) is meh. if anything to borrow from under the hood (and other parts have nothing better), propose what to pull; otherwise discard. (flockbook: B. The cleanest chat written as a mod, small tested files; you have not seen it yet.)
-PK-444:W172 (2026-11-16, dima, herdr-typed): the plan: 1. best ideas from collie and ovis and how to apply them; 2. revisit what we have, exploration is done; 3. all borrow surfaces, what we pull from and when; 4. next actions: cuts, borrows from shepardr or swaps, moving to shepardr as base instead of pulling on top of zoo. Herdr lane is stuck: cuts now or after shepardr rewiring?
-PK-444:W173 (2026-11-16, dima, herdr-typed): tabs look better in the terminals layout; i just AB tested against shepardr, so let's borrow tabs from terminals layout.
-PK-444:W174 (2026-11-16, dima, herdr-typed): what else to borrow from terminals? frame? ask herdr codie to inspect.
-PK-444:W175 (2026-11-16, dima, herdr-typed): but this old zoo's one will die? (the collision: x-herdr-tabs is the folder of the tab bar you use now, the zoo-derived one, and your layout points at that name; two mods cannot share a folder)
-PK-444:W176 (2026-11-16, dima, herdr-typed): tell when. (speed measure needs Apple's overlay and a herdr restart; it can ride your next restart, which also closes the old cuts ticket)
-PK-444:W177 (2026-11-16, dima, herdr-typed): o66: tell when how.
-PK-444:W178 (2026-11-16, dima, herdr-typed): what is it? i do not understand, explain in simple way. (the side panel in egg-basket: one state for all spaces, or per space)
-PK-444:W179 (2026-11-16, dima, herdr-typed): i keep herdr open.
-PK-444:W180 (2026-11-16, dima, herdr-typed): side chat: after reload, seems drifted.
+PK-444:W167 (2026-11-16 19:50, dima, herdr-typed, filed late): do not forget! if researcher still running (ask researcher to compare shepard and those two i asked for against zoo herdr layout, one we started with)
+PK-444:W168 (2026-11-16 19:50, dima, herdr-typed, filed late): a little history: we moved to herdr from the Claude desktop app as our main coding place a week ago; before moving i asked for a research starting point, you proposed Zoo and said it is good, and we started with Zoo.
+PK-444:W169 (2026-11-16 19:50, dima, herdr-typed, filed late): the previous mess hunt probably drew so much negative feedback for exactly this reason: Zoo is poorly written.
+PK-444:W170 (2026-11-16 19:50, dima, herdr-typed, filed late): now codie has to fix a lot, and even TypeScript is broken under the hood; i do not like it.
+PK-444:W171 (2026-11-16 19:50, dima, herdr-typed, filed late): i looked in herdr gallery; the UI (look) is meh. if anything to borrow from under the hood (and other parts have nothing better), propose what to pull; otherwise discard. (flockbook: B. The cleanest chat written as a mod, small tested files; you have not seen it yet.)
+PK-444:W172 (2026-11-16 19:50, dima, herdr-typed, filed late): the plan: 1. best ideas from collie and ovis and how to apply them; 2. revisit what we have, exploration is done; 3. all borrow surfaces, what we pull from and when; 4. next actions: cuts, borrows from shepardr or swaps, moving to shepardr as base instead of pulling on top of zoo. Herdr lane is stuck: cuts now or after shepardr rewiring?
+PK-444:W173 (2026-11-16 19:50, dima, herdr-typed, filed late): tabs look better in the terminals layout; i just AB tested against shepardr, so let's borrow tabs from terminals layout.
+PK-444:W174 (2026-11-16 19:50, dima, herdr-typed, filed late): what else to borrow from terminals? frame? ask herdr codie to inspect.
+PK-444:W175 (2026-11-16 19:50, dima, herdr-typed, filed late): but this old zoo's one will die? (the collision: x-herdr-tabs is the folder of the tab bar you use now, the zoo-derived one, and your layout points at that name; two mods cannot share a folder)
+PK-444:W176 (2026-11-16 19:50, dima, herdr-typed, filed late): tell when. (speed measure needs Apple's overlay and a herdr restart; it can ride your next restart, which also closes the old cuts ticket)
+PK-444:W177 (2026-11-16 19:50, dima, herdr-typed, filed late): o66: tell when how.
+PK-444:W178 (2026-11-16 19:50, dima, herdr-typed, filed late): what is it? i do not understand, explain in simple way. (the side panel in egg-basket: one state for all spaces, or per space)
+PK-444:W179 (2026-11-16 19:50, dima, herdr-typed, filed late): i keep herdr open.
+PK-444:W180 (2026-11-16 19:50, dima, herdr-typed, filed late): side chat: after reload, seems drifted.
 <!-- SECTION:NOTES:END -->
