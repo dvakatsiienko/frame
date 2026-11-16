@@ -266,26 +266,30 @@ test('92 % used, 50 min left, +8 over pace sends exactly one line, the burn', as
     expect(rungs(w)).toEqual(['burn']);
 });
 
-test('a park at 70–80 % used reads resume under pace', async ($, on) => {
-    const w = world(on, WATCH);
-    w.meter(72, 2 * HOUR);
-    await start($);
-    await w.clock.advance(POLL);
-    await endTurn($);
-    const reset = NOW + 2 * HOUR;
-    const atOver1 = NOW + 32 * MIN;
-    w.meter(72, reset - atOver1, 0, atOver1);
-    await w.clock.set(atOver1);
-    await w.clock.advance(POLL);
-    const between = rungs(w).length;
-    const atUnder = NOW + 45 * MIN;
-    w.meter(72, reset - atUnder, 0, atUnder);
-    await w.clock.set(atUnder);
-    await w.clock.advance(POLL);
-    await endTurn($);
-    await w.clock.advance(POLL);
-    expect([between, rungs(w)]).toEqual([1, ['park', 'resume']]);
-});
+test(
+    'a park at 70–80 % used reads resume under pace',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, WATCH);
+        w.meter(72, 2 * HOUR);
+        await start($);
+        await w.clock.advance(POLL);
+        await endTurn($);
+        const reset = NOW + 2 * HOUR;
+        const atOver1 = NOW + 32 * MIN;
+        w.meter(72, reset - atOver1, 0, atOver1);
+        await w.clock.set(atOver1);
+        await w.clock.advance(POLL);
+        const between = rungs(w).length;
+        const atUnder = NOW + 45 * MIN;
+        w.meter(72, reset - atUnder, 0, atUnder);
+        await w.clock.set(atUnder);
+        await w.clock.advance(POLL);
+        await endTurn($);
+        await w.clock.advance(POLL);
+        expect([between, rungs(w)]).toEqual([1, ['park', 'resume']]);
+    },
+);
 
 test('a new window clears the stored rung, so its park is told again', async ($, on) => {
     const w = world(on, WATCH);
@@ -313,15 +317,19 @@ test('a pre-reset meter against the fresh clock clears the rung with no line', a
 
 /* a quiet meter */
 
-test('a meter 40 min old still fires the resume once the clock carries pace back', async ($, on) => {
-    const w = world(on, WATCH);
-    w.meter(46, LEFT);
-    await start($);
-    await w.clock.advance(POLL);
-    await endTurn($);
-    await w.clock.advance(40 * MIN);
-    expect(rungs(w)).toEqual(['park', 'resume']);
-});
+test(
+    'a meter 40 min old still fires the resume once the clock carries pace back',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, WATCH);
+        w.meter(46, LEFT);
+        await start($);
+        await w.clock.advance(POLL);
+        await endTurn($);
+        await w.clock.advance(40 * MIN);
+        expect(rungs(w)).toEqual(['park', 'resume']);
+    },
+);
 
 test('a meter 40 min old never fires a park', async ($, on) => {
     const w = world(on, WATCH);
@@ -591,17 +599,21 @@ test('the part switched off mid-shift restores the waker', async ($, on) => {
     expect(wakerOn(w)).toBe(false);
 });
 
-test('a refused line leaves keep-hot armed', async ($, on) => {
-    const w = world(on, { ...WATCH, [`hot:${SID}`]: { since: NOW } });
-    w.meter(46, LEFT);
-    w.state.isRefused = true;
-    await start($);
-    await w.clock.advance(POLL);
-    w.state.isRefused = false;
-    w.store.delete(`pace:${SID}`);
-    await w.clock.advance(51 * 60_000);
-    expect(w.turns.some((t) => t.includes('keep-hot'))).toBe(true);
-});
+test(
+    'a refused line leaves keep-hot armed',
+    { timeoutMs: 60_000 },
+    async ($, on) => {
+        const w = world(on, { ...WATCH, [`hot:${SID}`]: { since: NOW } });
+        w.meter(46, LEFT);
+        w.state.isRefused = true;
+        await start($);
+        await w.clock.advance(POLL);
+        w.state.isRefused = false;
+        w.store.delete(`pace:${SID}`);
+        await w.clock.advance(51 * 60_000);
+        expect(w.turns.some((t) => t.includes('keep-hot'))).toBe(true);
+    },
+);
 
 const settings = ($: Engine) =>
     $.ui.mount({

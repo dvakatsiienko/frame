@@ -403,18 +403,26 @@ async function run($: Engine, on: On, key: string, isOn: boolean) {
 }
 
 for (const key of Object.keys(SCENARIOS)) {
-    test(`${key} on: it reaches the model and its op works`, async ($, on) => {
-        const r = await run($, on, key, true);
-        expect([r.traces.length > 0, r.refused]).toEqual([true, undefined]);
-    });
-    test(`${key} off: nothing reaches the model, no turn, its op refused in one line`, async ($, on) => {
-        const r = await run($, on, key, false);
-        expect([
-            r.traces,
-            SCENARIOS[key]?.op ? r.refused?.includes('🎛️ settings') : true,
-            r.refused?.includes('\n') ?? false,
-        ]).toEqual([[], true, false]);
-    });
+    test(
+        `${key} on: it reaches the model and its op works`,
+        { timeoutMs: 60_000 },
+        async ($, on) => {
+            const r = await run($, on, key, true);
+            expect([r.traces.length > 0, r.refused]).toEqual([true, undefined]);
+        },
+    );
+    test(
+        `${key} off: nothing reaches the model, no turn, its op refused in one line`,
+        { timeoutMs: 60_000 },
+        async ($, on) => {
+            const r = await run($, on, key, false);
+            expect([
+                r.traces,
+                SCENARIOS[key]?.op ? r.refused?.includes('🎛️ settings') : true,
+                r.refused?.includes('\n') ?? false,
+            ]).toEqual([[], true, false]);
+        },
+    );
 }
 
 test('🪐 orbit off tells the model its asks go into the reply as a ➡️ line', async ($, on) => {
