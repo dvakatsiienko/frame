@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-16T17:26:00Z'
+updated_date: '2026-11-16T17:37:00Z'
 labels:
   - s
   - clio-main
@@ -891,4 +891,6 @@ PK-349:W1062 (2026-11-16 19:11, dima): ❓ what to solve next with you? let's st
 PK-349:W1063 (2026-11-16 19:23, dima): stop probe wind frm-625.
 PK-349:W1064 (2026-11-16 19:23, dima): ensure all trash cleaned. (clio's line before ←: the cuts ticket's closing word overstated; three cuts you ticked are still on disk: the zoo backup, 4 zoo keys, two zoo lines in your layout; they are now listed in the herdr end step)
 PK-349:W1065 (2026-11-16 19:23, dima): ❓ what is o79?
+
+19:37 PK-349:W1056 and W1057 moved to PK-441:W8 and W9 (the mess hunt lines live there)
 <!-- SECTION:NOTES:END -->

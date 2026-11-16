@@ -4,7 +4,7 @@ title: 'mess hunt: a subagent card instead of the skill? weigh it'
 status: open
 assignee: []
 created_date: '2026-11-16T12:15:00Z'
-updated_date: '2026-11-16T17:26:00Z'
+updated_date: '2026-11-16T17:37:00Z'
 labels:
   - s
 dependencies: []
@@ -54,4 +54,6 @@ PK-441:W16 (2026-11-16 19:23, dima): grill q1. i'm not sure about extending wisp
 PK-441:W17 (2026-11-16 19:23, dima): i think in the future we won't run it every day either. it will be maybe once a week at least, or even rarer. i wouldn't rush into flooding the wisphunter spec with these mess hunting details.
 PK-441:W18 (2026-11-16 19:23, dima): on the other hand, the wisphunter spec would be a good base for messhunter, because essentially messhunter is wisphunter with an additional precise and good goal. having a wisphunter spec for the messhunter card would also be good.
 PK-441:W19 (2026-11-16 19:23, dima): now i'm confused. propose how to solve all of this efficiently.
+
+19:37 decided on his ticks (19:29): o80 a small new card standing on wisphunter's card, differences only, wisphunter gains one clause; o81 Opus 5.5 medium, memory-less, read-only, one card with the angle in its brief; o82 the name and badge 🦝 messhunter; o83 one line in rules/fleet-identity.md plus x:crew-subagent and the mess hunt skill. built 9a2ea76d; the probe: its first call read wisphunter's card. PK-441:W8 and W9 are this item's; their twins PK-349:W1056–W1057 carry a moved note
 <!-- SECTION:NOTES:END -->
