@@ -1,7 +1,7 @@
 ---
-dies-when: dima's verdict on archify
+dies-when: distilled into FRM-614's borrowed section (2026-11-17)
 ---
-Ticket: none
+Ticket: FRM-614
 
 # archify: diagrams for our fleet flows, better than Excalidraw?
 
