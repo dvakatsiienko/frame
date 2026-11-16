@@ -53,6 +53,7 @@ import {
     withFiles,
 } from './attach.js';
 import {
+    AUTO_WIND_DOOR,
     DECK_BLOCK,
     OVERRIDE_STORE,
     PENDING_MS,
@@ -60,6 +61,7 @@ import {
     PRESS_FILE,
     STATE_DIR,
     THREADS_KEY,
+    autoWind,
     bandButtons,
     bandOf,
     meterCells,
@@ -851,6 +853,24 @@ async function bandStates(pid) {
               }
             : null,
     };
+}
+
+// a 🍃 pressed on the cc band reaches no file herdr watches, so the shown thread's key is asked again this often
+const AUTO_WIND_MS = 60 * 1000;
+
+/**
+ * x-mod-stash's door for a session's 🍃, run in frame where `pnpm mods:set` lives
+ * @param {string[]} args
+ */
+async function autoWindDoor(args) {
+    const r = await exec('pnpm', [...AUTO_WIND_DOOR, ...args], {
+        cwd: `${home()}/frame`,
+    });
+    if (r.code !== 0)
+        throw new Error(
+            r.stderr.trim() || r.stdout.trim() || 'mods:set failed',
+        );
+    return r.stdout;
 }
 
 /**
@@ -6984,6 +7004,8 @@ export default class ClaudeChat extends View {
                         .on_click((_e, cx) => {
                             if (btn.key === 'board')
                                 run('layout.toggle', { id: DECK_BLOCK });
+                            else if (btn.key === 'auto')
+                                this.flipAutoWind(cx, btn);
                             else if (btn.key === 'settings')
                                 openOverlay({
                                     ...SETTINGS_WINDOW,
@@ -7035,6 +7057,46 @@ export default class ClaudeChat extends View {
         });
     }
 
+    // 🍃 flips through the stash's door, and shows what the door then reads, never the click's own guess
+    /** @param {import('gpui-kit').Context} cx @param {import('./band.js').BandButton} btn */
+    flipAutoWind(cx, btn) {
+        const sid = this.states?.thread?.sid;
+        if (!sid || this.autoWindBusy) return;
+        this.autoWindBusy = true;
+        cx.spawn(async (/** @type {import('gpui-kit').Context} */ cx) => {
+            try {
+                const on = await autoWind(autoWindDoor, sid, !btn.isOn);
+                this.autoWind = { at: Date.now(), on, sid };
+            } catch (err) {
+                notify({
+                    body: String(err),
+                    level: 'error',
+                    title: 'second wind auto: the flip was not written',
+                });
+            } finally {
+                this.autoWindBusy = false;
+            }
+            cx.notify();
+        });
+    }
+
+    // the shown thread's 🍃 as the door reads it: asked on a new thread, then every AUTO_WIND_MS
+    /** @param {import('gpui-kit').Context} cx */
+    async readAutoWind(cx) {
+        const sid = this.states?.thread?.sid;
+        const last = this.autoWind;
+        if (!sid || this.autoWindBusy) return;
+        if (last?.sid === sid && Date.now() - last.at < AUTO_WIND_MS) return;
+        this.autoWindBusy = true;
+        try {
+            const on = await autoWind(autoWindDoor, sid).catch(() => null);
+            this.autoWind = { at: Date.now(), on, sid };
+            cx.notify();
+        } finally {
+            this.autoWindBusy = false;
+        }
+    }
+
     // the thread's own state and the fleet's, as x-mod-stash wrote them for the band's four buttons, and the presses
     // in the press file it has not answered yet
     /** @param {import('gpui-kit').Context} cx */
@@ -7053,6 +7115,7 @@ export default class ClaudeChat extends View {
                 if (await this.settleAway(cx)) cx.notify();
                 await this.readBack(cx);
                 if (this.settlePresses()) cx.notify();
+                await this.readAutoWind(cx);
             } finally {
                 this.statesBusy = false;
             }
@@ -7277,7 +7340,7 @@ export default class ClaudeChat extends View {
             .child(this.bandChips(t));
     }
 
-    // the band's 7 buttons, on the right of the control card
+    // the band's 8 buttons, on the right of the control card
     /** @param {any} t */
     bandChips(t) {
         return h_flex()
@@ -7285,6 +7348,10 @@ export default class ClaudeChat extends View {
             .gap(4)
             .children(
                 bandButtons({
+                    autoWind:
+                        this.autoWind?.sid === this.states?.thread?.sid
+                            ? (this.autoWind?.on ?? null)
+                            : null,
                     fleet: this.states?.fleet,
                     isDeckShown: this.deckShown(),
                     override: this.override ?? { isOn: false },

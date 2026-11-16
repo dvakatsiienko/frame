@@ -3,6 +3,8 @@ import { describe, expect, test } from 'vitest';
 import type { FleetState, ThreadState } from './band.js';
 import {
     STALE_MS,
+    autoWind,
+    autoWindOf,
     bandButtons,
     bandOf,
     meterCells,
@@ -71,6 +73,7 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
     test('with no state file yet the four thread buttons stay greyed', () => {
         expect(keys(off)).toEqual([
             ['wind', false, false],
+            ['auto', false, false],
             ['hot', false, false],
             ['waker', false, false],
             ['afk', false, false],
@@ -81,8 +84,9 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
     });
 
     test("with the thread's state file and fleet.json, wind, hot, waker and AFK are live", () => {
-        expect(keys({ ...off, fleet, thread }).slice(0, 4)).toEqual([
+        expect(keys({ ...off, fleet, thread }).slice(0, 5)).toEqual([
             ['wind', false, true],
+            ['auto', false, false],
             ['hot', false, true],
             ['waker', false, true],
             ['afk', false, true],
@@ -98,12 +102,12 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
             },
             thread: { hot: { since: 5 }, wind: 'writing' },
         });
-        expect(on.slice(0, 4).map((b) => b.isOn)).toEqual([
-            true,
-            true,
-            true,
-            true,
-        ]);
+        expect(
+            on
+                .filter((b) => b.key !== 'auto')
+                .slice(0, 4)
+                .map((b) => b.isOn),
+        ).toEqual([true, true, true, true]);
     });
 
     test('a wind the stash cancelled or refused reads off', () => {
@@ -120,6 +124,7 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
             bandButtons(state).map((b) => b.tip);
         expect(tips(off)).toEqual([
             'second wind',
+            'second wind auto',
             'keep hot',
             'waker',
             'afk',
@@ -134,7 +139,7 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
                 override: { isOn: true, since: 'x' },
                 pending: { waker: { at: 1, on: false } },
                 thread: { hot: { since }, wind: null },
-            }).slice(1, 5),
+            }).slice(2, 6),
         ).toEqual([
             'keep hot: on since 22:20',
             'waker',
@@ -174,12 +179,12 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
     test('a press waiting on the stash shows its new state until the stash answers', () => {
         const pending = { hot: { at: 1, on: true } };
         expect(
-            bandButtons({ ...off, fleet, pending, thread })[1],
+            bandButtons({ ...off, fleet, pending, thread })[2],
         ).toMatchObject({ isOn: true, isPending: true });
     });
 
     test('the board reads off while the deck is hidden', () => {
-        expect(keys({ ...off, isDeckShown: false })[6]).toEqual([
+        expect(keys({ ...off, isDeckShown: false })[7]).toEqual([
             'board',
             false,
             true,
@@ -312,7 +317,7 @@ describe('the band follows a press made on the deck (dima, 23:42)', () => {
             override: { isOn: false },
             pending: pendingOf(file, 'me', now),
             thread: { hot: { since: 5 }, wind: null },
-        })[1];
+        })[2];
         expect(hot).toMatchObject({ isOn: false, isPending: true });
     });
 });
@@ -383,5 +388,61 @@ describe('the meters: no words, the numbers in a tooltip (PK-384)', () => {
     test('the tooltip names the meter and its percent', () => {
         expect(meterTip('ctx', 28.4)).toBe('context');
         expect(meterTip('week', null)).toBe('weekly: not read yet');
+    });
+});
+
+describe('🍃 second wind auto sits right of 🐦‍🔥 (FRM-625)', () => {
+    const base = {
+        fleet: null,
+        isDeckShown: true,
+        override: { isOn: false },
+        thread: { hot: null, wind: null },
+    };
+    const leaf = (state: Parameters<typeof bandButtons>[0]) =>
+        bandButtons(state)[1];
+
+    test('it follows the wind button, named by its hover, lit while the key reads on', () => {
+        expect(bandButtons({ ...base, autoWind: true })[0].key).toBe('wind');
+        expect(leaf({ ...base, autoWind: true })).toMatchObject({
+            emoji: '🍃',
+            isLive: true,
+            isOn: true,
+            key: 'auto',
+            tip: 'second wind auto',
+        });
+        expect(leaf({ ...base, autoWind: false })).toMatchObject({
+            isLive: true,
+            isOn: false,
+        });
+    });
+
+    test('with no thread, or before the door answered, it stays greyed', () => {
+        expect(leaf({ ...base, autoWind: null }).isLive).toBe(false);
+        expect(leaf({ ...base, autoWind: true, thread: null }).isLive).toBe(
+            false,
+        );
+    });
+
+    // a stand-in for `pnpm mods:set second-wind-auto`: its two forms over one store, on where nothing was pressed
+    const door = (store: Record<string, boolean>) => async (args: string[]) => {
+        const [sid, value] = args;
+        if (value) store[sid] = value === 'on';
+        return value
+            ? `🍃 ${sid} ${value}, its next turn reads it\n`
+            : `${sid} ${store[sid] === false ? 'off' : 'on'}\n`;
+    };
+
+    test('a flip writes through the door, and the door reads the new value', async () => {
+        const store: Record<string, boolean> = {};
+        expect(await autoWind(door(store), 's1')).toBe(true);
+        expect(await autoWind(door(store), 's1', false)).toBe(false);
+        expect(store).toEqual({ s1: false });
+        expect(await autoWind(door(store), 's1', true)).toBe(true);
+    });
+
+    test('an answer for another session, or none, reads unknown', () => {
+        expect(autoWindOf('s2 on\n', 's1')).toBeNull();
+        expect(autoWindOf('', 's1')).toBeNull();
+        expect(autoWindOf('s1 maybe\n', 's1')).toBeNull();
     });
 });

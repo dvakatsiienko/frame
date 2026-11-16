@@ -153,6 +153,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then right of «wait» sit 🐦‍🔥 🔥 ⏰ 💨 🔓 🎛️ 🚦, emoji only, each word leading its tooltip (dima, 21:02); filled when on, 🔓 red when on
   - and 🚦 shows and hides the deck by herdr's `layout.toggle` on its block, no layout file write (proof 2102: 9 threads before, hidden and after; his click «board confirmed to work»)
   - and 🔓 reads the override store `x` reads; its click waits on the mods codie's proof row; 🎛️ waits on the settings view: greyed, the reason on hover
+- ⬜ 🍃 second wind auto on the band, right of 🐦‍🔥 (FRM-625)
+  - makes: the thread's `second-wind-auto` key, written by x-mod-stash's own door (`pnpm mods:set second-wind-auto <session id> on|off`), never by herdr
+  - given a thread's tab in the Chat view, then 🍃 sits right of 🐦‍🔥, its hover «second wind auto», filled while that thread's key reads on
+  - when dima clicks it, then the key flips through the door and the button shows what the door reads back; a failed write says so in a toast and the button keeps its state
+  - and it stays greyed until the door answered for the shown thread; a press on the cc band shows here within a minute
+  - decision: the door, never the press file — the spec's line; the key is asked on a new thread and once a minute, since no shelf file carries it yet
 - 🧭 a thread's status sits in the text box's bottom bar (FRM-610)
   - given a thread working, then between + and the band's buttons a spinner, what it does, its turn clock and Stop; at the narrowest pane the line and clock clip, while Stop and the band's buttons stay whole
   - given a thread idle, then the bar reads «○ Idle» (or its wait line), and the meters card above has no status row

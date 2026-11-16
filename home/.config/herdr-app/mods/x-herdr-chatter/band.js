@@ -162,11 +162,40 @@ const WIND_SAY = {
     writing: 'writing its handoff',
 };
 
+// x-mod-stash's door for a session's 🍃 key, run in frame: `pnpm --silent mods:set second-wind-auto <sid> [on|off]`
+export const AUTO_WIND_DOOR = ['--silent', 'mods:set', 'second-wind-auto'];
+
+/**
+ * the door's answer for one session, `<sid> on|off`; anything else reads unknown
+ * @param {string} stdout
+ * @param {string} sid
+ * @returns {boolean | null}
+ */
+export function autoWindOf(stdout, sid) {
+    for (const line of stdout.split('\n')) {
+        if (line === `${sid} on`) return true;
+        if (line === `${sid} off`) return false;
+    }
+    return null;
+}
+
+/**
+ * a session's 🍃: with `on` it writes through the door first, and what comes back is always the door's own read
+ * @param {(args: string[]) => Promise<string>} door runs the door with these arguments, resolves with its stdout
+ * @param {string} sid
+ * @param {boolean} [on]
+ */
+export async function autoWind(door, sid, on) {
+    if (on !== undefined) await door([sid, on ? 'on' : 'off']);
+    return autoWindOf(await door([sid]), sid);
+}
+
 /**
  * the row right of «wait», in his order (his crop, 20:59; board last, 21:02): only a button whose press herdr can prove
  * is live; each draws as its emoji alone, its tooltip its name and no press explanation (dima, 23:08). wind, hot, waker
  * and AFK read on from what the stash wrote; a press it has not answered yet shows the state it asked for
- * @param {{ isDeckShown: boolean, override: Override, thread?: ThreadState | null, fleet?: FleetState | null, pending?: Pending }} state
+ * 🍃 reads its key through the stash's own door (`autoWind`), so it stays greyed until that door answered
+ * @param {{ isDeckShown: boolean, override: Override, thread?: ThreadState | null, fleet?: FleetState | null, pending?: Pending, autoWind?: boolean | null }} state
  * @returns {BandButton[]}
  */
 export function bandButtons({
@@ -175,6 +204,7 @@ export function bandButtons({
     thread = null,
     fleet = null,
     pending = {},
+    autoWind = null,
 }) {
     const asked = pending.wind;
     const wind = asked ? (asked.on ? 'asked' : null) : (thread?.wind ?? null);
@@ -229,6 +259,14 @@ export function bandButtons({
     };
     return [
         pressable('wind', WIND_EMOJI[wind] ?? '🐦‍🔥', 'wind'),
+        {
+            emoji: '🍃',
+            isLive: Boolean(thread) && autoWind !== null,
+            isOn: autoWind === true,
+            key: 'auto',
+            tip: 'second wind auto',
+            word: 'second wind auto',
+        },
         pressable('hot', '🔥', 'hot'),
         pressable('waker', '⏰', 'waker'),
         pressable('afk', '💨', 'AFK'),
