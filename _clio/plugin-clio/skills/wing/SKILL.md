@@ -13,6 +13,7 @@ a wing (dima's name, 2026-11-06, was «side channel») takes dima's side questio
 - the wing takes the rest; main hands a chore or grill to it the turn it lands, with one line to dima naming it; the wing takes it by slipstream (`habit-shared-files` § the flyway)
 - 🐦‍⬛ crow reads every wing on its own clock and sends its note there; a wing still consults her by `SendMessage` on a grill or a solo call, and a plan goes through `pnpm crow:plan-critique <file>`
 - every clio sees every clio lane: `node ~/frame/_clio/script/clio-lanes-radar.ts`, printed at each start and compact; asked about state, run it first
+- a guarded command another session runs gets its ask on that session's board, the whole command quoted: its guard reads only its own ticks (o10, 11-18)
 - heavy runs go in the background: `x lane commit` and `x lane push` take the machine-wide turn; a long round (mutants, a hand suite) runs through `~/frame/script/gate-queue.sh --long <command…>`
 
 ## the doors
