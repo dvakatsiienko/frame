@@ -2461,10 +2461,11 @@ export default class Chat extends View {
         const text = box.value().trim();
         if (!text || !file) return;
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
-        // checked before the mark comes off, so a refused push keeps his words marked
-        const blocked = sendBlocked(this.address, typingInto);
-        if (blocked) return this.say(blocked, cx);
         cx.spawn(async (cx) => {
+            // checked right before the mark comes off, so a refused push keeps his words marked
+            const blocked =
+                this.address && sendBlocked(this.address, typingInto);
+            if (blocked) return this.say(blocked, cx);
             const why = await this.magic.release(file, this.joins);
             if (this.file !== file) return;
             if (why) return this.say(why, cx);

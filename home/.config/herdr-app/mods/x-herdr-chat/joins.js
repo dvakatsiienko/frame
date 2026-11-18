@@ -96,14 +96,15 @@ export const takeBackJoin = (io, path, id) =>
 // tap never flashes it (dima, 20:03; 100 ms at 20:14); both are settings rows, these their defaults
 export const HOLD_DELAY_MS = 100;
 export const HOLD_PUSH_MS = 1000;
-// a disc that has filled this long is one he has seen: let go before it, a press is still a tap (FRM-628: a 110–250 ms
-// press did nothing while the disc had filled a sliver he could not see)
-export const DISC_SEEN_MS = 150;
+// a disc filled this far is one he has seen: let go before it, a press is still a tap (FRM-628: a 110–250 ms press did
+// nothing while the disc had filled a sliver he could not see); a share of the fill, so a faster disc in his settings
+// counts as seen sooner
+export const DISC_SEEN_FILL = 0.15;
 // a tap shorter than this always joins: a 0 delay would start the disc at the press and leave no tap at all
 export const HOLD_DELAY_MIN_MS = 50;
 
 /**
- * a press on send, step by step: a release before the disc shows (HOLD_DELAY_MS, then DISC_SEEN_MS of fill) joins, one
+ * a press on send, step by step: a release before the disc shows (HOLD_DELAY_MS, then DISC_SEEN_FILL of its fill) joins, one
  * after it does nothing, a hold that reaches it pushes once, and a hold
  * cut short (focus loss, a blur, the pointer gone) does nothing; `fill` is the bar, 0 to 1
  * @param {{ at: number } | null} hold @param {'press' | 'tick' | 'release' | 'cancel'} event @param {number} now
@@ -133,7 +134,7 @@ export function holdSend(
         const act =
             held >= timing.delay + timing.push
                 ? 'push'
-                : held > timing.delay + DISC_SEEN_MS
+                : (held - timing.delay) / timing.push > DISC_SEEN_FILL
                   ? null
                   : 'join';
         return { act, fill: 0, hold: null };

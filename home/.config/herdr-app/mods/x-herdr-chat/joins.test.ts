@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import {
-    DISC_SEEN_MS,
+    DISC_SEEN_FILL,
     HOLD_DELAY_MS,
     HOLD_PUSH_MS,
     JOIN_LOCK_STALE_MS,
@@ -161,12 +161,17 @@ describe('a hold on send: a bar fills over 1 s and pushes; a release before join
     test('a slow tap (~150 ms) joins: the disc had not shown yet', () => {
         expect(holdSend(pressed.hold, 'release', 1000 + 150).act).toBe('join');
     });
+    test('with a faster disc, a press let go once it shows is a changed mind', () => {
+        const fast = { delay: HOLD_DELAY_MS, push: 500 };
+        const held = holdSend(null, 'press', 1000, fast).hold;
+        expect(holdSend(held, 'release', 1000 + 250, fast).act).toBeNull();
+    });
     test('a press let go as its disc first shows still joins', () => {
         expect(
             holdSend(
                 pressed.hold,
                 'release',
-                1000 + HOLD_DELAY_MS + DISC_SEEN_MS,
+                1000 + HOLD_DELAY_MS + DISC_SEEN_FILL * HOLD_PUSH_MS,
             ).act,
         ).toBe('join');
     });
@@ -175,7 +180,7 @@ describe('a hold on send: a bar fills over 1 s and pushes; a release before join
             holdSend(
                 pressed.hold,
                 'release',
-                1000 + HOLD_DELAY_MS + DISC_SEEN_MS + 1,
+                1000 + HOLD_DELAY_MS + DISC_SEEN_FILL * HOLD_PUSH_MS + 1,
             ),
         ).toEqual({ act: null, fill: 0, hold: null });
     });
