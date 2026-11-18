@@ -39,20 +39,24 @@ export function createAttachments(home, io, store) {
         /** @type {[string, string][]} */
         const remake = [];
         for (const [thread, paths] of waitingFiles(loaded, home)) {
-            if (threads.has(thread)) continue;
-            threads.set(
+            // what loaded first, then what he added before the load, each file once
+            const added = of(thread).filter((w) => !paths.includes(w.path));
+            const loaded = paths.map((path) => {
+                const isOurs = path.startsWith(`${home}/`);
+                if (!isOurs && isImagePath(path)) remake.push([thread, path]);
+                return {
+                    path,
+                    preview: isOurs ? path.slice(home.length + 1) : null,
+                };
+            });
+            const next = [...loaded, ...added];
+            threads.set(thread, next);
+            saved = withWaitingFiles(
+                saved,
                 thread,
-                paths.map((path) => {
-                    const isOurs = path.startsWith(`${home}/`);
-                    if (!isOurs && isImagePath(path))
-                        remake.push([thread, path]);
-                    return {
-                        path,
-                        preview: isOurs ? path.slice(home.length + 1) : null,
-                    };
-                }),
+                next.map((w) => w.path),
+                home,
             );
-            saved = withWaitingFiles(saved, thread, paths, home);
         }
         // files he added before the load and the loaded ones go to disk together, never his alone
         if (isMerge) io.save(saved);

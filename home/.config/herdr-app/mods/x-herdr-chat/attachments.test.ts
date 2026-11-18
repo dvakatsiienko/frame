@@ -146,12 +146,18 @@ describe('what waited comes back whole, from one owner (sixth sense, slice 5 rou
         });
     });
 
-    test('a thread he added to before the load keeps what he added', async () => {
-        const { files } = setup();
+    test('a thread he added to before the load keeps both: the loaded files first, then his', async () => {
+        const { files, io } = setup();
         files.paste('t1', pasted);
         await files.restore({
             't1 files': ['data/x-herdr-chat/shots/shot-9.png'],
         });
-        expect(files.of('t1').map((w) => w.preview)).toEqual([pasted]);
+        expect(files.of('t1').map((w) => w.preview)).toEqual([
+            'data/x-herdr-chat/shots/shot-9.png',
+            pasted,
+        ]);
+        expect(io.save).toHaveBeenLastCalledWith({
+            't1 files': ['data/x-herdr-chat/shots/shot-9.png', pasted],
+        });
     });
 });
