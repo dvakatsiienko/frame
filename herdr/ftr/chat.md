@@ -387,23 +387,30 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why
   - decision: a new mod beside the old chat, moved in file by file under a strict type check, swapped in once at the end (dima, 2026-11-16 16:36: «pull only clean, decided features»)
 
-- ⬜ find in the new chat (x-herdr-chat, FRM-638 slice 6)
+- ✅ find in the new chat (x-herdr-chat, FRM-638 slice 6)
   - given the chat shows a thread
-  - when he presses ⌘F, then a find bar opens at the chat's top with the keyboard in it
-  - and his query settles 150 ms, then «n / N» counts the rows holding it, any case, and the newest hit's row scrolls to the view's top
-  - and Enter steps to the next older hit, ⇧Enter to the newer, wrapping; ↑ ↓ buttons do the same
-  - and Esc or ✕ closes the bar and gives the keyboard back to the quill; a thread switch closes it
+  - when he presses ⌘F anywhere in the window, the deck or an orbit steer box included, then a find bar floats at the chat's top right with the keyboard in it, and no message moves (dima, 17:58, 18:39)
+  - and ⌘F over an open settings window, dialog or popup does nothing (dima, 18:28)
+  - and his query settles 150 ms, then «n / N» counts each match, any case, and the newest hit's row scrolls to the view's top
+  - and Enter or ↓ steps to the next older match, ⇧Enter or ↑ to the newer, wrapping; the ↑ ↓ buttons do the same
+  - and Esc anywhere in the window or ✕ closes the bar and gives the keyboard back to the quill; a thread switch closes it; it opens empty each time (dima, 18:11, 18:18)
+  - and the bar is one pill lifted off the chat, its ↑ ↓ ✕ on a pill of their own, as the picture viewer's tools (dima, 18:46)
+  - and every matched message is tinted in his accent and keeps its markdown; the stepped one has an accent border and its words drawn plain with each match marked, the stepped match in full accent (dima's o2, 18:46)
   - decision: it searches the rows loaded so far, never pages further up
-  - and every matched message is tinted in his accent, the one shown in a stronger tint with an accent border; the whole message, never the word: herdr's text view takes no CSS (dima, 17:34)
-- ⬜ the new chat's / menu lists commands and every skill (x-herdr-chat, FRM-638 slice 6)
+  - decision: words are marked only in the stepped row: herdr's text view takes no ranges, so a marked row loses its bold and reflows; the full fix is herdr's (the upstream ask, clio's)
+- ✅ the new chat's / menu lists commands and every skill (x-herdr-chat, FRM-638 slice 6)
   - given the quill holds «/» at its start, or after a space or a line break, and part of a name
   - then a list over the quill shows Claude Code's commands, the thread's skills and its plugins' skills, filtered as he types
   - and ↑ ↓ move the pick, Enter or Tab fills «/name » with the caret after it, Esc closes it for this word, a click on a row fills it too
-- ⬜ the tool-call fold shows each call (x-herdr-chat, FRM-638 slice 6, PK-432)
+- ✅ the tool-call fold shows each call (x-herdr-chat, FRM-638 slice 6, PK-432)
   - given a reply turn ran tool calls in a row
   - then one row reads «▸ 🛠️ N tool calls: Read 2, Bash 1», folded
   - when he clicks it, then one row a call follows, its name and what it did (a path, a command, a pattern)
   - and a click on one call opens it alone to its input, a second click closes it; every fold opens, whatever its count
+- ⬜ a slash command he sends is his message (x-herdr-chat, FRM-638 slice 6)
+  - given he sends «/name args» from the quill
+  - then it shows as his bubble, as he typed it, waiting while the thread works and in history once it ran; no «Sent:» note (dima, 18:00, 18:01)
+  - and a prompt a plugin sends in his place, or a command it runs for him, draws no bubble of his (dima, 18:28)
 - ✅ the new chat's quill: he types, sends and joins a turn from it (x-herdr-chat, FRM-638 slice 2)
   - given the new chat open on a thread, then the quill, a text box, sits under the list in its column and grows with his lines up to eight
   - when he types, then his draft is kept for that thread: it is back after the chat closes and opens again (his look, 22:42)
