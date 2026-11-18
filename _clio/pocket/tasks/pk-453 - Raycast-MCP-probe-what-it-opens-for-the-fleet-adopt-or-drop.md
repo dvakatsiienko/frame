@@ -1,11 +1,10 @@
 ---
 id: PK-453
 title: 'Raycast MCP: probe what it opens for the fleet, adopt or drop'
-status: waiting
+status: open
 assignee: []
 created_date: '2026-11-18T18:01:00Z'
-updated_date: '2026-11-18T18:01:00Z'
-due_date: '2026-11-21'
+updated_date: '2026-11-18T18:02:00Z'
 labels:
   - s
   - clio-wing-1
