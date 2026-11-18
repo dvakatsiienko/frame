@@ -4,7 +4,9 @@ import { openViewer, viewerAfter, viewerCount, viewerLevel } from './viewer.js';
 
 const three = ['a', 'b', 'c'].map((n) => ({
     file: `/${n}.png`,
+    h: 10,
     rel: `s/${n}.png`,
+    w: 10,
 }));
 
 describe('the picture viewer steps through a message’s pictures (FRM-638 slice 5)', () => {

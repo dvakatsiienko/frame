@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { beforeAll, describe, expect, test } from 'vitest';
 
 import { messageDetails } from './details.js';

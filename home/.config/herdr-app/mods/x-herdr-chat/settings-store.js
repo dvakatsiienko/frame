@@ -15,6 +15,8 @@ export function rowValue(row, value) {
     if (c.kind === 'toggle')
         return typeof value === 'boolean' ? value : row.default;
     if (c.kind === 'text') return typeof value === 'string' ? value : '';
+    if (c.kind === 'choice')
+        return c.options.some((o) => o.value === value) ? value : row.default;
     if (c.kind === 'stepper')
         return typeof value === 'number' &&
             value >= c.min &&

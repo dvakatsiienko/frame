@@ -52,7 +52,8 @@ describe('effortKey', () => {
 
     test('a thumb slid away and back applies nothing', () => {
         const open = effortKey(null, 'high', false).popover;
-        const back = slideEffort(slideEffort(open, 'right'), 'left');
+        expect(open).not.toBeNull();
+        const back = slideEffort(slideEffort(open!, 'right'), 'left');
         expect(effortKey(back, 'high', false).apply).toBeNull();
     });
 });
@@ -60,7 +61,8 @@ describe('effortKey', () => {
 describe('slideEffort', () => {
     test('opened on medium, → → then the key applies the second stop right of medium', () => {
         const open = effortKey(null, 'medium', false).popover;
-        const moved = slideEffort(slideEffort(open, 'right'), 'right');
+        expect(open).not.toBeNull();
+        const moved = slideEffort(slideEffort(open!, 'right'), 'right');
         expect(effortKey(moved, 'medium', false)).toEqual({
             apply: 'xhigh',
             popover: null,

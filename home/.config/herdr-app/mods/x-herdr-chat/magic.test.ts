@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { describe, expect, test, vi } from 'vitest';
 
 // the pure half of attach.js is what this reads; its herdr door stays shut

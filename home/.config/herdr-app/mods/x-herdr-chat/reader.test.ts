@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { describe, expect, test } from 'vitest';
 
 import { createReader, utf8Length } from './reader.js';

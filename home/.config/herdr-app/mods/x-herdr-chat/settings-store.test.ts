@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
+import type { Row } from './settings-model.js';
 import { settingRows } from './settings-model.js';
 import {
     noteHint,
@@ -16,16 +17,21 @@ import {
     windRefusal,
 } from './settings-store.js';
 
-/** @type {any} */
-const toggle = { control: { kind: 'toggle' }, default: true, key: 'a.toggle' };
-/** @type {any} */
-const stepper = {
+const toggle: Row = {
+    control: { kind: 'toggle' },
+    default: true,
+    key: 'a.toggle',
+    title: '',
+    why: '',
+};
+const stepper: Row = {
     control: { kind: 'stepper', max: 95, min: 30, step: 5, unit: '%' },
     default: 60,
     key: 'a.step',
+    title: '',
+    why: '',
 };
-/** @type {any} */
-const checks = {
+const checks: Row = {
     control: {
         kind: 'checks',
         options: [
@@ -35,6 +41,8 @@ const checks = {
     },
     default: ['all'],
     key: 'a.checks',
+    title: '',
+    why: '',
 };
 
 describe('rowValue', () => {
@@ -102,6 +110,20 @@ describe('settingsText', () => {
             'a.step': 3,
         });
         expect(JSON.parse(text).rows['a.step']).toBe(70);
+    });
+});
+
+describe('a choice row', () => {
+    const pictures = settingRows.find(
+        (r) => r.key === 'chatter.pictures.cleanshot',
+    ) as Row;
+
+    test('keeps a stored option, Preview as false, the way the old chat reads it', () => {
+        expect(rowValue(pictures, false)).toBe(false);
+    });
+
+    test('reads a value no option offers as its default', () => {
+        expect(rowValue(pictures, 'preview')).toBe(true);
     });
 });
 

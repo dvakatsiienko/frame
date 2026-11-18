@@ -2,7 +2,7 @@
 // mod's file, so this chat holds every page its window shows; settings-store.js keeps their values, settings-window.js
 // draws them. a row joins only once its mod acts on it
 
-/** @typedef {{ kind: 'toggle' } | { kind: 'checks', options: { value: string, label: string, isLocked?: boolean }[] } | { kind: 'stepper', min: number, max: number, step: number, unit: string } | { kind: 'text', needs: string[] }} Control */
+/** @typedef {{ kind: 'toggle' } | { kind: 'choice', options: { value: unknown, label: string }[] } | { kind: 'checks', options: { value: string, label: string, isLocked?: boolean }[] } | { kind: 'stepper', min: number, max: number, step: number, unit: string } | { kind: 'text', needs: string[] }} Control */
 /** @typedef {{ key: string, title: string, why: string, control: Control, default: unknown }} Row */
 /** @typedef {{ heading: string, rows: Row[] }} Group */
 /** @typedef {{ id: string, icon: string, title: string, about: string, groups: Group[] }} Page */
@@ -81,11 +81,18 @@ export const pages = [
                 heading: 'pictures',
                 rows: [
                     {
-                        control: { kind: 'toggle' },
+                        // a boolean in the file, as the old chat reads it: true is CleanShot
+                        control: {
+                            kind: 'choice',
+                            options: [
+                                { label: 'CleanShot', value: true },
+                                { label: 'macOS Preview', value: false },
+                            ],
+                        },
                         default: true,
                         key: 'chatter.pictures.cleanshot',
-                        title: 'Open in CleanShot',
-                        why: 'a picture’s open button starts CleanShot X’s annotate on it; off, it opens in Preview',
+                        title: 'Open pictures in',
+                        why: 'the app a picture’s open button starts: CleanShot X’s annotate, or Preview',
                     },
                 ],
             },

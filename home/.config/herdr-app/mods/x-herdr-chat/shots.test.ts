@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { execFileSync } from 'node:child_process';
 import { platform } from 'node:os';
 import { describe, expect, it, vi } from 'vitest';

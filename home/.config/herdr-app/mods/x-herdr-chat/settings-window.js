@@ -42,8 +42,9 @@ export const settingsOverlay = (page) => ({
     width: 860,
 });
 
-// shepherdr's sizes: 13 body and titles, 12 second lines and headings, 15 page titles; 6 on controls, 8 on cards
-const TEXT = { body: 13, label: 12, title: 15 };
+// shepherdr's sizes: 13 body and titles, 12 second lines, 15 the nav's title; a page title 20 and a group's heading 15,
+// bigger than shepherdr's dim 12, on his word (o1, 20:06: «section titles are tiny»)
+const TEXT = { body: 13, heading: 15, label: 12, page: 20, title: 15 };
 const CARD_MAX_H = 760;
 
 /** @typedef {import('./settings-model.js').Row} Row */
@@ -347,7 +348,7 @@ function content(t, w, page) {
                 .gap(3)
                 .child(
                     div()
-                        .text_size(TEXT.title)
+                        .text_size(TEXT.page)
                         .font_semibold()
                         .text_color(t.foreground)
                         .child(page.title),
@@ -404,11 +405,11 @@ function content(t, w, page) {
 /** a small dim heading over a group of rows, sentence case @param {any} t @param {string} text */
 const heading = (t, text) =>
     div()
-        .pt(22)
-        .pb(2)
-        .text_size(TEXT.label)
-        .font_medium()
-        .text_color(t.dim)
+        .pt(28)
+        .pb(4)
+        .text_size(TEXT.heading)
+        .font_semibold()
+        .text_color(t.foreground)
         .child(text);
 
 /** one setting: its name and one line on the left, the control on the right; a note box under all of it
@@ -500,6 +501,54 @@ function control(t, w, r) {
                     .bg(isOn ? t.accent_foreground : t.muted),
             );
     }
+    if (c.kind === 'choice')
+        // shepherdr's segmented control: each option as wide as its words, the picked one lifted
+        return h_flex()
+            .h(24)
+            .flex_none()
+            .p(2)
+            .gap(2)
+            .rounded(6)
+            .bg(t.raised)
+            .children(
+                c.options.map((o) => {
+                    const isOn = o.value === value;
+                    return h_flex()
+                        .id(`chat-settings-${r.key}-${o.label}`)
+                        .h_full()
+                        .px(8)
+                        .flex_none()
+                        .items_center()
+                        .justify_center()
+                        .rounded(4)
+                        .whitespace_nowrap()
+                        .text_size(TEXT.label)
+                        .when(isOn, (/** @type {any} */ el) =>
+                            el
+                                .bg(t.background)
+                                .text_color(t.foreground)
+                                .font_medium(),
+                        )
+                        .when(!isOn, (/** @type {any} */ el) =>
+                            el
+                                .text_color(t.muted)
+                                .cursor_pointer()
+                                .hover((/** @type {any} */ x) =>
+                                    x.text_color(t.foreground),
+                                )
+                                .on_click(
+                                    (
+                                        /** @type {any} */ _e,
+                                        /** @type {any} */ cx,
+                                    ) => {
+                                        cx.stop_propagation();
+                                        w.change(r.key, o.value, cx);
+                                    },
+                                ),
+                        )
+                        .child(o.label);
+                }),
+            );
     if (c.kind !== 'stepper') return div();
     const n = Number(value);
     /** @param {number} d @param {string} id @param {string} label */

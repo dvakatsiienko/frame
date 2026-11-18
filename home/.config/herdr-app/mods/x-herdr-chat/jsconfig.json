@@ -8,6 +8,7 @@
     "compilerOptions": {
         "checkJs": true,
         "lib": ["ES2022"],
+        "maxNodeModuleJsDepth": 0,
         "module": "ES2022",
         "moduleResolution": "bundler",
         "noEmit": true,

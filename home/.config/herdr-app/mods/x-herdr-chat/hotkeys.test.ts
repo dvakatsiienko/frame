@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { OUR_KEYS, keysWithOurs, rebind } from './hotkeys.js';
+import { OUR_KEYS, type OurKey, keysWithOurs, rebind } from './hotkeys.js';
 
-const ours = [
+const ours: [OurKey, OurKey] = [
     { action: 'x-herdr-chatter.focus', key: 'cmd-k', title: 'Focus the quill' },
     {
         action: 'x-herdr-deck.toggle',
@@ -10,6 +10,9 @@ const ours = [
         title: 'Show or hide the deck',
     },
 ];
+
+const keysOf = (result: ReturnType<typeof rebind>) =>
+    'keys' in result ? result.keys : undefined;
 
 describe('keysWithOurs', () => {
     test('our keys join his global section, his own keys stay as they were', () => {
@@ -89,7 +92,7 @@ describe('keysWithOurs', () => {
             },
         ]);
         expect(keys.global['cmd-k']).toBe('x-herdr-chatter.focus');
-        expect(refused[0].takenBy).toBe('x-herdr-chatter.focus');
+        expect(refused[0]?.takenBy).toBe('x-herdr-chatter.focus');
     });
 
     test('a file with no global section gets one', () => {
@@ -161,13 +164,13 @@ describe('rebind', () => {
     test('a herdr key moves the same way, in its place', () => {
         // biome sorts the fixture's keys, so its order is cmd-e, cmd-k, cmd-t: the moved key keeps cmd-e's place
         expect(
-            Object.entries(rebind(his, 'cmd-e', 'cmd-j').keys?.global ?? {}),
+            Object.entries(keysOf(rebind(his, 'cmd-e', 'cmd-j'))?.global ?? {}),
         ).toEqual([
             ['cmd-j', 'x-herdr-chatter.deck'],
             ['cmd-k', 'x-herdr-chatter.focus'],
             ['cmd-t', 'tab.new'],
         ]);
-        expect(rebind(his, 'cmd-t', 'cmd-y').keys?.global['cmd-y']).toBe(
+        expect(keysOf(rebind(his, 'cmd-t', 'cmd-y'))?.global?.['cmd-y']).toBe(
             'tab.new',
         );
     });

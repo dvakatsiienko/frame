@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
@@ -288,6 +289,7 @@ describe('the quills of every thread, kept and shown by one owner', () => {
         expect(quills.get('a.jsonl').text).toBe('text');
     });
 
+    // the settings window's note boxes are its own text boxes, never a quill
     test('the quill is written in one place: no file of the chat but quill.js sets a box’s text', () => {
         const dir = new URL('.', import.meta.url).pathname;
         const writers = readdirSync(dir)
@@ -295,6 +297,6 @@ describe('the quills of every thread, kept and shown by one owner', () => {
             .filter((name) =>
                 /\.set_value\(/.test(readFileSync(`${dir}${name}`, 'utf8')),
             );
-        expect(writers).toEqual(['quill.js']);
+        expect(writers).toEqual(['quill.js', 'settings-window.js']);
     });
 });

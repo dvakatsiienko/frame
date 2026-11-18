@@ -9,6 +9,7 @@ import {
     unlinkFiles,
     withFileRows,
 } from './files.js';
+import type { Row } from './row-model.js';
 
 const HOME = '/Users/dima';
 
@@ -112,12 +113,15 @@ describe('a file:// link in the text reads plain while herdr-app#894 is open', (
 });
 
 describe("a reply's files are rows of their own in the list, so a click on one can open it (FRM-587)", () => {
-    const reply = (id: string, text: string, version = 1) => ({
+    const reply = (id: string, text: string, version = 1): Row => ({
         at: null,
+        delivery: null,
+        files: [],
         id,
         isTurnStart: false,
         isWaiting: false,
-        kind: 'reply' as const,
+        kind: 'reply',
+        pictures: [],
         replyId: null,
         text,
         tools: [],
@@ -157,9 +161,7 @@ describe("a reply's files are rows of their own in the list, so a click on one c
     test('his own messages and tool rows get no file rows', () => {
         const mine = {
             ...reply('m1', '/tmp/a.png'),
-            files: [],
             kind: 'mine' as const,
-            pictures: [],
         };
         expect(withFileRows([mine], HOME, new Map())).toEqual([mine]);
     });

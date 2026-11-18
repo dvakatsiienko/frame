@@ -120,7 +120,7 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
         for (const wind of ['cancelled', 'refused'])
             expect(
                 bandButtons({ ...off, fleet, thread: { hot: null, wind } })[0]
-                    .isOn,
+                    ?.isOn,
             ).toBe(false);
     });
 
@@ -157,7 +157,7 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
     test("the wind button draws the cc band's lifecycle emoji for the thread's wind", () => {
         const emoji = (wind: string | null) =>
             bandButtons({ ...off, fleet, thread: { hot: null, wind } })[0]
-                .emoji;
+                ?.emoji;
         expect(
             [
                 null,
@@ -177,7 +177,7 @@ describe("the band's buttons, as his crop showed them (FRM-565 slice 2)", () => 
                 fleet,
                 pending: { wind: { at: 1, on } },
                 thread: { hot: null, wind: was },
-            })[0].emoji;
+            })[0]?.emoji;
         expect(wind(true, null)).toBe('🥚');
         expect(wind(false, 'asked')).toBe('🐦‍🔥');
     });
@@ -415,7 +415,7 @@ describe('🍃 second wind auto sits right of 🐦‍🔥 (FRM-625)', () => {
         bandButtons(state)[1];
 
     test('it follows the wind button, named by its hover, lit while the key reads on', () => {
-        expect(bandButtons({ ...base, autoWind: true })[0].key).toBe('wind');
+        expect(bandButtons({ ...base, autoWind: true })[0]?.key).toBe('wind');
         expect(leaf({ ...base, autoWind: true })).toMatchObject({
             emoji: '🍃',
             isLive: true,
@@ -446,15 +446,15 @@ describe('🍃 second wind auto sits right of 🐦‍🔥 (FRM-625)', () => {
     });
 
     test('with no thread, or before the door answered, it stays greyed', () => {
-        expect(leaf({ ...base, autoWind: null }).isLive).toBe(false);
-        expect(leaf({ ...base, autoWind: true, thread: null }).isLive).toBe(
+        expect(leaf({ ...base, autoWind: null })?.isLive).toBe(false);
+        expect(leaf({ ...base, autoWind: true, thread: null })?.isLive).toBe(
             false,
         );
     });
 
     // a stand-in for `pnpm mods:set second-wind-auto`: its two forms over one store, on where nothing was pressed
     const door = (store: Record<string, boolean>) => async (args: string[]) => {
-        const [sid, value] = args;
+        const [sid = '', value] = args;
         if (value) store[sid] = value === 'on';
         return value
             ? `🍃 ${sid} ${value}, its next turn reads it\n`

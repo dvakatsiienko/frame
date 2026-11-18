@@ -13,7 +13,10 @@ function rig(names: string[] = []) {
     const io = {
         home: '/app',
         list: vi.fn(async () => names),
-        thumb: vi.fn(async (path: string) => `thumbs/${path.length}.png`),
+        thumb: vi.fn(
+            async (path: string): Promise<string | null> =>
+                `thumbs/${path.length}.png`,
+        ),
         write: vi.fn(async (_rel: string, _bytes: Uint8Array) => true),
     };
     return { io, sent: createSentPictures(io) };
