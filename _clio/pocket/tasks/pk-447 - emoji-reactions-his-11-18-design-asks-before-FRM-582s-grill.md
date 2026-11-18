@@ -4,7 +4,7 @@ title: 'emoji reactions: his 11-18 design asks before FRM-582''s grill'
 status: open
 assignee: []
 created_date: '2026-11-18T09:19:00Z'
-updated_date: '2026-11-18T09:42:00Z'
+updated_date: '2026-11-18T10:25:00Z'
 labels:
   - s
 dependencies: []
@@ -99,4 +99,23 @@ PK-447:W18 (2026-11-18 inbox, dima): how does an emoji reach you? will what we p
 PK-447:W19 (2026-11-18 inbox, dima): emojis searchable, please; search expands the list; the grid keeps most-tapped first — propose how to measure and log it ❓ (W9, W11 refolded)
 
 PK-447:W20 (2026-11-18 11:40, dima): 🐢 is debatable as an emoji; instead, or both: a nudge button that tells the selected herdr thread «you rush, slow down», and the emoji pointing at the message where i lag, so you see how far you ran from me: wait until i finish replying, read what you answered after it, then help me catch up gradually
+
+PK-447:W21 (2026-11-18 inbox, dima): proposed top 7 emojis (i am not sure on these): 🏎️🚄🛤️ as "go" from me, meaning "dima reads and approves your plan as sound, please move on" ❓
+PK-447:W22 (2026-11-18 inbox, dima): 🎉🥳🎊🪅🪩: start with these to react to my messages, when i bring good news or am happy about the fleet getting prettier
+PK-447:W23 (2026-11-18 inbox, dima): question: how does an emoji reach you? does what we put in emoji strings become part of your message history sent to you whole on each turn, in the special field where slipstreamed joined messages get folded into, shaped like this: ❓
+PK-447:W24 (2026-11-18 inbox, dima): each time the grid opens its state starts from scratch: keep track of the most used emojis and put them first, from most tapped to least tapped; propose how to measure and log that properly ❓
+PK-447:W26 (2026-11-18 inbox, dima): user message: ...
+PK-447:W27 (2026-11-18 inbox, dima): agent message: ...
+PK-447:W28 (2026-11-18 inbox, dima): our-special-mods-slipstream-field: second wind, orbit, emojis? ← here? ❓
+PK-447:W25 (2026-11-18 11:42, dima): 🐢 — my idea from inbox. it is debatable if it should be an emoji. instead - it can by a nudge button that tells currently selected thread in herdr that you rush too fast and have to slow down. OR - both places a nudge button and a emoji. nudge button just tells you that you are rusing. the emoji points to certain message - and you see how far i lag behind - see how much you run away from me. this means that you should wait for me until i finish replying and see what else you answered after that. then help me to keep up with everything gradually.
+
+retires PK-447:W2, refolded into PK-447:W21 (the original stays above as written)
+retires PK-447:W4, refolded into PK-447:W22 (the original stays above as written)
+retires PK-447:W9, refolded into PK-447:W24 (the original stays above as written)
+retires PK-447:W10, refolded into PK-447:W23 (the original stays above as written)
+retires PK-447:W16, superseded by PK-447:W21
+retires PK-447:W17, superseded by PK-447:W22
+retires PK-447:W18, superseded by PK-447:W23
+retires PK-447:W19: searchable is PK-447:W8, the grid is PK-447:W24; PK-447:W11 stays its own line above
+retires PK-447:W20, superseded by PK-447:W25
 <!-- SECTION:NOTES:END -->
