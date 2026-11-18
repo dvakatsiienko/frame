@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-28
+until: 2026-11-29
 dies-when: the verdict line below is written
 fits: clio
 ---

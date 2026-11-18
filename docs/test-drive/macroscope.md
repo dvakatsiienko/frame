@@ -1,6 +1,6 @@
 ---
 status: live
-until: 2026-11-22
+until: 2026-11-23
 dies-when: the verdict line below is written
 ---
 
@@ -64,5 +64,6 @@ markdown files in `.macroscope/check-run-agents/`, each an ai check on every pr 
 - 2026-11-16 23:03–23:05 · cli, budget, `--base 547e8a28 --raw --isolate=false`, run by the herdr codie (FRM-638 slice 2, 547e8a28..e5394378; FRM-641 steps 72–74, the Settings size and the mods lane's d00db524 and clipboard guard rode in: it read 547e8a28..HEAD) · 146 s, exit 0, 117 of 117 code objects · findings 8: 1 in another lane's file (`x-mod-guard/hooks/rules/clipboard.ts:33`, unjudged by its owner), 7 in slice 2's files, all 7 real, noise 0 · found also by the other reviews: 0 of 7 (the wisphunter round fixed a near cousin, a take-back racing its append; the sixth sense gave 🌼 clean at round 1 on e5394378) · found only by macroscope: 7, 4 fixed the same hour (`joins.js:126` a hold let go past its push sent nothing, `magic.js:93` a failed append left a ghost mark, `main.js:947` a push erased words typed during its take-back, `main.js:978` a refused send dropped when he had typed on), 3 named as limits (`magic.js:177` a «not taken» mark forgotten before its row is taken back, `magic.js:198` two row rewrites racing the lock, `queued.js:63` his text that opens with «<» not drawn while it waits) · cost: the cli printed no credits; billing not read (inference: about the 15:11 round's size, 117 objects against 67)
 - 2026-11-16 23:24–23:25 · cli, budget, `--base 3c1626ca --raw --isolate=false`, run by the herdr codie (FRM-641 steps 72–77, f5bc6b55..131fd798) · 71 s, exit 0, 39 of 39 code objects · findings 4, real 4, noise 0, two of them one bug seen twice (`x-herdr-chat-settings/main.js:243` and `foreground.js:87`: a Reset pressed while his text colour is still being written loses to it) · found also by the other reviews: none ran on this chunk yet · found only by macroscope: 3 bugs, all fixed the same hour (that race, `foreground.js:59` a refused write counted as done, so a failed Reset threw away the colour from before; `main.js:161` a Background pill left his old hex in the colour box), red-proven by 3 new rows in `foreground.test.ts` · cost: the cli printed no credits; billing not read
 - 2026-11-16 mid-drive read, told to dima: 9 of 10 findings real, 8 caught by nothing else; the monthly free cli credits spent in 2 days, $10.21 spent, $99.75 welcome balance left; kept on the welcome balance, one round per chunk with a tight base (his o140); no verdict yet
+- 2026-11-18 11:15 billing read (the fleet Chrome, his tab): balance $98.75, $1.00 below the 11-16 read; a new billing period opened 11-17 (Nov 17 – Dec 17), spend $0.00 in it; limits read back: workspace $100, cli $10 a period, per review $10, per pr $50, Murmur $0, auto-refill threshold $10 / amount $50 · the cli's 1,000 monthly credits likely reset with the period (inference, the usage tab not read)
 
 ## verdict
