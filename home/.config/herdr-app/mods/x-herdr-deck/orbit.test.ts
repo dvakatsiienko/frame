@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
+import { createKeyPress } from './keypress.js';
 import {
     type Ask,
     SENT_MS,
@@ -11,6 +12,7 @@ import {
     canTakeBack,
     createPresses,
     createSerial,
+    createTurns,
     hotOf,
     hotPressLine,
     hotPresses,
@@ -26,6 +28,7 @@ import {
     runningThreads,
     savePress,
     stateOfPid,
+    steerKeyAct,
     steerKeyNote,
     steerKeyPress,
     threadFacts,
@@ -850,6 +853,22 @@ describe('one record of his press per ask: every reader asks it, only events mov
         expect(presses.of(KEY, undefined)).toBeUndefined();
     });
 
+    test('a press given up by time is named, so the box can say so', () => {
+        const presses = createPresses();
+        presses.pressed(KEY, 'tick', 1_000);
+        expect(
+            presses.settle(lookup(open, undefined), 1_000 + SENT_MS + 1),
+        ).toEqual([KEY]);
+    });
+
+    test('a press the shelf settled is never named given up', () => {
+        const presses = createPresses();
+        presses.pressed(KEY, 'tick', 1_000);
+        expect(
+            presses.settle(lookup(open, 'tick'), 1_000 + SENT_MS + 1),
+        ).toEqual([]);
+    });
+
     test('the deck merges his press with the ticks file’s only through the record', () => {
         const main = readFileSync(
             new URL('./main.js', import.meta.url),
@@ -1017,6 +1036,105 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
         await expect(failed).rejects.toThrow('ps timed out');
         let isRun = false;
         await serial(async () => {
+            isRun = true;
+        });
+        expect(isRun).toBe(true);
+    });
+});
+
+// FRM-628's first done test (W1): with an ask's steer box focused, Enter then ⌘Enter: Replay ticked and «ready to send»
+// unticked at once, every time
+describe('Enter then ⌘Enter in a steer box: the replay takes over from the tick at once (FRM-628)', () => {
+    const rows = [
+        {
+            asks: [{ ...ask, isLocked: false, mark: null }],
+            pending: new Map(),
+            sid: SID,
+            taken: 0,
+        },
+    ];
+    const KEY = `${SID}:o1`;
+
+    test('each key acts on the press the one before it made, with no shelf read between', () => {
+        const presses = createPresses();
+        const keys = createKeyPress();
+        const pressOf = (s: (typeof rows)[number], id: string | null) =>
+            presses.of(`${s.sid}:${id}`, s.pending.get(id ?? ''));
+        const states: string[] = [];
+        for (const [at, isCmd] of [
+            [1_000, false],
+            [1_090, true],
+            [1_300, true],
+        ] as const) {
+            keys.up();
+            keys.down(at, false);
+            if (keys.submitted(at) === 'repeat') continue;
+            const step = steerKeyAct(rows, KEY, isCmd, pressOf);
+            if (step?.act) presses.pressed(KEY, step.act, at);
+            states.push(tickState(rows[0]!.asks[0]!, pressOf(rows[0]!, 'o1')));
+        }
+        // the third: ⌘Enter again takes the replay back
+        expect(states).toEqual(['ticked', 'replayed', 'open']);
+    });
+
+    test('a key in a box whose ask left does nothing', () => {
+        expect(
+            steerKeyAct(rows, `${SID}:gone`, false, () => undefined),
+        ).toBeNull();
+    });
+
+    test('Enter on a gated ask says it ticks by click', () => {
+        const gated = [
+            { ...rows[0]!, asks: [{ ...rows[0]!.asks[0]!, isGated: true }] },
+        ];
+        expect(steerKeyAct(gated, KEY, false, () => undefined)).toMatchObject({
+            act: null,
+            note: 'Ticks by click only',
+        });
+    });
+});
+
+describe('the ticks files are written one at a time (FRM-628)', () => {
+    test('a write waits for the one before it', async () => {
+        const turns = createTurns();
+        const log: string[] = [];
+        let release = () => {};
+        const first = turns(
+            () =>
+                new Promise<void>((resolve) => {
+                    release = () => {
+                        log.push('first');
+                        resolve();
+                    };
+                }),
+        );
+        const second = turns(async () => {
+            log.push('second');
+        });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        release();
+        await Promise.all([first, second]);
+        expect(log).toEqual(['first', 'second']);
+    });
+
+    test('a write the stash slipped in front of is tried once more', async () => {
+        const turns = createTurns();
+        let tries = 0;
+        await turns(async () => {
+            tries += 1;
+            if (tries === 1) throw new Error('text changed since read');
+        });
+        expect(tries).toBe(2);
+    });
+
+    test('a write that fails twice says so, and the next still runs', async () => {
+        const turns = createTurns();
+        const failed = turns(async () => {
+            throw new Error('refused');
+        });
+        await expect(failed).rejects.toThrow('refused');
+        let isRun = false;
+        await turns(async () => {
             isRun = true;
         });
         expect(isRun).toBe(true);

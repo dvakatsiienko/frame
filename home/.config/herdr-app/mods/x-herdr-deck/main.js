@@ -30,6 +30,7 @@ import {
     byName,
     createPresses,
     createSerial,
+    createTurns,
     dropPress,
     hotOf,
     hotPressLine,
@@ -44,8 +45,7 @@ import {
     runningThreads,
     savePress,
     stateOfPid,
-    steerKeyNote,
-    steerKeyPress,
+    steerKeyAct,
     threadFacts,
     tickAll,
     tickAllTakes,
@@ -250,8 +250,8 @@ export default class Deck extends View {
         // a steer box per open ask, made when a read finds the ask: an InputState is never made while drawing
         /** @type {Map<string, import('gpui-base').InputState>} */
         this.steers = new Map();
-        /** @type {Promise<unknown>} */
-        this.writing = Promise.resolve();
+        // the ticks files, one write at a time
+        this.turns = createTurns();
         // his presses written and not yet taken by the session's stash, so a second press waits
         this.presses = createPresses();
         // reloads one at a time, the newest last: an older read never puts a gone ask back
@@ -351,13 +351,21 @@ export default class Deck extends View {
                 .find((s) => s.sid === sid)
                 ?.asks.find((a) => a.id === id);
         };
-        this.presses.settle((key) => {
+        const givenUp = this.presses.settle((key) => {
             const [sid, id] = key.split(':');
             return {
                 ask: askOf(key),
                 pending: this.rows.find((s) => s.sid === sid)?.pending.get(id),
             };
         }, Date.now());
+        // a press the thread never answered says so under its box, never a silent flip back
+        for (const key of givenUp) {
+            this.keyNotes.set(key, {
+                text: 'No answer in 2 min: press again',
+                until: Date.now() + GIVEN_UP_NOTE_MS,
+            });
+            cx.timer.after(GIVEN_UP_NOTE_MS + 1, (later) => later.notify());
+        }
         for (const key of this.steers.keys()) {
             const s = this.rows.find((r) => r.sid === key.split(':')[0]);
             const ask = askOf(key);
@@ -592,7 +600,7 @@ export default class Deck extends View {
                 throw new Error(
                     made.stderr.trim() || `mkdir exited ${made.code}`,
                 );
-            await this.inTurn(() =>
+            await this.turns(() =>
                 savePress(
                     { read: readTextFile, write: writeTextFile },
                     `${TICKS}/${s.sid}.jsonl`,
@@ -635,7 +643,7 @@ export default class Deck extends View {
                 throw new Error(
                     made.stderr.trim() || `mkdir exited ${made.code}`,
                 );
-            await this.inTurn(() =>
+            await this.turns(() =>
                 tickAll(
                     { read: readTextFile, write: writeTextFile },
                     TICKS,
@@ -651,18 +659,6 @@ export default class Deck extends View {
             this.pressError = `tick all not sent: ${err instanceof Error ? err.message : err}`;
         }
         cx.notify();
-    }
-
-    // the ticks files are written one at a time: two presses in flight would each read the file before the other's
-    // write, and herdr refuses the second (it writes only over the text it read), so the press flipped back. one retry
-    // covers a write the stash slipped in between
-    /** @template T @param {() => Promise<T>} write @returns {Promise<T>} */
-    inTurn(write) {
-        const run = this.writing
-            .catch(() => {})
-            .then(() => write().catch(() => write()));
-        this.writing = run;
-        return run;
     }
 
     /** @param {string} key */
@@ -693,25 +689,21 @@ export default class Deck extends View {
     /** @param {Context} cx @param {string} key @param {boolean} isCmd @param {number} at */
     steerKeyAct(cx, key, isCmd, at) {
         if (this.steerKeys.submitted(at) === 'repeat') return;
-        for (const s of this.rows)
-            for (const ask of s.asks) {
-                if (`${s.sid}:${ask.id}` !== key) continue;
-                const state = tickState(ask, this.pressOf(s, ask.id));
-                const act = steerKeyPress(state, isCmd, Boolean(ask.isGated));
-                const note = steerKeyNote(state, isCmd, Boolean(ask.isGated));
-                if (note) {
-                    this.keyNotes.set(key, {
-                        text: note,
-                        until: Date.now() + KEY_NOTE_MS,
-                    });
-                    cx.notify();
-                    cx.timer.after(KEY_NOTE_MS + 1, (later) => later.notify());
-                }
-                if (act === 'untick')
-                    cx.spawn((cx) => this.unpress(cx, s, ask));
-                else if (act) cx.spawn((cx) => this.press(cx, s, ask, act));
-                return;
-            }
+        const step = steerKeyAct(this.rows, key, isCmd, (s, id) =>
+            this.pressOf(s, id),
+        );
+        if (!step) return;
+        const { act, ask, note, s } = step;
+        if (note) {
+            this.keyNotes.set(key, {
+                text: note,
+                until: Date.now() + KEY_NOTE_MS,
+            });
+            cx.notify();
+            cx.timer.after(KEY_NOTE_MS + 1, (later) => later.notify());
+        }
+        if (act === 'untick') cx.spawn((cx) => this.unpress(cx, s, ask));
+        else if (act) cx.spawn((cx) => this.press(cx, s, ask, act));
     }
 
     // his second click on a ticked or replayed ask takes it back until a turn took it: a press the stash has not read
@@ -731,7 +723,7 @@ export default class Deck extends View {
         this.presses.pressed(key, 'untick', at);
         cx.notify();
         try {
-            await this.inTurn(() =>
+            await this.turns(() =>
                 isDrop
                     ? dropPress(io, path, ask.id, s.taken)
                     : savePress(

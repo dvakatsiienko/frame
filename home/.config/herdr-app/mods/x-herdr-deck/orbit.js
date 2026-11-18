@@ -410,17 +410,21 @@ export function createPresses() {
          * after a read of the shelf
          * @param {(key: string) => { ask: Ask | undefined, pending: Press['verdict'] | null | undefined }} lookup
          * @param {number} now
+         * @returns {string[]} the presses given up by time, never answered: each box says so, never a silent revert
          */
         settle(lookup, now) {
+            /** @type {string[]} */
+            const givenUp = [];
             for (const [key, press] of sent) {
                 const { ask, pending } = lookup(key);
-                if (
-                    !ask ||
-                    isPressSettled(ask, pending, press.verdict) ||
-                    now - press.at > SENT_MS
-                )
+                if (!ask || isPressSettled(ask, pending, press.verdict))
                     sent.delete(key);
+                else if (now - press.at > SENT_MS) {
+                    sent.delete(key);
+                    givenUp.push(key);
+                }
             }
+            return givenUp;
         },
     };
 }
@@ -489,6 +493,48 @@ export function steerKeyPress(state, isCmd, isGated) {
     if (isCmd) return state === 'replayed' ? 'untick' : 'replay';
     if (state === 'ticked') return 'untick';
     return isGated ? null : 'tick';
+}
+
+/**
+ * what a key in a steer box does to its ask, read against his press as the one record has it: no shelf read between
+ * two keys, so Enter then ⌘Enter takes the replay over the tick at once (FRM-628:W1)
+ * @template {{ sid: string, asks: Ask[] }} R
+ * @param {R[]} rows @param {string} key the box's `sid:id` @param {boolean} isCmd
+ * @param {(s: R, id: string | null) => Press['verdict'] | null | undefined} pressOf
+ * @returns {{ s: R, ask: Ask, act: ReturnType<typeof steerKeyPress>, note: string | null } | null} null: its ask left
+ */
+export function steerKeyAct(rows, key, isCmd, pressOf) {
+    for (const s of rows)
+        for (const ask of s.asks) {
+            if (`${s.sid}:${ask.id}` !== key) continue;
+            const state = tickState(ask, pressOf(s, ask.id));
+            const isGated = Boolean(ask.isGated);
+            return {
+                act: steerKeyPress(state, isCmd, isGated),
+                ask,
+                note: steerKeyNote(state, isCmd, isGated),
+                s,
+            };
+        }
+    return null;
+}
+
+/**
+ * the ticks files are written one at a time: two presses in flight would each read the file before the other's write,
+ * and herdr refuses the second (it writes only over the text it read), so the press flipped back. one retry covers a
+ * write the stash slipped in between; a failed write never stops the next
+ */
+export function createTurns() {
+    /** @type {Promise<unknown>} */
+    let writing = Promise.resolve();
+    /** @template T @param {() => Promise<T>} write @returns {Promise<T>} */
+    return (write) => {
+        const run = writing
+            .catch(() => {})
+            .then(() => write().catch(() => write()));
+        writing = run;
+        return run;
+    };
 }
 
 /**
