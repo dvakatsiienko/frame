@@ -285,6 +285,42 @@ func TestModsEditTestRedsTheGateTheCommitWouldRed(t *testing.T) {
 	}
 }
 
+// FRM-555 step 127 (retro line 9): a gate red only on a test timeout runs once more and stands on its second run; a real
+// red gets no rerun
+func TestModsEditTestRerunsAGateRedOnlyOnATimeoutOnce(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name, first string
+		wantRuns    int
+		isGreen     bool
+	}{
+		{"a timed-out row", "(fail) a row [5002.31ms]\n  Error: timed out after 5000 ms\n", 2, true},
+		{"a real red", "(fail) a real red [0.35ms]\n  AssertionError: expect(received).toBe()\n", 1, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			hook := `pre-commit:
+  commands:
+    flaky:
+      glob: "` + modsDir + `**"
+      run: sh -c 'echo run >> "$X_RUNS"; [ "$(wc -l < "$X_RUNS")" -gt 1 ] && exit 0; cat "$X_FIRST"; exit 1'
+`
+			dir, env := gateFixture(t, hook)
+			scratch := t.TempDir()
+			runs, first := filepath.Join(scratch, "runs"), filepath.Join(scratch, "first")
+			write(t, first, c.first)
+			env = append(env, "X_RUNS="+runs, "X_FIRST="+first)
+			edited(t, dir, env, modHooks, "export const register = () => 1;\n")
+			got := xIn(t, dir, env, "mods", "edit", "test")
+			n := strings.Count(readFile(t, runs), "run\n")
+			if n != c.wantRuns || (got.code == 0) != c.isGreen {
+				t.Errorf("ran %d, exit %d; want %d runs, green %v:\n%s", n, got.code, c.wantRuns, c.isGreen, got.stdout)
+			}
+		})
+	}
+}
+
 func TestModsEditTestPrintsEachGatesVerdictInTheHooksOrder(t *testing.T) {
 	t.Parallel()
 	dir, env := gateFixture(t, realGatesHook)
