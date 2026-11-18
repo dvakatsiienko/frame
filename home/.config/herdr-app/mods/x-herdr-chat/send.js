@@ -21,10 +21,11 @@ export function addressIn(processLine) {
  * @param {string[]} befores the quill's last texts, newest first: the break's own change may or may not have been
  *   seen by the submit (in his window it was not, 2026-11-16: the break stayed in the message)
  * @param {{ shift?: boolean, secondary?: boolean }} keys
+ * @param {boolean} [hasFiles] files wait over the quill: they go with no words too
  * @returns {{ act: 'click' | 'push' | null, text: string | null, caret: number }} `text`: what the quill holds and
  *   sends, null to leave it as typed; `caret`: where his caret was in it
  */
-export function submitted(value, befores, keys) {
+export function submitted(value, befores, keys, hasFiles = false) {
     if (keys.shift) return { act: null, caret: 0, text: null };
     // Enter with the caret inside the text breaks it there: the words as they were are the message
     const before = befores.find((text) => oneBreakMoreAt(value, text) >= 0);
@@ -33,7 +34,7 @@ export function submitted(value, befores, keys) {
     const text = typed.trim();
     const lead = typed.length - typed.trimStart().length;
     return {
-        act: text ? (keys.secondary ? 'push' : 'click') : null,
+        act: text || hasFiles ? (keys.secondary ? 'push' : 'click') : null,
         caret:
             breakAt < 0
                 ? text.length

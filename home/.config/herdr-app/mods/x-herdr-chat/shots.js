@@ -197,3 +197,54 @@ export async function readClipboard(board) {
     ]).catch(() => null);
     return r?.code === 0 ? clipboardRead(r.stdout, rel) : null;
 }
+
+// a picture the viewer shows, whole: image() reads only under the app dir, so one from elsewhere is copied there once
+export const VIEW_DIR = 'data/x-herdr-chat/view';
+
+/** @param {string} path @returns {Promise<{ rel: string, w: number, h: number } | null>} */
+export async function viewCopy(path) {
+    const own = `${appHome()}/`;
+    const ext = /\.\w+$/.exec(path)?.[0] ?? '.png';
+    const rel = path.startsWith(own)
+        ? path.slice(own.length)
+        : `${VIEW_DIR}/${thumbName(path).slice(THUMBS_DIR.length + 1, -4)}${ext}`;
+    if (!path.startsWith(own)) {
+        await mkdir(`${appHome()}/${VIEW_DIR}`, { recursive: true });
+        const copied = await exec('cp', [path, `${appHome()}/${rel}`]).catch(
+            /** @returns {null} */ () => null,
+        );
+        if (copied?.code !== 0) return null;
+    }
+    const got = await exec('sips', [
+        '-g',
+        'pixelWidth',
+        '-g',
+        'pixelHeight',
+        `${appHome()}/${rel}`,
+    ]).catch(/** @returns {null} */ () => null);
+    const w = Number(/pixelWidth: (\d+)/.exec(got?.stdout ?? '')?.[1]);
+    const h = Number(/pixelHeight: (\d+)/.exec(got?.stdout ?? '')?.[1]);
+    return w && h ? { h, rel, w } : null;
+}
+
+// a picture onto the clipboard as an image, the way CleanShot's copy puts one (JXA, read only from the file)
+const MAC_COPY_IMAGE = `ObjC.import("AppKit");
+function run(argv) {
+  const image = $.NSImage.alloc.initWithContentsOfFile(argv[0]);
+  if (!image || image.isNil()) return "";
+  const pb = $.NSPasteboard.generalPasteboard;
+  pb.clearContents;
+  return pb.writeObjects($([image])) ? "copied" : "";
+}`;
+
+/** @param {string} path @returns {Promise<boolean>} */
+export async function copyPicture(path) {
+    const r = await exec('osascript', [
+        '-l',
+        'JavaScript',
+        '-e',
+        MAC_COPY_IMAGE,
+        path,
+    ]).catch(/** @returns {null} */ () => null);
+    return r?.code === 0 && r.stdout.trim() === 'copied';
+}

@@ -32,6 +32,14 @@ describe('Enter acts on what he typed, Shift+Enter keeps writing', () => {
         });
     });
 
+    test.each([
+        [{ secondary: true }, 'push'],
+        [{}, 'click'],
+    ])('an empty quill with files waiting still acts: %j', (keys, act) => {
+        expect(submitted('\n', [''], keys, true).act).toBe(act);
+        expect(submitted('\n', [''], keys).act).toBeNull();
+    });
+
     test('cmd+Enter sends now', () => {
         expect(
             submitted('ship it\n', ['ship it'], { secondary: true }).act,

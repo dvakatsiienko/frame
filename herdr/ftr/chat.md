@@ -85,7 +85,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and its × takes it at once, mid-turn too, and the next send carries no image
   - and a send puts its path after his text, and Claude reads it
   - and files copied in Finder paste as their paths, the way a drop does, never as the file's icon; a text paste stays text
-  - and a click on a pasted or dropped picture's preview opens it in macOS Preview, a dropped one as itself, never its small preview copy
+  - and a click on a picture's square, over the quill, under his message or in a reply's file row, opens the viewer over the chat on the whole picture: zoom out, its level (a click fits), zoom in, copy, open, Show in Finder, ← → with «n / N» among its siblings, ✕; keys ← → + − 0 ⌘C Esc (FRM-638 slice 5, W33/W35)
+  - and the viewer's open starts CleanShot X annotate on the file, or Preview with the chatter setting «Open in CleanShot» off (FRM-587 W1)
+  - and ⌘Enter, Enter or a click sends pictures with no words
   - decision: one path for paste and drop (dima's o49, 16:38); it replaces ctrl+v into Claude's prompt, whose × had to empty that prompt and lagged when he emptied it in the Terminal view (FRM-609)
   - and a click or Enter with files waiting marks them to join with the words (🍕): the join row carries each path on its own line after the words, a file added or × under the mark rides the same row, and the quill lets them go once a turn takes it (FRM-638 slice 5, his wisps 16:36 and 16:37)
   - and a message he sent draws its pictures under his words as squares, and its other files as «📎 name» chips, never as their paths or «[Image #N]» tokens; a reload brings them back (FRM-638 slice 5, his 16:35 shot)
