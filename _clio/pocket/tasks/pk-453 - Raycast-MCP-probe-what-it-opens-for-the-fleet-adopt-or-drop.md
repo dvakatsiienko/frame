@@ -1,7 +1,7 @@
 ---
 id: PK-453
 title: 'Raycast MCP: probe what it opens for the fleet, adopt or drop'
-status: open
+status: waiting
 assignee: []
 created_date: '2026-11-18T18:01:00Z'
 updated_date: '2026-11-18T18:01:00Z'
