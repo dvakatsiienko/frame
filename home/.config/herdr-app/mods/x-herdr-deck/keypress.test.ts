@@ -10,6 +10,17 @@ describe('one press of Enter acts once, a held one too (FRM-628)', () => {
         expect(key.submitted(1_000)).toBe('act');
     });
 
+    // FRM-628's done test: a slow Enter (~150 ms) sends exactly once, his first key repeat landing as he lets go
+    test('a slow Enter (~150 ms) acts once', () => {
+        const key = createKeyPress();
+        key.down(1_000, false);
+        const acts = [key.submitted(1_000)];
+        key.down(1_150, true);
+        acts.push(key.submitted(1_150));
+        key.up();
+        expect(acts).toEqual(['act', 'repeat']);
+    });
+
     test('a held key’s repeats do nothing: its key-down says held', () => {
         const key = createKeyPress();
         key.down(1_000, false);

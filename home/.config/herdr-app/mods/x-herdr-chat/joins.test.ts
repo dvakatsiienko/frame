@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+    DISC_SEEN_MS,
     HOLD_DELAY_MS,
     HOLD_PUSH_MS,
     JOIN_LOCK_STALE_MS,
@@ -156,9 +157,26 @@ describe('a hold on send: a bar fills over 1 s and pushes; a release before join
             holdSend(pressed.hold, 'release', 1000 + HOLD_DELAY_MS - 1),
         ).toEqual({ act: 'join', fill: 0, hold: null });
     });
-    test('let go once the disc started filling, before it is full: nothing is sent, nothing marked', () => {
+    // the review's probe: a 110–250 ms press did nothing, and a typed press is often 100–150 ms (FRM-628)
+    test('a slow tap (~150 ms) joins: the disc had not shown yet', () => {
+        expect(holdSend(pressed.hold, 'release', 1000 + 150).act).toBe('join');
+    });
+    test('a press let go as its disc first shows still joins', () => {
         expect(
-            holdSend(pressed.hold, 'release', 1000 + HOLD_DELAY_MS + 1),
+            holdSend(
+                pressed.hold,
+                'release',
+                1000 + HOLD_DELAY_MS + DISC_SEEN_MS,
+            ).act,
+        ).toBe('join');
+    });
+    test('let go once he saw the disc filling, before it is full: nothing is sent, nothing marked', () => {
+        expect(
+            holdSend(
+                pressed.hold,
+                'release',
+                1000 + HOLD_DELAY_MS + DISC_SEEN_MS + 1,
+            ),
         ).toEqual({ act: null, fill: 0, hold: null });
     });
     test('cut by focus loss, a blur or a cancelled press: nothing written, the bar resets', () => {

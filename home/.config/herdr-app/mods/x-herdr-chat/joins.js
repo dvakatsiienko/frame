@@ -96,11 +96,15 @@ export const takeBackJoin = (io, path, id) =>
 // tap never flashes it (dima, 20:03; 100 ms at 20:14); both are settings rows, these their defaults
 export const HOLD_DELAY_MS = 100;
 export const HOLD_PUSH_MS = 1000;
+// a disc that has filled this long is one he has seen: let go before it, a press is still a tap (FRM-628: a 110–250 ms
+// press did nothing while the disc had filled a sliver he could not see)
+export const DISC_SEEN_MS = 150;
 // a tap shorter than this always joins: a 0 delay would start the disc at the press and leave no tap at all
 export const HOLD_DELAY_MIN_MS = 50;
 
 /**
- * a press on send, step by step: a release before HOLD_DELAY_MS joins, one after it does nothing, a hold that reaches it pushes once, and a hold
+ * a press on send, step by step: a release before the disc shows (HOLD_DELAY_MS, then DISC_SEEN_MS of fill) joins, one
+ * after it does nothing, a hold that reaches it pushes once, and a hold
  * cut short (focus loss, a blur, the pointer gone) does nothing; `fill` is the bar, 0 to 1
  * @param {{ at: number } | null} hold @param {'press' | 'tick' | 'release' | 'cancel'} event @param {number} now
  * @param {{ delay: number, push: number }} [timing] his settings, the defaults above when unset
@@ -122,14 +126,14 @@ export function holdSend(
     };
     if (event === 'press') return { act: null, fill: 0, hold: { at: now } };
     if (!hold || event === 'cancel') return { act: null, fill: 0, hold: null };
-    // a tap joins; a hold he lets go once its disc started is changed mind, nothing sent or marked (dima's o127, 21:23);
+    // a tap joins; a hold he lets go once he saw its disc is changed mind, nothing sent or marked (dima's o127, 21:23);
     // one let go after the disc filled pushes, though no tick saw it full yet
     if (event === 'release') {
         const held = now - hold.at;
         const act =
             held >= timing.delay + timing.push
                 ? 'push'
-                : held > timing.delay
+                : held > timing.delay + DISC_SEEN_MS
                   ? null
                   : 'join';
         return { act, fill: 0, hold: null };
