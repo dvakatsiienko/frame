@@ -1,3 +1,2 @@
 gmail/blocklist.json filter=git-crypt diff=git-crypt
-docs/knowledge/job/** filter=git-crypt diff=git-crypt
 recipes/refresh-job-market/** filter=git-crypt diff=git-crypt

@@ -15,3 +15,4 @@ conflicting terms on sight; ADR only for hard-to-reverse, surprising decisions.
 - **mcp vs cli — which machine does the shell reach?** clio's shell is the mac → cli. `cloud-chat`'s
   shell is a throwaway container → a local mcp server is its only door to the real filesystem.
   Say that inside the tool's description. Decided in [FRM-185](https://linear.app/x-com/issue/FRM-185).
+- 🗼 `lookout` — dima's private job-hunting repo, `~/projects/lookout`, fully ours to maintain: his job sessions, research per company, the application log, the job knowledge (PK-452)
