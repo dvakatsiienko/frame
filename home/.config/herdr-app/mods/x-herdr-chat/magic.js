@@ -22,6 +22,16 @@ import {
 const isTaken = (joins, id) =>
     Boolean(joins?.taken?.includes(id) || joins?.joined?.includes(id));
 
+/**
+ * the turn took these words of the mark: all of them, or the words before a retext of what he typed on that lost the
+ * race to the turn (dima's wisp, 15:50)
+ * @param {string} said @param {string} text
+ */
+const tookOf = (said, text) =>
+    text !== '' &&
+    (said === text ||
+        (said.startsWith(text) && /^\s/.test(said.slice(text.length))));
+
 /** words typed under a mark reach its join row once his keys rest this long */
 export const RETEXT_MS = 400;
 
@@ -69,9 +79,12 @@ export function createMagic({ io, dir, quills, newId }) {
         return { act: 'none', note: 'Still joining, try again' };
     }
 
-    /** a turn took the mark: it shows as taken, the quill keeps only what he typed after its words @param {Mark} mark @returns {Settled} */
-    function taken(mark) {
-        quills.apply(mark.thread, { id: mark.id, type: 'shown' });
+    /**
+     * a turn took the mark: it shows as taken, the quill keeps only what he typed after the words that went
+     * @param {Mark} mark @param {string} [said] the words the turn took, when the chat showed them @returns {Settled}
+     */
+    function taken(mark, said) {
+        quills.apply(mark.thread, { id: mark.id, said, type: 'shown' });
         return { id: mark.id, note: null };
     }
 
@@ -88,13 +101,13 @@ export function createMagic({ io, dir, quills, newId }) {
         arrived(thread, arrived) {
             const mark = quills.markOf(thread);
             if (mark?.state !== 'pending') return null;
-            const isHis = arrived.some(
+            const his = arrived.find(
                 (row) =>
-                    row.text.trim() === mark.said &&
+                    tookOf(mark.said, row.text.trim()) &&
                     row.at !== null &&
                     Date.parse(row.at) >= mark.at,
             );
-            return isHis ? taken(mark) : null;
+            return his ? taken(mark, his.text.trim()) : null;
         },
         /**
          * a click on send. the mark is set, or taken off, before the first wait: draw at once, then await the answer

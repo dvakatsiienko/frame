@@ -360,6 +360,20 @@ describe('his words arriving in the chat settle the mark at once', () => {
         expect(w.quills.get(THREAD).text).toBe('and one more');
     });
 
+    // dima's wisp 15:50: he typed « fix pls» after 🍕, the turn took the words before that retext; they sat in the
+    // quill ~2 s after showing in the chat, until the state settled the mark
+    test('words a turn took before his retext settle the mark at once, his later words stay', async () => {
+        const w = world();
+        w.type('hold 1s');
+        await w.magic.click(THREAD, SID, 'hold 1s', ON);
+        w.type('hold 1s fix pls');
+        await w.magic.typed(THREAD, 'hold 1s fix pls', ON);
+        expect(
+            w.magic.arrived(THREAD, [{ at: LATER, text: 'hold 1s' }]),
+        ).toEqual({ id: 'id-1', note: null });
+        expect(w.quills.get(THREAD).text).toBe('fix pls');
+    });
+
     test('another message arriving leaves the mark waiting', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);

@@ -26,7 +26,7 @@
  * @typedef {{ type: 'typed', text: string }
  *   | { type: 'marked', mark: Mark }
  *   | { type: 'retexted', id: string, said: string }
- *   | { type: 'shown', id: string }
+ *   | { type: 'shown', id: string, said?: string }
  *   | { type: 'unmarked', id: string }
  *   | { type: 'sent', said: string }
  *   | { type: 'returned', said: string }} QuillEvent
@@ -72,7 +72,9 @@ export function next(quill, event) {
             return mark?.id === event.id && mark.state === 'pending'
                 ? {
                       mark: { ...mark, state: 'joined' },
-                      text: after(quill.text, mark.said) ?? quill.text,
+                      text:
+                          after(quill.text, event.said ?? mark.said) ??
+                          quill.text,
                   }
                 : quill;
         case 'unmarked':
