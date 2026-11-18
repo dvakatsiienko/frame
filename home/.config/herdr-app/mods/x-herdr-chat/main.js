@@ -71,6 +71,7 @@ import {
     pickerLabel,
     slideEffort,
 } from './effort.js';
+import { fileLinks, isPicture, unlinkFiles } from './files.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
@@ -381,6 +382,8 @@ export default class Chat extends View {
     lookKey = '';
     /** the rows the list draws: the model's, less tool calls he hides @type {readonly Row[]} */
     shownRows = [];
+    /** the files each reply names, by row, read once per version @type {Map<string, { version: number, files: { label: string, path: string }[] }>} */
+    replyFiles = new Map();
     /** [TRACE-place] the list's asks are traced until then, after an open */
     traceUntil = 0;
     /** until then the list is not shown: a held place is still landing as real heights arrive */
@@ -2152,29 +2155,72 @@ export default class Chat extends View {
                         .rounded(12)
                         .bg(t.raised)
                         .children(
-                            splitBlocks(row.text).map((block, i) =>
-                                block.kind === 'text'
-                                    ? TextView.markdown(
-                                          `${id}-${i}`,
-                                          block.text,
-                                      ).selectable(true)
-                                    : div()
-                                          .px(10)
-                                          .py(8)
-                                          .rounded(8)
-                                          .bg(t.background)
-                                          .border(1)
-                                          .border_color(t.border)
-                                          .child(
-                                              TextView.markdown(
-                                                  `${id}-${i}`,
-                                                  `\`\`\`${block.lang}\n${block.text}\n\`\`\``,
-                                              ).selectable(true),
-                                          ),
+                            splitBlocks(unlinkFiles(row.text)).map(
+                                (block, i) =>
+                                    block.kind === 'text'
+                                        ? TextView.markdown(
+                                              `${id}-${i}`,
+                                              block.text,
+                                          ).selectable(true)
+                                        : div()
+                                              .px(10)
+                                              .py(8)
+                                              .rounded(8)
+                                              .bg(t.background)
+                                              .border(1)
+                                              .border_color(t.border)
+                                              .child(
+                                                  TextView.markdown(
+                                                      `${id}-${i}`,
+                                                      `\`\`\`${block.lang}\n${block.text}\n\`\`\``,
+                                                  ).selectable(true),
+                                              ),
+                            ),
+                        )
+                        .children(
+                            this.filesOf(row).map((file, i) =>
+                                this.fileRow(file, `${id}-file-${i}`, t),
                             ),
                         ),
                 ),
         );
+    }
+
+    /** the files a reply names, read again only when its text grew @param {Row} row */
+    filesOf(row) {
+        const had = this.replyFiles.get(row.id);
+        if (had?.version === row.version) return had.files;
+        const files = fileLinks(row.text, home());
+        this.replyFiles.set(row.id, { files, version: row.version });
+        return files;
+    }
+
+    /**
+     * a file a reply names, under its text: a click opens it in its app, a png in Preview (FRM-587); its whole path on
+     * hover
+     * @param {{ label: string, path: string }} file @param {string} id @param {Theme} t
+     */
+    fileRow(file, id, t) {
+        return h_flex()
+            .id(id)
+            .gap(6)
+            .items_center()
+            .self_start()
+            .px(8)
+            .py(3)
+            .rounded(6)
+            .border(1)
+            .border_color(t.border)
+            .cursor_pointer()
+            .text_size(12)
+            .text_color(t.muted)
+            .hover((s) => s.bg(t.hover).text_color(t.foreground))
+            .tooltip(file.path)
+            .on_click(() => {
+                exec('open', [file.path]).catch(() => {});
+            })
+            .child(isPicture(file.path) ? ICONS.picture : ICONS.file)
+            .child(div().truncate().child(file.label));
     }
 
     /**
