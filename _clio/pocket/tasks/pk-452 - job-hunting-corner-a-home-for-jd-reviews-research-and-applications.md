@@ -1,10 +1,10 @@
 ---
 id: PK-452
 title: 'job hunting corner: a home for jd reviews, research and applications'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-18T14:16:00Z'
-updated_date: '2026-11-18T15:28:00Z'
+updated_date: '2026-11-18T15:35:00Z'
 labels:
   - m
   - clio-wing-1
@@ -99,4 +99,10 @@ PK-452:W40 (2026-11-18 17:27, dima): q8: such a check is overkill, no need; usua
 PK-452:W41 (2026-11-18 17:27, dima): where is q11? i saw q10 and q12; is anything missed? ❓
 PK-452:W42 (2026-11-18 17:27, dima): q12: what about moving the job data from knowledge into the new place, and refreshing the recipe's link? it is also my private data, and i want it hidden
 PK-452:W43 (2026-11-18 17:27, dima, o7 steer): lookout: approved, sounds nice; and an emoji? a top 7
+
+ticket: FRM-653
+moved: PK-452:W1 → FRM-653:W1, PK-452:W2 → FRM-653:W2, PK-452:W3 → FRM-653:W3, PK-452:W4 → FRM-653:W4, PK-452:W5 → FRM-653:W5, PK-452:W6 → FRM-653:W6, PK-452:W7 → FRM-653:W7, PK-452:W8 → FRM-653:W8, PK-452:W9 → FRM-653:W9, PK-452:W10 → FRM-653:W10, PK-452:W11 → FRM-653:W11, PK-452:W12 → FRM-653:W12, PK-452:W13 → FRM-653:W13, PK-452:W14 → FRM-653:W14, PK-452:W15 → FRM-653:W15, PK-452:W16 → FRM-653:W16, PK-452:W17 → FRM-653:W17, PK-452:W18 → FRM-653:W18, PK-452:W19 → FRM-653:W19, PK-452:W20 → FRM-653:W20, PK-452:W21 → FRM-653:W21, PK-452:W22 → FRM-653:W22, PK-452:W23 → FRM-653:W23, PK-452:W24 → FRM-653:W24, PK-452:W25 → FRM-653:W25, PK-452:W26 → FRM-653:W26, PK-452:W27 → FRM-653:W27, PK-452:W28 → FRM-653:W28, PK-452:W29 → FRM-653:W29, PK-452:W30 → FRM-653:W30, PK-452:W31 → FRM-653:W31, PK-452:W32 → FRM-653:W32, PK-452:W33 → FRM-653:W33, PK-452:W34 → FRM-653:W34, PK-452:W35 → FRM-653:W35, PK-452:W36 → FRM-653:W36, PK-452:W37 → FRM-653:W37, PK-452:W38 → FRM-653:W38, PK-452:W39 → FRM-653:W39, PK-452:W40 → FRM-653:W40, PK-452:W41 → FRM-653:W41, PK-452:W42 → FRM-653:W42, PK-452:W43 → FRM-653:W43
+close: 17:35 shaped and built as FRM-653 (lookout), on dima's «proceed»; his raw drops stay in these notes
+
+close: 17:35 moved to FRM-653: PK-452:W1 PK-452:W2 PK-452:W3 PK-452:W4 PK-452:W5 PK-452:W6 PK-452:W7 PK-452:W8 PK-452:W9 PK-452:W10 PK-452:W11 PK-452:W12 PK-452:W13 PK-452:W14 PK-452:W15 PK-452:W16 PK-452:W17 PK-452:W18 PK-452:W19 PK-452:W20 PK-452:W21 PK-452:W22 PK-452:W23 PK-452:W24 PK-452:W25 PK-452:W26 PK-452:W27 PK-452:W28 PK-452:W29 PK-452:W30 PK-452:W31 PK-452:W32 PK-452:W33 PK-452:W34 PK-452:W35 PK-452:W36 PK-452:W37 PK-452:W38 PK-452:W39 PK-452:W40 PK-452:W41 PK-452:W42 PK-452:W43
 <!-- SECTION:NOTES:END -->
