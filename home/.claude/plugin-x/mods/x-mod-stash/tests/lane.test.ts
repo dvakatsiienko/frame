@@ -1816,6 +1816,23 @@ for (const [name, title, at] of [
         expect(kept(w)[0]?.current).toBe(at);
     });
 
+test("a plan card whose running ticket is all done points at the plan's first open step", async ($, on) => {
+    const w = world(on);
+    await start($);
+    plant(w, [
+        ['x', 'FRM-9', 'measure first'],
+        [' ', 'FRM-1', 'FRM-1 reviewed and closed'],
+        ['x', 'FRM-9', 'the idle poll'],
+    ]);
+    await create($, {
+        items: undefined,
+        plan: '~/.local/state/x/lanes/mods/lane-plan.md',
+        title: 'mods — FRM-9 the idle poll',
+    });
+    await poll(w);
+    expect(kept(w)[0]?.current).toBe(1);
+});
+
 test('a plan with a step line holding no ticket id is refused, naming that line', async ($, on) => {
     const w = world(on);
     await start($);

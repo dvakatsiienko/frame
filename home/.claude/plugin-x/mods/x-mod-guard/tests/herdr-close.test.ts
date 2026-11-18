@@ -540,7 +540,7 @@ for (const [kill, isRun] of [
 for (const made of ['tb3', 'tb5'])
     test(`a mod-only tab this seat made closes, a half-listed one never: ${made}`, async ($, on) => {
         const { ran } = world(on);
-        const open = `herdr-app do tab.new '{"name":"${made}","mod":"x-herdr-chatter"}' && herdr-app status`;
+        const open = `herdr-app do tab.new '{"name":"${made}","mod":"x-herdr-chat"}' && herdr-app status`;
         expect((await bash($, open)).deny).toBe(undefined);
         const close = `herdr-app do tab.close '{"id":"${made}"}' >/dev/null`;
         const r = await bash($, close);

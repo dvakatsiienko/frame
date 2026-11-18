@@ -3964,9 +3964,12 @@ async function followPlans($: EngineInterface) {
         // «we are here» is the first open step of the ticket the card runs; an older chunk's open close line is passed
         // over (clio's ruling, FRM-649 step 132), the plan's first open line when none of its steps carry that ticket
         const runs = items.some((x) => x.ticket && x.ticket === lane.ticket);
-        const current = items.findIndex(
+        const running = items.findIndex(
             (x) => !x.isDone && (!runs || x.ticket === lane.ticket),
         );
+        // a running ticket with every step done leaves the pointer on the plan's first open step, not past its end
+        const current =
+            running < 0 ? items.findIndex((x) => !x.isDone) : running;
         const at = current < 0 ? items.length : current;
         const isSame =
             !lane.isPlanGone &&
@@ -4871,7 +4874,7 @@ async function forgetJoins($: EngineInterface, sid: string) {
     await $.store.delete(JOIN_DONE + sid).catch(() => undefined);
 }
 // a lock dir this old was left by a crash, never by a live writer (both hold it for well under a second): broken and
-// taken. herdr's chatter reads the same age (`JOIN_LOCK_STALE_MS` in x-herdr-chatter's joins.js)
+// taken. herdr's chat reads the same age (`JOIN_LOCK_STALE_MS` in x-herdr-chat/joins.js:12)
 const JOIN_LOCK_STALE_MS = 30 * 1000;
 async function takeJoinLock($: EngineInterface, lock: string) {
     if ((await $.process.run(['mkdir', lock])).exitCode === 0) return true;
