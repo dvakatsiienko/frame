@@ -199,7 +199,8 @@ GIT_READ = re.compile(r"\bgit\s+(?:status|log|rev-parse|ls-remote|branch\s+-r)\b
 
 
 def landed_unread(path: str, reply: str) -> list[str]:
-    prose = INLINE_CODE.sub("", FENCE.sub("", reply))
+    # a one-word span is a branch or path name that stays in the sentence («is on `main`»); a spaced span is a quoted claim
+    prose = INLINE_CODE.sub(lambda m: m.group(0).strip("`") if " " not in m.group(0) else "", FENCE.sub("", reply))
     m = LANDED_CLAIM.search(NEGATED_LANDED.sub("", prose))
     if not m or any(name == "Bash" and GIT_READ.search(str(args.get("command", ""))) for name, args in turn_calls(path)):
         return []

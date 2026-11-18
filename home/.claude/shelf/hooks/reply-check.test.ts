@@ -471,6 +471,8 @@ describe('a landed claim with no git read (o185)', () => {
         'the fix is on origin/main.',
         'it landed on main.',
         'The three new rules are on main.',
+        'the fix is on `origin/main`.',
+        'it landed on `main`.',
     ])('logs «%s» in a turn with no git read', (reply) => {
         expect(loggedAfter(reply, noCalls)).toContain('landed-unread\t');
     });
