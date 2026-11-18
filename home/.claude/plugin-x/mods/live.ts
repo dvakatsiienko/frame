@@ -37,6 +37,11 @@ import {
     servedDirs,
     slotsOf,
 } from './live-root.ts';
+import {
+    putBackRepoSettings,
+    repoSettingsPaths,
+    snapshotRepoSettings,
+} from './live-settings.ts';
 import { RELOAD_MS, reloadVerdict, sourceHash } from './live-verdict.ts';
 import { SWAP_SOURCES, childEnv, liveDirs, manifestName } from './probe.ts';
 
@@ -198,6 +203,17 @@ async function serve() {
     // --plugin-dir lost the name clash to the live one (PK-65); a mod not live yet joins last
     const home = homedir();
     const dirs = servedDirs(liveDirs(home), mods, (d) => manifestName(d, home));
+    const settingsAtStart = snapshotRepoSettings(
+        repoSettingsPaths(process.cwd()),
+    );
+    const putBack = () => {
+        for (const line of putBackRepoSettings(
+            settingsAtStart,
+            readFileSync(debugLog, 'utf8'),
+            join(dir, 'repo-settings'),
+        ))
+            console.error(line);
+    };
     // named, so the fleet board reads what it is
     const session = pty.spawn(
         'claude',
@@ -240,6 +256,7 @@ async function serve() {
     let frames = 0;
     const stop = (code: number) => {
         session.kill();
+        putBack();
         rmSync(pidFile, { force: true });
         rmSync(slotFile, { force: true });
         if (plantRoot) rmSync(plantRoot, { force: true, recursive: true });
@@ -247,6 +264,7 @@ async function serve() {
     };
     session.onExit(() => {
         console.error('mods:live: the session ended');
+        putBack();
         rmSync(pidFile, { force: true });
         rmSync(slotFile, { force: true });
         if (plantRoot) rmSync(plantRoot, { force: true, recursive: true });
