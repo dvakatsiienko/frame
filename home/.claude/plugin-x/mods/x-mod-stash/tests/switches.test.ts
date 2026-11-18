@@ -240,13 +240,11 @@ const SCENARIOS: Record<string, Scenario> = {
             });
             await ui.board.press({ key: 'orbit:accepted:o1' });
         },
-        // a tick at the prompt, and one marked on another board mid-turn at the next tool call
+        // a tick at the prompt, and one pressed on herdr's board mid-turn at the next tool call
         fire: async ($, w) => {
             await say($, 'go');
-            w.store.set(`marks:${SID}:o2`, {
-                at: NOW - 5_000,
-                mark: 'accepted',
-            });
+            w.files[`/home/.claude/shelf/orbit-ticks/${SID}.jsonl`] =
+                `${JSON.stringify({ at: NOW - 5_000, id: 'o2', verdict: 'tick' })}\n`;
             await edit($, w);
         },
         op: {
@@ -442,7 +440,7 @@ test('🪐 orbit off tells the model its asks go into the reply as a ➡️ line
     ]);
 });
 
-// an idle session with marks from another board wakes once dima prompts anywhere: a turn the switch must stop too
+// an idle session with a press from herdr's board wakes once dima prompts anywhere: a turn the switch must stop too
 async function idleWake($: Engine, on: On, isOn: boolean) {
     const w = world(on);
     await $.session.start({
@@ -455,7 +453,8 @@ async function idleWake($: Engine, on: On, isOn: boolean) {
         op: 'add',
     });
     w.store.set('shown', { 'stash.orbit': isOn });
-    w.store.set(`marks:${SID}:o1`, { at: NOW, mark: 'accepted' });
+    w.files[`/home/.claude/shelf/orbit-ticks/${SID}.jsonl`] =
+        `${JSON.stringify({ at: NOW, id: 'o1', verdict: 'tick' })}\n`;
     await w.clock.advance(5_000);
     w.store.set('dima-at', NOW + 6_000);
     await w.clock.advance(5_000);
@@ -463,10 +462,10 @@ async function idleWake($: Engine, on: On, isOn: boolean) {
     return w.lines.filter((l) => l.startsWith('turn: ')).length;
 }
 
-test('🪐 orbit on: an idle session with marks wakes once dima prompts anywhere', async ($, on) => {
+test('🪐 orbit on: an idle session with a herdr press wakes once dima prompts anywhere', async ($, on) => {
     expect(await idleWake($, on, true)).toBe(1);
 });
 
-test('🪐 orbit off: an idle session with marks never wakes', async ($, on) => {
+test('🪐 orbit off: an idle session with a herdr press never wakes', async ($, on) => {
     expect(await idleWake($, on, false)).toBe(0);
 });

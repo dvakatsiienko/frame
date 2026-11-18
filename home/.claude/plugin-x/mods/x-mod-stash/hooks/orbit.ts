@@ -61,8 +61,8 @@ export const allAsksTicks = (
     }));
 
 // herdr's board writes one press per line of `~/.claude/shelf/orbit-ticks/<sid>.jsonl`, each `at` above the line before:
-// the presses past `after`, the newest per ask, as the marks a glide card would leave (a steer typed there replaces the
-// ask's own), each with the ask text he pressed on, since a follow keeps the id; a line that is no press is skipped. the
+// the presses past `after`, the newest per ask, as marks (a steer typed there replaces the ask's own), each with the ask
+// text he pressed on, since a follow keeps the id; a line that is no press is skipped. the
 // newest wins, as at x-mod-guard: his ↩️ then 🛎 is a tick (sixth sense round 1 on FRM-544, his 16:26 no-lockout rule); his
 // untick there takes the mark and its steer back, so the ask is open again and a later tick marks it (FRM-574, PK-363:W934)
 const HERDR_MARK = {

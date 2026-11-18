@@ -20,11 +20,11 @@ export type PublishedAsk = {
     isGated?: boolean;
 };
 
-// a mark or steer dima made on another board's glide card, waiting in the store for the member to take it in
+// a press dima made on herdr's board, read from its ticks file for the session to take in
 export type RemoteMark = {
     mark?: 'accepted' | 'rejected';
     steer?: string;
-    // the steer was typed on that board, so it replaces the member's own instead of yielding to it
+    // the steer came with the press, so it replaces the session's own instead of yielding to it
     isSteerEdit?: boolean;
     at: number;
 };

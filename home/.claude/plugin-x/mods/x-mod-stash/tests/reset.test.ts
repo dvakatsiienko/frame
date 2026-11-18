@@ -81,12 +81,11 @@ for (const command of ['clear', 'resume'] as const)
         expect([before, s.asks()]).toEqual([1, 0]);
     });
 
-test('/clear drops every key the old conversation kept, its pending lane marks included', async ($, on) => {
+test('/clear drops every key the old conversation kept', async ($, on) => {
     const s = await session($, on);
     const old = 'a1a1a1a1-0000';
     for (const key of ['reply:', 'context:', 'model:', 'hot:'])
         s.store.set(key + old, { at: 0 });
-    s.store.set(`marks:${old}:o1`, { at: 0, mark: 'accepted' });
     await run($, 'clear');
     expect([...s.store.keys()].filter((k) => k.includes(old))).toEqual([]);
 });

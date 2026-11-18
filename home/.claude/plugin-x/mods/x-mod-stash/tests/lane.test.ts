@@ -989,27 +989,17 @@ test('a member publishes its open asks whole, with ids, for the glide card', asy
     ).toEqual([{ id: 'o1', pick: 'cut it', text: 'cut the second probe?' }]);
 });
 
-test("a mark from a glide card joins the member's running turn", async ($, on) => {
-    const w = await memberWithAsk($, on);
-    await say($, 'go on');
-    w.store.set(`marks:${SID}:o1`, {
-        at: w.clock.now(),
-        mark: 'accepted',
-    });
-    const r = await $.tool.call({ command: 'ls', tool: 'Bash' } as never);
-    expect(
-        r.context?.some((c) => /o1 🛎️ accepted: cut the second probe/.test(c)),
-    ).toBe(true);
-});
-
-test('an idle member with marks wakes once, after dima prompts anywhere', async ($, on) => {
+test('an idle member with a herdr press wakes once, after dima prompts anywhere', async ($, on) => {
     const w = await memberWithAsk($, on);
     const before = w.texts.length;
-    w.store.set(`marks:${SID}:o1`, {
-        at: w.clock.now(),
-        mark: 'rejected',
-        steer: 'later',
-    });
+    w.files[`/home/.claude/shelf/orbit-ticks/${SID}.jsonl`] = `${JSON.stringify(
+        {
+            at: w.clock.now(),
+            id: 'o1',
+            steer: 'later',
+            verdict: 'replay',
+        },
+    )}\n`;
     await w.clock.advance(5_000);
     const quiet = w.texts.length;
     w.store.set('dima-at', w.clock.now() + 1);
@@ -1019,7 +1009,7 @@ test('an idle member with marks wakes once, after dima prompts anywhere', async 
     expect([quiet - before, woke.length, woke[0]]).toEqual([
         0,
         1,
-        expect.stringMatching(/o1 ↩️ rejected: cut the second probe.*«later»/su),
+        expect.stringMatching(/o1 ↩️ rejected.*cut the second probe.*«later»/su),
     ]);
 });
 

@@ -612,11 +612,6 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: one name, «steer», for every text field dima types into on the board; an ask's hidden note stays a «note», it is the session's (dima's o57)
   - decision: a text kept under the old name, «note», reads as its steer after the reload: orbit's state, a glide mark, a lane's draft
   - proof: tests/orbit-steps.test.ts::a steer the turn carried clears at the turn's end; tests/lane.test.ts::a taken steer clears from the box once clio took it; tests/orbit.test.ts::an assumption's steer box is empty once ↩️ sent it back
-- ✅ a steer typed on a glide card never loses text while the member takes it in
-  - given dima types a steer into a member's ask on another board's glide card
-  - when the member takes the card's mark into its orbit, or he types on while it does
-  - then the field keeps what he typed: the mark leaves only after the orbit holds it and only if it is still the one read, and a steer typed on the card replaces the member's own (dima, 2026-10-29: «text … gets occasionally deleted when I print too fast»)
-  - proof: tests/orbit.test.ts::a steer typed on another board while its mark is taken in survives for the next take; ::a card steer lands over the member's own unless it typed into that box a moment ago; ::a remote mark landing while dim…
 - ✅ a typed steer survives every redraw (FRM-492)
   - given an ask's steer box with a landed save
   - when dima types 60+ characters without a pause while another session, the poll or a reload redraws the board
@@ -690,7 +685,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - proven live on the desktop 2026-10-10 20:40: dima ticked o21 while clio ran a tool, and that same turn's reply answered it
   - decision: the tick rides the turn's next tool result as model-only context; one that no tool result reaches waits for dima's next prompt — a hidden appended message started a turn of its own when it landed after the turn's last read (dima, 20:31)
   - given dima ticks an ask once and the turn that took it never resolves it, then the next three turns do not carry the tick again; a re-tick of the still-open ask arrives as a fresh tick (FRM-426, PK-262: a tick was delivered five times)
-  - given a remote mark from another board lands on an ask whose steer dima is typing, then his typed steer stays; the remote steer fills only an empty one (PK-149)
+  - given a press from herdr's board lands on an ask whose steer dima is typing, then his typed steer stays; the press's steer fills only an empty one (PK-149)
   - decision: any running turn takes a tick, not only one dima's prompt started — his o32 waited through 5+ tool calls of a task-notification turn (dima's o10, 2026-10-11 12:20)
   - decision: every orbit write reads the orbit back from `$.state` first — a reload landing at a turn's end ran `turn.complete` before `session.start` and saved an empty orbit (dima, 20:20: «coder wiped the orbit»)
 - ✅ marked asks lock while clio works on them
@@ -708,7 +703,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - decision: an answered ask stays in orbit until its turn ends, its line led by 👀 (`👀 o20: …`), so dima sees it go — an icon, not the word «answered», inline so the row keeps its left edge; no «seen» card, since a card needs a box of its own (dima, 20:34, 20:39)
 - ✅ a tick lands at once (FRM-507)
   - given a store from the old build, then the mod ignores `undo-window`, `undo-delay` and `shown["stash.chips"]`
-  - given dima presses 🛎️ tick or 🔁 replay on an ask, on its own board or a glide card
+  - given dima presses 🛎️ tick or 🔁 replay on an ask, on its own board or on herdr's
   - then the button reads `✅ tick` (or `✅ replay`) at once, and the next turn, or the running turn at its next tool call, takes it
   - decision: a state changes only the button's icon, never its text (dima, 21:01)
   - proof: tests/orbit.test.ts::a tick reads ✅ tick at once / 🔁 replay reads ✅ replay at once / a running turn takes a tick at its next tool call / a tick from another board's glide card joins the running turn at once; tests/lane.test.ts::a tick on the card reads ✅ tick at once
@@ -719,8 +714,7 @@ the session's asks to dima, ticked instead of copy-pasted; one orbit per session
   - given dima presses ✅, then each ask it marks gets its own record, as his 🛎️ on it would; a ⚠️ ask, an ask opening `merge` or `land`, or an ask added after the frame he pressed drew, stays unmarked with no record, its row still reading `🛎️ tick`, a toast names each one it skipped, and ✅ is not drawn while only ⚠️ asks are left to mark (FRM-510)
   - given dima presses 🛎️ on an ask of this session's own orbit, then the record holds it; a second press takes it back; a 🔁 replay writes none
   - given an agent's orbit op carries a `mark` (an add, a follow, a resolve), then no tick is written: only his press writes one
-  - given an ask the agent followed up (new text, same id) and dima presses 🛎️ on it on this board, then the record holds the new text and its quoted command; a press on a glide card writes none (below, dima's pick a, 2026-10-30)
-  - decision: a tick on a glide card, made in clio's session for a member's ask, writes no record in the member's session — its mark travels through the shared store, which anything can write; pinned by tests/orbit.test.ts::a mark from another board's glide card writes no tick record (FRM-467, kept after a try that wrote one)
+  - given an ask the agent followed up (new text, same id) and dima presses 🛎️ on it on this board, then the record holds the new text and its quoted command
   - and a second press before a turn takes it unsends it: no turn ever takes it
   - and a press that lands after his prompt locked the ask (a frame drawn before the lock) changes nothing and keeps the record
   - proof: tests/orbit.test.ts::a 🛎️ press writes the tick record: the ask's id, text, quoted targets and time; ::a second 🛎️ press takes the tick back; ::a 🔁 replay press writes no tick; ::an agent's own orbit o…; ::a mark from another board's glide card writes no tick record; ::a press that lands on an ask his prompt already locked keeps the tick record (S1)

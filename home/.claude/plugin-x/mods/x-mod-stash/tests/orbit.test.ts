@@ -108,7 +108,7 @@ function world(on: On, files: Record<string, string> = {}) {
     on('classic.Stop', () => ({}));
     on('tool.call', () => ({ result: {}, text: 'done' }));
     on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { appended, clock, contexts, panes, prompts, store, taps };
+    return { appended, clock, contexts, files, panes, prompts, store, taps };
 }
 
 const start = ($: Engine) =>
@@ -812,7 +812,7 @@ test('a remote mark landing while dima types a steer leaves his typed steer in i
     const ui = await board($);
     await add($, ['name a bird', 'pelican']);
     await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
-    w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });
+    herdrPress(w, 'o1', { at: w.clock.now(), verdict: 'tick' });
     await w.clock.advance(5_000);
     expect(savedSteer(w.store)).toBe('a heron');
 });
@@ -909,10 +909,10 @@ test("a card steer lands over the member's own unless it typed into that box a m
     const ui = await board($);
     await add($, ['name a bird', 'pelican']);
     await ui.input({ key: 'orbit:steer:o1', kind: 'change', text: 'a heron' });
-    w.store.set(`marks:${SID}:o1`, {
+    herdrPress(w, 'o1', {
         at: w.clock.now(),
-        isSteerEdit: true,
         steer: 'a swan',
+        verdict: 'tick',
     });
     await say($, 'go');
     expect(savedSteer(w.store)).toBe('a heron');
@@ -927,45 +927,13 @@ test('a steer typed on another board replaces the one the ask already holds', as
     await w.clock.advance(5_000);
     await ui.press({ key: 'fold:orbit' });
     await ui.press({ key: 'fold:orbit' });
-    w.store.set(`marks:${SID}:o1`, {
+    herdrPress(w, 'o1', {
         at: w.clock.now(),
-        isSteerEdit: true,
         steer: 'a swan',
+        verdict: 'tick',
     });
     await w.clock.advance(5_000);
     expect(savedSteer(w.store)).toBe('a swan');
-});
-
-test('a steer typed on another board while its mark is taken in survives for the next take', async ($, on) => {
-    const w = world(on);
-    const key = `marks:${SID}:o1`;
-    let isRaced = false;
-    const race = () => {
-        if (isRaced) return;
-        isRaced = true;
-        w.store.set(key, {
-            at: w.clock.now() + 1,
-            isSteerEdit: true,
-            steer: 'a swan again',
-        });
-    };
-    await start($);
-    await add($, ['name a bird', 'pelican']);
-    w.store.set(key, {
-        at: w.clock.now(),
-        isSteerEdit: true,
-        steer: 'a swan',
-    });
-    w.taps.set = (k) => {
-        if (!k.startsWith('marks:')) race();
-    };
-    w.taps.delete = (k) => {
-        if (k === key) race();
-    };
-    await w.clock.advance(5_000);
-    expect(isRaced).toBe(true);
-    await say($, 'next');
-    expect(savedSteer(w.store)).toBe('a swan again');
 });
 
 /* the orbit note speaks only on a change (FRM-640): the rules sit in the tool's own text, so no sentence rides every prompt */
@@ -1947,19 +1915,6 @@ test('a 🛎️ press on a followed-up ask writes the tick record with the new t
     ]);
 });
 
-test("a mark from another board's glide card writes no tick record: the shared store it travels through is anything's to write", async ($, on) => {
-    const w = world(on);
-    const writes = tickLog(on);
-    await start($);
-    await add($, ['push `git push origin --delete old`', 'yes']);
-    w.store.set(`marks:${SID}:o1`, {
-        at: await w.clock.now(),
-        mark: 'accepted',
-    });
-    await w.clock.advance(5_000);
-    expect(writes.flat()).toEqual([]);
-});
-
 test('a 🛎️ press in orbit ends mobile mode', async ($, on) => {
     const w = world(on);
     await start($);
@@ -2609,19 +2564,17 @@ test('a running turn takes a tick at its next tool call', async ($, on) => {
     expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
 });
 
-test("a tick from another board's glide card joins the running turn at once", async ($, on) => {
-    const w = world(on);
-    await start($);
-    await add($, ['push FRM-1', 'yes']);
-    await say($, 'run the long job');
-    w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });
-    const r = await $.tool.call({ command: 'ls', tool: 'Bash' });
-    expect((r.context ?? []).join('\n')).toMatch(/o1 🛎️ accepted/);
-});
-
 // FRM-552: herdr's board writes one press per line of the session's ticks file, and stash keeps how far it read
 const HERDR_FILE = `/home/.claude/shelf/orbit-ticks/${SID}.jsonl`;
 const press = (p: Record<string, unknown>) => `${JSON.stringify(p)}\n`;
+// a press herdr's board appends to this session's ticks file
+const herdrPress = (
+    w: { files: Record<string, string> },
+    id: string,
+    p: Record<string, unknown>,
+) => {
+    w.files[HERDR_FILE] = `${w.files[HERDR_FILE] ?? ''}${press({ id, ...p })}`;
+};
 const turnContext = async ($: Engine) =>
     ((await $.tool.call({ command: 'ls', tool: 'Bash' })).context ?? []).join(
         '\n',
@@ -4422,7 +4375,7 @@ test("the idle wake's lock, reading from before his press, keeps the mark", asyn
     const ui = await board($);
     await add($, ['push `origin`', 'yes'], ['push `backup`', 'yes']);
     await endTurn($);
-    w.store.set(`marks:${SID}:o1`, { at: w.clock.now(), mark: 'accepted' });
+    herdrPress(w, 'o1', { at: w.clock.now(), verdict: 'tick' });
     await w.clock.advance(5_000);
     await ui.find({ key: 'orbit:accepted:o1' });
     const stale = race.last;
@@ -5041,10 +4994,10 @@ for (const [when, beforeMs] of [
         if (beforeMs) await w.clock.advance(beforeMs);
         await $.session.detach({ ...CLIENT, reason: 'detach' });
         await ui.unmount();
-        w.store.set(`marks:${SID}:${id}`, {
+        herdrPress(w, id, {
             at: (w.clock as unknown as { now: () => number }).now(),
-            isSteerEdit: true,
             steer: 'a swan',
+            verdict: 'tick',
         });
         await w.clock.advance(5_000);
         await $.session.attach(CLIENT);
@@ -5085,10 +5038,10 @@ test('a steer another board wrote while he was here offers nothing at his next r
     // a fold forgets the typing stamp, which reads the real clock and so never ages here
     await ui.press({ key: 'fold:orbit' });
     await ui.press({ key: 'fold:orbit' });
-    w.store.set(`marks:${SID}:${id}`, {
+    herdrPress(w, id, {
         at: (w.clock as unknown as { now: () => number }).now(),
-        isSteerEdit: true,
         steer: 'a swan',
+        verdict: 'tick',
     });
     await w.clock.advance(5_000);
     const back = await switchThread($, w, ui);
@@ -5106,10 +5059,10 @@ test('a steer he emptied never comes back as an offer when another board writes 
     await w.clock.advance(FIELD_SAVE + 3500);
     await $.session.detach({ ...CLIENT, reason: 'detach' });
     await ui.unmount();
-    w.store.set(`marks:${SID}:${id}`, {
+    herdrPress(w, id, {
         at: (w.clock as unknown as { now: () => number }).now(),
-        isSteerEdit: true,
         steer: 'a swan',
+        verdict: 'tick',
     });
     await w.clock.advance(5_000);
     await $.session.attach(CLIENT);
@@ -5208,10 +5161,10 @@ test('a steer another board wrote, still a mark at his return inside the poll, w
     await w.clock.advance(FIELD_SAVE + 100);
     await $.session.detach({ ...CLIENT, reason: 'detach' });
     await ui.unmount();
-    w.store.set(`marks:${SID}:${id}`, {
+    herdrPress(w, id, {
         at: (w.clock as unknown as { now: () => number }).now(),
-        isSteerEdit: true,
         steer: 'a swan',
+        verdict: 'tick',
     });
     await $.session.attach(CLIENT);
     const back = await board($);
@@ -5304,31 +5257,6 @@ test('a reloaded module takes back what he left, and his return offers it over a
     ).toEqual(expect.stringContaining('a heron'));
 });
 
-test('a held text that yielded never draws over the words he types next', async ($, on) => {
-    const w = world(on);
-    const { down, state } = refusingOrbit(on);
-    const id = `o${(state.orbit as { next: number }).next}`;
-    await start($);
-    const ui = await board($);
-    await add($, ['name a bird', 'pelican']);
-    await ui.redraw();
-    const key = `orbit:steer:${id}`;
-    down.isDown = true;
-    await ui.input({ key, kind: 'change', text: 'a heron' });
-    const back = await switchThread($, w, ui);
-    down.isDown = false;
-    w.store.set(`marks:${SID}:${id}`, {
-        at: (w.clock as unknown as { now: () => number }).now(),
-        isSteerEdit: true,
-        steer: 'a swan',
-    });
-    await w.clock.advance(5_000);
-    await say($, 'go');
-    await back.input({ key, kind: 'change', text: 'a swan and' });
-    await back.redraw();
-    expect(await boxValue(back, key)).toBe('a swan');
-});
-
 /* FRM-531 sixth sense, round 1 */
 test('a second steer refused after a sent one cleared keeps drawing, and lands at the next chance', async ($, on) => {
     const w = world(on);
@@ -5373,10 +5301,10 @@ test('a text sent before he left is not offered back over a newer steer', async 
     await $.session.detach({ ...CLIENT, reason: 'detach' });
     await ui.unmount();
     await endTurn($);
-    w.store.set(`marks:${SID}:${id}`, {
+    herdrPress(w, id, {
         at: (w.clock as unknown as { now: () => number }).now(),
-        isSteerEdit: true,
         steer: 'a swan',
+        verdict: 'tick',
     });
     await $.session.attach(CLIENT);
     const back = await board($);
@@ -5469,10 +5397,10 @@ test('a text a turn carried while he was away is not offered back over a newer s
     await ui.unmount();
     await say($, 'go');
     await endTurn($);
-    w.store.set(`marks:${SID}:${id}`, {
+    herdrPress(w, id, {
         at: (w.clock as unknown as { now: () => number }).now(),
-        isSteerEdit: true,
         steer: 'a swan',
+        verdict: 'tick',
     });
     await $.session.attach(CLIENT);
     const back = await board($);
@@ -5511,10 +5439,10 @@ test("a phone attaching while he is away leaves the desktop's offer for his retu
     await $.session.detach({ ...CLIENT, reason: 'detach' });
     await ui.unmount();
     await $.session.attach({ clientId: 'phone', surface: 'mobile' });
-    w.store.set(`marks:${SID}:${id}`, {
+    herdrPress(w, id, {
         at: (w.clock as unknown as { now: () => number }).now(),
-        isSteerEdit: true,
         steer: 'a swan',
+        verdict: 'tick',
     });
     await $.session.attach(CLIENT);
     const back = await board($);

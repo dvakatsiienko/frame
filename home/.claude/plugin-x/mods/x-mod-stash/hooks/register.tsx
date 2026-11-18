@@ -11,7 +11,6 @@ import type {
     QuietGap,
     QuietLogLine,
     QuietPing,
-    RemoteMark,
     StashCap,
     StashEntry,
     StashField,
@@ -165,7 +164,6 @@ const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 // the l14 card on the codie's old id, its asks gone from the card); dropped a week after it was written
 const SUCC = 'succ:';
 // a glide card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
-const MARKS = 'marks:';
 // how far this session read herdr's ticks file for it: the `at` of the newest press taken, one key per session id
 const HERDR_READ = 'herdr-read:';
 // the join queue (FRM-584): `join-taken:<sid>` the ids handed into the running turn, `join-done:<sid>` the ids a
@@ -2761,10 +2759,6 @@ async function currentOrbit($: EngineInterface) {
     return orbit;
 }
 
-// a glide card's marks on one member's asks: one store key per ask, `marks:<sid>:<ask id>`, so a board writes only its
-// own key and the member deletes only the keys it read — a shared map lost or re-applied marks across sessions
-const markKey = (sid: string, askId: string) => `${MARKS}${sid}:${askId}`;
-
 // herdr's presses for this session past what it read last; the file is herdr's board's alone, so this side only reads
 // and keeps its own watermark. x-mod-guard reads the same file as his tick, its ticks-write rule keeping seats out (FRM-544)
 async function herdrMarksOf($: EngineInterface, sid: string) {
@@ -2777,20 +2771,6 @@ async function herdrMarksOf($: EngineInterface, sid: string) {
     return { after, ...herdrTicks(text, after) };
 }
 
-async function marksOf($: EngineInterface, sid: string) {
-    const marks: Record<string, RemoteMark> = {};
-    const keys = (await $.store.keys().catch(() => [] as string[])).filter(
-        (k) => k.startsWith(`${MARKS}${sid}:`),
-    );
-    for (const key of keys) {
-        const m = (await $.store.get(key).catch(() => undefined)) as
-            | RemoteMark
-            | undefined;
-        if (m) marks[key.slice(`${MARKS}${sid}:`.length)] = steered(m);
-    }
-    return marks;
-}
-
 // a steer typed into this session's own box a moment ago is newer than a card's edit that lands now
 const isTypedHere = (askId: string) =>
     isTypingAt(
@@ -2799,14 +2779,13 @@ const isTypedHere = (askId: string) =>
         Date.now(),
     );
 
-// marks dima made on another board's glide card join this session's own orbit, as if made here; a steer typed here stays
-// in its box over the remote mark's (PK-149)
+// dima's presses on herdr's board join this session's own orbit, as if made here; a steer typed here stays in its box over
+// the press's (PK-149)
 async function absorbMarks($: EngineInterface) {
     const sid = await currentId($);
     if (!sid) return;
-    const marks = await marksOf($, sid);
     const herdr = await herdrMarksOf($, sid);
-    if (!Object.keys(marks).length && herdr.last <= herdr.after) return;
+    if (herdr.last <= herdr.after) return;
     let isSaved = false;
     // asks his newer ↩️ took back from an accepted mark: their tick record goes too, so the guard honours no tick the
     // board no longer shows
@@ -2822,31 +2801,20 @@ async function absorbMarks($: EngineInterface) {
                 // the question he read, never the round a follow put under the same id
                 const h = herdr.marks[a.id];
                 const m =
-                    marks[a.id] ??
-                    (h?.text !== undefined && h.text !== a.text
-                        ? undefined
-                        : h);
+                    h?.text !== undefined && h.text !== a.text ? undefined : h;
                 if (!m || a.isLocked || a.isResolved) return a;
                 // a herdr ↩️ takes back a tick a turn already took, whose mark the turn end cleared: the deck's tick is a
                 // toggle, and the record would still stand for its 2 h
-                if (
-                    m.mark !== 'accepted' &&
-                    (a.mark === 'accepted' || !marks[a.id])
-                )
-                    retracted.push(a);
+                if (m.mark !== 'accepted') retracted.push(a);
                 // his 🛎 from herdr gets the tick record a seat-board 🛎 gets: x-herdr-deck prunes the press once read
                 // and the turn that takes the ask clears its mark, so the record is what x-mod-guard honours for 2 h
                 // (clio's o49 at 19:30, wing 1's o13 at 19:08)
-                if (
-                    !marks[a.id] &&
-                    m.mark === 'accepted' &&
-                    a.mark !== 'accepted'
-                )
+                if (m.mark === 'accepted' && a.mark !== 'accepted')
                     accepted.push(a);
                 return {
                     ...a,
                     isChanged: false,
-                    isHerdrMark: !marks[a.id] || undefined,
+                    isHerdrMark: true,
                     mark: m.mark,
                     markedAt: m.mark ? m.at : undefined,
                     steer: isTypedHere(a.id)
@@ -2854,7 +2822,7 @@ async function absorbMarks($: EngineInterface) {
                         : m.isSteerEdit
                           ? m.steer
                           : // his untick from herdr takes back the steer his tick brought
-                            h === m && !m.mark
+                            !m.mark
                             ? undefined
                             : (a.steer ?? m.steer),
                 };
@@ -2866,15 +2834,6 @@ async function absorbMarks($: EngineInterface) {
     // a press the orbit did not keep is read again at the next take
     if (isSaved && herdr.last > herdr.after)
         await $.store.set(HERDR_READ + sid, herdr.last).catch(() => undefined);
-    // the marks go once the orbit holds them, and only the ones still as read: a steer typed on that board meanwhile
-    // stays for the next take, and its card never sees the steer missing in between
-    for (const [id, m] of Object.entries(marks)) {
-        const stored = (await $.store
-            .get(markKey(sid, id))
-            .catch(() => undefined)) as RemoteMark | undefined;
-        if (stored?.at === m.at)
-            await $.store.delete(markKey(sid, id)).catch(() => undefined);
-    }
 }
 
 // an idle session whose asks were marked from another board wakes once dima prompts anywhere after the marks: one turn
@@ -4264,8 +4223,6 @@ async function forget($: EngineInterface, sid: string) {
     await $.store.delete(BAND_READ + sid);
     await $.store.delete(BAND_REFUSED + sid);
     for (const prefix of SESSION_KEYS) await $.store.delete(prefix + sid);
-    for (const key of await $.store.keys())
-        if (key.startsWith(`${MARKS}${sid}:`)) await $.store.delete(key);
 }
 
 // a session that exited keeps only its last reply, marked ended, dropped a day later
