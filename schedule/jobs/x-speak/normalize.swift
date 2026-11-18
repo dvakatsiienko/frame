@@ -114,6 +114,8 @@ private func rewriteLatin(_ text: String) -> String {
 
 private func rewriteSymbols(_ text: String) -> String {
     var t = text
+    // a key glyph is a word a voice cannot say: «⌘Enter» reads «command Enter»
+    t = sub(t, "[⌘⌥⇧⌃]") { g in " " + ["⌘": "command", "⌥": "option", "⇧": "shift", "⌃": "control"][g[0]]! + " " }
     t = sub(t, "\\s*(?:→|->|=>|⇒|·|\\||—|–)\\s*", ", ")
     t = sub(t, "\\s&\\s", " and ")
     t = sub(t, "\\s/\\s", ", ")
@@ -126,7 +128,8 @@ private func rewriteSymbols(_ text: String) -> String {
     t = sub(t, ",(\\s*,)+", ",")
     t = sub(t, "([.!?;:]),", "$1")
     t = sub(t, ",([.!?;:])", "$1")
-    return sub(t, "^[,\\s]+|[,\\s]+$", "")
+    // a voice never gets a text that opens on punctuation: a grab that starts «. Before» or «… and» sounds like noise
+    return sub(t, "^[,.…:;!?\\s]+|[,\\s]+$", "")
 }
 
 // a run changes language only on a letter; digits, spaces and punctuation stay with the run they sit in

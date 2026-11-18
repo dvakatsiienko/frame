@@ -370,5 +370,18 @@
                 "C L I with muscles, or B Y T 52, the harness? moves to F R M 43, the harness verdict, which stays open. a gui, or a terminal app with U I elements, answered here"
             ]
         ]
+    },
+    {
+        "in": ". Before fixing the board's text-box keys, the herdr 🔧 codie needs to see exactly what herdr sends on Enter and on ⌘Enter:",
+        "out": [
+            [
+                "en",
+                "Before fixing the board's text-box keys, the herdr codie needs to see exactly what herdr sends on Enter and on command Enter:"
+            ]
+        ]
+    },
+    {
+        "in": "… and then ⌥⇧P",
+        "out": [["en", "and then option shift P"]]
     }
 ]
