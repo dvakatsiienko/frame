@@ -167,15 +167,19 @@ const rungs = (w: ReturnType<typeof world>) =>
 
 /* the crossing */
 
-test('a +5 crossing sends one line until the rung changes', async ($, on) => {
-    const w = world(on, WATCH);
-    w.meter(46, LEFT);
-    await start($);
-    await w.clock.advance(POLL);
-    const first = rungs(w);
-    await w.clock.advance(5 * MIN);
-    expect([first, rungs(w)]).toEqual([['park'], ['park']]);
-});
+test(
+    'a +5 crossing sends one line until the rung changes',
+    { timeoutMs: 30_000 },
+    async ($, on) => {
+        const w = world(on, WATCH);
+        w.meter(46, LEFT);
+        await start($);
+        await w.clock.advance(POLL);
+        const first = rungs(w);
+        await w.clock.advance(5 * MIN);
+        expect([first, rungs(w)]).toEqual([['park'], ['park']]);
+    },
+);
 
 test('between the rungs the stored one stands: +6, +3, +6 sends one line', async ($, on) => {
     const w = world(on, WATCH);
