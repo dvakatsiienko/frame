@@ -116,21 +116,24 @@ export function readsAfter(reads, queue, op) {
  * @param {Read[]} reads @param {string} text @param {number} at
  */
 export function readTime(reads, text, at) {
-    const said = words(queuedWords(text));
+    const said = words(unwrapPastes(text));
     const read = reads.find(
         (r) =>
             Math.abs(r.at - at) <= STAMP_SLACK_MS &&
-            words(asTyped(queuedWords(r.text))) === said,
+            words(asTyped(unwrapPastes(r.text))) === said,
     );
     return read?.readAt ?? (at || null);
 }
 
-/** what he typed, out of the wrapper Claude Code puts around a paste @param {string} text */
-export const queuedWords = (text) =>
+/**
+ * what he typed, out of the tags Claude Code puts around each paste, an id on the closing one too: a tag on its own
+ * line leaves one line break, a tag inside a line leaves nothing
+ * @param {string} text
+ */
+export const unwrapPastes = (text) =>
     text
-        .replace(
-            /^<pasted_content\b[^>]*>\n?([\s\S]*?)\n?<\/pasted_content>$/,
-            '$1',
+        .replace(/\n?<\/?pasted_content\b[^>]*>\n?/g, (tag) =>
+            tag.includes('\n') ? '\n' : '',
         )
         .trim();
 
@@ -203,7 +206,7 @@ export function waitingRows(waiting) {
     const seen = new Map();
     return waiting.map((q, n) => {
         // his words: a picture's path or a quote rides the message, never the row
-        const text = queuedWords(q.said ?? q.text);
+        const text = unwrapPastes(q.said ?? q.text);
         const twin = seen.get(text) ?? 0;
         seen.set(text, twin + 1);
         return {

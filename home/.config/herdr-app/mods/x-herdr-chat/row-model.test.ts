@@ -34,6 +34,34 @@ const tool = (name: string, id = `msg-${serial + 1}`) =>
 const shown = (model: ReturnType<typeof createRowModel>) =>
     model.rows.map((row) => `${row.kind}: ${row.text}`);
 
+describe('a paste in his message shows as his words, never as the wrapper Claude Code puts around it (dima, 12:35)', () => {
+    test('the opening and closing tags, each with its id, are gone', () => {
+        const model = createRowModel();
+        model.add([
+            mine(
+                '\n\n<pasted_content id="8784">\nfirst line\n\nsecond line\n</pasted_content id="8784">\n',
+            ),
+        ]);
+        expect(shown(model)).toEqual(['mine: first line\n\nsecond line']);
+    });
+
+    test('a paste whose tag carries no id is still his message', () => {
+        const model = createRowModel();
+        model.add([mine('<pasted_content>\nthe log\n</pasted_content>')]);
+        expect(shown(model)).toEqual(['mine: the log']);
+    });
+
+    test('words he typed around the paste stay', () => {
+        const model = createRowModel();
+        model.add([
+            mine(
+                'look at this:\n<pasted_content id="a1">\nthe log\n</pasted_content>\nwhy?',
+            ),
+        ]);
+        expect(shown(model)).toEqual(['mine: look at this:\nthe log\nwhy?']);
+    });
+});
+
 describe('which transcript lines become rows', () => {
     test('his message, a reply and a tool call each become one row, in order', () => {
         const model = createRowModel();

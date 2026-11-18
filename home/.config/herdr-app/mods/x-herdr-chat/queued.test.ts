@@ -9,10 +9,10 @@ import {
     isVimNormal,
     queuedAfterIdle,
     queuedAfterRow,
-    queuedWords,
     readTime,
     readsAfter,
     sendArgs,
+    unwrapPastes,
     waitingRows,
 } from './queued.js';
 
@@ -160,13 +160,13 @@ describe('which queued messages are his', () => {
 describe('the words of a queued message', () => {
     test('a paste shows its text, not its wrapper', () => {
         expect(
-            queuedWords(
+            unwrapPastes(
                 '<pasted_content id="36e3">\nhi there\n</pasted_content>',
             ),
         ).toBe('hi there');
     });
     test('plain words stay as they are', () => {
-        expect(queuedWords('fix the crow emoji')).toBe('fix the crow emoji');
+        expect(unwrapPastes('fix the crow emoji')).toBe('fix the crow emoji');
     });
 });
 

@@ -5,7 +5,7 @@
 // takes it and its own transcript line replaces it: a user line at a turn's start, a queued command mid-turn.
 
 import { joinedTexts } from './joins.js';
-import { claudeQueueAfter, isHisQueued, queuedWords } from './queued.js';
+import { claudeQueueAfter, isHisQueued, unwrapPastes } from './queued.js';
 
 /**
  * @typedef {object} Row
@@ -25,7 +25,8 @@ const CONVERSATION = '{"parentUuid"';
 // Claude Code's queue records open with their type
 const QUEUE_RECORD = '{"type":"queue-operation"';
 // a user line that is not his words: a command's echo or output, a task notice, an interruption note
-const NOT_HIS_WORDS = /^\s*(?:<[\w-]+>|\[Request interrupted)/;
+const NOT_HIS_WORDS =
+    /^\s*(?:<(?!pasted_content\b)[\w-]+>|\[Request interrupted)/;
 
 /** @param {unknown} value @returns {value is Record<string, unknown>} */
 const isRecord = (value) => typeof value === 'object' && value !== null;
@@ -33,7 +34,7 @@ const isRecord = (value) => typeof value === 'object' && value !== null;
 /** @param {unknown} value */
 const textOf = (value) => (typeof value === 'string' ? value : '');
 
-/** his words in a message's content: the string itself, or its first text block @param {unknown} content */
+/** a message's content as written: the string itself, or its first text block @param {unknown} content */
 const saidIn = (content) =>
     typeof content === 'string'
         ? content
@@ -83,8 +84,8 @@ function rowsOf(line) {
             isRecord(queued.origin) &&
             queued.origin.kind === 'human'
         ) {
-            const said = saidIn(queued.prompt);
-            return said.trim() ? [row('mine', said)] : [];
+            const said = unwrapPastes(saidIn(queued.prompt));
+            return said ? [row('mine', said)] : [];
         }
         // words that joined a turn (the magic send) are his messages, one row each
         return joinedTexts(entry).map((text, n) =>
@@ -94,9 +95,10 @@ function rowsOf(line) {
     const { content } = message;
     const blocks = (Array.isArray(content) ? content : []).filter(isRecord);
     if (entry.type === 'user') {
+        // a paste's tags go after the check: a paste that opens with a tag of its own is still his
         const said = saidIn(content);
         return said.trim() && !NOT_HIS_WORDS.test(said)
-            ? [{ ...row('mine', said), isTurnStart: true }]
+            ? [{ ...row('mine', unwrapPastes(said)), isTurnStart: true }]
             : [];
     }
     if (entry.type !== 'assistant') return [];
@@ -213,7 +215,7 @@ export function createRowModel() {
                         isWaiting: true,
                         kind: 'mine',
                         replyId: null,
-                        text: queuedWords(queued.text),
+                        text: unwrapPastes(queued.text),
                         tools: [],
                         version: 1,
                     };
