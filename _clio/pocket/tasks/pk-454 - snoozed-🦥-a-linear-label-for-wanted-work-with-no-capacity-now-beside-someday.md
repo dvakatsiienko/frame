@@ -30,4 +30,7 @@ PK-454:W6 (2026-11-18 20:52, dima): when i ask to query zzz or someday items, un
 PK-454:W7 (2026-11-18 20:52, dima): propose how to have this now: top 7 emojis for the zzz tag, and a quick shape idea.
 PK-454:W8 (2026-11-18 20:58, dima): why did you ask about o10? was it because a stray asked for permission, and so now permission requests will be relayed to me? ❓
 PK-454:W9 (2026-11-18 20:58, dima): 💤 clearly shows the snooze state and is right, but i don't like it; it isn't fun. propose another top 7 set of emojis from a different area that also means snooze, with a more fun emoji.
+
+PK-454:W10 (2026-11-18 20:54, dima): o10: why do you ask for it? ❓
+PK-454:W11 (2026-11-18 20:54, dima): for the zzz ask, make a new Linear tag (🎙️ deck) compatible with the flyway: it means the same in the flyway and in Linear, with a similar or the same emoji
 <!-- SECTION:NOTES:END -->
