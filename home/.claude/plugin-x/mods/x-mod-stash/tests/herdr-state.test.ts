@@ -101,7 +101,10 @@ async function session($: Engine, on: On) {
                 size: 1,
             })),
     }));
+    // a test's tap before each command, to land a peer's move between two of this session's
+    const taps: { run?: (argv: readonly string[]) => void } = {};
     on('process.run', (_$, e) => {
+        taps.run?.(e.argv);
         const [cmd, ...args] = e.argv;
         const out = (stdout: string, exitCode = 0) => ({
             value: {
@@ -175,6 +178,7 @@ async function session($: Engine, on: On) {
             sid = next;
         },
         store,
+        taps,
     };
 }
 
@@ -685,6 +689,31 @@ test('a lock a crash left, older than the age herdr reads too, is broken: the ro
         s.files.has(JOINS),
         s.dirs.has(`${JOINS}.lock`),
     ]).toEqual([row('j1', 'waits'), false, false]);
+});
+
+// FRM-555 step 130: two waiters read one stale lock; the peer breaks it and takes it fresh before this session's next
+// step, so this session never breaks the peer's fresh lock (herdr's joins.js holds the same twin)
+test('a stale lock a peer breaks first is never broken twice: the rows wait for the peer', async ($, on) => {
+    const s = await session($, on);
+    const lock = `${JOINS}.lock`;
+    s.files.set(JOINS, row('j1', 'waits'));
+    s.dirs.add(lock);
+    s.mtimes.set(lock, s.clock.now() - 30_000);
+    let fails = 0;
+    s.taps.run = ([cmd, dir]) => {
+        // after this session's own failed mkdir, the peer breaks the stale lock and takes it fresh
+        if (cmd === 'mkdir' && dir === lock && fails++ === 0) return;
+        if (fails === 1 && cmd !== 'ps') {
+            s.mtimes.set(lock, s.clock.now());
+            fails++;
+        }
+    };
+    await $.session.end({ reason: 'clear', sessionId: A } as never);
+    expect([s.files.get(BACK), s.dirs.has(lock), s.files.has(JOINS)]).toEqual([
+        undefined,
+        true,
+        true,
+    ]);
 });
 
 test('a hand-back the lock refused at /clear goes back at a later sweep', async ($, on) => {

@@ -4875,11 +4875,26 @@ async function forgetJoins($: EngineInterface, sid: string) {
 const JOIN_LOCK_STALE_MS = 30 * 1000;
 async function takeJoinLock($: EngineInterface, lock: string) {
     if ((await $.process.run(['mkdir', lock])).exitCode === 0) return true;
-    const at = (await $.fs.stat(lock).catch(() => undefined))?.mtimeMs;
-    if (at === undefined || (await $.clock.now()) - at < JOIN_LOCK_STALE_MS)
+    if (!(await isJoinLockStale($, lock))) return false;
+    // one breaker at a time, the age read again under it: two waiters that both read the lock stale once both broke it,
+    // the second removing the first's fresh lock (FRM-555 step 130); a breaker lock a crash left is stale the same way
+    const breaker = `${lock}.break`;
+    if ((await $.process.run(['mkdir', breaker])).exitCode !== 0) {
+        if (!(await isJoinLockStale($, breaker))) return false;
+        await $.process.run(['rmdir', breaker]);
         return false;
-    await $.process.run(['rmdir', lock]);
-    return (await $.process.run(['mkdir', lock])).exitCode === 0;
+    }
+    try {
+        if (!(await isJoinLockStale($, lock))) return false;
+        await $.process.run(['rmdir', lock]);
+        return (await $.process.run(['mkdir', lock])).exitCode === 0;
+    } finally {
+        await $.process.run(['rmdir', breaker]);
+    }
+}
+async function isJoinLockStale($: EngineInterface, lock: string) {
+    const at = (await $.fs.stat(lock).catch(() => undefined))?.mtimeMs;
+    return at !== undefined && (await $.clock.now()) - at >= JOIN_LOCK_STALE_MS;
 }
 async function handBackJoins($: EngineInterface, home: string, sid: string) {
     const file = joinsFile(home, sid);
