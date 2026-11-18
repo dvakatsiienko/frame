@@ -135,7 +135,11 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 			plan.Threads = append(plan.Threads, named[1]+" → "+threadDisplay(record))
 		}
 	}
-	plan.Glide = "orbit glide, act link, role codie, session " + cmp.Or(session, "<sid>") + " — clio's call, x never calls orbit"
+	// the stash reads the lane off the codie's thread record and opens the card itself (FRM-602)
+	plan.Glide = "no --lane or no --session: no glide card opens"
+	if lane != "" && session != "" {
+		plan.Glide = "x-mod-stash opens the glide card from " + home(filepath.Join(stateDir(), "lanes", lane, "lane-plan.md")) + " at clio's next poll, codie linked"
+	}
 	plan.Window = fiveHourWindow()
 	return plan, nil
 }
@@ -374,7 +378,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		// the live name follows the record, so the registry and x's display stay one string
 		renames = append(renames, renameThread(sid, threadDisplay(record), 0, 0))
 	}
-	r.Done("dispatched; left by hand: the glide link", plan.Window)
+	r.Done("dispatched", plan.Window)
 	if len(renames) == 0 {
 		return plan, nil
 	}

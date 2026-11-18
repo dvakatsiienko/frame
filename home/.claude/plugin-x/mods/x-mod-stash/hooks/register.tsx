@@ -3631,6 +3631,75 @@ async function readPlanSteps(
     }
 }
 
+// a dispatch opens its lane's card (FRM-602): x's record of a live codie names the lane, whose plan file holds the steps;
+// a lane any card ever followed opens none again, and a joiner's dispatch links its codie to the open card
+async function openDispatchedLanes($: EngineInterface) {
+    if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
+        return;
+    const dispatched = (await threadRecords($)).filter(
+        (t): t is ThreadRecord & { lane: string } =>
+            t.role === 'codie' && /^[\w.-]+$/.test(t.lane ?? ''),
+    );
+    if (!dispatched.length) return;
+    const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
+    const live = (await registry($)).filter((r) => r.isAlive);
+    for (const codie of dispatched) {
+        const member = live.find((r) => r.base.sid === codie.sessionId);
+        if (!member) continue;
+        const plan = `~/.local/state/x/lanes/${codie.lane}/lane-plan.md`;
+        const path = plan.replace(/^~(?=\/)/, home);
+        const lanes = await readLanes($);
+        const onPlan = lanes.filter(
+            (l) => l.plan?.replace(/^~(?=\/)/, home) === path,
+        );
+        const open = onPlan.find((l) => !l.endedAt);
+        if (open) {
+            if (bare(open.members.codie ?? '') !== bare(member.base.name))
+                await orbitCall(
+                    $,
+                    {
+                        act: 'link',
+                        id: open.id,
+                        op: 'glide',
+                        role: 'codie',
+                        session: codie.sessionId,
+                    },
+                    false,
+                );
+            continue;
+        }
+        if (onPlan.length) continue;
+        const text = await $.fs.read(path).catch(() => undefined);
+        if (text === undefined) continue;
+        const title =
+            text
+                .match(/^# (.+)$/m)?.[1]
+                ?.replace(/\s+—\s+lane plan\s*$/, '')
+                .trim() || codie.lane;
+        const made = await orbitCall(
+            $,
+            { act: 'create', op: 'glide', plan, title },
+            false,
+        );
+        if ('deny' in made) continue;
+        const card = (await readLanes($)).find(
+            (l) => !l.endedAt && l.plan === plan,
+        );
+        if (card)
+            await orbitCall(
+                $,
+                {
+                    act: 'link',
+                    id: card.id,
+                    op: 'glide',
+                    role: 'codie',
+                    session: codie.sessionId,
+                },
+                false,
+            );
+    }
+}
+
 // a linked card is its lane plan file: each poll its numbered lines are the steps; an unreadable file keeps the last state
 async function followPlans($: EngineInterface) {
     if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
@@ -7789,6 +7858,7 @@ export const register: Register = (on) => {
                     await hotLate($).catch(() => undefined);
                     await relayCrowWake($).catch(() => undefined);
                     await followCodies($).catch(() => undefined);
+                    await openDispatchedLanes($).catch(() => undefined);
                     await followPlans($).catch(() => undefined);
                     // a fold or mobile mode is kept within one poll of its change
                     await keepState($).catch(() => undefined);

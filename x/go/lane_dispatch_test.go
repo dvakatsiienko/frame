@@ -213,8 +213,8 @@ func TestDispatchApplySetsEveryMarkInOneUpdate(t *testing.T) {
 	if state, _, _ := bodySign(body); state != signMatch {
 		t.Errorf("sign %s after the dispatch, want match: the line sits below ## signed", state)
 	}
-	if data := jsonOf(envelope["data"]); !strings.Contains(data, "glide") || !strings.Contains(data, "20%") {
-		t.Errorf("the glide link and the 5h line are not printed: %s", data)
+	if data := jsonOf(envelope["data"]); !strings.Contains(data, "x-mod-stash opens the glide card from ") || !strings.Contains(data, "lanes/cli-3/lane-plan.md") || !strings.Contains(data, "20%") {
+		t.Errorf("the glide line and the 5h line are not printed: %s", data)
 	}
 }
 

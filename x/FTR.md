@@ -192,6 +192,7 @@
   - then it refuses with exit 2 and calls nothing
   - given a number and a file, when it runs with `--apply`, then the body is written as the codie app and the read-back matches the file, or it fails naming the difference
 - ⬜ `x lane dispatch --quick` writes a quick lane's three marks (FRM-480)
+  - given `--lane <lane>` and `--session <sid>`, then its `glide` field names the plan file x-mod-stash opens the card from, `~/.local/state/x/lanes/<lane>/lane-plan.md`, and its done line asks no glide link by hand (FRM-602)
   - given a ticket with no `## signed` block, then In Progress, the codie delegate and a 🚀 line with `main:<base>` land; `--sixth-sense <sid>` names one on the line; without `--quick` the sign refusal stands
   - given a ticket already dispatched, when a re-run names a new lane, session or sixth sense, then it writes its own 🚀 line below the old one, the same lane keeping its base and sixth sense; a bare re-run reports the marks set; a held line no field reads refuses a flag
 - ⬜ `x lane landed` reads a lane's close true (FRM-480)

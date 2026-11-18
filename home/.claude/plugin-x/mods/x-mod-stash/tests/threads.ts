@@ -8,6 +8,7 @@ export type ThreadRow = {
     roleName?: string;
     pid?: number;
     wing?: number;
+    lane?: string;
 };
 
 export const threadsFile = (rows: readonly ThreadRow[]) =>
