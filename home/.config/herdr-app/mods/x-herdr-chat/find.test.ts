@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createFind, findCount, findSpans, hitsOf } from './find.js';
+import { createFind, findCount, findSpans, hitsOf, plainOf } from './find.js';
 
 const row = (id: string, text: string) => ({ id, text }) as never;
 const rows = [
@@ -83,6 +83,26 @@ describe('a matched message cut into words and marks (word marks probe)', () => 
                 { match: null, text: ' 7' },
             ],
             [{ match: null, text: 'no' }],
+        ]);
+    });
+});
+
+describe('the stepped row reads clean, no markdown marks (dima o14)', () => {
+    test('bold, code, fences, links, headings and quotes drop their marks; snake_case stays', () => {
+        expect(
+            plainOf(
+                '## Plan\n> **ship** the `viewer`, *now*\n```ts\nrun_it()\n```\nsee [the spec](https://x.y/spec)',
+            ),
+        ).toBe('Plan\nship the viewer, now\nrun_it()\nsee the spec');
+    });
+
+    test('a match only in a link address is no hit: he finds what he reads', () => {
+        expect(
+            hitsOf([row('l', '[docs](https://viewer.dev)')], 'viewer'),
+        ).toEqual([]);
+        expect(findSpans('**Ship** it', 'ship')[0]).toEqual([
+            { match: 0, text: 'Ship' },
+            { match: null, text: ' it' },
         ]);
     });
 });

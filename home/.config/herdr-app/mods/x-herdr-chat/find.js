@@ -9,6 +9,28 @@
 export const FIND_SETTLE_MS = 150;
 
 /**
+ * a message as he reads it once drawn: markdown's marks dropped, so the stepped row's plain words read clean and a
+ * match hidden in a link address is no hit (dima's o14)
+ * @param {string} text
+ */
+export function plainOf(text) {
+    return text
+        .split('\n')
+        .filter((line) => !/^\s*(```|~~~)/.test(line))
+        .map((line) =>
+            line
+                .replace(/^\s{0,3}#{1,6}\s+/, '')
+                .replace(/^\s{0,3}>\s?/, '')
+                .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+                .replace(/`+([^`]*)`+/g, '$1')
+                .replace(/(\*\*|__)(?=\S)(.+?)(?<=\S)\1/g, '$2')
+                .replace(/(^|[^\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])/g, '$1$2')
+                .replace(/(^|[^\w_])_(?=\S)(.+?)(?<=\S)_(?![\w_])/g, '$1$2'),
+        )
+        .join('\n');
+}
+
+/**
  * every match of `q`, any case: the newest row first, a row's matches in reading order; none for an empty query
  * @param {readonly Row[]} rows @param {string} q @returns {Hit[]}
  */
@@ -16,7 +38,7 @@ export function hitsOf(rows, q) {
     const needle = q.trim().toLowerCase();
     if (!needle) return [];
     return [...rows].reverse().flatMap((r) => {
-        const text = r.text.toLowerCase();
+        const text = plainOf(r.text).toLowerCase();
         /** @type {Hit[]} */
         const hits = [];
         for (
@@ -30,7 +52,7 @@ export function hitsOf(rows, q) {
 }
 
 /**
- * a matched message cut into plain words and its matches, line by line, for the word marks probe (dima, 17:46): each
+ * a matched message, its marks dropped, cut into plain words and its matches, line by line, for the word marks probe (dima, 17:46): each
  * match carries its place among the message's matches
  * @param {string} text @param {string} q
  * @returns {{ text: string, match: number | null }[][]}
@@ -38,28 +60,30 @@ export function hitsOf(rows, q) {
 export function findSpans(text, q) {
     const needle = q.trim().toLowerCase();
     let n = 0;
-    return text.split('\n').map((line) => {
-        /** @type {{ text: string, match: number | null }[]} */
-        const spans = [];
-        const lower = line.toLowerCase();
-        let from = 0;
-        for (
-            let at = needle ? lower.indexOf(needle) : -1;
-            at >= 0;
-            at = lower.indexOf(needle, from)
-        ) {
-            if (at > from)
-                spans.push({ match: null, text: line.slice(from, at) });
-            spans.push({
-                match: n++,
-                text: line.slice(at, at + needle.length),
-            });
-            from = at + needle.length;
-        }
-        if (from < line.length || !spans.length)
-            spans.push({ match: null, text: line.slice(from) });
-        return spans;
-    });
+    return plainOf(text)
+        .split('\n')
+        .map((line) => {
+            /** @type {{ text: string, match: number | null }[]} */
+            const spans = [];
+            const lower = line.toLowerCase();
+            let from = 0;
+            for (
+                let at = needle ? lower.indexOf(needle) : -1;
+                at >= 0;
+                at = lower.indexOf(needle, from)
+            ) {
+                if (at > from)
+                    spans.push({ match: null, text: line.slice(from, at) });
+                spans.push({
+                    match: n++,
+                    text: line.slice(at, at + needle.length),
+                });
+                from = at + needle.length;
+            }
+            if (from < line.length || !spans.length)
+                spans.push({ match: null, text: line.slice(from) });
+            return spans;
+        });
 }
 
 /** «2 / 5», «no match» or nothing before a query @param {FindState} state */
