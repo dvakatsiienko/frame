@@ -374,6 +374,8 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 	renames := []ordered{}
 	area, _ := areaFlag(flags)
 	dispatcher := callerOwnerLabel()
+	// a busy member is renamed once it idles, as x thread rename does: the coordinator runs a dispatch in the background
+	wait, nudge := renameWait()
 	for _, named := range dispatchNamed(flags, plan.Tickets) {
 		role, sid := named[0], named[1]
 		if sid == "" {
@@ -390,7 +392,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 			return nil, &Fail{Msg: "the thread record of " + sid + " was not written: " + err.Error(), Next: "x thread list"}
 		}
 		// the live name follows the record, so the registry and x's display stay one string
-		renames = append(renames, renameThread(sid, threadDisplay(record), 0, 0))
+		renames = append(renames, renamePlaces(sid, threadDisplay(record), wait, nudge)[1:]...)
 	}
 	r.Done("dispatched", plan.Window)
 	if len(renames) == 0 {

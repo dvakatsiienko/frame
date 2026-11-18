@@ -577,7 +577,7 @@ esac
 			if err := os.Chmod(filepath.Join(bin, "hc"), 0o755); err != nil {
 				t.Fatal(err)
 			}
-			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc"), "HC_TERMINAL_ID=t3b"}, "coordinator")
+			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc"), "HC_TERMINAL_ID=t3b", "X_RENAME_WAIT=0"}, "coordinator")
 
 			envelope, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3", "--apply")
 
@@ -592,6 +592,50 @@ esac
 				t.Errorf("hc got %q; renamed want %v", sent, c.isRenamed)
 			}
 		})
+	}
+}
+
+// FRM-649 step 118 (dima's o11 look): a member busy at its dispatch is renamed once it goes idle inside the wait, as
+// x thread rename does, and its herdr tab takes the name too
+func TestDispatchRenamesABusyThreadOnceItIdles(t *testing.T) {
+	t.Parallel()
+	const rule = "────────────────────────────────────────"
+	server := dispatchServer(t, undispatched)
+	sessions, store, bin := t.TempDir(), filepath.Join(t.TempDir(), "threads.json"), t.TempDir()
+	log := filepath.Join(bin, "hc.log")
+	write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
+	screen := filepath.Join(bin, "screen.txt")
+	write(t, screen, "❯ an old prompt\n\n● an answer\n\n"+rule+"\n❯ \n"+rule+"\n  the status line\n")
+	// the first two reads find it working, every later one done
+	write(t, filepath.Join(bin, "hc"), fmt.Sprintf(`#!/bin/sh
+case "$1" in
+ls) echo '{"terminals":[{"address":"t9","agent":"claude-code"}]}' ;;
+get) n=$(cat %[1]s/n 2>/dev/null || echo 0); echo $((n+1)) > %[1]s/n
+  if [ "$n" -lt 2 ]; then s=working; else s=done; fi
+  echo '{"pid":%[2]d,"status":{"state":"'$s'"}}' ;;
+read) cat %[3]s ;;
+send) echo "send $2 $3" >> %[4]s ;;
+esac
+`, bin, os.Getpid(), screen, log))
+	write(t, filepath.Join(bin, "herdr-app"), fmt.Sprintf(`#!/bin/sh
+case "$1" in
+ls) echo '{"spaces":[{"tabs":[{"id":"tab7","terminals":[{"terminal":"t9"}]}]}]}' ;;
+do) echo "$2 $3" >> %s ;;
+esac
+`, log))
+	for _, name := range []string{"hc", "herdr-app"} {
+		if err := os.Chmod(filepath.Join(bin, name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions, "X_HC=" + filepath.Join(bin, "hc"), "X_HERDR_APP=" + filepath.Join(bin, "herdr-app"), "HC_TERMINAL_ID=t3b", "X_RENAME_WAIT=10", "X_RENAME_NUDGE=60"}, "coordinator")
+
+	_, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3", "--apply")
+
+	sent, _ := os.ReadFile(log)
+	want := "tab.rename {\"id\":\"tab7\",\"name\":\"🌗 🔧 cli | FRM-1\"}\nsend t9 /rename 🌗 🔧 cli | FRM-1\n"
+	if got.code != 0 || string(sent) != want {
+		t.Errorf("exit %d, herdr got %q, want %q:\n%s", got.code, sent, want, got.stdout)
 	}
 }
 
