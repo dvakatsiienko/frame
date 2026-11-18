@@ -83,6 +83,7 @@ import {
 } from './effort.js';
 import {
     fileAt,
+    isSentRow,
     openArgs,
     replyIdOf,
     unlinkFiles,
@@ -557,6 +558,8 @@ export default class Chat extends View {
     pickKeys = null;
     /** the picture viewer over the chat, null when closed @type {import('./viewer.js').ViewerState | null} */
     viewer = null;
+    /** the newest open asked: a slow one never reopens over a newer one or a close */
+    viewerAsk = 0;
     /** @type {import('gpui-kit').FocusHandle | null} */
     viewerKeys = null;
 
@@ -755,6 +758,10 @@ export default class Chat extends View {
             .on_modifiers_changed((e) => {
                 this.isCmdHeld = Boolean(e.modifiers.platform);
             })
+            // a ⌘ let go in another app never reaches the handler above: each move over the chat reads it again
+            .on_mouse_move((e) => {
+                this.isCmdHeld = Boolean(e.modifiers.platform);
+            })
             .bg(t.background)
             .text_color(t.foreground)
             .text_size(look.size)
@@ -854,10 +861,16 @@ export default class Chat extends View {
      * @param {string[]} files @param {number} at @param {Context} cx
      */
     openPictures(files, at, cx) {
+        const { file } = this;
+        const ask = ++this.viewerAsk;
         cx.spawn(async (cx) => {
             const made = await Promise.all(files.map((f) => viewCopy(f)));
             /** @type {import('./viewer.js').Shown[]} */
             const shown = [];
+            // a later click, a close or a thread switch outranks this one
+            if (this.file !== file || this.viewerAsk !== ask) return;
+            // the picture clicked opens, or nothing: never a sibling in its place
+            if (!made[at]) return this.say('That picture is gone', cx);
             let from = 0;
             made.forEach((copy, i) => {
                 if (!copy) return;
@@ -888,7 +901,10 @@ export default class Chat extends View {
             return;
         }
         this.viewer = viewerAfter(this.viewer, step);
-        if (!this.viewer) this.box?.focus();
+        if (!this.viewer) {
+            this.viewerAsk += 1;
+            this.box?.focus();
+        }
         cx.notify();
     }
 
@@ -2154,9 +2170,8 @@ export default class Chat extends View {
     }
 
     /** dropped or picked files join the thread's attachments; a picture's preview draws once it is made @param {string[]} paths @param {Context} cx */
-    addFiles(paths, cx) {
-        const file = this.file;
-        if (!file || !paths.length) return;
+    addFiles(paths, cx, file = this.file) {
+        if (!file || !paths.length || file !== this.file) return;
         cx.spawn(async (cx) => {
             const adding = this.attachments.add(file, paths);
             this.filesUnderMark(file, cx);
@@ -2181,7 +2196,10 @@ export default class Chat extends View {
             .hover((s) => s.bg(t.raised).text_color(t.foreground))
             .tooltip('Attach files')
             .on_click((_e, cx) => {
-                cx.spawn(async (cx) => this.addFiles(await pickFiles(), cx));
+                const file = this.file;
+                cx.spawn(async (cx) =>
+                    this.addFiles(await pickFiles(), cx, file),
+                );
             })
             .child('+');
     }
@@ -2607,8 +2625,9 @@ export default class Chat extends View {
                                 ),
                         ),
                     )
-                    .child(this.sentFiles(row, t))
-                    .child(this.detailsLine(row, t)),
+                    .when(!row.pictures.length && !row.files.length, (el) =>
+                        el.child(this.detailsLine(row, t)),
+                    ),
             );
         return column(
             v_flex()
@@ -2660,7 +2679,7 @@ export default class Chat extends View {
         return h_flex()
             .gap(6)
             .flex_wrap()
-            .when(row.kind === 'mine', (el) => el.justify_end())
+            .when(isSentRow(row.id), (el) => el.justify_end())
             .max_w(this.column())
             .children(
                 row.pictures.map((picture) => {
@@ -2715,6 +2734,13 @@ export default class Chat extends View {
      * @param {Row} row @param {Theme} t
      */
     fileRow(row, t) {
+        if (isSentRow(row.id))
+            return v_flex()
+                .w_full()
+                .items_end()
+                .gap(2)
+                .child(this.sentFiles(row, t).cursor_pointer())
+                .child(this.detailsLine(row, t));
         if (row.pictures.length) return this.sentFiles(row, t).cursor_pointer();
         return h_flex()
             .gap(6)
@@ -2781,6 +2807,9 @@ export default class Chat extends View {
         this.file = null;
         this.address = null;
         this.note = null;
+        // the viewer belongs to the thread it opened on
+        this.viewer = null;
+        this.viewerAsk += 1;
         this.joins = null;
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
         this.bandThread = null;
@@ -3101,8 +3130,8 @@ export default class Chat extends View {
 
     /** his messages' pictures get their files; each row draws its own once made @param {Context} cx */
     makePictures(cx) {
-        const pictures = shownOf(this.model.rows, this.look).flatMap(
-            (r) => r.pictures,
+        const pictures = shownOf(this.model.rows, this.look).flatMap((r) =>
+            r.kind === 'file' ? r.pictures : [],
         );
         if (!pictures.some((p) => !this.sent.relOf(p))) return;
         cx.spawn(async (cx) => {
@@ -3118,7 +3147,8 @@ export default class Chat extends View {
         const row = rows.find(
             (r) => r.id === key.replace(/#(?:above|below)$/, ''),
         );
-        if (!row) return null;
+        // his words select on a click; only the squares' own row opens the viewer
+        if (row?.kind !== 'file') return null;
         const files = row.pictures.flatMap((p) => this.sent.pathOf(p) ?? []);
         return files.length ? { at: 0, files } : null;
     }
@@ -3139,7 +3169,7 @@ export default class Chat extends View {
         cx.spawn(async (cx) => {
             const isChanged = await this.magic.typed(
                 file,
-                mark.said,
+                this.box?.value().trim() ?? mark.said,
                 this.joins,
                 this.waitingPaths(file),
             );

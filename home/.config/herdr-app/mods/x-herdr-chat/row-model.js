@@ -55,7 +55,9 @@ const NOT_HIS_WORDS =
 const isRecord = (value) => typeof value === 'object' && value !== null;
 
 // a file sent as its path: a line of its own after his words, escaped as a terminal drop types it
-const PATH_LINE = /^\/(?:\\.|[^\\\s])+$/;
+// two slashes and an extension at least: a slash command («/cmt») or a tool's path («/usr/local/bin/tool») he
+// typed is his words, never a file
+const PATH_LINE = /^\/(?:\\.|[^\\\s])*\/(?:\\.|[^\\\s])+\.\w+$/;
 // where Claude Code puts a picture it took inline from a path or a paste
 const IMAGE_TOKEN = /\[Image #\d+\]\s*/g;
 
@@ -76,7 +78,33 @@ export function wordsAndPaths(said) {
         paths.unshift(last.replace(/\\(.)/g, '$1'));
         lines.pop();
     }
-    return { paths, text: lines.join('\n').replace(IMAGE_TOKEN, '').trim() };
+    return { paths, text: lines.join('\n').trim() };
+}
+
+/**
+ * a message's words and what it sent: inline pictures first, then each path, a picture's or any other file's
+ * @param {string} said @param {unknown} content @param {string} rowId
+ * @returns {{ text: string, files: string[], pictures: Picture[] }}
+ */
+function messageOf(said, content, rowId) {
+    const { paths, text: words } = wordsAndPaths(said);
+    const inline = inlinePictures(content);
+    // the tokens go only where Claude Code put pictures, or the message still waits in its queue with its tokens
+    const text =
+        inline.length || content === null
+            ? words.replace(IMAGE_TOKEN, '').trim()
+            : words;
+    const pictures = [
+        ...inline.map(({ data, media }) => ({
+            data,
+            media,
+            path: null,
+        })),
+        ...paths
+            .filter(isImagePath)
+            .map((path) => ({ data: null, media: null, path })),
+    ].map((picture, n) => ({ ...picture, id: `${rowId}-${n}` }));
+    return { files: paths.filter((p) => !isImagePath(p)), pictures, text };
 }
 
 /** a message's inline pictures @param {unknown} content @returns {{ data: string, media: string }[]} */
@@ -147,22 +175,8 @@ function rowsOf(line) {
      * @param {string} said @param {unknown} content @param {string} [rowId] @returns {Row}
      */
     const his = (said, content, rowId = id) => {
-        const { paths, text } = wordsAndPaths(said);
-        const inline = inlinePictures(content);
-        return {
-            ...row('mine', text, rowId),
-            files: paths.filter((p) => !isImagePath(p)),
-            pictures: [
-                ...inline.map(({ data, media }) => ({
-                    data,
-                    media,
-                    path: null,
-                })),
-                ...paths
-                    .filter(isImagePath)
-                    .map((path) => ({ data: null, media: null, path })),
-            ].map((picture, n) => ({ ...picture, id: `${rowId}-${n}` })),
-        };
+        const { files, pictures, text } = messageOf(said, content, rowId);
+        return { ...row('mine', text, rowId), files, pictures };
     };
     if (entry.type === 'attachment') {
         // a prompt he sent while a turn ran: Claude Code writes it as a queued command, never as a user line; a
@@ -332,6 +346,12 @@ export function createRowModel() {
                 if (!isHisQueued(queued.text)) continue;
                 let row = had.get(queued);
                 if (!row) {
+                    const rowId = `waiting-${++waitingSerial}`;
+                    const said = messageOf(
+                        unwrapPastes(queued.text),
+                        null,
+                        rowId,
+                    );
                     row = {
                         at: queued.at
                             ? new Date(queued.at).toISOString()
@@ -342,14 +362,14 @@ export function createRowModel() {
                                   state: 'sent',
                               }
                             : null,
-                        files: [],
-                        id: `waiting-${++waitingSerial}`,
+                        files: said.files,
+                        id: rowId,
                         isTurnStart: false,
                         isWaiting: true,
                         kind: 'mine',
-                        pictures: [],
+                        pictures: said.pictures,
                         replyId: null,
-                        text: wordsAndPaths(unwrapPastes(queued.text)).text,
+                        text: said.text,
                         tools: [],
                         version: 1,
                     };

@@ -82,6 +82,7 @@ export function createSentPictures(io) {
                 const path = await wholeOf(picture).catch(() => null);
                 if (path && !picture.path) whole.set(picture.id, path);
                 const rel = path && (await io.thumb(path).catch(() => null));
+                making.delete(picture.id);
                 if (rel) {
                     ready.set(picture.id, rel);
                     isNew = true;

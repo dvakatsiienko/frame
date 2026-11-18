@@ -757,3 +757,35 @@ describe('the files his message sent draw under his words, never as their paths 
         expect(model.rows[0]?.text).toBe('[Image #1] /tmp/a.png');
     });
 });
+
+describe('his files stay his while the message waits and through odd names (macroscope, slice 5)', () => {
+    test('a waiting message keeps its files: no blank bubble for a send of files alone', () => {
+        const model = createRowModel();
+        model.add([queueOp('enqueue', '/tmp/notes.md\n/tmp/a.png')]);
+        const [row] = model.rows;
+        expect(row?.isWaiting).toBe(true);
+        expect(row?.text).toBe('');
+        expect(row?.files).toEqual(['/tmp/notes.md']);
+        expect(row?.pictures.map((p) => p.path)).toEqual(['/tmp/a.png']);
+    });
+});
+
+describe('a slash command he queued stays his words (wisphunter, slice 5)', () => {
+    test.each(['/cmt', 'done?\n/compact'])('%j', (said) => {
+        const model = createRowModel();
+        model.add([mine(said)]);
+        expect(model.rows[0]?.files).toEqual([]);
+        expect(model.rows[0]?.text).toBe(said);
+    });
+});
+
+describe('his own text stays whole (coderabbit, slice 5)', () => {
+    test.each([
+        ['a tool path he typed', 'run it:\n/usr/local/bin/tool'],
+        ['a token he typed with no picture', 'type [Image #1] exactly'],
+    ])('%s', (_, said) => {
+        const model = createRowModel();
+        model.add([mine(said)]);
+        expect(model.rows[0]?.text).toBe(said);
+    });
+});

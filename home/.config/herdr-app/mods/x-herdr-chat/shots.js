@@ -82,9 +82,15 @@ export const waitingFiles = (store, home) =>
 export const THUMBS_DIR = 'data/x-herdr-chat/thumbs';
 /** @param {string} path */
 export const thumbName = (path) => {
+    // two independent 32-bit hashes: one alone let `Aa` and `BB` share a file
     let h = 0;
-    for (const c of path) h = (h * 31 + (c.codePointAt(0) ?? 0)) >>> 0;
-    return `${THUMBS_DIR}/${h.toString(36)}.png`;
+    let f = 0x811c9dc5;
+    for (const c of path) {
+        const code = c.codePointAt(0) ?? 0;
+        h = (h * 31 + code) >>> 0;
+        f = Math.imul(f ^ code, 0x01000193) >>> 0;
+    }
+    return `${THUMBS_DIR}/${h.toString(36)}-${f.toString(36)}.png`;
 };
 
 /** a picture's size in pixels, read by sips @param {string} path @returns {Promise<{ w: number, h: number } | null>} */

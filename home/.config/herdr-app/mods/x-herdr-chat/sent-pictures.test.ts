@@ -80,3 +80,19 @@ describe('each sent picture gets one file image() can draw (FRM-638 slice 5)', (
         expect(sent.relOf(b)).not.toBeNull();
     });
 });
+
+describe('a picture that failed is made on a later pass (macroscope, slice 5)', () => {
+    test('its square is tried again', async () => {
+        const { io, sent } = rig();
+        io.thumb.mockResolvedValueOnce(null);
+        const picture = {
+            data: null,
+            id: 'u-4-0',
+            media: null,
+            path: '/c.png',
+        };
+        expect(await sent.make([picture])).toBe(false);
+        expect(await sent.make([picture])).toBe(true);
+        expect(sent.relOf(picture)).toBe('thumbs/6.png');
+    });
+});

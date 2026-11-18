@@ -87,6 +87,32 @@ export const unlinkFiles = (text) =>
 
 /** @typedef {import('./row-model.js').Row} Row */
 
+/** the files his message sent, a row of their own under it @param {string} id */
+export const isSentRow = (id) => id.endsWith(SENT_ROW);
+const SENT_ROW = '#sent';
+
+/**
+ * his message's pictures and files as their own row, so a click on them opens the viewer and a click on his words
+ * selects them; it carries his delivery line, drawn under the squares
+ * @param {Row} row @param {Map<string, { version: number, files: Row[] }>} cache @returns {Row}
+ */
+function sentRow(row, cache) {
+    const id = `${row.id}${SENT_ROW}`;
+    const had = cache.get(id);
+    const [kept] = had?.version === row.version ? had.files : [];
+    if (kept) return kept;
+    /** @type {Row} */
+    const made = {
+        ...row,
+        id,
+        kind: 'file',
+        text: '',
+        tools: [],
+    };
+    cache.set(id, { files: [made], version: row.version });
+    return made;
+}
+
 /**
  * the rows with each reply's files after it, one row a file: a click inside a list row blanks the list
  * (herdr-app#894), so a file is its own item and the list's item click opens it. a file row keeps its object while
@@ -101,6 +127,10 @@ export function withFileRows(rows, home, cache) {
     const out = [];
     for (const row of rows) {
         out.push(row);
+        if (row.kind === 'mine' && (row.pictures.length || row.files.length)) {
+            out.push(sentRow(row, cache));
+            continue;
+        }
         if (row.kind !== 'reply') continue;
         let had = cache.get(row.id);
         if (had?.version !== row.version) {

@@ -14,6 +14,7 @@ const {
     clipboardRead,
     parseShots,
     previewCopies,
+    thumbName,
     waitingFiles,
     withWaitingFiles,
 } = await import('./shots.js');
@@ -155,3 +156,9 @@ describe.runIf(platform() === 'darwin')(
         });
     },
 );
+
+describe('thumbName, one file per picture', () => {
+    it('keeps two paths a 31-hash alone confuses apart', () => {
+        expect(thumbName('/tmp/Aa.png')).not.toBe(thumbName('/tmp/BB.png'));
+    });
+});

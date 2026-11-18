@@ -93,6 +93,8 @@ export function next(quill, event) {
                 text: after(quill.text, event.said) ?? quill.text.trim(),
             };
         case 'returned':
+            // a send of files alone gives back no words: what he typed since stays as it is
+            if (!event.said) return quill;
             return {
                 ...quill,
                 text: quill.text

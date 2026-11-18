@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
     fileAt,
     fileLinks,
+    isSentRow,
     openArgs,
     replyIdOf,
     unlinkFiles,
@@ -154,7 +155,12 @@ describe("a reply's files are rows of their own in the list, so a click on one c
     });
 
     test('his own messages and tool rows get no file rows', () => {
-        const mine = { ...reply('m1', '/tmp/a.png'), kind: 'mine' as const };
+        const mine = {
+            ...reply('m1', '/tmp/a.png'),
+            files: [],
+            kind: 'mine' as const,
+            pictures: [],
+        };
         expect(withFileRows([mine], HOME, new Map())).toEqual([mine]);
     });
 
@@ -211,5 +217,45 @@ describe('a reading place saved on a file row is found by its reply (wisphunter 
 
     test('any other row is its own', () => {
         expect(replyIdOf('r1')).toBe('r1');
+    });
+});
+
+describe('his files are a row of their own under his words (wisphunter, slice 5)', () => {
+    const his = (pictures: number, version = 1) => ({
+        at: null,
+        delivery: null,
+        files: [],
+        id: 'm1',
+        isTurnStart: true,
+        isWaiting: false,
+        kind: 'mine' as const,
+        pictures: Array.from({ length: pictures }, (_, n) => ({
+            data: null,
+            id: `m1-${n}`,
+            media: null,
+            path: `/tmp/${n}.png`,
+        })),
+        replyId: null,
+        text: 'look',
+        tools: [],
+        version,
+    });
+
+    test('a message with pictures is followed by its squares row, a click there names them', () => {
+        const rows = withFileRows([his(2)], HOME, new Map());
+        expect(rows.map((r) => [r.id, r.kind])).toEqual([
+            ['m1', 'mine'],
+            ['m1#sent', 'file'],
+        ]);
+        expect(isSentRow('m1#sent')).toBe(true);
+        expect(rows[1]?.pictures).toHaveLength(2);
+    });
+
+    test('words alone get no row, and the squares row keeps its object until the message changes', () => {
+        expect(withFileRows([his(0)], HOME, new Map())).toHaveLength(1);
+        const cache = new Map();
+        const first = withFileRows([his(1)], HOME, cache)[1];
+        expect(withFileRows([his(1)], HOME, cache)[1]).toBe(first);
+        expect(withFileRows([his(1, 2)], HOME, cache)[1]).not.toBe(first);
     });
 });
