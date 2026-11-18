@@ -73,17 +73,18 @@ footer{padding-top:16px;font-size:13px;color:var(--muted);border-top:1px solid v
 :root[data-theme="dark"]{--bg:#121711;--surface:#1A2119;--ink:#E7EADF;--muted:#A4AC86;--line:#2C3529;--pine:#A4C38A;--pine-soft:#22301F;--gold:#C9CF9E;--gold-soft:#2B2F1F;}
 </style>
 
+
 <div class="wrap">
 <header>
-  <span class="eyebrow">🧬 evergreen · wed 04-11-2026</span>
+  <span class="eyebrow">🧬 evergreen · wed 18-11-2026</span>
   <h1>What updated, and what we can take from it</h1>
-  <p class="lede">The week since the 10-28 mark: a quiet renovate, six automerged PRs with two security fixes, 54 brew upgrades, and Claude Code 2.1.318 changing how a mod's prompt attachments read.</p>
+  <p class="lede">Two weeks in one read. Seven renovate PRs are open. The four green ones only wait for a merge. The two red bytes PRs are biome rules that newer versions turned on. Claude Code 2.1.327 brings Fable 5.2 and a <code>/status</code> list of broken skill and hook files.</p>
   <div class="counts">
-    <span class="count"><b>0</b> renovate PRs open</span>
-    <span class="count"><b>6</b> merged</span>
-    <span class="count"><b>54</b> brew upgraded</span>
-    <span class="count"><b>15</b> apps read</span>
-    <span class="count"><b>0</b> OS releases</span>
+    <span class="count"><b>7</b> renovate PRs open</span>
+    <span class="count"><b>2</b> red</span>
+    <span class="count"><b>~120</b> brew upgraded</span>
+    <span class="count"><b>20</b> apps read</span>
+    <span class="count"><b>3</b> OS security releases</span>
   </div>
 </header>
 
@@ -91,71 +92,72 @@ footer{padding-top:16px;font-size:13px;color:var(--muted);border-top:1px solid v
   <div class="sec-head"><h2>🌟 Worth reading</h2><p>each with its borrow and where it stands</p></div>
   <div class="stars">
     <article class="card">
-      <div class="card-top"><h3><a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md">Claude Code</a></h3><span class="ver">2.1.314 → <span class="to">2.1.318</span></span></div>
+      <div class="card-top"><h3><a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md">Claude Code</a></h3><span class="ver">2.1.319 → <span class="to">2.1.327</span></span></div>
       <ul class="facts">
-        <li>A mod's <code>prompt.submit</code> attachment now stays in the user's turn instead of going out as a system message. x-mod-stash's <code>e.context</code> reads differently on 2.1.318.</li>
-        <li>Headless runs no longer report success when a <code>turn.step</code> hook sits on a cut-off reply. Background sessions get it; the desktop's bundled 2.1.317 does not.</li>
-        <li><code>claude -p</code> JSON gains <code>credential_expires_at</code>, and a stderr warning 10 days before the login ends.</li>
-        <li><code>CLAUDE_CODE_SUBAGENT_EFFORT</code> sets a subagent's effort when nothing else names one.</li>
-        <li>Opus 4.8 fast mode is removed on 2026-11-30. A fleet grep finds no use.</li>
+        <li>Fable 5.2 (<code>claude-fable-5-2</code>) becomes the default Fable model, with 1M context.</li>
+        <li><code>/status</code> lists broken agent, skill, command and output-style files, and hook matchers that never match.</li>
+        <li>A mod's <code>Box</code> gets <code>overflowX="scroll"</code>, and its <code>Text</code> gets <code>maxLines</code> and <code>wrap="clip"</code>.</li>
+        <li><code>plugin.json</code> takes <code>engines["claude-code"]</code>. <code>claude plugin validate</code> now type-checks TypeScript hooks.</li>
+        <li><code>permissions.denyInsteadOfPrompting</code> refuses instead of asking.</li>
+        <li>Security fixes: zstd decoding, MCP OAuth refresh tokens leaking on a redirect, and a read-only Bash command that ran outside the sandbox.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>subagent effort at <code>medium</code>. <span class="chip done">applied</span></span></div>
-      <div class="borrow"><span class="k">borrow</span><span>re-check x-mod-stash wording that assumed system framing. <span class="chip wait">dima's word</span></span></div>
-      <div class="borrow"><span class="k">borrow</span><span>scheduled jobs flag a login ending within 10 days. <span class="chip wait">dima's word</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span><code>engines</code> in plugin-x, and <code>/status</code> as the first check for a broken mod or skill. <span class="chip wait">dima's word</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span><code>denyInsteadOfPrompting</code> for unattended lanes. <span class="chip wait">dima's word</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3><a href="https://github.com/pnpm/pnpm/releases">pnpm</a></h3><span class="ver">12.15 → <span class="to">12.16.1</span>, 12.17 upstream</span></div>
+      <div class="card-top"><h3><a href="https://github.com/nodejs/node/releases/tag/v26.13.1">Node</a></h3><span class="ver">fnm 26.13.0 · <span class="to">26.13.1</span></span></div>
       <ul class="facts">
-        <li>12.16.1 fixes a <code>pnpm install</code> hang on a cold store.</li>
-        <li>12.17 adds <code>pnpm peers check -g</code>, and <code>outdated</code> and <code>update</code> now cover <code>packageManager</code> and runtime pins.</li>
-        <li>Those new rows may red our evergreen gate, not checked.</li>
+        <li>A security release with 9 high CVEs, in http2 and TLS.</li>
+        <li>Brew's node is on 26.13.1. Your fnm default is still 26.13.0.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>repin both repos with <code>toolchain:sync</code> when brew carries 12.17. <span class="chip next">queued</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span><code>fnm install 26.13.1</code> as the default, then <code>toolchain:sync</code>. <span class="chip wait">dima's word</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3><a href="https://nodejs.org/en/blog/release/v26.13.0">Node</a></h3><span class="ver">we run 24.12.0 · <span class="to">26.13.0</span> LTS</span></div>
+      <div class="card-top"><h3><a href="https://www.raycast.com/changelog">Raycast</a></h3><span class="ver">2.5 → <span class="to">2.13</span></span></div>
       <ul class="facts">
-        <li>26.13.0 is the 26.x LTS promotion, with no code change from 26.12.1, supported to end of April 2029.</li>
-        <li>24.22.2 exists on our own line, its notes not read yet.</li>
+        <li>Raycast MCP is a local server. It lets an agent search clipboard history, make snippets and quicklinks, and read browser tabs.</li>
+        <li>2.12 rebuilds the Calculator, 60× faster.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>24.22.2 first, then 26. <span class="chip wait">dima's word</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>Raycast MCP as a door for agents. It would be a new MCP against our cli-first rule. <span class="chip wait">dima's word</span></span></div>
     </article>
     <article class="card">
-      <div class="card-top"><h3><a href="https://obsidian.md/changelog/2026-11-02-desktop-v1.15.0/">Obsidian</a></h3><span class="ver">1.14.5 → <span class="to">1.15.0</span></span></div>
+      <div class="card-top"><h3><a href="https://github.com/cli/cli/releases/tag/v2.105.0">gh</a></h3><span class="ver">2.103 → <span class="to">2.105</span></span></div>
       <ul class="facts">
-        <li>The URI and CLI can append or prepend under a heading.</li>
-        <li>Mermaid moves to a faster renderer, shown without a prompt.</li>
+        <li><code>gh event listen</code> waits on a PR review or a check suite finishing, with <code>--timeout</code>. It is a preview behind a waitlist.</li>
+        <li>gh already prints it as a hint in place of polling.</li>
       </ul>
-      <div class="borrow"><span class="k">borrow</span><span>none: <code>x:notes</code> appends raw files. <span class="chip done">read</span></span></div>
+      <div class="borrow"><span class="k">borrow</span><span>replace the polling in the merge round's waits. <span class="chip wait">dima's word</span></span></div>
     </article>
   </div>
 </section>
 
 <section>
-  <div class="sec-head"><h2>📦 The renovate round</h2><p>six automerged since 10-28; nothing open</p></div>
+  <div class="sec-head"><h2>📦 The renovate round</h2><p>seven open: four ready, one waiting, two red</p></div>
   <div class="rows">
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/121">style-dictionary</a><span class="ver">→ <span class="to">5.7.1</span></span></div><div><p>Security: a prototype-pollution fix. <span class="chip done">merged</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/122">bubbletea</a><span class="ver">→ <span class="to">2.1.1</span></span></div><div><p>Security: a terminal-size query vulnerability, in the frame group with biome 2.6.4. <span class="chip done">merged</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/118">playwright-core</a><span class="ver">→ <span class="to">1.64.1</span></span></div><div><p><code>page.webmcp</code> reaches a page's WebMCP tools, with raycast api 2.10.1. <span class="chip done">merged</span></p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/137">the bytes minors</a><span class="ver">9 packages</span></div><div><p><code>ai</code> 7.0.157 graduates <code>filterActiveTools</code>; its <code>experimental_</code> alias is deprecated. <span class="chip done">merged</span></p></div></div>
-    <div class="row"><div class="name">@hookform/resolvers</div><div><p>6.0.2 → 7.0.2 waits on the dashboard. The one headline break is typebox, and per the review we import only <code>/zod</code>. <span class="chip wait">dima's word</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/158">frame minors</a><span class="ver">7 days</span></div><div><p>lipgloss 2.1 adds <code>table.FitContent()</code>, along with style-dictionary 5.8, pflag 1.1 and @excalidraw/cli 0.3. Clean, green. <span class="chip next">merge</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/frame/pull/176">frame renovate action</a><span class="ver">→ <span class="to">46.3.13</span></span></div><div><p>Clean, green. <span class="chip next">merge</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/153">cn</a><span class="ver">→ <span class="to">0.5.2</span></span></div><div><p>Clean, green. <span class="chip next">merge</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/154">bytes renovate action</a><span class="ver">→ <span class="to">46.3.13</span></span></div><div><p>Every real check green. A cancelled skip-marker job is the only red. <span class="chip next">merge</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/152">bytes actions digests</a><span class="ver">7 days</span></div><div><p>Waits on renovate's stability-days check. <span class="chip wait">waiting</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/155">bytes minors</a><span class="ver">7 days</span></div><div><p>Red: ultracite 8.2.1 turns <code>noImportCycles</code> on. space-explorer-ui has a <code>Layout.tsx</code> ↔ <code>components/index.ts</code> cycle. <span class="chip wait">a fix on the branch</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/dvakatsiienko/bytes/pull/158">bytes patches</a><span class="ver">5 days</span></div><div><p>Red: biome 2.6.7 starts firing <code>useWhile</code> at <code>atelier/src/takes.ts:46</code>. <code>biome lint --write</code> fixes it. <span class="chip wait">a fix on the branch</span></p></div></div>
   </div>
-  <p class="quiet">Held on purpose: graphql 17. Never <code>--latest</code> prisma: its latest tag is an 8.0.0 rc. Abandoned per renovate, no release in a year: 6 in frame, 13 in bytes, among them cmdk and react-markdown.</p>
+  <p class="quiet">The bots' waiting list is empty in both repos. FRM-465 check 5 stays open until bytes patches merge inside the 07:00–18:59 window. Waiting on your word in the dashboards: string-width 9, yaml v4, @hookform/resolvers 7, graphql-codegen major.</p>
 </section>
 
 <section>
   <div class="sec-head"><h2>🍺 Brew and the apps</h2><p>markers advanced after this read</p></div>
   <div class="rows">
-    <div class="row"><div class="name"><a href="https://github.com/docker/docs/blob/main/content/manuals/engine/release-notes/29.md">docker</a><span class="ver">→ <span class="to">29.9.3</span></span></div><div><p>Security fixes across the engine, Swarm and BuildKit, and the daemon no longer hangs on API requests under load.</p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/vercel-labs/agent-browser/releases">agent-browser</a><span class="ver">→ <span class="to">0.41.2</span></span></div><div><p><code>agent-browser mcp call</code> runs one MCP tool as a one-shot. A fleet grep finds none of the renamed tool names.</p></div></div>
-    <div class="row"><div class="name"><a href="https://github.com/docker/compose/releases/tag/v5.7.0">docker-compose</a><span class="ver">→ <span class="to">5.7.0</span></span></div><div><p><code>up</code> runs create and start as one plan over one daemon snapshot.</p></div></div>
-    <div class="row"><div class="name"><a href="https://www.raycast.com/changelog/macos/2-10">Raycast</a><span class="ver">→ <span class="to">2.10</span></span></div><div><p>AI Chat mentions items from AI Extensions with <code>@</code>; MCP timeouts on streaming-HTTP servers fixed.</p></div></div>
-    <div class="row"><div class="name"><a href="https://superwhisper.com/changelog">Superwhisper</a><span class="ver">→ <span class="to">3.1.0</span></span></div><div><p>Records FaceTime calls, detected in Meetings.</p></div></div>
-    <div class="row"><div class="name"><a href="https://releases.1password.com/mac/stable/index.xml">1Password</a><span class="ver">→ <span class="to">8.12.44</span></span></div><div><p>Post-quantum passkeys on sites that support them.</p></div></div>
-    <div class="row"><div class="name">Google Chrome</div><div><p>157 stable on 11-03, notes not read: the release pages returned 404. <span class="chip next">marker to re-seed</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/pnpm/pnpm/releases">pnpm</a><span class="ver">→ <span class="to">12.21.0</span></span></div><div><p>Peer-resolution fixes, and <code>pnpm store add</code> for offline frozen installs. Both repos still pin 12.16.1. <span class="chip next">toolchain:sync</span></p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/n8n-io/n8n/releases">n8n</a><span class="ver">→ <span class="to">2.48.5</span></span></div><div><p>Fixes executions that use global credentials being wrongly redacted.</p></div></div>
+    <div class="row"><div class="name"><a href="https://github.com/Unitech/pm2/releases/tag/v7.1.2">pm2</a><span class="ver">→ <span class="to">7.1.2</span></span></div><div><p>Breaking: apps with <code>filter_env: true</code> no longer inherit NODE_ENV or NODE_OPTIONS.</p></div></div>
+    <div class="row"><div class="name"><a href="https://linear.app/changelog">Linear</a><span class="ver">Nov 5–12</span></div><div><p>A branch with a prefix before the issue id now links to the issue.</p></div></div>
+    <div class="row"><div class="name"><a href="https://superwhisper.com/changelog">Superwhisper</a><span class="ver">→ <span class="to">3.3.1</span></span></div><div><p>Lives in the menu bar and imports Wispr Flow history.</p></div></div>
+    <div class="row"><div class="name">macOS, iOS, iPadOS</div><div><p>27.2.1 security releases on 09 Nov. The macOS marker missed it. <span class="chip next">marker to re-seed</span></p></div></div>
+    <div class="row"><div class="name">T3 Code cask</div><div><p>The upgrade failed: the cask looks for the Alpha app, and the app on disk is now the Beta. <span class="chip wait">dima's word</span></p></div></div>
   </div>
-  <p class="quiet">Nothing new: Wispr Flow, Cursor, Linear, Claude Desktop, Notion, Things, CleanShot X, Bartender, Newton, macOS, iOS, iPadOS. Brew upgraded clean, nothing left outdated. Global n8n moved to 2.46.4; changedetection-io to 0.60.10.</p>
+  <p class="quiet">Brew upgraded about 120 packages, and the signing key still answers. Also read, nothing to take: Cursor, Wispr Flow, Claude Desktop's release channel, Bartender 7.2, 1Password 8.12.46, Obsidian, Notion, Things, CleanShot X. Newton and Chrome markers need re-seeding.</p>
 </section>
 
-<footer>Sources: each project's release page or changelog, read 04-11-2026 by the evergreen read and its review.</footer>
+<footer>Sources: each project's release page or changelog, read 18-11-2026 by the evergreen read and its review.</footer>
 </div>
