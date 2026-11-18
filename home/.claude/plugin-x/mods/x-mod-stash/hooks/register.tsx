@@ -4025,28 +4025,28 @@ async function showLanes($: EngineInterface, lanes: StashLane[]) {
     const rows = live.some((l) => Object.keys(l.members).length)
         ? await registry($).catch(() => [])
         : [];
-    // each member to the session id it runs under now; the card's asks are keyed by the member as linked
-    const sids = new Map<string, string>();
-    for (const member of new Set(
-        live.flatMap((l) => Object.values(l.members)),
-    )) {
-        if (member) {
+    // each lane's member to the session id it runs under now, its linked id first, so a retitle after the link keeps it;
+    // the card's asks are keyed by that id, so two lanes whose members share a name never swap asks
+    for (const lane of live) {
+        const memberSids: Partial<Record<LaneRole, string>> = {};
+        for (const [role, member] of Object.entries(lane.members)) {
+            if (!member) continue;
+            const linked = lane.linkedIds?.[role as LaneRole];
             const id = await successorOf($, member);
-            sids.set(member, memberOf(rows, id)?.base.sid ?? id);
+            const sid =
+                laneMemberRow(
+                    rows,
+                    id,
+                    linked && (await successorOf($, linked)),
+                )?.base.sid ?? id;
+            memberSids[role as LaneRole] = sid;
+            if (asks[sid]) continue;
+            const entry = (await $.store
+                .get(PREFIX + sid)
+                .catch(() => undefined)) as Entry | undefined;
+            asks[sid] = (entry?.items ?? []).map(steered);
         }
-    }
-    for (const lane of live)
-        lane.memberSids = Object.fromEntries(
-            Object.entries(lane.members).map(([role, m]) => [
-                role,
-                sids.get(m ?? '') ?? m,
-            ]),
-        );
-    for (const [member, sid] of sids) {
-        const entry = (await $.store
-            .get(PREFIX + sid)
-            .catch(() => undefined)) as Entry | undefined;
-        asks[member] = (entry?.items ?? []).map(steered);
+        lane.memberSids = memberSids;
     }
     const text = JSON.stringify({ asks, live });
     if (text === lanesShown) return;
@@ -9460,9 +9460,10 @@ export const register: Register = (on) => {
                         lane: StashLane,
                         role: (typeof LANE_ROLES)[number],
                     ) => {
-                        const sid = lane.members[role];
-                        if (!sid) return null;
-                        const asks = laneAsks[sid] ?? [];
+                        const member = lane.members[role];
+                        if (!member) return null;
+                        const asks =
+                            laneAsks[lane.memberSids?.[role] ?? member] ?? [];
                         const card = `lane:${lane.id}:${role}`;
                         const isOpen = !isFolded(card);
                         const badge = memberBadge(role);

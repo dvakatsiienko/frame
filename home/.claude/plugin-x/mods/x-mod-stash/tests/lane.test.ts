@@ -1197,6 +1197,7 @@ interface KeptLane {
     current: number;
     movedAt: number;
     members: Record<string, string>;
+    linkedIds?: Record<string, string>;
     steer?: string;
     isSteerTaken?: boolean;
     plan?: string;
@@ -1346,6 +1347,55 @@ test("after a /clear mints a new session id, the card still shows the member's a
     await start($);
     const ui = await board($);
     expect(await subText(ui, 'codie')).toContain('1 ask');
+});
+
+// FRM-617 exit 4: a dispatch retitles a member to its next ticket; the card follows its linked id, never the old name
+test('a member renamed after its link still shows its asks on the card', async ($, on) => {
+    const w = world(on, {
+        files: shelf(
+            keptLane({
+                linkedIds: { codie: CODIE },
+                members: { codie: '⚡ 🔧 mods | FRM-1' },
+            }),
+        ),
+        peers: [codieAt(CODIE, { name: '⚡ 🔧 mods | FRM-2' })],
+    });
+    published(w, CODIE, [ASK]);
+    await start($);
+    expect(await subText(await board($), 'codie')).toContain('1 ask');
+});
+
+test('two lanes whose codies share an old name each show their own linked codie’s asks', async ($, on) => {
+    const OTHER = 'd0d0d0d0-other';
+    const STALE = '⚡ 🔧 mods | FRM-1';
+    const w = world(on, {
+        files: shelf(
+            keptLane({
+                linkedIds: { codie: CODIE },
+                members: { codie: STALE },
+            }),
+            keptLane({
+                id: 'l2',
+                linkedIds: { codie: OTHER },
+                members: { codie: STALE },
+            }),
+        ),
+        peers: [
+            codieAt(CODIE, { name: '⚡ 🔧 mods | FRM-2' }),
+            codieAt(OTHER, { name: '⚡ 🔧 mods | FRM-3', pid: 5002 }),
+        ],
+    });
+    published(w, CODIE, [ASK]);
+    published(w, OTHER, [ASK, { ...ASK, id: 'o4' }]);
+    await start($);
+    const ui = await board($);
+    expect([
+        await subText(ui, 'codie'),
+        (await ui.find({ key: 'lane:l2:codie', type: 'Box' }))?.text,
+    ]).toEqual([
+        expect.stringContaining('1 ask'),
+        expect.stringContaining('2 asks'),
+    ]);
 });
 
 test('two live sessions under one name: the card follows the newer', async ($, on) => {
