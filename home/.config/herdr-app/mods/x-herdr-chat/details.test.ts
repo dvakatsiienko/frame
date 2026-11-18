@@ -8,110 +8,45 @@ beforeAll(() => {
 });
 
 const now = Date.parse('2026-11-13T13:20:00Z');
+const mine = (state: 'sent' | 'read', at: string) => ({
+    at: '2026-11-13T12:00:00Z',
+    delivery: { at, state },
+});
 
-describe('a message reads one state and its own time (FRM-594)', () => {
-    test('his message Claude Code took mid-turn reads «read» at the remove that took it', () => {
-        expect(
-            messageDetails(
-                {
-                    at: '2026-11-13T12:45:04Z',
-                    isMine: true,
-                    isWaiting: false,
-                    readAt: '2026-11-13T12:46:19Z',
-                },
-                now,
-            ),
-        ).toBe('read 14:46');
+describe('a row prints one state and its own time (FRM-594)', () => {
+    test('his message read prints «read» at the time it was read', () => {
+        expect(messageDetails(mine('read', '2026-11-13T12:46:19Z'), now)).toBe(
+            'read 14:46',
+        );
     });
 
-    test('his message with no queue record, an idle send above all, reads «read» at its own stamp', () => {
-        expect(
-            messageDetails(
-                { at: '2026-11-13T12:18:15Z', isMine: true, isWaiting: false },
-                now,
-            ),
-        ).toBe('read 14:18');
+    test('his message Claude Code still holds prints «sent» at its time', () => {
+        expect(messageDetails(mine('sent', '2026-11-13T13:10:00Z'), now)).toBe(
+            'sent 15:10',
+        );
     });
 
-    test('a message Claude Code still holds reads «sent» at its send time', () => {
-        expect(
-            messageDetails(
-                { at: '2026-11-13T13:10:00Z', isMine: true, isWaiting: true },
-                now,
-            ),
-        ).toBe('sent 15:10');
+    test('a time from an earlier day carries its date', () => {
+        expect(messageDetails(mine('read', '2026-11-12T21:53:00Z'), now)).toBe(
+            'read Nov 12, 23:53',
+        );
     });
 
-    test('a prompt a tool round took reads «sent» until the remove that took it lands', () => {
+    test('today is his date, not UTC’s: past his midnight a time is today’s', () => {
         expect(
-            messageDetails(
-                {
-                    at: '2026-11-13T12:45:04Z',
-                    command: 'c1',
-                    isMine: true,
-                    isWaiting: false,
-                    readAt: null,
-                },
-                now,
-            ),
-        ).toBe('sent 14:45');
-    });
-
-    test('a message from an earlier day carries its date', () => {
-        expect(
-            messageDetails(
-                {
-                    at: '2026-11-12T21:52:00Z',
-                    isMine: true,
-                    isWaiting: false,
-                    readAt: '2026-11-12T21:53:00Z',
-                },
-                now,
-            ),
-        ).toBe('read Nov 12, 23:53');
-    });
-
-    test('today is his date, not UTC’s: past his midnight a message is today’s', () => {
-        expect(
-            messageDetails(
-                { at: '2026-11-12T22:30:00Z', isMine: false, isWaiting: false },
-                now,
-            ),
+            messageDetails({ at: '2026-11-12T22:30:00Z', delivery: null }, now),
         ).toBe('00:30');
     });
 
-    test('a reply shows its time alone', () => {
+    test('a reply prints its time alone', () => {
         expect(
-            messageDetails(
-                { at: '2026-11-13T12:04:30Z', isMine: false, isWaiting: false },
-                now,
-            ),
+            messageDetails({ at: '2026-11-13T12:04:30Z', delivery: null }, now),
         ).toBe('14:04');
     });
 
-    test('a row with no stamp, or one that does not parse, shows nothing', () => {
-        expect(
-            messageDetails({ at: null, isMine: true, isWaiting: false }, now),
-        ).toBeNull();
-        expect(
-            messageDetails(
-                { at: 'soon', isMine: false, isWaiting: false },
-                now,
-            ),
-        ).toBeNull();
-    });
-
-    test('a read stamp that does not parse falls back to the row’s own', () => {
-        expect(
-            messageDetails(
-                {
-                    at: '2026-11-13T12:18:15Z',
-                    isMine: true,
-                    isWaiting: false,
-                    readAt: 'soon',
-                },
-                now,
-            ),
-        ).toBe('read 14:18');
+    test('a row with no stamp, or one that does not parse, prints nothing', () => {
+        expect(messageDetails({ at: null, delivery: null }, now)).toBeNull();
+        expect(messageDetails({ at: 'soon', delivery: null }, now)).toBeNull();
+        expect(messageDetails(mine('read', 'soon'), now)).toBeNull();
     });
 });

@@ -107,6 +107,7 @@ export function withFileRows(rows, home, cache) {
             had = {
                 files: fileLinks(row.text, home).map((file, i) => ({
                     at: row.at,
+                    delivery: null,
                     id: `${row.id}#file-${i}`,
                     isTurnStart: false,
                     isWaiting: false,

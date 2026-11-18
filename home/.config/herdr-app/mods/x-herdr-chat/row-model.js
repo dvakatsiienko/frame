@@ -21,7 +21,14 @@ import { claudeQueueAfter, isHisQueued, unwrapPastes } from './queued.js';
  * @property {boolean} isWaiting his message in Claude Code's queue, no turn has taken it yet
  * @property {boolean} isTurnStart his prompt that started a turn, never words a running turn took in
  * @property {string} [command] a prompt a tool round took: the queued command its `remove` record names
- * @property {string | null} [readAt] when that `remove` took it; any other row of his was read at its own stamp
+ * @property {Delivery | null} delivery his message's one state and that state's time (FRM-594); null on any other row
+ */
+
+/**
+ * «sent» while Claude Code holds his message (a waiting row, or a taken prompt whose `remove` has not landed: its row is
+ * written first), «read» once it took it: at that `remove`, or a row's own stamp when no record took it (an idle send,
+ * a turn's start, words that joined)
+ * @typedef {{ state: 'sent' | 'read', at: string }} Delivery
  */
 
 // a conversation line opens with this key; api requests, snapshots and modes open with "type" and are never parsed
@@ -67,9 +74,14 @@ function rowsOf(line) {
     const id = textOf(entry.uuid);
     if (!id) return [];
     const message = isRecord(entry.message) ? entry.message : {};
+    const at = textOf(entry.timestamp) || null;
     /** @param {Row['kind']} kind @param {string} text @param {string} [rowId] @returns {Row} */
     const row = (kind, text, rowId = id) => ({
-        at: textOf(entry.timestamp) || null,
+        at,
+        delivery:
+            kind === 'mine' && at
+                ? { at, state: /** @type {const} */ ('read') }
+                : null,
         id: rowId,
         isTurnStart: false,
         isWaiting: false,
@@ -91,7 +103,15 @@ function rowsOf(line) {
             const said = unwrapPastes(saidIn(queued.prompt));
             const command = textOf(queued.source_uuid);
             return said
-                ? [{ ...row('mine', said), ...(command ? { command } : {}) }]
+                ? [
+                      command && at
+                          ? {
+                                ...row('mine', said),
+                                command,
+                                delivery: { at, state: 'sent' },
+                            }
+                          : row('mine', said),
+                  ]
                 : [];
         }
         // words that joined a turn (the magic send) are his messages, one row each
@@ -174,8 +194,8 @@ export function createRowModel() {
         if (op?.operation !== 'remove' || !command || !at) return null;
         takenAt.set(command, at);
         const row = rowOfCommand.get(command);
-        if (!row || row.readAt) return null;
-        row.readAt = at;
+        if (row?.delivery?.state !== 'sent') return null;
+        row.delivery = { at, state: 'read' };
         row.version += 1;
         return row;
     }
@@ -199,7 +219,8 @@ export function createRowModel() {
             rowOfLine.set(next.id, next);
             if (next.command) {
                 rowOfCommand.set(next.command, next);
-                next.readAt = takenAt.get(next.command) ?? null;
+                const at = takenAt.get(next.command);
+                if (at) next.delivery = { at, state: 'read' };
             }
             into.push(next);
             changed.add(next.id);
@@ -241,6 +262,12 @@ export function createRowModel() {
                     row = {
                         at: queued.at
                             ? new Date(queued.at).toISOString()
+                            : null,
+                        delivery: queued.at
+                            ? {
+                                  at: new Date(queued.at).toISOString(),
+                                  state: 'sent',
+                              }
                             : null,
                         id: `waiting-${++waitingSerial}`,
                         isTurnStart: false,

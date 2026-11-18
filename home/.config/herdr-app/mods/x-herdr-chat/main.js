@@ -2209,10 +2209,7 @@ export default class Chat extends View {
      * @param {Row} row @param {Theme} t
      */
     detailsLine(row, t) {
-        const details = messageDetails(
-            { ...row, isMine: row.kind === 'mine' },
-            Date.now(),
-        );
+        const details = messageDetails(row, Date.now());
         return div()
             .px(4)
             .text_size(12)

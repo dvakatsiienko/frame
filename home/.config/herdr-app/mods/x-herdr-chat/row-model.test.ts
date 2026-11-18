@@ -561,24 +561,48 @@ describe('the turn clock starts at his prompt', () => {
     });
 });
 
-describe('his message knows when Claude Code read it (FRM-594)', () => {
+describe('his message has one delivery state, owned by the row model (FRM-594)', () => {
     const removeOf = (command: string, at: string) =>
         queueOp('remove', 'also the tests', at, { commandUuid: command });
+    const read = (at: string) => ({ at, state: 'read' });
 
-    test('a prompt a tool round took reads the remove that took it, and only its row changes', () => {
+    test('a prompt a tool round took is «sent» until the remove that took it lands', () => {
+        const model = createRowModel();
+        model.add([reply('working'), taken('also the tests', 'human', 'c1')]);
+        expect(model.rows.at(-1)?.delivery).toEqual({
+            at: '2026-11-16T16:45:42.000Z',
+            state: 'sent',
+        });
+    });
+
+    test('its remove makes it «read» at that time, and only its row changes', () => {
         const model = createRowModel();
         model.add([reply('working'), taken('also the tests', 'human', 'c1')]);
         const row = model.rows.at(-1);
-        expect(row?.readAt ?? null).toBeNull();
         const { changed } = model.add([
             removeOf('c1', '2026-11-16T16:46:19.000Z'),
         ]);
-        expect(row?.readAt).toBe('2026-11-16T16:46:19.000Z');
+        expect(row?.delivery).toEqual(read('2026-11-16T16:46:19.000Z'));
         expect(row?.version).toBe(2);
         expect(changed).toEqual([row?.id]);
     });
 
-    test('a remove that names another command reads nothing', () => {
+    test('a second remove for the same command moves nothing', () => {
+        const model = createRowModel();
+        model.add([
+            taken('also the tests', 'human', 'c1'),
+            removeOf('c1', '2026-11-16T16:46:19.000Z'),
+        ]);
+        const { changed } = model.add([
+            removeOf('c1', '2026-11-16T16:50:00.000Z'),
+        ]);
+        expect(model.rows[0]?.delivery).toEqual(
+            read('2026-11-16T16:46:19.000Z'),
+        );
+        expect(changed).toEqual([]);
+    });
+
+    test('a remove that names another command moves nothing', () => {
         const model = createRowModel();
         model.add([taken('also the tests', 'human', 'c1')]);
         const [row] = model.rows;
@@ -586,7 +610,7 @@ describe('his message knows when Claude Code read it (FRM-594)', () => {
             removeOf('c2', '2026-11-16T16:46:19.000Z'),
         ]);
         expect(model.rows).toEqual([row]);
-        expect(row?.readAt).toBeNull();
+        expect(row?.delivery?.state).toBe('sent');
         expect(changed).toEqual([]);
     });
 
@@ -597,21 +621,42 @@ describe('his message knows when Claude Code read it (FRM-594)', () => {
             taken('also the tests', 'human', 'c1'),
             removeOf('c1', '2026-11-16T16:46:19.000Z'),
         ]);
-        expect(model.rows[0]?.readAt).toBe('2026-11-16T16:46:19.000Z');
+        expect(model.rows[0]?.delivery).toEqual(
+            read('2026-11-16T16:46:19.000Z'),
+        );
     });
 
     test('a remove loaded before the page holding its prompt still reads it', () => {
         const model = createRowModel();
         model.add([removeOf('c1', '2026-11-16T16:46:19.000Z'), reply('later')]);
         model.addEarlier([taken('also the tests', 'human', 'c1')]);
-        expect(model.rows[0]?.readAt).toBe('2026-11-16T16:46:19.000Z');
+        expect(model.rows[0]?.delivery).toEqual(
+            read('2026-11-16T16:46:19.000Z'),
+        );
     });
 
-    test('a prompt that started a turn has no read of its own: its stamp is the read', () => {
+    test('a prompt that started a turn is «read» at its own stamp', () => {
         const model = createRowModel();
         model.add([mine('start'), queueOp('dequeue')]);
         expect(shown(model)).toEqual(['mine: start']);
-        expect(model.rows[0]?.readAt ?? null).toBeNull();
+        expect(model.rows[0]?.delivery).toEqual(
+            read('2026-11-16T16:45:39.060Z'),
+        );
+    });
+
+    test('a message waiting in Claude Code’s queue is «sent» at its queue time', () => {
+        const model = createRowModel();
+        model.add([queueOp('enqueue', 'later', '2026-11-16T16:47:00.000Z')]);
+        expect(model.rows[0]?.delivery).toEqual({
+            at: '2026-11-16T16:47:00.000Z',
+            state: 'sent',
+        });
+    });
+
+    test('a reply has no delivery', () => {
+        const model = createRowModel();
+        model.add([reply('hi')]);
+        expect(model.rows[0]?.delivery).toBeNull();
     });
 
     test('clear forgets the reads', () => {
@@ -620,6 +665,6 @@ describe('his message knows when Claude Code read it (FRM-594)', () => {
         model.clear();
         model.add([taken('also the tests', 'human', 'c1')]);
         expect(shown(model)).toEqual(['mine: also the tests']);
-        expect(model.rows[0]?.readAt).toBeNull();
+        expect(model.rows[0]?.delivery?.state).toBe('sent');
     });
 });

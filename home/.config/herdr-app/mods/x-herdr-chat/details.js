@@ -1,39 +1,29 @@
-// a message's details (FRM-594): one state and its own time, on his clock. his own message reads «sent» at its send
-// time while Claude Code holds it, «read» once it took it (his 17:16: «only one state — sent or read»): at the `remove`
-// record a tool round wrote, or a row's own stamp when no record took it (an idle send, a turn's start). a prompt a
-// tool round took lands as a row before its `remove` record: it reads «sent» until that record names it
+// a row's details (FRM-594) on his clock: his message prints its one state and that state's time, which the row
+// model owns (`Delivery`); a reply prints its time alone
 
 import { clockOf } from './relay.js';
 
 const MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
 
-/** @param {string | null | undefined} at @returns {Date | null} */
-const dateOf = (at) => {
-    const d = at ? new Date(at) : null;
-    return d && !Number.isNaN(d.getTime()) ? d : null;
-};
-
-/** a moment on his clock, with its date when it is not today @param {Date} at @param {Date} today */
-const whenOf = (at, today) => {
-    const clock = clockOf(at.toISOString());
-    return at.toDateString() === today.toDateString()
+/** a moment on his clock, with its date when it is not today; null when it does not parse @param {string} at @param {number} now */
+const whenOf = (at, now) => {
+    const d = new Date(at);
+    if (Number.isNaN(d.getTime())) return null;
+    const clock = clockOf(at);
+    return d.toDateString() === new Date(now).toDateString()
         ? clock
-        : `${MONTHS[at.getMonth()]} ${at.getDate()}, ${clock}`;
+        : `${MONTHS[d.getMonth()]} ${d.getDate()}, ${clock}`;
 };
 
 /**
- * @param {{ at: string | null, isMine: boolean, isWaiting: boolean, command?: string, readAt?: string | null }} row
+ * @param {{ at: string | null, delivery: import('./row-model.js').Delivery | null }} row
  * @param {number} now
  * @returns {string | null} «read 15:04», «sent 15:10», a reply's «15:04»; null with no stamp
  */
-export function messageDetails(
-    { at, isMine, isWaiting, command, readAt = null },
-    now,
-) {
-    const sent = dateOf(at);
-    if (!sent) return null;
-    const today = new Date(now);
-    if (!isMine) return whenOf(sent, today);
-    if (isWaiting || (command && !readAt)) return `sent ${whenOf(sent, today)}`;
-    return `read ${whenOf(dateOf(readAt) ?? sent, today)}`;
+export function messageDetails({ at, delivery }, now) {
+    if (delivery) {
+        const when = whenOf(delivery.at, now);
+        return when && `${delivery.state} ${when}`;
+    }
+    return at ? whenOf(at, now) : null;
 }
