@@ -3631,14 +3631,23 @@ async function readPlanSteps(
     }
 }
 
-// a dispatch opens its lane's card (FRM-602): x's record of a live codie names the lane, whose plan file holds the steps;
-// a lane any card ever followed opens none again, and a joiner's dispatch links its codie to the open card
+// a dispatch opens its lane's card (FRM-602): x's record of a live codie names the lane, whose plan file holds the steps,
+// and the clio that dispatched it, whose session opens the card (a record with none is main's); a lane any card ever
+// followed opens none again, and a joiner's dispatch links its codie to the open card
 async function openDispatchedLanes($: EngineInterface) {
-    if (!(await isLaneOwner($)) || !(await partsShown($))('stash.glide'))
-        return;
+    const self = await selfLive($);
+    const label =
+        self?.role === MAIN_ROLE
+            ? 'clio-main'
+            : self?.role === WING_ROLE && self.wing
+              ? `clio-wing-${self.wing}`
+              : undefined;
+    if (!label || !(await partsShown($))('stash.glide')) return;
     const dispatched = (await threadRecords($)).filter(
         (t): t is ThreadRecord & { lane: string } =>
-            t.role === 'codie' && /^[\w.-]+$/.test(t.lane ?? ''),
+            t.role === 'codie' &&
+            /^[\w.-]+$/.test(t.lane ?? '') &&
+            (t.coordinator ?? 'clio-main') === label,
     );
     if (!dispatched.length) return;
     const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
@@ -4187,6 +4196,9 @@ type ThreadRecord = {
     pid?: number;
     role?: string;
     lane?: string;
+    // the clio that dispatched a lane member, by x's owner label: clio-main or clio-wing-<n>
+    coordinator?: string;
+    wing?: number;
     ticket?: string;
 };
 // the standing role ids x's roles.json names (FRM-579): one place here, so a rename of the fleet's roles is a table edit

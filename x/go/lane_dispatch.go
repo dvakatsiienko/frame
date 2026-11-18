@@ -363,12 +363,16 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 	kind := dispatchLaneKind(flags, plan.Tickets)
 	renames := []ordered{}
 	area, _ := areaFlag(flags)
+	dispatcher := callerOwnerLabel()
 	for _, named := range [][2]string{{"codie", flagString(flags, "session")}, {"sixth-sense", flagString(flags, "sixth-sense")}} {
 		role, sid := named[0], named[1]
 		if sid == "" {
 			continue
 		}
 		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: recordLaneKind(kind, sid), Ticket: plan.Tickets[0].ID, Area: area}
+		if record.Lane != "" {
+			record.Coordinator = dispatcher
+		}
 		if err := writeThreadRecord(record, time.Now(), false); err != nil {
 			if fail, isFail := errors.AsType[*Fail](err); isFail {
 				return nil, fail

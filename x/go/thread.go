@@ -27,15 +27,17 @@ type thread struct {
 	ProcStart string `json:"procStart,omitempty"`
 	Role      string `json:"role,omitempty"`
 	Lane      string `json:"lane,omitempty"`
-	LaneKind  string `json:"laneKind,omitempty"`
-	Ticket    string `json:"ticket,omitempty"`
-	Wing      int    `json:"wing,omitempty"`
-	Area      string `json:"area,omitempty"`
-	Title     string `json:"title,omitempty"`
-	Fallback  bool   `json:"fallback,omitempty"`
-	Display   string `json:"display"`
-	RoleName  string `json:"roleName,omitempty"`
-	At        int64  `json:"at,omitempty"`
+	// the clio that dispatched a lane member (its owner label, clio-main or clio-wing-<n>), whose session opens the lane's card
+	Coordinator string `json:"coordinator,omitempty"`
+	LaneKind    string `json:"laneKind,omitempty"`
+	Ticket      string `json:"ticket,omitempty"`
+	Wing        int    `json:"wing,omitempty"`
+	Area        string `json:"area,omitempty"`
+	Title       string `json:"title,omitempty"`
+	Fallback    bool   `json:"fallback,omitempty"`
+	Display     string `json:"display"`
+	RoleName    string `json:"roleName,omitempty"`
+	At          int64  `json:"at,omitempty"`
 }
 
 type threadStore struct {
@@ -418,7 +420,7 @@ func writeThreadRecord(record thread, now time.Time, isMinted bool) error {
 		live := store.Threads[i]
 		record.Pid, record.ProcStart, record.Name, record.Cwd = live.Pid, live.ProcStart, live.Name, live.Cwd
 		if record.Lane == "" {
-			record.Lane = live.Lane
+			record.Lane, record.Coordinator = live.Lane, cmp.Or(record.Coordinator, live.Coordinator)
 		}
 		// a kind the call named (a dispatch reads it off the ticket) outranks the record's old one
 		record.LaneKind = cmp.Or(record.LaneKind, live.LaneKind)

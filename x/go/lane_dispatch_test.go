@@ -689,3 +689,28 @@ func TestDispatchRefusesTicketsWhoseLaneLinesDisagree(t *testing.T) {
 		})
 	}
 }
+
+// FRM-602: the codie's record names the clio that dispatched it, so the stash opens the lane's card in that clio's session
+func TestDispatchRecordsTheDispatchingClioOnTheCodie(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ caller, want string }{
+		{"coordinator", "clio-main"},
+		{"wing", "clio-wing-1"},
+	} {
+		t.Run(c.caller, func(t *testing.T) {
+			t.Parallel()
+			server := dispatchServer(t, undispatched)
+			sessions, store := filepath.Join(t.TempDir(), "caller-set"), filepath.Join(t.TempDir(), "threads.json")
+			write(t, filepath.Join(sessions, "s1.json"), fmt.Sprintf(`{"sessionId":"s1","pid":%d}`, os.Getpid()))
+			env := asCaller(t, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store, "X_SESSIONS=" + sessions}, c.caller)
+
+			_, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-3", "--apply")
+
+			written, _ := readThreadStore(store)
+			i := slices.IndexFunc(written.Threads, func(th thread) bool { return th.SessionID == "s1" })
+			if got.code != 0 || i < 0 || written.Threads[i].Coordinator != c.want {
+				t.Fatalf("exit %d, records %+v, want s1's coordinator %q:\n%s", got.code, written.Threads, c.want, got.stdout)
+			}
+		})
+	}
+}

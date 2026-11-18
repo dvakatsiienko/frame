@@ -2173,7 +2173,12 @@ test('a glide steer clio took while he was away is not offered back over a newer
 /* FRM-602: a dispatch opens its lane's card — x's thread record names the lane, the stash draws the card */
 const DISPATCHED = '/home/.local/state/x/lanes/mods-lane-9/lane-plan.md';
 const dispatched = (
-    codies: { sessionId: string; pid: number; lane?: string }[],
+    codies: {
+        sessionId: string;
+        pid: number;
+        lane?: string;
+        coordinator?: string;
+    }[],
     self = recordOf(CLIO),
 ) => ({
     files: {
@@ -2301,4 +2306,42 @@ test('a lane whose card clio ended opens no new card while its codie lives on', 
     await lane($, { act: 'end', id: kept(w)[0]?.id });
     await poll(w);
     expect(kept(w).filter((l) => !l.endedAt)).toEqual([]);
+});
+
+test("a lane a wing dispatched opens in that wing's session as its card, never in main's", async ($, on) => {
+    const codie = {
+        coordinator: 'clio-wing-2',
+        lane: 'mods-lane-9',
+        pid: 5001,
+        sessionId: CODIE,
+    };
+    const main = world(on, dispatched([codie]));
+    titled(main, marked('   '));
+    await start($);
+    await poll(main);
+    expect(kept(main)).toEqual([]);
+});
+
+test('a wing opens the card of a lane it dispatched, its runner set', async ($, on) => {
+    const wing = '🦉🪽 clio: wing 2';
+    const w = world(on, {
+        ...dispatched(
+            [
+                {
+                    coordinator: 'clio-wing-2',
+                    lane: 'mods-lane-9',
+                    pid: 5001,
+                    sessionId: CODIE,
+                },
+            ],
+            recordOf(wing),
+        ),
+        name: wing,
+    });
+    titled(w, marked('   '));
+    await start($);
+    await poll(w);
+    expect(kept(w).map((l) => [l.title, l.runner, l.members.codie])).toEqual([
+        ['mods lane 9', wing, CODIE_NAME],
+    ]);
 });
