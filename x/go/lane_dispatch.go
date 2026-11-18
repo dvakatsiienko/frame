@@ -138,8 +138,8 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		plan.Slices = home(filepath.Join(stateDir(), "lanes", feature, "issues")) + "/ — codie's to-tickets slices"
 	}
 	area, _ := areaFlag(flags)
-	for _, named := range [][2]string{{"codie", session}, {"sixth-sense", flagString(flags, "sixth-sense")}} {
-		if named[1] != "" && len(plan.Tickets) > 0 {
+	for _, named := range dispatchNamed(flags, plan.Tickets) {
+		if named[1] != "" {
 			record := thread{Role: named[0], LaneKind: recordLaneKind(dispatchLaneKind(flags, plan.Tickets), named[1]), Area: area, Ticket: plan.Tickets[0].ID}
 			plan.Threads = append(plan.Threads, named[1]+" → "+threadDisplay(record))
 		}
@@ -374,7 +374,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 	renames := []ordered{}
 	area, _ := areaFlag(flags)
 	dispatcher := callerOwnerLabel()
-	for _, named := range [][2]string{{"codie", flagString(flags, "session")}, {"sixth-sense", flagString(flags, "sixth-sense")}} {
+	for _, named := range dispatchNamed(flags, plan.Tickets) {
 		role, sid := named[0], named[1]
 		if sid == "" {
 			continue
@@ -410,6 +410,25 @@ func dispatchLaneKind(flags Flags, tickets []dispatchTicket) string {
 		}
 	}
 	return ""
+}
+
+// the threads a dispatch moves: its codie, and its sixth sense, else the ones the lane's records hold, so a sixth sense
+// summoned before the chunk takes the chunk's ticket in its name too
+func dispatchNamed(flags Flags, tickets []dispatchTicket) [][2]string {
+	if len(tickets) == 0 {
+		return nil
+	}
+	named := [][2]string{{"codie", flagString(flags, "session")}}
+	if sid := flagString(flags, "sixth-sense"); sid != "" || tickets[0].lane == "" {
+		return append(named, [2]string{"sixth-sense", sid})
+	}
+	store, _ := readThreadStore(threadStorePath())
+	for _, t := range store.Threads {
+		if t.Role == "sixth-sense" && t.Lane == tickets[0].lane && t.SessionID != named[0][1] {
+			named = append(named, [2]string{"sixth-sense", t.SessionID})
+		}
+	}
+	return named
 }
 
 // a dispatch that names no mode keeps the one its record holds; side only when the record has none either

@@ -429,6 +429,28 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 	}
 }
 
+// FRM-649 step 118: the lane's sixth sense, summoned before the chunk and not named on its dispatch, takes the
+// chunk's ticket in its name too; a sixth sense on another lane keeps its own
+func TestDispatchNamesTheLanesSixthSenseWithItsTicket(t *testing.T) {
+	t.Parallel()
+	server := dispatchServer(t, undispatched)
+	store := filepath.Join(t.TempDir(), "threads.json")
+	write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie","lane":"cli-9"},{"sessionId":"s2","role":"sixth-sense","lane":"cli-9","laneKind":"side","area":"cli"},{"sessionId":"s3","role":"sixth-sense","lane":"cli-8","ticket":"FRM-7"}]}`)
+	_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store},
+		"lane", "dispatch", "FRM-1", "--session", "s1", "--area", "cli", "--lane", "cli-9", "--apply")
+	written, err := readThreadStore(store)
+	if err != nil || got.code != 0 {
+		t.Fatalf("exit %d, %v:\n%s", got.code, err, got.stdout)
+	}
+	tickets := map[string]string{}
+	for _, th := range written.Threads {
+		tickets[th.SessionID] = th.Display + " · " + th.Ticket
+	}
+	if tickets["s2"] != "🌗 🔎 cli | FRM-1 · FRM-1" || tickets["s3"] != " · FRM-7" {
+		t.Errorf("records %v, want s2 named for FRM-1 and s3 left on FRM-7", tickets)
+	}
+}
+
 // FRM-649 exit 2 (FRM-616:W36): a dispatch keeps the ticket's title, its scope prefix cut, on every member it moves, and
 // x lane show prints it as the lane's what, so the glide card titles «<scope> — <what>» with no hand edit
 func TestDispatchKeepsTheTicketsWhatForTheLaneCard(t *testing.T) {
