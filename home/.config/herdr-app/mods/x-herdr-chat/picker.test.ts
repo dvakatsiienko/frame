@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest';
 
-import * as chatter from '../x-herdr-chatter/permissions.js';
 import {
     NO_RUNS_AT,
     effortNow,
@@ -156,11 +155,7 @@ describe("a pick runs in Claude Code's own picker", () => {
     });
 });
 
-// x-herdr-chatter carries a copy until the swap (a mod cannot import a sibling): both run every row
-describe.each([
-    ['x-herdr-chat', { permissionIn, permissionOf }],
-    ['x-herdr-chatter', chatter],
-])(
+describe.each([['x-herdr-chat', { permissionIn, permissionOf }]])(
     '%s: the permission mode, read off Claude’s footer and cycled live',
     (_mod, { permissionIn, permissionOf }) => {
         test.each([

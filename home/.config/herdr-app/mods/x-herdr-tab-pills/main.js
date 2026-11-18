@@ -2,7 +2,7 @@
 // program tile with a status dot, the thread's own name (as the agents list publishes it) or the tab's, and its folder;
 // the space chip opens herdr's picker. changed from the original: every colour comes from theme() (the layout's
 // `colors` block sets `chrome`, `selected` and `input` for the tray, the shown pill and its edge), a × that asks before
-// it ends something, no window buttons, no palette button, no + (it lives in x-herdr-chatter-header).
+// it ends something, no window buttons, no palette button, no + (it lives in x-herdr-chat-header).
 
 import { h_flex } from 'gpui-base';
 import { View, div, image, svg } from 'gpui-kit';

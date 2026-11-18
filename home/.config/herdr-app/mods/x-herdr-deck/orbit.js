@@ -566,8 +566,6 @@ export function steerKeyNote(state, isCmd, isGated) {
         : null;
 }
 
-// twin band-press: x-herdr-chatter's band.js writes the same file (a mod imports nothing outside its folder); the stash
-// reads a hot press for the thread its sid names, whichever band wrote it (FRM-568)
 /**
  * the `env … ps` call `runningThreads` reads: its start times in utc and the c locale, the form x writes `procStart` in
  * @param {number[]} pids

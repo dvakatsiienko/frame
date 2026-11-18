@@ -18,7 +18,7 @@
         {
             "kind": "ours",
             "name": "layout file",
-            "today": "x-herdr-layout.json",
+            "today": "itrout.json",
             "what": "what sits where, and the look"
         }
     ],
@@ -45,7 +45,7 @@
             "n": 3,
             "name": "box 3 thread header",
             "node": "views",
-            "today": "x-herdr-chatter-header",
+            "today": "x-herdr-chat-header",
             "top": 0,
             "what": "thread's top row, Chat | Terminal switch"
         },
@@ -54,7 +54,7 @@
             "n": 4,
             "name": "box 4 chat",
             "node": "views",
-            "today": "x-herdr-chatter",
+            "today": "x-herdr-chat",
             "top": 36,
             "what": "the Chat view: read and write"
         },

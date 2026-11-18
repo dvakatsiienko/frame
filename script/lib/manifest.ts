@@ -66,8 +66,6 @@ export const noLink = new Map<string, keyof typeof noLinkReasons>([
     ['.config/herdr-app/mods/x-herdr-chat', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-chat-header', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-chat-settings', 'landedByCopy'],
-    ['.config/herdr-app/mods/x-herdr-chatter', 'landedByCopy'],
-    ['.config/herdr-app/mods/x-herdr-chatter-header', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-status', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-terminal-header', 'landedByCopy'],
     ['.config/herdr-app/mods/x-herdr-tabs', 'landedByCopy'],

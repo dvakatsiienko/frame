@@ -15,5 +15,5 @@ claims: `home/.config/herdr-app/mods/`
 - [x-herdr-deck — orbit](ftr/orbit.md) — 11 features
 - [threads — tabs](ftr/tabs.md) — 6 features
 - [tray — quick terminal](ftr/tray.md) — 1 feature
-- [chat view — x-herdr-chatter](ftr/chat.md) — 65 features
+- [chat view — x-herdr-chat](ftr/chat.md) — 79 features
 - [scripts](ftr/scripts.md) — 3 features

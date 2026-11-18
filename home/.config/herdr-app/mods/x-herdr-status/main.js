@@ -63,7 +63,8 @@ import {
 // PRs: GitHub through gh, Azure DevOps through its REST API (azure-prs.ps1, git's stored credential).
 
 const WIN = /^win/.test(os.platform()); // "windows" here, not node's "win32"
-// x-herdr-chatter shares which container each Claude runs in: { "<address>": "<container id or name>" }.
+// which container each Claude runs in: { "<address>": "<container id or name>" }. zoo's chat wrote it; since it
+// retired (FRM-638) nothing does, so the bar reads the last value it left
 const CONTAINERS = 'chat.containers';
 // The repo each dev container workspace shows on the bar, picked in the repos list:
 // { "<workspace root, lowercase>": "<repo folder>" }. Unset = the focused terminal's repo.
@@ -781,15 +782,9 @@ export default class WorkspaceStatus extends View {
                     command === 'effort' ||
                     command === 'find'
                 ) {
-                    // the new chat first, once it holds the Chat view; the old one while only it does
-                    const chat =
-                        blockOf(
-                            (c) => c?.mod === 'x-herdr-chat' && c.props?.stack,
-                        ) ??
-                        blockOf(
-                            (c) =>
-                                c?.mod === 'x-herdr-chatter' && c.props?.stack,
-                        );
+                    const chat = blockOf(
+                        (c) => c?.mod === 'x-herdr-chat' && c.props?.stack,
+                    );
                     if (chat)
                         run('layout.select', {
                             child: chat.content.props.self,

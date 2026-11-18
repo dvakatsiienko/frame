@@ -9,7 +9,7 @@ const script = fileURLToPath(new URL('./window-map.py', import.meta.url));
 const dir = mkdtempSync(join(tmpdir(), 'window-map-'));
 afterAll(() => rmSync(dir, { force: true, recursive: true }));
 
-// the shape of the egg-basket layout the window shows, trimmed to the nodes the map names
+// the shape of the iTrout layout the window shows, trimmed to the nodes the map names
 const layout = (hidden: { panel: boolean; tray: boolean }) => ({
     children: [
         { id: 'tabs', size: { px: 38 }, type: 'block' },

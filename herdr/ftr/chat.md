@@ -1,4 +1,4 @@
-# herdr — chat view — x-herdr-chatter
+# herdr — chat view — x-herdr-chat
 
 wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
@@ -58,18 +58,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when he triple clicks a word in it
   - then the whole paragraph is selected; today only the clicked row is, since gpui-kit lays such a paragraph out a row at a time
   - decision: inline code keeps its chips, and the fix waits on gpui-kit (his tick, 18:35): [gpui-kit#3933](https://github.com/longbridge/gpui-kit/issues/3933)
-- ✅ the chat is ours by name: `x-herdr-chatter`
-  - makes: `home/.config/herdr-app/mods/x-herdr-chatter`, landed into `~/.config/herdr-app/mods/x-herdr-chatter` by `herdr-mods:land`
-  - given `layouts/x-herdr-layout.json` places `x-herdr-chatter`
-  - then herdr opens no file of zoo's `claude-chat`, and every name dima sees reads x-herdr-chatter
-  - proof: the layout's mods read with jq name `x-herdr-chatter` and no `claude-chat` (17:35:34, status errors [])
-  - decision: copied from zoo's `claude-chat` (FRM-556, 11-10), whose folder stays on disk unplaced; the shared keys `chat.look/subs/containers` keep their names until zoo's other mods are ours
-- ✅ drafts typed under the old name come along
-  - given dima typed a draft in a thread's box while the chat was `claude-chat`
-  - when `x-herdr-chatter` first starts
-  - then that thread's box shows the draft, and a draft typed in `x-herdr-chatter` is never overwritten
-  - proof: a throwaway mod with the same `drafts.js` took a draft from a fixture store, left other keys, set its flag (17:17); the live switch ran it and found the old store empty (17:35:34)
-  - decision: herdr keeps a mod's storage per mod name, so `drafts.js` reads `data/claude-chat/store-*.json` once
+- ✅ the chat is ours by name: `x-herdr-chat`
+  - makes: `home/.config/herdr-app/mods/x-herdr-chat`, landed into `~/.config/herdr-app/mods/x-herdr-chat` by `herdr-mods:land`
+  - given `layouts/itrout.json` places `x-herdr-chat`
+  - then herdr places no zoo chat: `x-herdr-chatter` and `x-herdr-chatter-header` retired at FRM-638's end step (2026-11-18)
 - ⬜ a pasted image survives a chat reload
   - given dima pasted a screenshot into a thread's box and has not sent it
   - when the chat reloads
@@ -77,7 +69,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a send or its × takes the preview away with the image
   - decision: not built in FRM-556; his words: «same for screenshots attached in chatter» (PK-363:W355)
 - ⬜ a pasted image goes the way a dropped one does, by its path (FRM-613)
-  - makes: the clipboard's image as `~/.config/herdr-app/data/x-herdr-chatter/shots/shot-<ms>.png`
+  - makes: the clipboard's image as `~/.config/herdr-app/data/x-herdr-chat/shots/shot-<ms>.png`
   - and that file is his shot: the chat never deletes it, sent or taken out of the box; only a scaled copy the chat made of a dropped picture is removed
   - decision: no cleanup at load. the one that removed every unclaimed shot older than an hour took five of his shots on 2026-11-16 (clio, his word relayed 20:53: a shot he took is his file, kept until his word)
   - given dima pastes an image with cmd+v
@@ -95,13 +87,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: an inline picture is written once as `~/.config/herdr-app/data/x-herdr-chat/sent/<row>-<n>.<ext>` from the transcript's bytes, a joined one by path gets a scaled copy; no «🖼 N images» caption, the squares say it
   - decision: the clipboard is read, never written (FRM-612)
   - decision: the preview row holds the previews alone, no caption and no Remove: each × takes its own (FRM-609, his 16:40 shot: «delete description, i know what it does»); Remove stays only beside a «🖼 N images» count with no previews, a dev container's
-- ⬜ the shared keys carry the x-herdr name
-  - given the chat, the status bar and the agents list share `chat.look`, `chat.subs`, `chat.containers`
-  - then each key is `x-herdr-chatter.*`, read by every mod under its new name, and «zoo» appears nowhere
-  - decision: left for after zoo's other mods are ours (x-herdr-status reads them), FRM-556
-- ⬜ the chat mod passes its own type check
-  - given `pnpm exec tsc -p home/.config/herdr-app/mods/x-herdr-chatter/jsconfig.json`
-  - then it exits 0; today 468 errors carried from zoo's copy, and `pnpm typecheck` does not cover the mod
+- ✅ the chat mod passes its own type check
+  - given `pnpm herdr-mods:typecheck`
+  - then x-herdr-chat exits 0, its test files included
 - ⬜ the chat mod has tests
   - given its pure helpers (`drafts.js`, the turn fold, the `hc send` reading)
   - then each has a vitest file beside it, run by the commit gate
@@ -237,7 +225,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ⬜ a «Lane idle alarm after» row on the Claude Code mods page (FRM-605 rider)
   - makes: `stash.park.after` in `settings.json`, minutes, 10 by default, 5 to 60
 - ✅ x-herdr's keys (FRM-577)
-  - makes: our entries in herdr's `keys.json` `global`, told apart by an `x-herdr-*` action; the file before each change kept in `data/x-herdr-chatter/keys-before/`
+  - makes: our entries in herdr's `keys.json` `global`, told apart by an `x-herdr-*` action; the file before each change kept in `data/x-herdr-chat/keys-before/`
   - given herdr focused, when dima presses ⌘K, then the Chat view comes forward and the caret sits in the quill
   - given herdr focused, when he presses ⌘E, then the deck shows or hides
   - given a terminal pane focused, when he types «d» or «/», then the letter lands in the pane

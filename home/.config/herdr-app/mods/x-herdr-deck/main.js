@@ -276,7 +276,7 @@ export default class Deck extends View {
         ]);
         // the thread strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
         // alive draws nothing and reads nothing, so it never runs a second deck. «seat» is the layout's own value in
-        // layouts/x-herdr-layout.json: renaming it means a layout edit, never done while a thread holds focus
+        // layouts/itrout.json: renaming it means a layout edit, never done while a thread holds focus
         /** @type {Map<string, number>} each ask id label's drawn width */
         this.labelW = new Map();
         /** the ask whose linked file shows under it, and that file's text, or why it could not be read @type {{ id: string, text: string | null, problem: string | null } | null} */

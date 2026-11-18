@@ -1,17 +1,18 @@
 # inventory — what dima's herdr runs today
 
-sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on every start), each mod's `mod.json` (`cloned_from`), `layouts/x-herdr-layout.json`.
+sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on every start), each mod's `mod.json` (`cloned_from`), `layouts/itrout.json`.
 
 ## the layout
 
-- `layouts/x-herdr-layout.json` is the shown layout (`herdr-app status` → `layout: x-herdr-layout`); not in `installed.json`, so herdr never replaces it. it began as a clone of the third-party zoo layout
-- it places: `x-herdr-chatter`, `x-herdr-chatter-header`, `x-herdr-status`, `x-herdr-tabs`, `x-herdr-terminal-header` (twice), `x-herdr-agents`, `x-herdr-deck`, plus herdr's own `changes`, `files`, `spaces`, `workspace-chrome` (twice)
+- `layouts/itrout.json` (iTrout) is the shown layout (`herdr-app status` → `layout: itrout`); not in `installed.json`, so herdr never replaces it. it was egg-basket, renamed at FRM-638's end step; zoo's `x-herdr-layout` left then
+- it places: `x-herdr-chat`, `x-herdr-chat-header` (above the chat and on each Terminal pane), `x-herdr-status`, `x-herdr-tab-pills`, `x-herdr-terminal-header`, `x-herdr-agents`, `x-herdr-deck`, plus herdr's own `changes`, `files`
 - themes on disk: `atom-one-dark.json`, `win98.json`; the layout names no theme of its own
 
 ## mods — ours (in frame, landed by `pnpm herdr-mods:land`)
 
-- `x-herdr-chatter` — the Chat view
-- `x-herdr-chatter-header` — the pane header in the Terminal view, a clone of herdr's `pane` 0.1.10; its look is `chatter-header.js`, shared with `x-herdr-chatter`
+- `x-herdr-chat` — the Chat view, built new (FRM-638)
+- `x-herdr-chat-header` — a thread's top row, above the chat and on each Terminal pane
+- `x-herdr-chat-settings` — the chat look popover the header's gear opens
 - `x-herdr-agents` — the agents list in the sidebar, a clone of herdr's `agents` 0.1.9
 - `x-herdr-tabs` — the tab bar, a clone of herdr's `tabs` 0.1.9; its + opens herdr's `new-menu`
 - `x-herdr-deck` — the deck, the right column
@@ -28,4 +29,5 @@ sources: `~/.config/herdr-app/installed.json` (what herdr ships and replaces on 
 
 ## set aside, never deleted
 
+- `~/.config/herdr-app/data/backups/layouts-before-itrout-20261118/`: egg-basket and x-herdr-layout as they were before the end step; the retired `x-herdr-chatter` and `x-herdr-chatter-header` in the macOS Trash, and in git history
 - `~/.local/state/herdr-aside/`: the zoo-era mods (`zoo`, `my-pane`, `quick-term`, `my-status`, `my-new-menu`, `agents-list`, `zoo-agents`, `claude-chat`, `zoo-spaces`, `agent-board`) and each layout file as it was before a rename

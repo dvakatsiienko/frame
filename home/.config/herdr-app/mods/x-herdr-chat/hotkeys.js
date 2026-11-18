@@ -31,7 +31,7 @@ export const OUR_KEYS = [
         title: "Tick all of the shown thread's asks",
     },
     {
-        action: 'x-herdr-chatter.send',
+        action: 'x-herdr-chat.send',
         isLocal: true,
         key: 'cmd-enter',
         title: 'Send now: a turn starts',

@@ -9,21 +9,20 @@ the words `herdr/FTR.md` and our herdr mods use, each defined once (dima settled
 - **x-herdr** — our setup inside herdr: its layout and our mods, each mod under its own name; `x-herdr-*` names a mod alone, a part inside a mod is a plain word with its mod named
 - **block** — short for herdr layout block; one block holds one mod, and where a part sits is the layout's alone (HRD-0001)
 - **thread** — one Claude Code session running in a herdr terminal
-- **Chat view** — a thread drawn as a conversation by x-herdr-chatter; the view dima lives in
+- **Chat view** — a thread drawn as a conversation by x-herdr-chat; the view dima lives in
 - **Terminal view** — the same thread as its raw terminal, where cc's own band and board draw
-- **dock** — the stack under the Chat view's log, inside x-herdr-chatter: the band on top, the quill, the ledge under it
+- **dock** — the stack under the Chat view's log, inside x-herdr-chat: the band on top, the quill, the ledge under it
 - **band** — the dock's top card: the thread's meters (context, weekly use); not cc's own band, the row cc draws in the Terminal view
 - **quill** — the dock's text box, where dima writes to a thread
 - **ledge** — the dock's bottom card: the thread's status line with its clock and Stop, the buttons, the agent's progress
-- **x-herdr key** — a key of ours in herdr's `keys.json`, its action naming an x-herdr mod (`x-herdr-chatter.focus`); listed in `hotkeys.js`, shown on the settings window's Keys page
-- **settings window** — the one dialog for x-herdr's choices, a page per mod, drawn by x-herdr-chatter from its rows; its values live in `~/.claude/shelf/herdr-settings/settings.json`
+- **x-herdr key** — a key of ours in herdr's `keys.json`, its action naming an x-herdr mod (`x-herdr-status.quill`); listed in `hotkeys.js`, shown on the settings window's Keys page
+- **settings window** — the one dialog for x-herdr's choices, a page per mod, drawn by x-herdr-chat from its rows; its values live in `~/.claude/shelf/herdr-settings/settings.json`
 - **settings row** — one choice in the settings window: a key, a title, a one-line why, one control (toggle, checks or stepper) and a default
-- **x-herdr-chatter** — our chat mod, the Chat view itself; copied from zoo's `claude-chat` (FRM-556)
-- **x-herdr-chat** — the new chat, built fresh beside x-herdr-chatter and swapped in once it holds every part (FRM-638); opened as an overlay until then
-- **chat look** — his choices for how the chat reads (text size, font, width, spacing, tool calls, his messages, colours, accent), kept in herdr's shared store under `chat.look`; both chats read it
-- **x-herdr-chat-settings** — the chat settings popover, a herdr mod of its own the chat's ⚙ opens; it edits the chat look
-- **x-herdr-chatter-header** — the whole top row of a thread's pane, in the Chat view and the Terminal view alike: the thread's name and the switch; one row to the eye, drawn by x-herdr-chatter in the Chat view and by the x-herdr-chatter-header mod in the Terminal view, both from one `chatter-header.js`
-- **x-herdr-chatter-header-tabs** — the Chat | Terminal switch inside that row
+- **x-herdr-chat** — our chat mod, the Chat view itself, built new in place of zoo's chat (FRM-638)
+- **iTrout** — dima's layout, `layouts/itrout.json` under the hood (FRM-633)
+- **chat look** — his choices for how the chat reads (text size, font, width, spacing, tool calls, his messages, colours, accent), kept in herdr's shared store under `chat.look`; the chat reads it
+- **x-herdr-chat-settings** — the chat settings popover, a herdr mod of its own the header's ⚙ opens; it edits the chat look
+- **x-herdr-chat-header** — the whole top row of a thread, in the Chat view and the Terminal view alike: the thread's name and folder, + Files Changes, search, the chat look's ⚙ and the Chat | Terminal switch; one mod placed twice by the layout
 - **x-herdr-terminal-header** — the head row of the tray (the bottom quick terminal), part of x-herdr-terminal
 - **x-herdr-status** — the status bar along the bottom of the middle column, under the tray: branch, folder, the open-in commands (VS Code), the command palette
 - **sidebar** — the window's left column: today the agents list over the spaces; settled to hold antenna on top and glide at its bottom

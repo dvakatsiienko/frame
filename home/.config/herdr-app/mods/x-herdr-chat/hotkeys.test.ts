@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { OUR_KEYS, type OurKey, keysWithOurs, rebind } from './hotkeys.js';
 
 const ours: [OurKey, OurKey] = [
-    { action: 'x-herdr-chatter.focus', key: 'cmd-k', title: 'Focus the quill' },
+    { action: 'x-herdr-chat.focus', key: 'cmd-k', title: 'Focus the quill' },
     {
         action: 'x-herdr-deck.toggle',
         key: 'cmd-e',
@@ -26,7 +26,7 @@ describe('keysWithOurs', () => {
         expect(keys).toEqual({
             global: {
                 'cmd-e': 'x-herdr-deck.toggle',
-                'cmd-k': 'x-herdr-chatter.focus',
+                'cmd-k': 'x-herdr-chat.focus',
                 'cmd-t': 'tab.new',
             },
             terminal: { 'ctrl-1': 'terminal' },
@@ -60,16 +60,16 @@ describe('keysWithOurs', () => {
         const { keys } = keysWithOurs(
             {
                 global: {
-                    'cmd-j': 'x-herdr-chatter.focus',
+                    'cmd-j': 'x-herdr-chat.focus',
                     'cmd-t': 'tab.new',
-                    'cmd-y': 'x-herdr-chatter.probe',
+                    'cmd-y': 'x-herdr-chat.probe',
                 },
             },
             ours,
         );
         expect(keys.global).toEqual({
             'cmd-e': 'x-herdr-deck.toggle',
-            'cmd-j': 'x-herdr-chatter.focus',
+            'cmd-j': 'x-herdr-chat.focus',
             'cmd-t': 'tab.new',
         });
     });
@@ -91,13 +91,13 @@ describe('keysWithOurs', () => {
                 title: 'Show or hide the deck',
             },
         ]);
-        expect(keys.global['cmd-k']).toBe('x-herdr-chatter.focus');
-        expect(refused[0]?.takenBy).toBe('x-herdr-chatter.focus');
+        expect(keys.global['cmd-k']).toBe('x-herdr-chat.focus');
+        expect(refused[0]?.takenBy).toBe('x-herdr-chat.focus');
     });
 
     test('a file with no global section gets one', () => {
         expect(keysWithOurs({}, ours).keys.global['cmd-k']).toBe(
-            'x-herdr-chatter.focus',
+            'x-herdr-chat.focus',
         );
     });
 });
@@ -105,7 +105,7 @@ describe('keysWithOurs', () => {
 describe('a key the quill reads itself (cmd-enter): listed, never written into his keys.json', () => {
     const local = [
         {
-            action: 'x-herdr-chatter.join',
+            action: 'x-herdr-chat.join',
             isLocal: true,
             key: 'cmd-enter',
             title: 'Join, held: send',
@@ -135,7 +135,7 @@ describe('a rebind kept in his keys.json', () => {
         );
         expect(keys.global).toEqual({
             'cmd-j': 'x-herdr-deck.toggle',
-            'cmd-k': 'x-herdr-chatter.focus',
+            'cmd-k': 'x-herdr-chat.focus',
         });
     });
 });
@@ -143,8 +143,8 @@ describe('a rebind kept in his keys.json', () => {
 describe('rebind', () => {
     const his = {
         global: {
-            'cmd-e': 'x-herdr-chatter.deck',
-            'cmd-k': 'x-herdr-chatter.focus',
+            'cmd-e': 'x-herdr-chat.deck',
+            'cmd-k': 'x-herdr-chat.focus',
             'cmd-t': 'tab.new',
         },
     };
@@ -153,8 +153,8 @@ describe('rebind', () => {
         expect(rebind(his, 'cmd-e', 'cmd-j')).toEqual({
             keys: {
                 global: {
-                    'cmd-j': 'x-herdr-chatter.deck',
-                    'cmd-k': 'x-herdr-chatter.focus',
+                    'cmd-j': 'x-herdr-chat.deck',
+                    'cmd-k': 'x-herdr-chat.focus',
                     'cmd-t': 'tab.new',
                 },
             },
@@ -166,8 +166,8 @@ describe('rebind', () => {
         expect(
             Object.entries(keysOf(rebind(his, 'cmd-e', 'cmd-j'))?.global ?? {}),
         ).toEqual([
-            ['cmd-j', 'x-herdr-chatter.deck'],
-            ['cmd-k', 'x-herdr-chatter.focus'],
+            ['cmd-j', 'x-herdr-chat.deck'],
+            ['cmd-k', 'x-herdr-chat.focus'],
             ['cmd-t', 'tab.new'],
         ]);
         expect(keysOf(rebind(his, 'cmd-t', 'cmd-y'))?.global?.['cmd-y']).toBe(

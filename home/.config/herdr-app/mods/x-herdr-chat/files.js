@@ -1,6 +1,5 @@
 // the files a reply names, each to open in one click from a row under it (FRM-587). a link in the text can't be
 // pressed while herdr-app#894 is open (a handler inside a lazy-list row), so every file gets a row of its own.
-// ported from x-herdr-chatter's rows.js `fileLinks`, which stays with the old chat.
 
 // a path the chat opens starts at his home or a system root, never a relative one
 const ROOT = String.raw`(?:~|\/(?:Users|private|tmp|Volumes|opt))\/`;

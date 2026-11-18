@@ -36,12 +36,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 - ✅ crow's 🐦‍⬛ draws whole
   - given a session name holds an emoji with a zero-width joiner, which cc's registry stores as a space
   - then the agents list and the deck draw 🐦‍⬛, 🐦‍🔥 and 🙋‍♂️ as one glyph (shot 1416)
-- ⬜ a pane's header prints its folder once (x-herdr-chatter-header, FRM-635)
+- ⬜ a pane's header prints its folder once (x-herdr-chat-header, FRM-635)
   - given a pane whose title already holds its folder, as a shell's does
   - then the folder is not printed a second time after the title; an agent's pane still shows its folder
   - and a click anywhere on the row focuses the pane, as before
 - ⬜ the tab bar draws each tab as a pill (x-herdr-tab-pills, FRM-635)
-  - given x-herdr-tab-pills is placed in a layout's top bar (the playground `egg-basket`)
+  - given x-herdr-tab-pills is placed in a layout's top bar (iTrout)
   - then every tab is a pill with its program's tile, a dot on the tile while its thread works, is blocked or is done, and its name: a thread's own name with its emoji, the member word dropped, whole on hover; any other tab's name and folder
   - and the shown pill stands out, a hovered one only hints; the space chip at the left opens herdr's picker
   - and a wheel scroll or a swipe over the bar switches no tab, and a press and drag on a pill never moves the window
@@ -50,10 +50,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - decision: a clone of herdr's shipped `terminals-bar`, his pick after an A/B (dima, 2026-11-16: «tabs look better in the Terminals layout»); at his swap word it is renamed `x-herdr-tabs` and the old folder goes
   - not checked: in a shown window; its first look is his own open of the playground
 - ⬜ the thread header holds +, Files and Changes where the layout asks for them (FRM-635)
-  - given a layout block that sets `tabBarButtons` on the thread header (the playground `egg-basket` does, his own layout does not)
+  - given a layout block that sets `tabButtons` on the thread header (iTrout does, in both views)
   - then the row ends in + (the new-tab menu), Files and Changes; a press on the shown panel hides it, a press on the other shows it
   - and a panel he switched off in herdr's settings gets no button
   - and a split tab draws them once, in its first pane's row
-  - decision: the buttons moved out of the tab bar so the tab bar can be herdr's pills (dima, 2026-11-16: «Files and Changes buttons, and + moves to x-herdr-chatter-header»)
-  - and both rows draw them: the Terminal view's (x-herdr-chatter-header) and the Chat view's (x-herdr-chatter)
+  - decision: the buttons moved out of the tab bar so the tab bar can be herdr's pills (dima, 2026-11-16: «Files and Changes buttons, and + moves to x-herdr-chatter-header», the header since rebuilt as x-herdr-chat-header)
+  - and both rows draw them: x-herdr-chat-header, above the chat and on each Terminal pane
   - not checked: in a shown window; its first look is his own open of the playground
