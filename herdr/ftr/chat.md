@@ -86,7 +86,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and a send puts its path after his text, and Claude reads it
   - and files copied in Finder paste as their paths, the way a drop does, never as the file's icon; a text paste stays text
   - and a click on a picture's square, over the quill, under his message or in a reply's file row, opens the viewer over the chat on the whole picture: zoom out, its level (a click fits), zoom in, copy, open, Show in Finder, ← → with «n / N» among its siblings, ✕; keys ← → + − 0 ⌘C Esc (FRM-638 slice 5, W33/W35)
-  - and the viewer's open starts CleanShot X annotate on the file, or Preview with the chatter setting «Open in CleanShot» off (FRM-587 W1)
+  - and the viewer's open, or a ⌘-click on any picture square, starts CleanShot X annotate on the file, or Preview with the chatter setting «Open in CleanShot» off (FRM-587 W1, dima 16:59)
+  - and every square is sharp and fills its frame: a 288 px cut of the picture's middle (dima 17:00, «too blurry»)
   - and ⌘Enter, Enter or a click sends pictures with no words
   - decision: one path for paste and drop (dima's o49, 16:38); it replaces ctrl+v into Claude's prompt, whose × had to empty that prompt and lagged when he emptied it in the Terminal view (FRM-609)
   - and a click or Enter with files waiting marks them to join with the words (🍕): the join row carries each path on its own line after the words, a file added or × under the mark rides the same row, and the quill lets them go once a turn takes it (FRM-638 slice 5, his wisps 16:36 and 16:37)
@@ -407,7 +408,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then each file gets one row under the reply, «🖼️ <name>» for a picture and «📂 <name>» for any other file, and a click opens it in its app (a png in Preview)
   - and a path inside a fenced block gets no row, a sentence's period or comma is not part of the path, and the same file twice is one row
   - and the link inside the text stays plain while herdr-app#894 is open: a handler inside a lazy-list row's text does nothing there
-  - and a picture's row draws its own small square in place of «🖼️» once its copy is made (FRM-638 slice 5)
+  - and a reply's pictures draw together as squares under it, the way his own do, and a click opens them in the viewer (FRM-638 slice 5, dima 16:59)
   - and each file is its own row in the list, opened through the list's item click: a press or hover handler inside a row blanked the whole list (herdr-app#894; clio's thread drew empty, 14:15)
 
 - ✅ the chat settings popover: his chat look in one place (x-herdr-chat-settings, FRM-641)

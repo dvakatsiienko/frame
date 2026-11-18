@@ -78,7 +78,7 @@ export const waitingFiles = (store, home) =>
             rels.map((r) => `${home}/${r}`),
         ]);
 
-// a picture a reply links, as a small square in its file chip (FRM-562): one file per path, remade on each load
+// a picture's square thumb under the app dir: one file per path
 export const THUMBS_DIR = 'data/x-herdr-chat/thumbs';
 /** @param {string} path */
 export const thumbName = (path) => {
@@ -87,32 +87,52 @@ export const thumbName = (path) => {
     return `${THUMBS_DIR}/${h.toString(36)}.png`;
 };
 
-/** @param {string} path @returns {Promise<{ rel: string, w: number, h: number } | null>} */
-export async function saveLinkThumb(path) {
-    const rel = thumbName(path);
-    const out = `${appHome()}/${rel}`;
-    await mkdir(`${appHome()}/${THUMBS_DIR}`, { recursive: true });
-    const made = await exec('sips', [
-        '-Z',
-        '96',
-        '-s',
-        'format',
-        'png',
-        path,
-        '--out',
-        out,
-    ]).catch(/** @returns {null} */ () => null);
-    if (made?.code !== 0) return null;
+/** a picture's size in pixels, read by sips @param {string} path @returns {Promise<{ w: number, h: number } | null>} */
+async function sizeOf(path) {
     const got = await exec('sips', [
         '-g',
         'pixelWidth',
         '-g',
         'pixelHeight',
-        out,
+        path,
     ]).catch(/** @returns {null} */ () => null);
     const w = Number(/pixelWidth: (\d+)/.exec(got?.stdout ?? '')?.[1]);
     const h = Number(/pixelHeight: (\d+)/.exec(got?.stdout ?? '')?.[1]);
-    return w && h ? { h, rel, w } : null;
+    return w && h ? { h, w } : null;
+}
+
+// a square is drawn at 96 points: three pixels a point keep it sharp on a retina screen, zoomed too
+export const SQUARE_PX = 288;
+
+/**
+ * a picture as a sharp square that fills its frame: scaled so its short side fits, the middle cut out
+ * @param {string} path @returns {Promise<string | null>} its rel under the app dir
+ */
+export async function saveSquareThumb(path) {
+    const rel = thumbName(path).replace(`${THUMBS_DIR}/`, `${THUMBS_DIR}/sq-`);
+    const out = `${appHome()}/${rel}`;
+    const size = await sizeOf(path);
+    if (!size) return null;
+    await mkdir(`${appHome()}/${THUMBS_DIR}`, { recursive: true });
+    const side = size.w < size.h ? '--resampleWidth' : '--resampleHeight';
+    const scaled = await exec('sips', [
+        '-s',
+        'format',
+        'png',
+        side,
+        String(SQUARE_PX),
+        path,
+        '--out',
+        out,
+    ]).catch(/** @returns {null} */ () => null);
+    if (scaled?.code !== 0) return null;
+    const cut = await exec('sips', [
+        '-c',
+        String(SQUARE_PX),
+        String(SQUARE_PX),
+        out,
+    ]).catch(/** @returns {null} */ () => null);
+    return cut?.code === 0 ? rel : null;
 }
 
 // a dropped picture's preview, scaled down under the app dir (image() reads only there): its path, or null
@@ -215,16 +235,8 @@ export async function viewCopy(path) {
         );
         if (copied?.code !== 0) return null;
     }
-    const got = await exec('sips', [
-        '-g',
-        'pixelWidth',
-        '-g',
-        'pixelHeight',
-        `${appHome()}/${rel}`,
-    ]).catch(/** @returns {null} */ () => null);
-    const w = Number(/pixelWidth: (\d+)/.exec(got?.stdout ?? '')?.[1]);
-    const h = Number(/pixelHeight: (\d+)/.exec(got?.stdout ?? '')?.[1]);
-    return w && h ? { h, rel, w } : null;
+    const size = await sizeOf(`${appHome()}/${rel}`);
+    return size ? { ...size, rel } : null;
 }
 
 // a picture onto the clipboard as an image, the way CleanShot's copy puts one (JXA, read only from the file)

@@ -131,8 +131,25 @@ describe("a reply's files are rows of their own in the list, so a click on one c
         );
         expect(rows.map((r) => [r.kind, r.id, r.text, r.path])).toEqual([
             ['reply', 'r1', 'see /tmp/a.png and /tmp/b.md', undefined],
-            ['file', 'r1#file-0', 'a.png', '/tmp/a.png'],
+            ['file', 'r1#pictures', 'a.png', undefined],
             ['file', 'r1#file-1', 'b.md', '/tmp/b.md'],
+        ]);
+    });
+
+    test("a reply's pictures are one row of squares, in the order it names them", () => {
+        const rows = withFileRows(
+            [reply('r1', '/tmp/a.png, /tmp/x.md and /tmp/b.jpg')],
+            HOME,
+            new Map(),
+        );
+        expect(rows[1]?.pictures.map((p) => [p.id, p.path])).toEqual([
+            ['r1#file-0', '/tmp/a.png'],
+            ['r1#file-2', '/tmp/b.jpg'],
+        ]);
+        expect(rows.map((r) => r.id)).toEqual([
+            'r1',
+            'r1#pictures',
+            'r1#file-1',
         ]);
     });
 
@@ -158,15 +175,15 @@ describe("a reply's files are rows of their own in the list, so a click on one c
         );
         expect(grown.map((r) => r.id)).toEqual([
             'r1',
-            'r1#file-0',
+            'r1#pictures',
             'r1#file-1',
         ]);
     });
 
     test('a click names its file through the row key, a cut half included', () => {
-        const rows = withFileRows([reply('r1', '/tmp/a.png')], HOME, new Map());
-        expect(fileAt(rows, 'r1#file-0')).toBe('/tmp/a.png');
-        expect(fileAt(rows, 'r1#file-0#below')).toBe('/tmp/a.png');
+        const rows = withFileRows([reply('r1', '/tmp/a.md')], HOME, new Map());
+        expect(fileAt(rows, 'r1#file-0')).toBe('/tmp/a.md');
+        expect(fileAt(rows, 'r1#file-0#below')).toBe('/tmp/a.md');
         expect(fileAt(rows, 'r1')).toBeNull();
     });
 });

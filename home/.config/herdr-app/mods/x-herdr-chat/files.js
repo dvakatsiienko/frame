@@ -104,22 +104,50 @@ export function withFileRows(rows, home, cache) {
         if (row.kind !== 'reply') continue;
         let had = cache.get(row.id);
         if (had?.version !== row.version) {
+            const links = fileLinks(row.text, home).map((file, i) => ({
+                ...file,
+                id: `${row.id}#file-${i}`,
+            }));
+            const pictures = links.filter((f) => isPicture(f.path));
+            /** @param {string} id @param {string} text @param {string | null} path @returns {Row} */
+            const fileRow = (id, text, path) => ({
+                at: row.at,
+                delivery: null,
+                files: [],
+                id,
+                isTurnStart: false,
+                isWaiting: false,
+                kind: 'file',
+                ...(path ? { path } : {}),
+                pictures: path
+                    ? []
+                    : pictures.map((f) => ({
+                          data: null,
+                          id: f.id,
+                          media: null,
+                          path: f.path,
+                      })),
+                replyId: null,
+                text,
+                tools: [],
+                version: row.version,
+            });
+            // a reply's pictures draw together as squares under it, the way his own do; any other file is its own row
             had = {
-                files: fileLinks(row.text, home).map((file, i) => ({
-                    at: row.at,
-                    delivery: null,
-                    files: [],
-                    id: `${row.id}#file-${i}`,
-                    isTurnStart: false,
-                    isWaiting: false,
-                    kind: /** @type {const} */ ('file'),
-                    path: file.path,
-                    pictures: [],
-                    replyId: null,
-                    text: file.label,
-                    tools: [],
-                    version: row.version,
-                })),
+                files: [
+                    ...(pictures.length
+                        ? [
+                              fileRow(
+                                  `${row.id}#pictures`,
+                                  pictures.map((f) => f.label).join(', '),
+                                  null,
+                              ),
+                          ]
+                        : []),
+                    ...links
+                        .filter((f) => !isPicture(f.path))
+                        .map((f) => fileRow(f.id, f.label, f.path)),
+                ],
                 version: row.version,
             };
             cache.set(row.id, had);

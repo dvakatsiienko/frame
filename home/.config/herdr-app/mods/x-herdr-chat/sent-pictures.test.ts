@@ -11,8 +11,9 @@ const inline = (id: string, data: string) => ({
 
 function rig(names: string[] = []) {
     const io = {
-        copy: vi.fn(async (path: string) => `thumbs/${path.length}.png`),
+        home: '/app',
         list: vi.fn(async () => names),
+        thumb: vi.fn(async (path: string) => `thumbs/${path.length}.png`),
         write: vi.fn(async (_rel: string, _bytes: Uint8Array) => true),
     };
     return { io, sent: createSentPictures(io) };
@@ -37,7 +38,11 @@ describe('each sent picture gets one file image() can draw (FRM-638 slice 5)', (
         const picture = inline('u-1-0', 'TWFu');
         expect(sent.relOf(picture)).toBeNull();
         expect(await sent.make([picture])).toBe(true);
-        expect(sent.relOf(picture)).toBe(`${SENT_DIR}/u-1-0.jpg`);
+        expect(sent.pathOf(picture)).toBe(`/app/${SENT_DIR}/u-1-0.jpg`);
+        expect(io.thumb).toHaveBeenCalledWith(`/app/${SENT_DIR}/u-1-0.jpg`);
+        expect(sent.relOf(picture)).toBe(
+            `thumbs/${`/app/${SENT_DIR}/u-1-0.jpg`.length}.png`,
+        );
         expect(await sent.make([picture])).toBe(false);
         expect(io.write).toHaveBeenCalledTimes(1);
         expect([...(io.write.mock.calls[0]?.[1] ?? [])]).toEqual([77, 97, 110]);
@@ -47,10 +52,12 @@ describe('each sent picture gets one file image() can draw (FRM-638 slice 5)', (
         const { io, sent } = rig(['u-1-0.jpg']);
         await sent.make([inline('u-1-0', 'TWFu')]);
         expect(io.write).not.toHaveBeenCalled();
-        expect(sent.relOf(inline('u-1-0', ''))).toBe(`${SENT_DIR}/u-1-0.jpg`);
+        expect(sent.pathOf(inline('u-1-0', ''))).toBe(
+            `/app/${SENT_DIR}/u-1-0.jpg`,
+        );
     });
 
-    test('a picture sent by path gets a scaled copy', async () => {
+    test('a picture sent by path gets its square from the file itself', async () => {
         const { io, sent } = rig();
         const picture = {
             data: null,
@@ -59,8 +66,9 @@ describe('each sent picture gets one file image() can draw (FRM-638 slice 5)', (
             path: '/a.png',
         };
         await sent.make([picture]);
-        expect(io.copy).toHaveBeenCalledWith('/a.png');
+        expect(io.thumb).toHaveBeenCalledWith('/a.png');
         expect(sent.relOf(picture)).toBe('thumbs/6.png');
+        expect(sent.pathOf(picture)).toBe('/a.png');
     });
 
     test('a write that fails leaves the picture undrawn, and the next one still made', async () => {

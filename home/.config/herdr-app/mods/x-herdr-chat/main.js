@@ -83,7 +83,6 @@ import {
 } from './effort.js';
 import {
     fileAt,
-    isPicture,
     openArgs,
     replyIdOf,
     unlinkFiles,
@@ -128,8 +127,8 @@ import {
     loadShots,
     readClipboard,
     saveFileShot,
-    saveLinkThumb,
     saveShots,
+    saveSquareThumb,
     viewCopy,
 } from './shots.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
@@ -223,15 +222,8 @@ const SETTINGS_FILE = '.claude/shelf/herdr-settings/settings.json';
 const SEND_SIZE = 28;
 // a picture waiting over the quill, and how long a paste's «nothing there» note stays
 const THUMB_SIZE = 56;
-// a picture his message sent, under his words; a picture a reply names, in its file row
+// a picture his message sent or a reply names, a square under the words
 const SENT_THUMB = 96;
-const FILE_THUMB = 40;
-
-/** a reply's file row that names a picture, as one @param {Row} row @returns {import('./row-model.js').Picture | null} */
-const filePicture = (row) =>
-    row.kind === 'file' && row.path && isPicture(row.path)
-        ? { data: null, id: row.id, media: null, path: row.path }
-        : null;
 const PASTE_NOTE_MS = 6000;
 const NO_IMAGE = 'No image on the clipboard';
 /** @type {import('./attachments.js').AttachmentsIo} */
@@ -247,8 +239,11 @@ const ATTACH_IO = {
 };
 /** @type {import('./sent-pictures.js').SentIo} */
 const SENT_IO = {
-    copy: async (path) => (await saveLinkThumb(path))?.rel ?? null,
+    get home() {
+        return appHome();
+    },
     list: () => readdir(`${appHome()}/${SENT_DIR}`).catch(() => []),
+    thumb: saveSquareThumb,
     write: async (rel, bytes) => {
         try {
             await mkdir(`${appHome()}/${SENT_DIR}`, { recursive: true });
@@ -548,6 +543,7 @@ export default class Chat extends View {
     isPickOpen = false;
     /** a picture's open button starts CleanShot's annotate, else Preview (`chatter.pictures.cleanshot`) */
     isCleanShot = true;
+    isCmdHeld = false;
     /** the effort slider while the picker is open @type {import('./effort.js').EffortPopover | null} */
     effortPop = null;
     /** a model switch waiting on his yes: it drops the thread's cache @type {string | null} */
@@ -716,10 +712,13 @@ export default class Chat extends View {
         this.quillAsk = acts.lastQuill;
         this.effortAsk = acts.lastEffort;
         this.wasShown = isShown;
-        if (acts.isFocus)
+        if (acts.isFocus && !this.viewer)
             _cx.timer.after(50, () => {
                 if (!this.isPickOpen) this.box?.focus();
             });
+        // the open viewer holds the keyboard: a click on the list or a later focus of the quill never keeps it
+        if (this.viewer && !this.viewerKeys?.is_focused())
+            _cx.timer.after(0, () => this.viewerKeys?.focus());
         if (acts.isEffort)
             _cx.timer.after(0, (later) => {
                 const isOpening = !this.isPickOpen;
@@ -752,6 +751,10 @@ export default class Chat extends View {
         const root = v_flex()
             .size_full()
             .min_h(0)
+            // ⌘ held at a click on a picture opens it in his desktop app, not the viewer
+            .on_modifiers_changed((e) => {
+                this.isCmdHeld = Boolean(e.modifiers.platform);
+            })
             .bg(t.background)
             .text_color(t.foreground)
             .text_size(look.size)
@@ -831,6 +834,19 @@ export default class Chat extends View {
             .child(this.quill(this.box, t))
             .child(this.bar(drawn.bar, drawn.band.buttons, t))
             .when(Boolean(this.viewer), (el) => el.child(this.viewerView(t)));
+    }
+
+    /**
+     * a click on a picture: the viewer over the chat, or with ⌘ held his desktop app (CleanShot annotate by default)
+     * @param {string[]} files @param {number} at @param {Context} cx
+     */
+    showPictures(files, at, cx) {
+        const file = files[at];
+        if (this.isCmdHeld && file)
+            exec('open', pictureOpenArgs(file, this.isCleanShot)).catch(
+                () => {},
+            );
+        else this.openPictures(files, at, cx);
     }
 
     /**
@@ -924,7 +940,10 @@ export default class Chat extends View {
             .left(0)
             .size_full()
             .bg(tint(t.background, 'f2'))
-            .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
+            .on_mouse_down('left', (_e, cx) => {
+                cx.stop_propagation();
+                this.viewerKeys?.focus();
+            })
             .child(
                 h_flex()
                     .flex_none()
@@ -2225,7 +2244,7 @@ export default class Chat extends View {
                                   const pictures = waiting
                                       .map((w) => w.path)
                                       .filter(isImagePath);
-                                  this.openPictures(
+                                  this.showPictures(
                                       pictures,
                                       pictures.indexOf(path),
                                       cx,
@@ -2398,8 +2417,9 @@ export default class Chat extends View {
             .track_scroll(this.scroll)
             // a file row opens its file in its app, a png in Preview (FRM-587)
             .on_item_click((key, cx) => {
-                const pictures = this.picturesAt(rows, key);
-                if (pictures.length) return this.openPictures(pictures, 0, cx);
+                const opened = this.picturesAt(rows, key);
+                if (opened)
+                    return this.showPictures(opened.files, opened.at, cx);
                 const path = fileAt(rows, key);
                 if (path) exec('open', openArgs(path)).catch(() => {});
             })
@@ -2632,15 +2652,15 @@ export default class Chat extends View {
     }
 
     /**
-     * the pictures and files his message sent, under his words: a square per picture, a chip per file. no press or
-     * hover handler, one inside a list row blanks the whole list (herdr-app#894)
+     * the pictures and files a message carries: a square per picture, a chip per file; his on the right, a reply's on
+     * the left. no press or hover handler, one inside a list row blanks the whole list (herdr-app#894)
      * @param {Row} row @param {Theme} t
      */
     sentFiles(row, t) {
         return h_flex()
             .gap(6)
             .flex_wrap()
-            .justify_end()
+            .when(row.kind === 'mine', (el) => el.justify_end())
             .max_w(this.column())
             .children(
                 row.pictures.map((picture) => {
@@ -2695,6 +2715,7 @@ export default class Chat extends View {
      * @param {Row} row @param {Theme} t
      */
     fileRow(row, t) {
+        if (row.pictures.length) return this.sentFiles(row, t).cursor_pointer();
         return h_flex()
             .gap(6)
             .items_center()
@@ -2707,22 +2728,8 @@ export default class Chat extends View {
             .cursor_pointer()
             .text_size(12)
             .text_color(t.muted)
-            .child(this.fileIcon(row, t))
+            .child(ICONS.file)
             .child(div().truncate().child(row.text));
-    }
-
-    /** a picture's own small square once it is made, else its emoji @param {Row} row @param {Theme} t */
-    fileIcon(row, t) {
-        const picture = filePicture(row);
-        const rel = picture && this.sent.relOf(picture);
-        if (!rel) return picture ? ICONS.picture : ICONS.file;
-        return div()
-            .size(FILE_THUMB)
-            .flex_none()
-            .rounded(4)
-            .overflow_hidden()
-            .bg(t.raised)
-            .child(image(rel).size_full());
     }
 
     /**
@@ -3094,10 +3101,9 @@ export default class Chat extends View {
 
     /** his messages' pictures get their files; each row draws its own once made @param {Context} cx */
     makePictures(cx) {
-        const pictures = shownOf(this.model.rows, this.look).flatMap((r) => {
-            const picture = filePicture(r);
-            return picture ? [picture] : r.pictures;
-        });
+        const pictures = shownOf(this.model.rows, this.look).flatMap(
+            (r) => r.pictures,
+        );
         if (!pictures.some((p) => !this.sent.relOf(p))) return;
         cx.spawn(async (cx) => {
             if (await this.sent.make(pictures)) cx.notify();
@@ -3105,19 +3111,16 @@ export default class Chat extends View {
     }
 
     /**
-     * a click on a message with pictures, or on a reply's picture row: the pictures it opens, whole
-     * @param {readonly Row[]} rows @param {string} key @returns {string[]}
+     * a click on a message's or a reply's pictures: the pictures it opens, whole, the first shown; ← → reach the rest
+     * @param {readonly Row[]} rows @param {string} key @returns {{ files: string[], at: number } | null}
      */
     picturesAt(rows, key) {
         const row = rows.find(
             (r) => r.id === key.replace(/#(?:above|below)$/, ''),
         );
-        if (!row) return [];
-        if (filePicture(row)) return [row.path ?? ''];
-        return row.pictures.flatMap((p) => {
-            const rel = this.sent.relOf(p);
-            return p.path ? [p.path] : rel ? [`${appHome()}/${rel}`] : [];
-        });
+        if (!row) return null;
+        const files = row.pictures.flatMap((p) => this.sent.pathOf(p) ?? []);
+        return files.length ? { at: 0, files } : null;
     }
 
     /** @param {string} file @returns {string[]} */

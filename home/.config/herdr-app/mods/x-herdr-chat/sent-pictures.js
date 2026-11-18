@@ -1,5 +1,5 @@
-// the pictures his messages sent, as files under the app dir that image() can draw (FRM-638 slice 5): an inline one is
-// written once from its bytes as itself, a joined one by path gets a scaled copy. one owner for each picture's file.
+// the pictures a message carries, as files under the app dir that image() can draw (FRM-638 slice 5): an inline one is
+// written once from its bytes, and each gets a sharp square thumb. one owner for each picture's files.
 
 export const SENT_DIR = 'data/x-herdr-chat/sent';
 
@@ -38,27 +38,32 @@ export const sentName = (picture) =>
  * @typedef {object} SentIo
  * @property {() => Promise<string[]>} list the names already in SENT_DIR
  * @property {(rel: string, bytes: Uint8Array) => Promise<boolean>} write
- * @property {(path: string) => Promise<string | null>} copy a picture by path, scaled, under the app dir
+ * @property {(path: string) => Promise<string | null>} thumb a picture's square under the app dir, by its path
+ * @property {string} home the app dir
  */
 
 /** @param {SentIo} io */
 export function createSentPictures(io) {
-    /** @type {Map<string, string>} picture id → its file under the app dir */
+    /** @type {Map<string, string>} picture id → its square under the app dir */
     const ready = new Map();
+    /** @type {Map<string, string>} an inline picture's id → its whole file */
+    const whole = new Map();
     /** @type {Set<string>} */
     const making = new Set();
     /** @type {Promise<Set<string>> | null} */
     let written = null;
 
-    /** @param {import('./row-model.js').Picture} picture @returns {Promise<string | null>} */
-    async function fileOf(picture) {
-        if (picture.path) return io.copy(picture.path);
+    /** @param {import('./row-model.js').Picture} picture @returns {Promise<string | null>} the whole picture's path */
+    async function wholeOf(picture) {
+        if (picture.path) return picture.path;
         if (!picture.data) return null;
         const name = sentName(picture);
         const rel = `${SENT_DIR}/${name}`;
         written ??= io.list().then((names) => new Set(names));
-        if ((await written).has(name)) return rel;
-        return (await io.write(rel, decodeBase64(picture.data))) ? rel : null;
+        const isThere =
+            (await written).has(name) ||
+            (await io.write(rel, decodeBase64(picture.data)));
+        return isThere ? `${io.home}/${rel}` : null;
     }
 
     return {
@@ -74,7 +79,9 @@ export function createSentPictures(io) {
             for (const p of todo) making.add(p.id);
             let isNew = false;
             for (const picture of todo) {
-                const rel = await fileOf(picture).catch(() => null);
+                const path = await wholeOf(picture).catch(() => null);
+                if (path && !picture.path) whole.set(picture.id, path);
+                const rel = path && (await io.thumb(path).catch(() => null));
                 if (rel) {
                     ready.set(picture.id, rel);
                     isNew = true;
@@ -82,7 +89,9 @@ export function createSentPictures(io) {
             }
             return isNew;
         },
-        /** a picture's file, null until it is made @param {import('./row-model.js').Picture} picture */
+        /** the whole picture, for the viewer and the desktop app @param {import('./row-model.js').Picture} picture */
+        pathOf: (picture) => picture.path ?? whole.get(picture.id) ?? null,
+        /** a picture's square, null until it is made @param {import('./row-model.js').Picture} picture */
         relOf: (picture) => ready.get(picture.id) ?? null,
     };
 }
