@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -92,5 +93,25 @@ func TestModsEditDriftRefusalNamesTheCopyBeforeOver(t *testing.T) {
 
 	if got.code == 0 || !strings.Contains(got.stdout, "copy "+copied+" aside") || got.next != "x mods edit pull --over "+modTestA {
 		t.Errorf("exit %d, next %q\n%s", got.code, got.next, got.stdout)
+	}
+}
+
+// a file gone from the repo leaves no base behind its re-pull, so the new copy lands as a new file
+func TestModsEditPullOverOfAGoneFileDropsItsBase(t *testing.T) {
+	t.Parallel()
+	dir, env := modsFixture(t)
+	copied := pullCopy(t, dir, env, modTestA)
+	write(t, copied, "green, edited\n")
+	if err := os.Remove(filepath.Join(dir, modTestA)); err != nil {
+		t.Fatal(err)
+	}
+
+	if got := xIn(t, dir, env, "mods", "edit", "pull", "--over", modTestA); got.code != 0 {
+		t.Fatalf("exit %d\n%s", got.code, got.stdout)
+	}
+	write(t, copied, "green, new again\n")
+
+	if got := xIn(t, dir, env, "mods", "edit", "push"); got.code != 0 || readFile(t, filepath.Join(dir, modTestA)) != "green, new again\n" {
+		t.Errorf("a stale base refused the new file: exit %d\n%s", got.code, got.stdout)
 	}
 }

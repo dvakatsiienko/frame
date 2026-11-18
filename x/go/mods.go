@@ -101,7 +101,7 @@ func modsEditPull(r *Run, args []string, flags Flags) (any, error) {
 				}
 			} else if err := os.MkdirAll(filepath.Dir(to), 0o755); err != nil {
 				return "", err
-			} else if err := os.Remove(to); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			} else if err := errors.Join(removeIfThere(to), removeIfThere(filepath.Join(scratch, scratchBase, path))); err != nil {
 				return "", err
 			}
 			if !slices.Contains(pulled, path) {
@@ -752,6 +752,13 @@ func touchedMods(paths []string) []string {
 		}
 	}
 	return mods
+}
+
+func removeIfThere(path string) error {
+	if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	return nil
 }
 
 // a pull --over drops the edit, so a drift refusal says where the edit sits before it sends there
