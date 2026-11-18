@@ -394,6 +394,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and Enter steps to the next older hit, ⇧Enter to the newer, wrapping; ↑ ↓ buttons do the same
   - and Esc or ✕ closes the bar and gives the keyboard back to the quill; a thread switch closes it
   - decision: it searches the rows loaded so far, never pages further up
+  - and every matched message is tinted in his accent, the one shown in a stronger tint with an accent border; the whole message, never the word: herdr's text view takes no CSS (dima, 17:34)
 - ⬜ the new chat's / menu lists commands and every skill (x-herdr-chat, FRM-638 slice 6)
   - given the quill holds «/» at its start, or after a space or a line break, and part of a name
   - then a list over the quill shows Claude Code's commands, the thread's skills and its plugins' skills, filtered as he types

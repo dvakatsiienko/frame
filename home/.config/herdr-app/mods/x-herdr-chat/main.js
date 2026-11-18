@@ -2669,6 +2669,15 @@ export default class Chat extends View {
      *   words, laid over the shown ones, flicker into his selection as he scrolls (dima, 13:51)
      */
     row(row, t, pre, isShown = true) {
+        const { hits, isOpen } = this.find.state;
+        const base = row.id.replace(/#.*$/, '');
+        const hit = !isOpen
+            ? null
+            : this.find.current() === row.id
+              ? 'current'
+              : hits.includes(row.id) || hits.includes(base)
+                ? 'match'
+                : null;
         const column = (/** @type {import('gpui-kit').Element} */ el) =>
             h_flex()
                 .w_full()
@@ -2679,6 +2688,16 @@ export default class Chat extends View {
                         .max_w(this.column() + 36)
                         .px(18)
                         .py(ROW_PAD[this.look.space] ?? ROW_PAD.normal)
+                        .rounded(10)
+                        .border(2)
+                        .border_color(tint(t.background, '00'))
+                        // find marks every row it matched, the one shown in his accent (dima, 17:34)
+                        .when(hit === 'match', (e) =>
+                            e.bg(tint(t.accent, '1f')),
+                        )
+                        .when(hit === 'current', (e) =>
+                            e.bg(tint(t.accent, '38')).border_color(t.accent),
+                        )
                         .child(el),
                 );
         if (row.kind === 'file') return column(this.fileRow(row, t));
