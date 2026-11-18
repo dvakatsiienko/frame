@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { toolchainSync } from './toolchain-sync.ts';
+import { type Deps, toolchainSync } from './toolchain-sync.ts';
 
 const apps = ['cv', 'financial', 'trophy-sys'];
 let root = '';
@@ -70,7 +70,12 @@ const deps = (
     nodeMajor: string,
     readVercel: () => Record<string, string>,
     install = vi.fn(),
+    fnm: Deps['fnm'] = {
+        installed: () => ({ default: 'v26.13.1', versions: ['v26.13.1'] }),
+        uninstall: vi.fn(),
+    },
 ) => ({
+    fnm,
     install,
     nodeMajor,
     pnpmVersion: '11.0.0',
@@ -179,5 +184,52 @@ describe('--check', () => {
             expect(console.log).toHaveBeenCalledWith(
                 expect.stringContaining(part),
             );
+    });
+});
+
+describe('prune old fnm nodes', () => {
+    const fnm = (uninstall: Deps['fnm']['uninstall']): Deps['fnm'] => ({
+        installed: () => ({
+            default: 'v26.13.1',
+            versions: ['v22.23.1', 'v26.13.0', 'v26.13.1'],
+        }),
+        uninstall,
+    });
+
+    it('the write path uninstalls every version but the default, --check only says it would', () => {
+        const uninstall = vi.fn();
+
+        toolchainSync(
+            true,
+            deps('26', () => allOn('26'), vi.fn(), fnm(uninstall)),
+        );
+        expect(uninstall).not.toHaveBeenCalled();
+        expect(console.log).toHaveBeenCalledWith(
+            expect.stringContaining('would remove v22.23.1'),
+        );
+
+        toolchainSync(
+            false,
+            deps('26', () => allOn('26'), vi.fn(), fnm(uninstall)),
+        );
+        expect(uninstall.mock.calls).toEqual([['v22.23.1'], ['v26.13.0']]);
+    });
+
+    it('removes nothing when no installed version is the default', () => {
+        const uninstall = vi.fn();
+        const noDefault: Deps['fnm'] = {
+            installed: () => ({
+                default: '',
+                versions: ['v22.23.1', 'v26.13.0'],
+            }),
+            uninstall,
+        };
+
+        toolchainSync(
+            false,
+            deps('26', () => allOn('26'), vi.fn(), noDefault),
+        );
+
+        expect(uninstall).not.toHaveBeenCalled();
     });
 });

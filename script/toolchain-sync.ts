@@ -4,7 +4,8 @@
  * installed), `packageManager`, `engines`, `devEngines.runtime` and trophy-sys's two
  * node pins in bytes. Renovate is told to leave those alone.
  * `--check` reports drift and exits 1, and also reads each Vercel project's node version
- * (the logged-in vercel cli); without it the files are rewritten and each lockfile refreshed.
+ * (the logged-in vercel cli); without it the files are rewritten and each lockfile refreshed,
+ * and every fnm node but the default is uninstalled (`--check` only says which).
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -141,7 +142,30 @@ export function toolchainSync(check: boolean, deps: Deps) {
         for (const write of writes) write();
         deps.install(repo);
     }
+    // the default is the one node fnm keeps; with none named among the installed, nothing is known safe and nothing goes
+    const { default: keep, versions } = deps.fnm.installed();
+    for (const version of keep && versions.includes(keep)
+        ? versions.filter((v) => v !== keep)
+        : []) {
+        if (!check) deps.fnm.uninstall(version);
+        console.log(`fnm: ${check ? 'would remove' : 'removed'} ${version}`);
+    }
     return check && drift > 0 ? 1 : 0;
+}
+
+// `fnm list` prints `* v26.13.1 default`, one row per node and `* system`; no fnm reads as nothing installed
+function readFnm() {
+    const list = spawnSync('fnm', ['list'], { encoding: 'utf8' });
+    const rows = (list.stdout ?? '').split('\n').flatMap((row) => {
+        const match = row.match(/^\*?\s*(v\d[\w.-]*)(\s+default)?\b/);
+        return match?.[1]
+            ? [{ isDefault: Boolean(match[2]), version: match[1] }]
+            : [];
+    });
+    return {
+        default: rows.find((row) => row.isDefault)?.version ?? '',
+        versions: rows.map((row) => row.version),
+    };
 }
 
 // `vercel project ls` prints one row per project, its node version the last column; the cli writes the table to stderr
@@ -171,6 +195,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     }).trim();
     process.exit(
         toolchainSync(process.argv.includes('--check'), {
+            fnm: {
+                installed: readFnm,
+                uninstall: (version) =>
+                    execFileSync('fnm', ['uninstall', version], {
+                        stdio: 'inherit',
+                    }),
+            },
             // a pin bump alone reds ci's frozen install; CI=1 keeps the hook shims where they are
             install: (repo) =>
                 execFileSync(
@@ -200,6 +231,11 @@ export interface Deps {
     install: (repo: string) => void;
     nodeMajor: string;
     pnpmVersion: string;
+    /** the fnm-installed node versions (`v26.13.1`, never `system`) and the default one; the removal of one */
+    fnm: {
+        installed: () => { default: string; versions: string[] };
+        uninstall: (version: string) => void;
+    };
     /** project name → node version like `26.x`; throws when the read fails */
     readVercel: () => Record<string, string>;
     repos: string[];
