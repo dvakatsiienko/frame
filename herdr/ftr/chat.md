@@ -403,6 +403,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then that reply shows its words with no `**`, backticks, fence lines, `#` or link addresses, its matches marked
   - and a query found only inside a link address counts no hit
   - decision: plain words, not rendered marks: rendered bold with word marks waits on herdr-app TextView highlight ranges (clio's upstream ask)
+- ⬜ wanted: find marks words inside the rendered reply, no flicker, its markdown kept, once [herdr-app#1231](https://github.com/herdrdev/herdr-app/issues/1231) ships (FRM-638:W131: plain words are accepted, not wanted)
 - ✅ older history loads as he scrolls up (x-herdr-chat, FRM-638 slice 6b)
   - given a thread longer than its first 4 MiB
   - when he scrolls to within a screen of the top, then the next older page draws above, and the row he reads stays at its spot on screen, no jump, no blank frame (dima, 19:19: pages loaded back to the boot prompt, his line held)

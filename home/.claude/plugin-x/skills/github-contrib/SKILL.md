@@ -102,7 +102,7 @@ ends with one footer line so the maintainer knows who typed it and that dima sta
     — printed by Claude Code, signed by me.
 
 his account carries the accountability, the footer carries the honesty. the text itself is
-written through `x:writing-for-humans` — load it before the first draft. the ask for his word links the final body file, and his
+written through `x:writing-for-humans` — load it before the first draft. the final body prints in the reply carrying the ask for his word, and his
 tick posts exactly that text, no pass after it (his o1, 2026-11-18: three posts went out he never read). never a `[bot]`
 impersonation, never silent. outside our repos, and in job work, the text
 names no fleet member: it says «the agent» or «a review». inside our own repos the app identities (`x-codie-cc`,

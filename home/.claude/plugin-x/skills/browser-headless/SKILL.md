@@ -67,7 +67,7 @@ agent-browser --cdp 9333 <verb>
 - `fleet-chrome:start` (`script/fleet-chrome-start.sh`) is the door after a reboot: it starts the Chrome only when `curl -sf http://127.0.0.1:9333/json/version` says it is down, waits up to 15 s for the port, never touches a running one
 - a sign-in there is dima's hand, once per site, kept by the profile
 - a page read there is closed the turn its read lands (`curl -sf http://127.0.0.1:9333/json/close/<id>`): a billing tab left open burned ~90 % CPU for 6 h (2026-11-18)
-- never its last tab: open `about:blank` first (`curl -sf -X PUT 'http://127.0.0.1:9333/json/new?about:blank'`); a last-tab close quits the Chrome, and a site that signs in with a session cookie (macroscope) asks his sign-in again (2026-11-18)
+- never its last tab: open `about:blank` first (`curl -sf -X PUT 'http://127.0.0.1:9333/json/new?about:blank'`); a last-tab close quits the Chrome and the port with it (2026-11-18; macroscope's sign-in cookies are persistent in the profile, its 11-18 sign-out cause unknown)
 
 ## hazards — measured on a chart app, 2026-09-03
 
