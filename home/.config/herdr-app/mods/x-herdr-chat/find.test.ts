@@ -106,3 +106,30 @@ describe('the stepped row reads clean, no markdown marks (dima o14)', () => {
         ]);
     });
 });
+
+describe('find over history as pages land (FRM-638 slice 6b)', () => {
+    test('a page above re-counts the hits and keeps the stepped one', () => {
+        const find = createFind();
+        find.open();
+        find.search(rows, 'viewer');
+        find.step('older');
+        expect(find.current()).toBe('c');
+        find.recount([
+            row('o1', 'an old viewer'),
+            row('o2', 'viewer, older'),
+            ...rows,
+        ]);
+        expect(find.current()).toBe('c');
+        expect(findCount(find.state)).toBe('2 / 5');
+    });
+
+    test('with no query or no hit left, a recount shows the newest', () => {
+        const find = createFind();
+        find.search(rows, '');
+        find.recount(rows);
+        expect(findCount(find.state)).toBe('');
+        find.search(rows, 'viewer');
+        find.recount([row('x', 'nothing')]);
+        expect(findCount(find.state)).toBe('No match');
+    });
+});

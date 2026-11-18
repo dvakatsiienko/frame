@@ -17,7 +17,8 @@ import {
 /**
  * @typedef {object} Row
  * @property {string} id the uuid of the row's first transcript line
- * @property {'mine' | 'reply' | 'tool' | 'file'} kind `file`: a file a reply names, drawn under it (files.js)
+ * @property {'mine' | 'reply' | 'tool' | 'file' | 'start'} kind `file`: a file a reply names, drawn under it (files.js);
+ *   `start`: the quiet row over a thread read back to its first line
  * @property {string} [path] a file row's file
  * @property {string} text his words, the reply's markdown, or the line naming a run of tool calls
  * @property {string | null} at when its line was written, as the transcript stamps it
