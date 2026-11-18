@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-18T19:51:00Z'
+updated_date: '2026-11-18T20:41:00Z'
 labels:
   - s
   - clio-wing-1
@@ -24,7 +24,7 @@ ordinal: 1001
 - [ ] #6 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
 - [ ] #7 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
 - [ ] #8 f27 refreshes on his word: refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2 (his plan)
-- [ ] #9 f36 ⏳ FRM-555 follow-up with the mods codie: its profile of a quiet row, then the fix with measured gains to main — waits for: FRM-555
+- [ ] #9 f37 ⏳ FRM-555 fix 3 (live idle cpu): the mods codie's measure, then chunk or drop — waits for: FRM-555
 - [ ] #10 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
 - [ ] #11 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
 - [ ] #12 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
@@ -703,4 +703,8 @@ done 2026-11-18 21:17: f29 💤 FRM-650 measuring, one solution: the shape-idea 
 21:17: the 💤 later lines re-added with 🦥 (dima 21:04, one emoji with the snoozed label), their text unchanged
 
 21:24: the five «done 21:17» lines above are moves, not done: f15 → f31, f16 → f32, f17 → f33, f21 → f34, f29 → f35, the 🦥 prefix swap (wishkeeper's catch)
+
+done 2026-11-18 22:41: f36 ⏳ FRM-555 follow-up with the mods codie: its profile of a quiet row, then the fix with measured gains to main — waits for: FRM-555 (FRM-555 In Progress)
+
+22:41: f36 is reworded, not done: fixes 1–2 dropped on wing 1's verdict, the harness half went upstream (#106740), only fix 3's measure is open
 <!-- SECTION:NOTES:END -->
