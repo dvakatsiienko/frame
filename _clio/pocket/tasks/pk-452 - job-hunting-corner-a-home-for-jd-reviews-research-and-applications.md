@@ -4,7 +4,7 @@ title: 'job hunting corner: a home for jd reviews, research and applications'
 status: open
 assignee: []
 created_date: '2026-11-18T14:16:00Z'
-updated_date: '2026-11-18T14:17:00Z'
+updated_date: '2026-11-18T14:35:00Z'
 labels:
   - m
   - clio-wing-1
@@ -62,4 +62,12 @@ side question: /Users/dima/projects/cw/migration-job ← can you look here? it i
 	- all search history and job application history must be logged - what j'ds we reviwed, research results (efficiently colocated and organized), my verdicts, decisions, log where i appiled to.
 	- so we keep track of my application progress, and research data about jds and places i apply to - so we do not research same stuff twise.
 	- propose efficienly organized job hunting corner for me.
+
+PK-452:W11 (2026-11-18 16:33, dima, o14 steer): shape it now; i want to solve this topic
+PK-452:W12 (2026-11-18 16:33, dima): another source: /Users/dima/projects/cw/migration-job-global, the export of the job part of my global cw memory; /Users/dima/projects/cw/migration-job is the project-only memory; all of these memories are a little stale and can duplicate each other
+PK-452:W13 (2026-11-18 16:33, dima): find a good spot in the system for job hunting sessions: i start a cc thread (possibly via a skill?) fully dedicated to this format: i seek job postings and send you links and my thoughts; you verify, research and help me gather data, match the JD against my wants, filter out obviously crap companies and JDs and archaic, old, ugly projects, and help me actually apply: drafting messages, etc. ❓
+PK-452:W14 (2026-11-18 16:33, dima): how to research? a full research per JD is probably too much, because i can often send you ~20 JDs a day; how do we pick a good balance for job hunting sessions? ❓
+PK-452:W15 (2026-11-18 16:33, dima): every research is logged, in a very good format: every single place i already applied to, plus the time last peeked at, the time last searched, the comms with each company (my applications, or a data log if the comms went further than applying), and the hiring progress history
+PK-452:W16 (2026-11-18 16:33, dima): everything is a durable record: if i tell you i am on step 2 of the hr process, the next spawn knows it
+PK-452:W17 (2026-11-18 16:33, dima): you can also do job hunting with me; i plan to run the flow with you the first few times, since you know the system and what i do best; we sharpen the flow, then i can run a dedicated clean cc there, without you
 <!-- SECTION:NOTES:END -->
