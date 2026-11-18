@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-18T13:41:00Z'
+updated_date: '2026-11-18T19:20:00Z'
 labels:
   - s
   - clio-main
@@ -19,8 +19,8 @@ ordinal: 1000
 - [ ] #1 f12 helga grooms the day’s grill W-lines: prompt-groom.ts --linear 51 reds to 0
 - [ ] #2 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
 - [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #4 f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #5 f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #4 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #5 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1097,4 +1097,8 @@ PK-349:W1191 (2026-11-18 13:14, dima): say «in quill» where the steps mean the
 PK-349:W1192 (2026-11-18 14:33, dima): print dates bold, in the emoji set from 16 Nov
 
 15:41 dima's standing plan for main, until he changes it (15:13, narrowed 15:28): 1) lead both lanes closely, no member blocked or parked idle 20 min; 2) a look card goes to orbit right away, with clean how-and-where-to-test steps; 3) I close my mechanical tails myself, no stashing, an orbit ask only when I need him; 4) a probe or test need is asked at once, what and how first, then the place opened; codies post their own such asks; 5) anyone blocked or with a question → an orbit ask to him; 6) the stray lane helps when needed, wing 1 may use it; 7) otherwise stay parked, collect no tail debt. 15:28: orbit clean, a test ask only when ready to test, never during a fix round. wing 1 is his; he steers it himself.
+
+done 2026-11-18 21:20: f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move (FRM-368 Todo)
+
+done 2026-11-18 21:20: f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- SECTION:NOTES:END -->
