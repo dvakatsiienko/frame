@@ -54,6 +54,7 @@ dima's words:
 - **every feature gets its settings row**, the essential knobs only, in one clean settings surface
 - **slipstream first** wherever he talks to a thread: a send that joins the next turn before a send that starts one, each with visible feedback
 - **cheap to modify stays cheap**: one mod per feature, plain JS, no clever layers
+- **one owner per fact, from the first build**: each piece of state (the quill's text, a pick, an ask's press) has one tested writer, designed in, never retrofitted (dima, 2026-11-18 12:41: «i want properly built features»)
 - **his window is a set of parts he places**: one block, one mod; moving a part is a layout edit, never a build (HRD-0001)
 - **his window is a set of parts he places: moving one is a layout edit, never a build** (dima's o65, 2026-11-13: he juggles blocks a lot while the parts are raw)
   - one block, one mod: each part he sees (antenna, glide, orbit, the chat) is its own mod, drawn whole in whatever block holds it; where it sits is the layout json's alone
