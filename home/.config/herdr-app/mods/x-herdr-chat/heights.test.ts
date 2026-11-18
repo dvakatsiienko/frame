@@ -120,3 +120,26 @@ describe('the guess before a row is measured', () => {
         expect(guessHeight(tool, 300)).toBe(guessHeight(tool, 900));
     });
 });
+
+describe('a row drawn another way is measured apart: find’s word marks never jump the list (FRM-638 slice 6, dima 17:51)', () => {
+    test('its marked height is its own, beside the plain one', () => {
+        const heights = createHeights();
+        const plain = row('a');
+        const marked = { ...plain, look: 'find:tool' };
+        heights.record(plain, 120);
+        expect(heights.has(marked)).toBe(false);
+        expect(heights.toMeasure([marked], null)).toEqual([marked]);
+        heights.record(marked, 150);
+        expect(heights.has(marked)).toBe(true);
+        expect(heights.sizes([marked], guess)).toEqual([150]);
+        expect(heights.sizes([plain], guess)).toEqual([120]);
+    });
+
+    test('until the marked height is known the row keeps its plain one', () => {
+        const heights = createHeights();
+        heights.record(row('a'), 120);
+        expect(heights.sizes([{ ...row('a'), look: 'find:x' }], guess)).toEqual(
+            [120],
+        );
+    });
+});

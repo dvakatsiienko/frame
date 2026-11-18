@@ -92,11 +92,6 @@ import {
     withFileRows,
 } from './files.js';
 import { FIND_SETTLE_MS, createFind, findCount, findSpans } from './find.js';
-
-// the word marks probe (dima, 17:46): while find is open a matched message draws as plain words with each match
-// marked, its markdown styling off until find closes. false puts back the whole-message tint
-const FIND_WORDS = true;
-
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
@@ -904,7 +899,6 @@ export default class Chat extends View {
                             .on_click(() => closeOverlay(overlay)),
                     ),
             );
-        if (this.find.state.isOpen) root.child(this.findBar(t));
         if (rows.length) {
             if (this.error)
                 root.child(
@@ -949,12 +943,18 @@ export default class Chat extends View {
         if (this.askModel) root.child(this.modelConfirm(this.askModel, t));
         const drawn = this.drawnNow(Date.now());
         this.bandKey = JSON.stringify(drawn);
-        return root
-            .relative()
-            .child(this.band(drawn.band, t))
-            .child(this.quill(this.box, t))
-            .child(this.bar(drawn.bar, drawn.band.buttons, t))
-            .when(Boolean(this.viewer), (el) => el.child(this.viewerView(t)));
+        return (
+            root
+                .relative()
+                .child(this.band(drawn.band, t))
+                .child(this.quill(this.box, t))
+                .child(this.bar(drawn.bar, drawn.band.buttons, t))
+                // find floats over the list, so opening it moves no message (dima, 18:39)
+                .when(this.find.state.isOpen, (el) => el.child(this.findBar(t)))
+                .when(Boolean(this.viewer), (el) =>
+                    el.child(this.viewerView(t)),
+                )
+        );
     }
 
     /**
@@ -2540,7 +2540,8 @@ export default class Chat extends View {
      */
     list(rows, t, cx) {
         const zoom = Number(settings().zoom) || 1;
-        const sizes = this.heights.sizes(rows, (row) =>
+        const booked = this.booked(rows);
+        const sizes = this.heights.sizes(booked, (row) =>
             guessHeight(row, Math.min(this.width || NARROW, this.column())),
         );
         this.sizes = sizes;
@@ -2661,7 +2662,7 @@ export default class Chat extends View {
                 if (step.hadCut || step.isFollowChanged) cx.notify();
             })
             .child(list)
-            .child(this.measurer(rows, t, `m${this.widthGen}-`))
+            .child(this.measurer(booked, t, `m${this.widthGen}-`))
             .when(!this.at.follow, (el) =>
                 el.child(
                     div()
@@ -2690,7 +2691,7 @@ export default class Chat extends View {
 
     /**
      * rows drawn out of sight at the list's width, so each one's real height reaches the height book
-     * @param {readonly Row[]} rows
+     * @param {readonly (Row & { look?: string })[]} rows
      * @param {Theme} t
      * @param {string} pre
      */
@@ -2709,7 +2710,9 @@ export default class Chat extends View {
                     .children(
                         this.heights.toMeasure(rows, this.at.range).map((row) =>
                             div()
-                                .id(`${pre}${row.id}@${row.version}`)
+                                .id(
+                                    `${pre}${row.id}@${row.version}${row.look ?? ''}`,
+                                )
                                 .flex_none()
                                 .w_full()
                                 .on_size_change((size, cx) => {
@@ -2753,8 +2756,7 @@ export default class Chat extends View {
             ? null
             : this.find.current() === row.id
               ? 'current'
-              : !FIND_WORDS &&
-                  hits.some((h) => h.id === row.id || h.id === base)
+              : hits.some((h) => h.id === row.id || h.id === base)
                 ? 'match'
                 : null;
         const column = (/** @type {import('gpui-kit').Element} */ el) =>
@@ -2814,7 +2816,7 @@ export default class Chat extends View {
                                 )
                                 .when(row.isWaiting, (el) => el.opacity(0.6))
                                 .child(
-                                    this.markedText(row, t) ??
+                                    this.markedText(row, t, isShown) ??
                                         TextView.markdown(
                                             id,
                                             typedMarkdown(row.text),
@@ -2839,11 +2841,11 @@ export default class Chat extends View {
                         .gap(8)
                         .rounded(12)
                         .bg(t.raised)
-                        .when(Boolean(this.markedText(row, t)), (el) =>
-                            el.child(this.markedText(row, t) ?? ''),
+                        .when(Boolean(this.markedText(row, t, isShown)), (el) =>
+                            el.child(this.markedText(row, t, isShown) ?? ''),
                         )
                         .children(
-                            (this.markedText(row, t)
+                            (this.markedText(row, t, isShown)
                                 ? []
                                 : splitBlocks(unlinkFiles(row.text))
                             ).map((block, i) =>
@@ -3475,15 +3477,16 @@ export default class Chat extends View {
                 .tooltip(hint)
                 .on_click((_e, cx) => act(cx))
                 .child(glyph);
-        // the count and the steps sit on a pill, as the picture viewer's tools do (dima, 18:12)
-        const pill = h_flex()
+        // the count and the steps sit beside his query on one pill, as the picture viewer's tools do (dima, 18:12)
+        // the tools sit on a pill of their own inside the bar, apart from his query (dima, 18:46)
+        const steps = h_flex()
             .flex_none()
-            .px(8)
-            .py(4)
+            .px(4)
+            .py(2)
             .gap(2)
             .items_center()
             .rounded_full()
-            .bg(t.raised)
+            .bg(t.background)
             .border(1)
             .border_color(t.border)
             .when(Boolean(count), (el) =>
@@ -3507,38 +3510,49 @@ export default class Chat extends View {
                     this.closeFind(cx),
                 ),
             );
-        return h_flex()
-            .id('chat-find')
-            .key_context('ChatFind')
-            .on_action('x_herdr_chat_find_close', (_e, cx) =>
-                this.closeFind(cx),
-            )
-            .on_action('x_herdr_chat_find_newer', (_e, cx) =>
-                this.showHit(this.find.step('newer'), cx),
-            )
-            .on_action('x_herdr_chat_find_older', (_e, cx) =>
-                this.showHit(this.find.step('older'), cx),
-            )
-            .flex_none()
-            .w_full()
-            .px(18)
-            .py(6)
-            .gap(6)
-            .items_center()
-            .border_b(1)
-            .border_color(t.border)
-            .child(
-                div()
-                    .flex_1()
-                    .child(
-                        Input.new(
-                            /** @type {import('gpui-base').InputState} */ (
-                                this.findBox
+        return (
+            h_flex()
+                .id('chat-find')
+                .key_context('ChatFind')
+                .on_action('x_herdr_chat_find_close', (_e, cx) =>
+                    this.closeFind(cx),
+                )
+                .on_action('x_herdr_chat_find_newer', (_e, cx) =>
+                    this.showHit(this.find.step('newer'), cx),
+                )
+                .on_action('x_herdr_chat_find_older', (_e, cx) =>
+                    this.showHit(this.find.step('older'), cx),
+                )
+                .absolute()
+                .top(10)
+                .right(20)
+                .w(460)
+                .pl(14)
+                .pr(8)
+                .py(4)
+                .gap(6)
+                .items_center()
+                .rounded_full()
+                // lifted off the chat: the popover surface, an accent edge and a shadow (dima, 18:46: «blended with the chat»)
+                .bg(t.popover)
+                .border(1)
+                .border_color(tint(t.accent, '66'))
+                .shadow_lg()
+                // a press on the bar stays on it: the list under it never takes the click
+                .on_mouse_down('left', (_e, cx) => cx.stop_propagation())
+                .child(
+                    div()
+                        .flex_1()
+                        .child(
+                            Input.new(
+                                /** @type {import('gpui-base').InputState} */ (
+                                    this.findBox
+                                ),
                             ),
                         ),
-                    ),
-            )
-            .child(pill);
+                )
+                .child(steps)
+        );
     }
 
     /** the thread's skill listing, wherever its line is read: the tail or an earlier page @param {string[]} lines */
@@ -3555,14 +3569,36 @@ export default class Chat extends View {
     }
 
     /**
-     * the word marks probe: a matched message as plain words, every match in a soft accent, the stepped one in full
-     * accent; null when find is closed or the row holds no match
+     * how a row draws when not plain: find's word marks over the stepped row only, keyed by the query; every other
+     * match keeps its markdown under a tint, since a marked row loses its bold and reflows (dima's o2, 18:46)
+     * @param {Row} row
+     */
+    lookOf(row) {
+        const { isOpen, q } = this.find.state;
+        return isOpen && this.find.current() === row.id
+            ? `find:${q}`
+            : undefined;
+    }
+
+    /** the rows as the height book keys them: a row drawn another way is measured apart @param {readonly Row[]} rows */
+    booked(rows) {
+        return rows.map((row) => {
+            const look = this.lookOf(row);
+            return look ? { ...row, look } : row;
+        });
+    }
+
+    /**
+     * the stepped row as plain words, every match in a soft accent, the stepped one in full accent; null for any
+     * other row, or while its marked height is not measured yet
      * @param {Row} row @param {Theme} t
      */
-    markedText(row, t) {
-        const { isOpen, q, hits } = this.find.state;
-        if (!FIND_WORDS || !isOpen || !hits.some((h) => h.id === row.id))
+    markedText(row, t, isShown = true) {
+        const look = this.lookOf(row);
+        // the shown copy waits for its marked height, so the list never draws it at the plain one and jumps
+        if (!look || (isShown && !this.heights.has({ ...row, look })))
             return null;
+        const { q } = this.find.state;
         const current = this.find.currentHit();
         return v_flex().children(
             findSpans(row.text, q).map((line) =>

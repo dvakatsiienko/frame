@@ -1,7 +1,7 @@
 // each row's measured height, kept by the row's id and version: the list is handed exact sizes, so a row that changes
 // moves nothing above it, and only the rows near the view are measured in a frame.
 
-/** @typedef {{ id: string, version: number, kind: 'mine' | 'reply' | 'tool' | 'file', text: string, pictures?: unknown[], files?: unknown[] }} Measured */
+/** @typedef {{ id: string, version: number, kind: 'mine' | 'reply' | 'tool' | 'file', text: string, pictures?: unknown[], files?: unknown[], look?: string }} Measured */
 /** @typedef {{ start: number, end: number }} Range */
 
 // herdr's list refuses a taller row
@@ -53,14 +53,17 @@ export function createHeights() {
     const measured = new Map();
     /** a row's last height at any version: what a grown row keeps until it is measured again @type {Map<string, number>} */
     const last = new Map();
-    /** @param {Measured} row */
-    const keyOf = (row) => `${row.id}@${row.version}`;
+    /** a row drawn another way (find's word marks) is its own entry: `look` names the way @param {Measured} row */
+    const keyOf = (row) =>
+        `${row.id}@${row.version}${row.look ? `~${row.look}` : ''}`;
 
     return {
         clear() {
             measured.clear();
             last.clear();
         },
+        /** whether the row's height is known as it would draw now @param {Measured} row */
+        has: (row) => measured.has(keyOf(row)),
         /**
          * @param {Measured} row
          * @param {number} height as measured
@@ -70,7 +73,7 @@ export function createHeights() {
             const next = whole(height);
             if (measured.get(keyOf(row)) === next) return false;
             measured.set(keyOf(row), next);
-            last.set(row.id, next);
+            if (!row.look) last.set(row.id, next);
             return true;
         },
         /**
