@@ -130,6 +130,21 @@ const PLACE_PAGES = 8;
 // a meter's cells, as the old chat drew them
 const METER_CELLS = 48;
 const CHIP_SIZE = 26;
+// his quill's two cards sit one layer under it, a little narrower, flush against it (the old chat's PK-384 pick)
+const NEST_INSET = 14;
+
+/** @param {Theme} t @param {'top' | 'bottom'} side */
+const nestedCard = (t, side) => {
+    const card = v_flex()
+        .px(12)
+        .bg(t.raised)
+        .border_color(t.border)
+        .border_l(1)
+        .border_r(1);
+    return side === 'top'
+        ? card.pt(8).pb(8).rounded_t(12).border_t(1)
+        : card.pt(6).pb(6).rounded_b(12).border_b(1);
+};
 // a 🍃 pressed on the cc band reaches no file herdr watches: the shown thread's key is asked again this often, and a
 // read that failed this soon, never a minute of grey; a door that hangs (a lock, a prompt) ends at its timeout
 const AUTO_WIND_MS = 60 * 1000;
@@ -622,7 +637,7 @@ export default class Chat extends View {
         return root
             .child(this.band(drawn.band, t))
             .child(this.quill(this.box, t))
-            .child(this.bar(drawn.bar, t));
+            .child(this.bar(drawn.bar, drawn.band.buttons, t));
     }
 
     /** the band and the bottom bar as they draw now @param {number} now */
@@ -828,11 +843,11 @@ export default class Chat extends View {
     }
 
     /**
-     * the band over the quill: the context and week meters, their numbers beside them, and the band's buttons
+     * the card over the quill: the context and week meters, their numbers beside them
      * @param {ReturnType<Chat['bandNow']>} now
      * @param {Theme} t
      */
-    band({ buttons, meters }, t) {
+    band({ meters }, t) {
         /** @param {string} name @param {number | null} pct @param {number} warnAt */
         const meter = (name, pct, warnAt) =>
             h_flex()
@@ -877,45 +892,34 @@ export default class Chat extends View {
                         .text_color(t.dim)
                         .child(pct == null ? '—' : `${Math.round(pct)}%`),
                 );
+        return this.nestedRow(
+            'chat-band-row',
+            nestedCard(t, 'top')
+                .gap(3)
+                // ctx above week (dima: «move ctx meter over the week»)
+                .child(meter('ctx', meters.context, this.meterWarn.ctx))
+                .child(meter('week', meters.week, this.meterWarn.week)),
+        );
+    }
+
+    /**
+     * a card nested under the quill, in the list's column, as wide as the quill less its inset
+     * @param {string} id @param {ReturnType<typeof v_flex>} card
+     */
+    nestedRow(id, card) {
         return h_flex()
-            .id('chat-band-row')
+            .id(id)
             .w_full()
             .flex_none()
             .justify_center()
             .px(18)
-            .pb(6)
             .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
             .child(
-                h_flex()
+                v_flex()
                     .w_full()
                     .max_w(this.column())
-                    .gap(14)
-                    .items_center()
-                    .child(
-                        v_flex()
-                            .flex_1()
-                            .min_w(0)
-                            .gap(3)
-                            // ctx above week (dima: «move ctx meter over the week»)
-                            .child(
-                                meter(
-                                    'ctx',
-                                    meters.context,
-                                    this.meterWarn.ctx,
-                                ),
-                            )
-                            .child(
-                                meter('week', meters.week, this.meterWarn.week),
-                            ),
-                    )
-                    .child(
-                        h_flex()
-                            .flex_none()
-                            .gap(4)
-                            .children(
-                                buttons.map((btn) => this.bandChip(btn, t)),
-                            ),
-                    ),
+                    .px(NEST_INSET)
+                    .child(card),
             );
     }
 
@@ -1532,82 +1536,88 @@ export default class Chat extends View {
     }
 
     /**
-     * the bar under the quill: the thread's state, its turn clock, and Stop on the far right, which stays pressable
-     * while the line truncates in a narrow window
+     * the card under the quill: the thread's state, its turn clock and Stop, which stays pressable while the line
+     * truncates in a narrow window, then the band's buttons on the right
      * @param {ReturnType<Chat['barNow']>} now
+     * @param {ReturnType<Chat['bandNow']>['buttons']} buttons
      * @param {Theme} t
      */
-    bar({ clock, hasStop, isWorking, line, mark }, t) {
-        return h_flex()
-            .id('chat-bar-row')
-            .w_full()
-            .flex_none()
-            .justify_center()
-            .px(18)
-            .pb(10)
-            .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
-            .child(
-                h_flex()
-                    .w_full()
-                    .max_w(this.column())
-                    .h(26)
-                    .px(14)
-                    .gap(8)
-                    .items_center()
-                    .text_size(12)
-                    .text_color(t.muted)
-                    .child(
-                        mark === 'spinner'
-                            ? svg('mods/workspace-chrome/spinner.svg')
-                                  .size(12)
-                                  .flex_none()
-                                  .text_color(t.working)
-                                  .spin(900)
-                            : div()
-                                  .size(10)
-                                  .flex_none()
-                                  .rounded_full()
-                                  .border(1)
-                                  .border_color(t.dim),
-                    )
-                    .child(
-                        div()
-                            .id('chat-bar-line')
-                            .flex_1()
-                            .min_w(0)
-                            .truncate()
-                            .text_color(isWorking ? t.foreground : t.muted)
-                            .tooltip(line)
-                            .child(line),
-                    )
-                    .when(clock !== null, (el) =>
-                        el.child(
+    bar({ clock, hasStop, isWorking, line, mark }, buttons, t) {
+        return this.nestedRow(
+            'chat-bar-row',
+            nestedCard(t, 'bottom')
+                .flex_row()
+                .px(8)
+                .gap(6)
+                .items_center()
+                .child(
+                    h_flex()
+                        .flex_1()
+                        .min_w(0)
+                        .h(26)
+                        .gap(8)
+                        .items_center()
+                        .text_size(12)
+                        .text_color(t.muted)
+                        .child(
+                            mark === 'spinner'
+                                ? svg('mods/workspace-chrome/spinner.svg')
+                                      .size(12)
+                                      .flex_none()
+                                      .text_color(t.working)
+                                      .spin(900)
+                                : div()
+                                      .size(10)
+                                      .flex_none()
+                                      .rounded_full()
+                                      .border(1)
+                                      .border_color(t.dim),
+                        )
+                        .child(
                             div()
-                                .flex_none()
-                                .text_color(t.dim)
-                                .child(clock ?? ''),
+                                .id('chat-bar-line')
+                                .flex_1()
+                                .min_w(0)
+                                .truncate()
+                                .text_color(isWorking ? t.foreground : t.muted)
+                                .tooltip(line)
+                                .child(line),
+                        )
+                        .when(clock !== null, (el) =>
+                            el.child(
+                                div()
+                                    .flex_none()
+                                    .text_color(t.dim)
+                                    .child(clock ?? ''),
+                            ),
+                        )
+                        .when(hasStop, (el) =>
+                            el.child(
+                                div()
+                                    .id('chat-stop')
+                                    .flex_none()
+                                    .px(10)
+                                    .py(3)
+                                    .rounded(6)
+                                    .bg(t.raised)
+                                    .text_color(t.foreground)
+                                    .cursor_pointer()
+                                    .hover((style) => style.bg(t.border))
+                                    .tooltip(
+                                        "Stop Claude's turn (Esc in the thread)",
+                                    )
+                                    .child('Stop')
+                                    .on_click((_event, cx) => this.stop(cx)),
+                            ),
                         ),
-                    )
-                    .when(hasStop, (el) =>
-                        el.child(
-                            div()
-                                .id('chat-stop')
-                                .flex_none()
-                                .px(10)
-                                .py(3)
-                                .rounded(6)
-                                .bg(t.raised)
-                                .text_color(t.foreground)
-                                .cursor_pointer()
-                                .hover((style) => style.bg(t.border))
-                                .tooltip(
-                                    "Stop Claude's turn (Esc in the thread)",
-                                )
-                                .child('Stop')
-                                .on_click((_event, cx) => this.stop(cx)),
-                        ),
-                    ),
-            );
+                )
+                .child(
+                    h_flex()
+                        .flex_none()
+                        .gap(4)
+                        .children(buttons.map((btn) => this.bandChip(btn, t))),
+                ),
+        ).pb(10);
     }
 
     /**
@@ -1692,7 +1702,6 @@ export default class Chat extends View {
                 .flex_none()
                 .justify_center()
                 .px(18)
-                .pb(4)
                 // opened as a window, a press herdr is not told to keep drags it: only the head row moves it
                 .on_mouse_down('left', (_event, cx) => cx.stop_propagation())
                 .child(
