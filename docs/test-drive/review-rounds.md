@@ -138,6 +138,9 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-18 · FRM-621 · wisphunter, plain card (Opus 5.5) · 5; 4 real fixed (a refused pull had copied earlier paths, `--over` kept a new file's copy, the drift Next led into the refusal, the edit rule read in two places), 1 test gap folded in · useful
 - 2026-11-18 · FRM-621 · macroscope, budget · 1 real, the same partial-pull bug the card found; none found only by it · useful
 - 2026-11-18 · FRM-621, mods-lane-7 quick lane on main (884579e8..310be40c), one mods-edit scratch per session and a pull that keeps an edit: no sixth sense · local reviews 2 found 5 real before land, all fixed
+- 2026-11-18 · FRM-602 · wisphunter, plain card (Opus 5.5) · 3 real, all fixed (a joiner's link flipped every poll, a summon record opened a card under main, an untested merge branch) · useful
+- 2026-11-18 · FRM-602 · macroscope, budget · 0 in the chunk's files, 3 in other lanes' · noise
+- 2026-11-18 · FRM-602, mods-lane-7 quick lane on main (92c1e5e9..53de1afd), a lane's glide card opens itself at dispatch: no sixth sense · local reviews 2; the live probe FRM-646 opened its card in the dispatch's second
 
 ## verdict
 - 2026-11-12 · frame#172, FRM-572 chunk 2 (cli wisps): clean at 3 rounds · wishkeeper found 1 high (a UTC lock stamp read every live holder as gone), sixth sense round 2 found 1 P1 (a `ps` that did not run read as gone); both fixed, red-proven · ci reviewer: not named
