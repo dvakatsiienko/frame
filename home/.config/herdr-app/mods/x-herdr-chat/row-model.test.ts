@@ -74,6 +74,35 @@ describe('a paste in his message shows as his words, never as the wrapper Claude
         },
     );
 
+    test('a wrapper inside what he pasted stays: only the outer one leaves', () => {
+        const model = createRowModel();
+        model.add([
+            mine(
+                '<pasted_content id="x">\nline1\n<pasted_content>\ninner\n</pasted_content>\nline2\n</pasted_content id="x">',
+            ),
+        ]);
+        expect(shown(model)).toEqual([
+            'mine: line1\n<pasted_content>\ninner\n</pasted_content>\nline2',
+        ]);
+    });
+
+    test('a closing tag naming another id is not this paste’s: both tags stay', () => {
+        const text = '<pasted_content id="a">\nX\n</pasted_content id="b">';
+        const model = createRowModel();
+        model.add([mine(text)]);
+        expect(shown(model)).toEqual([`mine: ${text}`]);
+    });
+
+    test('two pastes in one message each leave their wrapper', () => {
+        const model = createRowModel();
+        model.add([
+            mine(
+                '<pasted_content id="a">\nA\n</pasted_content>\nmid\n<pasted_content id="b">\nB\n</pasted_content>',
+            ),
+        ]);
+        expect(shown(model)).toEqual(['mine: A\nmid\nB']);
+    });
+
     test('words he typed around the paste stay', () => {
         const model = createRowModel();
         model.add([

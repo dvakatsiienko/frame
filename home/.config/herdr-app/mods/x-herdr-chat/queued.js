@@ -125,17 +125,41 @@ export function readTime(reads, text, at) {
     return read?.readAt ?? (at || null);
 }
 
-// the wrapper Claude Code puts around a paste: an opening tag that starts a line, its closing tag that ends one, the
-// same id on both when the closing carries one
-const PASTE =
-    /(^|\n)<pasted_content(?: id="([^"]*)")?>\n?([\s\S]*?)\n?<\/pasted_content(?: id="\2")?>(?=\n|$)/g;
+// the tags Claude Code puts around a paste: an opening tag that starts a line, a closing tag that ends one, an id on
+// the opening and, in a user line, the same id on the closing
+const PASTE_TAG =
+    /(^|\n)<pasted_content(?: id="([^"]*)")?>\n?|\n?<\/pasted_content(?: id="([^"]*)")?>(?=\n|$)/g;
 
 /**
- * what he typed, out of the wrappers around his pastes; a tag in his own words, or inside what he pasted, stays
+ * what he typed, out of the wrappers around his pastes: tags pair up like brackets, a closing id naming its opening, and
+ * only an outermost pair leaves; a tag in his own words, or a wrapper inside what he pasted, stays
  * @param {string} text
  */
-export const unwrapPastes = (text) =>
-    text.replace(PASTE, (_, lead, _id, body) => `${lead}${body}`).trim();
+export function unwrapPastes(text) {
+    /** @type {{ index: number, end: number, lead: string, id: string | undefined }[]} */
+    const open = [];
+    /** @type {{ index: number, end: number, keep: string }[]} */
+    const cuts = [];
+    for (const tag of text.matchAll(PASTE_TAG)) {
+        const index = tag.index ?? 0;
+        const end = index + tag[0].length;
+        if (tag[0].includes('</')) {
+            const top = open.at(-1);
+            if (!top || (tag[3] !== undefined && tag[3] !== top.id)) continue;
+            open.pop();
+            if (open.length) continue;
+            cuts.push({ end: top.end, index: top.index, keep: top.lead });
+            cuts.push({ end, index, keep: '' });
+        } else open.push({ end, id: tag[2], index, lead: tag[1] ?? '' });
+    }
+    let out = '';
+    let at = 0;
+    for (const cut of cuts.sort((a, b) => a.index - b.index)) {
+        out += text.slice(at, cut.index) + cut.keep;
+        at = cut.end;
+    }
+    return (out + text.slice(at)).trim();
+}
 
 // hc reads a text that opens with `-` as its own flag and refuses the send (exit 2, a «- item» lost 2026-11-12): `--` ends its flags
 /** @param {string} address @param {string} text @param {string[]} [flags] */
