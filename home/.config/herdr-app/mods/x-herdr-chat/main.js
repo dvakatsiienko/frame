@@ -2307,7 +2307,7 @@ export default class Chat extends View {
         const added = new Set(changed);
         const arrived = this.model.rows
             .filter((r) => added.has(r.id) && r.kind === 'mine' && !r.isWaiting)
-            .map((r) => r.text);
+            .map((r) => ({ at: r.at, text: r.text }));
         if (arrived.length && this.box && this.file)
             this.showSettled(
                 this.magic.arrived(this.file, arrived, this.box.value()),

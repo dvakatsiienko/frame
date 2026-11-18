@@ -292,13 +292,34 @@ describe('a push of words still marked to join', () => {
 });
 
 describe('his words arriving in the chat settle the mark at once', () => {
+    // the world's clock: a mark is made at its now; his message lands a moment after
+    const LATER = new Date(2_000_000_000_000).toISOString();
+    const EARLIER = new Date(500).toISOString();
+
+    test('an older message of his with the same words never settles it: a re-read after a switch brings them all back', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'yes', ON);
+        expect(
+            w.magic.arrived(THREAD, [{ at: EARLIER, text: 'yes' }], 'yes'),
+        ).toBeNull();
+        expect(w.magic.markOf(THREAD)?.state).toBe('pending');
+    });
+
+    test('a row with no time never settles it', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'yes', ON);
+        expect(
+            w.magic.arrived(THREAD, [{ at: null, text: 'yes' }], 'yes'),
+        ).toBeNull();
+    });
+
     test('the joined words show as his message: the quill empties in the same draw', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'what tails do you have atm?', ON);
         expect(
             w.magic.arrived(
                 THREAD,
-                ['what tails do you have atm?'],
+                [{ at: LATER, text: 'what tails do you have atm?' }],
                 'what tails do you have atm?',
             ),
         ).toEqual({ id: 'id-1', note: null, quill: '' });
@@ -311,7 +332,7 @@ describe('his words arriving in the chat settle the mark at once', () => {
         expect(
             w.magic.arrived(
                 THREAD,
-                ['also the tests'],
+                [{ at: LATER, text: 'also the tests' }],
                 'also the tests\nand one more',
             )?.quill,
         ).toBe('and one more');
@@ -321,13 +342,19 @@ describe('his words arriving in the chat settle the mark at once', () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
         expect(
-            w.magic.arrived(THREAD, ['something else'], 'also the tests'),
+            w.magic.arrived(
+                THREAD,
+                [{ at: LATER, text: 'something else' }],
+                'also the tests',
+            ),
         ).toBeNull();
         expect(w.magic.markOf(THREAD)?.state).toBe('pending');
     });
 
     test('no mark, nothing to settle', () => {
         const w = world();
-        expect(w.magic.arrived(THREAD, ['hi'], 'hi')).toBeNull();
+        expect(
+            w.magic.arrived(THREAD, [{ at: LATER, text: 'hi' }], 'hi'),
+        ).toBeNull();
     });
 });

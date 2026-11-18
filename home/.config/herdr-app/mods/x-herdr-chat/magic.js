@@ -116,15 +116,22 @@ export function createMagic({ io, dir, store, newId }) {
          * his marked words just arrived in the chat as his message: the mark settles in that same draw, so the words
          * leave the quill the moment they show above it, never on the stash's later state write (dima, 12:20)
          * @param {string} thread
-         * @param {string[]} arrived the texts of his messages the transcript just added
+         * @param {{ at: string | null, text: string }[]} arrived his messages the transcript just added, with their times:
+         *   only one written after the mark counts, so an older message with the same words (a re-read after a thread
+         *   switch brings them all back) never settles it
          * @param {string} quill what the quill holds
          * @returns {{ id: string, quill: string | null, note: string | null } | null}
          */
         arrived(thread, arrived, quill) {
             const mark = marks.get(thread);
             if (mark?.state !== 'pending') return null;
-            if (!arrived.some((text) => text.trim() === mark.said)) return null;
-            return taken(mark, quill);
+            const isHis = arrived.some(
+                (row) =>
+                    row.text.trim() === mark.said &&
+                    row.at !== null &&
+                    Date.parse(row.at) >= mark.at,
+            );
+            return isHis ? taken(mark, quill) : null;
         },
         /**
          * a click on send. the mark is set, or taken off, before the first wait: draw at once, then await the answer
