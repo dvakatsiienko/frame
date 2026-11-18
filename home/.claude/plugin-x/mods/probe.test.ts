@@ -95,21 +95,34 @@ describe('moduleLoaded', () => {
 });
 
 describe('childEnv', () => {
-    it('moves the plugin cache, which holds the store, under the run dir, and HOME to its sandbox', () => {
-        expect(
-            childEnv(
-                { HOME: '/u', PATH: '/bin' },
-                ['/a', '/b'],
-                '/run',
-                '/run/home',
-            ),
-        ).toEqual({
-            CLAUDE_CODE_PLUGIN_CACHE_DIR: '/run/plugin-cache',
-            CLAUDE_CODE_PLUGIN_DIRS: '/a:/b',
-            HOME: '/run/home',
-            PATH: '/bin',
-            X_MODS_TEST_CHILD: '1',
-        });
+    it('moves the plugin cache, which holds the store, under the run dir, and HOME to the sandbox it builds', () => {
+        const real = mkdtempSync(join(tmpdir(), 'env-real-'));
+        mkdirSync(join(real, '.claude'));
+        writeFileSync(join(real, '.claude/settings.json'), '{"model":"opus"}');
+        const run = mkdtempSync(join(tmpdir(), 'env-run-'));
+        const env = childEnv(
+            { HOME: real, PATH: '/bin' },
+            ['/a', '/b'],
+            run,
+            real,
+        );
+        writeFileSync(
+            join(env.HOME, '.claude/settings.json'),
+            '{"model":"haiku"}',
+        );
+        expect([
+            env,
+            readFileSync(join(real, '.claude/settings.json'), 'utf8'),
+        ]).toEqual([
+            {
+                CLAUDE_CODE_PLUGIN_CACHE_DIR: join(run, 'plugin-cache'),
+                CLAUDE_CODE_PLUGIN_DIRS: '/a:/b',
+                HOME: join(run, 'home'),
+                PATH: '/bin',
+                X_MODS_TEST_CHILD: '1',
+            },
+            '{"model":"opus"}',
+        ]);
     });
 });
 

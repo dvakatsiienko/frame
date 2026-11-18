@@ -61,19 +61,19 @@ export function probeArgv(prompt: string, debugFile: string, extra: string[]) {
 }
 
 // the child's env: the swapped dirs, and the plugin cache, which holds $.store, moved under the run's dir, so a load-time
-// write or a 🎛️ press never reaches the fleet's store (a live proof flipped it, 2026-11-05); HOME is the run's sandbox.
-// CLAUDE_CONFIG_DIR would move the login too
+// write or a 🎛️ press never reaches the fleet's store (a live proof flipped it, 2026-11-05); HOME is the run's sandbox,
+// built from the real one here, so no caller can hand the child the real HOME. CLAUDE_CONFIG_DIR would move the login too
 export function childEnv(
     env: NodeJS.ProcessEnv,
     dirs: string[],
     scratch: string,
-    home: string,
+    realHome: string,
 ) {
     return {
         ...env,
         CLAUDE_CODE_PLUGIN_CACHE_DIR: join(scratch, 'plugin-cache'),
         CLAUDE_CODE_PLUGIN_DIRS: dirs.join(':'),
-        HOME: home,
+        HOME: sandboxHome(realHome, scratch),
         X_MODS_TEST_CHILD: '1',
     };
 }
@@ -283,7 +283,7 @@ if (import.meta.main) {
         {
             cwd: tmp,
             encoding: 'utf8',
-            env: childEnv(process.env, dirs, tmp, sandboxHome(home, tmp)),
+            env: childEnv(process.env, dirs, tmp, home),
             timeout: 240_000,
         },
     );
