@@ -4,7 +4,7 @@ title: 'job hunting corner: a home for jd reviews, research and applications'
 status: open
 assignee: []
 created_date: '2026-11-18T14:16:00Z'
-updated_date: '2026-11-18T15:04:00Z'
+updated_date: '2026-11-18T15:16:00Z'
 labels:
   - m
   - clio-wing-1
@@ -81,4 +81,15 @@ PK-452:W24 (2026-11-18 17:04, dima): q4: yes, full coverage, easy to query and v
 PK-452:W25 (2026-11-18 17:04, dima): q5: yes, exactly; once everything is migrated, delete the moved job data from projects/cw
 PK-452:W26 (2026-11-18 17:04, dima): remind me what the targets, stop list, pay ranges and positioning currently say
 PK-452:W27 (2026-11-18 17:04, dima): a top 7 over the new job project spot: a pretty, short vibe name for it
+
+PK-452:W28 (2026-11-18 17:16, dima): targets: small, high-quality AI-product teams like flick.art, correct; plus my main target projects, the ones i'd most like to do: https://ffern.co/ (fashion tech, the only good one, not crap) and https://spellbrush.com/, the exception: slightly gamedev, but a good one that looks very solid, and not igaming
+PK-452:W29 (2026-11-18 17:16, dima): i see the most interesting projects i'd like to apply to and work on at https://www.workatastartup.com/, like https://www.workatastartup.com/companies/spellbrush: that resource holds the kinds of JDs i like
+PK-452:W30 (2026-11-18 17:16, dima): big tech: i don't rush to work at amazon or meta, but genai is interesting; i'd like to apply to anthropic, for example, i think i'd like that experience; the open question is which role there fits me ❓
+PK-452:W31 (2026-11-18 17:16, dima): the Ukraine branch: yes, i apply through djinni and dou, though there are not many attractive JDs there recently; the area and the postings change, so i look there when nothing else interesting is found (a fallback)
+PK-452:W32 (2026-11-18 17:16, dima): civilian defence tech, with an enlisted ZSU role, is another layer of fallback: if i find no good project before my money runs out, which is quite soon (about 90 k left, no income, roughly 3 to 4 months in economy mode), my plan is to join the military forces, either in an IT department or as a soldier
+PK-452:W33 (2026-11-18 17:16, dima): all the other data holds: move and merge everything, and make sure it lands at once, pretty and well organized
+PK-452:W34 (2026-11-18 17:16, dima): pay: yes, a wide range, i prefer higher; $5–8k at UA companies if nothing better is found; $7–10k at US or UK direct-hire startups would be nice; $12k+ at well-funded US startups, ideally
+PK-452:W35 (2026-11-18 17:16, dima): positioning: yes, it is defined later, not now
+PK-452:W36 (2026-11-18 17:16, dima): now only a good folder for me with everything colocated; from that folder, link the job data folder in the knowledge folder
+PK-452:W37 (2026-11-18 17:16, dima): a top 7 of pretty names for the new folder
 <!-- SECTION:NOTES:END -->
