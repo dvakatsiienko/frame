@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createKeyPress } from './keypress.js';
+import { createCmdEnter, createKeyPress } from './keypress.js';
 
 // FRM-648: a press is told by events, never by a clock. herdr hands the chat's quill and the deck's steer boxes Enter
 // and ⌘Enter as their own actions (step 111's probe, 14:47), each repeat of a held key one more action
@@ -56,5 +56,28 @@ describe('one press of Enter acts once, a held one too', () => {
         key.released();
         expect(key.pressed()).toBe('act');
         expect(key.pressed()).toBe('repeat');
+    });
+});
+
+// FRM-648 round 2 (dima's o6): under a held ⌘ every ⌘Enter tap acts, though no key-up ever comes between them
+describe('⌘Enter with ⌘ held', () => {
+    test('every tap acts', () => {
+        const key = createCmdEnter();
+        expect([0, 300, 600].map((at) => key.pressed(at))).toEqual([
+            'act',
+            'act',
+            'act',
+        ]);
+    });
+
+    test('a held ⌘Enter acts on its press and its first repeat only', () => {
+        const key = createCmdEnter();
+        expect([0, 150, 165, 180, 195].map((at) => key.pressed(at))).toEqual([
+            'act',
+            'act',
+            'repeat',
+            'repeat',
+            'repeat',
+        ]);
     });
 });

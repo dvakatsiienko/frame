@@ -31,3 +31,22 @@ export function createKeyPress() {
         },
     };
 }
+
+/** a ⌘Enter closer than this to the one before is a held key's repeat: this mac repeats every 15 ms, the first after 150 ms */
+export const CMD_REPEAT_MS = 100;
+
+/**
+ * ⌘Enter under a held ⌘: herdr sends the box no key-up and no `is_held`, only ⌘Enter's action (FRM-648 round 2, the
+ * 15:27 trace), so a tap is told from a repeat by its gap alone; a hold past the first repeat acts twice (dima's o6)
+ */
+export function createCmdEnter() {
+    let last = Number.NEGATIVE_INFINITY;
+    return {
+        /** @param {number} at @returns {'act' | 'repeat'} */
+        pressed(at) {
+            const gap = at - last;
+            last = at;
+            return gap < CMD_REPEAT_MS ? 'repeat' : 'act';
+        },
+    };
+}

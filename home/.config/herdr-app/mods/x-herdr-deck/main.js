@@ -17,7 +17,7 @@ import {
 } from 'herdr';
 
 import { rejoin } from './joined.js';
-import { createKeyPress } from './keypress.js';
+import { createCmdEnter, createKeyPress } from './keypress.js';
 import {
     ORDER_KEY,
     PENDING_MS,
@@ -258,6 +258,7 @@ export default class Deck extends View {
     reloads = createSerial(Date.now);
     // Enter in every steer box, one press at a time: a held key's repeats act once
     steerKeys = createKeyPress();
+    steerCmdKeys = createCmdEnter();
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
         cx.bind_keys([
@@ -791,10 +792,14 @@ export default class Deck extends View {
         }
     }
 
-    // Enter in a steer box is 🛎️, cmd-enter 🔁, as the buttons beside it (steerKeyPress); a held key's repeats act once
+    // Enter in a steer box is 🛎️, cmd-enter 🔁, as the buttons beside it (steerKeyPress); a held Enter acts once, every
+    // ⌘Enter tap acts under a held ⌘ (createCmdEnter)
     /** @param {Context} cx @param {string} key @param {boolean} isCmd */
     steerKeyAct(cx, key, isCmd) {
-        if (this.steerKeys.pressed() === 'repeat') return;
+        const said = isCmd
+            ? this.steerCmdKeys.pressed(Date.now())
+            : this.steerKeys.pressed();
+        if (said === 'repeat') return;
         const step = steerKeyAct(this.rows, key, isCmd, (s, id) =>
             this.pressStateOf(s, id),
         );

@@ -846,6 +846,27 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
         expect(serial.state().phase).not.toBe('stalled');
     });
 
+    // FRM-648 round 2 (dima 15:26, «orbit shows nothing»): after a mod restart a hung read's stall timer may never fire;
+    // the next read asked for past READ_STALL_MS lets it go by the clock it reads, never waiting on that timer
+    test('a hung read whose stall timer never fires frees the chain for the next read asked past the stall', async () => {
+        const clock = fakeClock();
+        const chain = createSerial(clock.now);
+        const deadTimer = () => ({ cancel: () => {} });
+        void chain(() => new Promise<void>(() => {}), deadTimer);
+        await Promise.resolve();
+        clock.pass(READ_STALL_MS);
+        let isRun = false;
+        void chain(async () => {
+            isRun = true;
+        }, deadTimer);
+        for (let i = 0; i < 10; i++) await Promise.resolve();
+        expect(isRun).toBe(true);
+        expect(chain.state()).toEqual({
+            phase: 'idle',
+            settledAt: READ_STALL_MS,
+        });
+    });
+
     // sixth sense round 1 (FRM-648 5b): the chain is one named state, never a running id beside a stalled flag
     test('the chain is one state: idle, running, then stalled since its last settled read', async () => {
         const clock = fakeClock();

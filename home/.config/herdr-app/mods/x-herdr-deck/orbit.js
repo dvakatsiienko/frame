@@ -182,9 +182,9 @@ export const READ_STALL_MS = 30 * 1000;
 
 /**
  * @typedef {{ phase: 'idle', settledAt: number | null }
- *   | { phase: 'running', id: number, settledAt: number | null }
+ *   | { phase: 'running', id: number, startedAt: number, settledAt: number | null }
  *   | { phase: 'stalled', settledAt: number | null }} ChainState
- * @typedef {{ type: 'started', id: number }
+ * @typedef {{ type: 'started', id: number, at: number }
  *   | { type: 'settled' | 'failed' | 'stallTimedOut', id: number, at: number }} ChainEvent
  */
 
@@ -195,7 +195,12 @@ export const READ_STALL_MS = 30 * 1000;
  */
 export function nextChain(chain, event) {
     if (event.type === 'started')
-        return { id: event.id, phase: 'running', settledAt: chain.settledAt };
+        return {
+            id: event.id,
+            phase: 'running',
+            settledAt: chain.settledAt,
+            startedAt: event.at,
+        };
     if (chain.phase !== 'running' || chain.id !== event.id) return chain;
     if (event.type === 'settled') return { phase: 'idle', settledAt: event.at };
     if (event.type === 'failed')
@@ -207,7 +212,9 @@ export function nextChain(chain, event) {
  * one run at a time: a run asked for while one goes waits for it, and of those waiting only the newest runs, so two
  * reloads never overlap and the newest read always lands last (FRM-628: a slow `ps` let an older read put a gone ask back).
  * a run that never settles stalls the chain (FRM-648 step 113b, dima's empty deck at 14:41): past READ_STALL_MS it is
- * let go, its late answer told it is no longer current, and the deck says «no read since» its last settled read
+ * let go, its late answer told it is no longer current, and the deck says «no read since» its last settled read. a
+ * mod restart may leave its stall timer dead (dima's empty orbit, 15:26), so the next run asked for past the stall lets
+ * it go by the clock too
  * @param {() => number} now
  */
 export function createSerial(now) {
@@ -215,24 +222,32 @@ export function createSerial(now) {
     let newest = 0;
     /** @type {ChainState} */
     let chain = { phase: 'idle', settledAt: null };
+    /** lets the running run go as stalled */
+    let letGo = () => {};
     /**
      * @param {(isCurrent: () => boolean) => Promise<void>} run
      * @param {(ms: number, fire: () => void) => { cancel: () => unknown }} after the run's own timer, `cx.timer.after`
      */
     const serial = (run, after) => {
         const id = ++newest;
+        if (
+            chain.phase === 'running' &&
+            now() - chain.startedAt >= READ_STALL_MS
+        )
+            letGo();
         const next = tail.then(() => {
             if (id !== newest) return;
-            chain = nextChain(chain, { id, type: 'started' });
+            chain = nextChain(chain, { at: now(), id, type: 'started' });
             return new Promise((resolve, reject) => {
-                const timer = after(READ_STALL_MS, () => {
+                letGo = () => {
                     chain = nextChain(chain, {
                         at: now(),
                         id,
                         type: 'stallTimedOut',
                     });
                     resolve(undefined);
-                });
+                };
+                const timer = after(READ_STALL_MS, () => letGo());
                 run(() => chain.phase === 'running' && chain.id === id).then(
                     () => {
                         timer.cancel();
