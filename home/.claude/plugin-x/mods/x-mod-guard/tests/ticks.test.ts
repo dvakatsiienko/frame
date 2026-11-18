@@ -1,46 +1,6 @@
-import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+import { expect, test } from 'claude-code/testing';
 
-import { answerPrompts } from './said.ts';
-import { liveStore } from './store.ts';
-
-// his tick on an orbit ask quoting a floor command opens it once; a sign or a merge word is no guard's door any more
-const NOW = 1_000_000;
-type Tick = { at: number; id: string; targets: string[]; text: string };
-const tickOn = (command: string, id = 'o1'): Tick => ({
-    at: NOW,
-    id,
-    targets: [command],
-    text: `⚠️ go: \`${command}\``,
-});
-
-function world(on: On, ticks: Tick[] = []) {
-    mock.clock(on, { now: NOW });
-    liveStore(on);
-    answerPrompts(on);
-    const ran: string[] = [];
-    const fail = new Set<string>();
-    on('state.get', (_$, e, next) =>
-        e.plugin === 'x-mod-stash' && e.key === 'ticks'
-            ? { value: { value: ticks, version: 1 } }
-            : next(e),
-    );
-    on('session.id', () => ({ value: 't1t1t1t1-0000' }));
-    on('session.cwd', () => ({ value: '/repo' }));
-    on('env.get', () => ({ value: '/home' }));
-    on('fs.exists', () => ({ value: false }));
-    on('ui.log', () => ({ value: undefined }));
-    on('tool.call', (_$, e) => {
-        const command = 'command' in e ? String(e.command) : '';
-        ran.push(command);
-        return fail.has(command)
-            ? { isError: true, result: {}, text: 'failed' }
-            : { result: {}, text: 'ran' };
-    });
-    return { fail, ran };
-}
-const bash = ($: Engine, command: string) =>
-    $.tool.call({ command, run_in_background: true, tool: 'Bash' });
+import { NOW, bash, tickOn, world } from './ticks-world.ts';
 
 // FRM-580 and FRM-566 took two ticks or a raw api call for one sign: now the label and the body line run as written
 for (const command of [

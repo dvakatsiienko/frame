@@ -1,185 +1,22 @@
 import type { On } from 'claude-code';
-import { type Engine, expect, mock, test } from 'claude-code/testing';
+import { type Engine, expect, test } from 'claude-code/testing';
 
 import { closedMark } from '../hooks/register.tsx';
-
-const SID = 'o1o1o1o1-orbit';
-const TOOL = 'mcp__x-mod-stash__orbit';
-
-// one session: `contexts` holds each prompt's model-only context, `appended` each hidden mid-turn message
-// the orbit tool's description as the last start registered it
-let described = '';
-let schema: {
-    properties?: Record<
-        string,
-        { items?: { properties?: Record<string, unknown> }; enum?: string[] }
-    >;
-} = {};
-let isDeferred: boolean | undefined;
-
-// a test holds the store's key list shut, to keep a hook mid-way while a draw overtakes it
-let storeKeysGate: Promise<void> | undefined;
-
-// `files`: what `$.fs.read` finds, such as the glide shelf file
-function world(on: On, files: Record<string, string> = {}) {
-    on('fs.read', (_$, e) =>
-        e.path in files
-            ? { value: files[e.path] ?? '' }
-            : { deny: 'no such file' },
-    );
-    const contexts: string[][] = [];
-    const appended: string[] = [];
-    const clock = mock.clock(on, {
-        now: new Date(2026, 9, 10, 19, 0).getTime(),
-    });
-    // a store in memory the test reads back: the shared store other sessions' boards count from
-    const store = new Map<string, unknown>();
-    // a test's tap into the store calls, to land another board's write between two of them
-    // a tap that returns a reason refuses that write, as a failing store would
-    const taps = {
-        delete: (_key: string) => {},
-        set: (_key: string): string | undefined => undefined,
-    };
-    on('store.get', (_$, e) => ({ value: store.get(e.key) }));
-    on('store.set', (_$, e) => {
-        const refused = taps.set(e.key);
-        if (refused) return { deny: refused };
-        store.set(e.key, e.value);
-        return { value: undefined };
-    });
-    on('store.keys', async () => {
-        await storeKeysGate;
-        return { value: [...store.keys()] };
-    });
-    on('store.delete', (_$, e) => {
-        taps.delete(e.key);
-        store.delete(e.key);
-        return { value: undefined };
-    });
-    on('session.id', () => ({ value: SID }));
-    on('env.get', () => ({ value: '/home' }));
-    on('ui.log', () => ({ value: undefined }));
-    // a test flips it to read the board as closed at the next poll, or to fail the read
-    const panes = { isClosed: false, isFailed: false };
-    on('ui.panes', () => {
-        if (panes.isFailed) throw new Error('panes read failed');
-        return {
-            value: panes.isClosed
-                ? []
-                : [
-                      {
-                          id: 'x-cc-deck',
-                          isFocused: false,
-                          isPlaced: true,
-                          isShown: true,
-                          plugin: 'x-mod-stash',
-                          title: 'fleet board',
-                      },
-                  ],
-        };
-    });
-    on('ui.render', ($, e) => $.ui.resolve(e).Box({}));
-    on('session.attach', (_$, e) => ({ clientId: e.clientId }));
-    on('session.detach', (_$, e) => ({ clientId: e.clientId }));
-    on('session.start', (_$, e) => ({ cwd: e.cwd }));
-    on('session.repo', () => ({
-        value: { internal: false, name: null, remote: null, root: '/tmp' },
-    }));
-    // the registry dir lists the session files a test plants; every other dir reads empty
-    on('fs.list', (_$, e) => ({
-        value:
-            e.path === '/home/.claude/sessions'
-                ? Object.keys(files)
-                      .filter((p) => p.startsWith(`${e.path}/`))
-                      .map((p) => ({
-                          isLink: false,
-                          kind: 'file' as const,
-                          mtimeMs: 0,
-                          name: p.slice(e.path.length + 1),
-                          size: 1,
-                      }))
-                : [],
-    }));
-    on('tool.register', (_$, e) => {
-        described = e.description;
-        schema = e.inputSchema as typeof schema;
-        isDeferred = e.isDeferred;
-        return { value: { tool: `mcp__x-mod-stash__${e.name}` } };
-    });
-    // a test flips it to drop the next prompts, as another plugin's hook would
-    const prompts = { isDropped: false };
-    on('prompt.submit', (_$, e) => {
-        if (prompts.isDropped) return { drop: 'planted' };
-        contexts.push([...(e.context ?? [])]);
-        return { text: e.text };
-    });
-    on('session.append', (_$, e, next) => {
-        for (const b of e.message.content)
-            if (b.type === 'text') appended.push(String(b.text));
-        return next(e);
-    });
-    on('turn.complete', () => ({ text: '' }));
-    on('classic.Stop', () => ({}));
-    on('tool.call', () => ({ result: {}, text: 'done' }));
-    on('skill.prompt', (_$, e) => ({ text: e.text }));
-    return { appended, clock, contexts, files, panes, prompts, store, taps };
-}
-
-const start = ($: Engine) =>
-    $.session.start({ cwd: '/tmp', isInteractive: true, surface: 'desktop' });
-
-const orbit = ($: Engine, input: Record<string, unknown>) =>
-    $.tool.call({ tool: TOOL, ...input } as never);
-
-const add = ($: Engine, ...asks: [string, string][]) =>
-    orbit($, {
-        asks: asks.map(([text, pick]) => ({
-            hiddenNote: `came from ${text}`,
-            pick,
-            text,
-        })),
-        op: 'add',
-    });
-
-const say = ($: Engine, text: string, kind = 'composer' as const) =>
-    $.prompt.submit({ origin: { kind }, text, wait: false });
-
-const endTurn = ($: Engine) =>
-    $.turn.complete({
-        answer: '',
-        durationMs: 1,
-        isAborted: false,
-        reason: 'answer',
-        turnId: 't',
-    });
-
-const board = ($: Engine) =>
-    $.ui.mount({
-        component: 'Pane',
-        plugin: 'x-mod-stash',
-        props: {
-            bodyColumns: 100,
-            isFocused: true,
-            placement: 'dock',
-            scroll: { bodyRows: 40, offset: 0 },
-            title: 'fleet board',
-            view: {},
-        },
-        requestId: 'x-cc-deck',
-        surface: 'desktop',
-    });
-
-type Board = Awaited<ReturnType<typeof board>>;
-
-// orbit's ask ids as the mounted board shows them, in order
-async function asksShown(ui: Board) {
-    return (await ui.findAll({ type: 'Box' }))
-        .filter((n) => n.key?.startsWith('orbit:ask:'))
-        .map((n) => n.key?.slice('orbit:ask:'.length));
-}
-
-const joined = (contexts: string[][]) =>
-    (contexts.at(-1) ?? []).filter((c) => c.startsWith('orbit: dima marked'));
+import {
+    type Board,
+    SID,
+    add,
+    asksShown,
+    board,
+    endTurn,
+    gates,
+    joined,
+    orbit,
+    registered,
+    say,
+    start,
+    world,
+} from './orbit-world.ts';
 
 test('asks the tool adds list in orbit oldest first, each by its id', async ($, on) => {
     world(on);
@@ -2345,8 +2182,10 @@ test('on mobile a stale plan is still named', async ($, on) => {
 test("orbit's description fits the 4096 chars cc shows the model, every op named", async ($, on) => {
     world(on);
     await start($);
-    const ops = [...described.matchAll(/^op (\w+)/gmu)].map((m) => m[1]);
-    expect([described.length <= 4096, ops]).toEqual([
+    const ops = [...registered.described.matchAll(/^op (\w+)/gmu)].map(
+        (m) => m[1],
+    );
+    expect([registered.described.length <= 4096, ops]).toEqual([
         true,
         ['add', 'resolve', 'follow', 'assume', 'plan', 'glide'],
     ]);
@@ -2524,7 +2363,7 @@ test('a gated ask carries isGated in the store, a plain ask none', async ($, on)
 test('orbit registers loaded up front, never behind ToolSearch', async ($, on) => {
     world(on);
     await start($);
-    expect(isDeferred).toBe(false);
+    expect(registered.isDeferred).toBe(false);
 });
 
 /* a tick lands at once: no sending state, no delay field */
@@ -2892,7 +2731,7 @@ test('a phases steer alone never joins a turn', async ($, on) => {
 test("orbit's schema names every argument its ops read", async ($, on) => {
     world(on);
     await start($);
-    const props = schema.properties ?? {};
+    const props = registered.schema.properties ?? {};
     const inner = (name: string) =>
         Object.keys(props[name]?.items?.properties ?? {}).sort();
     expect([
@@ -3689,7 +3528,7 @@ test('a «changed:» resolve beside a refused follow is refused', async ($, on) 
 test('orbit has no catch op: the schema names none, a call is refused as unknown', async ($, on) => {
     world(on);
     await start($);
-    const props = schema.properties ?? {};
+    const props = registered.schema.properties ?? {};
     const r = await orbit($, {
         op: 'catch',
         pieces: [{ hiddenNote: 'n', kind: '💡', text: 'f1' }],
@@ -3697,7 +3536,7 @@ test('orbit has no catch op: the schema names none, a call is refused as unknown
     expect([
         (props.op?.enum ?? []).includes('catch'),
         'pieces' in props || 'clear' in props,
-        /\bcatch\b/.test(described),
+        /\bcatch\b/.test(registered.described),
         r.deny,
     ]).toEqual([
         false,
@@ -5360,14 +5199,14 @@ for (const [kind, setUp] of Object.entries(SWITCH_KINDS))
         await $.session.detach({ ...CLIENT, reason: 'detach' });
         await ui.unmount();
         let open = () => {};
-        storeKeysGate = new Promise<void>((resolve) => {
+        gates.storeKeys = new Promise<void>((resolve) => {
             open = resolve;
         });
         const attaching = $.session.attach(CLIENT);
         const back = await board($);
         const first = await boxValue(back, key);
         open();
-        storeKeysGate = undefined;
+        gates.storeKeys = undefined;
         await attaching;
         expect(first).toBe('a heron');
     });
