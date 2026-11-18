@@ -125,17 +125,17 @@ export function readTime(reads, text, at) {
     return read?.readAt ?? (at || null);
 }
 
+// the wrapper Claude Code puts around a paste: an opening tag that starts a line, its closing tag that ends one, the
+// same id on both when the closing carries one
+const PASTE =
+    /(^|\n)<pasted_content(?: id="([^"]*)")?>\n?([\s\S]*?)\n?<\/pasted_content(?: id="\2")?>(?=\n|$)/g;
+
 /**
- * what he typed, out of the tags Claude Code puts around each paste, an id on the closing one too: a tag on its own
- * line leaves one line break, a tag inside a line leaves nothing
+ * what he typed, out of the wrappers around his pastes; a tag in his own words, or inside what he pasted, stays
  * @param {string} text
  */
 export const unwrapPastes = (text) =>
-    text
-        .replace(/\n?<\/?pasted_content\b[^>]*>\n?/g, (tag) =>
-            tag.includes('\n') ? '\n' : '',
-        )
-        .trim();
+    text.replace(PASTE, (_, lead, _id, body) => `${lead}${body}`).trim();
 
 // hc reads a text that opens with `-` as its own flag and refuses the send (exit 2, a «- item» lost 2026-11-12): `--` ends its flags
 /** @param {string} address @param {string} text @param {string[]} [flags] */

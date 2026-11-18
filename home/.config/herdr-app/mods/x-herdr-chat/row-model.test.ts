@@ -51,6 +51,29 @@ describe('a paste in his message shows as his words, never as the wrapper Claude
         expect(shown(model)).toEqual(['mine: the log']);
     });
 
+    test.each([
+        [
+            'a tag he named in a sentence',
+            'why does the bubble show <pasted_content> tags?',
+        ],
+        [
+            'a tag inside pasted code',
+            '<pasted_content id="b2">\ntoBe("<pasted_content id=1>a</pasted_content>")\n</pasted_content id="b2">',
+            'toBe("<pasted_content id=1>a</pasted_content>")',
+        ],
+        [
+            'a tag that only starts the same',
+            '<pasted_content-like>\nsome words\n</pasted_content-like>',
+        ],
+    ])(
+        'his own words that only look like a tag stay: %s',
+        (_, text, expected = text) => {
+            const model = createRowModel();
+            model.add([mine(text)]);
+            expect(shown(model)).toEqual([`mine: ${expected}`]);
+        },
+    );
+
     test('words he typed around the paste stay', () => {
         const model = createRowModel();
         model.add([
