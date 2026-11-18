@@ -239,7 +239,8 @@ export function createSerial(now) {
             if (id !== newest) return;
             chain = nextChain(chain, { at: now(), id, type: 'started' });
             return new Promise((resolve, reject) => {
-                letGo = () => {
+                // this run's own stall: its timer, firing after a later run started, never stalls that one
+                const stall = () => {
                     chain = nextChain(chain, {
                         at: now(),
                         id,
@@ -247,7 +248,8 @@ export function createSerial(now) {
                     });
                     resolve(undefined);
                 };
-                const timer = after(READ_STALL_MS, () => letGo());
+                letGo = stall;
+                const timer = after(READ_STALL_MS, stall);
                 run(() => chain.phase === 'running' && chain.id === id).then(
                     () => {
                         timer.cancel();

@@ -867,6 +867,26 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
         });
     });
 
+    // wisphunter on a633bf7f: a run let go by the clock keeps its live timer, which must never stall the run after it
+    test('a let-go run’s late stall timer leaves the next run running', async () => {
+        let now = 0;
+        const fires: (() => void)[] = [];
+        const lateTimer = (_ms: number, fire: () => void) => {
+            fires.push(fire);
+            return { cancel: () => {} };
+        };
+        const chain = createSerial(() => now);
+        void chain(() => new Promise<void>(() => {}), lateTimer);
+        await Promise.resolve();
+        // the next read is asked past the stall, before the first run's timer fires
+        now = READ_STALL_MS;
+        void chain(() => new Promise<void>(() => {}), lateTimer);
+        for (let i = 0; i < 10; i++) await Promise.resolve();
+        expect(chain.state().phase).toBe('running');
+        fires[0]!();
+        expect(chain.state().phase).toBe('running');
+    });
+
     // sixth sense round 1 (FRM-648 5b): the chain is one named state, never a running id beside a stalled flag
     test('the chain is one state: idle, running, then stalled since its last settled read', async () => {
         const clock = fakeClock();
