@@ -46,7 +46,8 @@
   the same script is clio's `PostToolUse` hook (FRM-396), where only a proposal counts, so a summon wakes once: a write to `.scratch/**/*-proposal.md` gets a
   `mode decision` wake ending `proposal <path>`, the file whole under a `## proposal ·` block in the packet; it never
   waits, like a summon, and any other file wakes nothing. one wake per proposal file per turn (o178): `decisions/proposal-<hash>.json` keys the
-  turn by clio's last prompt line, so a draft's later Edits stay quiet until her next prompt.
+  turn by clio's last prompt line, so a draft's later Edits stay quiet until her next prompt. a proposal wake that ends `none` reaches its
+  `reply to` thread as one line from the harvester, «🐦‍⬛ crow: none on <path>» (`noneReceipt` in `lib.ts`), so the round prints without the 3 min wait; crow herself still sends no `none`.
 - every wake line carries `charter <sha8> <path>`; a hash off the one in `state.json` puts the fresh text under `## charter changed` in that packet (`readCharter`)
 - a cadence wake skips while the 5h ladder parks, a `skipped: park` line in `harvest.log` (`isParked`); decision wakes still go
 - every packet opens with crow's ledger line: notes sent today, the last send's time, today's ok verdicts — `ledgerLine` in `lib.ts`
