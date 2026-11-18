@@ -491,7 +491,10 @@ describe('fork-guard fork-edit', () => {
 
     test('a wing writes a repo it runs as its own, by Bash and by Edit, and no other main checkout', () => {
         const own = mkdtempSync(join(tmpdir(), 'fg-own-'));
-        spawnSync('git', ['-C', own, 'init', '-q'], { env: gitEnv() });
+        spawnSync('git', ['-C', own, 'init', '-q'], {
+            env: gitEnv(),
+            timeout: 10_000,
+        });
         process.env.FORK_GUARD_WING_REPOS = own;
         try {
             expect(edit(String(process.ppid), join(own, 'a.md'))).toBe('');
