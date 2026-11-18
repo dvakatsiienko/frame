@@ -103,3 +103,14 @@ describe('the menu as he types and keys', () => {
         expect(menu.fill('x')).toBeNull();
     });
 });
+
+describe('the caret moving off the word closes the menu (wisphunter, slice 6)', () => {
+    test('a caret before the «/» shows no menu, back on the word shows it again', () => {
+        const menu = createSlashMenu();
+        menu.typed('', 'hi /co');
+        menu.at('hi /co', 1);
+        expect(menu.shown([['compact', 'a']]).list).toEqual([]);
+        menu.at('hi /co', 6);
+        expect(menu.shown([['compact', 'a']]).list).toHaveLength(1);
+    });
+});

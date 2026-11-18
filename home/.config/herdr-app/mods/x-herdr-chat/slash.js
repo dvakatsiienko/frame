@@ -70,6 +70,15 @@ export function createSlashMenu() {
     let at = 0;
     let isOff = false;
     return {
+        /** the quill and its caret as they are now: a caret moved off the word closes the menu @param {string} text @param {number} caret */
+        at(text, caret) {
+            const next = slashAt(text, caret);
+            if (next?.start !== slash?.start || next?.q !== slash?.q) {
+                at = 0;
+                isOff = false;
+            }
+            slash = next;
+        },
         clear() {
             slash = null;
             at = 0;
@@ -101,12 +110,7 @@ export function createSlashMenu() {
         },
         /** a new value in the quill @param {string} was @param {string} now */
         typed(was, now) {
-            const next = slashAt(now, caretAfter(was, now));
-            if (next?.start !== slash?.start || next?.q !== slash?.q) {
-                at = 0;
-                isOff = false;
-            }
-            slash = next;
+            this.at(now, caretAfter(was, now));
         },
     };
 }

@@ -205,5 +205,5 @@ const RUNS =
 /** the `open` arguments for a file row's click: a file that would run is revealed in Finder @param {string} path */
 export const openArgs = (path) => (RUNS.test(path) ? ['-R', path] : [path]);
 
-/** the row a saved reading place names: a file row's place is found through its reply @param {string} id */
-export const replyIdOf = (id) => id.replace(/#file-\d+$/, '');
+/** the row a saved reading place names: a file row's or a tool call's place is found through its own row @param {string} id */
+export const replyIdOf = (id) => id.replace(/#(?:file|call)-\d+$/, '');

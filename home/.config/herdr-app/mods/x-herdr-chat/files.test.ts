@@ -259,3 +259,10 @@ describe('his files are a row of their own under his words (wisphunter, slice 5)
         expect(withFileRows([his(1, 2)], HOME, cache)[1]).not.toBe(first);
     });
 });
+
+describe('a tool call row names its fold for a saved place (wisphunter, slice 6)', () => {
+    test('#call-N goes back to its tool row', () => {
+        expect(replyIdOf('u-1#call-2')).toBe('u-1');
+        expect(replyIdOf('u-1#file-0')).toBe('u-1');
+    });
+});

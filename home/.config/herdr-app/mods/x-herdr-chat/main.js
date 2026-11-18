@@ -713,6 +713,12 @@ export default class Chat extends View {
                 context: 'ChatFind',
                 keystroke: 'escape',
             },
+            // the find box's own Esc comes first unless ours sits on the box itself
+            {
+                action: 'x_herdr_chat_find_close',
+                context: 'ChatFind > Input',
+                keystroke: 'escape',
+            },
         ]);
         // the / menu's keys, only while it shows (its wrapper carries `ChatSlash` then)
         cx.bind_keys(
@@ -3016,6 +3022,7 @@ export default class Chat extends View {
         // the viewer and find belong to the thread they opened on
         this.viewer = null;
         this.find.close();
+        this.findTyped += 1;
         this.viewerAsk += 1;
         this.joins = null;
         // no button shows or presses a thread no longer on screen; the fleet's facts stay
@@ -3138,15 +3145,7 @@ export default class Chat extends View {
         }
         if (this.runsAt !== ran && this.settlePick()) cx.notify();
         const { changed, removed } = this.model.add(lines);
-        for (const line of lines)
-            if (line.includes('"skill_listing"'))
-                try {
-                    const content = JSON.parse(line)?.attachment?.content;
-                    for (const [name, about] of listedSkills(content))
-                        this.skills.set(name, about);
-                } catch {
-                    // half a line never reaches here: the reader hands over whole lines
-                }
+        this.learnSkills(lines);
         this.makePictures(cx);
         // his marked words showing as his message settle the mark in this same draw: they leave the quill as they land
         const added = new Set(changed);
@@ -3464,8 +3463,23 @@ export default class Chat extends View {
             );
     }
 
-    /** what the / menu shows now */
+    /** the thread's skill listing, wherever its line is read: the tail or an earlier page @param {string[]} lines */
+    learnSkills(lines) {
+        for (const line of lines)
+            if (line.includes('"skill_listing"'))
+                try {
+                    const content = JSON.parse(line)?.attachment?.content;
+                    for (const [name, about] of listedSkills(content))
+                        this.skills.set(name, about);
+                } catch {
+                    // half a line never reaches here: the reader hands over whole lines
+                }
+    }
+
+    /** what the / menu shows now: the caret is read off the box, so a caret moved off the word closes it */
     slashShown() {
+        if (this.box)
+            this.slashMenu.at(this.box.value(), this.box.selected_range().end);
         return this.slashMenu.shown(menuNames(this.skills, this.pluginSkills));
     }
 
@@ -3678,6 +3692,7 @@ export default class Chat extends View {
             const lines = await reader.readEarlier();
             if (this.reader !== reader) return;
             this.model.addEarlier(lines);
+            this.learnSkills(lines);
         }
         this.makePictures(cx);
         // the saved line may sit inside a folded row: the place is that row
