@@ -375,12 +375,13 @@ export default class Deck extends View {
         this.filePresses = filePresses;
         this.week = week;
         this.isStale = listed === null;
-        if (listed)
-            this.rows = rows.sort(
-                (a, b) =>
-                    rankOf(a.status) - rankOf(b.status) ||
-                    byName(a.name, b.name),
-            );
+        this.rows = !listed
+            ? rows
+            : rows.sort(
+                  (a, b) =>
+                      rankOf(a.status) - rankOf(b.status) ||
+                      byName(a.name, b.name),
+              );
         const next = nextThreads(
             /** @type {any} */ (shared(THREADS_KEY)),
             threadFacts(this.rows, this.week),

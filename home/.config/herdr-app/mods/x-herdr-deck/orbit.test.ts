@@ -808,6 +808,16 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
         expect(rows[0]?.pending.get('o1')).toBe('tick');
     });
 
+    // a read the chain let go as stalled still runs: it must never write into the rows the deck draws
+    test('the rows it is handed stay as they were', async () => {
+        const kept = row(SID, [ask]);
+        const was = kept.pending;
+        await withPending([kept], async () =>
+            JSON.stringify({ at: 1, id: 'o1', verdict: 'tick' }),
+        );
+        expect(kept.pending).toBe(was);
+    });
+
     test('a row with no asks reads no ticks file', async () => {
         const read: string[] = [];
         await withPending([row(SID, [])], async (sid) => {

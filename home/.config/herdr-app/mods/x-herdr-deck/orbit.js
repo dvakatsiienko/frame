@@ -152,17 +152,29 @@ export function pendingPresses(text, taken) {
 
 /**
  * the rows with their presses from the ticks files, read before any of them draws: a row drawn before its file was read
- * showed a ticked ask open, and a key on it ticked again (FRM-628)
+ * showed a ticked ask open, and a key on it ticked again (FRM-628); new rows, never a write into the ones it is handed,
+ * which may be the rows the deck draws
  * @template {{ sid: string, asks: unknown[], taken: number, pending: Map<string, Press['verdict']> }} R
  * @param {R[]} rows
  * @param {(sid: string) => Promise<string | null>} readTicks
  * @returns {Promise<R[]>}
  */
 export async function withPending(rows, readTicks) {
+    /** @type {R[]} */
+    const read = [];
     for (const row of rows)
-        if (row.asks.length)
-            row.pending = pendingPresses(await readTicks(row.sid), row.taken);
-    return rows;
+        read.push(
+            row.asks.length
+                ? {
+                      ...row,
+                      pending: pendingPresses(
+                          await readTicks(row.sid),
+                          row.taken,
+                      ),
+                  }
+                : row,
+        );
+    return read;
 }
 
 /** a read still running after this long has stalled: the chain lets it go and the next read starts */
