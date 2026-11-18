@@ -453,3 +453,15 @@ describe('files waiting join the turn with the words (FRM-638 slice 5, dima’s 
         expect(w.reload().markOf(THREAD)?.files).toEqual([PIC]);
     });
 });
+
+describe('retexts under one mark run one at a time (sixth sense, slice 5 round 1)', () => {
+    test('a × right after an add leaves the row without the file', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'look', ON, ['/a.png']);
+        const add = w.magic.typed(THREAD, 'look', ON, ['/a.png', '/b.png']);
+        const remove = w.magic.typed(THREAD, 'look', ON, ['/a.png']);
+        await Promise.all([add, remove]);
+        expect(w.rows()).toEqual([{ id: 'id-1', text: 'look\n/a.png' }]);
+        expect(w.magic.markOf(THREAD)?.files).toEqual(['/a.png']);
+    });
+});

@@ -133,6 +133,8 @@ import {
     viewCopy,
 } from './shots.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
+import { loadableSkills } from './skills.js';
+import { createSlashMenu, listedSkills, menuNames } from './slash.js';
 import { transcriptPath } from './thread.js';
 import { createToolFolds, isCallRow, withCallRows } from './tool-folds.js';
 import { typedMarkdown } from './typed.js';
@@ -233,6 +235,8 @@ const THUMB_SIZE = 56;
 const SENT_THUMB = 96;
 const PASTE_NOTE_MS = 6000;
 const NO_IMAGE = 'No image on the clipboard';
+// each save waits for the one before it, so an older store never lands last
+let shotsSaved = Promise.resolve();
 /** @type {import('./attachments.js').AttachmentsIo} */
 const ATTACH_IO = {
     deleteCopies: (rels) => {
@@ -241,7 +245,7 @@ const ATTACH_IO = {
     makePreview: saveFileShot,
     now: Date.now,
     save: (store) => {
-        saveShots(store).catch(() => {});
+        shotsSaved = shotsSaved.then(() => saveShots(store)).catch(() => {});
     },
 };
 /** @type {import('./sent-pictures.js').SentIo} */
@@ -262,6 +266,11 @@ const SENT_IO = {
     },
 };
 const QUILL_ENTER = 'x_herdr_chat_quill_enter';
+/** @type {import('./skills.js').SkillFs} */
+const SKILL_FS = {
+    list: (dir) => readdir(dir).catch(() => []),
+    read: (path) => readTextFile(path).catch(() => null),
+};
 const NOT_IN_HERDR = 'This thread does not run in herdr: nothing was sent';
 
 /** the join file's doors in herdr: a mkdir lock dir, its age from macOS stat, a write over the text it read */
@@ -551,6 +560,7 @@ export default class Chat extends View {
     /** a picture's open button starts CleanShot's annotate, else Preview (`chatter.pictures.cleanshot`) */
     isCleanShot = true;
     isCmdHeld = false;
+    noteSerial = 0;
     /** the effort slider while the picker is open @type {import('./effort.js').EffortPopover | null} */
     effortPop = null;
     /** a model switch waiting on his yes: it drops the thread's cache @type {string | null} */
@@ -564,6 +574,12 @@ export default class Chat extends View {
     pickKeys = null;
     /** the picture viewer over the chat, null when closed @type {import('./viewer.js').ViewerState | null} */
     viewer = null;
+    /** the / menu over the quill (slice 6) */
+    slashMenu = createSlashMenu();
+    /** the thread's skills, from its transcript's listing @type {Map<string, string>} */
+    skills = new Map();
+    /** the skills of the plugins its folder enables @type {Map<string, string>} */
+    pluginSkills = new Map();
     /** the newest open asked: a slow one never reopens over a newer one or a close */
     viewerAsk = 0;
     /** @type {import('gpui-kit').FocusHandle | null} */
@@ -588,6 +604,8 @@ export default class Chat extends View {
             }
             this.quills.apply(this.file, { text: now, type: 'typed' });
             this.typedUnderMark(box, cx);
+            this.slashMenu.typed(this.typedBefore ?? '', now);
+            cx.notify();
         });
         box.on('submit', (event, cx) => {
             const { act, caret, text } = submitted(
@@ -607,13 +625,11 @@ export default class Chat extends View {
         });
         // a paste with no text: the clipboard's image saved as a png, or files copied in Finder by their paths (FRM-613)
         box.on('paste_other', (_event, cx) => this.pasteFiles(cx));
+        // one owner from the start: what loads joins what he added meanwhile
         cx.spawn(async (cx) => {
-            this.attachments = createAttachments(
-                appHome(),
-                ATTACH_IO,
-                await loadShots(),
-            );
+            const made = this.attachments.restore(await loadShots());
             cx.notify();
+            if (await made) cx.notify();
         });
         box.on('blur', (_event, cx) => {
             this.quillKeys.blurred();
@@ -2166,9 +2182,12 @@ export default class Chat extends View {
                 this.filesUnderMark(file, cx);
             }
             this.note = read ? null : NO_IMAGE;
+            // only the newest note's timer clears it
+            const shown = ++this.noteSerial;
             if (!read)
                 cx.timer.after(PASTE_NOTE_MS, (cx) => {
-                    if (this.note === NO_IMAGE) this.note = null;
+                    if (this.note === NO_IMAGE && this.noteSerial === shown)
+                        this.note = null;
                     cx.notify();
                 });
             cx.notify();
@@ -2851,6 +2870,9 @@ export default class Chat extends View {
         this.heights.clear();
         fileRows.clear();
         toolFolds.clear();
+        this.slashMenu.clear();
+        this.skills = new Map();
+        this.pluginSkills = new Map();
         this.reader = null;
         this.file = null;
         this.address = null;
@@ -2895,6 +2917,14 @@ export default class Chat extends View {
             this.file = file;
             this.showDraft();
             cx.notify();
+            const cwd = session && JSON.parse(session)?.cwd;
+            if (typeof cwd === 'string')
+                loadableSkills(SKILL_FS, { cwd, home: home() })
+                    .then((found) => {
+                        if (this.file !== file) return;
+                        this.pluginSkills = found;
+                    })
+                    .catch(() => {});
             // only a send needs the address: a ps that fails leaves the thread readable
             const claude = await exec('ps', [
                 'eww',
@@ -2971,6 +3001,15 @@ export default class Chat extends View {
         }
         if (this.runsAt !== ran && this.settlePick()) cx.notify();
         const { changed, removed } = this.model.add(lines);
+        for (const line of lines)
+            if (line.includes('"skill_listing"'))
+                try {
+                    const content = JSON.parse(line)?.attachment?.content;
+                    for (const [name, about] of listedSkills(content))
+                        this.skills.set(name, about);
+                } catch {
+                    // half a line never reaches here: the reader hands over whole lines
+                }
         this.makePictures(cx);
         // his marked words showing as his message settle the mark in this same draw: they leave the quill as they land
         const added = new Set(changed);

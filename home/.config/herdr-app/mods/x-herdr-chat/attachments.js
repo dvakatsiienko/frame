@@ -27,15 +27,48 @@ import { previewCopies, waitingFiles, withWaitingFiles } from './shots.js';
 export function createAttachments(home, io, store) {
     /** @type {Map<string, Waiting[]>} */
     const threads = new Map();
-    for (const [thread, paths] of waitingFiles(store, home))
-        threads.set(
-            thread,
-            paths.map((path) => ({
-                path,
-                preview: path.slice(home.length + 1),
-            })),
-        );
     let saved = store;
+
+    /**
+     * what waited before a reload comes back: a pasted shot is its own preview, a picture from elsewhere gets its
+     * preview made again; a thread he already added to since the start keeps what he added
+     * @param {import('./shots.js').ShotStore} loaded @returns {Promise<boolean>} whether a preview was made
+     */
+    async function restore(loaded) {
+        const isMerge = threads.size > 0;
+        /** @type {[string, string][]} */
+        const remake = [];
+        for (const [thread, paths] of waitingFiles(loaded, home)) {
+            if (threads.has(thread)) continue;
+            threads.set(
+                thread,
+                paths.map((path) => {
+                    const isOurs = path.startsWith(`${home}/`);
+                    if (!isOurs && isImagePath(path))
+                        remake.push([thread, path]);
+                    return {
+                        path,
+                        preview: isOurs ? path.slice(home.length + 1) : null,
+                    };
+                }),
+            );
+            saved = withWaitingFiles(saved, thread, paths, home);
+        }
+        // files he added before the load and the loaded ones go to disk together, never his alone
+        if (isMerge) io.save(saved);
+        const at = io.now();
+        let isMade = false;
+        for (const [i, [thread, path]] of remake.entries()) {
+            const preview = await io.makePreview(path, at + i);
+            if (!preview) continue;
+            const waiting = of(thread).find((w) => w.path === path);
+            if (waiting && !waiting.preview) {
+                waiting.preview = preview;
+                isMade = true;
+            } else io.deleteCopies([preview]);
+        }
+        return isMade;
+    }
 
     /** @param {string} thread */
     const of = (thread) => threads.get(thread) ?? [];
@@ -59,6 +92,8 @@ export function createAttachments(home, io, store) {
             gone.map(({ path, preview }) => ({ path, rel: preview })),
             home,
         );
+
+    restore(store);
 
     return {
         /**
@@ -101,6 +136,7 @@ export function createAttachments(home, io, store) {
             );
             io.deleteCopies(copiesOf(gone));
         },
+        restore,
 
         /**
          * a send takes every file waiting: their paths, in the order he added them

@@ -49,10 +49,17 @@ describe('a pasted image waits as a file', () => {
             't1 files': [rel],
         });
     });
-    it('leaves a file dropped from elsewhere out of the store', () => {
-        expect(
-            withWaitingFiles({}, 't1', ['/Users/d/a.png', path], '/app'),
-        ).toEqual({ 't1 files': [rel] });
+    it('keeps a file dropped from elsewhere by its own path, so a reload brings it back', () => {
+        const store = withWaitingFiles(
+            {},
+            't1',
+            ['/Users/d/a.png', path],
+            '/app',
+        );
+        expect(store).toEqual({ 't1 files': ['/Users/d/a.png', rel] });
+        expect(waitingFiles(store, '/app')).toEqual([
+            ['t1', ['/Users/d/a.png', path]],
+        ]);
     });
     it('drops it from the store once × takes it', () => {
         const store = { 't1 files': [rel], 't2 files': ['x.png'] };

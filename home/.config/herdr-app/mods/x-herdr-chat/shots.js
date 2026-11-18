@@ -51,16 +51,17 @@ export function parseShots(text) {
 }
 
 /**
- * the store after a thread's waiting files change: the ones in our own dir (a pasted png) under `<thread> files`, so
- * a reload brings them back; a file dropped from elsewhere stays out
+ * the store after a thread's waiting files change, under `<thread> files`, so a reload brings them back: ours (a
+ * pasted png) by its place under the app dir, a file dropped or picked from elsewhere by its own path
  * @param {ShotStore} store @param {string} thread @param {string[]} files @param {string} home
  * @returns {ShotStore}
  */
 export function withWaitingFiles(store, thread, files, home) {
+    // ours by its place under the app dir, a file from elsewhere by its own path: both come back after a reload
     const own = `${home}/`;
-    const kept = files
-        .filter((p) => p.startsWith(own))
-        .map((p) => p.slice(own.length));
+    const kept = files.map((p) =>
+        p.startsWith(own) ? p.slice(own.length) : p,
+    );
     const key = `${thread} files`;
     const { [key]: _old, ...rest } = store;
     return kept.length ? { ...rest, [key]: kept } : rest;
@@ -75,7 +76,7 @@ export const waitingFiles = (store, home) =>
         .filter(([key]) => key.endsWith(' files'))
         .map(([key, rels]) => [
             key.slice(0, -' files'.length),
-            rels.map((r) => `${home}/${r}`),
+            rels.map((r) => (r.startsWith('/') ? r : `${home}/${r}`)),
         ]);
 
 // a picture's square thumb under the app dir: one file per path

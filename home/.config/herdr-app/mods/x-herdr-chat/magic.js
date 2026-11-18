@@ -49,6 +49,8 @@ export const retextWait = (text) => (text.trim() ? RETEXT_MS : 0);
 export function createMagic({ io, dir, quills, newId }) {
     /** each row's write, so a take-back never runs before the append it undoes @type {Map<string, Promise<boolean>>} */
     const written = new Map();
+    /** each thread's retext under way, so the next waits for it @type {Map<string, Promise<boolean>>} */
+    const retexts = new Map();
 
     /** @param {Mark} mark */
     const set = (mark) => quills.apply(mark.thread, { mark, type: 'marked' });
@@ -196,25 +198,40 @@ export function createMagic({ io, dir, quills, newId }) {
          * @param {string[]} [files] the files waiting
          * @returns {Promise<boolean>} whether the mark changed
          */
-        async typed(thread, text, joins, files = []) {
-            const mark = quills.markOf(thread);
-            const had = withPaths(mark?.said ?? '', mark?.files ?? []);
-            if (mark?.state !== 'pending' || withPaths(text, files) === had)
-                return false;
-            if (isTaken(joins, mark.id)) return false;
-            if (!text && !files.length)
-                return (await unmark(mark, joins)).act === 'unmarked';
-            await written.get(mark.id);
-            const body = withPaths(text, files);
-            if (!(await retextJoin(io, fileOf(mark), mark.id, body)))
-                return false;
-            const now = quills.apply(thread, {
-                files,
-                id: mark.id,
-                said: text,
-                type: 'retexted',
-            }).mark;
-            return withPaths(now?.said ?? '', now?.files ?? []) === body;
+        typed(thread, text, joins, files = []) {
+            // one retext at a time per thread, each reading the mark as the one before left it; with none under way it
+            // starts at once, so an emptied quill drops its mark in this same draw
+            const before = retexts.get(thread);
+            const run = before
+                ? before.then(() => retext(thread, text, joins, files))
+                : retext(thread, text, joins, files);
+            const settled = run.catch(() => false);
+            retexts.set(thread, settled);
+            settled.then(() => {
+                if (retexts.get(thread) === settled) retexts.delete(thread);
+            });
+            return run;
         },
     };
+
+    /** @param {string} thread @param {string} text @param {Joins | null | undefined} joins @param {string[]} files */
+    async function retext(thread, text, joins, files) {
+        const mark = quills.markOf(thread);
+        const had = withPaths(mark?.said ?? '', mark?.files ?? []);
+        if (mark?.state !== 'pending' || withPaths(text, files) === had)
+            return false;
+        if (isTaken(joins, mark.id)) return false;
+        if (!text && !files.length)
+            return (await unmark(mark, joins)).act === 'unmarked';
+        await written.get(mark.id);
+        const body = withPaths(text, files);
+        if (!(await retextJoin(io, fileOf(mark), mark.id, body))) return false;
+        const now = quills.apply(thread, {
+            files,
+            id: mark.id,
+            said: text,
+            type: 'retexted',
+        }).mark;
+        return withPaths(now?.said ?? '', now?.files ?? []) === body;
+    }
 }

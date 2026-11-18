@@ -113,3 +113,45 @@ describe('a thread’s attachments, one owner (FRM-638 slice 5)', () => {
         ]);
     });
 });
+
+describe('what waited comes back whole, from one owner (sixth sense, slice 5 round 1)', () => {
+    test('a picture dropped from elsewhere comes back after a reload, its preview made again', async () => {
+        const { files, io } = setup();
+        expect(
+            await files.restore({ 't1 files': ['/Users/d/Desktop/a.png'] }),
+        ).toBe(true);
+        expect(files.of('t1')).toEqual([
+            {
+                path: '/Users/d/Desktop/a.png',
+                preview: 'data/x-herdr-chat/shots/shot-100.png',
+            },
+        ]);
+        expect(io.makePreview).toHaveBeenCalledWith(
+            '/Users/d/Desktop/a.png',
+            100,
+        );
+    });
+
+    test('a paste before the load joins what loads: the save holds both threads', async () => {
+        const { files, io } = setup();
+        files.paste('t2', pasted);
+        await files.restore({
+            't1 files': ['data/x-herdr-chat/shots/shot-9.png'],
+        });
+        expect(files.of('t2')).toHaveLength(1);
+        expect(files.of('t1')).toHaveLength(1);
+        expect(io.save).toHaveBeenLastCalledWith({
+            't1 files': ['data/x-herdr-chat/shots/shot-9.png'],
+            't2 files': [pasted],
+        });
+    });
+
+    test('a thread he added to before the load keeps what he added', async () => {
+        const { files } = setup();
+        files.paste('t1', pasted);
+        await files.restore({
+            't1 files': ['data/x-herdr-chat/shots/shot-9.png'],
+        });
+        expect(files.of('t1').map((w) => w.preview)).toEqual([pasted]);
+    });
+});
