@@ -476,10 +476,10 @@ describe('checkPocket', () => {
         ['a wait with no tail', '- [ ] #1 ⏳ cpu read, until 11-14', true],
         [
             'a later with its tail',
-            '- [ ] #1 💤 helga grill — later: dima 19:58',
+            '- [ ] #1 🦥 helga grill — later: dima 19:58',
             false,
         ],
-        ['a later with no tail', '- [ ] #1 💤 helga grill', true],
+        ['a later with no tail', '- [ ] #1 🦥 helga grill', true],
         [
             'a dated with its date',
             '- [ ] #1 📅 crow read — on: 2026-11-14',
@@ -493,13 +493,13 @@ describe('checkPocket', () => {
     test.each([
         [
             'open, waits, later',
-            ['redraw', '⏳ a — waits for: x', '💤 b — later: dima 1'],
+            ['redraw', '⏳ a — waits for: x', '🦥 b — later: dima 1'],
             false,
         ],
         ['an open line under a wait', ['⏳ a — waits for: x', 'redraw'], true],
         [
             'a wait under a later',
-            ['💤 b — later: dima 1', '⏳ a — waits for: x'],
+            ['🦥 b — later: dima 1', '⏳ a — waits for: x'],
             true,
         ],
         [
@@ -508,7 +508,7 @@ describe('checkPocket', () => {
                 '⏳ a — waits for: x',
                 '📅 b — on: 2026-11-11',
                 '📅 c — on: 2026-11-14',
-                '💤 d — later: dima 1',
+                '🦥 d — later: dima 1',
             ],
             false,
         ],

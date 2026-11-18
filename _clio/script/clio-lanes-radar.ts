@@ -164,7 +164,7 @@ function placeFlyways() {
                 return match[1] ?? [];
             },
         );
-        // the flyway's own order is the reading order: open, then ⏳, then 💤 (pocket-check holds it)
+        // the flyway's own order is the reading order: open, then ⏳, then 🦥 (pocket-check holds it)
         thread(key).flyway = open;
     }
 }

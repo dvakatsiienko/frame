@@ -139,7 +139,7 @@ export function checkPocket(
             if (flywayTitles.has(title))
                 report(`a second «${title}»: one flyway per thread`);
             flywayTitles.add(title);
-            // dima, 2026-11-09 (o66, o68): open lines, then ⏳ waits, then 📅 dated, then 💤 later; a finished line leaves that turn
+            // dima, 2026-11-09 (o66, o68): open lines, then ⏳ waits, then 📅 dated, then 🦥 later; a finished line leaves that turn
             const lines = flywayLines(text);
             const leave = (ref: string) =>
                 `node script/flyway-done.ts ${id} ${ref.replace(/^#/, '')}`;
@@ -170,7 +170,7 @@ export function checkPocket(
                     );
                 if (kind === 'later' && !line.text.includes(' — later: '))
                     report(
-                        `${line.ref} 💤 ends «— later: dima <time>»: ${reword(line.n)}`,
+                        `${line.ref} 🦥 ends «— later: dima <time>»: ${reword(line.n)}`,
                     );
                 if (kind === 'dated' && !flywayDate(line.text))
                     report(
@@ -206,7 +206,7 @@ export function checkPocket(
             const misplaced = texts.findIndex((t, i) => t !== sorted[i]);
             if (misplaced >= 0)
                 report(
-                    `${lines.filter((l) => !l.done)[misplaced]?.ref} is out of order: open, then ⏳, then 📅 by date, then 💤 — node script/flyway-done.ts ${id} --sort`,
+                    `${lines.filter((l) => !l.done)[misplaced]?.ref} is out of order: open, then ⏳, then 📅 by date, then 🦥 — node script/flyway-done.ts ${id} --sort`,
                 );
         }
         const born = localDay(front.scalars.created_date ?? '');

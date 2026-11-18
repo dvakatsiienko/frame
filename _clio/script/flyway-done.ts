@@ -15,7 +15,7 @@ const usage =
 
 export function flywayKind(text: string): (typeof kinds)[number] {
     const body = text.replace(LINE_ID, '');
-    if (body.startsWith('💤')) return 'later';
+    if (body.startsWith('🦥')) return 'later';
     if (body.startsWith('📅')) return 'dated';
     if (body.startsWith('⏳')) return 'waits';
     return 'open';
@@ -173,7 +173,7 @@ function rewrite(id: string, added: string[]) {
         ...sorted.flatMap((line) => ['--ac', line]),
     ]);
     console.log(
-        `${id} ${added.length ? 'line added, ' : ''}sorted: open, then ⏳, then 📅 by date, then 💤`,
+        `${id} ${added.length ? 'line added, ' : ''}sorted: open, then ⏳, then 📅 by date, then 🦥`,
     );
 }
 

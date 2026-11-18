@@ -51,24 +51,24 @@ function pocketWith(lines: string[]) {
 describe('flyway-done', () => {
     test('a line takes its kind from its marker', () => {
         expect(flywayKind('⏳ a — waits for: x')).toBe('waits');
-        expect(flywayKind('💤 b — later: dima 1')).toBe('later');
+        expect(flywayKind('🦥 b — later: dima 1')).toBe('later');
         expect(flywayKind('📅 c — on: 2026-11-14')).toBe('dated');
         expect(flywayKind('redraw the board')).toBe('open');
     });
 
     test('the sort keeps each kind in its own order', () => {
-        expect(flywaySorted(['💤 c', '⏳ a', 'one', '⏳ b', 'two'])).toEqual([
+        expect(flywaySorted(['🦥 c', '⏳ a', 'one', '⏳ b', 'two'])).toEqual([
             'one',
             'two',
             '⏳ a',
             '⏳ b',
-            '💤 c',
+            '🦥 c',
         ]);
     });
 
     test.skipIf(!hasBacklog)('--sort rewrites the flyway in kind order', () => {
         const { read, run } = pocketWith([
-            '💤 c — later: dima 1',
+            '🦥 c — later: dima 1',
             '⏳ a — waits for: x',
             'one',
             '📅 d — on: 2026-11-14',
@@ -78,19 +78,19 @@ describe('flyway-done', () => {
             'f3 one',
             'f2 ⏳ a — waits for: x',
             'f4 📅 d — on: 2026-11-14',
-            'f1 💤 c — later: dima 1',
+            'f1 🦥 c — later: dima 1',
         ]);
     });
 
     test.skipIf(!hasBacklog)(
         '--add places a new open line above the waits',
         () => {
-            const { read, run } = pocketWith(['one', '💤 c — later: dima 1']);
+            const { read, run } = pocketWith(['one', '🦥 c — later: dima 1']);
             run('--add', 'two');
             expect(read()).toEqual([
                 'f1 one',
                 'f3 two',
-                'f2 💤 c — later: dima 1',
+                'f2 🦥 c — later: dima 1',
             ]);
         },
     );
@@ -107,9 +107,9 @@ describe('flyway-done', () => {
 
     test('a kind reads past the id', () => {
         expect(flywayKind('f12 ⏳ a — waits for: x')).toBe('waits');
-        expect(flywaySorted(['f1 💤 c', 'f2 one'])).toEqual([
+        expect(flywaySorted(['f1 🦥 c', 'f2 one'])).toEqual([
             'f2 one',
-            'f1 💤 c',
+            'f1 🦥 c',
         ]);
     });
 
