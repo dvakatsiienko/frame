@@ -4,6 +4,7 @@ import {
     mkdtempSync,
     readFileSync,
     rmSync,
+    utimesSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -32,9 +33,9 @@ const world = () => {
     const starts = snapshotRepoSettings(repoSettingsPaths(repo));
     return { keep: join(root, 'run/repo-settings'), local, repo, starts };
 };
-// the line cc's debug file carries for a settings write, copied from a live child's log
-const wrote = (path: string) =>
-    `2026-11-18T15:03:56.595Z [DEBUG] Writing to temp file: ${path}.tmp.93883.00582f79d584\n`;
+// the line cc's debug file carries for a settings write, copied from a live child's log, stamped now unless `at` says
+const wrote = (path: string, at = new Date()) =>
+    `${at.toISOString()} [DEBUG] Writing to temp file: ${path}.tmp.93883.00582f79d584\n`;
 
 it("a settings file the child's own write changed is put back, its version kept", () => {
     const w = world();
@@ -87,6 +88,24 @@ it("a change the child's log never names stays, with the start copy beside it", 
         [
             `mods:live: ${w.local} changed during the run, not by the child's write; left as it is, the start copy at ${start}`,
         ],
+    ]);
+});
+
+it("a peer's write after the child's last one stays, with the start copy beside it", () => {
+    const w = world();
+    const childAt = new Date(Date.now() - 60_000);
+    writeFileSync(w.local, '{"permissions":{"allow":["his rule"]}}\n');
+    utimesSync(w.local, new Date(), new Date());
+    putBackRepoSettings(w.starts, wrote(w.local, childAt), w.keep);
+    expect([
+        readFileSync(w.local, 'utf8'),
+        readFileSync(
+            join(w.keep, `${w.local.replaceAll('/', '_')}.start`),
+            'utf8',
+        ),
+    ]).toEqual([
+        '{"permissions":{"allow":["his rule"]}}\n',
+        '{"outputStyle":"crew"}\n',
     ]);
 });
 

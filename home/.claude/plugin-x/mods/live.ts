@@ -203,6 +203,8 @@ async function serve() {
     // --plugin-dir lost the name clash to the live one (PK-65); a mod not live yet joins last
     const home = homedir();
     const dirs = servedDirs(liveDirs(home), mods, (d) => manifestName(d, home));
+    // each run its own keep dir, so a next run's put-back never writes over this one's copies
+    const runStamp = new Date().toISOString().replaceAll(':', '-');
     const settingsAtStart = snapshotRepoSettings(
         repoSettingsPaths(process.cwd()),
     );
@@ -210,7 +212,7 @@ async function serve() {
         for (const line of putBackRepoSettings(
             settingsAtStart,
             readFileSync(debugLog, 'utf8'),
-            join(dir, 'repo-settings'),
+            join(dir, 'repo-settings', runStamp),
         ))
             console.error(line);
     };
