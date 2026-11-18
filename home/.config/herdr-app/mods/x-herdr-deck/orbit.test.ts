@@ -33,6 +33,7 @@ import {
     tickAll,
     tickAllTakes,
     tickAllThread,
+    ticketUrl,
     unbold,
     waitOf,
     withBandPress,
@@ -1111,5 +1112,23 @@ describe('the ticks files are written one at a time (FRM-628)', () => {
             isRun = true;
         });
         expect(isRun).toBe(true);
+    });
+});
+
+describe('the glide card names its running ticket (FRM-649:W39)', () => {
+    test('a ticket id opens its linear page; anything else draws no link', () => {
+        expect(ticketUrl('FRM-555')).toBe(
+            'https://linear.app/x-com/issue/FRM-555',
+        );
+        for (const odd of [
+            undefined,
+            null,
+            '',
+            'frm-555',
+            'FRM-555 x',
+            'FRM-',
+            42,
+        ])
+            expect(ticketUrl(odd)).toBeNull();
     });
 });

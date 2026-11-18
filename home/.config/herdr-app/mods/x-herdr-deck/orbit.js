@@ -53,6 +53,17 @@ export function linkOf(link) {
 }
 
 /**
+ * a glide card's running ticket as its linear page; a ticket in any other shape draws nothing (FRM-649:W39)
+ * @param {unknown} ticket the card's `ticket`, which x-mod-stash derives from its title
+ * @returns {string | null}
+ */
+export function ticketUrl(ticket) {
+    return typeof ticket === 'string' && /^[A-Z]+-\d+$/.test(ticket)
+        ? `https://linear.app/x-com/issue/${ticket}`
+        : null;
+}
+
+/**
  * a session's state file, found by the pid its registry file is named for: after a `/clear` the old id's file can
  * linger a moment, so the newest wins
  * @param {any[]} states

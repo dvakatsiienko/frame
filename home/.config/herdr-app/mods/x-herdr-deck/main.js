@@ -49,6 +49,7 @@ import {
     tickAll,
     tickAllTakes,
     tickAllThread,
+    ticketUrl,
     waitOf,
     withBandPress,
     withPending,
@@ -62,7 +63,7 @@ import { SENT_MS, next, pressState, untickDoor } from './press.js';
 /** @typedef {import('./orbit.js').Ask} Ask */
 /** @typedef {{ asks: Ask[], context: number | null, hot: { since: number } | null, model: string | null, name: string, pending: Map<string, import('./orbit.js').Press['verdict']>, phases: string[], pid: number, sid: string, status: string, taken: number, wait: string | null }} Row */
 
-/** @typedef {{ id?: string, title: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
+/** @typedef {{ id?: string, title: string, ticket?: string, items?: { text: string }[], current?: number, endedAt?: number }} Lane */
 
 const CLAUDE = `${home()}/.claude`;
 const STATES = `${CLAUDE}/shelf/herdr-state`;
@@ -1269,6 +1270,7 @@ export default class Deck extends View {
         const key = l.id ?? l.title;
         const open = this.open.has(key);
         const now = items[current];
+        const ticket = ticketUrl(l.ticket);
         /** @param {string} text @param {number} i */
         const step = (text, i) =>
             h_flex()
@@ -1307,6 +1309,38 @@ export default class Deck extends View {
                     .gap(8)
                     .items_center()
                     .child(line(t.foreground, SIZE.main).child(`🛼 ${l.title}`))
+                    .when(Boolean(ticket), (el) =>
+                        el.child(
+                            div()
+                                .id(`lane-ticket-${key}`)
+                                .flex_none()
+                                .px(6)
+                                .rounded(4)
+                                .border_1()
+                                .border_color(t.border)
+                                .text_size(SIZE.small)
+                                .text_color(t.muted)
+                                .cursor_pointer()
+                                .hover((st) =>
+                                    st.text_color(t.foreground).underline(),
+                                )
+                                .tooltip(`open ${l.ticket} in linear`)
+                                .on_mouse_down('left', (_e, cx) =>
+                                    cx.stop_propagation(),
+                                )
+                                .on_click((_e, cx) => {
+                                    cx.stop_propagation();
+                                    cx.spawn(async () => {
+                                        await exec('open', [
+                                            ticket ?? '',
+                                        ]).catch(
+                                            /** @returns {null} */ () => null,
+                                        );
+                                    });
+                                })
+                                .child(l.ticket ?? ''),
+                        ),
+                    )
                     .child(
                         div()
                             .flex_none()
