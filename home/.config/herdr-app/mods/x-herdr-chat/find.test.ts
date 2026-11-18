@@ -20,6 +20,14 @@ describe('find in the chat (FRM-638 slice 6)', () => {
         expect(hitsOf(rows, '  ')).toEqual([]);
     });
 
+    test('his query in capitals finds the same rows (sixth sense, round 1)', () => {
+        expect(hitsOf(rows, 'Viewer').map((h) => h.id)).toEqual([
+            'd',
+            'c',
+            'a',
+        ]);
+    });
+
     test('a search shows the newest hit and counts it', () => {
         const find = createFind();
         find.open();
