@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 )
 
 const dispatchAbove = "lane: side\n\n## 🎯 done test\n\ngiven a ticket, when it runs, then it holds\n\n"
@@ -712,5 +713,25 @@ func TestDispatchRecordsTheDispatchingClioOnTheCodie(t *testing.T) {
 				t.Fatalf("exit %d, records %+v, want s1's coordinator %q:\n%s", got.code, written.Threads, c.want, got.stdout)
 			}
 		})
+	}
+}
+
+// a record write that names no lane (a summon of a dispatched thread) keeps the lane and the clio that dispatched it
+func TestThreadRecordWithNoLaneKeepsItsDispatchingClio(t *testing.T) {
+	// serial: t.Setenv names the store
+	store := filepath.Join(t.TempDir(), "threads.json")
+	t.Setenv("X_THREADS", store)
+	now := time.Now()
+	if err := writeThreadRecord(thread{SessionID: "s1", Role: "codie", Lane: "cli-3", Coordinator: "clio-wing-1"}, now, true); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := writeThreadRecord(thread{SessionID: "s1", Role: "codie", Ticket: "FRM-2"}, now, true); err != nil {
+		t.Fatal(err)
+	}
+
+	written, _ := readThreadStore(store)
+	if len(written.Threads) != 1 || written.Threads[0].Coordinator != "clio-wing-1" || written.Threads[0].Lane != "cli-3" {
+		t.Fatalf("records %+v, want s1 kept in cli-3 by clio-wing-1", written.Threads)
 	}
 }

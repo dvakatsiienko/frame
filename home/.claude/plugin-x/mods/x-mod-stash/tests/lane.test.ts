@@ -2178,13 +2178,18 @@ const dispatched = (
         pid: number;
         lane?: string;
         coordinator?: string;
+        at?: number;
     }[],
     self = recordOf(CLIO),
 ) => ({
     files: {
         [THREADS_FILE]: threadsFile([
             { pid: PID, sessionId: SID, ...self },
-            ...codies.map((c) => ({ ...c, role: 'codie' })),
+            ...codies.map((c) => ({
+                coordinator: 'clio-main',
+                ...c,
+                role: 'codie',
+            })),
         ]),
     },
     peers: codies.map((c) => codieAt(c.sessionId, { pid: c.pid })),
@@ -2263,21 +2268,38 @@ test('a second dispatch into the lane keeps one card and links its codie', async
     titled(w, marked('   '));
     await start($);
     await poll(w);
+    // the first codie lives on and keeps its record, listed after the joiner: only the newest dispatch holds the link
     w.files[THREADS_FILE] = threadsFile([
         { pid: PID, sessionId: SID, ...recordOf(CLIO) },
         {
+            at: 2,
+            coordinator: 'clio-main',
             lane: 'mods-lane-9',
             pid: 5002,
             role: 'codie',
             sessionId: 'j0j0j0j0-joiner',
         },
+        {
+            at: 1,
+            coordinator: 'clio-main',
+            lane: 'mods-lane-9',
+            pid: 5001,
+            role: 'codie',
+            sessionId: CODIE,
+        },
     ]);
     titled(w, marked('    '));
+    await poll(w);
+    const links = () =>
+        kept(w)[0]?.history.filter((h) => h.act === 'link codie').length;
+    const after = links();
+    await poll(w);
     await poll(w);
     const cards = kept(w).filter((l) => !l.endedAt);
     expect(cards.map((l) => [l.members.codie, l.items.length])).toEqual([
         ['⚡ 🔧 mods | FRM-9', 4],
     ]);
+    expect(links()).toBe(after);
 });
 
 test('a card clio opened by hand on the plan gets no second one from the dispatch', async ($, on) => {
@@ -2344,4 +2366,22 @@ test('a wing opens the card of a lane it dispatched, its runner set', async ($, 
     expect(kept(w).map((l) => [l.title, l.runner, l.members.codie])).toEqual([
         ['mods lane 9', wing, CODIE_NAME],
     ]);
+});
+
+test('a codie a summon recorded with a lane but no dispatching clio opens no card', async ($, on) => {
+    const w = world(
+        on,
+        dispatched([
+            {
+                coordinator: undefined,
+                lane: 'mods-lane-9',
+                pid: 5001,
+                sessionId: CODIE,
+            },
+        ]),
+    );
+    titled(w, marked('   '));
+    await start($);
+    await poll(w);
+    expect(kept(w)).toEqual([]);
 });

@@ -3632,8 +3632,8 @@ async function readPlanSteps(
 }
 
 // a dispatch opens its lane's card (FRM-602): x's record of a live codie names the lane, whose plan file holds the steps,
-// and the clio that dispatched it, whose session opens the card (a record with none is main's); a lane any card ever
-// followed opens none again, and a joiner's dispatch links its codie to the open card
+// and the clio that dispatched it, whose session opens the card; a record with no dispatching clio (a summon's) opens
+// none. a lane any card ever followed opens none again, and the newest live codie dispatched into a lane holds its link
 async function openDispatchedLanes($: EngineInterface) {
     const self = await selfLive($);
     const label =
@@ -3647,14 +3647,22 @@ async function openDispatchedLanes($: EngineInterface) {
         (t): t is ThreadRecord & { lane: string } =>
             t.role === 'codie' &&
             /^[\w.-]+$/.test(t.lane ?? '') &&
-            (t.coordinator ?? 'clio-main') === label,
+            t.coordinator === label,
     );
     if (!dispatched.length) return;
     const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
     const live = (await registry($)).filter((r) => r.isAlive);
+    const newest = new Map<
+        string,
+        { codie: ThreadRecord & { lane: string }; member: Registered }
+    >();
     for (const codie of dispatched) {
         const member = live.find((r) => r.base.sid === codie.sessionId);
-        if (!member) continue;
+        const was = newest.get(codie.lane);
+        if (member && (!was || (codie.at ?? 0) > (was.codie.at ?? 0)))
+            newest.set(codie.lane, { codie, member });
+    }
+    for (const { codie, member } of newest.values()) {
         const plan = `~/.local/state/x/lanes/${codie.lane}/lane-plan.md`;
         const path = plan.replace(/^~(?=\/)/, home);
         const lanes = await readLanes($);
@@ -4199,6 +4207,7 @@ type ThreadRecord = {
     // the clio that dispatched a lane member, by x's owner label: clio-main or clio-wing-<n>
     coordinator?: string;
     wing?: number;
+    at?: number;
     ticket?: string;
 };
 // the standing role ids x's roles.json names (FRM-579): one place here, so a rename of the fleet's roles is a table edit

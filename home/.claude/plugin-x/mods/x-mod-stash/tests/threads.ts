@@ -10,6 +10,7 @@ export type ThreadRow = {
     wing?: number;
     lane?: string;
     coordinator?: string;
+    at?: number;
 };
 
 export const threadsFile = (rows: readonly ThreadRow[]) =>
