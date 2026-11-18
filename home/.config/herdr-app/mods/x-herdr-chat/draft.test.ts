@@ -1,3 +1,4 @@
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
 import { createDrafts } from './draft.js';
@@ -26,6 +27,16 @@ describe('every write to the quill is the draft too', () => {
         drafts.put(box, 'b.jsonl', drafts.kept('b.jsonl'));
         drafts.put(box, 'a.jsonl', drafts.kept('a.jsonl'));
         expect(shown).toBe('');
+    });
+
+    test('the quill is written in one place: no file of the chat but draft.js sets a box’s text', () => {
+        const dir = new URL('.', import.meta.url).pathname;
+        const writers = readdirSync(dir)
+            .filter((name) => name.endsWith('.js'))
+            .filter((name) =>
+                /\.set_value\(/.test(readFileSync(`${dir}${name}`, 'utf8')),
+            );
+        expect(writers).toEqual(['draft.js']);
     });
 
     test('what he typed after the taken words is what stays', () => {
