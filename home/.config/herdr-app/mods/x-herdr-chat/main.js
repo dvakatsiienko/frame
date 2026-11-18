@@ -154,9 +154,6 @@ const AUTO_WIND_DOOR_MS = 10 * 1000;
 const APPLIED_FLASH_MS = 2000;
 // a pick that shows no change by then says so
 const PICK_WAIT_MS = 12000;
-// the effort slider's stops: px between two, and the margin at each end
-const EFFORT_STEP = 46;
-const EFFORT_EDGE = 14;
 // the operator override changes with no event herdr watches, and a deck that stopped publishing changes nothing: the
 // band's facts that age are read again this often
 const BAND_AGE_MS = 5000;
@@ -449,6 +446,7 @@ export default class Chat extends View {
     permission = null;
     /** a permission change on its way @type {string | null} */
     permissionAsked = null;
+    isPermsOpen = false;
     /** the open picker holds the keyboard, so ← → reach the slider @type {import('gpui-kit').FocusHandle | null} */
     pickKeys = null;
 
@@ -1137,19 +1135,16 @@ export default class Chat extends View {
         const row = (value) =>
             h_flex()
                 .id(`chat-pick-model-${value}`)
-                .gap(8)
-                .px(8)
-                .h(26)
+                .gap(10)
+                .px(9)
+                .h(31)
                 .items_center()
-                .rounded(5)
-                .text_size(12.5)
-                .when(value === model, (el) =>
-                    el.text_color(t.foreground).bg(t.selected),
-                )
-                .when(value !== model && ready, (el) =>
+                .rounded(7)
+                .text_size(13)
+                .text_color(value === shownModel ? t.foreground : t.muted)
+                .when(value !== shownModel && ready, (el) =>
                     el
                         .cursor_pointer()
-                        .text_color(t.muted)
                         .hover((style) =>
                             style.bg(t.hover).text_color(t.foreground),
                         )
@@ -1162,25 +1157,76 @@ export default class Chat extends View {
                             cx.notify();
                         }),
                 )
-                .when(value !== shownModel && !ready, (el) =>
-                    el.text_color(t.dim),
-                )
+                .when(!ready, (el) => el.text_color(t.dim))
                 .when(value === shownModel && pending?.kind === 'model', (el) =>
                     el.text_color(t.accent),
                 )
                 .child(div().flex_1().child(value))
-                .when(value === shownModel, (el) =>
-                    el.child(div().flex_none().text_color(t.accent).child('✓')),
+                .child(
+                    div()
+                        .w(14)
+                        .flex_none()
+                        .text_color(t.foreground)
+                        .child(value === shownModel ? '✓' : ''),
                 );
         /** @param {string} text */
-        const title = (text) =>
-            div()
-                .px(8)
-                .pb(6)
-                .text_size(12)
-                .font_semibold()
-                .text_color(t.foreground)
-                .child(text);
+        const head = (text) =>
+            div().px(9).pt(8).pb(4).text_size(11).text_color(t.dim).child(text);
+        const chosenEffort =
+            EFFORTS[this.effortPop?.at ?? -1] ?? shownEffort ?? null;
+        // each level as wide as its word, the room left shared out, the chosen one raised (shepherdr's segments)
+        const levels = h_flex()
+            .mx(4)
+            .my(3)
+            .h(28)
+            .gap(2)
+            .p(2)
+            .rounded(7)
+            .bg(t.selected)
+            .children(
+                EFFORTS.map((level) =>
+                    div()
+                        .id(`chat-pick-level-${level}`)
+                        .flex_auto()
+                        .h_full()
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .rounded(5)
+                        .text_size(11.5)
+                        .when(level === chosenEffort, (el) =>
+                            el
+                                .bg(isApplied ? t.solid : t.popover)
+                                .text_color(
+                                    isApplied
+                                        ? t.solid_foreground
+                                        : pending?.kind === 'effort'
+                                          ? t.accent
+                                          : t.foreground,
+                                )
+                                .font_weight(500)
+                                .shadow_sm(),
+                        )
+                        .when(level !== chosenEffort, (el) =>
+                            el.text_color(t.muted),
+                        )
+                        .when(ready && level !== chosenEffort, (el) =>
+                            el
+                                .cursor_pointer()
+                                .hover((style) =>
+                                    style.text_color(t.foreground),
+                                )
+                                .on_click((_event, cx) => {
+                                    this.closePick();
+                                    if (level !== shownEffort)
+                                        this.pick('effort', level, cx);
+                                    this.box?.focus();
+                                    cx.notify();
+                                }),
+                        )
+                        .child(effortWord(level)),
+                ),
+            );
         return Popover.new('chat-pick')
             .anchor('bottom_right')
             .open(this.isPickOpen)
@@ -1192,6 +1238,7 @@ export default class Chat extends View {
                     : null;
                 this.pickNote =
                     isOpen && !ready ? 'Answer Claude first, then pick' : null;
+                this.isPermsOpen = false;
                 if (this.isPickOpen) this.readPermission(cx);
                 this.focusPick(cx);
                 cx.notify();
@@ -1220,78 +1267,108 @@ export default class Chat extends View {
                         this.box?.focus();
                         cx.notify();
                     })
-                    .p(4)
-                    .pt(10)
-                    .pb(10)
-                    .gap(1)
+                    .relative()
+                    .w(340)
+                    .p(5)
                     .mb(6)
                     .rounded(10)
                     .bg(t.popover)
                     .border(1)
                     .border_color(t.border)
                     .shadow_md()
-                    .child(title('Model'))
+                    .child(head('Model'))
                     .children(MODELS.map(([, label]) => row(label ?? '')))
-                    .child(div().mx(8).my(8).h(1).bg(t.border))
-                    .child(title('Effort'))
-                    .child(
-                        div()
-                            .px(8)
-                            .child(
-                                this.effortTrack(
-                                    t,
-                                    ready,
-                                    shownEffort,
-                                    pending?.kind === 'effort',
-                                    isApplied,
-                                ),
-                            ),
-                    )
-                    .child(div().mx(8).my(8).h(1).bg(t.border))
-                    .child(title('Permissions'))
-                    .child(this.permissionRow(t, ready)),
+                    .child(div().mx(4).my(4).h(1).bg(t.border))
+                    .child(head('Reasoning'))
+                    .child(levels)
+                    .child(div().mx(4).my(4).h(1).bg(t.border))
+                    .child(this.permissionsRow(t, ready))
+                    .when(this.isPermsOpen, (el) =>
+                        el.child(this.permissionsMenu(t)),
+                    ),
             );
     }
 
-    /** the thread's permission mode as he would pick it: one segment each, the live one filled @param {Theme} t @param {boolean} ready */
-    permissionRow(t, ready) {
+    /** shepherdr's row: «Permissions · Full access ›», its five modes in a small menu over the picker's foot @param {Theme} t @param {boolean} ready */
+    permissionsRow(t, ready) {
+        const shown = this.permissionAsked ?? this.permission;
+        const label = PERMISSIONS.find((p) => p.id === shown)?.label ?? '…';
         return h_flex()
-            .px(8)
-            .gap(4)
+            .id('chat-permissions')
+            .gap(10)
+            .px(9)
+            .h(31)
+            .items_center()
+            .rounded(7)
+            .text_size(13)
+            .text_color(ready ? t.foreground : t.dim)
+            .when(this.isPermsOpen, (el) => el.bg(t.hover))
+            .when(ready, (el) =>
+                el
+                    .cursor_pointer()
+                    .hover((style) => style.bg(t.hover))
+                    .on_click((_event, cx) => {
+                        this.isPermsOpen = !this.isPermsOpen;
+                        cx.notify();
+                    }),
+            )
+            .child(div().flex_1().child('Permissions'))
+            .child(
+                div()
+                    .text_size(12)
+                    .text_color(this.permissionAsked ? t.accent : t.muted)
+                    .child(label),
+            )
+            .child(div().text_color(t.dim).child('›'));
+    }
+
+    /** @param {Theme} t */
+    permissionsMenu(t) {
+        const shown = this.permissionAsked ?? this.permission;
+        return v_flex()
+            .id('chat-permissions-menu')
+            .absolute()
+            .right(4)
+            .bottom(40)
+            .w(180)
+            .p(5)
+            .rounded(8)
+            .bg(t.popover)
+            .border(1)
+            .border_color(t.border)
+            .shadow_md()
             .children(
-                PERMISSIONS.map(({ id, label }) => {
-                    const isOn =
-                        id === (this.permissionAsked ?? this.permission);
-                    return div()
+                PERMISSIONS.map(({ id, label }) =>
+                    h_flex()
                         .id(`chat-permission-${id}`)
-                        .px(8)
-                        .h(24)
-                        .flex()
+                        .gap(10)
+                        .px(9)
+                        .h(29)
                         .items_center()
                         .rounded(6)
-                        .border(1)
-                        .border_color(isOn ? t.accent : t.border)
-                        .bg(isOn ? t.selected : t.popover)
-                        .text_size(11.5)
-                        .text_color(
-                            isOn
-                                ? this.permissionAsked
-                                    ? t.accent
-                                    : t.foreground
-                                : t.muted,
+                        .text_size(13)
+                        .text_color(id === shown ? t.foreground : t.muted)
+                        .cursor_pointer()
+                        .hover((style) =>
+                            style.bg(t.hover).text_color(t.foreground),
                         )
-                        .when(ready && !isOn && !this.permissionAsked, (el) =>
-                            el
-                                .cursor_pointer()
-                                .hover((style) =>
-                                    style.bg(t.hover).text_color(t.foreground),
-                                )
-                                .on_click((_event, cx) =>
-                                    this.pickPermission(id, label, cx),
-                                ),
-                        )
-                        .child(label);
-                }),
+                        .on_click((_event, cx) => {
+                            if (id !== shown)
+                                this.pickPermission(id, label, cx);
+                            else {
+                                this.isPermsOpen = false;
+                                cx.notify();
+                            }
+                        })
+                        .child(div().flex_1().child(label))
+                        .child(
+                            div()
+                                .w(14)
+                                .flex_none()
+                                .text_color(t.foreground)
+                                .child(id === shown ? '✓' : ''),
+                        ),
+                ),
             );
     }
 
@@ -1316,6 +1393,7 @@ export default class Chat extends View {
         const { address } = this;
         if (!address || this.permissionAsked) return;
         this.permissionAsked = mode;
+        this.isPermsOpen = false;
         cx.notify();
         cx.spawn(async (cx) => {
             try {
@@ -1347,122 +1425,6 @@ export default class Chat extends View {
         if (!this.isPickOpen || !this.effortPop) return;
         this.effortPop = slideEffort(this.effortPop, way);
         cx.notify();
-    }
-
-    /**
-     * the effort slider (dima, 14:01 and 14:17): one thumb on a line with five small stops, the line filled up to it; a
-     * click on a stop applies at once, ← → move the thumb and Enter applies, Esc closes
-     * @param {Theme} t @param {boolean} ready @param {string | null} now @param {boolean} isPending @param {boolean} isApplied
-     */
-    effortTrack(t, ready, now, isPending, isApplied) {
-        const at = Math.max(
-            0,
-            this.effortPop?.at ?? EFFORTS.indexOf(now ?? ''),
-        );
-        const x = (/** @type {number} */ i) => EFFORT_EDGE + i * EFFORT_STEP;
-        const width = EFFORT_EDGE * 2 + EFFORT_STEP * (EFFORTS.length - 1);
-        /** @param {string} level @param {number} i */
-        const stop = (level, i) =>
-            div()
-                .id(`chat-effort-stop-${level}`)
-                .absolute()
-                .top(0)
-                .left(x(i) - 12)
-                .size(24)
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                // the hover is an opaque ring over the line, so the line never shows through it (dima, 14:17)
-                .when(ready, (el) =>
-                    el
-                        .cursor_pointer()
-                        .hover((style) =>
-                            style
-                                .bg(t.popover)
-                                .border(1)
-                                .border_color(t.border),
-                        )
-                        .on_click((_event, cx) => {
-                            this.closePick();
-                            if (level !== now) this.pick('effort', level, cx);
-                            this.box?.focus();
-                            cx.notify();
-                        }),
-                )
-                .child(
-                    div()
-                        .size(6)
-                        .rounded_full()
-                        .bg(i < at ? t.accent : t.border),
-                );
-        /** @param {string} level @param {number} i */
-        const label = (level, i) =>
-            div()
-                .absolute()
-                .top(0)
-                .left(x(i) - 22)
-                .w(44)
-                .flex()
-                .justify_center()
-                .text_size(11)
-                .rounded(4)
-                .text_color(
-                    i === at ? (isPending ? t.accent : t.foreground) : t.muted,
-                )
-                .when(i === at && isApplied, (el) =>
-                    el.bg(t.solid).text_color(t.solid_foreground),
-                )
-                .when(i === at, (el) => el.font_semibold())
-                .child(effortWord(level));
-        return v_flex()
-            .gap(6)
-            .child(
-                div()
-                    .relative()
-                    .w(width)
-                    .h(24)
-                    .child(
-                        div()
-                            .absolute()
-                            .top(10)
-                            .left(EFFORT_EDGE)
-                            .w(width - EFFORT_EDGE * 2)
-                            .h(4)
-                            .rounded_full()
-                            .bg(t.border),
-                    )
-                    .child(
-                        div()
-                            .id('chat-effort-fill')
-                            .absolute()
-                            .top(10)
-                            .left(EFFORT_EDGE)
-                            .w(at * EFFORT_STEP)
-                            .h(4)
-                            .rounded_full()
-                            .bg(t.accent)
-                            .spring('width'),
-                    )
-                    .children(EFFORTS.map(stop))
-                    .child(
-                        div()
-                            .id('chat-effort-thumb')
-                            .absolute()
-                            .top(3)
-                            .left(x(at) - 9)
-                            .size(18)
-                            .rounded_full()
-                            .bg(t.accent)
-                            .border(3)
-                            .border_color(t.popover)
-                            .shadow_sm()
-                            .spring('left'),
-                    ),
-            )
-            .child(
-                div().relative().w(width).h(16).children(EFFORTS.map(label)),
-            );
     }
 
     /** a model switch mid-conversation, asked first: the next message re-reads the whole history uncached @param {string} value @param {Theme} t */
@@ -2123,6 +2085,7 @@ export default class Chat extends View {
         this.askModel = null;
         this.permission = null;
         this.permissionAsked = null;
+        this.isPermsOpen = false;
         this.closePick();
         this.stateWatch?.cancel();
         this.stateWatch = null;
