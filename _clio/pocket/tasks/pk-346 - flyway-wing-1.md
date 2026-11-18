@@ -25,7 +25,7 @@ ordinal: 1001
 - [ ] #7 f10 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks
 - [ ] #8 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
 - [ ] #9 f22 wing 1 opens on his word: evergreen → refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2
-- [ ] #10 f23 f18-strays 📅 strays lane measure: model pick, spec shape for Sonnet 5.5, at the stray-lane trial end — on: 2026-11-21
+- [ ] #10 f24 📅 strays lane measure: model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-21
 - [ ] #11 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
 - [ ] #12 f11 💤 evergreen, two weeks in one: frame#158, bytes#152–#155, FRM-465 exit 5 — later: dima, with wing 1
 - [ ] #13 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21
@@ -667,4 +667,6 @@ done 2026-11-18 15:40: f13 💤 PK-300 one complete measuring solution — later
 done 2026-11-18 15:40: f14 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80) (PK-374 done)
 
 done 2026-11-18 15:40: f18 halt retro today: measure the strays lane — model pick, spec shape for Sonnet 5.5 (dima 18:06)
+
+done 2026-11-18 15:40: f23 f18-strays 📅 strays lane measure: model pick, spec shape for Sonnet 5.5, at the stray-lane trial end — on: 2026-11-21
 <!-- SECTION:NOTES:END -->
