@@ -1,10 +1,10 @@
 ---
 id: PK-374
 title: 'gates: one naming convention everywhere, one big sweep'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-09T20:03:00Z'
-updated_date: '2026-11-18T09:18:00Z'
+updated_date: '2026-11-18T13:40:00Z'
 labels:
   - s
 dependencies: []
@@ -67,4 +67,8 @@ kept: 2026-11-13 — reopened: dima's 22:04 «keep them linked in wing 1 flyway,
 kept: 2026-11-15 — dima picks the window (o80) (13:33)
 
 11:18 kept: 2026-11-18 — his window (o80)
+
+ticket: FRM-651
+moved: PK-374:W1 → FRM-651:W1, PK-374:W2 → FRM-651:W2, PK-374:W3 → FRM-651:W3, PK-374:W4 → FRM-651:W4, PK-374:W5 → FRM-651:W5, PK-374:W6 → FRM-651:W6, PK-374:W7 → FRM-651:W7, PK-374:W8 → FRM-651:W8, PK-374:W9 → FRM-651:W9, PK-374:W10 → FRM-651:W10, PK-374:W11 → FRM-651:W11, PK-374:W12 → FRM-651:W12, PK-374:W13 → FRM-651:W13, PK-374:W14 → FRM-651:W14, PK-374:W15 → FRM-651:W15, PK-374:W16 → FRM-651:W16, PK-374:W17 → FRM-651:W17, PK-374:W18 → FRM-651:W18
+close: 15:40 moved to linear, fleet project, on dima's o4 tick (2026-11-18); his raw drops stay in these notes
 <!-- SECTION:NOTES:END -->
