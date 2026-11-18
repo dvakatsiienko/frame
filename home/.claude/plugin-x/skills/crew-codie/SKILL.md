@@ -98,7 +98,7 @@ brief says which, and when it does not, ask once, up front.
    `~/frame/docs/test-drive/review-rounds.md` § graded lines at land.
    steps 1–3 run on every assignment, quick-lane ones included.
 4. **with a sixth sense** named in the brief (`🌗 🔎 <area> | #<pr>`): «final» is a `SendMessage` to it,
-   with the pr url and head sha (a quick lane: «final», your head pushed, goes to the coordinator as `[done]`, who hands it to the lane's one sixth sense; it names `main:<base sha>` and your head sha, no pr url; each later round's «round N on <sha>» goes to sixth sense). it reads the ci reviewer for you; every reviewer thread is still yours to
+   with the pr url and head sha (a quick lane: at «final» you send its sixth sense (`x lane show`) `next: <ticket> main:<base> final: <head> spec: <path>`, then `[done]` to the coordinator naming it; rounds go to it). it reads the ci reviewer for you; every reviewer thread is still yours to
    answer on github. fix what each round lists, push (the ci reviewer's one round
    was spent at «final»; a round on an ancestor of the head still counts), then message «round N on <sha>»; the loop
    runs as the dna's pr pair says. your `[done]` report on `clean` quotes the verdict object, the round count, the
@@ -141,6 +141,7 @@ on diff lines.
 - **the done report** is one linear comment, ≤20 lines, opening with the look card (`how-you-work.md`):
   shipped, left, measured numbers, one line per defect; every upstream issue, pr or release your work
   hit or waits on, as a link — clio watches it.
+- **his tick on your look ask** goes to the coordinator then: `<ticket> look <oN> ticked: «…»`.
 - **a fact a future reader of the repo needs** (an api that lies, a setting that is really two, a tool that
   queues instead of failing) goes into that app's `AGENTS.md`, never only the comment.
 - **the retro's standing focus**: the brief and the tools first — what blocked you, every guard refusal

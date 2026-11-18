@@ -68,7 +68,7 @@ the mechanical steps run as one: `x brief summon "<command>" --area <scope word>
   - the surface's head comes first (`hc run … --` on herdr, its file)
   - side lane: `… claude -n '🌗 🔧 <area> | BYT-N' --model opus --effort medium "$(cat <brief file>)" --remote-control`
   - quick lane on main: the same line with `-n '⚡ 🔧 <area> | BYT-N'`
-  - a lane's first chunk only; later chunks get a `next:` message (`x:crew-sixth-sense` § the next chunk)
+  - a lane's first chunk only; later chunks get a `next:` (a quick lane's from codie, `x:crew-sixth-sense`)
   - side-lane sixth sense, once the pr exists: `… claude -n '🌗 🔎 <area> | #<pr>' --model opus --effort medium '/x:crew-sixth-sense BYT-N <pr url> <codie registry name> <clio registry name> spec: <spec path> trials: <names>' --remote-control`
   - quick-lane sixth sense, on codie's «final»: the same line with `-n '⚡ 🔎 <area> | main'` and `main:<base sha>` in place of the pr url, plus `final: <head sha>` before `spec:`
   - `spec:` is the lane's spec path, so sixth sense grades the spec's exit lines; it comes after the four arguments, before `trials:`
