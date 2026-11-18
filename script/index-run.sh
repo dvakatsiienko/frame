@@ -52,9 +52,12 @@ for dir in . $(sed -n 's/^  - //p' "$repo/pnpm-workspace.yaml"); do
         fi
     done
 done
-(cd "$repo" && git ls-files --others --ignored --exclude-standard --directory -- 'home/.claude/plugin-x/mods/*/tsconfig.json' 'home/.claude/plugin-x/mods/*/.claude-plugin/types/') |
+# the engine types come from the main checkout: live engines rewrite them there at each reload, while a worktree keeps the
+# copy its seed made, so a wing's tree once typechecked against 2.1.317 and refused today's props
+main=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+(cd "$main" && git ls-files --others --ignored --exclude-standard --directory -- 'home/.claude/plugin-x/mods/*/tsconfig.json' 'home/.claude/plugin-x/mods/*/.claude-plugin/types/') |
     while read -r path; do
-        [ -e "$copy/$(dirname "$path")" ] && cp -R "$repo/${path%/}" "$copy/${path%/}"
+        [ -e "$copy/$(dirname "$path")" ] && cp -R "$main/${path%/}" "$copy/${path%/}"
     done
 
 # pnpm checks its install before a script and dies on a symlinked node_modules; the copy never installs
