@@ -309,6 +309,13 @@ describe('the band follows a press made on the deck (dima, 23:42)', () => {
         });
     });
 
+    test('a 🔓 press from another chat is pending here too, so a click here never repeats it', () => {
+        const press = { at: now - 1000, button: 'override', on: true };
+        expect(pendingOf(JSON.stringify(press), 'me', now)).toEqual({
+            override: { at: now - 1000, on: true },
+        });
+    });
+
     test('a press past the wait is no longer pending', () => {
         expect(pendingOf(file, 'me', now + 60_000)).toEqual({});
     });

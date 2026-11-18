@@ -985,10 +985,15 @@ export default class Chat extends View {
     pick(kind, value, cx) {
         const { address } = this;
         if (!address) return;
-        if (this.statusNow() === 'blocked' || this.pending) {
-            this.pickNote = this.pending
-                ? 'One switch at a time: wait for this one to land'
-                : 'Answer Claude first, then pick';
+        if (
+            this.statusNow() === 'blocked' ||
+            this.pending ||
+            this.permissionAsked
+        ) {
+            this.pickNote =
+                this.pending || this.permissionAsked
+                    ? 'One switch at a time: wait for this one to land'
+                    : 'Answer Claude first, then pick';
             cx.notify();
             return;
         }
@@ -1210,7 +1215,7 @@ export default class Chat extends View {
                         .when(level !== chosenEffort, (el) =>
                             el.text_color(t.muted),
                         )
-                        .when(ready && level !== chosenEffort, (el) =>
+                        .when(ready && level !== shownEffort, (el) =>
                             el
                                 .cursor_pointer()
                                 .hover((style) =>
@@ -1284,7 +1289,7 @@ export default class Chat extends View {
                     .child(div().mx(4).my(4).h(1).bg(t.border))
                     .child(this.permissionsRow(t, ready))
                     .when(this.isPermsOpen, (el) =>
-                        el.child(this.permissionsMenu(t)),
+                        el.child(this.permissionsMenu(t, ready)),
                     ),
             );
     }
@@ -1322,21 +1327,16 @@ export default class Chat extends View {
             .child(div().text_color(t.dim).child('›'));
     }
 
-    /** @param {Theme} t */
-    permissionsMenu(t) {
+    /** the five modes, inline under the row: a menu floating over the picker's rows would let a click reach them too @param {Theme} t @param {boolean} ready */
+    permissionsMenu(t, ready) {
         const shown = this.permissionAsked ?? this.permission;
         return v_flex()
             .id('chat-permissions-menu')
-            .absolute()
-            .right(4)
-            .bottom(40)
-            .w(180)
-            .p(5)
+            .mx(4)
+            .mb(2)
+            .p(3)
             .rounded(8)
-            .bg(t.popover)
-            .border(1)
-            .border_color(t.border)
-            .shadow_md()
+            .bg(t.selected)
             .children(
                 PERMISSIONS.map(({ id, label }) =>
                     h_flex()
@@ -1348,18 +1348,21 @@ export default class Chat extends View {
                         .rounded(6)
                         .text_size(13)
                         .text_color(id === shown ? t.foreground : t.muted)
-                        .cursor_pointer()
-                        .hover((style) =>
-                            style.bg(t.hover).text_color(t.foreground),
+                        .when(ready, (el) =>
+                            el
+                                .cursor_pointer()
+                                .hover((style) =>
+                                    style.bg(t.hover).text_color(t.foreground),
+                                )
+                                .on_click((_event, cx) => {
+                                    if (id !== shown)
+                                        this.pickPermission(id, label, cx);
+                                    else {
+                                        this.isPermsOpen = false;
+                                        cx.notify();
+                                    }
+                                }),
                         )
-                        .on_click((_event, cx) => {
-                            if (id !== shown)
-                                this.pickPermission(id, label, cx);
-                            else {
-                                this.isPermsOpen = false;
-                                cx.notify();
-                            }
-                        })
                         .child(div().flex_1().child(label))
                         .child(
                             div()
@@ -1392,12 +1395,26 @@ export default class Chat extends View {
     pickPermission(mode, label, cx) {
         const { address } = this;
         if (!address || this.permissionAsked) return;
+        const isBlocked =
+            agents().find((a) => a.address === address)?.status === 'blocked';
+        // keys typed into a question would answer it, and keys mixed into a model or effort pick would land in its picker
+        if (isBlocked || this.pending) {
+            this.pickNote = isBlocked
+                ? 'Answer Claude first, then pick'
+                : 'One switch at a time: wait for this one to land';
+            this.isPermsOpen = false;
+            cx.notify();
+            return;
+        }
         this.permissionAsked = mode;
         this.isPermsOpen = false;
         cx.notify();
         cx.spawn(async (cx) => {
             try {
                 const now = await permissionIn(mode, {
+                    isBlocked: () =>
+                        agents().find((a) => a.address === address)?.status ===
+                        'blocked',
                     keys: async (keys) => {
                         await hc(['keys', address, ...keys]);
                     },
@@ -2080,6 +2097,7 @@ export default class Chat extends View {
         this.bandThread = null;
         this.pressed = {};
         this.runsAt = NO_RUNS_AT;
+        this.isStuck = false;
         this.pending = null;
         this.pickNote = null;
         this.askModel = null;
@@ -2167,6 +2185,8 @@ export default class Chat extends View {
         const { lines, isRestart } = await reader.readNew();
         if (this.reader !== reader) return;
         if (isRestart) {
+            // a replaced transcript names its own model and effort, or none yet: never the removed one's
+            this.runsAt = NO_RUNS_AT;
             this.model.clear();
             this.heights.clear();
             // nothing of the old rows may steer the new ones: a held place, a landing under way, the rows drawn

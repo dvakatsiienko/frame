@@ -2169,7 +2169,11 @@ export default class ClaudeChat extends View {
         // keys typed into a question would answer it, and a second pick would mix its keys into the first one's picker
         const isBlocked =
             agents().find((a) => a.address === address)?.status === 'blocked';
-        if (isBlocked || this.pending?.address === address) {
+        if (
+            isBlocked ||
+            this.pending?.address === address ||
+            this.permissionAsked
+        ) {
             this.pickNote = isBlocked
                 ? 'Answer Claude first, then pick'
                 : 'One switch at a time: wait for this one to land';
@@ -2471,15 +2475,21 @@ export default class ClaudeChat extends View {
                         .text_size(px(11.5))
                         .when(level === chosenEffort, (el) =>
                             el
-                                .bg(t.popover)
-                                .text_color(t.foreground)
+                                .bg(isApplied ? APPLIED_FLASH : t.popover)
+                                .text_color(
+                                    isApplied
+                                        ? '#ffffff'
+                                        : pending?.kind === 'effort'
+                                          ? t.accent
+                                          : t.foreground,
+                                )
                                 .font_weight(500)
                                 .shadow_sm(),
                         )
                         .when(level !== chosenEffort, (el) =>
                             el.text_color(t.muted),
                         )
-                        .when(ready && level !== chosenEffort, (el) =>
+                        .when(ready && level !== shownEffort, (el) =>
                             el
                                 .cursor_pointer()
                                 .hover((s) => s.text_color(t.foreground))
@@ -2527,7 +2537,11 @@ export default class ClaudeChat extends View {
                         this.effortSlide('right', cx),
                     )
                     .on_action('x_herdr_chatter_effort_apply', (_e, cx) =>
-                        chosenEffort && chosenEffort !== shownEffort
+                        // an effort never read opens on Medium: Enter applies only a stop he moved to
+                        this.effortPop &&
+                        this.effortPop.at !== this.effortPop.from &&
+                        chosenEffort &&
+                        chosenEffort !== shownEffort
                             ? this.applyPick(agent, null, chosenEffort, cx)
                             : this.effortClose(cx),
                     )
@@ -2552,7 +2566,7 @@ export default class ClaudeChat extends View {
                     .child(div().mx(4).my(4).h(1).bg(t.border))
                     .child(this.permissionsRow(t, ready))
                     .when(this.isPermsOpen, (el) =>
-                        el.child(this.permissionsMenu(t)),
+                        el.child(this.permissionsMenu(t, ready)),
                     ),
             );
     }
@@ -2591,21 +2605,16 @@ export default class ClaudeChat extends View {
             .child(div().text_color(t.dim).child('›'));
     }
 
-    /** @param {any} t */
-    permissionsMenu(t) {
+    /** the five modes, inline under the row: a menu floating over the picker's rows would let a click reach them too @param {any} t @param {boolean} ready */
+    permissionsMenu(t, ready) {
         const shown = this.permissionAsked ?? this.permission;
         return v_flex()
             .id('pick-permissions-menu')
-            .absolute()
-            .right(4)
-            .bottom(40)
-            .w(180)
-            .p(5)
+            .mx(4)
+            .mb(2)
+            .p(3)
             .rounded(8)
-            .bg(t.popover)
-            .border(1)
-            .border_color(t.border)
-            .shadow_md()
+            .bg(t.selected)
             .children(
                 PERMISSIONS.map(({ id, label }) =>
                     h_flex()
@@ -2617,12 +2626,17 @@ export default class ClaudeChat extends View {
                         .rounded(6)
                         .text_size(px(13))
                         .text_color(id === shown ? t.foreground : t.muted)
-                        .cursor_pointer()
-                        .hover((s) => s.bg(t.hover).text_color(t.foreground))
-                        .on_click((_e, cx) =>
-                            id === shown
-                                ? this.closePermissions(cx)
-                                : this.pickPermission(id, label, cx),
+                        .when(ready, (el) =>
+                            el
+                                .cursor_pointer()
+                                .hover((s) =>
+                                    s.bg(t.hover).text_color(t.foreground),
+                                )
+                                .on_click((_e, cx) =>
+                                    id === shown
+                                        ? this.closePermissions(cx)
+                                        : this.pickPermission(id, label, cx),
+                                ),
                         )
                         .child(div().flex_1().child(label))
                         .child(
@@ -2660,12 +2674,26 @@ export default class ClaudeChat extends View {
     pickPermission(mode, label, cx) {
         const { address } = this;
         if (!address || this.permissionAsked) return;
+        const isBlocked =
+            agents().find((a) => a.address === address)?.status === 'blocked';
+        // keys typed into a question would answer it, and keys mixed into a model or effort pick would land in its picker
+        if (isBlocked || this.pending) {
+            this.pickNote = isBlocked
+                ? 'Answer Claude first, then pick'
+                : 'One switch at a time: wait for this one to land';
+            this.isPermsOpen = false;
+            cx.notify();
+            return;
+        }
         this.permissionAsked = mode;
         this.isPermsOpen = false;
         cx.notify();
         cx.spawn(async (cx) => {
             try {
                 const now = await permissionIn(mode, {
+                    isBlocked: () =>
+                        agents().find((a) => a.address === address)?.status ===
+                        'blocked',
                     keys: async (keys) => {
                         await hc(['keys', address, ...keys]);
                     },
@@ -2688,16 +2716,12 @@ export default class ClaudeChat extends View {
         });
     }
 
-    // a click in the menu: a model mid-conversation asks first (its cache is lost); with an effort too, the effort goes
-    // once the model landed
+    // a click in the menu: a model mid-conversation asks first (its cache is lost)
     /** @param {any} agent @param {string | null} model @param {string | null} effort @param {any} cx */
     applyPick(agent, model, effort, cx) {
         this.effortClose(cx);
         this.box.focus();
         if (model) {
-            this.nextPick = effort
-                ? { address: agent.address, kind: 'effort', value: effort }
-                : null;
             if (this.flat?.length)
                 this.askModel = { address: agent.address, value: model };
             else this.pick('model', model, agent.address, cx);
@@ -7726,14 +7750,6 @@ export default class ClaudeChat extends View {
         const images = this.imageCount(agent.address);
         const menu = this.menu(t);
         this.settlePick();
-        // the second half of a «Switch to Sonnet 5.5 · High»: its effort goes once the model landed
-        const next = this.nextPick;
-        if (next && !this.pending && next.address === this.address) {
-            this.nextPick = null;
-            cx.timer.after(0, (later) =>
-                this.pick(next.kind, next.value, next.address, later),
-            );
-        }
         // what changes the module's height under the log: a change, or the first frame after a load, keeps the newest
         // reply in view while following (his 15:24: the quill «covers the last reply»)
         const boxShape = [

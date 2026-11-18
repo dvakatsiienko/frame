@@ -372,7 +372,8 @@ export function pendingOf(text, sid, now) {
             continue;
         }
         const key = /** @type {PressKey} */ (p?.button);
-        if (!['wind', 'hot', 'waker', 'afk'].includes(key)) continue;
+        if (!['wind', 'hot', 'waker', 'afk', 'override'].includes(key))
+            continue;
         if ((key === 'wind' || key === 'hot') && p.sid !== sid) continue;
         if (typeof p.at !== 'number' || now - p.at >= PENDING_MS) continue;
         if (!pending[key] || p.at > pending[key].at)

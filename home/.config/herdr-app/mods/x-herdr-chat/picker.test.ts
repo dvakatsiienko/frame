@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
+import * as chatter from '../x-herdr-chatter/permissions.js';
 import {
     NO_RUNS_AT,
     effortNow,
@@ -131,55 +132,101 @@ describe("a pick runs in Claude Code's own picker", () => {
     });
 });
 
-describe('the permission mode, read off Claude’s footer and cycled live', () => {
-    test.each([
-        [
-            '  -- INSERT -- ⏵⏵ bypass permissions on (shift+tab to cycle)',
-            'bypassPermissions',
-        ],
-        ['  ⏵⏵ auto mode on (shift+tab to cycle) · esc to interrupt', 'auto'],
-        ['  -- INSERT -- ⏸ manual mode on', 'default'],
-        ['  ⏵⏵ accept edits on (shift+tab to cycle)', 'acceptEdits'],
-        ['  ⏸ plan mode on (shift+tab to cycle)', 'plan'],
-    ])('«%s» reads %s', (footer, mode) => {
-        expect(permissionOf(`❯ hi\n${footer}`)).toBe(mode);
-    });
+// x-herdr-chatter carries a copy until the swap (a mod cannot import a sibling): both run every row
+describe.each([
+    ['x-herdr-chat', { permissionIn, permissionOf }],
+    ['x-herdr-chatter', chatter],
+])(
+    '%s: the permission mode, read off Claude’s footer and cycled live',
+    (_mod, { permissionIn, permissionOf }) => {
+        test.each([
+            [
+                '  -- INSERT -- ⏵⏵ bypass permissions on (shift+tab to cycle)',
+                'bypassPermissions',
+            ],
+            [
+                '  ⏵⏵ auto mode on (shift+tab to cycle) · esc to interrupt',
+                'auto',
+            ],
+            ['  -- INSERT -- ⏸ manual mode on', 'default'],
+            ['  ⏵⏵ accept edits on (shift+tab to cycle)', 'acceptEdits'],
+            ['  ⏸ plan mode on (shift+tab to cycle)', 'plan'],
+        ])('«%s» reads %s', (footer, mode) => {
+            expect(permissionOf(`❯ hi\n${footer}`)).toBe(mode);
+        });
 
-    test('a screen with no footer reads nothing', () => {
-        expect(permissionOf('Select model')).toBeNull();
-    });
+        test('a screen with no footer reads nothing', () => {
+            expect(permissionOf('Select model')).toBeNull();
+        });
 
-    test('Shift+Tab is pressed until the footer reads the mode picked', async () => {
-        const screens = [
+        // a fake thread: its mode line moves one step per Shift+Tab through `cycle`, redrawn `lag` screen reads later
+        const thread = (
+            cycle: string[],
+            at: number,
+            lag = 0,
+            isBlocked = () => false,
+        ) => {
+            let presses = 0;
+            let reads = 0;
+            let since = 0;
+            return {
+                io: {
+                    isBlocked,
+                    keys: async () => {
+                        presses += 1;
+                        since = reads;
+                    },
+                    screen: async () => {
+                        reads += 1;
+                        const shown =
+                            reads - since > lag ? presses : presses - 1;
+                        return (
+                            cycle[(at + Math.max(0, shown)) % cycle.length] ??
+                            ''
+                        );
+                    },
+                    sleep: async () => {},
+                },
+                presses: () => presses,
+            };
+        };
+        const FULL = [
             '⏵⏵ bypass permissions on',
             '⏵⏵ auto mode on',
             '⏸ manual mode on',
             '⏵⏵ accept edits on',
+            '⏸ plan mode on',
         ];
-        let n = 0;
-        const sent: string[][] = [];
-        const mode = await permissionIn('acceptEdits', {
-            keys: async (k: string[]) => {
-                sent.push(k);
-                n += 1;
-            },
-            screen: async () => screens[n] ?? '',
-            sleep: async () => {},
-        });
-        expect([mode, sent.length]).toEqual(['acceptEdits', 3]);
-    });
 
-    test('a mode the cycle never reaches stops after one round, on the mode it ends at', async () => {
-        const screens = ['⏸ manual mode on', '⏸ plan mode on'];
-        let n = 0;
-        const mode = await permissionIn('auto', {
-            keys: async () => {
-                n += 1;
-            },
-            screen: async () => screens[n % 2] ?? '',
-            sleep: async () => {},
+        test('Shift+Tab is pressed until the footer reads the mode picked', async () => {
+            const t = thread(FULL, 0);
+            expect(await permissionIn('acceptEdits', t.io)).toBe('acceptEdits');
+            expect(t.presses()).toBe(3);
         });
-        expect(mode).not.toBe('auto');
-        expect(n).toBeLessThanOrEqual(6);
-    });
-});
+
+        test('a mode the cycle never reaches leaves the thread in the mode it started in', async () => {
+            const four = [FULL[2], FULL[3], FULL[4], FULL[0]] as string[];
+            const t = thread(four, 0);
+            expect(await permissionIn('auto', t.io)).toBe('default');
+            expect(t.presses()).toBe(4);
+        });
+
+        test('a footer slow to redraw is waited for, never pressed past', async () => {
+            const t = thread(FULL, 0, 3);
+            expect(await permissionIn('default', t.io)).toBe('default');
+            expect(t.presses()).toBe(2);
+        });
+
+        test('a screen with no mode line gets no key', async () => {
+            const t = thread(['Select model'], 0);
+            expect(await permissionIn('plan', t.io)).toBeNull();
+            expect(t.presses()).toBe(0);
+        });
+
+        test('a thread asking a question gets no key', async () => {
+            const t = thread(FULL, 0, 0, () => true);
+            await permissionIn('plan', t.io);
+            expect(t.presses()).toBe(0);
+        });
+    },
+);

@@ -25,23 +25,39 @@ export function permissionOf(screen) {
 }
 
 /**
- * Shift+Tab until the mode line reads `mode`, at most one round of the cycle; resolves with the mode it ends at
+ * Shift+Tab until the mode line reads `mode`, one press per redraw seen. it stops on the mode it started in once the
+ * cycle comes round (a thread's cycle can lack a mode), on a screen with no mode line, on a footer that never redraws,
+ * and before any press while the thread asks a question: a key there would answer it. resolves with the mode it ends at
  * @param {string} mode @param {PermissionIo} io
  * @returns {Promise<string | null>}
  */
 export async function permissionIn(mode, io) {
-    let now = permissionOf(await io.screen());
-    for (let i = 0; i <= PERMISSIONS.length && now !== mode; i++) {
+    const start = permissionOf(await io.screen());
+    let now = start;
+    for (
+        let i = 0;
+        i < PERMISSIONS.length && now !== null && now !== mode;
+        i++
+    ) {
+        if (io.isBlocked()) break;
+        const was = now;
         await io.keys(['shift+tab']);
-        await io.sleep(250);
-        now = permissionOf(await io.screen());
+        for (let wait = 0; wait < REDRAW_READS && now === was; wait++) {
+            await io.sleep(REDRAW_MS);
+            now = permissionOf(await io.screen());
+        }
+        if (now === was || now === start) break;
     }
     return now;
 }
+
+const REDRAW_READS = 20;
+const REDRAW_MS = 50;
 
 /**
  * @typedef {object} PermissionIo the thread, as a mode change reaches it
  * @property {(keys: string[]) => Promise<void>} keys
  * @property {() => Promise<string>} screen
  * @property {(ms: number) => Promise<void>} sleep
+ * @property {() => boolean} isBlocked
  */
