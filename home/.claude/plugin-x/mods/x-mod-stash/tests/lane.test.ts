@@ -896,6 +896,19 @@ test("at 0 asks the board's top has no strip", async ($, on) => {
 // FRM-643 (dima's 12:54 ok): the strip counts only the clios' own orbit asks; a member's asks show on its lane card alone
 test("the board's top strip counts the clio's own open asks, a marked one not counted, never a member's", async ($, on) => {
     const w = world(on, { files: linked() });
+    // the poll reads the clios' asks only while a board is open
+    on('ui.panes', () => ({
+        value: [
+            {
+                id: 'x-cc-deck',
+                isFocused: false,
+                isPlaced: true,
+                isShown: true,
+                plugin: 'x-mod-stash',
+                title: 'fleet board',
+            },
+        ],
+    }));
     published(w, CODIE, [ASK, { ...ASK, id: 'o4' }]);
     published(w, SID, [
         ASK,

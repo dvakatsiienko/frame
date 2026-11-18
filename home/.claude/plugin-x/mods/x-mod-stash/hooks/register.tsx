@@ -163,7 +163,6 @@ const KEPT_MS = 7 * 24 * 60 * 60 * 1000;
 // `succ:<old id>` → the id a /clear continued under, so a lane linked by a session id follows it (todo 21: a clear left
 // the l14 card on the codie's old id, its asks gone from the card); dropped a week after it was written
 const SUCC = 'succ:';
-// a glide card's mark on a member's ask, waiting for the member's own stash (FRM-385 exit 3); and when dima last prompted anywhere
 // how far this session read herdr's ticks file for it: the `at` of the newest press taken, one key per session id
 const HERDR_READ = 'herdr-read:';
 // the join queue (FRM-584): `join-taken:<sid>` the ids handed into the running turn, `join-done:<sid>` the ids a
@@ -176,6 +175,7 @@ const JOIN_OWED = 'join-owed:';
 const LANE_STEP = 'lane-step:';
 // the moves clio's stash made from codie's step, held for her next tool call or prompt
 const LANE_MOVES = 'lane-moves';
+// when dima last prompted anywhere: an idle session's herdr press waits for it before it wakes
 const DIMA_AT = 'dima-at';
 const AFK_KEY = 'afk';
 const AWAY_NOTE =
@@ -3550,6 +3550,7 @@ async function readPlanSteps(
 // the poll into $.state, since the board draws with no file read
 let clioAsksShown = '';
 async function showClioAsks($: EngineInterface) {
+    if (!(await isOpen($)) || !(await partsShown($))('stash.orbit')) return;
     const waiting = await cliosWaiting($);
     const text = JSON.stringify(waiting);
     if (text === clioAsksShown) return;
@@ -8934,7 +8935,7 @@ export const register: Register = (on) => {
                     const open = o.asks.filter((a) => !a.isResolved);
                     const age = planAge(o);
                     // 🛎️ and ↩️ are one toggle each, side by side at the row's left: lit while it holds, plain while it does not
-                    // an ask card's door: this session's own orbit by default; a glide card passes the member's, through the store
+                    // an ask card's door: this session's own orbit; a lane card passes a view door, which draws no control
                     const ownDoor: AskDoor = {
                         mark: (a, mark) => void pressMark($, a.id, mark),
                         prefix: 'orbit',
