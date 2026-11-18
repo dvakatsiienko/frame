@@ -130,7 +130,7 @@ describe('a choice row', () => {
 describe('the file the old chat wrote', () => {
     // a cut of his real file, 18 Nov: the old chat's own rows sit beside ours
     const his =
-        '{"v":1,"rows":{"chatter.send.holdDelay":150,"chatter.showMore":false,"chatter.pictures.cleanshot":false,"stash.second-wind-auto":true}}';
+        '{"v":1,"rows":{"chatter.send.holdDelay":150,"chatter.fps":true,"chatter.pictures.cleanshot":false,"stash.second-wind-auto":true}}';
 
     test("reads his values for this chat's rows", () => {
         const values = settingsOf(his);
@@ -148,7 +148,7 @@ describe('the file the old chat wrote', () => {
         const next = settingsText(settingRows, his, {
             'chatter.send.holdPush': 1500,
         });
-        expect(JSON.parse(next).rows['chatter.showMore']).toBe(false);
+        expect(JSON.parse(next).rows['chatter.fps']).toBe(true);
     });
 });
 

@@ -92,6 +92,7 @@ import {
     withFileRows,
 } from './files.js';
 import { FIND_SETTLE_MS, createFind, findCount, findSpans } from './find.js';
+import { replyFold } from './fold.js';
 import { placeOf } from './follow.js';
 import { createHeights, guessHeight } from './heights.js';
 import { ICONS } from './icons.js';
@@ -253,6 +254,8 @@ const NO_IMAGE = 'No image on the clipboard';
 const MENU_SIZE = { h: 60, w: 200 };
 // a blocked thread's screen is read this often while it asks, so the question card follows its cursor
 const ASK_READ_MS = 1000;
+// about how wide a character of a reply is, in px: the fold counts a bubble's lines from its width
+const CHAR_PX = 7.5;
 /**
  * a button of the question card and the blocked panel; `strong` is the one that answers
  * @param {any} t @param {string} id @param {string} label @param {((e: any, cx: any) => void) | null} onClick @param {boolean} [strong]
@@ -651,6 +654,12 @@ export default class Chat extends View {
         tick: () => {},
         toTerminal: () => {},
     };
+    /** his «Show more» switch: a long reply of an earlier turn shows its first lines (FRM-607) */
+    isShowMore = true;
+    /** the long replies he opened with Show more, by row id @type {Set<string>} */
+    openReplies = new Set();
+    /** the rows of the turn he reads now, which never fold @type {Set<string>} */
+    currentTurn = new Set();
     /** the message a reply answers, by thread: one line above the quill, sent quoted before his words @type {Map<string, string>} */
     replies = new Map();
     /** the thread's skills, from its transcript's listing @type {Map<string, string>} */
@@ -2634,6 +2643,13 @@ export default class Chat extends View {
      */
     list(rows, t, cx) {
         const zoom = Number(settings().zoom) || 1;
+        let turnAt = 0;
+        rows.forEach((r, i) => {
+            if (r.kind === 'mine' && r.isTurnStart) turnAt = i;
+        });
+        this.currentTurn = new Set(
+            rows.slice(Math.max(0, turnAt)).map((r) => r.id),
+        );
         const booked = this.booked(rows);
         const sizes = this.heights.sizes(booked, (row) =>
             guessHeight(row, Math.min(this.width || NARROW, this.column())),
@@ -2717,8 +2733,15 @@ export default class Chat extends View {
             // a file row opens its file in its app, a png in Preview (FRM-587)
             .on_item_click((key, cx) => {
                 const id = key.replace(/#(?:above|below)$/, '');
-                if (rows.find((r) => r.id === id)?.kind === 'tool') {
+                const pressed = rows.find((r) => r.id === id);
+                if (pressed?.kind === 'tool') {
                     toolFolds.toggle(id);
+                    cx.notify();
+                    return;
+                }
+                // a folded reply opens whole where it is
+                if (pressed && this.foldOf(pressed)) {
+                    this.openReplies.add(id);
                     cx.notify();
                     return;
                 }
@@ -3161,6 +3184,7 @@ export default class Chat extends View {
             ),
         );
         const id = `${pre}${row.id}@${row.version}`;
+        const fold = this.lookOf(row) === 'fold' ? this.foldOf(row) : null;
         if (row.kind === 'mine')
             return column(
                 v_flex()
@@ -3217,7 +3241,8 @@ export default class Chat extends View {
                         .children(
                             (this.markedText(row, t, isShown)
                                 ? []
-                                : splitBlocks(unlinkFiles(row.text))
+                                : (fold?.shown ??
+                                  splitBlocks(unlinkFiles(row.text)))
                             ).map((block, i) =>
                                 block.kind === 'text'
                                     ? TextView.markdown(
@@ -3237,6 +3262,19 @@ export default class Chat extends View {
                                                   `\`\`\`${block.lang}\n${block.text}\n\`\`\``,
                                               ).selectable(isShown),
                                           ),
+                            ),
+                        )
+                        // the line he clicks to open it: the list's item click does, herdr-app#894 keeps a press
+                        // handler out of a row
+                        .when(Boolean(fold), (el) =>
+                            el.child(
+                                div()
+                                    .text_size(12)
+                                    .text_color(t.accent)
+                                    .cursor_pointer()
+                                    .child(
+                                        `▾ Show more · ${fold?.hidden ?? 0} more lines`,
+                                    ),
                             ),
                         ),
                 )
@@ -3420,6 +3458,7 @@ export default class Chat extends View {
         this.watch = null;
         this.model.clear();
         this.askWatch.reset();
+        this.openReplies.clear();
         this.heights.clear();
         fileRows.clear();
         toolFolds.clear();
@@ -3586,6 +3625,7 @@ export default class Chat extends View {
             week: Number(values['chatter.meter.week.warn']),
         };
         this.hasAutoWind = values['stash.second-wind-auto'] === true;
+        this.isShowMore = values['chatter.showMore'] === true;
     }
 
     /**
@@ -3973,9 +4013,30 @@ export default class Chat extends View {
      */
     lookOf(row) {
         const { isOpen, q } = this.find.state;
-        return isOpen && this.find.current() === row.id
-            ? `find:${q}`
-            : undefined;
+        if (isOpen && this.find.current() === row.id) return `find:${q}`;
+        return this.foldOf(row) ? 'fold' : undefined;
+    }
+
+    /**
+     * how a reply folds now: only a long one of an earlier turn, while his switch is on and he has not opened it; a
+     * search hit shows whole
+     * @param {Row} row
+     */
+    foldOf(row) {
+        if (row.kind !== 'reply' || this.openReplies.has(row.id)) return null;
+        const { isOpen } = this.find.state;
+        if (isOpen && this.find.state.hits.some((h) => h.id === row.id))
+            return null;
+        const width =
+            Math.min(this.width || NARROW, this.column()) * BUBBLE_SHARE;
+        return replyFold(
+            splitBlocks(unlinkFiles(row.text)),
+            Math.floor(Math.max(240, width) / CHAR_PX),
+            {
+                isEarlierTurn: !this.currentTurn.has(row.id),
+                isShowMoreOn: this.isShowMore,
+            },
+        );
     }
 
     /** the rows as the height book keys them: a row drawn another way is measured apart @param {readonly Row[]} rows */
@@ -3994,7 +4055,10 @@ export default class Chat extends View {
     markedText(row, t, isShown = true) {
         const look = this.lookOf(row);
         // the shown copy waits for its marked height, so the list never draws it at the plain one and jumps
-        if (!look || (isShown && !this.heights.has({ ...row, look })))
+        if (
+            !look?.startsWith('find:') ||
+            (isShown && !this.heights.has({ ...row, look }))
+        )
             return null;
         const { q } = this.find.state;
         const current = this.find.currentHit();
