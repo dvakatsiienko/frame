@@ -107,6 +107,7 @@ import {
 import { createKeyPress } from './keypress.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMagic, retextWait } from './magic.js';
+import { createPages } from './pages.js';
 import {
     MODELS,
     NO_RUNS_AT,
@@ -446,6 +447,8 @@ export default class Chat extends View {
     heights = createHeights();
     /** @type {ReturnType<typeof createReader> | null} */
     reader = null;
+    /** older history above what the reader handed on: the one door to its pages @type {ReturnType<typeof createPages> | null} */
+    pages = null;
     /** the pid of the thread shown, found from the focused tab's Claude @type {number | null} */
     pid = null;
     /** the terminal of the thread shown @type {string | null} */
@@ -3056,6 +3059,7 @@ export default class Chat extends View {
         this.skills = new Map();
         this.pluginSkills = new Map();
         this.reader = null;
+        this.pages = null;
         this.file = null;
         this.address = null;
         this.note = null;
@@ -3124,6 +3128,7 @@ export default class Chat extends View {
             cx.spawn((cx) => this.watchState(file, turn, cx));
             const reader = createReader(doorTo(file));
             this.reader = reader;
+            this.pages = createPages(reader);
             const dir = file.slice(0, file.lastIndexOf('/'));
             const name = file.slice(dir.length + 1);
             // the wait is armed before each read, so a line written while one runs is never missed
@@ -3841,14 +3846,15 @@ export default class Chat extends View {
         if (!place) return;
         // a place on a file row is found through its reply, the row the transcript holds
         const lineId = replyIdOf(place.id);
+        const pages = this.pages;
         for (
             let page = 0;
-            this.model.indexOf(lineId) < 0 &&
-            reader.hasEarlier() &&
-            page < PLACE_PAGES;
+            this.model.indexOf(lineId) < 0 && page < PLACE_PAGES;
             page++
         ) {
-            const lines = await reader.readEarlier();
+            const read = pages?.next();
+            if (!read) break;
+            const lines = await read;
             if (this.reader !== reader) return;
             this.model.addEarlier(lines);
             this.learnSkills(lines);
