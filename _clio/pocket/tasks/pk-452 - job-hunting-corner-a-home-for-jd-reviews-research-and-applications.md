@@ -4,7 +4,7 @@ title: 'job hunting corner: a home for jd reviews, research and applications'
 status: open
 assignee: []
 created_date: '2026-11-18T14:16:00Z'
-updated_date: '2026-11-18T15:16:00Z'
+updated_date: '2026-11-18T15:28:00Z'
 labels:
   - m
   - clio-wing-1
@@ -92,4 +92,11 @@ PK-452:W34 (2026-11-18 17:16, dima): pay: yes, a wide range, i prefer higher; $5
 PK-452:W35 (2026-11-18 17:16, dima): positioning: yes, it is defined later, not now
 PK-452:W36 (2026-11-18 17:16, dima): now only a good folder for me with everything colocated; from that folder, link the job data folder in the knowledge folder
 PK-452:W37 (2026-11-18 17:16, dima): a top 7 of pretty names for the new folder
+
+PK-452:W38 (2026-11-18 17:27, dima): about 90k uah left, not 90k $
+PK-452:W39 (2026-11-18 17:27, dima, o1 steer): q6: yes, and it is very flexible, so if i ever want to render that history in my future hq app (dima's fleet central place, planned for someday), i could see stats or data from that log
+PK-452:W40 (2026-11-18 17:27, dima): q8: such a check is overkill, no need; usually when someone emails me, i tell you and you go look; i don't have many emails now, so himalaya stays manual for now
+PK-452:W41 (2026-11-18 17:27, dima): where is q11? i saw q10 and q12; is anything missed? ❓
+PK-452:W42 (2026-11-18 17:27, dima): q12: what about moving the job data from knowledge into the new place, and refreshing the recipe's link? it is also my private data, and i want it hidden
+PK-452:W43 (2026-11-18 17:27, dima, o7 steer): lookout: approved, sounds nice; and an emoji? a top 7
 <!-- SECTION:NOTES:END -->
