@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-18T20:30:00Z'
+updated_date: '2026-11-18T20:31:00Z'
 labels:
   - s
   - clio-main
@@ -1117,4 +1117,6 @@ PK-349:W1197 (2026-11-18 22:06, dima): i read your reply about the Claude plugin
 PK-349:W1198 (2026-11-18 22:19, dima): FRM-555: tell again how much faster mods tests became after this lands. The tests default to a closed board and a 60 s poll, and the board skips rebuilding its member list when nothing changed. I am not sure it helps and does not hurt: a longer poll stretches the problem to the other side. Did you measure any useful gain? ❓
 PK-349:W1199 (2026-11-18 22:19, dima): FRM-590 — what does this ticket do in the mods chunk sequence? It is a validator for linear verbs in the CLI and should flag sneaky sign-it / unsign-it moves on tickets, right? If yes, say in a few words what it does, in simple terms without tech details. I will evaluate when to do it if it matters. ❓
 PK-349:W1200 (2026-11-18 22:19, dima): I resumed speak v2 (🎙️ wispr: «speak EV2») with the wing. I am not glad with today's results: we only solved Evergreen and prepared my job-application lookout spot. I planned more: finish the speak recipe refresh with wing 1, refresh Fable 5 knowledge of the fleet, and refresh the designer. It is postponed to tomorrow.
+
+22:31 PK-349:W1200 (2026-11-18 22:19, dima): I resumed speak EV2 with the wing. I am not glad with today's results: we only solved Evergreen and prepared my job-application lookout spot. I planned more: finish the speak recipe refresh with wing 1, refresh Fable 5 knowledge of the fleet, and refresh the designer. It is postponed to tomorrow.
 <!-- SECTION:NOTES:END -->
