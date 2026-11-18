@@ -164,6 +164,8 @@ const NEAR = [
     ['a host and a port', 'curl http://$HOST:8080/'],
     ['arithmetic with a shift', 'echo $((1<<2))'],
     ['a pip that only lists', 'python3 -m pip list'],
+    // FRM-489 row 48: env -S reads its split string, and a harmless one runs
+    ['env -S splitting a harmless string', 'env -S "ls -la docs"'],
     // FRM-519 item 17: a dry run only prints what a prune would remove
     ['a worktree prune dry run', 'git worktree prune -n'],
     ['a verbose worktree prune dry run', 'git worktree prune --dry-run -v'],

@@ -317,6 +317,27 @@ describe('clockReads', () => {
             'f(`${a ? `x${Date.now()}` : 1}`);',
             [1],
         ],
+        // FRM-489 row 23: a backtick inside a regex literal opened a template and blanked the code after it
+        [
+            'a read after a regex literal holding a backtick',
+            'if (/^\\s*```/.test(line)) f();\ng(Date.now());',
+            [2],
+        ],
+        [
+            'a read after a regex literal holding a quote',
+            'const q = /[\'"]/;\ng(Date.now());',
+            [2],
+        ],
+        [
+            'a read after a regex class holding a slash',
+            'const s = /[/`]/g;\ng(Date.now());',
+            [2],
+        ],
+        [
+            'a read after a division',
+            'const h = a / 2 / b;\ng(Date.now());',
+            [2],
+        ],
     ])('reds %s', (_, source, lines) => {
         expect(clockReads(source)).toEqual(lines);
     });

@@ -168,6 +168,21 @@ function codeOnly(source: string) {
             const end = source.indexOf('*/', i + 2);
             const stop = end < 0 ? source.length : end + 2;
             for (; i < stop; i++) out += keep(source[i] as string);
+        } else if (c === '/' && REGEX_AFTER.test(out.trimEnd().at(-1) ?? '')) {
+            // a regex literal: its quotes, backticks and slashes inside a class are text (FRM-489 row 23)
+            out += c;
+            let isClass = false;
+            for (i++; i < source.length && source[i] !== '\n'; i++) {
+                const r = source[i] as string;
+                if (r === '\\') {
+                    out += ' ';
+                    i++;
+                } else if (r === '[') isClass = true;
+                else if (r === ']') isClass = false;
+                else if (r === '/' && !isClass) break;
+                out += keep(source[i] as string);
+            }
+            if (i < source.length && source[i] === '/') out += source[i++];
         } else if (c === "'" || c === '"') {
             out += c;
             for (
@@ -213,6 +228,8 @@ function codeOnly(source: string) {
     }
     return out;
 }
+// a `/` after one of these opens a regex, never a division: no value can end on them
+const REGEX_AFTER = /^$|[(,=:[!&|?{};+\-*%<>~^]/;
 const CLOCK_FALLBACK =
     /\$\.clock\s*\.\s*now\(\s*\)\s*\.catch\(\s*(?:\(\s*\)\s*=>\s*Date\.now\(\s*\)|Date\.now)\s*,?\s*\)/g;
 
