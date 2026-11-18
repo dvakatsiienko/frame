@@ -1,38 +1,20 @@
-// the popover's rows, in the order it draws them: each names the look value it sets and the choices it offers.
+// the popover's rows, in the order it draws them: each names the look value it sets and the choices it offers. a
+// look value joins as a row only once the chat acts on it: accent, his messages, background, system lines and earlier
+// replies wait for theirs (FRM-638)
 // arrays, never objects, so a formatter's key sort never moves a row or a choice.
 
 /**
  * @typedef {object} Row
  * @property {keyof import('./look.js').Look} key the look value the row sets
  * @property {string} label
- * @property {'step' | 'pills' | 'swatches' | 'colors'} kind `step`: − and + around the number; `pills`: one word
- *   per choice; `swatches`: round colours; `colors`: round colours and a box for any `#rrggbb`
+ * @property {'step' | 'pills' | 'colors'} kind `step`: − and + around the number; `pills`: one word per choice;
+ *   `colors`: round colours and a box for any `#rrggbb`
  * @property {[string, string][]} [choices] each choice and its label, or its colour and its name
  */
 /**
  * a colour as herdr takes it
  * @typedef {import('gpui-kit').Color} Color
  */
-
-// the accent swatches: the theme's own accent first, then fixed colours
-/** @type {[string, Color | null][]} */
-export const ACCENTS = [
-    ['theme', null],
-    ['claude', '#d97757'],
-    ['blue', '#4f8cff'],
-    ['green', '#3fb950'],
-    ['purple', '#a371f7'],
-    ['pink', '#f778ba'],
-];
-
-/** @type {[string, string][]} */
-const BACKGROUNDS = [
-    ['#0d1117', 'Night'],
-    ['#1e1e1e', 'Charcoal'],
-    ['#22201c', 'Coffee'],
-    ['#f6f1e7', 'Paper'],
-    ['#ffffff', 'White'],
-];
 
 /** @type {[string, string][]} */
 const TEXTS = [
@@ -74,58 +56,6 @@ export const ROWS = [
         kind: 'pills',
         label: 'Tool calls',
     },
-    {
-        choices: [
-            ['fold', 'Folded'],
-            ['hide', 'Hidden'],
-            ['show', 'Shown'],
-        ],
-        key: 'system',
-        kind: 'pills',
-        label: 'System lines',
-    },
-    {
-        choices: [
-            ['open', 'Open'],
-            ['folded', 'Folded'],
-        ],
-        key: 'replies',
-        kind: 'pills',
-        label: 'Earlier replies',
-    },
-    {
-        choices: ACCENTS.map(([key]) => [
-            key,
-            key === 'theme'
-                ? "Theme's accent"
-                : `${key.slice(0, 1).toUpperCase()}${key.slice(1)}`,
-        ]),
-        key: 'accent',
-        kind: 'swatches',
-        label: 'Accent',
-    },
-    {
-        choices: [
-            ['bubble', 'Bubbles'],
-            ['box', 'Box'],
-            ['tint', 'Tint'],
-            ['bar', 'Bar'],
-        ],
-        key: 'mine',
-        kind: 'pills',
-        label: 'Your messages',
-    },
-    {
-        choices: [
-            ['background', 'Terminal'],
-            ['chrome', 'Panel'],
-            ['canvas', 'Canvas'],
-        ],
-        key: 'bg',
-        kind: 'pills',
-        label: 'Background',
-    },
-    { choices: BACKGROUNDS, key: 'bg', kind: 'colors', label: '' },
     {
         choices: TEXTS,
         key: 'fg',

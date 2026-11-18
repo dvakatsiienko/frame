@@ -15,7 +15,7 @@ import {
 
 import { createForeground } from './foreground.js';
 import { LOOK_KEY, SIZE_MAX, SIZE_MIN, lookOf, withChange } from './look.js';
-import { ACCENTS, ROWS } from './rows.js';
+import { ROWS } from './rows.js';
 
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {import('gpui-kit').Element} Element */
@@ -166,26 +166,6 @@ export default class ChatSettings extends View {
                         .child(label),
                 ),
             );
-        if (row.kind === 'swatches')
-            return h_flex()
-                .flex_none()
-                .gap(6)
-                .children(
-                    ACCENTS.map(([choice, color], n) =>
-                        div()
-                            .id(`look-accent-${choice}`)
-                            .size(18)
-                            .rounded(9)
-                            .cursor_pointer()
-                            .bg(color ?? t.accent)
-                            .border(2)
-                            .border_color(
-                                value === choice ? t.foreground : '#00000000',
-                            )
-                            .tooltip(choices[n]?.[1] ?? choice)
-                            .on_click(() => setLook({ accent: choice })),
-                    ),
-                );
         const box = this.hex.get(row.key);
         return h_flex()
             .flex_none()

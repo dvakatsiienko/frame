@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
-import { LOOK_DEFAULT, lookOf } from './look.js';
+import { lookOf } from './look.js';
 import { ROWS } from './rows.js';
 
 describe('the popover’s rows', () => {
-    test('every look value has a row', () => {
+    test('the rows are the look values the new chat acts on', () => {
         expect(new Set(ROWS.map((row) => row.key))).toEqual(
-            new Set(Object.keys(LOOK_DEFAULT)),
+            new Set(['size', 'font', 'width', 'tools', 'fg', 'space']),
         );
     });
 
