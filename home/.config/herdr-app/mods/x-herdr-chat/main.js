@@ -180,6 +180,7 @@ const SETTINGS_FILE = '.claude/shelf/herdr-settings/settings.json';
 // under a mark, the join row is rewritten this long after his last key
 const RETEXT_MS = 400;
 const SEND_SIZE = 28;
+const QUILL_ENTER = 'x_herdr_chat_quill_enter';
 const NOT_IN_HERDR = 'This thread does not run in herdr: nothing was sent';
 
 /** the join file's doors in herdr: a mkdir lock dir, its age from macOS stat, a write over the text it read */
@@ -536,6 +537,15 @@ export default class Chat extends View {
                 keystroke: String(keystroke),
             })),
         );
+        // Enter in the quill is ours before the text box's own (context `Input`): no line break typed, so no scroll to
+        // the caret (dima, 13:14). a binding herdr never reaches leaves Enter to the box's submit, as before
+        cx.bind_keys([
+            {
+                action: QUILL_ENTER,
+                context: 'XChatQuill > Input',
+                keystroke: 'enter',
+            },
+        ]);
         // a check draws one frame and must read no thread
         if (checking()) return;
         // a Claude whose session file came after its tab, or a /resume in the same pane: the thread is looked up again
@@ -1776,6 +1786,13 @@ export default class Chat extends View {
                         .bg(t.background)
                         .border(1)
                         .border_color(t.border)
+                        .key_context('XChatQuill')
+                        .on_action(QUILL_ENTER, (_event, cx) => {
+                            const at = Date.now();
+                            const said = this.quillKeys.submitted(at);
+                            this.trace(`[TRACE-enter] action ${at} → ${said}`);
+                            if (said === 'act') this.click(box, cx);
+                        })
                         .on_key_down((e) => {
                             if (e.key !== 'enter') return;
                             this.trace(
