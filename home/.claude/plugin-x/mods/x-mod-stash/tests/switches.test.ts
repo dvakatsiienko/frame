@@ -323,7 +323,7 @@ const SCENARIOS: Record<string, Scenario> = {
             w.lines.push(...((r as { context?: string[] }).context ?? []));
         },
         name: '⚡ 🔧 codie: x',
-        trace: /round \d of this lane/,
+        trace: /round \d with a P0 or P1 in this chunk/,
     },
     'stash.second-wind': {
         // a board asked this session: the note rides its next prompt, and the op takes the handoff it wrote

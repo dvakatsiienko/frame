@@ -3862,13 +3862,151 @@ test('two chunks a round line names count apart, the record trailing both, and t
         ['mods-lane-5 | FRM-625 slice 4', 'mods-lane-5 | FRM-638 slice 5'],
         { count: 3, shas: ['c3c3c3c', 'd4d4d4d', 'e5e5e5e'] },
         [
-            'round 3 of this lane: a next round with a P0 or P1 is past the cap of 3',
+            'round 3 with a P0 or P1 in this chunk: a next one is past the cap of 3',
         ],
         [],
     ]);
     await send($, ROUND_SENSE, 'round 4 on f6f6f6f (FRM-638 slice 5)');
     expect(w.told.map((t) => t.text)).toEqual([
         `[escalate] round 4 of mods-lane-5 | FRM-638 slice 5, past the cap of 3, from ${ROUND_CODIE}: ask dima «go on, or stop the lane»`,
+    ]);
+});
+
+test('a lone slice joins the key a fuller line gave it, and a ticket the line only mentions keys nothing', async ($, on) => {
+    const w = roundWorld(on, { record: { ticket: 'FRM-625' } });
+    await start($);
+    await send(
+        $,
+        ROUND_SENSE,
+        'round 1 on a1a1a1a (FRM-638 slice 5, base main:1234567)',
+    );
+    await send($, ROUND_SENSE, 'round 2 on b2b2b2b (slice 5)');
+    await send(
+        $,
+        ROUND_SENSE,
+        'round 1 on c3c3c3c, fixes the FRM-617 regression',
+    );
+    expect(roundsIn(w.files)).toEqual({
+        'mods-lane-5 | FRM-625': { count: 1, shas: ['c3c3c3c'] },
+        'mods-lane-5 | FRM-638 slice 5': {
+            count: 2,
+            shas: ['a1a1a1a', 'b2b2b2b'],
+        },
+    });
+});
+
+test('a round file that does not parse moves aside and the count starts over', async ($, on) => {
+    const w = roundWorld(on, { files: { [ROUNDS_FILE]: '{"rounds": [torn' } });
+    await start($);
+    const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    expect([w.files[`${ROUNDS_FILE}.bad`], kept(w), roundLines(r)]).toEqual([
+        '{"rounds": [torn',
+        { count: 1, shas: ['ccccccc'] },
+        [],
+    ]);
+});
+
+test('a round file that is there but will not read is never written over', async ($, on) => {
+    const w = roundWorld(on, {
+        files: { [ROUNDS_FILE]: 'kept' },
+        unreadable: [ROUNDS_FILE],
+    });
+    await start($);
+    const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    expect([w.files[ROUNDS_FILE], roundLines(r)]).toEqual([
+        'kept',
+        [
+            'round 1 on ccccccc not counted (the round file would not read): resend the same line to count it',
+        ],
+    ]);
+});
+
+test('a resend of a round past the cap says nothing and tells clio nothing again', async ($, on) => {
+    const w = roundWorld(on);
+    await start($);
+    await sendRounds($, 4);
+    const r = await send($, ROUND_SENSE, 'round 4 on abcdef3');
+    expect([roundLines(r), w.told.length]).toEqual([[], 1]);
+});
+
+test('an entry missing its shas reads as none', async ($, on) => {
+    const w = roundWorld(on, {
+        files: {
+            [ROUNDS_FILE]: JSON.stringify({
+                rounds: { [LANE]: { count: 2 } },
+                v: 1,
+            }),
+        },
+    });
+    await start($);
+    await send($, ROUND_SENSE, 'round 3 on ccccccc');
+    expect(kept(w)).toEqual({ count: 3, shas: ['ccccccc'] });
+});
+
+test('a round that could not be written tells the sender to resend it', async ($, on) => {
+    const w = roundWorld(on, { isMvRefused: true });
+    await start($);
+    const r = await send($, ROUND_SENSE, 'round 1 on ccccccc');
+    expect([w.files[ROUNDS_FILE], roundLines(r), r.result.success]).toEqual([
+        undefined,
+        [
+            'round 1 on ccccccc not counted (mv failed): resend the same line to count it',
+        ],
+        true,
+    ]);
+});
+
+// the cap counts rounds with a P0 or P1 (crew-dna § the loop): a line naming «P0/P1: 0» is a clean round, a line naming
+// none reads as one with findings, the safe side; four rounds with one P1 among them reach no cap
+const fourRounds = async ($: Engine, severe: string[]) => {
+    const out = [];
+    for (const [i, p] of severe.entries())
+        out.push(
+            await send(
+                $,
+                ROUND_SENSE,
+                `round ${i + 1} on abcdef${i} (FRM-9 slice 5, ${p})`,
+            ),
+        );
+    return out;
+};
+
+test('four rounds with one P1 among them reach no cap and tell no one', async ($, on) => {
+    const w = roundWorld(on);
+    await start($);
+    const r = await fourRounds($, [
+        'P0/P1: 0',
+        'p0/p1: 0',
+        'p0/p1: 0',
+        'P0/P1: 1',
+    ]);
+    expect([r.flatMap(roundLines), w.told]).toEqual([[], []]);
+});
+
+test('four rounds each with a P1, the last one naming none, escalate at the fourth, and a clean fifth tells no one', async ($, on) => {
+    const w = roundWorld(on);
+    await start($);
+    const r = await fourRounds($, [
+        'P0/P1: 1',
+        'P0/P1: 2',
+        'P0/P1: 1',
+        'base main:1234567',
+    ]);
+    r.push(
+        await send(
+            $,
+            ROUND_SENSE,
+            'round 5 on abcdef5 (FRM-9 slice 5, P0/P1: 0)',
+        ),
+    );
+    expect([
+        r.map((x) => roundLines(x).length),
+        w.told.map((t) => t.text),
+    ]).toEqual([
+        [0, 0, 1, 1, 0],
+        [
+            `[escalate] round 4 of mods-lane-5 | FRM-9 slice 5, past the cap of 3, from ${ROUND_CODIE}: ask dima «go on, or stop the lane»`,
+        ],
     ]);
 });
 
@@ -3993,7 +4131,9 @@ test('at the cap the sender hears that a next round is past it, and clio hears n
     await start($);
     const sent = await sendRounds($, 3);
     expect([roundLines(sent[2] ?? {}).join(''), w.told]).toEqual([
-        expect.stringContaining('a next round with a P0 or P1 is past the cap'),
+        expect.stringContaining(
+            'with a P0 or P1 in this chunk: a next one is past the cap',
+        ),
         [],
     ]);
 });
@@ -4011,7 +4151,7 @@ test('round 4 tells the coordinator the lane and the count, once, and warns the 
             },
         ],
         [
-            'round 4 of this lane, past the cap of 3: the coordinator has the count and says go on or stop; nothing is refused, keep working',
+            'round 4 with a P0 or P1 in this chunk, past the cap of 3: the coordinator has the count and says go on or stop; nothing is refused, keep working',
         ],
     ]);
 });

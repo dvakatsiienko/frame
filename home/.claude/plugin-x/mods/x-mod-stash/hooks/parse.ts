@@ -332,6 +332,7 @@ const ROUND_LEAD = String.raw`(?:(?:\[\w+\]|[A-Z]{2,5}-\d+:?|#\d+|slice\s+\d+|co
 const ROUND_HEAD = new RegExp(
     String.raw`^${ROUND_LEAD}round\s+(\d+)\b[^\n]*?(?:\bon\s+\**([0-9a-f]{7,40})|\b((?=[0-9a-f]*\d)[0-9a-f]{7,40}))\b`,
 );
+const LEAD_HEAD = new RegExp(`^${ROUND_LEAD}`);
 // a sha holds a digit, so a word like «defaced» is none
 const FINAL_HEAD = new RegExp(
     String.raw`^${ROUND_LEAD}final\s+on\s+\**((?=[0-9a-f]*\d)[0-9a-f]{7,40})\b`,
@@ -348,14 +349,25 @@ export function roundOf(message: string) {
 }
 
 // the chunk a round's first line names, «round 3 on <sha> (FRM-638 slice 5, …)»: the cap is per chunk, and x's record can
-// trail a lane's chunks (herdr lane 2's slices 4 and 5 counted as one under FRM-625); a part it leaves out falls to the record
+// trail a lane's chunks (herdr lane 2's slices 4 and 5 counted as one under FRM-625). a ticket counts paired with its
+// slice or in the lead, never one the line only mentions («fixes the FRM-617 regression»); a part it leaves out falls to
+// the record, a lone slice to the lane's key of that slice
 export function roundChunkOf(message: string) {
     const line = message.trimStart().split('\n', 1)[0] ?? '';
+    const paired = line.match(/\b((?:FRM|BYT)-\d+)\s+slice\s+0*(\d+)\b/i);
+    if (paired) return { slice: paired[2], ticket: paired[1] };
+    const lead = line.match(LEAD_HEAD)?.[0] ?? '';
     return {
         slice: line.match(/\bslice\s+0*(\d+)\b/i)?.[1],
-        ticket: ticketOf(line),
+        ticket: ticketOf(lead),
     };
 }
+
+// the P0 and P1 findings a round's line names, «P0/P1: 0»; undefined when it names none, which the cap reads as some
+export const severeOf = (message: string) => {
+    const n = message.match(/\bP0\/P1:\s*(\d+)/i)?.[1];
+    return n === undefined ? undefined : Number(n);
+};
 
 export const ROUND_CAP = 3;
 // the count only signals and refuses nothing (FRM-504:W49: a block stops everyone); past the cap the coordinator decides,
@@ -363,12 +375,12 @@ export const ROUND_CAP = 3;
 export function roundLine(count: number, untold?: string) {
     if (count < ROUND_CAP) return undefined;
     if (count === ROUND_CAP)
-        return `round ${count} of this lane: a next round with a P0 or P1 is past the cap of ${ROUND_CAP}`;
+        return `round ${count} with a P0 or P1 in this chunk: a next one is past the cap of ${ROUND_CAP}`;
     const heard =
         untold === undefined
             ? 'the coordinator has the count and says go on or stop'
             : `the line to the coordinator did not go (${untold}): send her this count yourself`;
-    return `round ${count} of this lane, past the cap of ${ROUND_CAP}: ${heard}; nothing is refused, keep working`;
+    return `round ${count} with a P0 or P1 in this chunk, past the cap of ${ROUND_CAP}: ${heard}; nothing is refused, keep working`;
 }
 // the coordinator's line past the cap: [escalate] passes quiet comms and starts her turn
 export const capLine = (lane: string, count: number, from: string) =>

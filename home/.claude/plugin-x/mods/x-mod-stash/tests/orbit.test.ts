@@ -85,7 +85,21 @@ function world(on: On, files: Record<string, string> = {}) {
     on('session.repo', () => ({
         value: { internal: false, name: null, remote: null, root: '/tmp' },
     }));
-    on('fs.list', () => ({ value: [] }));
+    // the registry dir lists the session files a test plants; every other dir reads empty
+    on('fs.list', (_$, e) => ({
+        value:
+            e.path === '/home/.claude/sessions'
+                ? Object.keys(files)
+                      .filter((p) => p.startsWith(`${e.path}/`))
+                      .map((p) => ({
+                          isLink: false,
+                          kind: 'file' as const,
+                          mtimeMs: 0,
+                          name: p.slice(e.path.length + 1),
+                          size: 1,
+                      }))
+                : [],
+    }));
     on('tool.register', (_$, e) => {
         described = e.description;
         schema = e.inputSchema as typeof schema;
@@ -5521,12 +5535,26 @@ test('of a herdr tick and his untick read together, the untick wins', async ($, 
 
 // FRM-649 exit 1 (FRM-616:W10): one ask counter for the fleet, minted under a lock dir beside the shelf, so two threads
 // asking at once never both hand out o1; it starts at 1 again once no thread holds an open ask
-const lockDirs = (on: On, isHeld = false, onUnlock = () => {}) => {
+// `alive`: the pids ps reports alive, so a registry row counts as a live session
+const lockDirs = (
+    on: On,
+    { alive = [] as number[], isHeld = false, onUnlock = () => {} } = {},
+) => {
     const dirs = new Set<string>(
         isHeld ? ['/home/.claude/shelf/ask-counter.lock'] : [],
     );
     on('process.run', (_$, e) => {
         const [cmd, path = ''] = e.argv;
+        if (cmd === 'ps')
+            return {
+                value: {
+                    exitCode: 0,
+                    isStderrTruncated: false,
+                    isStdoutTruncated: false,
+                    stderr: '',
+                    stdout: alive.join('\n'),
+                },
+            };
         const isTaken = cmd === 'mkdir' && !dirs.has(path);
         if (isTaken) dirs.add(path);
         if (cmd === 'rmdir') {
@@ -5547,8 +5575,13 @@ const lockDirs = (on: On, isHeld = false, onUnlock = () => {}) => {
 };
 
 test("an ask takes the fleet's next id while another thread holds an open one", async ($, on) => {
-    const w = world(on);
-    const dirs = lockDirs(on);
+    const w = world(on, {
+        '/home/.claude/sessions/777.json': JSON.stringify({
+            pid: 777,
+            sessionId: 'other-thread',
+        }),
+    });
+    const dirs = lockDirs(on, { alive: [777] });
     w.store.set('ask-counter', { next: 5 });
     w.store.set('asks:other-thread', {
         asks: ['its ask'],
@@ -5569,12 +5602,32 @@ test("an ask takes the fleet's next id while another thread holds an open one", 
 test('the minted ask is published before the counter lock frees', async ($, on) => {
     const w = world(on);
     const seen: string[][] = [];
-    lockDirs(on, false, () =>
-        seen.push([...w.store.keys()].filter((k) => k.startsWith('asks:'))),
-    );
+    lockDirs(on, {
+        onUnlock: () =>
+            seen.push([...w.store.keys()].filter((k) => k.startsWith('asks:'))),
+    });
     await start($);
     await add($, ['push FRM-1', 'yes']);
     expect(seen.map((keys) => keys.length)).toEqual([1]);
+});
+
+test("a gone session's ask left in the store holds no count", async ($, on) => {
+    const w = world(on, {
+        '/home/.claude/sessions/778.json': JSON.stringify({
+            pid: 778,
+            sessionId: 'gone-thread',
+        }),
+    });
+    lockDirs(on);
+    w.store.set('ask-counter', { next: 9 });
+    w.store.set('asks:gone-thread', {
+        asks: ['its ask'],
+        items: [{ id: 'o8' }],
+    });
+    await start($);
+    const ui = await board($);
+    await add($, ['push FRM-1', 'yes']);
+    expect(await asksShown(ui)).toEqual(['o1']);
 });
 
 test('with no open ask anywhere the count starts at 1 again', async ($, on) => {
@@ -5601,7 +5654,7 @@ test('a restart skips an id this thread still draws, a resolved ask dimmed for o
 
 test('a counter lock another thread holds refuses the add, never mints a local id', async ($, on) => {
     world(on);
-    lockDirs(on, true);
+    lockDirs(on, { isHeld: true });
     await start($);
     const r = (await add($, ['push FRM-1', 'yes'])) as { deny?: string };
     expect(r.deny).toMatch(/ask counter is held/);

@@ -88,6 +88,7 @@ import {
     roundChunkOf,
     roundLine,
     roundOf,
+    severeOf,
     ticketOf,
     unbold,
     waitSpans,
@@ -2396,7 +2397,13 @@ async function isToCoordinator($: EngineInterface, to: string) {
 // rounds; only this mod writes it, clio's compact-carry and the board read it, so a compact or a reload loses no count.
 // a resend adds nothing; the private `lane-rounds:` keys of the build before seed a key the file lacks (clio's call 9)
 const LANE_ROUNDS = 'lane-rounds:';
-type LaneRounds = { at?: number; count: number; shas: string[] };
+// clean: the rounds whose line named «P0/P1: 0», written only once one did; count − clean is what the cap reads
+type LaneRounds = {
+    at?: number;
+    clean?: number;
+    count: number;
+    shas: string[];
+};
 const roundsPath = (home: string) => `${home}/.claude/shelf/lane-rounds.json`;
 // a file that does not parse moves aside to `lane-rounds.json.bad`, kept for a look, and the count starts over: one torn
 // write never stops every lane's count
@@ -2432,6 +2439,9 @@ function roundsOf(kept: unknown): LaneRounds {
         };
     const v = kept as Partial<LaneRounds> | undefined;
     return {
+        ...(typeof v?.clean === 'number' && v.clean > 0
+            ? { clean: v.clean }
+            : {}),
         count: typeof v?.count === 'number' ? v.count : 0,
         shas: Array.isArray(v?.shas) ? v.shas : [],
     };
@@ -2472,11 +2482,25 @@ async function laneRoundLine(
     const ticket = chunk.ticket ?? self.ticket;
     if (!ticket)
         return `round ${round.n} on ${round.sha} not counted (x's record names no ticket): resend the same line once clio's dispatch writes one`;
-    const lane = `${self.lane} | ${ticket}${chunk.slice ? ` slice ${chunk.slice}` : ''}`;
+    const isClean = severeOf(text(e.message) ?? '') === 0;
     const now = await $.clock.now();
     // a count that could not be taken says so: a silent miss is a cap nobody hears
     const taken = await roundsLocked($, home, async () => {
         const rounds = await readRounds($, home);
+        const named = `${self.lane} | ${ticket}${chunk.slice ? ` slice ${chunk.slice}` : ''}`;
+        // a lone slice joins the lane's latest key of that slice, whichever ticket a fuller line gave it
+        const lane =
+            chunk.slice && !chunk.ticket
+                ? (Object.entries(rounds)
+                      .filter(
+                          ([k]) =>
+                              k.startsWith(`${self.lane} | `) &&
+                              k.endsWith(` slice ${chunk.slice}`),
+                      )
+                      .sort(
+                          ([, a], [, b]) => (b.at ?? 0) - (a.at ?? 0),
+                      )[0]?.[0] ?? named)
+                : named;
         const kept =
             rounds[lane] ??
             roundsOf(
@@ -2488,8 +2512,9 @@ async function laneRoundLine(
             )
         )
             return undefined;
-        // a lane may open past round 1, and a number sent is never read back as less
+        // a lane may open past round 1, and a number sent is never read back as less; a round never seen reads as severe
         const next = Math.max(round.n, kept.count + 1);
+        const clean = (kept.clean ?? 0) + (isClean ? 1 : 0);
         await writeWhole(
             $,
             roundsPath(home),
@@ -2499,6 +2524,7 @@ async function laneRoundLine(
                         ...rounds,
                         [lane]: {
                             at: now,
+                            ...(clean ? { clean } : {}),
                             count: next,
                             shas: [...kept.shas, round.sha],
                         },
@@ -2509,15 +2535,16 @@ async function laneRoundLine(
                 2,
             )}\n`,
         );
-        return { count: next };
+        return { lane, severe: next - clean };
     }).catch((err: unknown) => errorText(err));
     if (typeof taken === 'string')
         return `round ${round.n} on ${round.sha} not counted (${taken}): resend the same line to count it`;
     // a resend changes nothing and says nothing: its first send's line stands
-    if (!taken) return undefined;
-    const { count } = taken;
-    if (count <= ROUND_CAP) return roundLine(count);
-    return roundLine(count, await capTold($, self.sessionId, lane, count));
+    // a clean round moves no cap: only the rounds with a P0 or P1 count toward it (crew-dna § the loop)
+    if (!taken || isClean) return undefined;
+    const { lane, severe } = taken;
+    if (severe <= ROUND_CAP) return roundLine(severe);
+    return roundLine(severe, await capTold($, self.sessionId, lane, severe));
 }
 
 // past the cap, each new round: one line to the lane's coordinator, the live wing whose glide card links this codie,
@@ -3652,7 +3679,7 @@ async function cliosWaiting($: EngineInterface) {
 }
 
 // FRM-649 (FRM-616:W10): one ask counter for the fleet, `ask-counter` in $.store, read and bumped under a lock dir beside
-// the shelf (the joins' rule: no compare-and-swap exists); with no `asks:` key in the store no thread holds an open ask,
+// the shelf (the joins' rule: no compare-and-swap exists); with no live session's `asks:` key no thread holds an open ask,
 // so the count starts at 1 again, past any id this thread still draws. `publish` saves the asks before the lock frees, or
 // a thread taking it next reads no `asks:` key and mints the same o1 again. undefined: the lock stayed held; a host that
 // runs no process (a test world) mints unlocked
@@ -3678,7 +3705,24 @@ async function mintAsks<T>(
         await $.process.run(['sleep', '0.1']);
     }
     try {
-        const isHeld = (await $.store.keys()).some((k) => k.startsWith(PREFIX));
+        // a gone session's key outlives it (only its own save deletes it): only a live one holds; a registry that will
+        // not read, or lists no session at all, holds on any key, the side that never mints a taken id
+        const live = await registry($)
+            .then((rs) =>
+                rs.length
+                    ? new Set(
+                          rs.filter((r) => r.isAlive).map((r) => r.base.sid),
+                      )
+                    : undefined,
+            )
+            .catch(() => undefined);
+        const self = await currentId($);
+        const isHeld = (await $.store.keys()).some((k) => {
+            const sid = k.slice(PREFIX.length);
+            return (
+                k.startsWith(PREFIX) && (!live || sid === self || live.has(sid))
+            );
+        });
         const kept = (await $.store.get(ASK_COUNTER).catch(() => undefined)) as
             | { next?: unknown }
             | undefined;
@@ -3696,18 +3740,23 @@ async function mintAsks<T>(
     }
 }
 
-// FRM-649 (FRM-616:W36–W38): a lane card's title is x's lane record, «<scope> — <what>», read once per dispatch of its
-// codie (the record's id, time and ticket), never each poll; title undefined when x has no record or it names no what;
-// sixth: the sixth sense x's record names, linked beside the codie
-type LaneShown = { title?: string; sixth?: string };
+// FRM-649 (FRM-616:W36–W38): a lane card's title is x's lane record, «<scope> — <what>», read once per change of the lane's
+// records in x's thread store (a dispatch, a sixth sense joining), never each poll, and a failed read is tried again next
+// poll; title undefined when x has no record or it names no what; sixth: the sixth sense x's record names, linked beside
+// the codie; isFresh: read on this call, the one time a card takes the title, so a hand retitle stands
+type LaneShown = { isFresh?: boolean; title?: string; sixth?: string };
 const laneShowns = new Map<string, LaneShown & { key: string }>();
 async function laneShown(
     $: EngineInterface,
     codie: ThreadRecord & { lane: string },
 ): Promise<LaneShown> {
-    const key = `${codie.sessionId}|${codie.at ?? 0}|${codie.ticket ?? ''}`;
+    const key = (await threadRecords($))
+        .filter((t) => t.lane === codie.lane)
+        .map((t) => `${t.sessionId}|${t.role}|${t.at ?? 0}|${t.ticket ?? ''}`)
+        .sort()
+        .join(',');
     const kept = laneShowns.get(codie.lane);
-    if (kept?.key === key) return kept;
+    if (kept?.key === key) return { sixth: kept.sixth, title: kept.title };
     const run = await $.process
         .run(['x', 'lane', 'show', codie.lane, '--json'], {
             cwd: await $.env.get('HOME'),
@@ -3739,8 +3788,8 @@ async function laneShown(
         )
             title = `${record.scope} — ${record.what}`;
     } catch {}
-    laneShowns.set(codie.lane, { key, sixth, title });
-    return { sixth, title };
+    if (run?.exitCode === 0) laneShowns.set(codie.lane, { key, sixth, title });
+    return { isFresh: true, sixth, title };
 }
 
 // a dispatch opens its lane's card (FRM-602): x's record of a live codie names the lane, whose plan file holds the steps,
@@ -3783,7 +3832,7 @@ async function openDispatchedLanes($: EngineInterface) {
         );
         const open = onPlan.find((l) => !l.endedAt);
         const shown = await laneShown($, codie);
-        if (open && shown.title && open.title !== shown.title)
+        if (open && shown.isFresh && shown.title && open.title !== shown.title)
             await orbitCall(
                 $,
                 { act: 'edit', id: open.id, op: 'glide', title: shown.title },

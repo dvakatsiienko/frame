@@ -2346,6 +2346,107 @@ test("a lane's next dispatch retitles its open card from the record", async ($, 
     ).toEqual(['mods — the next chunk']);
 });
 
+test('an x lane show that fails is read again on the next poll', async ($, on) => {
+    const w = world(
+        on,
+        dispatched([{ lane: 'mods-lane-9', pid: 5001, sessionId: CODIE }]),
+    );
+    titled(w, marked('x  '));
+    await start($);
+    await poll(w);
+    w.shows['mods-lane-9'] = {
+        lane: 'mods-lane-9',
+        members: { [CODIE]: 'codie' },
+        scope: 'mods',
+        what: 'read on the second try',
+    };
+    await poll(w);
+    expect([
+        kept(w)
+            .filter((l) => !l.endedAt)
+            .map((l) => l.title),
+        w.showRuns,
+    ]).toEqual([
+        ['mods — read on the second try'],
+        ['mods-lane-9', 'mods-lane-9'],
+    ]);
+});
+
+test("a title clio gave the card by hand stands until the lane's records change", async ($, on) => {
+    const w = world(
+        on,
+        dispatched([{ lane: 'mods-lane-9', pid: 5001, sessionId: CODIE }]),
+    );
+    titled(w, marked('x  '));
+    w.shows['mods-lane-9'] = {
+        lane: 'mods-lane-9',
+        members: { [CODIE]: 'codie' },
+        scope: 'mods',
+        what: 'the record title',
+    };
+    await start($);
+    await poll(w);
+    const id = kept(w).find((l) => !l.endedAt)?.id;
+    await lane($, { act: 'edit', id, title: 'mods — her own words' });
+    await poll(w);
+    expect(
+        kept(w)
+            .filter((l) => !l.endedAt)
+            .map((l) => l.title),
+    ).toEqual(['mods — her own words']);
+});
+
+test('a sixth sense x records after the dispatch joins the card on a later poll', async ($, on) => {
+    const SIXTH_SID = 'sx6sx6sx-sixth';
+    const setup = dispatched([
+        { lane: 'mods-lane-9', pid: 5001, sessionId: CODIE },
+    ]);
+    const w = world(on, {
+        ...setup,
+        peers: [
+            ...setup.peers,
+            codieAt(SIXTH_SID, { name: '⚡ 🔎 mods | FRM-9', pid: 5002 }),
+        ],
+    });
+    titled(w, marked('x  '));
+    w.shows['mods-lane-9'] = {
+        lane: 'mods-lane-9',
+        members: { [CODIE]: 'codie' },
+        scope: 'mods',
+        what: 'one ask counter',
+    };
+    await start($);
+    await poll(w);
+    // the summon of the sixth sense writes its record into the lane; the codie's stays as it was
+    w.files[THREADS_FILE] = threadsFile([
+        { pid: PID, sessionId: SID, ...recordOf(CLIO) },
+        {
+            coordinator: 'clio-main',
+            lane: 'mods-lane-9',
+            pid: 5001,
+            role: 'codie',
+            sessionId: CODIE,
+        },
+        {
+            lane: 'mods-lane-9',
+            pid: 5002,
+            role: 'sixth-sense',
+            sessionId: SIXTH_SID,
+        },
+    ]);
+    w.shows['mods-lane-9'] = {
+        lane: 'mods-lane-9',
+        members: { [CODIE]: 'codie', [SIXTH_SID]: 'sixth-sense' },
+        scope: 'mods',
+        what: 'one ask counter',
+    };
+    await poll(w);
+    await poll(w);
+    expect(kept(w).find((l) => !l.endedAt)?.members['sixth-sense']).toBe(
+        '⚡ 🔎 mods | FRM-9',
+    );
+});
+
 test('a dispatch opens no card for a gone codie, a record with no lane, or a lane with no plan', async ($, on) => {
     const w = world(on, {
         ...dispatched([
