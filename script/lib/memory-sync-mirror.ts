@@ -3,7 +3,7 @@
  * ? (claude.ai settings → account → «instructions for claude»).
  * ?
  * ? `account / profile / instructions` is the one cloud-chat destination the masters feed: it loads
- * ? on every surface, holds 32 768 chars (dima's paste test, 2026-09-23), and only dima can write
+ * ? on every surface, holds at least 32 826 chars (dima saved a 32 826 paste whole, 2026-11-18; his 2026-09-23 test read 32 768), and only dima can write
  * ? it — so the render is a paste block, and cloud-chat's own memory entries (`/preferences.md`,
  * ? `/profile.md`, the leaves) stay fully cloud-chat-native, never spliced.
  * ?
@@ -14,7 +14,7 @@
  * ? whole file. cc strips html comments at load, so a tag costs cc nothing and the masters keep
  * ? their natural section order. `pnpm memory-sync:map` prints the routing table.
  * ?
- * ? over 32 768 the field refuses the paste, so the render aborts first. the fragment renders
+ * ? over the cap the render aborts first. the fragment renders
  * ? COMPACT: headers, bullets and marker-led paragraphs whole, plain prose and html comments
  * ? dropped — except a leaf section left with nothing but its heading, which keeps its prose.
  */

@@ -44,6 +44,8 @@ floods; no other member prints one.
 
 <!-- 2026-10-20: clio's own 🔥 template (2026-10-13) beat the skill three times: 4 questions at once, mechanics asked, grill-me named and skipped. -->
 
+**His clipboard is never set by me** (dima, 2026-11-18: «never set my clipboard yourself. i often copy-paste myself, so when you set it i just don't see it, overwrite it, and then clarify with you for 5 messages in a row»): a text he pastes goes out as a file link he opens, and a one-press orbit button where it matters ([FRM-645](https://linear.app/x-com/issue/FRM-645)).
+
 **A remove or uninstall instruction to dima goes out only after its target's source is read**.
 
 **A ui part is shown, never described** (dima, 2026-11-10: «let's use screenshots to communicate»): a shot with the part boxed and named, drawn by me, helga or a `helper-lite`; where its window is shot: the surface leaf.
