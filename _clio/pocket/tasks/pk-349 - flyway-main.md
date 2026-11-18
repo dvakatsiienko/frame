@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-18T20:45:00Z'
+updated_date: '2026-11-18T20:53:00Z'
 labels:
   - s
   - clio-main
@@ -17,10 +17,9 @@ ordinal: 1000
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
-- [ ] #2 f44 when dima is back: show where his not-possible herdr wishes live; he wants one colocated home — not now
-- [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
-- [ ] #4 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
-- [ ] #5 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
+- [ ] #2 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
+- [ ] #3 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
+- [ ] #4 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -1126,4 +1125,6 @@ PK-349:W1202 (2026-11-18 22:33, dima): perf: I agree with Wade's decision to imp
 PK-349:W1203 (2026-11-18 22:33, dima): FRM-590: I think it is nice to help. Evolve yourself two times. If you think it is still worth it and will help, I approve it: move it to the CLI chunk sequence from CC mods.
 
 22:45 correction: PK-349:W1201 is clio's 22:21 reply text, quoted back by dima to answer it, not his words; his own line is W1202 (wishkeeper 22:45)
+
+done 2026-11-18 22:53: f44 when dima is back: show where his not-possible herdr wishes live; he wants one colocated home — not now
 <!-- SECTION:NOTES:END -->

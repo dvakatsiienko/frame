@@ -4,10 +4,9 @@ title: 'Raycast MCP: probe what it opens for the fleet, adopt or drop'
 status: open
 assignee: []
 created_date: '2026-11-18T18:01:00Z'
-updated_date: '2026-11-18T18:02:00Z'
+updated_date: '2026-11-18T21:16:00Z'
 labels:
   - s
-  - clio-wing-1
 dependencies: []
 priority: later
 type: task
@@ -38,4 +37,6 @@ the bar: our rule is cli over mcp; it earns a place only if it opens a door we l
 
 <!-- SECTION:NOTES:BEGIN -->
 20:01 kept: 2026-11-18 — dima's word: a pocket item solved in a few days, not today or tomorrow (20:01); his word outranks the today–tomorrow rule
+
+23:16: handed back at wing 1's halt: open, no date on dima's 20:01 word («in a few days»); main or the next wing 1 takes it
 <!-- SECTION:NOTES:END -->
