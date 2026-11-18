@@ -1,7 +1,7 @@
 # fleet mods — the cc mods every session works through
 
 **scope:** the mods of plugin `x` (`plugin-x/mods/<name>`), the fleet's live channel to dima. one section per mod, one line per part a session meets. how a mod is built: `plugin-x/mods/AGENTS.md`.
-📌 a `--bg` session draws no board: its orbit and phases stay unseen in the desktop app (2026-10-11), so its asks also reach its coordinator in its ping.
+📌 a `--bg` session draws no board: its orbit and phases stay unseen (2026-10-11), so its asks also reach its coordinator in its ping.
 
 ## 🗂️ x-mod-stash — the board
 
