@@ -27,12 +27,12 @@ import {
     askLabel,
     asksOf,
     byName,
+    createPresses,
     dropPress,
     hotOf,
     hotPressLine,
     hotPresses,
     inListOrder,
-    isPressSettled,
     linkOf,
     literalAngles,
     nextThreads,
@@ -70,7 +70,6 @@ const USAGE = `${CLAUDE}/shelf/cc-usage-window.json`;
 const SESSIONS = `${CLAUDE}/sessions`;
 const THREADS = `${CLAUDE}/shelf/threads.json`;
 const TICKS = `${CLAUDE}/shelf/orbit-ticks`;
-const SENT_MS = 2 * 60 * 1000;
 
 /**
  * @param {string} path
@@ -255,9 +254,8 @@ export default class Deck extends View {
         this.steers = new Map();
         /** @type {Promise<unknown>} */
         this.writing = Promise.resolve();
-        // presses written and not yet taken by the session's stash, so a second press waits
-        /** @type {Map<string, { verdict: import('./orbit.js').Press['verdict'], at: number }>} */
-        this.sent = new Map();
+        // his presses written and not yet taken by the session's stash, so a second press waits
+        this.presses = createPresses();
         // the gated asks a «tick all» passed over, `sid:id`: each says it still needs his own press
         /** @type {Set<string>} */
         this.passedOver = new Set();
@@ -350,18 +348,15 @@ export default class Deck extends View {
                     .find((s) => s.sid === sid)
                     ?.asks.find((a) => a.id === id);
             };
-            for (const [key, press] of this.sent) {
-                const ask = askOf(key);
-                const pending = this.rows
-                    .find((s) => s.sid === key.split(':')[0])
-                    ?.pending.get(ask?.id ?? '');
-                if (
-                    !ask ||
-                    isPressSettled(ask, pending, press.verdict) ||
-                    Date.now() - press.at > SENT_MS
-                )
-                    this.sent.delete(key);
-            }
+            this.presses.settle((key) => {
+                const [sid, id] = key.split(':');
+                return {
+                    ask: askOf(key),
+                    pending: this.rows
+                        .find((s) => s.sid === sid)
+                        ?.pending.get(id),
+                };
+            }, Date.now());
             for (const key of this.steers.keys()) {
                 const s = this.rows.find((r) => r.sid === key.split(':')[0]);
                 const ask = askOf(key);
@@ -576,6 +571,11 @@ export default class Deck extends View {
         });
     }
 
+    /** his press on an ask, from the one record @param {Row} s @param {string | null} id */
+    pressOf(s, id) {
+        return this.presses.of(`${s.sid}:${id}`, s.pending.get(id ?? ''));
+    }
+
     // a click's own cx is the only one valid past an await (herdr's AGENTS.md: never keep a cx), so a press runs as
     // its own task; every failure, a refused mkdir included, lands in the panel, never silently
     /** @param {Context} cx @param {Row} s @param {Ask} ask @param {'tick' | 'replay'} verdict */
@@ -583,7 +583,7 @@ export default class Deck extends View {
         const key = `${s.sid}:${ask.id}`;
         const steer = this.steers.get(key)?.value().trim();
         const at = Date.now();
-        this.sent.set(key, { at, verdict });
+        this.presses.pressed(key, verdict, at);
         this.pressError = null;
         cx.notify();
         try {
@@ -607,7 +607,7 @@ export default class Deck extends View {
                 ),
             );
         } catch (err) {
-            if (this.sent.get(key)?.at === at) this.sent.delete(key);
+            this.presses.failed(key, at);
             this.pressError = `${ask.id} not sent: ${err instanceof Error ? err.message : err}`;
         }
         cx.notify();
@@ -619,17 +619,11 @@ export default class Deck extends View {
     async pressAll(cx, s) {
         const at = Date.now();
         // read before the asks draw ticked below, or the write would find nothing left to take
-        const was = new Map(
-            s.asks.map((a) => [
-                a.id,
-                this.sent.get(`${s.sid}:${a.id}`)?.verdict ??
-                    s.pending.get(a.id ?? ''),
-            ]),
-        );
+        const was = new Map(s.asks.map((a) => [a.id, this.pressOf(s, a.id)]));
         const sentOf = (/** @type {string} */ id) => was.get(id);
         const takes = tickAllTakes(s.asks, sentOf);
         for (const a of takes)
-            this.sent.set(`${s.sid}:${a.id}`, { at, verdict: 'tick' });
+            this.presses.pressed(`${s.sid}:${a.id}`, 'tick', at);
         if (takes.length > 0)
             for (const a of s.asks)
                 if (a.isGated) this.passedOver.add(`${s.sid}:${a.id}`);
@@ -653,7 +647,7 @@ export default class Deck extends View {
                 ),
             );
         } catch (err) {
-            for (const a of takes) this.sent.delete(`${s.sid}:${a.id}`);
+            for (const a of takes) this.presses.failed(`${s.sid}:${a.id}`, at);
             this.pressError = `tick all not sent: ${err instanceof Error ? err.message : err}`;
         }
         cx.notify();
@@ -711,9 +705,7 @@ export default class Deck extends View {
         for (const s of this.rows)
             for (const ask of s.asks) {
                 if (`${s.sid}:${ask.id}` !== key) continue;
-                const sent =
-                    this.sent.get(key)?.verdict ?? s.pending.get(ask.id);
-                const state = tickState(ask, sent);
+                const state = tickState(ask, this.pressOf(s, ask.id));
                 const act = steerKeyPress(state, isCmd, Boolean(ask.isGated));
                 const note = steerKeyNote(state, isCmd, Boolean(ask.isGated));
                 if (note) {
@@ -745,7 +737,7 @@ export default class Deck extends View {
         // drawn open at once, before the write: the ticks file's last read may still hold the press
         const at = Date.now();
         const isDrop = untickDoor(s.pending.get(ask.id), ask.mark) === 'drop';
-        this.sent.set(key, { at, verdict: 'untick' });
+        this.presses.pressed(key, 'untick', at);
         cx.notify();
         try {
             await this.inTurn(() =>
@@ -759,7 +751,7 @@ export default class Deck extends View {
                       ),
             );
         } catch (err) {
-            if (this.sent.get(key)?.at === at) this.sent.delete(key);
+            this.presses.failed(key, at);
             this.pressError = `${ask.id} not unticked: ${err instanceof Error ? err.message : err}`;
         }
         cx.notify();
@@ -771,9 +763,8 @@ export default class Deck extends View {
     /** @param {Theme} t @param {Row} s @param {Ask} ask @param {number} i @param {number} j */
     ask(t, s, ask, i, j) {
         const key = `${s.sid}:${ask.id}`;
-        const sent = this.sent.get(key)?.verdict ?? s.pending.get(ask.id);
         const steer = this.steers.get(key);
-        const state = tickState(ask, sent);
+        const state = tickState(ask, this.pressOf(s, ask.id));
         const isLocked = state === 'locked';
         const labels = pressLabel(state, ask.mark);
         // tick is the main act, so it is the one filled button
@@ -1090,12 +1081,7 @@ export default class Deck extends View {
         const owners = rows.filter((s) => s.asks.length > 0);
         return owners.map((s, i) => {
             const canTickAll =
-                tickAllTakes(
-                    s.asks,
-                    (id) =>
-                        this.sent.get(`${s.sid}:${id}`)?.verdict ??
-                        s.pending.get(id),
-                ).length > 0;
+                tickAllTakes(s.asks, (id) => this.pressOf(s, id)).length > 0;
             // ⌘⇧K ticks the asker under the pointer, else the one he clicked last, ringed so he sees which
             const isPicked = this.pickedSid === s.sid;
             return v_flex()

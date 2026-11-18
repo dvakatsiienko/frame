@@ -1,12 +1,15 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
 import {
     type Ask,
+    SENT_MS,
     THREADS_BEAT_MS,
     askLabel,
     asksOf,
     byName,
     canTakeBack,
+    createPresses,
     hotOf,
     hotPressLine,
     hotPresses,
@@ -785,6 +788,72 @@ describe('a press draws as sent until the shelf agrees with it, so a fast run of
         expect(
             isPressSettled({ ...open, isLocked: true }, undefined, 'untick'),
         ).toBe(true);
+    });
+});
+
+describe('one record of his press per ask: every reader asks it, only events move it (FRM-628)', () => {
+    const open: Ask = { ...ask, isLocked: false, mark: null };
+    const KEY = `${SID}:o1`;
+    const lookup =
+        (found: Ask | undefined, pending?: 'tick' | 'replay' | 'untick') =>
+        () => ({ ask: found, pending });
+
+    test('nothing pressed: the ask shows the ticks file’s press', () => {
+        expect(createPresses().of(KEY, 'tick')).toBe('tick');
+    });
+
+    test('a press he just made shows over the ticks file’s', () => {
+        const presses = createPresses();
+        presses.pressed(KEY, 'untick', 1_000);
+        expect(presses.of(KEY, 'tick')).toBe('untick');
+    });
+
+    test('a write that failed gives the press back', () => {
+        const presses = createPresses();
+        presses.pressed(KEY, 'tick', 1_000);
+        presses.failed(KEY, 1_000);
+        expect(presses.of(KEY, undefined)).toBeUndefined();
+    });
+
+    test('a failed write never takes back a newer press', () => {
+        const presses = createPresses();
+        presses.pressed(KEY, 'tick', 1_000);
+        presses.pressed(KEY, 'untick', 2_000);
+        presses.failed(KEY, 1_000);
+        expect(presses.of(KEY, undefined)).toBe('untick');
+    });
+
+    test('a press stays until the shelf draws the ask the same without it', () => {
+        const presses = createPresses();
+        presses.pressed(KEY, 'tick', 1_000);
+        presses.settle(lookup(open, undefined), 2_000);
+        expect(presses.of(KEY, undefined)).toBe('tick');
+        presses.settle(lookup(open, 'tick'), 3_000);
+        expect(presses.of(KEY, 'untick')).toBe('untick');
+    });
+
+    test('a press on an ask that left is dropped', () => {
+        const presses = createPresses();
+        presses.pressed(KEY, 'tick', 1_000);
+        presses.settle(lookup(undefined), 2_000);
+        expect(presses.of(KEY, undefined)).toBeUndefined();
+    });
+
+    test('a press the session never took gives the buttons back after a while', () => {
+        const presses = createPresses();
+        presses.pressed(KEY, 'tick', 1_000);
+        presses.settle(lookup(open, undefined), 1_000 + SENT_MS - 1);
+        expect(presses.of(KEY, undefined)).toBe('tick');
+        presses.settle(lookup(open, undefined), 1_000 + SENT_MS + 1);
+        expect(presses.of(KEY, undefined)).toBeUndefined();
+    });
+
+    test('the deck merges his press with the ticks file’s only through the record', () => {
+        const main = readFileSync(
+            new URL('./main.js', import.meta.url),
+            'utf8',
+        );
+        expect(main.match(/\.verdict\s*\?\?/g)).toBeNull();
     });
 });
 

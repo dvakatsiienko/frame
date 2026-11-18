@@ -350,6 +350,50 @@ export function tickState(ask, sent) {
 export const isPressSettled = (ask, pending, sent) =>
     ask.isLocked || tickState(ask, pending) === tickState(ask, sent);
 
+/** a press the session never took gives the buttons back after this long */
+export const SENT_MS = 2 * 60 * 1000;
+
+/**
+ * his presses on the asks, one record each, keyed `sid:id`: a key or a click presses, a failed write takes its own
+ * press back, and a press settles once the shelf draws the ask the same without it, the ask leaves, or SENT_MS passes.
+ * every reader of his press asks `of`, so a fix lands in one place (FRM-628)
+ */
+export function createPresses() {
+    /** @type {Map<string, { verdict: Press['verdict'], at: number }>} */
+    const sent = new Map();
+    return {
+        /** its write failed: only the press made at `at`, never a newer one @param {string} key @param {number} at */
+        failed(key, at) {
+            if (sent.get(key)?.at === at) sent.delete(key);
+        },
+        /**
+         * his press on an ask: one he just made, else the last read of the ticks file
+         * @param {string} key @param {Press['verdict'] | null | undefined} pending
+         */
+        of: (key, pending) => sent.get(key)?.verdict ?? pending,
+        /** @param {string} key @param {Press['verdict']} verdict @param {number} at */
+        pressed(key, verdict, at) {
+            sent.set(key, { at, verdict });
+        },
+        /**
+         * after a read of the shelf
+         * @param {(key: string) => { ask: Ask | undefined, pending: Press['verdict'] | null | undefined }} lookup
+         * @param {number} now
+         */
+        settle(lookup, now) {
+            for (const [key, press] of sent) {
+                const { ask, pending } = lookup(key);
+                if (
+                    !ask ||
+                    isPressSettled(ask, pending, press.verdict) ||
+                    now - press.at > SENT_MS
+                )
+                    sent.delete(key);
+            }
+        },
+    };
+}
+
 /**
  * how his second click takes a tick back: a press the stash has not read leaves the ticks file, so neither the stash
  * nor the guard ever sees it; a press it has read gets an untick line, which the stash answers by dropping the mark
