@@ -33,7 +33,10 @@ async function reloaded(
         state[e.key] = e.value;
         return { value: { isSet: true, version: 2 } };
     });
-    on('env.get', () => ({ value: '/home' }));
+    // a minute's poll, read once (X_STASH_POLL_MS): its hour-long rows cross 60 ticks, not 900 (FRM-555 fix 3)
+    on('env.get', (_$, e) => ({
+        value: e.name === 'X_STASH_POLL_MS' ? String(60_000) : '/home',
+    }));
     on('fs.list', () => {
         calls.io++;
         return { value: [] };
