@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    readFileSync,
+    readdirSync,
+    statSync,
+    writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import {
@@ -699,7 +705,15 @@ export function closeOnDone(
         const { id, status, title } = frontmatter(text).scalars;
         if (!id || status !== 'open' || title?.startsWith('flyway:')) return [];
         const named = new RegExp(`\\b${id}\\b`, 'i');
-        const since = lastWrite.get(name) ?? 0;
+        // a note is committed seconds later by a hook, so the file's own mtime counts too
+        const since = Math.max(
+            lastWrite.get(name) ?? 0,
+            Math.floor(
+                (statSync(join(root, 'pocket', 'tasks', name), {
+                    throwIfNoEntry: false,
+                })?.mtimeMs ?? 0) / 1000,
+            ),
+        );
         const hit = commits.find(
             (commit) => commit.at > since && named.test(commit.text),
         );

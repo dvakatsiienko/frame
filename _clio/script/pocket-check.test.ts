@@ -5,6 +5,7 @@ import {
     mkdirSync,
     mkdtempSync,
     rmSync,
+    utimesSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -1365,6 +1366,7 @@ describe('close on done', () => {
     const redsFor = (
         fields: Record<string, string>,
         commits: { at: number; message: string; note?: boolean }[],
+        uncommittedNoteAt?: number,
     ) => {
         const repo = mkdtempSync(join(tmpdir(), 'pocket-close-'));
         repos.push(repo);
@@ -1383,15 +1385,27 @@ describe('close on done', () => {
             });
         git(0, 'init', '-q');
         writeFileSync(join(tasks, 'pk-443.md'), item.text);
+        utimesSync(join(tasks, 'pk-443.md'), dayAgo, dayAgo);
         git(0, 'add', '.');
         git(0, 'commit', '-q', '-m', '📜 pocket: pk-443 (auto)');
         for (const { at, message, note } of commits) {
-            writeFileSync(
-                join(repo, note ? 'pocket/tasks/pk-443.md' : 'other.txt'),
-                `${item.text}${at}`,
+            const written = join(
+                repo,
+                note ? 'pocket/tasks/pk-443.md' : 'other.txt',
             );
+            writeFileSync(written, `${item.text}${at}`);
+            utimesSync(written, dayAgo + at, dayAgo + at);
             git(at, 'add', '.');
             git(at, 'commit', '-q', '-m', message);
+        }
+        if (uncommittedNoteAt !== undefined) {
+            const noted = join(tasks, 'pk-443.md');
+            writeFileSync(noted, `${item.text}note`);
+            utimesSync(
+                noted,
+                dayAgo + uncommittedNoteAt,
+                dayAgo + uncommittedNoteAt,
+            );
         }
         return closeOnDone([{ ...item, name: 'pk-443.md' }], repo, gitEnv());
     };
@@ -1411,6 +1425,12 @@ describe('close on done', () => {
                 { at: 200, message: '🐞 fix: PK-443 done' },
                 { at: 300, message: '📜 pocket: pk-443 (auto)', note: true },
             ]),
+        ).toEqual([]);
+    });
+
+    test('a note written after that commit clears it before the pocket commit lands', () => {
+        expect(
+            redsFor({}, [{ at: 200, message: '🐞 fix: PK-443 done' }], 300),
         ).toEqual([]);
     });
 
