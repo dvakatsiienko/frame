@@ -82,6 +82,7 @@ import {
     JOIN_TAKE_MS,
     holdSend,
 } from './joins.js';
+import { createKeyPress } from './keypress.js';
 import { LOOK_KEY, lookOf } from './look.js';
 import { createMagic } from './magic.js';
 import {
@@ -100,7 +101,7 @@ import { sendArgs } from './queued.js';
 import { createQuills } from './quill.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
-import { SUBMIT_REST_MS, addressIn, submitted } from './send.js';
+import { addressIn, submitted } from './send.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
 import { transcriptPath } from './thread.js';
 import { typedMarkdown } from './typed.js';
@@ -426,7 +427,8 @@ export default class Chat extends View {
     lastKeyAt = 0;
     /** the quill's text, and its text one change earlier: Enter types its line break before it submits */
     typedNow = '';
-    lastSubmitAt = 0;
+    /** Enter in the quill, one press at a time: a held key's repeats act once */
+    quillKeys = createKeyPress();
     typedBefore = '';
     /** one more at each thread opened: a state watch of an earlier opening ends */
     stateTurn = 0;
@@ -504,11 +506,12 @@ export default class Chat extends View {
             this.quills.apply(this.file, { text, type: 'typed' });
             box.set_selected_range({ end: caret, start: caret });
             const at = Date.now();
-            const isRepeat = at - this.lastSubmitAt < SUBMIT_REST_MS;
-            this.lastSubmitAt = at;
-            if (isRepeat) return;
-            if (act === 'push') this.push(box, cx);
-            else if (act === 'click') this.click(box, cx);
+            // a beat later, so this press's key-down, which herdr tells after the submit, has landed
+            cx.timer.after(1, (cx) => {
+                if (this.quillKeys.submitted(at) === 'repeat') return;
+                if (act === 'push') this.push(box, cx);
+                else if (act === 'click') this.click(box, cx);
+            });
         });
         this.box = box;
         this.pickKeys = cx.focus_handle();
@@ -1765,6 +1768,20 @@ export default class Chat extends View {
                         .bg(t.background)
                         .border(1)
                         .border_color(t.border)
+                        .on_key_down((e) => {
+                            if (e.key === 'enter')
+                                this.quillKeys.down(
+                                    Date.now(),
+                                    Boolean(e.is_held),
+                                );
+                        })
+                        .on_key_up((e) => {
+                            if (e.key === 'enter') this.quillKeys.up();
+                        })
+                        .on_modifiers_changed((e) => {
+                            if (!e.modifiers.platform)
+                                this.quillKeys.modifiersUp();
+                        })
                         .child(Textarea.new(box))
                         .child(
                             // the picker sits left of send, as shepherdr's does

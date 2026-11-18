@@ -55,6 +55,3 @@ function oneBreakMoreAt(value, before) {
         ? at
         : -1;
 }
-
-// a held Enter repeats its submit every few ms, and one press can be seen twice: only the first sighting acts
-export const SUBMIT_REST_MS = 300;

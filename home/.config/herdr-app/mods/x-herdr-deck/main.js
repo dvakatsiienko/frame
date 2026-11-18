@@ -17,6 +17,7 @@ import {
 } from 'herdr';
 
 import { rejoin } from './joined.js';
+import { createKeyPress } from './keypress.js';
 import {
     ORDER_KEY,
     PENDING_MS,
@@ -146,12 +147,8 @@ async function sessions(shelf) {
     );
 }
 
-// with no key-up seen, a submit this close to the last one is the held key's repeat (his first repeat at 150 ms)
-const STEER_KEY_REPEAT_MS = 180;
 // how long a key that did nothing says why under its steer box
 const KEY_NOTE_MS = 3000;
-// a key-down and the submit it makes land this close together
-const STEER_DOWN_PAIR_MS = 60;
 
 // a steer he is typing outlives a reload of this mod: localStorage is kept across a copy's restart
 /** @param {string} key */
@@ -256,6 +253,8 @@ export default class Deck extends View {
         this.writing = Promise.resolve();
         // his presses written and not yet taken by the session's stash, so a second press waits
         this.presses = createPresses();
+        // Enter in every steer box, one press at a time: a held key's repeats act once
+        this.steerKeys = createKeyPress();
         // the gated asks a «tick all» passed over, `sid:id`: each says it still needs his own press
         /** @type {Set<string>} */
         this.passedOver = new Set();
@@ -690,18 +689,9 @@ export default class Deck extends View {
         cx.timer.after(1, (cx) => this.steerKeyAct(cx, key, isCmd, at));
     }
 
-    // the key-down's own held flag says a repeat, exactly, ⌘ down or not; with none seen, a key-up or a gap does
     /** @param {Context} cx @param {string} key @param {boolean} isCmd @param {number} at */
     steerKeyAct(cx, key, isCmd, at) {
-        const down = this.steerDown;
-        const isRepeat =
-            down && Math.abs(at - down.at) < STEER_DOWN_PAIR_MS
-                ? down.isHeld
-                : !this.isSteerKeyUp &&
-                  at - (this.steerKeyAt ?? 0) < STEER_KEY_REPEAT_MS;
-        this.steerKeyAt = at;
-        if (isRepeat) return;
-        this.isSteerKeyUp = false;
+        if (this.steerKeys.submitted(at) === 'repeat') return;
         for (const s of this.rows)
             for (const ask of s.asks) {
                 if (`${s.sid}:${ask.id}` !== key) continue;
@@ -902,18 +892,18 @@ export default class Deck extends View {
                                         // ends a cmd-enter, whose Enter key-up macOS never sends
                                         .on_key_down((e) => {
                                             if (e.key === 'enter')
-                                                this.steerDown = {
-                                                    at: Date.now(),
-                                                    isHeld: Boolean(e.is_held),
-                                                };
+                                                this.steerKeys.down(
+                                                    Date.now(),
+                                                    Boolean(e.is_held),
+                                                );
                                         })
                                         .on_key_up((e) => {
                                             if (e.key === 'enter')
-                                                this.isSteerKeyUp = true;
+                                                this.steerKeys.up();
                                         })
                                         .on_modifiers_changed((e) => {
                                             if (!e.modifiers.platform)
-                                                this.isSteerKeyUp = true;
+                                                this.steerKeys.modifiersUp();
                                         })
                                         // delivered: the steer stays as words, no longer editable
                                         .child(
