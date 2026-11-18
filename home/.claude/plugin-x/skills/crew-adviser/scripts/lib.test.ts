@@ -8,9 +8,10 @@ import {
     utimesSync,
     writeFileSync,
 } from 'node:fs';
+import { type Server, createServer } from 'node:net';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, test } from 'vitest';
+import { afterAll, describe, expect, test } from 'vitest';
 
 import {
     type Note,
@@ -33,6 +34,7 @@ import {
     leavesToSend,
     ledgerLine,
     meterLine,
+    noneReceipt,
     planNotes,
     planPrompt,
     prViewArgs,
@@ -1314,4 +1316,100 @@ test('a --bg job maps to its own session id, two starts at once never swap', () 
         sessionOfJob('aaaa1111', dir),
         sessionOfJob('cccc3333', dir),
     ]).toEqual(['sid-crow', undefined]);
+});
+
+// clio holds a grill round for crow's note or 3 min, and a clean read is a `none` that only reached the notes log
+describe('a proposal wake that crow answers none', () => {
+    const proposal = '/frame/.scratch/x/grill-2-proposal.md';
+    const servers: Server[] = [];
+
+    // a clio thread's session: its record in the thread list, its file in the sessions dir, a socket that records lines
+    function clioThread(
+        sessionId: string,
+        role: 'coordinator' | 'wing',
+        wing?: number,
+    ) {
+        const dir = mkdtempSync(join(tmpdir(), 'crow-none-'));
+        const socket = join(dir, `${sessionId}.sock`);
+        const heard: string[] = [];
+        servers.push(
+            createServer((conn) => {
+                let buffer = '';
+                conn.on('data', (chunk) => {
+                    buffer += chunk;
+                });
+                conn.on('end', () =>
+                    heard.push(JSON.parse(buffer).message.content),
+                );
+            }).listen(socket),
+        );
+        return { heard, record: { role, sessionId, wing }, socket };
+    }
+
+    function sessionsOf(...threads: ReturnType<typeof clioThread>[]) {
+        const dir = mkdtempSync(join(tmpdir(), 'crow-sessions-'));
+        for (const [index, thread] of threads.entries()) {
+            writeFileSync(
+                join(dir, `${index + 1}.json`),
+                JSON.stringify({
+                    cwd: '/frame/_clio',
+                    messagingSocketPath: thread.socket,
+                    pid: process.pid,
+                    sessionId: thread.record.sessionId,
+                }),
+            );
+        }
+        return dir;
+    }
+
+    const settle = () => new Promise((done) => setTimeout(done, 50));
+
+    afterAll(() => {
+        for (const server of servers) server.close();
+    });
+
+    test('reaches its reply-to thread as one line, and no other thread', async () => {
+        const main = clioThread('sid-main', 'coordinator');
+        const wing = clioThread('sid-wing', 'wing', 1);
+        const otherWing = clioThread('sid-wing2', 'wing', 2);
+
+        const sent = await noneReceipt({
+            note: 'none',
+            proposal,
+            sessionsDir: sessionsOf(main, otherWing, wing),
+            thread: 'wing-1',
+            threads: [main.record, otherWing.record, wing.record],
+        });
+        await settle();
+
+        expect([sent, wing.heard, main.heard, otherWing.heard]).toEqual([
+            true,
+            [`🐦‍⬛ crow: none on ${proposal}`],
+            [],
+            [],
+        ]);
+    });
+
+    test('a real note, or a wake with no proposal, sends nothing', async () => {
+        const main = clioThread('sid-main', 'coordinator');
+        const sessionsDir = sessionsOf(main);
+        const threads = [main.record];
+
+        const realNote = await noneReceipt({
+            note: 'the gate reads wrong',
+            proposal,
+            sessionsDir,
+            thread: 'main',
+            threads,
+        });
+        const otherWake = await noneReceipt({
+            note: 'none',
+            sessionsDir,
+            thread: 'main',
+            threads,
+        });
+        await settle();
+
+        expect([realNote, otherWake, main.heard]).toEqual([false, false, []]);
+    });
 });

@@ -506,8 +506,13 @@ export function dropStaleRelay(path = RELAY_PATH, now = Date.now()) {
 }
 export const HARVEST_DEADLINE_MS = 15 * 60_000;
 
-export function spawnHarvest(wake: Wake) {
-    spawnHarvester([wake.id, wake.mode, wake.phase]);
+export function spawnHarvest(wake: Wake, proposal?: string) {
+    spawnHarvester([
+        wake.id,
+        wake.mode,
+        wake.phase,
+        ...(proposal ? [proposal] : []),
+    ]);
 }
 
 export function spawnHarvester(args: string[]) {
@@ -1409,6 +1414,51 @@ export function sendLine(socketPath: string, text: string) {
         socket.on('error', reject);
         socket.on('connect', () => socket.end(`${frame}\n`, () => resolve()));
     });
+}
+
+// clio holds a grill round for crow's note, or 3 min with none; a clean read is a `none` that only reached the notes log, so
+// a proposal wake's none goes to its reply-to thread as one line, through that thread's own socket
+export async function noneReceipt({
+    note,
+    proposal,
+    sessionsDir = SESSIONS_DIR,
+    thread,
+    threads = liveThreads(),
+}: {
+    note: string;
+    proposal?: string;
+    sessionsDir?: string;
+    thread: string;
+    threads?: LiveThread[];
+}) {
+    if (!proposal || !/^none\.?$/i.test(note.trim())) return false;
+    const target = threads.find((t) =>
+        thread === MAIN_THREAD
+            ? t.role === 'coordinator'
+            : t.role === 'wing' && `wing-${t.wing}` === thread,
+    );
+    if (!target?.sessionId) return false;
+    for (const file of readdirSync(sessionsDir)) {
+        if (!/^\d+\.json$/.test(file)) continue;
+        try {
+            const entry: Partial<LiveSession> = JSON.parse(
+                readFileSync(join(sessionsDir, file), 'utf8'),
+            );
+            if (
+                entry.sessionId === target.sessionId &&
+                entry.messagingSocketPath &&
+                entry.pid &&
+                isAlive(entry.pid)
+            ) {
+                await sendLine(
+                    entry.messagingSocketPath,
+                    `🐦‍⬛ crow: none on ${proposal}`,
+                );
+                return true;
+            }
+        } catch {}
+    }
+    return false;
 }
 
 export function appendJsonl(path: string, value: Note | PlanNote | Verdict) {

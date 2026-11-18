@@ -17,6 +17,7 @@ import {
     heldMapOf,
     isMode,
     newestTranscript,
+    noneReceipt,
     oneShotModel,
     packetCarriedHeld,
     readCharter,
@@ -39,8 +40,8 @@ const TIMEOUT: Run = {
     tokensIn: 0,
     tokensOut: 0,
 };
-// `<wake id> <mode> <phase>` for a wake
-const [wakeId, mode, phaseArg] = process.argv.slice(2);
+// `<wake id> <mode> <phase> [proposal path]` for a wake
+const [wakeId, mode, phaseArg, proposal] = process.argv.slice(2);
 
 function log(line: string) {
     writeFileSync(
@@ -105,6 +106,17 @@ async function harvestSession(wake: Wake, arm: Arm) {
     });
     appendNoteOnce(NOTES_PATH, noteOf(wake, arm, 'session', turn.run));
     log(`session: note logged (${turn.run.seconds} s)`);
+    const isSent = await noneReceipt({
+        note: turn.run.note,
+        proposal,
+        thread,
+    }).catch((error: unknown) => {
+        log(
+            `none receipt failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        return false;
+    });
+    if (isSent) log(`session: none sent to ${thread}`);
 }
 
 async function harvestOneShot(wake: Wake, arm: Arm) {

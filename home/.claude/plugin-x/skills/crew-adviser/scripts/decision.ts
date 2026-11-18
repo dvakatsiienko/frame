@@ -313,7 +313,7 @@ async function wakeCrow({
                     ? now.getTime()
                     : undefined,
         });
-        spawnHarvest(wake);
+        spawnHarvest(wake, proposal);
         return { ...wake, line };
     }
 }
