@@ -121,4 +121,6 @@ retires PK-447:W20, superseded by PK-447:W25
 
 23:29 ticket: FRM-582 — every PK-447 W-line lives in FRM-582's wish block (19 lines); its grill is open, FRM-582 held unsigned for it
 close: moved to FRM-582, one home (dima 23:29: «pocket item closes into linear ticket?»)
+
+close: PK-447:W1, PK-447:W2, PK-447:W3, PK-447:W4, PK-447:W5, PK-447:W6, PK-447:W7, PK-447:W8, PK-447:W9, PK-447:W10, PK-447:W11, PK-447:W12, PK-447:W13, PK-447:W14, PK-447:W15, PK-447:W16, PK-447:W17, PK-447:W18, PK-447:W19, PK-447:W20, PK-447:W21, PK-447:W22, PK-447:W23, PK-447:W24, PK-447:W25, PK-447:W26, PK-447:W27, PK-447:W28,  moved to FRM-582 (its wish block carries each, 19 lines); its ❓ lines wait for FRM-582's grill
 <!-- SECTION:NOTES:END -->
