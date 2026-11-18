@@ -439,6 +439,8 @@ export default class Chat extends View {
     holdFill = 0;
     /** @type {{ cancel: () => void } | null} */
     holdTask = null;
+    /** the hold under way is Enter's, so its key-up ends it */
+    isHoldByEnter = false;
     /** how long a hold takes to push: his two settings rows */
     timing = { delay: HOLD_DELAY_MS, push: HOLD_PUSH_MS };
     /** how full a meter gets before it warns: his two settings rows, their defaults until read */
@@ -529,7 +531,11 @@ export default class Chat extends View {
             if (act === 'push') this.push(box, cx);
             else if (act === 'click') this.click(box, cx);
         });
-        box.on('blur', () => this.quillKeys.blurred());
+        box.on('blur', (_event, cx) => {
+            this.quillKeys.blurred();
+            // a quill that lost focus cuts Enter's hold; a hold on the send button is the pointer's to end
+            if (this.isHoldByEnter) this.holdStep(box, 'cancel', cx);
+        });
         this.box = box;
         this.pickKeys = cx.focus_handle();
         // ← → slide the effort thumb, Enter applies, Esc closes: the open picker holds the keyboard
@@ -1795,13 +1801,19 @@ export default class Chat extends View {
                         .border(1)
                         .border_color(t.border)
                         .key_context('XChatQuill')
+                        // Enter runs the send button's hold (FRM-628 W12): a tap joins on its release, a hold fills
+                        // the disc and pushes; its repeats keep the one hold going
                         .on_action(QUILL_ENTER, (_event, cx) => {
-                            if (this.quillKeys.pressed() === 'act')
-                                this.click(box, cx);
+                            if (this.quillKeys.pressed() !== 'act') return;
+                            this.press(box, cx);
+                            this.isHoldByEnter = this.hold !== null;
                         })
                         // the box never tells Enter's key-down (FRM-628 round 2 trace): its key-up ends a press
-                        .on_key_up((e) => {
-                            if (e.key === 'enter') this.quillKeys.released();
+                        .on_key_up((e, cx) => {
+                            if (e.key !== 'enter') return;
+                            this.quillKeys.released();
+                            if (this.isHoldByEnter)
+                                this.holdStep(box, 'release', cx);
                         })
                         .on_modifiers_changed((e) => {
                             if (!e.modifiers.platform)
@@ -2643,6 +2655,7 @@ export default class Chat extends View {
         this.holdTask = null;
         this.hold = null;
         this.holdFill = 0;
+        this.isHoldByEnter = false;
     }
 
     /** the quill holds the shown thread's draft, the caret after it; no thread, an empty quill */
