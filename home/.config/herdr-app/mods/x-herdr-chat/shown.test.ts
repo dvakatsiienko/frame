@@ -186,6 +186,16 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
         expect(shown.isEffort).toBe(true);
     });
 
+    test('two draws on screen see the same ⌘⇧E: the picker opens once', () => {
+        const first = asksActedOn({ ...at, effortAsk: 9_500 });
+        const second = asksActedOn({
+            ...at,
+            effortAsk: 9_500,
+            lastEffort: first.lastEffort,
+        });
+        expect([first.isEffort, second.isEffort]).toEqual([true, false]);
+    });
+
     test('a quiet draw takes nothing', () => {
         expect(asksActedOn(at)).toEqual({
             isEffort: false,
