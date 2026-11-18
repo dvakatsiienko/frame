@@ -38,7 +38,13 @@ import {
     slotsOf,
 } from './live-root.ts';
 import { RELOAD_MS, reloadVerdict, sourceHash } from './live-verdict.ts';
-import { SWAP_SOURCES, childEnv, liveDirs, manifestName } from './probe.ts';
+import {
+    SWAP_SOURCES,
+    childEnv,
+    liveDirs,
+    manifestName,
+    sandboxHome,
+} from './probe.ts';
 
 const COLS = 140;
 const ROWS = 40;
@@ -217,7 +223,7 @@ async function serve() {
             cwd: process.cwd(),
             // the watch var also came from the user settings' env
             env: {
-                ...childEnv(process.env, dirs, dir),
+                ...childEnv(process.env, dirs, dir, sandboxHome(home, dir)),
                 CLAUDE_CODE_PLUGIN_DIR_WATCH: '1',
             },
             name: 'xterm-256color',

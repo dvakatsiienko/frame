@@ -5,12 +5,15 @@
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import {
+    copyFileSync,
     existsSync,
     mkdirSync,
     mkdtempSync,
     readFileSync,
     readdirSync,
     realpathSync,
+    rmSync,
+    symlinkSync,
 } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -58,18 +61,44 @@ export function probeArgv(prompt: string, debugFile: string, extra: string[]) {
 }
 
 // the child's env: the swapped dirs, and the plugin cache, which holds $.store, moved under the run's dir, so a load-time
-// write or a 🎛️ press never reaches the fleet's store (a live proof flipped it, 2026-11-05). CLAUDE_CONFIG_DIR would move the login too
+// write or a 🎛️ press never reaches the fleet's store (a live proof flipped it, 2026-11-05); HOME is the run's sandbox.
+// CLAUDE_CONFIG_DIR would move the login too
 export function childEnv(
     env: NodeJS.ProcessEnv,
     dirs: string[],
     scratch: string,
+    home: string,
 ) {
     return {
         ...env,
         CLAUDE_CODE_PLUGIN_CACHE_DIR: join(scratch, 'plugin-cache'),
         CLAUDE_CODE_PLUGIN_DIRS: dirs.join(':'),
+        HOME: home,
         X_MODS_TEST_CHILD: '1',
     };
+}
+
+// a child's HOME: every entry of the real one linked, `.claude/` a dir of links, and the two files cc writes its settings
+// to copied fresh each run, so a /model in the child never reaches the user's settings.json (FRM-622: one wrote
+// `"model": "haiku"` there). the login lives in the keychain, which reads no HOME (probed 2026-11-18)
+const SANDBOX_COPIES = ['.claude/settings.json', '.claude.json'];
+export function sandboxHome(real: string, scratch: string) {
+    const home = join(scratch, 'home');
+    rmSync(home, { force: true, recursive: true });
+    mkdirSync(join(home, '.claude'), { recursive: true });
+    const link = (from: string, to: string) => {
+        for (const name of readdirSync(from)) {
+            const rel = join(to, name);
+            if (rel === '.claude' || SANDBOX_COPIES.includes(rel)) continue;
+            symlinkSync(join(from, name), join(home, rel));
+        }
+    };
+    link(real, '');
+    link(join(real, '.claude'), '.claude');
+    for (const rel of SANDBOX_COPIES)
+        if (existsSync(join(real, rel)))
+            copyFileSync(join(real, rel), join(home, rel));
+    return home;
 }
 
 // one `name<TAB>bash line` per line; `#` and blank lines skipped, a literal \n in the line is a newline
@@ -254,7 +283,7 @@ if (import.meta.main) {
         {
             cwd: tmp,
             encoding: 'utf8',
-            env: childEnv(process.env, dirs, tmp),
+            env: childEnv(process.env, dirs, tmp, sandboxHome(home, tmp)),
             timeout: 240_000,
         },
     );

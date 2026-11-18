@@ -1,5 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readdirSync } from 'node:fs';
+import {
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    readdirSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -14,6 +20,7 @@ import {
     parseRows,
     probeArgv,
     rowVerdicts,
+    sandboxHome,
     swapDir,
 } from './probe.ts';
 
@@ -88,13 +95,78 @@ describe('moduleLoaded', () => {
 });
 
 describe('childEnv', () => {
-    it('moves the plugin cache, which holds the store, under the run dir', () => {
-        expect(childEnv({ PATH: '/bin' }, ['/a', '/b'], '/run')).toEqual({
+    it('moves the plugin cache, which holds the store, under the run dir, and HOME to its sandbox', () => {
+        expect(
+            childEnv(
+                { HOME: '/u', PATH: '/bin' },
+                ['/a', '/b'],
+                '/run',
+                '/run/home',
+            ),
+        ).toEqual({
             CLAUDE_CODE_PLUGIN_CACHE_DIR: '/run/plugin-cache',
             CLAUDE_CODE_PLUGIN_DIRS: '/a:/b',
+            HOME: '/run/home',
             PATH: '/bin',
             X_MODS_TEST_CHILD: '1',
         });
+    });
+});
+
+// FRM-622 exit 1: a child's settings write lands in its own copy; the user's file stays byte-identical, everything else
+// in the home reads and writes through
+describe('sandboxHome', () => {
+    const fixture = () => {
+        const real = mkdtempSync(join(tmpdir(), 'sandbox-real-'));
+        mkdirSync(join(real, '.claude/shelf'), { recursive: true });
+        writeFileSync(join(real, '.claude/settings.json'), '{"model":"opus"}');
+        writeFileSync(join(real, '.claude.json'), '{"numStartups":1}');
+        writeFileSync(join(real, '.gitconfig'), '[user]');
+        return { real, run: mkdtempSync(join(tmpdir(), 'sandbox-run-')) };
+    };
+
+    it("a write to the child's settings and its .claude.json leaves the user's bytes alone", () => {
+        const { real, run } = fixture();
+        const home = sandboxHome(real, run);
+        writeFileSync(join(home, '.claude/settings.json'), '{"model":"haiku"}');
+        writeFileSync(join(home, '.claude.json'), '{"numStartups":2}');
+        expect([
+            readFileSync(join(real, '.claude/settings.json'), 'utf8'),
+            readFileSync(join(real, '.claude.json'), 'utf8'),
+            readFileSync(join(home, '.claude/settings.json'), 'utf8'),
+        ]).toEqual([
+            '{"model":"opus"}',
+            '{"numStartups":1}',
+            '{"model":"haiku"}',
+        ]);
+    });
+
+    it('everything else in the home reads and writes through to the real one', () => {
+        const { real, run } = fixture();
+        const home = sandboxHome(real, run);
+        writeFileSync(join(home, '.claude/shelf/state.json'), 'x');
+        expect([
+            readFileSync(join(home, '.gitconfig'), 'utf8'),
+            readFileSync(join(real, '.claude/shelf/state.json'), 'utf8'),
+        ]).toEqual(['[user]', 'x']);
+    });
+
+    it('a second run starts from the user settings as they are now', () => {
+        const { real, run } = fixture();
+        writeFileSync(
+            join(sandboxHome(real, run), '.claude/settings.json'),
+            '{}',
+        );
+        writeFileSync(
+            join(real, '.claude/settings.json'),
+            '{"model":"sonnet"}',
+        );
+        expect(
+            readFileSync(
+                join(sandboxHome(real, run), '.claude/settings.json'),
+                'utf8',
+            ),
+        ).toBe('{"model":"sonnet"}');
     });
 });
 
