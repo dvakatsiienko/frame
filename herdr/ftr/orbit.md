@@ -65,6 +65,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when he presses Enter, or cmd-enter
   - then Enter acts as 🛎️ and cmd-enter as 🔁, his steer riding the press; the same key again takes that press back, the button changing in the same frame; a held key acts once, two taps act twice
   - and Enter never ticks a guarded ask: that word stays his click
+  - and Enter then ⌘Enter takes the replay over the tick at once, with no read of the shelf between; ⌘Enter again takes it back (FRM-628:W1, a fake-clock test)
+  - and a press the thread never answers in 2 min says «No answer in 2 min: press again» under its box, never a silent flip back (FRM-628 step 96)
   - decision: dima, 20:34 (FRM-564:W75)
 - ✅ an ask id names its thread
   - given main clio and wing 1 both have an o8 open

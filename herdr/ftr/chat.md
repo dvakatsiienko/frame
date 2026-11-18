@@ -389,6 +389,12 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when a send is refused, or the thread does not run in herdr, then his words are back in the quill and a line over it says so
   - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «Waiting for the turn», until the turn takes it; words that joined a turn are drawn as his messages
   - Shift+Enter breaks the line
+  - and one press of Enter acts once: a held Enter, or one press herdr reports twice, acts once; a slow tap (~150 ms) sends once (FRM-628)
+  - and a release on send joins until he can see the disc: a 100 ms pause, then 150 ms of fill; let go after that, nothing is sent
+  - decision: a changed mind counts from a disc he can see, never a sliver: a 110–250 ms press did nothing (FRM-628 step 92, keeping his o127)
+  - and while a model, effort or permission pick types into the thread, a push or a send waits: his words stay, marked or not, and a line over the quill says «A switch is typing into this thread: send again in a moment» (FRM-628 step 93)
+  - and his words, their 🍕 mark and his draft have one owner (`quill.js`): words a turn took leave the quill as they show in the chat and stay gone after a switch away and back (FRM-628 step 88, his ✓ 12:39)
+  - and a message he pasted reads as his own words, the wrapper Claude Code puts around a paste gone; a tag he typed, or one inside what he pasted, stays (FRM-628)
   - decision: until the swap the two chats share no draft and the global keys (cmd-k and the rest) stay the old chat's; the hold's two timings are read from the old chat's settings (clio, 2026-11-16 21:50)
 
 - ✅ the chat settings popover: his chat look in one place (x-herdr-chat-settings, FRM-641)
