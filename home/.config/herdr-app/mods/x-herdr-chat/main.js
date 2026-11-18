@@ -508,15 +508,10 @@ export default class Chat extends View {
             box.set_selected_range({ end: caret, start: caret });
             const at = Date.now();
             const { file } = this;
-            // a beat later, so this press's key-down, which herdr tells after the submit, has landed; a thread switched
-            // in that beat never gets the other thread's words
+            // a beat later, so a key-up told with the submit has landed; a thread switched in that beat never gets the
+            // other thread's words
             cx.timer.after(1, (cx) => {
-                const said = this.quillKeys.submitted(at);
-                // [TRACE-enter] FRM-628 round 2: which Enter events the quill hears; out once his look reads them
-                this.trace(
-                    `[TRACE-enter] submit ${at} read ${Date.now()} ${act} → ${said}`,
-                );
-                if (said === 'repeat') return;
+                if (this.quillKeys.submitted(at) === 'repeat') return;
                 if (this.file !== file) return;
                 if (act === 'push') this.push(box, cx);
                 else if (act === 'click') this.click(box, cx);
@@ -1788,22 +1783,13 @@ export default class Chat extends View {
                         .border_color(t.border)
                         .key_context('XChatQuill')
                         .on_action(QUILL_ENTER, (_event, cx) => {
-                            const at = Date.now();
-                            const said = this.quillKeys.submitted(at);
-                            this.trace(`[TRACE-enter] action ${at} → ${said}`);
-                            if (said === 'act') this.click(box, cx);
+                            if (this.quillKeys.submitted(Date.now()) === 'act')
+                                this.click(box, cx);
                         })
-                        .on_key_down((e) => {
-                            if (e.key !== 'enter') return;
-                            this.trace(
-                                `[TRACE-enter] down ${Date.now()} held=${Boolean(e.is_held)}`,
-                            );
-                            this.quillKeys.down(Date.now(), Boolean(e.is_held));
-                        })
+                        // the box never tells Enter's key-down (FRM-628 round 2 trace): its key-up ends a press
                         .on_key_up((e) => {
-                            if (e.key !== 'enter') return;
-                            this.trace(`[TRACE-enter] up ${Date.now()}`);
-                            this.quillKeys.up(Date.now());
+                            if (e.key === 'enter')
+                                this.quillKeys.up(Date.now());
                         })
                         .on_modifiers_changed((e) => {
                             if (!e.modifiers.platform)
@@ -1923,7 +1909,9 @@ export default class Chat extends View {
             itemSizes,
             (i) => {
                 const id = rows[rowAt(i)]?.id ?? `end-${i}`;
-                if (i === cutAt) return `${id}#above`;
+                // the cut's upper half keeps the row's own key and text ids: a held place dropped at his next wheel
+                // step, or held again, keeps the same text views, so a selection in it never flickers (dima, 13:28)
+                if (i === cutAt) return id;
                 return i === cutAt + 1 && cutAt >= 0 ? `${id}#below` : id;
             },
             (drawn) => {
@@ -1943,9 +1931,7 @@ export default class Chat extends View {
                     }
                     if (i === cutAt)
                         items.push(
-                            box
-                                .overflow_hidden()
-                                .child(this.row(row, t, `${pre}a-`)),
+                            box.overflow_hidden().child(this.row(row, t, pre)),
                         );
                     else if (cutAt >= 0 && i === cutAt + 1)
                         items.push(
