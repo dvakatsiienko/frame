@@ -277,7 +277,7 @@ export async function tickAll(io, dir, rows, sid, sentOf, steerOf, at) {
                 ...(steer ? { steer } : {}),
             };
             return withPress(was, press, row.taken);
-        }, text),
+        }, text ?? ''),
     );
     return takes;
 }
@@ -639,11 +639,11 @@ const clock = (ms) => new Date(ms).toTimeString().slice(0, 5);
 export function hotOf(hot, pressed, now) {
     const isRead = Boolean(hot);
     const isPending =
-        Boolean(pressed) &&
+        pressed != null &&
         pressed.on !== isRead &&
         now - pressed.at < PENDING_MS;
     return {
-        isOn: isPending ? pressed.on : isRead,
+        isOn: isPending && pressed ? pressed.on : isRead,
         isPending,
         tip:
             hot && typeof hot.since === 'number'

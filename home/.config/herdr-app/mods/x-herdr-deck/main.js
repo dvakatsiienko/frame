@@ -95,7 +95,7 @@ async function states() {
 
 /**
  * @param {any[]} shelf
- * @returns {Promise<Row[]>}
+ * @returns {Promise<Row[] | null>} null: no answer, the deck keeps its last rows
  */
 async function sessions(shelf) {
     // one rule, one reader (FRM-570 rule 8): x's thread store names the live threads, a pid kept only while x finds it
@@ -179,6 +179,8 @@ const STATE = {
 };
 /** @type {Record<string, number>} */
 const RANK = { blocked: 0, working: 1 };
+/** blocked threads first, then working, then the rest @param {string} status */
+const rankOf = (status) => RANK[STATE[status] ?? ''] ?? 2;
 // the system font: herdr's own UI font (Geist) ships one face, so markdown's **bold** drew flat in it
 const SANS = '.AppleSystemUIFont';
 // one type scale: names and ask text, secondary lines, the smallest anywhere; secondary text is `muted`, never `dim`,
@@ -232,6 +234,18 @@ const prose = (id, markdown, color, size) =>
         .text_color(color);
 
 export default class Deck extends View {
+    /** the asker under the pointer, which ⌘⇧K ticks first @type {string | null} */
+    hoverSid = null;
+    /** the asker he clicked last, ringed @type {string | null} */
+    pickedSid = null;
+    // the ticks files, one write at a time
+    turns = createTurns();
+    // his presses written and not yet taken by the session's stash, so a second press waits
+    presses = createPresses();
+    // reloads one at a time, the newest last: an older read never puts a gone ask back
+    reloads = createSerial();
+    // Enter in every steer box, one press at a time: a held key's repeats act once
+    steerKeys = createKeyPress();
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
         // the thread strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
@@ -252,14 +266,6 @@ export default class Deck extends View {
         // a steer box per open ask, made when a read finds the ask: an InputState is never made while drawing
         /** @type {Map<string, import('gpui-base').InputState>} */
         this.steers = new Map();
-        // the ticks files, one write at a time
-        this.turns = createTurns();
-        // his presses written and not yet taken by the session's stash, so a second press waits
-        this.presses = createPresses();
-        // reloads one at a time, the newest last: an older read never puts a gone ask back
-        this.reloads = createSerial();
-        // Enter in every steer box, one press at a time: a held key's repeats act once
-        this.steerKeys = createKeyPress();
         // the gated asks a «tick all» passed over, `sid:id`: each says it still needs his own press
         /** @type {Set<string>} */
         this.passedOver = new Set();
@@ -325,17 +331,17 @@ export default class Deck extends View {
             null;
         const listed = await sessions(shelf);
         this.isStale = listed === null;
+        // a stale list keeps its rows, their presses read again all the same
+        const rows = await withPending(listed ?? this.rows, (sid) =>
+            readTextFile(`${TICKS}/${sid}.jsonl`).catch(
+                () => /** @type {string | null} */ (null),
+            ),
+        );
         if (listed)
-            this.rows = (
-                await withPending(listed, (sid) =>
-                    readTextFile(`${TICKS}/${sid}.jsonl`).catch(
-                        () => /** @type {string | null} */ (null),
-                    ),
-                )
-            ).sort(
+            this.rows = rows.sort(
                 (a, b) =>
-                    (RANK[STATE[a.status]] ?? 2) -
-                        (RANK[STATE[b.status]] ?? 2) || byName(a.name, b.name),
+                    rankOf(a.status) - rankOf(b.status) ||
+                    byName(a.name, b.name),
             );
         const next = nextThreads(
             /** @type {any} */ (shared(THREADS_KEY)),
@@ -357,7 +363,9 @@ export default class Deck extends View {
             const [sid, id] = key.split(':');
             return {
                 ask: askOf(key),
-                pending: this.rows.find((s) => s.sid === sid)?.pending.get(id),
+                pending: this.rows
+                    .find((s) => s.sid === sid)
+                    ?.pending.get(id ?? ''),
             };
         }, Date.now());
         // a press the thread never answered says so under its box, never a silent flip back
@@ -401,6 +409,8 @@ export default class Deck extends View {
                   ? t.blocked
                   : t.idle;
         const model = s.model?.split(' · ')[0] ?? null;
+        // drawn only when the thread has one
+        const context = s.context ?? 0;
         return v_flex()
             .px(12)
             .py(4)
@@ -451,9 +461,9 @@ export default class Deck extends View {
                             .child(
                                 bar(
                                     t,
-                                    s.context,
+                                    context,
                                     40,
-                                    s.context >= 60 ? t.blocked : t.muted,
+                                    context >= 60 ? t.blocked : t.muted,
                                 ),
                             )
                             // a fixed width and right-aligned digits stand in for tabular-nums, which gpui does not offer
@@ -464,13 +474,13 @@ export default class Deck extends View {
                                     .flex()
                                     .justify_end()
                                     .text_size(SIZE.secondary)
-                                    .when(s.context >= 60, (el2) =>
+                                    .when(context >= 60, (el2) =>
                                         el2.font_semibold(),
                                     )
                                     .text_color(
-                                        s.context >= 60 ? t.blocked : t.muted,
+                                        context >= 60 ? t.blocked : t.muted,
                                     )
-                                    .child(`${s.context}%`),
+                                    .child(`${context}%`),
                             ),
                     ),
             )
@@ -590,7 +600,10 @@ export default class Deck extends View {
     // its own task; every failure, a refused mkdir included, lands in the panel, never silently
     /** @param {Context} cx @param {Row} s @param {Ask} ask @param {'tick' | 'replay'} verdict */
     async press(cx, s, ask, verdict) {
-        const key = `${s.sid}:${ask.id}`;
+        const { id } = ask;
+        // an ask with no id has no line in the ticks file to name it
+        if (!id) return;
+        const key = `${s.sid}:${id}`;
         const steer = this.steers.get(key)?.value().trim();
         const at = Date.now();
         this.presses.pressed(key, verdict, at);
@@ -608,7 +621,7 @@ export default class Deck extends View {
                     `${TICKS}/${s.sid}.jsonl`,
                     {
                         at,
-                        id: ask.id,
+                        id,
                         text: ask.text,
                         verdict,
                         ...(steer ? { steer } : {}),
@@ -713,7 +726,9 @@ export default class Deck extends View {
     // mark (x-mod-stash hooks/orbit.ts herdrTicks)
     /** @param {Context} cx @param {Row} s @param {Ask} ask */
     async unpress(cx, s, ask) {
-        const key = `${s.sid}:${ask.id}`;
+        const { id } = ask;
+        if (!id) return;
+        const key = `${s.sid}:${id}`;
         // the steer box comes back with the tick button, at once, never at the next poll
         if (!this.steers.has(key)) this.makeSteerBox(key);
         const io = { read: readTextFile, write: writeTextFile };
@@ -721,17 +736,17 @@ export default class Deck extends View {
         this.pressError = null;
         // drawn open at once, before the write: the ticks file's last read may still hold the press
         const at = Date.now();
-        const isDrop = untickDoor(s.pending.get(ask.id), ask.mark) === 'drop';
+        const isDrop = untickDoor(s.pending.get(id), ask.mark) === 'drop';
         this.presses.pressed(key, 'untick', at);
         cx.notify();
         try {
             await this.turns(() =>
                 isDrop
-                    ? dropPress(io, path, ask.id, s.taken)
+                    ? dropPress(io, path, id, s.taken)
                     : savePress(
                           io,
                           path,
-                          { at, id: ask.id, text: ask.text, verdict: 'untick' },
+                          { at, id, text: ask.text, verdict: 'untick' },
                           s.taken,
                       ),
             );
@@ -908,8 +923,16 @@ export default class Deck extends View {
                                                       .truncate()
                                                       .text_size(SIZE.secondary)
                                                       .text_color(t.muted)
-                                                      .child(steer.value())
-                                                : Input.new(steer)
+                                                      .child(
+                                                          /** @type {InputState} */ (
+                                                              steer
+                                                          ).value(),
+                                                      )
+                                                : Input.new(
+                                                      /** @type {InputState} */ (
+                                                          steer
+                                                      ),
+                                                  )
                                                       .w_full()
                                                       .text_size(SIZE.secondary)
                                                       .text_color(t.foreground),
@@ -1196,7 +1219,7 @@ export default class Deck extends View {
                 el.children(items.map((it, i) => step(it.text, i))),
             )
             .when(!open && Boolean(now), (el) =>
-                el.child(step(now.text, current)),
+                now ? el.child(step(now.text, current)) : el,
             );
     }
 
