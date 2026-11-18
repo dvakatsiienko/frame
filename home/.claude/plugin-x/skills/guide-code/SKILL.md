@@ -10,8 +10,8 @@ these govern.
 
 ## Less is better
 
-The best version of a change leaves the least behind; a diff that removes more than it adds
-is usually the stronger one.
+The best version of a change leaves the least behind. Volume is not progress; a diff that
+removes more than it adds is usually the stronger one.
 
 Reach for, in order:
 
@@ -21,7 +21,8 @@ Reach for, in order:
 3. **Inline it.** One obvious place beats an abstraction used twice.
 4. **Then write it** — the smallest thing that does the job.
 
-Applies to everything countable: files, dependencies, options, verbs, lines. **Before adding, ask what it removes** — a change that only adds needs a
+Applies to everything countable: files, dependencies, options, verbs, layers, config keys,
+branches, lines. **Before adding, ask what it removes** — a change that only adds needs a
 reason a subtraction couldn't cover.
 
 Calls this decides:
@@ -32,7 +33,8 @@ Calls this decides:
 - Two ways to do one thing means one is wrong; find out which.
 
 **Less is not fewer characters.** Terse names and clever one-liners spend the reader's
-attention to save your keystrokes. Minimise what a reader holds in their head.
+attention to save your keystrokes — that's more, not less. Minimise what a reader holds in
+their head.
 
 ## Complete means whole
 
@@ -44,7 +46,7 @@ attention to save your keystrokes. Minimise what a reader holds in their head.
   thing drift, and the next fix lands in only one.
 - **Every use site.** Before a rename or a change to a shared name, find every caller — in TypeScript
   through the `LSP` tool (`guide-typescript`), elsewhere through grep.
-- **Agent-friendly by default.** Project files (`AGENTS.md`, `FTR.md`, README) stay current with the code; no half-scrapped files (PK-449).
+- **Agent-friendly by default.** Every shipment keeps its project files (`AGENTS.md`, `FTR.md`, README) current with the code, the code tidy, no half-scrapped files, unless the design rules it out (dima, PK-449).
 - **Smallest proof.** Targeted tests and typecheck for what you touched; CI owns the full
   suite — no repo-wide checks unasked.
 - **A red proof edits the existing line.** Prove a test by mutating the line it reads, never by adding a sibling

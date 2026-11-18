@@ -113,7 +113,7 @@ home/.claude/plugin-x/skills/firelink/references/web-bot-blocked-fetch.md	2800	s
 home/.claude/plugin-x/skills/firelink/SKILL.md	9900	bumped 2026-11-06: the wait line labelled (o54), the vm's two safety rules, his tick, a perf run's exception; 2026-11-02: game pages became the fourth door, gotchas kept resident (dima picked the bump)
 home/.claude/plugin-x/skills/github-contrib/SKILL.md	9000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-code/references/review-lessons.md	3900	seed 2026-11-15, its size + 15 %
-home/.claude/plugin-x/skills/guide-code/SKILL.md	4300	seed 2026-10-16, today's size + 15 %
+home/.claude/plugin-x/skills/guide-code/SKILL.md	4500	raised 2026-11-18: his agent-friendly line (PK-449) lands whole, no rule cut to fit
 home/.claude/plugin-x/skills/guide-conventions/SKILL.md	1700	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-go/SKILL.md	6000	seed 2026-10-16, today's size + 15 %
 home/.claude/plugin-x/skills/guide-react/SKILL.md	7500	seed 2026-10-16, today's size + 15 %
