@@ -32,6 +32,7 @@ import {
  * @property {number[]} sizes every row's height
  * @property {number} cutAt the row cut in two, -1 with none
  * @property {number} cutOffset the px of that row in its upper item
+ * @property {number} landTop how far the list is scrolled once the asked item drew where it was asked
  * @property {(item: number) => number} rowAt the row a list item draws
  */
 
@@ -55,6 +56,8 @@ export function createPlace() {
     let cut = null;
     /** after a look change, how far into the held message he was as a share of its height: a rewrap moves its px @type {number | null} */
     let share = null;
+    /** after a page joined his row above him: how far his place sits above that row's bottom @type {number | null} */
+    let below = null;
     let isSeekDue = false;
     /** the list was sent to its end, so the next frame can land the held place at the top */
     let isLifted = false;
@@ -112,8 +115,7 @@ export function createPlace() {
                 id = null;
             } else if (cut && plan.seekAt >= 0 && drawn.start === plan.seekAt)
                 // the list drew from the held place: he is exactly there
-                top =
-                    topOf(plan.sizes, plan.rowAt(plan.seekAt)) + plan.cutOffset;
+                top = plan.landTop;
         },
         get follow() {
             return follow;
@@ -141,6 +143,7 @@ export function createPlace() {
             id = null;
             cut = null;
             share = null;
+            below = null;
             isSeekDue = false;
             isLifted = false;
         },
@@ -163,6 +166,13 @@ export function createPlace() {
                     cut = { id: cut.id, offset };
                 }
             }
+            if (cut && below !== null) {
+                const at = placeIndex(rows, cut.id);
+                if (at >= 0) {
+                    offset = Math.max(0, (sizes[at] ?? 0) - below);
+                    cut = { id: cut.id, offset };
+                }
+            }
             /** @type {{ sizes: number[], seekAt: number, cut: { at: number, offset: number } | null }} */
             let split = cut
                 ? splitAtPlace(rows, sizes, cut)
@@ -172,6 +182,9 @@ export function createPlace() {
                 split.cut && item > split.cut.at ? item - 1 : item;
             /** @type {Plan['ask']} */
             let ask = null;
+            const at = cut ? placeIndex(rows, cut.id) : -1;
+            let landTop =
+                at >= 0 && cut ? topOf(sizes, at) + Math.round(cut.offset) : 0;
             if (isSeekDue && cut) {
                 const edge =
                     // only from a list that drew: before its first frame, where it sits is not known
@@ -186,9 +199,11 @@ export function createPlace() {
                     isSeekDue = false;
                     cut = null;
                     share = null;
+                    below = null;
                 } else if (edge) {
                     // below the view and far enough down: its view's bottom is asked for, in this one frame
                     split = edge;
+                    landTop = edge.top;
                     top = edge.top;
                     isSeekDue = false;
                     ask = 'seek';
@@ -213,6 +228,7 @@ export function createPlace() {
                 cutAt,
                 cutOffset: split.cut?.offset ?? 0,
                 itemSizes: [...split.sizes, ...END_MARKS],
+                landTop,
                 rowAt,
                 seekAt: cut ? split.seekAt : -1,
                 sizes,
@@ -227,6 +243,7 @@ export function createPlace() {
             follow = true;
             id = null;
             share = null;
+            below = null;
             offset = 0;
             top = 0;
             range = null;
@@ -237,12 +254,17 @@ export function createPlace() {
             wheelUntil = 0;
             isLastWheelDown = false;
         },
-        /** a saved place read back after a reload: held until the list lands it @param {string} rowId @param {number} px */
-        restore(rowId, px) {
+        /**
+         * a saved place read back after a reload, or kept over a page landing: held until the list lands it
+         * @param {string} rowId @param {number} px
+         * @param {number | null} [fromBottom] a page joined the row above him: his place is this far above its bottom
+         */
+        restore(rowId, px, fromBottom = null) {
             follow = false;
             id = rowId;
             offset = px;
             share = null;
+            below = fromBottom;
             hold();
         },
         /**
@@ -301,6 +323,7 @@ export function createPlace() {
             const hadCut = cut !== null;
             cut = null;
             share = null;
+            below = null;
             isSeekDue = false;
             top = topAfterWheel(top, dy, sizes, viewH);
             if (follow) id = null;

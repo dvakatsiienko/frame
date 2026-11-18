@@ -184,6 +184,15 @@ const AWAY_NOTE =
     'dima is afk: nothing waits on him. take reversible steps and log them, pick every pending ask and log its undo, raise one in orbit only when blocked, on his design call, or irreversible. send no ping.';
 const BACK_NOTE = 'dima is back from afk: orbit and pings reach him again.';
 const POLL_MS = 4000;
+// 5 min past its last event, a session's bookkeeping jobs tick every 30 s; what dima pressed, typed or ticked, and the
+// wakes, keep 4 s (FRM-555, dima o58, o59)
+const IDLE_AFTER_MS = 5 * 60_000;
+const IDLE_POLL_MS = 30_000;
+let activeAt = 0;
+let bookkeptAt = 0;
+async function markActive($: EngineInterface) {
+    activeAt = await $.clock.now();
+}
 // the fleet board: cc's registry gives each session's state; each session's stash adds its 🔭 wait and context fill
 const BOARD = 'x-cc-deck';
 // read-both: the board's id before dima's x-cc-deck name (o25); a reload finds it open and swaps it
@@ -2879,6 +2888,8 @@ async function absorbMarks($: EngineInterface) {
     if (!sid) return;
     const herdr = await herdrMarksOf($, sid);
     if (herdr.last <= herdr.after) return;
+    // his tick from herdr is an event: the bookkeeping jobs tick at 4 s again
+    await markActive($);
     let isSaved = false;
     // asks his newer ↩️ took back from an accepted mark: their tick record goes too, so the guard honours no tick the
     // board no longer shows
@@ -8035,31 +8046,40 @@ export const register: Register = (on) => {
                 await $.env.get('X_STASH_POLL_MS').catch(() => undefined),
             );
             const pollMs = asked >= POLL_MS ? asked : POLL_MS;
+            await markActive($);
             const tick = () =>
                 $.clock.after(pollMs, async () => {
+                    const now = await $.clock.now();
+                    const isBookkept =
+                        isBusy ||
+                        now - activeAt < IDLE_AFTER_MS ||
+                        now - bookkeptAt >= IDLE_POLL_MS;
+                    if (isBookkept) bookkeptAt = now;
                     await takeHerdrRows($).catch(() => undefined);
                     await syncWindStore($).catch(() => undefined);
                     // an open board's view carries the tick's clock, so its «ago» times move on their own
                     await load($);
                     await followHot($).catch(() => undefined);
-                    await freshMeter($).catch(() => undefined);
+                    if (isBookkept) await freshMeter($).catch(() => undefined);
                     await absorbMarks($).catch(() => undefined);
                     await wakeForMarks($).catch(() => undefined);
                     await takeBandPresses($).catch(() => undefined);
-                    await pollShelf($);
+                    if (isBookkept) await pollShelf($);
                     await quietIdle($).catch(() => undefined);
-                    await quietBooks($).catch(() => undefined);
+                    if (isBookkept) await quietBooks($).catch(() => undefined);
                     await wakeForParkedLanes($).catch(() => undefined);
                     await pacePoll($).catch(() => undefined);
                     await hotLate($).catch(() => undefined);
                     await relayCrowWake($).catch(() => undefined);
-                    await followCodies($).catch(() => undefined);
-                    await openDispatchedLanes($).catch(() => undefined);
-                    await showClioAsks($).catch(() => undefined);
-                    await followPlans($).catch(() => undefined);
+                    if (isBookkept) {
+                        await followCodies($).catch(() => undefined);
+                        await openDispatchedLanes($).catch(() => undefined);
+                        await showClioAsks($).catch(() => undefined);
+                        await followPlans($).catch(() => undefined);
+                    }
                     // a fold or mobile mode is kept within one poll of its change
                     await keepState($).catch(() => undefined);
-                    if (await isOpen($))
+                    if (isBookkept && (await isOpen($)))
                         await refreshSpeaking($).catch(() => undefined);
                     tick();
                 });
@@ -8084,11 +8104,13 @@ export const register: Register = (on) => {
     // only dima's own hands make his turn; a reply to any other origin may drop the block
     // a press reads what was typed: a steer still waiting for its pause saves first
     on('ui.press', async ($, e, next) => {
+        await markActive($).catch(() => undefined);
         await flushFields($);
         return next(e);
     });
 
     on('prompt.submit', async ($, e, next) => {
+        await markActive($).catch(() => undefined);
         await flushFields($);
         // the app sends no attachment, and a drop would lose his image with the prompt
         const isAppShaped = e.origin?.kind === 'sdk' && !e.attachments?.length;
@@ -8363,6 +8385,7 @@ export const register: Register = (on) => {
     });
 
     on('turn.complete', async ($, e, next) => {
+        await markActive($).catch(() => undefined);
         const r = await next(e);
         // a subagent's turn ending is not the session going idle
         if (e.agentId) return r;
@@ -8512,6 +8535,7 @@ export const register: Register = (on) => {
     // `/board colour` flips the colour MVP for every session's board, and opens it to look
     // quiet comms: in clio's thread a message that does not push is held; every delivery is logged
     on('session.receive', async ($, e, next) => {
+        await markActive($).catch(() => undefined);
         const kind = e.origin.kind;
         if (kind === 'task-notification' && !e.agentId) {
             await settleTask($, e.text).catch(() => undefined);
@@ -8685,6 +8709,7 @@ export const register: Register = (on) => {
         return next(e);
     });
     on('session.attach', async ($, e, next) => {
+        await markActive($).catch(() => undefined);
         if (e.surface === 'desktop')
             await returnToBoxes($).catch((err) =>
                 $.ui.log(
@@ -10691,6 +10716,7 @@ export const register: Register = (on) => {
 
     // `/clear` and `/resume` leave the conversation: its asks and holds go now, not at the next poll
     on('command.run', async ($, e, next) => {
+        await markActive($).catch(() => undefined);
         if (e.command !== 'clear' && e.command !== 'resume') return next(e);
         const left = await currentId($);
         const r = await next(e);

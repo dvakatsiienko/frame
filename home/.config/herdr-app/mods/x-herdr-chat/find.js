@@ -17,16 +17,27 @@ export function plainOf(text) {
     return text
         .split('\n')
         .filter((line) => !/^\s*(```|~~~)/.test(line))
-        .map((line) =>
-            line
-                .replace(/^\s{0,3}#{1,6}\s+/, '')
+        .map((line) => {
+            // code is read as written: its spans step aside while the marks around them drop
+            /** @type {string[]} */
+            const codes = [];
+            const marked = line
                 .replace(/^\s{0,3}>\s?/, '')
+                .replace(/^\s{0,3}#{1,6}\s+/, '')
+                .replace(/(`+)([^`]*?)\1/g, (_all, _ticks, code) => {
+                    codes.push(code);
+                    return `\uE000${codes.length - 1}\uE000`;
+                })
                 .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-                .replace(/`+([^`]*)`+/g, '$1')
-                .replace(/(\*\*|__)(?=\S)(.+?)(?<=\S)\1/g, '$2')
+                .replace(/\*\*(?=\S)(.+?)(?<=\S)\*\*/g, '$1')
+                .replace(/(^|[^\w_])__(?=\S)(.+?)(?<=\S)__(?![\w_])/g, '$1$2')
                 .replace(/(^|[^\w*])\*(?=\S)(.+?)(?<=\S)\*(?![\w*])/g, '$1$2')
-                .replace(/(^|[^\w_])_(?=\S)(.+?)(?<=\S)_(?![\w_])/g, '$1$2'),
-        )
+                .replace(/(^|[^\w_])_(?=\S)(.+?)(?<=\S)_(?![\w_])/g, '$1$2');
+            return marked.replace(
+                /\uE000(\d+)\uE000/g,
+                (_all, n) => codes[Number(n)] ?? '',
+            );
+        })
         .join('\n');
 }
 
@@ -108,12 +119,28 @@ export function createFind() {
         open() {
             state = { ...state, isOpen: true };
         },
-        /** a page landed: the same query over the rows now loaded, the stepped hit kept @param {readonly Row[]} rows */
-        recount(rows) {
+        /**
+         * a page landed: the same query over the rows now loaded, the stepped hit kept
+         * @param {readonly Row[]} rows
+         * @param {{ from: string, to: string } | null} [joined] the page's last reply joined row `from` above, as `to`
+         */
+        recount(rows, joined = null) {
             const was = state.hits[state.at];
             const hits = hitsOf(rows, state.q);
-            const at = was
-                ? hits.findIndex((h) => h.id === was.id && h.n === was.n)
+            /** @param {Hit[]} list @param {string} id */
+            const count = (list, id) => list.filter((h) => h.id === id).length;
+            const kept =
+                was && joined && was.id === joined.from
+                    ? {
+                          id: joined.to,
+                          n:
+                              was.n +
+                              count(hits, joined.to) -
+                              count(state.hits, joined.from),
+                      }
+                    : was;
+            const at = kept
+                ? hits.findIndex((h) => h.id === kept.id && h.n === kept.n)
                 : -1;
             state = { ...state, at: Math.max(0, at), hits };
         },

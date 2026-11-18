@@ -117,6 +117,24 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
             if (held) place.restore(held.id, held.offset);
             frame();
         },
+        /** a page whose last reply joins the first row: it takes the page's id and grows by `grow` above his place */
+        prependJoining(grow: number, ...more: number[]) {
+            place.read(rows, sizes);
+            const held = place.place;
+            const height = sizes[0] ?? 0;
+            rows[0] = { id: `j${rows.length}` };
+            sizes = [...more, height + grow, ...sizes.slice(1)];
+            rows.unshift(
+                ...more.map((_, i) => ({ id: `p${rows.length + i}` })),
+            );
+            if (held)
+                place.restore(
+                    rows[more.length]?.id ?? '',
+                    0,
+                    height - held.offset,
+                );
+            frame();
+        },
         /** the list's own height changes: the band, the bottom card or the picker under it grew or shrank */
         reshape(height: number) {
             viewH = height;
@@ -458,6 +476,25 @@ describe('an older page landing above his place (FRM-638 slice 6b)', () => {
         sim.prepend(500, 250, 400);
         expect(sim.truth()).toEqual({ id: 'r2', offset: 0 });
         expect(sim.asks).not.toContain('lift');
+    });
+
+    test('a landing inside a row taller than the view keeps the counted top true (review, finding 1)', () => {
+        const sim = createSim(thread());
+        sim.restore({ id: `r${REPLY}`, offset: 100 });
+        sim.idle(WHEEL_REST_MS);
+        sim.prepend(300, 300, 300, 300, 300, 300);
+        expect(sim.truth()).toEqual({ id: `r${REPLY}`, offset: 100 });
+        sim.wheel(50);
+        sim.idle(WHEEL_REST_MS);
+        expect(sim.saved()).toEqual(sim.truth());
+    });
+
+    test('a page joining the row he reads keeps his line: the place is held from the row’s bottom (review, finding 2)', () => {
+        const sim = createSim(thread());
+        sim.restore({ id: 'r0', offset: 120 });
+        sim.idle(WHEEL_REST_MS);
+        sim.prependJoining(200, 300, 300, 300, 300);
+        expect(sim.truth()).toEqual({ id: 'j9', offset: 320 });
     });
 
     test('his next wheel step after a landing moves from the place', () => {

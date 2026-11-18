@@ -115,6 +115,45 @@ test('the index copy registers no worktree', () => {
     expect(listed()).toBe(before);
 });
 
+// a worktree's mod types are the ones its seed copied, never rewritten: a gate run there reads the main checkout's,
+// which live engines keep current
+test("a gate run in a worktree reads the main checkout's engine types", () => {
+    const repo = mkdtempSync(join(tmpdir(), 'index-run-types-'));
+    const mod = 'home/.claude/plugin-x/mods/m';
+    const types = `${mod}/.claude-plugin/types/claude-code.d.ts`;
+    mkdirSync(join(repo, 'script'));
+    mkdirSync(join(repo, mod, '.claude-plugin/types'), { recursive: true });
+    copyFileSync(
+        join(root, 'script/index-run.sh'),
+        join(repo, 'script/index-run.sh'),
+    );
+    writeFileSync(join(repo, 'pnpm-workspace.yaml'), 'packages: []\n');
+    writeFileSync(
+        join(repo, '.gitignore'),
+        '**/.claude-plugin/types/\ntrees/\n',
+    );
+    writeFileSync(join(repo, mod, '.claude-plugin/plugin.json'), '{}\n');
+    const git = (args: string[], cwd = repo) =>
+        execFileSync('git', args, { cwd, env, timeout: 10_000 });
+    git(['init', '-q']);
+    git(['add', '-A']);
+    git(['commit', '-q', '-m', 'seed']);
+    git(['worktree', 'add', '-q', 'trees/w']);
+    const tree = join(repo, 'trees/w');
+    mkdirSync(join(tree, mod, '.claude-plugin/types'), { recursive: true });
+    writeFileSync(join(tree, types), 'the seed copy\n');
+    writeFileSync(join(repo, types), 'the live engine\n');
+
+    const run = spawnSync('bash', ['script/index-run.sh', 'cat', types], {
+        cwd: tree,
+        encoding: 'utf8',
+        env,
+        timeout: 10_000,
+    });
+
+    expect(run.stdout, run.stderr).toBe('the live engine\n');
+});
+
 // a repo whose shared index holds a peer's staged new file, and a pathspec commit's own index that lacks it
 function peerStaged() {
     const repo = mkdtempSync(join(tmpdir(), 'index-run-peer-'));
