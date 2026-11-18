@@ -4,8 +4,9 @@ import { asMember, peel, testSpan } from './command.ts';
 // zsh reads `[[ a == b ]]`'s operator as syntax, never as a path
 const TEST_OPERATORS = new Set(['=', '==', '=~']);
 type Edit = { at: number; from: string; to: string; why: string };
-// a shape with one right spelling, fixed in place: `pnpm -s` and an unquoted `=`-led word
-export function edits(segments: Segment[]): Edit[] {
+// a shape with one right spelling, fixed in place: `pnpm -s` and an unquoted `=`-led word; `self`, this seat's herdr
+// terminal, labels its own `hc run` as its lead
+export function edits(segments: Segment[], self?: string): Edit[] {
     // a `[[ … ]]` opens anywhere in a segment (`if [[`, `! [[`) and spans the segments its `&&` splits
     let inTest = false;
     return segments.flatMap((s) => {
@@ -78,14 +79,41 @@ export function edits(segments: Segment[]): Edit[] {
                       },
                   ]
                 : [];
-        return [...own, ...viaX, ...edits(s.subst)];
+        // a seat's own `hc run` carries `lead=<its terminal>`, so herdr-close lets it kill the throwaway it started, a
+        // --no-parent one too (FRM-604, in FRM-622); a line naming its own lead keeps it
+        const runWord =
+            peeled.name === 'hc'
+                ? peeled.args.find((w) => !w.text.startsWith('-'))
+                : undefined;
+        const hasLead = peeled.args.some(
+            (w, i) =>
+                w.text.startsWith('--label=lead=') ||
+                (w.text.startsWith('lead=') &&
+                    peeled.args[i - 1]?.text === '--label'),
+        );
+        const lead =
+            self &&
+            /^t[0-9a-z]+$/.test(self) &&
+            runWord?.text === 'run' &&
+            runWord.at !== undefined &&
+            !hasLead
+                ? [
+                      {
+                          at: runWord.at,
+                          from: 'run',
+                          to: `run --label lead=${self}`,
+                          why: 'a seat may kill the terminal it labels as its lead',
+                      },
+                  ]
+                : [];
+        return [...own, ...viaX, ...lead, ...edits(s.subst, self)];
     });
 }
-export function rewrite(command: string) {
+export function rewrite(command: string, self?: string) {
     // a `$( … )`'s commands are segments of their own and of the word's subst: one edit per offset
     const found = [
         ...new Map(
-            edits(parse(command).segments).map((e) => [e.at, e]),
+            edits(parse(command).segments, self).map((e) => [e.at, e]),
         ).values(),
     ].sort((a, b) => b.at - a.at);
     let out = command;

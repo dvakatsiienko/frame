@@ -125,7 +125,8 @@
 - ✅ a herdr close names a target that ends no live seat
   - given a thread's herdr close — `herdr-app do` `pane.close`, `tab.close`, `space.close`, `terminal.kill`, `overlay.close`, `app.quit` or `window.close`, or `hc kill`, `hc rm`, `hc server stop|restart` — that names no target, a target behind a variable, or one whose terminals herdr cannot name or include a live seat (a `seat=` label, or a claude agent this seat did not start), then it is refused (rule `herdr-close`, dima's o53); the window, the app and the server end every seat, so those always ask
   - then a named overlay herdr lists open, a plain shell, a claude terminal this seat started, a finished terminal and a mod-only tab this seat's own `tab.new` made run
-  - and a claude terminal this seat's own `hc run --bg` printed, named by its address or its name, is killed though it runs with `--no-parent`; a seat label still keeps it out, and an answer with an echo beside it, or a run with no `--bg`, claims none (FRM-604, in FRM-622)
+  - and a seat's own `hc run` is rewritten to carry `--label lead=<its HC_TERMINAL_ID>` (a line naming its own lead, a quoted verb and a seat outside herdr are left as typed), so the throwaway claude it started is its to kill, a `--no-parent` one too; a claude it never labelled stays refused (FRM-604, in FRM-622)
+  - 📌 `hc label <t> lead=<self>` on a terminal it did not start still claims it: the lead door's limit since FRM-574
   - and a clio seat (`seat=clio` or `seat=clio-wing-<n>`) ends any seat but a clio's, and a lead the seat it labelled `lead=<its own HC_TERMINAL_ID>`
   - proof: tests/herdr-close.test.ts
 - ✅ a guard that fails refuses the command, unless the off switch is on

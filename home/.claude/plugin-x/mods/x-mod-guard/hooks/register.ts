@@ -9,7 +9,6 @@ import {
     herdrCloseKey,
     herdrCloseOf,
     isClioSeat,
-    isHcRun,
     isHerdrTabNew,
 } from './rules/herdr-close.ts';
 import {
@@ -676,21 +675,8 @@ async function herdrSafeOf($: EngineInterface, command: string, cwd: string) {
     const { value: made = [] } = await $.state
         .get(TABS_MADE)
         .catch(() => ({ value: [] }));
-    const { value: runs = [] } = await $.state
-        .get(RUNS_MADE)
-        .catch(() => ({ value: [] }));
     for (const close of closes.filter((c) => c.scope !== 'overlay')) {
-        // a terminal this seat's own `hc run` printed, named by its address or its name (FRM-604)
-        const run =
-            close.scope === 'terminal'
-                ? runs.find(
-                      (r) =>
-                          r.address === close.target || r.name === close.target,
-                  )
-                : undefined;
-        const terminals = run
-            ? [run.address]
-            : terminalsOf(close, window, made);
+        const terminals = terminalsOf(close, window, made);
         if (!terminals) continue;
         let isSafe = true;
         for (const t of terminals) {
@@ -705,11 +691,7 @@ async function herdrSafeOf($: EngineInterface, command: string, cwd: string) {
                 isSafe = false;
                 continue;
             }
-            if (
-                isClio ||
-                (self !== undefined && got.labels?.lead === self) ||
-                (run?.address === t && typeof seat !== 'string')
-            )
+            if (isClio || (self !== undefined && got.labels?.lead === self))
                 continue;
             if (
                 typeof seat === 'string' ||
@@ -734,9 +716,6 @@ async function isClioCaller($: EngineInterface, self: string | undefined) {
 // only, so one of dima's mod panels in a tab of its own stays his); a line that echoes a tab id beside a tab.new can
 // still claim one, a local guard's limit
 const TABS_MADE = { key: 'tabsMade', plugin: 'x-mod-guard' } as const;
-// the terminals this seat's own `hc run` printed, by address and name: a throwaway probe started with --no-parent carries
-// no parent herdr could match, so its owner reads it here (FRM-604); a seat label still keeps it out
-const RUNS_MADE = { key: 'runsMade', plugin: 'x-mod-guard' } as const;
 async function keepTabsMade(
     $: EngineInterface,
     command: string,
@@ -744,12 +723,6 @@ async function keepTabsMade(
     text: unknown,
 ) {
     if (typeof text !== 'string') return;
-    const hcRuns = commandsDeep(command, cwd).filter(isHcRun);
-    const runs = madeRuns(hcRuns, text);
-    if (runs.length) {
-        const { value: kept = [] } = await $.state.get(RUNS_MADE);
-        await $.state.set(RUNS_MADE, [...kept, ...runs].slice(-50));
-    }
     if (!commandsDeep(command, cwd).some(isHerdrTabNew)) return;
     const ids = [...text.matchAll(/"tab":\s*"(tb[0-9a-f]+)"/g)].flatMap((m) =>
         m[1] ? [m[1]] : [],
@@ -757,35 +730,6 @@ async function keepTabsMade(
     if (!ids.length) return;
     const { value: made = [] } = await $.state.get(TABS_MADE);
     await $.state.set(TABS_MADE, [...made, ...ids].slice(-50));
-}
-// what a line of `hc run --bg`s printed, one json line each and nothing else: an echo beside them, a run that streams
-// its program, or a line that is no terminal's answer claims none
-function madeRuns(hcRuns: { args: { text: string }[] }[], text: string) {
-    if (
-        !hcRuns.length ||
-        !hcRuns.every((c) => c.args.some((w) => w.text === '--bg'))
-    )
-        return [];
-    const lines = text.split('\n').filter((l) => l.trim());
-    if (lines.length !== hcRuns.length) return [];
-    const runs = lines.map((line) => {
-        try {
-            const v = JSON.parse(line) as {
-                address?: unknown;
-                name?: unknown;
-                state?: unknown;
-            };
-            return typeof v.address === 'string' && typeof v.state === 'string'
-                ? {
-                      address: v.address,
-                      name: typeof v.name === 'string' ? v.name : '',
-                  }
-                : undefined;
-        } catch {
-            return undefined;
-        }
-    });
-    return runs.every((r) => r !== undefined) ? runs : [];
 }
 type HerdrWindow = {
     spaces?: {
@@ -998,7 +942,10 @@ async function lookUp(
 
 // what the floor says of one line, judged before anything runs
 async function judge($: EngineInterface, typed: string) {
-    const { command, notes } = rewrite(typed);
+    const { command, notes } = rewrite(
+        typed,
+        await $.env.get('HC_TERMINAL_ID').catch(() => undefined),
+    );
     const cwd = await $.session.cwd();
     const home = await $.env.get('HOME');
     // a failed root reads as no session's, never the cwd a `cd` moved

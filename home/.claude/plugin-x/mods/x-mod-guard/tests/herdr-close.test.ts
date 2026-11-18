@@ -104,6 +104,14 @@ const TERMINALS: Record<string, object> = {
         state: 'live',
         status: { app: 'claude-code' },
     },
+    // FRM-622: a throwaway claude whose start the guard labelled with this seat's terminal, no seat label
+    t48: {
+        argv: ['claude'],
+        labels: { lead: 't9' },
+        parent: null,
+        state: 'live',
+        status: { app: 'claude-code' },
+    },
 };
 const WINDOW = {
     spaces: [
@@ -212,18 +220,6 @@ function world(
         ran.push(command);
         if ([...fail].some((f) => command.includes(f)))
             return { isError: true as const, result: {}, text: 'failed' };
-        // herdr's answer to an `hc run --bg`, as the real one prints it (2026-11-18 16:08)
-        if (/^hc run .*--name probe\b/.test(command))
-            return {
-                result: {},
-                // an echo on the line prints its own json after herdr's
-                text: [
-                    '{"address":"t2p","agent":"claude","cwd":"/tmp","name":"probe","state":"live","turn":0}',
-                    ...[...command.matchAll(/echo '(\{[^']*\})'/g)].map(
-                        (m) => m[1],
-                    ),
-                ].join('\n'),
-            };
         // herdr's answer to a tab.new, as the real one prints it (2026-11-11 16:40)
         const made = command.match(/"name":"(tb\w+)"/)?.[1];
         return made
@@ -364,7 +360,10 @@ test('a clio seat spawns a wing with its clio label', async ($, on) => {
     const line = 'hc run --bg --label seat=clio-wing-3 -- claude';
     const { ran } = world(on, [], 't40');
     const r = await bash($, line);
-    expect([r.deny, ran]).toEqual([undefined, [line]]);
+    expect([r.deny, ran]).toEqual([
+        undefined,
+        ['hc run --label lead=t40 --bg --label seat=clio-wing-3 -- claude'],
+    ]);
 });
 
 // FRM-574 decided 2 and 7: a tick quoting one guarded command passes it inside a longer line, every other part judged,
@@ -493,41 +492,48 @@ for (const [line, word] of [
 test('hc run starting a plain program runs', async ($, on) => {
     const line = 'hc run --bg --name srv -- pnpm dev';
     const { ran } = world(on);
-    expect([(await bash($, line)).deny, ran]).toEqual([undefined, [line]]);
+    expect([(await bash($, line)).deny, ran]).toEqual([
+        undefined,
+        ['hc run --label lead=t9 --bg --name srv -- pnpm dev'],
+    ]);
 });
 
-// FRM-622 exit 3 (FRM-604): a codie kills the throwaway claude its own `hc run` started, by address or by name; a claude
-// it never started stays refused
-for (const [kill, isRun] of [
-    ['hc kill t2p', true],
-    ['hc kill probe', true],
-    ['hc kill t43', true],
-    ['hc kill t2p', false],
+// FRM-622 exit 3 (FRM-604): a seat's own `hc run` is rewritten to carry `lead=<its terminal>`, so the throwaway claude
+// it started is its to kill, a --no-parent one too; a claude it never labelled stays refused
+for (const [line, want] of [
+    [
+        "hc run --bg --no-parent --name probe -- claude 'hi'",
+        "hc run --label lead=t9 --bg --no-parent --name probe -- claude 'hi'",
+    ],
+    [
+        'cd /tmp && hc run --bg -- sleep 5',
+        'cd /tmp && hc run --label lead=t9 --bg -- sleep 5',
+    ],
+    [
+        'hc run --label lead=t9 --bg -- sleep 5',
+        'hc run --label lead=t9 --bg -- sleep 5',
+    ],
+    ["echo 'hc run --bg -- sleep 5'", "echo 'hc run --bg -- sleep 5'"],
+    // a quoted verb has no offset the edit could land on, so it is left as typed
+    ["hc 'run' --bg -- sleep 5", "hc 'run' --bg -- sleep 5"],
 ] as const)
-    test(`${kill} after ${isRun ? 'this seat started t2p' : 'no run'}: ${isRun && kill !== 'hc kill t43' ? 'runs' : 'refused'}`, async ($, on) => {
+    test(`a seat's hc run carries its lead label: ${line}`, async ($, on) => {
         const { ran } = world(on);
-        const start =
-            "hc run --bg --no-parent --no-notify --name probe -- claude -n 'probe' 'say hi'";
-        if (isRun) expect((await bash($, start)).deny).toBe(undefined);
-        const r = await bash($, kill);
-        expect(r.deny === undefined).toBe(isRun && kill !== 'hc kill t43');
-        expect(ran.includes(kill)).toBe(r.deny === undefined);
+        await bash($, line);
+        expect(ran).toEqual([want]);
     });
 
-// an echo beside the run, or a run that streams its program, claims no terminal
-for (const start of [
-    `hc run --bg --no-parent --name probe -- claude 'hi' && echo '{"address":"t43","name":"x","state":"live"}'`,
-    `hc run --no-parent --name probe -- echo '{"address":"t43","name":"x","state":"live"}'`,
-    // a run with no --bg streams what its program prints, which could be any terminal's answer
-    "hc run --no-parent --name probe -- claude 'hi'",
-])
-    test(`a forged hc run answer claims nothing: ${start.slice(0, 40)}`, async ($, on) => {
-        world(on);
-        await bash($, start);
-        expect([
-            (await bash($, 'hc kill t43')).deny === undefined,
-            (await bash($, 'hc kill t2p')).deny === undefined,
-        ]).toEqual([false, false]);
+for (const [kill, isRun] of [
+    ['hc kill t48', true],
+    ['hc kill t43', false],
+] as const)
+    test(`${kill}: ${isRun ? 'a claude labelled with this seat as its lead runs' : 'a claude with no lead label is refused'}`, async ($, on) => {
+        const { ran } = world(on);
+        const r = await bash($, kill);
+        expect([r.deny === undefined, ran.includes(kill)]).toEqual([
+            isRun,
+            isRun,
+        ]);
     });
 
 // r1, the herdr codie's pin-probe close refused 16:05: a seat closes a mod-only tab its own tab.new made
