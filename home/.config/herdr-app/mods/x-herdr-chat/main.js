@@ -491,6 +491,8 @@ export default class Chat extends View {
     box = null;
     /** every thread's quill and its mark, the one owner of what the box shows */
     quills = createQuills(localStorage, (text) => {
+        // a write of ours (a send, a taken mark, a fill) is an edit the / menu reads too: a sent «/co» closes it
+        this.slashMenu?.typed(this.typedNow ?? '', text);
         this.typedNow = text;
         this.typedBefore = text;
     });
@@ -1000,7 +1002,7 @@ export default class Chat extends View {
                 .flex()
                 .items_center()
                 .justify_center()
-                .rounded(6)
+                .rounded_full()
                 .cursor_pointer()
                 .hover((style) => style.bg(t.border))
                 .tooltip(hint)
@@ -1033,60 +1035,99 @@ export default class Chat extends View {
                 cx.stop_propagation();
                 this.viewerKeys?.focus();
             })
+            // the tools sit centred on a pill of their own, so they read apart from the picture (dima, 17:40)
             .child(
                 h_flex()
                     .flex_none()
-                    .px(12)
-                    .py(6)
-                    .gap(4)
-                    .items_center()
-                    .border_b(1)
-                    .border_color(t.border)
-                    .text_color(t.foreground)
-                    .child(button('out', '−', 'Zoom out (−)', 'zoom out'))
+                    .w_full()
+                    .py(10)
+                    .justify_center()
                     .child(
-                        div()
-                            .id('chat-viewer-level')
-                            .min_w(52)
-                            .flex()
-                            .justify_center()
-                            .text_size(12)
-                            .text_color(t.muted)
-                            .cursor_pointer()
-                            .tooltip('Fit (0)')
-                            .on_click((_e, cx) => this.viewerStep('fit', cx))
-                            .child(viewerLevel(state)),
-                    )
-                    .child(button('in', '+', 'Zoom in (+)', 'zoom in'))
-                    .child(div().w(12))
-                    .child(button('copy', '⧉', 'Copy picture (⌘C)', 'copy'))
-                    .child(
-                        button(
-                            'open',
-                            '↗',
-                            this.isCleanShot
-                                ? 'Open in CleanShot'
-                                : 'Open in Preview',
-                            'open',
-                        ),
-                    )
-                    .child(button('folder', '📁', 'Show in Finder', 'folder'))
-                    .child(div().flex_1())
-                    .when(state.pictures.length > 1, (el) =>
-                        el
+                        h_flex()
+                            .px(8)
+                            .py(4)
+                            .gap(2)
+                            .items_center()
+                            .rounded_full()
+                            .bg(t.raised)
+                            .border(1)
+                            .border_color(t.border)
+                            .text_color(t.foreground)
                             .child(
-                                button('prev', '←', 'Previous (←)', 'previous'),
+                                button('out', '−', 'Zoom out (−)', 'zoom out'),
                             )
                             .child(
                                 div()
+                                    .id('chat-viewer-level')
+                                    .min_w(48)
+                                    .flex()
+                                    .justify_center()
                                     .text_size(12)
                                     .text_color(t.muted)
-                                    .child(viewerCount(state)),
+                                    .cursor_pointer()
+                                    .tooltip('Fit (0)')
+                                    .on_click((_e, cx) =>
+                                        this.viewerStep('fit', cx),
+                                    )
+                                    .child(viewerLevel(state)),
                             )
-                            .child(button('next', '→', 'Next (→)', 'next')),
-                    )
-                    .child(div().w(12))
-                    .child(button('close', '✕', 'Close (Esc)', 'close')),
+                            .child(button('in', '+', 'Zoom in (+)', 'zoom in'))
+                            .child(div().w(1).h(16).mx(6).bg(t.border))
+                            .child(
+                                button(
+                                    'copy',
+                                    '⧉',
+                                    'Copy picture (⌘C)',
+                                    'copy',
+                                ),
+                            )
+                            .child(
+                                button(
+                                    'open',
+                                    '↗',
+                                    this.isCleanShot
+                                        ? 'Open in CleanShot (⌘-click a square)'
+                                        : 'Open in Preview (⌘-click a square)',
+                                    'open',
+                                ),
+                            )
+                            .child(
+                                button(
+                                    'folder',
+                                    '📁',
+                                    'Show in Finder',
+                                    'folder',
+                                ),
+                            )
+                            .when(state.pictures.length > 1, (el) =>
+                                el
+                                    .child(div().w(1).h(16).mx(6).bg(t.border))
+                                    .child(
+                                        button(
+                                            'prev',
+                                            '←',
+                                            'Previous (←)',
+                                            'previous',
+                                        ),
+                                    )
+                                    .child(
+                                        div()
+                                            .min_w(40)
+                                            .flex()
+                                            .justify_center()
+                                            .text_size(12)
+                                            .text_color(t.muted)
+                                            .child(viewerCount(state)),
+                                    )
+                                    .child(
+                                        button('next', '→', 'Next (→)', 'next'),
+                                    ),
+                            )
+                            .child(div().w(1).h(16).mx(6).bg(t.border))
+                            .child(
+                                button('close', '✕', 'Close (Esc)', 'close'),
+                            ),
+                    ),
             )
             .child(
                 div()
@@ -2701,7 +2742,8 @@ export default class Chat extends View {
                         .child(el),
                 );
         if (row.kind === 'file') return column(this.fileRow(row, t));
-        if (row.kind === 'tool') return column(this.toolRow(row, t, pre));
+        if (row.kind === 'tool')
+            return column(this.toolRow(row, t, pre, isShown));
         const most = Math.max(
             240,
             Math.floor(
@@ -2791,7 +2833,7 @@ export default class Chat extends View {
      * FRM-638:W23). no press handler in here: the list's item click toggles it (herdr-app#894)
      * @param {Row} row @param {Theme} t @param {string} pre
      */
-    toolRow(row, t, pre) {
+    toolRow(row, t, pre, isShown = true) {
         const isOpen = toolFolds.isOpen(row.id);
         const line = (/** @type {string} */ mark, /** @type {string} */ text) =>
             h_flex()
@@ -2824,7 +2866,7 @@ export default class Chat extends View {
                             TextView.markdown(
                                 `${pre}${row.id}@${row.version}`,
                                 `\`\`\`json\n${call?.input ?? ''}\n\`\`\``,
-                            ).selectable(true),
+                            ).selectable(isShown),
                         ),
                 ),
             );
@@ -3338,6 +3380,9 @@ export default class Chat extends View {
     /** ⌘F: the bar opens with the keyboard in it @param {Context} cx */
     openFind(cx) {
         this.find.open();
+        // the bar keeps his last query: it is searched again, so its count and its hit come back with it
+        this.find.search(this.shownRows, this.findBox?.value() ?? '');
+        this.showHit(this.find.current(), cx);
         cx.timer.after(16, () => this.findBox?.focus());
         cx.notify();
     }
@@ -3436,9 +3481,10 @@ export default class Chat extends View {
     slashFill(name, cx) {
         const filled = name ? this.slashMenu.fill(name) : null;
         if (!filled || !this.box) return;
-        // the quill writes the box, then the caret goes past the name
+        // the quill writes the box, then the caret goes past the name; words under a 🍕 mark ride its row too
         this.quills.apply(this.file, { text: filled.text, type: 'typed' });
         this.box.set_selected_range({ end: filled.caret, start: filled.caret });
+        this.typedUnderMark(this.box, cx);
         this.box.focus();
         cx.notify();
     }

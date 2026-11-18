@@ -465,3 +465,17 @@ describe('retexts under one mark run one at a time (sixth sense, slice 5 round 1
         expect(w.magic.markOf(THREAD)?.files).toEqual(['/a.png']);
     });
 });
+
+describe('a queued edit stays with its own mark (macroscope, slice 6)', () => {
+    test('an edit queued under one mark never rewrites the mark set after it', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'first', ON, []);
+        const running = w.magic.typed(THREAD, 'first more', ON, []);
+        const queued = w.magic.typed(THREAD, 'first even more', ON, []);
+        w.quills.apply(THREAD, { id: 'id-1', type: 'unmarked' });
+        const marked = w.magic.click(THREAD, SID, 'second', ON, []);
+        await Promise.all([running, queued, marked]);
+        expect(w.magic.markOf(THREAD)?.said).toBe('second');
+        expect(w.rows().find((r) => r.id === 'id-2')?.text).toBe('second');
+    });
+});

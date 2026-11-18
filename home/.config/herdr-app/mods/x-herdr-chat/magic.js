@@ -201,10 +201,12 @@ export function createMagic({ io, dir, quills, newId }) {
         typed(thread, text, joins, files = []) {
             // one retext at a time per thread, each reading the mark as the one before left it; with none under way it
             // starts at once, so an emptied quill drops its mark in this same draw
+            // bound to the mark it was typed under: a queued edit never lands on a mark set after it
+            const id = quills.markOf(thread)?.id ?? null;
             const before = retexts.get(thread);
             const run = before
-                ? before.then(() => retext(thread, text, joins, files))
-                : retext(thread, text, joins, files);
+                ? before.then(() => retext(thread, text, joins, files, id))
+                : retext(thread, text, joins, files, id);
             const settled = run.catch(() => false);
             retexts.set(thread, settled);
             settled.then(() => {
@@ -214,9 +216,13 @@ export function createMagic({ io, dir, quills, newId }) {
         },
     };
 
-    /** @param {string} thread @param {string} text @param {Joins | null | undefined} joins @param {string[]} files */
-    async function retext(thread, text, joins, files) {
+    /**
+     * @param {string} thread @param {string} text @param {Joins | null | undefined} joins @param {string[]} files
+     * @param {string | null} id the mark the edit was made under
+     */
+    async function retext(thread, text, joins, files, id) {
         const mark = quills.markOf(thread);
+        if (mark?.id !== id) return false;
         const had = withPaths(mark?.said ?? '', mark?.files ?? []);
         if (mark?.state !== 'pending' || withPaths(text, files) === had)
             return false;
