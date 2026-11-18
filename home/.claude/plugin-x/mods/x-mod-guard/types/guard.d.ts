@@ -7,6 +7,8 @@ declare module 'claude-code' {
         'x-mod-guard': {
             // tabsMade: the herdr tab ids this seat's own `herdr-app do tab.new` printed, the tabs it may close once they hold no terminal
             tabsMade: string[];
+            // runsMade: the terminals this seat's own `hc run` printed, by address and name, the throwaway probes it may kill
+            runsMade: { address: string; name: string }[];
             edits: number;
             spent: string[];
             helped: string[];

@@ -172,6 +172,11 @@ const WRITERS = [
         'swift -e naming NSPasteboard',
         `swift -e 'import AppKit; NSPasteboard.general.clearContents()'`,
     ],
+    // FRM-622 exit 4, macroscope's line 33: a prefix assignment hands the runner its program through a variable
+    [
+        'a program held in a prefix assignment',
+        `CMD='import os; os.system("pbcopy")' python3 -c "$CMD"`,
+    ],
 ] as const;
 
 for (const [shape, command] of WRITERS) {

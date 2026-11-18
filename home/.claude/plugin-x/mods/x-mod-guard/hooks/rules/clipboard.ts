@@ -25,10 +25,12 @@ const CODE = /[\s()[\]{}'"`;=]/;
 const PROGRAM_FLAG =
     /^(?:-[A-Za-z]*[ceEprR]|--eval|--print|--execute|--command)$/;
 // the program a script runner is handed on the line, whatever flag or subcommand carries it: each word that is code or
-// follows a program flag (a `<<<` string is such a word), a heredoc, what a pipe feeds it
+// follows a program flag (a `<<<` string is such a word), a heredoc, what a pipe feeds it, a prefix assignment's value
+// (`CMD='…' python3 -c "$CMD"`, FRM-622)
 function programs(c: Command) {
     const texts = c.args.map((w) => w.text);
     return [
+        ...c.assigns.map((a) => a.slice(a.indexOf('=') + 1)),
         ...texts.filter(
             (t, i) => CODE.test(t) || PROGRAM_FLAG.test(texts[i - 1] ?? ''),
         ),

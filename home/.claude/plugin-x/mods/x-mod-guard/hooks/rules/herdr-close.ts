@@ -66,6 +66,11 @@ const jsonOf = (word: string | undefined) => {
     }
 };
 
+// a seat's own `hc run`: the terminal it prints is the seat's to kill, a seat label aside (FRM-604)
+export const isHcRun = (c: Command) =>
+    c.name === 'hc' &&
+    c.args.find((w) => !w.text.startsWith('-'))?.text === 'run';
+
 // a seat's own `herdr-app do tab.new`, its verb a word or the json's name: the tab it prints is the seat's to close
 export function isHerdrTabNew(c: Command) {
     const words = c.args.map((w) => w.text);
