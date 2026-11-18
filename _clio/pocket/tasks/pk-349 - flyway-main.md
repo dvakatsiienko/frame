@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-18T11:26:00Z'
+updated_date: '2026-11-18T12:34:00Z'
 labels:
   - s
   - clio-main
@@ -1093,4 +1093,6 @@ PK-349:W1189 (2026-11-18 12:56, dima): unclear f12 lines: identify them, look at
 PK-349:W1190 (2026-11-18 13:03, dima): the date format confuses him (mon-first); write clearer dates, like 6 Nov
 
 PK-349:W1191 (2026-11-18 13:14, dima): say «in quill» where the steps mean the quill box, not a vague reference; the joining-state hunt spread across places, so name the surface each step lives in
+
+PK-349:W1192 (2026-11-18 14:33, dima): print dates bold, in the emoji set from 16 Nov
 <!-- SECTION:NOTES:END -->
