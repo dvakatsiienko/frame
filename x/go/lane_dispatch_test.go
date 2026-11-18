@@ -716,6 +716,60 @@ func TestDispatchRefusesTicketsWhoseLaneLinesDisagree(t *testing.T) {
 	}
 }
 
+// a dispatch naming no --lane takes its lane from the tickets' 🚀 lines: two lanes between them are refused before any
+// write, one lane is the record's and the plan's glide line
+func TestDispatchWithNoLaneTakesTheOneLaneItsRocketLinesName(t *testing.T) {
+	t.Parallel()
+	rocket := func(line string) string {
+		return signedBody(dispatchAbove, line, dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
+	}
+	for _, c := range []struct {
+		name, first, second, wantLane string
+		isRefused                     bool
+	}{
+		{"two lanes", "🚀 dispatched 2026-10-30 — cli-3, codie s0\n", "🚀 dispatched 2026-10-30 — cli-4, codie s0\n", "", true},
+		{"one lane twice", "🚀 dispatched 2026-10-30 — cli-3, codie s0\n", "🚀 dispatched 2026-10-30 — cli-3, codie s0\n", "cli-3", false},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			writes := 0
+			server := newFakeLinear(t, func(call gqlCall) string {
+				if strings.Contains(call.Query, "mutation") {
+					writes++
+					return `{"data":{"issueUpdate":{"success":true}}}`
+				}
+				body := rocket(c.first)
+				if call.Variables["id"] == "FRM-2" {
+					body = rocket(c.second)
+				}
+				description, _ := json.Marshal(body)
+				return `{"data":{"issue":{"id":"uuid-1","identifier":"FRM-1","description":` + string(description) + `,"state":{"name":"Todo","type":"unstarted"},"delegate":null,` +
+					`"labels":{"nodes":[{"id":"l-signed","name":"signed"}]},"team":{"states":{"nodes":[{"id":"s-ip","name":"In Progress"}]}}},"users":{"nodes":[{"id":"u-codie","name":"codie"}]}}}`
+			})
+			store := filepath.Join(t.TempDir(), "threads.json")
+			write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie"}]}`)
+			env := []string{"HOME=" + t.TempDir(), "X_THREADS=" + store}
+
+			plan, dry := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "FRM-2", "--session", "s1", "--area", "cli")
+			if c.isRefused {
+				said := jsonOf(plan["error"])
+				if dry.code != 2 || writes != 0 || !strings.Contains(said, "cli-3") || !strings.Contains(said, "cli-4") {
+					t.Errorf("exit %d, %d writes, want a refusal naming cli-3 and cli-4 before any write:\n%s", dry.code, writes, dry.stdout)
+				}
+				return
+			}
+			if glide := jsonOf(plan["plan"]); dry.code != 4 || !strings.Contains(glide, "lanes/"+c.wantLane+"/lane-plan.md") {
+				t.Errorf("exit %d, want the plan's glide line on %s's lane plan:\n%s", dry.code, c.wantLane, dry.stdout)
+			}
+			_, got := runLinear(t, server, env, "lane", "dispatch", "FRM-1", "FRM-2", "--session", "s1", "--area", "cli", "--apply")
+			written, err := readThreadStore(store)
+			if err != nil || got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Lane != c.wantLane {
+				t.Errorf("exit %d, %v, records %+v, want s1 in %s:\n%s", got.code, err, written.Threads, c.wantLane, got.stdout)
+			}
+		})
+	}
+}
+
 // FRM-602: the codie's record names the clio that dispatched it, so the stash opens the lane's card in that clio's session
 func TestDispatchRecordsTheDispatchingClioOnTheCodie(t *testing.T) {
 	t.Parallel()

@@ -41,8 +41,9 @@ var (
 	rate       = regexp.MustCompile(`\d+(?:\.\d+)?\s?%`)
 	sampleSize = regexp.MustCompile(`(?i)\bn\s*(?:=|≥|>=|>)\s*\d|\bminimum n\b|\bn of\b|\bof\s+\d+\b|\bout of\b|\d+\s*/\s*\d+|\b\d+\s+(?:runs?|calls?|samples?|sessions?|prs?|tickets?|briefs?)\b`)
 	surface    = regexp.MustCompile("`[^`]+`|https?://|localhost:\\d+|:\\d{2,5}\\b")
-	// a path into clio's home; the fence naming `_clio/` alone is no path into it
-	clioPath  = regexp.MustCompile(`(?:^|[^\w])_clio/[\w.-]`)
+	// a path into clio's home, a glob or brace one too; the fence naming `_clio/` alone, a quote, paren or sentence's
+	// end after it, is no path into it
+	clioPath  = regexp.MustCompile("(?:^|[^\\w])_clio/(?:[^\\s`'\")»,;:.]|\\.[^\\s])")
 	relayed   = regexp.MustCompile(`(?i)\bdima\b[^.\n]{0,24}\b(?:approved|approves|said yes|agreed|signed off|ok'?d)\b`)
 	stampTime = regexp.MustCompile(`\b\d{1,2}:\d{2}\b|\d{4}-\d{2}-\d{2}`)
 	newMark   = regexp.MustCompile(`^\s*\((?:new|to build)\)`)

@@ -114,6 +114,10 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 			return nil, err
 		}
 	}
+	dispatched, err := agreeingLanes(plan.Tickets)
+	if err != nil {
+		return nil, err
+	}
 	// outside every checkout: a .scratch/ in the worktree would keep the tree from its decamp at land
 	// one dir name with codie's lane plan: the spec's feature, else the lane
 	feature := ""
@@ -138,9 +142,9 @@ func dispatchPlanOf(r *Run, args []string, flags Flags) (any, error) {
 		}
 	}
 	// the stash reads the lane off the codie's thread record and opens the card itself (FRM-602)
-	plan.Glide = "no --lane or no --session: no glide card opens"
-	if lane != "" && session != "" {
-		plan.Glide = "x-mod-stash opens the glide card from " + home(filepath.Join(stateDir(), "lanes", lane, "lane-plan.md")) + " at clio's next poll, codie linked"
+	plan.Glide = "no lane or no --session: no glide card opens"
+	if dispatched != "" && session != "" {
+		plan.Glide = "x-mod-stash opens the glide card from " + home(filepath.Join(stateDir(), "lanes", dispatched, "lane-plan.md")) + " at clio's next poll, codie linked"
 	}
 	plan.Window = fiveHourWindow()
 	return plan, nil
@@ -418,6 +422,25 @@ func recordLaneKind(kind, sid string) string {
 		}
 	}
 	return "side"
+}
+
+// one dispatch is one lane: the lane --lane or the tickets' 🚀 lines name, "" when none does
+func agreeingLanes(tickets []dispatchTicket) (string, error) {
+	var named []string
+	lanes := map[string]bool{}
+	for _, ticket := range tickets {
+		if ticket.lane != "" && !lanes[ticket.lane] {
+			named = append(named, ticket.ID+": "+ticket.lane)
+			lanes[ticket.lane] = true
+		}
+	}
+	if len(lanes) > 1 {
+		return "", usageFail("the 🚀 lines of these tickets name different lanes ("+strings.Join(named, ", ")+"): one dispatch is one lane", "x lane dispatch <tickets of one lane> --session <sid> --lane <name>")
+	}
+	for lane := range lanes {
+		return lane, nil
+	}
+	return "", nil
 }
 
 // one dispatch is one lane, so its tickets' lane: lines name one mode between them; a ticket with none says nothing
