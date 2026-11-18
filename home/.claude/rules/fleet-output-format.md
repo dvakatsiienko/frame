@@ -48,7 +48,7 @@ for colour, which the terminal cannot render.
 - **bold** — key assertions, outcomes, decisions, numbers that matter, and fleet names (§ emoji).
 - **a model always carries its version** — **Opus 5.5**, **Sonnet 5.5**, **Haiku 5.5**, **Fable 5.1**, read from the run (a transcript's `model` field), never a bare «opus» (dima, 2026-10-10: «especially when it is about a fleet»).
 - no italics.
-- **a date reads bold «6 Nov»**, never `11-06`; a file name or stamp keeps iso <!-- cc -->
+- **a date reads bold «6 Nov»**, never `11-06`; a file name or stamp keeps iso
 
 
 highlight the load-bearing part of a sentence so it scans. never ship flat prose.

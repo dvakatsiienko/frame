@@ -96,7 +96,7 @@ export const ORDER = [
 ];
 
 export const target: Target = {
-    cap: 32_768,
+    cap: 33_280,
     fragment: 'core',
     path: 'account/profile/instructions',
 };
