@@ -4,7 +4,7 @@ one home for the shared parts (PK-387:W23, W25): every lowtide skill points here
 
 ## the filter
 
-- off: `someday`-labelled tickets
+- off: `someday` and `snoozed` 🦥 tickets, in every lowtide query and every «your tails» answer; both unfold only on dima's ask, and only he sets or lifts `snoozed` (dima, 2026-11-18)
 - scoped tickets belong to their lane: a lane's (the cli project, the mods and herdr milestones) or an app's (its project), read from linear; triage leaves them out, a lane checkup reads only them
 - «signed» is the body's `## signed` lines, never the label
 - the report opens with its filter line: kept, dropped, stores searched

@@ -27,4 +27,4 @@ dima, 2026-11-12 17:35 (PK-380:W42): «i often ask stuff like this, e.g. «check
 
 ## completion criterion
 
-every pending chunk of every named lane has its chunk line with its size, the running one its 🛼 and estimate, nothing `someday` printed, and the order is an orbit ask.
+every pending chunk of every named lane has its chunk line with its size, the running one its 🛼 and estimate, nothing `someday` or `snoozed` printed, and the order is an orbit ask.
