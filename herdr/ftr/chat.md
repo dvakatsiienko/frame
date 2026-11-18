@@ -2,7 +2,7 @@
 
 wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
 
-regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-638 end step); a line the new chat does not do yet stays ⬜ and names what is missing
+regroomed 2026-11-18 to the new chat, after zoo's x-herdr-chatter retired (FRM-638 end step); a line the new chat does not do yet stays ⬜ and names what is missing; a want blocked by an upstream (herdr-app, gpui-kit) lives in [FRM-655](https://linear.app/x-com/issue/FRM-655), herdr wishes: blocked upstream
 
 ## the mod
 
