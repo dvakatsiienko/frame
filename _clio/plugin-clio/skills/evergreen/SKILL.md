@@ -17,7 +17,7 @@ the boot digest seeds «🧬 evergreen turn» first under the flyways (`boot-pre
 1. **boot turn** — beside the boot, the read starts in the background on the `helper` card (Sonnet 5.5, no fleet memory), its brief the path of [references/read.md](references/read.md); when it lands, `timeout 2400 brew upgrade` (pinned never) runs in the background, then `open -g -a 1Password` and `ssh-add -l` on its socket, since an upgrade once left signing refused, and `wishkeeper` reads the report for its own picks — fixes it would make, borrows it would take
 2. **evergreen turn** — the turn after the board, before anything else: the report whole in the chat with wishkeeper's picks folded in, the standing page republished, every borrow a line he can steer
 3. **his feedback** — he steers line by line
-4. **resolve** — each borrow done in place, or a ticket, or a lane rider; the page republished with each chip at its landing (ticket, rider, skipped and why); `pnpm skill:evergreen-apps --mark` (the helper card never marks); the 🧬 pocket item set done
+4. **resolve** — the merge round runs at once, no ask: [references/merge-round.md](references/merge-round.md), its sweep, majors and red fixes all one stray batch; each borrow done in place, or a ticket, or a lane rider; the page republished with each chip at its landing (ticket, rider, skipped and why); `pnpm skill:evergreen-apps --mark` (the helper card never marks); the 🧬 pocket item set done
 
 ## the report — what clio does with the card's reply
 
@@ -33,7 +33,7 @@ the boot digest seeds «🧬 evergreen turn» first under the flyways (`boot-pre
 
 ## act on his word
 
-«approve evergreen» (or a 🛎️ on its orbit ask) runs every ➡️ merge in the report now, by clio, no second ask: read [references/merge-round.md](references/merge-round.md) first — the merge, the rebase, the hold and the after-round steps.
+the merge round runs on the evergreen turn itself, by clio, no ask (dima, 2026-11-18: «be more proactive … upgrade everything at once»); a steer of his subtracts from it: read [references/merge-round.md](references/merge-round.md) first — the merge, the sweep, the majors, the red fixes, the hold.
 
 weekly with brew, the skills lane and the plugins lane join the digest: read [references/weekly-lanes.md](references/weekly-lanes.md).
 
@@ -47,5 +47,5 @@ weekly with brew, the skills lane and the plugins lane join the digest: read [re
 every open renovate PR is a card or silent with a green ci; every card carries brings, breaks and, on a major, since;
 the breaks answer names the peer-range check; every ➡️ is one of merge / codie /
 hold; on a wednesday every app in the index was read and is a line or silent, and the markers
-advanced after the digest; `brew upgrade` ran and its line is in the report; on «approve evergreen» every merge ran and the
+advanced after the digest; `brew upgrade` ran and its line is in the report; every merge ran, `pnpm outdated -r` is empty in both repos but for a major in orbit or a named hold, and the
 reply names what landed, what waits on a rebase, and the new prod deploy count.

@@ -4,7 +4,11 @@ read by `clio:evergreen` § act on his word: a plain «approve evergreen» (or a
 
 - **the round ends with a loot in both main checkouts, frame and bytes** (`git pull --ff-only`, or a
   proposed rebase when the tree is ahead too); the boot prefetch's ahead/behind line is the tell: behind-only = loot as a freebie at boot.
-- **the round is done when `pnpm outdated -r` is empty in both repos**, or every row it prints is a named hold; a row past the 3-day `minimumReleaseAge`, neither merged nor held, is the round's own chore, solved that day.
+- **the round upgrades everything upgradable, in one stray batch** after the PR merges (dima, 2026-11-18: «everything upgradable must be upgraded»):
+  - the sweep: every non-major row of `pnpm outdated -r` in both repos → `pnpm update -r <pkg>@latest`; the 3-day `minimumReleaseAge` already hides what may not go yet
+  - the majors: each one on the renovate dashboard gets its breaking notes read against our use; no break for us → upgraded in the same batch; a real migration → one orbit ask naming what it needs
+  - then every touched app builds, one commit per repo, bytes pushed once
+- **the round is done when `pnpm outdated -r` is empty in both repos**, or every row it prints is a major whose migration dima has in orbit, or one of the named holds below.
 - **before a merge that moves a shared dependency's major in one app only**, check the repo's one-version
   rule (bytes: the `package-json-shape` hook) — renovate commits skip our hooks. a bump in a deployed app
   is proven by that app's local `pnpm --filter <app> build`, never its typecheck — jotai-devtools broke
