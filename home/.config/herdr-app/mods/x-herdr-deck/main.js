@@ -56,6 +56,7 @@ import {
 import { SENT_MS, next, pressState, untickDoor } from './press.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
+/** @typedef {import('gpui-kit').AsyncContext} AsyncContext */
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'canvas' | 'dim' | 'foreground' | 'hover' | 'idle' | 'muted' | 'raised' | 'solid' | 'solid_foreground' | 'surface' | 'working', Color>} Theme */
 /** @typedef {import('./orbit.js').Ask} Ask */
@@ -234,6 +235,13 @@ const prose = (id, markdown, color, size) =>
         .text_size(size)
         .text_color(color);
 
+/** a time as HH:MM, or HH:MM:SS with 3 parts @param {Date} at @param {2 | 3} parts */
+const clockOf = (at, parts) =>
+    [at.getHours(), at.getMinutes(), at.getSeconds()]
+        .slice(0, parts)
+        .map((n) => String(n).padStart(2, '0'))
+        .join(':');
+
 export default class Deck extends View {
     /** the asker under the pointer, which ⌘⇧K ticks first @type {string | null} */
     hoverSid = null;
@@ -330,29 +338,43 @@ export default class Deck extends View {
 
     /** @param {Context} cx */
     reload(cx) {
-        cx.spawn((cx) => this.reloads(() => this.read(cx)));
+        cx.spawn(async (cx) => {
+            await this.reloads(
+                (isCurrent) => this.read(cx, isCurrent),
+                (ms, fire) => cx.timer.after(ms, () => fire()),
+            );
+            // a read let go as stalled says so in the footer at once
+            if (this.reloads.isStalled()) cx.notify();
+        });
     }
 
-    /** one read of the shelf, whole: the rows draw only with their presses read @param {Context} cx */
-    async read(cx) {
+    /**
+     * one read of the shelf, whole: the rows draw only with their presses read; a read the chain let go as stalled
+     * changes nothing when it answers late
+     * @param {AsyncContext} cx @param {() => boolean} isCurrent
+     */
+    async read(cx, isCurrent) {
         const shelf = await states();
         const lanes = (await json(LANES))?.lanes ?? [];
-        this.filePresses = hotPresses(
+        const filePresses = hotPresses(
             await readTextFile(`${home()}/${PRESS_FILE}`).catch(
                 () => /** @type {string | null} */ (null),
             ),
         );
-        this.week =
+        const week =
             (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
             null;
         const listed = await sessions(shelf);
-        this.isStale = listed === null;
         // a stale list keeps its rows, their presses read again all the same
         const rows = await withPending(listed ?? this.rows, (sid) =>
             readTextFile(`${TICKS}/${sid}.jsonl`).catch(
                 () => /** @type {string | null} */ (null),
             ),
         );
+        if (!isCurrent()) return;
+        this.filePresses = filePresses;
+        this.week = week;
+        this.isStale = listed === null;
         if (listed)
             this.rows = rows.sort(
                 (a, b) =>
@@ -630,7 +652,7 @@ export default class Deck extends View {
 
     /**
      * his press, drawn at once; one the session never answers in SENT_MS is given up and says so under its box
-     * @param {Context | import('gpui-kit').AsyncContext} cx @param {string} key @param {import('./press.js').Verdict} verdict @param {number} at
+     * @param {Context | AsyncContext} cx @param {string} key @param {import('./press.js').Verdict} verdict @param {number} at
      */
     pressMade(cx, key, verdict, at) {
         const record = this.pressStep(key, { at, type: 'pressed', verdict });
@@ -1386,15 +1408,11 @@ export default class Deck extends View {
                     .text_size(SIZE.small)
                     .text_color(t.muted)
                     .child(
-                        this.loadedAt
-                            ? `updated ${[
-                                  this.loadedAt.getHours(),
-                                  this.loadedAt.getMinutes(),
-                                  this.loadedAt.getSeconds(),
-                              ]
-                                  .map((n) => String(n).padStart(2, '0'))
-                                  .join(':')}`
-                            : 'reading…',
+                        !this.loadedAt
+                            ? 'reading…'
+                            : this.reloads.isStalled()
+                              ? `no read since ${clockOf(this.loadedAt, 2)}, reading again`
+                              : `updated ${clockOf(this.loadedAt, 3)}`,
                     ),
             );
     }

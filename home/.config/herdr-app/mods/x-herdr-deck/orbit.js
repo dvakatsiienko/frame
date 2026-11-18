@@ -165,20 +165,52 @@ export async function withPending(rows, readTicks) {
     return rows;
 }
 
+/** a read still running after this long has stalled: the chain lets it go and the next read starts */
+export const READ_STALL_MS = 30 * 1000;
+
 /**
  * one run at a time: a run asked for while one goes waits for it, and of those waiting only the newest runs, so two
- * reloads never overlap and the newest read always lands last (FRM-628: a slow `ps` let an older read put a gone ask back)
+ * reloads never overlap and the newest read always lands last (FRM-628: a slow `ps` let an older read put a gone ask back).
+ * a run that never settles stalls the chain (FRM-648 step 113b, dima's empty deck at 14:41): past READ_STALL_MS it is
+ * let go, its late answer told it is no longer current, and the deck says so until a run settles
  */
 export function createSerial() {
     let tail = Promise.resolve();
     let newest = 0;
-    /** @param {() => Promise<void>} run */
-    return (run) => {
+    let current = 0;
+    let isStalled = false;
+    /**
+     * @param {(isCurrent: () => boolean) => Promise<void>} run
+     * @param {(ms: number, fire: () => void) => { cancel: () => unknown }} after the run's own timer, `cx.timer.after`
+     */
+    const serial = (run, after) => {
         const mine = ++newest;
-        const next = tail.then(() => (mine === newest ? run() : undefined));
+        const next = tail.then(() => {
+            if (mine !== newest) return;
+            current = mine;
+            return new Promise((resolve, reject) => {
+                const timer = after(READ_STALL_MS, () => {
+                    isStalled = true;
+                    current = 0;
+                    resolve(undefined);
+                });
+                run(() => current === mine).then(
+                    () => {
+                        timer.cancel();
+                        if (current === mine) isStalled = false;
+                        resolve(undefined);
+                    },
+                    (err) => {
+                        timer.cancel();
+                        reject(err);
+                    },
+                );
+            });
+        });
         tail = next.catch(() => {});
         return next;
     };
+    return Object.assign(serial, { isStalled: () => isStalled });
 }
 
 /**

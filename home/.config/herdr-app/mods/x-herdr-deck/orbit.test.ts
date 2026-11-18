@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { createKeyPress } from '../_shared/keypress.js';
 import {
     type Ask,
+    READ_STALL_MS,
     THREADS_BEAT_MS,
     askLabel,
     asksOf,
@@ -40,6 +41,37 @@ import {
     withoutPress,
 } from './orbit.js';
 import { next, pressState } from './press.js';
+
+/** the reload chain on a fake clock, each run timed by it */
+function serialOn(clock: ReturnType<typeof fakeClock>) {
+    const chain = createSerial();
+    return Object.assign(
+        (run: Parameters<typeof chain>[0]) => chain(run, clock.after),
+        { isStalled: chain.isStalled },
+    );
+}
+
+/** a clock that moves only when a test says so: each timer fires once `pass` reaches it */
+function fakeClock() {
+    let now = 0;
+    const timers = new Set<{ at: number; fire: () => void }>();
+    return {
+        after(ms: number, fire: () => void) {
+            const timer = { at: now + ms, fire };
+            timers.add(timer);
+            return { cancel: () => timers.delete(timer) };
+        },
+        armed: () => timers.size,
+        pass(ms: number) {
+            now += ms;
+            for (const timer of [...timers])
+                if (timer.at <= now) {
+                    timers.delete(timer);
+                    timer.fire();
+                }
+        },
+    };
+}
 
 const SID = 's1';
 const ask: Ask = {
@@ -785,8 +817,56 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
         expect(read).toEqual([]);
     });
 
+    // FRM-648 step 113b: dima's deck sat empty at 14:41 behind a read that never settled, until a relaunch
+    test('a read that never settles stalls the chain, and the next read starts', async () => {
+        const clock = fakeClock();
+        const serial = serialOn(clock);
+        const stuck = serial(() => new Promise<void>(() => {}));
+        await Promise.resolve();
+        expect(serial.isStalled()).toBe(false);
+        clock.pass(READ_STALL_MS);
+        await stuck;
+        expect(serial.isStalled()).toBe(true);
+        let isRun = false;
+        await serial(async () => {
+            isRun = true;
+        });
+        expect(isRun).toBe(true);
+        expect(serial.isStalled()).toBe(false);
+    });
+
+    test('a stalled read that answers late is told it is no longer the current one', async () => {
+        const clock = fakeClock();
+        const serial = serialOn(clock);
+        let release = () => {};
+        let isCurrentLate = true;
+        const stuck = serial(
+            (isCurrent) =>
+                new Promise<void>((resolve) => {
+                    release = () => {
+                        isCurrentLate = isCurrent();
+                        resolve();
+                    };
+                }),
+        );
+        await Promise.resolve();
+        clock.pass(READ_STALL_MS);
+        await stuck;
+        release();
+        await Promise.resolve();
+        expect(isCurrentLate).toBe(false);
+    });
+
+    test('a read that settles in time cancels its stall timer', async () => {
+        const clock = fakeClock();
+        const serial = serialOn(clock);
+        await serial(async () => {});
+        expect(clock.armed()).toBe(0);
+        expect(serial.isStalled()).toBe(false);
+    });
+
     test('a reload asked for while one runs waits for it: two never overlap', async () => {
-        const serial = createSerial();
+        const serial = serialOn(fakeClock());
         const log: string[] = [];
         let release = () => {};
         const first = serial(
@@ -812,7 +892,7 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
     });
 
     test('of the reloads asked for meanwhile, only the newest runs', async () => {
-        const serial = createSerial();
+        const serial = serialOn(fakeClock());
         const ran: string[] = [];
         let release = () => {};
         const first = serial(
@@ -830,7 +910,7 @@ describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628
     });
 
     test('a reload that fails never stops the next', async () => {
-        const serial = createSerial();
+        const serial = serialOn(fakeClock());
         const failed = serial(async () => {
             throw new Error('ps timed out');
         });
