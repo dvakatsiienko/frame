@@ -66,6 +66,7 @@ agent-browser --cdp 9333 <verb>
 
 - `fleet-chrome:start` (`script/fleet-chrome-start.sh`) is the door after a reboot: it starts the Chrome only when `curl -sf http://127.0.0.1:9333/json/version` says it is down, waits up to 15 s for the port, never touches a running one
 - a sign-in there is dima's hand, once per site, kept by the profile
+- a page read there is closed the turn its read lands (`curl -sf http://127.0.0.1:9333/json/close/<id>`): a billing tab left open burned ~90 % CPU for 6 h (2026-11-18)
 
 ## hazards — measured on a chart app, 2026-09-03
 
