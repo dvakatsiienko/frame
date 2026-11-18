@@ -678,6 +678,20 @@ export default class Chat extends View {
                 keystroke: 'enter',
             },
         ]);
+        // the / menu's keys, only while it shows (its wrapper carries `ChatSlash` then)
+        cx.bind_keys(
+            [
+                ['down', 'x_herdr_chat_slash_down'],
+                ['up', 'x_herdr_chat_slash_up'],
+                ['tab', 'x_herdr_chat_slash_fill'],
+                ['enter', 'x_herdr_chat_slash_fill'],
+                ['escape', 'x_herdr_chat_slash_close'],
+            ].map(([keystroke, action]) => ({
+                action: String(action),
+                context: 'ChatSlash > Input',
+                keystroke: String(keystroke),
+            })),
+        );
         // a check draws one frame and must read no thread
         if (checking()) return;
         // a Claude whose session file came after its tab, or a /resume in the same pane: the thread is looked up again
@@ -2147,8 +2161,32 @@ export default class Chat extends View {
                             if (!e.modifiers.platform)
                                 this.quillKeys.modifiersReleased();
                         })
+                        .child(this.slashList(t))
                         .child(this.attachmentsRow(t))
-                        .child(Textarea.new(box))
+                        // while the / menu shows, its keys come before the box's own
+                        .child(
+                            div()
+                                .w_full()
+                                .when(this.slashShown().list.length > 0, (el) =>
+                                    el.key_context('ChatSlash'),
+                                )
+                                .on_action(
+                                    'x_herdr_chat_slash_down',
+                                    (_e, cx) => this.slashKey('down', cx),
+                                )
+                                .on_action('x_herdr_chat_slash_up', (_e, cx) =>
+                                    this.slashKey('up', cx),
+                                )
+                                .on_action(
+                                    'x_herdr_chat_slash_fill',
+                                    (_e, cx) => this.slashKey('fill', cx),
+                                )
+                                .on_action(
+                                    'x_herdr_chat_slash_close',
+                                    (_e, cx) => this.slashKey('close', cx),
+                                )
+                                .child(Textarea.new(box)),
+                        )
                         .child(
                             div()
                                 .absolute()
@@ -3238,6 +3276,69 @@ export default class Chat extends View {
         if (row?.kind !== 'file') return null;
         const files = row.pictures.flatMap((p) => this.sent.pathOf(p) ?? []);
         return files.length ? { at: 0, files } : null;
+    }
+
+    /** what the / menu shows now */
+    slashShown() {
+        return this.slashMenu.shown(menuNames(this.skills, this.pluginSkills));
+    }
+
+    /** a / menu key: ↑ ↓ move, Tab or Enter fills the pick, Esc closes @param {'up' | 'down' | 'fill' | 'close'} key @param {Context} cx */
+    slashKey(key, cx) {
+        const { at, list } = this.slashShown();
+        if (key !== 'fill') this.slashMenu.step(key, list.length);
+        else this.slashFill(list[at]?.[0], cx);
+        cx.notify();
+    }
+
+    /** @param {string | undefined} name @param {Context} cx */
+    slashFill(name, cx) {
+        const filled = name ? this.slashMenu.fill(name) : null;
+        if (!filled || !this.box) return;
+        // the quill writes the box, then the caret goes past the name
+        this.quills.apply(this.file, { text: filled.text, type: 'typed' });
+        this.box.set_selected_range({ end: filled.caret, start: filled.caret });
+        this.box.focus();
+        cx.notify();
+    }
+
+    /** the / menu over the quill: a name and what it does per match, the pick marked (slice 6) @param {Theme} t */
+    slashList(t) {
+        const { at, list } = this.slashShown();
+        return v_flex()
+            .when(list.length > 0, (el) => el.pb(8))
+            .children(
+                list.map(([name, about], i) =>
+                    h_flex()
+                        .id(`chat-slash-${name}`)
+                        .gap(10)
+                        .px(8)
+                        .py(4)
+                        .rounded(6)
+                        .items_center()
+                        .cursor_pointer()
+                        .when(i === at, (el) => el.bg(t.raised))
+                        .hover((style) => style.bg(t.border))
+                        .on_click((_e, cx) => this.slashFill(name, cx))
+                        .child(
+                            div()
+                                .w(180)
+                                .flex_none()
+                                .truncate()
+                                .text_color(t.foreground)
+                                .child(`/${name}`),
+                        )
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w(0)
+                                .truncate()
+                                .text_size(12)
+                                .text_color(t.dim)
+                                .child(about),
+                        ),
+                ),
+            );
     }
 
     /** @param {string} file @returns {string[]} */

@@ -387,6 +387,10 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and while it finds the thread it says «Opening the thread…», then «Reading the thread…»; a transcript it cannot read shows why
   - decision: a new mod beside the old chat, moved in file by file under a strict type check, swapped in once at the end (dima, 2026-11-16 16:36: «pull only clean, decided features»)
 
+- ⬜ the new chat's / menu lists commands and every skill (x-herdr-chat, FRM-638 slice 6)
+  - given the quill holds «/» at its start, or after a space or a line break, and part of a name
+  - then a list over the quill shows Claude Code's commands, the thread's skills and its plugins' skills, filtered as he types
+  - and ↑ ↓ move the pick, Enter or Tab fills «/name » with the caret after it, Esc closes it for this word, a click on a row fills it too
 - ⬜ the tool-call fold shows each call (x-herdr-chat, FRM-638 slice 6, PK-432)
   - given a reply turn ran tool calls in a row
   - then one row reads «▸ 🛠️ N tool calls: Read 2, Bash 1», folded
