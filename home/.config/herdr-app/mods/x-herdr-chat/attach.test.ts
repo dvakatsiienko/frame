@@ -5,7 +5,7 @@ vi.mock('herdr', () => ({ exec }));
 const {
     fileName,
     isImagePath,
-    openInPreview,
+    pictureOpenArgs,
     pickedPaths,
     promptPath,
     withFiles,
@@ -91,30 +91,17 @@ describe('isImagePath, a dropped file that shows as a picture', () => {
     });
 });
 
-describe('openInPreview, a click on a preview over the quill', () => {
-    const previews: Record<string, string> = {
-        '/Users/d/big.jpg': 'data/shots/shot-2.png',
-        '/app/data/shots/shot-1.png': 'data/shots/shot-1.png',
-    };
-    const files = Object.keys(previews);
-    const previewOf = (p: string) => previews[p];
-    it('opens a pasted png in Preview', () => {
-        exec.mockClear();
-        openInPreview(files, previewOf, 'data/shots/shot-1.png');
-        expect(exec.mock.calls).toEqual([
-            ['open', ['-a', 'Preview', '/app/data/shots/shot-1.png']],
+describe('pictureOpenArgs, the open button on a picture', () => {
+    it('starts CleanShot X annotate on the file, its path escaped', () => {
+        expect(pictureOpenArgs('/Users/d/My Shots/a&b.png', true)).toEqual([
+            'cleanshot://open-annotate?filepath=%2FUsers%2Fd%2FMy%20Shots%2Fa%26b.png',
         ]);
     });
-    it('opens a dropped picture itself, never its small preview', () => {
-        exec.mockClear();
-        openInPreview(files, previewOf, 'data/shots/shot-2.png');
-        expect(exec.mock.calls).toEqual([
-            ['open', ['-a', 'Preview', '/Users/d/big.jpg']],
+    it('opens it in Preview when CleanShot is off', () => {
+        expect(pictureOpenArgs('/a.png', false)).toEqual([
+            '-a',
+            'Preview',
+            '/a.png',
         ]);
-    });
-    it('opens nothing for a preview no file waits behind', () => {
-        exec.mockClear();
-        openInPreview(files, previewOf, 'data/shots/shot-9.png');
-        expect(exec).not.toHaveBeenCalled();
     });
 });

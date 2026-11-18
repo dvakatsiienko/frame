@@ -87,7 +87,9 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - and files copied in Finder paste as their paths, the way a drop does, never as the file's icon; a text paste stays text
   - and a click on a pasted or dropped picture's preview opens it in macOS Preview, a dropped one as itself, never its small preview copy
   - decision: one path for paste and drop (dima's o49, 16:38); it replaces ctrl+v into Claude's prompt, whose × had to empty that prompt and lagged when he emptied it in the Terminal view (FRM-609)
-  - decision: in the new chat, a click or Enter with files waiting sends them at once with the words, «Sent: files go with a plain send, not a join», until a join carries paths (FRM-638 slice 5, the codie's interim, 16:31)
+  - and a click or Enter with files waiting marks them to join with the words (🍕): the join row carries each path on its own line after the words, a file added or × under the mark rides the same row, and the quill lets them go once a turn takes it (FRM-638 slice 5, his wisps 16:36 and 16:37)
+  - and a message he sent draws its pictures under his words as squares, and its other files as «📎 name» chips, never as their paths or «[Image #N]» tokens; a reload brings them back (FRM-638 slice 5, his 16:35 shot)
+  - decision: an inline picture is written once as `~/.config/herdr-app/data/x-herdr-chat/sent/<row>-<n>.<ext>` from the transcript's bytes, a joined one by path gets a scaled copy; no «🖼 N images» caption, the squares say it
   - decision: the clipboard is read, never written (FRM-612)
   - decision: the preview row holds the previews alone, no caption and no Remove: each × takes its own (FRM-609, his 16:40 shot: «delete description, i know what it does»); Remove stays only beside a «🖼 N images» count with no previews, a dev container's
 - ⬜ the shared keys carry the x-herdr name
@@ -403,7 +405,7 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - then each file gets one row under the reply, «🖼️ <name>» for a picture and «📂 <name>» for any other file, and a click opens it in its app (a png in Preview)
   - and a path inside a fenced block gets no row, a sentence's period or comma is not part of the path, and the same file twice is one row
   - and the link inside the text stays plain while herdr-app#894 is open: a handler inside a lazy-list row's text does nothing there
-  - decision: the row draws an emoji, not a thumbnail, until FRM-638 slice 5 brings the new chat's picture plumbing (clio, 13:38)
+  - and a picture's row draws its own small square in place of «🖼️» once its copy is made (FRM-638 slice 5)
   - and each file is its own row in the list, opened through the list's item click: a press or hover handler inside a row blanked the whole list (herdr-app#894; clio's thread drew empty, 14:15)
 
 - ✅ the chat settings popover: his chat look in one place (x-herdr-chat-settings, FRM-641)

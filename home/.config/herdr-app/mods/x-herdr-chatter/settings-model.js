@@ -90,6 +90,18 @@ export const pages = [
                 ],
             },
             {
+                heading: 'pictures',
+                rows: [
+                    {
+                        control: { kind: 'toggle' },
+                        default: true,
+                        key: 'chatter.pictures.cleanshot',
+                        title: 'Open in CleanShot',
+                        why: 'a picture’s open button starts CleanShot X’s annotate on it; off, it opens in Preview',
+                    },
+                ],
+            },
+            {
                 heading: 'measure',
                 rows: [
                     {

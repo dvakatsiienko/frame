@@ -5,6 +5,7 @@
 // a message he sent while the thread works waits in Claude Code's queue: it is his last row, waiting, until a turn
 // takes it and its own transcript line replaces it: a user line at a turn's start, a queued command mid-turn.
 
+import { isImagePath } from './attach.js';
 import { joinedTexts } from './joins.js';
 import { claudeQueueAfter, isHisQueued, unwrapPastes } from './queued.js';
 
@@ -22,6 +23,17 @@ import { claudeQueueAfter, isHisQueued, unwrapPastes } from './queued.js';
  * @property {boolean} isTurnStart his prompt that started a turn, never words a running turn took in
  * @property {string} [command] a prompt a tool round took: the queued command its `remove` record names
  * @property {Delivery | null} delivery his message's one state and that state's time (FRM-594); null on any other row
+ * @property {Picture[]} pictures the pictures his message sent, drawn under his words (FRM-638 slice 5)
+ * @property {string[]} files the other files his message sent, by path
+ */
+
+/**
+ * a picture his message sent: Claude Code keeps a pasted or dropped one inline as its bytes, a join names it by path
+ * @typedef {object} Picture
+ * @property {string} id the row's id and the picture's place in it
+ * @property {string | null} path
+ * @property {string | null} data base64
+ * @property {string | null} media its type, `image/png`
  */
 
 /**
@@ -41,6 +53,43 @@ const NOT_HIS_WORDS =
 
 /** @param {unknown} value @returns {value is Record<string, unknown>} */
 const isRecord = (value) => typeof value === 'object' && value !== null;
+
+// a file sent as its path: a line of its own after his words, escaped as a terminal drop types it
+const PATH_LINE = /^\/(?:\\.|[^\\\s])+$/;
+// where Claude Code puts a picture it took inline from a path or a paste
+const IMAGE_TOKEN = /\[Image #\d+\]\s*/g;
+
+/**
+ * his words without what Claude Code and the quill add for files: the trailing path lines, read back as paths, and the
+ * picture tokens
+ * @param {string} said @returns {{ text: string, paths: string[] }}
+ */
+export function wordsAndPaths(said) {
+    const lines = said.split('\n');
+    /** @type {string[]} */
+    const paths = [];
+    for (
+        let last = lines.at(-1)?.trim();
+        last && PATH_LINE.test(last);
+        last = lines.at(-1)?.trim()
+    ) {
+        paths.unshift(last.replace(/\\(.)/g, '$1'));
+        lines.pop();
+    }
+    return { paths, text: lines.join('\n').replace(IMAGE_TOKEN, '').trim() };
+}
+
+/** a message's inline pictures @param {unknown} content @returns {{ data: string, media: string }[]} */
+const inlinePictures = (content) =>
+    (Array.isArray(content) ? content : [])
+        .filter(isRecord)
+        .filter((block) => block.type === 'image' && isRecord(block.source))
+        .map((block) => /** @type {Record<string, unknown>} */ (block.source))
+        .filter((source) => source.type === 'base64' && textOf(source.data))
+        .map((source) => ({
+            data: textOf(source.data),
+            media: textOf(source.media_type) || 'image/png',
+        }));
 
 /** @param {unknown} value */
 const textOf = (value) => (typeof value === 'string' ? value : '');
@@ -82,15 +131,39 @@ function rowsOf(line) {
             kind === 'mine' && at
                 ? { at, state: /** @type {const} */ ('read') }
                 : null,
+        files: [],
         id: rowId,
         isTurnStart: false,
         isWaiting: false,
         kind,
+        pictures: [],
         replyId: kind === 'reply' ? textOf(message.id) || null : null,
         text,
         tools: kind === 'tool' ? [text] : [],
         version: 1,
     });
+    /**
+     * his message: its words, and the files it sent after them, inline or by path
+     * @param {string} said @param {unknown} content @param {string} [rowId] @returns {Row}
+     */
+    const his = (said, content, rowId = id) => {
+        const { paths, text } = wordsAndPaths(said);
+        const inline = inlinePictures(content);
+        return {
+            ...row('mine', text, rowId),
+            files: paths.filter((p) => !isImagePath(p)),
+            pictures: [
+                ...inline.map(({ data, media }) => ({
+                    data,
+                    media,
+                    path: null,
+                })),
+                ...paths
+                    .filter(isImagePath)
+                    .map((path) => ({ data: null, media: null, path })),
+            ].map((picture, n) => ({ ...picture, id: `${rowId}-${n}` })),
+        };
+    };
     if (entry.type === 'attachment') {
         // a prompt he sent while a turn ran: Claude Code writes it as a queued command, never as a user line; a
         // peer's message or a task notice queued the same way is not his
@@ -106,17 +179,17 @@ function rowsOf(line) {
                 ? [
                       command && at
                           ? {
-                                ...row('mine', said),
+                                ...his(said, queued.prompt),
                                 command,
                                 delivery: { at, state: 'sent' },
                             }
-                          : row('mine', said),
+                          : his(said, queued.prompt),
                   ]
                 : [];
         }
         // words that joined a turn (the magic send) are his messages, one row each
         return joinedTexts(entry).map((text, n) =>
-            row('mine', text, n ? `${id}#${n}` : id),
+            his(text, null, n ? `${id}#${n}` : id),
         );
     }
     const { content } = message;
@@ -125,7 +198,7 @@ function rowsOf(line) {
         // a paste's tags go after the check: a paste that opens with a tag of its own is still his
         const said = saidIn(content);
         return said.trim() && !NOT_HIS_WORDS.test(said)
-            ? [{ ...row('mine', unwrapPastes(said)), isTurnStart: true }]
+            ? [{ ...his(unwrapPastes(said), content), isTurnStart: true }]
             : [];
     }
     if (entry.type !== 'assistant') return [];
@@ -269,12 +342,14 @@ export function createRowModel() {
                                   state: 'sent',
                               }
                             : null,
+                        files: [],
                         id: `waiting-${++waitingSerial}`,
                         isTurnStart: false,
                         isWaiting: true,
                         kind: 'mine',
+                        pictures: [],
                         replyId: null,
-                        text: unwrapPastes(queued.text),
+                        text: wordsAndPaths(unwrapPastes(queued.text)).text,
                         tools: [],
                         version: 1,
                     };

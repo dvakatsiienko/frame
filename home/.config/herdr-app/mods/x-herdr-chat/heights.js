@@ -1,7 +1,7 @@
 // each row's measured height, kept by the row's id and version: the list is handed exact sizes, so a row that changes
 // moves nothing above it, and only the rows near the view are measured in a frame.
 
-/** @typedef {{ id: string, version: number, kind: 'mine' | 'reply' | 'tool' | 'file', text: string }} Measured */
+/** @typedef {{ id: string, version: number, kind: 'mine' | 'reply' | 'tool' | 'file', text: string, pictures?: unknown[], files?: unknown[] }} Measured */
 /** @typedef {{ start: number, end: number }} Range */
 
 // herdr's list refuses a taller row
@@ -19,6 +19,9 @@ const LINE_PX = 21;
 const CHAR_PX = 7;
 // a bubble's padding and the details line under it (FRM-594)
 const BUBBLE_PAD_PX = 48;
+// the pictures or the file chips his message sent, under his words
+const SENT_ROW_PX = 102;
+const FILE_ROW_PX = 28;
 
 /**
  * a row's height before it is measured, from its text and the list's width
@@ -34,7 +37,12 @@ export function guessHeight(row, width) {
             (sum, line) => sum + Math.max(1, Math.ceil(line.length / perLine)),
             0,
         );
-    return BUBBLE_PAD_PX + lines * LINE_PX;
+    const sent = row.pictures?.length
+        ? SENT_ROW_PX
+        : row.files?.length
+          ? FILE_ROW_PX
+          : 0;
+    return BUBBLE_PAD_PX + lines * LINE_PX + sent;
 }
 
 /** @param {number} height */

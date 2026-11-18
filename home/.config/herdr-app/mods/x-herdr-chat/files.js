@@ -108,11 +108,13 @@ export function withFileRows(rows, home, cache) {
                 files: fileLinks(row.text, home).map((file, i) => ({
                     at: row.at,
                     delivery: null,
+                    files: [],
                     id: `${row.id}#file-${i}`,
                     isTurnStart: false,
                     isWaiting: false,
                     kind: /** @type {const} */ ('file'),
                     path: file.path,
+                    pictures: [],
                     replyId: null,
                     text: file.label,
                     tools: [],

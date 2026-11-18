@@ -3,7 +3,7 @@
 // his text box. the rules live in their own files, each tested with no herdr: reader.js, row-model.js, heights.js,
 // follow.js, place.js, quill.js, send.js, magic.js.
 
-import { readdir } from 'fs/promises';
+import { mkdir, readdir, writeFile } from 'fs/promises';
 import {
     Popover,
     TextView,
@@ -42,9 +42,9 @@ import {
 import {
     fileName,
     isImagePath,
-    openInPreview,
     pickFiles,
-    promptPath,
+    pictureOpenArgs,
+    withPaths,
 } from './attach.js';
 import { createAttachments } from './attachments.js';
 import {
@@ -121,11 +121,13 @@ import { createQuills } from './quill.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
 import { addressIn, sendBlocked, submitted } from './send.js';
+import { SENT_DIR, createSentPictures } from './sent-pictures.js';
 import {
     deletePreviewCopies,
     loadShots,
     readClipboard,
     saveFileShot,
+    saveLinkThumb,
     saveShots,
 } from './shots.js';
 import { asksActedOn, isShownIn, pidFor, shownThread } from './shown.js';
@@ -218,9 +220,17 @@ const SETTINGS_FILE = '.claude/shelf/herdr-settings/settings.json';
 const SEND_SIZE = 28;
 // a picture waiting over the quill, and how long a paste's «nothing there» note stays
 const THUMB_SIZE = 56;
+// a picture his message sent, under his words; a picture a reply names, in its file row
+const SENT_THUMB = 96;
+const FILE_THUMB = 40;
+
+/** a reply's file row that names a picture, as one @param {Row} row @returns {import('./row-model.js').Picture | null} */
+const filePicture = (row) =>
+    row.kind === 'file' && row.path && isPicture(row.path)
+        ? { data: null, id: row.id, media: null, path: row.path }
+        : null;
 const PASTE_NOTE_MS = 6000;
 const NO_IMAGE = 'No image on the clipboard';
-const FILES_PUSH = 'Sent: files go with a plain send, not a join';
 /** @type {import('./attachments.js').AttachmentsIo} */
 const ATTACH_IO = {
     deleteCopies: (rels) => {
@@ -230,6 +240,20 @@ const ATTACH_IO = {
     now: Date.now,
     save: (store) => {
         saveShots(store).catch(() => {});
+    },
+};
+/** @type {import('./sent-pictures.js').SentIo} */
+const SENT_IO = {
+    copy: async (path) => (await saveLinkThumb(path))?.rel ?? null,
+    list: () => readdir(`${appHome()}/${SENT_DIR}`).catch(() => []),
+    write: async (rel, bytes) => {
+        try {
+            await mkdir(`${appHome()}/${SENT_DIR}`, { recursive: true });
+            await writeFile(`${appHome()}/${rel}`, bytes);
+            return true;
+        } catch {
+            return false;
+        }
     },
 };
 const QUILL_ENTER = 'x_herdr_chat_quill_enter';
@@ -455,6 +479,7 @@ export default class Chat extends View {
     });
     /** the files waiting over each thread's quill, by its transcript file; what waited comes back once the store is read */
     attachments = createAttachments(appHome(), ATTACH_IO, {});
+    sent = createSentPictures(SENT_IO);
     /** where a message to the shown thread goes: its herdr address @type {string | null} */
     address = null;
     /** what the quill says about his last send: why it did not go, or why it went as a push @type {string | null} */
@@ -518,6 +543,8 @@ export default class Chat extends View {
     /** why a pick did not go, or did not land @type {string | null} */
     pickNote = null;
     isPickOpen = false;
+    /** a picture's open button starts CleanShot's annotate, else Preview (`chatter.pictures.cleanshot`) */
+    isCleanShot = true;
     /** the effort slider while the picker is open @type {import('./effort.js').EffortPopover | null} */
     effortPop = null;
     /** a model switch waiting on his yes: it drops the thread's cache @type {string | null} */
@@ -1893,7 +1920,10 @@ export default class Chat extends View {
             const read = await readClipboard();
             if (this.file !== file) return;
             if (read && 'paths' in read) return this.addFiles(read.paths, cx);
-            if (read) this.attachments.paste(file, read.rel);
+            if (read) {
+                this.attachments.paste(file, read.rel);
+                this.filesUnderMark(file, cx);
+            }
             this.note = read ? null : NO_IMAGE;
             if (!read)
                 cx.timer.after(PASTE_NOTE_MS, (cx) => {
@@ -1910,6 +1940,7 @@ export default class Chat extends View {
         if (!file || !paths.length) return;
         cx.spawn(async (cx) => {
             const adding = this.attachments.add(file, paths);
+            this.filesUnderMark(file, cx);
             cx.notify();
             await adding;
             cx.notify();
@@ -1963,7 +1994,10 @@ export default class Chat extends View {
                 .tooltip('Remove')
                 .on_click((_e, cx) => {
                     cx.stop_propagation();
-                    if (file) this.attachments.remove(file, path);
+                    if (file) {
+                        this.attachments.remove(file, path);
+                        this.filesUnderMark(file, cx);
+                    }
                     cx.notify();
                 })
                 .child('×');
@@ -1986,13 +2020,16 @@ export default class Chat extends View {
                               .border(1)
                               .border_color(t.border)
                               .cursor_pointer()
-                              .tooltip('Open in Preview')
+                              .tooltip(
+                                  this.isCleanShot
+                                      ? 'Open in CleanShot'
+                                      : 'Open in Preview',
+                              )
                               .on_click(() =>
-                                  openInPreview(
-                                      [path],
-                                      () => preview ?? '',
-                                      preview ?? '',
-                                  ),
+                                  exec(
+                                      'open',
+                                      pictureOpenArgs(path, this.isCleanShot),
+                                  ).catch(() => {}),
                               )
                               .when(Boolean(preview), (el) =>
                                   el.child(image(preview ?? '').size_full()),
@@ -2322,30 +2359,33 @@ export default class Chat extends View {
                     .w_full()
                     .items_end()
                     .gap(2)
-                    .child(
-                        div()
-                            .max_w(most)
-                            .px(12)
-                            .py(8)
-                            .rounded(12)
-                            // a waiting message is an outline of his bubble, its words dim, until a turn takes it
-                            .bg(
-                                row.isWaiting
-                                    ? t.background
-                                    : tint(t.accent, '33'),
-                            )
-                            .border(1)
-                            .border_color(
-                                tint(t.accent, row.isWaiting ? '99' : '4d'),
-                            )
-                            .when(row.isWaiting, (el) => el.opacity(0.6))
-                            .child(
-                                TextView.markdown(
-                                    id,
-                                    typedMarkdown(row.text),
-                                ).selectable(isShown),
-                            ),
+                    .when(Boolean(row.text) || row.isWaiting, (el) =>
+                        el.child(
+                            div()
+                                .max_w(most)
+                                .px(12)
+                                .py(8)
+                                .rounded(12)
+                                // a waiting message is an outline of his bubble, its words dim, until a turn takes it
+                                .bg(
+                                    row.isWaiting
+                                        ? t.background
+                                        : tint(t.accent, '33'),
+                                )
+                                .border(1)
+                                .border_color(
+                                    tint(t.accent, row.isWaiting ? '99' : '4d'),
+                                )
+                                .when(row.isWaiting, (el) => el.opacity(0.6))
+                                .child(
+                                    TextView.markdown(
+                                        id,
+                                        typedMarkdown(row.text),
+                                    ).selectable(isShown),
+                                ),
+                        ),
                     )
+                    .child(this.sentFiles(row, t))
                     .child(this.detailsLine(row, t)),
             );
         return column(
@@ -2390,6 +2430,50 @@ export default class Chat extends View {
     }
 
     /**
+     * the pictures and files his message sent, under his words: a square per picture, a chip per file. no press or
+     * hover handler, one inside a list row blanks the whole list (herdr-app#894)
+     * @param {Row} row @param {Theme} t
+     */
+    sentFiles(row, t) {
+        return h_flex()
+            .gap(6)
+            .flex_wrap()
+            .justify_end()
+            .max_w(this.column())
+            .children(
+                row.pictures.map((picture) => {
+                    const rel = this.sent.relOf(picture);
+                    return div()
+                        .size(SENT_THUMB)
+                        .flex_none()
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .rounded(8)
+                        .overflow_hidden()
+                        .bg(t.raised)
+                        .border(1)
+                        .border_color(t.border)
+                        .text_color(t.dim)
+                        .child(rel ? image(rel).size_full() : ICONS.picture);
+                }),
+            )
+            .children(
+                row.files.map((path) =>
+                    div()
+                        .px(8)
+                        .py(3)
+                        .rounded(6)
+                        .border(1)
+                        .border_color(t.border)
+                        .text_size(12)
+                        .text_color(t.muted)
+                        .child(`📎 ${fileName(path)}`),
+                ),
+            );
+    }
+
+    /**
      * the dim line under a bubble, one state and its own time (FRM-594): always drawn, a tooltip in a list row never
      * showed for him (herdr-app#598)
      * @param {Row} row @param {Theme} t
@@ -2421,8 +2505,22 @@ export default class Chat extends View {
             .cursor_pointer()
             .text_size(12)
             .text_color(t.muted)
-            .child(isPicture(row.path ?? '') ? ICONS.picture : ICONS.file)
+            .child(this.fileIcon(row, t))
             .child(div().truncate().child(row.text));
+    }
+
+    /** a picture's own small square once it is made, else its emoji @param {Row} row @param {Theme} t */
+    fileIcon(row, t) {
+        const picture = filePicture(row);
+        const rel = picture && this.sent.relOf(picture);
+        if (!rel) return picture ? ICONS.picture : ICONS.file;
+        return div()
+            .size(FILE_THUMB)
+            .flex_none()
+            .rounded(4)
+            .overflow_hidden()
+            .bg(t.raised)
+            .child(image(rel).size_full());
     }
 
     /**
@@ -2587,6 +2685,7 @@ export default class Chat extends View {
         }
         if (this.runsAt !== ran && this.settlePick()) cx.notify();
         const { changed, removed } = this.model.add(lines);
+        this.makePictures(cx);
         // his marked words showing as his message settle the mark in this same draw: they leave the quill as they land
         const added = new Set(changed);
         const arrived = this.model.rows
@@ -2615,6 +2714,7 @@ export default class Chat extends View {
             ),
             push: Number(settings?.['chatter.send.holdPush'] ?? HOLD_PUSH_MS),
         };
+        this.isCleanShot = settings?.['chatter.pictures.cleanshot'] !== false;
         this.meterWarn = {
             ctx: Number(settings?.['chatter.meter.ctx.warn'] ?? 60),
             week: Number(settings?.['chatter.meter.week.warn'] ?? 80),
@@ -2675,6 +2775,9 @@ export default class Chat extends View {
         const { file } = this;
         if (!settled || !file) return;
         this.note = settled.note;
+        // the files its row carried went with the words
+        for (const path of settled.files ?? [])
+            this.attachments.remove(file, path);
         // the taken mark shows for a moment, then the button rests
         if (!settled.note)
             cx.timer.after(JOINED_SHOWN_MS, (later) => {
@@ -2694,11 +2797,16 @@ export default class Chat extends View {
         const { file } = this;
         const text = box.value().trim();
         if (!file) return;
-        if (this.attachments.of(file).length)
-            return this.push(box, cx, FILES_PUSH);
-        if (!text) return;
+        const files = this.waitingPaths(file);
+        if (!text && !files.length) return;
         if (!this.address) return this.say(NOT_IN_HERDR, cx);
-        const answer = this.magic.click(file, sidOf(file), text, this.joins);
+        const answer = this.magic.click(
+            file,
+            sidOf(file),
+            text,
+            this.joins,
+            files,
+        );
         cx.notify();
         cx.spawn(async (cx) => {
             const { act, note } = await answer;
@@ -2755,9 +2863,7 @@ export default class Chat extends View {
         this.quills.apply(file, { said: text, type: 'sent' });
         // the files waiting go after the words, each path on its line as a terminal drop types it (FRM-613)
         const files = file ? this.attachments.take(file) : [];
-        const message = [text, ...files.map(promptPath)]
-            .filter(Boolean)
-            .join('\n');
+        const message = withPaths(text, files);
         this.say(note, cx);
         cx.spawn(async (cx) => {
             const sent = await hc(sendArgs(address, message)).catch(
@@ -2784,6 +2890,42 @@ export default class Chat extends View {
         cx.notify();
     }
 
+    /** his messages' pictures get their files; each row draws its own once made @param {Context} cx */
+    makePictures(cx) {
+        const pictures = shownOf(this.model.rows, this.look).flatMap((r) => {
+            const picture = filePicture(r);
+            return picture ? [picture] : r.pictures;
+        });
+        if (!pictures.some((p) => !this.sent.relOf(p))) return;
+        cx.spawn(async (cx) => {
+            if (await this.sent.make(pictures)) cx.notify();
+        });
+    }
+
+    /** @param {string} file @returns {string[]} */
+    waitingPaths(file) {
+        return this.attachments.of(file).map((w) => w.path);
+    }
+
+    /**
+     * a file came or went under a mark: its join row carries the files waiting now, or the mark comes off when nothing
+     * is left to send
+     * @param {string} file @param {Context} cx
+     */
+    filesUnderMark(file, cx) {
+        const mark = this.magic.markOf(file);
+        if (mark?.state !== 'pending') return;
+        cx.spawn(async (cx) => {
+            const isChanged = await this.magic.typed(
+                file,
+                mark.said,
+                this.joins,
+                this.waitingPaths(file),
+            );
+            if (isChanged) cx.notify();
+        });
+    }
+
     /**
      * he typed under a mark: once his keys rest, the join row carries the quill's words; an emptied quill unmarks
      * @param {import('gpui-base').TextareaState} box
@@ -2798,7 +2940,13 @@ export default class Chat extends View {
         if (!retextWait(text)) {
             // the mark drops before the take-back's write, so 🍕 goes in this draw
             cx.spawn(async (cx) => {
-                if (await this.magic.typed(file, '', this.joins)) cx.notify();
+                const isChanged = await this.magic.typed(
+                    file,
+                    '',
+                    this.joins,
+                    this.waitingPaths(file),
+                );
+                if (isChanged) cx.notify();
             });
             cx.notify();
             return;
@@ -2810,6 +2958,7 @@ export default class Chat extends View {
                     file,
                     box.value().trim(),
                     this.joins,
+                    this.waitingPaths(file),
                 );
                 if (isChanged) cx.notify();
             });
@@ -2824,7 +2973,11 @@ export default class Chat extends View {
      */
     press(box, cx, by = 'pointer') {
         // an empty quill has nothing to send: no hold, no disc
-        if (!box.value().trim() || !this.file) return;
+        if (
+            !this.file ||
+            (!box.value().trim() && !this.waitingPaths(this.file).length)
+        )
+            return;
         this.cancelHold();
         this.hold = holdSend(null, 'press', Date.now(), this.timing, by).hold;
         this.holdTask = cx.timer.every(33, (later) =>
@@ -2900,6 +3053,7 @@ export default class Chat extends View {
             if (this.reader !== reader) return;
             this.model.addEarlier(lines);
         }
+        this.makePictures(cx);
         // the saved line may sit inside a folded row: the place is that row
         const at = this.model.indexOf(lineId);
         const row = this.model.rows[at];

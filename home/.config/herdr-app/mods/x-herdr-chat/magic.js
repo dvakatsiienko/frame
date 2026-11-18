@@ -4,6 +4,7 @@
 // (quill.js) with its words. it holds no herdr call: the view hands it the join file's doors and does what each
 // answer says.
 
+import { withPaths } from './attach.js';
 import {
     appendJoin,
     joinStatus,
@@ -16,7 +17,7 @@ import {
 /** @typedef {import('./joins.js').Joins & { taken?: string[] }} Joins what the thread's state lists of its joins */
 /** @typedef {import('./quill.js').Mark} Mark */
 /** @typedef {{ act: 'marked' | 'unmarked' | 'push' | 'none', note: string | null }} Clicked */
-/** @typedef {{ id: string, note: string | null }} Settled a mark that settled: shown in the chat, or not taken */
+/** @typedef {{ id: string, note: string | null, files?: string[] }} Settled a mark that settled: shown in the chat with the files its row carried, or not taken */
 
 /** a turn has the row: taking it, or done with it @param {Joins | null | undefined} joins @param {string} id */
 const isTaken = (joins, id) =>
@@ -85,7 +86,7 @@ export function createMagic({ io, dir, quills, newId }) {
      */
     function taken(mark, said) {
         quills.apply(mark.thread, { id: mark.id, said, type: 'shown' });
-        return { id: mark.id, note: null };
+        return { files: mark.files ?? [], id: mark.id, note: null };
     }
 
     return {
@@ -115,9 +116,10 @@ export function createMagic({ io, dir, quills, newId }) {
          * @param {string | null} sid its session
          * @param {string} text the quill's words
          * @param {Joins | null | undefined} joins what the thread's state lists
+         * @param {string[]} [files] the files waiting, their paths after the words in the row (FRM-638 slice 5)
          * @returns {Promise<Clicked>} `push`: nothing was marked, the words go as a plain send, `note` says why
          */
-        async click(thread, sid, text, joins) {
+        async click(thread, sid, text, joins, files = []) {
             const had = quills.markOf(thread);
             if (had?.state === 'pending') return unmark(had, joins);
             const why = pushReason(text, sid ? joins : null);
@@ -125,6 +127,7 @@ export function createMagic({ io, dir, quills, newId }) {
             /** @type {Mark} */
             const mark = {
                 at: io.now(),
+                files,
                 id: newId(),
                 said: text,
                 sid,
@@ -132,7 +135,12 @@ export function createMagic({ io, dir, quills, newId }) {
                 thread,
             };
             set(mark);
-            const write = appendJoin(io, fileOf(mark), mark.id, text);
+            const write = appendJoin(
+                io,
+                fileOf(mark),
+                mark.id,
+                withPaths(text, files),
+            );
             written.set(mark.id, write);
             if (await write) return { act: 'marked', note: null };
             drop(mark);
@@ -180,27 +188,33 @@ export function createMagic({ io, dir, quills, newId }) {
             return { id: mark.id, note: 'Not taken, still in the box' };
         },
         /**
-         * he typed on under a mark: the same row carries the quill's words now; an emptied quill takes the mark off
+         * he typed on, or a file came or went, under a mark: the same row carries the quill's words and files now; an
+         * emptied quill takes the mark off
          * @param {string} thread
          * @param {string} text the quill's words
          * @param {Joins | null | undefined} joins
+         * @param {string[]} [files] the files waiting
          * @returns {Promise<boolean>} whether the mark changed
          */
-        async typed(thread, text, joins) {
+        async typed(thread, text, joins, files = []) {
             const mark = quills.markOf(thread);
-            if (mark?.state !== 'pending' || text === mark.said) return false;
-            if (isTaken(joins, mark.id)) return false;
-            if (!text) return (await unmark(mark, joins)).act === 'unmarked';
-            await written.get(mark.id);
-            if (!(await retextJoin(io, fileOf(mark), mark.id, text)))
+            const had = withPaths(mark?.said ?? '', mark?.files ?? []);
+            if (mark?.state !== 'pending' || withPaths(text, files) === had)
                 return false;
-            return (
-                quills.apply(thread, {
-                    id: mark.id,
-                    said: text,
-                    type: 'retexted',
-                }).mark?.said === text
-            );
+            if (isTaken(joins, mark.id)) return false;
+            if (!text && !files.length)
+                return (await unmark(mark, joins)).act === 'unmarked';
+            await written.get(mark.id);
+            const body = withPaths(text, files);
+            if (!(await retextJoin(io, fileOf(mark), mark.id, body)))
+                return false;
+            const now = quills.apply(thread, {
+                files,
+                id: mark.id,
+                said: text,
+                type: 'retexted',
+            }).mark;
+            return withPaths(now?.said ?? '', now?.files ?? []) === body;
         },
     };
 }

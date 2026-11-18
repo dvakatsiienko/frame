@@ -1,4 +1,7 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+
+// the pure half of attach.js is what this reads; its herdr door stays shut
+vi.mock('herdr', () => ({ exec: vi.fn() }));
 
 import { createRowModel } from './row-model.js';
 
@@ -666,5 +669,91 @@ describe('his message has one delivery state, owned by the row model (FRM-594)',
         model.add([taken('also the tests', 'human', 'c1')]);
         expect(shown(model)).toEqual(['mine: also the tests']);
         expect(model.rows[0]?.delivery?.state).toBe('sent');
+    });
+});
+
+describe('the files his message sent draw under his words, never as their paths or tokens (FRM-638 slice 5)', () => {
+    const picture = (data: string) => ({
+        source: { data, media_type: 'image/jpeg', type: 'base64' },
+        type: 'image',
+    });
+
+    test('a send Claude Code took inline: its tokens leave the words, its pictures stay in order', () => {
+        const model = createRowModel();
+        model.add([
+            entry('user', {
+                content: [
+                    {
+                        text: '[Image #14] [Image #15]shot sending',
+                        type: 'text',
+                    },
+                    picture('AAA'),
+                    picture('BBB'),
+                ],
+                role: 'user',
+            }),
+        ]);
+        const [row] = model.rows;
+        expect(row?.text).toBe('shot sending');
+        expect(row?.pictures.map((p) => [p.data, p.media])).toEqual([
+            ['AAA', 'image/jpeg'],
+            ['BBB', 'image/jpeg'],
+        ]);
+        expect(new Set(row?.pictures.map((p) => p.id)).size).toBe(2);
+    });
+
+    test('a queued command keeps its pictures', () => {
+        const model = createRowModel();
+        model.add([
+            entry(
+                'attachment',
+                {},
+                {
+                    attachment: {
+                        origin: { kind: 'human' },
+                        prompt: [
+                            { text: '[Image #1] look', type: 'text' },
+                            picture('CCC'),
+                        ],
+                        source_uuid: 'cmd-1',
+                        type: 'queued_command',
+                    },
+                },
+            ),
+        ]);
+        expect(model.rows[0]?.text).toBe('look');
+        expect(model.rows[0]?.pictures.map((p) => p.data)).toEqual(['CCC']);
+    });
+
+    test('path lines after the words come back as files: pictures by path, the rest as files, escapes undone', () => {
+        const model = createRowModel();
+        model.add([
+            mine(
+                'see these\n/Users/d/My\\ Shots/a.png\n/Users/d/notes\\ (1).md',
+            ),
+        ]);
+        const [row] = model.rows;
+        expect(row?.text).toBe('see these');
+        expect(row?.pictures.map((p) => p.path)).toEqual([
+            '/Users/d/My Shots/a.png',
+        ]);
+        expect(row?.files).toEqual(['/Users/d/notes (1).md']);
+    });
+
+    test.each([
+        ['a path inside a sentence', 'open /tmp/a.png please'],
+        ['a path line above more words', '/tmp/a.png\nis it there?'],
+    ])('%s stays words', (_, said) => {
+        const model = createRowModel();
+        model.add([mine(said)]);
+        expect(model.rows[0]?.text).toBe(said);
+        expect(model.rows[0]?.pictures).toEqual([]);
+    });
+
+    test('a reply never takes his message fields', () => {
+        const model = createRowModel();
+        model.add([reply('[Image #1] /tmp/a.png')]);
+        expect(model.rows[0]?.pictures).toEqual([]);
+        expect(model.rows[0]?.text).toBe('[Image #1] /tmp/a.png');
     });
 });

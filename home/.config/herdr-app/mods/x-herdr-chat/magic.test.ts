@@ -1,4 +1,7 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+
+// the pure half of attach.js is what this reads; its herdr door stays shut
+vi.mock('herdr', () => ({ exec: vi.fn() }));
 
 import { JOIN_TAKE_MS } from './joins.js';
 import { RETEXT_MS, createMagic, retextWait } from './magic.js';
@@ -224,6 +227,7 @@ describe('the thread’s state settles a mark', () => {
         const joined = { ...ON, joined: ['id-1'] };
         w.type('also the tests\nand one more');
         expect(w.magic.settle(THREAD, joined)).toEqual({
+            files: [],
             id: 'id-1',
             note: null,
         });
@@ -347,7 +351,7 @@ describe('his words arriving in the chat settle the mark at once', () => {
             w.magic.arrived(THREAD, [
                 { at: LATER, text: 'what tails do you have atm?' },
             ]),
-        ).toEqual({ id: 'id-1', note: null });
+        ).toEqual({ files: [], id: 'id-1', note: null });
         expect(w.quills.get(THREAD).text).toBe('');
         expect(w.magic.markOf(THREAD)?.state).toBe('joined');
     });
@@ -370,7 +374,7 @@ describe('his words arriving in the chat settle the mark at once', () => {
         await w.magic.typed(THREAD, 'hold 1s fix pls', ON);
         expect(
             w.magic.arrived(THREAD, [{ at: LATER, text: 'hold 1s' }]),
-        ).toEqual({ id: 'id-1', note: null });
+        ).toEqual({ files: [], id: 'id-1', note: null });
         expect(w.quills.get(THREAD).text).toBe('fix pls');
     });
 
@@ -386,5 +390,66 @@ describe('his words arriving in the chat settle the mark at once', () => {
     test('no mark, nothing to settle', () => {
         const w = world();
         expect(w.magic.arrived(THREAD, [{ at: LATER, text: 'hi' }])).toBeNull();
+    });
+});
+
+describe('files waiting join the turn with the words (FRM-638 slice 5, dima’s wisps 16:36 and 16:37)', () => {
+    const PIC = '/app/shots/shot 1.png';
+
+    test('a click with files waiting marks: 🍕, and the row carries each path after the words', async () => {
+        const w = world();
+        w.type('look');
+        expect(await w.magic.click(THREAD, SID, 'look', ON, [PIC])).toEqual({
+            act: 'marked',
+            note: null,
+        });
+        expect(w.magic.markOf(THREAD)?.state).toBe('pending');
+        expect(w.rows()).toEqual([
+            { id: 'id-1', text: 'look\n/app/shots/shot\\ 1.png' },
+        ]);
+    });
+
+    test('files alone, no words, still mark', async () => {
+        const w = world();
+        expect((await w.magic.click(THREAD, SID, '', ON, [PIC])).act).toBe(
+            'marked',
+        );
+        expect(w.rows()).toEqual([
+            { id: 'id-1', text: '/app/shots/shot\\ 1.png' },
+        ]);
+    });
+
+    test('a file added or taken off under the mark rides the same row; the last one gone with no words unmarks', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'look', ON, [PIC]);
+        expect(await w.magic.typed(THREAD, 'look', ON, [PIC, '/b.png'])).toBe(
+            true,
+        );
+        expect(w.rows()).toEqual([
+            { id: 'id-1', text: 'look\n/app/shots/shot\\ 1.png\n/b.png' },
+        ]);
+        expect(await w.magic.typed(THREAD, 'look', ON, [PIC, '/b.png'])).toBe(
+            false,
+        );
+        expect(await w.magic.typed(THREAD, '', ON, [])).toBe(true);
+        expect(w.magic.markOf(THREAD)).toBeNull();
+        expect(w.rows()).toEqual([]);
+    });
+
+    test('a turn took it: the settle names the files that went, so the quill lets them go', async () => {
+        const w = world();
+        w.type('look');
+        await w.magic.click(THREAD, SID, 'look', ON, [PIC]);
+        expect(
+            w.magic.arrived(THREAD, [
+                { at: new Date(2_000).toISOString(), text: 'look' },
+            ]),
+        ).toEqual({ files: [PIC], id: 'id-1', note: null });
+    });
+
+    test('a reload keeps the mark’s files', async () => {
+        const w = world();
+        await w.magic.click(THREAD, SID, 'look', ON, [PIC]);
+        expect(w.reload().markOf(THREAD)?.files).toEqual([PIC]);
     });
 });

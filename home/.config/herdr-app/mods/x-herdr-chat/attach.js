@@ -47,14 +47,14 @@ export const withFiles = (list, added) => [
 export const isImagePath = (path) => /[^/]\.(png|jpe?g|gif|webp)$/i.test(path);
 
 /**
- * a click on a preview over the quill opens its picture in macOS Preview: the file that waits, never a dropped
- * picture's small preview copy
- * @param {string[]} files @param {(path: string) => string | undefined} previewOf @param {string} rel
+ * `open`'s arguments for a picture: CleanShot X's annotate on it, or macOS Preview (FRM-587 W1, the setting
+ * `chatter.pictures.cleanshot`)
+ * @param {string} path @param {boolean} isCleanShot
  */
-export function openInPreview(files, previewOf, rel) {
-    const path = files.find((p) => previewOf(p) === rel);
-    if (path) exec('open', ['-a', 'Preview', path]).catch(() => {});
-}
+export const pictureOpenArgs = (path, isCleanShot) =>
+    isCleanShot
+        ? [`cleanshot://open-annotate?filepath=${encodeURIComponent(path)}`]
+        : ['-a', 'Preview', path];
 
 /** @param {string} path */
 export const fileName = (path) => path.split('/').filter(Boolean).pop() ?? path;
@@ -62,3 +62,7 @@ export const fileName = (path) => path.split('/').filter(Boolean).pop() ?? path;
 /** a path the way a file dropped on a terminal types it, spaces escaped @param {string} path */
 export const promptPath = (path) =>
     path.replace(/([\s()'"[\]&$;|<>*?!#`{}\\])/g, '\\$1');
+
+/** a message as it leaves: the words, then each file's path on its own line @param {string} text @param {string[]} files */
+export const withPaths = (text, files) =>
+    [text, ...files.map(promptPath)].filter(Boolean).join('\n');

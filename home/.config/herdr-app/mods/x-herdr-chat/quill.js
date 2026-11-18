@@ -18,6 +18,7 @@
  * @property {string} sid the thread's session, which names its join file
  * @property {string} thread the thread's transcript file
  * @property {string} said the quill's words the row carries
+ * @property {string[]} [files] the paths the row carries after the words
  * @property {number} at when it was marked
  * @property {'pending' | 'joined'} state `joined`: a turn took it and it shows in the chat, for a moment
  */
@@ -25,7 +26,7 @@
 /**
  * @typedef {{ type: 'typed', text: string }
  *   | { type: 'marked', mark: Mark }
- *   | { type: 'retexted', id: string, said: string }
+ *   | { type: 'retexted', id: string, said: string, files?: string[] }
  *   | { type: 'shown', id: string, said?: string }
  *   | { type: 'unmarked', id: string }
  *   | { type: 'sent', said: string }
@@ -66,7 +67,14 @@ export function next(quill, event) {
             return { ...quill, mark: event.mark };
         case 'retexted':
             return mark?.id === event.id && mark.state === 'pending'
-                ? { ...quill, mark: { ...mark, said: event.said } }
+                ? {
+                      ...quill,
+                      mark: {
+                          ...mark,
+                          files: event.files ?? mark.files,
+                          said: event.said,
+                      },
+                  }
                 : quill;
         case 'shown':
             return mark?.id === event.id && mark.state === 'pending'
