@@ -3,6 +3,7 @@
 // his text box. the rules live in their own files, each tested with no herdr: reader.js, row-model.js, heights.js,
 // follow.js, place.js, draft.js, send.js, magic.js.
 
+import { readdir } from 'fs/promises';
 import {
     Popover,
     TextView,
@@ -19,6 +20,7 @@ import {
     checking,
     closeOverlay,
     exec,
+    focused,
     hc,
     home,
     layout,
@@ -27,6 +29,7 @@ import {
     props,
     readTextFile,
     run as runCommand,
+    setShared,
     settings,
     shared,
     terminals,
@@ -98,6 +101,7 @@ import { sendArgs } from './queued.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
 import { SUBMIT_REST_MS, addressIn, submitted } from './send.js';
+import { pidFor, shownThread } from './shown.js';
 import { transcriptPath } from './thread.js';
 import { typedMarkdown } from './typed.js';
 
@@ -345,8 +349,14 @@ export default class Chat extends View {
     heights = createHeights();
     /** @type {ReturnType<typeof createReader> | null} */
     reader = null;
-    /** the pid of the thread shown, as the old chat publishes it @type {number | null} */
+    /** the pid of the thread shown, found from the focused tab's Claude @type {number | null} */
     pid = null;
+    /** the terminal of the thread shown @type {string | null} */
+    shownAddress = null;
+    /** ⌘K's last ask (the status bar takes the key and writes the time); undefined before the first draw @type {unknown} */
+    quillAsk = undefined;
+    /** ⌘⇧E's last ask @type {unknown} */
+    effortAsk = undefined;
     /** @type {string | null} */
     file = null;
     /** the pid the open thread was opened for; undefined before the first @type {number | null | undefined} */
@@ -528,13 +538,38 @@ export default class Chat extends View {
     /** @param {Context} _cx */
     render(_cx) {
         const t = /** @type {Theme} */ (theme());
-        const shown = /** @type {{ pid?: unknown } | null} */ (
-            shared('chat.shown') ?? null
-        );
-        const pid = typeof shown?.pid === 'number' ? shown.pid : null;
-        if (pid !== this.pid) {
-            this.pid = pid;
-            this.wake();
+        // ⌘K puts the caret in the quill; ⌘⇧E opens the picker on the effort, a second press applies it. a press older than
+        // 2 s (the chat sat hidden) is dropped, never acted on late; the first draw only takes note of them
+        const quillAsk = shared('chat.quill') ?? null;
+        if (quillAsk !== this.quillAsk) {
+            const isFirst = this.quillAsk === undefined;
+            this.quillAsk = quillAsk;
+            if (!isFirst)
+                _cx.timer.after(50, () => {
+                    if (!this.isPickOpen) this.box?.focus();
+                });
+        }
+        const effortAsk = shared('chat.effort') ?? null;
+        if (effortAsk !== this.effortAsk) {
+            const isFirst = this.effortAsk === undefined;
+            this.effortAsk = effortAsk;
+            if (
+                !isFirst &&
+                typeof effortAsk === 'number' &&
+                Date.now() - effortAsk < 2000
+            )
+                _cx.timer.after(0, (later) => {
+                    const isOpening = !this.isPickOpen;
+                    this.applyEffort(later);
+                    if (isOpening && this.isPickOpen)
+                        this.readPermission(later);
+                });
+        }
+        // the chat finds its own thread, as the old chat did, and names it for the deck's ⌘⇧K
+        const address = shownThread(agents(), focused(), this.shownAddress);
+        if (address !== this.shownAddress) {
+            this.shownAddress = address;
+            _cx.timer.after(0, (later) => this.showThread(address, later));
         }
         const look = lookOf(shared(LOOK_KEY));
         const lookKey = [
@@ -2087,6 +2122,37 @@ export default class Chat extends View {
                         ),
                 ),
         );
+    }
+
+    /**
+     * the session pid of the thread shown, from the Claude whose environment names its terminal; a switch made while
+     * one is read wins
+     * @param {string | null} address @param {Context} cx
+     */
+    showThread(address, cx) {
+        cx.spawn(async () => {
+            let pid = null;
+            if (address)
+                try {
+                    const sessions = (
+                        await readdir(`${home()}/.claude/sessions`)
+                    )
+                        .filter((name) => name.endsWith('.json'))
+                        .map((name) => Number(name.slice(0, -5)));
+                    const ps = await exec('ps', [
+                        'eww',
+                        '-o',
+                        'pid=,command=',
+                        '-p',
+                        sessions.join(','),
+                    ]);
+                    pid = pidFor(address, ps.stdout, sessions);
+                } catch {}
+            if (address !== this.shownAddress || pid === this.pid) return;
+            this.pid = pid;
+            setShared('chat.shown', { pid });
+            this.wake();
+        });
     }
 
     /**

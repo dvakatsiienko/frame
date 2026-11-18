@@ -666,9 +666,15 @@ export default class WorkspaceStatus extends View {
             for (;;) {
                 const command = await nextCommand();
                 if (command === 'quill' || command === 'effort') {
-                    const chat = blockOf(
-                        (c) => c?.mod === 'x-herdr-chatter' && c.props?.stack,
-                    );
+                    // the new chat first, once it holds the Chat view; the old one while only it does
+                    const chat =
+                        blockOf(
+                            (c) => c?.mod === 'x-herdr-chat' && c.props?.stack,
+                        ) ??
+                        blockOf(
+                            (c) =>
+                                c?.mod === 'x-herdr-chatter' && c.props?.stack,
+                        );
                     if (chat)
                         run('layout.select', {
                             child: chat.content.props.self,
