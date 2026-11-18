@@ -22,6 +22,8 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
     let itemSizes = [...sizes];
     let scrollTop = 0;
     let now = 1_000;
+    /** every ask the view carried out, in order */
+    const asks: string[] = [];
     const clamp = () => {
         const max = Math.max(0, topOf(itemSizes, itemSizes.length) - viewH);
         scrollTop = Math.min(max, Math.max(0, scrollTop));
@@ -49,6 +51,7 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
     function frame() {
         const plan = place.plan(rows, sizes, viewH);
         itemSizes = [...plan.itemSizes];
+        if (plan.ask) asks.push(plan.ask);
         if (plan.ask === 'end' || plan.ask === 'lift')
             scrollTop = Number.MAX_SAFE_INTEGER;
         clamp();
@@ -75,6 +78,7 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
             }
             frame();
         },
+        asks,
         /** tool calls hidden: a row leaves the list, his place held first, as the view does */
         hide(index: number) {
             const shown = rows.filter((_, i) => i !== index);
@@ -100,6 +104,17 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
         moveUnseen(px: number) {
             scrollTop += px;
             clamp();
+            frame();
+        },
+        /** an older page lands above: the list keeps its px, his place read first and held, as main.js does */
+        prepend(...more: number[]) {
+            place.read(rows, sizes);
+            const held = place.place;
+            rows.unshift(
+                ...more.map((_, i) => ({ id: `p${rows.length + i}` })),
+            );
+            sizes = [...more, ...sizes];
+            if (held) place.restore(held.id, held.offset);
             frame();
         },
         /** the list's own height changes: the band, the bottom card or the picker under it grew or shrank */
@@ -134,7 +149,7 @@ function createSim(heights: number[], startH = 600, zoom = 1) {
             let top = 0;
             for (const [i, size] of sizes.entries()) {
                 if (top + size > scrollTop)
-                    return { id: `r${i}`, offset: scrollTop - top };
+                    return { id: rows[i]?.id, offset: scrollTop - top };
                 top += size;
             }
             return { id: 'none', offset: 0 };
@@ -419,5 +434,38 @@ describe('nothing moves the view without him', () => {
         place.reset();
         expect(place.plan(rows, thread(), 600).ask).toBe('end');
         expect(place.place).toBeNull();
+    });
+});
+
+describe('an older page landing above his place (FRM-638 slice 6b)', () => {
+    test('the row he reads stays at the same spot, in one frame, never via the end', () => {
+        const sim = createSim(thread());
+        sim.restore({ id: 'r1', offset: 120 });
+        sim.idle(WHEEL_REST_MS);
+        const before = sim.truth();
+        sim.asks.length = 0;
+        sim.prepend(300, 300, 300, 300, 300, 300);
+        expect(sim.truth()).toEqual(before);
+        expect(sim.asks).toEqual(['seek']);
+        expect(sim.saved()).toEqual(before);
+    });
+
+    test('a page landing at a row boundary keeps the place too', () => {
+        const sim = createSim(thread());
+        sim.restore({ id: 'r2', offset: 0 });
+        sim.idle(WHEEL_REST_MS);
+        sim.asks.length = 0;
+        sim.prepend(500, 250, 400);
+        expect(sim.truth()).toEqual({ id: 'r2', offset: 0 });
+        expect(sim.asks).not.toContain('lift');
+    });
+
+    test('his next wheel step after a landing moves from the place', () => {
+        const sim = createSim(thread());
+        sim.restore({ id: 'r1', offset: 120 });
+        sim.idle(WHEEL_REST_MS);
+        sim.prepend(300, 300, 300, 300);
+        sim.wheel(50);
+        expect(sim.truth()).toEqual({ id: 'r1', offset: 70 });
     });
 });

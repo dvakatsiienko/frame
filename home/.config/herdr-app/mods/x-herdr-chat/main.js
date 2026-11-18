@@ -2662,6 +2662,9 @@ export default class Chat extends View {
                 );
                 if (step.isIgnored) return;
                 this.savePlaceSoon(cx);
+                // within a screen of the first row: the next older page, one at a time
+                if (!this.at.follow && this.at.top < this.viewH)
+                    this.loadEarlier(cx);
                 if (step.hadCut || step.isFollowChanged) cx.notify();
             })
             .child(list)
@@ -3887,6 +3890,28 @@ export default class Chat extends View {
         );
         this.settleUntil = Date.now() + SETTLE_MS;
         cx.notify();
+    }
+
+    /**
+     * the next older page drawn above, the row he reads kept at its spot on screen; nothing while one is read or at
+     * the thread's start, and a page for a thread he left is dropped
+     * @param {Context} cx
+     */
+    loadEarlier(cx) {
+        const pages = this.pages;
+        const read = pages?.next();
+        if (!read) return;
+        cx.spawn(async (cx) => {
+            const lines = await read.catch(() => null);
+            if (this.pages !== pages || !lines?.length) return;
+            this.readPlace();
+            const place = this.at.place;
+            this.model.addEarlier(lines);
+            this.learnSkills(lines);
+            this.makePictures(cx);
+            if (place) this.at.restore(place.id, place.offset);
+            cx.notify();
+        });
     }
 
     /** his place, read from the rows the list drew last; never inside the list's row callback (see place.js) */

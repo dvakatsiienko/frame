@@ -8,6 +8,7 @@
 
 import {
     END_MARKS,
+    edgeSplit,
     followAfterWheel,
     isEndDrawn,
     needsLift,
@@ -162,22 +163,36 @@ export function createPlace() {
                     cut = { id: cut.id, offset };
                 }
             }
-            const split = cut
+            /** @type {{ sizes: number[], seekAt: number, cut: { at: number, offset: number } | null }} */
+            let split = cut
                 ? splitAtPlace(rows, sizes, cut)
                 : { cut: null, seekAt: -1, sizes };
-            const cutAt = split.cut?.at ?? -1;
             /** @param {number} item */
-            const rowAt = (item) =>
-                cutAt >= 0 && item > cutAt ? item - 1 : item;
+            const rowOf = (item) =>
+                split.cut && item > split.cut.at ? item - 1 : item;
             /** @type {Plan['ask']} */
             let ask = null;
             if (isSeekDue && cut) {
+                const edge =
+                    // only from a list that drew: before its first frame, where it sits is not known
+                    range &&
+                    split.seekAt >= 0 &&
+                    !isLifted &&
+                    needsLift(range, rowOf(split.seekAt))
+                        ? edgeSplit(rows, sizes, cut, viewH, top)
+                        : null;
                 if (split.seekAt < 0) {
                     // the held message is not among the rows
                     isSeekDue = false;
                     cut = null;
                     share = null;
-                } else if (!isLifted && needsLift(range, rowAt(split.seekAt))) {
+                } else if (edge) {
+                    // below the view and far enough down: its view's bottom is asked for, in this one frame
+                    split = edge;
+                    top = edge.top;
+                    isSeekDue = false;
+                    ask = 'seek';
+                } else if (!isLifted && needsLift(range, rowOf(split.seekAt))) {
                     isLifted = true;
                     ask = 'lift';
                 } else {
@@ -189,6 +204,10 @@ export function createPlace() {
                 ask = 'end';
                 top = Math.max(0, topOf(sizes, sizes.length) - viewH);
             }
+            const cutAt = split.cut?.at ?? -1;
+            /** @param {number} item */
+            const rowAt = (item) =>
+                cutAt >= 0 && item > cutAt ? item - 1 : item;
             return {
                 ask,
                 cutAt,

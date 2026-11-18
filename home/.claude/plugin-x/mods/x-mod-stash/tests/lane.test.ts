@@ -2447,6 +2447,34 @@ test('a sixth sense x records after the dispatch joins the card on a later poll'
     );
 });
 
+// FRM-649 step 119: a card ended before the lane's next dispatch leaves the plan free for a new card; one ended after it
+// holds, so a lane clio closed never comes back
+for (const [name, endedAt, open] of [
+    ['ended before the dispatch opens a new card', 100, 1],
+    ['ended after the dispatch opens none', 300, 0],
+] as const)
+    test(`a lane card ${name}`, async ($, on) => {
+        const d = dispatched([
+            { at: 200, lane: 'mods-lane-9', pid: 5001, sessionId: CODIE },
+        ]);
+        const w = world(on, {
+            ...d,
+            files: {
+                ...d.files,
+                ...shelf(
+                    keptLane({
+                        endedAt,
+                        plan: '~/.local/state/x/lanes/mods-lane-9/lane-plan.md',
+                    }),
+                ),
+            },
+        });
+        titled(w, marked('x  '));
+        await start($);
+        await poll(w);
+        expect(kept(w).filter((l) => !l.endedAt).length).toBe(open);
+    });
+
 test('a dispatch opens no card for a gone codie, a record with no lane, or a lane with no plan', async ($, on) => {
     const w = world(on, {
         ...dispatched([
