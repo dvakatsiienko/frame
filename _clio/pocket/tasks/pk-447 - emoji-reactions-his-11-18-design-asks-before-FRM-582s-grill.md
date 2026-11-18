@@ -1,10 +1,10 @@
 ---
 id: PK-447
 title: 'emoji reactions: his 11-18 design asks before FRM-582''s grill'
-status: open
+status: done
 assignee: []
 created_date: '2026-11-18T09:19:00Z'
-updated_date: '2026-11-18T10:25:00Z'
+updated_date: '2026-11-18T21:29:00Z'
 labels:
   - s
 dependencies: []
@@ -118,4 +118,7 @@ retires PK-447:W17, superseded by PK-447:W22
 retires PK-447:W18, superseded by PK-447:W23
 retires PK-447:W19: searchable is PK-447:W8, the grid is PK-447:W24; PK-447:W11 stays its own line above
 retires PK-447:W20, superseded by PK-447:W25
+
+23:29 ticket: FRM-582 — every PK-447 W-line lives in FRM-582's wish block (19 lines); its grill is open, FRM-582 held unsigned for it
+close: moved to FRM-582, one home (dima 23:29: «pocket item closes into linear ticket?»)
 <!-- SECTION:NOTES:END -->
