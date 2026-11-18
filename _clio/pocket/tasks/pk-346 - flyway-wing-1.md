@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-15T15:24:00Z'
+updated_date: '2026-11-18T09:17:00Z'
 labels:
   - s
   - clio-wing-1
@@ -26,9 +26,9 @@ ordinal: 1001
 - [ ] #8 f8 flyway --check trial (o45): stray lines it found vs found by hand, two syncs, keep or drop
 - [ ] #9 f9 FRM-534 kill rule: the week's push reds per kind on test-commit.log
 - [ ] #10 f10 usage from monday: all-fable, a fable reset only at fable 100 %, 3 weeks
-- [ ] #11 f11 📅 evergreen, two weeks in one: frame#158, bytes#152–#155, then FRM-465 exit 5 — on: 2026-11-18
-- [ ] #12 f19 📅 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm — on: 2026-11-18
-- [ ] #13 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #11 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
+- [ ] #12 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #13 f11 💤 evergreen, two weeks in one: frame#158, bytes#152–#155, FRM-465 exit 5 — later: dima, with wing 1
 - [ ] #14 f13 💤 PK-300 one complete measuring solution — later: dima 11-11
 - [ ] #15 f14 💤 PK-374 gates naming: one convention, one big sweep — later: dima picks the window (o80)
 - [ ] #16 f15 💤 redraw the refresh-crew-coordinator board — later: dima 19:21

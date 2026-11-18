@@ -4,7 +4,7 @@ title: 'measuring: one complete solution across x, mods and scripts'
 status: open
 assignee: []
 created_date: '2026-11-02T20:24:00Z'
-updated_date: '2026-11-16T17:27:00Z'
+updated_date: '2026-11-18T09:18:00Z'
 labels:
   - m
 dependencies: []
@@ -229,4 +229,6 @@ PK-300:W1563 (2026-11-16 18:50, dima, o68): not a new lane, we already have two 
 correction to PK-300:W1548 (2026-11-16 18:50, dima): for my band - likely not. too noisy. let's have it initially though. i'll see how noisy it is. show me how much time review count went over the set bar. question, not a wish: i thought we build a mechanized protection?
 
 19:27 PK-300:W1563 moved to FRM-639:W44 (the o68 steer lives in the ticket now)
+
+11:18 kept: 2026-11-18 — his 💤 (11-11), waits for his window
 <!-- SECTION:NOTES:END -->

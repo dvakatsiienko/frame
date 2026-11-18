@@ -4,7 +4,7 @@ title: 'steamac vm disk: shrink 256gb to 192gb'
 status: open
 assignee: []
 created_date: '2026-11-09T12:38:00Z'
-updated_date: '2026-11-15T12:55:00Z'
+updated_date: '2026-11-18T09:18:00Z'
 labels:
   - s
 dependencies: []
@@ -62,4 +62,6 @@ kept: 2026-11-13 — reopened: dima's 22:04 «keep them linked in wing 1 flyway,
 kept: 2026-11-15 — his vet, «i tell when» (wing 2 flyway), watch fxgl/steamac#91 (13:33)
 
 moved from FRM-506 at its close (14:55): FRM-506:W1462 (dima, the vm's performance): «that's for later» — the gta iv on steamac perf test waits here with the vm's disk
+
+11:18 kept: 2026-11-18 — his vet, «i tell when»
 <!-- SECTION:NOTES:END -->

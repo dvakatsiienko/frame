@@ -4,7 +4,7 @@ title: 'gates: one naming convention everywhere, one big sweep'
 status: open
 assignee: []
 created_date: '2026-11-09T20:03:00Z'
-updated_date: '2026-11-15T11:33:00Z'
+updated_date: '2026-11-18T09:18:00Z'
 labels:
   - s
 dependencies: []
@@ -65,4 +65,6 @@ close: 22:06 PK-374:W1–W18 kept here, linked from wing 1's flyway as a 💤 li
 kept: 2026-11-13 — reopened: dima's 22:04 «keep them linked in wing 1 flyway, mark as 💤» needs a live item behind the line
 
 kept: 2026-11-15 — dima picks the window (o80) (13:33)
+
+11:18 kept: 2026-11-18 — his window (o80)
 <!-- SECTION:NOTES:END -->
