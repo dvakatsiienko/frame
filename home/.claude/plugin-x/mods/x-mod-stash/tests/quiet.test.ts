@@ -3681,7 +3681,11 @@ for (const message of [
         const w = roundWorld(on);
         await start($);
         await send($, ROUND_SENSE, message);
-        expect((kept(w) as { shas: string[] }).shas.length).toBe(1);
+        expect(
+            Object.values(roundsIn(w.files)).flatMap(
+                (r) => (r as { shas: string[] }).shas,
+            ).length,
+        ).toBe(1);
     });
 
 for (const message of [
@@ -3820,6 +3824,52 @@ test("with no lane plan the count keys on x's record's ticket", async ($, on) =>
         count: 1,
         shas: ['ccccccc'],
     });
+});
+
+// the cap is per chunk: herdr lane 2's codie named «FRM-638 slice 5» after the sha while x's record held FRM-625, and its
+// slices 4 and 5 counted as one, escalating a «round 4» its chunk never reached
+test('two chunks a round line names count apart, the record trailing both, and the cap line names the chunk', async ($, on) => {
+    const w = roundWorld(on, { record: { ticket: 'FRM-625' } });
+    await start($);
+    for (const [n, sha] of [
+        [1, 'a1a1a1a'],
+        [2, 'b2b2b2b'],
+    ] as const)
+        await send(
+            $,
+            ROUND_SENSE,
+            `round ${n} on ${sha} (slice 4, base main:1234567)`,
+        );
+    const r = [];
+    for (const [n, sha] of [
+        [1, 'c3c3c3c'],
+        [2, 'd4d4d4d'],
+        [3, 'e5e5e5e'],
+    ] as const)
+        r.push(
+            await send(
+                $,
+                ROUND_SENSE,
+                `round ${n} on ${sha} (FRM-638 slice 05, base main:1234567)`,
+            ),
+        );
+    expect([
+        Object.keys(roundsIn(w.files)),
+        kept(w, 'mods-lane-5 | FRM-638 slice 5'),
+        r.flatMap(roundLines),
+        w.told,
+    ]).toEqual([
+        ['mods-lane-5 | FRM-625 slice 4', 'mods-lane-5 | FRM-638 slice 5'],
+        { count: 3, shas: ['c3c3c3c', 'd4d4d4d', 'e5e5e5e'] },
+        [
+            'round 3 of this lane: a next round with a P0 or P1 is past the cap of 3',
+        ],
+        [],
+    ]);
+    await send($, ROUND_SENSE, 'round 4 on f6f6f6f (FRM-638 slice 5)');
+    expect(w.told.map((t) => t.text)).toEqual([
+        `[escalate] round 4 of mods-lane-5 | FRM-638 slice 5, past the cap of 3, from ${ROUND_CODIE}: ask dima «go on, or stop the lane»`,
+    ]);
 });
 
 // FRM-570 exit 15: the count reads x's record, so a rename keeps it and a name alone starts none

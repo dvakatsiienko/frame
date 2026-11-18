@@ -85,6 +85,7 @@ import {
     noticeOf,
     numberCircled,
     parseWait,
+    roundChunkOf,
     roundLine,
     roundOf,
     ticketOf,
@@ -2467,9 +2468,11 @@ async function laneRoundLine(
     const home = (await $.env.get('HOME')) ?? '';
     // the lane record's ticket, as the card reads it: each chunk opens with clio's dispatch, which moves it (FRM-617 exit
     // 4), where a plan's first open step could be an old chunk's leftover (a false «round 9» on FRM-605, FRM-649)
-    if (!self.ticket)
+    const chunk = roundChunkOf(text(e.message) ?? '');
+    const ticket = chunk.ticket ?? self.ticket;
+    if (!ticket)
         return `round ${round.n} on ${round.sha} not counted (x's record names no ticket): resend the same line once clio's dispatch writes one`;
-    const lane = `${self.lane} | ${self.ticket}`;
+    const lane = `${self.lane} | ${ticket}${chunk.slice ? ` slice ${chunk.slice}` : ''}`;
     const now = await $.clock.now();
     // a count that could not be taken says so: a silent miss is a cap nobody hears
     const taken = await roundsLocked($, home, async () => {
@@ -3650,10 +3653,16 @@ async function cliosWaiting($: EngineInterface) {
 
 // FRM-649 (FRM-616:W10): one ask counter for the fleet, `ask-counter` in $.store, read and bumped under a lock dir beside
 // the shelf (the joins' rule: no compare-and-swap exists); with no `asks:` key in the store no thread holds an open ask,
-// so the count starts at 1 again, past any id this thread still draws. undefined: the lock stayed held; a host that runs
-// no process (a test world) mints unlocked
+// so the count starts at 1 again, past any id this thread still draws. `publish` saves the asks before the lock frees, or
+// a thread taking it next reads no `asks:` key and mints the same o1 again. undefined: the lock stayed held; a host that
+// runs no process (a test world) mints unlocked
 const ASK_COUNTER = 'ask-counter';
-async function mintAsks($: EngineInterface, count: number, drawn: string[]) {
+async function mintAsks<T>(
+    $: EngineInterface,
+    count: number,
+    drawn: string[],
+    publish: (first: number) => Promise<T>,
+) {
     const home = (await $.env.get('HOME').catch(() => undefined)) ?? '';
     const lock = `${home}/.claude/shelf/ask-counter.lock`;
     let isLocked = true;
@@ -3681,7 +3690,7 @@ async function mintAsks($: EngineInterface, count: number, drawn: string[]) {
         )
             next++;
         await $.store.set(ASK_COUNTER, { next: next + count });
-        return next;
+        return await publish(next);
     } finally {
         if (isLocked) await $.process.run(['rmdir', lock]);
     }
@@ -7806,32 +7815,34 @@ async function orbitCall(
         input.op === 'add' && Array.isArray(input.asks) ? input.asks.length : 0;
     const op = await inMarking(async () => {
         const current = await currentOrbit($);
+        const apply = async (first: number) => {
+            const made = orbitOp(
+                { ...current, next: first },
+                input,
+                isTurn,
+                lines,
+                isAmended,
+            );
+            if ('deny' in made) return made;
+            if (asked) made.orbit = { ...made.orbit, next: current.next };
+            await saveOrbit($, made.orbit);
+            // a follow asks a new question: his tick on the old one is no longer his word on it (S3); one step with the
+            // save, so a press lands wholly before both or after both
+            if (input.op === 'follow') await dropTicks($, oneLine(input.id));
+            return made;
+        };
+        if (!asked) return apply(current.next);
         // an add's ids come from the fleet's one counter; the thread's own `next` keeps counting its assumptions
-        const minted = asked
-            ? await mintAsks(
-                  $,
-                  asked,
-                  current.asks.map((a) => a.id),
-              )
-            : current.next;
-        if (minted === undefined)
-            return {
+        return (
+            (await mintAsks(
+                $,
+                asked,
+                current.asks.map((a) => a.id),
+                apply,
+            )) ?? {
                 deny: 'orbit add: the ask counter is held by another thread past 2 s; add the ask again in a moment',
-            };
-        const made = orbitOp(
-            { ...current, next: minted },
-            input,
-            isTurn,
-            lines,
-            isAmended,
+            }
         );
-        if ('deny' in made) return made;
-        if (asked) made.orbit = { ...made.orbit, next: current.next };
-        await saveOrbit($, made.orbit);
-        // a follow asks a new question: his tick on the old one is no longer his word on it (S3); one step with the save, so
-        // a press lands wholly before both or after both
-        if (input.op === 'follow') await dropTicks($, oneLine(input.id));
-        return made;
     });
     if ('deny' in op) return { deny: op.deny };
     if (input.op === 'add')

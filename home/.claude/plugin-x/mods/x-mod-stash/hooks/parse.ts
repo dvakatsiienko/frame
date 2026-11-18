@@ -347,6 +347,16 @@ export function roundOf(message: string) {
     return sha ? { n: 1, sha } : undefined;
 }
 
+// the chunk a round's first line names, «round 3 on <sha> (FRM-638 slice 5, …)»: the cap is per chunk, and x's record can
+// trail a lane's chunks (herdr lane 2's slices 4 and 5 counted as one under FRM-625); a part it leaves out falls to the record
+export function roundChunkOf(message: string) {
+    const line = message.trimStart().split('\n', 1)[0] ?? '';
+    return {
+        slice: line.match(/\bslice\s+0*(\d+)\b/i)?.[1],
+        ticket: ticketOf(line),
+    };
+}
+
 export const ROUND_CAP = 3;
 // the count only signals and refuses nothing (FRM-504:W49: a block stops everyone); past the cap the coordinator decides,
 // `untold` the reason her line did not go

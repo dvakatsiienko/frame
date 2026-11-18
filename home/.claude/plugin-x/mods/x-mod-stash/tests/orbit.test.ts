@@ -5521,7 +5521,7 @@ test('of a herdr tick and his untick read together, the untick wins', async ($, 
 
 // FRM-649 exit 1 (FRM-616:W10): one ask counter for the fleet, minted under a lock dir beside the shelf, so two threads
 // asking at once never both hand out o1; it starts at 1 again once no thread holds an open ask
-const lockDirs = (on: On, isHeld = false) => {
+const lockDirs = (on: On, isHeld = false, onUnlock = () => {}) => {
     const dirs = new Set<string>(
         isHeld ? ['/home/.claude/shelf/ask-counter.lock'] : [],
     );
@@ -5529,7 +5529,10 @@ const lockDirs = (on: On, isHeld = false) => {
         const [cmd, path = ''] = e.argv;
         const isTaken = cmd === 'mkdir' && !dirs.has(path);
         if (isTaken) dirs.add(path);
-        if (cmd === 'rmdir') dirs.delete(path);
+        if (cmd === 'rmdir') {
+            onUnlock();
+            dirs.delete(path);
+        }
         return {
             value: {
                 exitCode: cmd === 'mkdir' && !isTaken ? 1 : 0,
@@ -5559,6 +5562,19 @@ test("an ask takes the fleet's next id while another thread holds an open one", 
         w.store.get('ask-counter'),
         dirs.size,
     ]).toEqual([['o5', 'o6'], { next: 7 }, 0]);
+});
+
+// a second thread that takes the lock the moment it frees reads this thread's ask, so it never restarts at the o1 just
+// minted (macroscope on herdr's slice 6: a publish after the unlock let two threads mint one id)
+test('the minted ask is published before the counter lock frees', async ($, on) => {
+    const w = world(on);
+    const seen: string[][] = [];
+    lockDirs(on, false, () =>
+        seen.push([...w.store.keys()].filter((k) => k.startsWith('asks:'))),
+    );
+    await start($);
+    await add($, ['push FRM-1', 'yes']);
+    expect(seen.map((keys) => keys.length)).toEqual([1]);
 });
 
 test('with no open ask anywhere the count starts at 1 again', async ($, on) => {
