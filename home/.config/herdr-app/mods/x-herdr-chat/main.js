@@ -1,7 +1,7 @@
 // x-herdr-chat: the Chat view, built new beside x-herdr-chatter (FRM-638). it reads the thread the old chat shows,
 // drawn as his messages, replies and one line per tool call, in a list that never moves without him, over the quill,
 // his text box. the rules live in their own files, each tested with no herdr: reader.js, row-model.js, heights.js,
-// follow.js, place.js, draft.js, send.js, magic.js.
+// follow.js, place.js, quill.js, send.js, magic.js.
 
 import { readdir } from 'fs/promises';
 import {
@@ -63,7 +63,6 @@ import {
     withPress,
 } from './band.js';
 import { splitBlocks } from './blocks.js';
-import { createDrafts } from './draft.js';
 import {
     EFFORTS,
     effortKey,
@@ -98,6 +97,7 @@ import {
 } from './picker.js';
 import { createPlace } from './place.js';
 import { sendArgs } from './queued.js';
+import { createQuills } from './quill.js';
 import { createReader } from './reader.js';
 import { createRowModel } from './row-model.js';
 import { SUBMIT_REST_MS, addressIn, submitted } from './send.js';
@@ -394,7 +394,11 @@ export default class Chat extends View {
     isRead = false;
     /** the quill: herdr draws its text itself, so a key typed in it draws nothing of ours @type {import('gpui-base').TextareaState | null} */
     box = null;
-    drafts = createDrafts(localStorage);
+    /** every thread's quill and its mark, the one owner of what the box shows */
+    quills = createQuills(localStorage, (text) => {
+        this.typedNow = text;
+        this.typedBefore = text;
+    });
     /** where a message to the shown thread goes: its herdr address @type {string | null} */
     address = null;
     /** what the quill says about his last send: why it did not go, or why it went as a push @type {string | null} */
@@ -404,7 +408,7 @@ export default class Chat extends View {
         dir: `${home()}/${JOINS_DIR}`,
         io: joinIo,
         newId,
-        store: localStorage,
+        quills: this.quills,
     });
     /** what the shown thread's state lists of its joins; null: joins are off for it @type {import('./magic.js').Joins | null} */
     joins = null;
@@ -486,7 +490,7 @@ export default class Chat extends View {
                 this.typedBefore = this.typedNow;
                 this.typedNow = now;
             }
-            this.drafts.keep(this.file, now);
+            this.quills.apply(this.file, { text: now, type: 'typed' });
             this.typedUnderMark(box, cx);
         });
         box.on('submit', (event, cx) => {
@@ -497,7 +501,7 @@ export default class Chat extends View {
             );
             if (text === null) return;
             // Enter's line break leaves, his caret stays; the words stay until they are sent or a turn takes them
-            this.setQuill(box, text);
+            this.quills.apply(this.file, { text, type: 'typed' });
             box.set_selected_range({ end: caret, start: caret });
             const at = Date.now();
             const isRepeat = at - this.lastSubmitAt < SUBMIT_REST_MS;
@@ -2308,11 +2312,8 @@ export default class Chat extends View {
         const arrived = this.model.rows
             .filter((r) => added.has(r.id) && r.kind === 'mine' && !r.isWaiting)
             .map((r) => ({ at: r.at, text: r.text }));
-        if (arrived.length && this.box && this.file)
-            this.showSettled(
-                this.magic.arrived(this.file, arrived, this.box.value()),
-                cx,
-            );
+        if (arrived.length && this.file)
+            this.showSettled(this.magic.arrived(this.file, arrived), cx);
         if (changed.length || removed || isRestart || hadError) cx.notify();
     }
 
@@ -2379,25 +2380,25 @@ export default class Chat extends View {
 
     /** the mark of the shown thread against its state: taken by a turn, or by none in a minute @param {Context} cx */
     settle(cx) {
-        const { box, file } = this;
-        if (!box || !file) return;
-        this.showSettled(this.magic.settle(file, this.joins, box.value()), cx);
+        const { file } = this;
+        if (!file) return;
+        this.showSettled(this.magic.settle(file, this.joins), cx);
     }
 
     /**
-     * a settled mark on screen: the quill keeps what he typed after the taken words, the taken mark shows for a moment
-     * @param {{ id: string, quill: string | null, note: string | null } | null} settled
+     * a settled mark on screen: the quill already keeps only what he typed after the taken words; the taken mark
+     * shows for a moment
+     * @param {import('./magic.js').Settled | null} settled
      * @param {Context} cx
      */
     showSettled(settled, cx) {
-        const { box } = this;
-        if (!settled || !box) return;
-        if (settled.quill !== null) this.setQuill(box, settled.quill);
+        const { file } = this;
+        if (!settled || !file) return;
         this.note = settled.note;
         // the taken mark shows for a moment, then the button rests
         if (!settled.note)
             cx.timer.after(JOINED_SHOWN_MS, (later) => {
-                this.magic.forget(settled.id);
+                this.magic.forget(file, settled.id);
                 later.notify();
             });
         cx.notify();
@@ -2419,7 +2420,7 @@ export default class Chat extends View {
         cx.spawn(async (cx) => {
             const { act, note } = await answer;
             if (this.file !== file) return;
-            if (act === 'push') return this.send(box, text, note, cx);
+            if (act === 'push') return this.send(text, note, cx);
             // a mark no turn takes in a minute comes off by itself
             if (act === 'marked')
                 cx.timer.after(JOIN_TAKE_MS + 500, (later) =>
@@ -2446,27 +2447,22 @@ export default class Chat extends View {
             if (why) return this.say(why, cx);
             // the words go as the quill holds them once the row is out: an edit he made meanwhile is what he sends,
             // and the quill empties, never keeping words that already went
-            this.send(box, box.value().trim() || text, null, cx);
+            this.send(box.value().trim() || text, null, cx);
         });
     }
 
     /**
      * the words leave the quill for the thread shown, as its Claude's next prompt, or wait in its queue while it
      * works. a message that did not go comes back to the quill
-     * @param {import('gpui-base').TextareaState} box
      * @param {string} text
      * @param {string | null} note why it went this way
      * @param {Context} cx
      */
-    send(box, text, note, cx) {
+    send(text, note, cx) {
         const { address, file } = this;
         if (!address) return;
         // what he typed while a mark was taken back stays: only the words sent leave
-        const now = box.value().trim();
-        this.setQuill(
-            box,
-            now.startsWith(text) ? now.slice(text.length).trimStart() : now,
-        );
+        this.quills.apply(file, { said: text, type: 'sent' });
         this.say(note, cx);
         cx.spawn(async (cx) => {
             const sent = await hc(sendArgs(address, text)).catch(
@@ -2476,14 +2472,9 @@ export default class Chat extends View {
                 }),
             );
             if (sent.code === 0) return;
-            // his words come back before what he typed since, never lost
-            /** @param {string} typed */
-            const back = (typed) => (typed ? `${text}\n\n${typed}` : text);
-            if (this.file !== file) {
-                if (file) this.drafts.keep(file, back(this.drafts.kept(file)));
-                return;
-            }
-            this.setQuill(box, back(box.value()));
+            // his words come back before what he typed since, never lost, on screen or not
+            this.quills.apply(file, { said: text, type: 'returned' });
+            if (this.file !== file) return;
             this.say(
                 `Not sent: ${sent.stderr.trim() || 'herdr refused it'}`,
                 cx,
@@ -2564,23 +2555,11 @@ export default class Chat extends View {
         this.holdFill = 0;
     }
 
-    /**
-     * the quill's text set by the view: remembered as the text before the next key, so Enter's line break is found
-     * against it even when no change was told for it (a restored draft, a cleared quill)
-     * @param {import('gpui-base').TextareaState} box
-     * @param {string} text
-     */
-    setQuill(box, text) {
-        this.drafts.put(box, this.file, text);
-        this.typedNow = text;
-        this.typedBefore = text;
-    }
-
     /** the quill holds the shown thread's draft, the caret after it; no thread, an empty quill */
     showDraft() {
-        const text = this.drafts.kept(this.file);
-        if (this.box) this.setQuill(this.box, text);
-        this.box?.set_selected_range({ end: text.length, start: text.length });
+        if (!this.box) return;
+        const text = this.quills.show(this.file, this.box);
+        this.box.set_selected_range({ end: text.length, start: text.length });
     }
 
     /** @param {string} file */

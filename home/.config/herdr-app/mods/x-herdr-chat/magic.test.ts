@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { JOIN_TAKE_MS } from './joins.js';
 import { createMagic } from './magic.js';
+import { createQuills } from './quill.js';
 
 const THREAD = '/t/a.jsonl';
 const SID = 'sid-a';
@@ -34,28 +35,36 @@ function world() {
             },
         },
         newId: () => `id-${++ids}`,
-        store: {
-            getItem: (key: string) => kept[key] ?? null,
-            removeItem: (key: string) => {
-                delete kept[key];
-            },
-            setItem: (key: string, value: string) => {
-                kept[key] = value;
-            },
+    };
+    const store = {
+        getItem: (key: string) => kept[key] ?? null,
+        removeItem: (key: string) => {
+            delete kept[key];
+        },
+        setItem: (key: string, value: string) => {
+            kept[key] = value;
         },
     };
+    const quills = createQuills(store);
     return {
         doors,
         locks,
-        magic: createMagic(doors),
+        magic: createMagic({ ...doors, quills }),
         pass(ms: number) {
             now += ms;
         },
+        quills,
+        /** a reload of the mod: the quills and the marks read back from the store */
+        reload: () => createMagic({ ...doors, quills: createQuills(store) }),
         rows: () =>
             (files.get(FILE) ?? '')
                 .split('\n')
                 .filter(Boolean)
                 .map((line) => JSON.parse(line)),
+        /** what the quill holds, typed by him */
+        type(text: string) {
+            quills.apply(THREAD, { text, type: 'typed' });
+        },
     };
 }
 
@@ -146,7 +155,7 @@ describe('a click on send marks the words to join the turn', () => {
     test('a mark outlives a reload of the mod', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
-        expect(createMagic(w.doors).markOf(THREAD)?.id).toBe('id-1');
+        expect(w.reload().markOf(THREAD)?.id).toBe('id-1');
     });
 });
 
@@ -198,9 +207,12 @@ describe('the thread’s state settles a mark', () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
         const joined = { ...ON, joined: ['id-1'] };
-        expect(
-            w.magic.settle(THREAD, joined, 'also the tests\nand one more'),
-        ).toEqual({ id: 'id-1', note: null, quill: 'and one more' });
+        w.type('also the tests\nand one more');
+        expect(w.magic.settle(THREAD, joined)).toEqual({
+            id: 'id-1',
+            note: null,
+        });
+        expect(w.quills.get(THREAD).text).toBe('and one more');
         expect(w.magic.markOf(THREAD)?.state).toBe('joined');
     });
 
@@ -208,9 +220,9 @@ describe('the thread’s state settles a mark', () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
         const joined = { ...ON, taken: ['id-1'] };
-        expect(
-            w.magic.settle(THREAD, joined, 'something else')?.quill,
-        ).toBeNull();
+        w.type('something else');
+        w.magic.settle(THREAD, joined);
+        expect(w.quills.get(THREAD).text).toBe('something else');
     });
 
     test('still waiting: nothing changes', async () => {
@@ -218,19 +230,20 @@ describe('the thread’s state settles a mark', () => {
         await w.magic.click(THREAD, SID, 'also the tests', ON);
         const waiting = { ...ON, waiting: ['id-1'] };
         w.pass(JOIN_TAKE_MS * 2);
-        expect(w.magic.settle(THREAD, waiting, 'also the tests')).toBeNull();
+        expect(w.magic.settle(THREAD, waiting)).toBeNull();
     });
 
     test('listed nowhere a minute on: the mark goes, the row too, the words stay', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
-        expect(w.magic.settle(THREAD, ON, 'also the tests')).toBeNull();
+        w.type('also the tests');
+        expect(w.magic.settle(THREAD, ON)).toBeNull();
         w.pass(JOIN_TAKE_MS);
-        expect(w.magic.settle(THREAD, ON, 'also the tests')).toEqual({
+        expect(w.magic.settle(THREAD, ON)).toEqual({
             id: 'id-1',
             note: 'Not taken, still in the box',
-            quill: null,
         });
+        expect(w.quills.get(THREAD).text).toBe('also the tests');
         await Promise.resolve();
         expect(w.magic.markOf(THREAD)).toBeNull();
         await w.doors.io.sleep(0);
@@ -240,8 +253,8 @@ describe('the thread’s state settles a mark', () => {
     test('a joined mark is forgotten once it was shown', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
-        w.magic.settle(THREAD, { ...ON, joined: ['id-1'] }, '');
-        w.magic.forget('id-1');
+        w.magic.settle(THREAD, { ...ON, joined: ['id-1'] });
+        w.magic.forget(THREAD, 'id-1');
         expect(w.magic.markOf(THREAD)).toBeNull();
     });
 });
@@ -300,7 +313,7 @@ describe('his words arriving in the chat settle the mark at once', () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'yes', ON);
         expect(
-            w.magic.arrived(THREAD, [{ at: EARLIER, text: 'yes' }], 'yes'),
+            w.magic.arrived(THREAD, [{ at: EARLIER, text: 'yes' }]),
         ).toBeNull();
         expect(w.magic.markOf(THREAD)?.state).toBe('pending');
     });
@@ -308,53 +321,41 @@ describe('his words arriving in the chat settle the mark at once', () => {
     test('a row with no time never settles it', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'yes', ON);
-        expect(
-            w.magic.arrived(THREAD, [{ at: null, text: 'yes' }], 'yes'),
-        ).toBeNull();
+        expect(w.magic.arrived(THREAD, [{ at: null, text: 'yes' }])).toBeNull();
     });
 
     test('the joined words show as his message: the quill empties in the same draw', async () => {
         const w = world();
+        w.type('what tails do you have atm?');
         await w.magic.click(THREAD, SID, 'what tails do you have atm?', ON);
         expect(
-            w.magic.arrived(
-                THREAD,
-                [{ at: LATER, text: 'what tails do you have atm?' }],
-                'what tails do you have atm?',
-            ),
-        ).toEqual({ id: 'id-1', note: null, quill: '' });
+            w.magic.arrived(THREAD, [
+                { at: LATER, text: 'what tails do you have atm?' },
+            ]),
+        ).toEqual({ id: 'id-1', note: null });
+        expect(w.quills.get(THREAD).text).toBe('');
         expect(w.magic.markOf(THREAD)?.state).toBe('joined');
     });
 
     test('what he typed after them stays', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
-        expect(
-            w.magic.arrived(
-                THREAD,
-                [{ at: LATER, text: 'also the tests' }],
-                'also the tests\nand one more',
-            )?.quill,
-        ).toBe('and one more');
+        w.type('also the tests\nand one more');
+        w.magic.arrived(THREAD, [{ at: LATER, text: 'also the tests' }]);
+        expect(w.quills.get(THREAD).text).toBe('and one more');
     });
 
     test('another message arriving leaves the mark waiting', async () => {
         const w = world();
         await w.magic.click(THREAD, SID, 'also the tests', ON);
         expect(
-            w.magic.arrived(
-                THREAD,
-                [{ at: LATER, text: 'something else' }],
-                'also the tests',
-            ),
+            w.magic.arrived(THREAD, [{ at: LATER, text: 'something else' }]),
         ).toBeNull();
         expect(w.magic.markOf(THREAD)?.state).toBe('pending');
     });
 
     test('no mark, nothing to settle', () => {
         const w = world();
-        expect(
-            w.magic.arrived(THREAD, [{ at: LATER, text: 'hi' }], 'hi'),
-        ).toBeNull();
+        expect(w.magic.arrived(THREAD, [{ at: LATER, text: 'hi' }])).toBeNull();
     });
 });
