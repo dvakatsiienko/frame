@@ -150,6 +150,9 @@ async function sessions(shelf) {
 
 // how long a key that did nothing says why under its steer box
 const KEY_NOTE_MS = 3000;
+// Enter and ⌘Enter in a steer box are the deck's own actions, ahead of the box's submit (FRM-648 step 111)
+const STEER_ENTER = 'x_herdr_deck_steer_enter';
+const STEER_CMD_ENTER = 'x_herdr_deck_steer_cmd_enter';
 // how long a press given up by time says so: long enough to be seen when he looks back at the board
 const GIVEN_UP_NOTE_MS = 30 * 1000;
 
@@ -248,6 +251,18 @@ export default class Deck extends View {
     steerKeys = createKeyPress();
     /** @param {unknown} _props @param {Context} cx */
     init(_props, cx) {
+        cx.bind_keys([
+            {
+                action: STEER_ENTER,
+                context: 'XDeckSteer > Input',
+                keystroke: 'enter',
+            },
+            {
+                action: STEER_CMD_ENTER,
+                context: 'XDeckSteer > Input',
+                keystroke: 'cmd-enter',
+            },
+        ]);
         // the thread strip is gone (dima, 20:12: «it eats UI»), its block hidden; a `view: seat` copy herdr still keeps
         // alive draws nothing and reads nothing, so it never runs a second deck. «seat» is the layout's own value in
         // layouts/x-herdr-layout.json: renaming it means a layout edit, never done while a thread holds focus
@@ -684,9 +699,8 @@ export default class Deck extends View {
                 value: keptSteer(key),
             });
             box.on('change', () => keepSteer(key, box.value()));
-            box.on('submit', (e, cx) =>
-                this.steerKey(cx, key, Boolean(e.secondary)),
-            );
+            // Enter and ⌘Enter are the box's own actions (STEER_ENTER), never its submit; focus leaving ends a press
+            box.on('blur', () => this.steerKeys.blurred());
             this.steers.set(key, box);
         } catch (err) {
             this.pressError = `steer box not made: ${err instanceof Error ? err.message : err}`;
@@ -695,15 +709,9 @@ export default class Deck extends View {
 
     // Enter in a steer box is 🛎️, cmd-enter 🔁, as the buttons beside it (steerKeyPress); a held key's repeats act once
     /** @param {Context} cx @param {string} key @param {boolean} isCmd */
-    steerKey(cx, key, isCmd) {
+    steerKeyAct(cx, key, isCmd) {
+        if (this.steerKeys.pressed() === 'repeat') return;
         const at = Date.now();
-        // a beat later, so the key-down of this very press has landed whichever way herdr orders the two
-        cx.timer.after(1, (cx) => this.steerKeyAct(cx, key, isCmd, at));
-    }
-
-    /** @param {Context} cx @param {string} key @param {boolean} isCmd @param {number} at */
-    steerKeyAct(cx, key, isCmd, at) {
-        if (this.steerKeys.submitted(at) === 'repeat') return;
         const step = steerKeyAct(this.rows, key, isCmd, (s, id) =>
             this.pressOf(s, id),
         );
@@ -898,24 +906,22 @@ export default class Deck extends View {
                                         .on_mouse_down('left', (_e, cx) =>
                                             cx.stop_propagation(),
                                         )
+                                        .key_context('XDeckSteer')
+                                        .on_action(STEER_ENTER, (_e, cx) =>
+                                            this.steerKeyAct(cx, key, false),
+                                        )
+                                        .on_action(STEER_CMD_ENTER, (_e, cx) =>
+                                            this.steerKeyAct(cx, key, true),
+                                        )
                                         // a let-go key ends a press, so the next Enter acts however soon; ⌘ let go
                                         // ends a cmd-enter, whose Enter key-up macOS never sends
-                                        .on_key_down((e) => {
-                                            if (e.key === 'enter')
-                                                this.steerKeys.down(
-                                                    Date.now(),
-                                                    Boolean(e.is_held),
-                                                );
-                                        })
                                         .on_key_up((e) => {
                                             if (e.key === 'enter')
-                                                this.steerKeys.up(Date.now());
+                                                this.steerKeys.released();
                                         })
                                         .on_modifiers_changed((e) => {
                                             if (!e.modifiers.platform)
-                                                this.steerKeys.modifiersUp(
-                                                    Date.now(),
-                                                );
+                                                this.steerKeys.modifiersReleased();
                                         })
                                         // delivered: the steer stays as words, no longer editable
                                         .child(

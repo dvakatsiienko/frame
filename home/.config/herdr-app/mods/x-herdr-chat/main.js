@@ -526,17 +526,12 @@ export default class Chat extends View {
             // Enter's line break leaves, his caret stays; the words stay until they are sent or a turn takes them
             this.quills.apply(this.file, { text, type: 'typed' });
             box.set_selected_range({ end: caret, start: caret });
-            const at = Date.now();
-            const { file } = this;
-            // a beat later, so a key-up told with the submit has landed; a thread switched in that beat never gets the
-            // other thread's words
-            cx.timer.after(1, (cx) => {
-                if (this.quillKeys.submitted(at) === 'repeat') return;
-                if (this.file !== file) return;
-                if (act === 'push') this.push(box, cx);
-                else if (act === 'click') this.click(box, cx);
-            });
+            // ⌘Enter reaches here, Enter is the quill's own action (QUILL_ENTER); a held key's repeats act once
+            if (this.quillKeys.pressed() === 'repeat') return;
+            if (act === 'push') this.push(box, cx);
+            else if (act === 'click') this.click(box, cx);
         });
+        box.on('blur', () => this.quillKeys.blurred());
         this.box = box;
         this.pickKeys = cx.focus_handle();
         // ← → slide the effort thumb, Enter applies, Esc closes: the open picker holds the keyboard
@@ -1803,17 +1798,16 @@ export default class Chat extends View {
                         .border_color(t.border)
                         .key_context('XChatQuill')
                         .on_action(QUILL_ENTER, (_event, cx) => {
-                            if (this.quillKeys.submitted(Date.now()) === 'act')
+                            if (this.quillKeys.pressed() === 'act')
                                 this.click(box, cx);
                         })
                         // the box never tells Enter's key-down (FRM-628 round 2 trace): its key-up ends a press
                         .on_key_up((e) => {
-                            if (e.key === 'enter')
-                                this.quillKeys.up(Date.now());
+                            if (e.key === 'enter') this.quillKeys.released();
                         })
                         .on_modifiers_changed((e) => {
                             if (!e.modifiers.platform)
-                                this.quillKeys.modifiersUp(Date.now());
+                                this.quillKeys.modifiersReleased();
                         })
                         .child(Textarea.new(box))
                         .child(

@@ -1066,9 +1066,8 @@ describe('Enter then ⌘Enter in a steer box: the replay takes over from the tic
             [1_090, true],
             [1_300, true],
         ] as const) {
-            keys.up();
-            keys.down(at, false);
-            if (keys.submitted(at) === 'repeat') continue;
+            keys.released();
+            if (keys.pressed() === 'repeat') continue;
             const step = steerKeyAct(rows, KEY, isCmd, pressOf);
             if (step?.act) presses.pressed(KEY, step.act, at);
             states.push(tickState(rows[0]!.asks[0]!, pressOf(rows[0]!, 'o1')));
