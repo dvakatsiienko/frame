@@ -32,6 +32,8 @@ type dispatchTicket struct {
 	input map[string]any
 	// the mode of the ticket's first lane: line, "" when it has none
 	laneKind string
+	// the lane the dispatch names, else its 🚀 line's
+	lane string
 }
 
 type dispatchPlan struct {
@@ -216,6 +218,7 @@ func dispatchMarks(id string, found dispatchLookup, session, lane string, note d
 		was = make([]string, 5)
 	}
 	newLane, newSession := cmp.Or(lane, was[1]), cmp.Or(session, was[2])
+	ticket.lane = newLane
 	base, sixthSense := "", note.sixthSense
 	// the same lane under a new session keeps the range and the verifier its line names; another lane starts fresh
 	if newLane == was[1] {
@@ -369,7 +372,7 @@ func laneDispatch(r *Run, _ []string, flags Flags, planned any) (any, error) {
 		if sid == "" {
 			continue
 		}
-		record := thread{SessionID: sid, Role: role, Lane: flagString(flags, "lane"), LaneKind: recordLaneKind(kind, sid), Ticket: plan.Tickets[0].ID, Area: area}
+		record := thread{SessionID: sid, Role: role, Lane: plan.Tickets[0].lane, LaneKind: recordLaneKind(kind, sid), Ticket: plan.Tickets[0].ID, Area: area}
 		if record.Lane != "" {
 			record.Coordinator = dispatcher
 		}

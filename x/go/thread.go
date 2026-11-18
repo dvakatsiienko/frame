@@ -85,6 +85,16 @@ func storePathOf(isFixtureOn bool, fixture string, isXTest bool, real string) st
 // from roles.json; no record reads as unknown
 func threadDisplay(t thread) string { return displayFrom(roles, t) }
 
+// one name to the eye: a registry name that lost an emoji's joiner or variation selector («🐦 ⬛ crow») is its display's
+// («🐦‍⬛ crow»), a joiner reading as the space cc leaves in its place
+func sameName(a, b string) bool {
+	key := func(s string) string {
+		s = strings.NewReplacer("‍", " ", "️", "").Replace(s)
+		return strings.Join(strings.Fields(s), " ")
+	}
+	return key(a) == key(b)
+}
+
 // a renamed thread keeps its role's own display beside the title dima gave, so a reader that owns by name (a wing's
 // lane) still finds it after the rename
 func drawNames(t *thread) {
@@ -297,6 +307,9 @@ func joinThreads(now time.Time, stored []thread) []thread {
 	nameFallback(threads)
 	for i := range threads {
 		drawNames(&threads[i])
+		if sameName(threads[i].Name, threads[i].Display) {
+			threads[i].Name = threads[i].Display
+		}
 	}
 	slices.SortFunc(threads, func(a, b thread) int { return strings.Compare(a.SessionID, b.SessionID) })
 	return threads

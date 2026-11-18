@@ -401,6 +401,21 @@
         {
             "args": [
                 {
+                    "description": "the lane's name, as dispatch wrote it",
+                    "name": "lane"
+                }
+            ],
+            "name": "lane show",
+            "needsApply": false,
+            "purpose": "print one lane's scope, mode, ticket, coordinator and members by session id, derived from its live threads' records",
+            "touches": [
+                "~/.claude/sessions/ — the registry, read",
+                "~/.claude/shelf/threads.json — the store, rewritten ($X_THREADS in tests)"
+            ]
+        },
+        {
+            "args": [
+                {
                     "description": "the pr number",
                     "name": "pr"
                 }

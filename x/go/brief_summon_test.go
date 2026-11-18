@@ -1099,6 +1099,31 @@ func TestBriefSummonTakesTheLaneKindFromItsTicket(t *testing.T) {
 	}
 }
 
+// FRM-617 exit 2: a member summoned onto a dispatched ticket with no spec: line is born in the 🚀 line's lane, so a
+// fresh codie never sits laneless beside its own sixth sense
+func TestBriefSummonTakesTheLaneFromItsTicketsDispatchLine(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ name, ticket, want string }{
+		{"a dispatched ticket", "lane: quick\n\n🚀 dispatched 2026-11-16 — herdr-lane-2, codie s0\n", "herdr-lane-2"},
+		{"a dispatch taken back", "lane: quick\n\n🚀 dispatched 2026-11-16 — herdr-lane-2, codie s0\n↩️ back to Todo 2026-11-16\n", ""},
+		{"an undispatched ticket", "lane: quick\n", ""},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			w := newSummonWorld(t)
+			w.ticket = c.ticket
+			store := filepath.Join(t.TempDir(), "threads.json")
+
+			got := w.summonWith(t, strings.Replace(codieArgv(w.repo, w.brief(t, goodBrief, true)), "🌗 🔧 cli | FRM-1", "⚡ 🔧 cli | FRM-1", 1), []string{"--apply", "--area", "cli"}, "X_THREADS="+store, "X_SESSIONS="+t.TempDir())
+
+			written, err := readThreadStore(store)
+			if err != nil || got.code != 0 || len(written.Threads) != 1 || written.Threads[0].Lane != c.want {
+				t.Errorf("exit %d, records %+v, want one codie in lane %q:\n%s", got.code, written.Threads, c.want, got.stdout)
+			}
+		})
+	}
+}
+
 // a ticket linear does not answer for leaves the name without its mode: the summon refuses and names the flag
 func TestBriefSummonRefusesWhenItsTicketsLaneKindIsUnread(t *testing.T) {
 	t.Parallel()

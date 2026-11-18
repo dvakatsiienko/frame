@@ -209,6 +209,9 @@
 - ⬜ `x lane plan-steps <plan>` lists a lane plan's steps, the one parse of a step line, x-mod-stash's glide card its caller (FRM-570)
   - given numbered column-0 `- [ ]`/`- [x]` lines, then each prints done or open, its text past a leading id and its separator, and its ticket; a nested, unnumbered or other-marked line prints nothing, `UTF-8` is no ticket
   - given no plan at the path, then exit 1 naming it; no network either way, so the card never waits on one
+- ✅ `x lane show <lane>` prints one lane record derived from its threads' records, no store of its own (FRM-617)
+  - given live threads whose records name the lane, then it prints the lane's scope, mode, ticket and coordinator, each from the first record that has it, and its members as role → session id
+  - given no live thread in the lane, then exit 1 naming it
 - ⬜ `x lane merge-auto` takes a merged lane's clean tree with it (FRM-480)
   - given a pr that merges, then a clean tree at the landed head is gone with no further command, and the verb says so; an empty `.scratch/` is clean, one holding a file stays, named
   - given a tree that is dirty, holds a gitignored file or an unpushed commit, has a live session (a pid in `~/.claude/sessions/`) whose process cwd or transcript's last `cwd` is inside it, named, sits on an upper layer or off the landed head, or a merge still enqueued, then it stays and the verb names why
@@ -553,7 +556,9 @@
   - given the session registry and the records x wrote at a summon or a dispatch, then each live session prints joined to its record by session id, its display name drawn from the record; a session with no record reads `unknown`
   - given a session that `/clear` or `/resume` gave a new id, then its record moves to that id through its pid and start time, the role, lane and ticket kept; a joined record's time moves to the call, so one torn registry read never ages it out
   - given two writers at once (a refresh beside a summon's record), then a lock beside the store lets one write at a time and neither record is lost; a store that does not parse refuses the call (exit 1) and stays as it is
-  - given a dispatch onto a live thread's record, then the record keeps its pid, name, cwd and start, and the summon's lane when the dispatch names none
+  - given a registry name that lost an emoji's joiner or variation selector against the display (`🐦 ⬛ crow` for `🐦‍⬛ crow`), then the record's name reads the display, so the two never show as drift; a name that really differs stays as the registry holds it (FRM-617)
+  - given a dispatch onto a live thread's record, then the record keeps its pid, name, cwd and start, and takes the lane the dispatch names, else its ticket's 🚀 line's, else keeps the summon's (FRM-617)
+  - given a summon whose brief names no `spec:` path, onto a ticket whose 🚀 line still stands, then the record is born in that line's lane; a dispatch taken back (↩️) gives none (FRM-617)
   - given `x brief summon` or `x lane dispatch --apply` from a session that is no coordinator (its record's role, the session found by the registry file on x's nearest ancestor pid, never by its name), then it refuses (exit 1) before any record or linear write; dima's own terminal (a tty, no agent env, no registered claude among x's ancestors) and a record whose role coordinates (`roles.json`) pass; a session with no record, a fork named «🦉 clio» included, gets nothing
   - given a dispatch naming an id no thread holds, or a thread whose record holds another role, then it refuses before any linear write; a running thread with no role yet takes its record from the coordinator
   - the display name reads `<mode> <role> <area> | <unit>`, the area the lane's scope word from `x/go/scopes.json` (`🌗 🔧 cli | FRM-579` for a lane named `thread-records`), never the lane name or the ticket's project; a scope's emoji replaces the role's mark and its own unit replaces the ticket: `⚡ 🐕 strays | chores`; a standing role draws its whole display from `x/go/roles.json`: `🦉 clio`, `🦉🪽 clio: wing N`, `🐦‍⬛ crow`, `🎀 helga`, so a rename of clio is one table line and moves no reader's power

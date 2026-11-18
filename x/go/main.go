@@ -56,6 +56,7 @@ var impls = map[string]Impl{
 	"lane dispatch":   {Plan: dispatchPlanOf, Apply: laneDispatch, Undone: "a ticket before the failed one keeps its marks", Ask: askDispatch},
 	"lane landed":     {Plan: landedPlanOf, Apply: laneLanded, Undone: "a step that ran stands; the list above is read after it", Ask: askLanded},
 	"lane plan-steps": {Run: lanePlanSteps},
+	"lane show":       {Run: laneShow},
 	"lane seed":       {Run: seed, Undone: "the tree is as the hook left it"},
 	"lane review":     {Run: laneReview, Undone: "no review was requested"},
 	"lane pr-body":    {Plan: prBodyPlan, Apply: prBody, Undone: "the pr body is unchanged", Ask: askPRBody},

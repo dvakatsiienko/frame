@@ -317,3 +317,28 @@ func TestAFallbackSeatWritesNoRecord(t *testing.T) {
 		t.Fatalf("exit %d, records %+v, want a refusal and no record:\n%s", got.code, written.Threads, got.stdout)
 	}
 }
+
+// FRM-617 exit 3: a registry name that lost an emoji's joiner («🐦 ⬛ crow») is the display («🐦‍⬛ crow»), so the record
+// takes the display; a name that really differs stays as the registry holds it
+func TestThreadListReadsANameThatLostItsJoinerAsTheDisplay(t *testing.T) {
+	t.Parallel()
+	sessions, store := t.TempDir(), filepath.Join(t.TempDir(), "threads.json")
+	for sid, name := range map[string]string{"sid-crow": "🐦 ⬛ crow", "sid-codie": "an old name"} {
+		write(t, filepath.Join(sessions, sid+".json"), fmt.Sprintf(`{"sessionId":%q,"pid":%d,"name":%q,"cwd":"/w"}`, sid, os.Getpid(), name))
+	}
+	write(t, store, `{"v":1,"threads":[{"sessionId":"sid-crow","role":"adviser"},{"sessionId":"sid-codie","role":"codie","laneKind":"quick","ticket":"FRM-1","area":"cli"}]}`)
+
+	got := xIn(t, t.TempDir(), []string{"X_SESSIONS=" + sessions, "X_THREADS=" + store}, "thread", "list")
+
+	written, err := readThreadStore(store)
+	if err != nil || got.code != 0 {
+		t.Fatalf("exit %d, %v:\n%s", got.code, err, got.stdout)
+	}
+	names := map[string]string{}
+	for _, th := range written.Threads {
+		names[th.SessionID] = th.Name
+	}
+	if names["sid-crow"] != "🐦‍⬛ crow" || names["sid-codie"] != "an old name" {
+		t.Errorf("names %q, want crow's set to its display and the codie's kept", names)
+	}
+}

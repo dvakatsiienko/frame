@@ -429,6 +429,31 @@ func TestDispatchWritesTheRecordOfEachThreadItNames(t *testing.T) {
 	}
 }
 
+// FRM-617 exit 2: a dispatch naming no --lane on a dispatched ticket writes the 🚀 line's lane on the member it moves,
+// so a sixth sense joined later never sits laneless beside its codie
+func TestDispatchWritesTheDispatchedLaneOnTheMemberItMoves(t *testing.T) {
+	t.Parallel()
+	done := signedBody(dispatchAbove, "🚀 dispatched 2026-10-30 — cli-3, codie s1\n", dispatchAbove) + "\n⸻ 🪪 stamp — please keep 🙏"
+	server := dispatchServer(t, dispatchState{body: done, state: "In Progress", labels: []string{"agent", "signed"}, delegate: "codie"})
+	store := filepath.Join(t.TempDir(), "threads.json")
+
+	write(t, store, `{"v":1,"threads":[{"sessionId":"s1","role":"codie","lane":"cli-3"},{"sessionId":"s2","role":"sixth-sense"}]}`)
+	_, got := runLinear(t, server, []string{"HOME=" + t.TempDir(), "X_THREADS=" + store},
+		"lane", "dispatch", "FRM-1", "--area", "cli", "--sixth-sense", "s2", "--apply")
+
+	written, err := readThreadStore(store)
+	if err != nil || got.code != 0 {
+		t.Fatalf("exit %d, %v:\n%s", got.code, err, got.stdout)
+	}
+	lanes := map[string]string{}
+	for _, th := range written.Threads {
+		lanes[th.SessionID] = th.Lane
+	}
+	if lanes["s1"] != "cli-3" || lanes["s2"] != "cli-3" {
+		t.Errorf("lanes %v, want the sixth sense in the 🚀 line's cli-3 beside its codie", lanes)
+	}
+}
+
 // exit 28: a dispatch renames an idle thread to the display its record now draws, and hands a busy one the exact command;
 // FRM-572 exit 5: an idle thread whose input box holds a draft, or whose box does not read, gets the command too
 func TestDispatchRenamesAThreadByItsNewRecord(t *testing.T) {
