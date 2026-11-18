@@ -258,6 +258,8 @@ export type LaneRole = 'codie' | 'sixth-sense';
 export type StashLane = {
     id: string;
     title: string;
+    // the ticket the title runs (FRM-649:W39), derived from it at each write; herdr's deck links it
+    ticket?: string;
     items: LaneItem[];
     // the wing that created this card, the one other session that writes it
     runner?: string;

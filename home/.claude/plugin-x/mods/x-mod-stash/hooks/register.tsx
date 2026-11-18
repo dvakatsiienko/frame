@@ -3418,6 +3418,7 @@ export function glideOp(
                 ],
                 items: stepped.items,
                 movedAt: turns,
+                ticket: titleTicket(title),
                 title,
             },
             laneSummary(lane.id, title, stepped),
@@ -3541,6 +3542,7 @@ function laneCreate(
         members: {},
         movedAt: turns,
         ...(plan ? { plan } : {}),
+        ticket: titleTicket(title),
         title,
     };
     return {
@@ -3549,6 +3551,8 @@ function laneCreate(
     };
 }
 
+// the ticket a card's title runs, «mods — FRM-555 …», kept beside it so herdr's deck links it with no parse
+const titleTicket = (title: string) => /^.*? — ([A-Z]+-\d+) /.exec(title)?.[1];
 // one topic, one open lane: the topic is the title before « — », « | » or «:», case-blind; a finished lane counts until ended
 const laneTopic = (title: string) =>
     (title.split(/ — | \| |:/)[0] ?? '').trim().toLowerCase();
@@ -3797,7 +3801,7 @@ async function laneShown(
             record.scope &&
             record.what
         )
-            title = `${record.scope} — ${record.what}`;
+            title = `${record.scope} — ${codie.ticket ? `${codie.ticket} ` : ''}${record.what}`;
     } catch {}
     if (run?.exitCode === 0) laneShowns.set(codie.lane, { key, sixth, title });
     return { isFresh: true, sixth, title };
@@ -9829,6 +9833,28 @@ export const register: Register = (on) => {
                             ...n,
                             isTaken: !n.isTaken || undefined,
                         }));
+                    // the running ticket in a card's title opens in linear (FRM-649:W39)
+                    const laneTitleJSX = (lane: StashLane, tail: string) => {
+                        const [, head, ticket, rest] =
+                            /^(.*? — )([A-Z]+-\d+)( .*)$/.exec(lane.title) ??
+                            [];
+                        if (!ticket || ticket !== lane.ticket)
+                            return (
+                                <Text
+                                    bold>{`🛼 glide: ${lane.title}${tail}`}</Text>
+                            );
+                        return (
+                            <Box flexDirection='row' flexShrink={1}>
+                                <Text bold>{`🛼 glide: ${head}`}</Text>
+                                <Link
+                                    href={`https://linear.app/x-com/issue/${ticket}`}
+                                    key={`lane:${lane.id}:title-ticket`}>
+                                    {ticket}
+                                </Link>
+                                <Text bold>{`${rest}${tail}`}</Text>
+                            </Box>
+                        );
+                    };
                     const laneJSX = isPartOn('stash.glide')
                         ? lanes.map((lane) =>
                               drawn(`lane ${lane.id}`, () => (
@@ -9840,8 +9866,10 @@ export const register: Register = (on) => {
                                       <Box
                                           flexDirection='row'
                                           justifyContent='space-between'>
-                                          <Text
-                                              bold>{`🛼 glide: ${lane.title}${laneSpan(lane)}${lane.isPlanGone ? ' · plan file gone' : lane.isPlanStale ? ' · steps stale, x lane plan-steps failed' : ''}`}</Text>
+                                          {laneTitleJSX(
+                                              lane,
+                                              `${laneSpan(lane)}${lane.isPlanGone ? ' · plan file gone' : lane.isPlanStale ? ' · steps stale, x lane plan-steps failed' : ''}`,
+                                          )}
                                           {foldJSX(`lane:${lane.id}`)}
                                       </Box>
                                       {isFolded(`lane:${lane.id}`)

@@ -619,6 +619,23 @@ test('the current step reads ➡️, no «we are here» (dima, 20:46)', async ($
     ]);
 });
 
+// W39: the running ticket in a card's title opens in linear
+test("a card title's ticket links to linear", async ($, on) => {
+    world(on, {
+        files: shelf(
+            keptLane({
+                ticket: 'FRM-555',
+                title: 'mods — FRM-555 an idle poll',
+            }),
+        ),
+    });
+    await start($);
+    const ui = await board($);
+    expect((await ui.find({ text: 'FRM-555', type: 'Link' }))?.props.href).toBe(
+        'https://linear.app/x-com/issue/FRM-555',
+    );
+});
+
 test('a ticket step links to linear', async ($, on) => {
     world(on);
     await start($);
@@ -1223,6 +1240,7 @@ interface KeptLane {
     runner?: string;
     id: string;
     title: string;
+    ticket?: string;
     items: { isDone: boolean; text: string; ticket?: string }[];
     current: number;
     movedAt: number;
@@ -2208,6 +2226,7 @@ const dispatched = (
         lane?: string;
         coordinator?: string;
         at?: number;
+        ticket?: string;
     }[],
     self = recordOf(CLIO),
 ) => ({
@@ -2251,11 +2270,19 @@ test('a live codie dispatched into a lane with a plan opens its card on the next
     ]);
 });
 
-// FRM-649 exit 2 (FRM-616:W36–W38): the card's title is the lane record's «<scope> — <what>», never the plan's heading
-test("a dispatched lane's card reads «<scope> — <what>» from x lane show, the heading only when the record has none", async ($, on) => {
+// FRM-649 exit 2 (FRM-616:W36–W38), W39: the card's title is the lane record's «<scope> — <ticket> <what>», the ticket the
+// codie runs, never the plan's heading
+test("a dispatched lane's card reads «<scope> — <ticket> <what>» from x lane show, the heading only when the record has none", async ($, on) => {
     const w = world(
         on,
-        dispatched([{ lane: 'mods-lane-9', pid: 5001, sessionId: CODIE }]),
+        dispatched([
+            {
+                lane: 'mods-lane-9',
+                pid: 5001,
+                sessionId: CODIE,
+                ticket: 'FRM-9',
+            },
+        ]),
     );
     titled(w, marked('x  '));
     w.shows['mods-lane-9'] = {
@@ -2272,11 +2299,17 @@ test("a dispatched lane's card reads «<scope> — <what>» from x lane show, th
     const cards = kept(w).filter((l) => !l.endedAt);
     expect([
         opened,
-        cards.map((l) => [l.title, l.members.codie]),
+        cards.map((l) => [l.title, l.ticket, l.members.codie]),
         w.showRuns,
     ]).toEqual([
-        'mods — one ask counter, cards from the lane record',
-        [['mods — one ask counter, cards from the lane record', CODIE_NAME]],
+        'mods — FRM-9 one ask counter, cards from the lane record',
+        [
+            [
+                'mods — FRM-9 one ask counter, cards from the lane record',
+                'FRM-9',
+                CODIE_NAME,
+            ],
+        ],
         // read once for the dispatch, never each poll
         ['mods-lane-9'],
     ]);
