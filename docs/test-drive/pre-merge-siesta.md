@@ -168,3 +168,4 @@ Ticket: none
 - 2026-11-18 17:43 · siesta, medium · ~150k tokens · 1 high, 3 medium, 3 low · high real (FRM-587 close lost W66, fixed) · all acted: W66 rehomed, review-rounds line + land, P0/P1 rider, FRM-645 stamp
 - 2026-11-18 19:45 · siesta, medium · ~149k tokens · 0 high, 5 medium, 7 low · all 5 real, acted: the ftr wanted line back, github-contrib reworded, the Chrome line proven (cookies persistent) and corrected, FRM-571 rider, the 🔎 flips asked for receipts
 - 2026-11-18 20:46 · siesta, medium, wing 1 · ~102k tokens · 0 high, 2 medium, 3 low · both real, acted: FRM-465 done-test window fixed, the tailwind loader ask back in orbit
+- 2026-11-18 21:23 · siesta, medium, wing 1 · ~87k tokens · 1 high, 4 medium, 2 low · high real (the snoozed wish ungroomed, PK-454 now holds W1–W11), acted: «or a clio on his ask» restored, someday label redefined, five moves marked, the flaky test 3/3 green
