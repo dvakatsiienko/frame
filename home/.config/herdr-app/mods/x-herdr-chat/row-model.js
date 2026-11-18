@@ -7,7 +7,12 @@
 
 import { isImagePath } from './attach.js';
 import { joinedTexts } from './joins.js';
-import { claudeQueueAfter, isHisQueued, unwrapPastes } from './queued.js';
+import {
+    asTyped,
+    claudeQueueAfter,
+    isHisQueued,
+    unwrapPastes,
+} from './queued.js';
 
 /**
  * @typedef {object} Row
@@ -86,6 +91,10 @@ export function callOf(name, input) {
 const CONVERSATION = '{"parentUuid"';
 // Claude Code's queue records open with their type
 const QUEUE_RECORD = '{"type":"queue-operation"';
+// a pushed command's enqueue lands within a second of its send (clio's transcript, 2026-11-18: 0.5 s); the clocks may
+// differ a little the other way
+const PUSH_TAKE_MS = 5000;
+const PUSH_SLACK_MS = 1000;
 // a user line that is not his words: a command's echo or output, a task notice, an interruption note
 const NOT_HIS_WORDS =
     /^\s*(?:<(?!pasted_content\b)[\w-]+>|\[Request interrupted)/;
@@ -249,7 +258,7 @@ function rowsOf(line) {
     const blocks = (Array.isArray(content) ? content : []).filter(isRecord);
     if (entry.type === 'user') {
         // a paste's tags go after the check: a paste that opens with a tag of its own is still his
-        const said = saidIn(content);
+        const said = asTyped(saidIn(content));
         return said.trim() && !NOT_HIS_WORDS.test(said)
             ? [{ ...his(unwrapPastes(said), content), isTurnStart: true }]
             : [];
@@ -317,6 +326,18 @@ export function createRowModel() {
     const takenAt = new Map();
     /** the row of each queued command loaded @type {Map<string, Row>} */
     const rowOfCommand = new Map();
+    /** the slash commands this chat typed in: Claude Code queues one with no text @type {{ text: string, at: number }[]} */
+    let pushes = [];
+
+    /** the command a textless enqueue at `at` holds, or no text: a peer's message is queued the same way @param {number} at */
+    function takePushed(at) {
+        const i = pushes.findIndex(
+            (p) => at >= p.at - PUSH_SLACK_MS && at - p.at <= PUSH_TAKE_MS,
+        );
+        if (i < 0) return undefined;
+        const [push] = pushes.splice(i, 1);
+        return push?.text;
+    }
 
     /** a `remove` record's read: kept for its row, which lands before it, and stamped on that row once it is loaded
      * @param {any} op @returns {Row | null} the row it stamped */
@@ -378,6 +399,11 @@ export function createRowModel() {
                 }
                 try {
                     const op = JSON.parse(line);
+                    if (
+                        op.operation === 'enqueue' &&
+                        typeof op.content !== 'string'
+                    )
+                        op.content = takePushed(Date.parse(op.timestamp));
                     queue = claudeQueueAfter(queue, op);
                     const read = readBy(op);
                     if (read) changed.add(read.id);
@@ -475,6 +501,13 @@ export function createRowModel() {
         indexOf(id) {
             const row = rowOfLine.get(id);
             return row ? rows.indexOf(row) : -1;
+        },
+        /** a slash command typed into the thread, matched to the textless enqueue that follows it @param {string} text @param {number} at */
+        pushed(text, at) {
+            pushes = [
+                ...pushes.filter((p) => at - p.at <= PUSH_TAKE_MS),
+                { at, text },
+            ];
         },
         /** the thread's rows, oldest first; the same array and the same row objects across updates */
         rows: /** @type {readonly Row[]} */ (rows),

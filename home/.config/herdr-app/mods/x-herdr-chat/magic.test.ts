@@ -116,11 +116,11 @@ describe('a click on send marks the words to join the turn', () => {
         expect(w.magic.markOf(THREAD)?.state).toBe('pending');
     });
 
-    test('a slash command starts a turn: nothing is marked', async () => {
+    test('a slash command starts a turn: nothing is marked, nothing said, its bubble is the reply (dima, 18:01)', async () => {
         const w = world();
         expect(await w.magic.click(THREAD, SID, '/compact', ON)).toEqual({
             act: 'push',
-            note: 'Sent: a slash command starts a turn',
+            note: null,
         });
         expect(w.magic.markOf(THREAD)).toBeNull();
         expect(w.rows()).toEqual([]);

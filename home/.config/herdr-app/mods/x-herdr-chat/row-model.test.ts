@@ -144,7 +144,6 @@ describe('which transcript lines become rows', () => {
         ['a model-only line', mine('context', { isMeta: true })],
         ['a compact summary', mine('summary', { isCompactSummary: true })],
         ['a task notice', mine('<task-notification> <task-id>1</task-id>')],
-        ['a command echo', mine('<command-name>/compact</command-name>')],
         ['an interruption note', mine('[Request interrupted by user]')],
         [
             'a tool result',
@@ -776,6 +775,55 @@ describe('a slash command he queued stays his words (wisphunter, slice 5)', () =
         model.add([mine(said)]);
         expect(model.rows[0]?.files).toEqual([]);
         expect(model.rows[0]?.text).toBe(said);
+    });
+});
+
+describe('a slash command he sent is his bubble, waiting and in history (dima, 18:00)', () => {
+    const ran = (name: string, args: string) =>
+        mine(
+            `<command-message>${name.slice(1)}</command-message>\n<command-name>${name}</command-name>\n<command-args>${args}</command-args>`,
+        );
+
+    test.each([
+        [
+            '/clio:lowtide-peek-lanes',
+            'mods pls',
+            '/clio:lowtide-peek-lanes mods pls',
+        ],
+        ['/cmt', '', '/cmt'],
+    ])('%s %j reads as he typed it', (name, args, said) => {
+        const model = createRowModel();
+        model.add([ran(name, args)]);
+        expect(shown(model)).toEqual([`mine: ${said}`]);
+    });
+
+    test('a command the chat pushed waits as his bubble, though Claude Code queues it with no text', () => {
+        const model = createRowModel();
+        model.pushed('/clio:peek test', Date.parse('2026-11-18T15:53:02.000Z'));
+        model.add([
+            mine('start'),
+            queueOp('enqueue', undefined, '2026-11-18T15:53:02.544Z'),
+        ]);
+        expect(waiting(model)).toEqual(['/clio:peek test']);
+    });
+
+    test('a textless enqueue far from any push stays unseen: a peer’s message is queued the same way', () => {
+        const model = createRowModel();
+        model.pushed('/clio:peek test', Date.parse('2026-11-18T15:40:00.000Z'));
+        model.add([queueOp('enqueue', undefined, '2026-11-18T15:53:02.544Z')]);
+        expect(waiting(model)).toEqual([]);
+    });
+
+    test('once the turn takes it, the waiting bubble gives way to its row in history', () => {
+        const model = createRowModel();
+        model.pushed('/cmt', Date.parse('2026-11-18T15:53:02.000Z'));
+        model.add([queueOp('enqueue', undefined, '2026-11-18T15:53:02.544Z')]);
+        model.add([
+            queueOp('dequeue', undefined, '2026-11-18T15:56:40.149Z'),
+            ran('/cmt', ''),
+        ]);
+        expect(waiting(model)).toEqual([]);
+        expect(shown(model)).toEqual(['mine: /cmt']);
     });
 });
 

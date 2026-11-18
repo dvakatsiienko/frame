@@ -64,8 +64,9 @@ export const isFreshAsk = (ask, now) =>
  * what a draw does about the keyboard and the picker: only the chat on screen acts, so a hidden one never opens a
  * second picker on the same thread. the quill takes the keyboard when the chat comes on screen, on a thread switch
  * and on a fresh ⌘K; a fresh ⌘⇧E not acted on yet opens the picker on the effort, or applies it
+ * and a fresh ⌘F opens the find bar, which takes the keyboard itself
  * @param {{ isShown: boolean, wasShown: boolean, isSwitched: boolean, quillAsk: unknown, lastQuill: unknown,
- *   effortAsk: unknown, lastEffort: unknown, now: number }} at
+ *   effortAsk: unknown, lastEffort: unknown, findAsk: unknown, lastFind: unknown, now: number }} at
  */
 export function asksActedOn(at) {
     const isQuillAsked =
@@ -75,10 +76,15 @@ export function asksActedOn(at) {
             at.isShown &&
             at.effortAsk !== at.lastEffort &&
             isFreshAsk(at.effortAsk, at.now),
+        isFind:
+            at.isShown &&
+            at.findAsk !== at.lastFind &&
+            isFreshAsk(at.findAsk, at.now),
         isFocus: at.isShown && (!at.wasShown || at.isSwitched || isQuillAsked),
         // a press counts as seen only on screen: the status bar shows the chat and writes the press in one tick, so a
         // draw can see the press while the chat is still hidden
         lastEffort: at.isShown ? at.effortAsk : at.lastEffort,
+        lastFind: at.isShown ? at.findAsk : at.lastFind,
         lastQuill: at.isShown ? at.quillAsk : at.lastQuill,
     };
 }

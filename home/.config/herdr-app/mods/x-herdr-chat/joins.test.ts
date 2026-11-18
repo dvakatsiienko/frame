@@ -203,18 +203,11 @@ describe('a send that cannot join pushes, and the button says why', () => {
         push: [] as string[],
         waiting: [] as string[],
     };
-    test('a slash command pushes', () => {
-        expect(pushReason('/compact', joins)).toBe(
-            'Sent: a slash command starts a turn',
-        );
-    });
     test('the join queue switched off pushes', () => {
-        expect(pushReason('ship it', null)).toBe(
-            'Sent: joins are off for this thread',
-        );
+        expect(pushReason(null)).toBe('Sent: joins are off for this thread');
     });
     test('plain words with the queue on join, nothing said', () => {
-        expect(pushReason('ship it', joins)).toBeNull();
+        expect(pushReason(joins)).toBeNull();
     });
 });
 

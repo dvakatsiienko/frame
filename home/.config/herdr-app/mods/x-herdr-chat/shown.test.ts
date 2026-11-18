@@ -139,9 +139,11 @@ describe('a ⌘K or ⌘⇧E press is acted on only while fresh', () => {
 describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () => {
     const at = {
         effortAsk: null,
+        findAsk: null,
         isShown: true,
         isSwitched: false,
         lastEffort: null,
+        lastFind: null,
         lastQuill: null,
         now: 10_000,
         quillAsk: null,
@@ -199,9 +201,42 @@ describe('what ⌘K and ⌘⇧E do, and when the quill takes the keyboard', () =
     test('a quiet draw takes nothing', () => {
         expect(asksActedOn(at)).toEqual({
             isEffort: false,
+            isFind: false,
             isFocus: false,
             lastEffort: null,
+            lastFind: null,
             lastQuill: null,
         });
+    });
+});
+
+describe('⌘F from anywhere in the window opens the chat on screen’s find (dima, 17:58)', () => {
+    const at = {
+        effortAsk: null,
+        findAsk: 9_500,
+        isShown: true,
+        isSwitched: false,
+        lastEffort: null,
+        lastFind: null,
+        lastQuill: null,
+        now: 10_000,
+        quillAsk: null,
+        wasShown: true,
+    };
+
+    test('a fresh ⌘F opens find, and the quill keeps no claim on the keyboard', () => {
+        expect(asksActedOn(at)).toMatchObject({ isFind: true, isFocus: false });
+    });
+
+    test('a hidden chat opens no find', () => {
+        expect(asksActedOn({ ...at, isShown: false }).isFind).toBe(false);
+    });
+
+    test('the same ⌘F is acted on once', () => {
+        expect(asksActedOn({ ...at, lastFind: 9_500 }).isFind).toBe(false);
+    });
+
+    test('a ⌘F the chat slept through is dropped', () => {
+        expect(asksActedOn({ ...at, now: 20_000 }).isFind).toBe(false);
     });
 });

@@ -200,10 +200,9 @@ export function joinStatus(joins, id, writtenAt, now) {
 
 /**
  * why a send pushes instead of joining, in the button's few words; null when it joins
- * @param {string} text @param {Joins | null | undefined} joins
+ * @param {Joins | null | undefined} joins
  */
-export function pushReason(text, joins) {
-    if (text.startsWith('/')) return 'Sent: a slash command starts a turn';
+export function pushReason(joins) {
     if (!joins) return 'Sent: joins are off for this thread';
     return null;
 }

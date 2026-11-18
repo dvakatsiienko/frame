@@ -763,7 +763,12 @@ export default class WorkspaceStatus extends View {
         cx.spawn(async () => {
             for (;;) {
                 const command = await nextCommand();
-                if (command === 'quill' || command === 'effort') {
+                // ⌘F from any focus opens the chat's find; a terminal keeps its own ⌘F (keys.json's terminal section)
+                if (
+                    command === 'quill' ||
+                    command === 'effort' ||
+                    command === 'find'
+                ) {
                     // the new chat first, once it holds the Chat view; the old one while only it does
                     const chat =
                         blockOf(

@@ -457,6 +457,8 @@ export default class Chat extends View {
     shownAddress = null;
     /** ⌘K's last ask (the status bar takes the key and writes the time) @type {unknown} */
     quillAsk = null;
+    /** ⌘F's last ask, pressed anywhere in the window (the status bar takes the key and writes the time) @type {unknown} */
+    findAsk = null;
     /** ⌘⇧E's last ask @type {unknown} */
     effortAsk = null;
     /** the pid this chat last named in `chat.shown`: its thread on screen, null hidden @type {number | null | undefined} */
@@ -693,21 +695,25 @@ export default class Chat extends View {
                 keystroke: 'enter',
             },
         ]);
-        // find: ⌘F from anywhere in the chat opens its bar; in the bar Enter steps older, ⇧Enter newer, Esc closes
-        const findBox = InputState.new({ placeholder: 'Find in this chat' });
-        findBox.on('change', (_event, cx) => {
-            const at = ++this.findTyped;
-            cx.timer.after(FIND_SETTLE_MS, (later) => {
-                if (this.findTyped !== at) return;
-                this.find.search(this.shownRows, findBox.value());
-                this.showHit(this.find.current(), later);
-            });
-        });
-        findBox.on('submit', (event, cx) =>
-            this.showHit(this.find.step(event.shift ? 'newer' : 'older'), cx),
-        );
-        this.findBox = findBox;
+        // find: ⌘F opens its bar; in the bar Enter or ↓ steps older, ⇧Enter or ↑ newer, Esc closes
+        this.findBox = this.newFindBox();
         cx.bind_keys([
+            {
+                action: 'x_herdr_chat_find_newer',
+                context: 'ChatFind > Input',
+                keystroke: 'up',
+            },
+            {
+                action: 'x_herdr_chat_find_older',
+                context: 'ChatFind > Input',
+                keystroke: 'down',
+            },
+            // the bar's Esc from wherever the keyboard sits in the chat; a box deeper down keeps its own Esc
+            {
+                action: 'x_herdr_chat_find_close',
+                context: 'XChat',
+                keystroke: 'escape',
+            },
             {
                 action: 'x_herdr_chat_find',
                 context: 'XChat',
@@ -785,11 +791,14 @@ export default class Chat extends View {
         // the chat slept through is dropped, never acted on late
         const quillAsk = shared('chat.quill') ?? null;
         const effortAsk = shared('chat.effort') ?? null;
+        const findAsk = shared('chat.find') ?? null;
         const acts = asksActedOn({
             effortAsk,
+            findAsk,
             isShown,
             isSwitched,
             lastEffort: this.effortAsk,
+            lastFind: this.findAsk,
             lastQuill: this.quillAsk,
             now: Date.now(),
             quillAsk,
@@ -797,7 +806,10 @@ export default class Chat extends View {
         });
         this.quillAsk = acts.lastQuill;
         this.effortAsk = acts.lastEffort;
+        this.findAsk = acts.lastFind;
         this.wasShown = isShown;
+        if (acts.isFind && !this.viewer)
+            _cx.timer.after(0, (later) => this.openFind(later));
         if (acts.isFocus && !this.viewer)
             _cx.timer.after(50, () => {
                 if (!this.isPickOpen) this.box?.focus();
@@ -839,6 +851,9 @@ export default class Chat extends View {
             .min_h(0)
             .key_context('XChat')
             .on_action('x_herdr_chat_find', (_e, cx) => this.openFind(cx))
+            .on_action('x_herdr_chat_find_close', (_e, cx) =>
+                this.closeFind(cx),
+            )
             // ⌘ held at a click on a picture opens it in his desktop app, not the viewer
             .on_modifiers_changed((e) => {
                 this.isCmdHeld = Boolean(e.modifiers.platform);
@@ -3337,6 +3352,8 @@ export default class Chat extends View {
         // the files waiting go after the words, each path on its line as a terminal drop types it (FRM-613)
         const files = file ? this.attachments.take(file) : [];
         const message = withPaths(text, files);
+        // Claude Code queues a slash command with no text: the model takes its words from here to draw it waiting
+        if (message.startsWith('/')) this.model.pushed(message, Date.now());
         this.say(note, cx);
         cx.spawn(async (cx) => {
             const sent = await hc(sendArgs(address, message)).catch(
@@ -3388,20 +3405,36 @@ export default class Chat extends View {
         return files.length ? { at: 0, files } : null;
     }
 
+    /** the find bar's box, empty: each close leaves a new one, so a reopened bar starts blank (dima, 18:11) */
+    newFindBox() {
+        const box = InputState.new({ placeholder: 'Find in this chat' });
+        box.on('change', (_event, cx) => {
+            const at = ++this.findTyped;
+            cx.timer.after(FIND_SETTLE_MS, (later) => {
+                if (this.findTyped !== at) return;
+                this.find.search(this.shownRows, box.value());
+                this.showHit(this.find.current(), later);
+            });
+        });
+        box.on('submit', (event, cx) =>
+            this.showHit(this.find.step(event.shift ? 'newer' : 'older'), cx),
+        );
+        return box;
+    }
+
     /** ⌘F: the bar opens with the keyboard in it @param {Context} cx */
     openFind(cx) {
         this.find.open();
-        // the bar keeps his last query: it is searched again, so its count and its hit come back with it
-        this.find.search(this.shownRows, this.findBox?.value() ?? '');
-        this.showHit(this.find.current(), cx);
         cx.timer.after(16, () => this.findBox?.focus());
         cx.notify();
     }
 
     /** @param {Context} cx */
     closeFind(cx) {
+        if (!this.find.state.isOpen) return cx.propagate();
         this.find.close();
         this.findTyped += 1;
+        this.findBox = this.newFindBox();
         this.box?.focus();
         cx.notify();
     }
@@ -3419,22 +3452,61 @@ export default class Chat extends View {
         const button = (id, glyph, hint, act) =>
             div()
                 .id(id)
-                .h(24)
-                .min_w(24)
+                .h(28)
+                .min_w(28)
+                .px(8)
                 .flex()
                 .items_center()
                 .justify_center()
-                .rounded(6)
+                .rounded_full()
                 .cursor_pointer()
                 .hover((style) => style.bg(t.border))
                 .tooltip(hint)
                 .on_click((_e, cx) => act(cx))
                 .child(glyph);
+        // the count and the steps sit on a pill, as the picture viewer's tools do (dima, 18:12)
+        const pill = h_flex()
+            .flex_none()
+            .px(8)
+            .py(4)
+            .gap(2)
+            .items_center()
+            .rounded_full()
+            .bg(t.raised)
+            .border(1)
+            .border_color(t.border)
+            .when(Boolean(count), (el) =>
+                el.child(
+                    div().px(6).text_size(12).text_color(t.muted).child(count),
+                ),
+            )
+            .child(
+                button('chat-find-newer', '↑', 'Newer match (↑ ⇧Enter)', (cx) =>
+                    this.showHit(this.find.step('newer'), cx),
+                ),
+            )
+            .child(
+                button('chat-find-older', '↓', 'Older match (↓ Enter)', (cx) =>
+                    this.showHit(this.find.step('older'), cx),
+                ),
+            )
+            .child(div().w(1).h(16).mx(6).bg(t.border))
+            .child(
+                button('chat-find-close', '✕', 'Close (Esc)', (cx) =>
+                    this.closeFind(cx),
+                ),
+            );
         return h_flex()
             .id('chat-find')
             .key_context('ChatFind')
             .on_action('x_herdr_chat_find_close', (_e, cx) =>
                 this.closeFind(cx),
+            )
+            .on_action('x_herdr_chat_find_newer', (_e, cx) =>
+                this.showHit(this.find.step('newer'), cx),
+            )
+            .on_action('x_herdr_chat_find_older', (_e, cx) =>
+                this.showHit(this.find.step('older'), cx),
             )
             .flex_none()
             .w_full()
@@ -3455,24 +3527,7 @@ export default class Chat extends View {
                         ),
                     ),
             )
-            .child(
-                div().min_w(64).text_size(12).text_color(t.muted).child(count),
-            )
-            .child(
-                button('chat-find-newer', '↑', 'Newer match (⇧Enter)', (cx) =>
-                    this.showHit(this.find.step('newer'), cx),
-                ),
-            )
-            .child(
-                button('chat-find-older', '↓', 'Older match (Enter)', (cx) =>
-                    this.showHit(this.find.step('older'), cx),
-                ),
-            )
-            .child(
-                button('chat-find-close', '✕', 'Close (Esc)', (cx) =>
-                    this.closeFind(cx),
-                ),
-            );
+            .child(pill);
     }
 
     /** the thread's skill listing, wherever its line is read: the tail or an earlier page @param {string[]} lines */

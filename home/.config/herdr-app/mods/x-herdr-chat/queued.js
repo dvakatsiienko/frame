@@ -15,12 +15,12 @@ const words = (text) => text.replace(/\s+/g, ' ').trim();
 // a slash command reaches the transcript as tags, `<command-name>/x</command-name>` and `<command-args>…`: read back
 // as he typed it, `/x …`, or its queued card never clears (his 18:37 wisp)
 /** @param {string} text */
-const asTyped = (text) => {
+export const asTyped = (text) => {
     const name = /<command-name>([^<]*)<\/command-name>/.exec(text)?.[1];
     if (!name) return text;
     const args =
         /<command-args>([\s\S]*?)<\/command-args>/.exec(text)?.[1] ?? '';
-    return `${name} ${args}`;
+    return `${name} ${args}`.trim();
 };
 
 /**
