@@ -150,6 +150,37 @@ export function pendingPresses(text, taken) {
 }
 
 /**
+ * the rows with their presses from the ticks files, read before any of them draws: a row drawn before its file was read
+ * showed a ticked ask open, and a key on it ticked again (FRM-628)
+ * @template {{ sid: string, asks: unknown[], taken: number, pending: Map<string, Press['verdict']> }} R
+ * @param {R[]} rows
+ * @param {(sid: string) => Promise<string | null>} readTicks
+ * @returns {Promise<R[]>}
+ */
+export async function withPending(rows, readTicks) {
+    for (const row of rows)
+        if (row.asks.length)
+            row.pending = pendingPresses(await readTicks(row.sid), row.taken);
+    return rows;
+}
+
+/**
+ * one run at a time: a run asked for while one goes waits for it, and of those waiting only the newest runs, so two
+ * reloads never overlap and the newest read always lands last (FRM-628: a slow `ps` let an older read put a gone ask back)
+ */
+export function createSerial() {
+    let tail = Promise.resolve();
+    let newest = 0;
+    /** @param {() => Promise<void>} run */
+    return (run) => {
+        const mine = ++newest;
+        const next = tail.then(() => (mine === newest ? run() : undefined));
+        tail = next.catch(() => {});
+        return next;
+    };
+}
+
+/**
  * the ticks file with an untaken press of the ask taken back: his second click on a ticked plain ask, before the stash
  * read it; lines the stash took are pruned as `withPress` prunes them
  * @param {string | null} text

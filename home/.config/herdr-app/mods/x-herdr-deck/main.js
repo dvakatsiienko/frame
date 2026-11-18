@@ -29,6 +29,7 @@ import {
     asksOf,
     byName,
     createPresses,
+    createSerial,
     dropPress,
     hotOf,
     hotPressLine,
@@ -37,7 +38,6 @@ import {
     linkOf,
     literalAngles,
     nextThreads,
-    pendingPresses,
     phasesOf,
     pressLabel,
     psStartArgs,
@@ -54,6 +54,7 @@ import {
     untickDoor,
     waitOf,
     withBandPress,
+    withPending,
 } from './orbit.js';
 
 /** @typedef {import('gpui-kit').Context} Context */
@@ -253,6 +254,8 @@ export default class Deck extends View {
         this.writing = Promise.resolve();
         // his presses written and not yet taken by the session's stash, so a second press waits
         this.presses = createPresses();
+        // reloads one at a time, the newest last: an older read never puts a gone ask back
+        this.reloads = createSerial();
         // Enter in every steer box, one press at a time: a held key's repeats act once
         this.steerKeys = createKeyPress();
         // the gated asks a «tick all» passed over, `sid:id`: each says it still needs his own press
@@ -303,79 +306,77 @@ export default class Deck extends View {
 
     /** @param {Context} cx */
     reload(cx) {
-        cx.spawn(async (cx) => {
-            const shelf = await states();
-            const lanes = (await json(LANES))?.lanes ?? [];
-            this.filePresses = hotPresses(
-                await readTextFile(`${home()}/${PRESS_FILE}`).catch(
-                    () => /** @type {string | null} */ (null),
-                ),
+        cx.spawn((cx) => this.reloads(() => this.read(cx)));
+    }
+
+    /** one read of the shelf, whole: the rows draw only with their presses read @param {Context} cx */
+    async read(cx) {
+        const shelf = await states();
+        const lanes = (await json(LANES))?.lanes ?? [];
+        this.filePresses = hotPresses(
+            await readTextFile(`${home()}/${PRESS_FILE}`).catch(
+                () => /** @type {string | null} */ (null),
+            ),
+        );
+        this.week =
+            (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
+            null;
+        const listed = await sessions(shelf);
+        this.isStale = listed === null;
+        if (listed)
+            this.rows = (
+                await withPending(listed, (sid) =>
+                    readTextFile(`${TICKS}/${sid}.jsonl`).catch(
+                        () => /** @type {string | null} */ (null),
+                    ),
+                )
+            ).sort(
+                (a, b) =>
+                    (RANK[STATE[a.status]] ?? 2) -
+                        (RANK[STATE[b.status]] ?? 2) || byName(a.name, b.name),
             );
-            this.week =
-                (await json(USAGE))?.rate_limits?.seven_day?.used_percentage ??
-                null;
-            const listed = await sessions(shelf);
-            this.isStale = listed === null;
-            if (listed)
-                this.rows = listed.sort(
-                    (a, b) =>
-                        (RANK[STATE[a.status]] ?? 2) -
-                            (RANK[STATE[b.status]] ?? 2) ||
-                        byName(a.name, b.name),
-                );
-            const next = nextThreads(
-                /** @type {any} */ (shared(THREADS_KEY)),
-                threadFacts(this.rows, this.week),
-                Date.now(),
-            );
-            if (next) setShared(THREADS_KEY, next);
-            for (const row of this.rows)
-                if (row.asks.length)
-                    row.pending = pendingPresses(
-                        await readTextFile(`${TICKS}/${row.sid}.jsonl`).catch(
-                            () => /** @type {string | null} */ (null),
-                        ),
-                        row.taken,
-                    );
-            this.lanes = lanes.filter((/** @type {Lane} */ l) => !l.endedAt);
-            // a press is done once the stash marked its ask or the ask left; one the session never took gives the
-            // buttons back after SENT_MS, and a steer box goes with its ask's mark
-            /** @param {string} key */
-            const askOf = (key) => {
-                const [sid, id] = key.split(':');
-                return this.rows
-                    .find((s) => s.sid === sid)
-                    ?.asks.find((a) => a.id === id);
+        const next = nextThreads(
+            /** @type {any} */ (shared(THREADS_KEY)),
+            threadFacts(this.rows, this.week),
+            Date.now(),
+        );
+        if (next) setShared(THREADS_KEY, next);
+        this.lanes = lanes.filter((/** @type {Lane} */ l) => !l.endedAt);
+        // a press is done once the stash marked its ask or the ask left; one the session never took gives the
+        // buttons back after SENT_MS, and a steer box goes with its ask's mark
+        /** @param {string} key */
+        const askOf = (key) => {
+            const [sid, id] = key.split(':');
+            return this.rows
+                .find((s) => s.sid === sid)
+                ?.asks.find((a) => a.id === id);
+        };
+        this.presses.settle((key) => {
+            const [sid, id] = key.split(':');
+            return {
+                ask: askOf(key),
+                pending: this.rows.find((s) => s.sid === sid)?.pending.get(id),
             };
-            this.presses.settle((key) => {
-                const [sid, id] = key.split(':');
-                return {
-                    ask: askOf(key),
-                    pending: this.rows
-                        .find((s) => s.sid === sid)
-                        ?.pending.get(id),
-                };
-            }, Date.now());
-            for (const key of this.steers.keys()) {
-                const s = this.rows.find((r) => r.sid === key.split(':')[0]);
-                const ask = askOf(key);
-                // his steer stays, stored and shown, until the ask leaves (dima, 21:03)
-                if (!s || !ask) {
-                    this.steers.delete(key);
-                    keepSteer(key, '');
-                }
+        }, Date.now());
+        for (const key of this.steers.keys()) {
+            const s = this.rows.find((r) => r.sid === key.split(':')[0]);
+            const ask = askOf(key);
+            // his steer stays, stored and shown, until the ask leaves (dima, 21:03)
+            if (!s || !ask) {
+                this.steers.delete(key);
+                keepSteer(key, '');
             }
-            for (const s of this.rows)
-                for (const ask of s.asks) {
-                    const key = `${s.sid}:${ask.id}`;
-                    if (ask.id && !this.steers.has(key))
-                        // herdr documents InputState.new for init or a handler; a refusal here costs the box, never
-                        // the reload that redraws the whole deck
-                        this.makeSteerBox(key);
-                }
-            this.loadedAt = new Date();
-            cx.notify();
-        });
+        }
+        for (const s of this.rows)
+            for (const ask of s.asks) {
+                const key = `${s.sid}:${ask.id}`;
+                if (ask.id && !this.steers.has(key))
+                    // herdr documents InputState.new for init or a handler; a refusal here costs the box, never
+                    // the reload that redraws the whole deck
+                    this.makeSteerBox(key);
+            }
+        this.loadedAt = new Date();
+        cx.notify();
     }
 
     /** @param {Theme} t @param {Row} s @param {number} i */

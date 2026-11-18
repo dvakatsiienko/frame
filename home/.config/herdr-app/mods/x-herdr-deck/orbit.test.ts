@@ -10,6 +10,7 @@ import {
     byName,
     canTakeBack,
     createPresses,
+    createSerial,
     hotOf,
     hotPressLine,
     hotPresses,
@@ -36,6 +37,7 @@ import {
     untickDoor,
     waitOf,
     withBandPress,
+    withPending,
     withPress,
     withoutPress,
 } from './orbit.js';
@@ -937,5 +939,86 @@ describe('an ask’s link, as the card draws it', () => {
 
     test.each(['', '   ', 'just words', null])('«%s» draws no link', (link) => {
         expect(linkOf(link)).toBeNull();
+    });
+});
+
+describe('a reload lands whole and alone: a ticked ask never flips back (FRM-628)', () => {
+    const row = (sid: string, asks: Ask[]) => ({
+        asks,
+        pending: new Map(),
+        sid,
+        taken: 0,
+    });
+
+    test('each row comes back with its presses read before anything draws it', async () => {
+        const tick = JSON.stringify({ at: 1, id: 'o1', verdict: 'tick' });
+        const rows = await withPending([row(SID, [ask])], async () => tick);
+        expect(rows[0]?.pending.get('o1')).toBe('tick');
+    });
+
+    test('a row with no asks reads no ticks file', async () => {
+        const read: string[] = [];
+        await withPending([row(SID, [])], async (sid) => {
+            read.push(sid);
+            return null;
+        });
+        expect(read).toEqual([]);
+    });
+
+    test('a reload asked for while one runs waits for it: two never overlap', async () => {
+        const serial = createSerial();
+        const log: string[] = [];
+        let release = () => {};
+        const first = serial(
+            () =>
+                new Promise<void>((resolve) => {
+                    log.push('first starts');
+                    release = () => {
+                        log.push('first ends');
+                        resolve();
+                    };
+                }),
+        );
+        // the first is under way, as a reload waiting on its `ps` is
+        await Promise.resolve();
+        const second = serial(async () => {
+            log.push('second runs');
+        });
+        // the second has had its chance to start while the first still runs
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        release();
+        await Promise.all([first, second]);
+        expect(log).toEqual(['first starts', 'first ends', 'second runs']);
+    });
+
+    test('of the reloads asked for meanwhile, only the newest runs', async () => {
+        const serial = createSerial();
+        const ran: string[] = [];
+        let release = () => {};
+        const first = serial(
+            () => new Promise<void>((resolve) => (release = resolve)),
+        );
+        await Promise.resolve();
+        const later = ['b', 'c', 'd'].map((name) =>
+            serial(async () => {
+                ran.push(name);
+            }),
+        );
+        release();
+        await Promise.all([first, ...later]);
+        expect(ran).toEqual(['d']);
+    });
+
+    test('a reload that fails never stops the next', async () => {
+        const serial = createSerial();
+        const failed = serial(async () => {
+            throw new Error('ps timed out');
+        });
+        await expect(failed).rejects.toThrow('ps timed out');
+        let isRun = false;
+        await serial(async () => {
+            isRun = true;
+        });
+        expect(isRun).toBe(true);
     });
 });
