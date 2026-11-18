@@ -4,6 +4,7 @@ title: 'Raycast MCP: probe what it opens for the fleet, adopt or drop'
 status: open
 assignee: []
 created_date: '2026-11-18T18:01:00Z'
+updated_date: '2026-11-18T18:01:00Z'
 due_date: '2026-11-21'
 labels:
   - s
@@ -33,3 +34,9 @@ capabilities to probe (from the 2.11–2.13 notes):
 
 the bar: our rule is cli over mcp; it earns a place only if it opens a door we lack today (hotkeys, settings) — else drop. today's door: import/raycast (hand-imported config, .rayconfig exports).
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+20:01 kept: 2026-11-18 — dima's word: a pocket item solved in a few days, not today or tomorrow (20:01); his word outranks the today–tomorrow rule
+<!-- SECTION:NOTES:END -->
