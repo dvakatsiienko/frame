@@ -74,6 +74,12 @@ describe('the thread on the left', () => {
         expect(headerOf(input()).status).toBeNull();
     });
 
+    test('a working thread shows no spinner: the agents list has one', () => {
+        expect(
+            headerOf(input({ pane: { ...claude, status: 'working' } })).status,
+        ).toBeNull();
+    });
+
     test('a blocked thread shows it needs him', () => {
         expect(
             headerOf(input({ pane: { ...claude, status: 'blocked' } })).status,
@@ -221,7 +227,14 @@ describe('what a press does', () => {
         ]);
     });
 
-    test('settings opens the chat settings window', () => {
-        expect(pressOf('settings', at)).toEqual([{ settings: true }]);
+    test('settings opens the chat look popover', () => {
+        expect(pressOf('settings', at)).toEqual([
+            {
+                overlay: expect.objectContaining({
+                    kind: 'popup',
+                    mod: 'x-herdr-chat-settings',
+                }),
+            },
+        ]);
     });
 });

@@ -16,12 +16,7 @@ import {
     theme,
 } from 'herdr';
 
-import {
-    CHAT_ASK,
-    CHAT_SHOWN,
-    chatShownOf,
-    settingsOverlay,
-} from './chat-asks.js';
+import { CHAT_ASK, CHAT_SHOWN, chatShownOf } from './chat-asks.js';
 import {
     hasNode,
     headerOf,
@@ -31,7 +26,7 @@ import {
 } from './header-model.js';
 
 /** @typedef {import('gpui-kit').Color} Color */
-/** @typedef {Record<'background' | 'blocked' | 'border' | 'dim' | 'done' | 'foreground' | 'hover' | 'selected' | 'surface' | 'working', Color>} Theme */
+/** @typedef {Record<'background' | 'blocked' | 'border' | 'dim' | 'done' | 'foreground' | 'hover' | 'selected' | 'surface', Color>} Theme */
 /** @typedef {import('./header-model.js').PaneLike & { tab: string, program: import('herdr').Program }} Pane */
 /** @typedef {import('./header-model.js').Control} Control */
 /** @typedef {import('./header-model.js').PressKind} PressKind */
@@ -65,8 +60,7 @@ export default class ChatHeader extends View {
         for (const e of effects) {
             if ('run' in e) run(...e.run);
             else if ('overlay' in e) openOverlay(e.overlay);
-            else if ('ask' in e) setShared(CHAT_ASK[e.ask], Date.now());
-            else openOverlay(settingsOverlay('chatter'));
+            else setShared(CHAT_ASK[e.ask], Date.now());
         }
     }
 
@@ -166,14 +160,8 @@ function programIcon(t, program) {
         : image(path).w(14).h(14).flex_none();
 }
 
-/** working spins, blocked asks for him, done is a dot until he looks @param {Theme} t @param {'working' | 'blocked' | 'done' | null} status */
+/** blocked asks for him, done is a dot until he looks @param {Theme} t @param {'blocked' | 'done' | null} status */
 function statusMark(t, status) {
-    if (status === 'working')
-        return svg('mods/workspace-chrome/spinner.svg')
-            .size(12)
-            .flex_none()
-            .text_color(t.working)
-            .spin(900);
     if (status === 'blocked')
         return div()
             .flex_none()

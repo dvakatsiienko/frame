@@ -15,10 +15,10 @@
  *   hasTabButtons: boolean, isFirstOfTab: boolean, isFindOpen: boolean, hasViews: boolean }} HeaderInput
  */
 /** @typedef {{ kind: ControlKind, label: string, icon: string, isOn: boolean, isHoverOnly: boolean, hasText: boolean }} Control */
-/** @typedef {{ name: string, place: string, status: 'working' | 'blocked' | 'done' | null, controls: Control[], hasSwitch: boolean }} Header */
+/** @typedef {{ name: string, place: string, status: 'blocked' | 'done' | null, controls: Control[], hasSwitch: boolean }} Header */
 /**
- * one thing a press does: a herdr command, an overlay to open, an ask to the chat on screen, or the chat's settings
- * @typedef {{ run: [string, Record<string, unknown>] } | { overlay: { mod: string, kind: 'popup', width: number, height: number } } | { ask: 'find' | 'escape' } | { settings: true }} Effect
+ * one thing a press does: a herdr command, a popup to open, or an ask to the chat on screen
+ * @typedef {{ run: [string, Record<string, unknown>] } | { overlay: { mod: string, kind: 'popup', width: number, height: number } } | { ask: 'find' | 'escape' }} Effect
  */
 /** @typedef {{ pane: PaneLike, stack: string | undefined, other: string | undefined, shownPanel: Panel | null, isFindOpen: boolean }} PressInput */
 
@@ -55,9 +55,7 @@ const placeBeside = (name, folder) =>
 
 /** @param {string | null} status @returns {Header['status']} */
 const statusMark = (status) =>
-    status === 'working' || status === 'blocked' || status === 'done'
-        ? status
-        : null;
+    status === 'blocked' || status === 'done' ? status : null;
 
 /**
  * @param {ControlKind} kind @param {string} label @param {string} icon
@@ -177,7 +175,17 @@ export function pressOf(kind, at) {
         case 'search':
             return [{ ask: at.isFindOpen ? 'escape' : 'find' }];
         case 'settings':
-            return [{ settings: true }];
+            // the chat's look (text size, font, tool calls, …), never the band's settings window
+            return [
+                {
+                    overlay: {
+                        height: 556,
+                        kind: 'popup',
+                        mod: 'x-herdr-chat-settings',
+                        width: 360,
+                    },
+                },
+            ];
         case 'switch':
             return [
                 ...(at.pane.terminal
