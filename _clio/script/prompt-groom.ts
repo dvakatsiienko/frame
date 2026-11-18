@@ -77,7 +77,12 @@ const bare = (line: string) =>
 export const groomedOnDisk: Groomed = (day, hhmm, item) =>
     groomDirs().some((dir) => groomedIn(dir, day, hhmm, item));
 
-function groomedIn(dir: string, day: string, hhmm: string, item: string) {
+export function groomedIn(
+    dir: string,
+    day: string,
+    hhmm: string,
+    item: string,
+) {
     const file = path.join(dir, path.basename(groomFile(day, hhmm, 'groomed')));
     if (!existsSync(file)) return false;
     const groomed = readFileSync(file, 'utf8');
@@ -90,11 +95,22 @@ function groomedIn(dir: string, day: string, hhmm: string, item: string) {
         const prep = groomed.split('\n').map(bare).join('\n');
         if (drops.length > 0) return drops.every((drop) => prep.includes(drop));
         // a ticket keeps no raw drop: its moved W-lines, renumbered, are found by their text in the day's prep
+        // a W-line a later «retires» note names is no longer the item's word: its refold carries the meaning
+        const retired = new Set(
+            [...item.matchAll(/^retires ((?:PK|FRM|BYT)-\d+:W\d+)/gm)].map(
+                ([, id]) => id,
+            ),
+        );
         const folded = [
             ...item.matchAll(
-                new RegExp(`\\(${day} inbox, dima[^)]*\\): (.+)$`, 'gm'),
+                new RegExp(
+                    `^(?:[*-]\\s+)?((?:PK|FRM|BYT)-\\d+:W\\d+)?.*?\\(${day} inbox, dima[^)]*\\): (.+)$`,
+                    'gm',
+                ),
             ),
-        ].map(([, text]) => bare(text ?? ''));
+        ]
+            .filter(([, id]) => !id || !retired.has(id))
+            .map(([, , text]) => bare(text ?? ''));
         return folded.length > 0 && folded.every((text) => prep.includes(text));
     }
     return groomed

@@ -13,6 +13,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 import {
     dayBefore,
+    groomedIn,
     helgaBootPrompt,
     liftStanding,
     newUnstamped,
@@ -234,6 +235,28 @@ describe('ungroomedStamps', () => {
             ),
         ).toEqual([]);
         expect(newUnstamped(`${inbox}\n`, '')).toEqual([]);
+    });
+
+    test('an inbox W-line a «retires» note names needs no text in the prep', () => {
+        const dir = mkdtempSync(join(tmpdir(), 'retired-'));
+        writeFileSync(
+            join(dir, '2026-10-26-inbox.groomed.md'),
+            'kept words from the vault\n',
+        );
+        const item = [
+            'PK-1:W1 (2026-10-26 inbox, dima): kept words from the vault',
+            'PK-1:W2 (2026-10-26 inbox, dima): a first fold, later redone',
+            'retires PK-1:W2, refolded into PK-1:W3',
+        ].join('\n');
+        expect(groomedIn(dir, '2026-10-26', 'inbox', item)).toBe(true);
+        expect(
+            groomedIn(
+                dir,
+                '2026-10-26',
+                'inbox',
+                item.replace(/\nretires.*/, ''),
+            ),
+        ).toBe(false);
     });
 
     test('helga’s W<n> · text (stamp) shape reads like the stamp-first one', () => {

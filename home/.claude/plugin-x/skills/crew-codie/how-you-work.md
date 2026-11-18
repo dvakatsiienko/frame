@@ -82,7 +82,7 @@ Part of the `x:crew-codie` contract, binding in full; read at step 0 and again a
 so one look is enough for dima:
 - **what**: one line
 - **where**: one click — a port url, `file:line`, a pr, an artifact
-- **try**: 1–3 steps he would take
+- **try**: 1–3 steps he would take, each opening with its surface and place («in herdr's orbit», «in the quill», «cc's board, a thread's Terminal view»); a change he can't see on his daily surface (herdr's Chat view) says so first (dima, 2026-11-18: «tell precisely where and what to look/test», comms-log c5)
 - **proven**: the command you ran and its result
 - **not checked**: what only his eyes or hands can judge — never empty; «nothing left unchecked» is said in words
 - a quick lane with no sixth sense adds `verified: <head sha>`, where `x lane landed`'s range stops

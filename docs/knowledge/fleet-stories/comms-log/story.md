@@ -67,3 +67,17 @@ fed-by: incidents
 - **fix:** a look ask names what he will see, part by part, never a member's step id; the herdr codie got the liked shape as its look-card template (11:55)
 - **home:** undefined
 - **source:** undefined
+
+## c5 · clarity · - · siesta · undefined
+
+- **what:** the FRM-643 look card told him to open «the board» and a «codie subcard» without naming the surface; the change lived only on cc's own board in a thread's Terminal view, and he searched herdr's orbit
+- **how:** orbit look ask o36 and the 13:50 reply's three steps
+- **why:** the card named a part, never the surface it lives on, in a fleet with two boards (herdr's orbit, cc's Terminal-view board)
+- **when:** 11-18 13:50–14:01
+- **where:** his herdr orbit
+- **who:** clio main, the mods codie, dima
+- **his words:** «you told me to test stuff in a multi-surface environment and did not tell where. result - i spent ~7 mins looking into the wrong place, and typing you a message, ~10 min lost total. fix: tell precisely where and what to look/test.»
+- **shape:** wrong surface
+- **fix:** every look step opens with its surface and place: «in herdr's orbit», «in the quill», «cc's board, a thread's Terminal view (⌘⌥T)»; a change he cannot see on his daily surface says so first; crew-codie how-you-work § the look card carries the line
+- **home:** undefined
+- **source:** undefined
