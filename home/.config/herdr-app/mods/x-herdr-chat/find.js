@@ -119,12 +119,28 @@ export function createFind() {
         open() {
             state = { ...state, isOpen: true };
         },
-        /** a page landed: the same query over the rows now loaded, the stepped hit kept @param {readonly Row[]} rows */
-        recount(rows) {
+        /**
+         * a page landed: the same query over the rows now loaded, the stepped hit kept
+         * @param {readonly Row[]} rows
+         * @param {{ from: string, to: string } | null} [joined] the page's last reply joined row `from` above, as `to`
+         */
+        recount(rows, joined = null) {
             const was = state.hits[state.at];
             const hits = hitsOf(rows, state.q);
-            const at = was
-                ? hits.findIndex((h) => h.id === was.id && h.n === was.n)
+            /** @param {Hit[]} list @param {string} id */
+            const count = (list, id) => list.filter((h) => h.id === id).length;
+            const kept =
+                was && joined && was.id === joined.from
+                    ? {
+                          id: joined.to,
+                          n:
+                              was.n +
+                              count(hits, joined.to) -
+                              count(state.hits, joined.from),
+                      }
+                    : was;
+            const at = kept
+                ? hits.findIndex((h) => h.id === kept.id && h.n === kept.n)
                 : -1;
             state = { ...state, at: Math.max(0, at), hits };
         },

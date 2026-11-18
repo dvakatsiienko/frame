@@ -150,3 +150,25 @@ describe('plain words keep what he reads (slice 6b review)', () => {
         );
     });
 });
+
+describe('find over a page that joins a row (sixth sense, slice 6b round 1)', () => {
+    test('the stepped hit follows its row onto the joined id, its place shifted by the page’s matches', () => {
+        const find = createFind();
+        find.open();
+        find.search(
+            [row('top', 'tail viewer here'), row('new', 'viewer now')],
+            'viewer',
+        );
+        find.step('older');
+        expect(find.current()).toBe('top');
+        find.recount(
+            [
+                row('page-1', 'head viewer once\ntail viewer here'),
+                row('new', 'viewer now'),
+            ],
+            { from: 'top', to: 'page-1' },
+        );
+        expect(find.currentHit()).toEqual({ id: 'page-1', n: 1 });
+        expect(findCount(find.state)).toBe('3 / 3');
+    });
+});
