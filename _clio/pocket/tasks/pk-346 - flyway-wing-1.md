@@ -4,7 +4,7 @@ title: 'flyway: wing 1'
 status: open
 assignee: []
 created_date: '2026-11-07T12:03:00Z'
-updated_date: '2026-11-18T19:24:00Z'
+updated_date: '2026-11-18T19:51:00Z'
 labels:
   - s
   - clio-wing-1
@@ -24,15 +24,16 @@ ordinal: 1001
 - [ ] #6 f19 wishkeeper-cache: one big measure over the trial's whole 5 min week, then the 1 h arm
 - [ ] #7 f25 speak v2 with dima: bytes move → mess hunt (FRM-629:W26–W27) → wisps → design; FRM-497 rides it
 - [ ] #8 f27 refreshes on his word: refresh-readaloud → refresh fable 5.2 → refresh designer, then speak v2 (his plan)
-- [ ] #9 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
-- [ ] #10 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
-- [ ] #11 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
-- [ ] #12 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
-- [ ] #13 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
-- [ ] #14 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
-- [ ] #15 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
-- [ ] #16 f34 🦥 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
-- [ ] #17 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
+- [ ] #9 f36 ⏳ FRM-555 follow-up with the mods codie: its profile of a quiet row, then the fix with measured gains to main — waits for: FRM-555
+- [ ] #10 f28 📅 FRM-516 crow per thread: the week's read (W15, W21), then close — on: 2026-11-20
+- [ ] #11 f30 📅 strays lane verdict (FRM-586): model pick, Sonnet 5.5 spec shape, at its trial end — on: 2026-11-20
+- [ ] #12 f26 📅 FRM-465 exit 5 read: bytes patches automerge inside 07:00–18:59 — on: 2026-11-25
+- [ ] #13 f12 📅 x knowledge and x probe bare: the 30-day re-read on x stats, keep or ask — on: 2026-11-27
+- [ ] #14 f31 🦥 redraw the refresh-crew-coordinator board — later: dima 19:21
+- [ ] #15 f32 🦥 FRM-525 cpu overload: the sudo read first, then the stopped-sessions A/B — later: dima, after herdr and speak v2
+- [ ] #16 f33 🦥 FRM-537 perf probes: a menu to run when usage is spare — later: dima, after herdr and speak v2
+- [ ] #17 f34 🦥 PK-362 steamac vm disk 256 → 192 gb — later: dima, his vet
+- [ ] #18 f35 🦥 FRM-650 measuring, one solution: the shape-idea grill — later: dima 20:47 («later, more important grills first»)
 <!-- AC:END -->
 
 ## Implementation Notes

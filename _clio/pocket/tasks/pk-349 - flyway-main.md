@@ -4,7 +4,7 @@ title: 'flyway: main'
 status: open
 assignee: []
 created_date: '2026-11-07T12:46:00Z'
-updated_date: '2026-11-18T19:20:00Z'
+updated_date: '2026-11-18T20:09:00Z'
 labels:
   - s
   - clio-main
@@ -16,8 +16,8 @@ ordinal: 1000
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 f12 helga grooms the day’s grill W-lines: prompt-groom.ts --linear 51 reds to 0
-- [ ] #2 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
+- [ ] #1 f39 designer day with dima: designer recipe, Fable 5.2 medium, speak v2 (FRM-642), herdr look
+- [ ] #2 f44 when dima is back: show where his not-possible herdr wishes live; he wants one colocated home — not now
 - [ ] #3 f35 ⏳ designer interview for herdr (FRM-591) — waits for: FRM-591
 - [ ] #4 f42 🦥 FRM-368 tilde grill with dima — later: dima after the herdr move
 - [ ] #5 f43 🦥 grill 5 leftover: his own sounds — later: dima at the mac
@@ -1101,4 +1101,13 @@ PK-349:W1192 (2026-11-18 14:33, dima): print dates bold, in the emoji set from 1
 done 2026-11-18 21:20: f9 💤 FRM-368 tilde grill with dima — later: dima after the herdr move (FRM-368 Todo)
 
 done 2026-11-18 21:20: f10 💤 grill 5 leftover: his own sounds — later: dima at the mac
+
+done 2026-11-18 21:26: f12 helga grooms the day’s grill W-lines: prompt-groom.ts --linear 51 reds to 0
+
+22:09 mods plan + upstream (22:06):
+PK-349:W1193 (2026-11-18 22:06, dima): ok, meanwhile the mods lane finishes, let's plan tomorrow (for you). i lead wing 1 with my own plan.
+PK-349:W1194 (2026-11-18 22:06, dima): run /clio:lowtide-peek-lanes for mods first. when mods are done, herdr.
+PK-349:W1195 (2026-11-18 22:06, dima): print the mods chunks in current order. while printing, see yourself and tell me if something is off in scope; are all chunks still worth it? propose improvements to the mods plan. done is when the mods lane has a proper plan, ready to be autodispatched tomorrow right at your boot.
+PK-349:W1196 (2026-11-18 22:06, dima): o2: what is the upstream issue? where to post? who is guilty? ❓
+PK-349:W1197 (2026-11-18 22:06, dima): i read your reply about the Claude plugin test after asking a question in orbit. proceed with filing an issue for the Claude plugin test, and proceed with chunk 2 + 3 in the mods lane (🎙️ wispr: «chunk speak for lanes for modeling»).
 <!-- SECTION:NOTES:END -->
