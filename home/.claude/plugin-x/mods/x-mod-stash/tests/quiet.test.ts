@@ -1964,6 +1964,65 @@ test('a parked lane whose next chunk linear cannot read wakes nobody', async ($,
     expect(parkedWakes(w)).toEqual([]);
 });
 
+test('a parked lane counts only the open steps of its chunk: a done one after the pointer is not left', async ($, on) => {
+    const card = steps('FRM-1', 'FRM-1', 'FRM-1', 'FRM-2');
+    card.items[1] = {
+        ...card.items[1],
+        isDone: true,
+    } as (typeof card.items)[number];
+    card.items[2] = {
+        ...card.items[2],
+        isDone: true,
+    } as (typeof card.items)[number];
+    const w = silentWorld(on, {
+        card,
+        labels: { 'FRM-2': ['agent'] },
+        wait: 60,
+    });
+    await idleLane($, w);
+    expect(parkedWakes(w)).toEqual([
+        expect.stringContaining(
+            '1 step left in FRM-1; next chunk FRM-2 is unsigned',
+        ),
+    ]);
+});
+
+test("a parked lane's chunk ends where another ticket's steps start", async ($, on) => {
+    const w = silentWorld(on, {
+        card: steps('FRM-1', 'FRM-2', 'FRM-2', 'FRM-1', 'FRM-1'),
+        labels: { 'FRM-2': ['agent'] },
+        wait: 60,
+    });
+    await idleLane($, w);
+    expect(parkedWakes(w)).toEqual([
+        expect.stringContaining(
+            '1 step left in FRM-1; next chunk FRM-2 is unsigned',
+        ),
+    ]);
+});
+
+test('a parked hand-made card with no tickets keeps the idle wake', async ($, on) => {
+    const w = silentWorld(on, {
+        card: {
+            items: [1, 2, 3].map((i) => ({ done: false, text: `step ${i}` })),
+        },
+        wait: 60,
+    });
+    await idleLane($, w);
+    expect(parkedWakes(w)).toEqual([
+        expect.stringContaining('«mods lane» has open steps'),
+    ]);
+});
+
+test('a failed linear read waits 10 min before the next, logged once', async ($, on) => {
+    const w = silentWorld(on, { card: steps('FRM-1', 'FRM-2'), wait: 60 });
+    await idleLane($, w);
+    await w.clock.advance(3 * MIN);
+    expect(
+        w.logged.filter((l) => l.includes('linear read FRM-2')),
+    ).toHaveLength(1);
+});
+
 test('a member speaking again re-arms the parked wake', async ($, on) => {
     const w = silentWorld(on, { wait: 60 });
     await start($);

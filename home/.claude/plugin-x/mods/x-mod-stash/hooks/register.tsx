@@ -1920,9 +1920,10 @@ const parkedUnreadLogged = new Map<string, string>();
 // a chunk this close to its end with nothing signed after it is what a parked lane wakes its clio for (FRM-602)
 const PARKED_STEPS_LEFT = 2;
 const SIGNED_READ_MS = 10 * 60_000;
-const signedReads = new Map<string, { at: number; isSigned: boolean }>();
+const signedReads = new Map<string, { at: number; isSigned?: boolean }>();
 
-// whether linear says a ticket is signed, read through x at most once per ticket in 10 min; undefined when x cannot read it
+// whether linear says a ticket is signed, read through x at most once per ticket in 10 min, a failed read too, so an
+// outage logs once and spawns one read a window; undefined when x cannot read it
 async function isSigned($: EngineInterface, ticket: string, now: number) {
     const kept = signedReads.get(ticket);
     if (kept && now - kept.at < SIGNED_READ_MS) return kept.isSigned;
@@ -1943,6 +1944,7 @@ async function isSigned($: EngineInterface, ticket: string, now: number) {
         signedReads.set(ticket, { at: now, isSigned });
         return isSigned;
     } catch {
+        signedReads.set(ticket, { at: now });
         await $.ui.log(
             `x-mod-stash: x linear read ${ticket} failed; the parked lane waits`,
         );
@@ -1957,12 +1959,16 @@ async function parkedNudge(
     lane: StashLane,
     now: number,
 ): Promise<string | undefined> {
-    const chunk = lane.items[lane.current]?.ticket;
-    const rest = lane.items.slice(lane.current);
-    const left = rest.filter((x) => x.ticket === chunk).length;
+    const open = lane.items.slice(lane.current).filter((x) => !x.isDone);
+    const chunk = open[0]?.ticket;
+    // a hand-made card names no ticket: it has no chunk to end, so its idle time is the wake
+    if (!chunk) return `«${lane.title}» has open steps`;
+    // the chunk is the run of open steps from the pointer that share its ticket; the next ticket's steps end it
+    const after = open.findIndex((x) => x.ticket !== chunk);
+    const left = after < 0 ? open.length : after;
     if (left > PARKED_STEPS_LEFT) return undefined;
-    const head = `«${lane.title}» (${lane.id}): ${left} step${left === 1 ? '' : 's'} left in ${chunk ?? 'its chunk'}`;
-    const next = rest.find((x) => x.ticket && x.ticket !== chunk)?.ticket;
+    const head = `«${lane.title}» (${lane.id}): ${left} step${left === 1 ? '' : 's'} left in ${chunk}`;
+    const next = open.find((x) => x.ticket && x.ticket !== chunk)?.ticket;
     if (!next) return `${head}, nothing queued, sign the next`;
     const signed = await isSigned($, next, now);
     return signed === false
