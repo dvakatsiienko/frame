@@ -135,6 +135,9 @@ born 2026-10-22 on dima's word (PK-103, the review-policy round): the round cap 
 - 2026-11-12 · frame#170 · ci reviewer · 4 on cf4179bb; 2 left with the guard, 2 stale comments fixed · useful
 - 2026-11-12 · FRM-576, quick lane on main (c200e8db..652e8af5), memory by surface: clean at 2 rounds · sixth sense found 1 break, fixed: a herdr clio thread whose cwd moved lost its leaf at a compaction, round 2 matches the start project · chunk 2 by clio (doors into the leaves), exit 8 live on dima's «dima probe 2» desktop thread (the desktop leaf loaded, no herdr leaf) · local reviews: none named in the done report
 - 2026-11-12 · FRM-505, quick lane on main (5dd97992..4bb9b71e), second wind runs itself: clean at 3 rounds · sixth sense round 1 broke exits 2, 3, 8 (his take-back undone, a gone handoff untold, 🍃 off kept the mod's ask), round 2 a false board word; all fixed, each fix's mutant red · live on throwaway --bg sessions for exits 3, 11, 13, 14
+- 2026-11-18 · FRM-621 · wisphunter, plain card (Opus 5.5) · 5; 4 real fixed (a refused pull had copied earlier paths, `--over` kept a new file's copy, the drift Next led into the refusal, the edit rule read in two places), 1 test gap folded in · useful
+- 2026-11-18 · FRM-621 · macroscope, budget · 1 real, the same partial-pull bug the card found; none found only by it · useful
+- 2026-11-18 · FRM-621, mods-lane-7 quick lane on main (884579e8..310be40c), one mods-edit scratch per session and a pull that keeps an edit: no sixth sense · local reviews 2 found 5 real before land, all fixed
 
 ## verdict
 - 2026-11-12 · frame#172, FRM-572 chunk 2 (cli wisps): clean at 3 rounds · wishkeeper found 1 high (a UTC lock stamp read every live holder as gone), sixth sense round 2 found 1 P1 (a `ps` that did not run read as gone); both fixed, red-proven · ci reviewer: not named
