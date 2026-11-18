@@ -259,6 +259,25 @@ describe('ungroomedStamps', () => {
         ).toBe(false);
     });
 
+    test('an inbox fold traces to the prep by its words, never by invented ones', () => {
+        const dir = mkdtempSync(join(tmpdir(), 'traced-'));
+        writeFileSync(
+            join(dir, '2026-10-26-inbox.groomed.md'),
+            '- goal 0: stabilize ourselves in herder. i am happy with ui and ux.\n- you are happy with performance.\n',
+        );
+        const fold =
+            'PK-1:W1 (2026-10-26 inbox, dima) goal 0: stabilize us in herder, i am happy with ui and ux, you with performance (restored: crow 14:27) (was PK-9:W3)';
+        expect(groomedIn(dir, '2026-10-26', 'inbox', fold)).toBe(true);
+        expect(
+            groomedIn(
+                dir,
+                '2026-10-26',
+                'inbox',
+                'PK-1:W1 (2026-10-26 inbox, dima): rewrite the billing exporter in rust tonight',
+            ),
+        ).toBe(false);
+    });
+
     test('helga’s W<n> · text (stamp) shape reads like the stamp-first one', () => {
         const drift = 'W7 · fold this one (2026-10-26 09:12, dima)';
         expect(ungroomedStamps(drift, day, () => false)).toEqual(['09:12']);

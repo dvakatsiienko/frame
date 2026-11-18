@@ -71,6 +71,28 @@ const bare = (line: string) =>
         .replace(/\s*❓$/, '')
         .replace(/\\([~[\]_*])/g, '$1');
 
+// a ticket's W-line is a fold, so its spelling fixes and joins leave no substring: it traces to the prep
+// when one window of a few consecutive prep lines holds most of its words, its «(was PK-N:Wn)» and «(restored: …)» notes aside
+const words = (text: string) =>
+    new Set(text.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? []);
+const TRACE_WINDOW = 6;
+const TRACE_SHARE = 0.8;
+export function tracedTo(prepLines: string[], text: string) {
+    const want = [
+        ...words(
+            text.replace(/\((?:was|from|restored|restores)\b[^)]*\)/g, ''),
+        ),
+    ];
+    if (want.length === 0) return false;
+    return prepLines.some((_, start) => {
+        const have = words(
+            prepLines.slice(start, start + TRACE_WINDOW).join(' '),
+        );
+        const hits = want.filter((word) => have.has(word)).length;
+        return hits / want.length >= TRACE_SHARE;
+    });
+}
+
 // a groom file holds at least one W-line stamped with this very minute; a placeholder file fails
 // an inbox day's groomed file is helga's checked prep, copied in at boot: it must exist and carry every
 // `raw drop (<day> inbox, dima): …` note of the item, or an inbox stamp would pass a raw fold
@@ -104,14 +126,20 @@ export function groomedIn(
         const folded = [
             ...item.matchAll(
                 new RegExp(
-                    `^(?:[*-]\\s+)?((?:PK|FRM|BYT)-\\d+:W\\d+)?.*?\\(${day} inbox, dima[^)]*\\): (.+)$`,
+                    `^(?:[*-]\\s+)?((?:PK|FRM|BYT)-\\d+:W\\d+)?.*?\\(${day} inbox, dima[^)]*\\):? (.+)$`,
                     'gm',
                 ),
             ),
         ]
             .filter(([, id]) => !id || !retired.has(id))
             .map(([, , text]) => bare(text ?? ''));
-        return folded.length > 0 && folded.every((text) => prep.includes(text));
+        const prepLines = prep.split('\n');
+        return (
+            folded.length > 0 &&
+            folded.every(
+                (text) => prep.includes(text) || tracedTo(prepLines, text),
+            )
+        );
     }
     return groomed
         .matchAll(STAMP)
