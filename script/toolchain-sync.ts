@@ -1,7 +1,8 @@
 /**
  * toolchain-sync — the installed node and pnpm are the source of truth for every
  * repo's runtime pins: `.node-version` (major only, so fnm resolves whatever patch is
- * installed), `packageManager`, `engines`, `devEngines.runtime` and trophy-sys's two
+ * installed), `packageManager`, `engines` and `devEngines.runtime` (the installed full node
+ * version, so `pnpm outdated` lists no node row) and trophy-sys's two
  * node pins in bytes. Renovate is told to leave those alone.
  * `--check` reports drift and exits 1, and also reads each Vercel project's node version
  * (the logged-in vercel cli); without it the files are rewritten and each lockfile refreshed,
@@ -26,10 +27,10 @@ const pins = [
 ] as const;
 
 export function toolchainSync(check: boolean, deps: Deps) {
-    const { nodeMajor, pnpmVersion } = deps;
+    const { nodeInstalled, nodeMajor, pnpmVersion } = deps;
     const want = {
-        devEngines: `>=${nodeMajor}.0.0`,
-        engines: { node: `>=${nodeMajor}`, pnpm: `>=${pnpmVersion}` },
+        devEngines: `>=${nodeInstalled}`,
+        engines: { node: `>=${nodeInstalled}`, pnpm: `>=${pnpmVersion}` },
         nodeVersion: `${nodeMajor}\n`,
         packageManager: `pnpm@${pnpmVersion}`,
     };
@@ -235,6 +236,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
                         stdio: 'inherit',
                     },
                 ),
+            nodeInstalled: process.version.slice(1),
             nodeMajor: process.version.slice(1).split('.')[0] ?? '',
             pnpmVersion,
             readVercel: readVercelNodes,
@@ -252,6 +254,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 export interface Deps {
     install: (repo: string) => void;
     nodeMajor: string;
+    /** the installed node, `26.13.1`: the engines floor, so `pnpm outdated` has nothing to list for node */
+    nodeInstalled: string;
     pnpmVersion: string;
     /** the fnm-installed node versions (`v26.13.1`, never `system`) and the default one; the removal of one */
     fnm: {

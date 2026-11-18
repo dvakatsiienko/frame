@@ -18,6 +18,9 @@ allowBuilds:
   node-pty: false
   webgpu: false
 
+# renovate's own gate, in minutes (3 days): pnpm outdated reads it, so it stops listing what renovate may not take yet
+minimumReleaseAge: 4320
+
 minimumReleaseAgeExclude:
   - biome-config-polished
   - three@0.186.1

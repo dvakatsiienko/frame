@@ -36,10 +36,10 @@ beforeEach(() => {
                         runtime: {
                             name: 'node',
                             onFail: 'error',
-                            version: '>=26.0.0',
+                            version: '>=26.13.1',
                         },
                     },
-                    engines: { node: '>=26', pnpm: '>=11.0.0' },
+                    engines: { node: '>=26.13.1', pnpm: '>=11.0.0' },
                     name: 'fixture',
                     packageManager: 'pnpm@11.0.0',
                 },
@@ -78,6 +78,7 @@ const deps = (
 ) => ({
     fnm,
     install,
+    nodeInstalled: `${nodeMajor}.13.1`,
     nodeMajor,
     pnpmVersion: '11.0.0',
     readVercel,
@@ -100,8 +101,9 @@ describe('sync', () => {
         expect(manifest.devEngines.runtime).toEqual({
             name: 'node',
             onFail: 'error',
-            version: '>=27.0.0',
+            version: '>=27.13.1',
         });
+        expect(manifest.engines.node).toBe('>=27.13.1');
         expect(Object.keys(manifest)).toEqual([
             'name',
             'engines',
