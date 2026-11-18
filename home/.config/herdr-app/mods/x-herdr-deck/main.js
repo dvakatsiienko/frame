@@ -909,11 +909,13 @@ export default class Deck extends View {
                                         })
                                         .on_key_up((e) => {
                                             if (e.key === 'enter')
-                                                this.steerKeys.up();
+                                                this.steerKeys.up(Date.now());
                                         })
                                         .on_modifiers_changed((e) => {
                                             if (!e.modifiers.platform)
-                                                this.steerKeys.modifiersUp();
+                                                this.steerKeys.modifiersUp(
+                                                    Date.now(),
+                                                );
                                         })
                                         // delivered: the steer stays as words, no longer editable
                                         .child(

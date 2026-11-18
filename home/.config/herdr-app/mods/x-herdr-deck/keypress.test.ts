@@ -17,7 +17,7 @@ describe('one press of Enter acts once, a held one too (FRM-628)', () => {
         const acts = [key.submitted(1_000)];
         key.down(1_150, true);
         acts.push(key.submitted(1_150));
-        key.up();
+        key.up(1_215);
         expect(acts).toEqual(['act', 'repeat']);
     });
 
@@ -33,7 +33,7 @@ describe('one press of Enter acts once, a held one too (FRM-628)', () => {
         const key = createKeyPress();
         key.down(1_000, false);
         key.submitted(1_000);
-        key.up();
+        key.up(1_065);
         key.down(1_120, false);
         expect(key.submitted(1_120)).toBe('act');
     });
@@ -41,7 +41,7 @@ describe('one press of Enter acts once, a held one too (FRM-628)', () => {
     test('⌘ let go ends a ⌘Enter, whose key-up macOS never sends', () => {
         const key = createKeyPress();
         key.submitted(1_000);
-        key.modifiersUp();
+        key.modifiersUp(1_060);
         expect(key.submitted(1_100)).toBe('act');
     });
 
@@ -55,8 +55,22 @@ describe('one press of Enter acts once, a held one too (FRM-628)', () => {
         test('a key-up between makes the next submit a new press, however soon', () => {
             const key = createKeyPress();
             key.submitted(1_000);
-            key.up();
+            key.up(1_040);
             expect(key.submitted(1_050)).toBe('act');
+        });
+
+        // FRM-628 round 2 (dima, 13:14): a held Enter in the quill unmarked his words as he let go: its last repeat,
+        // read a beat after its submit, came after the key-up
+        test('a held key’s last repeat, read after the key-up, is still its repeat', () => {
+            const key = createKeyPress();
+            expect(key.submitted(1_000)).toBe('act');
+            const acts = [];
+            for (let at = 1_150; at <= 1_300; at += 15)
+                acts.push(key.submitted(at));
+            key.up(1_310);
+            acts.push(key.submitted(1_305));
+            expect(acts.every((act) => act === 'repeat')).toBe(true);
+            expect(key.submitted(1_400)).toBe('act');
         });
 
         test('one after the repeat window acts', () => {

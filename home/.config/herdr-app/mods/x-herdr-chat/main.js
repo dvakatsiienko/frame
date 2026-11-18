@@ -510,7 +510,12 @@ export default class Chat extends View {
             // a beat later, so this press's key-down, which herdr tells after the submit, has landed; a thread switched
             // in that beat never gets the other thread's words
             cx.timer.after(1, (cx) => {
-                if (this.quillKeys.submitted(at) === 'repeat') return;
+                const said = this.quillKeys.submitted(at);
+                // [TRACE-enter] FRM-628 round 2: which Enter events the quill hears; out once his look reads them
+                this.trace(
+                    `[TRACE-enter] submit ${at} read ${Date.now()} ${act} → ${said}`,
+                );
+                if (said === 'repeat') return;
                 if (this.file !== file) return;
                 if (act === 'push') this.push(box, cx);
                 else if (act === 'click') this.click(box, cx);
@@ -1772,18 +1777,20 @@ export default class Chat extends View {
                         .border(1)
                         .border_color(t.border)
                         .on_key_down((e) => {
-                            if (e.key === 'enter')
-                                this.quillKeys.down(
-                                    Date.now(),
-                                    Boolean(e.is_held),
-                                );
+                            if (e.key !== 'enter') return;
+                            this.trace(
+                                `[TRACE-enter] down ${Date.now()} held=${Boolean(e.is_held)}`,
+                            );
+                            this.quillKeys.down(Date.now(), Boolean(e.is_held));
                         })
                         .on_key_up((e) => {
-                            if (e.key === 'enter') this.quillKeys.up();
+                            if (e.key !== 'enter') return;
+                            this.trace(`[TRACE-enter] up ${Date.now()}`);
+                            this.quillKeys.up(Date.now());
                         })
                         .on_modifiers_changed((e) => {
                             if (!e.modifiers.platform)
-                                this.quillKeys.modifiersUp();
+                                this.quillKeys.modifiersUp(Date.now());
                         })
                         .child(Textarea.new(box))
                         .child(

@@ -389,7 +389,8 @@ wish: PK-363 · legend and the other areas: [FTR.md](../FTR.md)
   - when a send is refused, or the thread does not run in herdr, then his words are back in the quill and a line over it says so
   - and a message waiting in Claude Code's queue is his last row, an outline of his bubble with dim words, reading «Waiting for the turn», until the turn takes it; words that joined a turn are drawn as his messages
   - Shift+Enter breaks the line
-  - and one press of Enter acts once: a held Enter, or one press herdr reports twice, acts once; a slow tap (~150 ms) sends once (FRM-628)
+  - and one press of Enter acts once: a held Enter, or one press herdr reports twice, marks once and its let-go leaves the mark on; a slow tap (~150 ms) marks once (FRM-628)
+  - 🧭 and Enter never scrolls the quill: with the caret past the quill's view, Enter marks and the view stays where he left it (dima, 13:14: «enter only does 🍕 and does not scroll quill»)
   - and a release on send joins until he can see the disc: a 100 ms pause, then 15 % of the fill (150 ms at the default 1 s hold); let go after that, nothing is sent
   - decision: a changed mind counts from a disc he can see, never a sliver: a 110–250 ms press did nothing (FRM-628 step 92, keeping his o127)
   - and while a model, effort or permission pick types into the thread, a push or a send waits: his words stay, marked or not, and a line over the quill says «A switch is typing into this thread: send again in a moment» (FRM-628 step 93)
