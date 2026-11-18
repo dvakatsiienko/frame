@@ -1,0 +1,5 @@
+{
+    "place": "none",
+    "shared": ["chat-asks.js"],
+    "title": "x-herdr chat header"
+}

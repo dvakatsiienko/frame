@@ -75,6 +75,7 @@ import {
 } from './band.js';
 import { screenTail } from './blocked.js';
 import { splitBlocks } from './blocks.js';
+import { CHAT_SHOWN, settingsOverlay } from './chat-asks.js';
 import { messageDetails } from './details.js';
 import {
     EFFORTS,
@@ -130,7 +131,7 @@ import { createRowModel } from './row-model.js';
 import { addressIn, sendBlocked, submitted } from './send.js';
 import { SENT_DIR, createSentPictures } from './sent-pictures.js';
 import { readSettings, settingsDir } from './settings-io.js';
-import { createSettingsWindow, settingsOverlay } from './settings-window.js';
+import { createSettingsWindow } from './settings-window.js';
 import {
     copyPicture,
     deletePreviewCopies,
@@ -151,6 +152,7 @@ import { openViewer, viewerAfter, viewerCount, viewerLevel } from './viewer.js';
 
 /** @typedef {import('gpui-kit').Color} Color */
 /** @typedef {import('gpui-kit').Context} Context */
+/** @typedef {import('./chat-asks.js').ChatShown} ChatShown */
 /** @typedef {import('./row-model.js').Row} Row */
 // the theme colours this file reads, each present in every herdr theme
 /** @typedef {Record<'accent' | 'background' | 'blocked' | 'border' | 'dim' | 'foreground' | 'hover' | 'muted' | 'popover' | 'raised' | 'selected' | 'solid' | 'solid_foreground' | 'working', Color>} Theme */
@@ -505,8 +507,8 @@ export default class Chat extends View {
     escapeAsk = null;
     /** ⌘⇧E's last ask @type {unknown} */
     effortAsk = null;
-    /** the pid this chat last named in `chat.shown`: its thread on screen, null hidden @type {number | null | undefined} */
-    namedPid = undefined;
+    /** what this chat last wrote in `chat.shown`, as json: its thread on screen and whether find is open @type {string} */
+    namedShown = '';
     /** whether the chat was on screen at the last draw */
     wasShown = false;
     /** @type {string | null} */
@@ -864,10 +866,18 @@ export default class Chat extends View {
             this.shownAddress = address;
             _cx.timer.after(0, (later) => this.showThread(address, later));
         }
-        const named = isShown ? this.pid : null;
-        if (named !== this.namedPid) {
-            this.namedPid = named;
-            _cx.timer.after(0, () => setShared('chat.shown', { pid: named }));
+        /** @type {ChatShown} */
+        const named = isShown
+            ? {
+                  address,
+                  isFindOpen: this.find.state.isOpen,
+                  pid: this.pid ?? null,
+              }
+            : { address: null, isFindOpen: false, pid: null };
+        const namedKey = JSON.stringify(named);
+        if (namedKey !== this.namedShown) {
+            this.namedShown = namedKey;
+            _cx.timer.after(0, () => setShared(CHAT_SHOWN, named));
         }
         // the keyboard comes to the quill when the chat comes on screen, on a thread switch and on ⌘K: a click on a tab
         // gives it to that tab's hidden terminal. ⌘⇧E opens the picker on the effort, a second press applies it. a press

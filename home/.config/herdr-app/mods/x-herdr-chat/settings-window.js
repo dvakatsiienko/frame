@@ -32,16 +32,6 @@ import {
     settledPending,
 } from './settings-store.js';
 
-/** the overlay the chat's gear opens: herdr's middle, the card drawn here @param {string} page */
-export const settingsOverlay = (page) => ({
-    frame: /** @type {const} */ ('none'),
-    height: 0.92,
-    kind: /** @type {const} */ ('dialog'),
-    mod: 'x-herdr-chat',
-    props: { settingsWindow: page },
-    width: 860,
-});
-
 // shepherdr's sizes: 13 body and titles, 12 second lines, 15 the nav's title; a group's heading 18 and a page title
 // 22, well above a row's 13, on his word (20:27: «the headings mix up with the options»)
 const TEXT = { body: 13, heading: 18, label: 12, page: 22, title: 15 };

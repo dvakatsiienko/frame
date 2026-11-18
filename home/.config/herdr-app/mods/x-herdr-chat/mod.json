@@ -1,6 +1,6 @@
 {
     "overlay": { "height": 720, "kind": "window", "width": 900 },
     "place": "none",
-    "shared": ["keypress.js"],
+    "shared": ["chat-asks.js", "keypress.js"],
     "title": "Chat"
 }
